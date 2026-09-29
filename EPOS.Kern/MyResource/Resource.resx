@@ -39877,5 +39877,23 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
     <value>Ferienperioden gekürzt</value>
   </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Zeitstruktur {0}: {1} Wochenstunden = {2}, sonst {3}</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG" xml:space="preserve">
+    <value>wie Heizung</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT" xml:space="preserve">
+    <value>wie Anwesenheit</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_ZIEL" xml:space="preserve">
+    <value>„Zeitstruktur übernehmen“ wirkt auf Kühlen, Lüftung oder Geräte, nicht auf {0}.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT" xml:space="preserve">
+    <value>„Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT" xml:space="preserve">
+    <value>„Zeitstruktur wie Heizung“ braucht den Tagwert der Heizspalte.</value>
+  </data>
 </root>
 
