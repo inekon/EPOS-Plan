@@ -494,8 +494,8 @@ danach im Wegweiser desselben Ordners.
 1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
 `Kenndaten_Test.sqlite` (eingefroren auf der Fassung `6f0d5458…`; die Testdatenbank steht jetzt auf
-Schemastand **153**, 71 622 656 Byte, LFS-SHA-256
-`5a0b315234614935a27e028ed70f23e8ac108aae955b1dede37355d12f0b39fe`, byte-gleich nachgerechnet — Nachträge unter
+Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, byte-gleich nachgerechnet — Nachträge unter
 „Die Vorgängerbasis R23“). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049)
 jeden Push, `ios.yml` den iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040, `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die
@@ -508,7 +508,7 @@ Projekt 1049. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Raumwärmebedarf > 0, bei den Gebäuden nach VDI 6007 fast jeder Tag. Jetzt ist Heiztag ein Tag, dessen
 > Mittel der Außentemperatur des Laufs über 24 Stunden **unter der Heizgrenze** liegt
 > (`SimulationSPK.HeiztageAus`, strikt, mit Rechenrand); die Heizgrenze steht je Projekt in
-> `Tab_Einstellungen.Kessel_Heizgrenze` (Schemaschritt 153), leer gilt **15 °C**. Nachlauf und Deckel
+> `Tab_Einstellungen.Kessel_Heizgrenze` (Schemaschritt 154), leer gilt **15 °C**. Nachlauf und Deckel
 > `Kessel_Betriebsbereitschaft` bleiben. Die Referenzprojekte führen keine eigene Heizgrenze; sie haben 254
 > Heiztage, 1018, 1030 und 1049 (andere Klimaregion) 269. Die neue Einfrierregel „gesäte Kesseldaten“ steht oben.
 >
@@ -589,7 +589,19 @@ Nachträge unten gelten der Testdatenbank zwischen R23 und R24.
 > Basis bleibt: Die drei Tabellen der Konditionierung sind leer, und die Ergebnistabellen liest der
 > Referenzlauf nicht (von der Gebäudesimulation gegen R23 gezeigt, mit der Heizgrenze unten gegen R24).
 
-> **Nachtrag 29.09.2026 — Schemaschritt 153 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 153, Basis unverändert.** Die Bezugsart Zimmer des
+> Zapfprofilgenerators (Auftrag A2, Umsetzungskonzept Zapfprofilgenerator N34 und N36, Weg 3 der Hotel-Durchsicht)
+> bringt den Schemaschritt **153** (`TwwBezugsartSchema`): `Tab_TwwNutzungsart_STAMM` und
+> `Tab_TwwBedarfstag_STAMM` neu gebaut mit der Prüfklausel der Bezugsart 1 bis 8, Zeilen, IDs und Zähler
+> unverändert, dazu die Nachführung der Auslieferungszeilen des Paketteils in einem früheren Stand (in der
+> Testdatenbank keine — ihre Zeilen tragen Status `EIGEN`). Danach führt `Skripte/tww_testkatalog_fiktiv.py`
+> (Python 3.12 oder neuer) die Hotelzeile auf die Bezugsart Zimmer nach. Zellvergleich gegen die Fassung
+> `1a86846c…`: allein `Tab_Applikation.SchemaVersion` 152 → 153 und `Tab_TwwNutzungsart_STAMM` ID 9
+> `Bezugsart` 3 → 8; im Schema allein die Prüfklausel beider Tabellen. Neue Fassung `621cf64a…`,
+> 71 622 656 Byte. **Die Basis bleibt** (von der Zapfprofil-Sitzung gegen R23 gezeigt, mit der Heizgrenze unten gegen R24): Kein Referenzprojekt benutzt die Hotelzeile (1045 rechnet mit
+> „Wohnen groß (abgeleitet)"), die Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt.
+
+> **Nachtrag 29.09.2026 — Schemaschritt 154 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
 > 27.09.2026 zu #568: `Tab_Einstellungen.Kessel_Heizgrenze` (`REAL`, nullbar, ohne Vorgabe; NULL = Vorgabe
 > 15 °C), **reines DDL, kein DML**; Quelle `KesselHeizgrenzeSchema`. Die Testdatenbank wurde aus der Fassung
 > `22b1f882…` (Schemastand 151) mit `Werkzeuge/Testdatenbankschema` nachgezogen — eine Spalte angelegt, ein
@@ -600,14 +612,15 @@ Nachträge unten gelten der Testdatenbank zwischen R23 und R24.
 > rechnen die fünfzehn Projekte darauf auf Linux byte-gleich zum Lauf auf der Fassung `22b1f882…`
 > (460/460 CSV); die Rechenwirkung kommt mit der Regel selbst (Basis R24).
 >
-> **Beim Zusammenführen mit KP1b umnummeriert.** Gebaut und eingefroren wurde die Heizgrenze als Schritt 152
-> auf der Fassung `6f0d5458…`; die Gebäudesimulation hatte 152 inzwischen mit KP1b belegt. Die Heizgrenze ist
-> deshalb **Schritt 153**, und die Testdatenbank wurde aus der KP1b-Fassung `1a86846c…` (Schemastand 152) mit
-> `Werkzeuge/Testdatenbankschema` neu nachgezogen: einzige Abweichungen `Tab_Applikation.SchemaVersion` 152 → 153
-> und die neue Spalte (25 Zeilen, alle NULL); `integrity_check` ok, `foreign_key_check` leer; **71 622 656 Byte,
-> LFS-SHA-256 `5a0b315234614935a27e028ed70f23e8ac108aae955b1dede37355d12f0b39fe`**. Die fünfzehn Projekte rechnen
-> darauf auf Linux **byte-gleich zu R24** (460/460 CSV, `vergleich` GESAMT PASS) — KP1b und der Schrittwechsel
-> lassen die Basis stehen.
+> **Beim Zusammenführen umnummeriert.** Gebaut und eingefroren wurde die Heizgrenze als Schritt 152 auf der
+> Fassung `6f0d5458…`; inzwischen belegten KP1b der Gebäudesimulation die 152 und die Bezugsart Zimmer des
+> Zapfprofilgenerators die 153. Die Heizgrenze ist deshalb **Schritt 154**, und die Testdatenbank wurde aus der
+> Fassung `621cf64a…` (Schemastand 153) mit `Werkzeuge/Testdatenbankschema` neu nachgezogen: einzige Abweichungen
+> `Tab_Applikation.SchemaVersion` 153 → 154 und die neue Spalte (25 Zeilen, alle NULL); `integrity_check` ok,
+> `foreign_key_check` leer; **71 622 656 Byte, LFS-SHA-256
+> `2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`**. Die fünfzehn Projekte rechnen darauf auf
+> Linux **byte-gleich zu R24** (460/460 CSV, `vergleich` GESAMT PASS) — KP1b, die Bezugsart Zimmer und der
+> Schrittwechsel lassen die Basis stehen.
 
 ## Was hier liegt
 

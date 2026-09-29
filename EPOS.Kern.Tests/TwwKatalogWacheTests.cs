@@ -1241,12 +1241,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Startet das Skript über <c>py</c> (Windows-Starter) oder <c>python3</c>;
-        /// <c>null</c>, wenn keines von beiden startet.
+        /// Startet das Skript über <c>py</c> (Windows-Starter), sonst über ein ausdrücklich benanntes
+        /// <c>python3.13</c>/<c>python3.12</c> und zuletzt <c>python3</c> — das Skript braucht Python 3.12
+        /// (kompensierte Summe) und bricht unter einer älteren Fassung benannt ab; ein Rechner, dessen
+        /// <c>python3</c> älter ist, aber eine neuere Fassung daneben führt, rechnet so mit ihr.
+        /// <c>null</c>, wenn keines startet.
         /// </summary>
         private static (int, string)? PythonStarten(string skript, string datenbank)
         {
-            foreach (string programm in new[] { "py", "python3" })
+            foreach (string programm in new[] { "py", "python3.13", "python3.12", "python3" })
             {
                 var start = new ProcessStartInfo
                 {

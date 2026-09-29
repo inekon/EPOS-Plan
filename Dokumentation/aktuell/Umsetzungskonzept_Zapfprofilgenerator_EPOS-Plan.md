@@ -134,7 +134,9 @@ Der Katalog ist in `EPOS.Kern/Allgemein/Katalog/KatalogRegistry.cs:250-264` als 
 `WizardCtrl.Add_Projekt_Brauchwasser` (`EPOS.Kern/Controller/WizardCtrl.cs:2763`, nimmt einen
 `DbVorgang` an). Die Herkunft der Katalogtypen (vier aus VDI-6002-Bildern digitalisiert, die übrigen
 generisch INEKON) beschreibt [`KONTEXT_Brauchwassertypen_VDI6002.md`](KONTEXT_Brauchwassertypen_VDI6002.md);
-ihre Zählung dort bezieht sich auf den Auslieferungskatalog und weicht von der Testdatenbank ab.
+ihre Zählung dort (11 Wochenprofile, 13 Monatssätze) gilt für den Auslieferungskatalog. Die Testdatenbank
+führt dieselben Zeilen mit denselben Werten und dazu zwei ältere Testtypen und drei Testsätze, die die
+Projekte 1007, 1009 und 1046 benutzen — Abgleich im KONTEXT-Papier, Abschnitt 5.
 
 Projekte mit Brauchwasser in der Testdatenbank: **mit Zuordnung** in `Z_Projekt_Brauchwasser` (sie
 rechnen Brauchwasser über die Sicht) 17 Projekte — 1007, 1009, 1019, 1023, 1024, 1026–1029,
@@ -404,7 +406,7 @@ in der internen Spalte `Beleg` TEXT je Zeile; Oberfläche, Bericht und KiSicht z
 |---|---|---|
 | `ID` | INTEGER PRIMARY KEY AUTOINCREMENT (N2) | |
 | `Bezeichner`, `Katalogversion` | TEXT NOT NULL, TEXT NOT NULL; UNIQUE (`Bezeichner`, `Katalogversion`) | neutraler Name; der Schlüssel ist zugleich der natürliche Schlüssel für Projektexport und -import (3.2) |
-| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall) |
+| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7,8)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall), Zimmer (8, Kennwerte je Zimmer eines Beherbergungsbetriebs; rechnet wie Betten, eigene Menge) — dieselbe Wertemenge `TwwSchema.BEZUGSART_WERTE` an `Tab_TwwBedarfstag_STAMM.Bezugsart` |
 | `Bedarf_Niedrig`, `Bedarf_Mittel`, `Bedarf_Hoch` | REAL NOT NULL | kWh je Einheit und Tag bei den Bezugstemperaturen |
 | `Bedarf_Niedrig_Min` … `Bedarf_Hoch_Max` | REAL | Bandbreite je Niveau (sechs Spalten) |
 | Provenienz `Bedarf` | vier Spalten | |
@@ -4576,3 +4578,62 @@ kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigene
 
 Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
 Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).
+
+### N36 (29.09.2026) — Welle #593–#594: Bezugsart Zimmer, FREI-1, Füllstandslinie am Wochenbild
+
+**Wortlaut** (Anwender, 27.09.2026): „Setze Teil A um“ und „Setze Teil D um“ — Teil A: Struktur des
+Zapfprofil-Wegs nach N35, Umgang mit der Import-Dublette FREI-1 (N34 (d)), Weg 3 „eigene Bezugsart
+Zimmer“ (N34); Teil D: die Kleinpunkte der Übergabe 2.4 (Speichergrößen-Auswahl im Wochendiagramm,
+Zählung des Brauchwasserkatalogs). Protokolle
+[Bezugsart Zimmer und FREI-1](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Bezugsart_Zimmer_FREI1.md),
+[Füllstandslinie](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Fuellstandslinie_Wochenbild.md).
+
+**(a) N35 ist mit #589 umgesetzt** (Sitzung „Dialoge und Korrekturen“, Baustein `Blattwechsel`,
+Hausregel „Blatt statt Überlagerung“). Eine zweite, parallel entstandene Fassung dieser Sitzung ist
+verworfen; ihre Browserprobe und ihre Abweichungen stehen im Bericht an die Orchestrierung, nicht im
+Bestand.
+
+**(b) Bezugsart Zimmer (#593, Weg 3).** `ZapfBezugsart.Zimmer = 8`; die Nutzungsart „Hotel (aus Messung,
+je Zimmer)“ trägt sie, ihr Name bleibt. Zimmer verhält sich überall wie Betten, wo Betten eine
+Sonderrolle hat; Zimmer und Betten werden nie summiert. Die Namensregel `BezugsmengeIstZimmerzahl`, der
+Hinweissatz aus N34 (c) und der DTO-Kanal `HinweisBezugsmenge` entfallen; die Einheit „Zimmer“ am Feld
+der Bezugsmenge trägt die Aussage. Schemaschritt **153** (`TwwBezugsartSchema.SCHRITT`; die 152 hat KP1b der Gebäudesimulation zuerst gepusht) baut
+`Tab_TwwNutzungsart_STAMM` und `Tab_TwwBedarfstag_STAMM` mit der Prüfklausel 1..8 neu (Grundschema =
+Schritt), Eintrag in `Paketanhebung.STUFEN`.
+
+**(c) FREI-1 (#593, N34 (d)) — Umbenennen am Platz, eine Regel.** Entscheid der Orchestrierung mit dem
+Auftrag: keine neue Katalogversion, sondern die Regel `PaketteilNachfuehrung` (Allgemein/Update) für
+frühere Stände der ausgelieferten Paketzeilen. Befund: Der Paketteil führt keine eigene Katalogversion,
+`FREI-1` ist die Provenienz (`Bedarf_Version`); die Regel greift nur bei Status `AUSLIEFERUNG`,
+Provenienz `FREI-1`, Herkunftsart `EIGENKONSTRUKTION` und Name samt Bezugsart des früheren Stands. Sie
+wirkt im Schemaschritt (gespeicherte Zeile, dieselbe ID), im Katalogimport und im Projektimport vor dem
+Dublettenscan (Berichtszeile in beiden Sprachen), in der Auslieferungsvorlage und im Validierungswerkzeug;
+das Saatskript spiegelt sie. Eine Anwenderzeile gleichen Namens bleibt unberührt.
+
+**(d) Füllstandslinie (#594, Übergabe 2.4).** Die Aussage der Übergabe galt dem Mockup; in der App war
+der Bezug des Füllstands seit Z4 wählbar (N13 (o)), stand aber bei den Eingaben des Verfahrensvergleichs
+und nannte keine Liter. Die Wahl steht jetzt als „Speichergröße der Füllstandslinie“ unmittelbar über dem
+Wochenbild — **N13 (o) gilt mit diesem Ort** —, jeder Eintrag nennt sein Volumen, ein nicht bestimmbarer
+Eintrag steht gesperrt mit Grund. Der Kern trägt nur neue Ergebnisfelder; kein Rechenweg, kein
+Schemaschritt. Die Volumina der einzelnen Verfahren (DIN 4708, Gleichzeitigkeit, klassisch) stehen nicht
+zur Wahl — das bräuchte einen Schemaschritt an `Tab_TwwProjekt.Fuellstand_Bezug`.
+
+**(e) Zählung des Brauchwasserkatalogs (#594, Übergabe 2.4).** Die Testdatenbank führt die 11
+Wochenprofile und 13 Monatssätze des KONTEXT-Papiers wertgleich, dazu ältere Testzeilen, die die Projekte
+1007, 1009 und 1046 benutzen (Abschnitt 1.2, KONTEXT-Papier Abschnitt 5). Keine Datenänderung.
+
+**Testdatenbank.** Schemastand 153 (auf der Fassung der Gebäudesimulation mit Schritt 152), Zellvergleich: allein `Tab_Applikation.SchemaVersion` und
+`Tab_TwwNutzungsart_STAMM` ID 9 `Bezugsart` 3 → 8. Kein Referenzprojekt benutzt die Hotelzeile; die
+Einfrierregel „gesäte Zapfprofil-Eingaben“ ist nicht berührt. Paketteil und Saat mit Python 3.12
+erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bricht unter 3.11 ab).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #593 | Windows-Abnahme: „Zimmer“ am Feld, Klappliste des Katalogeditors, Importbericht eines älteren Pakets | Anwender | nächste Abnahme |
+| #593 | Kurzlauf des Validierungswerkzeugs mit den neu konvertierten Hotelobjekten (erwartet 3 / 0 / 18) | Orchestrierung | mit dem nächsten Validierungslauf |
+| #593 | Auslieferungsvorlage aus einer Quelle auf Schemastand 153 | Orchestrierung | vor der nächsten Auslieferung |
+| #594 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
+| #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
+| Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |

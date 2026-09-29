@@ -135,6 +135,13 @@ namespace WindowsFormsApplication1
     /// trägt. Für den Tagesgangsatz gilt dieselbe Regel. <b>Die Katalogsperre bleibt unberührt:</b> Der
     /// Import ändert und löscht keine vorhandene Zeile.</para>
     ///
+    /// <para><b>Frühere Stände des Paketteils (N34, E-A2-4).</b> Führt ein älteres Paket eine Zeile des
+    /// ausgelieferten Paketteils unter einem früheren Bezeichner oder mit einer früheren Bezugsart, liest
+    /// der Import sie VOR dem Dublettenscan als die heutige (<see cref="PaketteilNachfuehrung"/>) — der
+    /// natürliche Schlüssel trifft dann die Zeile des Katalogs, und die Zeile des Berichts nennt es mit
+    /// einem Satz (<c>KATALOGIMPORT_FRUEHERER_STAND</c>). Eine Anwenderzeile gleichen Namens trifft die
+    /// Regel nie.</para>
+    ///
     /// <para><b>Kategorien als Datenblock (N12 (m)/(p)).</b> Eine Kategorie mit <c>ID_Nutzungsart</c>
     /// gehört zu dieser Nutzungsart des Pakets; Kategorien OHNE sie sind ein Vorgabesatz und binden an
     /// jede Nutzungsart des Pakets, die keine eigenen führt. Ohne die Tabelle (Stand vor Schritt 115)
@@ -503,8 +510,33 @@ namespace WindowsFormsApplication1
             return bericht;
         }
 
-        /// <summary>Eine Nutzungsart des Pakets: Ablehnung, Dublettenscan und Anlegen im laufenden Vorgang.</summary>
+        /// <summary>
+        /// Eine Nutzungsart des Pakets: Ablehnung, Dublettenscan und Anlegen im laufenden Vorgang. Führt
+        /// das Paket sie in einem früheren Stand (<see cref="PaketNutzungsart.FruehererStand"/>), nennt die
+        /// Zeile des Berichts das mit einem Satz vor ihrem Grund.
+        /// </summary>
         private static TwwImportzeile Einspielen(DbVorgang v, PaketNutzungsart p, Paket paket, Dictionary<long, int> satzZiel)
+        {
+            TwwImportzeile z = EinspielenGelesen(v, p, paket, satzZiel);
+            return p.FruehererStand == null ? z : z with { Grund = FruehererStandSatz(p.FruehererStand, z.Grund) };
+        }
+
+        /// <summary>
+        /// Der Satz des Berichts zu einer Paketzeile in einem früheren Stand: früherer Name und frühere
+        /// Bezugsart, gelesen als heutiger Name und heutige Bezugsart — mit dem übrigen Grund dahinter,
+        /// wenn es einen gibt.
+        /// </summary>
+        internal static ZapfSatz FruehererStandSatz(PaketteilNachfuehrung.Eintrag e, ZapfSatz grund)
+            => grund == null
+                ? ZapfSatz.Neu("KATALOGIMPORT_FRUEHERER_STAND", e.FruehererBezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.FruehereBezugsart), e.Bezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.Bezugsart))
+                : ZapfSatz.Neu("KATALOGIMPORT_FRUEHERER_STAND_UND", e.FruehererBezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.FruehereBezugsart), e.Bezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.Bezugsart), grund);
+
+        /// <summary>Eine Nutzungsart des Pakets, wie sie gelesen ist: Ablehnung, Dublettenscan und Anlegen.</summary>
+        private static TwwImportzeile EinspielenGelesen(DbVorgang v, PaketNutzungsart p, Paket paket, Dictionary<long, int> satzZiel)
         {
             if (p.Fehler != null)
                 return new TwwImportzeile(TwwImportausgang.Abgelehnt, p.Bezeichner, p.Katalogversion, "", 0, p.Zeile, p.Fehler);
@@ -700,6 +732,12 @@ namespace WindowsFormsApplication1
             internal PaketSatz Satz { get; set; }
             internal List<Zapfkategorie> Kategorien { get; set; } = new List<Zapfkategorie>();
             internal ZapfSatz Fehler { get; set; }
+
+            /// <summary>
+            /// Der frühere Stand, unter dem das Paket die Zeile führt (<see cref="PaketteilNachfuehrung"/>);
+            /// <c>null</c> = die Zeile steht so im Paket, wie sie gelesen ist.
+            /// </summary>
+            internal PaketteilNachfuehrung.Eintrag FruehererStand { get; set; }
         }
 
         /// <summary>Eine Datei als Tabelle: Name, Kopf und je Datenzeile ihre Zeilennummer und Felder.</summary>
@@ -1078,6 +1116,21 @@ namespace WindowsFormsApplication1
             for (int w = 0; w < woche.Length; w++) woche[w] = Wert("Woche_" + (w + 1).ToString(CultureInfo.InvariantCulture));
             Provenienz hw = Herkunft(t, z, "Wochengang_", out ZapfSatz fw);
             fehler ??= fb ?? fj ?? fw;
+
+            // Eine Zeile des ausgelieferten Paketteils in einem früheren Stand (älteres Paket) wird als
+            // die heutige gelesen — VOR dem Dublettenscan, damit der natürliche Schlüssel die Zeile des
+            // Katalogs trifft statt eine zweite anzulegen (PaketteilNachfuehrung, E-A2-4 b). Die Grenze
+            // zieht die Regel: Status des Pakets und die rohe Provenienz der Gruppe Bedarf.
+            if (hb != null)
+            {
+                p.FruehererStand = PaketteilNachfuehrung.Finden(p.Bezeichner, t.Ganz(z, "Bezugsart"), t.Text(z, "Status"),
+                                                                 hb.Version, TwwWertemengen.Text(hb.Art));
+                if (p.FruehererStand != null)
+                {
+                    p.Bezeichner = p.FruehererStand.Bezeichner;
+                    bezug = (int)p.FruehererStand.Bezugsart;
+                }
+            }
 
             long? satzId = t.Ganz(z, "ID_Tagesgangsatz");
             if (!satzId.HasValue) Fehlt("ID_Tagesgangsatz");

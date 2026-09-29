@@ -41,12 +41,12 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf 152 (KP1b); der Zielstand reicht bis zu ihr.</summary>
+        /// <summary>Die Nummer folgt lückenlos auf 153 (Bezugsart Zimmer); der Zielstand reicht bis zu ihr.</summary>
         [Fact]
-        public void Die_Nummer_folgt_lueckenlos_auf_152()
+        public void Die_Nummer_folgt_lueckenlos_auf_153()
         {
-            Assert.Equal(KonditionierungVorlagenSchema.SCHRITT + 1, KesselHeizgrenzeSchema.SCHRITT);
-            Assert.Equal(153, KesselHeizgrenzeSchema.SCHRITT);
+            Assert.Equal(TwwBezugsartSchema.SCHRITT + 1, KesselHeizgrenzeSchema.SCHRITT);
+            Assert.Equal(154, KesselHeizgrenzeSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= KesselHeizgrenzeSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KesselHeizgrenzeSchema.SCHRITT + ".");
         }

@@ -207,7 +207,9 @@ namespace WindowsFormsApplication1
             new Stufe(150, Art.Ddl, "Vorlauf und Rücklauf am Kollektor entfernt"),
             new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen"),
             new Stufe(152, Art.Ddl, "Konditionierungsvorlagen, Fremdschlüssel und Eindeutigkeit, Nachtauskühlstunden"),
-            new Stufe(153, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
+            new Stufe(TwwBezugsartSchema.SCHRITT, Art.Import,
+                      "Bezugsart Zimmer — der Import liest eine Paketzeile des Hotels in einem früheren Stand als die heutige"),
+            new Stufe(154, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

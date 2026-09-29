@@ -40,9 +40,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Vergeben
         /// unmittelbar vor dem Schemacommit gegen <c>origin</c> (Regel „lückenlos"); beim Zusammenführen
-        /// mit KP1b (Schritt 152, <see cref="KonditionierungVorlagenSchema"/>) auf 153 umnummeriert.
+        /// mit KP1b (Schritt 152) und der Bezugsart Zimmer (Schritt 153, <see cref="TwwBezugsartSchema"/>) auf 154 umnummeriert.
         /// </summary>
-        public const int SCHRITT = KonditionierungVorlagenSchema.SCHRITT + 1;
+        public const int SCHRITT = TwwBezugsartSchema.SCHRITT + 1;
 
         /// <summary>Die Tabelle der Projekteinstellungen.</summary>
         public const string TABELLE = SchemaKatalog.TAB_EINSTELLUNGEN;

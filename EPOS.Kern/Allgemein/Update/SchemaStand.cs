@@ -692,6 +692,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
         /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
         /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        /// Mit der BEZUGSART ZIMMER des Zapfprofilgenerators (Auftrag A2, Entscheide E-A2-1, E-A2-3
+        /// und E-A2-4; Nachtrag N34) steht das Ziel auf <see cref="TwwBezugsartSchema.SCHRITT"/>:
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> neu gebaut mit der
+        /// Prüfklausel der Bezugsart 1 bis 8, dazu die Nachführung der gespeicherten Zeilen des
+        /// ausgelieferten Paketteils (<see cref="PaketteilNachfuehrung"/>).
+        /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
+        /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
         /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
         /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
         /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL

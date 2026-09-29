@@ -4,8 +4,8 @@
 Bildet die Katalogkennwerte der Nutzungsart "Hotel (aus Messung, je Zimmer)" aus den drei
 norwegischen Hotelreihen und schreibt sie nach Referenzlaeufe/Skripte/tww_hotel_aus_messung.json
 (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU36; Folge V6 des Validierungsberichts
-Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Der Zusatz
-"je Zimmer" im Namen der Nutzungsart sagt, dass die Bezugsmenge die Zimmerzahl ist, nicht die
+Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Die
+Nutzungsart steht unter der Bezugsart Zimmer (8): Die Bezugsmenge ist die Zimmerzahl, nicht die
 Bettenzahl; der Tagesgangsatz heisst "Hotel (aus Messung)" (die Form gilt je Hotel, nicht je Zimmer).
 
 WARUM AUS MESSUNG. VDI 6002 fuehrt fuer Hotels weder Bedarfswerte noch Profile (die lokale
@@ -48,8 +48,8 @@ DIE REGEL (deterministisch, wiederholbar):
      flach (alle zwoelf Faktoren 1), eine MODELLANNAHME.
 
 MODELLANNAHMEN, die der Katalogeintrag traegt (Herkunftsart EIGENKONSTRUKTION): drei Hotels eines
-Landes und einer Region als Mittel fuer "Hotel"; ein Zimmer gilt als ein Bett (Bezugsart Betten,
-wie im Validierungslauf; die Bezugsmenge ist die ZIMMERZAHL des ganzen Hauses, nicht die Bettenzahl); flacher Jahresgang (die Reihen tragen keinen Jahresgang); Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
+Landes und einer Region als Mittel fuer "Hotel"; die Bezugsmenge ist die ZIMMERZAHL des ganzen Hauses,
+nicht die Bettenzahl (Bezugsart Zimmer, wie im Validierungslauf); flacher Jahresgang (die Reihen tragen keinen Jahresgang); Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
 VDI-Zeilen (die Quelle misst Energie, die Umrechnung auf eine andere Zapftemperatur ist die des
 Generators).
 
@@ -169,11 +169,12 @@ def main():
             "daten": "Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), Kanal Q_chw, Hotels HO1, HO2, HO4",
             "herkunftsart": "EIGENKONSTRUKTION",
             "regel": "Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py (Kopf)",
-            "bezug": "Zimmer, als Betten (Bezugsart 3); Bezugstemperaturen 60/12 Grad C",
+            "bezugsart": 8,
+            "bezug": "Zimmer (Bezugsart 8); Bezugstemperaturen 60/12 Grad C",
             "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
             "modellannahmen": [
                 "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-                "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
+                "Bezugsmenge ist die Zimmerzahl des ganzen Hauses (Bezugsart Zimmer), nicht die Bettenzahl",
                 "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
                 "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
             ]

@@ -381,6 +381,49 @@ namespace Auslieferungsvorlage.Tests
         }
 
         /// <summary>
+        /// <b>T15 (Auftrag A2, E-A2-4 c):</b> Ein Katalogpaket, das vor der Bezugsart Zimmer gebaut wurde,
+        /// führt die Hotelzeile des Paketteils im früheren Stand — „Hotel (aus Messung)" mit Betten. Sie
+        /// kommt unter dem heutigen Namen mit der Bezugsart Zimmer in die Vorlage (dieselbe Regel wie
+        /// Schemaschritt und Katalogimport), der Paketteil trifft danach ihren natürlichen Schlüssel und
+        /// tritt zurück: EINE Hotelzeile, keine zweite. Der Bericht nennt beides.
+        /// </summary>
+        [Fact]
+        public void T15_Eine_Hotelzeile_im_frueheren_Stand_kommt_im_heutigen_in_die_Vorlage()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
+                                          parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+            string arten = Path.Combine(paket, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+            string text = File.ReadAllText(arten, Encoding.UTF8);
+            Assert.Contains("\n60;Paketnutzung;" + VERSION + ";1;", text);
+            text = text.Replace("\n60;Paketnutzung;" + VERSION + ";1;", "\n60;Hotel (aus Messung);" + VERSION + ";3;")
+                       .Replace(";" + QUELLE + ";" + VERSION + ";EIGENKONSTRUKTION", ";" + QUELLE + ";FREI-1;EIGENKONSTRUKTION");
+            File.WriteAllText(arten, text, new UTF8Encoding(false));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("frueherer Stand: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv Zeile 2: \"Hotel (aus Messung)\" " +
+                            "(Bezugsart Betten) gelesen als \"Hotel (aus Messung, je Zimmer)\" (Bezugsart Zimmer)", e.Ausgabe);
+            Assert.Contains("MELDUNG " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " \"Hotel (aus Messung, je Zimmer)\" (" + VERSION +
+                            "): das Katalogpaket fuehrt dieselbe Zeile — die Zeile des Paketteils tritt zurueck", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                Assert.DoesNotContain("Hotel (aus Messung)", Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                DataRow r = Assert.Single(DataRepository.GetDataTable(
+                    "SELECT * FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner LIKE 'Hotel (aus Messung%'").Rows.Cast<DataRow>());
+                Assert.Equal(60L, Convert.ToInt64(r["ID"]));
+                Assert.Equal("Hotel (aus Messung, je Zimmer)", Convert.ToString(r["Bezeichner"]));
+                Assert.Equal((long)ZapfBezugsart.Zimmer, Convert.ToInt64(r["Bezugsart"]));
+                Assert.Equal(TwwSchema.STATUS_AUSLIEFERUNG, Convert.ToString(r["Status"]));
+            });
+        }
+
+        /// <summary>
         /// <b>T12 (Stufe Z4b):</b> Die eingespielten Typtage des Anwenders
         /// (<c>Tab_TwwTyptag_IMPORT</c>, Schemaschritt T3 „Typtage") fallen aus der Vorlage —
         /// unabhängig von <c>--kataloge</c> —, der Bericht nennt es, und der Prüfposten
