@@ -106791,6 +106791,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zimmer ähnelt.
+        /// </summary>
+        public static string ZPG_BEZUG_ZIMMER {
+            get {
+                return ResourceManager.GetString("ZPG_BEZUG_ZIMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dauerlinie Zapfung und Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_BILD_DAUERLINIE {
@@ -107129,6 +107138,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_EINHEIT_WOHNEINHEITEN {
             get {
                 return ResourceManager.GetString("ZPG_EINHEIT_WOHNEINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zimmer ähnelt.
+        /// </summary>
+        public static string ZPG_EINHEIT_ZIMMER {
+            get {
+                return ResourceManager.GetString("ZPG_EINHEIT_ZIMMER", resourceCulture);
             }
         }
         
@@ -108011,15 +108029,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE {
             get {
                 return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl ähnelt.
-        /// </summary>
-        public static string ZPG_HINW_BEZUGSMENGE_ZIMMER {
-            get {
-                return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_ZIMMER", resourceCulture);
             }
         }
         
@@ -111678,6 +111687,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zimmer ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_BEZUGSART_8 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_BEZUGSART_8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Bezugsmenge der Auslegung ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_BEZUGSMENGE_AUSLEGUNG {
@@ -111755,6 +111773,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_EINHEIT_7 {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zimmer ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_8 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_8", resourceCulture);
             }
         }
         
@@ -114329,6 +114356,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_FELDZAHL {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_FELDZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}. {4} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND", resourceCulture);
             }
         }
         

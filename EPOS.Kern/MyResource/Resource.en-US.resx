@@ -25376,9 +25376,6 @@ Do you want to allow this?</value>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Unit from the catalogue of the type of use</value>
   </data>
-  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
-    <value>Reference quantity is the number of rooms, not the number of beds</value>
-  </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
   </data>
@@ -25454,6 +25451,9 @@ Do you want to allow this?</value>
   <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
     <value>floor area [m²]</value>
   </data>
+  <data name="ZPG_BEZUG_ZIMMER" xml:space="preserve">
+    <value>rooms</value>
+  </data>
   <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
     <value>pers.</value>
   </data>
@@ -25474,6 +25474,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_EINHEIT_ZIMMER" xml:space="preserve">
+    <value>room</value>
   </data>
   <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
     <value>Preview</value>
@@ -29444,6 +29447,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_7" xml:space="preserve">
     <value>area</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_8" xml:space="preserve">
+    <value>rooms</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_BEGINN" xml:space="preserve">
     <value>the start of the charging window</value>
   </data>
@@ -29587,6 +29593,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_8" xml:space="preserve">
+    <value>room</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
     <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — applied: {5:0.#} kWh/d ({6}).</value>
@@ -31348,6 +31357,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
     <value>The catalogue already holds its content as “{0}”.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND" xml:space="preserve">
+    <value>The package holds it in an earlier state (“{0}”, reference type {1}); read as “{2}” with the reference type {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND" xml:space="preserve">
+    <value>The package holds it in an earlier state (“{0}”, reference type {1}); read as “{2}” with the reference type {3}. {4}</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
     <value>It differs from the entry of the same name and is stored as “{0}”; the entry of the same name remains unchanged.</value>

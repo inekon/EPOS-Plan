@@ -25383,9 +25383,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Einheit aus dem Katalog der Nutzungsart</value>
   </data>
-  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
-    <value>Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl</value>
-  </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog</value>
   </data>
@@ -25461,6 +25458,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
     <value>Fläche [m²]</value>
   </data>
+  <data name="ZPG_BEZUG_ZIMMER" xml:space="preserve">
+    <value>Zimmer</value>
+  </data>
   <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
     <value>P</value>
   </data>
@@ -25481,6 +25481,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_EINHEIT_ZIMMER" xml:space="preserve">
+    <value>Zimmer</value>
   </data>
   <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
     <value>Vorschau</value>
@@ -29451,6 +29454,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_7" xml:space="preserve">
     <value>Fläche</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_8" xml:space="preserve">
+    <value>Zimmer</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_BEGINN" xml:space="preserve">
     <value>der Beginn des Ladefensters</value>
   </data>
@@ -29594,6 +29600,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_8" xml:space="preserve">
+    <value>Zimmer</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
     <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — angesetzt: {5:0.#} kWh/d ({6}).</value>
@@ -31355,6 +31364,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
     <value>Der Katalog führt ihren Inhalt schon als „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND" xml:space="preserve">
+    <value>Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND" xml:space="preserve">
+    <value>Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}. {4}</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
     <value>Sie weicht vom Eintrag gleichen Namens ab und steht als „{0}“ im Katalog; der Eintrag gleichen Namens bleibt unverändert.</value>
