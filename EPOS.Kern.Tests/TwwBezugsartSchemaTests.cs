@@ -37,7 +37,8 @@ namespace EPOS.Kern.Tests
         public void Die_Nummer_folgt_lueckenlos_und_ist_das_Ziel()
         {
             Assert.Equal(KonditionierungVorlagenSchema.SCHRITT + 1, TwwBezugsartSchema.SCHRITT);
-            Assert.Equal(TwwBezugsartSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= TwwBezugsartSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + TwwBezugsartSchema.SCHRITT + ".");
             Paketanhebung.Stufe s = Assert.Single(Paketanhebung.Stufen, x => x.Nr == TwwBezugsartSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Import, s.Wirkung);
         }

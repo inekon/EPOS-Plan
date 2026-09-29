@@ -775,6 +775,10 @@ namespace EPOS.Kern.Tests
                 // Nachtauskuehlstunden_H an beiden Ergebnistabellen. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug; wiederholbar - steht alles, oeffnet er keinen Vorgang.
                 KonditionierungVorlagenSchema.Ausfuehren(null);
+                // Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+                // nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML - NULL rechnet die Vorgabe 15 °C.
+                KesselHeizgrenzeSchema.Ausfuehren(null);
 
                 // Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34): die Bezugsart
                 // Zimmer - Neubau von Tab_TwwNutzungsart_STAMM und Tab_TwwBedarfstag_STAMM mit der

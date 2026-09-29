@@ -794,6 +794,11 @@
         if (p.Bereitschaft < 0.0 || p.Bereitschaft > 8760.0)
             return Grenzbefund(Resource.KI_DLG_SIM_BEREITSCHAFT_NAME, 0, 8760);
 
+        if (!WindowsFormsApplication1.SimulationSPK.HeizgrenzePlausibel(p.Heizgrenze))
+            return Grenzbefund(Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE,
+                               (int)WindowsFormsApplication1.SimulationSPK.HEIZGRENZE_MIN_C,
+                               (int)WindowsFormsApplication1.SimulationSPK.HEIZGRENZE_MAX_C);
+
         return "";
     }
 

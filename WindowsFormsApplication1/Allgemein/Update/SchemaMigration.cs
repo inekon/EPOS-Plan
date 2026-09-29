@@ -4670,6 +4670,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_TWW_BEZUGSART_ZIMMER = TwwBezugsartSchema.SCHRITT;
 
+        // ---- Anwenderentscheid 27.09.2026 zu #568: die Heizgrenze der Kesselbereitschaft -------
+
+        /// <summary>
+        /// Schritt <see cref="KesselHeizgrenzeSchema.SCHRITT"/> — <b>die Heizgrenze der
+        /// Kesselbereitschaft</b> (Anwenderentscheid 27.09.2026 zu #568: Heiztag = Tagesmittel der
+        /// Außentemperatur unter der Heizgrenze, Vorgabe 15 °C, je Projekt vorgebbar). Er folgt auf
+        /// <see cref="SCHRITT_TWW_BEZUGSART_ZIMMER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> die nullbare Spalte <c>Tab_Einstellungen.Kessel_Heizgrenze
+        /// REAL</c>, ohne Vorgabe und ohne Prüfung; NULL rechnet die Vorgabe. Die Anweisung steht
+        /// bei <see cref="KesselHeizgrenzeSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar:</b> Eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_HEIZGRENZE = KesselHeizgrenzeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6705,6 +6721,15 @@ namespace WindowsFormsApplication1
                         "Betten, und eine Datenbank mit dem frueheren Namen bekaeme beim erneuten Einspielen des " +
                         "Paketteils eine zweite Zeile. KEIN Rechenergebnis aendert sich - Zimmer rechnet wie Betten.",
                         Schritt_TwwBezugsartZimmer),
+            // ANWENDERENTSCHEID 27.09.2026 zu #568 - die Heizgrenze der Kesselbereitschaft: eine
+            // nullbare Spalte an Tab_Einstellungen. REIN DDL; die Quelle ist
+            // KesselHeizgrenzeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_HEIZGRENZE,
+                        "Tab_Einstellungen: Heizgrenze der Kesselbereitschaft (Kessel_Heizgrenze)",
+                        "Die Heizgrenze, unter deren Tagesmittel der Aussentemperatur ein Tag als Heiztag " +
+                        "gilt und ein stillstehender Heizkessel betriebsbereit bleibt, haette keinen Ort je " +
+                        "Projekt. Die Spalte entsteht leer; leer rechnet die Vorgabe 15 Grad Celsius.",
+                        Schritt_KesselHeizgrenze),
         };
 
         /// <summary>
@@ -11629,6 +11654,41 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen)
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Bezugsart Zimmer - KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Heizgrenze der Kesselbereitschaft" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KESSEL_HEIZGRENZE"/>, die Anweisung bei
+        /// <see cref="KesselHeizgrenzeSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KesselHeizgrenzeSchema.Anweisungen</c> ist leer, wenn die Spalte schon steht.
+        /// Fehlt <c>Tab_Einstellungen</c>, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselHeizgrenze(Lauf l)
+        {
+            string nr = KesselHeizgrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(KesselHeizgrenzeSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + KesselHeizgrenzeSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            bool vorher = KesselHeizgrenzeSchema.Vollstaendig();
+            foreach (KeyValuePair<string, string> a in KesselHeizgrenzeSchema.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            if (!KesselHeizgrenzeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + KesselHeizgrenzeSchema.TABELLE + "." +
+                                  KesselHeizgrenzeSchema.SPALTE + " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + KesselHeizgrenzeSchema.TABELLE + "." + KesselHeizgrenzeSchema.SPALTE +
+                    (vorher ? " stand bereits." : " angelegt (REAL, leer = Vorgabe 15 Grad Celsius).") +
+                    " KEIN DML.");
             return true;
         }
 
