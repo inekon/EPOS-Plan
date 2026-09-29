@@ -116,6 +116,102 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Heizgrenze der Kesselbereitschaft</b> (Schemaschritt 154): ein Zahlenfeld [°C]
+    /// unter der Betriebsbereitschaft, leer mit dem Platzhalter der Vorgabe „15" und dem
+    /// Kurzhinweis, wozu der Wert dient. Eine Eingabe landet in der Arbeitskopie, Leeren macht
+    /// sie wieder leer (= Vorgabe).
+    /// </summary>
+    [Fact]
+    public void Der_Heizkessel_zeigt_die_Heizgrenze_leer_mit_der_Vorgabe_als_Platzhalter()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+        string text = cut.Markup;
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE, text);
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_KESSEL_HEIZGRENZE, "15"),
+                        text);
+        Assert.Contains("°C", text);
+
+        IElement feld = cut.FindAll("input")[1];
+        Assert.Equal("15", feld.GetAttribute("placeholder"));
+        Assert.True(string.IsNullOrEmpty(feld.GetAttribute("value")));
+        Assert.Null(_werte.Heizgrenze);
+
+        feld.Input("12,5");
+        Assert.Equal(12.5, _werte.Heizgrenze);
+
+        cut.FindAll("input")[1].Input("");
+        Assert.Null(_werte.Heizgrenze);
+
+        // Leer ist zulässig: OK schließt.
+        Leiste(cut, 1).Click();
+        Assert.Equal(new[] { true }, _ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Die Plausibilitätsgrenzen:</b> Eine Heizgrenze außerhalb von 0 bis 30 °C färbt das
+    /// Feld; beim OK steht eine BENANNTE Meldung, und der Dialog bleibt offen. Nach einer
+    /// gültigen Eingabe schließt OK, und die Arbeitskopie trägt den Wert.
+    /// </summary>
+    [Fact]
+    public void Eine_Heizgrenze_ausserhalb_der_Grenzen_meldet_benannt_und_haelt_den_Dialog_offen()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+        string meldung = string.Format(
+            WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH, "0", "30", "15");
+
+        cut.FindAll("input")[1].Input("35");
+        Assert.Contains("epos-fehleingabe", cut.FindAll("input")[1].ClassName);
+        Assert.Null(_werte.Heizgrenze);
+
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(meldung, cut.Markup);
+
+        cut.FindAll("input")[1].Input("20");
+        Assert.Equal(20.0, _werte.Heizgrenze);
+        Assert.DoesNotContain(meldung, cut.Markup);
+
+        Leiste(cut, 1).Click();
+        Assert.Equal(new[] { true }, _ergebnis);
+
+        // Abbrechen bleibt immer frei - auch mit einer Fehleingabe.
+        var zweiter = Zeige(Komponentenart.Heizkessel);
+        zweiter.FindAll("input")[1].Input("-5");
+        Leiste(zweiter, 0).Click();
+        Assert.Equal(new[] { true, false }, _ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Der Assistent</b> liest und setzt die Heizgrenze über dieselbe Arbeitskopie; ein Wert
+    /// außerhalb der Grenzen kommt dort an und wird beim OK benannt abgewiesen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Heizgrenze_und_das_OK_prueft_sie()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "kessel_heizgrenze");
+        Assert.NotNull(zugang);
+        Assert.Null(zugang.Lesen());
+
+        zugang.Setzen(13.0);
+        cut.Render();
+        Assert.Equal(13.0, _werte.Heizgrenze);
+
+        zugang.Setzen(45.0);
+        cut.Render();
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(string.Format(
+            WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH, "0", "30", "15"),
+            cut.Markup);
+    }
+
+    /// <summary>
     /// Die Wärmepumpe OHNE Anlagendaten zeigt KEINEN Schalter mehr.
     ///
     /// <para><b>Anwenderentscheid 16.09.2026 (Auftrag #299).</b> Bis dahin stand hier

@@ -49,7 +49,7 @@ Dazu vier Regeln des Paketteils:
    Parametrik, eigene Setzung), `EIGENKONSTRUKTION` für eine Setzung von INEKON **aus einer
    eigenen, nicht veröffentlichten Unterlage oder Modellannahme** — die Setzungen der Speicherauslegung aus der Vorlage
    TWW-Auslegung V4 (N28), die zwei Hinweisschwellen (INEKON-Setzung) und die Nutzungsart „Hotel (aus
-   Messung)" (Modellannahme aus dem Mittel dreier gemessener Hotels, ZU36) — und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
+   Messung, je Zimmer)" (Modellannahme aus dem Mittel dreier gemessener Hotels, ZU36) — und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
    — die aus VDI 6002 abgeleiteten Nutzungsarten samt Tagesgängen (ZU19/ZU20). `FREI` wäre für
    sie eine falsche Aussage: VDI 6002 ist keine frei verfügbare Quelle, und die Zahl der Zeile
    steht in keiner Richtlinie, sondern kommt aus der Ableitungsregel von
@@ -91,7 +91,7 @@ Kategorien, gilt das Katalogpaket; der Prüfbericht meldet die Schlüsselgleichh
 | `Tab_TwwParameter_STAMM.csv` | 42 | `Speicherauslegung.*` (24 Zeilen, siehe unten); die zwei Hinweisschwellen `Zapfprofil.Messwert.Rueckfrageschwelle` (0,5: Hinweis, wenn der Kalibrierfaktor eines Jahresmesswerts um mehr als diesen Anteil von 1 abweicht) und `Zapfprofil.Formvektor.Warnschwelle` (0,01: Hinweis, wenn die Summe eines Formvektors um mehr als diesen Betrag von 1 abweicht); Speichertemperatur, Nutzanteil, Zuschlag, Länge des Ladefensters, die drei Werte des klassischen Faustwerts, Raster und 14 Stufen der Nenninhaltsliste; `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99; `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (Hinweis, wenn die Zirkulation mehr als das 1,5-Fache der Zapfung verliert); `Zapfprofil.Anzeigetemperatur` (45 °C, Literanzeige) und `Zapfprofil.Stundenschwelle` (0,1 kW, Stunden über der Schwelle) — die Vorgaben der Anzeige, wenn weder Dialog noch Einstellung eine nennen; `Zapfprofil.Validierung.*`: die acht Setzungen der Validierung gegen eine Messreihe — Bandgrenzen der synthetischen Spitze (0,95 und 0,999) und die Mindestzahl der Einheiten, ab der das Band bewertet wird (10; darunter „nicht bewertbar"), die zwei Quantile der Streuung der Realisierungsspitzen (0,85 und 0,95; eigene Quantile, nicht das Band), Formschwelle des Tagesgangs (0,01), höchster Lückenanteil einer Messreihe (0,05) und kürzeste Reihe für einen Kalibriervorschlag (30 d) | Speicherauslegung: INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2), Herkunftsart `EIGENKONSTRUKTION`, Fundstelle je Zeile in `Quelle`; die zwei Hinweisschwellen: INEKON-Setzung (Konzept 2.2 bzw. 2.4), Herkunftsart `EIGENKONSTRUKTION`; die drei Bandsetzungen: Anwenderentscheid ZU35 aus der Bandanalyse des zweiten Validierungslaufs, Herkunftsart `EIGENKONSTRUKTION`; die zwei Streuungsquantile, Ladefenster-Beginn und GLF-Grenze: INEKON-Setzung, Anwenderentscheid 26.09.2026, Herkunftsart `EIGENKONSTRUKTION`; Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4, 4.0, 4.6 und Warnlogik der Stufe Z4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
 | `Tab_TwwTagesgangsatz_STAMM.csv` | 5 | die Tagesgangsätze der abgeleiteten Nutzungsarten (Wohnen groß, Studentenwohnheim, Seniorenheim, Krankenhaus) und des Hotels; das Ein- und Zweifamilienhaus teilt den Satz des großen Wohngebäudes | abgeleitet aus VDI 6002 Blatt 1 und 2 (Ausgabe 2014-03) nach der Regel von [`Skripte/normzahlen_abgeleitet_bauen.py`](../Skripte/normzahlen_abgeleitet_bauen.py) — **kein Wert der Richtlinie** (ZU19); Hotel: siehe unten |
 | `Tab_TwwTagesgang_STAMM.csv` | 20 | je Satz vier Tagesgänge (Werktag, Samstag, Sonntag, Ruhetag = Sonntag; beim Krankenhaus derselbe Gang für jeden Tagtyp), je 24 Stundenanteile mit Summe 1 | wie oben; Herkunftsart `VERFAHREN`, beim Hotel `EIGENKONSTRUKTION` |
-| `Tab_TwwNutzungsart_STAMM.csv` | 6 | die fünf abgeleiteten Nutzungsarten „… (abgeleitet)": Wohnen groß, Ein- und Zweifamilienhaus, Studentenwohnheim (Bezugsart Person, Kalender Wohnen), Seniorenheim, Krankenhaus (Bezugsart Bett, Kalender Auslastungsgang) — Bedarf niedrig/mittel/hoch in kWh je Einheit und Tag, Monatsfaktoren (Mittel 1), Wochenanteile (Summe 1), Verweis auf den Tagesgangsatz; dazu „Hotel (aus Messung, je Zimmer)" (Bezugsart Bett, Bezugsmenge ist die Zimmerzahl — der Zusatz im Namen sagt es, die Zonenmaske weist am Feld darauf hin; Kalender Betrieb, Gruppe Nichtwohnen) | wie oben; zwei Setzungen für das Ein- und Zweifamilienhaus (geliehene Formen des großen Wohngebäudes, mittlerer Bedarf = Mitte der Spanne); Hotel: Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228 (CC BY 4.0), Herkunftsart `EIGENKONSTRUKTION` |
+| `Tab_TwwNutzungsart_STAMM.csv` | 6 | die fünf abgeleiteten Nutzungsarten „… (abgeleitet)": Wohnen groß, Ein- und Zweifamilienhaus, Studentenwohnheim (Bezugsart Person, Kalender Wohnen), Seniorenheim, Krankenhaus (Bezugsart Bett, Kalender Auslastungsgang) — Bedarf niedrig/mittel/hoch in kWh je Einheit und Tag, Monatsfaktoren (Mittel 1), Wochenanteile (Summe 1), Verweis auf den Tagesgangsatz; dazu „Hotel (aus Messung, je Zimmer)" (Bezugsart Zimmer, 8 — die Bezugsmenge ist die Zimmerzahl; Kalender Betrieb, Gruppe Nichtwohnen) | wie oben; zwei Setzungen für das Ein- und Zweifamilienhaus (geliehene Formen des großen Wohngebäudes, mittlerer Bedarf = Mitte der Spanne); Hotel: Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228 (CC BY 4.0), Herkunftsart `EIGENKONSTRUKTION` |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 6 | **zwei Vorgabesätze** (Steuerspalte `Gruppe`): Wohnen mit vier Kategorien (Kurzzapfung, mittlere Zapfung, Wannenbad, Dusche), Nichtwohnen mit zwei (Kurzzapfung, Duschzapfung) — je Kategorie mittlerer Volumenstrom, Dauer, Anteil, Streuung, Kappung | Wohnen: Jordan/Vajen, IEA SHC Task 26 — die Parametrik des Einfamilienhauses, wie sie das Protokoll der DHWcalc-Referenzdatei [im Testordner](../../EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/LIESMICH.md) ausweist; Nichtwohnen: **Modellannahme** nach dem OpenDHW-Muster (zwei Kategorien statt vier) — beide **Modellannahme** |
 
 **Die Setzungen der Speicherauslegung (N28).** Die Werte stehen in der INEKON-eigenen Vorlage
@@ -142,12 +142,26 @@ ungewichtete Mittel, niedrig und hoch das kleinste und das größte Hotel. Gerun
 0,1 kWh je Zimmer und Tag (3,2 / 3,9 / 4,9), Anteile auf drei Stellen. Im Repositorium stehen nur
 diese gerundeten Kenn- und Verhältniswerte, keine Messreihe und keine Messmenge eines Gebäudes; die
 Regel steht im Kopf von `Skripte/hotel_aus_messung_bauen.py`. **Modellannahmen** (Herkunftsart
-`EIGENKONSTRUKTION`): drei Hotels einer Region als Mittel, ein Zimmer gilt als ein Bett, flacher
-Jahresgang (die Reihen umfassen sechs bis zwanzig Wochen), Bezugstemperaturen 60/12 °C wie die
-abgeleiteten Zeilen. Weil die Kennwerte je Zimmer gelten, trägt der Name den Zusatz „je Zimmer",
-und die Zonenmaske zeigt am Feld der Bezugsmenge „Bezugsmenge ist die Zimmerzahl, nicht die
-Bettenzahl" (Regel im Kern: Bezugsart Betten und „je Zimmer" im Namen). Der Tagesgangsatz heißt
-„Hotel (aus Messung)" ohne Zusatz.
+`EIGENKONSTRUKTION`): drei Hotels einer Region als Mittel, flacher Jahresgang (die Reihen umfassen
+sechs bis zwanzig Wochen), Bezugstemperaturen 60/12 °C wie die abgeleiteten Zeilen. Weil die
+Kennwerte je Zimmer gelten, steht die Nutzungsart unter der eigenen **Bezugsart Zimmer** (8; der
+Schlüssel `bezugsart` der JSON-Datei): Die Bezugsmenge ist die Zimmerzahl des ganzen Hauses, und die
+Zonenmaske nennt „Zimmer" als Einheit am Feld. Zimmer rechnet wie Betten, bleibt aber eine eigene
+Menge — Zimmer und Betten werden nie summiert. Der Tagesgangsatz heißt „Hotel (aus Messung)" ohne
+Zusatz.
+
+**Frühere Stände der Hotelzeile.** Die Zeile hieß im Paketteil zuerst „Hotel (aus Messung)" und
+stand bis zur Bezugsart Zimmer unter der Bezugsart Betten. Eine Datenbank oder ein Katalogpaket mit
+einem früheren Stand führt dieselbe Zeile — der natürliche Schlüssel (Bezeichner, Katalogversion)
+träfe sie aber nicht, und ein erneutes Einspielen legte eine zweite an. Deshalb gilt EINE Regel
+(`EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs`): Eine Zeile mit Status `AUSLIEFERUNG`,
+Provenienz `FREI-1`/`EIGENKONSTRUKTION` in der Gruppe Bedarf und einem früheren Stand (Name und
+Bezugsart) gilt als die heutige. Der Schemaschritt der Bezugsart Zimmer führt die gespeicherte Zeile
+am Platz nach (dieselbe ID); Katalogimport, Projektimport, `Werkzeuge/Auslieferungsvorlage`
+(externes Katalogpaket) und `Werkzeuge/ZapfprofilValidierung` lesen eine Zeile im früheren Stand als
+die heutige. Eine Anwenderzeile gleichen Namens (Status `EIGEN` oder `IMPORT`) bleibt, wie sie ist.
+Die Katalogversion taugt als Grenze nicht — der Paketteil führt keine (Regel 2 oben). Das
+Einspielskript spiegelt die Regel für die Testdatenbank (`UMBENANNTE_NUTZUNGSARTEN`).
 
 **Dauer der Ecodesign-Zapfungen.** Die Tabelle der Verordnung nennt Energie, Volumenstrom und
 Temperaturen, keine Dauer. Setzung: Dauer = Volumen / Volumenstrom, Volumen = Q_tap / (c_w ·

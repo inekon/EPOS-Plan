@@ -36,7 +36,7 @@ Vorgängerübergaben bleiben gültig:
   enthält. Damit ist auch der im Protokoll (Abschnitt 5)
   offene volle Lauf von `EPOS.Kern.Tests` belegt — der Kern-Lauf führt ihn vollständig aus.
 - **Nachtrag der Cloud-Sitzung (27.09.2026):** Statuszeile #583 und Block „Nach #583" nachgetragen; KP1b entworfen
-  ([Entwurf](2026-09-27_Entwurf_KP1b.md)), E54 entschieden (N1.62); #588 hat eine Nachbarsitzung belegt. Nächste
+  ([Entwurf](../../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)), E54 entschieden (N1.62); #588 hat eine Nachbarsitzung belegt. Nächste
   Nummern damit: Schemaschritt **152**, Entscheid **E55**, Nachtrag **N1.63**, Statuszeile die nächste freie nach
   #588 — am 29.09.2026 führen zwei Nachbarzweige (Wiki-Hilfe, Technikdoku) schon eine #589, die noch nicht auf
   `ios_migration_september` liegt; weiter unmittelbar vor jeder Vergabe gegen `origin` messen.
@@ -44,6 +44,10 @@ Vorgängerübergaben bleiben gültig:
 ## 2 Was aussteht
 
 ### 2.1 Nächste Stufe: KP1b (auf Auftrag)
+
+**Erledigt am 29.09.2026** (Statuszeile #596, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
+N1.63). Nächste Stufe ist **KP2** (Oberfläche, Saat der 14 Vorlagen; erste Kernwelle gbXML `SollHeizenC`, Ferien des
+Zapfprofils, „Zeitstruktur übernehmen"), auf Auftrag.
 
 Wortlaut und Umfang im KP1-Protokoll, Abschnitt 6: Vorlagentabelle `Tab_Konditionierungsvorlage_STAMM`
 samt Perioden und Wochen und Fremdschlüssel `ID_Vorlage` (Schemaschritt, Saat der vierzehn Vorlagen erst

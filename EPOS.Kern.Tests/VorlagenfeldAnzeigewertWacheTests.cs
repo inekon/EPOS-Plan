@@ -79,6 +79,29 @@ namespace EPOS.Kern.Tests
             Berichtswerte werte = Wertesatz(idStamm, name, stand.GewaehlteVarianten);
             Pruefe(stand.Ansicht.Kacheln.Select(k => (k.Vorlagenfeld, k.VorlagenfeldStufe, k.Wert, k.Titel)), werte);
             ImOrt(stand.Ansicht.GliederungVorlagenfeld);
+
+            // Die Positionsform an Sensitivität, Mehrjahrestafel und Zahlungsstrom: je Stand der Gruppe die Position,
+            // die auch die einzelne Seite bildet (Stamm = 1, dann die Varianten), und die Sensitivität nennt genau
+            // ihre Stände mit Namen.
+            Assert.Equal(stand.Varianten.Count, stand.Vorlagenfeldpositionen.Count);
+            foreach (VarianteZeile v in stand.Varianten)
+            {
+                Vorlagenfeldposition p = stand.Vorlagenfeldpositionen[v.IdProjekt];
+                Assert.Equal(VorlagenfeldpositionHuelle.Von(v.IdProjekt), p);
+                if (v.IstStamm) Assert.Equal(new Vorlagenfeldposition(1, 0), p);
+                else Assert.True(p.Stand > 1 && p.Variante > 0, v.Bezeichner);
+                _ausgabe.WriteLine($"{v.IdProjekt} {v.Bezeichner}: Stand {p.Stand}, Variante {p.Variante}");
+            }
+            Assert.All(stand.Ansicht.SensitivitaetPositionen, p =>
+            {
+                Assert.False(string.IsNullOrEmpty(p.Name));
+                Assert.Contains(p with { Name = "" }, stand.Vorlagenfeldpositionen.Values);
+            });
+            foreach (string schluessel in new[] { "stand.tabelle.sensitivitaet", "stand.tabelle.mehrjahres", "stand.bild.zahlungsstrom" })
+            {
+                ImOrt(schluessel);
+                Assert.NotNull(Vorlagenfeldkatalog.Finde("stand." + stand.Varianten.Count + schluessel.Substring("stand".Length)));
+            }
         }
 
         // =====================================================================

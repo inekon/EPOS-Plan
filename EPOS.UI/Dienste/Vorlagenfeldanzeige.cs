@@ -104,7 +104,20 @@ public static class Vorlagenfeldhalter
         }
     }
 
-    /// <summary>Nimmt gesetzte Einträge und die Quelle zurück.</summary>
+    /// <summary>
+    /// „Baukasten speichern…" für den Katalog der leisen Zeile (<c>Vorlagenfeldzeile</c>) — derselbe Weg wie im Katalog
+    /// der Berichtsseite: Die Hülle fragt den Ort, der Kern schreibt den Baukasten; Rückgabe ist die Meldung für die
+    /// Fußleiste, <c>""</c> = abgebrochen. Gesetzt von der Hülle beim Einhängen; <c>null</c> = ohne Baukasten.
+    /// </summary>
+    public static Func<Task<string>>? Baukasten
+    {
+        get { lock (_sperre) return _baukasten; }
+        set { lock (_sperre) _baukasten = value; }
+    }
+
+    private static Func<Task<string>>? _baukasten;
+
+    /// <summary>Nimmt gesetzte Einträge, die Quelle und den Baukastenweg zurück.</summary>
     public static void Zuruecksetzen()
     {
         lock (_sperre)
@@ -114,6 +127,7 @@ public static class Vorlagenfeldhalter
             _geladen = null;
             _index = null;
             _kultur = null;
+            _baukasten = null;
         }
     }
 

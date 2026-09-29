@@ -5627,17 +5627,56 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Overview — base project and variants</value>
   </data>
-  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
-    <value>Costs — investment, operation, energy</value>
+  <data name="BK_STATUS_VERSION" xml:space="preserve">
+    <value>{0} version</value>
   </data>
-  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
-    <value>Economics — net present value method (DIN EN 17463)</value>
+  <data name="BK_STATUS_VERSIONEN" xml:space="preserve">
+    <value>{0} versions</value>
   </data>
-  <data name="BK_KOPF_BERICHT" xml:space="preserve">
-    <value>Report — Word and Excel output</value>
+  <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
+    <value>{0} · simulated</value>
+  </data>
+  <data name="BK_STATUS_NICHT_AKTUELL" xml:space="preserve">
+    <value>{0} · {1} not up to date</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER" xml:space="preserve">
+    <value>{0} carriers</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
+    <value>{0} carrier</value>
+  </data>
+  <data name="BK_STATUS_WARNUNG" xml:space="preserve">
+    <value>{0} warning</value>
+  </data>
+  <data name="BK_STATUS_WARNUNGEN" xml:space="preserve">
+    <value>{0} warnings</value>
+  </data>
+  <data name="BK_STATUS_BESTE" xml:space="preserve">
+    <value>best: {0}, {1}</value>
+  </data>
+  <data name="BK_STATUS_STAMM_KW" xml:space="preserve">
+    <value>base project: {0}</value>
+  </data>
+  <data name="BK_STATUS_NICHT_BERECHNET" xml:space="preserve">
+    <value>not calculated</value>
+  </data>
+  <data name="BK_STATUS_VERALTET" xml:space="preserve">
+    <value>out of date</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_ZULETZT" xml:space="preserve">
+    <value>last {0:yyyy-MM-dd HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KURZ" xml:space="preserve">
+    <value>{0:MM-dd HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
+    <value>none created yet</value>
   </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Base project:</value>
+  </data>
+  <data name="BK_LBL_STAMM_KURZ" xml:space="preserve">
+    <value>Base:</value>
   </data>
   <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
     <value>base projects only</value>
@@ -6009,7 +6048,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>Report created:</value>
   </data>
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
-    <value>Preset from “Economics”: {0} versions selected, section Economic viability, scenario “{1}”. The report shows the key figures in the “Expected” scenario and the range across all three scenarios; the selection is saved with “Create”.</value>
+    <value>Preset from “Economics”: {0} versions selected, section Economic viability, scenario “{1}”. The report shows the economic evaluation in the chosen scenario and the range across all three scenarios; the selection is saved with “Create”.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>For this report, {0} project(s) will be simulated again and then economically evaluated.
@@ -6717,7 +6756,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Multi-year overview of the cash flows</value>
   </data>
   <data name="WIRT_MJ_HINWEIS" xml:space="preserve">
-    <value>Nominal payments per year, scenario "Expected", in €. Expenditure negative, income positive; the sum of the position columns is the column "Net nominal". Operating and energy cost grow with their respective escalation rates, replacement investments and feed-in revenue stay nominally constant. The CHP bonus ends in the year in which the full-load hour quota is exhausted.</value>
+    <value>Nominal payments per year, scenario "{0}", in €. Expenditure negative, income positive; the sum of the position columns is the column "Net nominal". Operating and energy cost grow with their respective escalation rates, replacement investments and feed-in revenue stay nominally constant. The CHP bonus ends in the year in which the full-load hour quota is exhausted.</value>
   </data>
   <data name="WIRT_MJ_JAHR" xml:space="preserve">
     <value>Year</value>
@@ -6918,7 +6957,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>All effects that follow from the investment decision are recorded.</value>
   </data>
   <data name="WIRT_AE_1_STELLE" xml:space="preserve">
-    <value>Word report: {0} · Workbook: sheet “Economic evaluation”, block “Expected”</value>
+    <value>Word report: {0} · Workbook: sheet “Economic evaluation”, block “{1}”</value>
   </data>
   <data name="WIRT_AE_1_STAND" xml:space="preserve">
     <value>investment, operating and energy costs, revenues and benefits, replacement and residual value per case.</value>
@@ -7014,7 +7053,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The evaluation covers all benefits and burdens with a monetary value.</value>
   </data>
   <data name="WIRT_AE_7_STELLE" xml:space="preserve">
-    <value>Word report: {0} · Workbook: block “Expected” (key figures as formulas)</value>
+    <value>Word report: {0} · Workbook: block “{1}” (key figures as formulas)</value>
   </data>
   <data name="WIRT_AE_7_STAND" xml:space="preserve">
     <value>net present value per case and as the difference to the reference; annuity, payback and internal rate of return for information.</value>
@@ -7089,7 +7128,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Operating cost by cost type</value>
   </data>
   <data name="WIRT_BK_HINWEIS" xml:space="preserve">
-    <value>Category 2 items in the scenario "Expected", grouped by the cost type of VDI 2067. Each item states the basis of assessment and — where the assessment is derived — the derivation quantity × unit price. A maintained best or worst case amount overrides the derivation; such rows are marked. Revenue items carry a negative sign. Items with a later start year are marked "from year …": they are included in the sum but only paid from that year on and are not part of the first-year operating cost.</value>
+    <value>Category 2 items in the scenario "{0}", grouped by the cost type of VDI 2067. Each item states the basis of assessment and — where the assessment is derived — the derivation quantity × unit price. A maintained best or worst case amount overrides the derivation; such rows are marked. Revenue items carry a negative sign. Items with a later start year are marked "from year …": they are included in the sum but only paid from that year on and are not part of the first-year operating cost.</value>
   </data>
   <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
     <value>Item</value>
@@ -10603,6 +10642,27 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   </data>
   <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
     <value>Conditioning: The heating set point is "off" in {0} of the 8760 hours (heating season or weekly schedule) — the solver computes those hours without heating, and the room heat channel is 0.</value>
+  </data>
+  <data name="SIMENG_KOND_START_AUS" xml:space="preserve">
+    <value>Conditioning: {0} — the heating set point of the first warm-up hour is "off"; the warm-up starts like an unheated zone, with the mean equivalent outdoor temperature over the {1} warm-up hours.</value>
+  </data>
+  <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
+    <value>Conditioning: The night value of the cooling set point {0} °C takes effect through the calendar in {1} hours. Without conditioning the run uses the day value in all hours.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_OHNE_TAG" xml:space="preserve">
+    <value>Conditioning: {0} — the ventilation column carries no day value; without it there is no excess that night cooling could switch conditionally. The ventilation calendar takes effect unconditionally in every hour.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_ABSTAND" xml:space="preserve">
+    <value>Conditioning: The outdoor difference of night cooling {0} K is outside {1} to {2} K. The run stops.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
+    <value>Conditioning: Night cooling ({0}) switched on in {1} of the 8760 hours; outside those hours the ventilation day value applies.</value>
+  </data>
+  <data name="SIMENG_KOND_UNTERTEMPERATUR" xml:space="preserve">
+    <value>Conditioning: Outside the heating season the room air is below the heating column day value {1} °C in {0} occupancy hours, at most by {2} K. The heating season cuts off that demand; the run continues.</value>
+  </data>
+  <data name="SIMENG_KOND_NUTZUNG_LEER" xml:space="preserve">
+    <value>Conditioning: {0} — the occupancy calendar has no hour with people present; the occupancy-period figures therefore count by the building's night period.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
@@ -20330,6 +20390,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Hours per year the boiler is kept ready for operation; its standby loss follows from this.</value>
   </data>
+  <data name="KI_DLG_SIM_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heating limit for boiler standby in °C: a day whose mean outdoor temperature lies below it is a heating day; then an idle boiler stays ready. Empty = default 15 °C; allowed 0 to 30 °C.</value>
+  </data>
   <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
     <value>Heat demand</value>
   </data>
@@ -21262,6 +21325,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
     <value>Configuring the heat pump unit is not available on this platform.</value>
+  </data>
+  <data name="SIMKONF_LBL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heating limit for boiler standby</value>
+  </data>
+  <data name="SIMKONF_HRL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>A heating day is a day whose mean outdoor temperature lies below this value. On heating days and for 24 h after its last run an idle boiler stays ready and carries its standby loss. Empty = {0} °C.</value>
+  </data>
+  <data name="SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH" xml:space="preserve">
+    <value>The heating limit for boiler standby has to be between {0} and {1} °C — or stay empty, then {2} °C applies.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
     <value>Include electric heating rod</value>
@@ -22753,6 +22825,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Standby operation of the boilers in hours per year — a value of the PROJECT, not of this boiler.</value>
+  </data>
+  <data name="KI_DLG_KKONF_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heating limit for boiler standby in °C — a value of the PROJECT, not of this boiler: a day whose mean outdoor temperature lies below it is a heating day. Empty = default 15 °C; allowed 0 to 30 °C.</value>
   </data>
   <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
     <value>Operating mode of the CHP units in the project: 0 = heat-led, 1 = power-led, 2 = without grid feed-in.</value>
@@ -25257,7 +25332,7 @@ Do you want to allow this?</value>
     <value>No progression calculated yet — “Refresh” first.</value>
   </data>
   <data name="WIRT_VERL_WORT_HINWEIS" xml:space="preserve">
-    <value>Cumulative discounted cash flows per year, without residual value — net present value = end value + present value of the residual value. The first chart shows the cumulative present value of the difference to the reference in all three scenarios (colour = variant, line style = scenario); its crossing of the zero line is the dynamic payback. The second chart shows the cumulative present values per version in the “Expected” scenario.</value>
+    <value>Cumulative discounted cash flows per year, without residual value — net present value = end value + present value of the residual value. The first chart shows the cumulative present value of the difference to the reference in all three scenarios (colour = variant, line style = scenario); its crossing of the zero line is the dynamic payback. The second chart shows the cumulative present values per version in the “{0}” scenario.</value>
   </data>
   <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
     <value>Scenarios {0} / {1} / {2}</value>
@@ -25397,9 +25472,6 @@ Do you want to allow this?</value>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Unit from the catalogue of the type of use</value>
   </data>
-  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
-    <value>Reference quantity is the number of rooms, not the number of beds</value>
-  </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
   </data>
@@ -25475,6 +25547,9 @@ Do you want to allow this?</value>
   <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
     <value>floor area [m²]</value>
   </data>
+  <data name="ZPG_BEZUG_ZIMMER" xml:space="preserve">
+    <value>rooms</value>
+  </data>
   <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
     <value>pers.</value>
   </data>
@@ -25495,6 +25570,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_EINHEIT_ZIMMER" xml:space="preserve">
+    <value>room</value>
   </data>
   <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
     <value>Preview</value>
@@ -27203,6 +27281,9 @@ Do you want to allow this?</value>
   <data name="ADM_VG_ZURUECK" xml:space="preserve">
     <value>‹ Record sheet of {0}</value>
   </data>
+  <data name="BLATT_ZURUECK" xml:space="preserve">
+    <value>‹ {0}</value>
+  </data>
   <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
     <value>only differing values</value>
   </data>
@@ -27932,11 +28013,14 @@ Do you want to allow this?</value>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Boiler "{0}": {1} operating hours, {2} starts, {3} idle hours kept ready, standby loss {4:N0} kWh/a.</value>
   </data>
+  <data name="SIMENG_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Standby readiness: heating limit {0:0.#} °C, {1} heating days — on these and for 24 h after its last operating hour an idle boiler carries its standby loss.</value>
+  </data>
   <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
     <value>Boiler efficiency 100 % (placeholder) for "{0}" — maintain the catalogue value: fuel input here equals heat production.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day or 24 h run-on); only in these the standby loss is charged.</value>
+    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day with a mean outdoor temperature below {0} °C, or 24 h run-on); only in these the standby loss is charged.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Highest hourly load of the total heat demand (space heating + domestic hot water + process heat).</value>
@@ -29258,6 +29342,18 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
     <value>V_max of the band</value>
   </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT" xml:space="preserve">
+    <value>The cumulative curve has no recommended point.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT" xml:space="preserve">
+    <value>There is no nominal capacity for the point — the list of nominal capacities is missing, or the point lies above its end without a grid.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_BAND" xml:space="preserve">
+    <value>There is no plausibility band — no method yields a volume within the band.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT" xml:space="preserve">
+    <value>There is no nominal capacity for V_max — the list of nominal capacities is missing, or V_max lies above its end without a grid.</value>
+  </data>
   <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
     <value>Largest daily demand of the governing week {0:0.#} kWh/d + circulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, together {4:0.#} kWh/d; ÷ charging window {5:0.#} h = {6:0.##} kW — applied: {7:0.##} kW ({8}).</value>
   </data>
@@ -29465,6 +29561,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_7" xml:space="preserve">
     <value>area</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_8" xml:space="preserve">
+    <value>rooms</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_BEGINN" xml:space="preserve">
     <value>the start of the charging window</value>
   </data>
@@ -29608,6 +29707,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_8" xml:space="preserve">
+    <value>room</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
     <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — applied: {5:0.#} kWh/d ({6}).</value>
@@ -31176,10 +31278,19 @@ Do you want to allow this?</value>
     <value>Persons, manual</value>
   </data>
   <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
-    <value>Reference of the fill level</value>
+    <value>Storage size of the state-of-charge line</value>
   </data>
   <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
     <value>Default: nominal volume of the point, otherwise the point</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE_WAHL" xml:space="preserve">
+    <value>Default: {0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL" xml:space="preserve">
+    <value>{0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL_GESPERRT" xml:space="preserve">
+    <value>{0} · cannot be determined</value>
   </data>
   <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
     <value>Applied: {0} kW ({1}) · {2}</value>
@@ -31197,7 +31308,13 @@ Do you want to allow this?</value>
     <value>empty = catalogue default; applied: {0}</value>
   </data>
   <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
-    <value>The fill level of the tile refers to this volume; applied: {0}</value>
+    <value>The state-of-charge line and the tile “State of charge” refer to this volume; applied: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GESPERRT" xml:space="preserve">
+    <value>{0} cannot be determined: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GRUPPE" xml:space="preserve">
+    <value>Storage size of the state-of-charge line: {0} — chosen at the first weekly chart</value>
   </data>
   <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
     <value>saved with the project; {0}</value>
@@ -31323,7 +31440,7 @@ Do you want to allow this?</value>
     <value>The manual number of persons — it acts only with “manual”.</value>
   </data>
   <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
-    <value>Which volume the fill level of the tile refers to: default, nominal volume of the point, point, nominal volume of the band or V_max.</value>
+    <value>Which storage size the state-of-charge line of the weekly chart and the tile “State of charge” use: default, nominal capacity of the point, point, nominal capacity of the band or V_max. Each entry states its volume; one without a volume is locked and states the reason.</value>
   </data>
   <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
     <value>The reference type of the constructed day; without a reference the day applies as it is.</value>
@@ -31369,6 +31486,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
     <value>The catalogue already holds its content as “{0}”.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND" xml:space="preserve">
+    <value>The package holds it in an earlier state (“{0}”, reference type {1}); read as “{2}” with the reference type {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND" xml:space="preserve">
+    <value>The package holds it in an earlier state (“{0}”, reference type {1}); read as “{2}” with the reference type {3}. {4}</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
     <value>It differs from the entry of the same name and is stored as “{0}”; the entry of the same name remains unchanged.</value>
@@ -35357,6 +35480,12 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
     <value>Remove the further position; in the report it remains highlighted in yellow.</value>
   </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Chapter {0} is inside the block {1} – it is filled only in the first repetition</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK_TUN" xml:space="preserve">
+    <value>Place the chapter before {0} or after {1}; values, tables and charts repeat inside the block.</value>
+  </data>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: only in a later program version</value>
   </data>
@@ -35371,6 +35500,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
     <value>The check reports a chapter twice. Which position counts?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>The check reports a chapter inside a “per version” block. Why does it appear only once?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
     <value>The check says a placeholder only takes effect in a later program version. What does that mean?</value>
@@ -35397,7 +35529,7 @@ Do you want to allow this?</value>
     <value>not in the report</value>
   </data>
   <data name="WIRT_AE_1_STELLE_WORT" xml:space="preserve">
-    <value>{0} › key figures of the scenario “Expected”</value>
+    <value>{0} › key figures of the scenario “{1}”</value>
   </data>
   <data name="WIRT_AE_2B_STELLE_WORT" xml:space="preserve">
     <value>{0} › “Non-monetary effects” (table)</value>
@@ -35415,7 +35547,7 @@ Do you want to allow this?</value>
     <value>declarations, scenarios Unfavourable / Expected / Favourable</value>
   </data>
   <data name="WIRT_AE_7_STELLE_WORT" xml:space="preserve">
-    <value>key figures of the scenario “Expected”</value>
+    <value>key figures of the scenario “{1}”</value>
   </data>
   <data name="WIRT_AE_8_STELLE_WORT" xml:space="preserve">
     <value>“Sensitivity analysis”</value>
@@ -36851,6 +36983,21 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>The company logo for the header of the report: the path of a PNG or JPEG file; empty means no logo. A file that does not exist is accepted anyway – the section says so below the field.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_WORD" xml:space="preserve">
+    <value>Default Word template:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_EXCEL" xml:space="preserve">
+    <value>Default Excel template:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORGABE" xml:space="preserve">
+    <value>Applies to every project that has not chosen a template of its own on the report page; a master project can differ there.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL" xml:space="preserve">
+    <value>Which Word template a report is created from as long as the master project has not chosen one of its own on the report page: the standard template or a template of the template folder.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL" xml:space="preserve">
+    <value>Which Excel template the workbook is created from as long as the master project has not chosen one of its own on the report page; “Without template (EPOS-Plan)” builds the workbook from the program.</value>
   </data>
   <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>Title page comes from the template</value>
@@ -38436,6 +38583,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
     <value>The Excel template of the workbook for this base project, chosen from the list of the page: “No template (EPOS-Plan)” – the workbook as before – or an own Excel template (.xlsx, .xltx) from the template folder. The row is shown only when an Excel workbook is created; a saved template whose file is missing is locked in the list, and the workbook is then created without a template.</value>
   </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_NAME" xml:space="preserve">
+    <value>Search in the placeholder catalogue</value>
+  </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_ERL" xml:space="preserve">
+    <value>What the placeholder catalogue of the report page (“Placeholders…”) filters by: words in the key and in the description, regardless of case; a placeholder including its braces finds its entry as well. The search stays until it is cleared and also applies the next time the catalogue opens; empty, the catalogue shows all placeholders.</value>
+  </data>
   <data name="BV_XL_START_PUNKT" xml:space="preserve">
     <value>Excel template: {0}</value>
   </data>
@@ -39555,4 +39708,98 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
     <value>This chart is in the catalogue as {0}: use that placeholder inside a {{{{#je stand}}}} block.</value>
   </data>
+  <data name="WIRT_BER_KENNZAHLEN_SZENARIO" xml:space="preserve">
+    <value>Key figures, scenario "{0}"</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_RUECKFALL" xml:space="preserve">
+    <value>⚠ No result in scenario "{1}" for {0} — the economic evaluation is therefore shown in scenario "{2}".</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_WORTBERICHT" xml:space="preserve">
+    <value>Scenario of the Word report: {0}</value>
+  </data>
+  <data name="BK_BER_LBL_SZENARIO" xml:space="preserve">
+    <value>Economic scenario:</value>
+  </data>
+  <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
+    <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. Only with the section Economic viability ticked.</value>
+  </data>
+  <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
+    <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_GESPERRT" xml:space="preserve">
+    <value>Template {0} belongs to the delivery (locked) — it cannot be changed. Use “Duplicate…” to create your own template.</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_GLEICHER_EIGNER" xml:space="preserve">
+    <value>Source and target of the conditioning copy are the same owner — nothing is copied.</value>
+  </data>
+  <data name="KOND_MSG_EIGNER_FEHLT" xml:space="preserve">
+    <value>Row {1} of table {0} does not exist — the cell value has no place there.</value>
+  </data>
+  <data name="KOND_MSG_KOPF_NICHT_ANGELEGT" xml:space="preserve">
+    <value>The catalogue record could not be created; nothing was written.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_UNGUELTIG" xml:space="preserve">
+    <value>A template name is 1 to {0} characters long and carries no leading or trailing blanks.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_DOPPELT" xml:space="preserve">
+    <value>A template “{0}” already exists in the list for quantity {1} — names do not differ in upper and lower case.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FEHLT" xml:space="preserve">
+    <value>Template {0} does not exist.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
+    <value>“{0}” is not one of the four template usages.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
+    <value>A template cannot be saved as a template — use “Duplicate…” instead.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_ZIEL" xml:space="preserve">
+    <value>A template cannot be applied to a template — it applies to a building, a zone or a catalogue building.</value>
+  </data>
+  <data name="KOND_MSG_HERKUNFT_VORLAGE" xml:space="preserve">
+    <value>from template {0}</value>
+  </data>
+  <data name="KOND_MSG_DUPLIKAT_ZUSATZ" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="KOND_MSG_KEIN_KALENDER" xml:space="preserve">
+    <value>No calendar has been created for quantity {0} — create it from the matrix first.</value>
+  </data>
+  <data name="KOND_MSG_WERT_AUSSERHALB" xml:space="preserve">
+    <value>The value {0} lies outside the limits {1}.</value>
+  </data>
+  <data name="KOND_MSG_WERT_RUNDLAUF" xml:space="preserve">
+    <value>The value {0} cannot be stored with {1} decimal places and would come back changed.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITFENSTER" xml:space="preserve">
+    <value>Time window {0}, {1}–{2} h = {3}</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_FEIERTAGE" xml:space="preserve">
+    <value>Public holidays as a rule ({0} of {1} created)</value>
+  </data>
+  <data name="KOND_MSG_WOCHENTAG_UNGUELTIG" xml:space="preserve">
+    <value>{0} is not a weekday from 1 (Monday) to 7 (Sunday).</value>
+  </data>
+  <data name="KOND_MSG_ZEITFENSTER_UNGUELTIG" xml:space="preserve">
+    <value>The time window {0}–{1} h is empty or lies outside 0 to 24 h.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BELEGT" xml:space="preserve">
+    <value>Rank {0} of rule {1} is already taken — the periods cannot be created without shifting one.</value>
+  </data>
+  <data name="KOND_MSG_RANG_DOPPELT" xml:space="preserve">
+    <value>Rank {0} occurs twice — two periods would apply to the same hour.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BAND_VOLL" xml:space="preserve">
+    <value>There is no room left in the rank band {0} to {1} for another period.</value>
+  </data>
+  <data name="KOND_MSG_PERIODEN_ZU_VIELE" xml:space="preserve">
+    <value>A calendar carries at most {1} periods, together there would be {0}.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE" xml:space="preserve">
+    <value>New Year;Good Friday;Easter Monday;May Day;Ascension Day;Whit Monday;German Unity Day;Christmas Day;Boxing Day</value>
+  </data>
+  <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
+    <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
 </root>
+

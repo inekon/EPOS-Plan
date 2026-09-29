@@ -2,7 +2,11 @@
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>Worauf sich der Bedarf einer Nutzungsart bezieht (<c>Tab_TwwNutzungsart_STAMM.Bezugsart</c>, Konzept 3.1).</summary>
+    /// <summary>
+    /// Worauf sich der Bedarf einer Nutzungsart bezieht (<c>Tab_TwwNutzungsart_STAMM.Bezugsart</c>,
+    /// Konzept 3.1). Die Zahl steht in der Datenbank; die Wertemenge der Prüfklausel ist
+    /// <see cref="TwwSchema.BEZUGSART_WERTE"/>.
+    /// </summary>
     internal enum ZapfBezugsart
     {
         Personen = 1,
@@ -13,7 +17,14 @@ namespace WindowsFormsApplication1
         Beschaeftigte = 6,
 
         /// <summary>Fläche — nur Rückfall.</summary>
-        Flaeche = 7
+        Flaeche = 7,
+
+        /// <summary>
+        /// Zimmer — Kennwerte je Zimmer eines Beherbergungsbetriebs (Katalogtyp „Hotel (aus Messung,
+        /// je Zimmer)"): Die Bezugsmenge ist die Zimmerzahl. Rechnet wie <see cref="Betten"/>, eine
+        /// eigene Menge — Zimmer und Betten werden nie summiert.
+        /// </summary>
+        Zimmer = 8
     }
 
     /// <summary>Die Bilanzgrenze der Bedarfswerte (<c>Bilanzgrenze</c>, Konzept 3.1).</summary>
@@ -140,19 +151,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Vier-Augen-Vermerk (K7); <c>null</c> = keiner.</summary>
         public string Freigabe { get; init; }
-
-        /// <summary>Der Namenszusatz, der eine Nutzungsart der Bezugsart Betten auf Zimmer bezieht.</summary>
-        internal const string ZUSATZ_JE_ZIMMER = "je Zimmer";
-
-        /// <summary>
-        /// Ist die Bezugsmenge die Zimmerzahl, nicht die Bettenzahl? Bei der Bezugsart
-        /// <see cref="ZapfBezugsart.Betten"/> und einem Namen mit <see cref="ZUSATZ_JE_ZIMMER"/>
-        /// (Katalogtyp „Hotel (aus Messung, je Zimmer)": die Kennwerte gelten je Zimmer, ein Zimmer
-        /// zählt als ein Bett). Die Oberfläche weist am Feld der Bezugsmenge darauf hin.
-        /// </summary>
-        public bool BezugsmengeIstZimmerzahl
-            => Bezug == ZapfBezugsart.Betten
-               && (Name ?? "").Contains(ZUSATZ_JE_ZIMMER, System.StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Konstanten der festen Raster einer Nutzungsart.</summary>

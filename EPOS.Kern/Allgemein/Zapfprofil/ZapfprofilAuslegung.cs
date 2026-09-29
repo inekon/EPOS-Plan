@@ -922,7 +922,7 @@ namespace WindowsFormsApplication1
             liste.Add(new Auslegungsablehnung(w.Name, satz));
         }
 
-        /// <summary>Die Bezugsart als Begriff (<c>BEGRIFF_BEZUGSART_1</c> … <c>_7</c>).</summary>
+        /// <summary>Die Bezugsart als Begriff (<c>BEGRIFF_BEZUGSART_1</c> … <c>_8</c>).</summary>
         internal static ZapfSatz Bezugsartbegriff(ZapfBezugsart b)
             => ZapfSatz.Neu("BEGRIFF_BEZUGSART_" + ((int)b).ToString(CultureInfo.InvariantCulture));
 

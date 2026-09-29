@@ -1529,13 +1529,14 @@
 
     /// <summary>
     /// V‑A (V‑G6): die Sensitivitätstafel mit der Steigungsspalte (Szenario Erwartet) —
-    /// bis E5 nur im Bericht.
+    /// bis E5 nur im Bericht. Die Tafel zeigt mehrere Stände; ihre Marke nennt je Stand
+    /// die Positionsform (<see cref="ErgebnisAnsicht.SensitivitaetPositionen"/>).
     /// </summary>
     private RenderFragment Sensitivitaetsteil => @<div class="epos-wirt-sensitivitaet-teil">
         @if (_stand.Ansicht.Sensitivitaet.Zeilen.Count > 0)
         {
             @Untertitel(Texte.SensitivitaetTitel, "stand.tabelle.sensitivitaet", Vorlagenfeldstufe.Aehnlich,
-                        Resource.VF_ORT_SENSITIVITAET)
+                        Resource.VF_ORT_SENSITIVITAET, positionen: _stand.Ansicht.SensitivitaetPositionen)
             @Tafel(_stand.Ansicht.Sensitivitaet, "epos-raster epos-wirt-tafel epos-wirt-sensitivitaet", false, 0)
         }
     </div>;
@@ -1640,6 +1641,9 @@
     private RenderFragment Zahlungsreihenteil => @<div class="epos-wirt-zahlungsreihen-teil">
         @if (Zahlungsreihe is ZahlungsreihenTafel tafel)
         {
+            @* Die Position des gewaehlten Stands fuer die Positionsform der Marken von Tafel und
+               Zahlungsstrombild (stand.<n>.…, variante.<n>.…); sie folgt der Klappliste. *@
+            <CascadingValue Value="@Standposition(tafel.IdStand)">
             <div class="epos-seite-zeile epos-wirt-zahlungsreihen-wahl">
                 <Auswahlfeld Bezeichnung="@Texte.ZrStand" Eintraege="@_stand.Ansicht.Zahlungsstaende"
                              Auswahl="@tafel.IdStand" AuswahlChanged="BeiZahlungsstand" />
@@ -1666,6 +1670,7 @@
                                  VorlagenfeldHinweis="@Resource.VF_ORT_ZAHLUNGSREIHEN" />
                 </div>
             }
+            </CascadingValue>
             @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
             {
                 <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
@@ -1705,13 +1710,23 @@
     /// <summary>
     /// BV-E6 (Konzept Berichtsvorlagen 9.4): der Untertitel einer Tafel mit der EINEN Marke
     /// am Tabellenkopf — keine Zeilenmarken; <paramref name="zusatz"/> nennt Zeilen- und
-    /// Spaltenschlüssel für die Aufklappung.
+    /// Spaltenschlüssel für die Aufklappung, <paramref name="positionen"/> die Stände einer
+    /// Tafel über mehrere Stände für die Positionsform (je Stand mit Namen).
     /// </summary>
     private static RenderFragment Untertitel(string titel, string vorlagenfeld, Vorlagenfeldstufe stufe,
-                                             string hinweis, string zusatz = "") => @<div class="epos-vorlagenfeld-zeile">
+                                             string hinweis, string zusatz = "",
+                                             IReadOnlyList<Vorlagenfeldposition>? positionen = null) => @<div class="epos-vorlagenfeld-zeile">
         <p class="epos-untergruppe">@titel</p>
-        <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" Zusatz="@zusatz" />
+        <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" Zusatz="@zusatz"
+                           Positionen="@positionen" />
     </div>;
+
+    /// <summary>
+    /// Die Position eines Stands für die Positionsform der Marken von Mehrjahrestafel und Zahlungsstrombild
+    /// (<see cref="WirtschaftlichkeitStand.Vorlagenfeldpositionen"/>); <c>null</c> = unbekannt, dann keine.
+    /// </summary>
+    private Vorlagenfeldposition? Standposition(int idStand)
+        => _stand.Vorlagenfeldpositionen is { } je && je.TryGetValue(idStand, out Vorlagenfeldposition? p) ? p : null;
 
     /// <summary>
     /// Eine Tafel aus einer Matrix: Spaltenköpfe (falls es welche gibt), je Zeile der

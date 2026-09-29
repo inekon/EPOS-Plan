@@ -157,6 +157,70 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilFuellstandbezug.BandMax, eingabe.Auslegung.Kopie().FuellstandBezug);
         }
 
+        /// <summary>
+        /// <b>Die Wahl „Speichergröße der Füllstandslinie" am Wochenbild</b> (N11 (d)): Die Hülle gibt je
+        /// Bezug der Wertemenge das Volumen aus dem Ergebnis des Kerns weiter, ohne Volumen den Grund als
+        /// Satz des Kerns in der Oberflächensprache, dazu den Bezug, den die Vorgabe auflöst — sie rechnet
+        /// nichts nach. Ohne Datenbank: die Speicherauslegung eines erfundenen Falls (10 und 20 kWh je Tag,
+        /// 2 kW rund um die Uhr, ohne Normvergleich — das Band trägt allein das profilbasierte Volumen).
+        /// </summary>
+        [Fact]
+        public void Die_Wahl_der_Speichergroesse_traegt_die_Liter_und_die_Gruende_des_Kerns()
+        {
+            Parametersatz ps = AuslegungTestbau.Auslegungssatz();
+            var s = new double[168];
+            for (int k = 0; k < 7; k++) { s[k * 24 + 7] = 10.0; s[k * 24 + 19] = 20.0; }
+            var eingang = new Speicherauslegungseingang
+            {
+                Woche = Wochenreihe.Aus(s, 100, 0, Enumerable.Repeat(ZapfTagtyp.Werktag, 7).ToArray()),
+                SpeicherC = 62.0, KaltwasserAuslegungC = 12.0, Nutzanteil = 0.75, Zuschlag = 0.1,
+                Ladefenster = new Tagesfenster(0.0, 24.0), LadeAuto = false, LadeManuellKw = 2.0,
+                Zirkulation = new Schaetzwert(true, 0.0, null), ZirkulationLaufzeit = Tagesfenster.Leer,
+                Din = new Din4708Ergebnis(), Wohnen = false,
+                Nenninhalte = Nenninhaltsliste.Aus(new[] { 100.0, 200.0, 300.0, 500.0, 800.0 }),
+                SummenlinienpunktL = 250.0
+            };
+            ZapfprofilVergleichDaten Vergleich(Speicherauslegungseingang e) => ZapfprofilHuelle.AlsGruppe(new Auslegungsgruppe
+            {
+                Topologie = ZapfTopologie.Speicher, Zonen = new[] { "Zone 1" },
+                Speicherauslegung = TwwSpeicherauslegung.Rechnen(e, ps)
+            }, ZapfprofilStufe.Einfach).Vergleich;
+
+            ZapfprofilVergleichDaten v = Vergleich(eingang);
+            Assert.NotNull(v.BandMaxL);
+            Assert.Equal(new[] { ZapfprofilFuellstandbezug.NenninhaltPunkt, ZapfprofilFuellstandbezug.Punkt,
+                                 ZapfprofilFuellstandbezug.NenninhaltBand, ZapfprofilFuellstandbezug.BandMax },
+                         v.FuellstandWahl.Select(w => w.Art).ToArray());
+            Assert.Equal(new double?[] { 300.0, 250.0, 500.0, v.BandMaxL }, v.FuellstandWahl.Select(w => w.VolumenL).ToArray());
+            Assert.All(v.FuellstandWahl, w => { Assert.True(w.Waehlbar); Assert.Equal("", w.Sperrgrund); });
+            Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, v.FuellstandVorgabeArt);
+            Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, v.FuellstandBezugArt);
+            Assert.Equal(300.0, v.FuellstandBezugL);
+
+            // Gewählt: der Punkt — die Vorgabe nennt weiter den Nenninhalt des Punkts, die Liter bleiben.
+            ZapfprofilVergleichDaten punkt = Vergleich(eingang with { FuellstandBezugWahl = ZapfFuellstandbezug.Punkt });
+            Assert.Equal(ZapfprofilFuellstandbezug.Punkt, punkt.FuellstandBezugArt);
+            Assert.Equal(250.0, punkt.FuellstandBezugL);
+            Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, punkt.FuellstandVorgabeArt);
+            Assert.Equal(v.FuellstandWahl.Select(w => w.VolumenL), punkt.FuellstandWahl.Select(w => w.VolumenL));
+
+            // Ohne Punkt: beide Bezüge des Punkts gesperrt, mit dem Satz des Kerns — in beiden Sprachen.
+            ZapfprofilVergleichDaten ohne = Vergleich(eingang with { SummenlinienpunktL = null });
+            Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltBand, ohne.FuellstandVorgabeArt);
+            Assert.Equal(new double?[] { null, null, 500.0, ohne.BandMaxL }, ohne.FuellstandWahl.Select(w => w.VolumenL).ToArray());
+            Assert.Equal("Die Summenlinie hat keinen empfohlenen Punkt.", ohne.FuellstandWahl[0].Sperrgrund);
+            Assert.Equal("Die Summenlinie hat keinen empfohlenen Punkt.", ohne.FuellstandWahl[1].Sperrgrund);
+            Assert.Equal("", ohne.FuellstandWahl[2].Sperrgrund);
+            CultureInfo vorher = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = EN;
+                Assert.Equal("The cumulative curve has no recommended point.",
+                             Vergleich(eingang with { SummenlinienpunktL = null }).FuellstandWahl[1].Sperrgrund);
+            }
+            finally { CultureInfo.CurrentUICulture = vorher; }
+        }
+
         // =================================================================================
         // Vorschau auf der Testdatenbank
         // =================================================================================

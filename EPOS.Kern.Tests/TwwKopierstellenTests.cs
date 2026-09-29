@@ -231,6 +231,54 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Eine Paketzeile des Hotels im früheren Stand</b> (Auftrag A2, E-A2-4 c): Ein Paket, das eine
+        /// Datenbank VOR dem Schritt der Bezugsart Zimmer geschrieben hat, führt die Auslieferungszeile
+        /// „Hotel (aus Messung)" mit Betten. Am nachgeführten Ziel heißt dieselbe Zeile „Hotel (aus Messung,
+        /// je Zimmer)" und trägt Zimmer. Der Import liest die Paketzeile als die heutige, die Zone zeigt auf
+        /// die nachgeführte Zeile, keine zweite entsteht, und der Bericht nennt es.
+        /// </summary>
+        [Fact]
+        public void Transfer_liest_eine_Paketzeile_des_Hotels_im_frueheren_Stand_als_die_heutige()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Probesatz Hotel", "FREI-1");
+            int hotel = TwwTestdatenbank.NutzungsartAnlegen("Hotel (aus Messung)", "FREI-1", satz,
+                                                            TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwNutzungsart_STAMM SET Bezugsart = 3, Bedarf_Version = 'FREI-1', Bedarf_Herkunftsart = ? WHERE ID = ?",
+                new DbParam("@h", TwwSchema.HERKUNFT_EIGENKONSTRUKTION), new DbParam("@id", hotel)));
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_TwwZone SET ID_Nutzungsart = ?, ID_Tagesgangsatz = NULL WHERE ID = ?",
+                                                  new DbParam("@n", hotel), new DbParam("@z", q.Zone)));
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Das Ziel ist nachgeführt (Schemaschritt der Bezugsart Zimmer): dieselbe Zeile, heutiger Stand.
+            var bericht = new List<string>();
+            TwwBezugsartSchema.Ausfuehren(bericht);
+            Assert.Contains("1 Paketzeile(n) in einem frueheren Stand nachgefuehrt", bericht);
+            Assert.Equal("Hotel (aus Messung, je Zimmer)", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", hotel))));
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Hotel", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            Assert.Equal((long)hotel, Convert.ToInt64(z["ID_Nutzungsart"]));
+            Assert.Equal(vorher, Katalogzeilen());
+            Assert.Equal(0, ImportZeilen());
+            Assert.Contains(io.LetzterBericht, b => b.Contains("„Hotel (aus Messung)“ (Bezugsart Betten)")
+                                                    && b.Contains("gelesen als „Hotel (aus Messung, je Zimmer)“ mit der Bezugsart Zimmer"));
+        }
+
+        /// <summary>
         /// Die Zapfkategorien (Schemaschritt T2) reisen als Kindzeilen ihrer Nutzungsart: Fehlt
         /// die Nutzungsart am Ziel, kommen ihre Kategorien mit — Werte gleich, Status IMPORT,
         /// ReadOnly 0. Die Werte liest die Probe aus der Datenbank; trägt die Nutzungsart dort

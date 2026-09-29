@@ -251,10 +251,6 @@
                                             Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
                                             WertChanged="BezugsmengeSetzen" />
                                 <Herleitungszeile Text="@Texte.HinweisBezugsmengeEinheit" />
-                                @if (!string.IsNullOrEmpty(art?.HinweisBezugsmenge))
-                                {
-                                    <Herleitungszeile Text="@art.HinweisBezugsmenge" />
-                                }
                                 @if (WirksameMenge(zone, art) is double wirksam)
                                 {
                                     <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), art!.Bezugsgroesse)" />

@@ -52,6 +52,19 @@ namespace WindowsFormsApplication1
             if (!ausDiesemLauf)
                 k.Hinweis(TextRueckfall(daten));
 
+            // ---------------- Das Szenario des Berichts (Fachvorgabe E31, Nach #582) ----------------
+            // Aus der Konfiguration, Vorgabe Erwartet. Ihm folgen Kennzahltafel, KWK-Zuschlag, Betriebskosten, das Bild
+            // der kumulierten Barwerte, die Brücke, die Mehrjahresübersicht und die Bezugsergebnisse je Version
+            // (Aktualität, Rechnungszeilen, Emissionsbilanz). Szenarienübersicht, Dreierbild des Verlaufs und
+            // Sensitivität bleiben, wie sie sind. Fehlt einem Stand das Ergebnis des gewählten Szenarios, steht der GANZE
+            // Baustein im Erwartungsfall — keine Tafel mischt zwei Szenarien — und die Zeile sagt es.
+            string szenario = werte.Berichtsszenario(konfig, out List<string> ohneSzenario);
+            if (ohneSzenario.Count > 0)
+                k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_BER_SZENARIO_RUECKFALL,
+                                           string.Join(", ", ohneSzenario),
+                                           VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.Normiere(konfig?.Szenario)),
+                                           VerlaufZeilen.Szenarioname(szenario)));
+
             // ---------------- Methodik + Parameternachweis (Normanforderung) ----------------
             WirtschaftlichkeitParameter p = werte.Parameter;
 
@@ -80,22 +93,25 @@ namespace WindowsFormsApplication1
             // Aktualität gegen den Simulationsstand prüfen. Nach der verbindlichen
             // Kette (Simulation → Wirtschaftlichkeit) darf hier nichts mehr auflaufen;
             // die Prüfung bleibt als Netz, falls doch etwas dazwischenkam.
-            string veraltet = TextVeraltet(daten, werte, null);
+            string veraltet = TextVeraltet(daten, werte, null, szenario);
             if (veraltet != null) k.HinweisRoh(veraltet);
 
-            // ---------------- Vergleichstabelle (Szenario Erwartet) ----------------
-            k.Ueberschrift2("Kennzahlen im Szenario „Erwartet“");
+            // ---------------- Vergleichstabelle (Szenario des Berichts) ----------------
+            // E31: Die Überschrift nennt den Anzeigetext des Szenarios; für Erwartet derselbe Wortlaut wie die
+            // Übersetzung von „Kennzahlen im Szenario „Erwartet““.
+            k.Ueberschrift2Roh(string.Format(k.Kultur, MyResource.Resource.WIRT_BER_KENNZAHLEN_SZENARIO,
+                                             VerlaufZeilen.Szenarioname(szenario)));
             // ETAPPE E7: Der Zeitbezug steht im Tabellenkopf statt in vier von
             // zweiundzwanzig Zeilentiteln — erst dadurch passt derselbe Schlüssel in
             // Kennzahlen- UND Mehrjahrestabelle.
             k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_JAHR1);
-            SchreibeVergleich(k, daten, alle, WirtschaftlichkeitSzenario.ERWARTET, werte);
+            SchreibeVergleich(k, daten, alle, szenario, werte);
 
             // ---------------- KWK-Zuschlag je Modul (E6 → E7) ----------------
-            SchreibeKwkgModule(k, daten, alle);
+            SchreibeKwkgModule(k, daten, alle, szenario);
 
             // ---------------- Betriebskosten nach Kostenarten (E3 → E7) ----------------
-            SchreibeBetriebskosten(k, daten, alle);
+            SchreibeBetriebskosten(k, daten, alle, szenario);
 
             // ---------------- Kapitalwert-Verlauf + Mehrjahresübersicht ----------------
             // ETAPPE E7: Beide Blöcke leben von derselben Verlaufsrechnung; sie läuft
@@ -103,12 +119,12 @@ namespace WindowsFormsApplication1
             // vollständige Läufe ohne Speichern); die Mehrjahrestabelle nimmt daraus den
             // Erwartungsfall — Zahl für Zahl der bisherige Einzellauf.
             WirtschaftlichkeitVerlaufSzenarien verlauf = HoleVerlauf(k, werte);
-            SchreibeVerlauf(k, verlauf);
+            SchreibeVerlauf(k, verlauf, szenario);
             // ETAPPE E8a (U41): das Brückenbild zur Kapitalwertdifferenz — aus DENSELBEN drei
             // Läufen, neben den Bildern des Verlaufs und vor den Jahresreihen der Mehrjahrestafel
             // (im Mockup steht die Brücke unter der Gliederung, vor dem Zahlungsstrom).
-            SchreibeBruecke(k, daten, verlauf, alle, p, bewertung);
-            SchreibeMehrjahres(k, daten, verlauf == null ? null : verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET), alle);
+            SchreibeBruecke(k, daten, verlauf, alle, p, bewertung, szenario);
+            SchreibeMehrjahres(k, daten, verlauf == null ? null : verlauf.Lauf(szenario), alle, szenario);
 
             // ---------------- Szenarienübersicht (Ungünstig / Erwartet / Günstig) ----------------
             // ETAPPE E6 (Befund Nach #434 (d), Entscheid E5‑Q2): Die Überschrift nennt die
@@ -177,11 +193,11 @@ namespace WindowsFormsApplication1
                            : ", Vorgabewert — kein Heizkessel im Stammprojekt") +
                           ") und derselbe KWK-Strom im Kraftwerkspark, inkl. Netzverluste " +
                           "(Konzept Kap. 2.8).");
-                SchreibeEmissionsbilanz(k, daten, p, alle, werte);
+                SchreibeEmissionsbilanz(k, daten, p, alle, werte, szenario);
             }
 
-            // Unvollständige Rechnungen ausweisen (keine stillen Lücken).
-            foreach (string zeile in Rechnungszeilen(daten, alle, null, true, true)) k.Hinweis(zeile);
+            // Unvollständige Rechnungen ausweisen (keine stillen Lücken) — im Szenario des Berichts.
+            foreach (string zeile in Rechnungszeilen(daten, alle, null, true, true, szenario)) k.Hinweis(zeile);
         }
 
         // ------------------------------------------------------------- Texte (BV-E4)
@@ -261,18 +277,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Satz „Ergebnis veraltet …“ über die Stände, deren Ergebnis „Erwartet“ fehlt oder nicht zum
-        /// Simulationslauf passt; <c>null</c> = keiner. <paramref name="nur"/> schränkt auf einen Stand ein.
+        /// Der Satz „Ergebnis veraltet …“ über die Stände, deren Ergebnis im Szenario (Vorgabe Erwartet) fehlt oder
+        /// nicht zum Simulationslauf passt; <c>null</c> = keiner. <paramref name="nur"/> schränkt auf einen Stand ein.
         /// </summary>
-        internal static string TextVeraltet(BerichtsDaten daten, WirtschaftsBerichtswerte werte, VariantenDaten nur)
+        internal static string TextVeraltet(BerichtsDaten daten, WirtschaftsBerichtswerte werte, VariantenDaten nur,
+                                            string szenario = null)
         {
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             List<WirtschaftlichkeitErgebnis> alle = werte.Ergebnisse;
             var veraltet = new List<string>();
             foreach (VariantenDaten v in daten.Varianten)
             {
                 if (nur != null && v.IdProjekt != nur.IdProjekt) continue;
                 WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    x.IdProjekt == v.IdProjekt && x.Szenario == sz);
                 if (e == null || (e.Fehlgrund == null && !werte.ErgebnisAktuell(e)))
                     veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             }
@@ -281,15 +299,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Zeilen „⚠ Name: Fehlgrund“ und „⚠ Name: Hinweis“ der Ergebnisse „Erwartet“ (unvollständige
-        /// Rechnungen, keine stillen Lücken); <paramref name="nur"/> schränkt auf einen Stand ein.
+        /// Die Zeilen „⚠ Name: Fehlgrund“ und „⚠ Name: Hinweis“ der Ergebnisse im Szenario (Vorgabe Erwartet;
+        /// unvollständige Rechnungen, keine stillen Lücken); <paramref name="nur"/> schränkt auf einen Stand ein.
         /// </summary>
         internal static List<string> Rechnungszeilen(BerichtsDaten daten, List<WirtschaftlichkeitErgebnis> alle,
-                                                     VariantenDaten nur, bool fehlgruende, bool hinweise)
+                                                     VariantenDaten nur, bool fehlgruende, bool hinweise,
+                                                     string szenario = null)
         {
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             var zeilen = new List<string>();
             foreach (WirtschaftlichkeitErgebnis e in alle.Where(x =>
-                         x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+                         x.Szenario == sz &&
                          (x.Fehlgrund != null || x.Hinweis != null)))
             {
                 if (nur != null && e.IdProjekt != nur.IdProjekt) continue;
@@ -334,14 +354,15 @@ namespace WindowsFormsApplication1
             return werte.Verlauf;
         }
 
-        private static void SchreibeVerlauf(WordKontext k, WirtschaftlichkeitVerlaufSzenarien verlauf)
+        private static void SchreibeVerlauf(WordKontext k, WirtschaftlichkeitVerlaufSzenarien verlauf, string szenario)
         {
-            WirtschaftlichkeitVerlauf erwartet = verlauf == null
-                ? null : verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
-            if (erwartet == null || erwartet.Absolut.All(s => s.Kumuliert == null)) return;
+            // E31: Bezug ist das Szenario des Berichts — das zweite Bild zeigt seine kumulierten Barwerte.
+            WirtschaftlichkeitVerlauf lauf = verlauf == null ? null : verlauf.Lauf(szenario);
+            if (lauf == null || lauf.Absolut.All(s => s.Kumuliert == null)) return;
 
             k.Ueberschrift2("Kapitalwert-Verlauf über den Betrachtungszeitraum");
-            k.HinweisRoh(MyResource.Resource.WIRT_VERL_WORT_HINWEIS);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_VERL_WORT_HINWEIS,
+                                       VerlaufZeilen.Szenarioname(szenario)));
 
             // ETAPPE E6 (Konzept § 2.13 (5), U13): das DREIERBILD — der kumulierte Barwert der
             // Differenz zur Referenz in allen drei Szenarien, Farbe = Variante, Strichart =
@@ -369,14 +390,14 @@ namespace WindowsFormsApplication1
             // mit Namen und Farbe; die Stammlinie ist die Bezugsgröße und keine Version
             // und wird deshalb gestrichelt gezeichnet, damit sie auch im
             // Schwarz-Weiß-Ausdruck von den Versionen zu trennen ist. ETAPPE E6: Es zeigt
-            // den Erwartungsfall, unverändert.
+            // den Erwartungsfall, unverändert — Fachvorgabe E31: das Szenario des Berichts.
             //
             // ETAPPE E2 — DER VORBEHALT ZUM „EINEN ORT": Gemeint ist der BERICHT. Der
             // Excel-Bericht führt den Verlauf als ZAHLEN statt als Bild (Blatt
             // „Wirtschaftlichkeit" und Blatt „Verlauf"). „An genau einem Ort" heißt also:
             // EIN erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
             // BV-E5: dasselbe Modell wie bild.wirtschaft.barwerte_kumuliert (Berichtsbilder).
-            k.Bild(Sicher(() => Berichtsbilder.BarwerteKumuliert(verlauf)), 620, 310);
+            k.Bild(Sicher(() => Berichtsbilder.BarwerteKumuliert(verlauf, null, szenario)), 620, 310);
         }
 
         /// <summary>
@@ -392,11 +413,12 @@ namespace WindowsFormsApplication1
                                             WirtschaftlichkeitVerlaufSzenarien verlauf,
                                             List<WirtschaftlichkeitErgebnis> alle,
                                             WirtschaftlichkeitParameter p,
-                                            WirtschaftlichkeitBewertung bewertung)
+                                            WirtschaftlichkeitBewertung bewertung, string szenario)
         {
             // BV-E5: dasselbe Modell wie bild.wirtschaft.bruecke (Berichtsbilder) — ohne Verlauf, Leitversion
-            // oder passende Gliederung entfällt die Bildstelle samt Überschrift.
-            Zeichnung.Zeichenmodell bild = Sicher(() => Berichtsbilder.Bruecke(daten, verlauf, alle, p, bewertung, k.Kultur));
+            // oder passende Gliederung entfällt die Bildstelle samt Überschrift. E31: im Szenario des Berichts.
+            Zeichnung.Zeichenmodell bild = Sicher(() => Berichtsbilder.Bruecke(daten, verlauf, alle, p, bewertung, k.Kultur,
+                                                                               null, szenario));
             if (bild == null) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_BR_TITEL);
@@ -437,12 +459,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void SchreibeMehrjahres(WordKontext k, BerichtsDaten daten,
                                                WirtschaftlichkeitVerlauf verlauf,
-                                               List<WirtschaftlichkeitErgebnis> alle)
+                                               List<WirtschaftlichkeitErgebnis> alle, string szenario)
         {
             if (verlauf == null || verlauf.Absolut.All(s => s.Bild == null)) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_MJ_TITEL);
-            k.HinweisRoh(MyResource.Resource.WIRT_MJ_HINWEIS);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_MJ_HINWEIS, VerlaufZeilen.Szenarioname(szenario)));
 
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -462,7 +484,7 @@ namespace WindowsFormsApplication1
                 // über der Tafel — dieselben Spalten als gestapelte Jahresbalken, Ausgaben nach
                 // unten, Ersatzjahre markiert; dasselbe Bild wie in Block 2 der Seite.
                 // BV-E5: dasselbe Modell wie stand.bild.zahlungsstrom (Berichtsbilder).
-                Zeichnung.Zeichenmodell strom = Sicher(() => Berichtsbilder.Zahlungsstrom(bild, v.Anzeige, k.Kultur));
+                Zeichnung.Zeichenmodell strom = Sicher(() => Berichtsbilder.Zahlungsstrom(bild, v.Anzeige, k.Kultur, null, szenario));
                 if (strom != null) k.Bild(strom, 620, strom.Hoehe / 2);
 
                 // BV-E5: dieselbe Tafel wie {{stand.tabelle.mehrjahres}}.
@@ -476,16 +498,16 @@ namespace WindowsFormsApplication1
                 // Nachweisblock: vermiedene Kosten und Aufschlagsbetrag. Sie stehen
                 // ausdrücklich AUSSERHALB der Tabelle — beide stecken bereits in anderen
                 // Positionen, eine eigene Zahlungszeile wäre eine Doppelzählung.
-                SchreibeNachweisblock(k, alle, v.IdProjekt);
+                SchreibeNachweisblock(k, alle, v.IdProjekt, szenario);
             }
         }
 
         /// <summary>Vermiedene Kosten und Aufschlagsbetrag als benannter Nachweis (E7).</summary>
         private static void SchreibeNachweisblock(WordKontext k,
-                                                  List<WirtschaftlichkeitErgebnis> alle, int idProjekt)
+                                                  List<WirtschaftlichkeitErgebnis> alle, int idProjekt, string szenario)
         {
             WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                x.IdProjekt == idProjekt && x.Szenario == szenario);
             if (e == null) return;
             bool vermieden = e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0;
             if (!vermieden) return;
@@ -494,7 +516,7 @@ namespace WindowsFormsApplication1
             k.HinweisRoh(MyResource.Resource.WIRT_MJ_NACHWEIS_HINWEIS);
 
             // BV-E5: dieselbe Tafel wie {{stand.tabelle.vermiedene_kosten}}.
-            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.VermiedeneKosten(idProjekt, alle, k.Kultur)));
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.VermiedeneKosten(idProjekt, alle, k.Kultur, szenario)));
             k.Abstand();
         }
 
@@ -506,9 +528,9 @@ namespace WindowsFormsApplication1
         /// die bei drei Modulen unlesbar wird.
         /// </summary>
         private static void SchreibeKwkgModule(WordKontext k, BerichtsDaten daten,
-                                               List<WirtschaftlichkeitErgebnis> alle)
+                                               List<WirtschaftlichkeitErgebnis> alle, string szenario)
         {
-            var mitModulen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+            var mitModulen = alle.Where(x => x.Szenario == szenario &&
                                              x.KwkgModule != null && x.KwkgModule.Count > 0).ToList();
             if (mitModulen.Count == 0) return;
 
@@ -524,7 +546,7 @@ namespace WindowsFormsApplication1
 
                 // Elf Spalten, gleich denen des Excel-Blattes (mit dem zweiten Fall sechzehn) — BV-E5: dieselbe
                 // Tafel wie {{stand.tabelle.kwkg_module}}; darunter die Herleitung der Sätze nach § 7.
-                Berichtstabelle kwkg = Berichtstabellen.KwkgModule(v, alle, k.Kultur);
+                Berichtstabelle kwkg = Berichtstabellen.KwkgModule(v, alle, k.Kultur, szenario);
                 k.Fuege(WordTabellenschreiber.Direkt(k, kwkg));
                 foreach (string herleitung in kwkg.Hinweise) k.HinweisRoh(herleitung);
                 k.Abstand();
@@ -559,15 +581,15 @@ namespace WindowsFormsApplication1
         }
 
         private static void SchreibeBetriebskosten(WordKontext k, BerichtsDaten daten,
-                                                   List<WirtschaftlichkeitErgebnis> alle)
+                                                   List<WirtschaftlichkeitErgebnis> alle, string szenario)
         {
-            var mitPositionen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+            var mitPositionen = alle.Where(x => x.Szenario == szenario &&
                                                 x.Betriebskosten != null &&
                                                 x.Betriebskosten.Count > 0).ToList();
             if (mitPositionen.Count == 0) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_BK_TITEL);
-            k.HinweisRoh(MyResource.Resource.WIRT_BK_HINWEIS);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_BK_HINWEIS, VerlaufZeilen.Szenarioname(szenario)));
 
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -579,7 +601,7 @@ namespace WindowsFormsApplication1
                 // BV-E5: dieselbe Tafel wie {{stand.tabelle.betriebskosten}}; die Probe gegen die Zahl, mit der die
                 // Kapitalwertrechnung gerechnet hat (Positionen des ersten Jahres gegen die Betriebskosten p. a., E8c),
                 // steht darunter.
-                Berichtstabelle bk = Berichtstabellen.Betriebskosten(v, alle, k.Kultur);
+                Berichtstabelle bk = Berichtstabellen.Betriebskosten(v, alle, k.Kultur, szenario);
                 k.Fuege(WordTabellenschreiber.Direkt(k, bk));
                 foreach (string abweichung in bk.Hinweise) k.HinweisRoh(abweichung);
                 k.Abstand();
@@ -668,14 +690,14 @@ namespace WindowsFormsApplication1
         private static void SchreibeEmissionsbilanz(WordKontext k, BerichtsDaten daten,
                                                     WirtschaftlichkeitParameter p,
                                                     List<WirtschaftlichkeitErgebnis> alle,
-                                                    WirtschaftsBerichtswerte werte)
+                                                    WirtschaftsBerichtswerte werte, string szenario)
         {
             foreach (VariantenDaten v in daten.Varianten)
             {
                 // Nur bei aktuellem Wirtschaftlichkeits-Ergebnis — sonst stünden
-                // zwei Rechenstände in einem Kapitel (Review Phase 8).
+                // zwei Rechenstände in einem Kapitel (Review Phase 8). E31: das Ergebnis des Berichtsszenarios.
                 WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    x.IdProjekt == v.IdProjekt && x.Szenario == szenario);
                 if (erw == null || !werte.ErgebnisAktuell(erw))
                 {
                     k.Hinweis("⚠ " + (v.IstStamm ? "Stamm" : v.Anzeige) +

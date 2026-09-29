@@ -251,8 +251,9 @@ public class ErzeugerReiterTests : EposBunitContext
         erg.AusPufferAndereMwh = 4.5;
         erg.Laufstunden = 1797;
         erg.Starts = 312;
-        erg.Bereitschaftsstunden = 5931;
-        erg.BereitschaftsverlustKwh = 296.55;
+        erg.Bereitschaftsstunden = 4335;
+        erg.BereitschaftsverlustKwh = 216.75;
+        erg.HeizgrenzeC = 12.5;
         erg.NutzungsgradPlatzhalter.Add("Kessel 1");
 
         var seite = KesselZeichnen(erg);
@@ -271,8 +272,11 @@ public class ErzeugerReiterTests : EposBunitContext
                           .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Contains("4,50", text);
         Assert.Contains("1.797", text);
-        Assert.Contains("5.931", text);
-        Assert.Contains("296,55", text);
+        Assert.Contains("4.335", text);
+        Assert.Contains("216,75", text);
+
+        // Der Hinweis der Gruppe „Betrieb" nennt die wirksame Heizgrenze des Laufs.
+        Assert.Contains(string.Format(Resource.SIMERG_TIP_BETRIEB_SPK, "12,5"), text);
         Assert.Contains(string.Format(Resource.SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER, "Kessel 1"), text);
         Assert.Contains(Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS, text);
     }

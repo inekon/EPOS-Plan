@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -649,6 +650,11 @@ namespace WindowsFormsApplication1
             {
                 DataRow stamm = GebaeudeStammCtrl.Katalogzeile(idStamm, name);
                 g = stamm == null ? null : ProjektGebaeudeCtrl.AusZeile(Kopiezeile(stamm, idProjekt));
+                // Stufe KP1b (Befund NB3): Die Vorschau reicht den Katalogbau herein - sein Kalender
+                // und seine Matrix reisen beim OK mit (CopyFromStamm), also rechnet die Vorschau
+                // schon jetzt damit. Ohne ihn las der Datenweg ID_Gebaeude = 0 und fand nichts.
+                if (g != null && stamm.Table.Columns.Contains("ID") && stamm["ID"] != DBNull.Value)
+                    g.KonditionierungKatalogbau = Convert.ToInt64(stamm["ID"], CultureInfo.InvariantCulture);
             }
             if (g == null) return null;
 

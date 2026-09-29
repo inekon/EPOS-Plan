@@ -138,6 +138,26 @@ namespace EPOS.Kern.Tests
                 string.Join("\n", funde));
         }
 
+        /// <summary>
+        /// Kein Vorlagenordner der Anwendung in der Repowurzel. <c>Berichtsvorlagen/</c> samt
+        /// <c>Mitgeliefert/</c> und <c>.berichtsvorlagen.json</c> legt das Programm zur Laufzeit
+        /// an (<c>BerichtsvorlagenCtrl</c>); ein Programmstart mit dem Repo als Vorlagenordner
+        /// hat ihn einmal über einen Sync hereingebracht. Er steht in <c>.gitignore</c>; die
+        /// mitgelieferten Vorlagen liegen unter <c>WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/</c>.
+        /// </summary>
+        [Fact]
+        public void Kein_Vorlagenordner_der_Anwendung_in_der_Repowurzel()
+        {
+            List<string> funde = Bestand().Dateien
+                .Where(d => d.StartsWith("Berichtsvorlagen/", StringComparison.Ordinal))
+                .ToList();
+
+            Assert.True(funde.Count == 0,
+                "Der Vorlagenordner der Anwendung gehoert nicht ins Repository - er entsteht " +
+                "zur Laufzeit und steht in .gitignore. Mit 'git rm -r --cached Berichtsvorlagen' " +
+                "entfernen:\n" + string.Join("\n", funde));
+        }
+
         /// <summary><c>*.sqlite</c> nur auf der Weißliste — die Testdatenbank.</summary>
         [Fact]
         public void Sqlite_Dateien_nur_auf_der_Weissliste()

@@ -189,6 +189,30 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Eine eigene Vorlage, die sich nicht lesen lässt: Der Kern nimmt die Stellen der Standardvorlage — und die
+        /// leise Zeile sagt „bezogen auf die Standardvorlage“, nicht den Namen der unlesbaren Vorlage.
+        /// </summary>
+        [Fact]
+        public async Task Eine_unlesbare_eigene_Vorlage_bezieht_sich_auf_die_Standardvorlage()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Hinzu("Kurzbericht.docx", Probevorlagen.AusAbsaetzen("Kurzbericht", "{{kapitel.projekt}}"));
+
+            BerichtsvorlagenGaben gruppe = Gruppe();
+            await gruppe.VorlageGewaehlt(Id(gruppe, "Kurzbericht"));
+            Assert.Equal(Format(R.WIRT_AE_BEZUG_VORLAGE, "Kurzbericht"), gruppe.AnhangEStellenDerVorlage().Bezug);
+
+            File.WriteAllBytes(_vorlagen.Liste().Single(e => e.Name == "Kurzbericht").Pfad, new byte[] { 1, 2, 3, 4 });
+            AnhangEStellen ersatz = gruppe.AnhangEStellenDerVorlage();
+
+            Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, ersatz.Bezug);
+            Assert.StartsWith("Wortbericht: „Wirtschaftlichkeit“ › ", ersatz.Stellen["1"]);
+        }
+
+        /// <summary>
         /// Gefragt wird der Kern mit der Konfiguration der Gruppe samt Vorlagenwahl, den gespeicherten
         /// Häkchen und der Wirtschaftlichkeit (zweiter Einstieg) und in der Sprache des Berichts; je Punkt
         /// steht, was die Checkliste des Kerns aus seiner Antwort macht.

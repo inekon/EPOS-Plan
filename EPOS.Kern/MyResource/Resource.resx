@@ -5643,17 +5643,56 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Übersicht — Stammprojekt und Varianten</value>
   </data>
-  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
-    <value>Kosten — Investition, Betrieb, Energie</value>
+  <data name="BK_STATUS_VERSION" xml:space="preserve">
+    <value>{0} Version</value>
   </data>
-  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
-    <value>Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)</value>
+  <data name="BK_STATUS_VERSIONEN" xml:space="preserve">
+    <value>{0} Versionen</value>
   </data>
-  <data name="BK_KOPF_BERICHT" xml:space="preserve">
-    <value>Bericht — Word- und Excel-Ausgabe</value>
+  <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
+    <value>{0} · simuliert</value>
+  </data>
+  <data name="BK_STATUS_NICHT_AKTUELL" xml:space="preserve">
+    <value>{0} · {1} nicht aktuell</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER" xml:space="preserve">
+    <value>{0} Träger</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
+    <value>{0} Träger</value>
+  </data>
+  <data name="BK_STATUS_WARNUNG" xml:space="preserve">
+    <value>{0} Warnung</value>
+  </data>
+  <data name="BK_STATUS_WARNUNGEN" xml:space="preserve">
+    <value>{0} Warnungen</value>
+  </data>
+  <data name="BK_STATUS_BESTE" xml:space="preserve">
+    <value>beste: {0}, {1}</value>
+  </data>
+  <data name="BK_STATUS_STAMM_KW" xml:space="preserve">
+    <value>Stammprojekt: {0}</value>
+  </data>
+  <data name="BK_STATUS_NICHT_BERECHNET" xml:space="preserve">
+    <value>nicht berechnet</value>
+  </data>
+  <data name="BK_STATUS_VERALTET" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_ZULETZT" xml:space="preserve">
+    <value>zuletzt {0:dd.MM.yy HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KURZ" xml:space="preserve">
+    <value>{0:dd.MM. HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
+    <value>noch keiner erstellt</value>
   </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Stammprojekt:</value>
+  </data>
+  <data name="BK_LBL_STAMM_KURZ" xml:space="preserve">
+    <value>Stamm:</value>
   </data>
   <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
     <value>nur Stammprojekte</value>
@@ -6025,7 +6064,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Bericht erstellt:</value>
   </data>
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
-    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Wirtschaftlichkeit im gewählten Szenario und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -6733,7 +6772,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Mehrjahresübersicht der Zahlungsströme</value>
   </data>
   <data name="WIRT_MJ_HINWEIS" xml:space="preserve">
-    <value>Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.</value>
+    <value>Nominale Zahlungen je Jahr im Szenario „{0}“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.</value>
   </data>
   <data name="WIRT_MJ_JAHR" xml:space="preserve">
     <value>Jahr</value>
@@ -6934,7 +6973,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst.</value>
   </data>
   <data name="WIRT_AE_1_STELLE" xml:space="preserve">
-    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „{1}“</value>
   </data>
   <data name="WIRT_AE_1_STAND" xml:space="preserve">
     <value>Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand.</value>
@@ -7030,7 +7069,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert.</value>
   </data>
   <data name="WIRT_AE_7_STELLE" xml:space="preserve">
-    <value>Wortbericht: {0} · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Block „{1}“ (Kennzahlen in Formeln)</value>
   </data>
   <data name="WIRT_AE_7_STAND" xml:space="preserve">
     <value>Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich.</value>
@@ -7105,7 +7144,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Betriebskosten nach Kostenarten</value>
   </data>
   <data name="WIRT_BK_HINWEIS" xml:space="preserve">
-    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
+    <value>Positionen der Kategorie 2 im Szenario „{0}“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
   </data>
   <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
     <value>Position</value>
@@ -10610,6 +10649,27 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   </data>
   <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
     <value>Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0.</value>
+  </data>
+  <data name="SIMENG_KOND_START_AUS" xml:space="preserve">
+    <value>Konditionierung: {0} — der Heizsollwert der ersten Vorlaufstunde steht auf „aus“; der Vorlauf startet wie bei einer unbeheizten Zone, mit dem Mittel der äquivalenten Außentemperatur über die {1} Vorlaufstunden.</value>
+  </data>
+  <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
+    <value>Konditionierung: Der Nachtwert des Kühlsollwerts {0} °C wirkt über den Kalender in {1} Stunden. Ohne Konditionierung rechnet der Lauf mit dem Tagwert über alle Stunden.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_OHNE_TAG" xml:space="preserve">
+    <value>Konditionierung: {0} — die Lüftungsspalte trägt keinen Tagwert; ohne ihn gibt es keinen Überschuss, den die Nachtauskühlung bedingt schalten könnte. Der Lüftungskalender wirkt in jeder Stunde unbedingt.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_ABSTAND" xml:space="preserve">
+    <value>Konditionierung: Der Außenabstand der Nachtauskühlung {0} K liegt außerhalb von {1} bis {2} K. Der Lauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
+    <value>Konditionierung: Die Nachtauskühlung ({0}) schaltete in {1} der 8760 Stunden ein; außerhalb gilt der Tagwert der Lüftung.</value>
+  </data>
+  <data name="SIMENG_KOND_UNTERTEMPERATUR" xml:space="preserve">
+    <value>Konditionierung: Außerhalb der Heizperiode liegt die Raumluft in {0} Nutzungsstunden unter dem Tagwert {1} °C der Heizspalte, am tiefsten um {2} K. Die Heizperiode schneidet diesen Bedarf ab; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_KOND_NUTZUNG_LEER" xml:space="preserve">
+    <value>Konditionierung: {0} — der Personenkalender führt keine einzige Stunde mit Anwesenheit; die Kennzahlen der Nutzungszeit zählen deshalb nach der Nachtzeit des Gebäudes.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
@@ -20337,6 +20397,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Stunden im Jahr, in denen der Kessel betriebsbereit gehalten wird; daraus folgt sein Bereitschaftsverlust.</value>
   </data>
+  <data name="KI_DLG_SIM_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft in °C: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag; dann bleibt ein stillstehender Kessel betriebsbereit. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C.</value>
+  </data>
   <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
     <value>Wärmebedarf</value>
   </data>
@@ -21269,6 +21332,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
     <value>Die Konfiguration der Wärmepumpen-Anlage ist auf dieser Plattform nicht verfügbar.</value>
+  </data>
+  <data name="SIMKONF_LBL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft</value>
+  </data>
+  <data name="SIMKONF_HRL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heiztag ist ein Tag, dessen mittlere Außentemperatur unter diesem Wert liegt. An Heiztagen und 24 h nach seinem letzten Lauf bleibt ein stillstehender Kessel betriebsbereit und trägt seinen Bereitschaftsverlust. Leer = {0} °C.</value>
+  </data>
+  <data name="SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH" xml:space="preserve">
+    <value>Die Heizgrenze der Kesselbereitschaft muss zwischen {0} und {1} °C liegen — oder leer bleiben, dann gilt {2} °C.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
     <value>Heizstab mitrechnen</value>
@@ -22760,6 +22832,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels.</value>
+  </data>
+  <data name="KI_DLG_KKONF_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft in °C — ein Wert des PROJEKTS, nicht dieses Kessels: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C.</value>
   </data>
   <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
     <value>Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung.</value>
@@ -25264,7 +25339,7 @@ Möchten Sie das zulassen?</value>
     <value>Noch kein Verlauf gerechnet — erst „Aktualisieren“.</value>
   </data>
   <data name="WIRT_VERL_WORT_HINWEIS" xml:space="preserve">
-    <value>Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“.</value>
+    <value>Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „{0}“.</value>
   </data>
   <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
     <value>Szenarien {0} / {1} / {2}</value>
@@ -25404,9 +25479,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Einheit aus dem Katalog der Nutzungsart</value>
   </data>
-  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
-    <value>Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl</value>
-  </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog</value>
   </data>
@@ -25482,6 +25554,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
     <value>Fläche [m²]</value>
   </data>
+  <data name="ZPG_BEZUG_ZIMMER" xml:space="preserve">
+    <value>Zimmer</value>
+  </data>
   <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
     <value>P</value>
   </data>
@@ -25502,6 +25577,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_EINHEIT_ZIMMER" xml:space="preserve">
+    <value>Zimmer</value>
   </data>
   <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
     <value>Vorschau</value>
@@ -27210,6 +27288,9 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_VG_ZURUECK" xml:space="preserve">
     <value>‹ Stammblatt von {0}</value>
   </data>
+  <data name="BLATT_ZURUECK" xml:space="preserve">
+    <value>‹ {0}</value>
+  </data>
   <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
     <value>nur abweichende Werte</value>
   </data>
@@ -27939,11 +28020,14 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
   </data>
+  <data name="SIMENG_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Betriebsbereitschaft: Heizgrenze {0:0.#} °C, {1} Heiztage — an ihnen und 24 h nach seiner letzten Laufstunde trägt ein stillstehender Kessel seinen Bereitschaftsverlust.</value>
+  </data>
   <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
     <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>
@@ -29265,6 +29349,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
     <value>V_max des Bands</value>
   </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT" xml:space="preserve">
+    <value>Die Summenlinie hat keinen empfohlenen Punkt.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT" xml:space="preserve">
+    <value>Zum Punkt gibt es keinen Nenninhalt — die Nenninhaltsliste fehlt, oder der Punkt liegt ohne Raster über ihrem Ende.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_BAND" xml:space="preserve">
+    <value>Es gibt kein Plausibilitätsband — kein Verfahren liefert ein Volumen im Band.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT" xml:space="preserve">
+    <value>Zu V_max gibt es keinen Nenninhalt — die Nenninhaltsliste fehlt, oder V_max liegt ohne Raster über ihrem Ende.</value>
+  </data>
   <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
     <value>Größter Tagesbedarf der maßgebenden Woche {0:0.#} kWh/d + Zirkulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, zusammen {4:0.#} kWh/d; ÷ Ladefenster {5:0.#} h = {6:0.##} kW — angesetzt: {7:0.##} kW ({8}).</value>
   </data>
@@ -29472,6 +29568,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_7" xml:space="preserve">
     <value>Fläche</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_8" xml:space="preserve">
+    <value>Zimmer</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_BEGINN" xml:space="preserve">
     <value>der Beginn des Ladefensters</value>
   </data>
@@ -29615,6 +29714,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
     <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_8" xml:space="preserve">
+    <value>Zimmer</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
     <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — angesetzt: {5:0.#} kWh/d ({6}).</value>
@@ -31183,10 +31285,19 @@ Möchten Sie das zulassen?</value>
     <value>Personen manuell</value>
   </data>
   <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
-    <value>Bezug des Füllstands</value>
+    <value>Speichergröße der Füllstandslinie</value>
   </data>
   <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
     <value>Vorgabe: Nenninhalt des Punkts, sonst der Punkt</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE_WAHL" xml:space="preserve">
+    <value>Vorgabe: {0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL" xml:space="preserve">
+    <value>{0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL_GESPERRT" xml:space="preserve">
+    <value>{0} · nicht bestimmbar</value>
   </data>
   <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
     <value>Angesetzt: {0} kW ({1}) · {2}</value>
@@ -31204,7 +31315,13 @@ Möchten Sie das zulassen?</value>
     <value>leer = Vorgabe des Katalogs; angesetzt: {0}</value>
   </data>
   <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
-    <value>Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}</value>
+    <value>Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GESPERRT" xml:space="preserve">
+    <value>{0} nicht bestimmbar: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GRUPPE" xml:space="preserve">
+    <value>Speichergröße der Füllstandslinie: {0} — gewählt am ersten Wochenbild</value>
   </data>
   <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
     <value>wird mit dem Projekt gespeichert; {0}</value>
@@ -31330,7 +31447,7 @@ Möchten Sie das zulassen?</value>
     <value>Die manuelle Personenzahl — sie wirkt nur bei „manuell“.</value>
   </data>
   <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
-    <value>Auf welches Volumen sich der Füllstand der Kachel bezieht: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max.</value>
+    <value>Mit welcher Speichergröße die Füllstandslinie des Wochenbilds und die Kachel „Füllstand“ rechnen: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max. Jeder Eintrag nennt sein Volumen; einer ohne Volumen ist gesperrt und nennt den Grund.</value>
   </data>
   <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
     <value>Die Bezugsart des konstruierten Tags; ohne Bezug gilt der Tag, wie er ist.</value>
@@ -31376,6 +31493,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
     <value>Der Katalog führt ihren Inhalt schon als „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND" xml:space="preserve">
+    <value>Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FRUEHERER_STAND_UND" xml:space="preserve">
+    <value>Das Paket führt sie in einem früheren Stand („{0}“, Bezugsart {1}); gelesen als „{2}“ mit der Bezugsart {3}. {4}</value>
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
     <value>Sie weicht vom Eintrag gleichen Namens ab und steht als „{0}“ im Katalog; der Eintrag gleichen Namens bleibt unverändert.</value>
@@ -35364,6 +35487,12 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
     <value>Die weitere Stelle entfernen; im Bericht bleibt sie gelb markiert stehen.</value>
   </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Kapitel {0} steht im Block {1} – gefüllt wird es nur in der ersten Wiederholung</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK_TUN" xml:space="preserve">
+    <value>Das Kapitel vor {0} oder hinter {1} setzen; im Block wiederholen sich Werte, Tabellen und Bilder.</value>
+  </data>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: erst in einer späteren Programmfassung</value>
   </data>
@@ -35378,6 +35507,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
     <value>Die Prüfung meldet ein Kapitel doppelt. Welche Stelle gilt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Die Prüfung meldet ein Kapitel in einem Block „je stand“. Warum erscheint es nur einmal?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
     <value>Die Prüfung sagt, ein Platzhalter wirke erst in einer späteren Programmfassung. Was heißt das?</value>
@@ -35404,7 +35536,7 @@ Möchten Sie das zulassen?</value>
     <value>nicht im Bericht</value>
   </data>
   <data name="WIRT_AE_1_STELLE_WORT" xml:space="preserve">
-    <value>{0} › „Kennzahlen im Szenario „Erwartet““</value>
+    <value>{0} › „Kennzahlen im Szenario „{1}““</value>
   </data>
   <data name="WIRT_AE_2B_STELLE_WORT" xml:space="preserve">
     <value>{0} › „Nicht monetäre Wirkungen“ (Tabelle)</value>
@@ -35422,7 +35554,7 @@ Möchten Sie das zulassen?</value>
     <value>Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“</value>
   </data>
   <data name="WIRT_AE_7_STELLE_WORT" xml:space="preserve">
-    <value>„Kennzahlen im Szenario „Erwartet““</value>
+    <value>„Kennzahlen im Szenario „{1}““</value>
   </data>
   <data name="WIRT_AE_8_STELLE_WORT" xml:space="preserve">
     <value>„Sensitivitätsanalyse“</value>
@@ -36858,6 +36990,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_WORD" xml:space="preserve">
+    <value>Vorgabe Word-Vorlage:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_EXCEL" xml:space="preserve">
+    <value>Vorgabe Excel-Vorlage:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORGABE" xml:space="preserve">
+    <value>Gilt für jedes Projekt, das auf der Berichtsseite keine eigene Vorlage gewählt hat; dort kann ein Stammprojekt abweichen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL" xml:space="preserve">
+    <value>Mit welcher Word-Vorlage ein Bericht entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat: die Standardvorlage oder eine Vorlage des Vorlagenordners.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL" xml:space="preserve">
+    <value>Aus welcher Excel-Vorlage die Mappe entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat; „Ohne Vorlage (EPOS-Plan)“ baut die Mappe aus dem Programm.</value>
   </data>
   <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>Deckblatt kommt aus der Vorlage</value>
@@ -38443,6 +38590,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
     <value>Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage.</value>
   </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_NAME" xml:space="preserve">
+    <value>Suche im Platzhalterkatalog</value>
+  </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_ERL" xml:space="preserve">
+    <value>Wonach der Platzhalterkatalog der Berichtsseite („Platzhalter…“) filtert: Wörter im Schlüssel und in der Beschreibung, Groß- und Kleinschreibung gleich; ein Platzhalter samt Klammern findet seinen Eintrag ebenso. Die Suche bleibt stehen, bis sie geleert wird, und gilt auch beim nächsten Öffnen des Katalogs; leer zeigt der Katalog alle Platzhalter.</value>
+  </data>
   <data name="BV_XL_START_PUNKT" xml:space="preserve">
     <value>Excel-Vorlage: {0}</value>
   </data>
@@ -39562,4 +39715,98 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
     <value>Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden.</value>
   </data>
+  <data name="WIRT_BER_KENNZAHLEN_SZENARIO" xml:space="preserve">
+    <value>Kennzahlen im Szenario „{0}“</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_RUECKFALL" xml:space="preserve">
+    <value>⚠ Für {0} fehlt das Ergebnis im Szenario „{1}“ — die Wirtschaftlichkeit steht deshalb im Szenario „{2}“.</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_WORTBERICHT" xml:space="preserve">
+    <value>Szenario des Wortberichts: {0}</value>
+  </data>
+  <data name="BK_BER_LBL_SZENARIO" xml:space="preserve">
+    <value>Szenario der Wirtschaftlichkeit:</value>
+  </data>
+  <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit.</value>
+  </data>
+  <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
+    <value>Der Katalogbau {0} gehört zur Auslieferung (Schloss) — seine Matrix und seine Kalender lassen sich nicht ändern. Legen Sie über „Duplizieren…“ einen eigenen Satz an.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_GESPERRT" xml:space="preserve">
+    <value>Die Vorlage {0} gehört zur Auslieferung (Schloss) — sie lässt sich nicht ändern. Legen Sie über „Duplizieren…“ eine eigene Vorlage an.</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_GLEICHER_EIGNER" xml:space="preserve">
+    <value>Quelle und Ziel der Konditionierungskopie sind derselbe Eigentümer — kopiert wird nichts.</value>
+  </data>
+  <data name="KOND_MSG_EIGNER_FEHLT" xml:space="preserve">
+    <value>Die Zeile {1} der Tabelle {0} gibt es nicht — der Wert der Zelle hat dort keinen Platz.</value>
+  </data>
+  <data name="KOND_MSG_KOPF_NICHT_ANGELEGT" xml:space="preserve">
+    <value>Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_UNGUELTIG" xml:space="preserve">
+    <value>Der Name einer Vorlage ist 1 bis {0} Zeichen lang und trägt keine Leerzeichen am Rand.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_DOPPELT" xml:space="preserve">
+    <value>Eine Vorlage „{0}“ gibt es in der Liste der Größe {1} schon — Namen unterscheiden sich nicht in Groß- und Kleinschreibung.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FEHLT" xml:space="preserve">
+    <value>Die Vorlage {0} gibt es nicht.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“ ist keine der vier Nutzungen einer Vorlage.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
+    <value>Eine Vorlage lässt sich nicht als Vorlage speichern — dafür gibt es „Duplizieren…“.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_ZIEL" xml:space="preserve">
+    <value>Eine Vorlage lässt sich nicht auf eine Vorlage übernehmen — sie wirkt auf Gebäude, Zone oder Katalogbau.</value>
+  </data>
+  <data name="KOND_MSG_HERKUNFT_VORLAGE" xml:space="preserve">
+    <value>aus Vorlage {0}</value>
+  </data>
+  <data name="KOND_MSG_DUPLIKAT_ZUSATZ" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="KOND_MSG_KEIN_KALENDER" xml:space="preserve">
+    <value>Für die Größe {0} ist kein Kalender angelegt — legen Sie ihn erst aus der Matrix an.</value>
+  </data>
+  <data name="KOND_MSG_WERT_AUSSERHALB" xml:space="preserve">
+    <value>Der Wert {0} liegt außerhalb der Grenzen {1}.</value>
+  </data>
+  <data name="KOND_MSG_WERT_RUNDLAUF" xml:space="preserve">
+    <value>Der Wert {0} lässt sich nicht mit {1} Nachkommastellen ablegen und käme verändert zurück.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITFENSTER" xml:space="preserve">
+    <value>Zeitfenster {0}, {1}–{2} Uhr = {3}</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage als Regel ({0} von {1} angelegt)</value>
+  </data>
+  <data name="KOND_MSG_WOCHENTAG_UNGUELTIG" xml:space="preserve">
+    <value>{0} ist kein Wochentag 1 (Montag) bis 7 (Sonntag).</value>
+  </data>
+  <data name="KOND_MSG_ZEITFENSTER_UNGUELTIG" xml:space="preserve">
+    <value>Das Zeitfenster {0}–{1} Uhr ist leer oder liegt außerhalb 0 bis 24 Uhr.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BELEGT" xml:space="preserve">
+    <value>Der Rang {0} der Regel {1} ist schon belegt — die Perioden lassen sich nicht ohne Verschiebung anlegen.</value>
+  </data>
+  <data name="KOND_MSG_RANG_DOPPELT" xml:space="preserve">
+    <value>Der Rang {0} kommt zweimal vor — zwei Perioden gälten für dieselbe Stunde.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BAND_VOLL" xml:space="preserve">
+    <value>Im Rangband {0} bis {1} ist kein Platz mehr für eine weitere Periode.</value>
+  </data>
+  <data name="KOND_MSG_PERIODEN_ZU_VIELE" xml:space="preserve">
+    <value>Ein Kalender trägt höchstens {1} Perioden, zusammen wären es {0}.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE" xml:space="preserve">
+    <value>Neujahr;Karfreitag;Ostermontag;Erster Mai;Christi Himmelfahrt;Pfingstmontag;Tag der Deutschen Einheit;Erster Weihnachtstag;Zweiter Weihnachtstag</value>
+  </data>
+  <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
+    <value>Mo;Di;Mi;Do;Fr;Sa;So</value>
+  </data>
 </root>
+

@@ -1,0 +1,139 @@
+﻿@page "/berichtekosten"
+@using EPOS.UI.Seiten.Berichte
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+
+@*  DIE SICHTPROBE "BERICHTE & KOSTEN" (Konzept Navigation Berichte & Kosten, Variante A,
+    Etappe A4): der echte Rahmen BerichteKostenSeite als sechstes Reiterblatt einer
+    Startseiten-Leiste - zwei Reiterebenen uebereinander, wie in der Anwendung -, mit den
+    Statuszeilen aus Mockup A, Stammname, Platzhalter-Umschalter und Hilfe im Leistenende.
+    Die Seiten bekommen synthetische Staende (kein Projekt, keine Datenbank); gemessen wird
+    das Layout bei 1 280 und 820 px, nicht der Rechenweg.
+
+    Gaben aus der Adresse: ?seite=UEBERSICHT|KOSTEN|WIRTSCHAFT|BERICHT (Vorgabe UEBERSICHT),
+    ?ansicht=1 (als eigene Ansicht mit Rueckweg statt als Reiterblatt), ?stamm=<name> (ein
+    langer Stammname kuerzt sich mit Auslassung). *@
+
+<div class="epos-startseite bkp-rahmen">
+    <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
+        <KindInhalt>
+            @foreach (string titel in new[] { "Projekt", "Wärmebedarf", "Strombedarf", "Energieerzeuger", "Simulation" })
+            {
+                <Reiterblatt @key="titel" Schluessel="@("BKP_" + titel)" Titel="@titel" />
+            }
+            <Reiterblatt Schluessel="BERICHTE_KOSTEN" Titel="Berichte &amp; Kosten">
+                <KindInhalt>
+                    @if (_ansicht)
+                    {
+                        <BerichteKostenSeite SeitenGaben="Gaben" Stamm="@(() => _stamm)"
+                                             StammBeschriftung="Stamm:" Status="Kurzstand"
+                                             Startseite="@_seite" NavigationBezeichnung="Berichte und Kosten"
+                                             ZurueckText="◀ Zurück" Geschlossen="@(() => { })" />
+                    }
+                    else
+                    {
+                        <BerichteKostenSeite SeitenGaben="Gaben" Stamm="@(() => _stamm)"
+                                             StammBeschriftung="Stamm:" Status="Kurzstand"
+                                             Startseite="@_seite" NavigationBezeichnung="Berichte und Kosten" />
+                    }
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+</div>
+
+<style>
+    body { margin: 0; padding: 8px 16px; font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse);
+           background: var(--epos-flaeche); }
+    .bkp-rahmen { min-height: 600px; }
+</style>
+
+@code {
+    private string _seite = BerichteKostenSeite.SEITE_UEBERSICHT;
+    private bool _ansicht;
+    private string _stamm = "Beispielprojekt";
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("seite", out var s) && s.ToString().Length > 0) _seite = s.ToString();
+        _ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "1";
+        if (abfrage.TryGetValue("stamm", out var n) && n.ToString().Length > 0) _stamm = n.ToString();
+    }
+
+    /// <summary>Die Kurzstände aus Mockup A.</summary>
+    private static Reiterstatus? Kurzstand(string seite) => seite switch
+    {
+        BerichteKostenSeite.SEITE_UEBERSICHT => new Reiterstatus("3 Versionen · simuliert", "3 Versionen"),
+        BerichteKostenSeite.SEITE_KOSTEN => new Reiterstatus("3 Träger · 2 Warnungen", "2", Statusstufe.Warnung),
+        BerichteKostenSeite.SEITE_WIRTSCHAFT => new Reiterstatus("beste: mit PV, +61.500 €", "+61.500 €"),
+        BerichteKostenSeite.SEITE_BERICHT => new Reiterstatus("zuletzt 26.09.26 18:12", "26.09. 18:12"),
+        _ => null
+    };
+
+    private static VarianteZeile[] Gruppe() => new[]
+    {
+        new VarianteZeile { IdProjekt = 1, Art = "Stamm", Bezeichner = "(Stammprojekt)", Projektname = "Beispielprojekt",
+                            SimStand = "26.09.26 18:02", IstStamm = true },
+        new VarianteZeile { IdProjekt = 2, Art = "Variante", Bezeichner = "mit PV", Projektname = "Beispielprojekt",
+                            SimStand = "26.09.26 18:05" },
+        new VarianteZeile { IdProjekt = 3, Art = "Variante", Bezeichner = "Speicher 1, 100 kWh", Projektname = "Beispielprojekt",
+                            SimStand = "26.09.26 18:07" }
+    };
+
+    /// <summary>Synthetische Stände je Seite — dieselben DTO wie aus der Hülle, ohne Datenbank.</summary>
+    private static IReadOnlyDictionary<string, object>? Gaben(string seite) => seite switch
+    {
+        BerichteKostenSeite.SEITE_UEBERSICHT => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<UebersichtStand>(() => new UebersichtStand
+            {
+                Staemme = new[] { (1, "Beispielprojekt") },
+                StammId = 1,
+                Zeilen = Gruppe(),
+                MarkierteId = 1,
+                GewaehlteVarianten = new[] { 1, 2, 3 },
+                Statuszeile = "3 Versionen · simuliert"
+            })
+        },
+        BerichteKostenSeite.SEITE_KOSTEN => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<KostenStand>(() => new KostenStand
+            {
+                Projektzeile = "Projekt: Beispielprojekt",
+                Bedienbar = true,
+                Kacheln = new[]
+                {
+                    new KachelZeile { Titel = "Investition", Wert = "120.000 €" },
+                    new KachelZeile { Titel = "Betrieb", Wert = "2.400 €/a" },
+                    new KachelZeile { Titel = "Energie", Wert = "18.300 €/a" }
+                },
+                Statuszeile = "Kostenpositionen ohne verbaute Anlage: Kessel 1 · Energieträger ohne Preis: Strom"
+            })
+        },
+        BerichteKostenSeite.SEITE_WIRTSCHAFT => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<WirtschaftlichkeitStand>(() => new WirtschaftlichkeitStand
+            {
+                Varianten = Gruppe(),
+                GewaehlteVarianten = new[] { 1, 2, 3 },
+                Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig") },
+                HatErgebnisse = true
+            })
+        },
+        _ => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<BerichtStand>(() => new BerichtStand
+            {
+                Varianten = Gruppe(),
+                GewaehlteVarianten = new[] { 1, 2, 3 },
+                Bausteine = new[]
+                {
+                    new BausteinZeile { Schluessel = "deckblatt", Titel = "Deckblatt" },
+                    new BausteinZeile { Schluessel = "wirtschaftlichkeit", Titel = "Wirtschaftlichkeit" }
+                },
+                AktiveBausteine = new[] { "deckblatt" }
+            })
+        }
+    };
+}

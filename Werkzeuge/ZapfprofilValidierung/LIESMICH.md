@@ -100,7 +100,7 @@ Der vollständige, kommentierte Satz steht in
 |---|---|
 | `kennung` | die **anonyme** Kennung; das Einzige, was in einen Bericht kommt |
 | `nutzungsart` | Bezeichner der Nutzungsart im Katalog (natürlicher Schlüssel) |
-| `bezugsmenge` | Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten …) |
+| `bezugsmenge` | Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten, Zimmer …) |
 | `bezugsmenge_herkunft` | `Veroeffentlichung` (belegt), `Abgeleitet` (aus einer belegten Größe mit benannter Annahme), `Platzhalter` oder `Unbekannt` (Niveau allein aus der Kalibrierung); leer = nicht angegeben. Platzhalter und unbekannte Mengen tragen die √N-Skalierung nicht |
 | `niveau` | `Niedrig`, `Mittel` (Vorgabe), `Hoch` |
 | `bilanzgrenze` | Bilanzgrenze des **Zählers**: `Zapfstelle`, `MitVerteilung`, `MitSpeicher` |
@@ -136,7 +136,10 @@ derselbe Weg, den das Programm nimmt. Verglichen wird mit `Messvergleich`, kalib
 Modell herein**: Nutzungsarten, Tagesgangsätze, Parametersatz und Zapfkategorien werden aus einem
 Paketordner (CSV) oder aus einer `.sqlite`-Datei **gelesen** und zu den Modellen des Kerns gebaut.
 Kein Controller, keine Projektkopie, keine Schreiboperation; eine `.sqlite`-Quelle wird
-`immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich.
+`immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich. Eine Nutzungsart des ausgelieferten
+Paketteils in einem früheren Stand (etwa „Hotel (aus Messung)" mit der Bezugsart Betten aus einem
+älteren Katalog) wird als die heutige gebaut — „Hotel (aus Messung, je Zimmer)" mit der Bezugsart
+Zimmer —, dieselbe Regel wie im Programm (`PaketteilNachfuehrung`); ein Hinweis des Katalogs nennt es.
 
 Der **freie Paketteil** `Referenzlaeufe/Katalogpaket_frei/` genügt allein **nicht**: Er führt nur
 die Parameter, die im Repositorium stehen dürfen; die Kaltwasser-, Wohnen- und
