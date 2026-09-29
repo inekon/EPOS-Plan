@@ -1,6 +1,6 @@
 # P556 — Leistungspreis nur bei stromverwendendem Erzeuger (Protokoll, 29.09.2026)
 
-Statuszeile folgt (#610 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile folgt (#611 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P556_Auftrag_2026-09-29.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P556_Auftrag_2026-09-29.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P555_Gruppenregel_Konzeptnachlese_Protokoll.md`](P555_Gruppenregel_Konzeptnachlese_Protokoll.md)
 (#603). Zweig `p556` ab `ee1f9323c`.
@@ -114,5 +114,5 @@ offen (Orchestrierung).
 
 ## Commit
 
-Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55`; Abnahme und Nummer #610 im folgenden Papiercommit; Push offen
+Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55`; Abnahme und Nummer #611 in den folgenden Papiercommits; Push offen
 (Orchestrierung).
