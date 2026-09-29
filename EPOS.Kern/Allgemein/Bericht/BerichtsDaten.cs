@@ -57,22 +57,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Hinweise zur Gruppenregel „Strombedarf ohne Verwendung" in der Sprache
-        /// <paramref name="kultur"/> — je Stand, an dem sie in diesem Lauf gewirkt hat, ein Satz
-        /// (<see cref="VariantenDaten.StromGruppenregelHinweis"/>), in der Folge der Stände. Das
-        /// Kostenkapitel stellt sie unter seine Tafeln der Kosten und Emissionen; leer, wenn die
-        /// Regel an keinem Stand gewirkt hat.
+        /// Die Fußzeilen zur Gruppenregel „Strombedarf ohne Verwendung" unter der Tafel der
+        /// Kennzahlgruppe <paramref name="gruppe"/> (<see cref="KennzahlenKatalog.GR_KOSTEN"/>
+        /// oder <see cref="KennzahlenKatalog.GR_EMISSION"/>) in der Sprache
+        /// <paramref name="kultur"/> — je Stand, an dem die Regel in diesem Lauf gewirkt hat, eine
+        /// Zeile (<see cref="VariantenDaten.StromGruppenregelFussnote"/>), in der Folge der Stände.
+        ///
+        /// <para>DIE TAFEL SELBST ZEIGT DIE EINZELZAHL (Anwenderentscheid 29.09.2026) — die
+        /// Fußzeile nennt daneben die Zahl MIT bepreistem Netzbezug und die Menge. Leer, wenn die
+        /// Regel an keinem Stand gewirkt hat; dann steht unter der Tafel nichts.</para>
         /// </summary>
-        public List<string> StromGruppenregelHinweise(System.Globalization.CultureInfo kultur)
+        public List<string> StromGruppenregelFussnoten(System.Globalization.CultureInfo kultur, string gruppe)
         {
-            var hinweise = new List<string>();
-            if (Varianten == null) return hinweise;
+            var fussnoten = new List<string>();
+            if (Varianten == null) return fussnoten;
             foreach (VariantenDaten v in Varianten)
             {
-                string h = v?.StromGruppenregelHinweis(kultur);
-                if (!string.IsNullOrEmpty(h) && !hinweise.Contains(h)) hinweise.Add(h);
+                string f = v?.StromGruppenregelFussnote(kultur, gruppe);
+                if (!string.IsNullOrEmpty(f) && !fussnoten.Contains(f)) fussnoten.Add(f);
             }
-            return hinweise;
+            return fussnoten;
         }
 
         /// <summary>
@@ -373,18 +377,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b> — EINGABE des
-        /// <see cref="KostenEmissionRechner"/>, gesetzt von der Wirtschaftlichkeit auf einer
-        /// KOPIE der Variante (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>) und vom
-        /// Berichtslauf auf dem Stand selbst, sobald der Bericht Stände einer Vergleichsgruppe
-        /// führt (<c>BerichtsDatenSammler.StromGruppenregelAnwenden</c>): Verwendet ein anderer
+        /// <see cref="KostenEmissionRechner"/>, gesetzt allein auf einer KOPIE der Variante:
+        /// von der Wirtschaftlichkeit (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>) und vom
+        /// Berichtslauf für die Gruppenzahl der Fußzeile
+        /// (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>): Verwendet ein anderer
         /// Stand derselben Vergleichsgruppe Strom
         /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>), bepreist und
         /// bewertet auch dieser Stand seinen Netzbezug, obwohl er selbst keinen Erzeuger
         /// führt, der Strom verwendet — sonst erschiene die Stromersparnis der Variante als
-        /// Mehrkosten. Die Einzelbetrachtung (Kostenseite, Übersicht, der Sammler der
-        /// Wirtschaftlichkeitsseite) setzt das Feld nie; dort gilt die Regel je Stand.
+        /// Mehrkosten. <b>AM STAND SELBST STEHT DAS FELD NIE</b>: Einzelbetrachtung
+        /// (Kostenseite, Übersicht, der Sammler der Wirtschaftlichkeitsseite) und Kostenkapitel
+        /// des Berichts zeigen die Einzelzahl; dort gilt die Regel je Stand.
         /// </summary>
         public bool StromImVergleichBepreisen;
+
+        /// <summary>
+        /// <b>DIE GRUPPENZAHL DIESES STANDES</b> (Anwenderentscheid 29.09.2026) — was der Stand
+        /// an Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der Gruppenregel
+        /// bepreist und bewertet wäre. Gerechnet auf einer KOPIE des Standes, damit seine eigenen
+        /// Zahlen die Einzelzahl bleiben; <c>null</c>, solange die Gruppenregel an diesem Stand
+        /// nicht gewirkt hat. Gesetzt allein vom Berichtslauf
+        /// (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>) — sie steht nur in der Fußzeile
+        /// unter den Tafeln der Kosten und der Emissionen, in keiner Zelle.
+        /// </summary>
+        public StromGruppenzahl Gruppenzahl;
 
         /// <summary>
         /// AUSGABE zur Gruppenregel: der Netzbezug [MWh/a], der in diesem Lauf NUR wegen
@@ -402,28 +418,57 @@ namespace WindowsFormsApplication1
         public List<string> StromGruppenregelVerwender;
 
         /// <summary>
-        /// Der Hinweis zur Gruppenregel in der Sprache <paramref name="kultur"/>
-        /// (<c>WIRT_HINWEIS_STROM_GRUPPENREGEL</c>) — derselbe Wortlaut wie die Hinweiszeile der
-        /// Wirtschaftlichkeit: Stand, die Stände mit Stromverwendung und die bepreiste Menge.
-        /// <c>null</c>, wenn die Gruppenregel an diesem Stand nicht gewirkt hat
-        /// (<see cref="StromGruppenregelMWh"/> leer).
+        /// <b>DIE FUSSZEILE UNTER DER TAFEL</b> (Anwenderentscheid 29.09.2026) — die Zeile, die
+        /// unter der Tafel der Kennzahlgruppe <paramref name="gruppe"/> steht, wenn die
+        /// Gruppenregel an diesem Stand gewirkt hat: Stand, die Stände mit Stromverwendung, die
+        /// bepreiste Menge und die Zahl MIT bepreistem Netzbezug — Energiekosten [€/a] unter der
+        /// Tafel der Kosten (<see cref="KennzahlenKatalog.GR_KOSTEN"/>), CO₂ [t/a] unter der Tafel
+        /// der Emissionen (<see cref="KennzahlenKatalog.GR_EMISSION"/>). Dieselbe Auskunft wie die
+        /// Hinweiszeile der Wirtschaftlichkeit (<c>WIRT_HINWEIS_STROM_GRUPPENREGEL</c>), um die
+        /// Zahl erweitert; die Zahlformate sind die der Tafelzeilen (N0 bzw. N1).
+        ///
+        /// <para><c>null</c> für jede andere Gruppe, ohne Gruppenzahl
+        /// (<see cref="Gruppenzahl"/> leer) und wenn der Gruppenzahl gerade die Zahl dieser Tafel
+        /// fehlt — dann steht keine Fußzeile.</para>
         /// </summary>
-        public string StromGruppenregelHinweis(System.Globalization.CultureInfo kultur)
+        public string StromGruppenregelFussnote(System.Globalization.CultureInfo kultur, string gruppe)
         {
-            if (!StromGruppenregelMWh.HasValue) return null;
+            if (Gruppenzahl == null) return null;
+            bool kosten = gruppe == KennzahlenKatalog.GR_KOSTEN;
+            if (!kosten && gruppe != KennzahlenKatalog.GR_EMISSION) return null;
+            double? zahl = kosten ? Gruppenzahl.EnergiekostenEuroJahr : Gruppenzahl.CO2TonnenJahr;
+            if (!zahl.HasValue) return null;
+
             System.Globalization.CultureInfo k = kultur ?? BerichtTexte.Kultur;
+            string schluessel = kosten ? SCHLUESSEL_FUSSNOTE_KOSTEN : SCHLUESSEL_FUSSNOTE_EMISSION;
             string vorlage = null;
-            try { vorlage = MyResource.Resource.ResourceManager.GetString("WIRT_HINWEIS_STROM_GRUPPENREGEL", k); }
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(schluessel, k); }
             catch (Exception) { vorlage = null; }
-            if (string.IsNullOrEmpty(vorlage)) vorlage = KostenEmissionRechner.HINWEIS_STROM_GRUPPENREGEL;
+            if (string.IsNullOrEmpty(vorlage)) vorlage = kosten ? FUSSNOTE_KOSTEN : FUSSNOTE_EMISSION;
             try
             {
                 return string.Format(k, vorlage, Anzeige,
-                                     WirtschaftlichkeitCtrl.Zitiert(StromGruppenregelVerwender, vorlage),
-                                     StromGruppenregelMWh.Value.ToString("N1", k));
+                                     WirtschaftlichkeitCtrl.Zitiert(Gruppenzahl.Verwender, vorlage),
+                                     Gruppenzahl.NetzbezugMWh.ToString("N1", k),
+                                     zahl.Value.ToString(kosten ? "N0" : "N1", k));
             }
             catch (FormatException) { return vorlage; }
         }
+
+        internal const string SCHLUESSEL_FUSSNOTE_KOSTEN = "BV_FUSSNOTE_GRUPPENREGEL_KOSTEN";
+        internal const string SCHLUESSEL_FUSSNOTE_EMISSION = "BV_FUSSNOTE_GRUPPENREGEL_EMISSION";
+
+        /// <summary>Rückfall der Fußzeile unter der Kostentafel, falls die Ressource fehlt.</summary>
+        internal const string FUSSNOTE_KOSTEN =
+            "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von " +
+            "{2} MWh/a bepreist und bewertet (Gruppenregel) — die Energiekosten betragen dann {3} €/a. " +
+            "Die Tafel weist die Einzelbetrachtung des Standes aus.";
+
+        /// <summary>Rückfall der Fußzeile unter der Emissionstafel, falls die Ressource fehlt.</summary>
+        internal const string FUSSNOTE_EMISSION =
+            "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von " +
+            "{2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. " +
+            "Die Tafel weist die Einzelbetrachtung des Standes aus.";
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
@@ -534,6 +579,33 @@ namespace WindowsFormsApplication1
         {
             return (VariantenDaten)MemberwiseClone();
         }
+    }
+
+    /// <summary>
+    /// <b>Die Gruppenzahl eines Standes</b> (Anwenderentscheid 29.09.2026) — was der Stand an
+    /// Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der Gruppenregel „Strombedarf
+    /// ohne Verwendung" bepreist und bewertet wäre. Der Berichtslauf rechnet sie auf einer KOPIE
+    /// des Standes (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>); die Zahlen des Standes
+    /// selbst bleiben die Einzelzahl.
+    ///
+    /// <para>Sie erscheint allein in der FUSSZEILE unter den Tafeln der Kosten und der Emissionen
+    /// (<see cref="VariantenDaten.StromGruppenregelFussnote"/>) — in keiner Zelle und in keiner
+    /// weiteren Auskunft. Das Kapitel Wirtschaftlichkeit rechnet dieselbe Zahl für sich, aus
+    /// seinen eigenen Ergebnissen.</para>
+    /// </summary>
+    public class StromGruppenzahl
+    {
+        /// <summary>Die Energiekosten [€/a] mit bepreistem Netzbezug; <c>null</c> = nicht bestimmbar.</summary>
+        public double? EnergiekostenEuroJahr;
+
+        /// <summary>Die Emissionen [t/a] mit bewertetem Netzbezug, im Modus des Laufs; <c>null</c> = nicht bestimmbar.</summary>
+        public double? CO2TonnenJahr;
+
+        /// <summary>Die Menge des Netzbezugs [MWh/a], die allein wegen der Gruppenregel zählt.</summary>
+        public double NetzbezugMWh;
+
+        /// <summary>Die Stände der Gruppe, die Strom verwenden (Anzeigenamen) — sie lösen die Regel aus.</summary>
+        public List<string> Verwender;
     }
 
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>

@@ -39855,5 +39855,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
     <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
   </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_KOSTEN" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the annual energy cost is then {3} €/a. The table shows the individual assessment of the version.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the CO₂ emissions are then {3} t/a. The table shows the individual assessment of the version.</value>
+  </data>
 </root>
 

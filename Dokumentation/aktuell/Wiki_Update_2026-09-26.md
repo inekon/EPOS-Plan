@@ -162,7 +162,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
 - Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
 - Auf der Berichtsseite lässt sich das Szenario der Wirtschaftlichkeit wählen; der Wortbericht zeigt Kennzahlen, Betriebskosten, Brücke und Mehrjahresübersicht in diesem Szenario. (#591)
-- Enthält der Bericht mehrere Versionen einer Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel des Variantenvergleichs aus. (#591)
+- Im Kostenkapitel des Berichts steht je Stand die Kostenzahl der Einzelbetrachtung; wo die Gruppenregel wirkt, nennt eine Fußzeile die Zahl mit bepreistem Netzbezug und die Menge. (#609)
 - Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
 - Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
 - In der Brauchwasser-Auslegung lässt sich die Speichergröße der Füllstandslinie auch auf das Volumen eines der verglichenen Verfahren setzen, etwa DIN 4708. (#608)
