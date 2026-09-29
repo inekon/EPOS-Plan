@@ -67,6 +67,7 @@ import csv
 import datetime
 import io
 import json
+import math
 import os
 import sys
 
@@ -101,6 +102,9 @@ def reihe_lesen(pfad):
     return werte
 
 
+# Jede Summe ueber Gleitkommazahlen mit math.fsum: die korrekt gerundete Summe ist auf jeder
+# Python-Fassung dieselbe; sum() kompensiert erst ab 3.12 (Neumaier) und rechnet unter 3.11 in der
+# letzten Stelle anders.
 def hotel_auswerten(pfad, zimmer):
     werte = reihe_lesen(pfad)
     jahr = g.jahr_mit_meisten(werte)
@@ -117,16 +121,16 @@ def hotel_auswerten(pfad, zimmer):
         gang[z.hour] = gang.get(z.hour, 0.0) + w
     tage = {d: [gang[h] for h in range(24)] for d, gang in sorted(je_tag.items()) if len(gang) == 24}
 
-    summen = {d: sum(x) for d, x in tage.items()}
-    tagesbedarf = sum(summen.values()) / len(summen) / zimmer
+    summen = {d: math.fsum(x) for d, x in tage.items()}
+    tagesbedarf = math.fsum(summen.values()) / len(summen) / zimmer
 
     m = []
     for i in range(7):
         s = [q for d, q in summen.items() if d.weekday() == i]
-        m.append(sum(s) / len(s) if s else None)
+        m.append(math.fsum(s) / len(s) if s else None)
     ohne = [x for x in m if x is not None]
-    m = [x if x is not None else sum(ohne) / len(ohne) for x in m]
-    woche = [x / sum(m) for x in m]
+    m = [x if x is not None else math.fsum(ohne) / len(ohne) for x in m]
+    woche = [x / math.fsum(m) for x in m]
 
     def tagtyp(d):
         if d in feiertage or d.weekday() == 6:
@@ -137,14 +141,14 @@ def hotel_auswerten(pfad, zimmer):
     for t in TAGTYPEN:
         auswahl = [d for d in tage if tagtyp(d) == t]
         zahl[t] = len(auswahl)
-        nenner = sum(summen[d] ** 2 for d in auswahl)
-        gaenge[t] = [sum(summen[d] * tage[d][h] for d in auswahl) / nenner for h in range(24)]
+        nenner = math.fsum(summen[d] ** 2 for d in auswahl)
+        gaenge[t] = [math.fsum(summen[d] * tage[d][h] for d in auswahl) / nenner for h in range(24)]
     return dict(tagesbedarf=tagesbedarf, woche=woche, gaenge=gaenge, tage=len(tage), zahl=zahl, jahr=jahr)
 
 
 def gerundet(werte, stellen):
     """Auf `stellen` Nachkommastellen, nachdem die Werte exakt auf Summe 1 gebracht sind."""
-    s = sum(werte)
+    s = math.fsum(werte)
     return [round(w / s, stellen) for w in werte]
 
 
@@ -156,8 +160,8 @@ def main():
 
     je_hotel = [hotel_auswerten(os.path.join(a.quelle, k + "_2.csv"), n) for k, n in HOTELS]
     bedarf = [h["tagesbedarf"] for h in je_hotel]
-    woche = gerundet([sum(h["woche"][i] for h in je_hotel) / 3.0 for i in range(7)], 3)
-    gaenge = {t: gerundet([sum(h["gaenge"][t][s] for h in je_hotel) / 3.0 for s in range(24)], 3)
+    woche = gerundet([math.fsum(h["woche"][i] for h in je_hotel) / 3.0 for i in range(7)], 3)
+    gaenge = {t: gerundet([math.fsum(h["gaenge"][t][s] for h in je_hotel) / 3.0 for s in range(24)], 3)
               for t in TAGTYPEN}
 
     ergebnis = {
@@ -181,7 +185,7 @@ def main():
         },
         "bedarf": {
             "niedrig": round(min(bedarf), 1),
-            "mittel": round(sum(bedarf) / 3.0, 1),
+            "mittel": round(math.fsum(bedarf) / 3.0, 1),
             "hoch": round(max(bedarf), 1)
         },
         "wochenanteile": dict(zip(WOCHENTAGE, woche)),
