@@ -396,8 +396,12 @@ namespace WindowsFormsApplication1
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
+            // Stufe KP1b (E53): Eine Stunde mit Heizsollwert "aus" hat keine Uebergabe - der
+            // Vorlauf bleibt leer wie jenseits der Heizgrenze, und die Stunde zaehlt getrennt
+            // (StundenOhneHeizungH), nicht als Heizgrenzstunde. Ohne Heizkalender ist ThetaSoll
+            // nie NaN, der Ausdruck also derselbe wie bisher.
             double heizMittel = akkHeiz / STUNDE_S;
-            double vorlauf = r.MitUebergabe ? r.VorlaufC : double.NaN;
+            double vorlauf = r.MitUebergabe && r.MitHeizung ? r.VorlaufC : double.NaN;
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
             int grund = 0;
             for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;

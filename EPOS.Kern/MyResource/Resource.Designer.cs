@@ -73920,6 +73920,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Nachtwert des Kühlsollwerts {0} °C wirkt über den Kalender in {1} Stunden. Ohne Konditionierung rechnet der Lauf mit dem Tagwert über alle Stunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_KUEHL_NACHT {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_KUEHL_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: In Stunde {0} liegt der Kühlsollwert {1} °C nicht mindestens {3} K über dem Heizsollwert {2} °C — Heizung und Kühlung arbeiteten dort gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab. ähnelt.
         /// </summary>
         public static string SIMENG_KOND_KUEHL_UNTER_HEIZ {
@@ -73934,6 +73943,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KOND_OHNE_HEIZUNG {
             get {
                 return ResourceManager.GetString("SIMENG_KOND_OHNE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: {0} — der Heizsollwert der ersten Vorlaufstunde steht auf „aus“; der Vorlauf startet wie bei einer unbeheizten Zone, mit dem Mittel der äquivalenten Außentemperatur über die {1} Vorlaufstunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_START_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_START_AUS", resourceCulture);
             }
         }
         

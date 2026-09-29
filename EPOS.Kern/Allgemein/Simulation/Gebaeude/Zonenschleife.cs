@@ -241,7 +241,7 @@ namespace WindowsFormsApplication1
         private void Stunde(int h, bool jahr)
         {
             int n = _laeufe.Length;
-            for (int z = 0; z < n; z++) _sommer[z] = _laeufe[z].Sommerlueftung();
+            for (int z = 0; z < n; z++) _sommer[z] = _laeufe[z].Sommerlueftung(h);
 
             foreach (int[] gruppe in _gruppen)
             {
@@ -384,6 +384,11 @@ namespace WindowsFormsApplication1
         /// Mittel von θ_eq über die 720 Vorlaufstunden — mit den Startwerten der Nachbarn in den
         /// Nachbargliedern, für unbeheizte Nachbarn in wenigen Jacobi-Schritten ab dem Mittel der
         /// Außenluft (EPOS-Regel).
+        ///
+        /// <para><b>„Beheizt" heißt hier: beheizt UND endlich</b> (Stufe KP1b, G1): Steht der
+        /// Heizsollwert der ersten Vorlaufstunde auf „aus" (NaN, Konzept 3.6), gilt der Zone die
+        /// Regel der unbeheizten — auch in den Jacobi-Schritten der Nachbarn, in die das NaN sonst
+        /// weiterliefe. Ohne „aus" steht jeder Ausdruck wörtlich wie im Bestand.</para>
         /// </summary>
         private double[] StartwerteBilden(int start)
         {
@@ -395,9 +400,12 @@ namespace WindowsFormsApplication1
             bool unbeheizt = false;
             for (int z = 0; z < n; z++)
             {
-                if (_zonen[z].IstBeheizt) s[z] = _zonen[z].Eingang.ThetaSoll[start];
+                if (MitStartsollwert(z)) s[z] = _zonen[z].Eingang.ThetaSoll[start];
                 else
                 {
+                    // Stufe KP1b (G1): eine beheizte Zone mit "aus" in der ersten Vorlaufstunde
+                    // startet wie eine unbeheizte - der Lauf nennt es.
+                    if (_zonen[z].IstBeheizt) Vdi6007Rechenweg.HinweisVorlaufstartAus(_zonen[z].Eingang);
                     s[z] = aussen;
                     unbeheizt = true;
                 }
@@ -410,7 +418,7 @@ namespace WindowsFormsApplication1
                 Array.Copy(s, neu, n);
                 for (int z = 0; z < n; z++)
                 {
-                    if (_zonen[z].IstBeheizt) continue;
+                    if (MitStartsollwert(z)) continue;
                     double summe = 0.0;
                     for (int h = start; h < 8760; h++) summe += _zonen[z].ThetaEq(h, s);
                     neu[z] = summe / (8760 - start);
@@ -418,6 +426,19 @@ namespace WindowsFormsApplication1
                 Array.Copy(neu, s, n);
             }
             return s;
+        }
+
+        /// <summary>
+        /// Startet die Zone <paramref name="z"/> am Heizsollwert der ersten Vorlaufstunde? Nur, wenn
+        /// sie beheizt ist <b>und</b> dieser Sollwert endlich ist — „aus" (NaN) heißt Regel der
+        /// unbeheizten Zone (Stufe KP1b, G1; Konzept 3.6, N1.56 Festlegung 7). Ohne Nebenwirkung:
+        /// Den Hinweis gibt <see cref="StartwerteBilden"/> einmal.
+        /// </summary>
+        private bool MitStartsollwert(int z)
+        {
+            if (!_zonen[z].IstBeheizt) return false;
+            double soll = _zonen[z].Eingang.ThetaSoll[8760 - Vdi6007Rechenweg.VORLAUF_H];
+            return !double.IsNaN(soll) && !double.IsInfinity(soll);
         }
 
         /// <summary>Die Teilgruppen über Trennflächen der Außengruppe und Luftströme (Union-Find), deterministisch geordnet.</summary>

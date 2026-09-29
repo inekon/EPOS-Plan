@@ -177,6 +177,24 @@ namespace WindowsFormsApplication1
         internal int StundenOhneHeizungH { get; private set; }
 
         /// <summary>
+        /// <b>Gilt ein Kühlkalender?</b> (Stufe KP1b) Dann steht in <see cref="ThetaMax"/> seine
+        /// Reihe statt der Konstante, die Schwelle der Sommerlüftung folgt ihr je Stunde
+        /// (Konzept 3.6), und die konstante Kühlprüfung entfällt zugunsten der stündlichen (G6).
+        /// </summary>
+        internal bool KuehlkalenderWirksam { get; private set; }
+
+        /// <summary>
+        /// <b>Die Stunden mit wirksamem Kühl-Nachtwert</b> (R14): wie oft die Reihe des
+        /// Kühlkalenders den Nachtwert der Bestandsspalte <c>Kuehl_Sollwert_Nacht</c> führt. 0 ohne
+        /// Kühlkalender, ohne gesetzten Nachtwert und wo er dem Tagwert gleicht. Der Lauf nennt die
+        /// Zahl als Hinweis — ohne Kalender wirkt die Spalte nicht, mit ihm wirkt sie erstmals.
+        /// </summary>
+        internal int KuehlNachtwertStundenH { get; private set; }
+
+        /// <summary>Der wirksam gewordene Kühl-Nachtwert [°C] (R14); NaN ohne ihn.</summary>
+        internal double KuehlNachtwertC { get; private set; } = double.NaN;
+
+        /// <summary>
         /// Die Nachtzeit des Gebäudes (Entscheid E43): <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>, beide
         /// leer = <see cref="Nachtzeit.Vorgabe"/> (22 bis 6 Uhr, der Fahrplan nach E8). Sie trennt im
         /// Sollwertfahrplan Tag- und Nachtsollwert und bestimmt die Nutzungszeit der Kennzahlen.
@@ -980,7 +998,12 @@ namespace WindowsFormsApplication1
             // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
             // frei, und die Raumluft darf über θ_max steigen (Entscheid E32).
-            e.KuehlungAufloesen(gebaeude, kuehlbetrieb);
+            // Stufe KP1b (G6): Steht ein Kuehlkalender bereit, tritt seine stuendliche Pruefung an
+            // die Stelle der konstanten (F17) - die konstante lehnte sonst einen gueltigen Kalender
+            // ab. Die Reihe selbst ist rein (Konditionierungssatz.Reihe), sie darf vorgezogen
+            // werden; ohne Konditionierung ist sie null und jede Zeile bleibt woertlich.
+            double[] kuehlkalenderReihe = konditionierung?.Reihe(Konditionierungsgroesse.Kuehlsoll);
+            e.KuehlungAufloesen(gebaeude, kuehlbetrieb, kuehlkalenderReihe != null);
             if (!e.IstBeheizt) e.FreiSchwingend();
             e.ThetaMax = new double[8760];
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
@@ -988,13 +1011,13 @@ namespace WindowsFormsApplication1
             // Konstante; "aus" ist +unendlich - die Zone schwingt dort nach oben frei (E32). Die
             // stuendliche Pruefung theta_K(h) >= theta_H(h) + 1 K tritt dann an die Stelle der
             // Pruefung gegen den hoechsten Sollwert (F17).
-            double[] kuehlReihe = e.KuehlungWirksam
-                ? konditionierung?.Reihe(Konditionierungsgroesse.Kuehlsoll)
-                : null;
+            double[] kuehlReihe = e.KuehlungWirksam ? kuehlkalenderReihe : null;
             if (kuehlReihe != null)
             {
                 e.ThetaMax = kuehlReihe;
+                e.KuehlkalenderWirksam = true;
                 e.KuehlpruefungStuendlich();
+                e.KuehlNachtwertAufloesen(gebaeude);
             }
 
             if (e.KopplungWirksam)
@@ -1712,8 +1735,15 @@ namespace WindowsFormsApplication1
         /// sie gelten —, und eine gesetzte Kühlleistungsgrenze muss größer null sein. Ohne
         /// wirksame Kühlung ist die obere Grenze +∞ (Entscheid E32): Der Löser kühlt nicht, das
         /// Gebäude läuft frei, und es entsteht keine Kühlreihe.
+        ///
+        /// <para><b>Mit Kühlkalender entfällt die konstante Prüfung</b> (Stufe KP1b, G6): Dann tritt
+        /// <see cref="KuehlpruefungStuendlich"/> an ihre Stelle (F17, Konzept 3.6) — die konstante
+        /// Prüfung gegen den höchsten Heizsollwert des ganzen Fahrplans lehnte sonst einen gültigen
+        /// Kalender ab, dessen Kühlsollwert nur in anderen Stunden tiefer liegt als jener Höchstwert.
+        /// Die Leistungsgrenze bleibt in jedem Fall geprüft.</para>
         /// </summary>
-        private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb)
+        /// <param name="kuehlkalender">Gilt ein Kühlkalender? Dann prüft nur die stündliche Regel.</param>
+        private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb, bool kuehlkalender)
         {
             KuehlungWirksam = kuehlbetrieb && g.Kuehlung_Aktiv && g.Kuehl_Sollwert.HasValue;
             if (!KuehlungWirksam)
@@ -1728,7 +1758,8 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < ThetaSoll.Length; h++)
                 if (Endlich(ThetaSoll[h]) && ThetaSoll[h] > heizMax) heizMax = ThetaSoll[h];
 
-            if (!Endlich(soll) || (Endlich(heizMax) && !(soll >= heizMax + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)))
+            if (!kuehlkalender
+                && (!Endlich(soll) || (Endlich(heizMax) && !(soll >= heizMax + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K))))
                 Fehler(GebaeudeModellFehler.KuehlsollwertUnterHeizsollwert,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT,
                                   Text(soll), Text(heizMax), Text(GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)));
@@ -1831,13 +1862,52 @@ namespace WindowsFormsApplication1
         /// <c>LueftungZusatzleitwertWK == null</c> gibt genau
         /// <c>sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0</c> zurück, ohne Maximum und ohne
         /// Vergleich — der Referenzlauf bleibt byte-gleich.
+        ///
+        /// <para>Auch die Zulufttemperatur gekoppelter Zonen nimmt diesen Wert
+        /// (<see cref="ZonenEingang.ThetaLue"/>, Stufe KP1b, G3): Der Löser rechnet
+        /// (g_ext + Z)·θ_Lue, Zähler und Nenner müssen also denselben Zusatzleitwert tragen, sonst
+        /// käme der Kalenderüberschuss mit Mischluft statt mit Außenluft herein.</para>
         /// </summary>
-        private double ZusatzleitwertWK(int h, bool sommerlueftung)
+        internal double ZusatzleitwertWK(int h, bool sommerlueftung)
         {
             double sommer = sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0;
             if (LueftungZusatzleitwertWK == null) return sommer;
             double kalender = LueftungZusatzleitwertWK[h];
             return kalender > sommer ? kalender : sommer;
+        }
+
+        /// <summary>
+        /// <b>Der Startwert einer unbeheizten Zone</b> [°C] (N1.56 Festlegung 7, Konzept 3.6): das
+        /// Mittel der äquivalenten Außentemperatur θ_eq über die Vorlaufstunden ab
+        /// <paramref name="start"/>. Er gilt auch einer beheizten Zone, deren Heizsollwert in der
+        /// ersten Vorlaufstunde „aus" (NaN) ist — ein NaN als Startzustand wäre ein Abbruch.
+        /// </summary>
+        internal double StartwertUnbeheiztC(int start)
+        {
+            double summe = 0.0;
+            for (int h = start; h < 8760; h++) summe += ThetaEq[h];
+            return summe / (8760 - start);
+        }
+
+        /// <summary>
+        /// <b>Der Kühl-Nachtwert, den erst der Kalender wirksam macht</b> (R14): Ohne
+        /// Konditionierungszeile rechnet der Bestandszweig mit der Konstante
+        /// <c>Kuehl_Sollwert</c>, und <c>Kuehl_Sollwert_Nacht</c> bleibt wirkungslos; mit
+        /// abgeleitetem Kühlkalender trägt die Reihe den Nachtwert. Gezählt werden die Stunden, in
+        /// denen die Reihe genau ihn führt — nur wenn er gesetzt ist und vom Tagwert abweicht.
+        /// </summary>
+        private void KuehlNachtwertAufloesen(ProjektGebaeudeModel g)
+        {
+            double? nacht = g.Kuehl_Sollwert_Nacht;
+            if (!nacht.HasValue || !Endlich(nacht.Value)) return;
+            double wert = nacht.Value;
+            if (!g.Kuehl_Sollwert.HasValue || wert == g.Kuehl_Sollwert.Value) return;
+            int n = 0;
+            for (int h = 0; h < ThetaMax.Length; h++)
+                if (ThetaMax[h] == wert) n++;
+            if (n == 0) return;
+            KuehlNachtwertStundenH = n;
+            KuehlNachtwertC = wert;
         }
 
         /// <summary>
