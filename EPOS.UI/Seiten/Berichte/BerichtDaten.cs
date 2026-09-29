@@ -388,6 +388,13 @@ public sealed record Vorlagenstand
     public Pruefstand? ExcelPruefzeile { get; init; }
 
     /// <summary>
+    /// BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt — dieselbe Form wie
+    /// <see cref="Kapitelstand"/>, gemessen an Blattmarken und Blattanhang der Mappe; <c>null</c> = jeder
+    /// Eintrag frei (ohne Excel-Vorlage, nicht lesbar oder ohne Platzhalter).
+    /// </summary>
+    public Kapitelstand? ExcelBlattstand { get; init; }
+
+    /// <summary>
     /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
     /// dieselben Rückrufe wie das Menü der Word-Vorlage.
     /// </summary>
