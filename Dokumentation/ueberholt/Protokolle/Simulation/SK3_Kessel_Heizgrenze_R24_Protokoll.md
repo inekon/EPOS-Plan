@@ -131,7 +131,7 @@ Siehe „Nach #568“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS
 1. Ein Windows-Lauf gegen R24 zeigt bei 1008, 1023 und 1042 FAIL. Die Schwelle, die am letzten Bit
    kippt, ist zu finden und robust zu machen — eigener Auftrag (Rechenweg, neue Basis).
 2. ~~Kollision mit KP1b der Gebäudesimulation~~ gelöst beim Zusammenführen
-   ([`2026-09-27_Entwurf_KP1b.md`](../../../aktuell/Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md)):
+   ([`Entwurf_KP1b_Konditionierungsprofile.md`](../../Entwurf_KP1b_Konditionierungsprofile.md)):
    KP1b ist Schritt 152, die Bezugsart Zimmer 153, die Heizgrenze 154.
 3. [`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../../aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md)
    (#569, zurückgestellt) plant noch mit „Neueinfrierung R23“ und Schritt 151 — bei Wiederaufnahme

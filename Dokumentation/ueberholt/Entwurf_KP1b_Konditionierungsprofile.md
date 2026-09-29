@@ -1,9 +1,12 @@
 # Entwurf KP1b — zweite Hälfte der Stufe KP1 (Konditionierungsprofile)
 
-**Stand 27.09.2026 · vorgelegt, Umsetzung auf Auftrag.** Grundlage: [Teilkonzept](../Konzept_Konditionierungsprofile_EPOS-Plan.md)
-Rev. 3 mit E54, Leitkonzept [N1.61 und N1.62](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Protokoll
-[KP1a](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-27_KP1_Konditionierungskalender.md) Abschnitt 6,
-[Übergabe](2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md) Abschnitt 2.1.
+> **Umgesetzt am 29.09.2026** (Statuszeile #596): [Protokoll](Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
+> Festlegungen der Umsetzung im Leitkonzept N1.63. Dieses Papier ist Geschichte, nicht Regelquelle.
+
+**Stand 27.09.2026 · vorgelegt, Umsetzung auf Auftrag.** Grundlage: [Teilkonzept](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md)
+Rev. 3 mit E54, Leitkonzept [N1.61 und N1.62](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Protokoll
+[KP1a](Protokolle/Gebaeudesimulation/2026-09-27_KP1_Konditionierungskalender.md) Abschnitt 6,
+[Übergabe](../aktuell/Gebaeudesimulation/2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md) Abschnitt 2.1.
 
 **Verfahren** (Regel „Entwurf vor Bau"): zwei Leser (Code-Bestand zu Schema und Kopierwegen, zu Rechenweg und Hinweisen),
 zwei unabhängige Entwürfe — A „Datenmodell und Kopierwege zuerst", B „Rechenweg und Risiko zuerst" —, eine

@@ -16,11 +16,14 @@
 > **Fortgeschrieben am 27.09.2026 mit E54** (Leitkonzept N1.62, 9.4): „Als Vorlage speichern" nimmt weder Nennwert
 > noch Saison mit — eine Vorlage trägt nur die Nutzungszeilen ihrer Spalte (3.5, 5.7) —, und KP3 bringt die
 > Nachtauskühl- und die Sommerlüftungsstunden in Bericht, Export, KI-Sicht und Variantenvergleich (3.7, 8). Der Entwurf
-> der zweiten Hälfte von KP1 steht unter [`Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md`](Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md).
+> der zweiten Hälfte von KP1 steht unter [`ueberholt/Entwurf_KP1b_Konditionierungsprofile.md`](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md).
 
-**Stand:** 27.09.2026. **Fassung:** Rev. 3 mit E54 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode entschieden
-(E53), zwei Fragen des KP1b-Entwurfs entschieden (E54); KP0 und die erste Hälfte von KP1 sind umgesetzt, die übrigen
-Stufen folgen auf Auftrag.
+> **Fortgeschrieben am 29.09.2026:** KP1 ist abgeschlossen — die zweite Hälfte (KP1b) steht im
+> [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md), ihre Festlegungen im Leitkonzept N1.63;
+> Schemaschritt 152 (`KP-S1v`) trägt 5.7 samt Fremdschlüssel `ID_Vorlage`, Teilindizes und `Nachtauskuehlstunden_H` (5.4).
+
+**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode entschieden
+(E53), zwei Fragen des KP1b-Entwurfs entschieden (E54); KP0 und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
 Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
@@ -762,7 +765,9 @@ OR …)`. Modus und Abzug stehen getrennt, damit NULL nicht zugleich „Variante
 
 ### 5.4 Die Schemaschritte
 
-**KP-S1** die Tabellen aus 5.1, 5.6 und 5.7 samt Indizes und `Nachtauskuehlstunden_H` (KP1), **KP-S1b** die Saat der
+**KP-S1** die Tabellen aus 5.1, 5.6 und 5.7 samt Indizes und `Nachtauskuehlstunden_H` (KP1) — gebaut als Schritte 151
+(`KP-S1`: 5.1 und 5.6) und 152 (`KP-S1v`: 5.7, Fremdschlüssel `ID_Vorlage` per Tabellenneubau, acht Teilindizes,
+`Nachtauskuehlstunden_H`), **KP-S1b** die Saat der
 14 ausgelieferten Vorlagen (KP2, Muster Schritt 149: legt nur an, was unter Größe und Namen fehlt, überschreibt nie),
 **KP-S2** die Projektspalten und **KP-S3** die Ergebnisspalten der Aufheizoptimierung (beide KP3). Die Nummern vergibt
 die Beauftragung aus `SchemaStand.Zielversion` + 1 — bei Abfassung **ab 151** (Zielversion 150) — und prüft sie **spät
@@ -1098,7 +1103,7 @@ Hintergrund und alle Optionen stehen im [Register](Offene_Entscheide_Gebaeudesim
 
 ### 9.4 Entscheide des Anwenders (E54, 27.09.2026)
 
-Zwei Fragen aus der Synthese des [KP1b-Entwurfs](Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md) (Abschnitt 5), per Auswahl entschieden. Der
+Zwei Fragen aus der Synthese des [KP1b-Entwurfs](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md) (Abschnitt 5), per Auswahl entschieden. Der
 Entscheid steht als Nachtrag N1.62 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md); im Register
 standen beide Fragen nicht.
 
