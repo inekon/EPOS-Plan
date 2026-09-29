@@ -110,9 +110,13 @@ der Szenarioabdeckung als Stromträger mit Leistungspreis zählte.
 
 ## Gate
 
-offen (Orchestrierung).
+Gate #611 auf `929343598` (Windows, Worktree `p556`, 29.09.2026 23:06–23:19): Kern-Filter Release 0 Fehler; ChartProben 185
+Bilder, alle grün und gleich der Windows-Messlatte; Tests 16 988 grün, 2 übersprungen, 0 rot (Kern 9 102, UI 6 924, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf der sieben CI-Projekte gegen
+`2026-09-29_R26_Kesselrest`: 7/7 PASS, 2 497 873 Werte; Windows-Schale 0 Fehler (Agent, Auftrag D).
 
 ## Commit
 
-Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55`; Abnahme und Nummer #611 in den folgenden Papiercommits; Push offen
-(Orchestrierung).
+Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55` mit #609 (vier Konflikte beidseitig zusammengeführt), Papiere und
+Abnahme `be47eb309`, Merge `929343598` mit origin `6a4b4ded`, Nummer `d89f80b2b`; Statuszeile #611 und dieses Gate-Feld im
+Papier-Commit der Orchestrierung (Zweig `p556`, Push auf `ios_migration_september`).
