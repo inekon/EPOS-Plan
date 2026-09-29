@@ -138,7 +138,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
 - Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“. (#579)
 - Projektpakete eines älteren Programmstands werden beim Import auf den aktuellen Stand gehoben; abgelehnt wird nur noch ein Paket eines neueren Programmstands. (#580)
-- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an einem Heiztag oder bis 24 Stunden nach dem letzten Lauf. (#568)
+- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an Tagen unter der je Projekt einstellbaren Heizgrenze (Vorgabe 15 °C Tagesmittel) oder bis 24 Stunden nach dem letzten Lauf. (#568, #595)
 - Ein Elektrokessel führt keine eigene Kesselemission mehr; sein Strom bleibt allein im Netzbezug. (#568)
 - Der Kessel-Reiter zeigt Restwärmebedarf und den Anteil aus dem Puffer, Betriebsstunden, Starts und Bereitschaftsverlust je Kessel sowie das Kesselbild als Flächenstapel. (#568)
 - Der Gebäudedialog zeigt unter den Raumtemperaturen einen Satz zum geltenden Fahrplan; Wochenend- und Feriensollwert gelten als eine absolute, ganztägige Solltemperatur, 0 heißt keine Absenkung. (#571)
