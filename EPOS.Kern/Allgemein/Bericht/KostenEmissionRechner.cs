@@ -41,6 +41,10 @@ namespace WindowsFormsApplication1
     ///    auf dem Stand eines Berichts mit Vergleichsgruppe)
     ///    <see cref="VariantenDaten.StromImVergleichBepreisen"/> — dann wird der
     ///    Netzbezug bepreist und bewertet, ohne Zuordnung mit dem Auslieferungsträger.
+    ///    Bepreist wird er mit Arbeits- und Grundpreis; den LEISTUNGSPREIS setzt ein Stand
+    ///    ohne stromverwendenden Erzeuger nicht an — er ist dort eine Größe der
+    ///    Lastoptimierung und wird benannt (Anwenderentscheid 29.09.2026, Register EZ‑17;
+    ///    <see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>).
     ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
     ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
     ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
@@ -266,6 +270,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Leistungspreis der Gruppenregel</b> (Anwenderentscheid 29.09.2026, Register
+        /// EZ‑17): Bepreist der Vergleich den Netzbezug eines Standes ohne stromverwendenden
+        /// Erzeuger (<see cref="VariantenDaten.StromImVergleichBepreisen"/>), setzt er Arbeits-
+        /// und Grundpreis an, den Leistungspreis des Trägers nicht — bei einem solchen Stand ist
+        /// er eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn dieser Hinweis.
+        /// {0} = der Leistungspreis (<see cref="LeistungspreisSatz"/>), {1} = der Stromträger.
+        /// </summary>
+        internal static string HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT
+        {
+            get
+            {
+                return T("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT",
+                    "Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt " +
+                    "keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe " +
+                    "der Lastoptimierung.");
+            }
+        }
+
+        /// <summary>
         /// MyResource mit deutschem Rückfall (Drei-Schichten-Regel) — dasselbe Muster
         /// wie <c>WirtschaftlichkeitCtrl.T</c> und <c>KohaerenzPruefung.T</c>. Der
         /// Rückfall greift auf einer Ressourcendatei ohne den Schlüssel.
@@ -317,6 +340,7 @@ namespace WindowsFormsApplication1
                 v.StromGruppenregelMWh = null;
                 v.BezugsspitzeKW = null;
                 v.LeistungspreisOhneSpitze = null;
+                v.LeistungspreisNichtAngesetzt = null;
                 KaeltestromZuruecksetzen(v);
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
@@ -333,6 +357,7 @@ namespace WindowsFormsApplication1
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
+            v.LeistungspreisNichtAngesetzt = null;   // EZ‑17 (nur im Vergleich gesetzt)
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
 
             // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
@@ -595,7 +620,9 @@ namespace WindowsFormsApplication1
             // Berichtslauf auf dem Stand eines Berichts mit Vergleichsgruppe
             // (BerichtsDatenSammler.StromGruppenregelAnwenden).
             // Dann wird der Netzbezug bepreist und bewertet wie bei jedem Stand mit
-            // Stromverwendung; v.StromGruppenregelMWh trägt die Menge für den Hinweis.
+            // Stromverwendung — bepreist mit Arbeits- und Grundpreis, OHNE Leistungspreis
+            // (Anwenderentscheid 29.09.2026, EZ‑17; Regel unten beim Netzbezug);
+            // v.StromGruppenregelMWh trägt die Menge für den Hinweis.
             // Die Einzelbetrachtung setzt das Feld nie — dort gilt die Regel je Stand.
             bool ohneVerwendungImStand =
                 ProjektEnergietraegerCtrl.StromOhneVerwendung(v.IdProjekt, netzbezugMWh);
@@ -660,7 +687,25 @@ namespace WindowsFormsApplication1
                 // Szenario-Strompreis nicht wirkt (E9a‑Q7).
                 TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten, szenario);
                 v.SzenarioStrompreisGepflegt = preistraeger.SzenarioGepflegt;
-                if (preistraeger.LeistungSzenarioGepflegt &&
+
+                // ---- DER LEISTUNGSPREIS NUR BEI STROMVERWENDUNG (Anwenderentscheid
+                // 29.09.2026, Register EZ‑17) ----
+                //
+                // „Der Leistungspreis bei Netzbezug eines Standes ohne stromverwendenden
+                // Erzeuger ist nur für die Lastoptimierung relevant. Der Leistungspreis wird
+                // ansonsten nur für stromverwendende Erzeuger verwendet, sofern angegeben."
+                //
+                // Die Gruppenregel setzt StromImVergleichBepreisen nur an Ständen OHNE
+                // stromverwendenden Erzeuger (WirtschaftlichkeitCtrl.StromGruppenregel). Ihr
+                // Netzbezug trägt Arbeits- und Grundpreis des Trägers — gleich, ob er
+                // zugeordnet ist oder der Auslieferungsträger einspringt —, den Leistungspreis
+                // (Staffel, Saisonreihe, Satz) nicht. Führt der Träger einen, wird er benannt
+                // (v.LeistungspreisNichtAngesetzt) statt still zu entfallen. Die Lastoptimierung
+                // (Speicherauslegung) liest ihn weiter; Stände mit Stromverwendung rechnen
+                // unverändert. Ein Szenario-Leistungspreis bleibt dann ebenfalls ohne Wirkung —
+                // aus diesem Grund, nicht wegen Staffel oder Saisonreihe.
+                bool leistungspreisAusgesetzt = v.StromImVergleichBepreisen;
+                if (!leistungspreisAusgesetzt && preistraeger.LeistungSzenarioGepflegt &&
                     (preistraeger.Staffel.Gepflegt || preistraeger.ReiheJeKW != null))
                     SzenarioLeistungOhneWirkung(v, stromCarrierKosten);
                 stromPreisTraeger = TraegerName(stromCarrierKosten);
@@ -712,19 +757,27 @@ namespace WindowsFormsApplication1
                     //
                     // E35: Dieselbe Regel bepreist die eigene Spitze eines Kältestromzählers
                     // (LeistungsanteilStrom, unten beim Kältestrom) — eine Regel, zwei Spitzen.
+                    //
+                    // EZ‑17: Ein Stand ohne stromverwendenden Erzeuger setzt den Leistungspreis
+                    // nicht an (leistungspreisAusgesetzt, oben) — auch nicht bei bekannter Spitze.
                     if (LeistungspreisStrom(preistraeger))
                     {
-                        Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
-                        if (spitze != null && spitze.JahrKW > 0)
-                        {
-                            double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
-
-                            stromKosten += anteilStrom;
-                            leistungsAnteil += anteilStrom;
-                            leistungGepflegt = true;
-                        }
+                        if (leistungspreisAusgesetzt)
+                            LeistungspreisNichtAngesetztVermerken(v, stromCarrierKosten, preistraeger);
                         else
-                            LeistungspreisOhneSpitzeVermerken(v, stromCarrierKosten);
+                        {
+                            Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
+                            if (spitze != null && spitze.JahrKW > 0)
+                            {
+                                double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
+
+                                stromKosten += anteilStrom;
+                                leistungsAnteil += anteilStrom;
+                                leistungGepflegt = true;
+                            }
+                            else
+                                LeistungspreisOhneSpitzeVermerken(v, stromCarrierKosten);
+                        }
                     }
 
                     // Der Vermerk steht NUR, wenn der Rückfall auch wirklich einen
@@ -1077,6 +1130,55 @@ namespace WindowsFormsApplication1
             foreach (string vorhanden in v.LeistungspreisOhneSpitze.Split(new[] { ", " }, StringSplitOptions.None))
                 if (string.Equals(vorhanden, name, StringComparison.Ordinal)) return;
             v.LeistungspreisOhneSpitze += ", " + name;
+        }
+
+        /// <summary>
+        /// Anwenderentscheid 29.09.2026 (Register EZ‑17) — vermerkt den Leistungspreis des
+        /// Stromträgers, den die Gruppenregel an einem Stand ohne stromverwendenden Erzeuger NICHT
+        /// ansetzt (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>): der Hinweis mit
+        /// Satz und Träger, in der Sprache des Laufs wie die übrigen Hinweise. Dasselbe Muster wie
+        /// <see cref="LeistungspreisOhneSpitzeVermerken"/> — benannt statt still. Es gibt je Stand
+        /// genau einen Stromträger des Netzbezugs, der Vermerk steht also einmal.
+        /// </summary>
+        private static void LeistungspreisNichtAngesetztVermerken(VariantenDaten v, int carrierId, TraegerInfo t)
+        {
+            string name = TraegerName(carrierId);
+            if (string.IsNullOrEmpty(name)) name = "?";
+            v.LeistungspreisNichtAngesetzt = string.Format(BerichtTexte.Kultur,
+                HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, LeistungspreisSatz(t), name);
+        }
+
+        /// <summary>
+        /// Der Leistungspreis eines Stromträgers als Text, in der Rangfolge der Rechnung
+        /// (<see cref="LeistungsanteilStrom"/>): die Staffel vor der Saisonreihe (Summe der zwölf
+        /// Monatssätze) vor dem Satz je Monat oder je Jahr. Nur für einen Träger mit
+        /// <see cref="LeistungspreisStrom"/>. Zahlen in der Kultur des Berichts.
+        /// </summary>
+        private static string LeistungspreisSatz(TraegerInfo t)
+        {
+            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
+            if (t.Staffel.Gepflegt)
+            {
+                double grenze = Math.Max(0.0, t.Staffel.GrenzeKW ?? 0.0);
+                double preis2 = t.Staffel.Preis2EurKWa ?? 0.0;
+                // Eine Grenze ≤ 0 heißt „alles zum Preis der zweiten Stufe" (LeistungspreisStaffel).
+                if (grenze <= 0.0) return preis2.ToString("N2", k) + " €/(kW·a)";
+                return string.Format(k, T("WIRT_LP_SATZ_STAFFEL",
+                        "{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)"),
+                    (t.Staffel.Preis1EurKWa ?? 0.0).ToString("N2", k),
+                    grenze.ToString("#,##0.#", k), preis2.ToString("N2", k));
+            }
+            if (t.ReiheJeKW != null)
+            {
+                double summe = 0.0;
+                foreach (double satz in t.ReiheJeKW) summe += satz;
+                return string.Format(k, T("WIRT_LP_SATZ_SAISON", "{0} €/(kW·a) aus zwölf Monatssätzen"),
+                    summe.ToString("N2", k));
+            }
+            double wert = t.PreisLeistung ?? 0.0;
+            if (string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return string.Format(k, T("WIRT_LP_SATZ_MONAT", "{0} €/(kW·Monat)"), wert.ToString("N2", k));
+            return wert.ToString("N2", k) + " €/(kW·a)";
         }
 
         private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,

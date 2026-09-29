@@ -675,6 +675,12 @@ namespace WindowsFormsApplication1
         /// Leistungspreis ohne Bezugsspitze), meldet der Schritt wie der Sammler; was schon gemeldet
         /// war, nicht ein zweites Mal. Den Hinweis zur Gruppenregel selbst trägt die
         /// Wirtschaftlichkeit in die Hinweise des Laufs, das Kostenkapitel unter seine Tafel.</para>
+        ///
+        /// <para>Den Leistungspreis des Trägers setzt die Regel nicht an (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17): Führt der Träger einen, meldet der Schritt ihn als
+        /// HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>) — an derselben
+        /// Stelle wie den Leistungspreis ohne Bezugsspitze, im selben Wortlaut wie die
+        /// Hinweiszeile der Wirtschaftlichkeit.</para>
         /// </summary>
         internal static void StromGruppenregelAnwenden(BerichtsDaten daten)
         {
@@ -702,6 +708,9 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) &&
                     !string.Equals(v.LeistungspreisOhneSpitze, leistungspreisVorher, StringComparison.Ordinal))
                     daten.Melde(v, Berichtshinweisstufe.Warnung, TextLeistungspreisOhneSpitze(v));
+                // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der Satz.
+                if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, v.LeistungspreisNichtAngesetzt);
             }
         }
 
