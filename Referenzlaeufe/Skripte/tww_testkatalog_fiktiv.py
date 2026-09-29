@@ -128,6 +128,7 @@ freien Paketteils neu und laeuft dann normal weiter)
 import csv
 import io
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -241,7 +242,10 @@ MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", 
 
 def normiert(werte, ziel):
     """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12)."""
-    s = sum(werte)
+    # math.fsum, nicht sum(): die korrekt gerundete Summe ist auf jeder Python-Fassung dieselbe.
+    # sum() kompensiert erst ab 3.12 (Neumaier) und rechnet unter 3.11 in der letzten Stelle
+    # anders - dann wichen die erzeugten Traegerdateien vom Paketteil im Arbeitsbaum ab.
+    s = math.fsum(werte)
     return [w * ziel / s for w in werte]
 
 
