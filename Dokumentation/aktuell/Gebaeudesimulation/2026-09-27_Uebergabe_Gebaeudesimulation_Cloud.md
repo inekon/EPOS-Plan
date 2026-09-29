@@ -43,6 +43,9 @@ Vorgängerübergaben bleiben gültig:
 - **Nachtrag der Cloud-Sitzung (29.09.2026):** KP1b umgesetzt (#596, N1.63); E55 entschieden (N1.64): Auslegung und F21
   bleiben an der Nachtzeit (N1.63 Nr. 12 bestätigt). Nächste Nummern damit: Schemaschritt **155**, Entscheid **E56**,
   Nachtrag **N1.65**, Statuszeile die nächste freie nach **#601** — vor jeder Vergabe gegen `origin` messen.
+- **Nachtrag der Cloud-Sitzung (29.09.2026, Entwurf KP2):** E56 entschieden (N1.65). Nächste Nummern: Schemaschritt
+  **156** (geplant für die Saat KP-S1b; 155 hat #608 belegt), Entscheid **E57**, Nachtrag **N1.66** (geplant für die
+  Festlegungen von KP2), Statuszeile die nächste freie nach **#608** — vor jeder Vergabe gegen `origin` messen.
 
 ## 2 Was aussteht
 
@@ -50,7 +53,8 @@ Vorgängerübergaben bleiben gültig:
 
 **Erledigt am 29.09.2026** (Statuszeile #596, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
 N1.63). Nächste Stufe ist **KP2** (Oberfläche, Saat der 14 Vorlagen; erste Kernwelle gbXML `SollHeizenC`, Ferien des
-Zapfprofils, „Zeitstruktur übernehmen"), auf Auftrag.
+Zapfprofils, „Zeitstruktur übernehmen"), auf Auftrag. Der [Entwurf KP2](2026-09-29_Entwurf_KP2.md) liegt vor, E56 ist
+entschieden (N1.65).
 
 Wortlaut und Umfang im KP1-Protokoll, Abschnitt 6: Vorlagentabelle `Tab_Konditionierungsvorlage_STAMM`
 samt Perioden und Wochen und Fremdschlüssel `ID_Vorlage` (Schemaschritt, Saat der vierzehn Vorlagen erst
