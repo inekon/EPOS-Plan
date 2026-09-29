@@ -4579,7 +4579,7 @@ kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigene
 Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
 Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).
 
-### N36 (29.09.2026) — Welle #592–#593: Bezugsart Zimmer, FREI-1, Füllstandslinie am Wochenbild
+### N36 (29.09.2026) — Welle #593–#594: Bezugsart Zimmer, FREI-1, Füllstandslinie am Wochenbild
 
 **Wortlaut** (Anwender, 27.09.2026): „Setze Teil A um“ und „Setze Teil D um“ — Teil A: Struktur des
 Zapfprofil-Wegs nach N35, Umgang mit der Import-Dublette FREI-1 (N34 (d)), Weg 3 „eigene Bezugsart
@@ -4593,7 +4593,7 @@ Hausregel „Blatt statt Überlagerung“). Eine zweite, parallel entstandene Fa
 verworfen; ihre Browserprobe und ihre Abweichungen stehen im Bericht an die Orchestrierung, nicht im
 Bestand.
 
-**(b) Bezugsart Zimmer (#592, Weg 3).** `ZapfBezugsart.Zimmer = 8`; die Nutzungsart „Hotel (aus Messung,
+**(b) Bezugsart Zimmer (#593, Weg 3).** `ZapfBezugsart.Zimmer = 8`; die Nutzungsart „Hotel (aus Messung,
 je Zimmer)“ trägt sie, ihr Name bleibt. Zimmer verhält sich überall wie Betten, wo Betten eine
 Sonderrolle hat; Zimmer und Betten werden nie summiert. Die Namensregel `BezugsmengeIstZimmerzahl`, der
 Hinweissatz aus N34 (c) und der DTO-Kanal `HinweisBezugsmenge` entfallen; die Einheit „Zimmer“ am Feld
@@ -4601,7 +4601,7 @@ der Bezugsmenge trägt die Aussage. Schemaschritt **153** (`TwwBezugsartSchema.S
 `Tab_TwwNutzungsart_STAMM` und `Tab_TwwBedarfstag_STAMM` mit der Prüfklausel 1..8 neu (Grundschema =
 Schritt), Eintrag in `Paketanhebung.STUFEN`.
 
-**(c) FREI-1 (#592, N34 (d)) — Umbenennen am Platz, eine Regel.** Entscheid der Orchestrierung mit dem
+**(c) FREI-1 (#593, N34 (d)) — Umbenennen am Platz, eine Regel.** Entscheid der Orchestrierung mit dem
 Auftrag: keine neue Katalogversion, sondern die Regel `PaketteilNachfuehrung` (Allgemein/Update) für
 frühere Stände der ausgelieferten Paketzeilen. Befund: Der Paketteil führt keine eigene Katalogversion,
 `FREI-1` ist die Provenienz (`Bedarf_Version`); die Regel greift nur bei Status `AUSLIEFERUNG`,
@@ -4610,7 +4610,7 @@ wirkt im Schemaschritt (gespeicherte Zeile, dieselbe ID), im Katalogimport und i
 Dublettenscan (Berichtszeile in beiden Sprachen), in der Auslieferungsvorlage und im Validierungswerkzeug;
 das Saatskript spiegelt sie. Eine Anwenderzeile gleichen Namens bleibt unberührt.
 
-**(d) Füllstandslinie (#593, Übergabe 2.4).** Die Aussage der Übergabe galt dem Mockup; in der App war
+**(d) Füllstandslinie (#594, Übergabe 2.4).** Die Aussage der Übergabe galt dem Mockup; in der App war
 der Bezug des Füllstands seit Z4 wählbar (N13 (o)), stand aber bei den Eingaben des Verfahrensvergleichs
 und nannte keine Liter. Die Wahl steht jetzt als „Speichergröße der Füllstandslinie“ unmittelbar über dem
 Wochenbild — **N13 (o) gilt mit diesem Ort** —, jeder Eintrag nennt sein Volumen, ein nicht bestimmbarer
@@ -4618,7 +4618,7 @@ Eintrag steht gesperrt mit Grund. Der Kern trägt nur neue Ergebnisfelder; kein 
 Schemaschritt. Die Volumina der einzelnen Verfahren (DIN 4708, Gleichzeitigkeit, klassisch) stehen nicht
 zur Wahl — das bräuchte einen Schemaschritt an `Tab_TwwProjekt.Fuellstand_Bezug`.
 
-**(e) Zählung des Brauchwasserkatalogs (#593, Übergabe 2.4).** Die Testdatenbank führt die 11
+**(e) Zählung des Brauchwasserkatalogs (#594, Übergabe 2.4).** Die Testdatenbank führt die 11
 Wochenprofile und 13 Monatssätze des KONTEXT-Papiers wertgleich, dazu ältere Testzeilen, die die Projekte
 1007, 1009 und 1046 benutzen (Abschnitt 1.2, KONTEXT-Papier Abschnitt 5). Keine Datenänderung.
 
@@ -4631,9 +4631,9 @@ erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bric
 
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
-| #592 | Windows-Abnahme: „Zimmer“ am Feld, Klappliste des Katalogeditors, Importbericht eines älteren Pakets | Anwender | nächste Abnahme |
-| #592 | Kurzlauf des Validierungswerkzeugs mit den neu konvertierten Hotelobjekten (erwartet 3 / 0 / 18) | Orchestrierung | mit dem nächsten Validierungslauf |
-| #592 | Auslieferungsvorlage aus einer Quelle auf Schemastand 153 | Orchestrierung | vor der nächsten Auslieferung |
-| #593 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
-| #593 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
+| #593 | Windows-Abnahme: „Zimmer“ am Feld, Klappliste des Katalogeditors, Importbericht eines älteren Pakets | Anwender | nächste Abnahme |
+| #593 | Kurzlauf des Validierungswerkzeugs mit den neu konvertierten Hotelobjekten (erwartet 3 / 0 / 18) | Orchestrierung | mit dem nächsten Validierungslauf |
+| #593 | Auslieferungsvorlage aus einer Quelle auf Schemastand 153 | Orchestrierung | vor der nächsten Auslieferung |
+| #594 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
+| #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
 | Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |

@@ -176,7 +176,7 @@ Bezugsart ‚Zimmer‘; die Zonenmaske nennt ‚Zimmer‘ als Einheit der Bezugs
 
 Die Stufe KP1b der Gebäudesimulation hat den Schemaschritt 152 zuerst gepusht. Der Schritt dieses
 Auftrags trägt deshalb die Nummer **153** (`TwwBezugsartSchema.SCHRITT = KonditionierungVorlagenSchema.SCHRITT
-+ 1`); die Statuszeile ist #592. Die Testdatenbank ist auf der Fassung `1a86846c…` (Schemastand 152) mit
++ 1`); die Statuszeile ist #593. Die Testdatenbank ist auf der Fassung `1a86846c…` (Schemastand 152) mit
 denselben Befehlen neu aufgesetzt: Zellvergleich allein `Tab_Applikation.SchemaVersion` 152 → 153 und
 `Tab_TwwNutzungsart_STAMM` ID 9 `Bezugsart` 3 → 8, im Schema allein die Prüfklausel beider Tabellen,
 `integrity_check` ok, `foreign_key_check` leer, zweiter Lauf ohne Änderung; neue Fassung `621cf64a…`,
