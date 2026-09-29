@@ -700,15 +700,21 @@ namespace WindowsFormsApplication1
         /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
         /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
         /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
-        /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
+        /// stand das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
         /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
         /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
         /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
+        /// Mit den KENNLINIENSPALTEN DES HEIZKESSELS (Konzept Kesselkennlinie 3.1, Etappe E1, #569)
+        /// steht das Ziel auf <see cref="KesselKennlinieSchema.SCHRITT"/>: fünf Spalten an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> (η bei 30 % Last, Schalter der
+        /// Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit), reines DDL
+        /// (<see cref="KesselKennlinieSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Spalten. Die Nummer steht allein bei <see cref="KesselKennlinieSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselHeizgrenzeSchema.SCHRITT;
+        public const int Zielversion = KesselKennlinieSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

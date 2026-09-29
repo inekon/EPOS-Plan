@@ -210,6 +210,7 @@ namespace WindowsFormsApplication1
             new Stufe(TwwBezugsartSchema.SCHRITT, Art.Import,
                       "Bezugsart Zimmer — der Import liest eine Paketzeile des Hotels in einem früheren Stand als die heutige"),
             new Stufe(154, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
+            new Stufe(155, Art.Ddl, "Kennlinienspalten des Heizkessels"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

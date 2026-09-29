@@ -4686,6 +4686,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_HEIZGRENZE = KesselHeizgrenzeSchema.SCHRITT;
 
+        // ---- Konzept Kesselkennlinie, Etappe E1 (#569): die Kennlinienspalten des Heizkessels ----
+
+        /// <summary>
+        /// Schritt <see cref="KesselKennlinieSchema.SCHRITT"/> — <b>die Kennlinienspalten des
+        /// Heizkessels</b> (Konzept Kesselkennlinie 3.1 und 3.2, Etappe E1; Anwenderentscheide
+        /// 29.09.2026). Er folgt auf <see cref="SCHRITT_KESSEL_HEIZGRENZE"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> je
+        /// fünf Spalten — <c>Wirkungsgrad_Teillast30</c>, <c>Kennlinie_Brennwert</c> (0/1,
+        /// Vorgabe 0), <c>Mindestleistung</c>, <c>Anfahrverlust_kWh</c>,
+        /// <c>Mindestlaufzeit_min</c>. Die Anweisungen stehen bei
+        /// <see cref="KesselKennlinieSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Spalten; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_KENNLINIE = KesselKennlinieSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6730,6 +6749,17 @@ namespace WindowsFormsApplication1
                         "gilt und ein stillstehender Heizkessel betriebsbereit bleibt, haette keinen Ort je " +
                         "Projekt. Die Spalte entsteht leer; leer rechnet die Vorgabe 15 Grad Celsius.",
                         Schritt_KesselHeizgrenze),
+            // KONZEPT KESSELKENNLINIE, ETAPPE E1 (#569) - die Kennlinienspalten des Heizkessels:
+            // fuenf Spalten an Katalog und Projektkopie. REIN DDL; die Quelle ist
+            // KesselKennlinieSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_KENNLINIE,
+                        "Tab_Heizkessel_STAMM und Tab_Heizkessel: Kennlinienspalten (Wirkungsgrad_Teillast30, " +
+                        "Kennlinie_Brennwert, Mindestleistung, Anfahrverlust_kWh, Mindestlaufzeit_min)",
+                        "Der Wirkungsgrad bei 30 % Last, der Schalter der Brennwertkennlinie und die Groessen " +
+                        "des Taktmodells haetten keinen Ort; der Import von VDI 3805 Blatt 3 (Satz 710.01) " +
+                        "koennte sie nicht ablegen. KEIN Rechenergebnis aendert sich - kein Rechenweg liest " +
+                        "die Spalten, sie entstehen leer bzw. mit 0.",
+                        Schritt_KesselKennlinie),
         };
 
         /// <summary>
@@ -11688,6 +11718,45 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": " + KesselHeizgrenzeSchema.TABELLE + "." + KesselHeizgrenzeSchema.SPALTE +
                     (vorher ? " stand bereits." : " angelegt (REAL, leer = Vorgabe 15 Grad Celsius).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kennlinienspalten des Heizkessels" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KESSEL_KENNLINIE"/>, die Anweisungen bei
+        /// <see cref="KesselKennlinieSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KesselKennlinieSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// beiden Kesseltabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselKennlinie(Lauf l)
+        {
+            string nr = KesselKennlinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KesselKennlinieSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in KesselKennlinieSchema.Anweisungen)
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KesselKennlinieSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kennlinienspalten an " + KesselKennlinieSchema.TAB_STAMM + " und " +
+                                  KesselKennlinieSchema.TAB_PROJEKT + " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kennlinienspalten des Heizkessels - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. 0).") +
                     " KEIN DML.");
             return true;
         }

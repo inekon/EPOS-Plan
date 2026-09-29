@@ -2185,6 +2185,24 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt KesselKennlinieSchema.SCHRITT (Konzept Kesselkennlinie, Etappe E1, #569): fuenf
+            //      Kennlinienspalten an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KesselKennlinie bedient
+            //      (KesselKennlinieSchema). Die Spalten entstehen leer bzw. mit 0 - kein Rechenweg liest sie.
+            string nrKennlinie = KesselKennlinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKennlinie + " - Kennlinienspalten des Heizkessels: " +
+                              (KesselKennlinieSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKennlinie = new List<string>();
+                angelegt += KesselKennlinieSchema.Ausfuehren(berichtKennlinie);
+                foreach (string zeile in berichtKennlinie)
+                    Console.WriteLine("Schritt " + nrKennlinie + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKennlinie + " - vollstaendig: " + KesselKennlinieSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

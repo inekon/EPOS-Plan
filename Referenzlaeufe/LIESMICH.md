@@ -542,6 +542,18 @@ die Kesselstunden von Projekt 1024. Sie ist die **einzige** Basis im Arbeitsbaum
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
+> **Nachtrag 29.09.2026 — Schemaschritt 155 (Kennlinienspalten des Heizkessels).** Konzept
+> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
+> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
+> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1),
+> reines DDL aus `KesselKennlinieSchema`. Die Testdatenbank ist mit `Werkzeuge/Testdatenbankschema` von 154
+> auf **155** gezogen (zweiter Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung
+> `SchemaVersion` 154 → 155, die neuen Spalten in 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok,
+> `foreign_key_check` leer; 71 622 656 Byte, LFS-SHA-256
+> `163baee9d74ea755df9be6473af97700f59126fa4be1bff7c2777c12fdd6e6e1`). Kein Rechenweg liest die Spalten —
+> die Basis R26 bleibt gültig. Die Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem
+> Rechenweg der Etappe E2.
+
 ### Die Vorgängerbasis R25 `2026-09-29_R25_Plattformrand`
 
 Fünfzehn Projekte, 460 CSV, 2 685 Skalare, Schemastand 154 (`2e417b36…`), auf Windows eingefroren; mit R26
