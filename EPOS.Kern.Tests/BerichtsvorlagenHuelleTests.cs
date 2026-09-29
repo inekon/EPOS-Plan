@@ -905,6 +905,129 @@ namespace EPOS.Kern.Tests
             PasstZu(typeof(EinstellungenDialog), ios);
         }
 
+        /// <summary>
+        /// <b>Die zwei Vorgaben der Installation</b> (Konzept 10.3): Die Listen sind die des
+        /// Controllers — Word mit der Standardvorlage und den eigenen, Excel mit „ohne Vorlage" und den
+        /// eigenen —, gewählt ist ohne Einstellung die Standardvorlage bzw. „ohne Vorlage"; der Rückweg
+        /// schreibt die Einstellung, die Standardvorlage und „ohne Vorlage" ENTFERNEN sie.
+        /// </summary>
+        [Fact]
+        public async Task Die_Einstellungen_fuehren_die_zwei_Vorgaben_aus_den_Listen_des_Controllers()
+        {
+            if (_standard == null) return;
+            Vorlageneintrag eigen = Hinzu("Büro Nord.docx", _standard);
+            Vorlageneintrag mappe = Hinzu("Kennzahlen.xlsx", Excelprobe.Mappe(wb => wb.Worksheets.Add("Deckblatt")));
+
+            IReadOnlyDictionary<string, object> gaben =
+                EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true });
+            PasstZu(typeof(EinstellungenDialog), gaben);
+
+            var word = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeWordVorlagen"];
+            Assert.Equal(new[] { R.BV_VORLAGEN_STANDARD, "Büro Nord" }, word.Select(z => z.Text));
+            Assert.True(word[0].Mitgeliefert);
+            Assert.DoesNotContain(word, z => z.Gesperrt);
+            Assert.Equal(word[0].Id, (int)gaben["VorgabeWord"]);
+            Assert.Equal(word[0].Id, (int)gaben["VorgabeWordStandard"]);
+
+            var excel = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeExcelVorlagen"];
+            Assert.Equal(R.BV_XL_OHNE_VORLAGE, excel[0].Text);
+            Assert.Contains(excel, z => z.Text == "Kennzahlen");
+            Assert.Equal(excel[0].Id, (int)gaben["VorgabeExcel"]);
+            Assert.Equal(excel[0].Id, (int)gaben["VorgabeExcelStandard"]);
+
+            // Der Rückweg schreibt die Einstellung ...
+            var wordWeg = (EventCallback<int?>)gaben["VorgabeWordChanged"];
+            await wordWeg.InvokeAsync(word.Single(z => z.Text == "Büro Nord").Id);
+            Assert.Equal(eigen.Id, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, null));
+            Assert.Equal(eigen.Id, _vorlagen.VorgabeWordId);
+
+            var excelWeg = (EventCallback<int?>)gaben["VorgabeExcelChanged"];
+            await excelWeg.InvokeAsync(excel.Single(z => z.Text == "Kennzahlen").Id);
+            Assert.Equal(mappe.Id, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, null));
+            Assert.Equal(mappe.Id, _vorlagen.VorgabeExcelId);
+
+            // ... und die Standardvorlage bzw. „ohne Vorlage" entfernt sie wieder.
+            await wordWeg.InvokeAsync(word[0].Id);
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, null));
+            Assert.Equal(BerichtsvorlagenCtrl.ID_STANDARD, _vorlagen.VorgabeWordId);
+            await excelWeg.InvokeAsync(excel[0].Id);
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, null));
+            Assert.Equal(BerichtsvorlagenCtrl.ID_OHNE, _vorlagen.VorgabeExcelId);
+        }
+
+        /// <summary>
+        /// <b>Eine gespeicherte Vorgabe, deren Datei es nicht mehr gibt</b>, steht gesperrt und gewählt in
+        /// der Liste — mit genau dem Satz, den der Kern beim Erstellen nennt
+        /// (<see cref="BerichtsvorlagenCtrl.VorlageFuer"/> bzw.
+        /// <see cref="BerichtsvorlagenCtrl.ExcelVorlageFuer"/>); still auf einen anderen Eintrag springt
+        /// das Feld nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_fehlende_Vorgabe_steht_gesperrt_mit_dem_Satz_des_Kerns()
+        {
+            if (_standard == null) return;
+            _einstellungen.Schreib(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, "eigen:Angebot.docx");
+            _einstellungen.Schreib(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, "eigen:Kennzahlen.xlsx");
+
+            IReadOnlyDictionary<string, object> gaben =
+                EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true });
+
+            var word = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeWordVorlagen"];
+            Vorlagenzeile weg = Assert.Single(word, z => z.Gesperrt);
+            Assert.Equal("Angebot", weg.Text);
+            Assert.Equal(weg.Id, (int)gaben["VorgabeWord"]);
+            Assert.Equal(Format(R.BV_VORLAGEN_NICHT_VORHANDEN, "Angebot", R.BV_VORLAGEN_STANDARD), weg.GesperrtHinweis);
+
+            var excel = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeExcelVorlagen"];
+            Vorlagenzeile wegExcel = Assert.Single(excel, z => z.Gesperrt);
+            Assert.Equal("Kennzahlen", wegExcel.Text);
+            Assert.Equal(wegExcel.Id, (int)gaben["VorgabeExcel"]);
+            Assert.Equal(Format(R.BV_XL_NICHT_VORHANDEN, "Kennzahlen"), wegExcel.GesperrtHinweis);
+
+            // Dieselbe Kette rechnet der Lauf: Vorgabe fehlt → Standardvorlage bzw. ohne Vorlage.
+            Vorlagenwahl lauf = _vorlagen.VorlageFuer(null);
+            Assert.Equal(Vorlagenwahlgrund.Standard, lauf.Grund);
+            Assert.Equal("eigen:Angebot.docx", lauf.FehlendeId);
+        }
+
+        /// <summary>
+        /// <b>Die Berichtsseite zeigt eine geänderte Vorgabe beim nächsten Aufbau</b>, solange das
+        /// Stammprojekt keine Abweichung trägt; eine Abweichung bleibt vorrangig.
+        /// </summary>
+        [Fact]
+        public async Task Die_Berichtsseite_zeigt_eine_geaenderte_Vorgabe_ohne_Abweichung()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();                                       // frische Konfiguration, keine Abweichung
+            Vorlageneintrag eigen = Hinzu("Büro Nord.docx", _standard);
+
+            var (_, neuLaden) = Seite();
+            Vorlagenstand vorher = neuLaden();
+            Assert.Equal(Id(vorher, R.BV_VORLAGEN_STANDARD), vorher.VorlageId);
+
+            // Die Vorgabe über die Einstellungen setzen ...
+            var weg = (EventCallback<int?>)EinstellungenBerichtGaben
+                .Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true })["VorgabeWordChanged"];
+            IReadOnlyList<Vorlagenzeile> liste = (IReadOnlyList<Vorlagenzeile>)EinstellungenBerichtGaben
+                .Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true })["VorgabeWordVorlagen"];
+            await weg.InvokeAsync(liste.Single(z => z.Text == "Büro Nord").Id);
+            Assert.Equal(eigen.Id, _vorlagen.VorgabeWordId);
+
+            // ... und die Seite zeigt sie beim nächsten Aufbau.
+            Vorlagenstand nachher = neuLaden();
+            Assert.Equal(Id(nachher, "Büro Nord"), nachher.VorlageId);
+            Assert.Null(Lade().VorlageWordQuelle);           // ohne Abweichung des Stammprojekts
+
+            // Eine Abweichung des Stammprojekts bleibt vorrangig.
+            BerichtsKonfiguration konfig = Lade();
+            BerichtsvorlagenCtrl.SetzeAbweichung(konfig, _vorlagen.Standardeintrag());
+            Assert.True(new BerichtCtrl(_vorlagen).Speichere(GRUPPE, konfig));
+            Vorlagenstand abweichend = neuLaden();
+            Assert.Equal(Id(abweichend, R.BV_VORLAGEN_STANDARD), abweichend.VorlageId);
+        }
+
         // =====================================================================
         //  BV-E7: die Zeile „Excel-Vorlage"
         // =====================================================================

@@ -69,4 +69,26 @@ public sealed class EinstellungenBerichtTexte
 
     /// <summary>EIN_BERICHT_LOGO_FEHLT — der Hinweis unter dem Feld, wenn die Datei nicht da ist.</summary>
     public string LogoFehlt { get; set; } = T("EIN_BERICHT_LOGO_FEHLT", "Datei nicht gefunden.");
+
+    // ---- Die Vorgaben der Installation (Einstellungen BerichtVorlageWord, BerichtVorlageExcel) ----
+
+    /// <summary>EIN_BERICHT_LBL_VORGABE_WORD</summary>
+    public string LabelVorgabeWord { get; set; } = T("EIN_BERICHT_LBL_VORGABE_WORD", "Vorgabe Word-Vorlage:");
+
+    /// <summary>EIN_BERICHT_LBL_VORGABE_EXCEL</summary>
+    public string LabelVorgabeExcel { get; set; } = T("EIN_BERICHT_LBL_VORGABE_EXCEL", "Vorgabe Excel-Vorlage:");
+
+    /// <summary>
+    /// EIN_BERICHT_HINT_VORGABE — die Herleitung unter den zwei Auswahlfeldern: Die Vorgabe gilt,
+    /// solange das Stammprojekt auf der Berichtsseite keine eigene Vorlage gewählt hat.
+    /// </summary>
+    public string HinweisVorgabe { get; set; } = T("EIN_BERICHT_HINT_VORGABE",
+        "Gilt für jedes Projekt, das auf der Berichtsseite keine eigene Vorlage gewählt hat; dort kann ein Stammprojekt abweichen.");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_NICHT_WAEHLBAR — der Kurztext am gesperrten Eintrag einer Vorlage, die es
+    /// nicht mehr gibt; denselben Text nennt die Auswahl der Berichtsseite.
+    /// </summary>
+    public string NichtWaehlbar { get; set; } = T("BK_BER_VORLAGE_NICHT_WAEHLBAR",
+        "Diese Vorlage ist nicht wählbar.");
 }

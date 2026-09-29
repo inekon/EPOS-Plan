@@ -36984,6 +36984,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>The company logo for the header of the report: the path of a PNG or JPEG file; empty means no logo. A file that does not exist is accepted anyway – the section says so below the field.</value>
   </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_WORD" xml:space="preserve">
+    <value>Default Word template:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_EXCEL" xml:space="preserve">
+    <value>Default Excel template:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORGABE" xml:space="preserve">
+    <value>Applies to every project that has not chosen a template of its own on the report page; a master project can differ there.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL" xml:space="preserve">
+    <value>Which Word template a report is created from as long as the master project has not chosen one of its own on the report page: the standard template or a template of the template folder.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL" xml:space="preserve">
+    <value>Which Excel template the workbook is created from as long as the master project has not chosen one of its own on the report page; “Without template (EPOS-Plan)” builds the workbook from the program.</value>
+  </data>
   <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>Title page comes from the template</value>
   </data>

@@ -83,10 +83,23 @@
    Rueckweg der Huelle (LogoChanged) da und geht wie Firma und Ordner im OK-Weg
    hinaus, nur geaendert. Eine Datei, die es nicht gibt, nennt ein Hinweis unter dem
    Feld ("Datei nicht gefunden") - geschrieben wird der Pfad trotzdem. "Standardwerte"
-   leert es (ohne Logo). *@
+   leert es (ohne Logo).
+
+   DIE ZWEI VORGABEN DER INSTALLATION (Konzept Berichtsvorlagen 10.3): "Vorgabe
+   Word-Vorlage" und "Vorgabe Excel-Vorlage" - zwei Auswahlfelder mit den Listen, die
+   die Huelle aus dem Vorlagen-Controller baut; dieselben, die die Berichtsseite zeigt.
+   Sie gelten fuer jedes Projekt, das auf der Berichtsseite keine eigene Vorlage
+   gewaehlt hat - das sagt eine Zeile unter den Feldern; die Abweichung eines
+   Stammprojekts bleibt vorrangig. Eine gespeicherte Vorgabe, deren Datei es nicht mehr
+   gibt, steht GESPERRT und gewaehlt in der Liste, und der Grund steht darunter -
+   derselbe Satz, den der Kern beim Erstellen nennt ("… nicht vorhanden - … verwendet").
+   Beide Werte stehen im Arbeitsstand und gehen wie die uebrigen erst im OK-Weg hinaus,
+   je Wert einmal und nur geaendert; "Standardwerte" setzt sie auf die Standardvorlage
+   bzw. "ohne Vorlage". Ohne Rueckweg der Huelle oder ohne Liste steht das Feld nicht da. *@
 
 @namespace EPOS.UI.Dialoge.Admin
 @using System.Linq
+@using EPOS.UI.Seiten.Berichte
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
@@ -275,6 +288,41 @@
                                             <Herleitungszeile Text="@Bt.LogoFehlt" />
                                         }
                                         <Herleitungszeile Text="@Bt.HinweisLogo" />
+                                    }
+                                    @if (VorgabeWordSichtbar)
+                                    {
+                                        @* Die Vorgabe der Word-Vorlage - die Liste kommt fertig aus der
+                                           Huelle; eine gespeicherte, aber fehlende Vorlage steht darin
+                                           gesperrt und gewaehlt, ihr Grund unter dem Feld. *@
+                                        <Auswahlfeld Bezeichnung="@Bt.LabelVorgabeWord"
+                                                     Eintraege="@VorgabeWordEintraege"
+                                                     Auswahl="@_vorgabeWord"
+                                                     GesperrteEintraege="@GesperrteVorgabeWord"
+                                                     GesperrtHinweise="@VorgabeWordGruende"
+                                                     GesperrtHinweis="@Bt.NichtWaehlbar"
+                                                     AuswahlChanged="@(id => _vorgabeWord = id)" />
+                                        @if (VorgabeWordFehlgrund.Length > 0)
+                                        {
+                                            <Herleitungszeile Text="@VorgabeWordFehlgrund" />
+                                        }
+                                    }
+                                    @if (VorgabeExcelSichtbar)
+                                    {
+                                        <Auswahlfeld Bezeichnung="@Bt.LabelVorgabeExcel"
+                                                     Eintraege="@VorgabeExcelEintraege"
+                                                     Auswahl="@_vorgabeExcel"
+                                                     GesperrteEintraege="@GesperrteVorgabeExcel"
+                                                     GesperrtHinweise="@VorgabeExcelGruende"
+                                                     GesperrtHinweis="@Bt.NichtWaehlbar"
+                                                     AuswahlChanged="@(id => _vorgabeExcel = id)" />
+                                        @if (VorgabeExcelFehlgrund.Length > 0)
+                                        {
+                                            <Herleitungszeile Text="@VorgabeExcelFehlgrund" />
+                                        }
+                                    }
+                                    @if (VorgabeWordSichtbar || VorgabeExcelSichtbar)
+                                    {
+                                        <Herleitungszeile Text="@Bt.HinweisVorgabe" />
                                     }
                                 </KindInhalt>
                             </Formularraster>
@@ -466,6 +514,45 @@
     /// </summary>
     [Parameter] public Func<string, bool>? LogoVorhanden { get; set; }
 
+    // ---- Die Vorgaben der Installation (Einstellungen BerichtVorlageWord, BerichtVorlageExcel) ----
+    //
+    // Zwei Auswahlfelder mit denselben Listen, die auch die Berichtsseite zeigt — sie kommen
+    // FERTIG aus der Hülle (keine Datenbank, keine Dateisuche in der Oberfläche). Eine gespeicherte
+    // Vorgabe, deren Datei es nicht mehr gibt, steht als GESPERRTER Eintrag darin, gewählt, und ihr
+    // Grund steht unter dem Feld — genau wie beim Erstellen, wo der Kern sie nennt und auf die
+    // Standardvorlage bzw. „ohne Vorlage" zurückfällt. Geschrieben wird im OK-Weg wie Firma,
+    // Vorlagenordner und Logo.
+
+    /// <summary>
+    /// Die wählbaren Word-Vorlagen der Vorgabe: die Standardvorlage, die mitgelieferten und die
+    /// eigenen des Vorlagenordners — dazu, gesperrt, eine gespeicherte Vorgabe ohne Datei.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Vorlagenzeile> VorgabeWordVorlagen { get; set; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>Die vorgegebene Word-Vorlage (<see cref="Vorlagenzeile.Id"/>); <c>null</c> = keine Wahl.</summary>
+    [Parameter] public int? VorgabeWord { get; set; }
+
+    /// <summary>
+    /// Übergabe der Vorgabe im OK-Weg, wie <see cref="FirmaChanged"/> — nach dem gelungenen
+    /// Speichern und nur geändert. Ohne Rückruf steht das Feld nicht da.
+    /// </summary>
+    [Parameter] public EventCallback<int?> VorgabeWordChanged { get; set; }
+
+    /// <summary>Die Vorgabe für „Standardwerte" — die Standardvorlage; <c>null</c> = das Feld bleibt.</summary>
+    [Parameter] public int? VorgabeWordStandard { get; set; }
+
+    /// <summary>Die wählbaren Excel-Vorlagen der Vorgabe: „ohne Vorlage" und die Excel-Vorlagen.</summary>
+    [Parameter] public IReadOnlyList<Vorlagenzeile> VorgabeExcelVorlagen { get; set; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>Die vorgegebene Excel-Vorlage (<see cref="Vorlagenzeile.Id"/>); <c>null</c> = keine Wahl.</summary>
+    [Parameter] public int? VorgabeExcel { get; set; }
+
+    /// <summary>Übergabe der Excel-Vorgabe im OK-Weg, wie <see cref="VorgabeWordChanged"/>.</summary>
+    [Parameter] public EventCallback<int?> VorgabeExcelChanged { get; set; }
+
+    /// <summary>Die Vorgabe für „Standardwerte" — „ohne Vorlage"; <c>null</c> = das Feld bleibt.</summary>
+    [Parameter] public int? VorgabeExcelStandard { get; set; }
+
     /// <summary>Die Beschriftungen des Abschnitts (<c>EIN_BERICHT_*</c>).</summary>
     [Parameter] public EinstellungenBerichtTexte BerichtTexte { get; set; } = new();
 
@@ -546,11 +633,15 @@
     private string _firma = "";
     private string _vorlagenordner = "";
     private string _logo = "";
+    private int? _vorgabeWord;
+    private int? _vorgabeExcel;
 
     /// <summary>Was zuletzt hinausging (bzw. hereinkam) — ein zweites OK wiederholt nichts.</summary>
     private string _firmaGemeldet = "";
     private string _vorlagenordnerGemeldet = "";
     private string _logoGemeldet = "";
+    private int? _vorgabeWordGemeldet;
+    private int? _vorgabeExcelGemeldet;
 
     private readonly EinstellungenBerichtTexte _berichtTexteVorgabe = new();
 
@@ -558,7 +649,71 @@
     private EinstellungenBerichtTexte Bt => BerichtTexte ?? _berichtTexteVorgabe;
 
     /// <summary>Kein Rückweg, keine Rubrik: Die Rubrik „Bericht" steht nur mit einem Rückruf der Hülle.</summary>
-    public bool BerichtSichtbar => FirmaChanged.HasDelegate || VorlagenordnerChanged.HasDelegate || LogoChanged.HasDelegate;
+    public bool BerichtSichtbar => FirmaChanged.HasDelegate || VorlagenordnerChanged.HasDelegate || LogoChanged.HasDelegate
+                                   || VorgabeWordSichtbar || VorgabeExcelSichtbar;
+
+    // ---- Die zwei Vorgabefelder ----------------------------------------------
+
+    /// <summary>Die Liste der Word-Vorgabe — nie <c>null</c>.</summary>
+    private IReadOnlyList<Vorlagenzeile> VorgabeWordListe
+        => (VorgabeWordVorlagen ?? Array.Empty<Vorlagenzeile>()).Where(z => z is not null).ToList();
+
+    /// <summary>Die Liste der Excel-Vorgabe — nie <c>null</c>.</summary>
+    private IReadOnlyList<Vorlagenzeile> VorgabeExcelListe
+        => (VorgabeExcelVorlagen ?? Array.Empty<Vorlagenzeile>()).Where(z => z is not null).ToList();
+
+    /// <summary>Kein Rückweg und keine Liste, kein Feld.</summary>
+    public bool VorgabeWordSichtbar => VorgabeWordChanged.HasDelegate && VorgabeWordListe.Count > 0;
+
+    /// <summary>Kein Rückweg und keine Liste, kein Feld.</summary>
+    public bool VorgabeExcelSichtbar => VorgabeExcelChanged.HasDelegate && VorgabeExcelListe.Count > 0;
+
+    /// <summary>Die gewählte Word-Vorgabe im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public int? VorgabeWordArbeitsstand => _vorgabeWord;
+
+    /// <summary>Die gewählte Excel-Vorgabe im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public int? VorgabeExcelArbeitsstand => _vorgabeExcel;
+
+    private IReadOnlyList<(int Id, string Text)> VorgabeWordEintraege
+        => VorgabeWordListe.Select(z => (z.Id, z.Text)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> VorgabeExcelEintraege
+        => VorgabeExcelListe.Select(z => (z.Id, z.Text)).ToList();
+
+    private IReadOnlyCollection<int> GesperrteVorgabeWord
+        => VorgabeWordListe.Where(z => z.Gesperrt).Select(z => z.Id).ToList();
+
+    private IReadOnlyCollection<int> GesperrteVorgabeExcel
+        => VorgabeExcelListe.Where(z => z.Gesperrt).Select(z => z.Id).ToList();
+
+    private IReadOnlyDictionary<int, string> VorgabeWordGruende => Sperrgruende(VorgabeWordListe);
+
+    private IReadOnlyDictionary<int, string> VorgabeExcelGruende => Sperrgruende(VorgabeExcelListe);
+
+    private static IReadOnlyDictionary<int, string> Sperrgruende(IReadOnlyList<Vorlagenzeile> zeilen)
+    {
+        var gruende = new Dictionary<int, string>();
+        foreach (Vorlagenzeile z in zeilen)
+            if (z.Gesperrt && !string.IsNullOrWhiteSpace(z.GesperrtHinweis)) gruende[z.Id] = z.GesperrtHinweis;
+        return gruende;
+    }
+
+    /// <summary>
+    /// Der Grund unter dem Feld, wenn die gewählte Word-Vorgabe gesperrt ist (die Vorlage gibt es
+    /// nicht mehr) — derselbe Satz, den der Kern beim Erstellen nennt; leer sonst.
+    /// </summary>
+    private string VorgabeWordFehlgrund => Fehlgrund(VorgabeWordListe, _vorgabeWord);
+
+    /// <summary>Der Grund unter dem Feld der Excel-Vorgabe — wie <see cref="VorgabeWordFehlgrund"/>.</summary>
+    private string VorgabeExcelFehlgrund => Fehlgrund(VorgabeExcelListe, _vorgabeExcel);
+
+    private string Fehlgrund(IReadOnlyList<Vorlagenzeile> zeilen, int? gewaehlt)
+    {
+        if (!gewaehlt.HasValue) return "";
+        Vorlagenzeile? zeile = zeilen.FirstOrDefault(z => z.Id == gewaehlt.Value);
+        if (zeile is not { Gesperrt: true }) return "";
+        return string.IsNullOrWhiteSpace(zeile.GesperrtHinweis) ? Bt.NichtWaehlbar : zeile.GesperrtHinweis;
+    }
 
     /// <summary>BV-E2: Das Logo steht nur mit seinem Rückweg da (kein Rückweg, kein Feld).</summary>
     public bool LogoSichtbar => LogoChanged.HasDelegate;
@@ -680,6 +835,12 @@
         _firmaGemeldet = _firma.Trim();
         _vorlagenordnerGemeldet = _vorlagenordner.Trim();
         _logoGemeldet = _logo.Trim();
+
+        // Die zwei Vorgaben: der Anfangswert der Hülle, gemeldet wird erst eine Änderung.
+        _vorgabeWord = VorgabeWord;
+        _vorgabeExcel = VorgabeExcel;
+        _vorgabeWordGemeldet = _vorgabeWord;
+        _vorgabeExcelGemeldet = _vorgabeExcel;
     }
 
     protected override void OnInitialized()
@@ -733,8 +894,40 @@
         {
             if (!LogoSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
             _logo = pfad ?? "";
-        }
+        },
+
+        // Die zwei Vorgaben - Wahlfelder mit den Einträgen der zwei Auswahlfelder; ein gesperrter
+        // Eintrag (die Vorlage gibt es nicht mehr) wird benannt abgelehnt, wie im Feld selbst.
+        BerichtVorgabeWordLesen = () => _vorgabeWord,
+        BerichtVorgabeWordSetzen = id =>
+        {
+            if (!VorgabeWordSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
+            _vorgabeWord = VorgabeGeprueft(VorgabeWordListe, id);
+        },
+        BerichtVorgabeWordEintraege = () => KiMaskenanmeldung.Eintraege(VorgabeWordListe, z => z.Id, z => z.Text),
+        BerichtVorgabeExcelLesen = () => _vorgabeExcel,
+        BerichtVorgabeExcelSetzen = id =>
+        {
+            if (!VorgabeExcelSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
+            _vorgabeExcel = VorgabeGeprueft(VorgabeExcelListe, id);
+        },
+        BerichtVorgabeExcelEintraege = () => KiMaskenanmeldung.Eintraege(VorgabeExcelListe, z => z.Id, z => z.Text)
     };
+
+    /// <summary>
+    /// Die Id, die der Assistent setzen darf: eine der Liste und nicht gesperrt — sonst der
+    /// benannte Grund, genau wie das Auswahlfeld einen gesperrten Eintrag nicht annimmt.
+    /// </summary>
+    private int? VorgabeGeprueft(IReadOnlyList<Vorlagenzeile> zeilen, int? id)
+    {
+        if (!id.HasValue) return null;
+        Vorlagenzeile? zeile = zeilen.FirstOrDefault(z => z.Id == id.Value);
+        if (zeile is null) throw new InvalidOperationException(Bt.NichtWaehlbar);
+        if (zeile.Gesperrt)
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(zeile.GesperrtHinweis)
+                                                    ? Bt.NichtWaehlbar : zeile.GesperrtHinweis);
+        return id;
+    }
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf.
@@ -846,6 +1039,9 @@
             _vorlagenordner = VorlagenordnerVorgabe;
         // BV-E2: Die Vorgabe des Logos ist „ohne Logo".
         if (LogoSichtbar) _logo = "";
+        // Die zwei Vorgaben auf die der Hülle — die Standardvorlage bzw. „ohne Vorlage".
+        if (VorgabeWordSichtbar && VorgabeWordStandard.HasValue) _vorgabeWord = VorgabeWordStandard;
+        if (VorgabeExcelSichtbar && VorgabeExcelStandard.HasValue) _vorgabeExcel = VorgabeExcelStandard;
 
         // Zuruecksetzen SPEICHERT NICHT - woertlich wie der Vorlaeufer.
         Melden(StandardwerteGeladenText, WarnStufe.Hinweis);
@@ -913,6 +1109,18 @@
         {
             _logoGemeldet = logo;
             await LogoChanged.InvokeAsync(logo);
+        }
+
+        if (VorgabeWordSichtbar && _vorgabeWord != _vorgabeWordGemeldet)
+        {
+            _vorgabeWordGemeldet = _vorgabeWord;
+            await VorgabeWordChanged.InvokeAsync(_vorgabeWord);
+        }
+
+        if (VorgabeExcelSichtbar && _vorgabeExcel != _vorgabeExcelGemeldet)
+        {
+            _vorgabeExcelGemeldet = _vorgabeExcel;
+            await VorgabeExcelChanged.InvokeAsync(_vorgabeExcel);
         }
     }
 
