@@ -593,19 +593,19 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_LBL_PERSONEN_MANUELL</c></summary>
     public string LabelPersonenManuell { get; set; } = "Personen manuell";
 
-    /// <summary><c>ZPG_AUS_LBL_FUELLSTAND_BEZUG</c> — die Wahl steht am (ersten) Wochenbild.</summary>
+    /// <summary><c>ZPG_AUS_LBL_FUELLSTAND_BEZUG</c></summary>
     public string LabelFuellstandBezug { get; set; } = "Speichergröße der Füllstandslinie";
 
-    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE</c> — die Vorgabe, solange sie keinen Bezug mit Volumen auflöst.</summary>
+    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE</c></summary>
     public string FuellstandVorgabe { get; set; } = "Vorgabe: Nenninhalt des Punkts, sonst der Punkt";
 
-    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE_WAHL</c> — {0} der Bezug, den die Vorgabe auflöst, {1} sein Volumen [l].</summary>
+    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE_WAHL</c></summary>
     public string FuellstandVorgabeWahl { get; set; } = "Vorgabe: {0} · {1} l";
 
-    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL</c> — {0} der Bezug, {1} sein Volumen [l].</summary>
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL</c></summary>
     public string FuellstandWahl { get; set; } = "{0} · {1} l";
 
-    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL_GESPERRT</c> — {0} der Bezug ohne Volumen.</summary>
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL_GESPERRT</c></summary>
     public string FuellstandWahlGesperrt { get; set; } = "{0} · nicht bestimmbar";
 
     /// <summary><c>ZPG_AUS_BTN_VORSCHLAG</c></summary>
@@ -632,10 +632,10 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HERL_FUELLSTAND</c></summary>
     public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: {0}";
 
-    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GESPERRT</c> — {0} der Bezug, {1} der Grund der Sperre.</summary>
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GESPERRT</c></summary>
     public string HerleitungFuellstandGesperrt { get; set; } = "{0} nicht bestimmbar: {1}";
 
-    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GRUPPE</c> — an jedem weiteren Wochenbild: {0} der geltende Bezug samt Volumen.</summary>
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GRUPPE</c></summary>
     public string HerleitungFuellstandGruppe { get; set; } = "Speichergröße der Füllstandslinie: {0} — gewählt am ersten Wochenbild";
 
     /// <summary><c>ZPG_AUS_HERL_GESPEICHERT</c></summary>
