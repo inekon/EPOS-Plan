@@ -1,0 +1,41 @@
+<includeonly><div class="epos-diagramm" role="figure" aria-label="{{{titel|Diagramm}}}" style="margin:1em 0;padding:12px 14px;background:var(--epos-flaeche-2);border:1px solid var(--epos-rahmen-leicht);border-radius:var(--epos-radius);color:var(--epos-text)">{{#if:{{{titel|}}}|<div style="font-weight:600;margin-bottom:0.5em">{{{titel}}}</div>}}</includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Diagramm-Anfang
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Diagramm-Anfang.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Diagramm-Anfang ==
+
+Öffnet den Rahmen eines Diagramms. Jedes Diagramm steht zwischen <code><nowiki>{{Diagramm-Anfang}}</nowiki></code> und <code><nowiki>{{Diagramm-Ende}}</nowiki></code>; dazwischen stehen ein Säulendiagramm, ein Flussbild und bei Bedarf eine Legende. Die Diagramme brauchen keine Bilddatei: Sie bestehen aus Text und Flächen, folgen der hellen und dunklen Darstellung und werden bei der Übersetzung mitübersetzt.
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Bedeutung
+|-
+| <code>titel</code> || nein || Überschrift des Diagramms; zugleich die Bezeichnung für Bildschirmleser
+|}
+
+=== Die Diagrammvorlagen ===
+
+{| class="wikitable"
+! Vorlage !! Zweck
+|-
+| [[Vorlage:Diagramm-Anfang]], [[Vorlage:Diagramm-Ende]] || Rahmen mit Titel und Bildunterschrift
+|-
+| [[Vorlage:Säulen-Anfang]], [[Vorlage:Säule]], [[Vorlage:Säulen-Ende]] || Säulendiagramm, auch gestapelt
+|-
+| [[Vorlage:Legende]] || Farbzeichen mit Beschriftung
+|-
+| [[Vorlage:Fluss-Anfang]], [[Vorlage:Flusskasten]], [[Vorlage:Flusspfeil]], [[Vorlage:Flussspalte-Anfang]], [[Vorlage:Flussspalte-Ende]], [[Vorlage:Fluss-Ende]] || Flussbild aus Kästen und Pfeilen
+|-
+| [[Vorlage:Diagrammfarbe]] || die Farben der Rollen
+|}
+
+=== Beispiel ===
+
+<pre>
+{{Diagramm-Anfang|titel=Wärmeerzeugung je Monat}}
+{{Säulen-Anfang|achse=MWh je Monat}}
+{{Säule|Jan|waerme=70|kessel=20|wert=9}}
+{{Säule|Feb|waerme=65|kessel=10|wert=7,5}}
+{{Säulen-Ende}}
+{{Legende|waerme=Wärmepumpe|kessel=Spitzenkessel}}
+{{Diagramm-Ende|Beispielwerte, gerundet.}}
+</pre>
+</noinclude>

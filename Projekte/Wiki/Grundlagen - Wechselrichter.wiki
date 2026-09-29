@@ -1,0 +1,90 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Wechselrichter
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Wechselrichter.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Wechselrichter wandelt den Gleichstrom einer Photovoltaikanlage in netzsynchronen Wechselstrom um und verbindet sie damit mit dem Hausnetz und dem öffentlichen Stromnetz. Ohne ihn ließe sich der Solarstrom weder im Gebäude nutzen noch einspeisen; ist ein Stromspeicher beteiligt, hängt auch dessen Ladung häufig am selben Gerät.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip}}
+
+Kernstück ist der '''MPP-Tracker''' (Maximum Power Point Tracker): Er stellt Spannung und Strom am Eingang laufend so ein, dass die angeschlossenen Module unter wechselnder Einstrahlung und Temperatur ihre größtmögliche Leistung liefern, und wandelt diese Gleichstromleistung in Wechselstrom mit Netzfrequenz und -spannung um. Ein '''Strang''' – mehrere Module in Reihe geschaltet – muss mit seiner Spannung in das '''Spannungsfenster''' des gewählten MPP-Trackers passen: Kälte hebt die Leerlauf- und die MPP-Spannung an, Wärme senkt sie, und beide Grenzfälle müssen innerhalb der Gerätegrenzen bleiben. Geräte mit mehreren, unabhängig regelnden MPP-Trackern erlauben getrennte Ausrichtungen oder Stranganzahlen an einem einzigen Wechselrichter. Kleinere Anlagen bekommen meist einen '''String-Wechselrichter''', der nur die Module wandelt; ein '''Hybridwechselrichter''' bindet zusätzlich einen Stromspeicher gleichstromseitig ein und spart dessen Ladung eine Umwandlungsstufe, koppelt dafür aber die Lebensdauer beider Geräte.
+
+== Kennzahlen ==
+{{Anker|kennzahlen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| MPP-Spannungsfenster || Spannungsbereich, in dem ein MPP-Tracker den Arbeitspunkt regelt || 200–800 V (kleine Geräte) bis 150–1 000 V (große Geräte)
+|-
+| Europäischer Wirkungsgrad || genormt gewichteter Teillastwirkungsgrad, der die mitteleuropäische Einstrahlungsverteilung nachbildet || 96–98 %
+|-
+| Maximalwirkungsgrad || höchster erreichter Wirkungsgrad, meist im oberen Teillastbereich || 97–99 %
+|-
+| DC/AC-Verhältnis (Dimensionierungsfaktor) || installierte Modulleistung geteilt durch die AC-Nennleistung des Geräts || 1,1–1,3
+|-
+| Nachtverbrauch || Eigenverbrauch des Geräts außerhalb der Einspeisezeit || 1–10 W
+|-
+| Anzahl MPP-Tracker || unabhängig voneinander regelbare Eingänge || 1–4 bei kleinen und mittleren Geräten, mehr bei Großanlagen
+|}
+
+<!-- Modell: sechs Stützstellen einer typischen Wirkungsgradkennlinie bei 5/10/20/30/50/100 % Teillast, Beispielwerte gerundet. Säulenhöhe auf den größten Wert (bei 50 %) normiert, angezeigter Wert ist der Wirkungsgrad. -->
+{{Diagramm-Anfang|titel=Wirkungsgrad über der Teillast}}
+{{Säulen-Anfang|achse=Wirkungsgrad [%]}}
+{{Säule|5 %|strom=92|wert=90 %}}
+{{Säule|10 %|strom=96|wert=94 %}}
+{{Säule|20 %|strom=98|wert=96 %}}
+{{Säule|30 %|strom=99|wert=97 %}}
+{{Säule|50 %|strom=100|wert=98 %}}
+{{Säule|100 %|strom=98|wert=96 %}}
+{{Säulen-Ende|Teillast in Prozent der AC-Nennleistung}}
+{{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
+
+== Typische Größen ==
+{{Anker|typische-groessen}}
+
+Richtwerte je Einsatzfall, gerundet:
+
+{| class="wikitable"
+! !! Einfamilienhaus !! Mehrfamilienhaus !! Gewerbe
+|-
+| AC-Nennleistung || rund 5–10 kW || rund 15–30 kW, auch mehrere Geräte || 50 kW bis in den Megawattbereich, meist mehrere Geräte
+|-
+| MPP-Tracker || 1–2 || 2–4 || viele, oft einer je Dachfläche oder Teilfeld
+|-
+| DC/AC-Verhältnis || rund 1,2 || rund 1,2–1,3 || rund 1,2–1,4
+|}
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Ein Wechselrichter wird nach der Modulleistung, der Stranganzahl und -spannung sowie der gewünschten Zahl an Ausrichtungen gewählt, nicht umgekehrt. Ein knapp bemessenes Gerät – ein DC/AC-Verhältnis über 1 – senkt die Kosten je Kilowattstunde und verbessert den Teillastbetrieb, weil die volle Modulleistung ohnehin nur an wenigen Stunden im Jahr ansteht; der Preis dafür ist die '''Abregelung''': Oberhalb der AC-Nennleistung wird die überschüssige Gleichstromleistung gekappt, spürbar vor allem an sonnigen Sommertagen um die Mittagszeit. Ein String-Wechselrichter deckt eine oder wenige Ausrichtungen ab; bei vielen Teilfeldern oder einem Speicher, der möglichst verlustarm gleichstromseitig geladen werden soll, kommt eher ein Hybridwechselrichter oder eine Aufteilung auf mehrere kleinere String-Geräte in Frage. Der Netzanschluss selbst folgt in Deutschland der '''VDE-AR-N 4105''' für Erzeugungsanlagen am Niederspannungsnetz; Schutzeinstellungen, Rückspeisegrenzen und die Anmeldung beim Netzbetreiber sind Sache der Elektrofachkraft, nicht der Anlagenplanung.
+
+<!-- Modell: Tagesgang der verfügbaren Gleichstromleistung (bezogen auf die Modulleistung bei Vollsonne) an einem wolkenlosen Sommertag; Wechselrichter mit einer AC-Nennleistung von 74 % der Modulleistung (DC/AC rund 1,35). Eingespeiste Wechselstromleistung = verfügbare Gleichstromleistung, höchstens jedoch die AC-Nennleistung; die Differenz ist die Abregelung. Beispielwerte, gerundet. -->
+{{Diagramm-Anfang|titel=Abregelung bei hohem DC/AC-Verhältnis}}
+{{Säulen-Anfang|achse=Leistung, bezogen auf die Modulleistung bei Vollsonne [%]}}
+{{Säule|6 Uhr|strom=5}}
+{{Säule|8 Uhr|strom=30}}
+{{Säule|10 Uhr|strom=62}}
+{{Säule|12 Uhr|strom=74|netz=16}}
+{{Säule|14 Uhr|strom=74|netz=26}}
+{{Säule|16 Uhr|strom=74|netz=14}}
+{{Säule|18 Uhr|strom=30}}
+{{Säule|20 Uhr|strom=5}}
+{{Säulen-Ende|Uhrzeit an einem sonnigen Sommertag}}
+{{Legende|strom=eingespeiste Wechselstromleistung|netz=durch die AC-Nennleistung abgeregelt}}
+{{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan}}
+
+In EPOS-Plan ist der Wechselrichter Teil der Photovoltaik-Anlage: Im PV-Dialog ordnet ein eigener Abschnitt jedem Modulstrang ein Gerät aus dem Wechselrichterkatalog zu. Der Katalog wird getrennt gepflegt, unter Administration → Energiesysteme → Photovoltaik → „Wechselrichter" (Import unter Administration → Daten & Import → Photovoltaik → „Wechselrichter (CEC, OND)…"). Einbindung, ein Rechenbeispiel, das Zusammenspiel mit anderen Techniken und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Wechselrichter#einbindung|Einbindung]], [[Programm Dokumentation/Wechselrichter#beispiel|Beispiel]], [[Programm Dokumentation/Wechselrichter#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Wechselrichter#fallstricke|Fallstricke]]. Der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Photovoltaik#wechselrichter|Berechnung: Photovoltaik]].
+
+== Siehe auch ==
+
+* [[Grundlagen/Photovoltaik|Photovoltaik]] – Modul, Ausrichtung und Ertrag
+* [[Grundlagen/Stromspeicher|Stromspeicher]] – Speicherung und Kopplung mit dem Wechselrichter
+* [[Programm Dokumentation/Gerätekataloge#wechselrichter|Gerätekataloge]] – Verwaltung, Import und Dubletten des Wechselrichterkatalogs
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

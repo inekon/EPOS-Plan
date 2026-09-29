@@ -39861,5 +39861,20 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the CO₂ emissions are then {3} t/a. The table shows the individual assessment of the version.</value>
   </data>
+  <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
+    <value>Fundamentals: {0}</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Fundamentals of this technology</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Help on cooling</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Help on the inverter</value>
+  </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Help on cooling emission</value>
+  </data>
 </root>
 

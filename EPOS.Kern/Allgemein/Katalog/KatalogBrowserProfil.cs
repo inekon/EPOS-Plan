@@ -238,6 +238,15 @@ namespace WindowsFormsApplication1
         public string BerechnungsKurztext =>
             BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
 
+        /// <summary>
+        /// Der Schluessel des DRITTEN Infoknopfs — der Weg in die Wiki-Rubrik
+        /// „Grundlagen" (Konzept Technikdokumentation, Abschnitt 7). Er sitzt neben
+        /// dem Berechnungsknopf; sein Ziel steht als Seitenpfad in
+        /// <c>help_mapping.txt</c> (<c>/wiki/Grundlagen/…</c>). Sprachneutral wie
+        /// <see cref="BerechnungsSchluessel"/>; leer = kein Knopf.
+        /// </summary>
+        public string GrundlagenSchluessel { get; private set; }
+
         /// <summary>Fenstertitel, bereits uebersetzt.</summary>
         public string Titel { get; private set; }
 
@@ -388,6 +397,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_Heizkessel_Admin.Berechnung",
+                        GrundlagenSchluessel = "Form_Heizkessel_Admin.Grundlagen",
                         BerechnungsSeite = "Heizkessel",
                         Titel = t("KBROW_TITEL_HEIZKESSEL"),
                         Listenbeschriftung = t("KBROW_LISTE_HEIZKESSEL"),
@@ -465,6 +475,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_BHKWAdmin.Berechnung",
+                        GrundlagenSchluessel = "Form_BHKWAdmin.Grundlagen",
                         BerechnungsSeite = "BHKW",
                         Titel = t("KBROW_TITEL_BHKW"),
                         Listenbeschriftung = t("KBROW_LISTE_BHKW"),
@@ -574,6 +585,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_SolarKollektorenAdmin.Berechnung",
+                        GrundlagenSchluessel = "Form_SolarKollektorenAdmin.Grundlagen",
                         BerechnungsSeite = "Solarthermie",
                         Titel = t("KBROW_TITEL_SOLAR"),
                         Listenbeschriftung = t("KBROW_LISTE_SOLAR"),
@@ -635,6 +647,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_PufferSp_Admin.Berechnung",
+                        GrundlagenSchluessel = "Form_PufferSp_Admin.Grundlagen",
                         BerechnungsSeite = "Pufferspeicher",
                         Titel = t("KBROW_TITEL_PUFFERSP"),
                         Listenbeschriftung = t("KBROW_LISTE_PUFFERSP"),

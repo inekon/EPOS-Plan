@@ -793,7 +793,7 @@ rundet und benennt um.
   `Firma` und `Hersteller` der `Tab_*`-Kataloge ohne die Platzhalter „Muster", „test",
   „meins", „EPOS-Plan Referenz") und gegen eine feste Liste bekannter Hersteller und
   Typcode-Muster.
-- Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
+- Seiten ohne Repo-Quelle (Grundlagenseiten ohne Quelle unter `Projekte/Wiki/`, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
   die Orchestrierung vor jedem Upload mit derselben Liste.
 
 Dieselbe Regel gilt für Beispieldaten, die aus den Mockups unter `Dokumentation/aktuell/Mockups/`
@@ -829,6 +829,125 @@ Schlüssel, Klassen, Testzahlen oder Ursachen. Kleinigkeiten — Beschriftungen,
 Knopfpositionen, interne Umbauten, Behebungen ohne sichtbare Bedienänderung — bekommen keinen
 Eintrag; sie stehen nur in Statusdatei und Protokoll. Mehrere Aufträge derselben Version zum selben
 Thema ergeben einen Eintrag. Richtwert: wenige Einträge je Version.
+
+### 13.5 Quelltext: eine Zeile je Absatz, Formeln als LaTeX
+
+**Regel 1: eine Quellzeile.**
+- Jeder Absatz, jeder Listenpunkt und jede Tabellenzelle steht in der Wiki-Quelle auf einer Zeile.
+- MediaWiki liest eine eingerückte Folgezeile als `<pre>`-Kasten (Schreibmaschinensatz auf grauem
+  Grund) und die nicht eingerückte Folgezeile eines Listenpunkts als neuen Absatz; beides zerreißt
+  die Liste.
+- Ein gewollter Kasten, etwa eine Bildschirmzeile der App, steht allein nach einer Leerzeile.
+
+**Regel 2: Formeln als LaTeX.**
+- Jede Formel, jede Gleichung und jedes Formelzeichen mit Index steht als LaTeX in `<math>…</math>`;
+  die Math-Erweiterung des Wikis setzt es als MathML.
+- Beschreibende Indizes stehen aufrecht (`P_{\mathrm{el}}`), Zahlindizes schlicht (`h_{0}`), das
+  Dezimalkomma als `{,}`.
+- Eine Gleichung mit Zahlenwert steht ganz in der Formel; die Einheit folgt als Text mit `&nbsp;`.
+- Keine HTML-Tiefstellung, keine Unicode-Indizes und keine Unterstrich-Schreibweise im Fließtext.
+- Text bleiben Einheiten, chemische Formeln, Überschriften, Linktexte und Parameter der
+  Diagrammvorlagen. Bezeichner aus Code und Datenbank stehen in `<code>`.
+- Ein `=` auf oberster Ebene eines Vorlagenaufrufs macht den Text zum benannten Parameter; eine
+  Gleichung in einer Vorlage steht deshalb immer in `<math>`.
+- Die Rechenwegseiten benutzen nur die TeX-Befehle, die der Klartext-Umsetzer des Assistenten kennt
+  (`BerechnungsHilfe.LatexKlartext`; Wache `ErlaubteBefehle` in `BerechnungsHilfeTests`).
+
+**Prüfung:** die Seite über `action=parse` rendern. Es darf keinen ungewollten `<pre>`-Kasten und
+keinen TeX-Fehler geben; die Vorschau `Werkzeuge/WikiUpload/vorschau.py` zeigt es im Bild.
+
+## 14. Technikdokumentation: Grundlagen, Anwendung, Sprungziele
+
+Jede Technik ist zweimal beschrieben. Die Rubrik **Grundlagen** erklärt sie kurz und fachlich, die
+Rubrik „Programm Dokumentation“ ausführlich mit Bezug auf EPOS-Plan. Seitenmuster,
+Beispielanlagen, Diagrammregeln und die Arbeitsanweisung stehen in
+[`Konzept_Technikdokumentation_Wiki_EPOS-Plan.md`](Konzept_Technikdokumentation_Wiki_EPOS-Plan.md).
+Die Inhaltsregeln aus Abschnitt 13 gelten für beide Rubriken.
+
+### 14.1 Zwei Seiten je Technik
+
+- **`Grundlagen/<Technik>`**
+  - Inhalt: Funktionsprinzip, Kennzahlen, typische Größen, Einsatz und Grenzen, dazu ein
+    kurzer Abschnitt „In EPOS-Plan“ mit Verweisen auf die Anwendungsseite; höchstens rund
+    4 000 Zeichen Fließtext.
+  - Repo-Quelle `Projekte/Wiki/Grundlagen - <Titel>.wiki`, Kategorie „Grundlagen“,
+    Navigation über `{{Navigation Grundlagen}}`.
+  - Die Rubrikseite `Grundlagen` hat die Repo-Quelle `Projekte/Wiki/Grundlagen.wiki`.
+- **`Programm Dokumentation/<Technik>`**
+  - Die Bedienungsseite bekommt vier Abschnitte: Einbindung, Beispiel, Zusammenspiel,
+    Fallstricke, mit den Ankern `einbindung`, `beispiel`, `zusammenspiel`, `fallstricke`.
+  - Das Beispiel ist eine Tafel *Dialog · Feld · Wert · Warum* mit den Beschriftungen des
+    Dialogs.
+  - Jede Aussage über das Programm ist am Code belegt.
+- **Die Techniken**
+  - Wärmepumpe, Wärmequelle Erdreich, Heizkessel (Grundlagen: Kessel und Spitzenlast), BHKW,
+    Solarthermie (Grundlagen: Solarkollektoren), Pufferspeicher, Photovoltaik, Wechselrichter,
+    Stromspeicher, Kühlung.
+  - Heizstab und Lastspitzenkappung sind Abschnitte der Seiten Wärmepumpe, Heizkessel und
+    Stromspeicher.
+- **Weiterleitungen**
+  - Die älteren Seiten der Rubrik Programmfunktionen leiten auf die jeweilige
+    Programm-Dokumentation-Seite weiter (`Werkzeuge/WikiUpload/weiterleitungen.tsv`).
+  - Synonyme zeigen direkt auf das Ziel, weil MediaWiki keiner doppelten Weiterleitung folgt.
+  - Die Anker der älteren Seiten leben auf der Zielseite weiter, soweit der Inhalt dort steht.
+
+### 14.2 Zwei Wege aus der App
+
+- **Direkt**
+  - Jeder Technikdialog trägt neben dem Knopf `<Formname>.Berechnung` einen Knopf
+    `<Formname>.Grundlagen`.
+  - Sein Ziel in `help_mapping.txt` hat die Pfadschreibweise `/wiki/Grundlagen/<Titel>`
+    (Leerzeichen als Unterstrich, Umlaute im Klartext).
+  - Windows löst Pfadziele über den eingebetteten Startbestand `help_cache.json` auch ohne
+    Netz auf.
+  - iOS zeigt einen lesbaren Kurztext („Grundlagen: Wärmepumpe“), den der Kern bildet.
+  - Die Wächter der Hilfe prüfen Zeile ↔ Knopf sowie die Anker der Pfadziele gegen die
+    Repo-Quellen.
+  - Kühlung hat Knöpfe am Kühlabschnitt des Gebäudes und am Kühlbetrieb der Wärmepumpe.
+- **Indirekt**
+  - Der Reiter „Energieerzeuger“ der Startseite öffnet über seine Beschreibung
+    `Programm Dokumentation/Energieerzeuger`.
+  - Deren Tafel „Die Techniken im Überblick“ (Anker `techniken`) führt je Technik zu
+    Grundlagen, Anwendung und Rechenweg.
+- **Assistent**
+  - Der Hilfe-Assistent findet beide Rubriken online über `WikiWissen` (Teil B).
+  - In den Programmkern eingebettet sind nur die Rechenwegseiten der Unterrubrik Berechnung.
+
+### 14.3 Diagramme und Grafiken
+
+- **Diagrammvorlagen**
+  - Diagramme entstehen mit den Vorlagen `Projekte/Wiki/Vorlage - *.wiki`: Säulen, Legende,
+    Flussbild.
+  - Die Farben kommen aus `Vorlage:Diagrammfarbe` und den `--epos-*`-Tokens von
+    `MediaWiki:Common.css`, dadurch sind sie hell und dunkel lesbar.
+  - Säulenhöhen stehen in Prozent des größten Werts.
+  - Über jedem Diagramm mit gerechneten Werten steht ein HTML-Kommentar mit Formel und Annahmen.
+  - Die Bildunterschrift lautet „Prinzipbild“ oder „Beispielwerte, gerundet“. Kein Diagramm
+    täuscht ein EPOS-Plan-Ergebnis vor.
+- **Vorschau:** `Werkzeuge/WikiUpload/vorschau.py` zeigt eine Quelle mit aufgelösten Vorlagen
+  hell und dunkel, ohne etwas zu speichern (`action=parse`).
+- **SVG-Grafiken**
+  - Das Wiki lässt Uploads mit der Endung `svg` zu (`$wgEnableUploads`, `$wgFileExtensions`,
+    `$wgSVGNativeRendering`).
+  - Eine Grafik liegt unter `Projekte/Wiki/Dateien/`, steht in
+    `Werkzeuge/WikiUpload/dateien.tsv` und trägt einen hellen Kartenhintergrund, damit sie in
+    beiden Farbschemata lesbar bleibt.
+  - Sie enthält kein `<script>`, keine Ereignisattribute, kein `<foreignObject>`, keine
+    externen Verweise und kein `<title>`. `wiki_upload.py` prüft das vor jedem Upload.
+  - Eine SVG-Grafik kommt nur dort, wo ein Schema mehr zeigt als die Diagrammvorlagen.
+
+### 14.4 Upload
+
+- **Reihenfolge:** Dateien → Vorlagen → Grundlagen → Anwendungsseiten → Rubrik und Navigation →
+  Weiterleitungen, also `wiki_upload.py --dateien --seiten --weiterleitungen`. `seiten.tsv`
+  führt die Vorlagen vorn.
+- **Bot-Upload**
+  - Gebündelt nach der Prüfung: Wächter, Gegenlese-Muster, Vorschau.
+  - Zugangsdaten nur als Umgebungsvariablen `WIKI_BOT_USER`/`WIKI_BOT_PASS`, nie im
+    Repository, in Commits oder in Protokollen.
+  - Für Dateien braucht das Bot-Passwort zusätzlich die Rechte „Hochladen neuer Dateien“ und
+    „Hochladen, Ersetzen und Verschieben von Dateien“.
+- Regel 13.3 gilt: Die Technikdokumentation geht mit dem nächsten gebündelten Upload ins Wiki.
 
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
