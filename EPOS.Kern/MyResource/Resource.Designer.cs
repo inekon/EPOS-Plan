@@ -95150,6 +95150,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {
@@ -95956,6 +95965,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_LBL_SZENARIO {
             get {
                 return ResourceManager.GetString("WIRT_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·Monat) ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_MONAT {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·a) aus zwölf Monatssätzen ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_SAISON {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a) ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_STAFFEL {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_STAFFEL", resourceCulture);
             }
         }
         

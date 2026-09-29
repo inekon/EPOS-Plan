@@ -23,8 +23,17 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigename („Erdgas E"); bei mehreren Ständen mit dem Stand dahinter.</summary>
         public string Name = "";
 
-        /// <summary>Ist es ein STROMträger? Dann zählt der Leistungspreis immer mit.</summary>
+        /// <summary>Ist es der STROMträger eines Standes mit stromverwendendem Erzeuger? Dann
+        /// zählt der Leistungspreis immer mit.</summary>
         public bool IstStrom;
+
+        /// <summary>
+        /// Der Stromträger eines Standes OHNE stromverwendenden Erzeuger, dessen Netzbezug die
+        /// Gruppenregel bepreist — zugeordnet oder Auslieferungsträger (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17): Er rechnet Arbeits- und Grundpreis, den Leistungspreis
+        /// nicht; der zählt deshalb nie, auch nicht gepflegt oder je Szenario.
+        /// </summary>
+        public bool LeistungspreisAusgesetzt;
 
         /// <summary>Wirksamer Erwartet-Arbeitspreis (Rückfallkette); <c>null</c> = keiner.</summary>
         public double? Arbeitspreis;
@@ -70,8 +79,11 @@ namespace WindowsFormsApplication1
     ///   <item><description>DV-Entgelt und PPA-Preis je Vergütungszeile, die für einen
     ///     Stand MIT PV-Anlage gilt;</description></item>
     ///   <item><description>je Träger MIT VERBRAUCH und Stand der Arbeits- und der
-    ///     Grundpreis, der Leistungspreis nur beim Stromträger oder dort, wo ein
-    ///     Leistungspreis (Erwartet oder je Szenario) gepflegt ist.</description></item>
+    ///     Grundpreis, der Leistungspreis beim Stromträger eines Standes mit
+    ///     stromverwendendem Erzeuger immer, sonst dort, wo ein Leistungspreis (Erwartet oder
+    ///     je Szenario) gepflegt ist — nie beim Stromträger eines Standes ohne
+    ///     stromverwendenden Erzeuger, der den Leistungspreis nicht ansetzt
+    ///     (Register EZ‑17).</description></item>
     /// </list>
     /// <para><c>n</c> — die SZENARIERTEN: Ein Parameter zählt, wenn sein Best- oder sein
     /// Worst-Wert gepflegt ist und sich um mehr als 1e−9 vom Erwartet-Wert unterscheidet
@@ -195,9 +207,11 @@ namespace WindowsFormsApplication1
                     // Der Leistungspreis zählt beim Stromträger immer, sonst nur, wo ein
                     // Leistungspreis gepflegt ist — Erwartet oder je Szenario. So bleibt
                     // n ≤ m: Ein gepflegter Szenario-Leistungspreis bringt seinen
-                    // Parameter mit.
+                    // Parameter mit. EZ‑17: Der Stromträger eines Standes ohne
+                    // stromverwendenden Erzeuger setzt ihn nicht an — dann zählt er nie.
                     bool leistungSzenario = (sz.LeistungspreisBest ?? 0) != 0 || (sz.LeistungspreisWorst ?? 0) != 0;
-                    if (tr.IstStrom || (tr.Leistungspreis ?? 0) != 0 || leistungSzenario)
+                    if (!tr.LeistungspreisAusgesetzt &&
+                        (tr.IstStrom || (tr.Leistungspreis ?? 0) != 0 || leistungSzenario))
                         a.Zaehlen(MyResource.Resource.WIRT_SZ_TP_LEISTUNG + " " + tr.Name,
                                   Paar(tr.Leistungspreis, sz.LeistungspreisBest, sz.LeistungspreisWorst));
                 }
@@ -254,7 +268,7 @@ namespace WindowsFormsApplication1
                 string stand = string.IsNullOrWhiteSpace(s.Value) ? id.ToString(CultureInfo.InvariantCulture) : s.Value;
 
                 List<KeyValuePair<int, string>> mitVerbrauch =
-                    TraegerMitVerbrauch(id, gruppeStrom, out int stromImVergleich);
+                    TraegerMitVerbrauch(id, gruppeStrom, out int stromOhneVerwender);
                 foreach (KeyValuePair<int, string> c in mitVerbrauch)
                 {
                     double? arbeit = null, grund = null, leistung = null;
@@ -267,9 +281,11 @@ namespace WindowsFormsApplication1
                     traeger.Add(new SzenarioAbdeckungTraeger
                     {
                         Name = c.Value + (mehrere ? " (" + stand + ")" : ""),
-                        // Der Träger, den die Gruppenregel ohne Zuordnung beisteuert, ist der
-                        // Stromträger dieses Standes im Vergleich — sein Leistungspreis zählt immer.
-                        IstStrom = c.Key == stromImVergleich || IstStromtraeger(id, c.Key),
+                        // EZ‑17: Der Stromträger eines Standes ohne stromverwendenden Erzeuger —
+                        // zugeordnet oder von der Gruppenregel beigesteuert — zählt Arbeits- und
+                        // Grundpreis; den Leistungspreis setzt der Vergleich dort nicht an.
+                        IstStrom = c.Key != stromOhneVerwender && IstStromtraeger(id, c.Key),
+                        LeistungspreisAusgesetzt = c.Key == stromOhneVerwender,
                         Arbeitspreis = arbeit,
                         Grundpreis = grund,
                         Leistungspreis = leistung,
@@ -309,13 +325,13 @@ namespace WindowsFormsApplication1
         /// Stromverwendung, ohne Zuordnung der Auslieferungsträger, mit dem ihn der Vergleich
         /// bepreist.</para>
         /// </summary>
-        /// <param name="stromImVergleich">Der Auslieferungsträger, den die Gruppenregel einem
-        /// Stand ohne eigene Stromverwendung und ohne zugeordneten Stromträger beisteuert;
-        /// 0 = keiner.</param>
+        /// <param name="stromOhneVerwender">Der Stromträger eines Standes ohne eigene
+        /// Stromverwendung, dessen Netzbezug die Gruppenregel bepreist — zugeordnet oder
+        /// Auslieferungsträger; er setzt keinen Leistungspreis an (EZ‑17). 0 = keiner.</param>
         private static List<KeyValuePair<int, string>> TraegerMitVerbrauch(int idProjekt, bool gruppeStrom,
-                                                                           out int stromImVergleich)
+                                                                           out int stromOhneVerwender)
         {
-            stromImVergleich = 0;
+            stromOhneVerwender = 0;
             var liste = new List<KeyValuePair<int, string>>();
             var ids = new HashSet<int>();
             try
@@ -333,10 +349,8 @@ namespace WindowsFormsApplication1
                 {
                     int strom = Emissionsquelle.StromTraeger(idProjekt);
                     if (strom <= 0 && !eigen)
-                    {
                         strom = ProjektEnergietraegerCtrl.StromTraegerImVergleich(idProjekt);
-                        stromImVergleich = Math.Max(0, strom);
-                    }
+                    if (!eigen && strom > 0) stromOhneVerwender = strom;
                     if (strom > 0 && ids.Add(strom))
                         liste.Add(new KeyValuePair<int, string>(strom, Emissionsquelle.TraegerName(strom)));
                 }

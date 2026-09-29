@@ -10975,6 +10975,18 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel).</value>
   </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
+  </data>
+  <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
+    <value>{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)</value>
+  </data>
+  <data name="WIRT_LP_SATZ_SAISON" xml:space="preserve">
+    <value>{0} €/(kW·a) aus zwölf Monatssätzen</value>
+  </data>
+  <data name="WIRT_LP_SATZ_MONAT" xml:space="preserve">
+    <value>{0} €/(kW·Monat)</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
   </data>
