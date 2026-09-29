@@ -383,6 +383,121 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  „Original geändert – übernehmen?" (Konzept 10.2, 10.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Ändert sich das Original einer eigenen Vorlage, steht die Zeile unter der Prüfzeile:
+        /// „Original geändert – übernehmen?" mit „Übernehmen" und „Behalten". „Übernehmen" holt das
+        /// Original, prüft voll und lässt die Vorlage gewählt; danach ist die Zeile weg.
+        /// </summary>
+        [Fact]
+        public async Task Die_Zeile_Original_geaendert_bietet_Uebernehmen_und_Behalten()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            int id = Id(gruppe.Stand(), "Angebot");
+            await gruppe.VorlageGewaehlt(id);
+            Assert.Null(gruppe.Stand().Originalzeile);
+
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            byte[] neu = Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}");
+            File.WriteAllBytes(quelle, neu);
+
+            Vorlagenstand stand = gruppe.Stand();
+            Originalstand? zeile = stand.Originalzeile;
+            Assert.NotNull(zeile);
+            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, zeile!.Text);
+            Assert.Equal(BerichtsvorlagenGaben.SYMBOL_WARNUNG, zeile.Symbol);
+            Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Id);
+            Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Text);
+            Assert.True(zeile.Uebernehmen.Aktiv);
+            Assert.Contains(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
+            Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN, zeile.Behalten.Id);
+            Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, zeile.Behalten.Text);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN);
+            stand = gruppe.Stand();
+            Assert.Equal(Format(R.BV_VORLAGEN_ORIGINAL_UEBERNOMMEN, "Angebot"), stand.Meldung);
+            Assert.Equal("", stand.Fehler);
+            Assert.Equal(neu, File.ReadAllBytes(angebot.Pfad));
+            Assert.Null(stand.Originalzeile);
+            Assert.Equal(id, stand.VorlageId);
+            Assert.Equal("Angebot.docx", Lade().VorlageWordDatei);
+            // Voll geprüft wie nach „Ersetzen…": der unbekannte Platzhalter steht in der Prüfzeile.
+            Assert.Equal(BerichtsvorlagenGaben.SYMBOL_FEHLER, stand.Pruefzeile!.Symbol);
+            Assert.True(stand.Pruefzeile.HatBefunde);
+        }
+
+        /// <summary>
+        /// „Behalten" lässt die Vorlage stehen und nimmt die Zeile fort, bis sich das Original erneut
+        /// ändert. Eine in Word geöffnete Vorlage sperrt „Übernehmen" WEICH mit Grund.
+        /// </summary>
+        [Fact]
+        public async Task Behalten_nimmt_die_Zeile_fort_und_Word_sperrt_Uebernehmen_weich()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            byte[] vorher = File.ReadAllBytes(angebot.Pfad);
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            await gruppe.VorlageGewaehlt(Id(gruppe.Stand(), "Angebot"));
+
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+            Assert.NotNull(gruppe.Stand().Originalzeile);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN);
+            Vorlagenstand stand = gruppe.Stand();
+            Assert.Equal(Format(R.BV_VORLAGEN_ORIGINAL_BEHALTEN, "Angebot"), stand.Meldung);
+            Assert.Null(stand.Originalzeile);
+            Assert.Equal(vorher, File.ReadAllBytes(angebot.Pfad));
+
+            // Das Original ändert sich ein zweites Mal — und in Word ist die Vorlage offen.
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.ort}}"));
+            File.WriteAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "~$Angebot.docx"), new byte[] { 1 });
+            Originalstand? zeile = gruppe.Stand().Originalzeile;
+            Assert.NotNull(zeile);
+            Assert.False(zeile!.Uebernehmen.Aktiv);
+            Assert.Equal(R.BV_VORLAGEN_IN_WORD, zeile.Uebernehmen.Grund);
+            Assert.True(zeile.Behalten.Aktiv);
+        }
+
+        /// <summary>
+        /// Ohne dauerhaftes Original (iOS: die Vorlage wird beim Hinzufügen in die Sandbox kopiert)
+        /// entsteht die Zeile nicht — und käme ihre Handlung dennoch herein, wird sie BENANNT
+        /// abgelehnt, statt still zu schreiben.
+        /// </summary>
+        [Fact]
+        public async Task Ohne_dauerhaftes_Original_gibt_es_die_Zeile_nicht_und_die_Handlung_wird_benannt_abgelehnt()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            byte[] vorher = File.ReadAllBytes(angebot.Pfad);
+            BerichtsvorlagenGaben ios = Gruppe(new Berichtsvorlagenwege());
+            await ios.VorlageGewaehlt(Id(ios.Stand(), "Angebot"));
+            File.WriteAllBytes(Path.Combine(_quellen, "Angebot.docx"), Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+
+            Assert.Null(ios.Stand().Originalzeile);
+
+            await ios.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN);
+            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER, ios.Stand().Fehler);
+            Assert.Equal(vorher, File.ReadAllBytes(angebot.Pfad));
+
+            await ios.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN);
+            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER, ios.Stand().Fehler);
+        }
+
+        // =====================================================================
         //  „Hinzufügen…" und „Neue Vorlage…"
         // =====================================================================
 
@@ -1687,7 +1802,9 @@ namespace EPOS.Kern.Tests
                     ImOrdnerZeigen = p => { Aufrufe.Add("ordner:" + p); return Antwort; },
                     InWordOeffnen = p => { Aufrufe.Add("word:" + p); return Antwort; },
                     SchreibgeschuetztOeffnen = p => { Aufrufe.Add("lesen:" + p); return Antwort; },
-                    OrdnerWaehlbar = true
+                    OrdnerWaehlbar = true,
+                    // Wie Windows: Die Datei, aus der „Hinzufügen…“ kopiert hat, bleibt liegen.
+                    HerkunftDauerhaft = true
                 };
             }
         }
