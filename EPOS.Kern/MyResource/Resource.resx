@@ -39868,5 +39868,422 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus.</value>
   </data>
+  <data name="KOND_LBL_REITER" xml:space="preserve">
+    <value>Konditionierung</value>
+  </data>
+  <data name="KOND_LBL_MATRIX" xml:space="preserve">
+    <value>Vorgabe-Matrix</value>
+  </data>
+  <data name="KOND_LBL_GROESSE_HEIZEN" xml:space="preserve">
+    <value>Heizen</value>
+  </data>
+  <data name="KOND_LBL_GROESSE_KUEHLEN" xml:space="preserve">
+    <value>Kühlen</value>
+  </data>
+  <data name="KOND_LBL_GROESSE_LUEFTUNG" xml:space="preserve">
+    <value>Lüftung</value>
+  </data>
+  <data name="KOND_LBL_GROESSE_GERAETE" xml:space="preserve">
+    <value>Geräte</value>
+  </data>
+  <data name="KOND_LBL_GROESSE_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_HEIZEN" xml:space="preserve">
+    <value>Heizen °C</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_KUEHLEN" xml:space="preserve">
+    <value>Kühlen °C</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_LUEFTUNG" xml:space="preserve">
+    <value>Lüftung 1/h</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_GERAETE" xml:space="preserve">
+    <value>Geräte W bzw. %</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_PERSONEN" xml:space="preserve">
+    <value>Personen W bzw. %</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_NENNWERT" xml:space="preserve">
+    <value>Nennwert</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_NACHT" xml:space="preserve">
+    <value>Nacht</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KOND_LBL_ZEILE_SAISON" xml:space="preserve">
+    <value>Saison</value>
+  </data>
+  <data name="KOND_LBL_FELD_HEIZEN_WOCHENENDE" xml:space="preserve">
+    <value>Soll am Wochenende (ganztägig)</value>
+  </data>
+  <data name="KOND_LBL_FELD_HEIZEN_FERIEN" xml:space="preserve">
+    <value>Soll in Ferien (ganztägig)</value>
+  </data>
+  <data name="KOND_LBL_NACHTFENSTER" xml:space="preserve">
+    <value>Nachtfenster</value>
+  </data>
+  <data name="KOND_LBL_NACHTFENSTER_VON" xml:space="preserve">
+    <value>Nachtfenster von</value>
+  </data>
+  <data name="KOND_LBL_NACHTFENSTER_BIS" xml:space="preserve">
+    <value>Nachtfenster bis</value>
+  </data>
+  <data name="KOND_LBL_SAISON_START" xml:space="preserve">
+    <value>Start der Saison</value>
+  </data>
+  <data name="KOND_LBL_SAISON_ENDE" xml:space="preserve">
+    <value>Ende der Saison</value>
+  </data>
+  <data name="KOND_LBL_FERIENZEITRAEUME" xml:space="preserve">
+    <value>Ferienzeiträume</value>
+  </data>
+  <data name="KOND_LBL_MAXRAUMTEMPERATUR" xml:space="preserve">
+    <value>Maximalraumtemperatur</value>
+  </data>
+  <data name="KOND_LBL_SOMMERLUEFTUNG" xml:space="preserve">
+    <value>Sommerlüftung</value>
+  </data>
+  <data name="KOND_LBL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="KOND_LBL_NUTZERLUEFTUNG" xml:space="preserve">
+    <value>Nutzerlüftung</value>
+  </data>
+  <data name="KOND_LBL_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Nachtauskühlung</value>
+  </data>
+  <data name="KOND_LBL_AUSSENABSTAND" xml:space="preserve">
+    <value>ΔT Außenluft</value>
+  </data>
+  <data name="KOND_TXT_JAHRESMITTEL" xml:space="preserve">
+    <value>Jahresmittel der Gewinne: Geräte {0} W, Personen {1} W, zusammen {2} W = {3} W/m²; Interne Wärmegewinne (Gesamtangabe): {4} W.</value>
+  </data>
+  <data name="KOND_TXT_HERLEITUNG_PERSONEN" xml:space="preserve">
+    <value>Personen: {0} × {1} W = {2} W (sensible Wärme)</value>
+  </data>
+  <data name="KOND_TXT_HERLEITUNG_GERAETE" xml:space="preserve">
+    <value>Geräte: {0} W = Interne Wärmegewinne {1} W − Jahresmittel der Personenwärme {2} W</value>
+  </data>
+  <data name="KOND_TXT_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="KOND_TXT_LEER" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="KOND_TXT_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="KOND_TXT_GANZJAEHRIG" xml:space="preserve">
+    <value>ganzjährig</value>
+  </data>
+  <data name="KOND_LBL_AUS" xml:space="preserve">
+    <value>aus</value>
+  </data>
+  <data name="KOND_LBL_AUS_SCHALTER" xml:space="preserve">
+    <value>Zelle auf „aus“ setzen</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_MATRIX" xml:space="preserve">
+    <value>aus der Matrix</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_VORLAGE" xml:space="preserve">
+    <value>aus Vorlage {0}</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_ANGELEGT" xml:space="preserve">
+    <value>angelegt, {0} eigene Perioden</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_ANGELEGT_EINE" xml:space="preserve">
+    <value>angelegt, 1 eigene Periode</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_GEBAEUDE" xml:space="preserve">
+    <value>vom Gebäude</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_EIGEN" xml:space="preserve">
+    <value>eigener Kalender</value>
+  </data>
+  <data name="KOND_BTN_KALENDER_ANLEGEN" xml:space="preserve">
+    <value>Kalender anlegen</value>
+  </data>
+  <data name="KOND_BTN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="KOND_BTN_MATRIX_ERNEUT" xml:space="preserve">
+    <value>Matrix erneut anwenden…</value>
+  </data>
+  <data name="KOND_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="KOND_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KOND_BTN_ALS_VORLAGE" xml:space="preserve">
+    <value>Als Vorlage speichern…</value>
+  </data>
+  <data name="KOND_BTN_VORLAGEN_VERWALTEN" xml:space="preserve">
+    <value>Vorlagen verwalten</value>
+  </data>
+  <data name="KOND_BTN_KATALOG_ERNEUT" xml:space="preserve">
+    <value>Aus dem Katalog erneut übernehmen…</value>
+  </data>
+  <data name="KOND_BTN_UEBERNEHMEN_ANPASSEN" xml:space="preserve">
+    <value>Vom Gebäude übernehmen und anpassen</value>
+  </data>
+  <data name="KOND_BTN_ERBEN" xml:space="preserve">
+    <value>Erben</value>
+  </data>
+  <data name="KOND_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren</value>
+  </data>
+  <data name="KOND_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="KOND_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KOND_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="KOND_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KOND_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KOND_BTN_ZEITFENSTER" xml:space="preserve">
+    <value>Zeitfenster eintragen</value>
+  </data>
+  <data name="KOND_BTN_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage als Regel anlegen</value>
+  </data>
+  <data name="KOND_BTN_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Zeitstruktur übernehmen</value>
+  </data>
+  <data name="KOND_BTN_PERIODE_NEU" xml:space="preserve">
+    <value>Periode hinzufügen</value>
+  </data>
+  <data name="KOND_BTN_PERIODE_BEARBEITEN" xml:space="preserve">
+    <value>Periode bearbeiten</value>
+  </data>
+  <data name="KOND_BTN_PERIODE_LOESCHEN" xml:space="preserve">
+    <value>Periode löschen</value>
+  </data>
+  <data name="KOND_BTN_RANG_HOEHER" xml:space="preserve">
+    <value>Rang erhöhen</value>
+  </data>
+  <data name="KOND_BTN_RANG_NIEDRIGER" xml:space="preserve">
+    <value>Rang senken</value>
+  </data>
+  <data name="KOND_LBL_GRUNDANGABE" xml:space="preserve">
+    <value>Grundangabe</value>
+  </data>
+  <data name="KOND_LBL_STANDARDWOCHE" xml:space="preserve">
+    <value>Standardwoche</value>
+  </data>
+  <data name="KOND_LBL_WOCHENRASTER" xml:space="preserve">
+    <value>Wochenraster</value>
+  </data>
+  <data name="KOND_LBL_ZEITFENSTER" xml:space="preserve">
+    <value>Zeitfenster</value>
+  </data>
+  <data name="KOND_LBL_ZEITFENSTER_TAGE" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="KOND_LBL_ZEITFENSTER_VON" xml:space="preserve">
+    <value>Von</value>
+  </data>
+  <data name="KOND_LBL_ZEITFENSTER_BIS" xml:space="preserve">
+    <value>Bis</value>
+  </data>
+  <data name="KOND_LBL_ZEITFENSTER_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="KOND_LBL_PERIODEN" xml:space="preserve">
+    <value>Perioden</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_VON" xml:space="preserve">
+    <value>Von</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_BIS" xml:space="preserve">
+    <value>Bis</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_RANG" xml:space="preserve">
+    <value>Rang</value>
+  </data>
+  <data name="KOND_LBL_ART_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="KOND_LBL_ART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KOND_LBL_ART_FEIERTAG" xml:space="preserve">
+    <value>Feiertag</value>
+  </data>
+  <data name="KOND_LBL_ART_BETRIEBSPAUSE" xml:space="preserve">
+    <value>Betriebspause</value>
+  </data>
+  <data name="KOND_TXT_WERT_EIGENE_WOCHE" xml:space="preserve">
+    <value>eigene Woche</value>
+  </data>
+  <data name="KOND_TXT_WERT_WIE_WOCHENTAG" xml:space="preserve">
+    <value>wie {0}</value>
+  </data>
+  <data name="KOND_LBL_WERKZEUG_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage</value>
+  </data>
+  <data name="KOND_LBL_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Zeitstruktur</value>
+  </data>
+  <data name="KOND_LBL_WIE_HEIZUNG" xml:space="preserve">
+    <value>wie Heizung</value>
+  </data>
+  <data name="KOND_LBL_WIE_ANWESENHEIT" xml:space="preserve">
+    <value>wie Anwesenheit</value>
+  </data>
+  <data name="KOND_LBL_VORSCHAU_WOCHE" xml:space="preserve">
+    <value>Vorschau: Woche</value>
+  </data>
+  <data name="KOND_LBL_TEPPICHBILD" xml:space="preserve">
+    <value>Teppichbild</value>
+  </data>
+  <data name="KOND_TXT_TEPPICHBILD" xml:space="preserve">
+    <value>Bezugsjahr {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle.</value>
+  </data>
+  <data name="KOND_TXT_QUELLE" xml:space="preserve">
+    <value>Quelle: {0}</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_PERIODEN" xml:space="preserve">
+    <value>Der Matrixbereich ist nur lesbar; neue Perioden sind Zeiträume oder Feiertage. Bei Überschneidung gilt die Periode mit dem höheren Rang.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_FEIERTAGE" xml:space="preserve">
+    <value>Legt die neun bundeseinheitlichen Feiertage als Regel an, jeweils wie Sonntag. Länderfeiertage legen Sie als eigene Perioden an.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ZEITSTRUKTUR" xml:space="preserve">
+    <value>„wie Heizung“ nimmt die Stunden, in denen mit dem Tagwert oder höher geheizt wird, „wie Anwesenheit“ die Stunden mit Anwesenheit. Diese Stunden bekommen den Tagwert der Größe, alle übrigen ihren Nachtwert; ersetzt wird nur die Standardwoche.</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_AUSWAHL" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_KEINE" xml:space="preserve">
+    <value>keine Vorlage gewählt</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="KOND_LBL_NUTZUNG_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="KOND_LBL_NUTZUNG_BUERO" xml:space="preserve">
+    <value>Büro</value>
+  </data>
+  <data name="KOND_LBL_NUTZUNG_SCHULE" xml:space="preserve">
+    <value>Schule</value>
+  </data>
+  <data name="KOND_LBL_NUTZUNG_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="KOND_LBL_NUTZUNG_KEINE" xml:space="preserve">
+    <value>ohne Angabe</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_AUSGELIEFERT" xml:space="preserve">
+    <value>ausgeliefert</value>
+  </data>
+  <data name="KOND_LBL_VORLAGE_EIGEN" xml:space="preserve">
+    <value>eigen</value>
+  </data>
+  <data name="KOND_LBL_VERWALTUNG" xml:space="preserve">
+    <value>Vorlagen der Konditionierung</value>
+  </data>
+  <data name="KOND_LBL_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_SOFORT" xml:space="preserve">
+    <value>Die Vorlage wird sofort gespeichert, nicht erst mit dem OK des Editors.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_GESPERRT" xml:space="preserve">
+    <value>Ausgelieferte Vorlage — nur lesbar; Duplizieren legt eine bearbeitbare Kopie an.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_LOESCHEN" xml:space="preserve">
+    <value>Beim Löschen der Vorlage „{0}“ wird kein Gebäude, keine Zone und kein Katalogsatz berührt; schon übernommene Werte bleiben.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen wirkt nur auf diese Größe. Nennwert und Saison des Ziels bleiben; leere Zellen der Vorlage lassen die Zellen des Ziels unverändert.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_SPEICHERN" xml:space="preserve">
+    <value>Die Vorlage nimmt die Matrixspalte und, falls angelegt, den Kalender dieser Größe mit — ohne Nennwert und Saison.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_VDI6007" xml:space="preserve">
+    <value>Unter VDI 6007 ist die Matrix Vorgabe; angelegte Kalender gehen vor.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ALTFELDER" xml:space="preserve">
+    <value>Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur stehen im Reiter „Konditionierung“.</value>
+  </data>
+  <data name="KOND_TXT_KUEHLEN_GESPERRT" xml:space="preserve">
+    <value>Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“.</value>
+  </data>
+  <data name="KOND_TXT_KUEHLEN_ZONE" xml:space="preserve">
+    <value>Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht möglich.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_TAGESBILANZ" xml:space="preserve">
+    <value>Dieses Gebäude rechnet auf dem Rechenweg „Tagesbilanz (Bestandsweg)“: Die Matrix zeigt nur die Felder, die dieser Weg liest; Kalender und weitere Zellen wirken erst unter VDI 6007.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_LESEMODUS" xml:space="preserve">
+    <value>Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an.</value>
+  </data>
+  <data name="KOND_TXT_GEMEINJAHR" xml:space="preserve">
+    <value>Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_AUS" xml:space="preserve">
+    <value>„aus“: Die Größe ist in dieser Stunde abgeschaltet (Heizen und Kühlen ohne Betrieb, Nutzerlüftung 0 1/h, Anteile 0 %). Ein neuer Wert in der Zelle hebt „aus“ wieder auf.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Wirkt nur bedingt: Die Raumluft liegt über der Schwelle und die Außenluft ist mindestens ΔT kühler (Vorgabe 2 K). Einen Schalter gibt es nicht.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_NACHTFENSTER" xml:space="preserve">
+    <value>leer = Nachtfenster der Heizspalte</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_SAISON" xml:space="preserve">
+    <value>Innerhalb der Saison wird geheizt bzw. gekühlt, außerhalb steht die Größe auf „aus“; leer heißt ganzjährig. Start und Ende gibt es nur zusammen.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_VOM_GEBAEUDE" xml:space="preserve">
+    <value>Die Zone folgt dem Kalender des Gebäudes. „Vom Gebäude übernehmen und anpassen“ legt eine eigene Kopie an.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_UNBEHEIZT" xml:space="preserve">
+    <value>Eine unbeheizte Zone hat weder Heiz- noch Kühlwerte; Lüftung, Geräte und Personen gelten.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_OHNE_TABELLEN" xml:space="preserve">
+    <value>Die Konditionierung steht nicht zur Verfügung: Diese Datenbank trägt die Tabellen der Konditionierung nicht.</value>
+  </data>
+  <data name="KOND_LBL_KATALOG_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="KOND_TXT_KATALOG_KALENDER" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
 </root>
 
