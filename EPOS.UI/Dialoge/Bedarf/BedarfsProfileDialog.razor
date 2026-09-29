@@ -62,6 +62,13 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+@* N35 (Anwenderentscheid 27.09.2026, Variante a): Auf dem Zapfprofil-BLATT tauscht der
+   Dialog seinen gesamten Haupt-Inhalt - Kopf, Katalog/Projektliste, Infoblock und die
+   uebrigen vier Ueberlagerungen - gegen das Blatt (siehe unten); das haelt die Ebenen
+   flach (Gebaeudekatalog -> "Brauchwasser..." -> Zapfprofil statt einer dritten
+   verschachtelten Ueberlagerung, Befund #572) und zeigt zugleich nur EINE Fussleiste. *@
+@if (!ZapfprofilOffen)
+{
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
         {
@@ -259,9 +266,17 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 5: das Brauchwasser-Zapfprofil (5.2) ----------------- *@
-    <Ueberlagerung Offen="@(_zapfprofilGaben is not null)" Titel="@ZapfprofilEinstiegTexte.Titel"
-                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _zapfprofilGaben = null">
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText" Frage="@Loeschfrage"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+}
+
+    @* --- Das Zapfprofil-BLATT (N35, Zuschnitt a) statt der fuenften Ueberlagerung ---
+       Blattwechsel tauscht den Inhalt DIESES Dialogs (siehe @if oben) gegen das Blatt;
+       derselbe ZapfprofilDialog, dieselbe Geschlossen-Behandlung wie zuvor (OK uebernimmt,
+       Abbrechen verwirft, beide fuehren zurueck) - nur eine Ebene flacher. *@
+    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@KopfbandText"
+                  Titel="@ZapfprofilEinstiegTexte.Titel" ZusatzKlasse="epos-blatt--breit"
+                  Zurueck="ZapfprofilZurueck">
         <KindInhalt>
             @if (_zapfprofilGaben is not null)
             {
@@ -269,10 +284,7 @@
                                   Geschlossen="ZapfprofilGeschlossen" />
             }
         </KindInhalt>
-    </Ueberlagerung>
-
-    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText" Frage="@Loeschfrage"
-                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+    </Blattwechsel>
 </div>
 
 @code {
@@ -527,6 +539,10 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    /// <summary>N35: Nach dem Rückweg vom Zapfprofil-Blatt bekommt die Wurzel den Fokus zurück
+    /// (derselbe Platz wie beim ersten Aufbau) — der Blattwechsel fokussiert nur SICH SELBST.</summary>
+    private bool _fokusZurueckNoetig;
+
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private Katalogfilterstand _filterstand = new();
     private BedarfsProfilZeile? _gewaehlt;
@@ -753,9 +769,18 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !_ersterAufbau) return;
-        _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        if (firstRender && _ersterAufbau)
+        {
+            _ersterAufbau = false;
+            await _wurzel.FocusAsync();
+            return;
+        }
+
+        if (_fokusZurueckNoetig && !ZapfprofilOffen)
+        {
+            _fokusZurueckNoetig = false;
+            await _wurzel.FocusAsync();
+        }
     }
 
     private void KatalogLaden()
@@ -1075,12 +1100,20 @@
     private void ZapfprofilGeschlossen(ZapfprofilErgebnisDaten? ergebnis)
     {
         _zapfprofilGaben = null;
+        _fokusZurueckNoetig = true;
         if (ergebnis is null) return;
 
         ZapfprofilUebernommen?.Invoke(ergebnis);
         _rechenweg = ZapfprofilWeg.Generator;
         _zapfprofilZonen = ergebnis.Eingabe.Zonen.Count;
     }
+
+    /// <summary>
+    /// N35: Rückknopf „‹ {Wirtstitel}" und Esc des Blattes — wie das Kreuz der abgelösten
+    /// Ueberlagerung führen beide zurück, ohne den eingebetteten Dialog zu fragen (Hausregel
+    /// „der Wirt schließt dafür selbst"): kein Übernehmen, kein Rechenweg-Wechsel.
+    /// </summary>
+    private void ZapfprofilZurueck() => ZapfprofilGeschlossen(null);
 
     /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
     private void RechenwegWaehlen(int? id)

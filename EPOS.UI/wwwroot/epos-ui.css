@@ -2256,6 +2256,13 @@ html:has(.epos-ueberlagerung) {
     --epos-ueberlagerung-fuss: calc(var(--epos-touchziel) + 9px);
 }
 
+/* Dieselbe Rechnung, wenn zwischen der Ueberlagerung und dem eingebetteten Dialog ein
+   BLATT steht (N35): Ein Diagramm des Zapfprofils braucht denselben Abstand zur (jetzt
+   im Blatt haftenden) Fussleiste wie eines, das direkt in der Ueberlagerung steht. */
+.epos-ueberlagerung:has(.epos-blatt-inhalt > .epos-dialog > .epos-leiste > .epos-status) {
+    --epos-ueberlagerung-fuss: calc(var(--epos-touchziel) + 9px);
+}
+
 /* DIE ZEIGERZEILE EINES BILDES BLEIBT IM BILD (#572). Unter einem Diagramm
    in einer Ueberlagerung stand der Wert am Zeiger unter dem unteren Rand
    des Rollbereichs, sobald das Bild bis dorthin reichte (Gebaeudebedarf,
@@ -2278,6 +2285,64 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 
 .epos-ueberlagerung:not(:has(.epos-ueberlagerung)) .epos-hilfepille {
     visibility: visible;
+}
+
+/* ==========================================================================
+   Blattwechsel (Umsetzungskonzept Zapfprofilgenerator, Nachtrag N35,
+   Anwenderentscheid 27.09.2026, Variante a). Ein Unterdialog mit eigenen
+   Spalten, eigenen Ueberlagerungen oder mehr als einer Bildschirmhoehe
+   tauscht den Inhalt seines Wirtsdialogs, statt eine weitere
+   Ueberlagerungsebene zu oeffnen - Befund #572: Gebaeudekatalog ->
+   "Brauchwasser..." -> Zapfprofil -> Auslegung... war eine Ueberlagerung in
+   einer Ueberlagerung in einer Ueberlagerung. Das Blatt traegt kein eigenes
+   Kreuz (Rueckknopf und Esc fuehren beide gleich zurueck, wie das Kreuz einer
+   Ueberlagerung); seine Kopfzeile und sein Inhalt sind deshalb einfacher als
+   die einer Ueberlagerung.
+   ========================================================================== */
+
+.epos-blatt {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-blatt-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-blatt-zurueck {
+    flex: 0 0 auto;
+    padding-left: 0;
+}
+
+.epos-blatt-titel {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-blatt-inhalt {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+/* DIE FUSSLEISTE DES BLATTES HAFTET GENAUSO (#572-Nachtrag): Die Regel oben
+   (.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste) greift nicht
+   mehr, sobald ein Blatt zwischen der Ueberlagerung und dem eingebetteten
+   Dialog steht - dieselbe Behandlung, eine Ebene tiefer verankert. */
+.epos-blatt-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {
+    position: sticky;
+    bottom: calc(-1 * var(--epos-karte-rand));
+    z-index: 2;
+    margin-bottom: calc(-1 * var(--epos-karte-rand));
+    padding: 8px 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
 }
 
 /* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen
@@ -10644,6 +10709,15 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 /* ausserhalb des Sichtfelds). 1400 px ist die Summe der drei            */
 /* Mindestbreiten plus Abstaende und Innenrand.                          */
 .epos-ueberlagerung--breit {
+    width: min(96vw, 1400px);
+    max-height: 94vh;
+}
+
+/* Ein breites BLATT (N35, Zapfprofil) weitet die tragende Ueberlagerung auf dasselbe
+   Mass wie .epos-ueberlagerung--breit - der Wirt (etwa der Gebaeudekatalog) muss dafuer
+   nichts vom Blatt wissen. .epos-blatt--breit traegt selbst keine Eigenschaften, es ist
+   nur die Marke, an der :has() hier greift. */
+.epos-ueberlagerung:has(.epos-blatt--breit) {
     width: min(96vw, 1400px);
     max-height: 94vh;
 }

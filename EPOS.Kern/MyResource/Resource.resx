@@ -27189,6 +27189,9 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_VG_ZURUECK" xml:space="preserve">
     <value>‹ Stammblatt von {0}</value>
   </data>
+  <data name="BLATT_ZURUECK" xml:space="preserve">
+    <value>‹ {0}</value>
+  </data>
   <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
     <value>nur abweichende Werte</value>
   </data>
