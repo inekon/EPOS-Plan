@@ -20337,6 +20337,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Stunden im Jahr, in denen der Kessel betriebsbereit gehalten wird; daraus folgt sein Bereitschaftsverlust.</value>
   </data>
+  <data name="KI_DLG_SIM_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft in °C: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag; dann bleibt ein stillstehender Kessel betriebsbereit. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C.</value>
+  </data>
   <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
     <value>Wärmebedarf</value>
   </data>
@@ -21269,6 +21272,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
     <value>Die Konfiguration der Wärmepumpen-Anlage ist auf dieser Plattform nicht verfügbar.</value>
+  </data>
+  <data name="SIMKONF_LBL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft</value>
+  </data>
+  <data name="SIMKONF_HRL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heiztag ist ein Tag, dessen mittlere Außentemperatur unter diesem Wert liegt. An Heiztagen und 24 h nach seinem letzten Lauf bleibt ein stillstehender Kessel betriebsbereit und trägt seinen Bereitschaftsverlust. Leer = {0} °C.</value>
+  </data>
+  <data name="SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH" xml:space="preserve">
+    <value>Die Heizgrenze der Kesselbereitschaft muss zwischen {0} und {1} °C liegen — oder leer bleiben, dann gilt {2} °C.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
     <value>Heizstab mitrechnen</value>
@@ -22760,6 +22772,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels.</value>
+  </data>
+  <data name="KI_DLG_KKONF_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heizgrenze der Kesselbereitschaft in °C — ein Wert des PROJEKTS, nicht dieses Kessels: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C.</value>
   </data>
   <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
     <value>Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung.</value>
@@ -27939,11 +27954,14 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
   </data>
+  <data name="SIMENG_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Betriebsbereitschaft: Heizgrenze {0:0.#} °C, {1} Heiztage — an ihnen und 24 h nach seiner letzten Laufstunde trägt ein stillstehender Kessel seinen Bereitschaftsverlust.</value>
+  </data>
   <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
     <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>

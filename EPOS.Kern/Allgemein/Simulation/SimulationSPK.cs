@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     // wurde komplett entfernt. Stattdessen wird der Brennstoffverbrauch nun stündlich direkt in der Simulationsschleife ermittelt:
     //
     // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den stündlichen Wirkungsgrad ermittelt.
-    // - Steht er in einer Stunde still und ist er betriebsbereit (Heizperiode oder Nachlauf, #568), wird
+    // - Steht er in einer Stunde still und ist er betriebsbereit (Heiztag oder Nachlauf, #568), wird
     //   ihm für diese exakte Stunde der Bereitschaftsverlust als Brennstoffverbrauch (Wärmeverlust)
     //   aufgeschlagen; außerhalb der Betriebsbereitschaft ist er abgeschaltet und verliert nichts.
     //
@@ -60,23 +60,68 @@ namespace WindowsFormsApplication1
         public int Vorgabe_Betriebsbereitschaft;
 
         /// <summary>
-        /// RAUMWÄRMEBEDARF des Projekts VOR der Erzeugerkaskade [kWh je Stunde], 8760 Werte
-        /// (Kanal <see cref="Kanal.HEIZUNG"/>) — die Grundlage der HEIZPERIODE
-        /// (<see cref="HeiztageAus"/>). Gesetzt von <c>SimulationControl</c> vor
-        /// <see cref="Vorbereiten_Zweikanalig"/>, wie <see cref="Vorgabe_Betriebsbereitschaft"/>;
-        /// <see cref="Init"/> lässt es stehen, denn es ist Eingang, nicht Laufzustand.
-        /// <c>null</c> = Heizperiode unbekannt; dann gilt jeder Tag als Heiztag.
+        /// AUSSENTEMPERATUR des Laufs [°C je Stunde], 8760 Werte — dieselbe Reihe, mit der
+        /// die Simulation rechnet (<c>SimulationControl.Stundentemperatur</c>, Klimaregion des
+        /// Projekts in Ortszeit); die Grundlage der HEIZTAGE (<see cref="HeiztageAus"/>).
+        /// Gesetzt von <c>SimulationControl</c> vor <see cref="Vorbereiten_Zweikanalig"/>, wie
+        /// <see cref="Vorgabe_Betriebsbereitschaft"/>; <see cref="Init"/> lässt sie stehen, denn
+        /// sie ist Eingang, nicht Laufzustand. <c>null</c> = keine Temperaturreihe; dann gilt
+        /// jeder Tag als Heiztag.
         /// </summary>
-        public double[] Raumwaermebedarf_Projekt;
+        public double[] Aussentemperatur_Projekt;
+
+        /// <summary>
+        /// HEIZGRENZE des Projekts [°C] (<c>Tab_Einstellungen.Kessel_Heizgrenze</c>): Ein Tag ist
+        /// Heiztag, wenn das Tagesmittel der Außentemperatur darunter liegt. <c>null</c> = die
+        /// Vorgabe <see cref="HEIZGRENZE_VORGABE_C"/>. Gesetzt von <c>SimulationControl</c> wie
+        /// <see cref="Aussentemperatur_Projekt"/>; wirksam ist <see cref="Heizgrenze_C"/>.
+        /// </summary>
+        public double? Vorgabe_Heizgrenze;
+
+        /// <summary>
+        /// Die VORGABE der Heizgrenze [°C] — sie gilt, solange das Projekt keine eigene führt
+        /// (Anwenderentscheid 27.09.2026 zu #568).
+        /// </summary>
+        public const double HEIZGRENZE_VORGABE_C = 15;
+
+        /// <summary>Untere Plausibilitätsgrenze der Heizgrenze [°C] — die Oberfläche lässt nichts darunter zu.</summary>
+        public const double HEIZGRENZE_MIN_C = 0;
+
+        /// <summary>Obere Plausibilitätsgrenze der Heizgrenze [°C] — die Oberfläche lässt nichts darüber zu.</summary>
+        public const double HEIZGRENZE_MAX_C = 30;
+
+        /// <summary>
+        /// Ist <paramref name="heizgrenze"/> eine zulässige Eingabe? Leer (<c>null</c> = Vorgabe) oder
+        /// eine Zahl von <see cref="HEIZGRENZE_MIN_C"/> bis <see cref="HEIZGRENZE_MAX_C"/>. Die Regel
+        /// der Oberfläche; der Rechenweg selbst nimmt jede endliche Zahl
+        /// (<see cref="HeizgrenzeWirksam"/>).
+        /// </summary>
+        public static bool HeizgrenzePlausibel(double? heizgrenze)
+        {
+            return !heizgrenze.HasValue ||
+                   (heizgrenze.Value >= HEIZGRENZE_MIN_C && heizgrenze.Value <= HEIZGRENZE_MAX_C);
+        }
+
+        /// <summary>
+        /// Die WIRKSAME Heizgrenze des Laufs [°C] — <see cref="HeizgrenzeWirksam"/> aus
+        /// <see cref="Vorgabe_Heizgrenze"/>, gebildet in <see cref="Vorbereiten_Zweikanalig"/>.
+        /// </summary>
+        public double Heizgrenze_C { get; private set; } = HEIZGRENZE_VORGABE_C;
+
+        /// <summary>
+        /// Die Zahl der HEIZTAGE des Laufs (0 … 365) — Tage, an denen ein stillstehender Kessel
+        /// betriebsbereit ist, gleich wann er zuletzt lief; ohne Temperaturreihe 365.
+        /// </summary>
+        public int Heiztage_Anzahl { get; private set; } = 365;
 
         /// <summary>
         /// Stunden, die ein Kessel nach seiner letzten Laufstunde betriebsbereit bleibt
-        /// (Nachlauf), auch außerhalb der Heizperiode — ein Kessel, der im Sommer Warmwasser
-        /// oder Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten.
+        /// (Nachlauf), auch an einem Tag über der Heizgrenze — ein Kessel, der im Sommer
+        /// Warmwasser oder Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten.
         /// </summary>
         internal const int BEREITSCHAFT_NACHLAUF_STUNDEN = 24;
 
-        /// <summary>Heiztage des Laufs (365), aus <see cref="Raumwaermebedarf_Projekt"/>; <c>null</c> = jeder Tag.</summary>
+        /// <summary>Heiztage des Laufs (365), aus <see cref="Aussentemperatur_Projekt"/>; <c>null</c> = jeder Tag.</summary>
         private bool[] _heiztage;
 
         /// <summary>Letzte Laufstunde je Kessel; <see cref="int.MinValue"/> = noch nie gelaufen.</summary>
@@ -1192,8 +1237,17 @@ namespace WindowsFormsApplication1
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
             if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
-            // #568: Heizperiode des Laufs - Grundlage der Betriebsbereitschaft.
-            _heiztage = HeiztageAus(Raumwaermebedarf_Projekt);
+            // #568: Heiztage des Laufs - Grundlage der Betriebsbereitschaft: Tagesmittel der
+            // Aussentemperatur unter der Heizgrenze des Projekts.
+            Heizgrenze_C = HeizgrenzeWirksam(Vorgabe_Heizgrenze);
+            _heiztage = HeiztageAus(Aussentemperatur_Projekt, Heizgrenze_C);
+            Heiztage_Anzahl = _heiztage == null ? 365 : _heiztage.Count(t => t);
+            if (Anzahl > 0)
+                SimulationProtokoll.Aktuell.Hinweis(
+                    MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KESSEL_HEIZGRENZE,
+                        Heizgrenze_C, Heiztage_Anzahl));
 
             // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
@@ -1454,7 +1508,7 @@ namespace WindowsFormsApplication1
                 }
                 else if (IstBetriebsbereit(_heiztage, stunde, _letzteLaufstunde[i]))
                 {
-                    // Kessel steht still, ist aber BETRIEBSBEREIT (Heizperiode oder Nachlauf)
+                    // Kessel steht still, ist aber BETRIEBSBEREIT (Heiztag oder Nachlauf)
                     // -> Bereitschaftsverlust, EINMAL: die Bereitschaftsleistung [kW] über
                     // eine Stunde. Sie ist eine Leistung, kein Anteil der Nennleistung
                     // (BereitschaftsleistungKw).
@@ -1464,7 +1518,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    // Kessel steht still und ist abgeschaltet (außerhalb der Heizperiode,
+                    // Kessel steht still und ist abgeschaltet (Tag über der Heizgrenze,
                     // Nachlauf abgelaufen): kein Bereitschaftsverlust.
                     stuendlicherBrennstoffverbrauchKW = 0;
                 }
@@ -1544,11 +1598,12 @@ namespace WindowsFormsApplication1
         /// Stunde <paramref name="stunde"/> betriebsbereit — und trägt dann seinen
         /// Bereitschaftsverlust —, wenn
         /// <list type="number">
-        /// <item>der Tag der Stunde ein HEIZTAG ist (<see cref="HeiztageAus"/>) oder</item>
+        /// <item>der Tag der Stunde ein HEIZTAG ist (<see cref="HeiztageAus"/>: Tagesmittel der
+        /// Außentemperatur unter der Heizgrenze) oder</item>
         /// <item>der Kessel in den <see cref="BEREITSCHAFT_NACHLAUF_STUNDEN"/> Stunden davor
         /// gelaufen ist (Nachlauf).</item>
         /// </list>
-        /// Außerhalb der Heizperiode und nach Ablauf des Nachlaufs ist er abgeschaltet und
+        /// An einem Tag über der Heizgrenze und nach Ablauf des Nachlaufs ist er abgeschaltet und
         /// verliert nichts. <paramref name="heiztage"/> <c>null</c> = jeder Tag ist Heiztag.
         /// </summary>
         internal static bool IstBetriebsbereit(bool[] heiztage, int stunde, int letzteLaufstunde)
@@ -1560,18 +1615,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die HEIZTAGE des Jahres aus dem stündlichen Raumwärmebedarf [kWh]: ein Tag, an dem
-        /// die Tagessumme größer 0 ist. Tage statt Stunden, weil ein Kessel zwischen einer
-        /// Nacht mit Heizbedarf und dem Mittag ohne nicht abkühlt. <c>null</c> ohne Reihe.
+        /// Die HEIZTAGE des Jahres aus der stündlichen Außentemperatur [°C]: ein Tag, dessen
+        /// Mittel über seine 24 Stunden UNTER der <paramref name="heizgrenze"/> liegt — genau
+        /// auf der Grenze ist kein Heiztag. Tage statt Stunden, weil ein Kessel zwischen einer
+        /// kalten Nacht und einem warmen Mittag nicht abkühlt. Eine Regel für jedes
+        /// Gebäudemodell und für Projekte ohne Gebäude.
+        ///
+        /// <para><b>Der Vergleich trägt den Zahlenrand</b> (<see cref="Rechenrand.SchwelleErreicht"/>):
+        /// Tagesmittel und Heizgrenze stammen aus getrennten Rechenketten, und ein Mittel, das
+        /// dezimal genau auf der Grenze liegt, darf nicht an der Rundung der Summe kippen.</para>
+        ///
+        /// <para><c>null</c> ohne Reihe (dann ist jeder Tag Heiztag); ein Tag, dessen Stunden die
+        /// Reihe nicht vollständig trägt, gilt ebenso als Heiztag.</para>
         /// </summary>
-        internal static bool[] HeiztageAus(double[] raumwaerme)
+        internal static bool[] HeiztageAus(double[] aussentemperatur, double heizgrenze)
         {
-            if (raumwaerme == null) return null;
+            if (aussentemperatur == null) return null;
 
             bool[] tage = new bool[365];
-            for (int h = 0; h < raumwaerme.Length && h < 8760; h++)
-                if (raumwaerme[h] > 0) tage[h / 24] = true;
+            for (int tag = 0; tag < 365; tag++)
+            {
+                int beginn = tag * 24;
+                if (beginn + 24 > aussentemperatur.Length) { tage[tag] = true; continue; }
+
+                double summe = 0;
+                for (int h = beginn; h < beginn + 24; h++) summe += aussentemperatur[h];
+                double mittel = summe / 24.0;
+                tage[tag] = !Rechenrand.SchwelleErreicht(mittel, heizgrenze);
+            }
             return tage;
+        }
+
+        /// <summary>
+        /// Die WIRKSAME Heizgrenze [°C]: der Wert des Projekts, ohne ihn — oder bei einem Wert,
+        /// der keine endliche Zahl ist — die Vorgabe <see cref="HEIZGRENZE_VORGABE_C"/>. Die
+        /// Plausibilitätsgrenzen hält die Oberfläche; der Rechenweg nimmt jede endliche Zahl.
+        /// </summary>
+        public static double HeizgrenzeWirksam(double? heizgrenze)
+        {
+            if (!heizgrenze.HasValue || double.IsNaN(heizgrenze.Value) || double.IsInfinity(heizgrenze.Value))
+                return HEIZGRENZE_VORGABE_C;
+            return heizgrenze.Value;
         }
 
         /// <summary>
@@ -1663,8 +1747,10 @@ namespace WindowsFormsApplication1
             SpeicherentladungAndere_Kwh = 0;
 
             // #568: Betriebsbereitschaft - Zähler und Laufgedächtnis sind Laufzustand;
-            // die Heiztage bildet Vorbereiten_Zweikanalig aus dem Raumwärmebedarf neu.
+            // Heizgrenze und Heiztage bildet Vorbereiten_Zweikanalig aus der Außentemperatur neu.
             _heiztage = null;
+            Heizgrenze_C = HEIZGRENZE_VORGABE_C;
+            Heiztage_Anzahl = 365;
             Array.Clear(Laufstunden_Spk, 0, MAX_SPK);
             Array.Clear(Starts_Spk, 0, MAX_SPK);
             Array.Clear(Bereitschaftsstunden_Spk, 0, MAX_SPK);
