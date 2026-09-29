@@ -4511,6 +4511,8 @@ Lauf.
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
 ### N35 (26.09.2026) — Alternativen zur Überlagerung bei großen Unterdialogen (#572)
 
+> **Umgesetzt (#589, 29.09.2026):** Variante a, Blattwechsel im Brauchwasser-Dialog (`EPOS.UI/Bausteine/Blattwechsel.razor`), Anwenderentscheid 27.09.2026. Abweichend vom Zuschnitt merkt der Baustein den Rollstand des gemeinsamen Rollbehälters (`epos-blatt.js`); die Hausregel „Blatt statt Überlagerung“ steht in `EPOS.UI/CLAUDE.md`.
+
 **Anlass.** Befund des Anwenders vom 26.09.2026 (Seiten 4 bis 6): Der Zapfprofil-Dialog, geöffnet aus
 „Brauchwasser…" im Gebäudekatalog, stand nicht in der Fläche — links und rechts abgeschnitten, mit
 Querrollbalken, die Wirtsliste schien unten durch; zwei Hilfeknöpfe; „generell sollte eine andere

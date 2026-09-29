@@ -150,6 +150,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
 - Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#586)
 - Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
+- Das Brauchwasser-Zapfprofil öffnet im selben Dialog statt in einer weiteren Überlagerung; „‹ Brauchwasserwärme“ führt zurück und lässt Listen und Eingaben unverändert. (#589)
 - Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
 - Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
