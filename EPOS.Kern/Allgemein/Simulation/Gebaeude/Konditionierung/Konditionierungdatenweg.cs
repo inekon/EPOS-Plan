@@ -48,6 +48,15 @@ namespace WindowsFormsApplication1
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (!KonditionierungSchema.Lesbar()) return null;
 
+            // DIE VORSCHAU DES ARBEITSSTANDS (Befund NB3): Ein Gebaeude ohne Projektkopie
+            // (ID_Gebaeude = 0) traegt den Katalogbau, aus dem der Speicherweg es kopieren wird -
+            // dann liest der Datenweg DESSEN Konditionierung, damit die Vorschau vor dem OK
+            // dieselbe Zahl zeigt wie der Lauf danach (Konzept 3.4, P3 (b)). Der LAUF geht hier
+            // nie herein: Ein Projektgebaeude traegt keine Katalogquelle.
+            if (gebaeude.ID_Gebaeude <= 0 && gebaeude.KonditionierungKatalogbau.HasValue && !idZone.HasValue)
+                return Satz(KonditionierungCtrl.Eigner.Katalogbau(gebaeude.KonditionierungKatalogbau.Value),
+                            gebaeude, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam);
+
             long idGebaeude = gebaeude.ID_Gebaeude;
             List<Kalenderzeile> kalenderzeilen = Kalenderzeilen(idGebaeude, null);
             List<Periodenzeile> perioden = Periodenzeilen(idGebaeude, null);
@@ -67,7 +76,8 @@ namespace WindowsFormsApplication1
                                                                   kuehlungWirksam);
             if (idZone.HasValue)
                 matrix = Vorgabematrix.Bilden(Konditionierungseingang.Bestand(gebaeude, kopplungWirksam,
-                                                                             kuehlungWirksam), zonenvorgaben)
+                                                                             kuehlungWirksam), zonenvorgaben,
+                                              Kalendereigentuemer.Zone)
                                       .Erben(matrix);
 
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
@@ -96,9 +106,58 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Satz EINES Eigentümers</b> — dieselbe Kette ohne Zonenebene: ein Katalogbau oder
+        /// eine Vorlage hat keine Zonen (Konzept 3.4, 5.7). <paramref name="bestand"/> liefert die
+        /// Bestandsspalten und die Ferienzeiträume; <c>null</c> heißt wie oben „wörtlich der
+        /// Bestandszweig".
+        ///
+        /// <para>Gebraucht wird er von der <b>Vorschau des Arbeitsstands</b> (Befund NB3) und von
+        /// den Werkzeugen der Karte (KP2); der Lauf selbst liest ausschließlich Projektmatrix und
+        /// Projektkalender.</para>
+        /// </summary>
+        public static Konditionierungssatz Satz(KonditionierungCtrl.Eigner eigner,
+                                                ProjektGebaeudeModel bestand, bool[] wochenende,
+                                                int referenzjahr, bool kopplungWirksam,
+                                                bool kuehlungWirksam)
+        {
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            if (bestand == null) throw new ArgumentNullException(nameof(bestand));
+            if (!KonditionierungSchema.Lesbar()) return null;
+
+            List<Kalenderzeile> kalenderzeilen = KalenderzeilenVon(eigner);
+            List<Vorgabezeile> vorgaben = VorgabezeilenVon(eigner);
+            if (kalenderzeilen.Count == 0 && vorgaben.Count == 0) return null;
+
+            List<Periodenzeile> perioden = PeriodenzeilenVon(kalenderzeilen);
+            Vorgabematrix matrix = Vorgabematrix.Bilden(
+                Konditionierungseingang.Bestand(bestand, kopplungWirksam, kuehlungWirksam),
+                vorgaben, eigner.Art);
+            Dictionary<Konditionierungsgroesse, Konditionierungskalender> angelegt =
+                Angelegt(kalenderzeilen, perioden, bestand);
+
+            int w0 = GebaeudeModellEingang.WochentagDesErstenTags(wochenende);
+            if (w0 < 0) throw Fehler(bestand, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
+
+            var satz = new Konditionierungssatz(w0, referenzjahr);
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                Konditionierungskalender k = Konditionierungseingang.ErsteQuelle(
+                    g, matrix, null, angelegt, out Fahrplanlesung befund);
+                if (befund != null && befund.Befund != Fahrplanbefund.Erzeugt &&
+                    befund.Befund != Fahrplanbefund.KeineAngabe)
+                    throw Fehler(bestand, string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
+                        befund.Befund.ToString(), befund.Fundstelle()));
+                satz.Setzen(g, k);
+            }
+            return satz.Wirksam ? satz : null;
+        }
+
+        /// <summary>
         /// Die angelegten Kalender eines Eigentümers, je Größe — der strenge Leser über jede Zeile;
-        /// eine zweite Zeile derselben Größe ist ein benannter Fehler (die Eindeutigkeit hält der
-        /// Controller, bis die Teilindizes kommen, Konzept 5.1 R4).
+        /// eine zweite Zeile derselben Größe ist ein benannter Fehler (die Eindeutigkeit halten die
+        /// Teilindizes des Schemaschritts <see cref="KonditionierungVorlagenSchema.SCHRITT"/>,
+        /// Konzept 5.1).
         /// </summary>
         private static Dictionary<Konditionierungsgroesse, Konditionierungskalender> Angelegt(
             List<Kalenderzeile> zeilen, List<Periodenzeile> perioden, ProjektGebaeudeModel gebaeude)
@@ -213,6 +272,96 @@ namespace WindowsFormsApplication1
                     Bis = I(r, "Bis"),
                     BedingtK = D(r, "Bedingt_K"),
                 });
+            return liste;
+        }
+
+        // -----------------------------------------------------------------
+        //  Dieselben drei Abfragen je EIGENTÜMER (Katalogbau, Vorlage, Gebäude, Zone)
+        // -----------------------------------------------------------------
+
+        /// <summary>Die Kalenderzeilen eines Eigentümers — die Bedingung stellt der <c>Eigner</c>.</summary>
+        internal static List<Kalenderzeile> KalenderzeilenVon(KonditionierungCtrl.Eigner eigner)
+        {
+            var liste = new List<Kalenderzeile>();
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT ID, ID_Gebaeude, ID_Zone, ID_Gebaeude_Stamm, ID_Vorlage, Groesse, Wert, Aus, Woche, " +
+                "Nennwert, Bemerkung FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
+                eigner.Bedingung() + " ORDER BY Groesse, ID", eigner.Parameter());
+            if (t == null) return liste;
+            foreach (DataRow r in t.Rows)
+                liste.Add(new Kalenderzeile
+                {
+                    Id = L(r, "ID") ?? 0,
+                    IdGebaeude = L(r, "ID_Gebaeude"),
+                    IdZone = L(r, "ID_Zone"),
+                    IdGebaeudeStamm = L(r, "ID_Gebaeude_Stamm"),
+                    IdVorlage = L(r, "ID_Vorlage"),
+                    Groesse = S(r, "Groesse"),
+                    Wert = D(r, "Wert"),
+                    Aus = (L(r, "Aus") ?? 0) != 0,
+                    Woche = S(r, "Woche"),
+                    Nennwert = D(r, "Nennwert"),
+                    Bemerkung = S(r, "Bemerkung"),
+                });
+            return liste;
+        }
+
+        /// <summary>Die Vorgabezeilen eines Eigentümers.</summary>
+        internal static List<Vorgabezeile> VorgabezeilenVon(KonditionierungCtrl.Eigner eigner)
+        {
+            var liste = new List<Vorgabezeile>();
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT ID, ID_Gebaeude, ID_Zone, ID_Gebaeude_Stamm, ID_Vorlage, Groesse, Zeile, Wert, Aus, " +
+                "Von, Bis, Bedingt_K FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE " +
+                eigner.Bedingung() + " ORDER BY Groesse, Zeile, ID", eigner.Parameter());
+            if (t == null) return liste;
+            foreach (DataRow r in t.Rows)
+                liste.Add(new Vorgabezeile
+                {
+                    Id = L(r, "ID") ?? 0,
+                    IdGebaeude = L(r, "ID_Gebaeude"),
+                    IdZone = L(r, "ID_Zone"),
+                    IdGebaeudeStamm = L(r, "ID_Gebaeude_Stamm"),
+                    IdVorlage = L(r, "ID_Vorlage"),
+                    Groesse = S(r, "Groesse"),
+                    Zeile = S(r, "Zeile"),
+                    Wert = D(r, "Wert"),
+                    Aus = (L(r, "Aus") ?? 0) != 0,
+                    Von = I(r, "Von"),
+                    Bis = I(r, "Bis"),
+                    BedingtK = D(r, "Bedingt_K"),
+                });
+            return liste;
+        }
+
+        /// <summary>Die Perioden der übergebenen Kalenderzeilen — eine Abfrage je Kalender.</summary>
+        private static List<Periodenzeile> PeriodenzeilenVon(List<Kalenderzeile> kalender)
+        {
+            var liste = new List<Periodenzeile>();
+            foreach (Kalenderzeile k in kalender)
+            {
+                DataTable t = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, " +
+                    "Woche, WieWochentag FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                    "\" WHERE ID_Kalender = ? ORDER BY Rang DESC", new DbParam("@k", k.Id));
+                if (t == null) continue;
+                foreach (DataRow r in t.Rows)
+                    liste.Add(new Periodenzeile
+                    {
+                        Id = L(r, "ID") ?? 0,
+                        IdKalender = L(r, "ID_Kalender") ?? 0,
+                        Rang = (int)(L(r, "Rang") ?? 0),
+                        Art = S(r, "Art"),
+                        Bezeichner = S(r, "Bezeichner"),
+                        Beginn = I(r, "Beginn"),
+                        Ende = I(r, "Ende"),
+                        Feiertagsregel = S(r, "Feiertagsregel"),
+                        Wert = D(r, "Wert"),
+                        Aus = (L(r, "Aus") ?? 0) != 0,
+                        Woche = S(r, "Woche"),
+                        WieWochentag = I(r, "WieWochentag"),
+                    });
+            }
             return liste;
         }
 

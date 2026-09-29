@@ -60541,6 +60541,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile {1} der Tabelle {0} gibt es nicht — der Wert der Zelle hat dort keinen Platz. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_EIGNER_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_EIGNER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPF_NICHT_ANGELEGT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPF_NICHT_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel der Konditionierungskopie sind derselbe Eigentümer — kopiert wird nichts. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_GLEICHER_EIGNER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_GLEICHER_EIGNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage {0} gehört zur Auslieferung (Schloss) — sie lässt sich nicht ändern. Legen Sie über „Duplizieren…“ eine eigene Vorlage an. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KONFIG_BHKW {

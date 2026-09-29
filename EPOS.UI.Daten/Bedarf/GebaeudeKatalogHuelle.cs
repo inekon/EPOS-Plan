@@ -89,8 +89,14 @@ namespace WindowsFormsApplication1
 
             var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
             {
+                // „Speichern unter" im PROJEKTMODUS: Der neue Katalogbau bekommt die
+                // Konditionierung des PROJEKTGEBÄUDES mit (Stufe KP1b, Konzept 5.5) — nur die
+                // Gebäudeebene; die Zonenzeilen bleiben zurück und stehen im Befund der
+                // Kernmethode für die Rückfrage, die mit KP2 kommt.
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
-                    (d, istNeu, bez) => istNeu ? Schreiben(d, true, bez) : ProjektSchreiben(idProjekt, idGebaeude, d)),
+                    (d, istNeu, bez) => istNeu
+                        ? Schreiben(d, true, bez, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude))
+                        : ProjektSchreiben(idProjekt, idGebaeude, d)),
                 ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
                 ["HilfeSchluessel"] = HILFE_PROJEKT
             };
@@ -836,9 +842,32 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der EINE Schreibweg des Editors samt ReadOnly-Sperre und Namensprobe. Angelegt
         /// wird nur unter einem freien Namen; überschrieben wird der URSPRUNGSNAME.
+        ///
+        /// <para><b>Im KATALOGMODUS</b> ist die Quelle der Konditionierung der Ursprungssatz —
+        /// „Speichern unter" wirkt dort wie Duplizieren (Stufe KP1b, Festlegung 10); im Modus Neu
+        /// gibt es keine, und der neue Satz beginnt ohne Matrix und Kalender.</para>
         /// </summary>
         internal static GebaeudeKatalogErgebnis Schreiben(
             GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)
+            => Schreiben(daten, istNeu, bezeichner, Katalogquelle(bezeichner));
+
+        /// <summary>
+        /// Der Ursprungs-Katalogbau als Eigentümer seiner Konditionierung; <c>null</c> ohne Namen
+        /// (Modus Neu) oder wenn es den Satz nicht gibt.
+        /// </summary>
+        private static KonditionierungCtrl.Eigner Katalogquelle(string bezeichner)
+        {
+            GebaeudeModel m = string.IsNullOrEmpty(bezeichner) ? null : Laden(bezeichner);
+            return m == null || m.ID <= 0 ? null : KonditionierungCtrl.Eigner.Katalogbau(m.ID);
+        }
+
+        /// <summary>
+        /// Derselbe Schreibweg mit ausdrücklicher <paramref name="quelle"/> der Konditionierung —
+        /// im Projektmodus das Projektgebäude, im Katalogmodus der Ursprungssatz.
+        /// </summary>
+        internal static GebaeudeKatalogErgebnis Schreiben(
+            GebaeudeKatalogDaten daten, bool istNeu, string bezeichner,
+            KonditionierungCtrl.Eigner quelle)
         {
             var ctrl = new GebaeudeStammCtrl();
 
@@ -857,9 +886,23 @@ namespace WindowsFormsApplication1
             // Ueberschreiben trifft den URSPRUNGSNAMEN (WHERE Bezeichner = Gebaeudename).
             if (!istNeu) modell.Gebaeudename = bezeichner;
 
-            bool ok = istNeu ? ctrl.Insert(modell) : ctrl.Overwrite(modell);
-            return new GebaeudeKatalogErgebnis(ok,
-                ok ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
+            if (!istNeu)
+            {
+                bool geaendert = ctrl.Overwrite(modell);
+                return new GebaeudeKatalogErgebnis(geaendert,
+                    geaendert ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
+            }
+
+            // „Speichern unter": Kopf und Konditionierung der Quelle in EINER Transaktion
+            // (Kernmethode, Konzept 5.5) - die Razor-Karte bleibt unberuehrt.
+            GebaeudeStammCtrl.SpeichernUnterErgebnis ergebnis =
+                GebaeudeStammCtrl.SpeichernUnter(modell, quelle);
+            return new GebaeudeKatalogErgebnis(ergebnis.Ok,
+                ergebnis.Ok
+                    ? ""
+                    : string.IsNullOrEmpty(ergebnis.Meldung)
+                        ? Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!")
+                        : ergebnis.Meldung);
         }
 
         /// <summary>Katalogsatz → Feldsatz.</summary>

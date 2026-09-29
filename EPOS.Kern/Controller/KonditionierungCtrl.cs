@@ -26,8 +26,15 @@ namespace WindowsFormsApplication1
     /// (<see cref="PersonenNennwertVorschlag"/> und <see cref="GeraeteNennwertNachPersonen"/>).</item>
     /// </list>
     ///
-    /// <para><b>Die Eindeutigkeit hält der Controller</b>, bis die Teilindizes kommen (Konzept 5.1,
-    /// R4): ein Kalender je Eigentümer und Größe, eine Vorgabezeile je Eigentümer, Größe und Zeile.</para>
+    /// <para><b>Die Eindeutigkeit halten die acht Teilindizes</b> des Schemaschritts
+    /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/> (Konzept 5.1): ein Kalender je
+    /// Eigentümer und Größe, eine Vorgabezeile je Eigentümer, Größe und Zeile. Der Controller
+    /// ersetzt vorher, was er überschreibt — so läuft er nicht in den Datenbankfall, und ein
+    /// Datenbankstand vor dem Schritt bleibt ebenso eindeutig.</para>
+    ///
+    /// <para><b>Das Schloss</b> (Konzept 3.4, 5.7): Ein Katalogbau oder eine Vorlage mit
+    /// <c>ReadOnly = 1</c> gehört zur Auslieferung; jeder Schreibweg auf ihn wird <b>benannt
+    /// abgelehnt</b>, auch der auf Matrix und Kalender — eine eigene Spalte dafür gibt es nicht.</para>
     /// </summary>
     public sealed class KonditionierungCtrl
     {
@@ -57,6 +64,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Ein Katalogbau (P3 (b)).</summary>
             public static Eigner Katalogbau(long id) => new Eigner(Kalendereigentuemer.Katalogbau, 0, null, id, 0);
+
+            /// <summary>
+            /// Eine Vorlage (P11, Konzept 5.7) — ihr Inhalt steht in <b>einer</b> Größe; der
+            /// Vorlagen-Controller kommt mit D3.
+            /// </summary>
+            public static Eigner Vorlage(long id) => new Eigner(Kalendereigentuemer.Vorlage, 0, null, 0, id);
 
             /// <summary>Die Spalten- und Wertpaare des Eigentümers für <c>WHERE</c> und <c>INSERT</c>.</summary>
             internal string Bedingung()
@@ -100,6 +113,58 @@ namespace WindowsFormsApplication1
                     new DbParam(praefix + "s", Art == Kalendereigentuemer.Katalogbau ? (object)IdStamm : null),
                     new DbParam(praefix + "v", Art == Kalendereigentuemer.Vorlage ? (object)IdVorlage : null),
                 };
+        }
+
+        // =================================================================
+        //  Das Schloss (Konzept 3.4, 5.7)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Darf auf diesen Eigentümer geschrieben werden?</b> Ein Katalogbau
+        /// (<c>Tab_Gebaeude_STAMM.ReadOnly = 1</c>) und eine Vorlage
+        /// (<c>Tab_Konditionierungsvorlage_STAMM.ReadOnly = 1</c>) gehören zur Auslieferung; ihr
+        /// Schloss gilt auch für Matrix und Kalender. Ein Projektgebäude und eine Zone tragen
+        /// keins.
+        ///
+        /// <para>Gelesen wird ohne Vorgang — das Schloss steht in der Datenbank, nicht im
+        /// Arbeitsstand; die Prüfung läuft VOR dem Schreibvorgang.</para>
+        /// </summary>
+        /// <returns><c>null</c>, wenn geschrieben werden darf, sonst die benannte Ablehnung.</returns>
+        public static string Schloss(Eigner eigner)
+        {
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            switch (eigner.Art)
+            {
+                case Kalendereigentuemer.Katalogbau:
+                    return Gesperrt(Matrixzellenort.TAB_KATALOGBAU, eigner.IdStamm)
+                        ? string.Format(CultureInfo.CurrentCulture,
+                                        MyResource.Resource.KOND_MSG_KATALOGBAU_GESPERRT,
+                                        eigner.IdStamm.ToString(CultureInfo.InvariantCulture))
+                        : null;
+
+                case Kalendereigentuemer.Vorlage:
+                    if (!KonditionierungVorlagenSchema.Lesbar())
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             MyResource.Resource.ZONE_MSG_OHNE_KOPPLUNG,
+                                             KonditionierungVorlagenSchema.SCHRITT);
+                    return Gesperrt(KonditionierungVorlagenSchema.TAB_VORLAGE, eigner.IdVorlage)
+                        ? string.Format(CultureInfo.CurrentCulture,
+                                        MyResource.Resource.KOND_MSG_VORLAGE_GESPERRT,
+                                        eigner.IdVorlage.ToString(CultureInfo.InvariantCulture))
+                        : null;
+
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>Trägt der Satz <paramref name="id"/> der Tabelle das Auslieferungskennzeichen?</summary>
+        private static bool Gesperrt(string tabelle, long id)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"ID\" = ? AND \"ReadOnly\" = 1",
+                new DbParam("@id", id));
+            return o != null && o != DBNull.Value && Convert.ToInt64(o, CultureInfo.InvariantCulture) > 0;
         }
 
         // =================================================================
@@ -239,6 +304,8 @@ namespace WindowsFormsApplication1
             if (!KonditionierungSchema.Lesbar())
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.ZONE_MSG_OHNE_KOPPLUNG, KonditionierungSchema.SCHRITT));
+            string schloss = Schloss(eigner);
+            if (schloss != null) return Ergebnis.Fehler(schloss);
 
             Fahrplanlesung l = Standardfahrplan.Erzeugen(matrix, groesse, rundlaufPruefen: true);
             if (l.Befund == Fahrplanbefund.KeineAngabe)
@@ -260,6 +327,8 @@ namespace WindowsFormsApplication1
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            string schloss = Schloss(eigner);
+            if (schloss != null) return Ergebnis.Fehler(schloss);
             if (!Kalenderleser.Rundlaeuft(kalender, out int rang, out int stelle))
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
@@ -283,8 +352,8 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so bleibt
-                    // die Eindeutigkeit gewahrt, bis die Teilindizes kommen (Konzept 5.1, R4).
+                    // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
+                    // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
                     v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
                                  eigner.Bedingung() + " AND \"Groesse\" = ?",
                                  Mit(eigner.Parameter(), new DbParam("@gr", groesse)));
@@ -340,6 +409,8 @@ namespace WindowsFormsApplication1
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (!KonditionierungSchema.Lesbar()) return Ergebnis.Gut;
+            string schloss = Schloss(eigner);
+            if (schloss != null) return Ergebnis.Fehler(schloss);
             try
             {
                 DataRepository.ExecuteNonQuery(
@@ -368,6 +439,8 @@ namespace WindowsFormsApplication1
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (matrix == null) throw new ArgumentNullException(nameof(matrix));
+            string schloss = Schloss(eigner);
+            if (schloss != null) return Ergebnis.Fehler(schloss);
 
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden = Kalender(eigner, out string m);
             if (m != null) return Ergebnis.Fehler(m);
@@ -419,6 +492,14 @@ namespace WindowsFormsApplication1
         /// Größe und Zeile: Die vorhandene wird ersetzt. Ist die Zelle in jedem Feld leer, fällt die
         /// Zeile — leer heißt „wie die Ebene darüber", und eine leere Zeile wäre eine Leerstelle mit
         /// Id.
+        ///
+        /// <para><b>Ein Ort je Zelle</b> (Konzept 5.6, Weiche <see cref="Matrixzellenort"/>): Hat
+        /// die Zelle am Eigentümer eine <b>Bestandsspalte</b>, geht ihr Zahlenwert dorthin — in
+        /// DERSELBEN Transaktion —, und die Vorgabezeile trägt nur „aus", die Zeiten und
+        /// <c>Bedingt_K</c>. Eine solche Zelle kann nicht „leer" sein: Die Bestandsspalte führt
+        /// immer einen Wert; eine unbelegte Zelle lässt sie deshalb unberührt. Hat die Zelle keine
+        /// Bestandsspalte — an einer Vorlage nirgends (Konzept 5.7) —, steht ihr Wert wie bisher in
+        /// der Vorgabezeile.</para>
         /// </summary>
         public Ergebnis Vorgabe(Eigner eigner, Konditionierungsgroesse groesse, string zeile,
                                 Matrixzelle zelle)
@@ -428,6 +509,8 @@ namespace WindowsFormsApplication1
             if (!KonditionierungSchema.Lesbar())
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.ZONE_MSG_OHNE_KOPPLUNG, KonditionierungSchema.SCHRITT));
+            string schloss = Schloss(eigner);
+            if (schloss != null) return Ergebnis.Fehler(schloss);
             bool bekannt = false;
             foreach (string z in DbWerte.KOND_ZEILEN)
                 if (string.Equals(zeile, z, StringComparison.Ordinal)) { bekannt = true; break; }
@@ -457,15 +540,38 @@ namespace WindowsFormsApplication1
             }
 
             string gr = Konditionierungsgroessen.Kennwort(groesse);
+
+            // DIE WEICHE (Konzept 5.6): Wo es eine Bestandsspalte gibt, gehoert der Zahlenwert
+            // dorthin - die Vorgabezeile traegt dann nur "aus", Zeiten und Bedingt_K.
+            Matrixzellenort.Ort ort = Matrixzellenort.Fuer(eigner.Art, groesse, zeile);
+            bool inBestandsspalte = ort.IstBestandsspalte;
+            object wert = zelle.Belegt && !zelle.Aus && !inBestandsspalte ? (object)zelle.Wert : null;
+
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    if (inBestandsspalte && zelle.Belegt && !zelle.Aus)
+                    {
+                        int zeilen = v.Ausfuehren(
+                            "UPDATE \"" + ort.Tabelle + "\" SET \"" + ort.Spalte + "\" = ? WHERE \"ID\" = ?",
+                            new DbParam("@w", zelle.Wert),
+                            new DbParam("@id", Traegerid(eigner)));
+                        if (zeilen == 0)
+                        {
+                            v.Rollback();
+                            return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.KOND_MSG_EIGNER_FEHLT, ort.Tabelle,
+                                Traegerid(eigner).ToString(CultureInfo.InvariantCulture)));
+                        }
+                    }
+
                     v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE " +
                                  eigner.Bedingung() + " AND \"Groesse\" = ? AND \"Zeile\" = ?",
                                  Mit(eigner.Parameter(), new DbParam("@gr", gr), new DbParam("@ze", zeile)));
 
-                    bool leer = !zelle.Belegt && !zelle.Von.HasValue && !zelle.Bis.HasValue && !zelle.BedingtK.HasValue;
+                    bool leer = wert == null && !zelle.Aus && !zelle.Von.HasValue && !zelle.Bis.HasValue
+                                && !zelle.BedingtK.HasValue;
                     if (!leer)
                         v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
                                      "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
@@ -474,7 +580,7 @@ namespace WindowsFormsApplication1
                                      Mit(eigner.Spaltenwerte("@e"),
                                          new DbParam("@gr", gr),
                                          new DbParam("@ze", zeile),
-                                         new DbParam("@we", zelle.Belegt && !zelle.Aus ? (object)zelle.Wert : null),
+                                         new DbParam("@we", wert),
                                          new DbParam("@au", zelle.Aus ? 1 : 0),
                                          new DbParam("@vo", (object)zelle.Von),
                                          new DbParam("@bi", (object)zelle.Bis),
@@ -488,6 +594,18 @@ namespace WindowsFormsApplication1
                 }
             }
             return Ergebnis.Gut;
+        }
+
+        /// <summary>Die Id des Satzes, der die Bestandsspalten des Eigentümers trägt.</summary>
+        private static long Traegerid(Eigner eigner)
+        {
+            switch (eigner.Art)
+            {
+                case Kalendereigentuemer.Gebaeude: return eigner.IdGebaeude;
+                case Kalendereigentuemer.Zone: return eigner.IdZone.Value;
+                case Kalendereigentuemer.Katalogbau: return eigner.IdStamm;
+                default: return eigner.IdVorlage;
+            }
         }
 
         // =================================================================
