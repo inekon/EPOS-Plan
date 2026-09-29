@@ -426,6 +426,110 @@ public sealed class SchliesskreuzWacheTests
     }
 
     // =====================================================================
+    //  Fall 4 — kein Blatt mit Titel und Kreuz doppelt (N35)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein <c>Blattwechsel</c> trägt Rückknopf und Titel des Blattes und KEIN Kreuz: Rückknopf und
+    /// Esc führen zurück (Umsetzungskonzept Zapfprofilgenerator, N35). Die eingebettete
+    /// Komponente, deren Quelldatei ein <c>&lt;Schliesskreuz</c> zeichnet, muss an ihrer
+    /// Einbettungsstelle <c>TitelText=""</c> oder <c>TitelAnzeigen="false"</c> tragen — sonst
+    /// stünden Titel und Kreuz des Dialogs unter der Kopfzeile des Blattes noch einmal da
+    /// („Ein Titel, eine Stelle"; das Kreuz des Dialogs führte dazu an der Kopfzeile vorbei).
+    /// Es gilt dieselbe Regel wie in Fall 3, mit dem Blatt an der Stelle der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void Kein_Blatt_zeigt_Titel_und_Kreuz_der_eingebetteten_Komponente()
+    {
+        List<Doppelfund> funde = Blattfunde(Wirtsdateien(), Komponentendateien());
+
+        Assert.True(funde.Count == 0,
+            "In diesen Blaettern steht der Kopf der eingebetteten Komponente ZUSAETZLICH zur "
+            + "Kopfzeile des Blattes (Titel und Kreuz doppelt). Die Einbettung braucht ein "
+            + "ausdrueckliches TitelText=\"\" oder TitelAnzeigen=\"false\":\n"
+            + string.Join("\n", funde.Select(f =>
+                "  " + f.Datei + ":" + f.Zeile + "  " + f.Komponente + "  " + f.Einbettung)));
+    }
+
+    /// <summary>Die Gegenprobe (Lehre W6‑B‑1): Eine ungeschützte Einbettung im Blatt ist ein Fund, die geschützten nicht.</summary>
+    [Fact]
+    public void Die_Blatt_Wache_findet_die_ungeschuetzte_Einbettung()
+    {
+        const string mitKreuz = "<div class=\"epos-dialog-kopf\"><Schliesskreuz Geschlossen=\"Abbrechen\" /></div>\n";
+        const string ohneKreuz = "<div class=\"epos-dialog\"><p>nur Inhalt</p></div>\n";
+
+        string Wirt(string einbettung)
+            => "<Blattwechsel Offen=\"@_offen\" Titel=\"@Kopf\">\n    <KindInhalt>\n        "
+               + einbettung + "\n    </KindInhalt>\n</Blattwechsel>\n";
+
+        var komponenten = new Dictionary<string, string>
+        {
+            ["TiefDialog"] = mitKreuz,
+            ["StillDialog"] = ohneKreuz
+        };
+
+        var offen = new Dictionary<string, string>
+        {
+            ["EPOS.UI/Dialoge/X/AWirt.razor"] = Wirt("<TiefDialog Daten=\"@_d\" Geschlossen=\"Fertig\" />")
+        };
+        Doppelfund fund = Assert.Single(Blattfunde(offen, komponenten));
+        Assert.Equal("TiefDialog", fund.Komponente);
+        Assert.Equal(3, fund.Zeile);
+
+        var still = new Dictionary<string, string>
+        {
+            ["EPOS.UI/Dialoge/X/BWirt.razor"] = Wirt("<TiefDialog TitelText=\"\" Geschlossen=\"Fertig\" />"),
+            ["EPOS.UI/Dialoge/X/CWirt.razor"] = Wirt("<TiefDialog TitelAnzeigen=\"false\" Geschlossen=\"Fertig\" />"),
+            ["EPOS.UI/Dialoge/X/DWirt.razor"] = Wirt(
+                "<EPOS.UI.Dialoge.X.TiefDialog @attributes=\"_gaben\" TitelAnzeigen=\"false\"\n"
+                + "                                      Geschlossen=\"Fertig\" />"),
+            ["EPOS.UI/Dialoge/X/EWirt.razor"] = Wirt("<StillDialog Geschlossen=\"Fertig\" />")
+        };
+        Assert.Empty(Blattfunde(still, komponenten));
+    }
+
+    private static List<Doppelfund> Blattfunde(IReadOnlyDictionary<string, string> wirte,
+                                               IReadOnlyDictionary<string, string> komponenten)
+    {
+        var funde = new List<Doppelfund>();
+
+        foreach (KeyValuePair<string, string> datei in wirte.OrderBy(d => d.Key, StringComparer.Ordinal))
+        {
+            string s = datei.Value;
+
+            foreach (Match m in Regex.Matches(s, @"<Blattwechsel\b"))
+            {
+                int tagEnde = FindeTagEnde(s, m.Index);
+                if (tagEnde < 0) continue;
+
+                int blockEnde = s.IndexOf("</Blattwechsel>", tagEnde, StringComparison.Ordinal);
+                if (blockEnde < 0) blockEnde = s.Length;
+                string block = s.Substring(tagEnde + 1, blockEnde - tagEnde - 1);
+
+                foreach (Match km in Regex.Matches(block, @"<(?:[A-Za-z0-9_.]*\.)?([A-Z][A-Za-z0-9]*)\b"))
+                {
+                    string name = km.Groups[1].Value;
+                    if (!komponenten.TryGetValue(name, out string? quelle)) continue;
+                    if (!quelle.Contains("<Schliesskreuz", StringComparison.Ordinal)) continue;
+
+                    int kindEnde = FindeTagEnde(block, km.Index);
+                    if (kindEnde < 0) continue;
+                    string einbettung = Einzeilig(block.Substring(km.Index, kindEnde - km.Index + 1));
+
+                    if (Regex.IsMatch(einbettung, "TitelText=\"\"")) continue;
+                    if (Regex.IsMatch(einbettung, "TitelAnzeigen=\"@?false\"")) continue;
+
+                    funde.Add(new Doppelfund(datei.Key,
+                                             1 + Zeilenzahl(s, tagEnde + 1 + km.Index),
+                                             name, einbettung));
+                }
+            }
+        }
+
+        return funde;
+    }
+
+    // =====================================================================
     //  Kleinwerkzeug (dieselbe Bauweise wie UeberlagerungstitelTests)
     // =====================================================================
 

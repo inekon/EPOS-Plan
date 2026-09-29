@@ -132,6 +132,12 @@ namespace WindowsFormsApplication1
         internal Func<AnhangEStellen> AnhangEStellenLaden { get; set; }
 
         /// <summary>
+        /// Die gespeicherten Ergebnisse sind neu gelesen oder neu gerechnet — der Wirt liest den
+        /// Kurzstand der Reiterzeile daraufhin neu (Konzept Navigation Berichte &amp; Kosten, A2).
+        /// </summary>
+        internal event Action Geladen;
+
+        /// <summary>
         /// Die Szenarien als Nummer. Die PERSISTENZWERTE
         /// (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>) kennt nur diese
         /// Hülle — sie dürfen weder in die Komponente noch in eine <c>.resx</c>.
@@ -458,6 +464,7 @@ namespace WindowsFormsApplication1
             // Arbeitsstand der Seite den geladenen Stand nicht mitverändert.
             stand.Wirkungen = _wirkungen.Select(w => w.Kopie()).ToList();
 
+            Geladen?.Invoke();
             return stand;
         }
 
@@ -1553,6 +1560,7 @@ namespace WindowsFormsApplication1
 
                 _tarifCache = null;
                 BilanzenAuffrischen();
+                Geladen?.Invoke();
 
                 return new LaufErgebnis
                 {

@@ -5627,17 +5627,56 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Overview — base project and variants</value>
   </data>
-  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
-    <value>Costs — investment, operation, energy</value>
+  <data name="BK_STATUS_VERSION" xml:space="preserve">
+    <value>{0} version</value>
   </data>
-  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
-    <value>Economics — net present value method (DIN EN 17463)</value>
+  <data name="BK_STATUS_VERSIONEN" xml:space="preserve">
+    <value>{0} versions</value>
   </data>
-  <data name="BK_KOPF_BERICHT" xml:space="preserve">
-    <value>Report — Word and Excel output</value>
+  <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
+    <value>{0} · simulated</value>
+  </data>
+  <data name="BK_STATUS_NICHT_AKTUELL" xml:space="preserve">
+    <value>{0} · {1} not up to date</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER" xml:space="preserve">
+    <value>{0} carriers</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
+    <value>{0} carrier</value>
+  </data>
+  <data name="BK_STATUS_WARNUNG" xml:space="preserve">
+    <value>{0} warning</value>
+  </data>
+  <data name="BK_STATUS_WARNUNGEN" xml:space="preserve">
+    <value>{0} warnings</value>
+  </data>
+  <data name="BK_STATUS_BESTE" xml:space="preserve">
+    <value>best: {0}, {1}</value>
+  </data>
+  <data name="BK_STATUS_STAMM_KW" xml:space="preserve">
+    <value>base project: {0}</value>
+  </data>
+  <data name="BK_STATUS_NICHT_BERECHNET" xml:space="preserve">
+    <value>not calculated</value>
+  </data>
+  <data name="BK_STATUS_VERALTET" xml:space="preserve">
+    <value>out of date</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_ZULETZT" xml:space="preserve">
+    <value>last {0:yyyy-MM-dd HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KURZ" xml:space="preserve">
+    <value>{0:MM-dd HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
+    <value>none created yet</value>
   </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Base project:</value>
+  </data>
+  <data name="BK_LBL_STAMM_KURZ" xml:space="preserve">
+    <value>Base:</value>
   </data>
   <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
     <value>base projects only</value>
@@ -27202,6 +27241,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_VG_ZURUECK" xml:space="preserve">
     <value>‹ Record sheet of {0}</value>
+  </data>
+  <data name="BLATT_ZURUECK" xml:space="preserve">
+    <value>‹ {0}</value>
   </data>
   <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
     <value>only differing values</value>

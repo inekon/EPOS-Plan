@@ -1,17 +1,22 @@
 # Konzept: Navigation der Seite „Berichte & Kosten“ — Vorschlag mit drei Varianten
 
-**Rev. 1 — 26.09.2026 — Vorschlag, noch nicht entschieden.** Anlass ist der Befund des
+**Umgesetzt — Variante A (Anwenderentscheide BN-Q1 bis BN-Q3 vom 27.09.2026), Etappen A1 bis A4
+(#NNN); Protokoll: [`BN_A_Navigation_Protokoll.md`](Protokolle/Bericht/BN_A_Navigation_Protokoll.md).
+Der gültige Stand steht im Code (`EPOS.UI/Seiten/Berichte/BerichteKostenSeite.razor`,
+`EPOS.UI/Bausteine/Reiter.razor`) und in den Wiki-Quellen. Das Papier ist Geschichte.**
+
+**Rev. 1 — 26.09.2026 — Vorschlag.** Anlass ist der Befund des
 Anwenders (PDF vom 26.09.2026, Seite 7): „Vorschlag für besseres Design des Dialogs —
 insbesondere die linke Spalte mit Übersicht, Kosten, Wirtschaftlichkeit, Bericht.“ Dieses
 Papier ändert nichts am Code; es stellt drei Mockups nebeneinander, empfiehlt eines und
 nennt die Etappen.
 
 Mockups (statisch, 1 280 px, Token aus dem Stilblatt epos-ui.css des Hauses):
-[A — Reiterzeile](Mockups/BerichteKosten_Navigation_A.html) ·
-[B — schlanke Seitenleiste](Mockups/BerichteKosten_Navigation_B.html) ·
-[C — Kachelstart](Mockups/BerichteKosten_Navigation_C.html);
-Bilder: [A](Mockups/BerichteKosten_Navigation_A.png), [B](Mockups/BerichteKosten_Navigation_B.png),
-[C](Mockups/BerichteKosten_Navigation_C.png).
+[A — Reiterzeile](../aktuell/Mockups/BerichteKosten_Navigation_A.html) ·
+[B — schlanke Seitenleiste](../aktuell/Mockups/BerichteKosten_Navigation_B.html) ·
+[C — Kachelstart](../aktuell/Mockups/BerichteKosten_Navigation_C.html);
+Bilder: [A](../aktuell/Mockups/BerichteKosten_Navigation_A.png), [B](../aktuell/Mockups/BerichteKosten_Navigation_B.png),
+[C](../aktuell/Mockups/BerichteKosten_Navigation_C.png).
 
 Bild 3 jedes Mockups zeigt den Bereich *Wirtschaftlichkeit* mit dem Knopf **„Zum Bericht ›“**
 anstelle von „Bericht erzeugen“ (entschieden am 26.09.2026, Umsetzung in eigenem Auftrag):

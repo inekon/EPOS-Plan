@@ -8301,38 +8301,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht — Word- und Excel-Ausgabe ähnelt.
-        /// </summary>
-        public static string BK_KOPF_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten — Investition, Betrieb, Energie ähnelt.
-        /// </summary>
-        public static string BK_KOPF_KOSTEN {
-            get {
-                return ResourceManager.GetString("BK_KOPF_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht — Stammprojekt und Varianten ähnelt.
         /// </summary>
         public static string BK_KOPF_UEBERSICHT {
             get {
                 return ResourceManager.GetString("BK_KOPF_UEBERSICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463) ähnelt.
-        /// </summary>
-        public static string BK_KOPF_WIRTSCHAFT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_WIRTSCHAFT", resourceCulture);
             }
         }
         
@@ -8951,6 +8924,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm: ähnelt.
+        /// </summary>
+        public static string BK_LBL_STAMM_KURZ {
+            get {
+                return ResourceManager.GetString("BK_LBL_STAMM_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet ähnelt.
         /// </summary>
         public static string BK_LBL_VARIANTEN_GEKAPPT {
@@ -9437,6 +9419,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch keiner erstellt ähnelt.
+        /// </summary>
+        public static string BK_STATUS_BERICHT_KEINER {
+            get {
+                return ResourceManager.GetString("BK_STATUS_BERICHT_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:dd.MM. HH:mm} ähnelt.
+        /// </summary>
+        public static string BK_STATUS_BERICHT_KURZ {
+            get {
+                return ResourceManager.GetString("BK_STATUS_BERICHT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zuletzt {0:dd.MM.yy HH:mm} ähnelt.
+        /// </summary>
+        public static string BK_STATUS_BERICHT_ZULETZT {
+            get {
+                return ResourceManager.GetString("BK_STATUS_BERICHT_ZULETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die beste: {0}, {1} ähnelt.
+        /// </summary>
+        public static string BK_STATUS_BESTE {
+            get {
+                return ResourceManager.GetString("BK_STATUS_BESTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} nicht aktuell ähnelt.
+        /// </summary>
+        public static string BK_STATUS_NICHT_AKTUELL {
+            get {
+                return ResourceManager.GetString("BK_STATUS_NICHT_AKTUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht berechnet ähnelt.
+        /// </summary>
+        public static string BK_STATUS_NICHT_BERECHNET {
+            get {
+                return ResourceManager.GetString("BK_STATUS_NICHT_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · simuliert ähnelt.
+        /// </summary>
+        public static string BK_STATUS_SIMULIERT {
+            get {
+                return ResourceManager.GetString("BK_STATUS_SIMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: {0} ähnelt.
+        /// </summary>
+        public static string BK_STATUS_STAMM_KW {
+            get {
+                return ResourceManager.GetString("BK_STATUS_STAMM_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Träger ähnelt.
+        /// </summary>
+        public static string BK_STATUS_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_STATUS_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Träger ähnelt.
+        /// </summary>
+        public static string BK_STATUS_TRAEGER_1 {
+            get {
+                return ResourceManager.GetString("BK_STATUS_TRAEGER_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die veraltet ähnelt.
+        /// </summary>
+        public static string BK_STATUS_VERALTET {
+            get {
+                return ResourceManager.GetString("BK_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Version ähnelt.
+        /// </summary>
+        public static string BK_STATUS_VERSION {
+            get {
+                return ResourceManager.GetString("BK_STATUS_VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Versionen ähnelt.
+        /// </summary>
+        public static string BK_STATUS_VERSIONEN {
+            get {
+                return ResourceManager.GetString("BK_STATUS_VERSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Warnung ähnelt.
+        /// </summary>
+        public static string BK_STATUS_WARNUNG {
+            get {
+                return ResourceManager.GetString("BK_STATUS_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Warnungen ähnelt.
+        /// </summary>
+        public static string BK_STATUS_WARNUNGEN {
+            get {
+                return ResourceManager.GetString("BK_STATUS_WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme einzelner Merkmale folgt im nächsten Paket. ähnelt.
         /// </summary>
         public static string BK_TIP_UEBERNEHMEN {
@@ -9577,6 +9694,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_UEB_TITEL_KOMP {
             get {
                 return ResourceManager.GetString("BK_UEB_TITEL_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ‹ {0} ähnelt.
+        /// </summary>
+        public static string BLATT_ZURUECK {
+            get {
+                return ResourceManager.GetString("BLATT_ZURUECK", resourceCulture);
             }
         }
         
