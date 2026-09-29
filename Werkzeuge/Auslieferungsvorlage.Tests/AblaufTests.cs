@@ -424,6 +424,85 @@ namespace Auslieferungsvorlage.Tests
                 try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
             }
         }
+
+        // =============================================================================
+        //  A12 — Die Nachpflege des Kesselkatalogs (--kesselkatalog)
+        // =============================================================================
+        /// <summary>
+        /// <b>Konzept Kesselkennlinie, Etappe E1, Entscheid F2.</b> Mit <c>--kesselkatalog</c> pflegt
+        /// das Werkzeug <c>Tab_Heizkessel_STAMM</c> der Arbeitskopie aus den Kesseldateien nach: Ein
+        /// Katalogsatz, dem die Quelle Kennlinie und Brennwertkennzeichen nimmt, steht in der Vorlage
+        /// mit η₃₀, η₁₀₀ aus Satz 710.01, kleinster Leistung und Brennwert. Die Kesseldatei ist die
+        /// Importprobe des Repositoriums, damit der Fall auch ohne Git LFS läuft.
+        /// </summary>
+        [Fact]
+        public void A12_Der_Kesselkatalog_wird_aus_VDI_3805_nachgepflegt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            const string KESSEL = "ecoVIT VKK 186/5";
+
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = quelle;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Kesselkatalog)");
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Heizkessel_STAMM SET Brennwert = 0, Wirkungsgrad_Teillast30 = NULL, " +
+                    "Mindestleistung = NULL, Wirkungsgrad_Gas = 0.874 WHERE Bezeichner = ?", new DbParam("?", KESSEL)));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+
+            string vdi = o.Datei("vdi");
+            Directory.CreateDirectory(vdi);
+            File.Copy(Path.Combine(Werkzeuglauf.Repowurzel, "Referenzlaeufe", "Importproben", "heizkessel_vaillant.vdi"),
+                      Path.Combine(vdi, "heizkessel_vaillant.vdi"));
+
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kesselkatalog", vdi);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Schritt 3b — Kesselkatalog aus VDI 3805 Blatt 3", e.Ausgabe);
+
+            try
+            {
+                DataRepository.PfadUeberschreibung = ziel;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Brennwert, Wirkungsgrad_Teillast30, Mindestleistung, Wirkungsgrad_Gas, Kennlinie_Brennwert " +
+                    "FROM Tab_Heizkessel_STAMM WHERE Bezeichner = ?", new DbParam("?", KESSEL));
+                Assert.Equal(1, dt.Rows.Count);
+                DataRow r = dt.Rows[0];
+                Assert.Equal(1L, Convert.ToInt64(r[0]));
+                Assert.Equal(1.079, Convert.ToDouble(r[1]), 9);
+                Assert.Equal(6.0, Convert.ToDouble(r[2]), 9);
+                Assert.Equal(0.96, Convert.ToDouble(r[3]), 9);
+                Assert.Equal(0L, Convert.ToInt64(r[4]));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        /// <summary>Ein Kesselkatalog, den es nicht gibt, ist ein Aufruffehler (Rückgabe 2) mit Grund.</summary>
+        [Fact]
+        public void A13_Ein_fehlender_Kesselkatalog_meldet_2()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(Werkzeuglauf.Testdatenbank, o.Datei("Kenndaten.sqlite"),
+                                                           "--kesselkatalog", o.Datei("gibt-es-nicht"), "--trocken");
+            Assert.Equal(2, e.Code);
+            Assert.Contains("Kesselkatalog nicht gefunden", e.Fehlerausgabe);
+        }
     }
 
     /// <summary>

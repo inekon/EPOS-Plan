@@ -128,17 +128,27 @@ namespace Testdatenbankschema
         {
             if (args.Length < 1 || args[0] == "--hilfe" || args[0] == "-h")
             {
-                Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
+                Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken] [--kesselkatalog <ordner>]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
                                   " nach (Schritte 62 bis " + SchemaStand.Zielversion + "), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
+                Console.WriteLine("  --kesselkatalog <ordner>  danach Tab_Heizkessel_STAMM aus den VDI-3805-Dateien des");
+                Console.WriteLine("            Ordners nachpflegen (eta30, eta100 aus Satz 710.01, kleinste Leistung,");
+                Console.WriteLine("            Brennwert; Konzept Kesselkennlinie, Entscheide F2/F3). Nie Tab_Heizkessel.");
                 return 2;
             }
 
             string pfad = Path.GetFullPath(args[0]);
             bool trocken = Array.IndexOf(args, "--trocken") >= 0;
+            int kkIndex = Array.IndexOf(args, "--kesselkatalog");
+            string kesselkatalog = kkIndex >= 0 && kkIndex + 1 < args.Length ? Path.GetFullPath(args[kkIndex + 1]) : null;
+            if (kkIndex >= 0 && (kesselkatalog == null || !Directory.Exists(kesselkatalog)))
+            {
+                Console.Error.WriteLine("--kesselkatalog braucht einen vorhandenen Ordner: " + (kesselkatalog ?? "(keiner)"));
+                return 2;
+            }
 
             if (!File.Exists(pfad))
             {
@@ -2227,6 +2237,21 @@ namespace Testdatenbankschema
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
+
+            // ---- Die Nachpflege des Kesselkatalogs (Konzept Kesselkennlinie, Etappe E1; Entscheide F2
+            //      und F3) - KEIN Schemaschritt und deshalb ohne Nummer, nur auf Zuruf: Sie braucht die
+            //      Herstellerdateien. Geschrieben wird allein Tab_Heizkessel_STAMM, nie eine Projektkopie
+            //      (Tab_Heizkessel) - der Referenzlauf bleibt byte-gleich. Wiederholbar.
+            if (kesselkatalog != null)
+            {
+                Console.WriteLine();
+                var kk = new KesselkatalogNachpflege.Ergebnis();
+                List<KesselkatalogNachpflege.Dateisatz> saetze =
+                    KesselkatalogNachpflege.Lesen(kesselkatalog, kk, HeizkesselImportSatz.MaxBrennstoff());
+                KesselkatalogNachpflege.Nachpflegen(saetze, kk, trocken);
+                foreach (string zeile in KesselkatalogNachpflege.Bericht(kk, trocken))
+                    Console.WriteLine(zeile);
+            }
 
             if (trocken)
             {

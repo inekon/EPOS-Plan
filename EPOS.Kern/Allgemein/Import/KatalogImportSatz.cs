@@ -162,7 +162,8 @@ namespace WindowsFormsApplication1
             // eta100 kommt seit Entscheid F3 (29.09.2026) aus Satz 710.01, ersatzweise aus Satz 700
             // (HeizkesselImport.Leistungsdaten). Die Prozentregel (> 1,5 -> /100) statt eines festen
             // „/ 100": Die Dateien fuehren Prozent, eine Datei mit Faktoren bliebe damit richtig.
-            double wirkungsgrad = KesselKennlinieWerte.AlsFaktor(ZahlText.NachDouble(_satz.m_szWirkungsgrad)) ?? 0;
+            // Gerundet auf sechs Stellen: 97,9 / 100 steht sonst als 0,9790000000000001 im Katalog.
+            double wirkungsgrad = Nennlast(_satz.m_szWirkungsgrad);
             if (brennstoffindex > 0)
             {
                 // Oel = Index 6-9 und 18-22, wie SimulationSPK.Stunde_Abschluss und
@@ -218,8 +219,23 @@ namespace WindowsFormsApplication1
             double? eta = KesselKennlinieWerte.AlsFaktor(Zahl(text));
             if (eta.HasValue && (eta.Value < KesselKennlinieWerte.ETA30_MIN || eta.Value > KesselKennlinieWerte.ETA30_MAX))
                 return null;
-            return eta;
+            return eta.HasValue ? Math.Round(eta.Value, STELLEN) : (double?)null;
         }
+
+        /// <summary>
+        /// eta100 als Faktor (Prozentregel, auf <see cref="STELLEN"/> gerundet); ein nicht lesbarer
+        /// Text gilt als 0 — der Platzhalter 1 greift danach in <see cref="NachModell"/>. Dieselbe
+        /// Rechnung nimmt die Katalognachpflege (<c>KesselkatalogNachpflege</c>).
+        /// </summary>
+        internal static double Nennlast(string text)
+            => Math.Round(KesselKennlinieWerte.AlsFaktor(ZahlText.NachDouble(text)) ?? 0, STELLEN);
+
+        /// <summary>
+        /// Die Nachkommastellen eines Wirkungsgrads aus der Datei: Die Dateien fuehren Prozent mit
+        /// hoechstens zwei Stellen, als Faktor also vier; sechs lassen Luft und schneiden den
+        /// Rest der Division ab.
+        /// </summary>
+        private const int STELLEN = 6;
 
         /// <summary>Ein Textfeld als Zahl; leer oder nicht lesbar = <c>null</c>, eine 0 ebenso.</summary>
         private static double? Zahl(string text)

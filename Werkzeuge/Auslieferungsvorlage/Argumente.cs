@@ -39,6 +39,16 @@ namespace Auslieferungsvorlage
         /// </summary>
         internal string Katalogpaket { get; private set; }
 
+        /// <summary>
+        /// Der Ordner mit den Kesseldateien nach VDI 3805 Blatt 3 (<c>--kesselkatalog</c>, Konzept
+        /// Kesselkennlinie, Etappe E1, Entscheid F2) oder <c>null</c>. Mit ihm pflegt das Werkzeug
+        /// <c>Tab_Heizkessel_STAMM</c> der Arbeitskopie nach (η₃₀, η₁₀₀ aus Satz 710.01, kleinste
+        /// Leistung, Brennwert) — <c>KesselkatalogNachpflege</c> im Kern, derselbe Weg wie
+        /// <c>Werkzeuge/Testdatenbankschema --kesselkatalog</c>. Die Dateien liegen im Repositorium
+        /// unter <c>VDI-3805-Daten/SPK-Daten/</c> (Git LFS).
+        /// </summary>
+        internal string Kesselkatalog { get; private set; }
+
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
         internal string Fehler { get; private set; }
 
@@ -80,6 +90,13 @@ namespace Auslieferungsvorlage
             Console.WriteLine("                    Der freie Paketteil " + TwwKataloge.PAKETTEIL_FREI + " (Stochastik,");
             Console.WriteLine("                    Ecodesign-Zapfprofil, Zapfkategorien) kommt IMMER dazu, nach dem");
             Console.WriteLine("                    Katalogpaket; eine gleiche Zeile des Katalogpakets geht vor (Bericht).");
+            Console.WriteLine("  --kesselkatalog <ordner>");
+            Console.WriteLine("                    Die Kesseldateien nach VDI 3805 Blatt 3 (*.vdi, auch in *.zip), im");
+            Console.WriteLine("                    Repositorium VDI-3805-Daten/SPK-Daten/. Pflegt Tab_Heizkessel_STAMM der");
+            Console.WriteLine("                    Arbeitskopie nach: eta30 und eta100 aus Satz 710.01, kleinste Leistung,");
+            Console.WriteLine("                    Brennwert aus der Bauart (Konzept Kesselkennlinie, Entscheide F2/F3).");
+            Console.WriteLine("                    Vor jeder Auslieferung angeben; ohne den Schalter bleibt der Katalog,");
+            Console.WriteLine("                    wie ihn die Quelle fuehrt.");
             Console.WriteLine();
             Console.WriteLine("Rueckgabe:");
             Console.WriteLine("  0  Vorlage erzeugt und abgenommen.");
@@ -118,6 +135,12 @@ namespace Auslieferungsvorlage
                         if (++i >= args.Length) return a.Mit("--katalogpaket braucht einen Ordner.");
                         string paketgrund = a.KatalogpaketPruefen(args[i]);
                         if (paketgrund != null) return a.Mit(paketgrund);
+                        break;
+                    case "--kesselkatalog":
+                        if (++i >= args.Length) return a.Mit("--kesselkatalog braucht einen Ordner.");
+                        string kk = Path.GetFullPath(args[i]);
+                        if (!Directory.Exists(kk)) return a.Mit("Kesselkatalog nicht gefunden (Ordner erwartet): " + kk);
+                        a.Kesselkatalog = kk;
                         break;
                     case "--beispiele":
                         if (++i >= args.Length) return a.Mit("--beispiele braucht einen Ordner oder eine Dateiliste.");
