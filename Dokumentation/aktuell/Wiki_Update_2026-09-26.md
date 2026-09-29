@@ -122,6 +122,7 @@ Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein
 - Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
 - Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
 - Dialoge mit mehreren Hilfeknöpfen bieten den Hilfe-Assistenten nur noch einmal an, am Hilfeknopf im Dialogkopf. (#610)
+- Im Variantenvergleich der Wirtschaftlichkeit trägt der Netzbezug eines Standes ohne stromverwendenden Erzeuger Arbeits- und Grundpreis, aber keinen Leistungspreis; ein Hinweis nennt den Leistungspreis des Stromträgers. (#612; Anwenderentscheid 29.09.2026: „aktuelle Version“)
 
 ### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
 
@@ -179,6 +180,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 - Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)
 - Die Häkchen der Berichtsbausteine wirken auch auf die Blätter der Excel-Mappe und richten sich nach der gewählten Excel-Vorlage. (#607)
+- Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
