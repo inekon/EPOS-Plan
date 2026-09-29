@@ -12657,6 +12657,21 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     min-width: 0;
 }
 
+/* Die Zeile "Original geaendert - uebernehmen?" (Konzept Berichtsvorlagen
+   10.2/10.3) steht unmittelbar unter der Pruefzeile und nimmt deren Zeilenform;
+   eigen ist nur der kleine Abstand. */
+.epos-vorlage-originalzeile {
+    margin-top: 2px;
+}
+
+/* Die Zeile nennt den Pfad des Originals. Ein Pfad traegt keine Leerzeichen,
+   an denen er umbrechen koennte - im schmalen Fenster schoebe er die beiden
+   Knoepfe sonst aus der Zeile. Gekuerzt wird schon in der Huelle; hier bricht
+   der Rest notfalls im Wort. */
+.epos-vorlage-originalzeile .epos-herleitung-text {
+    overflow-wrap: anywhere;
+}
+
 /* ---- Die Pruefliste ------------------------------------------------- */
 
 .epos-vorlage-meldungsgruppe + .epos-vorlage-meldungsgruppe {

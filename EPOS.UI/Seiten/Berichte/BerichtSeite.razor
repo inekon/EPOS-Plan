@@ -352,6 +352,12 @@
                         </div>
                     }
 
+                    @* "Original geaendert - uebernehmen?" (Konzept 10.2/10.3): eine eigene
+                       Zeile unter der Pruefzeile, nur wo es ein Original ausserhalb des
+                       Vorlagenordners gibt. *@
+                    <Vorlagenoriginalzeile Zeile="@_originalzeile" Gesperrt="@GruppeGesperrt"
+                                           Gewaehlt="HandlungKlick" />
+
                     @if (ExcelzeileSichtbar)
                     {
                         @* BV-E7: die Zeile "Excel-Vorlage" - nur, wenn eine Mappe entsteht. *@
@@ -428,6 +434,8 @@
                                 }
                             </div>
                         }
+                        <Vorlagenoriginalzeile Zeile="@_excelOriginalzeile" Gesperrt="@GruppeGesperrt"
+                                               Gewaehlt="HandlungKlick" />
                     }
                 </div>
             }
@@ -754,6 +762,13 @@
     [Parameter] public Pruefstand? Pruefzeile { get; set; }
 
     /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Word-Vorlage
+    /// (Konzept 10.2/10.3); <c>null</c> = keine. Ihre zwei Handlungen meldet die Seite über
+    /// <see cref="HandlungGewaehlt"/> — denselben Weg wie das Menü „…".
+    /// </summary>
+    [Parameter] public Originalstand? Originalzeile { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Überlagerung „Prüfliste" (<c>PrueflisteDialog</c>) — „anzeigen"
     /// in der Prüfzeile öffnet sie; <c>null</c> als Antwort = geht gerade nicht. Ohne Delegat
     /// kein „anzeigen". <c>Geschlossen</c> und <c>TitelAnzeigen</c> setzt die Seite selbst.
@@ -793,6 +808,14 @@
     [Parameter] public Kapitelstand? Kapitelstand { get; set; }
 
     /// <summary>
+    /// BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt (Blattmarken, Blattanhang) — der
+    /// ANFANGSSTAND wie die übrigen Werte der Gruppe; frisch kommt er mit
+    /// <see cref="Vorlagenstand.ExcelBlattstand"/>. <c>null</c> = die Mappe sagt nichts (keine
+    /// Excel-Vorlage, nicht lesbar oder ohne Platzhalter), der Excel-Weg bleibt wie bisher.
+    /// </summary>
+    [Parameter] public Kapitelstand? ExcelBlattstand { get; set; }
+
+    /// <summary>
     /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): die wählbaren Excel-Vorlagen — „Ohne Vorlage (EPOS-Plan)“ und die eigenen
     /// des Vorlagenordners, je mit stabiler Id. Leer oder ohne <see cref="ExcelVorlageIdChanged"/> = keine Zeile.
     /// </summary>
@@ -807,6 +830,9 @@
 
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
     [Parameter] public Pruefstand? ExcelPruefzeile { get; set; }
+
+    /// <summary>Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
+    [Parameter] public Originalstand? ExcelOriginalzeile { get; set; }
 
     /// <summary>BV-E7: der Parametersatz der Prüfliste der Excel-Vorlage; ohne Delegat kein „anzeigen“.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ExcelPrueflisteGaben { get; set; }
@@ -859,6 +885,7 @@
     private int? _vorlageId;
     private IReadOnlyList<Handlung> _handlungen = Array.Empty<Handlung>();
     private Pruefstand? _pruefzeile;
+    private Originalstand? _originalzeile;
     private Startrueckfrage? _startrueckfrage;
 
     /// <summary>BV-E9: die Sprache des Berichts aus der Vorlage als Information der Startrückfrage; leer = keine.</summary>
@@ -866,6 +893,9 @@
 
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
+
+    /// <summary>BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt; <c>null</c> = jeder Eintrag frei.</summary>
+    private Kapitelstand? _blattstand;
 
     // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
     private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
@@ -877,9 +907,11 @@
     private bool _neuExcel;
     private int? _excelVorlageId;
     private Pruefstand? _excelPruefzeile;
+    private Originalstand? _excelOriginalzeile;
     private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
     private int? _gesehenExcelVorlageId;
     private Pruefstand? _gesehenExcelPruefzeile;
+    private Originalstand? _gesehenExcelOriginalzeile;
 
     /// <summary>BV-E2: die Meldung nach dem Klick auf ein weich gesperrtes Häkchen (Banner mit Verfall).</summary>
     private string _bausteinmeldung = "";
@@ -889,8 +921,10 @@
     private int? _gesehenVorlageId;
     private IReadOnlyList<Handlung>? _gesehenHandlungen;
     private Pruefstand? _gesehenPruefzeile;
+    private Originalstand? _gesehenOriginalzeile;
     private Startrueckfrage? _gesehenStartrueckfrage;
     private Kapitelstand? _gesehenKapitelstand;
+    private Kapitelstand? _gesehenExcelBlattstand;
     private bool _gesehen;
 
     /// <summary>Läuft gerade eine Handlung der Gruppe (Dateiwahl, Kopie, Prüfung)?</summary>
@@ -972,11 +1006,14 @@
                    || VorlageId != _gesehenVorlageId
                    || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
                    || !Equals(Pruefzeile, _gesehenPruefzeile)
+                   || !Equals(Originalzeile, _gesehenOriginalzeile)
                    || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
+                   || !Equals(ExcelBlattstand, _gesehenExcelBlattstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
                    || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
+                   || !Equals(ExcelOriginalzeile, _gesehenExcelOriginalzeile)
                    || !ReferenceEquals(ExcelVorlagenhandlungen, _gesehenExcelHandlungen);
         if (!neu) return;
 
@@ -985,22 +1022,28 @@
         _gesehenVorlageId = VorlageId;
         _gesehenHandlungen = Vorlagenhandlungen;
         _gesehenPruefzeile = Pruefzeile;
+        _gesehenOriginalzeile = Originalzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
         _gesehenKapitelstand = Kapitelstand;
+        _gesehenExcelBlattstand = ExcelBlattstand;
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
+        _gesehenExcelOriginalzeile = ExcelOriginalzeile;
         _gesehenExcelHandlungen = ExcelVorlagenhandlungen;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
         _handlungen = Vorlagenhandlungen ?? Array.Empty<Handlung>();
         _pruefzeile = Pruefzeile;
+        _originalzeile = Originalzeile;
         _startrueckfrage = Startrueckfrage;
         _kapitel = Kapitelstand;
+        _blattstand = ExcelBlattstand;
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
+        _excelOriginalzeile = ExcelOriginalzeile;
         _excelHandlungen = ExcelVorlagenhandlungen ?? Array.Empty<Handlung>();
     }
 
@@ -1638,12 +1681,15 @@
         _vorlageId = neu.VorlageId;
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
+        _originalzeile = neu.Originalzeile;
         _startrueckfrage = neu.Startrueckfrage;
         _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
+        _blattstand = neu.ExcelBlattstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
+        _excelOriginalzeile = neu.ExcelOriginalzeile;
         _excelHandlungen = neu.ExcelHandlungen ?? Array.Empty<Handlung>();
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
@@ -1906,11 +1952,17 @@
     private const int AUSGABE_WORD = 0, AUSGABE_EXCEL = 1, AUSGABE_BEIDE = 2;
 
     /// <summary>
-    /// Steht statt der Liste die leise Zeile? Nur wenn die Vorlage kein Kapitel führt (nur
-    /// Einzelplatzhalter) UND allein Word entsteht — mit Excel bleibt die Liste, denn die Mappe folgt
-    /// den Häkchen wie heute (BV-Q2).
+    /// Steht statt der Liste die leise Zeile? Sie steht, wenn jede Vorlage, die dieser Bericht füllt,
+    /// ihren Inhalt allein bestimmt: bei Word die Word-Vorlage ohne Kapitel, bei Excel die Excel-Vorlage
+    /// ohne Blattmarke und ohne Blattanhang (BV-Q2 (c)), bei beiden Ausgaben beide. Ohne Excel-Vorlage
+    /// folgt die Mappe den Häkchen wie bisher — dann bleibt die Liste.
     /// </summary>
-    private bool InhaltAusVorlage => _kapitel is { InhaltAusVorlage: true } && _stand.AusgabeId == AUSGABE_WORD;
+    private bool InhaltAusVorlage => _stand.AusgabeId switch
+    {
+        AUSGABE_WORD => _kapitel is { InhaltAusVorlage: true },
+        AUSGABE_EXCEL => _blattstand is { InhaltAusVorlage: true },
+        _ => _kapitel is { InhaltAusVorlage: true } && _blattstand is { InhaltAusVorlage: true },
+    };
 
     /// <summary>
     /// Trägt die Vorlage diesen Baustein selbst — das Deckblatt aus Platzhaltern
@@ -1921,16 +1973,44 @@
            && string.Equals(b.Schluessel, deckblatt, StringComparison.Ordinal);
 
     /// <summary>
-    /// Steht der Eintrag ausgegraut da? Nur mit einem Kapitelstand der Hülle, nur wenn Word entsteht
-    /// und die Vorlage das Kapitel nicht führt oder den Baustein selbst trägt — und wird Excel mit
-    /// ausgegeben, nur wenn auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// Führt die Word-Vorlage diesen Baustein — oder sagt sie nichts darüber (kein Kapitelstand der
+    /// Hülle)? Ein Baustein, den die Vorlage selbst trägt (Deckblatt aus Platzhaltern), zählt hier als
+    /// nicht geführt: Sein Häkchen wirkt nicht, und der Eintrag bekommt den eigenen Grund.
+    /// </summary>
+    private bool FuehrtWord(BausteinZeile b)
+    {
+        if (_kapitel is null) return true;
+        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b);
+    }
+
+    /// <summary>
+    /// BV-Q2 (c): Führt die Excel-Mappe diesen Baustein? Mit einer Excel-Vorlage entscheidet ihr
+    /// Blattstand (Blattmarken und Blattanhang); ohne Vorlage entstehen alle Blätter, also führt die
+    /// Mappe jeden Baustein, den sie überhaupt kennt (<see cref="BausteinZeile.InExcel"/>).
+    /// </summary>
+    private bool FuehrtExcel(BausteinZeile b)
+    {
+        if (_blattstand is null) return b.InExcel;
+        IReadOnlyList<string> fehlen = _blattstand.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Steht der Eintrag ausgegraut da (Konzept 10.2, Entscheide BV-Q1 c und BV-Q2 c)? Bei Ausgabe
+    /// „Word“ entscheidet die Word-Vorlage, bei „Excel“ allein die Excel-Vorlage, bei „Beide“ ist
+    /// ausgegraut, was WEDER die Word- NOCH die Excel-Vorlage führt. Ohne Excel-Vorlage bleibt der
+    /// Excel-Weg wie bisher: Jeder Eintrag ist frei, denn die Mappe entsteht mit allen Blättern.
     /// </summary>
     private bool Ausgegraut(BausteinZeile? b)
     {
-        if (_kapitel is null || b is null || _stand.AusgabeId == AUSGABE_EXCEL) return false;
-        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
-        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b)) return false;
-        return !(_stand.AusgabeId == AUSGABE_BEIDE && b.InExcel);
+        if (b is null) return false;
+        return _stand.AusgabeId switch
+        {
+            AUSGABE_WORD => _kapitel is not null && !FuehrtWord(b),
+            AUSGABE_EXCEL => _blattstand is not null && !FuehrtExcel(b),
+            _ => (_kapitel is not null || _blattstand is not null) && !FuehrtWord(b) && !FuehrtExcel(b),
+        };
     }
 
     /// <summary>Der Grund eines ausgegrauten Eintrags: „Deckblatt kommt aus der Vorlage" oder „in dieser Vorlage nicht enthalten".</summary>

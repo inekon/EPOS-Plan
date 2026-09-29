@@ -27,7 +27,7 @@ Mitgeliefert: `EPOS-Plan.iss` (lauffähiges Setup-Skript) und `build-setup.ps1`
 > Abschnitte `[Types]` und `[Components]` im Skript, eine Zeile in `[Files]`, eine
 > in `[UninstallDelete]` und eine Vorbedingung in `build-setup.ps1`. Begründung
 > der Lage: Entscheidung **E10** in Abschnitt 3. Fachlicher Bezug:
-> [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md),
+> [`Konzept_Wechselrichter_EPOS-Plan.md`](../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md),
 > Kapitel 12.
 
 > **Stand 09.09.2026 — Deinstallations-Rückfrage.** Anwenderentscheid

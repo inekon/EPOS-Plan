@@ -314,6 +314,37 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Häkchen, deren Inhalt ein erzeugtes Blatt trägt</b> (Entscheid BV-Q2 (c)): Das Blatt „Übersicht“
+        /// trägt den Projektkopf und die Komponentenmatrix, der „Vergleich“ den Variantenvergleich,
+        /// Formelmappe, Verlauf und Checkliste die Wirtschaftlichkeit, jedes Detailblatt die Ergebnisse je
+        /// Variante. Die Diagrammdaten (BV-E8) gehören keinem Häkchen: Sie tragen die Zahlen der Diagramme,
+        /// die ohnehin nur auf vorhandenen Blättern stehen. Ein Blatt ohne Häkchen in dieser Tafel entsteht
+        /// immer (<see cref="BlattGewaehlt"/>).
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<Blattart, IReadOnlyList<string>> Blattbausteine =
+            new Dictionary<Blattart, IReadOnlyList<string>>
+            {
+                [Blattart.Uebersicht] = new[] { BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_KOMPONENTEN },
+                [Blattart.Vergleich] = new[] { BerichtsKonfiguration.B_VERGLEICH },
+                [Blattart.Wirtschaftlichkeit] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Verlauf] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Detail] = new[] { BerichtsKonfiguration.B_ERGEBNISSE },
+                [Blattart.Checkliste] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Diagrammdaten] = Array.Empty<string>(),
+            };
+
+        /// <summary>
+        /// Trägt dieses Blatt in diesem Bericht Inhalt — ist also mindestens eines seiner Häkchen gesetzt
+        /// (<see cref="Blattbausteine"/>)? Ohne Konfiguration gilt jedes Häkchen als gesetzt.
+        /// </summary>
+        internal static bool BlattGewaehlt(Blattart art, BerichtsKonfiguration konfig)
+        {
+            if (konfig == null) return true;
+            if (!Blattbausteine.TryGetValue(art, out IReadOnlyList<string> bausteine) || bausteine.Count == 0) return true;
+            return bausteine.Any(konfig.IstAktiv);
+        }
+
+        /// <summary>
         /// Die festen Namen der erzeugten Blätter in der Sprache des Laufs — die Blätter, deren
         /// <c>Worksheets.Add</c> an einem gleichnamigen Anwenderblatt scheitern würde (der Verlauf
         /// und die Detailblätter weichen selbst auf einen freien Namen aus).

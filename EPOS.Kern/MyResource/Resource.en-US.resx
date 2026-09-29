@@ -36075,6 +36075,18 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
     <value>“{0}” is already in the template folder</value>
   </data>
+  <data name="BV_VORLAGEN_ORIGINAL_KEINS" xml:space="preserve">
+    <value>No original outside the template folder is recorded for “{0}”</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” taken over from the original</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_GESICHERT" xml:space="preserve">
+    <value>“{0}” taken over from the original – the edited copy is now in {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_BEHALTEN" xml:space="preserve">
+    <value>“{0}” stays as it is – you are asked again only when the original changes once more</value>
+  </data>
   <data name="BV_LAUF_VORLAGE" xml:space="preserve">
     <value>Word template: “{0}” ({1})</value>
   </data>
@@ -36353,6 +36365,24 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BK_BER_VORLAGE_NICHT_WAEHLBAR" xml:space="preserve">
     <value>This template cannot be selected.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_ORIGINAL_FRAGE" xml:space="preserve">
+    <value>Original changed – apply? ({0})</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_UEBERNEHMEN" xml:space="preserve">
+    <value>Copies the changed original over the template in the template folder again.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_BEHALTEN" xml:space="preserve">
+    <value>Keep</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_BEHALTEN" xml:space="preserve">
+    <value>Leaves the template as it is; you are asked again only when the original changes once more.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_ORIGINAL_NICHT_HIER" xml:space="preserve">
+    <value>On this platform there is no original outside the template folder – the template was copied here when it was added.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_ENTFERNEN" xml:space="preserve">
     <value>Moves the template into the “Entfernt” subfolder of the template folder.</value>

@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
             if (_zusammenfallend)
             {
                 double z = _mu * tauS;
-                double e = Math.Exp(z);
+                double e = Plattformrundung.Exp(z);
                 phi = e * Matrix2.Einheit + (tauS * e) * _aMinusMu;
                 gamma = (tauS * G1(z, e)) * Matrix2.Einheit + (tauS * tauS * G1Strich(z, e)) * _aMinusMu;
                 psi = (tauS * tauS * G2(z, e)) * Matrix2.Einheit + (tauS * tauS * tauS * G2Strich(z, e)) * _aMinusMu;
@@ -199,7 +199,7 @@ namespace WindowsFormsApplication1
             else
             {
                 double z1 = _l1 * tauS, z2 = _l2 * tauS;
-                double e1 = Math.Exp(z1), e2 = Math.Exp(z2);
+                double e1 = Plattformrundung.Exp(z1), e2 = Plattformrundung.Exp(z2);
                 double dl = _l1 - _l2;
                 phi = Sylvester(e1, e2, dl);
                 gamma = Sylvester(tauS * G1(z1, e1), tauS * G1(z2, e2), dl);

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -38,6 +40,14 @@ namespace EPOS.Kern.Tests
         private const double EINSPARUNG = 10.0;
         private const double GAS_EUR = 50.0;
         private const double STROMPREIS = 0.35;
+
+        /// <summary>Der Stamm der Vergleichsgruppe in der Testdatenbank: 1026 mit den Varianten
+        /// 1027 „Andere WP" und 1029 „Erdwärme".</summary>
+        private const int GRUPPE_STAMM = 1026;
+
+        /// <summary>Die Grundmenge des Ausweises ohne Träger und ohne PV (7 + Zeitraum, Menge,
+        /// Einspeisevergütung PV und KWK).</summary>
+        private const int GRUNDMENGE = 11;
 
         // =================================================================
         // Die Gruppe verwendet Strom — der Stamm bepreist seinen Netzbezug
@@ -324,6 +334,103 @@ namespace EPOS.Kern.Tests
             Assert.False(stamm.StromImVergleichBepreisen);
             Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
             Assert.Null(stamm.StromGruppenregelMWh);
+        }
+
+        // =================================================================
+        // Die Szenarioabdeckung zählt je Lauf (Konzept § 2.11.5, § 3.5; Register EZ‑15)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Ausweis „n von m Parametern szenariert" zählt nach der Gruppenregel.</b> Allein
+        /// zählt der Stamm ohne Stromverwendung keinen Stromträger. Im Lauf mit der Variante zählt er
+        /// den Auslieferungsträger, der seinen Netzbezug bepreist — als Stromträger mit Arbeits-,
+        /// Grund- und Leistungspreis, auch wenn dieser keinen Leistungspreis führt. Verwendet kein
+        /// Stand des Laufs Strom, zählt keiner ihn.
+        /// </summary>
+        [Fact]
+        public void Die_Szenarioabdeckung_zaehlt_den_Stromtraeger_nach_der_Gruppenregel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            DataRepository.ExecuteSQL("UPDATE energy_carrier SET price_power = ? WHERE id = ?",
+                new DbParam("@l", 0.0), new DbParam("@c", STROM));
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(STAMM);
+            var stamm = new KeyValuePair<int, string>(STAMM, "Stamm");
+            var variante = new KeyValuePair<int, string>(VARIANTE, "mit PV");
+
+            int allein = SzenarioAbdeckung.Lesen(p, new[] { stamm }).Parameter;
+            int nurVariante = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
+            int lauf = SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter;
+
+            // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit.
+            Assert.Equal(allein + nurVariante - GRUNDMENGE + 3, lauf);
+
+            // Gegenprobe: Die Variante verliert jeden stromverwendenden Erzeuger.
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@p", VARIANTE));
+            int varianteOhne = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
+            Assert.Equal(allein + varianteOhne - GRUNDMENGE,
+                         SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter);
+        }
+
+        /// <summary>
+        /// <b>Die Szenarioabdeckung der Ergebnisseite zählt je Lauf</b> — Stamm, angehakte Varianten
+        /// und Referenz, dieselbe Menge, über die der Lauf seine Gruppenregel bestimmt. In der Gruppe
+        /// 1026 verwendet allein „Erdwärme" (1029) Strom; Stamm und „Andere WP" (1027) führen keinen
+        /// Erzeuger, der Strom verwendet. Wird „Erdwärme" abgehakt, zählen die beiden übrigen keinen
+        /// Stromträger mehr, und der Ausweis ändert sich mit dem Haken, ohne neues Laden.
+        /// </summary>
+        [Fact]
+        public void Die_Szenarioabdeckung_der_Seite_folgt_dem_Haken_der_einzigen_Stromvariante()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt IN (?, ?) AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@a", GRUPPE_STAMM), new DbParam("@b", STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(GRUPPE_STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(STAMM));
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(VARIANTE));
+
+            var seite = new WirtschaftlichkeitSeiteGaben(GRUPPE_STAMM, "Beispiel WP WG 1");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])();
+            var anzeigen = (Func<int, ErgebnisAnsicht>)gaben["Anzeigen"];
+            var waehlen = (Action<IReadOnlyList<int>>)gaben["VergleichGewaehlt"];
+
+            List<KeyValuePair<int, string>> alle = stand.Staende
+                .Select(s => new KeyValuePair<int, string>(s.Id, s.Text)).ToList();
+            Assert.Equal(new[] { GRUPPE_STAMM, STAMM, VARIANTE }.OrderBy(i => i),
+                         alle.Select(s => s.Key).OrderBy(i => i));
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(GRUPPE_STAMM);
+
+            // Alle angehakt: der Lauf der ganzen Gruppe mit der Gruppenregel.
+            SzenarioAbdeckung mit = SzenarioAbdeckung.Lesen(p, alle);
+            string beimLaden = stand.Ansicht.Szenarioabdeckung;
+            Assert.Equal(mit.Satz(BerichtTexte.Kultur), beimLaden);
+
+            // „Erdwärme" abgehakt: Stamm und „Andere WP" zählen keinen Stromträger mehr.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM });
+            SzenarioAbdeckung ohne = SzenarioAbdeckung.Lesen(p, alle.Where(s => s.Key != VARIANTE));
+            string abgehakt = anzeigen(0).Szenarioabdeckung;
+            Assert.Equal(ohne.Satz(BerichtTexte.Kultur), abgehakt);
+            Assert.NotEqual(beimLaden, abgehakt);
+
+            // Der Unterschied: die Parameter von „Erdwärme" und je Stand ohne eigene
+            // Stromverwendung die drei Preise seines Stromträgers.
+            int erdwaerme = SzenarioAbdeckung.Lesen(p, alle.Where(s => s.Key == VARIANTE)).Parameter - GRUNDMENGE;
+            Assert.Equal(ohne.Parameter + erdwaerme + 2 * 3, mit.Parameter);
+
+            // Wieder angehakt: derselbe Ausweis wie beim Laden.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
+            Assert.Equal(beimLaden, anzeigen(0).Szenarioabdeckung);
         }
 
         // =================================================================

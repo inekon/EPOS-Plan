@@ -7617,6 +7617,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Behalten ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_BEHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_HANDLUNG_ENTFERNEN {
@@ -7676,6 +7685,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_HANDLUNG_TEILEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_TEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -8013,6 +8031,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Original geändert – übernehmen? ({0}) ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_ORIGINAL_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_ORIGINAL_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieser Plattform liegt kein Original außerhalb des Vorlagenordners – die Vorlage wurde beim Hinzufügen hierher kopiert. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_ORIGINAL_NICHT_HIER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_ORIGINAL_NICHT_HIER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lässt die Vorlage, wie sie ist; gefragt wird erst wieder, wenn sich das Original erneut ändert. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_BEHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Legt die Vorlage in den Unterordner „Entfernt“ des Vorlagenordners. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_TIP_ENTFERNEN {
@@ -8126,6 +8171,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_TIP_TEILEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_TIP_TEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt das geänderte Original erneut über die Vorlage im Vorlagenordner. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -13019,6 +13073,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_ORDNER_VORHANDEN {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_ORDNER_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ bleibt, wie sie ist – gefragt wird erst wieder, wenn sich das Original erneut ändert ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_ORIGINAL_BEHALTEN {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_ORIGINAL_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ aus dem Original übernommen – die bearbeitete Kopie liegt jetzt in {1} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_ORIGINAL_GESICHERT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_ORIGINAL_GESICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu „{0}“ ist kein Original außerhalb des Vorlagenordners gemerkt ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_ORIGINAL_KEINS {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_ORIGINAL_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ aus dem Original übernommen ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_ORIGINAL_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_ORIGINAL_UEBERNOMMEN", resourceCulture);
             }
         }
         

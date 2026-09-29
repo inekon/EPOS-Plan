@@ -627,6 +627,129 @@ namespace EPOS.Kern.Tests
             Assert.True(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
             File.Delete(quelle);
             Assert.Null(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
+
+            // Ohne Herkunft (eine Vorlage aus „Neue Vorlage…“) gibt es nichts zu vergleichen.
+            Assert.Null(_ctrl.OriginalGeaendert(_ctrl.NeueVorlage("Frisch").Eintrag));
+        }
+
+        // =====================================================================
+        //  „Original geändert – übernehmen?“ (Konzept 10.2, 10.3)
+        // =====================================================================
+
+        [Fact]
+        public void Uebernehmen_holt_das_geaenderte_Original_in_den_Vorlagenordner()
+        {
+            string quelle = Quelle("Orig.docx");
+            Vorlageneintrag e = _ctrl.Hinzufuegen(quelle).Eintrag;
+            byte[] neu = Probevorlagen.AusAbsaetzen("{{projekt.name}}");
+            File.WriteAllBytes(quelle, neu);
+
+            Vorlagenergebnis r = _ctrl.OriginalUebernehmen(_ctrl.Finde(e.Id));
+            Assert.True(r.Erfolg, r.Meldung);
+            Assert.Equal("„Orig“ aus dem Original übernommen", r.Meldung);
+            Assert.Equal(neu, File.ReadAllBytes(e.Pfad));
+            // Die Ablagedatei steht auf dem neuen Stand: Die Zeile kommt nicht wieder.
+            Assert.False(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
+            Assert.Equal(quelle, _ctrl.Finde(e.Id).Herkunftspfad);
+            Assert.False(Directory.Exists(Path.Combine(_ctrl.Vorlagenordner, BerichtsvorlagenCtrl.ORDNER_ENTFERNT)));
+        }
+
+        [Fact]
+        public void Uebernehmen_sichert_eine_am_Ort_bearbeitete_Kopie_nach_Entfernt()
+        {
+            string quelle = Quelle("Orig.docx");
+            Vorlageneintrag e = _ctrl.Hinzufuegen(quelle).Eintrag;
+            // Der Anwender hat die Kopie im Vorlagenordner selbst bearbeitet …
+            byte[] amOrt = Probevorlagen.AusAbsaetzen("{{projekt.bearbeiter}}");
+            File.WriteAllBytes(e.Pfad, amOrt);
+            // … und danach hat sich auch das Original geändert.
+            byte[] neu = Probevorlagen.AusAbsaetzen("{{projekt.name}}");
+            File.WriteAllBytes(quelle, neu);
+
+            Vorlagenergebnis r = _ctrl.OriginalUebernehmen(_ctrl.Finde(e.Id));
+            Assert.True(r.Erfolg, r.Meldung);
+            string entfernt = Path.Combine(_ctrl.Vorlagenordner, BerichtsvorlagenCtrl.ORDNER_ENTFERNT);
+            Assert.Equal("„Orig“ aus dem Original übernommen – die bearbeitete Kopie liegt jetzt in " + entfernt, r.Meldung);
+            Assert.Equal(neu, File.ReadAllBytes(e.Pfad));
+            string gesichert = Assert.Single(Directory.GetFiles(entfernt));
+            Assert.Equal(amOrt, File.ReadAllBytes(gesichert));
+            // Die Sicherung steht NICHT in der Liste — sie liegt im Unterordner.
+            Assert.Single(_ctrl.Liste(), v => v.Id == e.Id);
+        }
+
+        [Fact]
+        public void Uebernehmen_lehnt_ohne_Original_und_bei_geoeffneter_Vorlage_benannt_ab()
+        {
+            Assert.Equal(Vorlagenergebnisart.Schreibgeschuetzt, _ctrl.OriginalUebernehmen(_ctrl.Standardeintrag()).Art);
+
+            Vorlageneintrag ohne = _ctrl.NeueVorlage("Frisch").Eintrag;
+            Vorlagenergebnis keins = _ctrl.OriginalUebernehmen(ohne);
+            Assert.Equal(Vorlagenergebnisart.QuelleFehlt, keins.Art);
+            Assert.Equal("Zu „Frisch“ ist kein Original außerhalb des Vorlagenordners gemerkt", keins.Meldung);
+
+            string quelle = Quelle("Orig.docx");
+            Vorlageneintrag e = _ctrl.Hinzufuegen(quelle).Eintrag;
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("{{projekt.name}}"));
+            File.Delete(quelle);
+            Assert.Equal(Vorlagenergebnisart.QuelleFehlt, _ctrl.OriginalUebernehmen(_ctrl.Finde(e.Id)).Art);
+
+            // In Word geöffnet: Die Sperrdatei hält „Übernehmen“ auf.
+            Quelle("Orig.docx");
+            File.WriteAllBytes(Path.Combine(_ctrl.Vorlagenordner, "~$Orig.docx"), new byte[] { 1 });
+            Assert.Equal(Vorlagenergebnisart.InWordGeoeffnet, _ctrl.OriginalUebernehmen(_ctrl.Finde(e.Id)).Art);
+        }
+
+        [Fact]
+        public void Behalten_unterdrueckt_die_Zeile_bis_zur_naechsten_Aenderung()
+        {
+            string quelle = Quelle("Orig.docx");
+            Vorlageneintrag e = _ctrl.Hinzufuegen(quelle).Eintrag;
+            byte[] vorher = File.ReadAllBytes(e.Pfad);
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("{{projekt.name}}"));
+            Assert.True(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
+
+            Vorlagenergebnis r = _ctrl.OriginalBehalten(_ctrl.Finde(e.Id));
+            Assert.True(r.Erfolg, r.Meldung);
+            Assert.Equal("„Orig“ bleibt, wie sie ist – gefragt wird erst wieder, wenn sich das Original erneut ändert", r.Meldung);
+            Assert.False(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
+
+            // Die Vorlage selbst blieb unangetastet; die Zurückweisung steht in der Ablagedatei.
+            Assert.Equal(vorher, File.ReadAllBytes(e.Pfad));
+            using (JsonDocument ablage = JsonDocument.Parse(Ablagetext))
+            {
+                JsonElement eintrag = Assert.Single(ablage.RootElement.GetProperty("Vorlagen").EnumerateArray());
+                Assert.Equal(_ctrl.Finde(e.Id).Zurueckgewiesen, eintrag.GetProperty("Zurueckgewiesen").GetString());
+                Assert.NotEqual(eintrag.GetProperty("Pruefsumme").GetString(), eintrag.GetProperty("Zurueckgewiesen").GetString());
+            }
+
+            // Ändert sich das Original ein zweites Mal, kommt die Zeile wieder.
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("{{projekt.ort}}"));
+            Assert.True(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
+
+            // „Übernehmen“ räumt die Zurückweisung mit ab.
+            Assert.True(_ctrl.OriginalUebernehmen(_ctrl.Finde(e.Id)).Erfolg);
+            Assert.Null(_ctrl.Finde(e.Id).Zurueckgewiesen);
+        }
+
+        [Fact]
+        public void Eine_Ablagedatei_ohne_das_neue_Feld_bleibt_gueltig()
+        {
+            string quelle = Quelle("Orig.docx");
+            Vorlageneintrag e = _ctrl.Hinzufuegen(quelle).Eintrag;
+            _ctrl.OriginalBehalten(_ctrl.Finde(e.Id));
+
+            // Eine Ablagedatei aus der Zeit vor dem Feld: derselbe Inhalt ohne „Zurueckgewiesen“.
+            string alt = Ablagetext.Replace("\"Zurueckgewiesen\"", "\"ZurueckgewiesenWeg\"");
+            Assert.DoesNotContain("\"Zurueckgewiesen\":", alt);
+            File.WriteAllText(Path.Combine(_ctrl.Vorlagenordner, BerichtsvorlagenCtrl.ABLAGEDATEI), alt);
+
+            Vorlageneintrag gelesen = _ctrl.Finde(e.Id);
+            Assert.Equal(quelle, gelesen.Herkunftspfad);
+            Assert.NotNull(gelesen.Pruefsumme);
+            Assert.Null(gelesen.Zurueckgewiesen);
+            Assert.False(_ctrl.OriginalGeaendert(gelesen));
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("{{projekt.name}}"));
+            Assert.True(_ctrl.OriginalGeaendert(_ctrl.Finde(e.Id)));
         }
 
         // =====================================================================
