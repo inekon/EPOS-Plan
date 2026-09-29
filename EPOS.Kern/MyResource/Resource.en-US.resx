@@ -28601,6 +28601,15 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
     <value>The draw-off profile generator is available (catalogue version “{0}”).</value>
   </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — no catalogue version: {0}. {1}</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHGELADEN" xml:space="preserve">
+    <value>The draw-off profile generator has loaded its freely available catalogue data into this database (catalogue version “{0}”): {1} parameters, {2} domestic hot water types of use, {3} design days.</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The freely available catalogue data of the draw-off profile generator could not be loaded ({0}) — nothing changed.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN" xml:space="preserve">
     <value>A zone without data.</value>
   </data>

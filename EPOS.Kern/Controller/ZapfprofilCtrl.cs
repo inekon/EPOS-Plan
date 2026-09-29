@@ -106,6 +106,18 @@ namespace WindowsFormsApplication1
         /// Kann der Generator in dieser Datenbank laufen? Benannt: alle zehn Tabellen aus
         /// <see cref="TwwSchema"/> vorhanden (ein älterer iOS-Seed trägt sie nicht, 3.2) und
         /// eine Katalogversion der Parameter vorhanden (<see cref="AktuelleKatalogversion"/>).
+        ///
+        /// <para><b>Der Auslöser des Nachladens.</b> Stehen die Tabellen, fehlt aber die
+        /// Katalogversion (eine ältere, über die Schemaschritte angehobene Datenbank: der freie
+        /// Paketteil kam nur mit der Vorlage einer Neuinstallation), lädt der Kern den freien
+        /// Paketteil HIER nach (<see cref="TwwPaketteilCtrl.Nachladen"/>), bevor er ablehnt. Diese
+        /// Stelle ist gewählt, weil es keinen gemeinsamen Datenbankstart beider Schalen im Kern gibt
+        /// (Windows hebt das Schema in der Schale, iOS kopiert nur seine Datenbank), aber jeder Weg
+        /// des Generators — Dialog, Auslegung, Messvergleich und der Eingang des Laufs — auf beiden
+        /// Plattformen zuerst hier fragt. Wiederholbar: Mit Katalogversion geschieht nichts; eine
+        /// vorhandene wird nie angefasst. Misslingt das Nachladen, nennt die Ablehnung den Grund
+        /// (<c>VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN</c>); das Ergebnis steht zudem in
+        /// <see cref="ZapfVerfuegbarkeit.Nachladen"/> und im Laufprotokoll.</para>
         /// </summary>
         internal static ZapfVerfuegbarkeit Verfuegbar()
         {
@@ -117,12 +129,22 @@ namespace WindowsFormsApplication1
                     ZapfSatz.Neu("VERFUEGBAR_TABELLEN_FEHLEN", (object)fehlend.Select(ZapfSatz.Tabelle).ToArray()));
 
             string version = AktuelleKatalogversion();
+            TwwPaketteilNachladen nachladen = TwwPaketteilNachladen.Nichts;
+            if (version == null)
+            {
+                nachladen = TwwPaketteilCtrl.Nachladen();
+                version = AktuelleKatalogversion();
+            }
             if (version == null)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
-                    ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
+                    nachladen.Versucht && !nachladen.Erfolg
+                        ? ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM),
+                                       nachladen.Satz)
+                        : ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)))
+                { Nachladen = nachladen.Satz };
 
             return new ZapfVerfuegbarkeit(true, ZapfVerfuegbarkeitsgrund.Verfuegbar,
-                ZapfSatz.Neu("VERFUEGBAR_JA", version));
+                ZapfSatz.Neu("VERFUEGBAR_JA", version)) { Nachladen = nachladen.Satz };
         }
 
         // =================================================================================

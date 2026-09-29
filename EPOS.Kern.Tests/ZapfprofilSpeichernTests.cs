@@ -378,17 +378,45 @@ namespace EPOS.Kern.Tests
             Assert.True(r.Kennzahlen.JahresbedarfZapfungKwh > 0);
         }
 
+        /// <summary>
+        /// Ohne Katalogversion lädt der Eingang über <see cref="ZapfprofilCtrl.Verfuegbar"/> zuerst den
+        /// freien Paketteil nach; misslingt das (hier weist die Datei jedes Einfügen in den
+        /// Parameterkatalog ab), lehnt der Eingang benannt ab.
+        /// </summary>
         [Fact]
         public void Ohne_Katalogversion_lehnt_der_Eingang_benannt_ab()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() }, null);
             ParametersatzException ex = Assert.Throws<ParametersatzException>(
                 () => ZapfprofilCtrl.Eingang(PROJEKT, stand, 0, new bool[365]));
             Assert.Equal(ParametersatzFehler.KeineKatalogversion, ex.Fehler);
+        }
+
+        /// <summary>
+        /// Ohne Katalogversion lädt der Eingang des Laufs den freien Paketteil nach
+        /// (<see cref="TwwPaketteilCtrl.Nachladen"/>): Der Parametersatz trägt danach die Katalogversion
+        /// des Pakets, und der Hinweis steht im Laufprotokoll.
+        /// </summary>
+        [Fact]
+        public void Ohne_Katalogversion_laedt_der_Eingang_den_freien_Paketteil_nach()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+            SimulationProtokoll protokoll = SimulationProtokoll.NeuStarten();
+
+            var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() }, null);
+            Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, stand, 0, new bool[365]);
+
+            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, e.Parameter.Katalogversion);
+            Assert.Contains(protokoll.Hinweise, h => h.StartsWith("Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten",
+                                                                  StringComparison.Ordinal));
         }
 
         /// <summary>
