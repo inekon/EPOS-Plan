@@ -36350,13 +36350,13 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Diese Vorlage ist nicht wählbar.</value>
   </data>
   <data name="BK_BER_VORLAGE_ORIGINAL_FRAGE" xml:space="preserve">
-    <value>Original geändert – übernehmen?</value>
+    <value>Original geändert – übernehmen? ({0})</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_UEBERNEHMEN" xml:space="preserve">
-    <value>Legt das geänderte Original erneut über die Vorlage im Vorlagenordner: {0}</value>
+    <value>Legt das geänderte Original erneut über die Vorlage im Vorlagenordner.</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_BEHALTEN" xml:space="preserve">
     <value>Behalten</value>

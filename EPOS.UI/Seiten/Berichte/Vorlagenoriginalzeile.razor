@@ -15,14 +15,20 @@
 
    Die Zeilenform ist die der Pruefzeile (epos-vorlage-pruefzeile mit --befund), damit
    beide untereinander gleich aussehen; epos-vorlage-originalzeile ist der eigene Haken
-   fuer Abstand und Proben. *@
+   fuer Abstand, Umbruch des Pfades und Proben.
+
+   DER PFAD STEHT IN DER ZEILE: Sie fragt nach einer Datei, die der Anwender nicht sieht,
+   also nennt sie sie. Gekuerzt wird in der HUELLE (Mitte durch "..." ersetzt), den vollen
+   Pfad traegt der title der Zeile. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 
 @if (Zeile is not null)
 {
+    @* Der title traegt denselben Satz mit dem VOLLEN Pfad: In der Zeile steht ein langer Pfad
+       in der Mitte gekuerzt (die Huelle kuerzt). Am Knopf gewinnt dessen eigener title. *@
     <div class="epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund epos-vorlage-originalzeile"
-         role="status">
+         role="status" title="@(string.IsNullOrWhiteSpace(Zeile.Titel) ? null : Zeile.Titel)">
         @if (!string.IsNullOrEmpty(Zeile.Symbol))
         {
             <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@Zeile.Symbol</span>

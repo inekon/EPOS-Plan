@@ -270,7 +270,11 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// (<c>Berichtsvorlagenwege.HerkunftDauerhaft</c>). <c>null</c> = keine Zeile.</para>
 /// </summary>
 /// <param name="Symbol">Das Zeichen vor dem Text; reine Dekoration wie bei <see cref="Pruefstand"/>.</param>
-/// <param name="Text">„Original geändert – übernehmen?“</param>
+/// <param name="Text">
+/// „Original geändert – übernehmen? (&lt;Pfad des Originals&gt;)“. Der Pfad steht in der Zeile
+/// SELBST, damit erkennbar ist, welche Datei gemeint ist; ein langer Pfad kommt dabei in der Mitte
+/// gekürzt herein (die Hülle kürzt, nicht die Seite).
+/// </param>
 /// <param name="Uebernehmen">
 /// „Übernehmen“: legt das Original erneut über die Kopie. Wie jede <see cref="Handlung"/> weich
 /// gesperrt, solange die Vorlage in Word geöffnet ist — der Grund steht dann am Knopf.
@@ -279,7 +283,12 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// „Behalten“: weist diesen Stand des Originals zurück; die Zeile kommt erst wieder, wenn sich das
 /// Original erneut ändert.
 /// </param>
-public sealed record Originalstand(string Symbol, string Text, Handlung Uebernehmen, Handlung Behalten);
+/// <param name="Titel">
+/// Derselbe Satz mit dem VOLLEN Pfad — er steht am <c>title</c> der Zeile, damit ein gekürzter Pfad
+/// vollständig lesbar bleibt. Leer = kein <c>title</c>.
+/// </param>
+public sealed record Originalstand(string Symbol, string Text, Handlung Uebernehmen, Handlung Behalten,
+                                   string Titel = "");
 
 /// <summary>
 /// BV-E2 (Konzept Berichtsvorlagen 10.2, „Häkchen (BV-Q1 c)"): <b>was die gewählte Word-Vorlage an

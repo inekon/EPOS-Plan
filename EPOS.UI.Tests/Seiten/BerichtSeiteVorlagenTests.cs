@@ -563,12 +563,19 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
     // Die Zeile „Original geändert – übernehmen?" (Konzept 10.2, 10.3)
     // =====================================================================
 
-    private static Originalstand Originalzeile(bool uebernehmenAktiv = true, string kennung = "uebernehmen")
-        => new("⚠", "Original geändert – übernehmen?",
+    /// <summary>Der Pfad, den die Hülle GEKÜRZT in die Zeile schreibt; ungekürzt steht er im Titel.</summary>
+    private const string PFAD_VOLL = @"C:\Büro\Vorlagen\Angebote\Wärmepumpen\2026\Kunden\Süd\Angebot Muster.docx";
+
+    private const string PFAD_KURZ = @"C:\Büro\Vorlagen\Ang…nden\Süd\Angebot Muster.docx";
+
+    private static Originalstand Originalzeile(bool uebernehmenAktiv = true, string kennung = "uebernehmen",
+                                               string pfadInDerZeile = PFAD_KURZ, string titel = null)
+        => new("⚠", $"Original geändert – übernehmen? ({pfadInDerZeile})",
                new Handlung(kennung, "Übernehmen", uebernehmenAktiv,
                             uebernehmenAktiv ? "" : "Die Vorlage ist in Word geöffnet.",
                             "Legt das geänderte Original erneut über die Vorlage im Vorlagenordner."),
-               new Handlung("behalten", "Behalten", Kurztext: "Lässt die Vorlage, wie sie ist."));
+               new Handlung("behalten", "Behalten", Kurztext: "Lässt die Vorlage, wie sie ist."),
+               titel ?? $"Original geändert – übernehmen? ({PFAD_VOLL})");
 
     /// <summary>
     /// Die Zeile steht UNTER der Prüfzeile, trägt Zeichen und Text und meldet ihre beiden Handlungen
@@ -585,7 +592,8 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
 
         IElement zeile = cut.Find(".epos-vorlage-originalzeile");
         Assert.Equal("⚠", zeile.QuerySelector(".epos-vorlage-pruefsymbol")!.TextContent);
-        Assert.Equal("Original geändert – übernehmen?", zeile.QuerySelector(".epos-herleitung-text")!.TextContent);
+        Assert.Equal($"Original geändert – übernehmen? ({PFAD_KURZ})",
+                     zeile.QuerySelector(".epos-herleitung-text")!.TextContent);
         Assert.Empty(zeile.QuerySelectorAll(".epos-schloss"));
 
         // Sie steht hinter der Prüfzeile, nicht davor.
@@ -602,6 +610,32 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         uebernehmen.Click();
         behalten.Click();
         Assert.Equal(new[] { "uebernehmen", "behalten" }, gewaehlt);
+    }
+
+    /// <summary>
+    /// Die Zeile NENNT den Pfad des Originals: gekürzt im sichtbaren Text, vollständig am
+    /// <c>title</c> der Zeile. Ohne Titel steht kein <c>title</c> da.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_Original_geaendert_nennt_den_Pfad_und_traegt_ihn_voll_am_Titel()
+    {
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Originalzeile, Originalzeile()));
+
+        IElement zeile = cut.Find(".epos-vorlage-originalzeile");
+        string text = zeile.QuerySelector(".epos-herleitung-text")!.TextContent;
+        Assert.Contains(PFAD_KURZ, text, StringComparison.Ordinal);
+        Assert.Contains("Angebot Muster.docx", text, StringComparison.Ordinal);
+        Assert.DoesNotContain(PFAD_VOLL, text, StringComparison.Ordinal);
+        Assert.Equal($"Original geändert – übernehmen? ({PFAD_VOLL})", zeile.GetAttribute("title"));
+
+        // Ein kurzer Pfad steht ungekürzt in der Zeile.
+        const string kurz = @"C:\Vorlagen\Angebot.docx";
+        cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Originalzeile, Originalzeile(pfadInDerZeile: kurz, titel: "")));
+        zeile = cut.Find(".epos-vorlage-originalzeile");
+        Assert.Contains(kurz, zeile.QuerySelector(".epos-herleitung-text")!.TextContent, StringComparison.Ordinal);
+        Assert.False(zeile.HasAttribute("title"));
     }
 
     /// <summary>
