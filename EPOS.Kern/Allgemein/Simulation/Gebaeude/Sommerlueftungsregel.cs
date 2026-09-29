@@ -33,12 +33,20 @@ namespace WindowsFormsApplication1
     /// Aufruf bei der einen Zahl <see cref="SchwelleDerStunde"/> = <c>_schwelle</c>, also wörtlich
     /// beim Bestandsausdruck.</para>
     ///
-    /// <para>Ohne Datenbank, ohne Statik; ein Exemplar je Lauf eines Gebäudes (ab G6b je Zone).</para>
+    /// <para><b>Der Außenabstand ΔT steht als Feld</b> (Stufe KP1b, Konzept 3.7, P9): Die
+    /// Sommerlüftung nimmt die Konstante <see cref="GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN"/>
+    /// = 2 K, die <b>Nachtauskühlung</b> ihr <c>Bedingt_K</c> (0 … 5 K, leer = 2 K). Er wirkt an
+    /// genau EINER Stelle — <see cref="Schalten"/> —, Ein- und Ausschaltseite; die Hysterese von
+    /// 1 K bleibt dieselbe.</para>
+    ///
+    /// <para>Ohne Datenbank, ohne Statik; ein Exemplar je Lauf eines Gebäudes (ab G6b je Zone), ab
+    /// KP1b ein zweites je Zone für die Nachtauskühlung.</para>
     /// </summary>
     internal sealed class Sommerlueftungsregel
     {
         private readonly double _schwelle;
         private readonly double[] _kuehlsollwerteC;
+        private readonly double _abstandAussenK;
         private bool _aktiv;
 
         /// <summary>Die Regel mit der festen Schwelle der Stufe G2 (23 °C).</summary>
@@ -47,12 +55,19 @@ namespace WindowsFormsApplication1
         {
         }
 
-        /// <summary>Die Regel mit eigener Einschaltschwelle [°C] (ab KU1 θ_kuehl − 3 K).</summary>
-        internal Sommerlueftungsregel(double schwelle)
+        /// <summary>
+        /// Die Regel mit eigener Einschaltschwelle [°C] (ab KU1 θ_kuehl − 3 K) und, ab KP1b, eigenem
+        /// Außenabstand ΔT [K] — die Vorgabe ist die Konstante der Sommerlüftung (2 K).
+        /// </summary>
+        internal Sommerlueftungsregel(double schwelle,
+                                      double abstandAussenK = GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN)
         {
             if (double.IsNaN(schwelle) || double.IsInfinity(schwelle))
                 throw new ArgumentOutOfRangeException(nameof(schwelle));
+            if (!double.IsFinite(abstandAussenK) || abstandAussenK < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(abstandAussenK));
             _schwelle = schwelle;
+            _abstandAussenK = abstandAussenK;
         }
 
         /// <summary>
@@ -61,10 +76,18 @@ namespace WindowsFormsApplication1
         /// gehört zum Kühlkalender; ohne ihn gilt der Konstruktor mit der einen Zahl.
         /// </summary>
         /// <param name="kuehlsollwerteC">Die obere Regelgrenze je Stunde [°C] (<c>ThetaMax</c>); +∞ heißt „aus".</param>
-        internal Sommerlueftungsregel(double[] kuehlsollwerteC)
+        /// <param name="abstandAussenK">
+        /// Der Außenabstand ΔT [K]; Vorgabe die Konstante der Sommerlüftung (2 K). Die
+        /// Nachtauskühlung (KP1b, P9) setzt hier ihr <c>Bedingt_K</c> ein.
+        /// </param>
+        internal Sommerlueftungsregel(double[] kuehlsollwerteC,
+                                      double abstandAussenK = GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN)
         {
             _kuehlsollwerteC = kuehlsollwerteC ?? throw new ArgumentNullException(nameof(kuehlsollwerteC));
+            if (!double.IsFinite(abstandAussenK) || abstandAussenK < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(abstandAussenK));
             _schwelle = GebaeudeFestwerte.SOMMERLUEFTUNG_SCHWELLE;
+            _abstandAussenK = abstandAussenK;
         }
 
         /// <summary>Ist die Sommerlüftung in der laufenden Stunde eingeschaltet?</summary>
@@ -113,10 +136,10 @@ namespace WindowsFormsApplication1
             double abstand = thetaAirVorstunde - thetaOutVorstunde;
             if (!_aktiv)
                 _aktiv = thetaAirVorstunde > schwelle
-                         && abstand > GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN;
+                         && abstand > _abstandAussenK;
             else
                 _aktiv = !(thetaAirVorstunde < schwelle - GebaeudeFestwerte.SOMMERLUEFTUNG_HYSTERESE
-                           || abstand < GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN - GebaeudeFestwerte.SOMMERLUEFTUNG_HYSTERESE);
+                           || abstand < _abstandAussenK - GebaeudeFestwerte.SOMMERLUEFTUNG_HYSTERESE);
             return _aktiv;
         }
     }

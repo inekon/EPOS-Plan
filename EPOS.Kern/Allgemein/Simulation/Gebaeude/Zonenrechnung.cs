@@ -205,17 +205,19 @@ namespace WindowsFormsApplication1
 
             double summeW = 0.0;
             for (int h = 0; h < 8760; h++) summeW += heiz[h];
-            int umschaltung = 0, beides = 0, sommer = 0;
+            int umschaltung = 0, beides = 0, sommer = 0, nacht = 0;
             for (int h = 0; h < 8760; h++)
             {
                 if (schleife.StundenMitUmschaltung[h]) umschaltung++;
                 if (schleife.StundenMitHeizen[h] && schleife.StundenMitKuehlen[h]) beides++;
                 if (schleife.StundenMitSommerlueftung[h]) sommer++;
+                if (schleife.StundenMitNachtauskuehlung[h]) nacht++;
             }
             GebaeudeModellEingang erste = zonen.First(z => z.IstBeheizt).Eingang;
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
-                                              soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit);
+                                              soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
+                                              schleife.NachtauskuehlungGesetzt ? (int?)nacht : null);
         }
 
         /// <summary>

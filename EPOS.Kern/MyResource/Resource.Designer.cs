@@ -73749,6 +73749,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Außenabstand der Nachtauskühlung {0} K liegt außerhalb von {1} bis {2} K. Der Lauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_NACHTKUEHL_ABSTAND {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_NACHTKUEHL_ABSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: {0} — die Lüftungsspalte trägt keinen Tagwert; ohne ihn gibt es keinen Überschuss, den die Nachtauskühlung bedingt schalten könnte. Der Lüftungskalender wirkt in jeder Stunde unbedingt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_NACHTKUEHL_OHNE_TAG {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_NACHTKUEHL_OHNE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Die Nachtauskühlung ({0}) schaltete in {1} der 8760 Stunden ein; außerhalb gilt der Tagwert der Lüftung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_NACHTKUEHL_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_NACHTKUEHL_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0. ähnelt.
         /// </summary>
         public static string SIMENG_KOND_OHNE_HEIZUNG {

@@ -72,13 +72,14 @@ namespace WindowsFormsApplication1
             if (leer) return null;      // wörtlich der Bestandszweig
 
             // ---- Die Matrix: Gebäude, darüber die Zone je Zelle (F2) ----
-            Vorgabematrix matrix = Konditionierungseingang.Matrix(gebaeude, vorgaben, kopplungWirksam,
-                                                                  kuehlungWirksam);
+            Vorgabematrix gebaeudematrix = Konditionierungseingang.Matrix(gebaeude, vorgaben, kopplungWirksam,
+                                                                          kuehlungWirksam);
+            Vorgabematrix matrix = gebaeudematrix;
             if (idZone.HasValue)
                 matrix = Vorgabematrix.Bilden(Konditionierungseingang.Bestand(gebaeude, kopplungWirksam,
                                                                              kuehlungWirksam), zonenvorgaben,
                                               Kalendereigentuemer.Zone)
-                                      .Erben(matrix);
+                                      .Erben(gebaeudematrix);
 
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
                 Angelegt(kalenderzeilen, perioden, gebaeude);
@@ -102,7 +103,62 @@ namespace WindowsFormsApplication1
                         befund.Befund.ToString(), befund.Fundstelle()));
                 satz.Setzen(g, k);
             }
+            if (satz.Hat(Konditionierungsgroesse.Lueftung))
+                satz.NachtauskuehlungSetzen(Nachtauskuehlung(
+                    Quelle(matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt), gebaeude));
             return satz.Wirksam ? satz : null;
+        }
+
+        /// <summary>
+        /// <b>Die Matrix, aus der die Nachtauskühlung kommt</b> (Stufe KP1b, Konzept 3.7): die des
+        /// Eigentümers, dessen Lüftungskalender gilt. Trägt die Zone einen eigenen angelegten
+        /// Kalender, ist es ihre wirksame Matrix; gilt der angelegte Kalender des Gebäudes, dessen
+        /// Matrix; ist der Kalender abgeleitet, die Matrix, aus der der Generator ihn gebildet hat.
+        /// </summary>
+        private static Vorgabematrix Quelle(Vorgabematrix wirksam, Vorgabematrix gebaeudematrix,
+                                            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt,
+                                            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt)
+        {
+            if (zoneangelegt != null && zoneangelegt.ContainsKey(Konditionierungsgroesse.Lueftung))
+                return wirksam;
+            if (gebaeudeangelegt != null && gebaeudeangelegt.ContainsKey(Konditionierungsgroesse.Lueftung))
+                return gebaeudematrix;
+            return wirksam;
+        }
+
+        /// <summary>
+        /// <b>Die Vorgabe der Nachtauskühlung aus der Matrix</b> (Stufe KP1b, Konzept 3.7, P9 (b)):
+        /// das Nachtfenster der Lüftungsspalte (<see cref="Vorgabematrix.Nachtfenster"/>, F19), der
+        /// Tagwert n_T der Nutzerlüftung und ΔT aus <c>Bedingt_K</c> (leer = 2 K). Ohne Tagwert
+        /// bleibt <see cref="Nachtauskuehlvorgabe.TagwertH"/> leer — dann gibt es keinen bedingten
+        /// Anteil, und der Lauf sagt es.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei ungültigem Nachtfenster oder ΔT außerhalb 0 … 5 K.</exception>
+        private static Nachtauskuehlvorgabe Nachtauskuehlung(Vorgabematrix quelle, ProjektGebaeudeModel gebaeude)
+        {
+            if (quelle == null) return null;
+            quelle.Nachtfenster(Konditionierungsgroesse.Lueftung, out int? von, out int? bis);
+            NachtzeitBefund nb = Nachtzeit.Pruefen(von, bis);
+            if (nb != NachtzeitBefund.Gueltig)
+                throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
+                    Fahrplanbefund.NachtzeitUngueltig.ToString(),
+                    Konditionierungsgroessen.Kennwort(Konditionierungsgroesse.Lueftung) + ", " + nb));
+
+            Matrixspalte spalte = quelle.Lueftung;
+            double? abstand = spalte.Nacht.BedingtK;
+            if (abstand.HasValue && (!double.IsFinite(abstand.Value) ||
+                                     abstand.Value < Nachtauskuehlvorgabe.ABSTAND_MIN_K ||
+                                     abstand.Value > Nachtauskuehlvorgabe.ABSTAND_MAX_K))
+                throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KOND_NACHTKUEHL_ABSTAND,
+                    abstand.Value.ToString("G6", CultureInfo.InvariantCulture),
+                    Nachtauskuehlvorgabe.ABSTAND_MIN_K.ToString("G6", CultureInfo.InvariantCulture),
+                    Nachtauskuehlvorgabe.ABSTAND_MAX_K.ToString("G6", CultureInfo.InvariantCulture)));
+
+            Matrixzelle tag = spalte.Tag;
+            double? tagwert = tag.Belegt && !tag.Aus ? tag.Wert : (double?)null;
+            return new Nachtauskuehlvorgabe(Nachtzeit.Aus(von, bis), tagwert, abstand);
         }
 
         /// <summary>
@@ -150,6 +206,8 @@ namespace WindowsFormsApplication1
                         befund.Befund.ToString(), befund.Fundstelle()));
                 satz.Setzen(g, k);
             }
+            if (satz.Hat(Konditionierungsgroesse.Lueftung))
+                satz.NachtauskuehlungSetzen(Nachtauskuehlung(matrix, bestand));
             return satz.Wirksam ? satz : null;
         }
 

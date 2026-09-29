@@ -10656,6 +10656,15 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
     <value>Konditionierung: Der Nachtwert des Kühlsollwerts {0} °C wirkt über den Kalender in {1} Stunden. Ohne Konditionierung rechnet der Lauf mit dem Tagwert über alle Stunden.</value>
   </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_OHNE_TAG" xml:space="preserve">
+    <value>Konditionierung: {0} — die Lüftungsspalte trägt keinen Tagwert; ohne ihn gibt es keinen Überschuss, den die Nachtauskühlung bedingt schalten könnte. Der Lüftungskalender wirkt in jeder Stunde unbedingt.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_ABSTAND" xml:space="preserve">
+    <value>Konditionierung: Der Außenabstand der Nachtauskühlung {0} K liegt außerhalb von {1} bis {2} K. Der Lauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
+    <value>Konditionierung: Die Nachtauskühlung ({0}) schaltete in {1} der 8760 Stunden ein; außerhalb gilt der Tagwert der Lüftung.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
   </data>

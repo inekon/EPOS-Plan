@@ -40,8 +40,10 @@ namespace WindowsFormsApplication1
             int stundenMitUmschaltung, int stundenHeizenUndKuehlen,
             double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
             double? kuehlSollwert = null, HeizkreisErgebnis heizkreis = null,
-            KuehlkreisErgebnis kuehlkreis = null, Nachtzeit nachtzeit = null)
+            KuehlkreisErgebnis kuehlkreis = null, Nachtzeit nachtzeit = null,
+            int? stundenMitNachtauskuehlung = null)
         {
+            StundenMitNachtauskuehlung = stundenMitNachtauskuehlung;
             Nachtzeit = nachtzeit ?? Nachtzeit.Vorgabe;
             Heizkreis = heizkreis;
             Kuehlkreis = kuehlkreis;
@@ -243,6 +245,14 @@ namespace WindowsFormsApplication1
         internal int StundenMitSommerlueftung { get; }
 
         /// <summary>
+        /// <b>Stunden des Jahres mit wirksamer Nachtauskühlung</b> [h] (Stufe KP1b, Konzept 3.7):
+        /// die Regel war an <em>und</em> die Stunde trug einen bedingten Anteil — gleich, welcher
+        /// Luftwechsel gewann. <c>null</c> heißt: <b>keine Nachtauskühlung gesetzt</b> (Muster E30);
+        /// dann bleibt auch die Ergebnisspalte NULL.
+        /// </summary>
+        internal int? StundenMitNachtauskuehlung { get; }
+
+        /// <summary>
         /// Der Kühlsollwert, auf den der Löser geregelt hat [°C] — gesetzt genau dann, wenn die
         /// Kühlung dieses Gebäudes WIRKSAM war (Projektschalter, <c>Kuehlung_Aktiv</c>, Sollwert;
         /// Stufe KU1). <c>null</c>: Das Gebäude lief frei (Entscheid E32) — keine Kühlreihe,
@@ -289,7 +299,8 @@ namespace WindowsFormsApplication1
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
                                               Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
-                                              Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit);
+                                              Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit,
+                                              StundenMitNachtauskuehlung);
         }
     }
 

@@ -54,6 +54,19 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt der Satz überhaupt einen Kalender? <c>false</c> heißt: wörtlich der Bestandszweig.</summary>
         public bool Wirksam { get; private set; }
 
+        /// <summary>
+        /// <b>Die Vorgabe der Nachtauskühlung</b> (Stufe KP1b, Konzept 3.7, P9 (b)) — Nachtfenster,
+        /// Tagwert n_T und ΔT aus der Matrix des Eigentümers, dessen Lüftungskalender gilt.
+        /// <c>null</c> heißt: keine Teilung der Nutzerreihe, alles wirkt unbedingt wie in KP1a.
+        /// </summary>
+        public Nachtauskuehlvorgabe Nachtauskuehlung { get; private set; }
+
+        /// <summary>
+        /// Legt die Vorgabe der Nachtauskühlung ab; <c>null</c> entfernt sie. Wie
+        /// <see cref="Setzen"/> nur für den Datenweg gedacht — danach wird der Satz nur gelesen.
+        /// </summary>
+        public void NachtauskuehlungSetzen(Nachtauskuehlvorgabe vorgabe) => Nachtauskuehlung = vorgabe;
+
         /// <summary>Der Kalender einer Größe oder <c>null</c> — dann gilt für diese Größe der Bestandszweig.</summary>
         public Konditionierungskalender Kalender(Konditionierungsgroesse g) => _kalender[(int)g];
 

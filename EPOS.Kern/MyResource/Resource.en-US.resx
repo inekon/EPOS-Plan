@@ -10649,6 +10649,15 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
     <value>Conditioning: The night value of the cooling set point {0} °C takes effect through the calendar in {1} hours. Without conditioning the run uses the day value in all hours.</value>
   </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_OHNE_TAG" xml:space="preserve">
+    <value>Conditioning: {0} — the ventilation column carries no day value; without it there is no excess that night cooling could switch conditionally. The ventilation calendar takes effect unconditionally in every hour.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_ABSTAND" xml:space="preserve">
+    <value>Conditioning: The outdoor difference of night cooling {0} K is outside {1} to {2} K. The run stops.</value>
+  </data>
+  <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
+    <value>Conditioning: Night cooling ({0}) switched on in {1} of the 8760 hours; outside those hours the ventilation day value applies.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
   </data>
