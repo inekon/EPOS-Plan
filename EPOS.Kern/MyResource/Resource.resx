@@ -36058,6 +36058,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
     <value>„{0}“ liegt bereits im Vorlagenordner</value>
   </data>
+  <data name="BV_VORLAGEN_ORIGINAL_KEINS" xml:space="preserve">
+    <value>Zu „{0}“ ist kein Original außerhalb des Vorlagenordners gemerkt</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ aus dem Original übernommen</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_GESICHERT" xml:space="preserve">
+    <value>„{0}“ aus dem Original übernommen – die bearbeitete Kopie liegt jetzt in {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_ORIGINAL_BEHALTEN" xml:space="preserve">
+    <value>„{0}“ bleibt, wie sie ist – gefragt wird erst wieder, wenn sich das Original erneut ändert</value>
+  </data>
   <data name="BV_LAUF_VORLAGE" xml:space="preserve">
     <value>Word-Vorlage: „{0}“ ({1})</value>
   </data>
@@ -36336,6 +36348,24 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BK_BER_VORLAGE_NICHT_WAEHLBAR" xml:space="preserve">
     <value>Diese Vorlage ist nicht wählbar.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_ORIGINAL_FRAGE" xml:space="preserve">
+    <value>Original geändert – übernehmen?</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_UEBERNEHMEN" xml:space="preserve">
+    <value>Legt das geänderte Original erneut über die Vorlage im Vorlagenordner: {0}</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_BEHALTEN" xml:space="preserve">
+    <value>Behalten</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_BEHALTEN" xml:space="preserve">
+    <value>Lässt die Vorlage, wie sie ist; gefragt wird erst wieder, wenn sich das Original erneut ändert.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_ORIGINAL_NICHT_HIER" xml:space="preserve">
+    <value>Auf dieser Plattform liegt kein Original außerhalb des Vorlagenordners – die Vorlage wurde beim Hinzufügen hierher kopiert.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_ENTFERNEN" xml:space="preserve">
     <value>Legt die Vorlage in den Unterordner „Entfernt“ des Vorlagenordners.</value>

@@ -559,6 +559,121 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-vorlage-pruefliste"));
     }
 
+    // =====================================================================
+    // Die Zeile „Original geändert – übernehmen?" (Konzept 10.2, 10.3)
+    // =====================================================================
+
+    private static Originalstand Originalzeile(bool uebernehmenAktiv = true, string kennung = "uebernehmen")
+        => new("⚠", "Original geändert – übernehmen?",
+               new Handlung(kennung, "Übernehmen", uebernehmenAktiv,
+                            uebernehmenAktiv ? "" : "Die Vorlage ist in Word geöffnet.",
+                            "Legt das geänderte Original erneut über die Vorlage im Vorlagenordner."),
+               new Handlung("behalten", "Behalten", Kurztext: "Lässt die Vorlage, wie sie ist."));
+
+    /// <summary>
+    /// Die Zeile steht UNTER der Prüfzeile, trägt Zeichen und Text und meldet ihre beiden Handlungen
+    /// über denselben Rückruf wie das Menü „…".
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_Original_geaendert_meldet_Uebernehmen_und_Behalten()
+    {
+        var gewaehlt = new List<string>();
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Pruefzeile, new Pruefstand("✓", "geprüft, 23 Platzhalter, keine Befunde"))
+            .Add(x => x.Originalzeile, Originalzeile())
+            .Add(x => x.HandlungGewaehlt, (string id) => gewaehlt.Add(id)));
+
+        IElement zeile = cut.Find(".epos-vorlage-originalzeile");
+        Assert.Equal("⚠", zeile.QuerySelector(".epos-vorlage-pruefsymbol")!.TextContent);
+        Assert.Equal("Original geändert – übernehmen?", zeile.QuerySelector(".epos-herleitung-text")!.TextContent);
+        Assert.Empty(zeile.QuerySelectorAll(".epos-schloss"));
+
+        // Sie steht hinter der Prüfzeile, nicht davor.
+        var zeilen = cut.FindAll(".epos-vorlage-pruefzeile");
+        Assert.Contains("keine Befunde", zeilen[0].TextContent);
+        Assert.Contains("Original geändert", zeilen[1].TextContent);
+
+        IElement uebernehmen = zeile.QuerySelector("button.epos-vorlage-uebernehmen")!;
+        IElement behalten = zeile.QuerySelector("button.epos-vorlage-behalten")!;
+        Assert.Equal("Übernehmen", uebernehmen.TextContent.Trim());
+        Assert.Equal("Behalten", behalten.TextContent.Trim());
+        Assert.Null(uebernehmen.GetAttribute("aria-disabled"));
+
+        uebernehmen.Click();
+        behalten.Click();
+        Assert.Equal(new[] { "uebernehmen", "behalten" }, gewaehlt);
+    }
+
+    /// <summary>
+    /// Ohne Originalstand gibt es die Zeile nicht; ein weich gesperrtes „Übernehmen" meldet seinen
+    /// Grund, statt zu handeln, und während eines Laufs sind beide Knöpfe gesperrt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Stand_keine_Zeile_und_ein_gesperrtes_Uebernehmen_meldet_den_Grund()
+    {
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Pruefzeile, new Pruefstand("✓", "geprüft, 23 Platzhalter, keine Befunde")));
+        Assert.Empty(cut.FindAll(".epos-vorlage-originalzeile"));
+
+        string? gewaehlt = null;
+        cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Originalzeile, Originalzeile(uebernehmenAktiv: false))
+            .Add(x => x.HandlungGewaehlt, (string id) => gewaehlt = id));
+
+        IElement uebernehmen = cut.Find("button.epos-vorlage-uebernehmen");
+        Assert.Equal("true", uebernehmen.GetAttribute("aria-disabled"));
+        Assert.Equal("Die Vorlage ist in Word geöffnet.", uebernehmen.GetAttribute("title"));
+        Assert.False(uebernehmen.HasAttribute("disabled"));
+        uebernehmen.Click();
+
+        Assert.Null(gewaehlt);
+        Assert.Contains("in Word geöffnet", cut.Find(".epos-vorlage .epos-warnbanner").TextContent);
+
+        cut.Find("button.epos-vorlage-behalten").Click();
+        Assert.Equal("behalten", gewaehlt);
+    }
+
+    /// <summary>
+    /// Das Nachladen bringt die Zeile und nimmt sie wieder fort — Word wie Excel; die Excel-Zeile
+    /// trägt die Kennungen mit der Vorsilbe <c>excel:</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Nachladen_bringt_und_nimmt_die_Zeile_auch_an_der_Excel_Vorlage()
+    {
+        var gewaehlt = new List<string>();
+        int geladen = 0;
+        var cut = Render<BerichtSeite>(p => p
+            .Add(x => x.Laden, () => { BerichtStand s = Stand(); s.AusgabeId = 1; return s; })
+            .Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.ExcelVorlagen, new[] { new Vorlagenzeile(11, "Angebot") })
+            .Add(x => x.ExcelVorlageId, 11)
+            .Add(x => x.ExcelVorlageIdChanged, (int? _) => { })
+            .Add(x => x.Pruefen, () => { })
+            .Add(x => x.HandlungGewaehlt, (string id) => gewaehlt.Add(id))
+            .Add(x => x.VorlagenNeuLaden, () =>
+            {
+                geladen++;
+                return new Vorlagenstand
+                {
+                    Vorlagen = Drei(), VorlageId = 2,
+                    Originalzeile = geladen == 1 ? Originalzeile() : null,
+                    ExcelVorlagen = new[] { new Vorlagenzeile(11, "Angebot") },
+                    ExcelVorlageId = 11,
+                    ExcelOriginalzeile = geladen == 1 ? Originalzeile(kennung: "excel:uebernehmen") : null
+                };
+            }));
+
+        Assert.Empty(cut.FindAll(".epos-vorlage-originalzeile"));
+
+        cut.Find(".epos-vorlage-pruefen").Click();
+        Assert.Equal(2, cut.FindAll(".epos-vorlage-originalzeile").Count);
+        cut.FindAll("button.epos-vorlage-uebernehmen")[1].Click();
+        Assert.Equal(new[] { "excel:uebernehmen" }, gewaehlt);
+
+        // Der zweite Stand kennt keine Zeile mehr — beide sind fort.
+        Assert.Empty(cut.FindAll(".epos-vorlage-originalzeile"));
+    }
+
     [Fact]
     public void Ohne_Befunde_steht_kein_anzeigen()
     {

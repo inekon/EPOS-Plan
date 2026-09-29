@@ -47,6 +47,15 @@ namespace WindowsFormsApplication1
     /// „Ersetzen…", „Entfernen"; eine mitgelieferte Vorlage nur „Schreibgeschützt öffnen" bzw.
     /// „Teilen…". Was nicht geht, meldet die Gruppe benannt.</para>
     ///
+    /// <para><b>„Original geändert – übernehmen?" (Konzept 10.2, 10.3).</b> Jedes Nachladen fragt den
+    /// Kern, ob das Original einer eigenen Vorlage noch die gemerkte Prüfsumme trägt
+    /// (<see cref="Originalzeile"/>); trägt es sie nicht, steht die Zeile unter der Prüfzeile — bei Word
+    /// wie bei Excel — mit „Übernehmen" und „Behalten". Sie entsteht NUR, wo die Plattform ein
+    /// dauerhaftes Original außerhalb des Vorlagenordners kennt
+    /// (<see cref="Berichtsvorlagenwege.HerkunftDauerhaft"/>): auf iOS liegt die Vorlage nach dem
+    /// Hinzufügen in der Sandbox, dort gibt es die Zeile nicht, und käme eine ihrer Handlungen dennoch
+    /// herein, wird sie benannt abgelehnt.</para>
+    ///
     /// <para><b>BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"): der Kapitelstand.</b> Jedes Nachladen
     /// sagt der Seite, welche Kapitel die geprüfte Vorlage führt (<see cref="Kapitel(Pruefbefund)"/>) —
     /// die Häkchen folgen ihm nach jedem Vorlagenwechsel.</para>
@@ -81,6 +90,12 @@ namespace WindowsFormsApplication1
         /// <summary>„In den Vorlagenordner exportieren…" — nur an der mitgelieferten Vorlage, mit Namensdialog.</summary>
         internal const string HANDLUNG_EXPORTIEREN = "exportieren";
 
+        /// <summary>„Übernehmen“ der Zeile „Original geändert – übernehmen?“ (Konzept 10.2, 10.3).</summary>
+        internal const string HANDLUNG_UEBERNEHMEN = "uebernehmen";
+
+        /// <summary>„Behalten“ derselben Zeile: diesen Stand des Originals zurückweisen.</summary>
+        internal const string HANDLUNG_BEHALTEN = "behalten";
+
         /// <summary>BV-E9: die Vorsilbe der Handlungen der Zeile „Excel-Vorlage" — dieselben Rückrufe wie das Word-Menü.</summary>
         internal const string PRAEFIX_EXCEL = "excel:";
 
@@ -104,6 +119,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>BV-E9: „In den Vorlagenordner exportieren…" für die Standardmappe bzw. die ausführliche Excel-Vorlage.</summary>
         internal const string HANDLUNG_EXCEL_EXPORTIEREN = PRAEFIX_EXCEL + HANDLUNG_EXPORTIEREN;
+
+        /// <summary>„Übernehmen“ der Zeile „Original geändert – übernehmen?“ an der Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_UEBERNEHMEN = PRAEFIX_EXCEL + HANDLUNG_UEBERNEHMEN;
+
+        /// <summary>„Behalten“ derselben Zeile an der Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_BEHALTEN = PRAEFIX_EXCEL + HANDLUNG_BEHALTEN;
 
         /// <summary>Hilfeschlüssel der Überlagerung „Prüfliste".</summary>
         internal const string HILFE_PRUEFLISTE = "UcBericht.btn_Help_Pruefliste";
@@ -205,6 +226,7 @@ namespace WindowsFormsApplication1
             gaben["Pruefen"] = EventCallback.Factory.Create(this, Pruefen);
             gaben["PlatzhalterkatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogGaben);
             if (stand.Pruefzeile != null) gaben["Pruefzeile"] = stand.Pruefzeile;
+            if (stand.Originalzeile != null) gaben["Originalzeile"] = stand.Originalzeile;
             gaben["PrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(PrueflisteGaben);
             if (stand.Startrueckfrage != null) gaben["Startrueckfrage"] = stand.Startrueckfrage;
             if (stand.Kapitelstand != null) gaben["Kapitelstand"] = stand.Kapitelstand;
@@ -217,6 +239,7 @@ namespace WindowsFormsApplication1
             if (stand.ExcelVorlageId.HasValue) gaben["ExcelVorlageId"] = stand.ExcelVorlageId.Value;
             gaben["ExcelVorlageIdChanged"] = EventCallback.Factory.Create<int?>(this, ExcelVorlageGewaehlt);
             if (stand.ExcelPruefzeile != null) gaben["ExcelPruefzeile"] = stand.ExcelPruefzeile;
+            if (stand.ExcelOriginalzeile != null) gaben["ExcelOriginalzeile"] = stand.ExcelOriginalzeile;
             gaben["ExcelPrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(ExcelPrueflisteGaben);
 
             // BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Excel-Vorlage.
@@ -276,12 +299,14 @@ namespace WindowsFormsApplication1
                 VorlageId = gewaehlt,
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
+                Originalzeile = wahl?.FehlendeId == null ? Originalzeile(wahl?.Eintrag, false) : null,
                 Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
                 Sprachhinweis = Sprachhinweis(MitWord(konfig) ? start : null, excelStart, Englisch),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
                 ExcelVorlagen = excelZeilen,
                 ExcelVorlageId = excelGewaehlt,
                 ExcelPruefzeile = excelPruefzeile,
+                ExcelOriginalzeile = excel?.FehlendeId == null ? Originalzeile(excel?.Eintrag, true) : null,
                 ExcelHandlungen = excel == null || excel.FehlendeId != null ? Array.Empty<Handlung>() : ExcelHandlungen(excel.Eintrag),
                 Meldung = meldung ?? "",
                 Fehler = fehler ?? ""
@@ -534,6 +559,14 @@ namespace WindowsFormsApplication1
                     _meldung = weg.Meldung;
                     return;
 
+                case HANDLUNG_EXCEL_UEBERNEHMEN:
+                    OriginalUebernehmen(e, excel: true);
+                    return;
+
+                case HANDLUNG_EXCEL_BEHALTEN:
+                    OriginalBehalten(e);
+                    return;
+
                 default:
                     _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
                     return;
@@ -655,6 +688,43 @@ namespace WindowsFormsApplication1
             liste.Add(new Handlung(HANDLUNG_ENTFERNEN, R.BK_BER_VORLAGE_HANDLUNG_ENTFERNEN, !inWord, sperre,
                                    R.BK_BER_VORLAGE_TIP_ENTFERNEN, Format(R.BK_BER_VORLAGE_FRAGE_ENTFERNEN, e.Name)));
             return liste;
+        }
+
+        /// <summary>
+        /// Die Zeile „Original geändert – übernehmen?" UNTER der Prüfzeile (Konzept 10.2, 10.3) — für die
+        /// Word- wie für die Excel-Vorlage. Sie entsteht nur an einer EIGENEN Vorlage, nur wo die Plattform
+        /// ein dauerhaftes Original außerhalb des Vorlagenordners kennt
+        /// (<see cref="Berichtsvorlagenwege.HerkunftDauerhaft"/>; auf iOS liegt die Vorlage nach dem
+        /// Hinzufügen in der Sandbox — dann keine Zeile) und nur, wenn der Kern das Original als geändert
+        /// meldet. Ein nicht erreichbares Original (<c>null</c>) und ein mit „Behalten" zurückgewiesener
+        /// Stand bleiben still.
+        ///
+        /// <para>Die Prüfung liest die kleine Datei einmal je Aufbau der Gruppe — keine Dauerüberwachung.
+        /// Ist die Vorlage in Word geöffnet, bleibt „Übernehmen" WEICH gesperrt und nennt den Grund;
+        /// „Behalten" schreibt nur die Ablagedatei und geht immer.</para>
+        /// </summary>
+        internal Originalstand Originalzeile(Vorlageneintrag e, bool excel)
+        {
+            if (e == null || e.Quelle != Vorlagenquelle.Eigen) return null;
+            if (!Wege.HerkunftDauerhaft) return null;
+
+            bool? geaendert;
+            try { geaendert = _vorlagen.OriginalGeaendert(e); }
+            catch (Exception) { geaendert = null; }
+            if (geaendert != true) return null;
+
+            bool offen = false;
+            try { offen = _vorlagen.IstInWordGeoeffnet(e); } catch (Exception) { offen = false; }
+            string sperre = offen ? R.BV_VORLAGEN_IN_WORD : "";
+
+            return new Originalstand(
+                SYMBOL_WARNUNG,
+                R.BK_BER_VORLAGE_ORIGINAL_FRAGE,
+                new Handlung(excel ? HANDLUNG_EXCEL_UEBERNEHMEN : HANDLUNG_UEBERNEHMEN,
+                             R.BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN, !offen, sperre,
+                             Format(R.BK_BER_VORLAGE_TIP_UEBERNEHMEN, e.Herkunftspfad ?? "")),
+                new Handlung(excel ? HANDLUNG_EXCEL_BEHALTEN : HANDLUNG_BEHALTEN,
+                             R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, Kurztext: R.BK_BER_VORLAGE_TIP_BEHALTEN));
         }
 
         /// <summary>
@@ -1026,6 +1096,14 @@ namespace WindowsFormsApplication1
                     Entfernen(e, wahl);
                     return;
 
+                case HANDLUNG_UEBERNEHMEN:
+                    OriginalUebernehmen(e, excel: false);
+                    return;
+
+                case HANDLUNG_BEHALTEN:
+                    OriginalBehalten(e);
+                    return;
+
                 default:
                     _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
                     return;
@@ -1076,6 +1154,34 @@ namespace WindowsFormsApplication1
             Vorlagenergebnis r = _vorlagen.Ersetzen(quelle, e);
             if (!r.Erfolg) { _fehler = r.Meldung; return; }
             PruefeVoll(r.Eintrag ?? e);
+            _meldung = r.Meldung;
+        }
+
+        /// <summary>
+        /// „Übernehmen" der Zeile „Original geändert – übernehmen?": das Original erneut über die Kopie im
+        /// Vorlagenordner (<see cref="BerichtsvorlagenCtrl.OriginalUebernehmen"/>), danach die volle Prüfung —
+        /// derselbe Abschluss wie bei „Ersetzen…". Die GEWÄHLTE Vorlage bleibt gewählt; die Vorgabe der
+        /// Installation und die Abweichung des Stammprojekts bleiben unberührt.
+        /// </summary>
+        private void OriginalUebernehmen(Vorlageneintrag e, bool excel)
+        {
+            // Was die Plattform nicht führt, wird BENANNT abgelehnt, nie still übergangen.
+            if (!Wege.HerkunftDauerhaft) { _fehler = R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER; return; }
+            Vorlagenergebnis r = _vorlagen.OriginalUebernehmen(e);
+            if (!r.Erfolg) { _fehler = r.Meldung; return; }
+            if (excel) PruefeVollExcel(r.Eintrag ?? e); else PruefeVoll(r.Eintrag ?? e);
+            _meldung = r.Meldung;
+        }
+
+        /// <summary>
+        /// „Behalten" derselben Zeile: Die Vorlage bleibt, wie sie ist; der Kern merkt die zurückgewiesene
+        /// Prüfsumme des Originals, damit die Zeile erst bei einer weiteren Änderung wiederkommt.
+        /// </summary>
+        private void OriginalBehalten(Vorlageneintrag e)
+        {
+            if (!Wege.HerkunftDauerhaft) { _fehler = R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER; return; }
+            Vorlagenergebnis r = _vorlagen.OriginalBehalten(e);
+            if (!r.Erfolg) { _fehler = r.Meldung; return; }
             _meldung = r.Meldung;
         }
 
