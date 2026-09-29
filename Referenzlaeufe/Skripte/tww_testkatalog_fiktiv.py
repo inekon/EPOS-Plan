@@ -765,13 +765,6 @@ def ereignisse_setzen(con, id_tag, ereignisse):
 
 
 def main():
-    if sys.version_info < (3, 12):
-        # sum() rechnet Gleitkommazahlen erst ab Python 3.12 kompensiert; die Traeger des Paketteils und
-        # die Werte der Testdatenbank sind so erzeugt. Eine aeltere Fassung wiche in der letzten Stelle ab
-        # und fuehrte jede normierte Zeile nach - auch die Nutzungsart des Referenzprojekts 1045.
-        print("Python %d.%d: das Skript braucht Python 3.12 oder neuer (kompensierte Summe). Abbruch ohne "
-              "Schreiben." % sys.version_info[:2])
-        return 2
     if len(sys.argv) < 2:
         print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik] "
               "[" + SCHALTER_SCHREIBEN + "]")
