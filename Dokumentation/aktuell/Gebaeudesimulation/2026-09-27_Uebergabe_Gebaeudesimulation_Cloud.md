@@ -35,6 +35,11 @@ Vorgängerübergaben bleiben gültig:
   ist kein Nachweis) und als CI-Nachweis der grüne Kern-Lauf 36304861459 auf `3956959`, der `092544f`
   enthält. Damit ist auch der im Protokoll (Abschnitt 5)
   offene volle Lauf von `EPOS.Kern.Tests` belegt — der Kern-Lauf führt ihn vollständig aus.
+- **Nachtrag der Cloud-Sitzung (27.09.2026):** Statuszeile #583 und Block „Nach #583" nachgetragen; KP1b entworfen
+  ([Entwurf](2026-09-27_Entwurf_KP1b.md)), E54 entschieden (N1.62); #588 hat eine Nachbarsitzung belegt. Nächste
+  Nummern damit: Schemaschritt **152**, Entscheid **E55**, Nachtrag **N1.63**, Statuszeile die nächste freie nach
+  #588 — am 29.09.2026 führen zwei Nachbarzweige (Wiki-Hilfe, Technikdoku) schon eine #589, die noch nicht auf
+  `ios_migration_september` liegt; weiter unmittelbar vor jeder Vergabe gegen `origin` messen.
 
 ## 2 Was aussteht
 
