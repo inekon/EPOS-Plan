@@ -88,6 +88,17 @@
         <Herleitungszeile Text="@Vorbelegung" />
     }
 
+    @* DAS SCHLOSS (Stufe KP2, Befund B11): Ein ausgelieferter Satz steht mit seinem Grund da -
+       leise, wo der Anwender hinsieht; der Grund steht auch am weich gesperrten OK, und erst der
+       Versuch bringt ihn als Meldung. "Speichern unter" bleibt frei. *@
+    @if (IstGesperrt)
+    {
+        <p class="epos-herleitung epos-gebk-sperrzeile">
+            <Kennzeichen />
+            <span class="epos-herleitung-text">@SperrGrund</span>
+        </p>
+    }
+
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
         <KindInhalt>
 
@@ -769,7 +780,8 @@
         }
     }
 
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis"
+                     OkSperrgrund="@(IstGesperrt ? SperrGrund : null)">
         <Aktionen>
             @if (SpeichernUnterMoeglich)
             {
@@ -801,6 +813,32 @@
     /// Format …"); leer = keine.
     /// </summary>
     [Parameter] public string Vorbelegung { get; set; } = "";
+
+    /// <summary>
+    /// <b>Ist der Satz gesperrt?</b> (Stufe KP2, Befund B11) — die Hülle setzt es für einen
+    /// ausgelieferten Katalogsatz (<c>ReadOnly</c>) in der Betriebsart Bearbeiten, statt erst nach
+    /// dem OK abzulehnen. Dann steht die Grundzeile mit <see cref="SperrGrund"/>, OK ist WEICH
+    /// gesperrt (der Grund am Knopf, ein Klick meldet ihn und schreibt nichts, auch nicht über den
+    /// Assistenten), „Speichern unter" bleibt frei. Den feldgenauen Lesemodus bringt Welle U1.
+    /// </summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Der Grund der Sperre — aus dem Bündel der Konditionierung (<c>KOND_TXT_HINWEIS_LESEMODUS</c>,
+    /// <c>KonditionierungTexte.HinweisLesemodus</c>); der Vorgabewert ist der deutsche Rückfall.
+    /// </summary>
+    [Parameter] public string SperrGrund { get; set; }
+        = "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine "
+        + "bearbeitbare Kopie an.";
+
+    /// <summary>
+    /// Hat der Dialog einen NEUEN Satz angelegt („Speichern unter", Neu)? Ein eigener Satz trägt kein
+    /// Schloss — arbeitet der Dialog danach weiter, gilt die Sperre des geladenen Satzes nicht mehr.
+    /// </summary>
+    private bool _entsperrt;
+
+    /// <summary>Gilt das Schloss gerade? Der Parameter, solange der Dialog keinen neuen Satz angelegt hat.</summary>
+    public bool IstGesperrt => Gesperrt && !_entsperrt;
 
     /// <summary>Die Gebäudetypen der Klappliste (<c>Abfrage_Gebaeudetypen</c>).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudetypen { get; set; }
@@ -1608,6 +1646,10 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Pruefen = () => Pruefen(Modus == GebaeudeKatalogModus.Neu) ? "" : _meldung,
+        // Das Schloss (B11): Ein gesperrter Satz ist für den Assistenten schreibgeschützt; die
+        // Absage nennt den Grund samt Weg („Speichern unter").
+        Schreibgeschuetzt = () => IstGesperrt,
+        Schreibschutzgrund = () => IstGesperrt ? SperrGrund : "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
@@ -1616,6 +1658,7 @@
         if (Speichern is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
+        if (IstGesperrt) return KiKern.KiErgebnis.Abgelehnt(SperrGrund);   // das Schloss (B11) gilt auch hier
 
         bool istNeu = Modus == GebaeudeKatalogModus.Neu;
         bool ok = Modus == GebaeudeKatalogModus.Projekt
@@ -1834,6 +1877,7 @@
 
         _geschrieben = true;
         _ursprungsname = bezeichner;
+        if (istNeu) _entsperrt = true;   // der neue Satz ist ein eigener - ihm gilt das Schloss nicht (B11)
         _arbeit.Geschrieben();
         _meldung = "";
         return true;
@@ -1847,6 +1891,14 @@
     private async Task BeiErgebnis(bool ok)
     {
         if (!ok) { await Abbrechen(); return; }
+
+        // Das Schloss (B11): OK ist weich gesperrt - der Versuch meldet den Grund, geschrieben
+        // wird nichts, und der Dialog bleibt offen; „Speichern unter" ist der Weg zur Kopie.
+        if (IstGesperrt)
+        {
+            Melden(SperrGrund, WarnStufe.Warnung);
+            return;
+        }
 
         // Betriebsart Projekt (G3): die Projektkopie samt Zonen, in benannten Schritten.
         if (Modus == GebaeudeKatalogModus.Projekt)

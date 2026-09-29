@@ -12652,6 +12652,14 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     grid-column: 2;
 }
 
+/* Die Grundzeile eines gesperrten Katalogsatzes im Gebaeude-Katalogeditor (Stufe KP2, Befund
+   B11): das Schloss und sein Grund in EINER leisen Zeile, wo der Anwender hinsieht. */
+.epos-gebk-sperrzeile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 /* ==================================================================== */
 /* BERICHTSVORLAGEN BV-E1 - DIE GRUPPE "VORLAGE" DER BERICHTSSEITE,     */
 /* DIE PRUEFLISTE UND DER PLATZHALTERKATALOG (Konzept Berichtsvorlagen  */

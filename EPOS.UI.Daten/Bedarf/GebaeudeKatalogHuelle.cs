@@ -59,7 +59,22 @@ namespace WindowsFormsApplication1
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
-            return Grundgaben(geladen, modus);
+            IReadOnlyDictionary<string, object> gaben = Grundgaben(geladen, modus);
+
+            // DAS SCHLOSS ERREICHT DEN EDITOR (Stufe KP2, Befund B11): Ein ausgelieferter Satz
+            // (ReadOnly) steht im Modus Bearbeiten gesperrt da - OK weich gesperrt mit Grund,
+            // „Speichern unter" frei -, statt dass Schreiben ihn erst nach dem OK ablehnt. Die
+            // Ablehnung in Schreiben bleibt als zweite Sicherung.
+            if (modus != GebaeudeKatalogModus.Bearbeiten || string.IsNullOrEmpty(bezeichner)
+                || !new GebaeudeStammCtrl().IsReadOnly(bezeichner))
+                return gaben;
+            return new Dictionary<string, object>(gaben)
+            {
+                ["Gesperrt"] = true,
+                ["SperrGrund"] = Text_("KOND_TXT_HINWEIS_LESEMODUS",
+                    "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ " +
+                    "legt eine bearbeitbare Kopie an.")
+            };
         }
 
         // =================================================================================

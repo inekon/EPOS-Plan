@@ -142,6 +142,33 @@ namespace EPOS.Kern.Tests
             Assert.Null(new GebaeudeStammCtrl().Lies(name).Rahmenanteil);
         }
 
+        /// <summary>
+        /// <b>Das Schloss erreicht den Editor</b> (Stufe KP2, Befund B11): Die Hülle setzt
+        /// <c>Gesperrt</c> samt Grund für einen ausgelieferten Satz in der Betriebsart Bearbeiten —
+        /// statt ihn erst nach dem OK abzulehnen; ein eigener Satz und „Neu" bleiben frei.
+        /// </summary>
+        [Fact]
+        public void Ein_ausgelieferter_Satz_steht_im_Modus_Bearbeiten_gesperrt()
+        {
+            if (!_db.Vorhanden) return;
+
+            DataTable t = DataRepository.GetDataTable("SELECT ID, Bezeichner FROM Tab_Gebaeude_STAMM ORDER BY ID LIMIT 2");
+            string gesperrt = Convert.ToString(t.Rows[0]["Bezeichner"], CultureInfo.InvariantCulture);
+            string eigen = Convert.ToString(t.Rows[1]["Bezeichner"], CultureInfo.InvariantCulture);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 1 WHERE ID = ?",
+                                           new DbParam("?", Convert.ToInt32(t.Rows[0]["ID"], CultureInfo.InvariantCulture)));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE ID = ?",
+                                           new DbParam("?", Convert.ToInt32(t.Rows[1]["ID"], CultureInfo.InvariantCulture)));
+
+            IReadOnlyDictionary<string, object> bearbeiten = GebaeudeKatalogHuelle.Gaben(gesperrt, GebaeudeKatalogModus.Bearbeiten);
+            Assert.Equal(true, bearbeiten["Gesperrt"]);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KOND_TXT_HINWEIS_LESEMODUS, bearbeiten["SperrGrund"]);
+            Assert.Contains("Speichern unter", (string)bearbeiten["SperrGrund"]);
+
+            Assert.False(GebaeudeKatalogHuelle.Gaben(eigen, GebaeudeKatalogModus.Bearbeiten).ContainsKey("Gesperrt"));
+            Assert.False(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu).ContainsKey("Gesperrt"));
+        }
+
         [Fact]
         public void Der_Parametersatz_traegt_das_Textbuendel_und_ohne_Haken_keinen_Brauchwasserweg()
         {

@@ -1800,4 +1800,103 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal(23, cut.Instance.Arbeitsstand.NachtBeginn);
         Assert.Equal(5, cut.Instance.Arbeitsstand.NachtEnde);
     }
+
+    // =================================================================================
+    // Das Schloss erreicht den Editor (Stufe KP2, Welle U0b; Befund B11)
+    // =================================================================================
+
+    private const string SPERRGRUND =
+        "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an.";
+
+    /// <summary>Ein ausgelieferter Satz im Modus Bearbeiten, wie die Hülle ihn reicht.</summary>
+    private IRenderedComponent<GebaeudeKatalogDialog> AufbauenGesperrt(
+        List<(bool IstNeu, string Bezeichner)> aufrufe, Action<bool>? geschlossen = null)
+        => Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, Satz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, (_, istNeu, bez) => { aufrufe.Add((istNeu, bez)); return new GebaeudeKatalogErgebnis(true, ""); })
+            .Add(x => x.Gesperrt, true)
+            .Add(x => x.SperrGrund, SPERRGRUND)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>
+    /// <b>Ein gesperrter Satz nennt seinen Grund, und OK schreibt nicht</b>: die Grundzeile mit
+    /// Schloss, OK WEICH gesperrt (anklickbar, <c>aria-disabled</c>, der Grund als <c>title</c>),
+    /// der Versuch meldet den Grund, schreibt nichts und hält den Dialog offen.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Satz_nennt_seinen_Grund_und_OK_schreibt_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        bool? geschlossen = null;
+        var cut = AufbauenGesperrt(aufrufe, b => geschlossen = b);
+
+        IElement zeile = cut.Find(".epos-gebk-sperrzeile");
+        Assert.Contains(SPERRGRUND, zeile.TextContent);
+        Assert.NotNull(zeile.QuerySelector(".epos-schloss"));
+        Assert.True(cut.Instance.IstGesperrt);
+
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("disabled"));
+        Assert.Equal("true", ok.GetAttribute("aria-disabled"));
+        Assert.Equal(SPERRGRUND, ok.GetAttribute("title"));
+
+        Ok(cut);
+
+        Assert.Empty(aufrufe);
+        Assert.Null(geschlossen);
+        Assert.Equal(SPERRGRUND, cut.Instance.Meldung);
+        Assert.Contains(SPERRGRUND, cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>„Speichern unter" bleibt am gesperrten Satz frei — es legt eine eigene Kopie an.</summary>
+    [Fact]
+    public void Speichern_unter_bleibt_am_gesperrten_Satz_frei()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        var cut = AufbauenGesperrt(aufrufe);
+
+        IElement knopf = Knopf(cut, "Speichern unter");
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus A (eigen)");
+        Knopf(cut, "Speichern unter").Click();
+
+        Assert.Equal(new[] { (true, "Haus A (eigen)") }, aufrufe);
+        Assert.False(cut.Instance.IstGesperrt);   // der neue Satz ist ein eigener
+    }
+
+    /// <summary>Ohne Sperre steht keine Grundzeile, und OK trägt weder Sperre noch Grund.</summary>
+    [Fact]
+    public void Ohne_Sperre_steht_keine_Grundzeile_und_OK_ist_frei()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-gebk-sperrzeile"));
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("aria-disabled"));
+        Assert.False(ok.HasAttribute("title"));
+        Assert.False(cut.Instance.IstGesperrt);
+    }
+
+    /// <summary>Für den Assistenten ist der gesperrte Satz schreibgeschützt — mit Grund und Weg.</summary>
+    [Fact]
+    public async Task Der_Assistent_schreibt_einen_gesperrten_Satz_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        AufbauenGesperrt(aufrufe);
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDE_KATALOG);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(SPERRGRUND, haken.Schutzgrund());
+
+        KiKern.KiErgebnis ergebnis = await haken.Speichern!();
+        Assert.False(ergebnis.Erfolg);
+        Assert.Equal(SPERRGRUND, ergebnis.Text);
+        Assert.Empty(aufrufe);
+    }
 }
