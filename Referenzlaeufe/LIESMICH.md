@@ -520,6 +520,22 @@ Projekt 1049. Sie ist die **einzige** Basis im Arbeitsbaum.
 > weicht jenseits der Toleranz ab; die CI rechnet auf ubuntu und vergleicht mit R24 Linux gegen Linux. Ein
 > Windows-Lauf gegen R24 zeigt dieselben Unterschiede in der Gegenrichtung.
 >
+> **Ursache belegt (PB-1, #598, 29.09.2026).** Nicht die Arithmetik weicht ab, sondern die C-Bibliothek:
+> `Math.Sin`, `Cos`, `Asin`, `Acos` und `Exp` runden unter Windows (UCRT) bei 0,7–5 % der Argumente von
+> Sonnenstand und Gebäudematrix 1 ULP anders als unter Linux (glibc). Mit korrekt gerundeten Werten rechnet
+> Windows 13 der 15 Projekte byte-gleich zu R24. Es kippen zwei Entscheidungen:
+> - die Abschaltprüfung der Phase G (`Kaskadenschleife.cs:1006–1008`, `SOC >= Q_max · SchwelleAus` **ohne**
+>   Zahlenrand, nachdem die Nachentladung genau auf die Schwelle gesteuert hat) — 1008 ab Stunde 2531,
+>   1023 ab 2500;
+> - die Laufzeitzählung der Wärmepumpe am Quellpuffer, wo ein Rest von 10⁻¹⁶ kWh als volle Betriebsstunde
+>   zählt — 1042.
+>
+> Ein Zahlenrand an beiden Stellen macht die Plattformen gleich, ändert aber den Rechenweg von 1008, 1018,
+> 1023, 1039 und 1042. **Der Anwenderentscheid ist offen**; die Vorlage steht im
+> [Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
+> Bis dahin bleibt R24 die Basis. Ein Windows-Lauf gegen R24 mit 1008 (52), 1023 (21) und 1042 (2) FAIL und
+> 441/460 CSV byte-gleich ist der bekannte Stand ([`Werkzeuge/Gate/LIESMICH.md`](../Werkzeuge/Gate/LIESMICH.md)).
+>
 > **A/B, allein der Rechenweg** (Stand R23 auf Linux → R24): **3/15 PASS** (1018, 1023, 1041),
 > **448/460 CSV byte-gleich, alle Zeitreihen byte-gleich**; verschieden sind nur zwölf `aggregate.csv`.
 > **A/B gegen die Basis R23** (Windows): 2/15 PASS (1018, 1041), 431/460 CSV byte-gleich — die zwölf
