@@ -35,7 +35,7 @@ stehen in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md).
 |---|---|---|
 | Kessel (#568, SK2) | (a) Bereitschaftsverlust des Elektrokessels nur im Nutzungsgrad, nicht im Netzbezug; (b) „Maximale Brennstoffleistung Gas“ bei mehreren Kesseln = Summe der Einzelmaxima; (d) Heiztag = Raumwärme > 0 — VDI-6007-Gebäude sind fast ganzjährig „betriebsbereit“ | (a) belassen, (b) belassen mit Kurztext, (d) Schwelle je Gebäudemodell prüfen |
 | Kessel-Kennlinie (#569) | Fragen F1–F5 des [Konzepts](../Konzept_Kessel_Kennlinie_EPOS-Plan.md) | E1 + E2 |
-| Berichte & Kosten (#574) | BN-Q1–Q3 des [Konzepts](../Konzept_BerichteKosten_Navigation_EPOS-Plan.md), Mockups A/B/C | Variante A |
+| Berichte & Kosten (#574) | BN-Q1–Q3 des [Konzepts](../../ueberholt/Konzept_BerichteKosten_Navigation_EPOS-Plan.md), Mockups A/B/C | Variante A |
 | Zapfprofil-Dialog (#572) | Struktur statt Überlagerung in Überlagerung — Nachtrag N35 im Zapfprofil-Umsetzungskonzept | Blattwechsel „‹ Warmwasser“ |
 | Wirtschaftlichkeit (#582) | Soll der Bericht dem gewählten Szenario folgen? | ja, als eigener Auftrag |
 | Repowurzel | `Berichtsvorlagen/Mitgeliefert/` kam mit einem Sync-Commit herein (Laufzeiterzeugnis?) | entfernen und in `.gitignore` |

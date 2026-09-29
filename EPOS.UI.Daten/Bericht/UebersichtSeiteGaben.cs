@@ -118,6 +118,14 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Listenzeile wurde markiert (Id, Name) — die Kostenseite folgt ihr.</summary>
         internal event Action<int, string> ProjektMarkiert;
 
+        /// <summary>
+        /// Die Liste der Vergleichsgruppe ist geladen: Stammprojekt, Zahl der Versionen und wie
+        /// viele davon nicht simuliert oder veraltet sind. Der Wirt nennt es in der Statuszeile
+        /// des Reiters (Konzept Navigation Berichte &amp; Kosten, A2) — gezählt wird, was dieses
+        /// Laden ohnehin liest.
+        /// </summary>
+        internal event Action<int, int, int> Geladen;
+
         /// <summary>Der Datensatz einer Übernahmezeile (Vorbild <c>UebernahmeZeile</c>).</summary>
         private sealed class UebernahmeSatz
         {
@@ -328,6 +336,8 @@ namespace WindowsFormsApplication1
                 stand.SimulierenMoeglich = true;
             }
             stand.AnlegenMoeglich = _stand.IdStamm > 0;
+
+            Geladen?.Invoke(_stand.IdStamm, zeilen.Count, zeilen.Count(z => z.Auffaellig));
 
             // --- der Komponentenbereich -------------------------------------
             Komponentenbereich(stand);

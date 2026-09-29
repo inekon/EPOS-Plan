@@ -9,7 +9,13 @@
    VERZOEGERTER AUFBAU. Weil ein ungewaehltes Blatt nicht existiert, entsteht
    sein Inhalt erst beim ersten Betreten - dieselbe Zurueckhaltung, mit der
    UcBerichteKosten seine vier Seiten "lazy" erzeugte, nur ohne eigenen Code
-   dafuer. Wer beim Betreten etwas nachladen will, nimmt Betreten. *@
+   dafuer. Wer beim Betreten etwas nachladen will, nimmt Betreten.
+
+   STATUSZEILE (Konzept Navigation Berichte & Kosten, Etappe A2). Ein Blatt darf
+   unter seinem Titel einen KURZSTAND tragen - Status, Kurzform fuer schmale
+   Fenster, Stufe Normal oder Warnung. Gezeichnet wird er vom Reiter im Knopf,
+   denn er gehoert zur Leiste, nicht zum Blatt. Alle drei Werte sind freiwillig:
+   Ohne Status bleibt der Knopf genau der alte, nur der Titel. *@
 
 @namespace EPOS.UI.Bausteine
 @implements IDisposable
@@ -17,7 +23,7 @@
 @if (Sichtbar)
 {
     <div class="epos-reiter-blatt" role="tabpanel" tabindex="0"
-         id="@("blatt-" + Schluessel)" aria-labelledby="@("reiter-" + Schluessel)">
+         id="@BlattId" aria-labelledby="@KnopfId">
         @KindInhalt
     </div>
 }
@@ -26,6 +32,9 @@
     private string _titel = "";
     private bool _bedienbar = true;
     private string _sperrgrund = "";
+    private string _status = "";
+    private string _statusKurz = "";
+    private Statusstufe _statusstufe = Statusstufe.Normal;
 
     /// <summary>Der umgebende Reiter (von <see cref="Reiter"/> herabgereicht).</summary>
     [CascadingParameter] public Reiter? Eltern { get; set; }
@@ -54,6 +63,36 @@
     /// </summary>
     [Parameter] public string Sperrgrund { get; set; } = "";
 
+    /// <summary>
+    /// Die STATUSZEILE unter dem Titel im Reiterknopf; leer (Vorgabe) = keine, der Knopf
+    /// traegt dann nur den Titel.
+    /// </summary>
+    [Parameter] public string Status { get; set; } = "";
+
+    /// <summary>
+    /// Die Kurzform der Statuszeile unter 900 px Fensterbreite; leer (Vorgabe) = derselbe
+    /// Text wie <see cref="Status"/>.
+    /// </summary>
+    [Parameter] public string StatusKurz { get; set; } = "";
+
+    /// <summary>
+    /// Normal (leise) oder Warnung (Warnfarbe mit dem Zeichen ▲); ohne
+    /// <see cref="Status"/> ohne Wirkung.
+    /// </summary>
+    [Parameter] public Statusstufe Statusstufe { get; set; } = Statusstufe.Normal;
+
+    /// <summary>Traegt das Blatt eine Statuszeile?</summary>
+    public bool HatStatus => !string.IsNullOrEmpty(Status);
+
+    /// <summary>Die Kurzform, die unter 900 px steht (Rueckfall: der Status selbst).</summary>
+    public string Kurzform => string.IsNullOrEmpty(StatusKurz) ? Status : StatusKurz;
+
+    /// <summary>Die Kennung des Reiterknopfs dieses Blattes (mit der Kennung des Reiters).</summary>
+    public string KnopfId => Eltern?.KnopfId(Schluessel) ?? "reiter-" + Schluessel;
+
+    /// <summary>Die Kennung dieses Blattes (mit der Kennung des Reiters).</summary>
+    public string BlattId => Eltern?.BlattId(Schluessel) ?? "blatt-" + Schluessel;
+
     /// <summary>Der Inhalt des Blattes.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
 
@@ -69,19 +108,28 @@
         _titel = Titel;
         _bedienbar = Bedienbar;
         _sperrgrund = Sperrgrund;
+        _status = Status;
+        _statusKurz = StatusKurz;
+        _statusstufe = Statusstufe;
     }
 
     protected override void OnParametersSet()
     {
-        // Titel, Sperre und Sperrgrund stehen in der LEISTE, die der Reiter
-        // zeichnet - aendert eines der drei sich, muss er neu zeichnen.
+        // Titel, Sperre, Sperrgrund und Statuszeile stehen in der LEISTE, die der
+        // Reiter zeichnet - aendert sich eines davon, muss er neu zeichnen.
         if (!string.Equals(_titel, Titel, StringComparison.Ordinal)
             || _bedienbar != Bedienbar
-            || !string.Equals(_sperrgrund, Sperrgrund, StringComparison.Ordinal))
+            || !string.Equals(_sperrgrund, Sperrgrund, StringComparison.Ordinal)
+            || !string.Equals(_status, Status, StringComparison.Ordinal)
+            || !string.Equals(_statusKurz, StatusKurz, StringComparison.Ordinal)
+            || _statusstufe != Statusstufe)
         {
             _titel = Titel;
             _bedienbar = Bedienbar;
             _sperrgrund = Sperrgrund;
+            _status = Status;
+            _statusKurz = StatusKurz;
+            _statusstufe = Statusstufe;
             Eltern?.Aufgefrischt();
         }
     }

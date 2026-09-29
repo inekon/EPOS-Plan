@@ -706,6 +706,39 @@ public sealed class StilblattTests
         Assert.Matches(@"<div class=""epos-leiste"">[\s\S]*?<span class=""epos-status ", leiste);
     }
 
+    /// <summary>
+    /// <b>Konzept Navigation Berichte &amp; Kosten, Variante A (A1/A2):</b> Die dunkle
+    /// Seitennavigation mit ihren sechs Festfarben ist fort; die Statuszeile der Reiter warnt
+    /// mit dem TOKEN <c>--epos-warn-text</c> und im Kontrastmodus mit einer Systemfarbe, die
+    /// Kurzform steht erst unter 900 px, und das Leistenende bricht dort in eine eigene Zeile.
+    /// </summary>
+    [Fact]
+    public void BN_A_Die_Statuszeile_der_Reiter_warnt_mit_Token_und_kuerzt_unter_900px()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain(".epos-navigation", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("#23282d", css, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains("color: var(--epos-warn-text)", Regelblock(".epos-reiter-status--warnung"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-text-leise)", Regelblock(".epos-reiter-status {"), StringComparison.Ordinal);
+        Assert.Contains("display: none", Regelblock(".epos-reiter-status-kurz"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 52px", Regelblock(".epos-reiter-knopf--status"), StringComparison.Ordinal);
+
+        int schmal = css.IndexOf(
+            "@media (max-width: 900px) {\n    .epos-reiter-status-lang {\n        display: none;\n    }\n\n"
+            + "    .epos-reiter-status-kurz {\n        display: inline;\n    }", StringComparison.Ordinal);
+        Assert.True(schmal > 0, "Die Kurzform unter 900 px fehlt");
+        int ende = css.IndexOf(".epos-reiter-kopfzeile > .epos-reiter-leistenende {\n        flex: 1 1 100%;", schmal,
+                               StringComparison.Ordinal);
+        Assert.True(ende > schmal && ende < css.IndexOf("\n}\n", schmal, StringComparison.Ordinal),
+                    "Das Leistenende bricht unter 900 px nicht in eine eigene Zeile");
+
+        int kontrast = css.IndexOf(".epos-reiter-status--warnung { color: LinkText; }", StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal)
+                    && css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal) > schmal,
+                    "Der Kontrastmodus der Warnung fehlt");
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 
