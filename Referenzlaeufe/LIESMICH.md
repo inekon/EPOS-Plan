@@ -677,6 +677,30 @@ Beim allerersten Mal davor einmal `-t:Restore` mit denselben Parametern.
 Ergebnis: `Referenzlauf\bin\x64\Debug\net10.0-windows\Referenzlauf.exe` (alte Protokolle
 nennen noch den Frameworkordner vor .NET 10).
 
+## Der Plattformnachweis: `lauf … --stoerung ulp`
+
+Nur der plattformfreie `EPOS.Referenzlauf` kennt den Schalter. Er verschiebt die Ergebnisse von
+`Math.Exp`, `Sin`, `Cos`, `Asin` und `Acos` an der Naht `Plattformrundung` (Gebäudematrix, Sonnenstand,
+Erdreich, Kollektor, Tagesbilanz) deterministisch um ±1 ulp — etwa jedes sechzehnte Ergebnis, nach dem
+Bitmuster des Arguments, so wie eine andere C-Bibliothek rundet. Der gestörte Lauf muss mit dem
+ungestörten **innerhalb der Toleranz** übereinstimmen: `kern.yml` rechnet ihn für die sieben CI-Projekte,
+`Werkzeuge/Gate/gate_linux.sh` (Schritt 6) für alle fünfzehn. Er wird **nie eingefroren**; sein
+`protokoll.txt` trägt die Zeile `Stoerung:`.
+
+```bash
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+  --projekte 1030,1007,1017,1045,1046,1047,1049 --ziel <ordner>_stoerung --stoerung ulp
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <ordner> <ordner>_stoerung
+```
+
+Stand mit dem Zahlenrand an Phase G, Quellspeicher und Kessellauf: alle fünfzehn Projekte GESAMT PASS,
+453/460 CSV byte-gleich, die übrigen sieben nur mit Rechenresten von höchstens 10⁻⁸ (Heizstab 1007/1046,
+Kessel 1024, Quellpuffer 1042, BHKW-Restwärme 1018, Wärmepumpe 1045). **Gegenprobe:** Mit dem blanken
+Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 durch — der Nachweis sieht
+genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
+(`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit dem Lauf vor der Naht 460/460 CSV
+byte-gleich.
+
 ## Bedienung
 
 ```powershell

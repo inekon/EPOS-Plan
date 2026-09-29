@@ -200,6 +200,13 @@ weder Laufstunde noch Start.
 letzten Bit verschieden. Was ohne Rand am letzten Bit entscheidet, rechnet deshalb auf Windows und Linux
 verschieden. Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`, `PlattformrandTests`.
 
+**Die Plattformnaht.** In Gebäudematrix (`Matrix2`), Sonnenstand (`SolarPVGISCalculator`), Erdreich,
+Kollektor (`SimulationSolarthermie`) und Tagesbilanz laufen `Exp`, `Sin`, `Cos`, `Asin` und `Acos`
+über `Allgemein/Simulation/Plattformrundung.cs`: ohne Schalter bitgleich `Math.*`, mit
+`EPOS.Referenzlauf lauf … --stoerung ulp` um ±1 ulp verschoben; `kern.yml` hält den gestörten
+gegen den ungestörten Lauf (GESAMT PASS). **Wer in diesen Dateien eine der fünf Funktionen
+aufruft, ruft sie über die Naht** — Wache `PlattformrundungTests`.
+
 ## Keine `(int)`-Abschneidung auf einer Rechengröße
 
 `TagesbilanzPhysik.TaeglHeizlastWG`, `SolareGewinneC` und `SpezWaermeverlusteC` (Modul

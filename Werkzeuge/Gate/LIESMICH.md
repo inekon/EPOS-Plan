@@ -28,3 +28,8 @@ Projekte innerhalb der Toleranz gleich; Ursache und Behebung des früheren Unter
 Die Linux-Zeile stammt aus der Nachbildung des Linux-Laufs auf Windows. Der erste Lauf auf einem echten
 Linux-Läufer bestätigt oder berichtigt sie. `gate_windows.sh` rechnet den Referenzlauf nicht; die CI
 (`kern.yml`) rechnet auf ubuntu die sieben CI-Projekte.
+
+Schritt 6 rechnet dieselben Projekte mit `--stoerung ulp` (±1 ulp an Exp, Sin, Cos, Asin und Acos der
+Naht `Plattformrundung`) und vergleicht mit dem ungestörten Lauf aus Schritt 5; erwartet ist GESAMT PASS
+(Abschnitt „Der Plattformnachweis“ in `Referenzlaeufe/LIESMICH.md`). Ein FAIL dort ist eine Entscheidung,
+die am letzten Bit kippt.
