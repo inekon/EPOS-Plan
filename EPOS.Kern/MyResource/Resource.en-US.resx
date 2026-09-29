@@ -1978,9 +1978,6 @@ Without a source buffer this reads 0.00.</value>
   <data name="CHART_CSV_GESAMT" xml:space="preserve">
     <value>Total [kW]</value>
   </data>
-  <data name="CHART_CSV_HEIZKESSEL" xml:space="preserve">
-    <value>Boiler [kW]</value>
-  </data>
   <data name="CHART_CSV_HEIZSTAB" xml:space="preserve">
     <value>Immersion heater [kW]</value>
   </data>
@@ -3901,9 +3898,6 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   </data>
   <data name="SIM_SPALTE_ZWEITSENKE" xml:space="preserve">
     <value>Secondary sink</value>
-  </data>
-  <data name="CHART_CSV_RESTWAERME" xml:space="preserve">
-    <value>Residual heat [kW]</value>
   </data>
   <data name="CHART_DATEI_HEIZKESSEL" xml:space="preserve">
     <value>Boiler_project_{0}.csv</value>
@@ -22105,6 +22099,33 @@ Do you want to allow this?</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
+    <value>Project setting(s) without a CHP minimum output set to {0} %</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S69" xml:space="preserve">
+    <value>PV module(s) with corrupted coefficients: {0} repaired, {1} without a match cleared</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S76" xml:space="preserve">
+    <value>surplus energy-carrier record(s) removed</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S79" xml:space="preserve">
+    <value>Heat pump(s) now carry their project's immersion-heater switch</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S83" xml:space="preserve">
+    <value>Electricity carrier record(s): surcharge folded into the work price or shares deactivated</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S84" xml:space="preserve">
+    <value>Project(s): feed-in tariff of the carrier sheet adopted into the economic parameters</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S87" xml:space="preserve">
+    <value>second active storage variant(s) deactivated</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S89" xml:space="preserve">
+    <value>CHP Act detail(s) transferred from the project to the CHP unit</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S90" xml:space="preserve">
+    <value>Zero row(s) of the collection groups removed</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_S98" xml:space="preserve">
     <value>CHP efficiency/-ies converted from a percentage to the factor</value>

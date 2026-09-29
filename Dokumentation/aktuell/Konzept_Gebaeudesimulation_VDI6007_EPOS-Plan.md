@@ -4767,3 +4767,22 @@ Projekt und „Speichern unter", `KINDER` für Duplikat und Variante, der `.wpx`
 Auslieferungsvorlage samt Prüfbericht, die Werkzeuge der Karte, der Hinweis auf Untertemperatur
 außerhalb der Heizperiode, die Auslegungswerte aus 3.6 und die Nutzungszeit aus dem Personenkalender
 (F16).
+
+### N1.62 Entscheid E54 — Konditionierungsprofile: Inhalt eigener Vorlagen, Lüftungsstunden in Bericht und Export
+
+**Anlass.** Die Synthese des Entwurfs der zweiten Hälfte von KP1
+([`Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md`](Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md)) hat aus zwei
+Entwürfen und einer Gegenprüfung zwei Fragen an den Anwender gestellt; alles Übrige legt sie als Festlegungen der
+Umsetzung vor, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet beide per Auswahl.
+
+**Entscheid E54 (Anwender, 27.09.2026):**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| 1 | Was nimmt „Als Vorlage speichern" an Nennwert und Saison mit? | **Weder Nennwert noch Saison — abweichend von der Empfehlung** (Saison ja, Nennwert nein): Eine eigene Vorlage trägt Zeitstruktur und die Werte der Nutzungszeilen; Nennwert und Heiz- bzw. Kühlperiode gehören dem Objekt und bleiben beim Ziel |
+| 2 | Kommen mit der Nachtauskühlung auch die Sommerlüftungsstunden in Bericht und Export? | **Beide Kennzahlen**, nach Empfehlung: KP3 bringt `Nachtauskuehlstunden_H` und `Sommerlueftungsstunden_H` in Bericht, CSV-Export, KI-Sicht und Variantenvergleich |
+
+**Folgen.** Das [Teilkonzept](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 3.5, 3.7, 5.7, 8 und 9.4
+fortgeschrieben; der Vorlagen-Controller (KP1b) speichert und kopiert keine Zeilen `NENNWERT` und `SAISON`, keine
+Saisonperiode und keinen `Nennwert` am Kalender einer Vorlage; die Wache der ausgelieferten Vorlagen (KP2) prüft es
+mit. KP3 wächst um rund 0,25 PT. Kein Registerpunkt ist berührt; das Register zählt weiter einen offenen Punkt (M11).
