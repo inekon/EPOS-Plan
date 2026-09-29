@@ -479,10 +479,11 @@ namespace Auslieferungsvorlage
                     // Die EINE Regel des Kerns (ZapfprofilCtrl.Zielkatalogversion): die Version der
                     // zuletzt angelegten Parameterzeile — genau die, die der Parametersatz liest —,
                     // sonst der Rueckfall. Derselbe Aufruf steht im Katalogimport.
-                    string eigene = ZapfprofilCtrl.AktuelleKatalogversion(v);
+                    string eigeneVersion = ZapfprofilCtrl.AktuelleKatalogversion(v);
                     string version = ZapfprofilCtrl.Zielkatalogversion(v);
                     _bericht.Zeile("Katalogversion der Paketteil-Zeilen: " + version +
-                                   (string.IsNullOrWhiteSpace(eigene) ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
+                                   (string.IsNullOrWhiteSpace(eigeneVersion) ? " (der Katalog fuehrt keine eigene)"
+                                                                             : " (die des Katalogs)"));
                     var meldungen = new List<string>();
 
                     // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) --------------------
