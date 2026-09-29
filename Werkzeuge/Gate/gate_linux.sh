@@ -25,21 +25,14 @@ echo "=== 5 Referenzlauf gegen die aktuelle Basis"
 dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release -nologo -v q -clp:ErrorsOnly 2>&1 | grep -E 'error|Fehler' | head -3
 B=$(grep -o -m1 -E '\*\*`20[0-9]{2}-[0-9]{2}-[0-9]{2}_R[0-9]+[^`]*`\*\*' Referenzlaeufe/LIESMICH.md | tr -d '*`' | tr -d '/')
 P=$(ls -d Referenzlaeufe/$B/Projekt_* | sed 's/.*Projekt_//' | sort -n | paste -sd, -)
-# Plattformbefund PB-1 (Werkzeuge/Gate/LIESMICH.md): Diese Projekte kippen eine Schwelle am letzten Bit, wenn Basis
-# und Lauf auf verschiedenen Plattformen gerechnet sind (UCRT gegen glibc). Die Plattform der Basis steht im Quellpfad
-# ihres protokoll.txt. Ein rotes Projekt ausserhalb der Liste - oder auf derselben Plattform - ist ein Befund dieses Stands.
-PB1_PROJEKTE="1008 1023 1042"
+# Die Plattform der Basis steht im Quellpfad ihres protokoll.txt. Laufen Basis und Lauf auf verschiedenen Plattformen,
+# sind Reste im Band byte-verschieden (Werkzeuge/Gate/LIESMICH.md); jedes rote Projekt ist ein Befund dieses Stands.
 case "$(grep -m1 '^Quelle:' "Referenzlaeufe/$B/protokoll.txt" | sed 's/^Quelle: *//')" in /Users/*) BP=macOS;; /*) BP=Linux;; *) BP=Windows;; esac
 case "$(uname -s)" in Linux*) LP=Linux;; Darwin*) LP=macOS;; MINGW*|MSYS*|CYGWIN*) LP=Windows;; *) LP=$(uname -s);; esac
 echo "Basis $B (eingefroren auf $BP), Lauf auf $LP, Projekte $P"
 rm -rf "$G/ref"; dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte "$P" --ziel "$G/ref" 2>&1 | grep -E 'Erfolgreich|Fehler' | tail -2
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich "Referenzlaeufe/$B" "$G/ref" > "$G/vergleich.txt" 2>&1
 grep -E '^Projekt_[0-9]+: FAIL|^GESAMT' "$G/vergleich.txt"
-for p in $(grep -oE '^Projekt_[0-9]+: FAIL' "$G/vergleich.txt" | grep -oE '[0-9]+'); do
-  if [[ " $PB1_PROJEKTE " != *" $p "* ]]; then echo "  $p: NEU - kein bekannter Plattformbefund"
-  elif [ "$BP" != "$LP" ]; then echo "  $p: vorbestehender Plattformbefund PB-1 (Basis $BP, Lauf $LP) - kein Befund dieses Stands"
-  else echo "  $p: PB-1-Projekt, aber Basis und Lauf auf $LP - pruefen"; fi
-done
 n=0; g=0; v=""; for f in $(cd "Referenzlaeufe/$B" && find . -name '*.csv' | sort); do n=$((n+1)); if cmp -s "Referenzlaeufe/$B/$f" "$G/ref/$f"; then g=$((g+1)); else v="$v ${f#./}"; fi; done
 echo "CSV byte-gleich: $g von $n"; [ -n "$v" ] && echo "byte-verschieden:$v"
 echo "=== GATE-ENDE $(date +%H:%M:%S)"
