@@ -234,6 +234,14 @@ drei Reihen ist **gebündelt** die Vorgabe — halb so groß wie das PNG, kein V
 und ein Zoom über etwa das Vierfache lädt den Ausschnitt als rohen Pfad nach (ein Rundlauf
 pro Zoomstufe, nicht pro Radrast).
 
+**Stapel:** Eine Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle`),
+gehen weder roh noch gebündelt — deren Zickzack innerhalb einer Bildpunktspalte ließe die
+Schichten blass und löchrig erscheinen und die Summe über den Stapel greifen. Bei mehr Werten
+als Bildpunktspalten zeichnen sie je Stufe ihren Höchstwert als waagrechte Kante: im Jahresbild
+je Tag, solange ein Tag schmaler als vier Spalten ist, sonst je Spalte (`Pfadregel.Stufen`).
+Nachbarschichten teilen damit ihre Kante genau; nachgeladen wird wie bei jeder anderen Reihe
+ab dem Vierfachen.
+
 ## 6 Empfehlung
 
 **Option B**, in Etappen, mit D1 als bewusstem Zwischenstand: ein Zeichenmodell im Kern,
