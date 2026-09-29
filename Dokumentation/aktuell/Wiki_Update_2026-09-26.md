@@ -16,6 +16,9 @@ September 2026“ (4 Sätze) und „Version 1.2.0.5 – September 2026“ (51 S�
 zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Seiten aus `seiten.tsv` gleich ihrer
 Repo-Quelle. Statuszeile #614.
 
+**Nach dem Sammel-Upload #614 geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten Upload:**
+Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“).
+
 | Seite | Revision |
 |---|---|
 | Programm Dokumentation/Simulationsergebnisse | 711 |
@@ -141,6 +144,12 @@ neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
+
+### Version 1.2.0.6 — nicht veröffentlicht
+
+Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
+
+- Ein Katalogpaket der Brauchwasser-Nutzungsarten darf die Spalte ‚Katalogversion‘ weglassen; seine Zeilen treten dann der Katalogversion des Katalogs bei, in den sie kommen. (#615)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

@@ -103425,7 +103425,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen de [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_HINWEIS {
             get {
@@ -115485,6 +115485,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt keine Katalogversion; die Zeilen treten der Katalogversion „{0}“ des Katalogs bei. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Nutzungsart(en) des Pakets führen keine eigenen Zapfkategorien, und das Paket führt keinen Vorgabesatz; sie rechnen ohne Streuung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
@@ -115670,6 +115679,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt die Spalte „{0}“ nur in einem Teil seiner Dateien: in {1}, nicht aber in {2}. Entweder führen sie alle eine Katalogversion, oder keine — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT", resourceCulture);
             }
         }
         

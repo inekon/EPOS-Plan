@@ -22,7 +22,15 @@ große Zirkulation nennt noch einen Katalog der Nutzungsarten führt. Sie stehen
   Auslieferungsvorlage. Eine vorhandene Katalogversion bleibt unberührt, ohne Tww-Tabellen geschieht
   nichts, eine gleiche Zeile der Datenbank geht vor; das Ergebnis steht im Laufprotokoll. Die Wache
   `EPOS.Kern.Tests/TwwPaketteilNachladenTests` hält Ressourcen und Dateien byte-gleich — wer hier
-  eine Datei ändert, baut den Kern neu;
+  eine Datei ändert, baut den Kern neu. **Warum nicht der Katalogimport:** Er nimmt diesen Ordner
+  zwar unverändert an (N38 im
+  [Umsetzungskonzept Zapfprofilgenerator](../../Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md)),
+  legt aber Anwenderzeilen an — `IMPORT`, `ReadOnly` 0, Herkunftsart `IMPORT` statt `VERFAHREN`
+  bzw. `EIGENKONSTRUKTION` — und ersetzt einen vorhandenen Bedarfstag oder Parameter am Platz. Das
+  Nachladen gibt einer älteren Datenbank dagegen den Auslieferungskatalog einer Neuinstallation
+  (Regel 1 unten: `AUSLIEFERUNG`, `ReadOnly` 1, die Herkunft des Pakets, an der
+  `PaketteilNachfuehrung` eine Zeile in einem früheren Stand erkennt) und fasst keine Zeile der
+  Datenbank an. Die Katalogversion ist auf allen drei Wegen dieselbe (Regel 2);
 - [`Skripte/tww_testkatalog_fiktiv.py`](../Skripte/tww_testkatalog_fiktiv.py) schreibt dieselben
   Zeilen in die Testdatenbank; die drei Träger der abgeleiteten Werte (`Tab_TwwTagesgangsatz_STAMM.csv`,
   `Tab_TwwTagesgang_STAMM.csv`, `Tab_TwwNutzungsart_STAMM.csv`) **erzeugt** es dabei aus
@@ -75,6 +83,15 @@ Dazu vier Regeln des Paketteils:
    Testdatenbank `TEST-1`, beim Nachladen des Kerns `FREI-1` (die Datenbank führt dann keinen
    Parameter). Sonst sähe der Parametersatz, der nur eine Katalogversion liest, die
    Parameter der Stochastik nicht. `Version` (Provenienz) nennt den Stand des Paketteils.
+   Die Regel steht einmal im Kern (`ZapfprofilCtrl.Zielkatalogversion`, N38) und gilt auf **jedem
+   Weg**: für den Einspielweg des Kerns (`TwwPaketteilCtrl.Einspielen` — die Auslieferungsvorlage,
+   `Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs` `PaketteilEinspielen`, und das Nachladen) und
+   für den **Katalogimport** des Programms
+   (*Brauchwasser-Nutzungsarten → Import… → Katalog importieren*), der diesen Ordner unverändert
+   annimmt — als Dateiwahl im Ordner wie als ZIP. Sein Bericht nennt die Version, der die Zeilen
+   beitreten. Ein Paket, das die Spalte `Katalogversion` nur in einem Teil seiner Kopfdateien
+   (`Tab_TwwBedarfstag_STAMM`, `Tab_TwwParameter_STAMM`, `Tab_TwwTagesgangsatz_STAMM`,
+   `Tab_TwwNutzungsart_STAMM`) führt, lehnt der Import benannt ab — entweder alle oder keine.
 3. **Schlüssel des Pakets.** Die `ID` eines Bedarfstags verknüpft ihn mit seinen Ereignissen
    (`ID_Bedarfstag`), die `ID` eines Tagesgangsatzes mit seinen Tagesgängen und mit den
    Nutzungsarten, die ihn tragen (`ID_Tagesgangsatz`); die Datenbank vergibt die echte ID. Tritt

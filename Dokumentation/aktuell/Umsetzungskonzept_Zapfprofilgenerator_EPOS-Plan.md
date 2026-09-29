@@ -4669,3 +4669,33 @@ bleibt für offene Fremdreihen nutzbar; der Versand der Datenanfragen ist davon 
 | #608 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
 | K5 | eigene Messobjekte | Anwender | auf Zuruf |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N38 (29.09.2026) — Welle #615: Katalogimport eines Pakets ohne Katalogversion
+
+**Anlass** (Anwender, 29.09.2026, Bildschirmfoto aus der Windows-Anwendung): Der Katalogimport der
+Brauchwasser-Nutzungsarten lehnte den freien Paketteil `Referenzlaeufe/Katalogpaket_frei/` ab — „Die Spalte
+‚Katalogversion‘ fehlt“. Der Paketteil führt bewusst keine Katalogversion (seine Regel 2); Auslieferungsvorlage und
+Saatskript setzten sie selbst, der Import verlangte die Spalte. Protokoll
+[Katalogimport Paketteil](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Katalogimport_Paketteil.md).
+
+**(a) Eine Regel der Zielversion.** `ZapfprofilCtrl.Zielkatalogversion` = die Katalogversion der zuletzt angelegten
+Parameterzeile (dieselbe, die der Parametersatz der Stochastik und der Speicherauslegung liest), Rückfall `FREI-1`
+(Tabelle fehlt, leer, Version leer). Das Werkzeug `Auslieferungsvorlage` ruft sie auf; eine zweite Fassung gibt es
+nicht.
+
+**(b) Import.** Führt keine Kopfdatei des Pakets die Spalte, treten alle Zeilen der Zielversion bei, und der Bericht
+nennt sie (`KATALOGIMPORT_OHNE_KATALOGVERSION`); führen sie alle, gilt wie bisher die Version je Zeile; führt sie nur ein
+Teil, ist das Paket benannt abgelehnt (`KATALOGIMPORT_VERSION_GEMISCHT`). Dublettenscan, „(Import n)“, Ersetzen am Platz
+und die Regel der früheren Paketstände (N36 (c)) sind unverändert; die Zielversion entscheidet sie nicht. Weitere
+Formabweichungen des Paketteils gab es nicht; er bleibt unverändert.
+
+**(c) Nachweis.** In eine Kopie der Testdatenbank: 57 Zeilen übersprungen, keine Zelle geändert; in einen leeren
+Katalog: 57 angelegt in `FREI-1`, der Parametersatz liest sie. Ordner und ZIP, auch als Prüflauf. Kein Schemaschritt,
+keine Änderung der Testdatenbank, kein Rechenweg.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #615 | Windows-Abnahme: Import des Ordners `Katalogpaket_frei` mit und ohne „Nur prüfen“ — Bericht, Hinweiszeile, Hinweistext | Anwender | nächste Abnahme |
+| Wiki | Seite Brauchwasser-Zapfprofil und Logbuch-Satz unter 1.2.0.6 mit dem nächsten Sammel-Upload | Orchestrierung | mit dem Upload |

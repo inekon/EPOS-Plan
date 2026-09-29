@@ -414,7 +414,7 @@ namespace EPOS.Kern.Tests
             var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() }, null);
             Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, stand, 0, new bool[365]);
 
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, e.Parameter.Katalogversion);
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, e.Parameter.Katalogversion);
             Assert.Contains(protokoll.Hinweise, h => h.StartsWith("Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten",
                                                                   StringComparison.Ordinal));
         }

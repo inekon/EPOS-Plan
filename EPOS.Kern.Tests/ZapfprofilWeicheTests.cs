@@ -351,7 +351,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
             Assert.Contains(SimulationProtokoll.Aktuell.Hinweise,
                             h => h.StartsWith("Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten", StringComparison.Ordinal));
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, ZapfprofilCtrl.AktuelleKatalogversion());
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, ZapfprofilCtrl.AktuelleKatalogversion());
         }
 
         /// <summary>

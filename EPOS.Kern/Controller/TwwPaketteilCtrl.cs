@@ -59,11 +59,21 @@ namespace WindowsFormsApplication1
     /// über <see cref="TwwNutzungsartCtrl.PaketLesen"/>, dem Leser des Katalogimports) und für das
     /// <b>Nachladen</b> einer älteren Datenbank (<see cref="Nachladen"/>, gelesen aus den eingebetteten
     /// Ressourcen): dieselbe Prüfung jeder Datei, dieselbe Regel für eine gleiche Zeile, derselbe
-    /// Status (<c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1) und dieselbe Bindung der Vorgabesätze. Der
-    /// Katalogimport des Anwenders („Import…" im Katalog der Brauchwasser-Nutzungsarten,
-    /// <see cref="TwwNutzungsartCtrl.Importieren"/>) taugt dafür nicht: Er legt Anwenderzeilen an
-    /// (<c>IMPORT</c>, <c>ReadOnly</c> 0, Herkunftsart <c>IMPORT</c>) und verlangt eine Katalogversion
-    /// in jeder Datei, die der Paketteil nicht führt (Regel 2 seiner LIESMICH.md).</para>
+    /// Status (<c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1) und dieselbe Bindung der Vorgabesätze. Die
+    /// Katalogversion der Zeilen kommt aus der EINEN Regel des Kerns,
+    /// <see cref="ZapfprofilCtrl.Zielkatalogversion"/> — derselben, die der Katalogimport für ein Paket
+    /// ohne Katalogversion nimmt (Umsetzungskonzept Zapfprofilgenerator, N38): Vorlage, Nachladen und
+    /// Import landen bei derselben Version.</para>
+    ///
+    /// <para><b>Warum das Nachladen nicht den Katalogimport nimmt.</b> Der Katalogimport des Anwenders
+    /// („Import…" im Katalog der Brauchwasser-Nutzungsarten, <see cref="TwwNutzungsartCtrl.Importieren"/>)
+    /// nimmt den Ordner des Paketteils unverändert an (N38), legt aber <b>Anwenderzeilen</b> an —
+    /// <c>IMPORT</c>, <c>ReadOnly</c> 0, Herkunftsart <c>IMPORT</c> statt <c>VERFAHREN</c> bzw.
+    /// <c>EIGENKONSTRUKTION</c> — und ersetzt einen vorhandenen Bedarfstag oder Parameter am Platz. Das
+    /// Nachladen gibt einer älteren Datenbank dagegen den Auslieferungskatalog, den eine Neuinstallation
+    /// mit der Vorlage bekommt: gesperrt wie jede Auslieferungszeile und mit der Herkunft des Pakets
+    /// (nur daran erkennt <see cref="PaketteilNachfuehrung"/> eine Zeile des Paketteils in einem früheren
+    /// Stand), ohne eine Zeile der Datenbank anzufassen.</para>
     ///
     /// <para><b>Eine Quelle.</b> Die eingebetteten Ressourcen sind die CSV-Dateien des Ordners
     /// selbst (<c>EPOS.Kern.csproj</c> bindet <c>..\Referenzlaeufe\Katalogpaket_frei\*.csv</c> mit dem
@@ -74,12 +84,6 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Der Präfix der eingebetteten Dateien des Paketteils (fester <c>LogicalName</c>).</summary>
         internal const string RESSOURCE_PRAEFIX = "EPOS.Kern.Katalogpaket_frei.";
-
-        /// <summary>
-        /// Die Katalogversion der Paketteil-Zeilen, wenn der Katalog selbst keine führt (kein
-        /// Parameter nach Katalogpaket und Tww-Regel bzw. in der nachzuladenden Datenbank).
-        /// </summary>
-        internal const string KATALOGVERSION_FREI = "FREI-1";
 
         /// <summary>Wer vorgeht, wenn der Katalog eine gleiche Zeile führt: das externe Katalogpaket der Auslieferungsvorlage.</summary>
         internal const string VORRANG_KATALOGPAKET = "das Katalogpaket";
@@ -125,8 +129,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Lädt den freien Paketteil in eine Datenbank, der er fehlt</b> — benannt und wiederholbar.
         /// Eine ältere, über die Schemaschritte angehobene Datenbank führt die Tww-Tabellen, aber
-        /// keinen Parameter und damit keine Katalogversion (der Paketteil kommt sonst nur mit der
-        /// Vorlage einer Neuinstallation); ohne Katalogversion ist der Generator nicht verfügbar.
+        /// keinen Parameter und damit keine Katalogversion (als Auslieferung kommt der Paketteil sonst nur
+        /// mit der Vorlage einer Neuinstallation); ohne Katalogversion ist der Generator nicht verfügbar.
         ///
         /// <para><b>Wann.</b> Nur, wenn alle Tww-Tabellen stehen UND
         /// <see cref="ZapfprofilCtrl.AktuelleKatalogversion"/> <c>null</c> ist — geprüft vorher und noch
@@ -139,9 +143,12 @@ namespace WindowsFormsApplication1
         /// eingebetteten Dateien, mit einem Unterschied: Führt die Datenbank eine gleiche Zeile (gleicher
         /// natürlicher Schlüssel in derselben Katalogversion), <b>bleibt ihre</b> — die Zeile des
         /// Paketteils tritt zurück (<see cref="VORRANG_DATENBANK"/>), keine Zeile der Datenbank wird
-        /// gelöscht. Geschrieben wird in der Freigabe <see cref="Schreibnaht.GRUND_BEREITSTELLUNG"/>: Es
-        /// ist der Auslieferungskatalog, den die Vorlage einer Neuinstallation mitbringt, keine
-        /// Anwenderänderung.</para>
+        /// gelöscht. Die Katalogversion ist die der Regel <see cref="ZapfprofilCtrl.Zielkatalogversion"/>
+        /// — hier stets ihr Rückfall <see cref="ZapfprofilCtrl.KATALOGVERSION_RUECKFALL"/>, weil die
+        /// Datenbank keinen Parameter führt. Geschrieben wird in der Freigabe
+        /// <see cref="Schreibnaht.GRUND_BEREITSTELLUNG"/>: Es ist der Auslieferungskatalog, den die
+        /// Vorlage einer Neuinstallation mitbringt, keine Anwenderänderung — deshalb der Einspielweg der
+        /// Vorlage und nicht der Katalogimport (Klassenkommentar).</para>
         ///
         /// <para><b>Nie still.</b> Das Ergebnis geht als Hinweis (nachgeladen) bzw. als Warnung (Fehler)
         /// in das Laufprotokoll (<see cref="SimulationProtokoll.Aktuell"/>, das auch auf die Konsole
@@ -247,8 +254,8 @@ namespace WindowsFormsApplication1
         /// Provenienzgruppe eine Herkunftsart aus <see cref="HERKUNFT"/> — <c>FREI</c> für
         /// eine frei verfügbare Quelle, <c>VERFAHREN</c> für einen gerechneten Wert,
         /// <c>EIGENKONSTRUKTION</c> für eine Setzung von INEKON. Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
-        /// Katalogversion des Katalogs bei (die des zuletzt angelegten Parameters, sonst
-        /// <see cref="KATALOGVERSION_FREI"/>) — sonst sähe der Parametersatz die
+        /// Katalogversion des Katalogs bei — <see cref="ZapfprofilCtrl.Zielkatalogversion"/>, dieselbe
+        /// Regel wie im Katalogimport (N38) — sonst sähe der Parametersatz die
         /// Parameter der Stochastik nicht. Die <c>ID</c> eines Bedarfstags ist nur Schlüssel des
         /// Pakets (die Ereignisse verweisen über <c>ID_Bedarfstag</c> darauf); die Datenbank vergibt
         /// die echte; ebenso die <c>ID</c> eines Tagesgangsatzes, auf die Tagesgänge und Nutzungsarten
@@ -334,19 +341,20 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    object kv = v.Skalar("SELECT Katalogversion FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " ORDER BY ID DESC LIMIT 1");
-                    bool ohneVersion = kv == null || kv == DBNull.Value;
-                    if (nurOhneKatalogversion && !ohneVersion)
+                    string eigeneVersion = ZapfprofilCtrl.AktuelleKatalogversion(v);
+                    if (nurOhneKatalogversion && eigeneVersion != null)
                     {
                         // Ein anderer Weg war schneller (oder die Datenbank trug sie schon): nichts anfassen.
-                        string steht = Convert.ToString(kv, CultureInfo.InvariantCulture);
-                        Z("uebergangen: der Katalog fuehrt die Katalogversion " + steht + " — nichts eingespielt");
-                        zahlen = new TwwPaketteilZahlen { Katalogversion = steht, Uebergangen = true };
+                        Z("uebergangen: der Katalog fuehrt die Katalogversion " + eigeneVersion + " — nichts eingespielt");
+                        zahlen = new TwwPaketteilZahlen { Katalogversion = eigeneVersion, Uebergangen = true };
                         return true;
                     }
-                    string version = ohneVersion ? KATALOGVERSION_FREI : Convert.ToString(kv, CultureInfo.InvariantCulture);
+                    // Die EINE Regel des Kerns (ZapfprofilCtrl.Zielkatalogversion, N38): die Version der
+                    // zuletzt angelegten Parameterzeile — genau die, die der Parametersatz liest —, sonst
+                    // der Rueckfall. Derselbe Aufruf steht im Katalogimport.
+                    string version = ZapfprofilCtrl.Zielkatalogversion(v);
                     Z("Katalogversion der Paketteil-Zeilen: " + version +
-                      (ohneVersion ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
+                      (string.IsNullOrWhiteSpace(eigeneVersion) ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
                     var meldungen = new List<string>();
 
                     // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) --------------------

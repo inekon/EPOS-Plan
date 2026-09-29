@@ -75,8 +75,9 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Eine Datenbank mit Tww-Tabellen und leerem Parameterkatalog: Das erste
         /// <see cref="ZapfprofilCtrl.Verfuegbar"/> lädt den freien Paketteil nach — der Generator ist
-        /// verfügbar, die Katalogversion ist die des Pakets (<see cref="TwwPaketteilCtrl.KATALOGVERSION_FREI"/>,
-        /// der Paketteil führt keine eigene), jede Datei steht mit ihrer Zeilenzahl da, jede Kopfzeile
+        /// verfügbar, die Katalogversion ist der Rückfall der Zielkatalogversion
+        /// (<see cref="ZapfprofilCtrl.KATALOGVERSION_RUECKFALL"/>: weder der Katalog noch der Paketteil
+        /// führt eine), jede Datei steht mit ihrer Zeilenzahl da, jede Kopfzeile
         /// als Auslieferung (<c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1), jede Nutzungsart mit dem
         /// Vorgabesatz ihrer Gruppe. Der Hinweis steht im Laufprotokoll.
         /// </summary>
@@ -91,9 +92,9 @@ namespace EPOS.Kern.Tests
 
             Assert.True(v.Ja, v.Klartext);
             Assert.Equal(ZapfVerfuegbarkeitsgrund.Verfuegbar, v.Grund);
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, ZapfprofilCtrl.AktuelleKatalogversion());
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, ZapfprofilCtrl.AktuelleKatalogversion());
             Assert.Equal("PAKETTEIL_NACHGELADEN", v.Nachladen?.Kennung);
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, v.Nachladen.Werte[0]);
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, v.Nachladen.Werte[0]);
             Assert.Equal(Datenzeilen(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, v.Nachladen.Werte[1]);
             Assert.Equal(Datenzeilen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count, v.Nachladen.Werte[2]);
             Assert.Equal(Datenzeilen(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM).Count, v.Nachladen.Werte[3]);
@@ -109,12 +110,12 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" <> ? OR \"ReadOnly\" <> 1",
                                       TwwSchema.STATUS_AUSLIEFERUNG));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Katalogversion\" <> ?",
-                                      TwwPaketteilCtrl.KATALOGVERSION_FREI));
+                                      ZapfprofilCtrl.KATALOGVERSION_RUECKFALL));
             }
 
             // Der Parametersatz der Katalogversion trägt jeden Schlüssel des Pakets.
             Parametersatz ps = ZapfprofilCtrl.Parameter();
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, ps.Katalogversion);
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, ps.Katalogversion);
         }
 
         /// <summary>
@@ -208,7 +209,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Testdatenbank mit geleertem Parameterkatalog:</b> Der Paketteil kommt unter
-        /// <see cref="TwwPaketteilCtrl.KATALOGVERSION_FREI"/> dazu; jede Zeile, die die Datenbank schon
+        /// <see cref="ZapfprofilCtrl.KATALOGVERSION_RUECKFALL"/> dazu; jede Zeile, die die Datenbank schon
         /// führt (der Testkatalog unter seiner eigenen Katalogversion, samt seinen Kopien der freien
         /// Zeilen), bleibt Wert für Wert, wie sie war.
         /// </summary>
@@ -225,10 +226,80 @@ namespace EPOS.Kern.Tests
 
             Assert.True(v.Ja, v.Klartext);
             Assert.Equal("PAKETTEIL_NACHGELADEN", v.Nachladen?.Kennung);
-            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, ZapfprofilCtrl.AktuelleKatalogversion());
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, ZapfprofilCtrl.AktuelleKatalogversion());
             Assert.Equal((long)Datenzeilen(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count,
                          Zahl("SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\""));
             Assert.Equal(vorher, Fingerabdruck(bis));
+        }
+
+        // =================================================================================
+        // Eine Katalogversion für Vorlage, Nachladen und Katalogimport (N38)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Einspielweg nimmt die Regel des Kerns</b> (<see cref="ZapfprofilCtrl.Zielkatalogversion"/>,
+        /// N38) und landet bei derselben Katalogversion wie der Katalogimport desselben Pakets: bei der
+        /// des Katalogs, bei leerer Version der jüngsten Parameterzeile beim Rückfall. Der Import läuft
+        /// als Prüflauf vorweg und schreibt nichts.
+        /// </summary>
+        [Theory]
+        [InlineData("KAT-7", "KAT-7")]
+        [InlineData("", ZapfprofilCtrl.KATALOGVERSION_RUECKFALL)]
+        [InlineData("  ", ZapfprofilCtrl.KATALOGVERSION_RUECKFALL)]
+        public void Einspielweg_und_Katalogimport_nehmen_dieselbe_Zielkatalogversion(string katalog, string erwartet)
+        {
+            using var db = new TwwTestdatenbank();
+            TwwTestdatenbank.ParameterAnlegen("Probe.Eins", 1.0, katalog);
+            Assert.Equal(erwartet, ZapfprofilCtrl.Zielkatalogversion());
+
+            TwwKatalogimportBericht import = TwwNutzungsartCtrl.Importieren(TwwPaketteilCtrl.Eingebettet(), pruefen: true);
+            Assert.Null(import.Abbruch);
+            Assert.Contains(import.Hinweise, h => h.Kennung == "KATALOGIMPORT_OHNE_KATALOGVERSION" && h.Nennt(erwartet));
+
+            var bericht = new List<string>();
+            Assert.True(TwwPaketteilCtrl.Einspielen(TwwPaketteilCtrl.Eingebettet(), "Probe", null, false, bericht.Add,
+                                                    out string fehler, out TwwPaketteilZahlen zahlen), fehler);
+            Assert.Equal(erwartet, zahlen.Katalogversion);
+            Assert.Contains(bericht, z => z.StartsWith("Katalogversion der Paketteil-Zeilen: " + erwartet + " (", StringComparison.Ordinal));
+            Assert.Equal(erwartet, ZapfprofilCtrl.AktuelleKatalogversion());
+            Assert.Equal((long)Datenzeilen(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count,
+                         Zahl("SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Katalogversion\" = ? " +
+                              "AND \"Schluessel\" <> 'Probe.Eins'", erwartet));
+        }
+
+        /// <summary>
+        /// <b>Warum das Nachladen nicht den Katalogimport nimmt</b> (Klassenkommentar von
+        /// <see cref="TwwPaketteilCtrl"/>): Beide Wege bringen den Paketteil in einen leeren Katalog und
+        /// landen bei derselben Katalogversion — aber nur das Nachladen liefert aus (<c>AUSLIEFERUNG</c>,
+        /// <c>ReadOnly</c> 1, die Herkunftsarten des Pakets). Der Import legt dieselben Zeilen als
+        /// Anwenderzeilen an: <c>IMPORT</c>, <c>ReadOnly</c> 0, aus <c>EIGENKONSTRUKTION</c> und
+        /// <c>VERFAHREN</c> wird <c>IMPORT</c>.
+        /// </summary>
+        [Fact]
+        public void Nachladen_und_Katalogimport_treten_derselben_Version_bei_nur_das_Nachladen_liefert_aus()
+        {
+            string p = "\"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\"";
+            string n = "\"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\"";
+            string nachgeladen;
+            using (var db = new TwwTestdatenbank())
+            {
+                Assert.True(TwwPaketteilCtrl.Nachladen().Erfolg);
+                nachgeladen = ZapfprofilCtrl.AktuelleKatalogversion();
+                Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, nachgeladen);
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + p + " WHERE \"Status\" <> ? OR \"ReadOnly\" <> 1", TwwSchema.STATUS_AUSLIEFERUNG));
+                Assert.True(Zahl("SELECT COUNT(*) FROM " + p + " WHERE \"Herkunftsart\" = ?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION) > 0);
+                Assert.True(Zahl("SELECT COUNT(*) FROM " + n + " WHERE \"Bedarf_Herkunftsart\" = ?", TwwSchema.HERKUNFT_VERFAHREN) > 0);
+            }
+            using (var db = new TwwTestdatenbank())
+            {
+                TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(TwwPaketteilCtrl.Eingebettet());
+                Assert.Null(b.Abbruch);
+                Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_OHNE_KATALOGVERSION" && h.Nennt(nachgeladen));
+                Assert.Equal(nachgeladen, ZapfprofilCtrl.AktuelleKatalogversion());
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + p + " WHERE \"Status\" <> ? OR \"ReadOnly\" <> 0", TwwSchema.STATUS_IMPORT));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + p + " WHERE \"Herkunftsart\" = ?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + n + " WHERE \"Bedarf_Herkunftsart\" = ?", TwwSchema.HERKUNFT_VERFAHREN));
+            }
         }
 
         // =================================================================================

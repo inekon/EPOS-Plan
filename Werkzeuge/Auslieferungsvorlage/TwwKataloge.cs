@@ -307,13 +307,6 @@ namespace Auslieferungsvorlage
         /// <summary>Der freie Paketteil, relativ zur Repowurzel.</summary>
         internal const string PAKETTEIL_FREI = "Referenzlaeufe/Katalogpaket_frei";
 
-        /// <summary>
-        /// Die Katalogversion der Paketteil-Zeilen, wenn der Katalog selbst keine führt (kein
-        /// Parameter nach Katalogpaket und Tww-Regel) — die des Kerns
-        /// (<see cref="TwwPaketteilCtrl.KATALOGVERSION_FREI"/>).
-        /// </summary>
-        internal const string KATALOGVERSION_FREI = TwwPaketteilCtrl.KATALOGVERSION_FREI;
-
         /// <summary>Die Tabellen des Paketteils in Einspielreihenfolge — die des Kerns (<see cref="TwwPaketteilCtrl.TABELLEN"/>).</summary>
         internal static readonly string[] PAKETTEIL_TABELLEN = TwwPaketteilCtrl.TABELLEN;
 
@@ -350,8 +343,11 @@ namespace Auslieferungsvorlage
         /// <para><b>Der Einspielweg des Kerns.</b> Gelesen wird der Ordner mit dem Leser des
         /// Katalogimports (<see cref="TwwNutzungsartCtrl.PaketLesen"/>), eingespielt über
         /// <see cref="TwwPaketteilCtrl.Einspielen"/> — denselben Weg, auf dem der Kern einer älteren
-        /// Datenbank den Paketteil selbst nachlädt. Format, Regeln des Paketteils, Katalogversion und
-        /// Bindung der Vorgabesätze beschreibt der Kern. <b>Schlüsselgleichheit:</b> Führt das
+        /// Datenbank den Paketteil selbst nachlädt. Format, Regeln des Paketteils und Bindung der
+        /// Vorgabesätze beschreibt der Kern; die Katalogversion der Zeilen kommt aus der EINEN Regel
+        /// des Kerns (<see cref="ZapfprofilCtrl.Zielkatalogversion"/>, Rückfall
+        /// <see cref="ZapfprofilCtrl.KATALOGVERSION_RUECKFALL"/>), derselben, die der Katalogimport
+        /// für ein Paket ohne Katalogversion nimmt (N38). <b>Schlüsselgleichheit:</b> Führt das
         /// Katalogpaket dieselbe Zeile, gilt seine (<see cref="TwwPaketteilCtrl.VORRANG_KATALOGPAKET"/>),
         /// und der Bericht meldet es; ohne Katalogpaket ersetzt der Paketteil eine gleiche Zeile der
         /// Quelle. Ein Fehler nennt Datei, Zeile und Grund und rollt den ganzen Paketteil zurück.</para>
