@@ -54930,6 +54930,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet ein Kapitel in einem Block „je stand“. Warum erscheint es nur einmal? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung nennt ein neues Kapitel. Wie nehme ich es in meine Vorlage auf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_KAPITEL_NEU {
@@ -89143,6 +89152,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_KAPITEL_DOPPELT_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_KAPITEL_DOPPELT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel {0} steht im Block {1} – gefüllt wird es nur in der ersten Wiederholung ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_IM_BLOCK {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_IM_BLOCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kapitel vor {0} oder hinter {1} setzen; im Block wiederholen sich Werte, Tabellen und Bilder. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_IM_BLOCK_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_IM_BLOCK_TUN", resourceCulture);
             }
         }
         

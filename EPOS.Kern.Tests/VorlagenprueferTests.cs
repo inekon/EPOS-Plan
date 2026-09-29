@@ -913,6 +913,30 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Ein Kapitel in einem Wiederholblock: Die Engine erweitert die Blöcke vor dem Sammeln der Kapitelstellen —
+        /// gefüllt wird nur die erste Wiederholung. Der Prüfer gibt je Stelle einen Hinweis mit dem Block; ein Kapitel
+        /// außerhalb und eine Bedingung um ein Kapitel bleiben ohne ihn.
+        /// </summary>
+        [Fact]
+        public void Ein_Kapitel_im_Wiederholblock_ist_ein_Hinweis()
+        {
+            Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.projekt}}", "{{#je stand}}", "{{stand.anzeige}}",
+                                                                     "{{kapitel.anhang}}", "{{/je}}",
+                                                                     "{{#wenn baustein.ergebnisse}}", "{{kapitel.ergebnisse}}", "{{/wenn}}"));
+
+            Pruefmeldung m = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KAPITEL_IM_BLOCK"));
+            Assert.Equal(Befundstufe.Hinweis, m.Stufe);
+            Assert.Equal("Kapitel {{kapitel.anhang}} steht im Block {{#je stand}} – gefüllt wird es nur in der ersten Wiederholung",
+                         m.Text);
+            Assert.Equal("Das Kapitel vor {{#je stand}} oder hinter {{/je}} setzen; im Block wiederholen sich Werte, Tabellen und Bilder.",
+                         m.WasTun);
+            Assert.Equal("{{kapitel.anhang}}", m.Marke);
+            Assert.StartsWith("Absatz 4", m.Fundort, StringComparison.Ordinal);
+            Assert.Equal(0, befund.Fehleranzahl);
+            Assert.Contains(KiMeldungskennung.VF_PRUEF_KAPITEL_IM_BLOCK, KiMeldungskennung.Berichtsvorlagen);
+        }
+
+        /// <summary>
         /// Katalog v2: Ein Schalter (<c>baustein.*</c>) außerhalb einer Bedingung ist ein Ortsfehler (ohne
         /// Hinweis „später“ — Bedingungen wertet die Engine aus); das Logo als getippter Text ist ein Fehler — die
         /// Engine füllt allein das Bild mit dem Schlüssel im Alternativtext, und das ohne Befund, auch wenn

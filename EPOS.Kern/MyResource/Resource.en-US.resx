@@ -35336,6 +35336,12 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
     <value>Remove the further position; in the report it remains highlighted in yellow.</value>
   </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Chapter {0} is inside the block {1} – it is filled only in the first repetition</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK_TUN" xml:space="preserve">
+    <value>Place the chapter before {0} or after {1}; values, tables and charts repeat inside the block.</value>
+  </data>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: only in a later program version</value>
   </data>
@@ -35350,6 +35356,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
     <value>The check reports a chapter twice. Which position counts?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>The check reports a chapter inside a “per version” block. Why does it appear only once?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
     <value>The check says a placeholder only takes effect in a later program version. What does that mean?</value>

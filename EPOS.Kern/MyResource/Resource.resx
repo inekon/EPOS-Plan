@@ -35343,6 +35343,12 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
     <value>Die weitere Stelle entfernen; im Bericht bleibt sie gelb markiert stehen.</value>
   </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Kapitel {0} steht im Block {1} – gefüllt wird es nur in der ersten Wiederholung</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_IM_BLOCK_TUN" xml:space="preserve">
+    <value>Das Kapitel vor {0} oder hinter {1} setzen; im Block wiederholen sich Werte, Tabellen und Bilder.</value>
+  </data>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: erst in einer späteren Programmfassung</value>
   </data>
@@ -35357,6 +35363,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
     <value>Die Prüfung meldet ein Kapitel doppelt. Welche Stelle gilt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK" xml:space="preserve">
+    <value>Die Prüfung meldet ein Kapitel in einem Block „je stand“. Warum erscheint es nur einmal?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
     <value>Die Prüfung sagt, ein Platzhalter wirke erst in einer späteren Programmfassung. Was heißt das?</value>
