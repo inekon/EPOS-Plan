@@ -436,23 +436,31 @@ Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten G
 keine Flächenreihe.
 
 Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
-Stapels** (`Pfadregel.Stufen`, `Pfadregel.Hoechstwerte`, `Pfadregel.Treppe` in
-`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine Stapelschicht und jede Linie,
-die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur, Kanten), zeichnet je Stufe
-ihren Höchstwert als waagrechte Kante — im Jahresbild je Tag, solange ein Tag schmaler als vier
-Bildpunktspalten ist, sonst je Spalte. Beide Kanten einer Schicht folgen derselben Regel,
+Stapels** (`Pfadregel.Stufen`, `Pfadregel.Spitzenstunden`, `Pfadregel.Stundenwerte`,
+`Pfadregel.Treppe` in `EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
+Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur,
+Kanten), zeichnet je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange ein Tag
+schmaler als vier Bildpunktspalten ist, sonst je Spalte —, und zwar ALLE mit den Werten
+derselben Stunde: der **Spitzenstunde** der Bezugsgröße (`Datenreihe.Bezug`: die Bedarfs- oder
+Summenlinie, sonst die Kontur, sonst die Oberkante des Stapels; bei Gleichstand die erste
+Stunde). So summieren sich die Schichten je Stufe zur Oberkante, die Dicke jeder Schicht ist
+ihr Wert in dieser Stunde, und ein taktender Erzeuger steht nicht als Band auf Nennleistung da.
 Nachbarschichten teilen ihre Kante genau, die Schichten decken voll, und PNG und Druck malen sie
-von der Achse, die oberste zuerst. So bleibt keine Lücke, nichts scheint durch, und die Summe
-liegt als Rand auf der Oberkante statt unter dem ganzen oberen Stapel. Die überlagerte
-Produktion der Wärmepumpenseite (eine Säulengruppe über einer Flächengruppe) steht als Kanten
-über dem Bedarf, nicht halbtransparent. Die Dauerlinie stapelt nicht.
+von der Achse, die oberste zuerst — keine Lücke, nichts scheint durch, die Summe liegt als Rand
+auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspitze“
+(`CHART_HINWEIS_STUFE_TAG`). Die überlagerte Produktion der Wärmepumpenseite (eine Säulengruppe
+über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
+Dauerlinie stapelt nicht.
 
 Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
 `erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
 `erzeugerstapel_neun_reihen` samt `…_wenige` und `…_viele`, `erzeugerstapel_fenster` samt
-`…_a` und `…_b` sowie `erzeugerstapel_zweite_achse_a` und `…_b`. Byte-gleich bleiben die
-Dauerlinien (`erzeugerstapel_kessel_sortiert`, `ganglinie_normiert_sortiert`), die Bilder ohne
-Stapelschicht und der Berichtsstapel `jahresverlauf_waerme` (Tagesmittel, nicht dichter als die
-Spalten). Die Pixelproben „keine Löcher" und „Summe scheint nicht durch" stehen in
-`EPOS.Kern.Tests/ChartRendererTests.cs`, die Stufen und Treppen in `PfadregelTests.cs` und
-`SvgSchreiberTests.cs`.
+`…_a` und `…_b` sowie `erzeugerstapel_zweite_achse_a` und `…_b` (`erzeugerstapel_fenster` und
+`…_fenster_b` zeichnen einen Ausschnitt, der nicht dichter ist als die Spalten — sie ändern sich
+nur durch die deckenden Schichten). Byte-gleich bleiben die Dauerlinien
+(`erzeugerstapel_kessel_sortiert`, `ganglinie_normiert_sortiert`), die Bilder ohne
+Stapelschicht (`erzeugerstapel_solar_zwei_linien`) und der Berichtsstapel `jahresverlauf_waerme`
+(Tagesmittel, nicht dichter als die Spalten). Die Proben „Schichten summieren sich in jeder
+Stufe zur Oberkante“, „kein taktender Erzeuger als Nennleistungsband“, „keine Löcher“ und „Summe
+scheint nicht durch“ stehen in `EPOS.Kern.Tests/ChartRendererTests.cs` und
+`PfadregelTests.cs`, die Treppen in `SvgSchreiberTests.cs`.
