@@ -321,6 +321,15 @@ namespace WindowsFormsApplication1
         public const string FeldCo = "CO";
         public const string FeldStaub = "STAUB";
 
+        // Die Kennlinie des Heizkessels (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1):
+        // eta bei 30 % Last, der Schalter der Brennwertkennlinie und die drei Groessen des
+        // Taktmodells. Leer heisst „nicht gepflegt" (Vorgabe).
+        public const string FeldTeillast30 = "WIRKUNGSGRAD_TEILLAST30";
+        public const string FeldKennlinieBrennwert = "KENNLINIE_BRENNWERT";
+        public const string FeldMindestleistung = "MINDESTLEISTUNG";
+        public const string FeldAnfahrverlust = "ANFAHRVERLUST";
+        public const string FeldMindestlaufzeit = "MINDESTLAUFZEIT";
+
         public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
         public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
         public const string FeldWirkungsgradTh = "WIRKUNGSGRAD_TH";

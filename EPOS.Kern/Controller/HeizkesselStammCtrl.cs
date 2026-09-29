@@ -360,10 +360,16 @@ namespace WindowsFormsApplication1
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
                              Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
                              Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly,
+                             Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung,
+                             Anfahrverlust_kWh, Mindestlaufzeit_min)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                                   ?, ?, ?, ?, ?)";
 
-            DbParam[] ps = {
+            // Die fuenf Kennlinienfelder (Konzept Kesselkennlinie 3.1) haengen hinten an, in der
+            // Reihenfolge von KesselKennlinieSchema.SPALTEN - leer bleibt leer, der Schalter nur
+            // mit Brennwert (KesselKennlinieWerte).
+            var ps = new List<DbParam> {
                 new DbParam("@id", neueId),
                 new DbParam("@bez", this.Name ?? ""),
                 new DbParam("@bes", this.Beschreibung ?? ""),
@@ -388,8 +394,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@tl", this.Ruecklauf),
                 new DbParam("@ro", false)
             };
+            ps.AddRange(KesselKennlinieWerte.Parameter(this));
 
-            bool ok = DataRepository.ExecuteSQL(sql, ps);
+            bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray());
             if (ok) this.ID = neueId;
             return ok;
         }
@@ -453,10 +460,12 @@ namespace WindowsFormsApplication1
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
                             Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?
+                            Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?,
+                            Wirkungsgrad_Teillast30 = ?, Kennlinie_Brennwert = ?, Mindestleistung = ?,
+                            Anfahrverlust_kWh = ?, Mindestlaufzeit_min = ?
                           WHERE ID = ?";
 
-            DbParam[] ps = {
+            var ps = new List<DbParam> {
                 new DbParam("@bez", this.Name ?? ""),
                 new DbParam("@bes", this.Beschreibung ?? ""),
                 new DbParam("@fir", this.Firma ?? ""),
@@ -477,11 +486,12 @@ namespace WindowsFormsApplication1
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
                 new DbParam("@brn", this.Brennwert),
                 new DbParam("@vl", this.Vorlauf),
-                new DbParam("@rl", this.Ruecklauf),
-                new DbParam("@id", this.ID)
+                new DbParam("@rl", this.Ruecklauf)
             };
+            ps.AddRange(KesselKennlinieWerte.Parameter(this));
+            ps.Add(new DbParam("@id", this.ID));
 
-            return DataRepository.ExecuteSQL(sql, ps);
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
         /// <summary>
@@ -633,6 +643,8 @@ namespace WindowsFormsApplication1
             target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;
             target.Vorlauf = row["Vorlauf"] != DBNull.Value ? Convert.ToInt32(row["Vorlauf"]) : 0;
             target.Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
+            // Die fuenf Kennlinienfelder; eine noch nicht migrierte Datenbank liefert sie leer.
+            KesselKennlinieWerte.AusZeile(target, row);
 
             if (ReferenceEquals(target, this))
             {
@@ -997,6 +1009,11 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_BELEGT",
                         "Name existiert bereits!"), "");
 
+                // Dieselbe Pruefung der Kennlinienfelder wie beim Ueberschreiben (UpdateMitGrund).
+                string kennlinie = KesselKennlinieWerte.Verstoss(ctrl);
+                if (!string.IsNullOrEmpty(kennlinie))
+                    return new SpeicherErgebnis(false, kennlinie, "");
+
                 if (!ctrl.Insert())
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
                         "Fehler beim Speichern des Datensatzes!"), "");
@@ -1069,10 +1086,15 @@ namespace WindowsFormsApplication1
                 return (false, "Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
                                "\". Bitte einen eindeutigen Namen vergeben.");
 
+            // Die Kennlinienfelder (Konzept Kesselkennlinie 3.1): Bereich, und der Schalter der
+            // Brennwertkennlinie nur beim Brennwertkessel - benannt abgelehnt, nie still verworfen.
+            string kennlinie = KesselKennlinieWerte.Verstoss(this);
+            if (!string.IsNullOrEmpty(kennlinie)) return (false, kennlinie);
+
             return (Schreiben(), "");
         }
 
-        /// <summary>Uebernimmt die 21 Felder eines Modells in diesen Controller.</summary>
+        /// <summary>Uebernimmt die Felder eines Modells in diesen Controller (samt Kennlinie).</summary>
         private void Uebernehmen(HeizkesselModel m)
         {
             this.ID = m.ID;
@@ -1097,6 +1119,7 @@ namespace WindowsFormsApplication1
             this.Brennwert = m.Brennwert;
             this.Vorlauf = m.Vorlauf;
             this.Ruecklauf = m.Ruecklauf;
+            KesselKennlinieWerte.Uebertragen(m, this);
         }
 
         private static string Text(string schluessel, string rueckfall)
