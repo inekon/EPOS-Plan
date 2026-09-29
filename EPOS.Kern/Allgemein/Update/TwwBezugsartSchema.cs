@@ -247,9 +247,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die verletzten Beziehungen der Tabelle selbst und jeder Tabelle, die auf sie zeigt
         /// (<c>foreign_key_check</c> je Tabelle — ein Befund einer fremden Tabelle hält den Schritt
-        /// nicht an).
+        /// nicht an). Auch <see cref="TwwFuellstandSchema"/> geht diesen Weg — EIN Rezept.
         /// </summary>
-        private static long Verletzt(DbVorgang v, string tabelle)
+        internal static long Verletzt(DbVorgang v, string tabelle)
         {
             var pruefen = new List<string> { tabelle };
             DataTable kinder = v.Lese(

@@ -22,7 +22,7 @@ Den Assistenten muss man nicht suchen: Er ist dort erreichbar, wo gearbeitet wir
 
 '''Sie erreichen den Assistenten über die EPOS-Marke rechts neben dem i oben rechts in jeder Maske''' – die drei Felder des Programmlogos, farbig und mit einem Blitz in der Mitte. Beide Felder stehen in einem gemeinsamen Rahmen: Das i führt auf die Hilfeseite dieses Dialogs, die Marke daneben ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
 
-'''Die Marke steht oben rechts im Kopfband und folgt der Ansicht.''' Auf jedem Bildschirm gibt es genau eine: In einem Dialog oder einer Überlagerung steht sie im Kopf des Dialogs, sonst im Kopfband des Programmfensters – und dort meint sie immer das, was Sie gerade vor sich haben. Wechseln Sie in der Simulation von der Konfiguration zum Ergebnis, wechselt mit ihr auch der Programmbereich, den der Assistent kennt. Knöpfe mitten im Inhalt, die einen '''Rechenweg''' erklären, bleiben davon unberührt: Sie führen auf eine andere Hilfeseite.
+'''Die Marke steht oben rechts im Kopfband und folgt der Ansicht.''' Auf jedem Bildschirm gibt es genau eine: In einem Dialog oder einer Überlagerung steht sie im Kopf des Dialogs, sonst im Kopfband des Programmfensters – und dort meint sie immer das, was Sie gerade vor sich haben. Wechseln Sie in der Simulation von der Konfiguration zum Ergebnis, wechselt mit ihr auch der Programmbereich, den der Assistent kennt. Weitere Knöpfe – etwa zum '''Rechenweg''', zu einer Gruppe von Eingaben oder zum Dateiformat – tragen nur das i und führen auf ihre eigene Hilfeseite.
 
 Solange das Gespräch zu dieser Ansicht offen ist, ist die Marke '''blau ausgefüllt''' – so sehen Sie, wofür der Assistent gerade zuständig ist.
 

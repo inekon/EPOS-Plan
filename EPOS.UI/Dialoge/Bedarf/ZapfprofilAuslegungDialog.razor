@@ -16,13 +16,15 @@
    nachrichtlicher Vorschlag mit Wochenbild und die Warnliste. Sie RECHNET NICHTS: Ergebnis,
    Bilder und Saetze kommen aus der Huelle (Delegat "Rechnen").
 
-   SPEICHERGROESSE DER FUELLSTANDSLINIE (N11 (d)). Der Bezug des Fuellstands ist EINE Wahl an
-   EINER Stelle: unmittelbar ueber dem Wochenbild der ersten Gruppe mit Verfahrensvergleich,
-   jeder Eintrag mit seinem Volumen aus dem Ergebnis des Kerns ("Vorgabe" nennt den Bezug, den
-   sie gerade aufloest). Ein Bezug ohne Volumen steht gesperrt, sein Grund (Satz des Kerns) im
-   title und als Herleitungszeile darunter. Jedes weitere Wochenbild nennt den geltenden Bezug
-   als Herleitungszeile. Ein Wechsel rechnet neu wie jede Eingabe - Bild, Kachel "Fuellstand"
-   und Herleitung zeichnen mit dem Ergebnis.
+   SPEICHERGROESSE DER FUELLSTANDSLINIE (N11 (d), N36 (d)). Der Bezug des Fuellstands ist EINE
+   Wahl an EINER Stelle: unmittelbar ueber dem Wochenbild der ersten Gruppe mit
+   Verfahrensvergleich. Zur Wahl stehen die vier Groessen der Auslegung und die vier Verfahren
+   des Vergleichs mit genau dem Volumen, das ihre Zeile zeigt (das klassische nachrichtlich, aber
+   waehlbar); jeder Eintrag nennt seine Liter ("Vorgabe" nennt den Bezug, den sie gerade
+   aufloest). Ein Bezug ohne Volumen steht gesperrt, sein Grund (Satz des Kerns) im title und als
+   Herleitungszeile darunter. Jedes weitere Wochenbild nennt den geltenden Bezug als
+   Herleitungszeile. Ein Wechsel rechnet neu wie jede Eingabe - Bild, Kachel "Fuellstand" und
+   Herleitung zeichnen mit dem Ergebnis.
 
    WAS SIE NICHT TUT. Sie schreibt nicht. OK uebernimmt die Eingaben samt Punkt in den
    Arbeitsstand des Zapfprofils (geschrieben wird mit dem OK des Bedarfsprofil-Dialogs);
@@ -78,7 +80,7 @@
             <h1 class="epos-dialog-titel">@Texte.Titel</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.InfoBedienung" Dialogname="@Texte.Titel" />
-        <InfoKnopf Schluessel="@HilfeRechenweg" StandardKurztext="@Texte.InfoRechenweg" Dialogname="@Texte.Titel" />
+        <InfoKnopf Schluessel="@HilfeRechenweg" StandardKurztext="@Texte.InfoRechenweg" Dialogname="@Texte.Titel" MitAssistent="false" />
         @if (TitelAnzeigen)
         {
             <Schliesskreuz Geschlossen="Abbrechen" />
@@ -966,11 +968,12 @@
     private IReadOnlyList<(int Id, string Text)> AutoManuell => new[] { (AUTO, Texte.Auto), (MANUELL, Texte.Manuell) };
 
     /// <summary>
-    /// Die Wahl „Speichergröße der Füllstandslinie" (N11 (d)): die Vorgabe und die Wertemenge des
-    /// Schemas, jeder Eintrag mit seinem Volumen aus dem Verfahrensvergleich am ersten Wochenbild —
-    /// die Vorgabe mit dem Bezug, den sie gerade auflöst; ein Bezug ohne Volumen heißt „nicht
-    /// bestimmbar" und steht gesperrt (<see cref="Fuellstandsperren"/>). Ohne Vergleich die Namen.
-    /// Dieselben Einträge sieht der Assistent.
+    /// Die Wahl „Speichergröße der Füllstandslinie" (N11 (d), N36 (d)): die Vorgabe und die
+    /// Wertemenge des Schemas — die vier Größen der Auslegung und die vier Verfahren des
+    /// Vergleichs —, jeder Eintrag mit seinem Volumen aus dem Verfahrensvergleich am ersten
+    /// Wochenbild; die Vorgabe mit dem Bezug, den sie gerade auflöst; ein Bezug ohne Volumen heißt
+    /// „nicht bestimmbar" und steht gesperrt (<see cref="Fuellstandsperren"/>). Ohne Vergleich die
+    /// Namen. Dieselben Einträge sieht der Assistent.
     /// </summary>
     private IReadOnlyList<(int Id, string Text)> Fuellstandbezuege
     {

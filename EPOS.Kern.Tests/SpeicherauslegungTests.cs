@@ -184,6 +184,82 @@ namespace EPOS.Kern.Tests
                          n.Fuellstandsperre(ZapfFuellstandbezug.BandMax).Klartext);
         }
 
+        /// <summary>
+        /// <b>Die Verfahren des Vergleichs als Bezug</b> (N36 (d), Schritt
+        /// <see cref="TwwFuellstandSchema.SCHRITT"/>): Jeder Bezug 5 … 8 trägt genau das Volumen
+        /// seiner Zeile des Verfahrensvergleichs — auch das nachrichtliche klassische —, ein
+        /// Verfahren ohne Volumen steht benannt gesperrt, und eine Wahl auf ein Verfahren verschiebt
+        /// allein den Füllstand.
+        /// </summary>
+        [Fact]
+        public void Jedes_Verfahren_des_Vergleichs_ist_ein_Bezug_mit_seinem_Volumen()
+        {
+            Parametersatz ps = Auslegungssatz();
+            Speicherauslegungseingang e = Eingang(ps) with { SummenlinienpunktL = 250.0 };
+            Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(e, ps);
+
+            // Je Zeile des Vergleichs genau ein Bezug mit derselben Zahl — und kein Grund.
+            foreach (Verfahrensvolumen z in r.Verfahren)
+            {
+                var bezug = (ZapfFuellstandbezug)((int)z.Verfahren + TwwSpeicherauslegung.VERFAHREN_VERSATZ);
+                Assert.Equal(z.VolumenL, r.BezugsvolumenL(bezug));
+                Assert.Null(r.Fuellstandsperre(bezug));
+            }
+            Assert.Equal(r.VolumenProfilL, r.BezugsvolumenL(ZapfFuellstandbezug.VerfahrenProfilbasiert));
+            Assert.Equal(r.VolumenDinL, r.BezugsvolumenL(ZapfFuellstandbezug.VerfahrenDin4708));
+            Assert.Equal(r.VolumenGlfL, r.BezugsvolumenL(ZapfFuellstandbezug.VerfahrenGleichzeitigkeit));
+            // Das klassische Verfahren ist nachrichtlich (nie im Band) und trotzdem wählbar.
+            Assert.Equal(r.VolumenKlassischL, r.BezugsvolumenL(ZapfFuellstandbezug.VerfahrenKlassisch));
+            Assert.False(r.Verfahren.Single(v => v.Verfahren == ZapfSpeicherverfahren.Klassisch).ImBand);
+
+            // Gewählt DIN 4708: der Füllstand dort, die Vorgabe bleibt der Nenninhalt des Punkts —
+            // Defizit, Verfahren, Band, Nenninhalt und Warnliste ändern sich nicht.
+            Speicherauslegungsergebnis d = TwwSpeicherauslegung.Rechnen(
+                e with { FuellstandBezugWahl = ZapfFuellstandbezug.VerfahrenDin4708 }, ps);
+            Assert.Equal(r.VolumenDinL, d.FuellstandBezugL);
+            Assert.Equal(ZapfFuellstandbezug.VerfahrenDin4708, d.FuellstandBezug);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltPunkt, d.FuellstandVorgabe);
+            Assert.Equal(r.DefizitKwh, d.DefizitKwh);
+            Assert.Equal(r.Verfahren.Select(v => v.VolumenL), d.Verfahren.Select(v => v.VolumenL));
+            Assert.Equal((r.BandMinL, r.BandMaxL, r.NenninhaltL), (d.BandMinL, d.BandMaxL, d.NenninhaltL));
+            Assert.Equal(r.Hinweise.Select(h => h.Code), d.Hinweise.Select(h => h.Code));
+            double csp = r.VolumenDinL.Value * FNUTZ * CW * DT / 1000.0;
+            Assert.True(Relativ(d.KapazitaetKwh.Value, csp) < 1e-12);
+
+            // Auch das nachrichtliche Verfahren trägt die Füllstandslinie.
+            Speicherauslegungsergebnis k = TwwSpeicherauslegung.Rechnen(
+                e with { FuellstandBezugWahl = ZapfFuellstandbezug.VerfahrenKlassisch }, ps);
+            Assert.Equal(r.VolumenKlassischL, k.FuellstandBezugL);
+            Assert.Equal(ZapfFuellstandbezug.VerfahrenKlassisch, k.FuellstandBezug);
+
+            // D_max = 0 (die Ladeleistung deckt jede Stundenlast): allein das profilbasierte Verfahren
+            // ist gesperrt, DIN und Gleichzeitigkeit tragen weiter ihr Volumen.
+            Speicherauslegungsergebnis o = TwwSpeicherauslegung.Rechnen(Eingang(ps, 100.0), ps);
+            Assert.Null(o.VolumenProfilL);
+            Assert.Equal("FUELLSTAND_GESPERRT_VERFAHREN_PROFIL",
+                         o.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenProfilbasiert).Kennung);
+            Assert.Equal("Das profilbasierte Verfahren liefert kein Volumen — die Ladeleistung deckt jede Stundenlast.",
+                         o.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenProfilbasiert).Klartext);
+            Assert.Null(o.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenDin4708));
+            Assert.Null(o.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenGleichzeitigkeit));
+
+            // Ohne gültigen Normvergleich und ohne Personenzahl: jedes Verfahren benannt gesperrt,
+            // und eine Wahl darauf fällt mit Hinweis auf die Vorgabe zurück (hier: keine).
+            Speicherauslegungsergebnis n = TwwSpeicherauslegung.Rechnen(
+                Eingang(ps, 100.0) with { Din = new Din4708Ergebnis(), Personen = null,
+                                          FuellstandBezugWahl = ZapfFuellstandbezug.VerfahrenDin4708 }, ps);
+            Assert.Equal("FUELLSTAND_GESPERRT_VERFAHREN_PROFIL",
+                         n.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenProfilbasiert).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_VERFAHREN_DIN",
+                         n.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenDin4708).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_VERFAHREN_GLF",
+                         n.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenGleichzeitigkeit).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH",
+                         n.Fuellstandsperre(ZapfFuellstandbezug.VerfahrenKlassisch).Kennung);
+            Assert.Null(n.FuellstandBezug);
+            Assert.Contains(n.Hinweise, h => h.Code == TwwSpeicherauslegung.HINWEIS_FUELLSTAND_BEZUG);
+        }
+
         [Fact]
         public void Auslegungstext_hat_eine_feste_Kultur()
         {
