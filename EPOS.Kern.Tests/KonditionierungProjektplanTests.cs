@@ -108,10 +108,11 @@ namespace EPOS.Kern.Tests
             int neu = io.Importieren(alt, "D1 Anhebung 151", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
                                      null, out string fehler);
             Assert.True(neu > 0, fehler);
-            // Der Bericht nennt die Anhebung 151 → 152; ein reiner DDL-Schritt bringt keine
-            // eigene Zeile, weil er an den Paketdaten nichts umformt.
+            // Der Bericht nennt die Anhebung von 151 auf den Zielstand (152 und jeder spätere
+            // Schritt); ein reiner DDL-Schritt bringt keine eigene Zeile, weil er an den
+            // Paketdaten nichts umformt.
             string von = KonditionierungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
-            string bis = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string bis = SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture);
             Assert.Contains(io.LetzterBericht,
                             z => z.Contains(von, StringComparison.Ordinal)
                                  && z.Contains(bis, StringComparison.Ordinal));
