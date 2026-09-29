@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using WindowsFormsApplication1;
@@ -116,7 +117,18 @@ namespace EPOS.Kern.Tests
             teile.AddRange(main.HeaderParts.Select(h => (OpenXmlElement)h.Header));
             teile.AddRange(main.FooterParts.Select(f => (OpenXmlElement)f.Footer));
             return teile.SelectMany(t => t.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
-                        .Select(p => p.InnerText).ToList();
+                        .Select(p => OhneUhrzeit(p.InnerText)).ToList();
+        }
+
+        /// <summary>
+        /// Der Zeitpunkt „Rechenstand: TT.MM.JJJJ hh:mm“ der Parameterzeile ist der Zeitpunkt des
+        /// Wirtschaftlichkeitslaufs; jeder der zwei Füllläufe rechnet neu. Fällt eine Minutengrenze
+        /// zwischen beide, unterschieden sich die Texte allein darin (Kern-Lauf 36569049971,
+        /// Absatz 149: 12:54 gegen 12:55). Der Vergleich gilt der Sprache, nicht der Uhr.
+        /// </summary>
+        private static string OhneUhrzeit(string text)
+        {
+            return Regex.Replace(text, @"\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}", "TT.MM.JJJJ hh:mm");
         }
     }
 }
