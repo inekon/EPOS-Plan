@@ -971,6 +971,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Reihenart.Linie, m.Reihen[0].Art);
             Assert.All(m.Reihen.Skip(1), r => Assert.Equal(Reihenart.Flaeche, r.Art));
 
+            // Die Summe begleitet den Stapel: Sie zeichnet ihre obere Huellkurve (dieselbe
+            // Treppe wie die Oberkante), und jede Schicht DECKT — ohne Abwandlung ihrer Rolle.
+            Assert.True(m.Reihen[0].Huelle);
+            Assert.All(m.Reihen.Skip(1), r => Assert.Null(r.Ton.Deckung));
+            Assert.All(m.Reihen.Skip(1), r => Assert.False(r.Huelle));
+
             double bezug = summe.Max();
             foreach (int h in new[] { 0, 7, 12, 4380, 8759 })
             {
@@ -988,10 +994,11 @@ namespace EPOS.Kern.Tests
             }
             Assert.InRange(m.Reihen[3].Werte.Max(), 99.999, 100.001);
 
-            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert.
+            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert - und keine Huelle.
             Zeichenmodell dauer = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
             Assert.All(dauer.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
+            Assert.All(dauer.Reihen, r => Assert.False(r.Huelle));
             Assert.Equal(17.0 / bezug * 100.0,
                          dauer.Reihen.Single(r => r.Name == "Prozess").Werte[100], 9);
 
@@ -1004,6 +1011,114 @@ namespace EPOS.Kern.Tests
             Zeichenmodell klein = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, null, 1.0);
             Assert.InRange(klein.Reihen[3].Werte.Max(), 99.999, 100.001);
+        }
+
+        // ---- Die Stufenregel des Stapels im Bild (Anwenderbefund 29.09.2026) ----------
+        //
+        // „Mit Summe überdeckt das Rot das Bild fast ganz; ohne Summe wirken Heizung und
+        // Brauchwasser blass und durchlöchert." Beides lässt sich im PNG zählen: Die
+        // Schichten stehen in REINEM Rot und Blau, die Summe in Schwarz. Jede Mischung
+        // daraus hat Grün 0 und Rot + Blau um 255; Weiß, das durchscheint, hebt Grün, und
+        // eine Summe, die durchscheint, senkt Rot + Blau.
+
+        /// <summary>
+        /// Eine gestapelte Ganglinie über ein Stundenjahr: Heizung mit Tageszickzack
+        /// (Nachtabsenkung, Morgenspitze), Brauchwasser als Spitzen morgens und abends. Mit
+        /// <paramref name="jahresgang"/> wandert die Heizung mit der Jahreszeit, ohne ihn ist
+        /// jeder Tag gleich — die Tagesspitzen und damit die Oberkante stehen dann waagrecht.
+        /// </summary>
+        private static byte[] DichterStapel(bool jahresgang)
+        {
+            const int N = 8760;
+            var heizung = new double[N];
+            var wasser = new double[N];
+            var summe = new double[N];
+            for (int h = 0; h < N; h++)
+            {
+                int stunde = h % 24;
+                double gang = stunde < 6 ? 0.2 : stunde < 9 ? 1.0 : 0.6;
+                double saison = jahresgang ? 0.6 + 0.4 * Math.Cos(2 * Math.PI * h / N) : 1.0;
+                heizung[h] = (20.0 + 12.0 * gang) * saison;
+                wasser[h] = stunde == 7 || stunde == 19 ? 10.0 : 0.0;
+                summe[h] = heizung[h] + wasser[h];
+            }
+            return ChartRenderer.GanglinieNormiert("Waermelast", new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Summe", summe, new SKColor(0, 0, 0),
+                                            ChartRenderer.Stapelart.Keine,
+                                            ChartRenderer.Strichart.Durchgezogen, 3f),
+                    new ChartRenderer.Reihe("Heizung", heizung, new SKColor(255, 0, 0),
+                                            ChartRenderer.Stapelart.Flaeche),
+                    new ChartRenderer.Reihe("Brauchwasser", wasser, new SKColor(0, 0, 255),
+                                            ChartRenderer.Stapelart.Flaeche)
+                },
+                "Anteil", ChartRenderer.Achse.Monate, false, null, summe.Max());
+        }
+
+        /// <summary>
+        /// Zählt im Stapel (Zeichenfläche 100…1200 × 110…470) je Bildpunktspalte ab drei
+        /// Bildpunkten unter der obersten Schichtfarbe bis zur Achse: alle Bildpunkte, die
+        /// mit Grün über 8 (Weiß scheint durch), mit Grün über 64 (ein Loch) und mit Rot +
+        /// Blau unter 230 (die Summe scheint durch).
+        /// </summary>
+        private static (int Gesamt, int Durchschein, int Loch, int Summe) Stapelbildpunkte(byte[] png)
+        {
+            int gesamt = 0, durchschein = 0, loch = 0, summe = 0;
+            using (SKBitmap bild = SKBitmap.Decode(png))
+                for (int x = 102; x < 1198; x++)
+                {
+                    int oben = -1;
+                    for (int y = 111; y < 468 && oben < 0; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        if (c.Green < 60 && (c.Red > 200 || c.Blue > 200)) oben = y;
+                    }
+                    if (oben < 0) continue;
+                    for (int y = oben + 3; y < 468; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        gesamt++;
+                        if (c.Green > 8) durchschein++;
+                        if (c.Green > 64) loch++;
+                        if (c.Red + c.Blue < 230) summe++;
+                    }
+                }
+            return (gesamt, durchschein, loch, summe);
+        }
+
+        /// <summary>
+        /// <b>Jede Schicht ist ein geschlossenes, DECKENDES Band, und die Summe scheint
+        /// nicht durch.</b> Bei gleichen Tagen steht die Oberkante waagrecht; dann ist
+        /// jeder Bildpunkt des Stapels reines Rot, reines Blau oder — an ihrer gemeinsamen
+        /// Kante — eine Mischung der beiden. Bis zur Stufenregel stand jeder siebte Wert
+        /// halbdeckend (Deckung 210) über einer Summenlinie, die je Bildpunktspalte die
+        /// ganze Spanne ihres Zickzacks füllte: Kein einziger Bildpunkt war rein.
+        /// </summary>
+        [Fact]
+        public void Dichter_Stapel_deckt_jede_Spalte_und_die_Summe_scheint_nicht_durch()
+        {
+            (int gesamt, int durchschein, int loch, int summe) = Stapelbildpunkte(DichterStapel(false));
+
+            Assert.True(gesamt > 200000, "der Stapel fuellt die Flaeche: " + gesamt);
+            Assert.Equal(0, loch);
+            Assert.Equal(0, durchschein);
+            Assert.Equal(0, summe);
+        }
+
+        /// <summary>
+        /// <b>Keine Löcher auch mit Jahresgang</b>: Die Tagesspitzen wechseln von Tag zu Tag,
+        /// die Oberkante springt an jeder Tagesgrenze. Kein Bildpunkt im Stapel ist ein Loch
+        /// (Grün über 64), und nur an den Kanten der Tagesstufen darf die Kantenglättung
+        /// den Hintergrund zu einem kleinen Teil zeigen — höchstens ein Prozent.
+        /// </summary>
+        [Fact]
+        public void Dichter_Stapel_mit_Jahresgang_hat_keine_Loecher()
+        {
+            (int gesamt, int durchschein, int loch, _) = Stapelbildpunkte(DichterStapel(true));
+
+            Assert.True(gesamt > 100000, "der Stapel fuellt die Flaeche: " + gesamt);
+            Assert.Equal(0, loch);
+            Assert.True(durchschein * 100 <= gesamt, durchschein + " von " + gesamt + " scheinen durch");
         }
 
         /// <summary>

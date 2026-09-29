@@ -1209,9 +1209,11 @@ else
                 // EINE STAPELSCHICHT NENNT IHREN EIGENEN BEITRAG, nicht ihre Oberkante:
                 // Werte ist die Summe bis einschliesslich dieser Schicht, Unten die
                 // darunter - die Differenz ist die Groesse, die ihr Legendenname meint.
+                // Dasselbe gilt fuer die KANTE einer ueberlagerten Stapelgruppe (eine
+                // Linie mit Unten, die Produktion ueber dem Bedarf).
                 double roh = r.Werte![index];
-                if (r.Art == Reihenart.Flaeche && r.Unten != null && index < r.Unten.Length
-                    && double.IsFinite(r.Unten[index]))
+                if ((r.Art == Reihenart.Flaeche || r.Art == Reihenart.Linie) && r.Unten != null
+                    && index < r.Unten.Length && double.IsFinite(r.Unten[index]))
                     roh -= r.Unten[index];
                 string wert = roh.ToString("0.###", CultureInfo.CurrentCulture);
                 teile.Add(string.IsNullOrEmpty(einheit)
@@ -1460,7 +1462,14 @@ else
     /// steht wieder der Vollpfad des Schreibers.</para>
     ///
     /// <para>Rohe Reihen bleiben unberührt: Ihr Vollpfad trägt schon jede
-    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt.</para>
+    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt. <b>Stapelschichten
+    /// und die Linien, die einen Stapel begleiten, sind nie roh</b>, sobald sie mehr
+    /// Werte führen, als die Fläche Bildpunktspalten hat — sie gehen als Treppe der
+    /// Stufenhöchstwerte in den Vollpfad (im Jahresbild je Tag), auch bis 8 760
+    /// Stützstellen und drei Reihen (Stufenregel des Stapels,
+    /// <c>Pfadregel.VollpfadRoh</c>). Sie werden deshalb ebenfalls nachgerechnet; im
+    /// Ausschnitt zeigen sie den Tagesgang je Spalte und, sobald je Spalte höchstens eine
+    /// Stunde steht, wieder jede Stunde.</para>
     /// </summary>
     private void Nachladen(int von, int bis, bool voll)
     {
@@ -1477,14 +1486,17 @@ else
         }
 
         int reihen = Modell.Reihen.Count;
+        int spalten = (int)Math.Max(1.0, Math.Round(Modell.Flaeche.Bild.Breite));
         var neu = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (Datenreihe r in Modell.Reihen)
         {
             int n = r.Werte is null ? 0 : r.Werte.Length;
             // EINE PUNKTWOLKE WIRD NIE GEBUENDELT (DG-E3-5) - ihr Vollpfad traegt schon
-            // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt.
-            if (n < 2 || r.Art == Reihenart.Punkte || Pfadregel.Roh(n, reihen)) continue;
+            // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt. Eine
+            // Stapelschicht oder Huellkurve mit mehr Werten als Spalten ist dagegen nie
+            // roh (Stufenregel des Stapels) - Pfadregel.VollpfadRoh sagt beides.
+            if (n < 2 || Pfadregel.VollpfadRoh(r, reihen, spalten)) continue;
 
             neu[r.Name ?? ""] =
                 SvgSchreiber.Reihenpfad(r, Modell.Flaeche, von, bis, true);

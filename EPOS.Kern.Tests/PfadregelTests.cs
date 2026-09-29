@@ -226,5 +226,135 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, oben.Count);
             Assert.Equal(new[] { 4f, 1f, 7f }, oben.Select(p => p.Y).ToArray());
         }
+
+        // =====================================================================
+        // 4 — Die Stufenregel des Stapels
+        // =====================================================================
+
+        /// <summary>Eine Stapelschicht (Flaeche mit Unterkante) aus n Werten.</summary>
+        private static Datenreihe Schicht(int n)
+            => new Datenreihe("S", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, new double[n],
+                              null, Reihenart.Flaeche, new double[n]);
+
+        /// <summary>
+        /// <b>Im Jahresbild ist die Stufe der TAG</b>: 8 760 Stunden auf 1 100 Spalten sind
+        /// rund drei Spalten je Tag. Je Spalte gebuendelt, wechselten Nachbarspalten zwischen
+        /// Tagesspitze und Tagestief, und der Stapel stuende als Streifen da. Die Stufen
+        /// schliessen lueckenlos von der ersten bis zur letzten Stuetzstelle aneinander.
+        /// </summary>
+        [Fact]
+        public void ImJahresbildIstDieStufeDerTag()
+        {
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(8760, 0, 8760, 1100);
+
+            Assert.Equal(365, stufen.Count);
+            Assert.All(stufen, s => Assert.Equal(23, s.Bis - s.Von));
+            Assert.Equal(0.0, stufen[0].Links);
+            Assert.Equal(1.0, stufen[364].Rechts);
+            for (int s = 1; s < stufen.Count; s++)
+            {
+                Assert.Equal(stufen[s - 1].Bis + 1, stufen[s].Von);
+                Assert.Equal(stufen[s - 1].Rechts, stufen[s].Links);
+            }
+
+            // Dasselbe fuer ein Viertelstundenjahr: 96 Werte je Tag.
+            IReadOnlyList<Stufe> viertel = Pfadregel.Stufen(35040, 0, 35040, 1100);
+            Assert.Equal(365, viertel.Count);
+            Assert.All(viertel, s => Assert.Equal(95, s.Bis - s.Von));
+        }
+
+        /// <summary>
+        /// <b>Ab <c>TAG_MIN_SPALTEN</c> Spalten je Tag ist die Stufe die Bildpunktspalte</b>
+        /// (etwa ab dem vierfachen Zoom): Dann zeichnet sie den Tagesgang als Kurve ueber
+        /// mehrere Stufen. Eine Reihe ohne festes Jahresraster buendelt immer je Spalte.
+        /// </summary>
+        [Fact]
+        public void AbVierSpaltenJeTagIstDieStufeDieSpalte()
+        {
+            // 2 191 Stunden auf 1 100 Spalten: 12 Spalten je Tag.
+            IReadOnlyList<Stufe> gezoomt = Pfadregel.Stufen(8760, 500, 2191, 1100);
+            Assert.Equal(1100, gezoomt.Count);
+            Assert.All(gezoomt, s => Assert.InRange(s.Bis - s.Von + 1, 1, 3));
+
+            IReadOnlyList<Stufe> frei = Pfadregel.Stufen(20000, 0, 20000, 100);
+            Assert.Equal(100, frei.Count);
+            Assert.Equal(20000, frei.Sum(s => s.Bis - s.Von + 1));
+
+            Assert.Equal(4, Pfadregel.TAG_MIN_SPALTEN);
+            Assert.Equal(24, Pfadregel.WerteJeTag(8760));
+            Assert.Equal(96, Pfadregel.WerteJeTag(35040));
+            Assert.Equal(0, Pfadregel.WerteJeTag(8761));
+        }
+
+        /// <summary>
+        /// <b>Die Tage stehen auf dem Jahresanfang, nicht auf dem Ausschnitt</b>: Beginnt ein
+        /// Ausschnitt um 6 Uhr, endet seine erste Stufe um Mitternacht.
+        /// </summary>
+        [Fact]
+        public void DieTageStehenAufDemJahresanfang()
+        {
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(8760, 30, 8000, 400);
+
+            Assert.Equal(0, stufen[0].Von);
+            Assert.Equal(17, stufen[0].Bis);          // Stunden 30 … 47
+            Assert.Equal(18, stufen[1].Von);          // Stunde 48 = Tag 2, 0 Uhr
+            Assert.Equal(18.0 / 7999, stufen[1].Links, 12);
+        }
+
+        /// <summary>
+        /// <b>Hoechstwerte und Treppe</b>: je Stufe der groesste endliche Wert; die Treppe
+        /// steht je Stufe waagrecht und springt an der Grenze senkrecht — gleiche
+        /// Nachbarn ergeben keinen Zwischenpunkt.
+        /// </summary>
+        [Fact]
+        public void HoechstwerteUndTreppe()
+        {
+            var werte = new double[] { 1, 5, 2, double.NaN, 3, 3, 9, 4 };
+            var stufen = new List<Stufe>
+            {
+                new Stufe(0, 1, 0.00, 0.25), new Stufe(2, 3, 0.25, 0.50),
+                new Stufe(4, 5, 0.50, 0.75), new Stufe(6, 7, 0.75, 1.00)
+            };
+
+            double[] hoechst = Pfadregel.Hoechstwerte(werte, stufen);
+            Assert.Equal(new[] { 5.0, 2.0, 3.0, 9.0 }, hoechst);
+
+            IReadOnlyList<(double Anteil, double Wert)> treppe = Pfadregel.Treppe(stufen, hoechst);
+            Assert.Equal(new (double, double)[]
+            {
+                (0.00, 5.0), (0.25, 5.0), (0.25, 2.0), (0.50, 2.0), (0.50, 3.0),
+                (0.75, 3.0), (0.75, 9.0), (1.00, 9.0)
+            }, treppe.ToArray());
+
+            // Gleiche Nachbarn: eine einzige waagrechte Kante.
+            Assert.Equal(new (double, double)[] { (0.0, 4.0), (1.0, 4.0) },
+                         Pfadregel.Treppe(stufen, new[] { 4.0, 4.0, 4.0, 4.0 }).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Welche Reihe in Stufen geht</b>: eine Stapelschicht oder eine Hüllkurve mit
+        /// mehr Werten als Spalten — auch unter der Rohgrenze. Ihr Vollpfad ist dann nie
+        /// roh, und die Oberflaeche rechnet ihn beim Zoom nach; eine gewoehnliche Linie und
+        /// eine Punktwolke bleiben, wie sie waren.
+        /// </summary>
+        [Fact]
+        public void StapelschichtUndHuelleGehenInStufen()
+        {
+            Datenreihe schicht = Schicht(8760);
+            Datenreihe linie = new Datenreihe("L", Farbton.Aus(Farbrolle.BEDARF), 2f, null, new double[8760]);
+            Datenreihe huelle = linie with { Huelle = true };
+            Datenreihe punkte = linie with { Art = Reihenart.Punkte, XWerte = new double[8760] };
+
+            Assert.True(Pfadregel.Spaltenweise(schicht, 8760, 1100));
+            Assert.False(Pfadregel.Spaltenweise(schicht, 1000, 1100));      // nicht dicht: jede Stunde
+            Assert.True(Pfadregel.Spaltenweise(huelle, 8760, 1100));
+            Assert.False(Pfadregel.Spaltenweise(linie, 8760, 1100));
+
+            Assert.False(Pfadregel.VollpfadRoh(schicht, 3, 1100));
+            Assert.False(Pfadregel.VollpfadRoh(huelle, 3, 1100));
+            Assert.True(Pfadregel.VollpfadRoh(linie, 3, 1100));
+            Assert.False(Pfadregel.VollpfadRoh(linie, 4, 1100));
+            Assert.True(Pfadregel.VollpfadRoh(punkte, 9, 1100));
+        }
     }
 }

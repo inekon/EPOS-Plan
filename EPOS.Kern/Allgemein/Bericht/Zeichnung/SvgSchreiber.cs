@@ -673,6 +673,17 @@ namespace WindowsFormsApplication1.Zeichnung
             int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
             var sb = new StringBuilder(laenge * 12 + 16);
 
+            // DIE STUFENREGEL DES STAPELS: Eine Stapelschicht oder eine Linie, die einen
+            // Stapel begleitet, geht mit mehr Werten als Bildpunktspalten als TREPPE der
+            // Stufenhoechstwerte in den Pfad - ob roh oder gebuendelt verlangt ist. Roh
+            // stuenden acht Stunden in einer Spalte, und der Browser deckte den Zickzack
+            // nur anteilig (Kopf der Stufenregel in Pfadregel).
+            if (Pfadregel.Spaltenweise(reihe, laenge, spalten))
+            {
+                Stufentreppe(sb, reihe, rf, schritt, ab, biss, laenge, spalten, hoehe, spanne);
+                return sb.ToString();
+            }
+
             if (reihe.Art == Reihenart.Flaeche)
             {
                 Flaechenzug(sb, reihe, rf, ab, laenge, roh, spalten, hoehe, spanne);
@@ -834,6 +845,38 @@ namespace WindowsFormsApplication1.Zeichnung
             for (int i = kanteUnten.Count - 1; i >= 0; i--)
                 Punkt(sb, false, XStelle(r, rf, schritt, ab + kanteUnten[i].X),
                       Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
+            sb.Append(" Z");
+        }
+
+        /// <summary>
+        /// <b>Die Treppe einer Stapelschicht oder Hüllkurve</b> (Stufenregel in
+        /// <see cref="Pfadregel"/>): je Stufe — ein Tag im Jahresbild, sonst eine
+        /// Bildpunktspalte — der Höchstwert als waagrechte Kante, von der ersten bis zur
+        /// letzten Stützstelle des Ausschnitts. Eine Schicht schließt mit der Treppe ihrer
+        /// Unterkante rückwärts und <c>Z</c> — dieselbe Regel auf dieselben Zahlen wie die
+        /// Oberkante der Schicht darunter, also genau deren Kante. Eine Linie bleibt offen.
+        /// </summary>
+        private static void Stufentreppe(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                         int ab, int biss, int laenge, int spalten,
+                                         double hoehe, double spanne)
+        {
+            double x0 = XStelle(r, rf, schritt, ab);
+            double breite = XStelle(r, rf, schritt, biss) - x0;
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(r.Werte.Length, ab, laenge, spalten);
+
+            IReadOnlyList<(double Anteil, double Wert)> oben =
+                Pfadregel.Treppe(stufen, Pfadregel.Hoechstwerte(Teil(r.Werte, ab, laenge), stufen));
+            for (int i = 0; i < oben.Count; i++)
+                Punkt(sb, i == 0, x0 + breite * oben[i].Anteil, Bildpunkt(oben[i].Wert, rf, hoehe, spanne));
+
+            if (r.Art != Reihenart.Flaeche) return;
+
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+            double[] unterkante = r.Unten == null ? Gleichwert(laenge, null0) : Teil(r.Unten, ab, laenge);
+            IReadOnlyList<(double Anteil, double Wert)> unten =
+                Pfadregel.Treppe(stufen, Pfadregel.Hoechstwerte(unterkante, stufen));
+            for (int i = unten.Count - 1; i >= 0; i--)
+                Punkt(sb, false, x0 + breite * unten[i].Anteil, Bildpunkt(unten[i].Wert, rf, hoehe, spanne));
             sb.Append(" Z");
         }
 

@@ -37,6 +37,14 @@ namespace WindowsFormsApplication1.Zeichnung
         public float Unten => Y + Hoehe;
     }
 
+    /// <summary>
+    /// <b>Eine Stufe der Stufenregel des Stapels</b> (<see cref="Pfadregel.Stufen"/>): die
+    /// Werte <paramref name="Von"/> bis <paramref name="Bis"/> eines Ausschnitts (Index,
+    /// einschließlich), gezeichnet als EINE waagrechte Kante von <paramref name="Links"/>
+    /// bis <paramref name="Rechts"/> — beides Anteile 0 … 1 der Breite des Ausschnitts.
+    /// </summary>
+    public readonly record struct Stufe(int Von, int Bis, double Links, double Rechts);
+
     /// <summary>Die Form des Strichendes (Skia: <c>SKStrokeCap</c>).</summary>
     public enum Strichkappe { Stumpf = 0, Rund = 1, Quadratisch = 2 }
 
@@ -312,7 +320,10 @@ namespace WindowsFormsApplication1.Zeichnung
     /// <param name="Unten">
     /// Die UNTERKANTE einer Fläche, Stützstelle für Stützstelle — die Summe der
     /// Schichten darunter. <c>null</c> = die Achsennull, in das Fenster geklemmt.
-    /// Bei einer <see cref="Reihenart.Linie"/> ohne Bedeutung.
+    /// Bei einer <see cref="Reihenart.Linie"/> zeichnet sie nichts: Dort ist die Linie die
+    /// KANTE einer überlagerten Stapelschicht (<c>Werte</c> die Summe bis einschließlich der
+    /// Schicht), und <c>Unten</c> die Summe darunter — die Oberfläche nennt am Zeiger die
+    /// Differenz, den Beitrag der Schicht.
     /// </param>
     /// <param name="Randton">
     /// Die Farbe der RANDLINIE einer Fläche; <c>null</c> = ohne Strich. Sie steht neben
@@ -341,6 +352,14 @@ namespace WindowsFormsApplication1.Zeichnung
     /// <see cref="Achsenseite.Rechts"/> für die Reihen der zweiten Achse, damit die
     /// Oberfläche ihre Einheit nicht mehr aus der y-Spanne erraten muss.
     /// </param>
+    /// <param name="Huelle">
+    /// <b>Die Linie begleitet einen Stapel</b> (die Summe, die Kontur, der Bedarf über den
+    /// Erzeugern). Führt sie mehr Stützstellen als die Zeichenfläche Bildpunktspalten hat,
+    /// zeichnet sie je Stufe ihren HÖCHSTWERT (<see cref="Pfadregel.Stufen"/>) — dieselbe
+    /// Treppe wie die Oberkante der Stapelschichten. So liegt sie als Kante auf dem Stapel,
+    /// statt je Spalte die ganze Spanne ihres Zickzacks zu füllen und die Schichten zu
+    /// überdecken. Vorgabe <c>false</c>: jede andere Linie bleibt, wie sie war.
+    /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
                                     Strichmuster Muster, double[] Werte,
                                     Datenfenster Fenster = null,
@@ -349,7 +368,8 @@ namespace WindowsFormsApplication1.Zeichnung
                                     Farbton Randton = null,
                                     double[] XWerte = null,
                                     string Einheit = null,
-                                    Achsenseite Achsenseite = Zeichnung.Achsenseite.Links)
+                                    Achsenseite Achsenseite = Zeichnung.Achsenseite.Links,
+                                    bool Huelle = false)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
@@ -370,6 +390,7 @@ namespace WindowsFormsApplication1.Zeichnung
             if (!Equals(Randton, andere.Randton)) return false;
             if (!string.Equals(Einheit, andere.Einheit, StringComparison.Ordinal)) return false;
             if (Achsenseite != andere.Achsenseite) return false;
+            if (Huelle != andere.Huelle) return false;
             if (!Werteliste(Werte, andere.Werte)) return false;
             if (!Werteliste(XWerte, andere.XWerte)) return false;
             return Werteliste(Unten, andere.Unten);
@@ -488,6 +509,204 @@ namespace WindowsFormsApplication1.Zeichnung
                 punkte.Add(new Punkt(treffer, (float)werte[treffer]));
                 start = ende;
             }
+            return punkte;
+        }
+
+        // =================================================================
+        // DIE STUFENREGEL DES STAPELS
+        //
+        // Ein Stundenjahr hat 8 760 Werte, die Zeichenflaeche 1 100 Bildpunkt-
+        // spalten: Auf jede Spalte fallen acht Stunden. Zeichnet eine Schicht
+        // jede Stunde, zickzackt ihre Kante innerhalb der Spalte, und die
+        // Kantenglaettung deckt dort jeden Bildpunkt nur zu dem Anteil der
+        // Stunden, in denen die Schicht ihn erreicht - die Baender werden blass
+        // und loechrig, eine Linie fuellt die ganze Spanne ihres Zickzacks.
+        //
+        // Die Regel: Eine Stapelschicht und eine Linie, die einen Stapel
+        // begleitet (Datenreihe.Huelle), zeichnen bei mehr Werten als Bildpunkt-
+        // spalten je STUFE ihren HOECHSTWERT als waagrechte Kante. Beide Kanten
+        // einer Schicht nehmen dieselbe Regel - die Unterkante einer Schicht ist
+        // die Oberkante der darunter, Wert fuer Wert dieselbe Zahl -, also teilen
+        // Nachbarschichten ihre Kante genau: keine Luecke, keine Ueberlappung,
+        // jede Stufe bis zur Oberkante voll gedeckt. Die Oberkante des Stapels ist
+        // je Stufe die Spitze der Summe; eine Linie der Summe liegt genau darauf.
+        //
+        // DIE STUFE IST DER TAG, solange ein Tag schmaler ist als TAG_MIN_SPALTEN
+        // Bildpunktspalten - im Jahresbild rund drei. Je Spalte gebuendelt,
+        // wechselten Nachbarspalten zwischen Tagesspitze und Tagestief (drei
+        // Spalten je Tag), und der Stapel stuende als Streifen da. Ab vier Spalten
+        // je Tag (etwa ab dem vierfachen Zoom) ist die Stufe die Bildpunktspalte:
+        // Dann zeichnet sie den Tagesgang als Kurve ueber mehrere Stufen. Den Tag
+        // kennen nur die festen Jahresraster (8 760 Stunden, 35 040
+        // Viertelstunden); jede andere Reihe buendelt je Spalte.
+        // =================================================================
+
+        /// <summary>
+        /// Ab so vielen Bildpunktspalten je Tag bündelt die Stufenregel wieder je
+        /// SPALTE statt je Tag (Kopf der Stufenregel): Dann steht der Tagesgang als Kurve
+        /// über mehreren Stufen und nicht als Streifen.
+        /// </summary>
+        public const int TAG_MIN_SPALTEN = 4;
+
+        /// <summary>
+        /// Die Werte je Tag eines festen Jahresrasters — 24 bei 8 760 Stunden, 96 bei
+        /// 35 040 Viertelstunden; <c>0</c> für jede andere Länge (kein Tagesraster).
+        /// </summary>
+        public static int WerteJeTag(int gesamt) => gesamt == 8760 ? 24 : gesamt == 35040 ? 96 : 0;
+
+        /// <summary>
+        /// <b>Ist die Reihe eine Stapelschicht?</b> Eine Fläche mit Unterkante — die
+        /// Schichten der Stapelbilder tragen die Summe darunter als <c>Unten</c>, die
+        /// unterste eine Nullreihe. Das Profilband und die Flächen, die auf der
+        /// Achsennull schließen (<c>Unten</c> ist <c>null</c>), gehören nicht dazu.
+        /// </summary>
+        public static bool IstStapelschicht(Datenreihe reihe)
+            => reihe != null && reihe.Art == Reihenart.Flaeche && reihe.Unten != null;
+
+        /// <summary>
+        /// <b>Wird die Reihe in Stufen gezeichnet?</b> Eine Stapelschicht oder eine
+        /// Linie, die einen Stapel begleitet (<see cref="Datenreihe.Huelle"/>), mit
+        /// gleichmäßigen Stützstellen (ohne <c>XWerte</c>) — und nur, wenn sie MEHR Werte
+        /// führt, als die Fläche Bildpunktspalten hat. Sonst steht jede Stützstelle.
+        /// </summary>
+        /// <param name="reihe">Die Reihe.</param>
+        /// <param name="stuetzstellen">Die Zahl der gezeichneten Werte (im Ausschnitt dessen Länge).</param>
+        /// <param name="spalten">Die Bildpunktspalten der Zeichenfläche.</param>
+        public static bool Spaltenweise(Datenreihe reihe, int stuetzstellen, int spalten)
+            => reihe != null && (IstStapelschicht(reihe) || reihe.Huelle)
+               && reihe.XWerte == null && spalten >= 1 && stuetzstellen > spalten;
+
+        /// <summary>
+        /// <b>Trägt der VOLLPFAD der Reihe jede Stützstelle?</b> Dann rechnet die
+        /// Oberfläche beim Zoom nichts nach — der Ausschnitt wäre genau sein Stück. Eine
+        /// Punktwolke ist immer roh (DG-E3-5), eine in Stufen gezeichnete Reihe nie;
+        /// jede andere nach <see cref="Roh"/>.
+        /// </summary>
+        /// <param name="reihe">Die Reihe.</param>
+        /// <param name="reihen">Die Zahl der Reihen des Bildes.</param>
+        /// <param name="spalten">Die Bildpunktspalten der Zeichenfläche.</param>
+        public static bool VollpfadRoh(Datenreihe reihe, int reihen, int spalten)
+        {
+            if (reihe == null || reihe.Art == Reihenart.Punkte) return true;
+            int n = reihe.Werte == null ? 0 : reihe.Werte.Length;
+            if (Spaltenweise(reihe, n, spalten)) return false;
+            return Roh(n, reihen);
+        }
+
+        /// <summary>
+        /// Die Bildpunktspalte der Stützstelle <paramref name="i"/> von
+        /// <paramref name="n"/>: Die Stützstellen liegen gleichmäßig von der linken bis
+        /// zur rechten Kante der Fläche, Stelle <c>i</c> bei <c>i · spalten / (n − 1)</c>
+        /// Bildpunkten; die letzte zählt zur letzten Spalte.
+        /// </summary>
+        public static int Spalte(int i, int n, int spalten)
+        {
+            if (n <= 1 || spalten <= 1) return 0;
+            long c = (long)i * spalten / (n - 1);
+            return c >= spalten ? spalten - 1 : c < 0 ? 0 : (int)c;
+        }
+
+        /// <summary>
+        /// <b>Die Stufen eines Ausschnitts</b> (Kopf der Stufenregel): je Tag, solange ein
+        /// Tag schmaler als <see cref="TAG_MIN_SPALTEN"/> Bildpunktspalten ist und die
+        /// Reihe ein festes Jahresraster führt, sonst je Bildpunktspalte. Jede Stufe nennt
+        /// ihren ersten und letzten Wert (Index im Ausschnitt, einschließlich) und ihre
+        /// linke und rechte Grenze als Anteil 0 … 1 der Breite des Ausschnitts — von der
+        /// ersten bis zur letzten Stützstelle. Die Stufen schließen lückenlos aneinander.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der GANZEN Reihe (sie sagt das Tagesraster).</param>
+        /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe (die Tage
+        /// stehen auf dem Jahresanfang, nicht auf dem Ausschnitt).</param>
+        /// <param name="laenge">Die Werte des Ausschnitts.</param>
+        /// <param name="spalten">Die Bildpunktspalten, über die der Ausschnitt reicht.</param>
+        public static IReadOnlyList<Stufe> Stufen(int gesamt, int ab, int laenge, int spalten)
+        {
+            var stufen = new List<Stufe>();
+            if (laenge <= 0) return stufen;
+            if (laenge == 1 || spalten < 1)
+            {
+                stufen.Add(new Stufe(0, laenge - 1, 0.0, 1.0));
+                return stufen;
+            }
+
+            double schritt = laenge - 1;
+            int jeTag = WerteJeTag(gesamt);
+            if (jeTag > 0 && (long)jeTag * spalten < (long)TAG_MIN_SPALTEN * (laenge - 1))
+            {
+                int letzter = ab + laenge - 1;
+                for (int tag = ab / jeTag; (long)tag * jeTag <= letzter; tag++)
+                {
+                    int von = Math.Max(ab, tag * jeTag);
+                    int bis = Math.Min(letzter, (tag + 1) * jeTag - 1);
+                    int grenze = Math.Min(letzter, (tag + 1) * jeTag);
+                    stufen.Add(new Stufe(von - ab, bis - ab, (von - ab) / schritt, (grenze - ab) / schritt));
+                }
+                return stufen;
+            }
+
+            int start = 0;
+            while (start < laenge)
+            {
+                int spalte = Spalte(start, laenge, spalten);
+                int ende = start;
+                while (ende + 1 < laenge && Spalte(ende + 1, laenge, spalten) == spalte) ende++;
+                stufen.Add(new Stufe(start, ende, (double)spalte / spalten, (double)(spalte + 1) / spalten));
+                start = ende + 1;
+            }
+            return stufen;
+        }
+
+        /// <summary>
+        /// <b>Je Stufe der HÖCHSTWERT</b> — die Kante einer Stapelschicht oder einer
+        /// Hüllkurve (Kopf der Stufenregel). Nicht endliche Werte zählen nicht; eine Stufe
+        /// ohne endlichen Wert steht auf null.
+        /// </summary>
+        /// <param name="werte">Die Werte des Ausschnitts in Datenkoordinaten.</param>
+        /// <param name="stufen">Die Stufen (<see cref="Stufen"/>).</param>
+        public static double[] Hoechstwerte(double[] werte, IReadOnlyList<Stufe> stufen)
+        {
+            if (stufen == null) return new double[0];
+            var hoechst = new double[stufen.Count];
+            for (int s = 0; s < stufen.Count; s++)
+            {
+                bool belegt = false;
+                for (int i = stufen[s].Von; i <= stufen[s].Bis && werte != null && i < werte.Length; i++)
+                {
+                    double w = werte[i];
+                    if (double.IsNaN(w) || double.IsInfinity(w)) continue;
+                    if (!belegt || w > hoechst[s])
+                    {
+                        hoechst[s] = w;
+                        belegt = true;
+                    }
+                }
+            }
+            return hoechst;
+        }
+
+        /// <summary>
+        /// <b>Die Treppe der Stufenhöchstwerte</b> als Punktfolge von links nach rechts:
+        /// je Stufe eine waagrechte Kante von ihrer linken zu ihrer rechten Grenze, an der
+        /// Grenze zweier Stufen mit verschiedenen Werten ein senkrechter Sprung. Gleiche
+        /// Nachbarwerte ergeben keinen Zwischenpunkt. <c>Anteil</c> ist die Lage des
+        /// Punktes als Anteil 0 … 1 der Breite, <c>Wert</c> der Wert der Stufe.
+        /// </summary>
+        /// <param name="stufen">Die Stufen (<see cref="Stufen"/>).</param>
+        /// <param name="hoechstwerte">Die Werte je Stufe (<see cref="Hoechstwerte"/>).</param>
+        public static IReadOnlyList<(double Anteil, double Wert)> Treppe(IReadOnlyList<Stufe> stufen,
+                                                                         double[] hoechstwerte)
+        {
+            var punkte = new List<(double, double)>();
+            if (stufen == null || hoechstwerte == null || stufen.Count == 0
+                || hoechstwerte.Length < stufen.Count) return punkte;
+            punkte.Add((stufen[0].Links, hoechstwerte[0]));
+            for (int s = 1; s < stufen.Count; s++)
+            {
+                if (hoechstwerte[s].Equals(hoechstwerte[s - 1])) continue;
+                punkte.Add((stufen[s].Links, hoechstwerte[s - 1]));
+                punkte.Add((stufen[s].Links, hoechstwerte[s]));
+            }
+            punkte.Add((stufen[stufen.Count - 1].Rechts, hoechstwerte[stufen.Count - 1]));
             return punkte;
         }
     }
