@@ -1,0 +1,13 @@
+<includeonly><div style="display:flex;flex-wrap:wrap;gap:4px 14px;font-size:0.82em;margin-top:0.5em;color:var(--epos-text-2)">{{#if:{{{umwelt|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|umwelt}}"></span>{{{umwelt}}}</span>}}{{#if:{{{waerme|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|waerme}}"></span>{{{waerme}}}</span>}}{{#if:{{{solar|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|solar}}"></span>{{{solar}}}</span>}}{{#if:{{{bhkw|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|bhkw}}"></span>{{{bhkw}}}</span>}}{{#if:{{{kessel|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|kessel}}"></span>{{{kessel}}}</span>}}{{#if:{{{strom|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|strom}}"></span>{{{strom}}}</span>}}{{#if:{{{speicher|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|speicher}}"></span>{{{speicher}}}</span>}}{{#if:{{{kaelte|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|kaelte}}"></span>{{{kaelte}}}</span>}}{{#if:{{{netz|}}}|<span><span style="display:inline-block;width:0.9em;height:0.9em;border-radius:2px;margin-right:4px;vertical-align:-0.1em;background:{{Diagrammfarbe|netz}}"></span>{{{netz}}}</span>}}</div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Legende
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Legende.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Legende ==
+
+Farbzeichen mit Beschriftung unter einem Diagramm. Je Rolle aus [[Vorlage:Diagrammfarbe]] ein Parameter; sein Wert ist die Beschriftung. Die Reihenfolge ist dieselbe wie in [[Vorlage:Säule]].
+
+=== Beispiel ===
+
+<pre>
+{{Legende|waerme=Wärmepumpe|kessel=Spitzenkessel|strom=Heizstab}}
+</pre>
+</noinclude>

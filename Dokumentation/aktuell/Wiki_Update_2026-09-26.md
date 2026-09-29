@@ -8,6 +8,33 @@ Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Re
 Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
 Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
 
+**Zweiter Sammel-Upload 29.09.2026, Revisionen 711–723** — 22:01–22:03 UTC (30.09. 00:01–00:03 Uhr) durch die
+Orchestrierung (Cloud-Sitzung Berichterstellung, Benutzer Epos, Bot-Passwort vom Anwender neu erzeugt) mit demselben
+Skript, Quellen im Stand `07d7440a`: 12 Seiten (10 ersetzt, 2 neu) und das Update-Logbuch mit „Version 1.2.6 –
+September 2026“ (4 Sätze) und „Version 1.2.0.5 – September 2026“ (51 Sätze) vor 1.2.0.4; Rücklese byte-gleich,
+0 Parse-Warnungen, Dateien und Weiterleitungen unverändert. Vorprüfung nach Regel 3: Die letzte Revision jeder der
+zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Seiten aus `seiten.tsv` gleich ihrer
+Repo-Quelle. Statuszeile #614.
+
+**Nach dem Sammel-Upload #614 geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten Upload:**
+Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“).
+
+| Seite | Revision |
+|---|---|
+| Programm Dokumentation/Simulationsergebnisse | 711 |
+| Programm Dokumentation/Hilfe-Assistent | 712 |
+| Programm Dokumentation/Wirtschaftlichkeit | 713 |
+| Programm Dokumentation/Kosten | 714 |
+| Programm Dokumentation/Gerätekataloge | 715 |
+| Programm Dokumentation/Simulation | 716 |
+| Programm Dokumentation/Varianten | 717 |
+| Programm Dokumentation/Gebäude | 718 |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | 719 |
+| Programm Dokumentation/Berichtsvorlagen | 720 |
+| Programm Dokumentation/Mehrzonenmodell (neu) | 721 |
+| Programm Dokumentation/Projekttransfer (neu) | 722 |
+| Update-Logbuch | 723 |
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -68,15 +95,15 @@ dem eigentlichen Hochladen der Seite ist er mitzunehmen.
 **Nach dem Sammel-Upload (#556) geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten
 Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solarkollektors entfernt;
 #559: Bereitschaftsverlust des Heizkessels in kW; #567: Leerhinweis an Tracker/Stränge/max.
-Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird),
+Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
-#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter),
-Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration),
+#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
+Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
-Rückfallspreizung ohne Temperaturpaar),
+Rückfallspreizung ohne Temperaturpaar; hochgeladen 28.09.2026 mit #611),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
@@ -84,7 +111,7 @@ Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße d
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
-Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“),
+Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; hochgeladen 28.09.2026 mit #611),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
 mit derselben Vorlage und Prüfung),
@@ -94,28 +121,46 @@ Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungs
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
 noch nicht gespeichertes Gebäude aus dem Arbeitsstand),
-Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt),
+Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt; hochgeladen 28.09.2026 mit #611),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
-Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
+Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
 nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
 zurück, mit allen Umrechnungen der Register 62–92).
 
+**Abgleich mit dem Upload vom 28.09.2026 (#611).** Die Technikdokumentation hat am 28.09.2026 die
+Seiten ihrer Welle hochgeladen und dabei Seiten der Hauptlinie im Stand `363096aa` mitgenommen.
+Erledigt sind damit Kühlung, Pufferspeicher, Photovoltaik und die Rechenwegseiten Wärmebedarf,
+Prozesswärme und Strombedarf. Gerätekataloge und Simulation stehen mit dem Stand `363096aa`
+online; ihre späteren Änderungen der Hauptlinie bleiben ausstehend. Nicht hochgeladen und
+unverändert ausstehend sind Simulationsergebnisse, Wirtschaftlichkeit, Gebäude,
+Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
+
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
+
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Ein neuer Satz gehört in einen
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.6
+### Version 1.2.0.6 — nicht veröffentlicht
+
+Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
+
+- Ein Katalogpaket der Brauchwasser-Nutzungsarten darf die Spalte ‚Katalogversion‘ weglassen; seine Zeilen treten dann der Katalogversion des Katalogs bei, in den sie kommen. (#615)
+
+### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
 Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
 
 - Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
 - Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
 - Dialoge mit mehreren Hilfeknöpfen bieten den Hilfe-Assistenten nur noch einmal an, am Hilfeknopf im Dialogkopf. (#610)
+- Im Variantenvergleich der Wirtschaftlichkeit trägt der Netzbezug eines Standes ohne stromverwendenden Erzeuger Arbeits- und Grundpreis, aber keinen Leistungspreis; ein Hinweis nennt den Leistungspreis des Stromträgers. (#612; Anwenderentscheid 29.09.2026: „aktuelle Version“)
 
-### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
+### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.), veröffentlicht 29.09.2026 (Revision 723)
 
 Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload dieses Tages ist
 1.2.0.4, alle Sätze der Dialogdesign-Sitzung erscheinen unter 1.2.0.5. Ein Satz je Auftrag
@@ -171,6 +216,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 - Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)
 - Die Häkchen der Berichtsbausteine wirken auch auf die Blätter der Excel-Mappe und richten sich nach der gewählten Excel-Vorlage. (#607)
+- Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.

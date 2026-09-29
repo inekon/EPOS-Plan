@@ -198,6 +198,16 @@ namespace WindowsFormsApplication1
             BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
 
         /// <summary>
+        /// Der Schluessel des DRITTEN Infoknopfs — der Weg in die Wiki-Rubrik
+        /// „Grundlagen" (Konzept Technikdokumentation, Abschnitt 7). Er sitzt neben
+        /// dem Berechnungsknopf; sein Ziel steht als Seitenpfad in
+        /// <c>help_mapping.txt</c>. Anders als beim Rechenweg hat der Wechselrichter
+        /// eine EIGENE Grundlagenseite (<c>/wiki/Grundlagen/Wechselrichter</c>).
+        /// Sprachneutral; leer = kein Knopf.
+        /// </summary>
+        public string GrundlagenSchluessel { get; private set; }
+
+        /// <summary>
         /// <b>Die Spalten der Liste</b> (Anwenderentscheid <b>W14a-E-10</b> vom
         /// 07.09.2026) - <see cref="Katalogfilterprofil"/> zur passenden
         /// <see cref="Anlagenart"/>.
@@ -326,6 +336,7 @@ namespace WindowsFormsApplication1
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_SPEICHER"),
                         HilfeSchluessel = "Form_AdminStromspeicher.btn_Help",
                         BerechnungsSchluessel = "Form_AdminStromspeicher.Berechnung",
+                        GrundlagenSchluessel = "Form_AdminStromspeicher.Grundlagen",
                         BerechnungsSeite = "Stromspeicher",
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Stromspeicher, t),
                         Felder = new[]
@@ -394,6 +405,7 @@ namespace WindowsFormsApplication1
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_MODUL"),
                         HilfeSchluessel = "Form_AdminPV.btn_Help",
                         BerechnungsSchluessel = "Form_AdminPV.Berechnung",
+                        GrundlagenSchluessel = "Form_AdminPV.Grundlagen",
                         BerechnungsSeite = "Photovoltaik",
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Photovoltaik, t),
                         Felder = new[]
@@ -441,6 +453,7 @@ namespace WindowsFormsApplication1
                         MeldungOhneAuswahl = t("WRK_MSG_AUSWAHL"),
                         HilfeSchluessel = "Form_AdminWechselrichter.btn_Help",
                         BerechnungsSchluessel = "Form_AdminWechselrichter.Berechnung",
+                        GrundlagenSchluessel = "Form_AdminWechselrichter.Grundlagen",
                         BerechnungsSeite = "Photovoltaik",
                         // ALS EINZIGE der drei Auspraegungen mit Herstellerfilter
                         // (Konzept 6): Die CEC-Liste bringt ueber zweitausend Geraete

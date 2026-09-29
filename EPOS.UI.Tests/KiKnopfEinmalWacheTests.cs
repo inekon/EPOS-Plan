@@ -45,7 +45,15 @@ public sealed class KiKnopfEinmalWacheTests
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor"] =
-                "steht nur in BerichteKostenSeite; deren Pille oder die des Kopfbands führt den Assistenten"
+                "steht nur in BerichteKostenSeite; deren Pille oder die des Kopfbands führt den Assistenten",
+            // Felder der Technikdokumentation (Hilfeknöpfe Kühlung und Grundlagen): Sie stehen in
+            // Dialogen, deren Kopfpille den Assistenten führt.
+            ["EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor"] =
+                "steht nur in GebaeudeAdminDialog; dessen Kopfpille führt den Assistenten",
+            ["EPOS.UI/Dialoge/Bedarf/GebaeudeKuehluebergabeFelder.razor"] =
+                "steht in GebaeudeKatalogDialog und GebaeudeStammblattFelder; die Kopfpille des Wirts führt den Assistenten",
+            ["EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor"] =
+                "steht in WaermepumpeAnlageDialog und KomponentenKonfigurationDialog; deren Kopfpille führt den Assistenten"
         };
 
     [Fact]

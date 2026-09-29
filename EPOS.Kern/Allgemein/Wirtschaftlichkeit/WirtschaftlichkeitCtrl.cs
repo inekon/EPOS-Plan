@@ -6612,6 +6612,14 @@ namespace WindowsFormsApplication1
                     v.StromGruppenregelMWh.Value.ToString("N1", BerichtTexte.Kultur)));
             }
 
+            // ANWENDERENTSCHEID 29.09.2026 (Register EZ‑17): Den Leistungspreis setzt die
+            // Gruppenregel an einem Stand ohne stromverwendenden Erzeuger nicht an — er ist dort
+            // eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn diese Zeile
+            // (Satz und Träger, gebildet vom KostenEmissionRechner); dieselbe Reise wie die
+            // Zeilen darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
+            if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, v.LeistungspreisNichtAngesetzt);
+
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
             // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus

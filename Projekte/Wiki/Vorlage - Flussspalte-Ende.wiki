@@ -1,0 +1,7 @@
+<includeonly></div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Flussspalte-Ende
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Flussspalte-Ende.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Flussspalte-Ende ==
+
+Schließt eine Flussspalte, die [[Vorlage:Flussspalte-Anfang]] geöffnet hat.
+</noinclude>

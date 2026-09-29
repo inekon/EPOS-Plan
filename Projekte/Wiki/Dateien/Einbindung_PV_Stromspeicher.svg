@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Einbindung von Photovoltaik und Stromspeicher in das Hausnetz (Beispielanlagen A und C)
+
+Inhalt: Zwei Modulfelder mit unterschiedlicher Ausrichtung (Süd und West) liegen an je einem
+MPP-Tracker desselben Wechselrichters. Der Wechselrichter speist den Solarstrom als
+Wechselstrom in das Hausnetz. Dort versorgen Haushalt und Wärmepumpe sich zuerst; der
+Stromspeicher ist mit eigenem Wechselrichter am Hausnetz angeschlossen (AC-Kopplung) und
+wird aus Überschuss geladen und bei Bedarf entladen. Über den Zweirichtungszähler fließt der
+verbleibende Überschuss ins Netz, fehlender Strom wird aus dem Netz bezogen.
+
+Nebenskizze: Variante mit DC-Kopplung. Der Speicher hängt am Gleichstromkreis eines
+Hybridwechselrichters und wird vor der Umwandlung in Wechselstrom geladen.
+
+Annahmen: Prinzipbild ohne Leistungswerte. Pfeile zeigen die möglichen Energieflüsse, nicht
+gleichzeitige Werte. Farben nach Vorlage:Diagrammfarbe (solar für Gleichstrom aus den
+Modulen, strom für Wechselstrom, speicher, waerme, netz). Keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="580" viewBox="0 0 900 580" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <marker id="pfeil-1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#b38600"/></marker>
+  <marker id="pfeil-2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#2f74b5"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="578" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Photovoltaik mit Stromspeicher im Hausnetz</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Zwei Modulfelder an zwei MPP-Trackern, Stromspeicher AC-gekoppelt</text>
+  <!-- Modulfelder Süd und West -->
+  <text x="40" y="100" font-size="14" fill="#1f2328" font-weight="600">Modulfeld Süd</text>
+  <path d="M54,110 L102,110 L88,152 L40,152 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M49.3,124 L97.3,124 M44.7,138 L92.7,138 M66,110 L52,152 M78,110 L64,152 M90,110 L76,152" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M108,110 L156,110 L142,152 L94,152 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M103.3,124 L151.3,124 M98.7,138 L146.7,138 M120,110 L106,152 M132,110 L118,152 M144,110 L130,152" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M162,110 L210,110 L196,152 L148,152 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M157.3,124 L205.3,124 M152.7,138 L200.7,138 M174,110 L160,152 M186,110 L172,152 M198,110 L184,152" stroke="#b38600" stroke-width="1" fill="none"/>
+  <text x="40" y="205" font-size="14" fill="#1f2328" font-weight="600">Modulfeld West</text>
+  <path d="M54,215 L102,215 L88,257 L40,257 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M49.3,229 L97.3,229 M44.7,243 L92.7,243 M66,215 L52,257 M78,215 L64,257 M90,215 L76,257" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M108,215 L156,215 L142,257 L94,257 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M103.3,229 L151.3,229 M98.7,243 L146.7,243 M120,215 L106,257 M132,215 L118,257 M144,215 L130,257" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M162,215 L210,215 L196,257 L148,257 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M157.3,229 L205.3,229 M152.7,243 L200.7,243 M174,215 L160,257 M186,215 L172,257 M198,215 L184,257" stroke="#b38600" stroke-width="1" fill="none"/>
+  <!-- Wechselrichter mit zwei MPP-Trackern -->
+  <rect x="270" y="100" width="150" height="160" rx="8" fill="#eef4f9" stroke="#2f74b5" stroke-width="2"/>
+  <text x="345" y="122" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Wechselrichter</text>
+  <rect x="329" y="132" width="32" height="32" rx="2" fill="#fcfcfb" stroke="#57606a" stroke-width="1.4"/>
+  <path d="M329,164 L361,132" fill="none" stroke="#57606a" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M333,139 L343,139 M333,143 L343,143" fill="none" stroke="#57606a" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M345,156 q3,-4 6,0 q3,4 6,0" fill="none" stroke="#57606a" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="282" y="184" width="126" height="28" rx="4" fill="#fcfcfb" stroke="#57606a" stroke-width="1.2"/>
+  <text x="345" y="203" font-size="13" fill="#1f2328" text-anchor="middle">MPP-Tracker 1</text>
+  <rect x="282" y="222" width="126" height="28" rx="4" fill="#fcfcfb" stroke="#57606a" stroke-width="1.2"/>
+  <text x="345" y="241" font-size="13" fill="#1f2328" text-anchor="middle">MPP-Tracker 2</text>
+  <!-- Gleichstrom der Modulfelder -->
+  <path d="M207,130 L236,130 L236,198 L275.5,198" fill="none" stroke="#b38600" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <path d="M207,236 L275.5,236" fill="none" stroke="#b38600" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <text x="252" y="170" font-size="13" fill="#57606a" text-anchor="middle" font-weight="600">DC</text>
+  <!-- Hausnetz als Sammelschiene -->
+  <path d="M480,112 L480,452" stroke="#2f74b5" stroke-width="7" stroke-linecap="round"/>
+  <text x="480" y="100" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Hausnetz (AC)</text>
+  <path d="M420,180 L469.5,180" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="449" y="172" font-size="13" fill="#57606a" text-anchor="middle" font-weight="600">AC</text>
+  <!-- Verbraucher -->
+  <path d="M484,140 L573.5,140" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <rect x="580" y="118" width="170" height="44" rx="8" fill="#eaf1f8" stroke="#2f74b5" stroke-width="2"/>
+  <text x="665" y="144.7" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Haushalt</text>
+  <path d="M484,216 L573.5,216" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <rect x="580" y="194" width="170" height="44" rx="8" fill="#f9f0e8" stroke="#c56a1a" stroke-width="2"/>
+  <text x="665" y="220.7" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Wärmepumpe</text>
+  <!-- Stromspeicher, AC-gekoppelt -->
+  <path d="M484,298 L573.5,298" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <path d="M580,324 L490.5,324" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="530" y="291" font-size="13" fill="#57606a" text-anchor="middle">Laden</text>
+  <text x="530" y="343" font-size="13" fill="#57606a" text-anchor="middle">Entladen</text>
+  <rect x="580" y="280" width="170" height="62" rx="8" fill="#f2edf6" stroke="#7b4fa3" stroke-width="2"/>
+  <text x="665" y="298.7" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Stromspeicher</text>
+  <text x="665" y="315.7" font-size="13" fill="#57606a" text-anchor="middle">mit eigenem</text>
+  <text x="665" y="332.7" font-size="13" fill="#57606a" text-anchor="middle">Wechselrichter</text>
+  <!-- Netzanschluss mit Zweirichtungszähler -->
+  <path d="M484,404 L753.5,404" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <path d="M760,428 L490.5,428" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="530" y="397" font-size="13" fill="#57606a" text-anchor="middle">Einspeisung</text>
+  <text x="530" y="447" font-size="13" fill="#57606a" text-anchor="middle">Bezug</text>
+  <rect x="626" y="392" width="46" height="48" rx="4" fill="#fcfcfb" stroke="#7a828c" stroke-width="2"/>
+  <text x="649" y="421" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">kWh</text>
+  <text x="649" y="460" font-size="13" fill="#57606a" text-anchor="middle">Zweirichtungszähler</text>
+  <rect x="760" y="392" width="90" height="48" rx="8" fill="#f2f2f4" stroke="#7a828c" stroke-width="2"/>
+  <text x="805" y="420.7" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Netz</text>
+  <!-- Nebenskizze: Variante mit DC-Kopplung -->
+  <rect x="36" y="312" width="390" height="170" rx="8" fill="#ffffff" stroke="#d0d7de" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="50" y="336" font-size="14" fill="#1f2328" font-weight="600">Variante: DC-Kopplung</text>
+  <path d="M62,360 L96,360 L86,390 L52,390 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M58.7,370 L92.7,370 M55.3,380 L89.3,380 M70.5,360 L60.5,390 M79,360 L69,390 M87.5,360 L77.5,390" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M102,360 L136,360 L126,390 L92,390 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M98.7,370 L132.7,370 M95.3,380 L129.3,380 M110.5,360 L100.5,390 M119,360 L109,390 M127.5,360 L117.5,390" stroke="#b38600" stroke-width="1" fill="none"/>
+  <text x="52" y="410" font-size="13" fill="#57606a">Module</text>
+  <rect x="182" y="352" width="128" height="50" rx="6" fill="#eef4f9" stroke="#2f74b5" stroke-width="2"/>
+  <text x="246" y="373" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Hybrid-</text>
+  <text x="246" y="390" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">wechselrichter</text>
+  <path d="M136,375 L175.5,375" fill="none" stroke="#b38600" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <path d="M310,377 L407.5,377" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="414" y="368" font-size="13" fill="#57606a" text-anchor="end">Hausnetz</text>
+  <rect x="202" y="436" width="88" height="34" rx="8" fill="#f2edf6" stroke="#7b4fa3" stroke-width="2"/>
+  <text x="246" y="457.4" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Speicher</text>
+  <path d="M220,402 L220,429.5" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <path d="M272,436 L272,408.5" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="286" y="425" font-size="13" fill="#57606a" font-weight="600">DC</text>
+  <!-- Legende -->
+  <path d="M28,530 L51.5,530" fill="none" stroke="#b38600" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <text x="66" y="534.5" font-size="13" fill="#57606a">Gleichstrom der Module (DC)</text>
+  <path d="M291.6,530 L315.1,530" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="329.6" y="534.5" font-size="13" fill="#57606a">Wechselstrom im Hausnetz (AC)</text>
+  <text x="28" y="562" font-size="13" fill="#57606a">Prinzipbild · Pfeile zeigen mögliche Energieflüsse, keine gleichzeitigen Werte</text>
+</svg>

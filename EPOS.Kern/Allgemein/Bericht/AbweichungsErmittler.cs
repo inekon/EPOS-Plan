@@ -116,7 +116,9 @@ namespace WindowsFormsApplication1
             new Merkmal("Wärmepumpe", "Tab_WP", "Typ",          "Typ", "", TEXT),
             new Merkmal("Wärmepumpe", "Tab_WP", "Bauart",       "Bauart", "", TEXT),
             new Merkmal("Wärmepumpe", "Tab_WP", "Nennleistung", "Nennleistung", "kW", 0),
-            new Merkmal("Wärmepumpe", "Tab_WP", "maxPtherm",    "max. therm. Leistung", "kW", 0),
+            // Ohne maxPtherm (Anwenderentscheid 29.09.2026): Kein Dialog pflegt die Spalte,
+            // der Herstellerimport setzt sie nie, die Rechnung liest sie nicht - die Tafel
+            // zeigte „max. therm. Leistung 0 kW“ ohne Aussage.
             new Merkmal("Wärmepumpe", "Tab_WP", "Kuehlleistung","Kühlleistung", "kW", 1),
             new Merkmal("Wärmepumpe", "Tab_WP", "Regelung",     "Regelung", "", TEXT),
 

@@ -173,11 +173,27 @@
                    parametriert - Rechenmodell, Wechselrichter, Systemverluste. Der
                    Fensterknopf oben rechts bleibt, was er ist. *@
                 <div class="epos-berechnungshilfe">
+                    @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
+                    <InfoKnopf Schluessel="Form_PV.Grundlagen"
+                               StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
                     <InfoKnopf Schluessel="Form_PV.Berechnung"
                                StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
                 </div>
                 <PvModellFelder Zeile="@_projektZeile"
                                 Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
+
+                @* Hilfe zum Wechselrichter (Konzept Technikdokumentation, Abschnitt 7):
+                   Hier - unmittelbar ueber dem Abschnitt, in dem er gewaehlt wird - stehen
+                   seine zwei Seiten: die Anwendungsseite (Programm Dokumentation/
+                   Wechselrichter) und die Grundlagenseite. Dieselbe Huelle wie der
+                   Berechnungsknopf; sie steht im Dialog und nicht im Baustein
+                   PvStraengeFelder, der ohne Hilfedienst zeichnet. *@
+                <div class="epos-berechnungshilfe">
+                    <InfoKnopf Schluessel="Form_PV_Wechselrichter.btn_Help"
+                               StandardKurztext="@Resource.HILFE_WECHSELRICHTER_KNOPF" MitAssistent="false" />
+                    <InfoKnopf Schluessel="Form_PV_Wechselrichter.Grundlagen"
+                               StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                </div>
 
                 @* Stufe S2 des Wechselrichterkonzepts (W6-E-2 und W6-E-3): der Abschnitt
                    "Wechselrichter und Straenge" - die zwei sichtbaren Optionen, die

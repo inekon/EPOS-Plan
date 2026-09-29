@@ -63,6 +63,4 @@ Je Größe stehen nebeneinander der Farbwähler, der Farbwert in der Schreibweis
 
 
 == Berechnung ==
-Woher die Zahlen der einzelnen Reiter stammen, steht je Gewerk in der Rubrik
-[[Programm Dokumentation/Berechnung|Berechnung]]; den Ablauf, der sie erzeugt, beschreibt
-[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].
+Woher die Zahlen der einzelnen Reiter stammen, steht je Gewerk in der Rubrik [[Programm Dokumentation/Berechnung|Berechnung]]; den Ablauf, der sie erzeugt, beschreibt [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].

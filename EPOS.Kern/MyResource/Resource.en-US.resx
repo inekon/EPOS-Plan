@@ -10968,6 +10968,18 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
     <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule).</value>
   </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Demand charge {0} of the electricity carrier “{1}” not applied: the version has no generator that uses electricity; the demand charge is then a parameter of load optimisation.</value>
+  </data>
+  <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
+    <value>{0} €/(kW·a) up to {1} kW, {2} €/(kW·a) above</value>
+  </data>
+  <data name="WIRT_LP_SATZ_SAISON" xml:space="preserve">
+    <value>{0} €/(kW·a) from twelve monthly rates</value>
+  </data>
+  <data name="WIRT_LP_SATZ_MONAT" xml:space="preserve">
+    <value>{0} €/(kW·month)</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>
@@ -31803,7 +31815,7 @@ Do you want to allow this?</value>
     <value>Import catalogue</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder.</value>
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
     <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. An existing usage type remains unchanged: identical content is skipped, differing content is added as an own version “(Import n)”. A demand day and a parameter are replaced instead — a delivery row as well; the report names every replacement.</value>
@@ -36648,6 +36660,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH" xml:space="preserve">
     <value>The value {1:0.#######} of parameter “{0}” is outside the permitted range {2:0.###} to {3:0.###}.</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION" xml:space="preserve">
+    <value>The package carries no catalogue version; its rows join the catalogue version “{0}” of the catalogue.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT" xml:space="preserve">
+    <value>The package carries the column “{0}” in only some of its files: in {1}, but not in {2}. Either all of them carry a catalogue version, or none — nothing imported.</value>
+  </data>
   <data name="ZPGK_IMPORT_ERSETZT" xml:space="preserve">
     <value>replaced</value>
   </data>
@@ -40304,6 +40322,21 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT" xml:space="preserve">
     <value>“Time structure as heating” needs the day value of the heating column.</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
+    <value>Fundamentals: {0}</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Fundamentals of this technology</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Help on cooling</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Help on the inverter</value>
+  </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Help on cooling emission</value>
   </data>
 </root>
 

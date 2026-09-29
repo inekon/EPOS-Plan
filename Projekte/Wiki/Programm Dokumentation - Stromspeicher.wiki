@@ -4,12 +4,140 @@
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
 Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
 
+Wie ein Batteriespeicher arbeitet und wie man ihn bemisst, steht unter [[Grundlagen/Stromspeicher]]; diese Seite zeigt, wie EPOS-Plan ihn einbindet und im Projektlauf fährt.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+# '''Speicher im Katalog.''' ''Administration → Strombedarf & Speicher → Stromspeicher'' pflegt den Speicherkatalog; Datensätze aus der CEC-Liste oder einer bslib-Datei liest ''Administration → Daten & Import → Stromspeicher (CEC, bslib)...'' ein.
+# {{Anker|kennwerte|kapazitaet|ladezustand}}'''Speicher im Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Stromspeicher'' den Dialog ''Verwaltung Stromspeicher''. Den Satz in ''Stromspeicher aus Datenbank'' wählen und ''In das Projekt übernehmen''; der Block ''Modul'' zeigt seine Kennwerte, ''Alle Daten anzeigen'' die übrigen Katalogwerte. ''Ladezustand [%]'' ist der Ladezustand zu Beginn des Laufs, in das Band der Betriebsführung geklemmt; die ''Degradation'' wirkt in der Wirtschaftlichkeit, nicht im Jahreslauf.
+# '''Simulationskonfiguration.''' In Schritt ① steht der Stromspeicher in der Gruppe ''Energiespeicher''. Wie bei der Photovoltaik setzt das Programm einen vorhandenen Speicher selbst auf den Platz, solange die Kaskade nicht von Hand gepflegt ist; sonst ''+ aufnehmen'' und ''Konfiguration speichern'' ([[Programm Dokumentation/Simulation#speicher-im-projekt|Simulation]]).
+# '''Betriebsführung''' – einer von zwei Wegen:
+#* die '''Einzelanlage''', solange keine Projektflotte aktiv ist: Ergebnisseite (Schritt ③), Reiter ''Stromspeicher'', Block ''Einzelanlage (klassischer Projektlauf)''; jedes Feld schreibt sofort, auch vor dem ersten Lauf ([[#berechnungsart|Berechnungsart der Speichervariante]]).
+#* die '''Projektflotte''' über ''Stromspeicher auslegen…'' und ''Als Projektflotte übernehmen''; solange sie aktiv ist, rechnet der Projektlauf die Flotte, und der Block der Einzelanlage entfällt ([[#auslegung-ansicht|Stromspeicher-Auslegung]]).
+
+{{Diagramm-Anfang|titel=Wo der Stromspeicher im Projektlauf sitzt}}
+{{Fluss-Anfang}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|PV-Überschuss|Ladequelle „PV-Überschuss“|rolle=solar}}
+{{Flusskasten|BHKW-Überschuss|Ladequelle „BHKW-Überschuss“|rolle=bhkw}}
+{{Flusskasten|Netz|nur Betriebsart Graustrom|rolle=netz}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|laden}}
+{{Flusskasten|Stromspeicher|Band ''Ladezustand min.'' bis ''max.'', Lade- und Entladeleistung|rolle=speicher}}
+{{Flusspfeil|entladen}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Reststrombedarf|Last nach BHKW und PV|rolle=strom}}
+{{Flusskasten|Netz|Verkauf nur mit „Entladung ins Netz (Verkauf)“|rolle=netz}}
+{{Flussspalte-Ende}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Zur Last gehören Stromprofil, Wärmepumpe, Heizstab, Elektrokessel und Kälte; der Speicher rechnet je Viertelstunde nach Wärmeseite und Photovoltaik.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Beispielanlage C – Einfamilienhaus (Neubau):''' Haushaltsstrom 4 MWh im Jahr, Sole-Wasser-Wärmepumpe A mit 6 kW, Photovoltaik 10 kWp, Stromspeicher 1 mit 10 kWh.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Stromspeicher || ''Stromspeicher aus Datenbank'', dann ''In das Projekt übernehmen'' || Stromspeicher 1: 10 kWh, 5 kW || rund 1 kWh je kWp PV; 5 kW tragen Haushalt und Wärmepumpe
+|-
+| rowspan="2" | Simulation, ① Konfiguration || Gruppe ''Energiespeicher'': Stromspeicher || aufgenommen || ohne Platz rechnet der Speicher nicht
+|-
+| Gruppe ''Stromerzeuger'': Photovoltaik || aufgenommen || ohne Erzeugung gibt es nichts zu laden
+|-
+| rowspan="5" | Reiter ''Stromspeicher'', Block ''Einzelanlage (klassischer Projektlauf)'' || ''Ladezustand min.'' / ''Ladezustand max.'' || 10 % / 90 % || Vorgabe; nutzbar sind 8 kWh
+|-
+| ''Betriebsart'' || Grünstrom (nur Erzeugungsüberschuss) || der Hausspeicher lädt nicht aus dem Netz
+|-
+| ''Berechnungsart'' || Dauernutzung || Überschuss laden, Reststrombedarf decken
+|-
+| ''PV-Überschuss'' || an || die einzige Ladequelle; ''BHKW-Überschuss'' bleibt ohne BHKW wirkungslos
+|-
+| ''Entladung ins Netz (Verkauf)'' || aus || wirkt nur bei ''Preissteuerung / Arbitrage''
+|}
+
+'''Was zu erwarten ist.''' Ohne Speicher bleibt im Überschlag gut ein Viertel des PV-Stroms im Haus. Der Speicher hebt diesen Anteil deutlich; über rund 1 kWh je kWp hinaus wächst der Gewinn nur noch langsam, weil der Speicher im Sommer ohnehin voll wird und im Winter kaum Überschuss bekommt.
+
+<!-- Beispielwerte aus einem vereinfachten Stundenmodell, kein Rechenergebnis von EPOS-Plan.
+     Erzeugung: 8 760 Stunden, PV 10 kWp Süd, 950 kWh je kWp (9,5 MWh); Tagesgang als Halbsinus zwischen Sonnenaufgang
+     und Sonnenuntergang, sonnige und trübe Tage im festen Wechsel, typische Monatsverteilung.
+     Bedarf: Haushaltsstrom 4 MWh mit Morgen- und Abendspitze, im Winter 15 % über und im Sommer 15 % unter dem Mittel;
+     Wärmepumpe mit 7,5 MWh Heizwärme, stündlich verteilt nach max(0; 15 °C − Außentemperatur), Leistungszahl 4,3,
+     und 2,5 MWh Trinkwarmwasser mit Leistungszahl 3,0; zusammen 6,6 MWh Strom.
+     Speicher: nutzbar 10 bis 90 % der Nennkapazität, Leistung halbe Nennkapazität, Wirkungsgrad je Richtung Wurzel
+     aus 0,90, lädt nur aus PV-Überschuss, beginnt am unteren Rand.
+     Je Stunde: direkt genutzt = min(PV; Bedarf); geladen = min(PV − direkt; Leistung; freier Platz / Wirkungsgrad).
+     Eigenverbrauchsquote = (direkt genutzt + geladen) / PV-Ertrag: 28, 42, 49, 52 und 53 %.
+     Säulenhöhe = Quote / größte Quote (53 % bei 20 kWh) × 100. -->
+{{Diagramm-Anfang|titel=Beispielanlage C: Eigenverbrauchsquote über der Speichergröße}}
+{{Säulen-Anfang|achse=Anteil des PV-Ertrags, der im Haus bleibt}}
+{{Säule|ohne|solar=53|wert=28 %}}
+{{Säule|5 kWh|solar=53|speicher=26|wert=42 %}}
+{{Säule|10 kWh|solar=53|speicher=40|wert=49 %}}
+{{Säule|15 kWh|solar=53|speicher=45|wert=52 %}}
+{{Säule|20 kWh|solar=53|speicher=47|wert=53 %}}
+{{Säulen-Ende|Nennkapazität des Speichers}}
+{{Legende|solar=direkt genutzt|speicher=über den Stromspeicher}}
+{{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan.}}
+
+{{Anker|darstellung-des-ladezustands|speicherfuellstand}}'''Wo Sie es prüfen.''' Reiter ''Stromspeicher'' der Ergebnisseite: Kennzahlen wie ''Ladung aus PV-Überschuss'', ''Einspeisung mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''; das Bild zeigt Netzbezug ohne und mit Speicher und rechts den Ladezustand, ''CSV Export'' schreibt die Zeitreihen. Im Reiter ''Photovoltaik'' blendet der Schalter ''Speicherfüllstand'' den Ladezustand zum PV-Ertrag ein.
+
+'''Beispielanlage B (Hotel), Variante mit Stromspeicher für die Lastspitzenkappung:''' 450 MWh Strom im Jahr, BHKW 1 mit 30 kW elektrisch, Photovoltaik 100 kWp; dazu Stromspeicher 1 mit 100 kWh und 50 kW.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| rowspan="4" | Reiter ''Stromspeicher'', Block ''Einzelanlage (klassischer Projektlauf)'' || ''Berechnungsart'' || Lastspitzenkappung || Ziel ist die Bezugsspitze, nicht der Eigenverbrauch
+|-
+| ''Peak-Ziel adaptiv nachziehen'' || an || die Schwelle beginnt bei 0 und steigt nur, wo der Speicher sie nicht hält; nach dem Lauf steht unter den Feldern die Netzbezugsspitze ohne Speicher
+|-
+| ''Peak-Ziel'' || gesperrt; für ein festes Ziel adaptiv aus und ein Ziel unter dieser Spitze || ein Ziel auf oder über der Spitze kappt nichts
+|-
+| ''Betriebsart'' || Graustrom (Netzladung zulässig) || lädt unter der Schwelle aus dem Netz nach; diese Ladung zählt im Netzbezug
+|}
+
+Gekappt wird am Netzanschluss, gemessen an der Last abzüglich PV und BHKW; was die Kappung spart, rechnet die [[Programm Dokumentation/Wirtschaftlichkeit#energiekosten|Wirtschaftlichkeit]].
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+=== Betrieb in der Simulation ===
+{{Anker|betrieb-in-der-simulation|rangfolge|reststrombedarf}}
+
+Der Speicher rechnet nach Wärmeseite und Photovoltaik, je Viertelstunde, gegen die Last aus Stromprofil, Wärmepumpe, Heizstab, Elektrokessel und Kälte. Das BHKW deckt zuerst, die PV den Rest; übrige Erzeugung ist ladefähiger Überschuss, fehlende der Reststrombedarf, gegen den der Speicher entlädt ([[Programm Dokumentation/Photovoltaik#zusammenspiel|Rangfolge des PV-Stroms]]).
+
+{| class="wikitable"
+! Technik !! Wirkung auf den Speicher !! Wirkung des Speichers !! So rechnet EPOS-Plan
+|-
+| Photovoltaik || liefert den Ladestrom || mehr Eigenverbrauch, weniger Einspeisung || geladen wird mit der Ladequelle ''PV-Überschuss''; ohne gerechnete Erzeugung lädt der Speicher nichts, das Protokoll nennt den Grund
+|-
+| BHKW || deckt die Last vor der PV; sein Überschuss lädt mit ''BHKW-Überschuss'' || – || die Ladung zählt zuerst als PV-, dann als BHKW-Überschuss; die Eigenverbrauchsquote des Reiters ''Stromspeicher'' bezieht PV und BHKW ein
+|-
+| Wärmepumpe, Heizstab, Elektrokessel, Kälte || erhöhen die Last, die der Speicher deckt || keine: Die Wärmeseite rechnet vor dem Speicher und richtet sich nicht nach ihm || ihr Strom gehört zur Last des Speichers
+|-
+| Netz || Graustrom lädt aus dem Netz || senkt Bezug und Spitze || Netzladung zählt im Netzbezug der Viertelstunde; gekappt wird am Netzanschluss (Last minus PV minus BHKW)
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Nicht aufgenommen oder ohne Erzeugung.''' Ohne Platz rechnet der Speicher nicht („… nicht in die Simulation aufgenommen …“). Steht er auf dem Platz, die Photovoltaik aber nicht, rechnet er ohne Erzeugung: Eigenverbrauchsquote und Einspeisung bleiben 0, das Protokoll nennt den Grund.
+* '''''Ladezustand [%]'' ist der Start.''' Der Katalogwert setzt den Ladezustand zu Beginn des Laufs; die Grenzen stehen in ''Ladezustand min.'' und ''Ladezustand max.''. Ohne gültiges Band rechnet der Lauf mit 10 bis 90 % und sagt es.
+* '''Mehrere Speicheranlagen.''' Ohne Projektflotte rechnet der Lauf die Anlage der aktiven Speichervariante; ist keine bestimmbar, die Summe aller Speicheranlagen mit Hinweis im Protokoll. ''Kapazität [kWh]'' und ''Lade-/Entladeleistung [kW]'' der Einzelanlage sind nur bei genau einer Speicheranlage änderbar. Speicher, die zusammen arbeiten sollen, rechnet die Projektflotte.
+* '''Planende Betriebsziele brauchen den Fahrplaner.''' ''PV-Eigenverbrauch (reaktiv)'' und ''Lastspitzenkappung'' rechnen überall; ''PV-Prognoseplanung'', ''Preisoptimierung / Arbitrage'' und ''Multi Use mit Peak-Priorität'' brauchen den Fahrplaner der Windows-Anwendung. Auf dem iPad sind sie gesperrt und nennen den Grund; eine aktive Projektflotte mit planendem Ziel bricht dort den Lauf mit benannter Meldung ab ([[#auslegung-ios|Auf dem iPad]]). Die ''Preissteuerung / Arbitrage'' der Einzelanlage braucht ihn nicht, rechnet aber nur mit ''Entladung ins Netz (Verkauf)'', sonst als Dauernutzung mit Hinweis.
+* '''Peak-Ziel.''' Ohne Ziel und ohne ''adaptiv'' rechnet der Lauf die Dauernutzung, ein Ziel über der Spitze kappt nichts ([[#berechnungsart|Berechnungsart]]). Die Maske [[#maske-lastspitzenkappung|Lastspitzenkappung]] rechnet den reinen Lastgang ohne PV und BHKW, der Projektlauf am Netzanschluss – ihre Schwellen sind nicht dieselben.
+* '''Stundenwerte in der Viertelstunde.''' Viertelstundenspitzen kennt nur der Strombedarf aus Profil oder Messdaten; Wärmepumpe, Heizstab, Elektrokessel, PV und BHKW gehen als Stundenwerte ein, gleich auf die vier Viertelstunden verteilt.
+* '''Excel-Kompatibilitätsmodus.''' Er bildet eine Referenzmappe nach – ohne Wirkungsgradverluste und ohne BHKW – und liefert kein Produktivergebnis.
+* '''Autarkie Analyse.''' Das Blatt rechnet mit einem theoretischen Speicher, nicht mit diesem; siehe [[Programm Dokumentation/Photovoltaik#fallstricke|Photovoltaik: Fallstricke]].
+
 == Eingaben ==
 
 * '''Auswahl aus der Datenbank''' – den Speicher aus dem Katalog ins Projekt übernehmen; die Liste ''ausgewählte Stromspeicher'' zeigt die Zuordnung.
 * '''Name und Typ''' – Bezeichnung und Bauart des Speichers.
 * '''Leistung und Energie''' – die Lade- und Entladeleistung sowie die Kapazität des Speichers.
-* '''Ladezustand''' – die Grenze des Ladezustands in Prozent.
+* '''Ladezustand''' – der Ladezustand zu Beginn des Laufs in Prozent der Kapazität; die Grenzen setzt die Betriebsführung (''Ladezustand min.'', ''Ladezustand max.'').
 * '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
 * '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
@@ -189,7 +317,7 @@ Die Kostensätze '''einer Einheit''' bleiben hier und stehen unter der eigenen �
 
 Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen, die Kostensätze, der Leistungspreis und die '''wirtschaftliche Jahresprojektion'''. Der Suchraum gehört zu Schritt 4, die Betriebsführung zu Schritt 3.
 
-'''Leistungspreis.''' Das Feld ''Leistungspreis'' in €/(kW·a) bewertet die höchste Bezugsleistung des Jahres. Es ist '''eine''' Eingabe für beides: für die Auslegung und für die aktive Speichervariante des Projekts – dasselbe Feld, das der Reiter ''Parameter'' pflegt. Eine Änderung wird sofort geschrieben. Sind Leistungspreise im Projekt gepflegt, steht daneben eine Liste der '''Quellen'''; eine Auswahl daraus setzt den Wert ein und schreibt ihn ebenfalls.
+'''Leistungspreis.''' Das Feld ''Leistungspreis'' in €/(kW·a) bewertet die höchste Bezugsleistung des Jahres. Es ist '''eine''' Eingabe für beides: für die Auslegung und für die aktive Speichervariante des Projekts – dasselbe Feld, das der Block ''Einzelanlage (klassischer Projektlauf)'' im Reiter ''Stromspeicher'' pflegt. Eine Änderung wird sofort geschrieben. Sind Leistungspreise im Projekt gepflegt, steht daneben eine Liste der '''Quellen'''; eine Auswahl daraus setzt den Wert ein und schreibt ihn ebenfalls.
 
 ==== Investition und Betrieb ====
 {{Anker|auslegung-kosten}}
@@ -232,9 +360,9 @@ Unter den drei zuletzt genannten Feldern steht je '''eine Erklärzeile''' im Kla
 
 Jede Quelle wird einzeln gewählt:
 
-* '''Last''': EPOS-Strombedarf einschließlich der im Simulationslauf ermittelten elektrischen Zusatzverbraucher oder eine eigene CSV-Datei. ''load_kw'' bedeutet Bruttolast in kW vor Abzug der Erzeugung.
-* '''PV''': verfügbare AC-Leistung aus der EPOS-PV-Simulation oder einer eigenen CSV-Datei. ''pv_kw'' liegt nach Wechselrichterverlusten und vor zusätzlicher Abregelung. ''Keine PV'' setzt die PV-Leistung auf null.
-* '''Bezugspreis''': EPOS-Tarif, editierbares Strompreisprofil oder eine separate CSV-Datei. ''buy_eur_kwh'' enthält bereits den effektiven variablen Bezugspreis; negative Werte sind erlaubt. Auf die importierte effektive Preisreihe werden keine weiteren Tarifaufschläge addiert. Das bestehende Strompreisprofil verwendet dagegen Monats- und Wochenstundenwerte in ct/kWh plus den Projektaufschlag.
+* '''Last''': EPOS-Strombedarf einschließlich der im Simulationslauf ermittelten elektrischen Zusatzverbraucher oder eine eigene CSV-Datei. <code>load_kw</code> bedeutet Bruttolast in kW vor Abzug der Erzeugung.
+* '''PV''': verfügbare AC-Leistung aus der EPOS-PV-Simulation oder einer eigenen CSV-Datei. <code>pv_kw</code> liegt nach Wechselrichterverlusten und vor zusätzlicher Abregelung. ''Keine PV'' setzt die PV-Leistung auf null.
+* '''Bezugspreis''': EPOS-Tarif, editierbares Strompreisprofil oder eine separate CSV-Datei. <code>buy_eur_kwh</code> enthält bereits den effektiven variablen Bezugspreis; negative Werte sind erlaubt. Auf die importierte effektive Preisreihe werden keine weiteren Tarifaufschläge addiert. Das bestehende Strompreisprofil verwendet dagegen Monats- und Wochenstundenwerte in ct/kWh plus den Projektaufschlag.
 
 '''BHKW-Leistung und Einspeisevergütung''' kommen bei der Flotte immer aus dem vorbereiteten Projektlauf; die Batterieeinspeisung braucht einen '''eigenen''' Verkaufspreis – der Bezugspreis wird nie als Verkaufspreis verwendet. Die Einspeisevergütung selbst wird an zwei Stellen gepflegt: der PV-Satz unter [[Programm Dokumentation/Wirtschaftlichkeit#einspeiseverguetung|Wirtschaftlichkeit → Parameter → Strom]], der KWK-Satz im Dialog ''BHKW-Wirtschaftlichkeit''; ohne KWK-Satz gilt der PV-Satz. Ist keiner gepflegt, rechnet die Speicherbewertung mit 0 und sagt es im Protokoll.
 
@@ -485,7 +613,7 @@ Von oben nach unten:
 # '''Diagnosebanner''' – nur, wenn es etwas zu sagen gibt (siehe unten).
 # '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze ungekappt → gekappt (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie. Bei '''adaptivem''' Peak-Ziel nennt die Spitzenkachel statt „erreicht / nicht erreicht" den '''Startwert''' und die '''erreichte''' Schwelle – eine Schwelle, die auf das Erreichbare nachgezogen wird, kann nicht verfehlt werden.
 # '''Die zwei Schwellen''' – darunter steht „'''kausal erreicht'''" mit der Zahl der Nachzüge (Intervalle, in denen die Anlage die Spitze nicht halten konnte). Haben Sie in Schritt 3 „Mit Vorausschau erreichbares Ziel bestimmen…" gefahren, steht daneben „'''mit Vorausschau erreichbar'''" und die Differenz der beiden: der '''Wert der Vorausschau'''. Ist er klein, würde ein Prognoseregler wenig bringen.
-# '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
+# '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · <math>\Delta</math>''. <math>\Delta</math> ist ''Mit − Ohne''; ob ein negatives <math>\Delta</math> gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
 # '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf. Über dem Bild steht die Investition mit ihrer Herleitung je Einheit: fester Anteil, Kapazitätsanteil (kWh × €/kWh) und Leistungsanteil (kW × €/kW, mit der größeren der beiden Leistungen); bei mehreren Einheiten folgt die Summe.
 # '''Kennzahlen je Einheit''' – Lade- und Entladeenergie, Vollzyklen, Anfangs- und Endenergie, Rainflow-Zyklen und Schaden.
 # '''Diagramme''' – siehe unten.
@@ -499,7 +627,7 @@ Die '''Jahresprojektion''' hat keine Zeitachse und deshalb auch keine Leiste: Zw
 Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen Ergebnis) und '''„Beste Flotte übernehmen"''' (nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante). Die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten; erst danach fährt der gewöhnliche Projektlauf diese Flotte.
 
 {{Anker|auslegung-anlage}}
-'''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Reiter ''Parameter'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.
+'''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Block ''Einzelanlage (klassischer Projektlauf)'' im Reiter ''Stromspeicher'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.
 
 Tragen '''zwei''' Einheiten einen Anlagenbezug, erscheint der Knopf nicht: Die Anlage trägt eine Kapazität und eine Leistung, und welche der beiden gemeint wäre, ließe sich nicht sagen.
 
@@ -531,8 +659,9 @@ Die Ansicht gibt es auch auf dem iPad – mit '''einer''' Einschränkung: Die dr
 
 == Siehe auch ==
 
-* [[Stromspeicher]] – Betrieb in der Simulation und Darstellung des Ladezustands
+* [[#zusammenspiel|Zusammenspiel mit anderen Technologien]] – Betrieb in der Simulation, Rangfolge und Reststrombedarf
 * [[Grundlagen/Stromspeicher]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Photovoltaik|Photovoltaik]] – die Erzeugung, die den Speicher lädt
 * [[Programm Dokumentation/Hilfe-Assistent]] – der Knopf „erklären lassen" an den Meldungen dieser Ansicht
 
 [[Kategorie:Programm Dokumentation]]
@@ -548,8 +677,7 @@ Links steht die Liste der Lastgänge; die gewählte Zeile ist der Lastgang, den 
 '''„In Variante übernehmen"''' schreibt das Ergebnis in die '''aktive Speichervariante''' des Projekts: Berechnungsart ''Lastspitzenkappung'', die '''erreichte''' Schwelle als Peak-Ziel und die Einstellung ''adaptiv''. Danach rechnet der Projektlauf genau diese Kappung. Führt die Variante eine andere Berechnungsart, kommt zuvor eine Rückfrage – so tauschen Sie Ihren Rechenweg nicht versehentlich aus. Gerechnet muss sein: Ohne Ergebnis gibt es nichts zu übernehmen. Ohne Projekt steht der Knopf nicht da.
 
 == Berechnung ==
-Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter
-[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
+Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
 
 Die Rechenwege dieser Ansicht im Einzelnen:
 

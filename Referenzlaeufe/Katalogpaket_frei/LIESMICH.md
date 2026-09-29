@@ -59,6 +59,14 @@ Dazu vier Regeln des Paketteils:
    kommen — in der Vorlage der des zuletzt angelegten Parameters (sonst `FREI-1`), in der
    Testdatenbank `TEST-1`. Sonst sähe der Parametersatz, der nur eine Katalogversion liest, die
    Parameter der Stochastik nicht. `Version` (Provenienz) nennt den Stand des Paketteils.
+   Die Regel steht einmal im Kern (`ZapfprofilCtrl.Zielkatalogversion`) und gilt auf **beiden
+   Wegen**: für die Auslieferungsvorlage (`Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs`,
+   `PaketteilEinspielen`) und für den **Katalogimport** des Programms
+   (*Brauchwasser-Nutzungsarten → Import… → Katalog importieren*), der diesen Ordner unverändert
+   annimmt — als Dateiwahl im Ordner wie als ZIP. Sein Bericht nennt die Version, der die Zeilen
+   beitreten. Ein Paket, das die Spalte `Katalogversion` nur in einem Teil seiner Kopfdateien
+   (`Tab_TwwBedarfstag_STAMM`, `Tab_TwwParameter_STAMM`, `Tab_TwwTagesgangsatz_STAMM`,
+   `Tab_TwwNutzungsart_STAMM`) führt, lehnt der Import benannt ab — entweder alle oder keine.
 3. **Schlüssel des Pakets.** Die `ID` eines Bedarfstags verknüpft ihn mit seinen Ereignissen
    (`ID_Bedarfstag`), die `ID` eines Tagesgangsatzes mit seinen Tagesgängen und mit den
    Nutzungsarten, die ihn tragen (`ID_Tagesgangsatz`); die Datenbank vergibt die echte ID. Tritt

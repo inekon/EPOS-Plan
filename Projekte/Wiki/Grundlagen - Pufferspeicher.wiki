@@ -1,0 +1,70 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Pufferspeicher
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Pufferspeicher.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Pufferspeicher''' entkoppelt Wärmeerzeugung und Wärmebedarf: Er speichert heißes Wasser zwischen und gibt es zeitversetzt wieder ab. Damit kann ein Erzeuger unabhängig vom Momentanbedarf laufen – mit längeren Laufzeiten, weniger Takten und mehr Raum für schwankende Quellen wie Solarthermie.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|schichtung-und-verluste}}
+
+Gespeichert wird die Wärmekapazität des Wassers: Ein wärmeres Volumen enthält mehr Energie als dasselbe Volumen bei niedrigerer Temperatur – 1 000 Liter mit 20 Kelvin Spreizung fassen rund 23 Kilowattstunden. Ein Speicher arbeitet nur dann wirksam, wenn er sauber schichtet – oben heiß, unten kalt –, denn erst die Schichtung trennt die Temperaturniveaus von Ladung und Entnahme; wird er durchmischt, verliert er einen Teil seiner nutzbaren Kapazität. Unabhängig vom Betrieb fallen zudem Bereitschaftsverluste an: Wärme, die durch die Behälterwand entweicht, auch ohne dass Wärme entnommen wird.
+
+<!-- Prinzipbild der Schichtung: warmes Wasser oben, kaltes unten. Die Temperaturen sind
+     Beispielwerte fuer ein Heizungssystem mit rund 60/30 Grad, keinem Produkt zugeordnet. -->
+{{Diagramm-Anfang|titel=Schichtung im Pufferspeicher}}
+{{Fluss-Anfang}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Oben|heiß, rund 60 °C – Vorlauftemperatur|rolle=speicher}}
+{{Flusspfeil|richtung=unten}}
+{{Flusskasten|Mitte|Übergangszone|rolle=speicher}}
+{{Flusspfeil|richtung=unten}}
+{{Flusskasten|Unten|kalt, rund 30 °C – Rücklauftemperatur|rolle=speicher}}
+{{Flussspalte-Ende}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
+
+== Kennzahlen ==
+{{Anker|kennzahlen|kapazitaet}}{{Anker|bewirtschaftung-ueber-schaltschwellen|schaltschwellen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| Volumen || speicherfähiges Wasservolumen || 300 l (Einfamilienhaus) bis mehrere m³ (Gewerbe, Nahwärme)
+|-
+| Spezifische Wärmekapazität Wasser || Energie je Liter und Kelvin Temperaturanstieg || 1,16 Wh/(l·K)
+|-
+| Nutzbare Temperaturspreizung || Differenz zwischen Vorlauf- und Rücklauftemperatur || 15–30 K, je nach Anwendung
+|-
+| Bereitschaftsverlust || Wärmeverlust im Stillstand, unabhängig von der Entnahme || wenige kWh je Tag, abhängig von Größe und Dämmung
+|-
+| Schaltschwellen || Hysterese zwischen Nachladen und Abschalten || spürbarer Abstand nötig, sonst häufiges Takten
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen|dimensionierung-in-der-praxis}}
+
+* Einfamilienhaus: 200–500 Liter, als Kombispeicher für Heizung und Warmwasser oder als reiner Warmwasserspeicher.
+* Mehrfamilienhaus: häufig 1 000–3 000 Liter, abhängig von Erzeugerleistung und Gleichzeitigkeit der Entnahme.
+* Blockheizkraftwerk: Faustwert 60–100 Liter je Kilowatt thermischer Leistung, damit die Maschine lange am Stück läuft.
+* Wärmepumpe: Das Volumen richtet sich weniger nach der Leistung als nach Sperrzeiten des Netzbetreibers, Warmwasserspitzen und Abtauunterstützung.
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Ein Pufferspeicher lohnt sich, sobald Erzeugung und Bedarf zeitlich auseinanderfallen: ein Blockheizkraftwerk, das lange am Stück laufen soll, eine Wärmepumpe, die Takten vermeiden muss, oder ein Kollektorfeld, dessen Ertrag nicht im selben Moment gebraucht wird. Wo ein Erzeuger ohnehin fein und verzögerungsfrei dem Bedarf folgen kann, bringt er wenig zusätzlichen Nutzen. Er ist reiner Zeitpuffer, keine Energiequelle: Ein zu groß gewählter Speicher kostet Investition und zusätzliche Bereitschaftsverluste, ohne die Laufzeiten weiter zu verbessern; ein zu kleiner taktet trotzdem.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan|abbildung-in-epos-plan|zuordnung-zu-erzeugern}}
+
+Der Katalog der Pufferspeicher liegt unter Administration → Energiesysteme → Pufferspeicher; im Projekt legt die Kachel Pufferspeicher der Startseite den Speicher im Dialog „Verwaltung Pufferspeicher“ an, den Erzeugern zugeordnet wird er in der Simulationskonfiguration. Wie Zuordnung, Schaltschwellen und Ladereihenfolge dort zusammenwirken, zeigt [[Programm Dokumentation/Pufferspeicher#einbindung|Einbindung]], ein Beispiel mit realen Größen steht unter [[Programm Dokumentation/Pufferspeicher#beispiel|Beispiel]], das Zusammenspiel mit anderen Erzeugern unter [[Programm Dokumentation/Pufferspeicher#zusammenspiel|Zusammenspiel]] und was dabei zu beachten ist unter [[Programm Dokumentation/Pufferspeicher#fallstricke|Fallstricke]]. Der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Pufferspeicher|Programm Dokumentation: Pufferspeicher]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] – der Rechenweg
+* [[Grundlagen/Solarkollektoren|Grundlagen: Solarkollektoren]] – der häufigste schwankende Erzeuger vor dem Puffer
+* [[Grundlagen/Hydraulikschemata|Hydraulikschemata]] – gebräuchliche Schaltungen als Prinzipschema
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
