@@ -220,4 +220,5 @@ Die Skripte lagen im Scratchpad der Sitzung und sind nicht im Repository.
 **Offen:**
 - der Lauf auf einem echten Linux-Läufer: die sieben CI-Projekte in `kern.yml` nach dem Push, alle
   fünfzehn im Cloud-Gate;
-- der Logbuch-Satz mit der Versionsnummer des Anwenders.
+- die Veröffentlichung des Logbuch-Satzes mit dem nächsten Sammel-Upload. Er steht unter Version 1.2.6 in
+  `Dokumentation/aktuell/Wiki_Update_2026-09-26.md` (Anwenderentscheid 29.09.2026).

@@ -753,7 +753,9 @@ public sealed class StilblattTests
     [Fact]
     public void BN_A_Die_Statuszeile_der_Reiter_warnt_mit_Token_und_kuerzt_unter_900px()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        // Zeilenenden normalisieren: Der Windows-Arbeitsbaum haelt das Blatt mit CRLF,
+        // die mehrzeiligen Suchtexte unten stehen mit LF.
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
         Assert.DoesNotContain(".epos-navigation", css, StringComparison.Ordinal);
         Assert.DoesNotContain("#23282d", css, StringComparison.OrdinalIgnoreCase);
 
