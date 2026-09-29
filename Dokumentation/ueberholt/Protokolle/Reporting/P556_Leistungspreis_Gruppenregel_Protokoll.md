@@ -1,6 +1,6 @@
 # P556 — Leistungspreis nur bei stromverwendendem Erzeuger (Protokoll, 29.09.2026)
 
-Statuszeile folgt (#609 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile folgt (#610 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P556_Auftrag_2026-09-29.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P556_Auftrag_2026-09-29.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P555_Gruppenregel_Konzeptnachlese_Protokoll.md`](P555_Gruppenregel_Konzeptnachlese_Protokoll.md)
 (#603). Zweig `p556` ab `ee1f9323c`.
@@ -91,10 +91,28 @@ der Szenarioabdeckung als Stromträger mit Leistungspreis zählte.
 - Ein Stand ohne stromverwendenden Erzeuger und ohne Netzbezug unter der Gruppenregel trägt den Grundpreis und den
   Rückfallvermerk seines Trägers (Bestand seit #555); der Leistungspreishinweis steht dann ebenfalls.
 
+## Merge mit #609 (P555‑B) und Abnahme
+
+- Merge `33c9dfa55` mit origin `33f487058` (Welle #609 der Berichterstellung): Die Gruppenzahl des Berichts entsteht dort
+  auf einer Kopie (`BerichtsDatenSammler.StromGruppenzahlErmitteln`, `VariantenDaten.Gruppenzahl`); die EZ‑17-Meldung
+  hängt jetzt an dieser Kopie (`kopie.LeistungspreisNichtAngesetzt`, Stufe Hinweis), die Gruppenzahl der Fußzeile enthält
+  keinen Leistungspreis. Die zwei Berichtsfälle der P556-Tests sind auf den neuen Weg umgestellt (der Stand bleibt
+  Einzelzahl). Konflikte: vier Dateien, je beide Seiten übernommen.
+- Nach dem Merge: `EPOS.Kern.Tests` gefiltert (Auftrag D, dazu Bericht, Excel, Kennzahlen, Emission, BerichtSzenario,
+  WikiProduktdatenWache) 688/688 — `StromGruppenregelTests` 22 (14 aus #609, 8 aus P556), `BerichtSzenarioTests` 6,
+  `BerichtVorlagenMesslatteTests` 7/7 byte-gleich; Kern-Filter und Windows-Schale 0 Fehler; Designer unverändert.
+- **Abnahme P555‑B:** Tafeln Kosten und Emissionen mit der Einzelzahl, je eine Fußzeile mit Gruppenzahl, Menge und
+  Stromverwender (Word unter ihrer Tafel, Excel als Anmerkungszeile), Kapitel Wirtschaftlichkeit mit der Gruppenzahl, App
+  unverändert (keine Datei unter `EPOS.UI*`), Messlatten byte-gleich — belegt durch die Fälle aus #609 im lokalen Lauf;
+  der Word-Text der Probe gesichtet (Emissionen 7,3 t/a, Energiekosten 5.692 €/a). Benannt, nicht behoben: Die Rücknahme
+  gilt für den ganzen Berichtsbaum, auch Übersicht und Kennzahl-Platzhalter der Vorlage lesen die Einzelzahl ohne
+  Fußzeile — die Fachvorgabe nannte nur die zwei Tafeln.
+
 ## Gate
 
 offen (Orchestrierung).
 
 ## Commit
 
-Code `bf81729a1`; Papiere, Merge und Push offen (Orchestrierung).
+Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55`; Abnahme und Nummer #610 im folgenden Papiercommit; Push offen
+(Orchestrierung).
