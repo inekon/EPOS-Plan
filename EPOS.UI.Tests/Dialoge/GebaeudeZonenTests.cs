@@ -565,6 +565,8 @@ public class GebaeudeZonenTests : EposBunitContext
 
         Assert.True(cut.Instance.ProjekteditorOffen);
         Assert.Contains(KNOPF, cut.Markup);
+        // Auch im Projekt steht der Editor in der breiten Überlagerung (Stufe KP2, Festlegung 7).
+        Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
     }
 
     [Fact]

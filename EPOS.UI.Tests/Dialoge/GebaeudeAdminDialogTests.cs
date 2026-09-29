@@ -806,6 +806,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.True(cut.Instance.KatalogeditorOffen);
         Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-zu"));
         Assert.Equal("Neu…", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        // Der Editor steht in der breiten Überlagerung wie im Gebäudedialog (Stufe KP2, Festlegung 7).
+        Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
 
         p.Katalog.Add(new Haus("Neubau E", "Einfamilienhaus", "Wohngebaeude", 0, 120));
         cut.Find(".epos-ueberlagerung-zu").Click();

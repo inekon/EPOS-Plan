@@ -210,8 +210,10 @@
     </Ueberlagerung>
 
     @* --- Der Katalogeditor (W9.1) - nur noch "Neu..." (AD-Q6, #465) --------- *@
+    @* In der BREITEN Ueberlagerung wie im Gebaeudedialog (Stufe KP2, Entwurf Festlegung 7). *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
-                   Titel="@BtnNeuText" Geschlossen="KatalogeditorFertig">
+                   Titel="@BtnNeuText" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="KatalogeditorFertig">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
