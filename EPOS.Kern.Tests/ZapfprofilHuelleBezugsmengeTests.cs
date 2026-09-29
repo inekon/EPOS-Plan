@@ -63,18 +63,26 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jede_Bezugsart_hat_Beschriftung_Einheit_und_Begriff_in_beiden_Sprachen()
         {
-            foreach (string kultur in new[] { "de-DE", "en-US" })
-                using (new Kulturvorrichtung(kultur))
-                    foreach (ZapfBezugsart b in Enum.GetValues(typeof(ZapfBezugsart)).Cast<ZapfBezugsart>())
+            var satz = new[]
+            {
+                WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetResourceSet(
+                    System.Globalization.CultureInfo.InvariantCulture, true, false),
+                WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetResourceSet(
+                    System.Globalization.CultureInfo.GetCultureInfo("en-US"), true, false)
+            };
+            foreach (ZapfBezugsart b in Enum.GetValues(typeof(ZapfBezugsart)).Cast<ZapfBezugsart>())
+            {
+                string gross = ZapfprofilHuelle.Gross(b.ToString());
+                string ganz = ((int)b).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                foreach (string schluessel in new[] { "ZPG_BEZUG_" + gross, "ZPG_EINHEIT_" + gross,
+                                                      ZapfSatz.PRAEFIX + "BEGRIFF_BEZUGSART_" + ganz,
+                                                      ZapfSatz.PRAEFIX + "BEGRIFF_EINHEIT_" + ganz })
+                    foreach (System.Resources.ResourceSet s in satz)
                     {
-                        string groesse = ZapfprofilHuelle.Bezugsgroesse(b);
-                        string einheit = ZapfprofilHuelle.Einheit(b);
-                        Assert.False(string.IsNullOrWhiteSpace(groesse), kultur + " " + b);
-                        Assert.False(string.IsNullOrWhiteSpace(einheit), kultur + " " + b);
-                        Assert.NotEqual(b.ToString(), groesse);
-                        Assert.NotEqual("BEGRIFF_BEZUGSART_" + (int)b, ZapfprofilAuslegung.Bezugsartbegriff(b).Klartext);
-                        Assert.NotEqual("BEGRIFF_EINHEIT_" + (int)b, Schaetzhilfe.Einheitbegriff(b).Klartext);
+                        Assert.NotNull(s);
+                        Assert.False(string.IsNullOrWhiteSpace(s.GetString(schluessel)), schluessel + " fehlt in einer Sprache.");
                     }
+            }
             Assert.Equal("Zimmer", ZapfprofilAuslegung.Bezugsartbegriff(ZapfBezugsart.Zimmer).Klartext);
             Assert.Equal("Zimmer", Schaetzhilfe.Einheitbegriff(ZapfBezugsart.Zimmer).Klartext);
         }
