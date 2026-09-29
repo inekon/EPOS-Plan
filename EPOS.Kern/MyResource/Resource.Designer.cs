@@ -73965,6 +73965,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: {0} — der Personenkalender führt keine einzige Stunde mit Anwesenheit; die Kennzahlen der Nutzungszeit zählen deshalb nach der Nachtzeit des Gebäudes. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_NUTZUNG_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_NUTZUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0. ähnelt.
         /// </summary>
         public static string SIMENG_KOND_OHNE_HEIZUNG {
@@ -73979,6 +73988,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KOND_START_AUS {
             get {
                 return ResourceManager.GetString("SIMENG_KOND_START_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Außerhalb der Heizperiode liegt die Raumluft in {0} Nutzungsstunden unter dem Tagwert {1} °C der Heizspalte, am tiefsten um {2} K. Die Heizperiode schneidet diesen Bedarf ab; der Lauf rechnet weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_UNTERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_UNTERTEMPERATUR", resourceCulture);
             }
         }
         

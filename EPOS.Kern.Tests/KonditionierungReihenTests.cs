@@ -245,8 +245,9 @@ namespace EPOS.Kern.Tests
             Konditionierungssatz s = Satz();
             s.Setzen(Konditionierungsgroesse.Lueftung,
                      Konstant(Konditionierungsgroesse.Lueftung, 0.4, nennwert: null));
-            // Der Nennwert (Infiltration) kommt nicht aus dem Kalender - Lueftung traegt keinen;
-            // deshalb rechnet der Eingang mit 0 + 0,4 = 0,4 1/h.
+            // Ohne Matrixwert traegt der Satz keine Infiltration (KP1b: sie kommt aus der Zelle
+            // Lueftung/NENNWERT, nicht aus dem Kalender) - der Eingang rechnet mit 0 + 0,4 = 0,4 1/h.
+            // Mit ihr bleibt sie erhalten: KonditionierungNutzungAuslegungTests.
             GebaeudeModellEingang e = Eingang(g, s);
             Assert.Equal(0.4, e.Luftwechselrate_h, 12);
             Assert.NotNull(e.LueftungZusatzleitwertWK);

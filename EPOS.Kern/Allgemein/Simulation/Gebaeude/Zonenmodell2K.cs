@@ -622,10 +622,17 @@ namespace WindowsFormsApplication1
         /// Aufruf des vorhandenen Lösers mit fester Randbedingung, ausdrücklich kein
         /// Normnachweis (H-F12). Der Zustand des Modells bleibt unberührt.
         /// </summary>
-        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil)
+        /// <param name="zusatzleitwertWK">
+        /// Ein masseloser Zusatzleitwert Außenluft ↔ Raumluft [W/K] (Stufe KP1b, Konzept 3.6): der
+        /// Luftwechsel <b>über</b> dem Jahresminimum, mit dem R_ext gebildet ist. 0 heißt „nur das
+        /// Minimum" und ist Zeichen für Zeichen die Rechnung des Bestands.
+        /// </param>
+        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil,
+                                             double zusatzleitwertWK = 0.0)
         {
             var r = new Stundenrand(thetaOutC, thetaEqC, thetaRaumC, double.PositiveInfinity, 0.0, 0.0, 0.0,
-                                    heizungStrahlungsanteil: strahlungsanteil);
+                                    heizungStrahlungsanteil: strahlungsanteil,
+                                    zusatzleitwertWK: zusatzleitwertWK);
             Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
             Vektor2 xStationaer = -1.0 * (h.System.Rechner.A.Inverse() * h.B);
             return h.Ausgang(2, xStationaer);

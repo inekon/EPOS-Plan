@@ -67,6 +67,68 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void NachtauskuehlungSetzen(Nachtauskuehlvorgabe vorgabe) => Nachtauskuehlung = vorgabe;
 
+        /// <summary>
+        /// <b>Die Infiltration</b> [1/h] (Stufe KP1b, Konzept 3.1, 3.3, F15): die wirksame
+        /// Matrixzelle Lüftung/<c>NENNWERT</c> des Eigentümers, dessen Lüftungskalender gilt. Sie
+        /// bleibt konstant <b>unter</b> der Nutzerreihe des Kalenders und ist nie bedingt.
+        ///
+        /// <para><c>null</c> heißt 0 1/h — so wie der Bestand ohne getrennte Angabe rechnet: Trägt
+        /// das Gebäude nur die Gesamtangabe <c>Luftwechselrate</c>, gibt es keine Infiltration
+        /// unter der Reihe (der Generator lehnt dort jede Lüftungsvorgabe ohnehin ab,
+        /// <see cref="Fahrplanbefund.LuftwechselOhneTrennung"/>).</para>
+        ///
+        /// <para><b>Nicht der Nennwert des Kalenders:</b> Ein Lüftungskalender führt keinen
+        /// (<see cref="Konditionierungsgroessen.HatNennwert"/>), und sein Konstruktor lehnt ihn ab.
+        /// Die Infiltration ist eine Eigenschaft des Objekts, kein Wert der Kalenderzeile.</para>
+        /// </summary>
+        public double? InfiltrationH { get; private set; }
+
+        /// <summary>
+        /// <b>Der Tagwert der Heizspalte</b> [°C] (Stufe KP1b, Konzept 3.6, E53): die wirksame
+        /// Matrixzelle Heizen/<c>TAG</c> des Eigentümers, dessen Heizkalender gilt. Gegen ihn hält
+        /// der Lauf die Raumluft an den Tagen <b>außerhalb</b> der Heizperiode (Hinweis auf
+        /// Untertemperatur). <c>null</c> heißt: kein Tagwert (Zelle leer oder „aus") — dann gibt es
+        /// nichts zu vergleichen.
+        /// </summary>
+        public double? HeizTagwertC { get; private set; }
+
+        /// <summary>
+        /// Legt die zwei Werte ab, die der Lauf <b>neben</b> den Reihen aus der Matrix braucht
+        /// (Stufe KP1b): die Infiltration der Lüftungsspalte und den Tagwert der Heizspalte. Wie
+        /// <see cref="Setzen"/> nur für den Datenweg gedacht — danach wird der Satz nur gelesen.
+        /// </summary>
+        public void MatrixwerteSetzen(double? infiltrationH, double? heizTagwertC)
+        {
+            InfiltrationH = infiltrationH;
+            HeizTagwertC = heizTagwertC;
+        }
+
+        /// <summary>
+        /// <b>Die Tage außerhalb der Heizperiode</b> (Stufe KP1b, E53, Konzept 3.6): 365 Merker —
+        /// wahr, wo die <b>Saisonperiode</b> des Heizkalenders den Tag bestimmt (Art
+        /// <see cref="DbWerte.KOND_ART_BETRIEBSPAUSE"/>, <see cref="Standardfahrplan.RANG_SAISON"/>).
+        /// <c>null</c> ohne Heizkalender und ohne wirkende Saisonperiode — dann gibt es kein
+        /// „außerhalb", und der Hinweis entfällt.
+        ///
+        /// <para>Entschieden wird über <see cref="Konditionierungskalender.Quellperiode"/>, also über
+        /// <b>dieselbe</b> Wahl, die der Lauf rechnet: Ein Tag zählt nur, wenn die Saisonperiode ihn
+        /// auch wirklich gewinnt.</para>
+        /// </summary>
+        public bool[] HeizperiodeAussen()
+        {
+            Konditionierungskalender k = _kalender[(int)Konditionierungsgroesse.Heizsoll];
+            if (k == null) return null;
+            bool[] aussen = null;
+            for (int tag = 0; tag < 365; tag++)
+            {
+                Kalenderregel r = k.Quellperiode(tag, Referenzjahr);
+                if (r == null || !string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal)) continue;
+                aussen ??= new bool[365];
+                aussen[tag] = true;
+            }
+            return aussen;
+        }
+
         /// <summary>Der Kalender einer Größe oder <c>null</c> — dann gilt für diese Größe der Bestandszweig.</summary>
         public Konditionierungskalender Kalender(Konditionierungsgroesse g) => _kalender[(int)g];
 

@@ -105,26 +105,57 @@ namespace WindowsFormsApplication1
             }
             if (satz.Hat(Konditionierungsgroesse.Lueftung))
                 satz.NachtauskuehlungSetzen(Nachtauskuehlung(
-                    Quelle(matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt), gebaeude));
+                    Quelle(Konditionierungsgroesse.Lueftung, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt),
+                    gebaeude));
+            Matrixwerte(satz,
+                        Quelle(Konditionierungsgroesse.Lueftung, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt),
+                        Quelle(Konditionierungsgroesse.Heizsoll, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt));
             return satz.Wirksam ? satz : null;
         }
 
         /// <summary>
-        /// <b>Die Matrix, aus der die Nachtauskühlung kommt</b> (Stufe KP1b, Konzept 3.7): die des
-        /// Eigentümers, dessen Lüftungskalender gilt. Trägt die Zone einen eigenen angelegten
-        /// Kalender, ist es ihre wirksame Matrix; gilt der angelegte Kalender des Gebäudes, dessen
-        /// Matrix; ist der Kalender abgeleitet, die Matrix, aus der der Generator ihn gebildet hat.
+        /// <b>Die Matrix, aus der die Werte neben den Reihen kommen</b> (Stufe KP1b, Konzept 3.7,
+        /// 3.6): die des Eigentümers, dessen Kalender dieser Größe gilt. Trägt die Zone einen
+        /// eigenen angelegten Kalender, ist es ihre wirksame Matrix; gilt der angelegte Kalender des
+        /// Gebäudes, dessen Matrix; ist der Kalender abgeleitet, die Matrix, aus der der Generator
+        /// ihn gebildet hat.
         /// </summary>
-        private static Vorgabematrix Quelle(Vorgabematrix wirksam, Vorgabematrix gebaeudematrix,
+        private static Vorgabematrix Quelle(Konditionierungsgroesse groesse,
+                                            Vorgabematrix wirksam, Vorgabematrix gebaeudematrix,
                                             IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt,
                                             IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt)
         {
-            if (zoneangelegt != null && zoneangelegt.ContainsKey(Konditionierungsgroesse.Lueftung))
+            if (zoneangelegt != null && zoneangelegt.ContainsKey(groesse))
                 return wirksam;
-            if (gebaeudeangelegt != null && gebaeudeangelegt.ContainsKey(Konditionierungsgroesse.Lueftung))
+            if (gebaeudeangelegt != null && gebaeudeangelegt.ContainsKey(groesse))
                 return gebaeudematrix;
             return wirksam;
         }
+
+        /// <summary>
+        /// <b>Die zwei Werte neben den Reihen</b> (Stufe KP1b): die <b>Infiltration</b> aus der
+        /// Matrixzelle Lüftung/<c>NENNWERT</c> (Konzept 3.1, 3.3, F15 — der Kalender selbst führt
+        /// keinen Nennwert) und der <b>Tagwert der Heizspalte</b> aus Heizen/<c>TAG</c> (Konzept 3.6,
+        /// E53). Eine leere Zelle und eine Zelle auf „aus" liefern <c>null</c> — dann rechnet der
+        /// Eingang wie ohne Angabe.
+        /// </summary>
+        private static void Matrixwerte(Konditionierungssatz satz, Vorgabematrix lueftungsquelle,
+                                        Vorgabematrix heizquelle)
+        {
+            double? infiltration = satz.Hat(Konditionierungsgroesse.Lueftung) && lueftungsquelle != null
+                ? Zahl(lueftungsquelle.Lueftung.Nennwert)
+                : null;
+            double? heizTag = satz.Hat(Konditionierungsgroesse.Heizsoll) && heizquelle != null
+                ? Zahl(heizquelle.Heizsoll.Tag)
+                : null;
+            satz.MatrixwerteSetzen(infiltration, heizTag);
+        }
+
+        /// <summary>Die Zahl einer Matrixzelle; <c>null</c>, wenn sie leer, „aus" oder nicht endlich ist.</summary>
+        private static double? Zahl(Matrixzelle zelle)
+            => zelle != null && zelle.Belegt && !zelle.Aus && double.IsFinite(zelle.Wert)
+                ? zelle.Wert
+                : (double?)null;
 
         /// <summary>
         /// <b>Die Vorgabe der Nachtauskühlung aus der Matrix</b> (Stufe KP1b, Konzept 3.7, P9 (b)):
@@ -208,6 +239,7 @@ namespace WindowsFormsApplication1
             }
             if (satz.Hat(Konditionierungsgroesse.Lueftung))
                 satz.NachtauskuehlungSetzen(Nachtauskuehlung(matrix, bestand));
+            Matrixwerte(satz, matrix, matrix);
             return satz.Wirksam ? satz : null;
         }
 

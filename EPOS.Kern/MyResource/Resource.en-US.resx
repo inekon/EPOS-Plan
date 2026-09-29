@@ -10658,6 +10658,12 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
     <value>Conditioning: Night cooling ({0}) switched on in {1} of the 8760 hours; outside those hours the ventilation day value applies.</value>
   </data>
+  <data name="SIMENG_KOND_UNTERTEMPERATUR" xml:space="preserve">
+    <value>Conditioning: Outside the heating season the room air is below the heating column day value {1} °C in {0} occupancy hours, at most by {2} K. The heating season cuts off that demand; the run continues.</value>
+  </data>
+  <data name="SIMENG_KOND_NUTZUNG_LEER" xml:space="preserve">
+    <value>Conditioning: {0} — the occupancy calendar has no hour with people present; the occupancy-period figures therefore count by the building's night period.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
   </data>

@@ -217,7 +217,8 @@ namespace WindowsFormsApplication1
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
                                               heizkreis, kuehlkreis, eingang.Nachtzeit,
-                                              eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null);
+                                              eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null,
+                                              eingang.Nutzungsmaske);
         }
 
         /// <summary>

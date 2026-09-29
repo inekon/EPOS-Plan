@@ -217,7 +217,33 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
-                                              schleife.NachtauskuehlungGesetzt ? (int?)nacht : null);
+                                              schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
+                                              Gebaeudenutzung(zonen));
+        }
+
+        /// <summary>
+        /// <b>Die Nutzungsmaske des Gebäudes</b> (Stufe KP1b, F16, Konzept 3.4; Muster
+        /// N1.56 Nr. 10): Das Gebäude ist in Nutzung, wenn <b>eine beheizte Zone</b> es ist — je Zone
+        /// ihre eigene Maske, sonst ihre Nachtzeit. <c>null</c>, wenn keine beheizte Zone einen
+        /// Personenkalender trägt: Dann zählen die Kennzahlen wörtlich nach der Nachtzeit wie bisher.
+        /// </summary>
+        private static bool[] Gebaeudenutzung(IReadOnlyList<ZonenEingang> zonen)
+        {
+            bool eine = false;
+            foreach (ZonenEingang z in zonen)
+                if (z.IstBeheizt && z.Eingang.Nutzungsmaske != null) { eine = true; break; }
+            if (!eine) return null;
+
+            var maske = new bool[8760];
+            foreach (ZonenEingang z in zonen)
+            {
+                if (!z.IstBeheizt) continue;
+                GebaeudeModellEingang e = z.Eingang;
+                for (int h = 0; h < 8760; h++)
+                    if (!maske[h] && (e.Nutzungsmaske == null ? e.Nachtzeit.Nutzungszeit(h) : e.Nutzungsmaske[h]))
+                        maske[h] = true;
+            }
+            return maske;
         }
 
         /// <summary>

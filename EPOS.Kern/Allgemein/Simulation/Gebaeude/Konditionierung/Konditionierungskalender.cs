@@ -166,13 +166,23 @@ namespace WindowsFormsApplication1
         /// („Quelle: Sommerferien“, Konzept 3.2); dieselbe Entscheidung wie in
         /// <see cref="Auswerten"/>.
         /// </summary>
-        public string Quelle(int tag0, int referenzjahr)
+        public string Quelle(int tag0, int referenzjahr) => Quellperiode(tag0, referenzjahr)?.Bezeichner;
+
+        /// <summary>
+        /// <b>Die Periode, die einen Tag bestimmt</b> — die ranghöchste, die ihn enthält und greift,
+        /// oder <c>null</c> für Standardwoche bzw. Grundangabe; dieselbe Entscheidung wie in
+        /// <see cref="Auswerten"/> und in <see cref="Quelle"/>, nur mit der ganzen Regel statt ihres
+        /// Bezeichners. Der Lauf fragt sie nach der <b>Saisonperiode</b> (Art
+        /// <see cref="DbWerte.KOND_ART_BETRIEBSPAUSE"/>), um die Tage außerhalb der Heizperiode zu
+        /// finden (E53).
+        /// </summary>
+        public Kalenderregel Quellperiode(int tag0, int referenzjahr)
         {
             for (int p = 0; p < _perioden.Length; p++)
             {
                 Kalenderregel r = _perioden[p];
                 int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, referenzjahr) - 1 : -1;
-                if (r.Enthaelt(tag0, f0) && r.Angabe.Greift(_woche)) return r.Bezeichner;
+                if (r.Enthaelt(tag0, f0) && r.Angabe.Greift(_woche)) return r;
             }
             return null;
         }

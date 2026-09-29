@@ -254,6 +254,15 @@ namespace WindowsFormsApplication1
                     string.Format(k, MyResource.Resource.SIMENG_G6_MUSTERWECHSEL, wer,
                                   (s.Musterwechsel + s.MusterNichtHaltbar).ToString(k), s.MusterNichtHaltbar.ToString(k)));
 
+            // Stufe KP1b: die Konditionierungshinweise je Zone - Eingang und Ergebnis stehen an
+            // derselben Stelle der beiden Listen (Zonenrechnung.Rechnen).
+            for (int z = 0; z < m.Zonen.Count && z < m.Eingaenge.Count; z++)
+            {
+                string werZone = wer + ", " + m.Eingaenge[z].Bezeichnung;
+                HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
+                HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+            }
+
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
             if (m.Eingaenge.Any(z => z.Eingang.ErdreichErsatzwerte))
@@ -361,6 +370,61 @@ namespace WindowsFormsApplication1
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NACHTKUEHL_STUNDEN,
                               e.Nachtauskuehlung.ToString(),
                               r.StundenMitNachtauskuehlung.Value.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf Untertemperatur außerhalb der Heizperiode</b> (Stufe KP1b, E53,
+        /// Konzept 3.6): Die Heizperiode schneidet Bedarf ab, den die Raumheizung sonst gedeckt
+        /// hätte. Gezählt werden die <b>Nutzungsstunden</b> an den Tagen <b>außerhalb</b> der
+        /// Heizperiode, in denen die gelöste Raumluft einer <b>beheizten</b> Zone unter dem
+        /// Tagwert der Heizspalte liegt; genannt werden Zahl und tiefste Unterschreitung in K.
+        /// <b>Der Lauf rechnet weiter</b> — es ist ein Hinweis, kein Fehler.
+        ///
+        /// <para>„Außerhalb" ist der Tag, dessen Quelle die <b>Saisonperiode</b> ist
+        /// (<see cref="Konditionierungssatz.HeizperiodeAussen"/>) — dieselbe Wahl, die der Lauf
+        /// rechnet. Stundenweises „aus" <em>innerhalb</em> der Heizperiode zählt nicht: Es ist der
+        /// Wochenplan, nicht die Saison.</para>
+        ///
+        /// <para>Ohne Heizkalender, ohne wirkende Saisonperiode, ohne Tagwert der Heizspalte und
+        /// für eine unbeheizte Zone schweigt die Methode.</para>
+        /// </summary>
+        internal static void HinweisUntertemperatur(GebaeudeModellEingang e, GebaeudeModellErgebnis r, string wer)
+        {
+            bool[] aussen = e.HeizperiodeAussen;
+            double? tagwert = e.Konditionierung?.HeizTagwertC;
+            if (aussen == null || r == null || !e.IstBeheizt || !tagwert.HasValue) return;
+
+            double grenze = tagwert.Value;
+            int stunden = 0;
+            double tiefste = 0.0;
+            for (int h = 0; h < 8760; h++)
+            {
+                if (!aussen[h / 24] || !r.NutzungBei(h)) continue;
+                double fehlt = grenze - r.Raumtemperatur[h];
+                if (!(fehlt > 0.0)) continue;
+                stunden++;
+                if (fehlt > tiefste) tiefste = fehlt;
+            }
+            if (stunden == 0) return;
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-untertemperatur-" + wer,
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(k, MyResource.Resource.SIMENG_KOND_UNTERTEMPERATUR,
+                              stunden.ToString(CultureInfo.InvariantCulture),
+                              grenze.ToString("0.0#", k), tiefste.ToString("0.0#", k)));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf einen Personenkalender ohne Anwesenheitsstunde</b> (Stufe KP1b, F16):
+        /// Dann gibt es keine Nutzungszeit aus der Anwesenheit; die Kennzahlen zählen nach der
+        /// Nachtzeit wie ohne Kalender. Ohne diesen Fall schweigt die Methode.
+        /// </summary>
+        internal static void HinweisNutzungsmaske(GebaeudeModellEingang e, string wer)
+        {
+            if (!e.NutzungsmaskeLeer) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-nutzung-leer-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NUTZUNG_LEER, wer));
         }
 
         /// <summary>
@@ -539,7 +603,8 @@ namespace WindowsFormsApplication1
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
                                               heizkreis, kuehlkreis, eingang.Nachtzeit,
-                                              eingang.NachtauskuehlungWK != null ? (int?)nachtStunden : null);
+                                              eingang.NachtauskuehlungWK != null ? (int?)nachtStunden : null,
+                                              eingang.Nutzungsmaske);
         }
 
         /// <summary>
@@ -687,6 +752,8 @@ namespace WindowsFormsApplication1
                                       e.StundenOhneHeizungH.ToString(CultureInfo.InvariantCulture)));
             HinweisKuehlNachtwert(e, wer);
             HinweisNachtauskuehlung(e, r, wer);
+            HinweisNutzungsmaske(e, wer);
+            HinweisUntertemperatur(e, r, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als

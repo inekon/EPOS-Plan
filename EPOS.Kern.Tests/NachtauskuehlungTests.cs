@@ -41,8 +41,7 @@ namespace EPOS.Kern.Tests
                                            konditionierung: satz);
 
         /// <summary>Die Standardwoche der Lüftung: Tagwert, im Fenster [von, bis) der Nachtwert.</summary>
-        private static Konditionierungskalender Lueftungswoche(double tag, double nacht, int von, int bis,
-                                                               double? infiltration = null)
+        private static Konditionierungskalender Lueftungswoche(double tag, double nacht, int von, int bis)
         {
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             Nachtzeit fenster = Nachtzeit.Aus(von, bis);
@@ -50,7 +49,7 @@ namespace EPOS.Kern.Tests
                 for (int st = 0; st < Kalenderwoche.TAGESSTUNDEN; st++)
                     woche[Kalenderwoche.Stelle(w, st)] = fenster.IstNacht(st) ? nacht : tag;
             return new Konditionierungskalender(Konditionierungsgroesse.Lueftung,
-                                                Kalenderangabe.AusWoche(woche), infiltration, null);
+                                                Kalenderangabe.AusWoche(woche), null, null);
         }
 
         /// <summary>Der Satz mit Lüftungskalender und Nachtauskühlvorgabe.</summary>
@@ -59,8 +58,11 @@ namespace EPOS.Kern.Tests
                                                           double? infiltration = null)
         {
             Konditionierungssatz s = Satz();
-            s.Setzen(Konditionierungsgroesse.Lueftung, Lueftungswoche(tag, nacht, von, bis, infiltration));
+            s.Setzen(Konditionierungsgroesse.Lueftung, Lueftungswoche(tag, nacht, von, bis));
             s.NachtauskuehlungSetzen(new Nachtauskuehlvorgabe(Nachtzeit.Aus(von, bis), tagwert, bedingtK));
+            // Stufe KP1b: Die Infiltration kommt aus der Matrixzelle Lueftung/NENNWERT, nicht aus
+            // dem Kalender - ein Lueftungskalender fuehrt keinen Nennwert (Befund R2).
+            s.MatrixwerteSetzen(infiltration, null);
             return s;
         }
 

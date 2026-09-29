@@ -26,7 +26,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Nutzungszeit</b> ist die Zeit des Tagsollwerts außerhalb der Nachtzeit des Gebäudes
     /// (<see cref="Nachtzeit"/>, Entscheid E43; ohne Angabe Stunde des Tages 7 … 22, 1-basiert), an allen
-    /// 365 Tagen (Rechenschritte 8.2).</para>
+    /// 365 Tagen (Rechenschritte 8.2). <b>Mit Personenkalender</b> (Stufe KP1b, F16, Konzept 3.4)
+    /// zählt stattdessen die <see cref="Nutzungsmaske"/>: Anwesenheit über null. Sie wirkt allein
+    /// hier, in den Kennzahlen — der Sollwertfahrplan bleibt an der Nachtzeit.</para>
     ///
     /// <para>Unveränderlich; ohne Datenbank, ohne Anzeige.</para>
     /// </summary>
@@ -41,8 +43,11 @@ namespace WindowsFormsApplication1
             double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
             double? kuehlSollwert = null, HeizkreisErgebnis heizkreis = null,
             KuehlkreisErgebnis kuehlkreis = null, Nachtzeit nachtzeit = null,
-            int? stundenMitNachtauskuehlung = null)
+            int? stundenMitNachtauskuehlung = null, bool[] nutzungsmaske = null)
         {
+            if (nutzungsmaske != null && nutzungsmaske.Length != 8760)
+                throw new ArgumentException("8760 Werte erwartet.", nameof(nutzungsmaske));
+            Nutzungsmaske = nutzungsmaske;
             StundenMitNachtauskuehlung = stundenMitNachtauskuehlung;
             Nachtzeit = nachtzeit ?? Nachtzeit.Vorgabe;
             Heizkreis = heizkreis;
@@ -115,7 +120,7 @@ namespace WindowsFormsApplication1
             int nutzung = 0, ueber = 0;
             for (int h = 0; h < 8760; h++)
             {
-                if (!Nachtzeit.Nutzungszeit(h)) continue;
+                if (!NutzungBei(h)) continue;
                 nutzung++;
                 luft += raumtemperatur[h];
                 if (operativeTemperatur[h] > thetaMax) ueber++;
@@ -126,6 +131,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Nachtzeit des Gebäudes, nach der die Nutzungszeit der Kennzahlen zählt (E43).</summary>
         internal Nachtzeit Nachtzeit { get; }
+
+        /// <summary>
+        /// <b>Die Nutzungsmaske aus dem Personenkalender</b> (F16, Konzept 3.4) — 8 760 Merker,
+        /// wahr bei Anwesenheit über null. <c>null</c> heißt: <b>die Nachtzeit gilt</b>, wörtlich wie
+        /// bisher. Sie kommt aus <see cref="GebaeudeModellEingang.Nutzungsmaske"/>; beim Gebäude
+        /// eines Mehrzonenlaufs ist sie wahr, wo <b>eine beheizte Zone</b> in Nutzung ist.
+        /// </summary>
+        internal bool[] Nutzungsmaske { get; }
+
+        /// <summary>
+        /// <b>Ist die Stunde Nutzungszeit?</b> (F16) Ohne Personenkalender steht hier Zeichen für
+        /// Zeichen der Bestandsausdruck <c>Nachtzeit.Nutzungszeit(h)</c>; mit ihm gilt die Maske.
+        /// Keine Maske wird aus der Nachtzeit gebaut — es ist eine echte Verzweigung (N1.61 Nr. 11).
+        /// </summary>
+        internal bool NutzungBei(int h) => Nutzungsmaske == null ? Nachtzeit.Nutzungszeit(h) : Nutzungsmaske[h];
 
         /// <summary>
         /// Die Zonen eines Mehrzonengebäudes (Stufe G6b, W5), in der Rechenreihenfolge; <c>null</c> bei
@@ -146,7 +166,7 @@ namespace WindowsFormsApplication1
             int ueber = 0, kuehl = 0;
             for (int h = 0; h < 8760; h++)
             {
-                bool nutzung = Nachtzeit.Nutzungszeit(h);
+                bool nutzung = NutzungBei(h);
                 bool u = false, k = false;
                 foreach (GebaeudeZonenergebnis z in zonen)
                 {
@@ -300,7 +320,7 @@ namespace WindowsFormsApplication1
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
                                               Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
                                               Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit,
-                                              StundenMitNachtauskuehlung);
+                                              StundenMitNachtauskuehlung, Nutzungsmaske);
         }
     }
 

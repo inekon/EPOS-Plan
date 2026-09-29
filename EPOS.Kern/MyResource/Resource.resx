@@ -10665,6 +10665,12 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="SIMENG_KOND_NACHTKUEHL_STUNDEN" xml:space="preserve">
     <value>Konditionierung: Die Nachtauskühlung ({0}) schaltete in {1} der 8760 Stunden ein; außerhalb gilt der Tagwert der Lüftung.</value>
   </data>
+  <data name="SIMENG_KOND_UNTERTEMPERATUR" xml:space="preserve">
+    <value>Konditionierung: Außerhalb der Heizperiode liegt die Raumluft in {0} Nutzungsstunden unter dem Tagwert {1} °C der Heizspalte, am tiefsten um {2} K. Die Heizperiode schneidet diesen Bedarf ab; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_KOND_NUTZUNG_LEER" xml:space="preserve">
+    <value>Konditionierung: {0} — der Personenkalender führt keine einzige Stunde mit Anwesenheit; die Kennzahlen der Nutzungszeit zählen deshalb nach der Nachtzeit des Gebäudes.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
   </data>
