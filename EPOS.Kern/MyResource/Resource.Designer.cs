@@ -16479,6 +16479,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Projekt, das auf der Berichtsseite keine eigene Vorlage gewählt hat; dort kann ein Stammprojekt abweichen. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_VORGABE {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hier liegen die eigenen Berichtsvorlagen. Die Datenbanksicherung nimmt den Ordner nicht mit. ähnelt.
         /// </summary>
         public static string EIN_BERICHT_HINT_VORLAGENORDNER {
@@ -16511,6 +16520,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EIN_BERICHT_LBL_LOGO {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_LBL_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Excel-Vorlage: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_VORGABE_EXCEL {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_VORGABE_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Word-Vorlage: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_VORGABE_WORD {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_VORGABE_WORD", resourceCulture);
             }
         }
         
@@ -42074,6 +42101,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ADMSET_BERICHT_ORDNER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_ORDNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus welcher Excel-Vorlage die Mappe entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat; „Ohne Vorlage (EPOS-Plan)“ baut die Mappe aus dem Programm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit welcher Word-Vorlage ein Bericht entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat: die Standardvorlage oder eine Vorlage des Vorlagenordners. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL", resourceCulture);
             }
         }
         

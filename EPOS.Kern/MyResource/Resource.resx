@@ -36991,6 +36991,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld.</value>
   </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_WORD" xml:space="preserve">
+    <value>Vorgabe Word-Vorlage:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORGABE_EXCEL" xml:space="preserve">
+    <value>Vorgabe Excel-Vorlage:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORGABE" xml:space="preserve">
+    <value>Gilt für jedes Projekt, das auf der Berichtsseite keine eigene Vorlage gewählt hat; dort kann ein Stammprojekt abweichen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL" xml:space="preserve">
+    <value>Mit welcher Word-Vorlage ein Bericht entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat: die Standardvorlage oder eine Vorlage des Vorlagenordners.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL" xml:space="preserve">
+    <value>Aus welcher Excel-Vorlage die Mappe entsteht, solange das Stammprojekt auf der Berichtsseite keine eigene gewählt hat; „Ohne Vorlage (EPOS-Plan)“ baut die Mappe aus dem Programm.</value>
+  </data>
   <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>Deckblatt kommt aus der Vorlage</value>
   </data>

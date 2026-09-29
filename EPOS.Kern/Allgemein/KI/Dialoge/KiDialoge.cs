@@ -9017,7 +9017,7 @@ namespace WindowsFormsApplication1
         public const string FARBFELD_VORSILBE = "farbe_";
 
         /// <summary>
-        /// Die Programmeinstellungen — neun benannte Werte und je Farbrolle der
+        /// Die Programmeinstellungen — elf benannte Werte und je Farbrolle der
         /// Diagramme ein Feld der FELDTAFEL.
         /// </summary>
         /// <remarks>
@@ -9026,7 +9026,8 @@ namespace WindowsFormsApplication1
         /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b>, <b>die Rubrik
         /// „Bericht"</b> (Firma und Vorlagenordner der Berichtsvorlagen, BV-E1 — der
         /// Ordner wird erst im OK-Weg geprueft und nur bestehend uebernommen —, dazu das
-        /// Firmenlogo der Kopfzeile, BV-E2) und <b>die
+        /// Firmenlogo der Kopfzeile, BV-E2, und die zwei Vorgaben der Installation als
+        /// Wahlfelder) und <b>die
         /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
         /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
         /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
@@ -9078,7 +9079,17 @@ namespace WindowsFormsApplication1
                 // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile - ein Dateipfad, leer = ohne Logo.
                 new KiDialogFeld("bericht_logo", EINSTELLUNGEN_SICHT + ".BerichtLogo",
                                  KiDialogTexte.AdmsetBerichtLogoName, KiParameterTyp.Text,
-                                 KiDialogTexte.AdmsetBerichtLogoErl, leerErlaubt: true)
+                                 KiDialogTexte.AdmsetBerichtLogoErl, leerErlaubt: true),
+
+                // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) - WAHLFELDER
+                // mit den Eintraegen der zwei Auswahlfelder der Rubrik; ihre Begleiter sind
+                // BerichtVorgabeWordWahl und BerichtVorgabeExcelWahl.
+                new KiDialogFeld("bericht_vorgabe_word", EINSTELLUNGEN_SICHT + ".BerichtVorgabeWord",
+                                 KiDialogTexte.AdmsetBerichtVorgabeWordName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.AdmsetBerichtVorgabeWordErl, leerErlaubt: true),
+                new KiDialogFeld("bericht_vorgabe_excel", EINSTELLUNGEN_SICHT + ".BerichtVorgabeExcel",
+                                 KiDialogTexte.AdmsetBerichtVorgabeExcelName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.AdmsetBerichtVorgabeExcelErl, leerErlaubt: true)
             };
 
             foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)

@@ -865,14 +865,28 @@ public class KiDialogkatalogTests : IDisposable
         Assert.NotNull(d);
 
         // Sechs Werte der Anwendung und — Berichtsvorlagen BV-E1 — Firma und Vorlagenordner
-        // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu je Farbrolle ein Feld.
+        // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu die zwei Vorgaben der
+        // Installation als Wahlfelder und je Farbrolle ein Feld.
         var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
-        Assert.Equal(9 + rollen.Count, d.Felder.Count);
+        Assert.Equal(11 + rollen.Count, d.Felder.Count);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtFirma", d.FindeFeld("bericht_firma")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
                      d.FindeFeld("bericht_vorlagenordner")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtLogo", d.FindeFeld("bericht_logo")!.Eigenschaftspfad);
         Assert.Equal("Logo", d.FindeFeld("bericht_logo")!.Anzeigename);
+
+        // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3): Wahlfelder mit den
+        // Begleitern BerichtVorgabeWordWahl und BerichtVorgabeExcelWahl an der Sichtklasse.
+        KiDialogFeld word = d.FindeFeld("bericht_vorgabe_word")!;
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorgabeWord", word.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Wahl, word.Typ);
+        Assert.Equal("Vorgabe Word-Vorlage", word.Anzeigename);
+        KiDialogFeld excel = d.FindeFeld("bericht_vorgabe_excel")!;
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorgabeExcel", excel.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Wahl, excel.Typ);
+        Assert.Equal("Vorgabe Excel-Vorlage", excel.Anzeigename);
+        foreach (string begleiter in new[] { "BerichtVorgabeWordWahl", "BerichtVorgabeExcelWahl" })
+            Assert.NotNull(typeof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht).GetProperty(begleiter));
 
         foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
         {

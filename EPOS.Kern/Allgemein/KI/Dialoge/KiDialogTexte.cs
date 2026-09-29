@@ -3200,6 +3200,11 @@
         // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile
         internal static string AdmsetBerichtLogoName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_LOGO);
         internal static string AdmsetBerichtLogoErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_LOGO_ERL;
+        // Die zwei Vorgaben der Installation (BerichtVorlageWord, BerichtVorlageExcel)
+        internal static string AdmsetBerichtVorgabeWordName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORGABE_WORD);
+        internal static string AdmsetBerichtVorgabeWordErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL;
+        internal static string AdmsetBerichtVorgabeExcelName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORGABE_EXCEL);
+        internal static string AdmsetBerichtVorgabeExcelErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL;
 
         // ---- „Alle Daten" der Erzeugermasken des Projekts
 
