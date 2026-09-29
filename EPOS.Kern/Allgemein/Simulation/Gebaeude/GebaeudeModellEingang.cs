@@ -170,6 +170,31 @@ namespace WindowsFormsApplication1
         internal double[] LueftungZusatzleitwertWK { get; private set; }
 
         /// <summary>
+        /// <b>Der Zusatzleitwert des BEDINGTEN Anteils</b> je Stunde [W/K] (Stufe KP1b, Konzept 3.7,
+        /// P9 (b)): der Überschuss der Nutzerlüftung über den Tagwert n_T in den Stunden des
+        /// Nachtfensters, mal derselben Bezugsgröße wie <see cref="LueftungZusatzleitwertWK"/>. Er
+        /// wirkt nur, wenn die <see cref="Sommerlueftungsregel"/> der Nachtauskühlung eingeschaltet
+        /// ist.
+        ///
+        /// <para><c>null</c>, wenn es in KEINER Stunde einen bedingten Anteil gibt — dann wird
+        /// keine Regel gebaut, nichts gezählt, und <see cref="ZusatzleitwertWK(int, bool, bool)"/>
+        /// gibt wörtlich den Bestandsausdruck zurück (N1.61 Nr. 11).</para>
+        /// </summary>
+        internal double[] NachtauskuehlungWK { get; private set; }
+
+        /// <summary>
+        /// Die Vorgabe der Nachtauskühlung, aus der <see cref="NachtauskuehlungWK"/> entstand
+        /// (Nachtfenster, n_T, ΔT); <c>null</c> ohne Lüftungskalender.
+        /// </summary>
+        internal Nachtauskuehlvorgabe Nachtauskuehlung { get; private set; }
+
+        /// <summary>
+        /// <b>Ein Lüftungskalender ohne Tagwert</b> (Konzept 3.7): Dann gibt es keinen bedingten
+        /// Anteil — der Kalender wirkt in jeder Stunde unbedingt, und der Lauf nennt es als Hinweis.
+        /// </summary>
+        internal bool NachtauskuehlungOhneTagwert { get; private set; }
+
+        /// <summary>
         /// Die Stunden ohne Heizung (Heizsollwert „aus", E53) — außerhalb der Heizperiode oder
         /// stundenweise. 0 ohne Heizkalender. Der Kanal Raumwärme ist in diesen Stunden 0, weil der
         /// Löser sie ohne Heizung rechnet (<see cref="Stundenrand.MitHeizung"/>).
@@ -543,7 +568,8 @@ namespace WindowsFormsApplication1
         /// <see cref="Rand(int, bool)"/>, das wörtlich bleibt; im Löser wirkt die Zulufttemperatur als
         /// <c>gExt·ThetaOut</c>.
         /// </summary>
-        internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue)
+        internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                  bool nachtauskuehlung = false)
         {
             if (!KuehlKopplungWirksam)
             {
@@ -553,13 +579,13 @@ namespace WindowsFormsApplication1
                                            heizleistungMaxW: HeizleistungMaxW,
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                        heizleistungMaxW: HeizleistungMaxW,
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
@@ -569,7 +595,7 @@ namespace WindowsFormsApplication1
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
@@ -662,7 +688,7 @@ namespace WindowsFormsApplication1
         /// <paramref name="sommerlueftung"/> legt den Zusatzleitwert der Sommerlüftung parallel
         /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
         /// </summary>
-        internal Stundenrand Rand(int h, bool sommerlueftung = false)
+        internal Stundenrand Rand(int h, bool sommerlueftung = false, bool nachtauskuehlung = false)
         {
             // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
@@ -676,13 +702,13 @@ namespace WindowsFormsApplication1
                                            heizleistungMaxW: HeizleistungMaxW,
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                        heizleistungMaxW: HeizleistungMaxW,
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
@@ -695,7 +721,7 @@ namespace WindowsFormsApplication1
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
@@ -1877,6 +1903,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Zusatzleitwert einer Stunde mit Nachtauskühlung</b> [W/K] (Stufe KP1b, Konzept
+        /// 3.7): max(Sommerlüftung, L_u(h) + L_b(h)) — der unbedingte Anteil des Lüftungskalenders
+        /// gilt immer, der bedingte nur, wenn die Regel der Nachtauskühlung eingeschaltet ist; von
+        /// Sommerlüftung und Lüftung gewinnt der größere Luftwechsel.
+        ///
+        /// <para><b>Ohne Nachtauskühlung steht hier wörtlich der Bestandsausdruck:</b> Der Zweig
+        /// <c>NachtauskuehlungWK == null</c> ruft genau
+        /// <see cref="ZusatzleitwertWK(int, bool)"/> — dieselbe Zahl wie in KP1a, ohne zweite
+        /// Addition und ohne zweiten Vergleich (N1.61 Nr. 11).</para>
+        /// </summary>
+        internal double ZusatzleitwertWK(int h, bool sommerlueftung, bool nachtauskuehlung)
+        {
+            if (NachtauskuehlungWK == null) return ZusatzleitwertWK(h, sommerlueftung);
+            double sommer = sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0;
+            double kalender = (LueftungZusatzleitwertWK == null ? 0.0 : LueftungZusatzleitwertWK[h])
+                              + (nachtauskuehlung ? NachtauskuehlungWK[h] : 0.0);
+            return kalender > sommer ? kalender : sommer;
+        }
+
+        /// <summary>
+        /// <b>Zählt die Stunde <paramref name="h"/> als Nachtauskühlstunde?</b> (Konzept 3.7): Die
+        /// Regel ist an <em>und</em> es gibt in dieser Stunde einen bedingten Anteil — gleich,
+        /// welcher Luftwechsel am Ende gewinnt. Ohne Nachtauskühlung immer <c>false</c>.
+        /// </summary>
+        internal bool Nachtauskuehlstunde(int h, bool nachtauskuehlung)
+            => nachtauskuehlung && NachtauskuehlungWK != null && NachtauskuehlungWK[h] > 0.0;
+
+        /// <summary>
         /// <b>Der Startwert einer unbeheizten Zone</b> [°C] (N1.56 Festlegung 7, Konzept 3.6): das
         /// Mittel der äquivalenten Außentemperatur θ_eq über die Vorlaufstunden ab
         /// <paramref name="start"/>. Er gilt auch einer beheizten Zone, deren Heizsollwert in der
@@ -1933,11 +1987,35 @@ namespace WindowsFormsApplication1
                 // Die Infiltration bleibt konstant darunter (F15); ohne Angabe ist sie 0.
                 double infiltration = Konditionierung.Kalender(Konditionierungsgroesse.Lueftung).Nennwert
                                       ?? 0.0;
+
+                // Stufe KP1b (Konzept 3.7, P9 b): Geteilt wird die NUTZERREIHE, bevor die
+                // Infiltration dazukommt - die Infiltration ist nie bedingt (F15). In den Stunden
+                // des Nachtfensters ist max(0, n(h) - n_T) bedingt, der Rest unbedingt; ohne
+                // Nachtauskuehlvorgabe und ohne Tagwert gibt es keinen bedingten Anteil, und die
+                // Schleife rechnet Zeichen fuer Zeichen den Bestandsausdruck.
+                Nachtauskuehlung = satz.Nachtauskuehlung;
+                bool bedingtMoeglich = Nachtauskuehlung != null && Nachtauskuehlung.TraegtBedingtes;
+                NachtauskuehlungOhneTagwert = Nachtauskuehlung != null && !Nachtauskuehlung.TraegtBedingtes;
+                double tagwert = bedingtMoeglich ? Nachtauskuehlung.TagwertH.Value : 0.0;
+
                 var gesamt = new double[8760];
+                var bedingt = bedingtMoeglich ? new double[8760] : null;
+                bool bedingtWirksam = false;
                 double min = double.PositiveInfinity;
                 for (int h = 0; h < 8760; h++)
                 {
-                    double n = infiltration + nutzer[h];
+                    double unbedingt = nutzer[h];
+                    if (bedingtMoeglich && Nachtauskuehlung.Fenster.IstNacht(h))
+                    {
+                        double ueber = unbedingt - tagwert;
+                        if (ueber > 0.0)
+                        {
+                            bedingt[h] = ueber;
+                            unbedingt = tagwert;
+                            bedingtWirksam = true;
+                        }
+                    }
+                    double n = infiltration + unbedingt;
                     if (!Endlich(n) || n < 0.0)
                         Fehler(GebaeudeModellFehler.KalenderUngueltig,
                                "Der Luftwechsel " + Text(n) + " 1/h in Stunde " +
@@ -1955,6 +2033,15 @@ namespace WindowsFormsApplication1
                 {
                     double zusatzN = gesamt[h] - min;
                     LueftungZusatzleitwertWK[h] = zusatzN > 0.0 ? zusatzN * LuftwechselBezug() : 0.0;
+                }
+
+                // Der bedingte Anteil als zweiter Leitwert - nur, wenn es ihn in wenigstens einer
+                // Stunde gibt (sonst keine Regel und keine Zaehlung, Konzept 3.7).
+                if (bedingtWirksam)
+                {
+                    NachtauskuehlungWK = new double[8760];
+                    for (int h = 0; h < 8760; h++)
+                        NachtauskuehlungWK[h] = bedingt[h] > 0.0 ? bedingt[h] * LuftwechselBezug() : 0.0;
                 }
             }
 

@@ -69,6 +69,7 @@ namespace WindowsFormsApplication1
                             DeltaThetaMaxK = double.IsNaN(z.DeltaThetaMaxK) ? (double?)null : z.DeltaThetaMaxK,
                             DurchlaeufeMax = z.DurchlaeufeMax,
                             MusterwechselH = z.MusterwechselH,
+                            NachtauskuehlstundenH = z.Ergebnis.StundenMitNachtauskuehlung,
                         });
 
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;
@@ -76,6 +77,8 @@ namespace WindowsFormsApplication1
                 e.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 e.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
                 e.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                // Stufe KP1b (Konzept 3.7): NULL heisst "keine Nachtauskuehlung gesetzt" (E30).
+                e.NachtauskuehlstundenH = vdi.StundenMitNachtauskuehlung;
                 e.ObereRaumtemperaturC = vdi.ThetaMax;
 
                 // Anlagenkopplung (AK1): die Kennzahlen des Heizkreises je Gebäude.

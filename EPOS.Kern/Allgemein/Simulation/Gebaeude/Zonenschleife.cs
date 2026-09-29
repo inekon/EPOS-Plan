@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1
         private readonly string _wer;
         private readonly double[] _luft;
         private readonly bool[] _sommer;
+        private readonly bool[] _nacht;
         private readonly Stundenergebnis[] _ergebnis;
         private readonly Stundenmuster[] _muster;
         private readonly double[] _sicherAw, _sicherIw, _vorAir, _vorH, _vorC;
@@ -71,6 +72,8 @@ namespace WindowsFormsApplication1
         private readonly bool[] _heizen = new bool[8760];
         private readonly bool[] _kuehlen = new bool[8760];
         private readonly bool[] _sommerStunde = new bool[8760];
+        private readonly bool[] _nachtStunde = new bool[8760];
+        private bool _nachtauskuehlungGesetzt;
 
         /// <param name="zonen">Die Zonen des Gebäudes in der Rechenreihenfolge (<see cref="ZonenEingang.Bauen"/>).</param>
         /// <param name="wer">Das Gebäude für Meldungen.</param>
@@ -89,7 +92,12 @@ namespace WindowsFormsApplication1
             _gruppen = Teilgruppen(zonen);
             _luft = new double[n];
             _sommer = new bool[n];
+            _nacht = new bool[n];
             _ergebnis = new Stundenergebnis[n];
+            // Stufe KP1b (Konzept 3.7): Traegt KEINE Zone eine Nachtauskuehlung, bleibt die
+            // Kennzahl des Gebaeudes NULL (Muster E30).
+            for (int i = 0; i < n; i++)
+                if (zonen[i].Eingang.NachtauskuehlungWK != null) { _nachtauskuehlungGesetzt = true; break; }
             _muster = new Stundenmuster[n];
             _sicherAw = new double[n];
             _sicherIw = new double[n];
@@ -186,6 +194,15 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresstunden, in denen mindestens eine beheizte Zone sommerlich lüftete.</summary>
         internal IReadOnlyList<bool> StundenMitSommerlueftung => _sommerStunde;
 
+        /// <summary>
+        /// Jahresstunden, in denen mindestens eine beheizte Zone nachtauskühlte (Stufe KP1b,
+        /// Konzept 3.7) — Regel an <em>und</em> bedingter Anteil in dieser Stunde.
+        /// </summary>
+        internal IReadOnlyList<bool> StundenMitNachtauskuehlung => _nachtStunde;
+
+        /// <summary>Trägt wenigstens eine Zone eine Nachtauskühlung? Sonst bleibt die Kennzahl NULL (E30).</summary>
+        internal bool NachtauskuehlungGesetzt => _nachtauskuehlungGesetzt;
+
         // =====================================================================
         //  Vorlauf und Jahr
         // =====================================================================
@@ -241,7 +258,11 @@ namespace WindowsFormsApplication1
         private void Stunde(int h, bool jahr)
         {
             int n = _laeufe.Length;
-            for (int z = 0; z < n; z++) _sommer[z] = _laeufe[z].Sommerlueftung(h);
+            for (int z = 0; z < n; z++)
+            {
+                _sommer[z] = _laeufe[z].Sommerlueftung(h);
+                _nacht[z] = _laeufe[z].Nachtauskuehlung(h);
+            }
 
             foreach (int[] gruppe in _gruppen)
             {
@@ -250,7 +271,7 @@ namespace WindowsFormsApplication1
                     var vorstunde = (double[])_luft.Clone();
                     foreach (int z in gruppe)
                     {
-                        Stundenrand r = _zonen[z].Rand(h, _sommer[z], vorstunde);
+                        Stundenrand r = _zonen[z].Rand(h, _sommer[z], vorstunde, _nacht[z]);
                         Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
                         _ergebnis[z] = s;
                         _luft[z] = s.ThetaAirMittel;
@@ -259,7 +280,7 @@ namespace WindowsFormsApplication1
                 else if (gruppe.Length == 1)
                 {
                     int z = gruppe[0];
-                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft);
+                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft, _nacht[z]);
                     Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
                     _ergebnis[z] = s;
                     _luft[z] = Vorgabe(z, h, s.ThetaAirMittel);
@@ -276,12 +297,14 @@ namespace WindowsFormsApplication1
                     _laeufe[z].VorlaufUebernehmen(h, in s);
                     continue;
                 }
-                _laeufe[z].Uebernehmen(h, _sommer[z], in s);
+                _laeufe[z].Uebernehmen(h, _sommer[z], _nacht[z], in s);
                 BeobachterFuerProbe?.Invoke(z, h, s);
                 if (s.Abschnitte > 1) _umschaltung[h] = true;
                 if (s.HeizleistungW > 0.0) _heizen[h] = true;
                 if (s.KuehlleistungW > 0.0) _kuehlen[h] = true;
                 if (_sommer[z] && _zonen[z].IstBeheizt) _sommerStunde[h] = true;
+                if (_zonen[z].IstBeheizt && _zonen[z].Eingang.Nachtauskuehlstunde(h, _nacht[z]))
+                    _nachtStunde[h] = true;
             }
         }
 
@@ -314,7 +337,7 @@ namespace WindowsFormsApplication1
                 {
                     Zonenmodell2K m = _laeufe[z].Modell;
                     if (k > 1) m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
-                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft);
+                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft, _nacht[z]);
                     Stundenergebnis s = m.Schritt(in r);
                     if (k == 1) _muster[z] = m.LetztesMuster;
                     else if (!m.LetzteFolgeGleich(_muster[z]))

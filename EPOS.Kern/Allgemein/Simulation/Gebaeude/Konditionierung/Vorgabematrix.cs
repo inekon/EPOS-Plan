@@ -258,6 +258,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Das Nachtfenster einer Spalte</b> (F19) — die EINE Stelle, an der es gebildet wird:
+        /// die Zeiten der Nachtzeile der Spalte, leer das der Heizspalte, leer die Nachtzeit des
+        /// Gebäudes (<c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>, beide leer = 22 bis 6 Uhr).
+        ///
+        /// <para>Sie gilt dem Generator (<see cref="Standardfahrplan"/>, Standardwoche) und der
+        /// <b>Nachtauskühlung</b> (Stufe KP1b, Konzept 3.7) zugleich — beide müssen dasselbe Fenster
+        /// sehen, sonst stünde der bedingte Anteil neben den Stunden, in denen der Nachtwert steht.</para>
+        /// </summary>
+        /// <param name="groesse">Die Spalte, deren Nachtfenster gesucht ist.</param>
+        /// <param name="von">Beginn [Uhr 0 … 23] oder <c>null</c>.</param>
+        /// <param name="bis">Ende [Uhr 0 … 23] oder <c>null</c>; beide leer heißt die Vorgabe 22–6 Uhr.</param>
+        public void Nachtfenster(Konditionierungsgroesse groesse, out int? von, out int? bis)
+        {
+            Matrixspalte s = Spalte(groesse);
+            von = s.Nacht.Von ?? Heizsoll.Nacht.Von ?? Bestand.NachtBeginn;
+            bis = s.Nacht.Bis ?? Heizsoll.Nacht.Bis ?? Bestand.NachtEnde;
+        }
+
+        /// <summary>
         /// <b>Die Kaskade Zone → Gebäude</b> (F2): Diese Matrix (die der Zone) über der des Gebäudes,
         /// je Zelle. Die Ferienzeiträume und die Merker kommen vom Gebäude — sie gelten für alle
         /// Spalten (Konzept 3.4).

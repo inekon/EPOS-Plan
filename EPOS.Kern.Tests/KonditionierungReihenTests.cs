@@ -253,29 +253,57 @@ namespace EPOS.Kern.Tests
             for (int h = 0; h < 8760; h++) Assert.Equal(0.0, e.LueftungZusatzleitwertWK[h]);
         }
 
+        /// <summary>
+        /// <b>Die Mechanik des Zusatzleitwerts</b> — Überschuss über dem Jahresminimum, nie negativ,
+        /// und im Stundenrand.
+        ///
+        /// <para><b>Semantikwechsel nach P9 (Stufe KP1b):</b> Dieser Test hielt bis KP1a die
+        /// <em>unbedingte</em> Wirkung eines Nachtüberschusses als zulässig fest. P9 (b) verbietet
+        /// sie — eine Nachtauskühlung wirkt nur unter der Bedingung der Sommerlüftung. Das Muster
+        /// ist deshalb „Werktag über Wochenende": ein Überschuss, der mit dem Nachtfenster nichts
+        /// zu tun hat und damit nach Konzept 3.7 unbedingt bleibt. Die Nachtlüftung prüft
+        /// <c>NachtauskuehlungTests</c> (N-NK2).</para>
+        /// </summary>
         [Fact]
-        public void Der_Ueberschuss_der_Nachtlueftung_laeuft_als_Zusatzleitwert_und_ist_nie_negativ()
+        public void Der_Ueberschuss_ueber_dem_Jahresminimum_laeuft_als_Zusatzleitwert_und_ist_nie_negativ()
         {
             ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             for (int w = 0; w < 7; w++)
                 for (int st = 0; st < 24; st++)
-                    woche[Kalenderwoche.Stelle(w, st)] = st >= 22 || st < 6 ? 2.0 : 0.4;
+                    woche[Kalenderwoche.Stelle(w, st)] = w >= 5 ? 0.4 : 2.0;   // Werktag ueber Wochenende
             Konditionierungssatz s = Satz();
             s.Setzen(Konditionierungsgroesse.Lueftung,
                      new Konditionierungskalender(Konditionierungsgroesse.Lueftung,
                                                   Kalenderangabe.AusWoche(woche), null, null));
             GebaeudeModellEingang e = Eingang(g, s);
 
-            // Das Jahresminimum geht in R_ext.
+            // Das Jahresminimum (der Wochenendwert) geht in R_ext.
             Assert.Equal(0.4, e.Luftwechselrate_h, 12);
-            // Der Ueberschuss (2,0 - 0,4) laeuft nur in den Nachtstunden, nie negativ.
-            Assert.Equal(0.0, e.LueftungZusatzleitwertWK[12]);
-            Assert.True(e.LueftungZusatzleitwertWK[2] > 0.0);
+
+            // Die Stellen der ersten Woche: Werktag ueber dem Minimum, Wochenende genau darauf.
+            int w0 = W0();
+            int werktag = -1, wochenende = -1;
+            for (int h = 0; h < 168 && (werktag < 0 || wochenende < 0); h++)
+            {
+                int tag = (w0 + h / 24) % 7;
+                if (tag < 5 && werktag < 0) werktag = h;
+                if (tag >= 5 && wochenende < 0) wochenende = h;
+            }
+            Assert.True(werktag >= 0 && wochenende >= 0);
+
+            // Der Ueberschuss (2,0 - 0,4) laeuft an Werktagen, nie negativ.
+            Assert.True(e.LueftungZusatzleitwertWK[werktag] > 0.0);
+            Assert.Equal(0.0, e.LueftungZusatzleitwertWK[wochenende]);
             for (int h = 0; h < 8760; h++) Assert.True(e.LueftungZusatzleitwertWK[h] >= 0.0);
+
             // Der Zusatzleitwert steht im Stundenrand.
-            Assert.Equal(e.LueftungZusatzleitwertWK[2], e.Rand(2).ZusatzleitwertWK, 9);
-            Assert.Equal(0.0, e.Rand(12).ZusatzleitwertWK);
+            Assert.Equal(e.LueftungZusatzleitwertWK[werktag], e.Rand(werktag).ZusatzleitwertWK, 9);
+            Assert.Equal(0.0, e.Rand(wochenende).ZusatzleitwertWK);
+
+            // P9: Ohne Nachtauskuehlvorgabe gibt es keinen bedingten Anteil - der ganze
+            // Ueberschuss wirkt unbedingt (hier: ausserhalb jedes Nachtfensters).
+            Assert.Null(e.NachtauskuehlungWK);
         }
 
         // =============================================================================

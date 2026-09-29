@@ -238,9 +238,9 @@ namespace WindowsFormsApplication1
             if (!nachtWirksam && !weWirksam) return null;      // konstante Grundangabe
 
             // Das Nachtfenster der Spalte; leer heißt das der Heizspalte (F19), und deren leeres
-            // heißt die Vorgabe 22-6 Uhr.
-            int? von = s.Nacht.Von ?? matrix.Heizsoll.Nacht.Von ?? b.NachtBeginn;
-            int? bis = s.Nacht.Bis ?? matrix.Heizsoll.Nacht.Bis ?? b.NachtEnde;
+            // heißt die Vorgabe 22-6 Uhr. EINE Stelle (Vorgabematrix.Nachtfenster), damit die
+            // Nachtauskuehlung (KP1b, Konzept 3.7) genau dieses Fenster sieht.
+            matrix.Nachtfenster(groesse, out int? von, out int? bis);
             NachtzeitBefund nb = Nachtzeit.Pruefen(von, bis);
             if (nb != NachtzeitBefund.Gueltig)
                 return new Fahrplanlesung(Fahrplanbefund.NachtzeitUngueltig, null, groesse, nb.ToString());
