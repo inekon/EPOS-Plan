@@ -122,7 +122,10 @@ namespace WindowsFormsApplication1
             for (int tag = 0; tag < 365; tag++)
             {
                 Kalenderregel r = k.Quellperiode(tag, Referenzjahr);
-                if (r == null || !string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal)) continue;
+                // Außerhalb heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene
+                // Betriebspause des Anwenders ist gewolltes „aus", keine Grenze der Heizperiode.
+                if (r == null || r.Rang != Standardfahrplan.RANG_SAISON
+                    || !string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal)) continue;
                 aussen ??= new bool[365];
                 aussen[tag] = true;
             }

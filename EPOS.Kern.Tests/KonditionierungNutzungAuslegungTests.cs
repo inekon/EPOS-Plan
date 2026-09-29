@@ -595,6 +595,29 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Hinweise);
         }
 
+        /// <summary>
+        /// <b>Eine eigene Betriebspause liegt nicht außerhalb der Heizperiode</b> (Konzept 3.6, E53):
+        /// Außerhalb heißt allein die Saisonperiode (Rang 900); eine Betriebspause des Anwenders im
+        /// Eigenband ist gewolltes „aus" und löst keinen Hinweis auf Untertemperatur aus.
+        /// </summary>
+        [Fact]
+        public void Eine_eigene_Betriebspause_liegt_nicht_ausserhalb_der_Heizperiode()
+        {
+            ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
+            var woche = Woche(20.0, 18.0, 22, 6);
+            var pause = Kalenderregel.Zeitraum(Standardfahrplan.RANG_EIGEN, DbWerte.KOND_ART_BETRIEBSPAUSE,
+                                               "Werksferien", 150, 170, Kalenderangabe.Abgeschaltet);
+            Konditionierungssatz s = Satz();
+            s.Setzen(Konditionierungsgroesse.Heizsoll,
+                     new Konditionierungskalender(Konditionierungsgroesse.Heizsoll,
+                                                  Kalenderangabe.AusWoche(woche), null, new[] { pause }));
+            s.MatrixwerteSetzen(null, 20.0);
+            GebaeudeModellEingang e = Eingang(g, s);
+
+            Assert.True(e.StundenOhneHeizungH > 0);
+            Assert.Null(e.HeizperiodeAussen);
+        }
+
         // =============================================================================
         //  Infiltration im Kalenderweg (5, Befund R2)
         // =============================================================================
