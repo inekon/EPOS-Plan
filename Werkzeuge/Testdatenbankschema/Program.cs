@@ -2185,6 +2185,28 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt TwwFuellstandSchema.SCHRITT (Auftrag F1, Zapfprofilgenerator N36 (d)): die
+            //      Verfahrensvolumina als Bezug der Fuellstandslinie. Tab_TwwProjekt neu gebaut mit der
+            //      Pruefklausel 1..8 am Fuellstandsbezug (Rezept der Schritte 96, 100 und 153) - aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_TwwFuellstandVerfahren bedient
+            //      (TwwFuellstandSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: KEIN DML - Zeilen, IDs und Zaehlerstaende bleiben, die
+            //      Speicherauslegung ist nachrichtlich.
+            string nrFuellstand = TwwFuellstandSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFuellstand + " - Verfahrensvolumina der Fuellstandslinie: offen " +
+                              TwwFuellstandSchema.Offen() + " Tabelle(n).");
+            if (!trocken)
+            {
+                var berichtFuellstand = new List<string>();
+                int fuellstand = TwwFuellstandSchema.Ausfuehren(berichtFuellstand);
+                foreach (string zeile in berichtFuellstand)
+                    Console.WriteLine("Schritt " + nrFuellstand + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFuellstand + " - vollstaendig: " + TwwFuellstandSchema.Vollstaendig() +
+                                  " (erwartet True); " + fuellstand + " Tabelle(n) in diesem Lauf neu gebaut.");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

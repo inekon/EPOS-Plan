@@ -80,7 +80,7 @@ Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
-Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild),
+Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild; #608: Verfahrensvolumina als Einträge dieser Wahl),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
@@ -162,9 +162,10 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
 - Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
 - Auf der Berichtsseite lässt sich das Szenario der Wirtschaftlichkeit wählen; der Wortbericht zeigt Kennzahlen, Betriebskosten, Brücke und Mehrjahresübersicht in diesem Szenario. (#591)
-- Im Kostenkapitel des Berichts steht je Stand die Kostenzahl der Einzelbetrachtung; wo die Gruppenregel wirkt, nennt eine Fußzeile die Zahl mit bepreistem Netzbezug und die Menge. (#608)
+- Im Kostenkapitel des Berichts steht je Stand die Kostenzahl der Einzelbetrachtung; wo die Gruppenregel wirkt, nennt eine Fußzeile die Zahl mit bepreistem Netzbezug und die Menge. (#609)
 - Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
 - Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
+- In der Brauchwasser-Auslegung lässt sich die Speichergröße der Füllstandslinie auch auf das Volumen eines der verglichenen Verfahren setzen, etwa DIN 4708. (#608)
 - Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#597)
 - In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 - Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)

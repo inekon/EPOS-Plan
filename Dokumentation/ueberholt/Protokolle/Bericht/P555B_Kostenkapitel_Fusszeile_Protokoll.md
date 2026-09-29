@@ -1,6 +1,6 @@
 # Bericht — Kostenkapitel mit Einzelzahl und Fußzeile der Gruppenregel (Protokoll)
 
-Statuszeile #608. Anwenderentscheid vom 29.09.2026, gebaut nach der Fachvorgabe **P555‑B** der Sitzung
+Statuszeile #609. Anwenderentscheid vom 29.09.2026, gebaut nach der Fachvorgabe **P555‑B** der Sitzung
 „EPOS Plan Wirtschaftlichkeit“
 ([`P555B_Fachvorgabe_Kostenkapitel_Fusszeile_2026-09-29.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P555B_Fachvorgabe_Kostenkapitel_Fusszeile_2026-09-29.md)):
 **Die Einzelzahl bleibt im Kostenkapitel, und dort druckt eine Fußzeile die Gruppenzahl samt Menge.** Damit ist der
@@ -119,10 +119,10 @@ für CO₂ und die Menge.
 
 ## 6 Offene Punkte
 
-- **Die Statusnummer `#608`** steht in diesem Protokoll, im Logbuchsatz und in der Indexzeile als Platzhalter; sie wird
+- **Die Statusnummer `#609`** steht in diesem Protokoll, im Logbuchsatz und in der Indexzeile als Platzhalter; sie wird
   mit der Statuszeile vergeben (bei Übergabe waren #602 und #603 belegt). Statuszeile und Nach-Blöcke schreibt die
   Orchestrierung: Der Block „Nach #555“ (b) trägt die Revision vom 29.09.2026 bereits und bekommt das „erledigt mit
-  #608“; „Nach #603“ (a) steht auf „in Umsetzung“ und ist auf umgesetzt zu setzen, danach § 6.5 und EZ‑16 durch die
+  #609“; „Nach #603“ (a) steht auf „in Umsetzung“ und ist auf umgesetzt zu setzen, danach § 6.5 und EZ‑16 durch die
   Wirtschaftlichkeit.
 - **Der Wiki-Upload steht aus** (gebündelte Veröffentlichung): geänderte Seite „Wirtschaftlichkeit“, dazu der
   Logbuch-Eintrag unter 1.2.0.5.
