@@ -80,7 +80,7 @@ Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
-Verlauf…“ entfällt),
+Verlauf…“ entfällt; #591: Bezugsart Zimmer; #592: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
@@ -136,7 +136,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
 - Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
 - Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
-- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“; die Zonenmaske weist auf die Zimmerzahl als Bezugsmenge hin. (#579)
+- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“. (#579)
 - Projektpakete eines älteren Programmstands werden beim Import auf den aktuellen Stand gehoben; abgelehnt wird nur noch ein Paket eines neueren Programmstands. (#580)
 - Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an einem Heiztag oder bis 24 Stunden nach dem letzten Lauf. (#568)
 - Ein Elektrokessel führt keine eigene Kesselemission mehr; sein Strom bleibt allein im Netzbezug. (#568)
@@ -154,6 +154,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
 - Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
+- Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#591)
+- Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#592)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.

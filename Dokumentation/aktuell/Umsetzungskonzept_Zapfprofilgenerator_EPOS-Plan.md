@@ -4578,3 +4578,62 @@ kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigene
 
 Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
 Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).
+
+### N36 (29.09.2026) — Welle #591–#592: Bezugsart Zimmer, FREI-1, Füllstandslinie am Wochenbild
+
+**Wortlaut** (Anwender, 27.09.2026): „Setze Teil A um“ und „Setze Teil D um“ — Teil A: Struktur des
+Zapfprofil-Wegs nach N35, Umgang mit der Import-Dublette FREI-1 (N34 (d)), Weg 3 „eigene Bezugsart
+Zimmer“ (N34); Teil D: die Kleinpunkte der Übergabe 2.4 (Speichergrößen-Auswahl im Wochendiagramm,
+Zählung des Brauchwasserkatalogs). Protokolle
+[Bezugsart Zimmer und FREI-1](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Bezugsart_Zimmer_FREI1.md),
+[Füllstandslinie](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Fuellstandslinie_Wochenbild.md).
+
+**(a) N35 ist mit #589 umgesetzt** (Sitzung „Dialoge und Korrekturen“, Baustein `Blattwechsel`,
+Hausregel „Blatt statt Überlagerung“). Eine zweite, parallel entstandene Fassung dieser Sitzung ist
+verworfen; ihre Browserprobe und ihre Abweichungen stehen im Bericht an die Orchestrierung, nicht im
+Bestand.
+
+**(b) Bezugsart Zimmer (#591, Weg 3).** `ZapfBezugsart.Zimmer = 8`; die Nutzungsart „Hotel (aus Messung,
+je Zimmer)“ trägt sie, ihr Name bleibt. Zimmer verhält sich überall wie Betten, wo Betten eine
+Sonderrolle hat; Zimmer und Betten werden nie summiert. Die Namensregel `BezugsmengeIstZimmerzahl`, der
+Hinweissatz aus N34 (c) und der DTO-Kanal `HinweisBezugsmenge` entfallen; die Einheit „Zimmer“ am Feld
+der Bezugsmenge trägt die Aussage. Schemaschritt **152** (`TwwBezugsartSchema.SCHRITT`) baut
+`Tab_TwwNutzungsart_STAMM` und `Tab_TwwBedarfstag_STAMM` mit der Prüfklausel 1..8 neu (Grundschema =
+Schritt), Eintrag in `Paketanhebung.STUFEN`.
+
+**(c) FREI-1 (#591, N34 (d)) — Umbenennen am Platz, eine Regel.** Entscheid der Orchestrierung mit dem
+Auftrag: keine neue Katalogversion, sondern die Regel `PaketteilNachfuehrung` (Allgemein/Update) für
+frühere Stände der ausgelieferten Paketzeilen. Befund: Der Paketteil führt keine eigene Katalogversion,
+`FREI-1` ist die Provenienz (`Bedarf_Version`); die Regel greift nur bei Status `AUSLIEFERUNG`,
+Provenienz `FREI-1`, Herkunftsart `EIGENKONSTRUKTION` und Name samt Bezugsart des früheren Stands. Sie
+wirkt im Schemaschritt (gespeicherte Zeile, dieselbe ID), im Katalogimport und im Projektimport vor dem
+Dublettenscan (Berichtszeile in beiden Sprachen), in der Auslieferungsvorlage und im Validierungswerkzeug;
+das Saatskript spiegelt sie. Eine Anwenderzeile gleichen Namens bleibt unberührt.
+
+**(d) Füllstandslinie (#592, Übergabe 2.4).** Die Aussage der Übergabe galt dem Mockup; in der App war
+der Bezug des Füllstands seit Z4 wählbar (N13 (o)), stand aber bei den Eingaben des Verfahrensvergleichs
+und nannte keine Liter. Die Wahl steht jetzt als „Speichergröße der Füllstandslinie“ unmittelbar über dem
+Wochenbild — **N13 (o) gilt mit diesem Ort** —, jeder Eintrag nennt sein Volumen, ein nicht bestimmbarer
+Eintrag steht gesperrt mit Grund. Der Kern trägt nur neue Ergebnisfelder; kein Rechenweg, kein
+Schemaschritt. Die Volumina der einzelnen Verfahren (DIN 4708, Gleichzeitigkeit, klassisch) stehen nicht
+zur Wahl — das bräuchte einen Schemaschritt an `Tab_TwwProjekt.Fuellstand_Bezug`.
+
+**(e) Zählung des Brauchwasserkatalogs (#592, Übergabe 2.4).** Die Testdatenbank führt die 11
+Wochenprofile und 13 Monatssätze des KONTEXT-Papiers wertgleich, dazu ältere Testzeilen, die die Projekte
+1007, 1009 und 1046 benutzen (Abschnitt 1.2, KONTEXT-Papier Abschnitt 5). Keine Datenänderung.
+
+**Testdatenbank.** Schemastand 152, Zellvergleich: allein `Tab_Applikation.SchemaVersion` und
+`Tab_TwwNutzungsart_STAMM` ID 9 `Bezugsart` 3 → 8. Kein Referenzprojekt benutzt die Hotelzeile; die
+Einfrierregel „gesäte Zapfprofil-Eingaben“ ist nicht berührt. Paketteil und Saat mit Python 3.12
+erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bricht unter 3.11 ab).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #591 | Windows-Abnahme: „Zimmer“ am Feld, Klappliste des Katalogeditors, Importbericht eines älteren Pakets | Anwender | nächste Abnahme |
+| #591 | Kurzlauf des Validierungswerkzeugs mit den neu konvertierten Hotelobjekten (erwartet 3 / 0 / 18) | Orchestrierung | mit dem nächsten Validierungslauf |
+| #591 | Auslieferungsvorlage aus einer Quelle auf Schemastand 152 | Orchestrierung | vor der nächsten Auslieferung |
+| #592 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
+| #592 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
+| Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
