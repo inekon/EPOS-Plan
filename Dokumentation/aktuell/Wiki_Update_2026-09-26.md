@@ -159,6 +159,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
 - Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
 - Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#597)
+- In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
