@@ -39611,6 +39611,7 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
     <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. Only with the section Economic viability ticked.</value>
+  </data>
   <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
     <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
   </data>
@@ -39626,4 +39627,68 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_MSG_KOPF_NICHT_ANGELEGT" xml:space="preserve">
     <value>The catalogue record could not be created; nothing was written.</value>
   </data>
+  <data name="KOND_MSG_VORLAGE_NAME_UNGUELTIG" xml:space="preserve">
+    <value>A template name is 1 to {0} characters long and carries no leading or trailing blanks.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_DOPPELT" xml:space="preserve">
+    <value>A template “{0}” already exists in the list for quantity {1} — names do not differ in upper and lower case.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FEHLT" xml:space="preserve">
+    <value>Template {0} does not exist.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
+    <value>“{0}” is not one of the four template usages.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
+    <value>A template cannot be saved as a template — use “Duplicate…” instead.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_ZIEL" xml:space="preserve">
+    <value>A template cannot be applied to a template — it applies to a building, a zone or a catalogue building.</value>
+  </data>
+  <data name="KOND_MSG_HERKUNFT_VORLAGE" xml:space="preserve">
+    <value>from template {0}</value>
+  </data>
+  <data name="KOND_MSG_DUPLIKAT_ZUSATZ" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="KOND_MSG_KEIN_KALENDER" xml:space="preserve">
+    <value>No calendar has been created for quantity {0} — create it from the matrix first.</value>
+  </data>
+  <data name="KOND_MSG_WERT_AUSSERHALB" xml:space="preserve">
+    <value>The value {0} lies outside the limits {1}.</value>
+  </data>
+  <data name="KOND_MSG_WERT_RUNDLAUF" xml:space="preserve">
+    <value>The value {0} cannot be stored with {1} decimal places and would come back changed.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITFENSTER" xml:space="preserve">
+    <value>Time window {0}, {1}–{2} h = {3}</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_FEIERTAGE" xml:space="preserve">
+    <value>Public holidays as a rule ({0} of {1} created)</value>
+  </data>
+  <data name="KOND_MSG_WOCHENTAG_UNGUELTIG" xml:space="preserve">
+    <value>{0} is not a weekday from 1 (Monday) to 7 (Sunday).</value>
+  </data>
+  <data name="KOND_MSG_ZEITFENSTER_UNGUELTIG" xml:space="preserve">
+    <value>The time window {0}–{1} h is empty or lies outside 0 to 24 h.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BELEGT" xml:space="preserve">
+    <value>Rank {0} of rule {1} is already taken — the periods cannot be created without shifting one.</value>
+  </data>
+  <data name="KOND_MSG_RANG_DOPPELT" xml:space="preserve">
+    <value>Rank {0} occurs twice — two periods would apply to the same hour.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BAND_VOLL" xml:space="preserve">
+    <value>There is no room left in the rank band {0} to {1} for another period.</value>
+  </data>
+  <data name="KOND_MSG_PERIODEN_ZU_VIELE" xml:space="preserve">
+    <value>A calendar carries at most {1} periods, together there would be {0}.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE" xml:space="preserve">
+    <value>New Year;Good Friday;Easter Monday;May Day;Ascension Day;Whit Monday;German Unity Day;Christmas Day;Boxing Day</value>
+  </data>
+  <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
+    <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
 </root>
+

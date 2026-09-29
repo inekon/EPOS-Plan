@@ -47,6 +47,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die Tabelle einer Zone.</summary>
         public const string TAB_ZONE = SchemaKatalog.TAB_ZONE;
 
+        /// <summary>Die Bestandsspalte des Nachtbeginns [Uhr 0 … 23] — <b>keine</b> Zelle der Matrix (siehe oben).</summary>
+        public const string SPALTE_NACHT_BEGINN = "Nachtabsenkung_Beginn";
+
+        /// <summary>Die Bestandsspalte des Nachtendes [Uhr 0 … 23], ausschließlich.</summary>
+        public const string SPALTE_NACHT_ENDE = "Nachtabsenkung_Ende";
+
+        /// <summary>
+        /// <b>Wo die Nachtzeiten eines Eigentümers stehen</b> — <c>null</c> für Zone und Vorlage:
+        /// <c>Tab_Zone</c> führt die zwei Spalten nicht (sie erbt das Fenster vom Gebäude, F19), und
+        /// eine Vorlage trägt ihre Zeiten in der Vorgabezeile <c>NACHT</c> (Konzept 5.6, 5.7).
+        /// „Als Vorlage speichern" holt die Zeiten von hier, wenn die Quelle keine Vorgabezeile
+        /// trägt (E54: Nacht <b>mit Zeiten</b>).
+        /// </summary>
+        public static string Nachtzeittabelle(Kalendereigentuemer art)
+            => art == Kalendereigentuemer.Gebaeude ? TAB_GEBAEUDE
+               : art == Kalendereigentuemer.Katalogbau ? TAB_KATALOGBAU
+               : null;
+
         /// <summary>
         /// Die Bestandsspalten je Größe und Zeile — der Schlüssel ist
         /// „<c>&lt;Größe&gt;|&lt;Zeile&gt;</c>" mit den Kennwörtern aus <see cref="DbWerte"/>.
