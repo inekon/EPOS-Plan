@@ -44751,7 +44751,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Projekt; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BETRIEBSART_ERL {
             get {
@@ -45183,7 +45183,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes; er benennt den Satz, der geschrieben wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_NAME_ERL {
             get {

@@ -99,16 +99,8 @@
                         <KindInhalt>
                             <Formularraster>
                                 <KindInhalt>
-                            @if (Modus == GebaeudeKatalogModus.Admin)
-                            {
-                                <Auswahlfeld Bezeichnung="@LabelName" Eintraege="@Namenseintraege"
-                                             Auswahl="@_namensindex" AuswahlChanged="NamenWaehlen" />
-                            }
-                            else
-                            {
-                                <Textfeld Bezeichnung="@LabelName" Wert="@_stand.Name"
-                                          WertChanged="w => _stand.Name = w" />
-                            }
+                            <Textfeld Bezeichnung="@LabelName" Wert="@_stand.Name"
+                                      WertChanged="w => _stand.Name = w" />
                             @if (Modus == GebaeudeKatalogModus.Projekt)
                             {
                                 <Herleitungszeile Text="@NameProjektzeile" />
@@ -819,12 +811,6 @@
     /// <summary>Die 13 Baualtersklassen A bis M in ihrer festen Reihenfolge (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
 
-    /// <summary>Die Namen aller Katalogsätze — nur im Modus Admin gebraucht.</summary>
-    [Parameter] public Func<IReadOnlyList<string>>? Katalognamen { get; set; }
-
-    /// <summary>Lädt einen Katalogsatz nach Namen — der Klapplistenwechsel im Modus Admin.</summary>
-    [Parameter] public Func<string, GebaeudeKatalogDaten?>? Lies { get; set; }
-
     /// <summary>
     /// Schreibt den Satz — der EINE Schreibweg, gerufen allein im OK-Weg. Zweiter
     /// Parameter: <c>true</c> = anlegen, <c>false</c> = überschreiben. Dritter Parameter:
@@ -1033,8 +1019,6 @@
 
     private IReadOnlyList<string> _typen = Array.Empty<string>();
     private IReadOnlyList<string> _arten = Array.Empty<string>();
-    private IReadOnlyList<string> _namen = Array.Empty<string>();
-    private int? _namensindex;
     private IReadOnlyDictionary<string, object>? _brauchwasserGaben;
     private bool _geschrieben;
 
@@ -1552,16 +1536,6 @@
         _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null, Zonen?.Luftstroeme);
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
-        if (Modus == GebaeudeKatalogModus.Admin)
-        {
-            _namen = Katalognamen?.Invoke() ?? Array.Empty<string>();
-            if (_namen.Count > 0)
-            {
-                _namensindex = 0;
-                SatzLaden(_namen[0]);
-            }
-        }
-
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
                                           () => KiSicht(), KiHaken());
     }
@@ -1622,14 +1596,8 @@
         return liste;
     }
 
-    /// <summary>In der KATALOGVERWALTUNG WÄHLT der Name den Satz, sonst BENENNT er ihn.</summary>
-    private void KiNameSetzen(string wert)
-    {
-        if (Modus != GebaeudeKatalogModus.Admin) { _stand.Name = wert ?? ""; return; }
-
-        for (int i = 0; i < _namen.Count; i++)
-            if (string.Equals(_namen[i], wert, StringComparison.Ordinal)) { NamenWaehlen(i); return; }
-    }
+    /// <summary>Der Name BENENNT den Satz, der geschrieben wird.</summary>
+    private void KiNameSetzen(string wert) => _stand.Name = wert ?? "";
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf. <b>„Speichern" ist der OK-Weg
@@ -1695,7 +1663,6 @@
     private IReadOnlyList<(int Id, string Text)> Arteintraege => Eintraege(_arten, _stand.Gebaeudeart);
     private int? Artindex => Index(_arten, _stand.Gebaeudeart);
 
-    private IReadOnlyList<(int Id, string Text)> Namenseintraege => Liste(_namen);
     private IReadOnlyList<(int Id, string Text)> Klasseneintraege => Liste(Baualtersklassen);
     private IReadOnlyList<(int Id, string Text)> Bauarteintraege => Liste(Bauarten);
     private IReadOnlyList<(int Id, string Text)> Verwendungseintraege => Liste(Verwendungen);
@@ -1745,27 +1712,6 @@
 
     /// <summary>Die Randbedingung der Bodenplatte; Erdreich bleibt NULL, wenn es NULL war.</summary>
     private void RandbedingungWaehlen(int? i) => _arbeit.RandbedingungWaehlen(i);
-
-    /// <summary>Der Namenswechsel im Modus Admin lädt den gewählten Satz.</summary>
-    private void NamenWaehlen(int? i)
-    {
-        _namensindex = i;
-        if (i is null || i.Value < 0 || i.Value >= _namen.Count) return;
-        SatzLaden(_namen[i.Value]);
-    }
-
-    private void SatzLaden(string name)
-    {
-        GebaeudeKatalogDaten? satz = Lies?.Invoke(name);
-        if (satz is null) return;
-
-        StandSetzen(satz);
-
-        // Der Rundweg zu W9-O-2: Die BAUART kommt aus der gespeicherten Bauweise.
-        _stand.Bauart = Gebaeudebauweise.BauartAusBauweise(
-            _stand.Bauweise, _stand.WohnflaecheGesamt ?? 0);
-        _meldung = "";
-    }
 
     private string Ferienname(int n)
         => (Ferienzeitraeume is not null && Ferienzeitraeume.Count > n) ? Ferienzeitraeume[n] : "";

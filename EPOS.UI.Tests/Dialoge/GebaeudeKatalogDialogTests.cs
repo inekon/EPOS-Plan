@@ -36,7 +36,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968",
       "1969 bis 1978", "1979 bis 1983", "1984 bis 1994", "1995 bis 2001", "2002 bis 2009",
       "2010 bis 2015", "2016 bis 2020", "ab 2021" };
-    private static readonly string[] NAMEN = { "Haus A", "Haus B", "Hotel C" };
     private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
     private const string REITER2 = "Temperaturen und Ferien";
@@ -93,7 +92,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         GebaeudeKatalogDaten? daten = null,
         GebaeudeKatalogModus modus = GebaeudeKatalogModus.Bearbeiten,
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
-        Func<string, GebaeudeKatalogDaten?>? lies = null,
         Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
         Action<bool>? geschlossen = null,
         bool titelAnzeigen = true)
@@ -104,8 +102,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
             .Add(x => x.Gebaeudetypen, () => TYPEN)
             .Add(x => x.Gebaeudearten, () => ARTEN)
             .Add(x => x.Baualtersklassen, KLASSEN)
-            .Add(x => x.Katalognamen, () => NAMEN)
-            .Add(x => x.Lies, lies ?? (n => Satz(n)))
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))
             .Add(x => x.BrauchwasserGaben, brauchwasser)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
@@ -873,25 +869,26 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Neubau", bezeichner);
     }
 
+    /// <summary>
+    /// <b>Drei Betriebsarten, der Name ist immer ein Textfeld</b> (Stufe KP2, Welle U0b): Die
+    /// Betriebsart „Admin" — der Name als Klappliste aller Katalogsätze — ist entfallen; die
+    /// Gebäudeverwaltung ist eine eigene Komponente und ruft den Editor nur für „Neu…".
+    /// </summary>
     [Fact]
-    public void Im_Modus_Admin_ist_der_Name_eine_Klappliste_ohne_Speichern_unter()
+    public void Es_gibt_drei_Betriebsarten_und_der_Name_ist_ein_Textfeld()
     {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
+        Assert.Equal(new[] { "Bearbeiten", "Neu", "Projekt" }, Enum.GetNames<GebaeudeKatalogModus>());
 
-        Assert.NotNull(Klappliste(cut, "Name :"));
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern unter");
-        Assert.Contains("Haus A", cut.Markup);
-        Assert.Contains("Hotel C", cut.Markup);
-    }
+        foreach (GebaeudeKatalogModus modus in Enum.GetValues<GebaeudeKatalogModus>())
+        {
+            var cut = Aufbauen(modus: modus);
+            Assert.Equal("input", Feld(cut, "Name :").QuerySelector("input, select")!.LocalName);
+            Assert.Equal("Haus A", Eingabe(cut, "Name :").GetAttribute("value"));
+        }
 
-    [Fact]
-    public void Im_Modus_Admin_laedt_der_Namenswechsel_den_gewaehlten_Satz()
-    {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
-
-        Klappliste(cut, "Name :").Change("2");   // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
+        // Die Parameter der Klappliste gibt es nicht mehr.
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Katalognamen"));
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Lies"));
     }
 
     // =================================================================================
@@ -1148,23 +1145,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Ok(cut);
 
         Assert.Equal(9876, geschrieben);
-    }
-
-    [Fact]
-    public void Das_Laden_leitet_die_Bauart_aus_der_gespeicherten_Bauweise_ab()
-    {
-        GebaeudeKatalogDaten geladen = Satz("Hotel C");
-        geladen.WohnflaecheGesamt = 100;
-        geladen.Bauweise = 10000;      // spez. 100 -> sehr schwer
-        geladen.Bauart = 0;            // absichtlich unpassend
-
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin, lies: _ => geladen);
-
-        Klappliste(cut, "Name :").Change("2");     // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
-        Assert.Equal(2, cut.Instance.Arbeitsstand.Bauart);
-        Assert.Equal(10000, cut.Instance.Arbeitsstand.Bauweise);
     }
 
     // =================================================================================

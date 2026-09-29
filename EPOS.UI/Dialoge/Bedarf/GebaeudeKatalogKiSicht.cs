@@ -165,9 +165,8 @@ public sealed class GebaeudeKatalogKiSicht
     // =====================================================================
 
     /// <summary>
-    /// Der Bezeichner des Satzes. In der KATALOGVERWALTUNG wählt er den Satz aus,
-    /// den die Maske lädt — denselben Weg nimmt dort die Klappliste; in den beiden
-    /// anderen Betriebsarten benennt er den Satz, der geschrieben wird.
+    /// Der Bezeichner des Satzes. Im Katalogeditor benennt er den Satz, der geschrieben wird;
+    /// in der Gebäudeverwaltung ist er nur lesbar — dort wählt <see cref="Satz"/>.
     /// </summary>
     public string Name
     {
@@ -870,8 +869,8 @@ public sealed class GebaeudeKatalogKiSicht
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 
     /// <summary>
-    /// Die Betriebsart der Maske — Bearbeiten, Neu oder Katalogverwaltung. Sie
-    /// entscheidet, welcher der beiden Speicherwege frei ist.
+    /// Die Betriebsart der Maske — Bearbeiten, Neu oder Projekt. Sie entscheidet, welcher der
+    /// beiden Speicherwege frei ist.
     /// </summary>
     public string Betriebsart => BetriebsartLesen?.Invoke() ?? "";
 

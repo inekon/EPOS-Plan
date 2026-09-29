@@ -260,7 +260,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
-        new("GebaeudeKatalogDialog", 49),
+        // KP2 U0b: Die Betriebsart „Admin" fällt und mit ihr die Klappliste des Namens; der Name
+        // ist allein das Textfeld (Katalogfeld name): 49 → 48.
+        new("GebaeudeKatalogDialog", 48),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.

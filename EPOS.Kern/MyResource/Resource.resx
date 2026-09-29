@@ -23092,7 +23092,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Art der Angabe, wie sie im Kopf steht — auch dann, wenn die Klappliste sie nicht mehr führt.</value>
   </data>
   <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
-    <value>Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird.</value>
+    <value>Der Bezeichner des Katalogsatzes; er benennt den Satz, der geschrieben wird.</value>
   </data>
   <data name="KI_DLG_GEBA_NAME_ERL" xml:space="preserve">
     <value>Der Bezeichner des gewählten Gebäudes – nur lesbar. Einen anderen Satz wählt das Feld „satz“; einen neuen Namen bekommt ein Satz über „Duplizieren...“.</value>
@@ -23254,7 +23254,7 @@ Möchten Sie das zulassen?</value>
     <value>Betriebsart der Maske</value>
   </data>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
-    <value>Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
+    <value>Bearbeiten, Neu oder Projekt; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
   </data>
   <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
     <value>Randbedingung Bodenplatte</value>
