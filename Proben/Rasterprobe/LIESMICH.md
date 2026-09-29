@@ -771,3 +771,39 @@ Gemessen bei 1 280 × 900 und 820 × 1 180: Stilblatt geladen; vier Reiter, jede
 Kurzform und das Leistenende in eigener Zeile; die Warnung in `--epos-warn-text`; nichts ragt aus dem
 Fenster, die Seite rollt nicht quer. Ein langer Stammname kürzt sich mit Auslassung (voller Name im
 `title`), wird es enger, fällt die Beschriftung „Stamm:“ weg. Rückgabe `0` = kein Verstoß.
+
+## Konditionierungsprobe (Stufe KP2) — Seite `/konditionierungsprobe`
+
+**Zweck.** Die Cloud-Vorabnahme der Oberflächenwellen von KP2 (Entwurf KP2, Abschnitt 7): der echte
+`GebaeudeKatalogDialog` in der **breiten** Überlagerung, wie Gebäudedialog und Gebäudeverwaltung ihn
+zeigen — ohne Datenbank. Der Parametersatz ist der der Anwendung (`GebaeudeKatalogHuelle.Gaben` in der
+Betriebsart Neu, dem Weg der Hülle ohne Datenbankzugriff); darüber legt die Seite je Fall Daten,
+Betriebsart, Sperre und Zonenweg. Gebäudetypen und -arten sind feste Listen, „Speichern“ und der
+Zonenweg melden Erfolg und schreiben nichts, die hergeleiteten Vorgaben der Wärmeübergabe (Klimareihe
+eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen.
+
+| Adresse | Fall |
+|---|---|
+| `/konditionierungsprobe?fall=projekt` | Betriebsart Projekt mit zwei Zonen (Wohnen EG, Büro OG) samt Bauteilen |
+| `…?fall=gesamt` | Bearbeiten; die Lüftung als Gesamtangabe — nur `Luftwechselrate` (0,6), Infiltration und Nutzerlüftung leer |
+| `…?fall=gesperrt` | Bearbeiten, ein ausgelieferter Satz: `Gesperrt` und `SperrGrund`, wie die Hülle sie für `ReadOnly` setzt |
+| `…?fall=neu` | Betriebsart Neu, der leere Satz der Hülle (Vorgabe) |
+| `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
+| `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
+
+```bash
+node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--kultur de-DE]
+```
+
+Gemessen je Fall bei 390 × 844, 820 × 1 180, 1 180 × 820 und 1 300 × 900, jeder Reiter angewählt: kein
+Querrollen (`scrollWidth ≤ clientWidth`) für Seite, Überlagerung und Reiterblatt; die Überlagerung ganz
+im Fenster und `min(96vw, 1400px)` breit; beim Öffnen stehen ihr Titel und ihr Kreuz im Bild;
+Bedienziele ≥ 44 × 44 px (ein Kästchen mit seiner Beschriftung; die Hilfepille hat das Hausmaß 28 px und
+wird nur genannt); im Reiterblatt überdeckt kein Bedienziel ein anderes und keines ragt heraus; Esc, ✕
+und Esc aus einem Feld schließen. Je Fall dazu: zwei Zonen im Reiter „Zonen“ (projekt); Infiltration
+und Nutzerlüftung leer, die Herleitungszeile nennt 0,60 1/h aus der Luftwechselrate (gesamt);
+Grundzeile mit Schloss, OK weich gesperrt mit dem Grund als `title`, „Speichern unter“ frei, der
+OK-Versuch meldet den Grund und schreibt nichts (gesperrt); kein „Speichern unter“ (neu); die Anordnung
+des Wochenrasters je Behälterbreite, 168 Zellen ≥ 44 × 44 px, sechs Zellen „aus“, im breitesten
+Fenster auch an den Schwellen 1 150, 1 149, 600 und 599 px (bausteine). Rückgabe `0` = kein Verstoß,
+`1` = mindestens einer, `2` = Aufbaufehler. Die Probe steht in keiner CI.
