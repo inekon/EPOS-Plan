@@ -156,6 +156,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
 - Auf der Berichtsseite lässt sich das Szenario der Wirtschaftlichkeit wählen; der Wortbericht zeigt Kennzahlen, Betriebskosten, Brücke und Mehrjahresübersicht in diesem Szenario. (#591)
 - Enthält der Bericht mehrere Versionen einer Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel des Variantenvergleichs aus. (#591)
+- Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#592)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
