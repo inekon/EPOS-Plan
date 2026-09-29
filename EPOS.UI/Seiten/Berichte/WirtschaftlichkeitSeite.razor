@@ -346,11 +346,12 @@
                 @* U10 (ETAPPE E9b, E9b-Q3): UNMITTELBAR unter der Annahmentafel der
                    Ausweis "n von m Parametern szenariert" samt der gepflegten Groessen -
                    an der Stelle des Hinweistexts, den die Pflege in den Dialogen
-                   ueberfluessig macht (Konzept § 2.11.7). *@
-                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
+                   ueberfluessig macht (Konzept § 2.11.7). Er zaehlt die Staende des
+                   Laufs und folgt deshalb, wie die Bandbreite, dem Haken (Ansicht). *@
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenarioabdeckung))
                 {
                     <div class="epos-wirt-szenarioabdeckung">
-                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
+                        <Herleitungszeile Text="@_stand.Ansicht.Szenarioabdeckung" />
                     </div>
                 }
 
@@ -554,10 +555,10 @@
                         <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
                     </div>
                 }
-                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenarioabdeckung))
                 {
                     <div class="epos-wirt-szenarioabdeckung">
-                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
+                        <Herleitungszeile Text="@_stand.Ansicht.Szenarioabdeckung" />
                     </div>
                 }
                 <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"

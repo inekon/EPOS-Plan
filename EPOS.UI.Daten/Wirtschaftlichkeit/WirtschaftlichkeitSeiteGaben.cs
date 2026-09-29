@@ -94,6 +94,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die wirksame Referenz der Gruppe beim letzten <see cref="Laden"/> (0 = keine).</summary>
         private int _referenzWirksam;
 
+        /// <summary>
+        /// Der Ausweis „n von m Parametern szenariert", wie <see cref="Szenarioabdeckung"/> ihn
+        /// zuletzt gezählt hat, und sein Schlüssel (Sprache und Stände des Laufs): Ein
+        /// Szenariowechsel zählt nicht neu, ein Haken schon; <see cref="Laden"/> verwirft ihn.
+        /// </summary>
+        private string _abdeckung = "";
+        private string _abdeckungSchluessel;
+
         /// <summary>Die Verlaufshülle der Seite (ETAPPE E6).</summary>
         private KapitalwertVerlaufHuelle Verlauf
         {
@@ -256,6 +264,7 @@ namespace WindowsFormsApplication1
             _namen.Clear();
             _gruppe.Clear();
             _simStaende.Clear();
+            _abdeckungSchluessel = null;   // Parameter und Preise frisch zählen
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
@@ -455,10 +464,9 @@ namespace WindowsFormsApplication1
             stand.Nutzungsdauerhinweise = nutzungsdauer.Zeilen;
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
-            // ETAPPE E5 (U10, V‑A) und E9b (E9b-Q3): unter der Annahmentafel der Ausweis
-            // "n von m Parametern szenariert" (an der Stelle des Hinweistexts) und die
-            // Deklarationszeilen der Bewertung - beide an der Gruppe, nicht an der Wahl.
-            stand.Szenarioabdeckung = Szenarioabdeckung();
+            // ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung - an der Gruppe, nicht
+            // an der Wahl. Der Ausweis "n von m Parametern szenariert" darüber zählt die
+            // Stände des Laufs und steht deshalb an der Ansicht (Szenarioabdeckung).
             stand.Deklarationen = Deklarationen();
 
             // ETAPPE E5 Teil b (U2): die Annahmentafel ueber dem Ausweis und der
@@ -607,22 +615,45 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q2, E9b‑Q3): der Ausweis
         /// „n von m Parametern szenariert" unter der Annahmentafel — an der Stelle des
-        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt wird
-        /// über die GANZE Vergleichsgruppe, nicht über die Wahl — dieselben Stände wie die
-        /// Nutzungsdauer-Hinweise darüber; die Regel steht im Kern
+        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt werden
+        /// die Stände des LAUFS (<see cref="Laufstaende"/>) — dieselbe Menge, über die der
+        /// Lauf seine Gruppenregel bestimmt (Konzept § 3.5, → Register R‑EZ, EZ‑15), und
+        /// dieselbe, die der Bericht zählt; die Regel steht im Kern
         /// (<see cref="SzenarioAbdeckung.Lesen"/>). Ein Lesefehler kostet die Zeile.
         /// </summary>
         private string Szenarioabdeckung()
         {
+            List<KeyValuePair<int, string>> staende = Laufstaende();
+            string schluessel = CultureInfo.CurrentUICulture.Name + "|" + BerichtTexte.Kultur.Name + "|" +
+                                string.Join(",", staende.Select(s => s.Key.ToString(CultureInfo.InvariantCulture)));
+            if (_abdeckungSchluessel == schluessel) return _abdeckung;
+
+            string satz;
             try
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                var staende = new List<KeyValuePair<int, string>>();
-                foreach (int id in _gruppe)
-                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
-                return SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
+                satz = SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
             }
-            catch { return ""; }
+            catch { satz = ""; }
+            _abdeckung = satz;
+            _abdeckungSchluessel = schluessel;
+            return satz;
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15 und § 3.5 — die Stände des LAUFS in der Folge der Gruppe: der Stamm,
+        /// die angehakten Varianten und die wirksame Referenz, die nicht aus dem Vergleich
+        /// fallen kann. Genau sie rechnet „Berechnen" (die Seite reicht die angehakten
+        /// Varianten samt Referenz an den Sammler, der den Stamm immer führt), und über sie
+        /// bestimmt der Lauf die Gruppenregel „Strombedarf ohne Verwendung".
+        /// </summary>
+        private List<KeyValuePair<int, string>> Laufstaende()
+        {
+            var staende = new List<KeyValuePair<int, string>>();
+            foreach (int id in _gruppe)
+                if (Vergleich.IstGewaehlt(id, _idStamm) || id == _referenzWirksam)
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+            return staende;
         }
 
         /// <summary>
@@ -941,6 +972,10 @@ namespace WindowsFormsApplication1
             // Bandbreite, ihre Wirkung auf die Leitversion.
             ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
                                                                     Name(ansicht.Leitversion), kultur);
+
+            // ETAPPE E9b (U10): der Ausweis „n von m Parametern szenariert" über die Stände des
+            // Laufs — er folgt einem Haken wie die Bandbreite, nicht der Szenario-Klappliste.
+            ansicht.Szenarioabdeckung = Szenarioabdeckung();
 
             // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
             // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
