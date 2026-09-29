@@ -16,7 +16,8 @@ Katalogfassung, kein neuer Ressourcenschlüssel**; die mitgelieferten Vorlagen s
 | Teil | Gegenstand | Commit |
 |---|---|---|
 | Kern, Oberfläche, Tests | Blatt ↔ Häkchen, Blattstand der Excel-Vorlage, Füller, Ausgegraut-Regel | `407b1734` |
-| Papiere | Wiki-Quelle, dieses Protokoll, Indexzeile | Papier-Commit |
+| Papiere | Wiki-Quelle, dieses Protokoll, Indexzeile | `98a61a75` |
+| Nachzug | der Hüllentest der Excel-Zeile hakt die Blätter an, die er misst | `ca3134a1` |
 
 ## 1 Befund: wie die Häkchen vorher wirkten
 
@@ -124,6 +125,13 @@ Befund über die Häkchen stünde dort veraltet, sobald ein Häkchen umgelegt wi
   Zeile bei „Excel“, und der Wechsel der Excel-Vorlage über `VorlagenNeuLaden`.
 - Messlatten: `Bericht_Excel_1030.txt`, `Bericht_Excel_Gruppe.txt` und alle `Bericht_Word_*.txt` unverändert
   (`BerichtVorlagenMesslatteTests`, `ExcelVorlagenfuellerTests.Standardmappe_fuellt_wie_ohne_Vorlage_…`).
+- **Ein bestehender Fall war anzupassen:** `BerichtsvorlagenHuelleTests.Excelzeile_Wahl_Hinzufuegen_Pruefzeile_und_Lauf`
+  hakte allein das Deckblatt an und erwartete trotzdem Vergleich und Übersicht in der Mappe. Sein Gegenstand ist die
+  Excel-Zeile, nicht die Häkchen; er hakt jetzt Projektbeschreibung und Variantenvergleich mit an und misst weiter
+  Blattmarke und Anhängen. Kein weiterer Fall des Bestands hat sich geändert.
+- **Gate** (Linux, Release): `WP-Plan.Kern.slnf` 0 Fehler; `EPOS.Kern.Tests` gefiltert auf Excel und Vorlagen 490 grün,
+  auf Bericht, Anhang E, Lokalisierung und KI 815 grün, die drei Wachen 35 grün; `EPOS.UI.Tests` vollständig 6 913 grün;
+  die Windows-Schale kompiliert (0 Fehler).
 
 ## 6 Offene Punkte
 
