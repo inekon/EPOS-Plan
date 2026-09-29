@@ -8,6 +8,30 @@ Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Re
 Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
 Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
 
+**Zweiter Sammel-Upload 29.09.2026, Revisionen 711–723** — 22:01–22:03 UTC (30.09. 00:01–00:03 Uhr) durch die
+Orchestrierung (Cloud-Sitzung Berichterstellung, Benutzer Epos, Bot-Passwort vom Anwender neu erzeugt) mit demselben
+Skript, Quellen im Stand `07d7440a`: 12 Seiten (10 ersetzt, 2 neu) und das Update-Logbuch mit „Version 1.2.6 –
+September 2026“ (4 Sätze) und „Version 1.2.0.5 – September 2026“ (51 Sätze) vor 1.2.0.4; Rücklese byte-gleich,
+0 Parse-Warnungen, Dateien und Weiterleitungen unverändert. Vorprüfung nach Regel 3: Die letzte Revision jeder der
+zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Seiten aus `seiten.tsv` gleich ihrer
+Repo-Quelle. Statuszeile #614.
+
+| Seite | Revision |
+|---|---|
+| Programm Dokumentation/Simulationsergebnisse | 711 |
+| Programm Dokumentation/Hilfe-Assistent | 712 |
+| Programm Dokumentation/Wirtschaftlichkeit | 713 |
+| Programm Dokumentation/Kosten | 714 |
+| Programm Dokumentation/Gerätekataloge | 715 |
+| Programm Dokumentation/Simulation | 716 |
+| Programm Dokumentation/Varianten | 717 |
+| Programm Dokumentation/Gebäude | 718 |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | 719 |
+| Programm Dokumentation/Berichtsvorlagen | 720 |
+| Programm Dokumentation/Mehrzonenmodell (neu) | 721 |
+| Programm Dokumentation/Projekttransfer (neu) | 722 |
+| Update-Logbuch | 723 |
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -111,11 +135,14 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Ein neuer Satz gehört in einen
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
+
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.6
+### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
 Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
 
@@ -124,7 +151,7 @@ Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein
 - Dialoge mit mehreren Hilfeknöpfen bieten den Hilfe-Assistenten nur noch einmal an, am Hilfeknopf im Dialogkopf. (#610)
 - Im Variantenvergleich der Wirtschaftlichkeit trägt der Netzbezug eines Standes ohne stromverwendenden Erzeuger Arbeits- und Grundpreis, aber keinen Leistungspreis; ein Hinweis nennt den Leistungspreis des Stromträgers. (#612; Anwenderentscheid 29.09.2026: „aktuelle Version“)
 
-### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
+### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.), veröffentlicht 29.09.2026 (Revision 723)
 
 Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload dieses Tages ist
 1.2.0.4, alle Sätze der Dialogdesign-Sitzung erscheinen unter 1.2.0.5. Ein Satz je Auftrag
