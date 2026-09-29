@@ -127,7 +127,7 @@
         @* H13: der Rechenweg — wie ein eingelesener Lastgang in den Strombedarf des
            Projekts eingeht (Raster, Spreizung, Kennzahlen). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                   StandardKurztext="@HilfeKurztextBerechnung" />
+                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
         @if (!Wizard)
         {
             <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
@@ -215,7 +215,7 @@
                 <div class="epos-formathinweis">
                     <Herleitungszeile Text="@FormatHinweisText" />
                     <InfoKnopf Schluessel="@HilfeSchluesselImport"
-                               StandardKurztext="@FormatHinweisLangText" />
+                               StandardKurztext="@FormatHinweisLangText" MitAssistent="false" />
                 </div>
             }
         </Rechts>
