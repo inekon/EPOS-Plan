@@ -119,9 +119,11 @@ für CO₂ und die Menge.
 
 ## 6 Offene Punkte
 
-- **Die Statusnummer `#NNN`** steht in diesem Protokoll und im Logbuchsatz als Platzhalter; sie wird mit der Statuszeile
-  vergeben (bei Übergabe waren #602 und #603 belegt). Die Statuszeile und die Nach-Blöcke schreibt die Orchestrierung —
-  der Block „Nach #555 (b)“ ist auf „revidiert 29.09.2026“ zu setzen.
+- **Die Statusnummer `#NNN`** steht in diesem Protokoll, im Logbuchsatz und in der Indexzeile als Platzhalter; sie wird
+  mit der Statuszeile vergeben (bei Übergabe waren #602 und #603 belegt). Statuszeile und Nach-Blöcke schreibt die
+  Orchestrierung: Der Block „Nach #555“ (b) trägt die Revision vom 29.09.2026 bereits und bekommt das „erledigt mit
+  #NNN“; „Nach #603“ (a) steht auf „in Umsetzung“ und ist auf umgesetzt zu setzen, danach § 6.5 und EZ‑16 durch die
+  Wirtschaftlichkeit.
 - **Der Wiki-Upload steht aus** (gebündelte Veröffentlichung): geänderte Seite „Wirtschaftlichkeit“, dazu der
   Logbuch-Eintrag unter 1.2.0.5.
 - **Nur unter Windows prüfbar:** die Sichtprüfung des gedruckten Berichts in Word und Excel — Absatzstil „Hinweis“ der
