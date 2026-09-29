@@ -278,6 +278,10 @@ jobs:
       # im Quellspeicher einer Waermepumpe als leer gilt (Plattformbefund PB-1).
       # Auf ubuntu erwartet: PASS; byte-verschieden im Band heizstab.csv von
       # 1007 und 1046 (Reste von 1e-17 kWh, UCRT gegen glibc).
+      # R26 (29.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil ein Kessel erst ab dem Zahlenrand laeuft (Rechenrest keine
+      # Laufstunde, nur 1024); gegen R25 byte-verschieden unter den sieben
+      # allein heizstab.csv von 1007 und 1046 (Plattformwechsel).
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -290,24 +294,24 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-29_R25_Plattformrand
+      - name: Vergleich mit Referenzbasis 2026-09-29_R26_Kesselrest
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R26_Kesselrest/Projekt_1049 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
-      # Plattformnachweis (Befund PB-1, Basis R25): dieselben sieben Projekte noch
+      # Plattformnachweis (Befund PB-1, Basis R26): dieselben sieben Projekte noch
       # einmal mit --stoerung ulp. Exp, Sin, Cos, Asin und Acos der Naht
       # Plattformrundung (Gebaeudematrix, Sonnenstand, Erdreich, Kollektor,
       # Tagesbilanz) runden dann wie eine andere C-Bibliothek: etwa jedes

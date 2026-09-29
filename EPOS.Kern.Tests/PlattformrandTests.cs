@@ -201,7 +201,7 @@ namespace EPOS.Kern.Tests
         /// <b>Wache am Lauf:</b> Projekt 1042 führt eine Wärmepumpe (Modul 1) an einem
         /// Quellspeicher. Vor dem Entscheid zählte sie auf Windows 2 073,4 Betriebsstunden,
         /// davon 498 mit einer Ladung unter 10⁻⁹ kWh; ohne diese Scheinstunden sind es
-        /// 1 575,4 — die Zahl der Basis R25 (`aggregate.csv`, `WaermepumpeModul[1]`). Das
+        /// 1 575,4 — die Zahl der Basen R25 und R26 (`aggregate.csv`, `WaermepumpeModul[1]`). Das
         /// andere Modul hängt an keiner Quelle und bleibt bei 5 995,29.
         ///
         /// <para>Der Referenzlauf der CI rechnet 1042 nicht mit; diese Probe hält die Zahl
