@@ -22939,7 +22939,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Energieträger des Kessels; er bestimmt, welcher Wirkungsgrad gerechnet wird.</value>
   </data>
   <data name="KI_DLG_HK_BRENNWERT_ERL" xml:space="preserve">
-    <value>Ja = der Kessel wird als Brennwertkessel gerechnet.</value>
+    <value>Ja = Brennwertgerät. Das Kennzeichen beschreibt und filtert den Katalog; ob die Brennwertkennlinie rechnet, entscheidet der eigene Schalter „Brennwertkennlinie“.</value>
   </data>
   <data name="KI_DLG_PSP_NAME_ERL" xml:space="preserve">
     <value>Der Name des Speichers im Katalog.</value>
@@ -39873,6 +39873,69 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_KAT_FELD_MINDESTLEISTUNG" xml:space="preserve">
     <value>Mindestleistung:</value>
+  </data>
+  <data name="HZKK_GRP_KENNLINIE" xml:space="preserve">
+    <value>Kennlinie</value>
+  </data>
+  <data name="HZKK_LBL_TEILLAST30" xml:space="preserve">
+    <value>Wirkungsgrad bei 30 % Last:</value>
+  </data>
+  <data name="HZKK_FELD_TEILLAST30" xml:space="preserve">
+    <value>Wirkungsgrad bei 30 % Last</value>
+  </data>
+  <data name="HZKK_HINT_TEILLAST30" xml:space="preserve">
+    <value>(z. B. 1,05)</value>
+  </data>
+  <data name="HZKK_LBL_KENNLINIE_BRENNWERT" xml:space="preserve">
+    <value>Brennwertkennlinie</value>
+  </data>
+  <data name="HZKK_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung:</value>
+  </data>
+  <data name="HZKK_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="HZKK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start:</value>
+  </data>
+  <data name="HZKK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start</value>
+  </data>
+  <data name="HZKK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit:</value>
+  </data>
+  <data name="HZKK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="HZKK_PLATZHALTER_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="HZKK_HINT_KENNLINIE" xml:space="preserve">
+    <value>Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel.</value>
+  </data>
+  <data name="HZKK_MSG_KENNLINIE_OHNE_BRENNWERT" xml:space="preserve">
+    <value>Die Brennwertkennlinie ist nur bei einem Brennwertkessel zulässig.</value>
+  </data>
+  <data name="KBROW_HINT_LEER_VORGABE" xml:space="preserve">
+    <value>leer = Vorgabe</value>
+  </data>
+  <data name="KBROW_MSG_WERT_KEINE_ZAHL" xml:space="preserve">
+    <value>„{0}“: „{1}“ ist keine gültige Zahl.</value>
+  </data>
+  <data name="KI_DLG_HK_TEILLAST30_ERL" xml:space="preserve">
+    <value>Wirkungsgrad des Kessels bei 30 % Last, heizwertbezogen als Faktor (z. B. 1,05; ein Wert über 1,5 gilt als Prozentangabe). Leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_HK_KENNLINIE_BRENNWERT_ERL" xml:space="preserve">
+    <value>Ja = für diesen Kessel die Brennwertkennlinie rechnen (Wirkungsgrad abhängig von der Rücklauftemperatur). Nur bei einem Brennwertkessel zulässig.</value>
+  </data>
+  <data name="KI_DLG_HK_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Kleinste Leistung, bis zu der der Brenner moduliert; darunter taktet der Kessel. Höchstens die thermische Leistung. Leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_HK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Brennstoffmehrbedarf je Brennerstart in kWh. Leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_HK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Brennerstart in Minuten (1 bis 60). Leer = Vorgabe.</value>
   </data>
 </root>
 

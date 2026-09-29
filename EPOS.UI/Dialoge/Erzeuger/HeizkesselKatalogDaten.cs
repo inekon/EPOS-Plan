@@ -77,6 +77,26 @@ public sealed class HeizkesselKatalogDaten
     /// <summary>Rücklauftemperatur [°C], ganzzahlig.</summary>
     public int? Ruecklauf { get; set; }
 
+    // --- Gruppe „Kennlinie" (Konzept Kesselkennlinie 3.1, Etappe E1) ------------
+    //
+    // Anders als die Felder oben heißt LEER hier nicht 0, sondern „nicht gepflegt":
+    // Dann gilt die Vorgabe (Entscheid F1). Die Hülle schreibt leer als NULL.
+
+    /// <summary>Wirkungsgrad bei 30 % Last, heizwertbezogen, als Faktor (über 1,5 = Prozent). Leer = Vorgabe.</summary>
+    public double? Wirkungsgrad_Teillast30 { get; set; }
+
+    /// <summary>Die Brennwertkennlinie rechnen? Nur bei <see cref="Brennwert"/> zulässig.</summary>
+    public bool Kennlinie_Brennwert { get; set; }
+
+    /// <summary>Untere Modulationsgrenze [kW]. Leer = Vorgabe.</summary>
+    public double? Mindestleistung { get; set; }
+
+    /// <summary>Brennstoff je Start [kWh]. Leer = Vorgabe.</summary>
+    public double? Anfahrverlust_kWh { get; set; }
+
+    /// <summary>Mindestlaufzeit je Start [min], ganzzahlig. Leer = Vorgabe.</summary>
+    public int? Mindestlaufzeit_min { get; set; }
+
     // --- Gruppe 3: Kosten ------------------------------------------------------
 
     /// <summary>Investitionskosten [€].</summary>

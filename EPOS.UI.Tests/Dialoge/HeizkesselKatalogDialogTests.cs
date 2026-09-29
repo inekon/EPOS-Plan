@@ -91,18 +91,19 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Die_zwei_Gruppen_der_Karte_stehen()
+    public void Die_drei_Gruppen_der_Karte_stehen()
     {
-        // Seit dem 15.09.2026 nur noch ZWEI: "Kosten", "Emissionen nach BEHG-V" und
-        // "Emissionsfaktoren…" sind entfallen (Anwenderentscheid: der Bearbeiten-Dialog
-        // traegt keine Kosten und keine Emissionen). Aufgerufen werden sie weiterhin
-        // ueber die Knopfleiste.
+        // Seit dem 15.09.2026 ohne "Kosten", "Emissionen nach BEHG-V" und
+        // "Emissionsfaktoren…" (Anwenderentscheid: der Bearbeiten-Dialog traegt keine
+        // Kosten und keine Emissionen; aufgerufen werden sie ueber die Knopfleiste). Dazu
+        // kommt die Gruppe "Kennlinie" (Konzept Kesselkennlinie, Etappe E1).
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel");
-        Assert.Equal(2, titel.Count);
+        Assert.Equal(3, titel.Count);
         Assert.Equal("Kessel", titel[0].TextContent);
         Assert.Equal("Technische Daten", titel[1].TextContent);
+        Assert.Equal("Kennlinie", titel[2].TextContent);
     }
 
     [Fact]
@@ -116,17 +117,20 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         // Nutzungsdauer und die fuenf Emissionsfaktoren sind entfallen. Die zwei
         // Ganzzahlen (Vorlauf/Ruecklauf) bleiben, ebenso die zwei Texte, die
         // Beschreibung und der Schalter. Von den zwei Auswahllisten bleibt die eine
-        // (Brennstoff) - cb_WartungEinheit gehoerte zu den Kosten.
-        Assert.Equal(4, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
+        // (Brennstoff) - cb_WartungEinheit gehoerte zu den Kosten. Die Gruppe "Kennlinie"
+        // (Konzept Kesselkennlinie, Etappe E1) bringt drei Zahlenfelder (eta bei 30 % Last,
+        // Mindestleistung, Anfahrverlust), ein Ganzzahlfeld (Mindestlaufzeit) und einen
+        // Schalter (Brennwertkennlinie).
+        Assert.Equal(7, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         // Zahlen- und Ganzzahlfeld sind ebenfalls type="text" (type="number" wuerde je
         // nach Browsersprache eines der beiden Trennzeichen verweigern) - die reinen
         // Textfelder tragen als einzige KEIN inputmode.
         Assert.Equal(2, cut.FindAll("input[type=text]:not([inputmode])").Count);
-        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
+        Assert.Equal(12, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Single(cut.FindAll("select"));
-        Assert.Single(cut.FindAll("input[type=checkbox]"));
+        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Kesselbezeichnung:", texte);
@@ -140,6 +144,11 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Contains("Brennwertkessel", texte);
         Assert.Contains("Vorlauf:", texte);
         Assert.Contains("Rücklauf:", texte);
+        Assert.Contains("Wirkungsgrad bei 30 % Last:", texte);
+        Assert.Contains("Brennwertkennlinie", texte);
+        Assert.Contains("Mindestleistung:", texte);
+        Assert.Contains("Anfahrverlust je Start:", texte);
+        Assert.Contains("Mindestlaufzeit:", texte);
 
         // Und was NICHT mehr dasteht - der eigentliche Gegenstand der Aenderung.
         Assert.DoesNotContain("Investitionskosten:", texte);
@@ -285,6 +294,66 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Equal(285.0, uebergeben.NOx);
         Assert.Equal(370.0, uebergeben.CO);
         Assert.Equal(0.0, uebergeben.Staub);
+    }
+
+    // =================================================================================
+    // Die Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1)
+    // =================================================================================
+
+    /// <summary>
+    /// Leer heißt hier „Vorgabe", nicht 0: Die vier Zahlenfelder tragen den Platzhalter,
+    /// ein leeres Feld geht als <c>null</c> an den Speicherweg (die Hülle schreibt NULL),
+    /// ein gepflegter Wert unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Kennlinie_bleibt_leer_statt_null_zu_werden()
+    {
+        var daten = Bestand();
+        daten.Wirkungsgrad_Teillast30 = 1.07;
+        HeizkesselKatalogDaten? uebergeben = null;
+        var cut = Aufbauen(daten, ueberschreiben: d =>
+        {
+            uebergeben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Name);
+        });
+
+        var dezimal = cut.FindAll("input[inputmode=decimal]");
+        Assert.Equal("1,07", dezimal[4].GetAttribute("value"));
+        foreach (int i in new[] { 5, 6 })
+            Assert.Equal("Vorgabe", dezimal[i].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe", cut.FindAll("input[inputmode=numeric]")[2].GetAttribute("placeholder"));
+        Assert.Contains(cut.FindAll(".epos-leisezeile"), p => p.TextContent.StartsWith("Leer = Vorgabe"));
+
+        cut.FindAll("input[inputmode=decimal]")[4].Input("");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Null(uebergeben!.Wirkungsgrad_Teillast30);
+        Assert.Null(uebergeben.Mindestleistung);
+        Assert.Null(uebergeben.Anfahrverlust_kWh);
+        Assert.Null(uebergeben.Mindestlaufzeit_min);
+    }
+
+    /// <summary>
+    /// Die Brennwertkennlinie ist nur beim Brennwertkessel bedienbar; fällt der Schalter
+    /// „Brennwertkessel", fällt sie mit.
+    /// </summary>
+    [Fact]
+    public void Die_Brennwertkennlinie_haengt_am_Brennwertkessel()
+    {
+        var daten = Bestand();
+        daten.Kennlinie_Brennwert = true;
+        var cut = Aufbauen(daten);
+
+        var schalter = cut.FindAll("input[type=checkbox]");
+        Assert.False(schalter[1].HasAttribute("disabled"));
+        Assert.True(schalter[1].HasAttribute("checked"));
+
+        schalter[0].Change(false);
+
+        Assert.False(daten.Brennwert);
+        Assert.False(daten.Kennlinie_Brennwert);
+        Assert.True(cut.FindAll("input[type=checkbox]")[1].HasAttribute("disabled"));
     }
 
     [Fact]

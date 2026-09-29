@@ -327,7 +327,8 @@ namespace EPOS.Kern.Tests
         /// </summary>
         /// <remarks>
         /// Die Zahlen sind die Spaltenzahlen der vier Tabellen minus zwei:
-        /// <c>Tab_Heizkessel_STAMM</c> 23, <c>Tab_BHKW_STAMM</c> 27,
+        /// <c>Tab_Heizkessel_STAMM</c> 28 (mit den fünf Kennlinienspalten, Konzept Kesselkennlinie E1),
+        /// <c>Tab_BHKW_STAMM</c> 27,
         /// <c>Tab_Solarkollektoren_STAMM</c> 14 (ohne Vor- und Rücklauf, die mit
         /// <c>SolarkollektorTemperaturen.SCHRITT</c> entfallen sind), <c>Tab_Pufferspeicher_STAMM</c> 8.
         /// Bis zum Entscheid waren es 8 / 8 / 8 / 6 — der Detailblock der vier
@@ -338,7 +339,7 @@ namespace EPOS.Kern.Tests
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                [KatalogBrowserArt.Heizkessel] = 21,
+                [KatalogBrowserArt.Heizkessel] = 26,
                 [KatalogBrowserArt.Bhkw] = 27,
                 [KatalogBrowserArt.Solarkollektoren] = 12,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -391,8 +392,9 @@ namespace EPOS.Kern.Tests
             // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
             // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
             // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 20 / 24 / 11 / 5.
-            Assert.Equal(20, heiz.Detailfelder.Count(f => f.Editierbar));
+            // 20.09.2026): 25 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
+            // Kennlinie (Konzept Kesselkennlinie, Etappe E1).
+            Assert.Equal(25, heiz.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
@@ -552,7 +554,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Der Detailblock des Heizkesselbrowsers: die acht Bestandsfelder unveraendert
         /// — die Zahlen mit <c>F2</c>, der Brennstoff als Nachschlag, <c>NULL</c> als
-        /// leerer Text — innerhalb des vollen Satzes von einundzwanzig.
+        /// leerer Text — innerhalb des vollen Satzes von sechsundzwanzig (mit den fünf Feldern
+        /// der Kennlinie, Konzept Kesselkennlinie E1).
         /// </summary>
         [Fact]
         public void Heizkessel_Katalogsatz_zeigt_die_acht_Felder_wie_der_Bestand()
@@ -564,7 +567,7 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(21, satz.Count);
+            Assert.Equal(26, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);

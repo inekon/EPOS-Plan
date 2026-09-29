@@ -7100,7 +7100,29 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.HkTraegerErl, leerErlaubt: true),
                     new KiDialogFeld("brennwert", "HeizkesselKatalogDaten.Brennwert",
                                      KiDialogTexte.HkBrennwertName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.HkBrennwertErl)
+                                     KiDialogTexte.HkBrennwertErl),
+
+                    // ---- Die Gruppe „Kennlinie" (Konzept Kesselkennlinie 3.1, Etappe E1) ----
+                    // Die Schluessel sind die der Verwaltung (Profilfelder, klein geschrieben) -
+                    // Zielfeldname braucht deshalb keine Erklaerung in VERWALTUNGSFELDER.
+                    new KiDialogFeld("wirkungsgrad_teillast30", "HeizkesselKatalogDaten.Wirkungsgrad_Teillast30",
+                                     KiDialogTexte.HkTeillast30Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.HkTeillast30Erl, leerErlaubt: true),
+                    new KiDialogFeld("kennlinie_brennwert", "HeizkesselKatalogDaten.Kennlinie_Brennwert",
+                                     KiDialogTexte.HkKennlinieBrennwertName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.HkKennlinieBrennwertErl),
+                    new KiDialogFeld("mindestleistung", "HeizkesselKatalogDaten.Mindestleistung",
+                                     KiDialogTexte.HkMindestleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.HkMindestleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("anfahrverlust", "HeizkesselKatalogDaten.Anfahrverlust_kWh",
+                                     KiDialogTexte.HkAnfahrverlustName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.HkAnfahrverlustErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("mindestlaufzeit", "HeizkesselKatalogDaten.Mindestlaufzeit_min",
+                                     KiDialogTexte.HkMindestlaufzeitName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.HkMindestlaufzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_MINUTE, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {

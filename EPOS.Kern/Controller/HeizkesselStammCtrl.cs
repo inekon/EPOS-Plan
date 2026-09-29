@@ -1271,6 +1271,15 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldCo] = Feld(r, "CO");
             werte[KatalogBrowserProfil.FeldStaub] = Feld(r, "Staub");
 
+            // Die Kennlinie (Konzept Kesselkennlinie 3.1): roh, leer bleibt leer (= Vorgabe); der
+            // Schalter sprachneutral als „1"/„0" wie „Brennwertkessel".
+            werte[KatalogBrowserProfil.FeldTeillast30] = Feld(r, KesselKennlinieSchema.SPALTE_TEILLAST30);
+            werte[KatalogBrowserProfil.FeldKennlinieBrennwert] =
+                Feld(r, KesselKennlinieSchema.SPALTE_KENNLINIE_BRENNWERT) == "1" ? "1" : "0";
+            werte[KatalogBrowserProfil.FeldMindestleistung] = Feld(r, KesselKennlinieSchema.SPALTE_MINDESTLEISTUNG);
+            werte[KatalogBrowserProfil.FeldAnfahrverlust] = Feld(r, KesselKennlinieSchema.SPALTE_ANFAHRVERLUST);
+            werte[KatalogBrowserProfil.FeldMindestlaufzeit] = Feld(r, KesselKennlinieSchema.SPALTE_MINDESTLAUFZEIT);
+
             return werte;
         }
 
@@ -1299,6 +1308,10 @@ namespace WindowsFormsApplication1
         /// nicht Bequemlichkeit, sondern Datenschutz im Wortsinn: Der Schreibweg liest
         /// den Satz, aendert die mitgegebenen Felder und schreibt ihn ganz zurueck; ein
         /// vergessenes Feld wuerde sonst als 0 ueber einen gepflegten Wert laufen.</para>
+        /// <para><b>Die fuenf Felder der Kennlinie</b> (Konzept Kesselkennlinie 3.1) stehen
+        /// ganz hinten; die vier Zahlen kommen als TEXT, weil bei ihnen ein leeres Feld etwas
+        /// anderes heisst als ein fehlendes: <c>null</c> laesst die Spalte stehen, <c>""</c>
+        /// schreibt NULL (= Vorgabe).</para>
         /// </remarks>
         public sealed record AnzeigefelderHeizkessel(string Beschreibung, double Ptherm,
                                                      double Investitionskosten, bool Brennwert,
@@ -1314,7 +1327,12 @@ namespace WindowsFormsApplication1
                                                      double? Nutzungsdauer = null,
                                                      double? CO2 = null, double? SO2 = null,
                                                      double? NOx = null, double? CO = null,
-                                                     double? Staub = null);
+                                                     double? Staub = null,
+                                                     string Teillast30 = null,
+                                                     bool? KennlinieBrennwert = null,
+                                                     string Mindestleistung = null,
+                                                     string Anfahrverlust = null,
+                                                     string Mindestlaufzeit = null);
 
         /// <summary>
         /// Die drei zulaessigen Bezugsgroessen der Wartungskosten, in Anzeigereihenfolge
@@ -1458,6 +1476,17 @@ namespace WindowsFormsApplication1
                                                  f.Brennstoff, satz.Brennstoffart, out brennstoff);
             if (!string.IsNullOrEmpty(grund)) return grund;
 
+            // 2b. Die Kennlinie (Konzept Kesselkennlinie 3.1): Hier heisst ein LEERES Feld nicht
+            //     „unveraendert", sondern „Vorgabe" (NULL) - sonst liesse sich ein gepflegter Wert
+            //     nie wieder zuruecknehmen. null (nicht uebergeben) laesst die Spalte stehen.
+            //     Bereich und Brennwertregel prueft UpdateMitGrund (KesselKennlinieWerte.Verstoss).
+            grund = KatalogFeldPruefung.ErsterGrund(
+                Leerbar(KatalogBrowserProfil.FeldTeillast30, f.Teillast30, false, out var teillast30),
+                Leerbar(KatalogBrowserProfil.FeldMindestleistung, f.Mindestleistung, false, out var mindestleistung),
+                Leerbar(KatalogBrowserProfil.FeldAnfahrverlust, f.Anfahrverlust, false, out var anfahrverlust),
+                Leerbar(KatalogBrowserProfil.FeldMindestlaufzeit, f.Mindestlaufzeit, true, out var mindestlaufzeit));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
             // 3. Uebernehmen.
             if (brennstoff != null) satz.Brennstoff = satz.Brennstoffart.IndexOf(brennstoff) + 1;
             if (f.Firma != null) satz.Firma = f.Firma;
@@ -1474,8 +1503,35 @@ namespace WindowsFormsApplication1
             if (f.NOx.HasValue) satz.NOx = f.NOx.Value;
             if (f.CO.HasValue) satz.CO = f.CO.Value;
             if (f.Staub.HasValue) satz.Staub = f.Staub.Value;
+            if (teillast30.Gesetzt) satz.Wirkungsgrad_Teillast30 = teillast30.Wert;
+            if (mindestleistung.Gesetzt) satz.Mindestleistung = mindestleistung.Wert;
+            if (anfahrverlust.Gesetzt) satz.Anfahrverlust_kWh = anfahrverlust.Wert;
+            if (mindestlaufzeit.Gesetzt)
+                satz.Mindestlaufzeit_min = mindestlaufzeit.Wert.HasValue
+                    ? (int?)Convert.ToInt32(mindestlaufzeit.Wert.Value) : null;
+            if (f.KennlinieBrennwert.HasValue) satz.Kennlinie_Brennwert = f.KennlinieBrennwert.Value;
 
             return null;
+
+            // Ein Feld, dessen Leere „Vorgabe" heisst: null = nicht uebergeben (Gesetzt = false),
+            // "" = leeren (Wert = null), sonst eine Zahl (Komma oder Punkt) - ein unlesbarer
+            // Text wird benannt abgelehnt.
+            static string Leerbar(string schluessel, string text, bool ganzzahlig,
+                                  out (bool Gesetzt, double? Wert) ergebnis)
+            {
+                ergebnis = (false, null);
+                if (text == null) return null;
+                string s = text.Trim();
+                if (s.Length == 0) { ergebnis = (true, null); return null; }
+                double wert;
+                if (!ZahlText.Parsen(s, out wert) || !double.IsFinite(wert) ||
+                    (ganzzahlig && (Math.Abs(wert - Math.Round(wert)) > 1e-9 || Math.Abs(wert) > int.MaxValue)))
+                    return string.Format(
+                        Text("KBROW_MSG_WERT_KEINE_ZAHL", "„{0}“: „{1}“ ist keine gültige Zahl."),
+                        KatalogFeldPruefung.Feldname(KatalogBrowserArt.Heizkessel, schluessel), s);
+                ergebnis = (true, wert);
+                return null;
+            }
 
             static string Nichtnegativ(string schluessel, double? wert)
                 => wert.HasValue

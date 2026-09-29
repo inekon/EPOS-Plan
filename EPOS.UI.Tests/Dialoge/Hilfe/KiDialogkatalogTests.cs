@@ -407,10 +407,11 @@ public class KiDialogkatalogTests : IDisposable
             KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten),
                                      Wahlquellen(KiMaskennamen.HEIZKESSEL));
 
-        // ELF seit der Welle KI-F1b: die sechs Zahlen des Katalogeditors und die fuenf
-        // uebrigen Eingabefelder (Name, Hersteller, Beschreibung, Energietraeger,
-        // Brennwert) - keines davon gibt es an PufferSpKatalogDaten.
-        Assert.Equal(11, fehlt.Count);
+        // SECHZEHN: die sechs Zahlen des Katalogeditors, die fuenf uebrigen Eingabefelder
+        // (Welle KI-F1b: Name, Hersteller, Beschreibung, Energietraeger, Brennwert) und die
+        // fuenf der Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1) - keines davon
+        // gibt es an PufferSpKatalogDaten.
+        Assert.Equal(16, fehlt.Count);
         Assert.Contains("HeizkesselKatalogDaten.Ptherm", fehlt);
     }
 
@@ -623,7 +624,7 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_11_17_5_und_11_Felder()
+    public void Die_vier_Startmasken_fuehren_16_17_5_und_11_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -643,7 +644,10 @@ public class KiDialogkatalogTests : IDisposable
         // Welle #458, Stufe 2: Dazu kommen bei der Photovoltaik die Felder des
         // Aufklappers „Alle Daten" - so viele, wie das Profil des Modulkatalogs fuehrt
         // (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
-        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
+        //
+        // GEWACHSEN ist er beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
+        // Kesselkennlinie, Etappe E1): von 11 auf 16.
+        Assert.Equal(16, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
         Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
@@ -1372,7 +1376,10 @@ public class KiDialogkatalogTests : IDisposable
             "th_leistung", "wirkungsgrad_gas", "wirkungsgrad_oel",
             "bereitschaftsverlust", "vorlauf", "ruecklauf",
             // Welle KI-F1b: die uebrigen Eingabefelder derselben Maske.
-            "name", "hersteller", "beschreibung", "energietraeger", "brennwert"
+            "name", "hersteller", "beschreibung", "energietraeger", "brennwert",
+            // Konzept Kesselkennlinie, Etappe E1: die Gruppe „Kennlinie".
+            "wirkungsgrad_teillast30", "kennlinie_brennwert", "mindestleistung",
+            "anfahrverlust", "mindestlaufzeit"
         };
         Assert.Equal(erwartet.OrderBy(x => x, StringComparer.Ordinal),
                      hk.Felder.Select(f => f.Name).OrderBy(x => x, StringComparer.Ordinal));

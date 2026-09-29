@@ -32740,11 +32740,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust je Start ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_ANFAHRVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
         /// </summary>
         public static string HZKK_FELD_BBVERLUST {
             get {
                 return ResourceManager.GetString("HZKK_FELD_BBVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_MINDESTLAUFZEIT {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_MINDESTLAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_MINDESTLEISTUNG", resourceCulture);
             }
         }
         
@@ -32763,6 +32790,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZKK_FELD_RUECKLAUF {
             get {
                 return ResourceManager.GetString("HZKK_FELD_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 30 % Last ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_TEILLAST30 {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_TEILLAST30", resourceCulture);
             }
         }
         
@@ -32803,6 +32839,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinie ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_KENNLINIE {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Technische Daten ähnelt.
         /// </summary>
         public static string HZKK_GRP_TECHNIK {
@@ -32812,11 +32857,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel. ähnelt.
+        /// </summary>
+        public static string HZKK_HINT_KENNLINIE {
+            get {
+                return ResourceManager.GetString("HZKK_HINT_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 1,05) ähnelt.
+        /// </summary>
+        public static string HZKK_HINT_TEILLAST30 {
+            get {
+                return ResourceManager.GetString("HZKK_HINT_TEILLAST30", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 0,9) ähnelt.
         /// </summary>
         public static string HZKK_HINT_WIRKUNGSGRAD {
             get {
                 return ResourceManager.GetString("HZKK_HINT_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust je Start: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_ANFAHRVERLUST", resourceCulture);
             }
         }
         
@@ -32875,6 +32947,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_KENNLINIE_BRENNWERT {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_KENNLINIE_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_MINDESTLAUFZEIT {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_MINDESTLAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kesselbezeichnung: ähnelt.
         /// </summary>
         public static string HZKK_LBL_NAME {
@@ -32925,6 +33024,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZKK_LBL_STAUB {
             get {
                 return ResourceManager.GetString("HZKK_LBL_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 30 % Last: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_TEILLAST30 {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_TEILLAST30", resourceCulture);
             }
         }
         
@@ -32992,6 +33100,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennwertkennlinie ist nur bei einem Brennwertkessel zulässig. ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_KENNLINIE_OHNE_BRENNWERT {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_KENNLINIE_OHNE_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt den Namen &quot;{0}&quot; {1}-mal. Bearbeitet wird der Eintrag mit der kleinsten ID ({2}); die übrigen bleiben unverändert. ähnelt.
         /// </summary>
         public static string HZKK_MSG_MEHRDEUTIG {
@@ -33024,6 +33141,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZKK_MSG_ZAHL {
             get {
                 return ResourceManager.GetString("HZKK_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string HZKK_PLATZHALTER_VORGABE {
+            get {
+                return ResourceManager.GetString("HZKK_PLATZHALTER_VORGABE", resourceCulture);
             }
         }
         
@@ -37186,6 +37312,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
+        /// </summary>
+        public static string KBROW_HINT_LEER_VORGABE {
+            get {
+                return ResourceManager.GetString("KBROW_HINT_LEER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche: ähnelt.
         /// </summary>
         public static string KBROW_LBL_APERTURFLAECHE {
@@ -37434,6 +37569,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_MSG_WERT_BEREICH {
             get {
                 return ResourceManager.GetString("KBROW_MSG_WERT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: „{1}“ ist keine gültige Zahl. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_WERT_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_WERT_KEINE_ZAHL", resourceCulture);
             }
         }
         
@@ -45858,6 +46002,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffmehrbedarf je Brennerstart in kWh. Leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_ANFAHRVERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_ANFAHRVERLUST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_BB_VERLUST_ERL {
@@ -45885,7 +46038,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = der Kessel wird als Brennwertkessel gerechnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = Brennwertgerät. Das Kennzeichen beschreibt und filtert den Katalog; ob die Brennwertkennlinie rechnet, entscheidet der eigene Schalter „Brennwertkennlinie“. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_BRENNWERT_ERL {
             get {
@@ -45899,6 +46052,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_FIRMA_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = für diesen Kessel die Brennwertkennlinie rechnen (Wirkungsgrad abhängig von der Rücklauftemperatur). Nur bei einem Brennwertkessel zulässig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_KENNLINIE_BRENNWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_KENNLINIE_BRENNWERT_ERL", resourceCulture);
             }
         }
         
@@ -45917,6 +46079,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_LEISTUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_LEISTUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit je Brennerstart in Minuten (1 bis 60). Leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_MINDESTLAUFZEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_MINDESTLAUFZEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Leistung, bis zu der der Brenner moduliert; darunter taktet der Kessel. Höchstens die thermische Leistung. Leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_MINDESTLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_MINDESTLEISTUNG_ERL", resourceCulture);
             }
         }
         
@@ -45944,6 +46124,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_RUECKLAUF_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_RUECKLAUF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad des Kessels bei 30 % Last, heizwertbezogen als Faktor (z. B. 1,05; ein Wert über 1,5 gilt als Prozentangabe). Leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_TEILLAST30_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_TEILLAST30_ERL", resourceCulture);
             }
         }
         

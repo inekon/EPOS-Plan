@@ -70,7 +70,11 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM", "INVESTITIONSKOSTEN",
                     "BRENNWERT", "VORLAUF", "RUECKLAUF",
-                    "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST", "RAUMBEDARF",
+                    "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST",
+                    // Die Kennlinie (Konzept Kesselkennlinie, Etappe E1).
+                    "WIRKUNGSGRAD_TEILLAST30", "KENNLINIE_BRENNWERT", "MINDESTLEISTUNG",
+                    "ANFAHRVERLUST", "MINDESTLAUFZEIT",
+                    "RAUMBEDARF",
                     "WARTUNGSKOSTEN", "WARTUNG_EINHEIT", "NUTZUNGSDAUER",
                     "CO2", "SO2", "NOX", "CO", "STAUB"
                 }
@@ -324,6 +328,75 @@ namespace EPOS.Kern.Tests
             Assert.False(ergebnis.Ok);
             Assert.Contains("Leistung", ergebnis.Meldung);
             Assert.DoesNotContain("KBROW_", ergebnis.Meldung);
+        }
+
+        /// <summary>
+        /// <b>Die Kennlinie</b> (Konzept Kesselkennlinie, Etappe E1): Werte kommen an (Komma
+        /// wie Punkt); ein LEERES Feld heisst hier „Vorgabe" und schreibt NULL, ein
+        /// weggelassenes bleibt stehen. Unlesbarer Text, ein Bruchteil bei der Mindestlaufzeit,
+        /// ein Wert ausser Bereich und die Brennwertkennlinie ohne Brennwertkessel werden
+        /// benannt abgelehnt — und nichts wird geschrieben.
+        /// </summary>
+        [Fact]
+        public void Heizkessel_Kennlinie_leer_heisst_Vorgabe()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            static HeizkesselStammCtrl.AnzeigefelderHeizkessel Satz(
+                bool brennwert, string eta30 = null, bool? kennlinie = null, string pmin = null,
+                string anfahr = null, string laufzeit = null)
+                => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
+                    "Kennlinie", 22, 5000, brennwert, 70, 50,
+                    Teillast30: eta30, KennlinieBrennwert: kennlinie, Mindestleistung: pmin,
+                    Anfahrverlust: anfahr, Mindestlaufzeit: laufzeit);
+            static string Wert(string feld) => new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL)[feld];
+
+            var gepflegt = HeizkesselStammCtrl.AnzeigefelderSchreiben(
+                KESSEL, Satz(true, "1,07", true, "6.5", "0,05", "10"));
+            Assert.True(gepflegt.Ok, gepflegt.Meldung);
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("1", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
+            Assert.Equal("6,5", Wert(KatalogBrowserProfil.FeldMindestleistung));
+            Assert.Equal("0,05", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+            Assert.Equal("10", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Weggelassen = stehen lassen.
+            Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, Satz(true)).Ok);
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("1", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
+            Assert.Equal("10", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Benannt abgelehnt, nichts geschrieben.
+            foreach (var (falsch, feld) in new[]
+                     {
+                         (Satz(true, eta30: "hoch"), "Wirkungsgrad bei 30 % Last"),
+                         (Satz(true, eta30: "0,3"), "Wirkungsgrad bei 30 % Last"),
+                         (Satz(true, pmin: "30"), "Mindestleistung"),
+                         (Satz(true, anfahr: "-1"), "Anfahrverlust"),
+                         (Satz(true, laufzeit: "7,5"), "Mindestlaufzeit"),
+                         (Satz(true, laufzeit: "99"), "Mindestlaufzeit"),
+                         (Satz(false), "Brennwertkennlinie")
+                     })
+            {
+                var abgelehnt = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, falsch);
+                Assert.False(abgelehnt.Ok, feld);
+                Assert.Contains(feld, abgelehnt.Meldung);
+                Assert.DoesNotContain("KBROW_", abgelehnt.Meldung);
+            }
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("6,5", Wert(KatalogBrowserProfil.FeldMindestleistung));
+
+            // Leer = Vorgabe: NULL, nicht 0.
+            Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(
+                KESSEL, Satz(false, "", false, "", " ", "")).Ok);
+            foreach (string feld in new[]
+                     {
+                         KatalogBrowserProfil.FeldTeillast30, KatalogBrowserProfil.FeldMindestleistung,
+                         KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+                     })
+                Assert.Equal("", Wert(feld));
+            Assert.Equal("0", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
         }
 
         // =================================================================================
