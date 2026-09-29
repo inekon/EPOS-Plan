@@ -146,7 +146,18 @@ gerechnet; auf dem Linux-Läufer dieser Sitzung weichen die drei Projekte außer
 
 ## 7 Gates
 
-(Abschnitt nach dem vollen Lauf fortgeschrieben.)
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler |
+| voller Lauf `WP-Plan.Kern.slnf` (erster Lauf) | rot 4 von A2: `ZapfprofilHuelleTests` (16 statt 14 Schlüssel), `TwwNutzungsartCtrlTests` (8 ist gültig), `ZapfprofilTrennungWacheTests` und `EinheitenWacheTests` (die Regel griff im datenbankfreien Ordner `Allgemein/Zapfprofil` auf die Datenbank zu) — behoben: Tests auf acht Bezugsarten, `PaketteilNachfuehrung` nach `Allgemein/Update` |
+| voller Lauf `WP-Plan.Kern.slnf` (zweiter Lauf) | Kern 8 859 grün (+1 übersprungen), KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen) — 0 Fehler; UI 6 840 von 6 841: `GebaeudeDialogImportTests.Mit_der_echten_Huelle_schliesst_der_vorbelegte_Editor_mit_OK(ifc4_haus.ifc, null)` fremd und lastabhängig (lief neben dem Bau der Windows-Schale; im ersten Lauf 6 841/6 841, danach dreimal allein grün) |
+| `Werkzeuge/Auslieferungsvorlage.Tests` | 39 / 39 (neu T15) |
+| `Werkzeuge/ZapfprofilValidierung.Tests` | 39 / 39 (neu: Hotelzeile im früheren Stand) |
+| Windows-Schale `WindowsFormsApplication1` (Linux, `EnableWindowsTargeting`) | 0 Fehler |
+| `SqlDialektPruefer` | 2 063 SQL-Texte, 0 Fundstellen |
+| `designer_neu.py` (prüfen) | Blöcke gleich 13 042, abweichend 0, neu 0; die Byteabweichung ist allein das Zeilenende des Linux-Auscheckens (LF statt CRLF, +117 737 = Zeilenzahl) |
+| Wachen `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `ZapfprofilReferenzprojektWacheTests` | grün |
+| Referenzlauf (Endstand) | wie Abschnitt 6, 460 CSV byte-gleich zum Stand vor A2 |
 
 ## 8 Folgen
 
