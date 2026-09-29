@@ -1,6 +1,6 @@
 # Berichtsvorlagen — Reste nach #581 (Protokoll)
 
-Statuszeile #592. Abarbeitung der offenen Reste der Berichtsvorlagen, die keinen Anwenderentscheid brauchen: die Positionsform auf der
+Statuszeile #597. Abarbeitung der offenen Reste der Berichtsvorlagen, die keinen Anwenderentscheid brauchen: die Positionsform auf der
 Wirtschaftlichkeitsseite aus „Nach #581“ (b) und die Feststellung der Unterpunkte aus „Nach #566“, „Nach #558“,
 „Nach #556“, „Nach #549“ samt ihren Weiterverweisen („Nach #544“, „Nach #541“ und dahinter „Nach #532“, „Nach #528“,
 „Nach #520“, „Nach #512“). Vorgänger: [`BV_E6_Nachzug_Marken_Protokoll.md`](BV_E6_Nachzug_Marken_Protokoll.md) und

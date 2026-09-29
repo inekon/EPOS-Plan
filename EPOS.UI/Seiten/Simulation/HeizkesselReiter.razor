@@ -157,13 +157,13 @@
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_BETRIEB" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_BETRIEBSSTUNDEN, Ganz(Daten.Laufstunden), "h/a",
-                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                               hinweis: BetriebHinweis)
                     @Wertzeile(Resource.SIMERG_LBL_STARTS, Ganz(Daten.Starts), "1/a",
-                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                               hinweis: BetriebHinweis)
                     @Wertzeile(Resource.SIMERG_LBL_BEREITSCHAFTSSTUNDEN, Ganz(Daten.Bereitschaftsstunden), "h/a",
-                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                               hinweis: BetriebHinweis)
                     @Wertzeile(Resource.SIMERG_LBL_BEREITSCHAFTSVERLUST, Zahl(Daten.BereitschaftsverlustKwh), "kWh/a",
-                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                               hinweis: BetriebHinweis)
                 </dl>
             </section>
         </div>
@@ -333,6 +333,15 @@
 
     /// <summary>Eine ganze Zahl (Stunden, Starts) mit Tausenderpunkt.</summary>
     private static string Ganz(int wert) => wert.ToString("N0", Kultur);
+
+    /// <summary>
+    /// Der Hinweis der Gruppe „Betrieb“ — er nennt die WIRKSAME Heizgrenze des Laufs, unter deren
+    /// Tagesmittel der Außentemperatur ein Tag Heiztag ist (Schemaschritt 152).
+    /// </summary>
+    private string BetriebHinweis
+        => string.Format(Kultur, Resource.SIMERG_TIP_BETRIEB_SPK,
+                         (Daten?.HeizgrenzeC ?? WindowsFormsApplication1.SimulationSPK.HEIZGRENZE_VORGABE_C)
+                             .ToString("0.#", Kultur));
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet

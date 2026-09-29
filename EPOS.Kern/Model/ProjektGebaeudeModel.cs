@@ -232,6 +232,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IReadOnlyList<Zonenluftstrom> Zonenluftstroeme { get; set; }
 
+        /// <summary>
+        /// <b>Der Katalogbau, aus dem dieses Gebäude entsteht</b> (Stufe KP1b, Befund NB3) — nur am
+        /// ARBEITSSTAND eines noch nicht gespeicherten Gebäudes gesetzt
+        /// (<c>GebaeudeBedarfCtrl.Arbeitsstandgebaeude</c>, <c>ID_Gebaeude = 0</c>). Der Datenweg der
+        /// Konditionierung liest dann dessen Matrix und Kalender, damit die Vorschau vor dem OK
+        /// dieselbe Zahl zeigt wie der Lauf danach. <c>null</c> an jeder Projektkopie — keine Spalte
+        /// der Sicht, wie <see cref="Zonen"/>.
+        /// </summary>
+        internal long? KonditionierungKatalogbau { get; set; }
+
         public ProjektGebaeudeModel()
         {
             items = null;

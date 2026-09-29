@@ -2105,6 +2105,86 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + kond + " Tabelle(n) in diesem Lauf.");
             }
 
+            // ---- Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+            //      Konditionierungsprofile 5.1, 5.6 und 5.7, Entwurf KP1b Abschnitt 3):
+            //      Tab_Konditionierungsvorlage_STAMM samt Namensregel, der Fremdschluessel ID_Vorlage an
+            //      Kalender- und Vorgabetabelle per Tabellenneubau (umbenannt unter
+            //      legacy_alter_table = ON), acht Teilindizes der Eindeutigkeit und Nachtauskuehlstunden_H
+            //      an beiden Ergebnistabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KonditionierungVorlagen bedient, in EINEM Vorgang mit
+            //      abgeschalteten Fremdschluesseln; wiederholbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Vorlagentabelle entsteht LEER, der Neubau erhaelt jede
+            //      Zeile samt ID, und die Ergebnisspalten liest der Referenzlauf nicht. Ein benannter
+            //      Abbruch (Dubletten) laesst die Datei unberuehrt und beendet das Werkzeug mit 1.
+            string nrVorl = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorl + " - Konditionierungsvorlagen: " +
+                              (KonditionierungVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorl = new List<string>();
+                int vorl;
+                try
+                {
+                    vorl = KonditionierungVorlagenSchema.Ausfuehren(berichtVorl);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    foreach (string zeile in berichtVorl)
+                        Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                    Console.WriteLine("Schritt " + nrVorl + " - ABBRUCH: " + ex.Message);
+                    return 1;
+                }
+                foreach (string zeile in berichtVorl)
+                    Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorl + " - vollstaendig: " + KonditionierungVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True); " + vorl + " Aenderung(en) am Schema in diesem Lauf.");
+            }
+
+            // ---- Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34, Weg 3 der
+            //      Hotel-Durchsicht): die Bezugsart Zimmer. Tab_TwwNutzungsart_STAMM und
+            //      Tab_TwwBedarfstag_STAMM neu gebaut mit der Pruefklausel 1..8 (Rezept der Schritte 96
+            //      und 100), dazu die Nachfuehrung der gespeicherten Paketzeilen in einem frueheren Stand
+            //      - aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_TwwBezugsartZimmer bedient
+            //      (TwwBezugsartSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Zeilen, IDs und Zaehlerstaende bleiben; die Hotelzeile der
+            //      Testdatenbank (Status EIGEN) fuehrt die Katalogsaat nach (tww_testkatalog_fiktiv.py),
+            //      kein Referenzprojekt benutzt sie.
+            string nrBezug = TwwBezugsartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBezug + " - Bezugsart Zimmer: offen " + TwwBezugsartSchema.Offen() +
+                              " Tabelle(n), " + PaketteilNachfuehrung.Offen() + " Paketzeile(n).");
+            if (!trocken)
+            {
+                var berichtBezug = new List<string>();
+                int bezug = TwwBezugsartSchema.Ausfuehren(berichtBezug);
+                foreach (string zeile in berichtBezug)
+                    Console.WriteLine("Schritt " + nrBezug + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBezug + " - vollstaendig: " + TwwBezugsartSchema.Vollstaendig() +
+                                  " (erwartet True); " + bezug + " Tabelle(n) in diesem Lauf neu gebaut.");
+            }
+
+            // ---- Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+            //      nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze REAL. REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KesselHeizgrenze bedient
+            //      (KesselHeizgrenzeSchema). Die Spalte entsteht in jeder Zeile als NULL - jedes Projekt
+            //      rechnet mit der Vorgabe 15 Grad Celsius.
+            string nrHeizgrenze = KesselHeizgrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHeizgrenze + " - Heizgrenze der Kesselbereitschaft: " +
+                              (KesselHeizgrenzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtHeizgrenze = new List<string>();
+                angelegt += KesselHeizgrenzeSchema.Ausfuehren(berichtHeizgrenze);
+                foreach (string zeile in berichtHeizgrenze)
+                    Console.WriteLine("Schritt " + nrHeizgrenze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHeizgrenze + " - vollstaendig: " + KesselHeizgrenzeSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

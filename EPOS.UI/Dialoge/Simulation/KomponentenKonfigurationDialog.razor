@@ -104,9 +104,25 @@
                     <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
                                 Wert="@Werte.Bereitschaft" Einheit="h/a"
                                 Aktiv="@(!NurLesen)" WertChanged="BereitschaftGesetzt" />
+
+                    @* DIE HEIZGRENZE DER KESSELBEREITSCHAFT (Schemaschritt 152): leer = Vorgabe,
+                       der Platzhalter zeigt sie. Ein Wert außerhalb der Grenzen färbt das Feld;
+                       gemeldet wird beim OK, und der Dialog bleibt offen. *@
+                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE"
+                                Wert="@Werte.Heizgrenze" Einheit="°C"
+                                Min="@SimulationSPK.HEIZGRENZE_MIN_C" Max="@SimulationSPK.HEIZGRENZE_MAX_C"
+                                Platzhalter="@HeizgrenzePlatzhalter"
+                                Feldname="@FELD_HEIZGRENZE" FehlerZustand="HeizgrenzeFehlerGemeldet"
+                                Aktiv="@(!NurLesen)" WertChanged="HeizgrenzeGesetzt" />
+                    <Herleitungszeile Text="@HinweisHeizgrenze" />
                     <Herleitungszeile Text="@HinweisProjektweit" />
                 </KindInhalt>
             </Formularraster>
+
+            @if (_heizgrenzeWarnung.Length > 0)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@_heizgrenzeWarnung" />
+            }
         }
 
         @* ---------------------------------------------------------------- BHKW *@
@@ -173,6 +189,15 @@
     /// <summary>Der Mangel an den Kühlfeldern beim OK — er hält den Dialog offen.</summary>
     private string _kuehlWarnung = "";
 
+    /// <summary>Die Heizgrenze liegt außerhalb ihrer Grenzen — gemeldet beim OK, der Dialog bleibt offen.</summary>
+    private string _heizgrenzeWarnung = "";
+
+    /// <summary>Steht im Feld der Heizgrenze gerade eine Fehleingabe (keine Zahl oder außerhalb der Grenzen)?</summary>
+    private bool _heizgrenzeFehlerhaft;
+
+    /// <summary>Der Feldname der Heizgrenze für die Fehlermeldung des <c>Zahlenfeld</c>.</summary>
+    private const string FELD_HEIZGRENZE = "heizgrenze";
+
     /// <summary>Der Trägerkatalog der Energieträgerwahl; leer = keine Wahl.</summary>
     [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
         = Array.Empty<EnergietraegerWahl.Eintrag>();
@@ -230,6 +255,19 @@
     [Parameter] public string HinweisProjektweit { get; set; }
         = Resource.SIMKONF_HRL_PROJEKTWEIT;
 
+    /// <summary>
+    /// SIMKONF_HRL_KESSEL_HEIZGRENZE — wozu die Heizgrenze dient; <c>{0}</c> = die Vorgabe.
+    /// </summary>
+    [Parameter] public string HinweisHeizgrenzeText { get; set; }
+        = Resource.SIMKONF_HRL_KESSEL_HEIZGRENZE;
+
+    /// <summary>
+    /// SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH — die Meldung einer Heizgrenze außerhalb der
+    /// Grenzen; <c>{0}</c>/<c>{1}</c> = die Grenzen, <c>{2}</c> = die Vorgabe.
+    /// </summary>
+    [Parameter] public string MeldungHeizgrenzeBereich { get; set; }
+        = Resource.SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH;
+
     // 16.09.2026 (Auftrag #299): Hier standen HinweisHeizstab und
     // HinweisHeizstabAnlage — die zwei Herleitungszeilen, die den projektweiten vom
     // anlagenbezogenen Heizstabschalter trennten. Es gibt nur noch EINEN, und er steht
@@ -257,6 +295,24 @@
     public string Titel => string.IsNullOrEmpty(Bezeichner)
         ? TitelText.Replace(" · {0}", "").Replace("{0}", "")
         : string.Format(TitelText, Bezeichner);
+
+    /// <summary>Eine Gradzahl der Heizgrenze in der Oberflächensprache („15", „12,5").</summary>
+    private static string Grad(double wert)
+        => wert.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>Der Platzhalter des leeren Feldes: die Vorgabe.</summary>
+    private static string HeizgrenzePlatzhalter => Grad(SimulationSPK.HEIZGRENZE_VORGABE_C);
+
+    /// <summary>Der Kurzhinweis unter dem Feld der Heizgrenze.</summary>
+    private string HinweisHeizgrenze
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, HinweisHeizgrenzeText,
+                         Grad(SimulationSPK.HEIZGRENZE_VORGABE_C));
+
+    /// <summary>Die benannte Meldung einer Heizgrenze außerhalb ihrer Grenzen.</summary>
+    private string HeizgrenzeBereichMeldung
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, MeldungHeizgrenzeBereich,
+                         Grad(SimulationSPK.HEIZGRENZE_MIN_C), Grad(SimulationSPK.HEIZGRENZE_MAX_C),
+                         Grad(SimulationSPK.HEIZGRENZE_VORGABE_C));
 
     /// <summary>
     /// Die drei Betriebsarten des BHKW. Die Steuerwerte 0/1/2 sind die des
@@ -319,6 +375,8 @@
     {
         BereitschaftLesen = () => Werte.Bereitschaft,
         BereitschaftSetzen = w => BereitschaftGesetzt(w),
+        HeizgrenzeLesen = () => Werte.Heizgrenze,
+        HeizgrenzeSetzen = w => HeizgrenzeGesetzt(w),
         BhkwBetriebsartLesen = () => Werte.Betriebsart,
         BhkwBetriebsartSetzen = w => BetriebsartGesetzt(w),
         BhkwLeistungsgrenzeLesen = () => Werte.UntersteLeistungsgrenze,
@@ -371,6 +429,27 @@
     private void BereitschaftGesetzt(double? wert) => Werte.Bereitschaft = wert ?? 0.0;
 
     /// <summary>
+    /// Die Heizgrenze — leer bleibt leer (<c>null</c> = Vorgabe). Eine Eingabe außerhalb der
+    /// Grenzen meldet das Feld gar nicht erst (es färbt); ein Wert des Assistenten kommt hier
+    /// ungeprüft an und wird beim OK geprüft.
+    /// </summary>
+    private void HeizgrenzeGesetzt(double? wert)
+    {
+        Werte.Heizgrenze = wert;
+        _heizgrenzeFehlerhaft = false;
+        if (SimulationSPK.HeizgrenzePlausibel(wert)) _heizgrenzeWarnung = "";
+    }
+
+    /// <summary>Das Feld meldet eine Fehleingabe oder ihr Ende.</summary>
+    private void HeizgrenzeFehlerGemeldet((string Feld, bool Fehlerhaft) zustand)
+    {
+        if (zustand.Feld != FELD_HEIZGRENZE) return;
+        _heizgrenzeFehlerhaft = zustand.Fehlerhaft;
+        if (!zustand.Fehlerhaft && SimulationSPK.HeizgrenzePlausibel(Werte.Heizgrenze))
+            _heizgrenzeWarnung = "";
+    }
+
+    /// <summary>
     /// Die Wärmepumpen-Konfiguration hat an der Arbeitskopie etwas geändert — nur
     /// zeichnen; geschrieben wird im OK-Weg des Wirts.
     /// </summary>
@@ -386,6 +465,16 @@
 
     private Task BeiErgebnis(bool ok)
     {
+        // Die Heizgrenze der Kesselbereitschaft: leer oder 0 bis 30 °C. Eine Fehleingabe im
+        // Feld oder ein Wert außerhalb der Grenzen meldet benannt und hält den Dialog offen.
+        if (ok && Komponente == Komponentenart.Heizkessel &&
+            (_heizgrenzeFehlerhaft || !SimulationSPK.HeizgrenzePlausibel(Werte.Heizgrenze)))
+        {
+            _heizgrenzeWarnung = HeizgrenzeBereichMeldung;
+            return Task.CompletedTask;
+        }
+        _heizgrenzeWarnung = "";
+
         // KU2 Welle 3: dieselbe Prüfregel der Kühlfelder wie im Anlagendialog - eine
         // verletzte Regel meldet und hält den Dialog offen.
         if (ok && Anlage is not null)

@@ -87,7 +87,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Vorlage (Entscheid P11) — <b>ohne Fremdschlüssel in KP1a</b>, weil
         /// <c>Tab_Konditionierungsvorlage_STAMM</c> erst mit KP1b entsteht; der Grund steht im
-        /// Kopf der Datei.
+        /// Kopf der Datei. Den Fremdschlüssel setzt der Folgeschritt per Tabellenneubau
+        /// (<see cref="KonditionierungVorlagenSchema"/>).
         /// </summary>
         public const string SPALTE_ID_VORLAGE = "ID_Vorlage";
 
@@ -285,8 +286,8 @@ namespace WindowsFormsApplication1
         /// Die neun Indizes des Schritts, je Indexname — nach den Tabellen anzulegen. Es sind die
         /// Verweise, an denen die Löschkaskaden hängen und über die Controller und Lauf lesen;
         /// die <b>Teilindizes der Eindeutigkeit</b> (ein Kalender je Eigentümerart und Größe)
-        /// kommen erst nach der Werkzeugprobe (Konzept 5.1, R4) — bis dahin hält der Controller
-        /// die Eindeutigkeit.
+        /// kommen erst nach der Werkzeugprobe (Konzept 5.1, R4) mit dem Folgeschritt
+        /// (<see cref="KonditionierungVorlagenSchema.Teilindizes"/>).
         /// </summary>
         public static IEnumerable<KeyValuePair<string, string>> Indexanweisungen
         {

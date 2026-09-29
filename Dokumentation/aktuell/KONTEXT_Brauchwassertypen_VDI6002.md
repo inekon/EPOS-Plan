@@ -167,6 +167,26 @@ neuer Dateien, nicht das Ändern vorhandener. Eine vom Installer angelegte `Kenn
 dadurch schreibgeschützt — Access meldet das beim Öffnen. Nach „Komprimieren und reparieren"
 gehört die Datei dem angemeldeten Benutzer und ist beschreibbar.
 
+### Abgleich mit der Testdatenbank
+
+Die Testdatenbank `Referenzlaeufe/Kenndaten_Test.sqlite` führt **13** Wochenprofile (davon 4
+`ReadOnly`) und **16** Monatssätze (davon 6 `ReadOnly`). Die 11 Wochenprofile (ID 99–109) und die
+13 Monatssätze (ID 97–109) dieses Papiers stehen dort mit denselben IDs und Werten — die
+Monatswerte der Tabelle in Abschnitt 2 stimmen auf vier Stellen, die Tagessummen der 168 Stundenwerte
+auf die Wochenfaktoren. Die Mehrzeilen sind ältere Testzeilen aus der Zeit vor diesem Katalog:
+
+| Tabelle | ID | Bezeichner | Typ | `ReadOnly` | benutzt von |
+|---|---|---|---|---|---|
+| `Tab_Brauchwassertyp_STAMM` | 97 | Test | — | 0 | Typ der Sätze 94 und 96 |
+| `Tab_Brauchwassertyp_STAMM` | 98 | xxx | — | 0 | Typ des Satzes 95 |
+| `Tab_Brauchwasser_STAMM` | 94 | Haushalt-3 | Test | 1 | Referenzprojekte 1007 und 1046 (`Z_Projekt_Brauchwasser`) |
+| `Tab_Brauchwasser_STAMM` | 95 | test | xxx | 1 | Projekt 1009 |
+| `Tab_Brauchwasser_STAMM` | 96 | Haushalt-3 neu | Test | 0 | Projektkopien ohne Zuordnung |
+
+Sie bleiben in der Testdatenbank: 1007 und 1046 rechnen ihr Brauchwasser über den Satz
+„Haushalt-3“ und gehören zum Regressionsnetz der CI. Die Zählung dieses Papiers gilt für den
+Auslieferungskatalog; die Abweichung zur Testdatenbank ist damit erklärt und kein Datenfehler.
+
 ## 6. Geschichte: die Access-Migration hätte den neuen Katalog gelöscht (überholt seit 24.09.2026)
 
 > **Überholt.** `migration.manuell.sql` und `migration.config.json` (Skripte der Access-nach-Access-

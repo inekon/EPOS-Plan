@@ -132,7 +132,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new double?[] { 1, 2, 3 }, a.Entwurf.Bedarf);
             Assert.Equal(1.5, a.Entwurf.BedarfMin[1]);
             Assert.Equal(12, a.Monatsnamen.Count);
-            Assert.Equal(7, a.Bezugsarten.Count);
+            Assert.Equal(8, a.Bezugsarten.Count);
             Assert.Equal(new[] { satz }, a.Tagesgangsaetze.Select(s => s.Id).ToArray());   // der halbe Satz fehlt
             Assert.NotEqual(halb, a.Entwurf.IdTagesgangsatz);
             Assert.Contains("20 %", a.Wochenfaktoren, StringComparison.Ordinal);

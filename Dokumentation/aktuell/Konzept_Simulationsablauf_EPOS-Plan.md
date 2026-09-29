@@ -918,8 +918,9 @@ Verteilung und Peak-Ziel standen im Reiter UND in Station 3 der Auslegungsansich
 ## 12. Heizkessel: Bereitschaftsverlust, Betriebsbereitschaft und Elektrokessel (#568)
 
 Dieser Abschnitt beschreibt den gültigen Rechenweg der Kesselstufe, soweit er Brennstoffeinsatz,
-Bereitschaft und Emission betrifft; er ergänzt den Ablauf oben um den Rechenweg, weil die Vorgabe
-„Betriebsbereitschaft“ an der Heizkessel-Karte in ① steht (Abschnitt 7.3).
+Bereitschaft und Emission betrifft; er ergänzt den Ablauf oben um den Rechenweg, weil die Vorgaben
+„Betriebsbereitschaft“ und „Heizgrenze der Kesselbereitschaft“ in ① in der Konfiguration des
+Heizkessels stehen (Abschnitt 7.3).
 
 **Stundenbilanz je Kessel** (`SimulationSPK.Stunde_Abschluss`, einmal je Stunde und Kessel nach
 Bedarfsdeckung, Ladephase und Nachentladung):
@@ -932,13 +933,19 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 
 **Betriebsbereit** ist ein stillstehender Kessel (`SimulationSPK.IstBetriebsbereit`), wenn
 
-1. der Tag der Stunde ein **Heiztag** ist — die Tagessumme des Raumwärmebedarfs des Projekts vor der
-   Erzeugerkaskade ist größer 0 (`HeiztageAus`; Tage statt Stunden, weil ein Kessel zwischen einer Nacht
-   mit Heizbedarf und dem Mittag ohne nicht abkühlt) — oder
+1. der Tag der Stunde ein **Heiztag** ist — das Mittel der Außentemperatur des Laufs über die 24
+   Stunden des Tages liegt **unter der Heizgrenze** (`HeiztageAus`; genau auf der Grenze ist kein
+   Heiztag, der Vergleich trägt den Rechenrand; Tage statt Stunden, weil ein Kessel zwischen einer
+   kalten Nacht und einem warmen Mittag nicht abkühlt) — oder
 2. er in den **24 Stunden** davor gelaufen ist (Nachlauf; ein Kessel, der im Sommer Warmwasser oder
    Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten).
 
-Ohne Raumwärmereihe gilt jeder Tag als Heiztag.
+**Die Heizgrenze** steht je Projekt in `Tab_Einstellungen.Kessel_Heizgrenze` [°C]; leer gilt die
+Vorgabe **15 °C** (`SimulationSPK.HEIZGRENZE_VORGABE_C`). Die Oberfläche nimmt 0 bis 30 °C an. Die
+Außentemperatur ist dieselbe Stundenreihe, mit der der Lauf rechnet (Klimaregion des Projekts in
+Ortszeit); die Regel gilt für jedes Gebäudemodell und für Projekte ohne Gebäude. Ohne
+Temperaturreihe gilt jeder Tag als Heiztag. Das Laufprotokoll nennt die wirksame Heizgrenze und
+die Zahl der Heiztage.
 
 **Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft` [h/a]** zählt die Stunden, in denen ein
 Kessel warm gehalten wird, Laufstunden eingeschlossen. Größer 0 deckelt sie die Bereitschaftsstunden
@@ -947,7 +954,8 @@ zurück und meldet ihn im Laufprotokoll. 0 heißt „kein Deckel“, dann gilt a
 
 **Laufprotokoll und Ergebnis.** Je Kessel nennt das Laufprotokoll Laufstunden, Starts (Laufphasen im
 Stundenraster), betriebsbereite Stillstandsstunden und den Bereitschaftsverlust [kWh/a]. Der
-Heizkessel-Reiter zeigt dieselben Zahlen als Gruppe „Betrieb“ (Summe über die Kessel); der
+Heizkessel-Reiter zeigt dieselben Zahlen als Gruppe „Betrieb“ (Summe über die Kessel), ihr Hinweis
+nennt die wirksame Heizgrenze; der
 Jahresnutzungsgrad ist die Nutzwärme geteilt durch den gesamten Brennstoffeinsatz (Laufstunden und Bereitschaft).
 
 **Elektrokessel** (`Tab_Heizkessel.Brennstoff` = 13). Sein Strom steht über den Stromverbrauch der
@@ -967,4 +975,4 @@ Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein 
 meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests` und der Referenzbasis
-`2026-09-26_R23_KesselBereitschaft` (Größen `Kessel[i].*` in `aggregate.csv`).
+`2026-09-27_R24_Heizgrenze` (Größen `Kessel[i].*` in `aggregate.csv`).

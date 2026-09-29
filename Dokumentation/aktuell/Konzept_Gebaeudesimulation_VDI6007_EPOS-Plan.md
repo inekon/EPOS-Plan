@@ -1953,7 +1953,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der fünfzehn Testprojekte
-(`Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-27_R24_Heizgrenze`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -4771,7 +4771,7 @@ außerhalb der Heizperiode, die Auslegungswerte aus 3.6 und die Nutzungszeit aus
 ### N1.62 Entscheid E54 — Konditionierungsprofile: Inhalt eigener Vorlagen, Lüftungsstunden in Bericht und Export
 
 **Anlass.** Die Synthese des Entwurfs der zweiten Hälfte von KP1
-([`Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md`](Gebaeudesimulation/2026-09-27_Entwurf_KP1b.md)) hat aus zwei
+([`ueberholt/Entwurf_KP1b_Konditionierungsprofile.md`](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)) hat aus zwei
 Entwürfen und einer Gegenprüfung zwei Fragen an den Anwender gestellt; alles Übrige legt sie als Festlegungen der
 Umsetzung vor, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet beide per Auswahl.
 
@@ -4786,3 +4786,47 @@ Umsetzung vor, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender e
 fortgeschrieben; der Vorlagen-Controller (KP1b) speichert und kopiert keine Zeilen `NENNWERT` und `SAISON`, keine
 Saisonperiode und keinen `Nennwert` am Kalender einer Vorlage; die Wache der ausgelieferten Vorlagen (KP2) prüft es
 mit. KP3 wächst um rund 0,25 PT. Kein Registerpunkt ist berührt; das Register zählt weiter einen offenen Punkt (M11).
+
+### N1.63 Festlegungen der Umsetzung KP1b (zweite Hälfte von KP1) — benannt, nicht entschieden
+
+**Anlass.** Die zweite Hälfte der Stufe KP1 ist gebaut (29.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
+[Entwurf](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)): Schemaschritt 152, Kopierwege, Vorlagen, Werkzeuge
+der Karte, Prüfbericht, Nachtauskühlung, Nutzungszeit, Auslegungswerte, F21, Hinweise und Korrekturen am Bestand aus
+KP1a. Was die Papiere offenließen, hat die Umsetzung festgelegt; die Liste nennt es, damit es nicht als
+Anwenderentscheid gelesen wird. Widerspruch ist möglich und wäre ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Fremdschlüssel `ID_Vorlage` per Tabellenneubau** in Schritt 152 (`KP-S1v`), nicht im Controller — hebt N1.61 Nr. 1 auf und stellt 5.1 her; nur so räumt `--kataloge readonly` eigene Vorlagen samt Kalendern, Perioden und Vorgaben über die Kaskade. Zieltext aus `sqlite_master`, `RENAME` unter `legacy_alter_table`, sonst schriebe SQLite den Verweis der Periodentabelle um | Konditionierungsprofile 5.1, 5.4 |
+| 2 | **Acht Teilindizes** der Eindeutigkeit je Eigentümerart (Gebäude ohne Zone, Zone, Katalogbau, Vorlage); Dubletten brechen den Schritt benannt ab, nichts wird still gelöscht; Waisen an `ID_Vorlage` werden gezählt und gelöscht (0 in der Testdatenbank); keine Trigger | 5.1, 5.6 |
+| 3 | **Namensregel der Vorlagen:** getrimmt, 1–80 Zeichen, eindeutig je Größe mit `OrdinalIgnoreCase` im Controller; der NOCASE-Index ist die Rückfallsperre, weil SQLite nur ASCII faltet („Büro"/„BÜRO") | 5.7 |
+| 4 | **Nachtauskühlung:** Fenster, Tagwert n_T und ΔT kommen aus der Matrix des Eigentümers, dessen Lüftungskalender gilt — auch bei angelegtem, geändertem Kalender; geteilt wird die Nutzerreihe (die Infiltration ist nie bedingt): im Fenster ist max(0, n(h) − n_T) bedingt, außerhalb alles unbedingt, ohne n_T nichts bedingt (Hinweis); das Jahresminimum über den unbedingten Teil | 3.7, P9 |
+| 5 | **Eine Regelklasse** für Sommerlüftung und Nachtauskühlung (`Sommerlueftungsregel` mit Feld für den Außenabstand, eine Schaltstelle); Schwelle je Stunde θ_K(h) − 3 K, wo die Kühlung wirkt, sonst 23 °C; eine Stunde zählt, wenn die Regel an ist und der bedingte Anteil > 0 — gleich, welcher Luftwechsel gewinnt; das Gebäude zählt sie, wenn eine beheizte Zone sie hat; `Nachtauskuehlstunden_H` ist NULL ohne Nachtauskühlung | 3.6, 3.7 |
+| 6 | **Zwischenspeicher des freien Falls** mit vier Plätzen und bitgenauem Schlüssel — gemessen 2 418 statt 2 Neubauten im freien Lauf, rund 17 % Laufzeit; bitgleich zur Einzelrechnung | R7 |
+| 7 | **Der KP1a-Test der unbedingten Nachtlüftung** ist als Mechanikprobe „Werktag über Wochenende" umgeschrieben — ein Semantikwechsel nach P9, kein stilles Nachziehen | P9 |
+| 8 | **Vorlaufstart bei „aus":** Startwert der unbeheizten Zone (N1.56 Nr. 7) auf allen drei Startwegen, in der Zonenschleife „beheizt und endlich", mit Hinweis | 3.6 |
+| 9 | **Die konstante Kühlprüfung gilt nur ohne Kühlkalender** (F17); der Hinweis auf den wirksamen Kühl-Nachtwert (R14) kommt, wo ein abgeleiteter Kühlkalender die Bestandsspalte erstmals wirksam macht | 3.6, P13 |
+| 10 | **Der Vorlauf der Übergabe steht nur in Stunden mit Heizung** — außerhalb der Heizperiode bleibt er leer, auch bei festem Anlagenvorlauf; die Stunden zählen getrennt (`StundenOhneHeizungH`), nicht in der Heizgrenze | E53, 6 |
+| 11 | **F16 wirkt nur in den Kennzahlen:** die Nutzungsmaske (Anwesenheit > 0) ersetzt dort die Nachtzeit; `GebaeudeModellEingang.Nutzungszeit` und der Sollwertfahrplan bleiben an der Nachtzeit; ohne Anwesenheitsstunde gilt die Nachtzeit mit Hinweis; im Mehrzonenlauf zählt das Gebäude eine Stunde, wenn eine beheizte Zone in Nutzung ist | 3.4, F16 |
+| 12 | **Auslegung und F21 nehmen als Nutzungszeit die Nachtzeit**, nicht die Personenmaske — Folge von Nr. 11; höchster endlicher Heizsollwert der Nutzungsstunden (Übergabe, F21), niedrigster wirksamer endlicher Kühlsollwert (beide Kältestellen), höchster unbedingter Luftwechsel (Heizlast); ohne endliche Nutzungsstunde gilt der Bestand, F21 entfällt. Die Umstellung auf die Maske wäre je Auflöser eine Zeile | 3.6, F21 |
+| 13 | **Untertemperatur** nur als Protokollhinweis mit Zahl und tiefster Unterschreitung; „außerhalb der Heizperiode" heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene Betriebspause ist gewolltes „aus" | 3.6, E53 |
+| 14 | **Infiltration im Kalenderweg** aus der wirksamen Matrixzelle Lüftung/`NENNWERT` (Zone → Gebäude → Bestand); bei Gesamtangabe wie ohne Trennung 0 unter der Gesamtreihe | 3.1, 3.3, F15 |
+| 15 | **Ein SQL-Kopierer** (`Konditionierungskopie`, Spalten aus `pragma_table_info`, Alt→Neu-Zuordnung im selben Vorgang) für alle Wege Katalog ↔ Projekt, Katalog → Katalog und Vorlage ↔ Ziel; `Katalogkopie` bleibt unverändert; Duplikat, Variante und `.wpx` bleiben beim `KINDER`-Plan | 5.5 |
+| 16 | **Zellenort-Weiche** (`Matrixzellenort`) auf allen Schreibwegen: der Wert einer Bestandszelle in die Bestandsspalte, nur „aus", Zeiten und `Bedingt_K` in die Vorgabezeile; der Leser folgt 5.6; eine unbelegte Bestandszelle lässt die Spalte unberührt | 5.6 |
+| 17 | **Das Schloss sperrt jeden Schreibweg** auf gesperrte Katalogbauten und Vorlagen, benannt | 5.1, 5.7 |
+| 18 | **„Speichern unter"** ist eine Kernmethode (`GebaeudeStammCtrl.SpeichernUnter`) und nimmt nur die Gebäudeebene mit; im Katalogmodus wirkt es wie Duplizieren; der Befund `ZonenZurueck` zählt die Seite, die ein Gebäude ist (Quelle bei „Speichern unter", Ziel bei „erneut übernehmen") | 5.5 |
+| 19 | **Vorlagen:** Herkunft nur als Text in `Bemerkung`, nie als Id am Ziel; Inhalt nach E54 nur die Nutzungszeilen; die Nachtzeiten der Quelle kommen aus `Nachtabsenkung_Beginn/_Ende`, wo sie keine eigene Zeile trägt; ein Bestandswert außerhalb der Grenzen wird benannt abgelehnt | 3.5, 5.7, E54 |
+| 20 | **Rangbänder** an einer Stelle (`Standardfahrplan`): Feiertage 100–108 unter den Ferien (sonst heizte ein Feiertag in den Ferien „wie Sonntag"), Ferien 200 + k, eigene und übernommene Perioden 310–899, Saison 900; Kollision benannt abgelehnt | 3.2, N1.61 Nr. 5 |
+| 21 | **Zeitfenster:** `von` 0…23, `bis` 1…24 ausschließlich, `bis` unter `von` über Mitternacht, 0…24 der ganze Tag, gleiche Werte benannt abgelehnt | 3.5 |
+| 22 | **Stufenzuordnung:** gbXML `SollHeizenC`, Ferien des Zapfprofils und „Zeitstruktur übernehmen" in die erste Kernwelle von KP2; Bericht, CSV, KI-Sicht und Variantenvergleich der Lüftungsstunden in KP3 (E54) | 5.5, 8 |
+
+**Nachweise.** Die Proben der sieben Wellen (`KonditionierungVorlagenSchemaTests`, `KonditionierungKorrekturenTests`,
+`NachtauskuehlungTests`, `KonditionierungNutzungAuslegungTests`, `KonditionierungskopieTests`,
+`KonditionierungKopierwegeTests`, `MatrixzellenortTests`, `KonditionierungArbeitsstandTests`,
+`KonditionierungProjektplanTests`, `KonditionierungsvorlageCtrlTests`, `KalenderwerkzeugeTests` und im Werkzeug
+`KonditionierungVorlageTests`) halten die Festlegungen; jede Welle ist gegen ihren Ausgangsstand byte-gleich, der
+Referenzlauf der fünfzehn Projekte gegen die Basis R24 ebenfalls.
+
+**Offen (KP2, KP3):** siehe [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md)
+Abschnitt 7.

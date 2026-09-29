@@ -47,16 +47,21 @@ haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Tes
 dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
 'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
-DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579). Dieselben drei
+DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579, Bezugsart A2). Dieselben drei
 Traegerdateien fuehren einen sechsten Tagesgangsatz ("Hotel (aus Messung)") und eine sechste
 Nutzungsart, die NICHT aus VDI 6002 stammen (die Richtlinie fuehrt kein Hotel), sondern aus dem
 Mittel dreier gemessener Hotels: gerundete Kennwerte der Datei tww_hotel_aus_messung.json, gebildet
 von hotel_aus_messung_bauen.py. Herkunftsart 'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle
-"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Betten mit der Zimmerzahl als
-Bezugsmenge (ein Zimmer = ein Bett; der Zusatz "je Zimmer" im Namen sagt es), Kalenderart Betrieb,
-flacher Jahresgang. Eine Nutzungsart der Testdatenbank unter einem frueheren Bezeichner
-(UMBENANNTE_NUTZUNGSARTEN) wird vor dem Nachfuehren umbenannt - dieselbe Zeile, dieselbe ID, samt
-ihren Zapfkategorien; eine zweite Zeile entsteht nicht.
+"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Zimmer (8, aus der JSON-Datei) mit
+der Zimmerzahl als Bezugsmenge, Kalenderart Betrieb, flacher Jahresgang. Eine Nutzungsart der
+Testdatenbank in einem frueheren Stand (UMBENANNTE_NUTZUNGSARTEN: frueherer Bezeichner und fruehere
+Bezugsart) wird vor dem Nachfuehren am Platz nachgefuehrt - dieselbe Zeile, dieselbe ID, samt ihren
+Zapfkategorien; eine zweite Zeile entsteht nicht. Die Liste spiegelt die Regel des Kerns
+(EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs, NUTZUNGSARTEN), die Schemaschritt,
+Katalogimport, Projektimport und Auslieferungsvorlage an den Zeilen des ausgelieferten Paketteils
+anwenden; hier gilt sie nach der Regel der Testdatenbank (Status EIGEN, Katalogversion TEST-1). Die
+Bezugsart Zimmer braucht den Schemaschritt der Bezugsart Zimmer (Pruefklausel 1..8, Werkzeuge/
+Testdatenbankschema) - sonst bricht das Skript ohne Schreiben ab.
 
 DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
 Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
@@ -199,7 +204,7 @@ CW = 1.163                           # Wh/(l*K), wie Mengengeruest.WAERMEKAPAZIT
 # Aufgenommen ist JEDE Nutzungsart der Originale, deren Bezug eine Bezugsart des Schemas trifft
 # (Person -> 1, Bett -> 3); Tagtyp 4 (Ruhetag) nimmt den Sonntag - die Quelle behandelt Feiertage
 # wie Sonntage. NICHT aufgenommen, benannt (Stufe Z5):
-#   - Campingplatz: Bezug "belegter Stellplatz" - keine der sieben Bezugsarten des Schemas;
+#   - Campingplatz: Bezug "belegter Stellplatz" - keine der acht Bezugsarten des Schemas;
 #   - Standardhallenbad und Gut ausgestattetes Hallenbad: Bezug "Besucher der sommerlichen
 #     Schwachlastperiode" - keine Bezugsart des Schemas, und die Richtlinie fuehrt fuer sie weder
 #     Tages- noch Wochenprofil.
@@ -224,29 +229,34 @@ WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
 # DREIER GEMESSENER HOTELS (Soerensen et al. 2021, CC BY 4.0). Das Skript liest allein die gerundeten
 # Kennwerte der JSON-Datei, die hotel_aus_messung_bauen.py aus den Rohdaten bildet (Regel dort im
 # Kopf); die Rohdaten braucht dieses Skript nicht. Herkunftsart EIGENKONSTRUKTION: eine Modellannahme
-# von INEKON (drei Hotels als Mittel, ein Zimmer = ein Bett, flacher Jahresgang), weder ein Verfahren
-# ueber eine Richtlinie noch eine frei uebernommene Zahl. Bezugsart Betten (3), Kalenderart Betrieb (4)
-# wie das Krankenhaus - damit Gruppe Nichtwohnen. Tagtyp 4 (Ruhetag) nimmt den Sonntag. Der Bedarf der
+# von INEKON (drei Hotels als Mittel, Bedarf je Zimmer, flacher Jahresgang), weder ein Verfahren
+# ueber eine Richtlinie noch eine frei uebernommene Zahl. Bezugsart Zimmer (8, Schluessel "bezugsart" der
+# JSON-Datei), Kalenderart Betrieb (4) wie das Krankenhaus - damit Gruppe Nichtwohnen. Tagtyp 4 (Ruhetag) nimmt den Sonntag. Der Bedarf der
 # Datei ist gemessene Energie je Zimmer und Tag; er gilt bei den Bezugstemperaturen 60/12 Grad C der
 # abgeleiteten Zeilen (Modellannahme, die Quelle misst Energie, keine Temperaturen).
 HOTEL_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_hotel_aus_messung.json")
 HERKUNFT_HOTEL = "EIGENKONSTRUKTION"
-HOTEL_BEZUGSART = 3
+BEZUGSARTEN = range(1, 9)                     # ZapfBezugsart 1..8 (TwwSchema.BEZUGSART_WERTE), 8 = Zimmer
 HOTEL_KALENDER = 4
 HOTEL_TAGTYPEN = ("werktag", "samstag", "sonntag", "sonntag")
-# Fruehere Bezeichner einer Nutzungsart der Testdatenbank -> heutiger Bezeichner (#579: der Hoteltyp
-# traegt "je Zimmer" im Namen, weil die Bezugsmenge die Zimmerzahl ist, nicht die Bettenzahl).
-UMBENANNTE_NUTZUNGSARTEN = {"Hotel (aus Messung)": "Hotel (aus Messung, je Zimmer)"}
+# Fruehere Staende einer Nutzungsart des Paketteils -> heutiger Stand: (frueherer Bezeichner, fruehere
+# Bezugsart, heutiger Bezeichner, heutige Bezugsart). Dieselben Eintraege wie der Kern
+# (PaketteilNachfuehrung.NUTZUNGSARTEN): #579 schaerfte den Namen des Hoteltyps, A2 gab ihm die eigene
+# Bezugsart Zimmer (8) statt Betten (3).
+UMBENANNTE_NUTZUNGSARTEN = [
+    ("Hotel (aus Messung)", 3, "Hotel (aus Messung, je Zimmer)", 8),
+    ("Hotel (aus Messung, je Zimmer)", 3, "Hotel (aus Messung, je Zimmer)", 8),
+]
+# Die Pruefklausel der Bezugsart nach dem Schemaschritt der Bezugsart Zimmer (TwwBezugsartSchema.CHECK_NEU).
+CHECK_BEZUGSART = 'CHECK ("Bezugsart" IN (1,2,3,4,5,6,7,8))'
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
 
 
 def normiert(werte, ziel):
-    """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12).
-
-    Die Summe rechnet math.fsum - exakt gerundet und damit in jeder Python-Fassung dieselbe Zahl.
-    Das eingebaute sum() summiert Gleitkommazahlen erst ab 3.12 kompensiert; unter aelteren Fassungen
-    wichen die normierten Werte in der letzten Stelle ab, und Traegerdateien des Paketteils und
-    Testdatenbank passten nicht mehr zum Erzeugnis des Skripts."""
+    """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12)."""
+    # math.fsum, nicht sum(): die korrekt gerundete Summe ist auf jeder Python-Fassung dieselbe.
+    # sum() kompensiert erst ab 3.12 (Neumaier) und rechnet unter 3.11 in der letzten Stelle
+    # anders - dann wichen die erzeugten Traegerdateien vom Paketteil im Arbeitsbaum ab.
     s = math.fsum(werte)
     return [w * ziel / s for w in werte]
 
@@ -292,10 +302,12 @@ def hotel_satz_und_art():
     satzname = kopf.get("tagesgangsatz", name)       # der Satz traegt den Zusatz "je Zimmer" nicht
     b = d["bedarf"]
     assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_hotel_aus_messung.json: Bedarfsstufen"
+    bezugsart = kopf["bezugsart"]
+    assert bezugsart in BEZUGSARTEN, "tww_hotel_aus_messung.json: Bezugsart"
     satz = (satzname, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
             kopf["quelle"], kopf["ausgabe"], HERKUNFT_HOTEL, VERSION_PAKETTEIL)
     art = dict(
-        name=name, bezug=HOTEL_BEZUGSART, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
+        name=name, bezug=bezugsart, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
         grenze=1, kalender=HOTEL_KALENDER, ferien=None,
         monate=[1.0] * 12,                                    # flacher Jahresgang (Modellannahme)
         woche=normiert([d["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
@@ -785,6 +797,12 @@ def main():
             print(f"Schemastand {stand}: {T_BEDARFSTAG}.Bezugsart fehlt - erst Werkzeuge/Testdatenbankschema "
                   "(Schemaschritt T3, Schritt 124). Abbruch ohne Schreiben.")
             return 2
+        for t in ("Tab_TwwNutzungsart_STAMM", T_BEDARFSTAG):
+            sql = con.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", (t,)).fetchone()[0]
+            if CHECK_BEZUGSART not in sql:
+                print(f"Schemastand {stand}: {t} laesst die Bezugsart Zimmer (8) nicht zu - erst "
+                      "Werkzeuge/Testdatenbankschema (Schemaschritt der Bezugsart Zimmer). Abbruch ohne Schreiben.")
+                return 2
 
         # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / ReadOnly 0 ist.
         fremd = 0
@@ -827,13 +845,17 @@ def main():
                     zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
-            # Erst umbenennen, was unter einem frueheren Bezeichner steht: dieselbe Zeile (ID,
-            # Zapfkategorien, Zonenbezug) bekommt den heutigen Namen, statt dass eine zweite entsteht.
-            for alt, neu in UMBENANNTE_NUTZUNGSARTEN.items():
+            # Erst nachfuehren, was in einem frueheren Stand steht: dieselbe Zeile (ID, Zapfkategorien,
+            # Zonenbezug) bekommt den heutigen Namen und die heutige Bezugsart, statt dass eine zweite
+            # entsteht - nur, wenn die Katalogversion den heutigen Namen nicht schon an einer anderen
+            # Zeile fuehrt (dieselbe Grenze wie PaketteilNachfuehrung.Nachfuehren im Kern).
+            for alt, bezug_alt, neu, bezug_neu in UMBENANNTE_NUTZUNGSARTEN:
                 zaehler[1] += con.execute(
-                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ? WHERE "Bezeichner" = ? '
-                    'AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
-                    'WHERE "Bezeichner" = ? AND "Katalogversion" = ?)', (neu, alt, VERSION, neu, VERSION)).rowcount
+                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ?, "Bezugsart" = ? WHERE "Bezeichner" = ? '
+                    'AND "Bezugsart" = ? AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
+                    'AS "Andere" WHERE "Andere"."Bezeichner" = ? AND "Andere"."Katalogversion" = ? '
+                    'AND "Andere"."Bezeichner" <> ?)',
+                    (neu, bezug_neu, alt, bezug_alt, VERSION, neu, VERSION, alt)).rowcount
             id_arten = []
             for n in ALLE_NUTZUNGSARTEN:
                 w = {"Bezugsart": n["bezug"], "Bedarf_Niedrig": n["bedarf"][0], "Bedarf_Mittel": n["bedarf"][1],

@@ -272,7 +272,9 @@ public class SimulationKonfigSeiteTests : BunitContext
         BetriebsartSchreiben = w => _geschrieben.Add("betriebsart:" + w),
         LeistungsgrenzeSchreiben = w => _geschrieben.Add("grenze:" + w),
         // 16.09.2026 (Auftrag #299): HeizstabSchreiben ist entfallen.
-        BereitschaftSchreiben = w => _geschrieben.Add("bereitschaft:" + w)
+        BereitschaftSchreiben = w => _geschrieben.Add("bereitschaft:" + w),
+        HeizgrenzeSchreiben = w => _geschrieben.Add("heizgrenze:" + (w.HasValue
+            ? w.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "leer"))
     };
 
     private IRenderedComponent<SimulationKonfigSeite> SeiteMitParametern()
@@ -727,6 +729,34 @@ public class SimulationKonfigSeiteTests : BunitContext
         // ist mit Auftrag #299 entfallen - der Heizstab gehört der Anlage und geht über
         // WaermepumpeKonfigurationSpeichern (siehe den Fall darunter).
         Assert.Equal(new[] { "bereitschaft:7500" }, _geschrieben);
+    }
+
+    /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft geht im OK-Weg ihren eigenen Delegaten — eine
+    /// Zahl und das Leeren (= Vorgabe); eine Eingabe außerhalb der Grenzen schreibt nichts,
+    /// der Dialog bleibt offen.
+    /// </summary>
+    [Fact]
+    public void Der_Heizkessel_schreibt_die_Heizgrenze_im_OK_Weg()
+    {
+        var seite = SeiteMitParametern();
+        seite.Find("button.epos-simkonfig-verfuegbar").Click();
+
+        Knopf(seite, "Heizkessel").Click();
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[1].Input("40");
+        Leiste(seite, 1).Click();
+        Assert.Empty(_geschrieben);
+        Assert.NotEmpty(seite.FindAll("div.epos-ueberlagerung"));
+
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[1].Input("13");
+        Leiste(seite, 1).Click();
+        Assert.Equal(new[] { "heizgrenze:13" }, _geschrieben);
+
+        Knopf(seite, "Heizkessel").Click();
+        Assert.Equal("13", seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[1].GetAttribute("value"));
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[1].Input("");
+        Leiste(seite, 1).Click();
+        Assert.Equal(new[] { "heizgrenze:13", "heizgrenze:leer" }, _geschrieben);
     }
 
     /// <summary>

@@ -291,6 +291,59 @@ namespace WindowsFormsApplication1
         /// <summary>Restreserve = kleinster Füllstand / C_sp [-] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? ReserveAnteil { get; init; }
 
+        /// <summary>
+        /// Der empfohlene Punkt der Summenlinie [l], mit dem die Auslegung rechnete (Bezug
+        /// <see cref="ZapfFuellstandbezug.Punkt"/>); <c>null</c> = keiner. Nur Ergebnisangabe.
+        /// </summary>
+        public double? SummenlinienpunktL { get; init; }
+
+        /// <summary>
+        /// Der Nenninhalt zum empfohlenen Punkt [l] (Bezug <see cref="ZapfFuellstandbezug.NenninhaltPunkt"/>);
+        /// <c>null</c> ohne Punkt, ohne Nenninhaltsliste oder über ihrem Ende ohne Raster. Nur Ergebnisangabe.
+        /// </summary>
+        public double? NenninhaltPunktL { get; init; }
+
+        /// <summary>
+        /// Der Bezug, den die Vorgabe nach N10 (k) auflöst — unabhängig von der Wahl
+        /// <see cref="Speicherauslegungseingang.FuellstandBezugWahl"/>; <c>null</c> ohne jedes Volumen.
+        /// </summary>
+        public ZapfFuellstandbezug? FuellstandVorgabe { get; init; }
+
+        /// <summary>
+        /// Das Volumen [l] eines Bezugs des Füllstands — die Einträge der Wahl „Speichergröße der
+        /// Füllstandslinie" (N11 (d)); <c>null</c>, wenn der Bezug nicht bestimmbar ist, dann nennt
+        /// <see cref="Fuellstandsperre"/> den Grund. Liest nur Ergebnisfelder, rechnet nichts.
+        /// </summary>
+        public double? BezugsvolumenL(ZapfFuellstandbezug art) => art switch
+        {
+            ZapfFuellstandbezug.NenninhaltPunkt => NenninhaltPunktL,
+            ZapfFuellstandbezug.Punkt => SummenlinienpunktL,
+            ZapfFuellstandbezug.NenninhaltBand => NenninhaltL,
+            ZapfFuellstandbezug.BandMax => BandMaxL,
+            _ => null
+        };
+
+        /// <summary>
+        /// Warum ein Bezug des Füllstands kein Volumen hat — benannt, nie still (ohne Punkt der
+        /// Summenlinie, ohne Plausibilitätsband, ohne Nenninhalt); <c>null</c>, wenn er eines hat.
+        /// </summary>
+        public ZapfSatz Fuellstandsperre(ZapfFuellstandbezug art)
+        {
+            if (BezugsvolumenL(art).HasValue) return null;
+            switch (art)
+            {
+                case ZapfFuellstandbezug.NenninhaltPunkt when SummenlinienpunktL.HasValue:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT");
+                case ZapfFuellstandbezug.NenninhaltPunkt:
+                case ZapfFuellstandbezug.Punkt:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_OHNE_PUNKT");
+                case ZapfFuellstandbezug.NenninhaltBand when BandMaxL.HasValue:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT");
+                default:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_OHNE_BAND");
+            }
+        }
+
         /// <summary>Die Warnliste (nie blockierend).</summary>
         public IReadOnlyList<Auslegungshinweis> Hinweise { get; init; } = new Auslegungshinweis[0];
     }
@@ -553,6 +606,8 @@ namespace WindowsFormsApplication1
                 ? e.Nenninhalte?.Runden(e.SummenlinienpunktL.Value, ps, hinweise, out _) : null;
             (double? bezug, ZapfFuellstandbezug? bezugArt) = Fuellstandbezug(e.FuellstandBezugWahl, nennPunkt, e.SummenlinienpunktL,
                                                                              nenn, bandMax, hinweise);
+            // Nur für die Anzeige der Wahl: der Bezug, den die Vorgabe auflöst (ohne Wahl kein Hinweis).
+            ZapfFuellstandbezug? vorgabeArt = Fuellstandbezug(null, nennPunkt, e.SummenlinienpunktL, nenn, bandMax, null).Art;
             if (bezug.HasValue)
             {
                 var f = FuellstandAus(d, bezug.Value, fNutz, dT);
@@ -633,6 +688,9 @@ namespace WindowsFormsApplication1
                 KapazitaetKwh = kap,
                 MinFuellstandKwh = minSoc,
                 ReserveAnteil = reserve,
+                SummenlinienpunktL = e.SummenlinienpunktL,
+                NenninhaltPunktL = nennPunkt,
+                FuellstandVorgabe = vorgabeArt,
                 Hinweise = hinweise.AsReadOnly()
             };
         }

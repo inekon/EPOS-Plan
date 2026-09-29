@@ -774,11 +774,6 @@ namespace WindowsFormsApplication1
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
 
-            // #568: Raumwärmebedarf VOR der Kaskade - die Heizperiode, in der ein Kessel
-            // betriebsbereit gehalten wird (SimulationSPK.IstBetriebsbereit). Eine Kopie:
-            // Die Stufen schreiben die Kanäle in place fort.
-            _raumwaermeVorKaskade = (double[])kanaele.Bedarf[Kanal.HEIZUNG].Clone();
-
             // KU2: die Kälteseite des Vorlaufs verwerfen (Kälteerzeuger, Tagesbetriebsart).
             KaelteseiteZuruecksetzen();
 
@@ -861,7 +856,8 @@ namespace WindowsFormsApplication1
                     // hier stand bis dahin ein dritter Parameter ctrl_konfig.model.m_WP_Heizstab.
                     Speicherstufe_Rechnen(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
+                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft,
+                        ctrl_konfig.model.Kessel_Heizgrenze);
 
                     if (m_bError)
                         for (int k = 0; k < Kanal.ANZAHL; k++)
@@ -930,7 +926,8 @@ namespace WindowsFormsApplication1
                     // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
                     Simulation_SPK_Ctrl_Zweikanalig(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
+                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft,
+                        ctrl_konfig.model.Kessel_Heizgrenze);
 
                     temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -1148,12 +1145,6 @@ namespace WindowsFormsApplication1
         private bool _solarInSchleife = false;
         private bool _kesselInSchleife = false;
 
-        /// <summary>
-        /// Raumwärmebedarf des Projekts vor der Kaskade [kWh je Stunde] (#568) — die
-        /// Heizperiode der Kessel-Betriebsbereitschaft. Gesetzt am Anfang von
-        /// <see cref="Kaskade_Zweikanalig"/>.
-        /// </summary>
-        private double[] _raumwaermeVorKaskade;
         private bool _bhkwInSchleife = false;
 
         /// <summary>
@@ -1296,9 +1287,14 @@ namespace WindowsFormsApplication1
         ///   5. die gemeinsame Stundenschleife A–G (<see cref="Kaskadenschleife"/>).
         ///
         /// Die Kanäle werden dabei in place fortgeschrieben.
+        ///
+        /// <para><paramref name="nBereitschaft"/> und <paramref name="heizgrenze"/> sind die
+        /// Betriebsbereitschaft [h/a] und die Heizgrenze [°C] des Projekts
+        /// (<c>Tab_Einstellungen.Kessel_Betriebsbereitschaft</c>, <c>.Kessel_Heizgrenze</c>;
+        /// <c>null</c> = Vorgabe) — der Kessel liest sie samt der Außentemperatur des Laufs.</para>
         /// </summary>
         private void Speicherstufe_Rechnen(Kanalsatz kanaele, double[] Strombedarf,
-                                           int nBereitschaft)
+                                           int nBereitschaft, double? heizgrenze)
         {
             WaermequelleClass.SchemaSicherstellen();
 
@@ -1365,7 +1361,10 @@ namespace WindowsFormsApplication1
                 simulation_spk.Strombedarf_stuendlich =
                     NetzbezugGeklemmt((double[])stromStufeneingang.Clone());
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
-                simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
+                // #568, Anwenderentscheid 27.09.2026: Heiztag = Tagesmittel der Aussentemperatur
+                // des Laufs unter der Heizgrenze des Projekts.
+                simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
+                simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
@@ -2031,10 +2030,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Heizkessel als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an der
-        /// Kaskadenposition, ohne Speicherbeteiligung.
+        /// Kaskadenposition, ohne Speicherbeteiligung. Betriebsbereitschaft und Heizgrenze wie
+        /// bei <see cref="Speicherstufe_Rechnen"/>.
         /// </summary>
         private void Simulation_SPK_Ctrl_Zweikanalig(Kanalsatz kanaele, double[] Strombedarf,
-                                                     int nBereitschaft)
+                                                     int nBereitschaft, double? heizgrenze)
         {
             SPK_Liste_Laden();
 
@@ -2043,7 +2043,8 @@ namespace WindowsFormsApplication1
             // (Tab_ErgebnisHeizkessel.Strombedarf/Reststrombedarf), wie E27‑Q4 beim BHKW.
             simulation_spk.Strombedarf_stuendlich = NetzbezugGeklemmt(Strombedarf);
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
-            simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
+            simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
+            simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))
