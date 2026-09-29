@@ -74,8 +74,15 @@
    DIE VORBELEGUNG AUS "WIRTSCHAFTLICHKEIT": "Zum Bericht ›" der Wirtschaftlichkeitsseite
    wechselt hierher und reicht eine BerichtVorbelegung mit (Baustein Wirtschaftlichkeit,
    angehakte Versionen, Szenario). Die Seite legt sie beim Aufbau EINMAL ueber den
-   gespeicherten Stand und sagt es in einer leisen Zeile; gemerkt wird sie erst mit
-   "Erstellen", wie jede andere Auswahl. Ein spaeteres Auffrischen zeigt den gemerkten Stand. *@
+   gespeicherten Stand - das Szenario in die Klappliste des Szenarios - und sagt es in einer leisen
+   Zeile; gemerkt wird sie erst mit "Erstellen", wie jede andere Auswahl. Ein spaeteres
+   Auffrischen zeigt den gemerkten Stand.
+
+   DAS SZENARIO DER WIRTSCHAFTLICHKEIT (Fachvorgabe E31, Nach #582): Die Klappliste am
+   Baustein Wirtschaftlichkeit - nur sichtbar, solange er angehakt ist - waehlt das
+   Szenario des Wirtschaftlichkeitsberichts (Vorgabe Erwartet). Die Wahl geht mit dem
+   Auftrag in die Huelle und wird dort mit der uebrigen Auswahl gemerkt. Ohne Eintraege
+   der Huelle steht keine Klappliste. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -442,6 +449,13 @@
                                  GesperrtVersucht="BausteinGesperrtVersucht"
                                  GewaehltChanged="BausteineGesetzt" />
             }
+            @* Fachvorgabe E31: die Klappliste am Baustein Wirtschaftlichkeit (Kopfkommentar). *@
+            @if (SzenarioSichtbar)
+            {
+                <Auswahlfeld Bezeichnung="@LabelSzenario" Eintraege="@_stand.Szenarien"
+                             Auswahl="@_stand.SzenarioId" Aktiv="@(!_laeuft)"
+                             AuswahlChanged="BeiSzenario" />
+            }
             @if (_bausteinmeldung.Length > 0)
             {
                 @* Das Banner NACH dem Versuch, mit Verfall - unter der Liste, damit sie beim
@@ -601,6 +615,8 @@
     [Parameter] public string LabelRechnen { get; set; }
         = "Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet.";
     [Parameter] public string LabelAusgabe { get; set; } = "Ausgabe:";
+    /// <summary>Die Beschriftung der Klappliste des Szenarios (<c>BK_BER_LBL_SZENARIO</c>).</summary>
+    [Parameter] public string LabelSzenario { get; set; } = "Szenario der Wirtschaftlichkeit:";
     [Parameter] public string LabelZiel { get; set; } = "Zielordner:";
     [Parameter] public string LabelFortschritt { get; set; } = "Fortschritt";
 
@@ -1012,6 +1028,11 @@
             ZielordnerLesen = () => _stand.Zielordner,
             ZielordnerSetzen = BeiZielordner,
 
+            SzenarioLesen = () => _stand.SzenarioId,
+            SzenarioSetzen = BeiSzenario,
+            SzenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Szenarien, z => z.Id, z => z.Text),
+
             VariantenLesen = KiVariantenzeile,
             BausteineLesen = KiBausteinzeile,
             StatusLesen = () => _status,
@@ -1152,6 +1173,9 @@
             && _stand.Bausteine.Any(b => b.Schluessel == BausteinWirtschaft))
             _bausteine.Add(BausteinWirtschaft);
 
+        // Fachvorgabe E31: Das Szenario der Einzelheiten belegt die Klappliste vor (dieselben Nummern).
+        if (_stand.Szenarien.Any(z => z.Id == v.SzenarioId)) _stand.SzenarioId = v.SzenarioId;
+
         int anzahl = _gewaehlt.Count(id => gruppe.Contains(id));
         _vorbelegt = string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
                                    string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
@@ -1159,6 +1183,16 @@
 
     /// <summary>Die leise Zeile der übernommenen Vorbelegung (Prüfhilfe); leer = keine.</summary>
     public string Vorbelegungszeile => _vorbelegt;
+
+    /// <summary>Das gewählte Szenario der Wirtschaftlichkeit (Prüfhilfe; 0 = Erwartet).</summary>
+    public int Szenariowahl => _stand.SzenarioId;
+
+    /// <summary>
+    /// Steht die Klappliste des Szenarios? Nur mit Einträgen der Hülle und angehaktem Baustein Wirtschaftlichkeit
+    /// (Fachvorgabe E31).
+    /// </summary>
+    private bool SzenarioSichtbar => _stand.Szenarien.Count > 0 && BausteinWirtschaft.Length > 0
+                                     && _bausteine.Contains(BausteinWirtschaft);
 
     /// <summary>Die aktiven Bausteine (Prüfhilfe).</summary>
     public IReadOnlyList<string> AktiveBausteine => _bausteine;
@@ -1222,6 +1256,8 @@
 
     private void BeiAusgabe(int? id) => _stand.AusgabeId = id ?? 0;
 
+    private void BeiSzenario(int? id) => _stand.SzenarioId = id ?? 0;
+
     private void BeiZielordner(string pfad) => _stand.Zielordner = pfad ?? "";
 
     // =====================================================================
@@ -1245,6 +1281,7 @@
             Bausteine = new List<string>(_bausteine),
             AusgabeId = _stand.AusgabeId,
             Zielordner = _stand.Zielordner,
+            SzenarioId = _stand.SzenarioId,
             AnzahlMitStamm = mitStamm,
             VorlageId = _vorlageId,
             Vorlagenweg = vorlagenweg ?? ""

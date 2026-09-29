@@ -1002,9 +1002,11 @@ namespace WindowsFormsApplication1
                     if (sp == null) continue;
 
                     // Abschaltprüfung VOR den Bereitschaftsverlusten (wie im Altpfad),
-                    // sonst wird der Vollstand nie erreicht.
+                    // sonst wird der Vollstand nie erreicht. Mit Zahlenrand, dieselbe
+                    // Prüfung wie in HystereseFortschreiben (Plattformbefund PB-1): Die
+                    // Nachentladung der Phase E steuert den Füllstand auf genau diese Marke.
                     if (!sp.IstQuelle && sp.Q_max > 0 && sp.LaedtGerade &&
-                        sp.SOC >= sp.Q_max * sp.SchwelleAus)
+                        sp.AbschaltschwelleErreicht())
                         sp.LaedtGerade = false;
 
                     sp.StundeAbschliessen(stunde);

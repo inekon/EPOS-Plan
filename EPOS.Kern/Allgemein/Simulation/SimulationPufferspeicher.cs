@@ -1112,9 +1112,28 @@ namespace WindowsFormsApplication1
             if (Q_max <= 0) return false;
 
             if (!LaedtGerade && SOC <= Q_max * SchwelleEin) LaedtGerade = true;
-            if (LaedtGerade && Rechenrand.SchwelleErreicht(SOC, Q_max * SchwelleAus)) LaedtGerade = false;
+            if (LaedtGerade && AbschaltschwelleErreicht()) LaedtGerade = false;
 
             return !LaedtGerade;
+        }
+
+        /// <summary>
+        /// Hat der Füllstand die ABSCHALTSCHWELLE <c>Q_max · SchwelleAus</c> erreicht — mit
+        /// dem Zahlenrand aus <see cref="Rechenrand"/>. Die EINE Prüfung dieser Schwelle:
+        /// <see cref="HystereseFortschreiben"/> nimmt sie, und die Abschaltprüfung der
+        /// Phase G in <c>Kaskadenschleife</c> nimmt sie auch.
+        ///
+        /// <para><b>Warum auch Phase G den Rand braucht</b> (Plattformbefund PB‑1,
+        /// Anwenderentscheid vom 29.09.2026): Die Nachentladung der Phase E steuert einen
+        /// vollen Speicher um <c>Q_max · (1 − SchwelleAus)</c> auf genau diese Marke — und
+        /// in Gleitkomma landet sie ein ulp darüber oder darunter. Ohne Rand entschied dort
+        /// das letzte Bit, ob der Speicher im Ladebetrieb bleibt: in Projekt 1008 bei 1 634
+        /// von 4 677 Prüfungen, und zwischen Windows und Linux verschieden, weil deren
+        /// C-Bibliotheken <c>Math.Sin</c>/<c>Exp</c> im letzten Bit verschieden runden.</para>
+        /// </summary>
+        public bool AbschaltschwelleErreicht()
+        {
+            return Rechenrand.SchwelleErreicht(SOC, Q_max * SchwelleAus);
         }
 
         /// <summary>Anzeigetext der Rolle (lokalisiert seit Paket 9 / L6).</summary>

@@ -281,7 +281,7 @@ public class HauptfensterTests : EposBunitContext
         // Die Startseite ist ABGELOEST, die Seite "Berichte & Kosten" steht -
         // und das Menueband darueber wie ueber jeder Ansicht.
         Assert.Empty(cut.FindAll(".epos-startseite"));
-        Assert.Single(cut.FindAll(".epos-navigation"));
+        Assert.Single(cut.FindAll(".epos-berichtekosten"));
         Assert.Single(cut.FindAll(".epos-menueband"));
     }
 
@@ -300,11 +300,11 @@ public class HauptfensterTests : EposBunitContext
             Menuetabelle.Alle.Single(p => p.Name == "MenuItem_VariantenBericht"));
         cut.Render();
 
-        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Find(".epos-berichtekosten-zurueck").Click();
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-startseite"));
-        Assert.Empty(cut.FindAll(".epos-navigation"));
+        Assert.Empty(cut.FindAll(".epos-berichtekosten"));
     }
 
     // =====================================================================

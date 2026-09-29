@@ -924,6 +924,32 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Contains(FEHLT, fehler.Message + (fehler.InnerException?.Message ?? ""));
     }
 
+    /// <summary>
+    /// <b>Das Katalogfeld „katalogsuche“ an der Maskenbrücke</b> (BV-E1, Konzept 9.7): Die Suche des
+    /// Platzhalterkatalogs führt der Wirt — der Assistent liest und setzt sie, auch bei geschlossenem
+    /// Katalog; beim Öffnen steht sie im Suchfeld und filtert.
+    /// </summary>
+    [Fact]
+    public void Das_Katalogfeld_katalogsuche_liest_und_setzt_ueber_die_Maskenbruecke()
+    {
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.PlatzhalterkatalogGaben, () => new Dictionary<string, object> { ["Eintraege"] = Katalog() }));
+
+        KiFeldzugang suche = KiMaskenbruecke.Feldzugang(KiMaskennamen.BERICHTSEITE, "katalogsuche");
+        Assert.NotNull(suche);
+        Assert.True(suche.Setzbar);
+        Assert.Equal("", suche.Lesen());
+
+        KiFeldumsetzung wert = KiFeldwandler.Wandle(suche, "kunde");
+        Assert.True(wert.Ok, wert.Grund);
+        cut.InvokeAsync(() => suche.Setzen(wert.Wert));
+        Assert.Equal("kunde", suche.Lesen());
+
+        cut.Find(".epos-vorlage-platzhalter").Click();
+        Assert.Equal("kunde", cut.Find(".epos-vorlage-katalogsuche input").GetAttribute("value"));
+        Assert.Single(cut.FindAll(".epos-vorlage-katalogtabelle tbody tr"));
+    }
+
     // =====================================================================
     // BV-E7: die Zeile „Excel-Vorlage"
     // =====================================================================

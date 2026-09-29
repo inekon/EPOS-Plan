@@ -3,6 +3,8 @@
 **Stand 12.09.2026 — Anwenderauftrag: „Räume alte nicht mehr genutzte Läufe/Verzeichnisse auf" und „Plane: nicht benötigte
 Dateien/Verzeichnisse löschen, wenn nicht mehr benötigt. Räume auf."**
 
+Das Inventar unter Abschnitt 2 und der Stufenplan unter Abschnitt 3 tragen zusätzlich den Stand vom 29.09.2026 (Aufräumen #602).
+
 ## 1. Die Regel
 
 Eine Datei oder ein Verzeichnis bleibt im Repository, solange **eines** davon zutrifft: ein Build, ein Test, ein Workflow, das Setup
@@ -30,13 +32,16 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
 | `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
-| `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt |
+| `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt; die veraltete Kopie `EPOS-Plan_Beispiele_Geruest.zip` (Stand 16.08.2026, 18 KB) ist entfernt (#602) |
 | `.work/` | Arbeitsordner der Windows-Seite: Einmal-Prüfprogramm, Bericht, **70-MB-Kopie der Produktivdatenbank** | 71 MB | nichts (Bericht liegt seit #241 in `Dokumentation/ueberholt`) | **geht (Stufe 1)** — Anwenderentscheid 12.09.2026 „Lösche .work", Rücknahme von SP‑O‑9 |
 | `DB-Backup/` | 16 Git-LFS-Zeiger auf Access-Sicherungen | 2 KB im Baum | nichts; seit 02.09. per `.gitignore` ausgeschlossen | **geht (Stufe 1)** |
 | `sqlite-probe/` | Spike vor der SQLite-Umstellung (31.08.) | 104 KB | nichts | **geht (Stufe 1)** |
 | `WindowsFormsApplication1/**/*.bak` (4), `Allgemein/Reporting/Reporting_Geruest.zip` | Sicherungskopien, Gerüst-Archiv | 60 KB | nichts | **geht (Stufe 1)** |
 | `WindowsFormsApplication1/Allgemein/Simulation/Entwurf_Hydraulikuebersicht_Konfiguration.html`, `Allgemein/vdi_3805_importer/*` | Entwurf, Überreste eines nicht mehr versionierten Scrapers | klein | Protokolle | **verschieben (Stufe 1)** nach `Mockups/`, heute `Dokumentation/aktuell/Mockups/`, bzw. `Dokumentation/ueberholt/` |
 | 303 Markdown-Dokumente | Konzepte, Doku, Protokolle | 12 MB | Claude, Anwender | seit #241 unter `Dokumentation/aktuell` und `Dokumentation/ueberholt` |
+| `REAMDE-git.txt` | Git-Spickzettel vom 08.11.2025 | 144 Byte | nichts (durch CLAUDE.md Abschnitt „Git" abgelöst) | **entfernt mit #602** |
+| `GitHub_Sync_simple.bat` | ältere Sync-Variante ohne die drei Wächter (`AGENT_LAEUFT`, offener Merge/Rebase, Konfliktmarker) | 1,4 KB | nichts | **entfernt mit #602** |
+| `sql/tools/inventur_report.txt` | eingefrorener SQL-Dialekt-Report vom 12.09.2026 | 27 KB | nichts (`sql_dialekt_inventur.py` erzeugt ihn bei Bedarf neu) | **entfernt mit #602** |
 
 Außerhalb des Arbeitsbaums: elf alte Fernzweige (Anwender 12.09.2026: „vorerst nicht" löschen); alte GitHub-Actions-Läufe (mit den
 hier verfügbaren Werkzeugen nicht löschbar — im Browser unter Actions je Lauf, oder Aufbewahrungsfrist `retention-days` in den Workflows);
@@ -72,7 +77,9 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
 
 Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
 (`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
-`.claude/worktrees/`, beides gitignored.
+`.claude/worktrees/`, beides gitignored. Versioniert ist unter `.claude/` allein der Ordner `.claude/agents/` mit den
+Agentendefinitionen der Sitzungen (Anwenderentscheid vom 27.09.2026, damit Cloud-Sitzungen sie vorfinden); die `.gitignore` nimmt
+nur ihn aus, die Wache lässt genau ihn zu.
 
 **Stufe 4 — die Git-Geschichte umschreiben. Anwenderentscheid AUF‑Q1 vom 12.09.2026: „ausführen". Umsetzung Auftrag #244.**
 
@@ -150,6 +157,18 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
   vorerst nicht (Anwender 12.09.2026).
 - **GitHub Actions.** Die Aufbewahrungsfrist der Artefakte steht in allen drei Workflows bereits auf `retention-days: 14` (Vorgabe
   wären 90) — der ursprüngliche Vorschlag war gegenstandslos, nichts zu tun. Alte Läufe löscht nur der Anwender im Browser.
+
+**Stufe 5 — umgesetzt #602 (29.09.2026, Commit `619ab777`, losgelöster Worktree `.claude/worktrees/gate602`).**
+Vier liegen gebliebene, nirgends referenzierte Dateien entfernt: `REAMDE-git.txt`, `GitHub_Sync_simple.bat`,
+`sql/tools/inventur_report.txt`, `EPOS-Plan_Beispiele_Geruest.zip` (zusammen rund 46 KB; der Ordner
+`EPOS-Plan_Beispiele_Geruest/` bleibt, AUF‑E‑1). Dazu unversioniert im Hauptbaum gelöscht (neu erzeugbar, ohne
+Auswirkung auf dieses Inventar): `bin/`/`obj/` der Test- und Werkzeugprojekte, `Referenzlaeufe/Arbeitskopie/`,
+`artifacts/`, sowie die lokalen Zweige `papiere477` und `papiere478` (vollständig auf `origin`). Bewusst nicht
+angefasst: die Worktrees fremder Sitzungen, `Klimazonen DIN4710/`, `Quellen/Klimadaten/try_Python/`, die zwei
+Einmalbereinigungsskripte `sql/tools/Bereinige-Probierpuffer.*`/`Bereinige-Pufferdubletten.*` und vier Konzepte mit
+Kopf „umgesetzt" als Kandidaten für `git mv` nach `ueberholt/` — Einzelheiten im Protokollblock
+[`#602`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md) und in der
+Statuszeile #602.
 
 ## 4. Entscheide und offene Fragen
 

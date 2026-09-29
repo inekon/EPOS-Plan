@@ -318,6 +318,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TAB_KONDITIONIERUNGSVORGABE = "Tab_Konditionierungsvorgabe";
 
+        /// <summary>
+        /// Die Konditionierungsvorlagen je Groesse (Schritt KP-S1v,
+        /// <see cref="KonditionierungVorlagenSchema"/>, Konzept 5.7) — Auslieferungskatalog mit
+        /// <c>ReadOnly</c>; ihr Inhalt steht mit dem Eigentuemer <c>ID_Vorlage</c> in Kalender-,
+        /// Perioden- und Vorgabetabelle.
+        /// </summary>
+        public const string TAB_KONDITIONIERUNGSVORLAGE_STAMM = "Tab_Konditionierungsvorlage_STAMM";
+
         // ------------------------------------------------------------------------
         // GEBAEUDESIMULATION, STUFE G4c (Datenaustauschkonzept 7.1/7.2, Schritt
         // S-F): die Herkunftsablage der Gebaeudeimporte. Je Tabelle EINE Konstante;

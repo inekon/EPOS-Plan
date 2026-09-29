@@ -89,12 +89,12 @@ namespace EPOS.Kern.Tests
             for (int v = 0; v < vorlaeufe; v++)
                 for (int h = v == 2 ? 8760 - Zonenschleife.VORLAUF_LANG_H : start; h < 8760; h++)
                 {
-                    bool s = lauf.Sommerlueftung();
+                    bool s = lauf.Sommerlueftung(h);
                     lauf.VorlaufUebernehmen(h, lauf.Modell.Schritt(e1.Rand(h, s, keine)));
                 }
             for (int h = 0; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 lauf.Uebernehmen(h, s, lauf.Modell.Schritt(e1.Rand(h, s, keine)));
             }
             GebaeudeModellErgebnis soll = lauf.Ergebnis(0, 1);

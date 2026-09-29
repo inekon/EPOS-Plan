@@ -142,14 +142,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zulufttemperatur der Stunde <paramref name="h"/> [°C] mit dem Luftaustausch
-        /// (Klassenkopf); <paramref name="sommerlueftung"/> legt den Zusatzleitwert Z der
-        /// Sommerlüftung an die Außenluft. Ohne Luftaustausch θ_out selbst.
+        /// (Klassenkopf); <paramref name="sommerlueftung"/> legt den Zusatzleitwert Z an die
+        /// Außenluft. Ohne Luftaustausch θ_out selbst.
+        ///
+        /// <para><b>Z ist derselbe Zusatzleitwert wie am Rand</b>
+        /// (<see cref="GebaeudeModellEingang.ZusatzleitwertWK"/>, Stufe KP1b, G3): Der Löser rechnet
+        /// (g_ext + Z)·θ_Lue, Z steht also in Zähler und Nenner. Trüge θ_Lue nur den Anteil der
+        /// Sommerlüftung, käme der Überschuss des Lüftungskalenders mit Mischluft statt mit
+        /// Außenluft herein. Ohne Lüftungskalender ist das derselbe Ausdruck wie bisher.</para>
         /// </summary>
-        internal double ThetaLue(int h, bool sommerlueftung, ReadOnlySpan<double> thetaAir)
+        internal double ThetaLue(int h, bool sommerlueftung, ReadOnlySpan<double> thetaAir,
+                                 bool nachtauskuehlung = false)
         {
             GebaeudeModellEingang e = Eingang;
             if (_luftIndex.Length == 0) return e.ThetaOut[h];
-            double z = sommerlueftung ? e.SommerlueftungZusatzleitwertWK : 0.0;
+            double z = e.ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung);
             double zaehler = (_gAussen + z) * e.ThetaOut[h];
             IReadOnlyList<Luftkopplung> luft = e.Luftkopplungen;
             for (int k = 0; k < _luftIndex.Length; k++) zaehler += luft[k].Leitwert_WK * thetaAir[_luftIndex[k]];
@@ -157,10 +164,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Randbedingung der Stunde <paramref name="h"/> mit den Lufttemperaturen der Zonen (Klassenkopf).</summary>
-        internal Stundenrand Rand(int h, bool sommerlueftung, ReadOnlySpan<double> thetaAir)
+        internal Stundenrand Rand(int h, bool sommerlueftung, ReadOnlySpan<double> thetaAir,
+                                  bool nachtauskuehlung = false)
         {
-            if (!Gekoppelt) return Eingang.Rand(h, sommerlueftung, Eingang.ThetaEq[h], Eingang.ThetaOut[h]);
-            return Eingang.Rand(h, sommerlueftung, ThetaEq(h, thetaAir), ThetaLue(h, sommerlueftung, thetaAir));
+            if (!Gekoppelt)
+                return Eingang.Rand(h, sommerlueftung, Eingang.ThetaEq[h], Eingang.ThetaOut[h], nachtauskuehlung);
+            return Eingang.Rand(h, sommerlueftung, ThetaEq(h, thetaAir),
+                                ThetaLue(h, sommerlueftung, thetaAir, nachtauskuehlung), nachtauskuehlung);
         }
 
         // =====================================================================

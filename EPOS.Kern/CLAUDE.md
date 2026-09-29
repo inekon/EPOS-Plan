@@ -187,7 +187,16 @@ bei der UNTERgrenze `EntnahmeObergrenze` vertauscht.
 `Q_max · SchwelleAus`), **und jeder Vergleich, dessen Operanden aus getrennten Rechenketten
 stammen.** Die Einschaltschwelle bleibt bewusst ohne — auf sie steuert keine Rechnung zu. **Wer
 eine neue Betriebsschwelle einführt, nimmt `Rechenrand.SchwelleErreicht` — nicht `>=`.**
-Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`.
+
+**Die Abschaltschwelle eines Speichers prüft genau eine Methode**,
+`SimulationPufferspeicher.AbschaltschwelleErreicht()`: Die Hysterese und die Abschaltprüfung der Phase G
+in `Kaskadenschleife` nehmen sie. **Ein Quellspeicher gilt unter `Rechenrand.ABSOLUT` als leer**
+(`SimulationWaermepumpe.QuellInhalt`); ein Rest von 10⁻¹⁶ kWh ist weder Wärmequelle noch Betriebsstunde.
+
+**Eine Entscheidung am letzten Bit ist auch eine Plattformfrage.** `Math.Sin`, `Cos`, `Asin`, `Acos`,
+`Exp`, `Log` und `Pow` rechnen in der C-Bibliothek der Plattform (Windows UCRT, Linux glibc) und runden im
+letzten Bit verschieden. Was ohne Rand am letzten Bit entscheidet, rechnet deshalb auf Windows und Linux
+verschieden. Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`, `PlattformrandTests`.
 
 ## Keine `(int)`-Abschneidung auf einer Rechengröße
 

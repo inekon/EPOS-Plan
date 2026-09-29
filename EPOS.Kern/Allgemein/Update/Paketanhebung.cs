@@ -206,6 +206,10 @@ namespace WindowsFormsApplication1
             new Stufe(149, Art.Katalog, "Gebäudesätze der Klassen M und A"),
             new Stufe(150, Art.Ddl, "Vorlauf und Rücklauf am Kollektor entfernt"),
             new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen"),
+            new Stufe(152, Art.Ddl, "Konditionierungsvorlagen, Fremdschlüssel und Eindeutigkeit, Nachtauskühlstunden"),
+            new Stufe(TwwBezugsartSchema.SCHRITT, Art.Import,
+                      "Bezugsart Zimmer — der Import liest eine Paketzeile des Hotels in einem früheren Stand als die heutige"),
+            new Stufe(154, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -291,8 +295,9 @@ namespace WindowsFormsApplication1
         {
             if (!db.SpalteVorhanden(BhkwLeistungsgrenzeVorgabe.TABELLE, BhkwLeistungsgrenzeVorgabe.SPALTE)) return null;
             int n = db.Ausfuehren(BhkwLeistungsgrenzeVorgabe.Anhebung());
-            return n > 0 ? Zeilen(n, "Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf " +
-                                     BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT.ToString(CultureInfo.InvariantCulture) + " % gesetzt") : null;
+            return n > 0 ? Zeilen(n, string.Format(CultureInfo.InvariantCulture,
+                Text("TRANSFER_ANHEBUNG_S67", "Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf {0} % gesetzt"),
+                BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT)) : null;
         }
 
         /// <summary>
@@ -337,9 +342,9 @@ namespace WindowsFormsApplication1
                 db.Ausfuehren(PvKoeffizientenReparatur.Leerung(t, s));
 
             if (vorher <= 0) return null;
-            return Zeilen((int)vorher, "PV-Modul(e) mit verdorbenem Koeffizienten: " +
-                          (vorher - ohneTreffer).ToString(CultureInfo.InvariantCulture) + " repariert, " +
-                          ohneTreffer.ToString(CultureInfo.InvariantCulture) + " ohne Treffer auf leer gesetzt");
+            return Zeilen((int)vorher, string.Format(CultureInfo.InvariantCulture,
+                Text("TRANSFER_ANHEBUNG_S69", "PV-Modul(e) mit verdorbenem Koeffizienten: {0} repariert, {1} ohne Treffer auf leer gesetzt"),
+                vorher - ohneTreffer, ohneTreffer));
         }
 
         /// <summary>76 — <see cref="ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN"/>: je Projekt
@@ -349,7 +354,7 @@ namespace WindowsFormsApplication1
             if (!Hat(db, ProjektEnergietraegerEindeutig.TABELLE, "ID", ProjektEnergietraegerEindeutig.SPALTE_PROJEKT,
                      ProjektEnergietraegerEindeutig.SPALTE_TRAEGER)) return null;
             int n = db.Ausfuehren(ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN);
-            return n > 0 ? Zeilen(n, "überzählige(r) Trägersatz/-sätze entfernt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S76", "überzählige(r) Trägersatz/-sätze entfernt")) : null;
         }
 
         /// <summary>79 — <see cref="HeizstabJeWaermepumpe.SqlUebernahme"/>: jede Wärmepumpe
@@ -360,7 +365,7 @@ namespace WindowsFormsApplication1
                 !Hat(db, HeizstabJeWaermepumpe.TABELLE_ANLAGEN, "ID_Type", "ID_Projekt")) return null;
             db.SpalteSicherstellen(HeizstabJeWaermepumpe.TABELLE_ANLAGEN, HeizstabJeWaermepumpe.SPALTE_ANLAGE);
             int n = db.Ausfuehren(HeizstabJeWaermepumpe.SqlUebernahme());
-            return n > 0 ? Zeilen(n, "Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S79", "Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts")) : null;
         }
 
         /// <summary>83 — <see cref="StrompreisZerlegung.Falten(Umformzugriff)"/>: der wirksame
@@ -381,7 +386,7 @@ namespace WindowsFormsApplication1
             db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_TRAEGER, "id", "pricing_model", "hi_kwh_per_unit", "price_work");
             db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_PREIS, "ID_Projekt", "carrier_id", "arbeitspreis", "valid_from");
             int n = StrompreisZerlegung.Falten(db.Zugriff).Count;
-            return n > 0 ? Zeilen(n, "Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S83", "Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt")) : null;
         }
 
         /// <summary>84 — <see cref="VerguetungUmzug.Umziehen(Umformzugriff)"/>: die Vergütung
@@ -398,7 +403,7 @@ namespace WindowsFormsApplication1
                 db.SpalteSicherstellen(p, s);
             db.NachschlagenSicherstellen(VerguetungUmzug.TABELLE_TRAEGER, "id", "pricing_model");
             int n = VerguetungUmzug.Umziehen(db.Zugriff).Count(z => z.Contains("(Parametersatz"));
-            return n > 0 ? Zeilen(n, "Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S84", "Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen")) : null;
         }
 
         /// <summary>87 — <see cref="SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN"/>: je Projekt
@@ -409,7 +414,7 @@ namespace WindowsFormsApplication1
                      SpeicherVarianteAktivEindeutig.SPALTE_ANLAGE) ||
                 !Hat(db, SpeicherVarianteAktivEindeutig.TABELLE_ANLAGEN, "ID", "ID_Projekt")) return null;
             int n = db.Ausfuehren(SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN);
-            return n > 0 ? Zeilen(n, "zweite aktive Speichervariante(n) abgeschaltet") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S87", "zweite aktive Speichervariante(n) abgeschaltet")) : null;
         }
 
         /// <summary>89 — <see cref="KwkAnlagenwahrheit.Uebertragung"/> je Spaltenpaar: der
@@ -425,7 +430,7 @@ namespace WindowsFormsApplication1
                 db.SpalteSicherstellen(KwkAnlagenwahrheit.TABELLE, paar.Anlage);
                 n += db.Ausfuehren(KwkAnlagenwahrheit.Uebertragung(paar));
             }
-            return n > 0 ? Zeilen(n, "KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S89", "KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen")) : null;
         }
 
         /// <summary>90 — <see cref="KostenErfassungsgruppenAltzeilen.SqlLoeschen"/>: Nullzeilen
@@ -440,7 +445,7 @@ namespace WindowsFormsApplication1
             db.NachschlagenSicherstellen(KostenErfassungsgruppenAltzeilen.TABELLE_FAKTOR, "StammID",
                                          KostenErfassungsgruppenAltzeilen.SPALTE_HAUPTKOMPONENTE);
             int n = db.Ausfuehren(KostenErfassungsgruppenAltzeilen.SqlLoeschen());
-            return n > 0 ? Zeilen(n, "Nullzeile(n) der Erfassungsgruppen entfernt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S90", "Nullzeile(n) der Erfassungsgruppen entfernt")) : null;
         }
 
         /// <summary>98 — <see cref="BhkwWirkungsgradFaktor.SqlUmrechnen"/> an der Projektkopie.</summary>

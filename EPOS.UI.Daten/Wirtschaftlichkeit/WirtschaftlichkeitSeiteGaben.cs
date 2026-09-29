@@ -48,6 +48,13 @@ namespace WindowsFormsApplication1
         private readonly List<int> _gruppe = new List<int>();
 
         /// <summary>
+        /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1) — für die Positionsform der
+        /// Platzhaltermarken an Sensitivität, Mehrjahrestafel und Zahlungsstrombild (Konzept Berichtsvorlagen 4.5, 9.4).
+        /// </summary>
+        private Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> _positionen =
+            new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+        /// <summary>
         /// Die gespeicherten Simulationsstände der Gruppe (VF-1, Teil C) — Grundlage des
         /// Satzes „Ergebnisse aus gespeicherten Läufen vom …". Genommen wird der
         /// ÄLTESTE: Er begrenzt, wie frisch die Tabelle insgesamt ist.
@@ -86,6 +93,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die wirksame Referenz der Gruppe beim letzten <see cref="Laden"/> (0 = keine).</summary>
         private int _referenzWirksam;
+
+        /// <summary>
+        /// Der Ausweis „n von m Parametern szenariert", wie <see cref="Szenarioabdeckung"/> ihn
+        /// zuletzt gezählt hat, und sein Schlüssel (Sprache und Stände des Laufs): Ein
+        /// Szenariowechsel zählt nicht neu, ein Haken schon; <see cref="Laden"/> verwirft ihn.
+        /// </summary>
+        private string _abdeckung = "";
+        private string _abdeckungSchluessel;
 
         /// <summary>Die Verlaufshülle der Seite (ETAPPE E6).</summary>
         private KapitalwertVerlaufHuelle Verlauf
@@ -130,6 +145,12 @@ namespace WindowsFormsApplication1
         /// Standardvorlage.
         /// </summary>
         internal Func<AnhangEStellen> AnhangEStellenLaden { get; set; }
+
+        /// <summary>
+        /// Die gespeicherten Ergebnisse sind neu gelesen oder neu gerechnet — der Wirt liest den
+        /// Kurzstand der Reiterzeile daraufhin neu (Konzept Navigation Berichte &amp; Kosten, A2).
+        /// </summary>
+        internal event Action Geladen;
 
         /// <summary>
         /// Die Szenarien als Nummer. Die PERSISTENZWERTE
@@ -239,9 +260,11 @@ namespace WindowsFormsApplication1
             var stand = new WirtschaftlichkeitStand();
 
             var zeilen = new List<VarianteZeile>();
+            var folge = new List<(int IdProjekt, bool IstStamm)>();
             _namen.Clear();
             _gruppe.Clear();
             _simStaende.Clear();
+            _abdeckungSchluessel = null;   // Parameter und Preise frisch zählen
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
@@ -266,6 +289,7 @@ namespace WindowsFormsApplication1
                     });
                     if (st.SimStand.HasValue) _simStaende.Add(st.SimStand.Value);
                     _gruppe.Add(st.IdProjekt);
+                    folge.Add((st.IdProjekt, st.IstStamm));
                     _namen[st.IdProjekt] = st.IstStamm
                         ? MyResource.Resource.BK_ART_STAMM
                         : (string.IsNullOrEmpty(st.Variantenname) ? st.Projektname : st.Variantenname);
@@ -273,6 +297,12 @@ namespace WindowsFormsApplication1
             }
             catch { }
             stand.Varianten = zeilen;
+
+            // Die Positionen der Stände für die Positionsform der Marken (stand.<n>.…, variante.<n>.…): dieselbe Folge
+            // wie der Bericht (BerichtsDatenSammler: Stamm zuerst, dann die Varianten der Gruppe), gezählt über ALLE
+            // Varianten — ein Bericht mit Teilauswahl zählt nur die gewählten, das sagt der Hinweis der Marke.
+            _positionen = VorlagenfeldpositionHuelle.Je(folge);
+            stand.Vorlagenfeldpositionen = _positionen;
 
             // Die Vergleichswahl ist die GETEILTE der drei Seiten (W5-B-5, 08.09.2026):
             // Vorgabe alle Versionen der Gruppe (Vorbild AktualisiereListe), abgewaehlt
@@ -434,10 +464,9 @@ namespace WindowsFormsApplication1
             stand.Nutzungsdauerhinweise = nutzungsdauer.Zeilen;
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
-            // ETAPPE E5 (U10, V‑A) und E9b (E9b-Q3): unter der Annahmentafel der Ausweis
-            // "n von m Parametern szenariert" (an der Stelle des Hinweistexts) und die
-            // Deklarationszeilen der Bewertung - beide an der Gruppe, nicht an der Wahl.
-            stand.Szenarioabdeckung = Szenarioabdeckung();
+            // ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung - an der Gruppe, nicht
+            // an der Wahl. Der Ausweis "n von m Parametern szenariert" darüber zählt die
+            // Stände des Laufs und steht deshalb an der Ansicht (Szenarioabdeckung).
             stand.Deklarationen = Deklarationen();
 
             // ETAPPE E5 Teil b (U2): die Annahmentafel ueber dem Ausweis und der
@@ -458,6 +487,7 @@ namespace WindowsFormsApplication1
             // Arbeitsstand der Seite den geladenen Stand nicht mitverändert.
             stand.Wirkungen = _wirkungen.Select(w => w.Kopie()).ToList();
 
+            Geladen?.Invoke();
             return stand;
         }
 
@@ -585,22 +615,45 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q2, E9b‑Q3): der Ausweis
         /// „n von m Parametern szenariert" unter der Annahmentafel — an der Stelle des
-        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt wird
-        /// über die GANZE Vergleichsgruppe, nicht über die Wahl — dieselben Stände wie die
-        /// Nutzungsdauer-Hinweise darüber; die Regel steht im Kern
+        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt werden
+        /// die Stände des LAUFS (<see cref="Laufstaende"/>) — dieselbe Menge, über die der
+        /// Lauf seine Gruppenregel bestimmt (Konzept § 3.5, → Register R‑EZ, EZ‑15), und
+        /// dieselbe, die der Bericht zählt; die Regel steht im Kern
         /// (<see cref="SzenarioAbdeckung.Lesen"/>). Ein Lesefehler kostet die Zeile.
         /// </summary>
         private string Szenarioabdeckung()
         {
+            List<KeyValuePair<int, string>> staende = Laufstaende();
+            string schluessel = CultureInfo.CurrentUICulture.Name + "|" + BerichtTexte.Kultur.Name + "|" +
+                                string.Join(",", staende.Select(s => s.Key.ToString(CultureInfo.InvariantCulture)));
+            if (_abdeckungSchluessel == schluessel) return _abdeckung;
+
+            string satz;
             try
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                var staende = new List<KeyValuePair<int, string>>();
-                foreach (int id in _gruppe)
-                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
-                return SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
+                satz = SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
             }
-            catch { return ""; }
+            catch { satz = ""; }
+            _abdeckung = satz;
+            _abdeckungSchluessel = schluessel;
+            return satz;
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15 und § 3.5 — die Stände des LAUFS in der Folge der Gruppe: der Stamm,
+        /// die angehakten Varianten und die wirksame Referenz, die nicht aus dem Vergleich
+        /// fallen kann. Genau sie rechnet „Berechnen" (die Seite reicht die angehakten
+        /// Varianten samt Referenz an den Sammler, der den Stamm immer führt), und über sie
+        /// bestimmt der Lauf die Gruppenregel „Strombedarf ohne Verwendung".
+        /// </summary>
+        private List<KeyValuePair<int, string>> Laufstaende()
+        {
+            var staende = new List<KeyValuePair<int, string>>();
+            foreach (int id in _gruppe)
+                if (Vergleich.IstGewaehlt(id, _idStamm) || id == _referenzWirksam)
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+            return staende;
         }
 
         /// <summary>
@@ -867,7 +920,8 @@ namespace WindowsFormsApplication1
                     : string.Format(kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS, bandbreite.Referenzname),
                 // ETAPPE E6 (Nachtrag E5b, Frage (4)): das Spannenbild neben der Tafel.
                 Spannenbild = Spannenbild(bandbreite),
-                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
+                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur, out List<int> sensitivitaetStaende),
+                SensitivitaetPositionen = Positionen(sensitivitaetStaende),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
                 Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur),
@@ -918,6 +972,10 @@ namespace WindowsFormsApplication1
             // Bandbreite, ihre Wirkung auf die Leitversion.
             ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
                                                                     Name(ansicht.Leitversion), kultur);
+
+            // ETAPPE E9b (U10): der Ausweis „n von m Parametern szenariert" über die Stände des
+            // Laufs — er folgt einem Haken wie die Bandbreite, nicht der Szenario-Klappliste.
+            ansicht.Szenarioabdeckung = Szenarioabdeckung();
 
             // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
             // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
@@ -1275,10 +1333,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="WirtschaftlichkeitBewertung.Sensitivitaetszeilen"/>) — dieselbe
         /// Auswahl wie im Bericht.
         /// </summary>
+        /// <param name="staendeDerTafel">Die Stände, deren Zeilen die Tafel zeigt, in ihrer Folge — für die
+        /// Positionsform der Marke (<see cref="ErgebnisAnsicht.SensitivitaetPositionen"/>).</param>
         private ErgebnisMatrix SensitivitaetTafel(List<KeyValuePair<int, string>> staende, int idReferenz,
-                                                  CultureInfo kultur)
+                                                  CultureInfo kultur, out List<int> staendeDerTafel)
         {
             var tafel = new ErgebnisMatrix();
+            staendeDerTafel = new List<int>();
             List<SensitivitaetZeile> zeilen;
             try
             {
@@ -1315,10 +1376,25 @@ namespace WindowsFormsApplication1
                             : "—"
                     }
                 });
+                if (!staendeDerTafel.Contains(z.IdProjekt)) staendeDerTafel.Add(z.IdProjekt);
                 vorher = z.IdProjekt;
             }
             tafel.Zeilen = matrix;
             return tafel;
+        }
+
+        /// <summary>
+        /// Die Positionen der genannten Stände für die Marke einer Tafel über mehrere Stände — in ihrer Folge, je mit dem
+        /// Namen, den die Tafel zeigt; ein Stand ohne bekannte Position fällt weg.
+        /// </summary>
+        private IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> Positionen(IEnumerable<int> staende)
+        {
+            var liste = new List<EPOS.UI.Dienste.Vorlagenfeldposition>();
+            if (staende == null) return liste;
+            foreach (int id in staende)
+                if (_positionen.TryGetValue(id, out EPOS.UI.Dienste.Vorlagenfeldposition p) && p != null)
+                    liste.Add(p.MitName(Name(id)));
+            return liste;
         }
 
         /// <summary>
@@ -1553,6 +1629,7 @@ namespace WindowsFormsApplication1
 
                 _tarifCache = null;
                 BilanzenAuffrischen();
+                Geladen?.Invoke();
 
                 return new LaufErgebnis
                 {

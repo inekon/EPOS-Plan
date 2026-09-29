@@ -248,6 +248,9 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Kapitel steht mehrfach in der Vorlage (BV-E2).</summary>
         public const string VF_PRUEF_KAPITEL_DOPPELT = nameof(MyResource.Resource.VF_PRUEF_KAPITEL_DOPPELT);
 
+        /// <summary>Ein Kapitel steht in einem Wiederholblock — gefüllt nur in der ersten Wiederholung (BV-E4).</summary>
+        public const string VF_PRUEF_KAPITEL_IM_BLOCK = nameof(MyResource.Resource.VF_PRUEF_KAPITEL_IM_BLOCK);
+
         /// <summary>Ein Platzhalter wirkt erst in einer späteren Programmfassung (Schalter, Bild als Text; BV-E2).</summary>
         public const string VF_PRUEF_SPAETER = nameof(MyResource.Resource.VF_PRUEF_SPAETER);
 
@@ -305,7 +308,7 @@ namespace WindowsFormsApplication1
             VF_PRUEF_BLOCK_TIEFE, VF_PRUEF_BLOCK_ENDE, VF_PRUEF_BLOCK_OFFEN, VF_PRUEF_BLOCK_VERBUNDEN,
             VF_PRUEF_BLOCK_TABELLE, VF_PRUEF_DATUMSFELD, VF_PRUEF_KOMMENTARE, VF_PRUEF_OHNE_PLATZHALTER,
             VF_PRUEF_SPRACHE, VF_PRUEF_FASSUNG_ALT, VF_PRUEF_KAPITEL_NEU, VF_PRUEF_FASSUNG_NEU,
-            VF_PRUEF_GUELTIGKEIT, VF_PRUEF_KAPITEL_DOPPELT, VF_PRUEF_SPAETER, VF_PRUEF_ANHANG_E_STELLE,
+            VF_PRUEF_GUELTIGKEIT, VF_PRUEF_KAPITEL_DOPPELT, VF_PRUEF_KAPITEL_IM_BLOCK, VF_PRUEF_SPAETER, VF_PRUEF_ANHANG_E_STELLE,
             BV_VORLAGEN_NICHT_LESBAR, BV_VORLAGEN_FEHLT, BV_VORLAGEN_IN_WORD,
             BV_LAUF_VORLAGE, BV_LAUF_RUECKFALL, BV_LAUF_UNBEKANNT, BV_LAUF_LEER, BV_LAUF_KOMMENTARE,
             BV_LAUF_WARNUNGEN, BV_START_SICHT, BV_START_OHNE_WIRTSCHAFT

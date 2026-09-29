@@ -769,6 +769,24 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug; wiederholbar, KEIN DML - die Tabellen entstehen leer.
                 KonditionierungSchema.Ausfuehren(null);
 
+                // Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+                // Konditionierungsprofile 5.1/5.6/5.7): Tab_Konditionierungsvorlage_STAMM, der
+                // Fremdschluessel ID_Vorlage per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+                // Nachtauskuehlstunden_H an beiden Ergebnistabellen. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar - steht alles, oeffnet er keinen Vorgang.
+                KonditionierungVorlagenSchema.Ausfuehren(null);
+                // Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+                // nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML - NULL rechnet die Vorgabe 15 °C.
+                KesselHeizgrenzeSchema.Ausfuehren(null);
+
+                // Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34): die Bezugsart
+                // Zimmer - Neubau von Tab_TwwNutzungsart_STAMM und Tab_TwwBedarfstag_STAMM mit der
+                // Pruefklausel 1..8 und die Nachfuehrung der Paketzeilen in einem frueheren Stand. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - eine fertige Tabelle wird
+                // uebersprungen (die Testdatenbank traegt sie).
+                TwwBezugsartSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

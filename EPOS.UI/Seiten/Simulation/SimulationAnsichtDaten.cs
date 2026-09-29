@@ -320,6 +320,12 @@ public sealed class SimulationParameterDienste
     public Action<double>? BereitschaftSchreiben;
 
     /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C]; <c>null</c> = leer (Vorgabe). Geschrieben im
+    /// OK-Weg des <c>KomponentenKonfigurationDialog</c>, wie die Betriebsbereitschaft.
+    /// </summary>
+    public Action<double?>? HeizgrenzeSchreiben;
+
+    /// <summary>
     /// Die Projekteinstellung „Kühlung rechnen" (Stufe KU1, Kühlkonzept 8.3) — schreibt
     /// SOFORT, wie die Netzverluste, und meldet, ob danach der gewünschte Wert steht
     /// (<c>KonfigurationCtrl.KuehlbetriebSetzen</c>). <c>null</c> = die Plattform bietet

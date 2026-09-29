@@ -206,7 +206,7 @@ namespace WindowsFormsApplication1
         /// CHECK-Klausel der DDL und die Prüfung des Schreibwegs, wie <see cref="PERZENTIL_WERTE"/>:
         /// Erzeugerart 1 Kessel, 2 Wärmepumpe; Werkstoff des Übertragers 1 Stahl, 2 Edelstahl;
         /// Bezug des Füllstands 1 Nenninhalt des Punkts, 2 Punkt, 3 Nenninhalt des Bands, 4 V_max;
-        /// Bezugsart eines Bedarfstags 1 … 7 wie die Bezugsart der Nutzungsart.
+        /// Bezugsart eines Bedarfstags 1 … 8 wie die Bezugsart der Nutzungsart.
         /// </summary>
         public const string ERZEUGERART_WERTE = "1,2";
 
@@ -216,8 +216,12 @@ namespace WindowsFormsApplication1
         /// <summary>Wertemenge von <c>Tab_TwwProjekt.Fuellstand_Bezug</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
         public const string FUELLSTAND_BEZUG_WERTE = "1,2,3,4";
 
-        /// <summary>Wertemenge von <c>Tab_TwwBedarfstag_STAMM.Bezugsart</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
-        public const string BEZUGSART_WERTE = "1,2,3,4,5,6,7";
+        /// <summary>
+        /// Wertemenge von <c>Tab_TwwNutzungsart_STAMM.Bezugsart</c> und
+        /// <c>Tab_TwwBedarfstag_STAMM.Bezugsart</c> (siehe <see cref="ERZEUGERART_WERTE"/>) — die Zahlen
+        /// von <c>ZapfBezugsart</c>, 8 Zimmer seit Schritt <see cref="TwwBezugsartSchema.SCHRITT"/>.
+        /// </summary>
+        public const string BEZUGSART_WERTE = "1,2,3,4,5,6,7,8";
 
         // -----------------------------------------------------------------
         //  Die Satzarten der eingespielten Typtage (T3 „Typtage", Z4b)
@@ -356,7 +360,7 @@ namespace WindowsFormsApplication1
             "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Bezeichner\" TEXT NOT NULL,\n" +
             "    \"Katalogversion\" TEXT NOT NULL,\n" +
-            "    \"Bezugsart\" INTEGER NOT NULL CHECK (\"Bezugsart\" IN (1,2,3,4,5,6,7)),\n" +
+            "    \"Bezugsart\" INTEGER NOT NULL CHECK (\"Bezugsart\" IN (" + BEZUGSART_WERTE + ")),\n" +
             "    \"Bedarf_Niedrig\" REAL NOT NULL,\n" +
             "    \"Bedarf_Mittel\" REAL NOT NULL,\n" +
             "    \"Bedarf_Hoch\" REAL NOT NULL,\n" +

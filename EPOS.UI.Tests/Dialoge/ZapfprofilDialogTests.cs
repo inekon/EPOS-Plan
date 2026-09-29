@@ -194,25 +194,25 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Hinweis der Hülle am Feld der Bezugsmenge (N34): Trägt die gewählte Nutzungsart einen —
-    /// Kennwerte je Zimmer unter der Bezugsart Betten —, steht er unter dem Feld; ohne Hinweis keine Zeile.
+    /// Die Einheit am Feld der Bezugsmenge kommt aus der Bezugsart der gewählten Nutzungsart (Auftrag
+    /// A2): Unter der Bezugsart Zimmer steht „Zimmer" hinter dem Feld — die Beschriftung trägt die
+    /// Aussage selbst, ein eigener Hinweis unter dem Feld entfällt.
     /// </summary>
     [Fact]
-    public void Der_Hinweis_der_Nutzungsart_steht_am_Feld_der_Bezugsmenge()
+    public void Die_Einheit_der_Bezugsmenge_nennt_die_Zimmer_der_Nutzungsart()
     {
-        const string hinweis = "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl";
         ZapfprofilDaten daten = Daten();
         ZapfprofilNutzungsartDaten hotel = daten.Katalog[0];
         hotel.Name = "Hotel (je Zimmer)";
-        hotel.Bezugsart = 3;
-        hotel.Bezugsgroesse = "Betten";
-        hotel.HinweisBezugsmenge = hinweis;
+        hotel.Bezugsart = 8;
+        hotel.Bezugsgroesse = "Zimmer";
 
         var cut = Aufbauen(daten);
-        Assert.Contains(cut.FindAll(".epos-herleitung-text"), e => e.TextContent == hinweis);
+        Assert.Contains(cut.FindAll(".epos-einheit"), e => e.TextContent == "Zimmer");
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains("Zimmerzahl"));
 
         var ohne = Aufbauen();
-        Assert.DoesNotContain(hinweis, ohne.Markup);
+        Assert.DoesNotContain(ohne.FindAll(".epos-einheit"), e => e.TextContent == "Zimmer");
     }
 
     [Fact]

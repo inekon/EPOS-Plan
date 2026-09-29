@@ -443,6 +443,10 @@ namespace EPOS.Kern.Tests
                 ["AuslegungAussenHergeleitet"] = "AuslegungstagKuehlung",
                 ["HeizkurveAktiv"] = null,           // 7.4 Punkt 5
                 ["SollwertprofilWirksam"] = null,    // 7.4 Punkt 7
+                // Stufe KP1b (E53): Die Stunden mit Heizsollwert "aus" zaehlen getrennt von der
+                // Heizgrenze. Die Kaelteseite hat kein Gegenstueck: Ausserhalb der Kuehlperiode ist
+                // ThetaMax = +unendlich, und daraus entsteht keine Kennzahl, sondern kein Bedarf.
+                ["StundenOhneHeizungH"] = null,
             };
             var props = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
             var kuehlNamen = new HashSet<string>(typeof(KuehlkreisErgebnis).GetProperties(props).Select(p => p.Name));

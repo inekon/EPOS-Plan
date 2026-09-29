@@ -26,13 +26,14 @@ namespace WindowsFormsApplication1
         private readonly GebaeudeModellEingang _e;
         private readonly Zonenmodell2K _modell;
         private readonly Sommerlueftungsregel _regel;
+        private readonly Sommerlueftungsregel _nachtregel;
         private double _luftVor = double.NaN, _aussenVor = double.NaN;
 
         private readonly double[] _heiz = new double[8760];
         private double[] _kuehl = new double[8760];
         private readonly double[] _luft = new double[8760];
         private readonly double[] _op = new double[8760];
-        private int _umschaltung, _beides, _sommerStunden;
+        private int _umschaltung, _beides, _sommerStunden, _nachtStunden;
         private double _summeW;
 
         private readonly bool _gekoppelt;
@@ -50,11 +51,11 @@ namespace WindowsFormsApplication1
             _e = eingang;
             _modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
 
-            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen.
-            _regel = !eingang.Sommerlueftung ? null
-                : eingang.KuehlungWirksam
-                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
-                    : new Sommerlueftungsregel();
+            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen - dieselbe
+            // Stelle, damit die Schwellenreihe des Kühlkalenders (KP1b, G2) hier ebenso gilt.
+            _regel = Vdi6007Rechenweg.LueftungsregelBilden(eingang);
+            // Stufe KP1b (Konzept 3.7, P9 b): die zweite Regel je Zone - nur mit bedingtem Anteil.
+            _nachtregel = Vdi6007Rechenweg.NachtauskuehlregelBilden(eingang);
 
             _gekoppelt = eingang.KopplungWirksam;
             _vorlauf = _gekoppelt ? new double[8760] : null;
@@ -80,10 +81,20 @@ namespace WindowsFormsApplication1
         internal void Beginnen(double thetaStart) => _modell.Zuruecksetzen(thetaStart);
 
         /// <summary>
-        /// Der Zustand der Sommerlüftung der kommenden Stunde, aus Raum- und Außenluft der Vorstunde
-        /// (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Der Zustand der Sommerlüftung der Stunde <paramref name="h"/>, aus Raum- und Außenluft
+        /// der Vorstunde (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Die Stunde wählt die Schwelle: ohne Kühlkalender dieselbe Zahl wie bisher, mit ihm
+        /// θ_K(h) − 3 K bzw. 23 °C bei „aus" (KP1b, Konzept 3.6).
         /// </summary>
-        internal bool Sommerlueftung() => _regel != null && _regel.Stunde(_luftVor, _aussenVor);
+        internal bool Sommerlueftung(int h) => _regel != null && _regel.Stunde(h, _luftVor, _aussenVor);
+
+        /// <summary>
+        /// Der Zustand der <b>Nachtauskühlung</b> der Stunde <paramref name="h"/> (Stufe KP1b,
+        /// Konzept 3.7) — dieselbe Auswertung wie <see cref="Sommerlueftung"/>, mit dem eigenen
+        /// Außenabstand ΔT der Vorgabe; ohne bedingten Anteil gibt es keine Regel und damit
+        /// <c>false</c>.
+        /// </summary>
+        internal bool Nachtauskuehlung(int h) => _nachtregel != null && _nachtregel.Stunde(h, _luftVor, _aussenVor);
 
         /// <summary>Übernimmt eine Stunde des Vorlaufs (Ergebnis verworfen, nur der Zustand der Vorstunde).</summary>
         internal void VorlaufUebernehmen(int h, in Stundenergebnis v)
@@ -99,9 +110,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.ErgebnisUnplausibel"/>.</exception>
         internal void Uebernehmen(int h, bool sommer, in Stundenergebnis s)
+            => Uebernehmen(h, sommer, false, in s);
+
+        /// <summary>
+        /// Wie <see cref="Uebernehmen(int, bool, in Stundenergebnis)"/>, dazu der Zustand der
+        /// Nachtauskühlung <paramref name="nacht"/> (Stufe KP1b): Die Stunde zählt, wenn die Regel
+        /// an war <em>und</em> die Stunde einen bedingten Anteil trug (Konzept 3.7).
+        /// </summary>
+        internal void Uebernehmen(int h, bool sommer, bool nacht, in Stundenergebnis s)
         {
             GebaeudeModellEingang eingang = _e;
             if (sommer) _sommerStunden++;
+            if (eingang.Nachtauskuehlstunde(h, nacht)) _nachtStunden++;
             _luftVor = s.ThetaAirMittel;
             _aussenVor = eingang.ThetaOut[h];
             _heiz[h] = s.HeizleistungW;
@@ -196,7 +216,9 @@ namespace WindowsFormsApplication1
                                               (double[])eingang.ThetaSoll.Clone(), _sommerStunden,
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
-                                              heizkreis, kuehlkreis, eingang.Nachtzeit);
+                                              heizkreis, kuehlkreis, eingang.Nachtzeit,
+                                              eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null,
+                                              eingang.Nutzungsmaske);
         }
 
         /// <summary>
@@ -214,20 +236,24 @@ namespace WindowsFormsApplication1
             ReadOnlySpan<double> keine = ReadOnlySpan<double>.Empty;
 
             int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
-            lauf.Beginnen(zone.Eingang.ThetaSoll[start]);
+            // Stufe KP1b (G1): Steht der Heizsollwert der ersten Vorlaufstunde auf „aus", startet
+            // die Zone wie eine unbeheizte (N1.56 Festlegung 7); sonst steht hier der Bestandswert.
+            lauf.Beginnen(Vdi6007Rechenweg.VorlaufStartwertC(zone.Eingang, start));
             for (int h = start; h < 8760; h++)
             {
-                bool sommer = lauf.Sommerlueftung();
-                Stundenrand r = zone.Rand(h, sommer, keine);
+                bool sommer = lauf.Sommerlueftung(h);
+                bool nacht = lauf.Nachtauskuehlung(h);
+                Stundenrand r = zone.Rand(h, sommer, keine, nacht);
                 Stundenergebnis v = lauf.Modell.Schritt(in r);
                 lauf.VorlaufUebernehmen(h, in v);
             }
             for (int h = 0; h < 8760; h++)
             {
-                bool sommer = lauf.Sommerlueftung();
-                Stundenrand r = zone.Rand(h, sommer, keine);
+                bool sommer = lauf.Sommerlueftung(h);
+                bool nacht = lauf.Nachtauskuehlung(h);
+                Stundenrand r = zone.Rand(h, sommer, keine, nacht);
                 Stundenergebnis s = lauf.Modell.Schritt(in r);
-                lauf.Uebernehmen(h, sommer, in s);
+                lauf.Uebernehmen(h, sommer, nacht, in s);
             }
             return lauf.Ergebnis(index, idGebaeude);
         }

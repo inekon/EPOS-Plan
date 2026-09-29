@@ -1394,6 +1394,9 @@ namespace WindowsFormsApplication1
             foreach (var row in rows)
             {
                 long altId = row[k.pk].GetInt64();
+                // Eine Paketzeile des Hotels in einem früheren Stand liest der Import als die heutige
+                // (Schritt TwwBezugsartSchema.SCHRITT, PaketteilNachfuehrung) - VOR der Suche.
+                if (IstTwwKatalog(k.name)) TwwFruehererStand(k, row);
                 var wo = new List<string>(); var ps = new List<DbParam>(); int i = 0;
                 foreach (var key in k.naturalKey)
                 {

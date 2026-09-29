@@ -205,17 +205,45 @@ namespace WindowsFormsApplication1
 
             double summeW = 0.0;
             for (int h = 0; h < 8760; h++) summeW += heiz[h];
-            int umschaltung = 0, beides = 0, sommer = 0;
+            int umschaltung = 0, beides = 0, sommer = 0, nacht = 0;
             for (int h = 0; h < 8760; h++)
             {
                 if (schleife.StundenMitUmschaltung[h]) umschaltung++;
                 if (schleife.StundenMitHeizen[h] && schleife.StundenMitKuehlen[h]) beides++;
                 if (schleife.StundenMitSommerlueftung[h]) sommer++;
+                if (schleife.StundenMitNachtauskuehlung[h]) nacht++;
             }
             GebaeudeModellEingang erste = zonen.First(z => z.IstBeheizt).Eingang;
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
-                                              soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit);
+                                              soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
+                                              schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
+                                              Gebaeudenutzung(zonen));
+        }
+
+        /// <summary>
+        /// <b>Die Nutzungsmaske des Gebäudes</b> (Stufe KP1b, F16, Konzept 3.4; Muster
+        /// N1.56 Nr. 10): Das Gebäude ist in Nutzung, wenn <b>eine beheizte Zone</b> es ist — je Zone
+        /// ihre eigene Maske, sonst ihre Nachtzeit. <c>null</c>, wenn keine beheizte Zone einen
+        /// Personenkalender trägt: Dann zählen die Kennzahlen wörtlich nach der Nachtzeit wie bisher.
+        /// </summary>
+        private static bool[] Gebaeudenutzung(IReadOnlyList<ZonenEingang> zonen)
+        {
+            bool eine = false;
+            foreach (ZonenEingang z in zonen)
+                if (z.IstBeheizt && z.Eingang.Nutzungsmaske != null) { eine = true; break; }
+            if (!eine) return null;
+
+            var maske = new bool[8760];
+            foreach (ZonenEingang z in zonen)
+            {
+                if (!z.IstBeheizt) continue;
+                GebaeudeModellEingang e = z.Eingang;
+                for (int h = 0; h < 8760; h++)
+                    if (!maske[h] && (e.Nutzungsmaske == null ? e.Nachtzeit.Nutzungszeit(h) : e.Nutzungsmaske[h]))
+                        maske[h] = true;
+            }
+            return maske;
         }
 
         /// <summary>

@@ -745,6 +745,41 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Konzept Navigation Berichte &amp; Kosten, A3: Ein ERFOLGREICHER Lauf merkt seinen Zeitpunkt
+        /// für die Gruppe (<see cref="BerichtCtrl.MerkeErstellt"/>) und meldet ihn dem Wirt — die
+        /// Statuszeile des Reiters „Bericht" nennt ihn. Die gemerkte Auswahl bleibt dabei stehen.
+        /// </summary>
+        [Fact]
+        public async Task Der_erfolgreiche_Lauf_merkt_seinen_Zeitpunkt_und_meldet_ihn()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+            {
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) => Berichtsdatenproben.Gruppendaten(2)
+            };
+            DateTime? gemeldet = null;
+            seite.Erstellt += t => gemeldet = t;
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+            Assert.Null(new BerichtCtrl(_vorlagen).ZuletztErstellt(GRUPPE));
+
+            DateTime vorher = DateTime.Now.AddSeconds(-1);
+            LaufErgebnis erg = await Erstellen(gaben, stand, "");
+
+            Assert.True(erg.Erfolg, erg.Fehler);
+            Assert.NotNull(gemeldet);
+            Assert.True(gemeldet.Value >= vorher);
+            DateTime? gespeichert = new BerichtCtrl(_vorlagen).ZuletztErstellt(GRUPPE);
+            Assert.NotNull(gespeichert);
+            Assert.Equal(BerichtsKonfiguration.Zeitstempel(gemeldet.Value),
+                         BerichtsKonfiguration.Zeitstempel(gespeichert.Value));
+            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT }, Lade().AktiveBausteine);
+        }
+
+        /// <summary>
         /// Der Weg „standard" der erweiterten Rückfrage: DIESER Bericht entsteht aus der
         /// Standardvorlage, die Laufmeldung nennt die ersetzte — und die Wahl des Stammprojekts bleibt.
         /// </summary>
@@ -868,6 +903,129 @@ namespace EPOS.Kern.Tests
             IReadOnlyDictionary<string, object> ios = EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege());
             Assert.Equal(R.EIN_BERICHT_ORDNER_FEST, ios["VorlagenordnerGesperrtGrund"]);
             PasstZu(typeof(EinstellungenDialog), ios);
+        }
+
+        /// <summary>
+        /// <b>Die zwei Vorgaben der Installation</b> (Konzept 10.3): Die Listen sind die des
+        /// Controllers — Word mit der Standardvorlage und den eigenen, Excel mit „ohne Vorlage" und den
+        /// eigenen —, gewählt ist ohne Einstellung die Standardvorlage bzw. „ohne Vorlage"; der Rückweg
+        /// schreibt die Einstellung, die Standardvorlage und „ohne Vorlage" ENTFERNEN sie.
+        /// </summary>
+        [Fact]
+        public async Task Die_Einstellungen_fuehren_die_zwei_Vorgaben_aus_den_Listen_des_Controllers()
+        {
+            if (_standard == null) return;
+            Vorlageneintrag eigen = Hinzu("Büro Nord.docx", _standard);
+            Vorlageneintrag mappe = Hinzu("Kennzahlen.xlsx", Excelprobe.Mappe(wb => wb.Worksheets.Add("Deckblatt")));
+
+            IReadOnlyDictionary<string, object> gaben =
+                EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true });
+            PasstZu(typeof(EinstellungenDialog), gaben);
+
+            var word = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeWordVorlagen"];
+            Assert.Equal(new[] { R.BV_VORLAGEN_STANDARD, "Büro Nord" }, word.Select(z => z.Text));
+            Assert.True(word[0].Mitgeliefert);
+            Assert.DoesNotContain(word, z => z.Gesperrt);
+            Assert.Equal(word[0].Id, (int)gaben["VorgabeWord"]);
+            Assert.Equal(word[0].Id, (int)gaben["VorgabeWordStandard"]);
+
+            var excel = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeExcelVorlagen"];
+            Assert.Equal(R.BV_XL_OHNE_VORLAGE, excel[0].Text);
+            Assert.Contains(excel, z => z.Text == "Kennzahlen");
+            Assert.Equal(excel[0].Id, (int)gaben["VorgabeExcel"]);
+            Assert.Equal(excel[0].Id, (int)gaben["VorgabeExcelStandard"]);
+
+            // Der Rückweg schreibt die Einstellung ...
+            var wordWeg = (EventCallback<int?>)gaben["VorgabeWordChanged"];
+            await wordWeg.InvokeAsync(word.Single(z => z.Text == "Büro Nord").Id);
+            Assert.Equal(eigen.Id, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, null));
+            Assert.Equal(eigen.Id, _vorlagen.VorgabeWordId);
+
+            var excelWeg = (EventCallback<int?>)gaben["VorgabeExcelChanged"];
+            await excelWeg.InvokeAsync(excel.Single(z => z.Text == "Kennzahlen").Id);
+            Assert.Equal(mappe.Id, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, null));
+            Assert.Equal(mappe.Id, _vorlagen.VorgabeExcelId);
+
+            // ... und die Standardvorlage bzw. „ohne Vorlage" entfernt sie wieder.
+            await wordWeg.InvokeAsync(word[0].Id);
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, null));
+            Assert.Equal(BerichtsvorlagenCtrl.ID_STANDARD, _vorlagen.VorgabeWordId);
+            await excelWeg.InvokeAsync(excel[0].Id);
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, null));
+            Assert.Equal(BerichtsvorlagenCtrl.ID_OHNE, _vorlagen.VorgabeExcelId);
+        }
+
+        /// <summary>
+        /// <b>Eine gespeicherte Vorgabe, deren Datei es nicht mehr gibt</b>, steht gesperrt und gewählt in
+        /// der Liste — mit genau dem Satz, den der Kern beim Erstellen nennt
+        /// (<see cref="BerichtsvorlagenCtrl.VorlageFuer"/> bzw.
+        /// <see cref="BerichtsvorlagenCtrl.ExcelVorlageFuer"/>); still auf einen anderen Eintrag springt
+        /// das Feld nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_fehlende_Vorgabe_steht_gesperrt_mit_dem_Satz_des_Kerns()
+        {
+            if (_standard == null) return;
+            _einstellungen.Schreib(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_WORD, "eigen:Angebot.docx");
+            _einstellungen.Schreib(BerichtsvorlagenCtrl.EINSTELLUNG_VORGABE_EXCEL, "eigen:Kennzahlen.xlsx");
+
+            IReadOnlyDictionary<string, object> gaben =
+                EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true });
+
+            var word = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeWordVorlagen"];
+            Vorlagenzeile weg = Assert.Single(word, z => z.Gesperrt);
+            Assert.Equal("Angebot", weg.Text);
+            Assert.Equal(weg.Id, (int)gaben["VorgabeWord"]);
+            Assert.Equal(Format(R.BV_VORLAGEN_NICHT_VORHANDEN, "Angebot", R.BV_VORLAGEN_STANDARD), weg.GesperrtHinweis);
+
+            var excel = (IReadOnlyList<Vorlagenzeile>)gaben["VorgabeExcelVorlagen"];
+            Vorlagenzeile wegExcel = Assert.Single(excel, z => z.Gesperrt);
+            Assert.Equal("Kennzahlen", wegExcel.Text);
+            Assert.Equal(wegExcel.Id, (int)gaben["VorgabeExcel"]);
+            Assert.Equal(Format(R.BV_XL_NICHT_VORHANDEN, "Kennzahlen"), wegExcel.GesperrtHinweis);
+
+            // Dieselbe Kette rechnet der Lauf: Vorgabe fehlt → Standardvorlage bzw. ohne Vorlage.
+            Vorlagenwahl lauf = _vorlagen.VorlageFuer(null);
+            Assert.Equal(Vorlagenwahlgrund.Standard, lauf.Grund);
+            Assert.Equal("eigen:Angebot.docx", lauf.FehlendeId);
+        }
+
+        /// <summary>
+        /// <b>Die Berichtsseite zeigt eine geänderte Vorgabe beim nächsten Aufbau</b>, solange das
+        /// Stammprojekt keine Abweichung trägt; eine Abweichung bleibt vorrangig.
+        /// </summary>
+        [Fact]
+        public async Task Die_Berichtsseite_zeigt_eine_geaenderte_Vorgabe_ohne_Abweichung()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();                                       // frische Konfiguration, keine Abweichung
+            Vorlageneintrag eigen = Hinzu("Büro Nord.docx", _standard);
+
+            var (_, neuLaden) = Seite();
+            Vorlagenstand vorher = neuLaden();
+            Assert.Equal(Id(vorher, R.BV_VORLAGEN_STANDARD), vorher.VorlageId);
+
+            // Die Vorgabe über die Einstellungen setzen ...
+            var weg = (EventCallback<int?>)EinstellungenBerichtGaben
+                .Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true })["VorgabeWordChanged"];
+            IReadOnlyList<Vorlagenzeile> liste = (IReadOnlyList<Vorlagenzeile>)EinstellungenBerichtGaben
+                .Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true })["VorgabeWordVorlagen"];
+            await weg.InvokeAsync(liste.Single(z => z.Text == "Büro Nord").Id);
+            Assert.Equal(eigen.Id, _vorlagen.VorgabeWordId);
+
+            // ... und die Seite zeigt sie beim nächsten Aufbau.
+            Vorlagenstand nachher = neuLaden();
+            Assert.Equal(Id(nachher, "Büro Nord"), nachher.VorlageId);
+            Assert.Null(Lade().VorlageWordQuelle);           // ohne Abweichung des Stammprojekts
+
+            // Eine Abweichung des Stammprojekts bleibt vorrangig.
+            BerichtsKonfiguration konfig = Lade();
+            BerichtsvorlagenCtrl.SetzeAbweichung(konfig, _vorlagen.Standardeintrag());
+            Assert.True(new BerichtCtrl(_vorlagen).Speichere(GRUPPE, konfig));
+            Vorlagenstand abweichend = neuLaden();
+            Assert.Equal(Id(abweichend, R.BV_VORLAGEN_STANDARD), abweichend.VorlageId);
         }
 
         // =====================================================================
@@ -1328,6 +1486,68 @@ namespace EPOS.Kern.Tests
             {
                 Sprache.Nummer = vorher;
             }
+        }
+
+        // =====================================================================
+        //  Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Seite bekommt die drei Szenarien (Nummern der Wirtschaftlichkeitsseite) mit dem gemerkten; „Erstellen“ bildet
+        /// die Nummer auf den Schlüssel ab, legt ihn in die Konfiguration des Laufs — dieselbe, die Sammler und Schreiber
+        /// bekommen — und merkt ihn mit der übrigen Auswahl. Der Neuaufbau zeigt die gemerkte Wahl.
+        /// </summary>
+        [Fact]
+        public async Task Erstellen_reicht_das_Szenario_in_der_Konfiguration_und_merkt_es()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+
+            var gesehen = new List<string>();
+            var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+            {
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                {
+                    gesehen.Add(konfig.Szenario);
+                    return Berichtsdatenproben.Gruppendaten(2);
+                }
+            };
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            Assert.Equal(R.BK_BER_LBL_SZENARIO, gaben["LabelSzenario"]);
+            var laden = (Func<BerichtStand>)gaben["Laden"];
+            BerichtStand vorher = laden();
+            Assert.Equal(new[] { 0, 1, 2 }, vorher.Szenarien.Select(s => s.Id).ToArray());
+            Assert.Equal(new[] { R.WIRT_SZEN_ERWARTET, R.WIRT_SZEN_BEST, R.WIRT_SZEN_WORST },
+                         vorher.Szenarien.Select(s => s.Text).ToArray());
+            Assert.Equal(0, vorher.SzenarioId);
+
+            Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+            var erstellen = (Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>)gaben["Erstellen"];
+            foreach (int id in new[] { 1, 2, 0 })
+            {
+                LaufErgebnis lauf = await erstellen(new BerichtAuftrag
+                {
+                    VariantenIds = Array.Empty<int>(),
+                    Bausteine = new[] { BerichtsKonfiguration.B_DECKBLATT },
+                    AusgabeId = 0,
+                    Zielordner = _ziel,
+                    SzenarioId = id,
+                    AnzahlMitStamm = 1,
+                    VorlageId = stand.VorlageId,
+                    Vorlagenweg = UiStartweg.Eigene
+                }, _ => { });
+                Assert.True(lauf.Erfolg, lauf.Fehler);
+                Assert.Equal(id, laden().SzenarioId);
+            }
+            Assert.Equal(new[] { WirtschaftlichkeitSzenario.BEST, WirtschaftlichkeitSzenario.WORST,
+                                 WirtschaftlichkeitSzenario.ERWARTET }, gesehen.ToArray());
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, Lade().Szenario);
+            Assert.Contains("\"Szenario\":\"" + WirtschaftlichkeitSzenario.ERWARTET + "\"", Lade().NachJson(), StringComparison.Ordinal);
+
+            Konfig(k => k.Szenario = WirtschaftlichkeitSzenario.WORST);
+            Assert.Equal(2, laden().SzenarioId);
         }
 
         // =====================================================================

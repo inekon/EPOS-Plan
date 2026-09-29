@@ -136,6 +136,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der NUTZBARE Inhalt eines Quellspeichers [kWh]: Ein Rest unter
+        /// <see cref="Rechenrand.ABSOLUT"/> gilt als leer.
+        ///
+        /// <para><b>Warum</b> (Plattformbefund PB‑1, Anwenderentscheid vom 29.09.2026): Die
+        /// Quellentnahme lässt aus Gleitkommagründen oft einen Rest von 10⁻¹⁶ kWh stehen, der
+        /// Stunde um Stunde um den Faktor ≈ 10⁻¹⁶ schrumpft. Mit ihm skalierte die Begrenzung
+        /// durch die Quelle die Leistung des Moduls auf ebenso wenig, und die Laufzeitzählung
+        /// (<c>ladung / ladeTherm</c>) wertete das als volle Betriebsstunde — in Projekt 1042
+        /// ein Viertel der Stunden des Moduls, und zwischen Windows und Linux verschieden.
+        /// Beide Stellen, an denen die Quelle das Modul begrenzt, lesen den Inhalt deshalb
+        /// hier.</para>
+        /// </summary>
+        internal static double QuellInhalt(SimulationPufferspeicher quelle)
+        {
+            return quelle.SOC < Rechenrand.ABSOLUT ? 0 : quelle.SOC;
+        }
+
+        /// <summary>
         /// Meldet eine Quellentnahme an die Herkunftsrechnung (Etappe D5a). Für echte
         /// Quellspeicher entfällt die Meldung — siehe <see cref="Quellentnahmen"/>.
         /// </summary>
@@ -1376,9 +1394,10 @@ namespace WindowsFormsApplication1
                     if (quelle != null && result[PTHERM] > 0)
                     {
                         double quellAnteil = result[PTHERM] - result[PEL];
-                        if (quellAnteil > 0 && quelle.SOC < quellAnteil)
+                        double quellInhalt = QuellInhalt(quelle);
+                        if (quellAnteil > 0 && quellInhalt < quellAnteil)
                         {
-                            double faktor = quelle.SOC / quellAnteil;
+                            double faktor = quellInhalt / quellAnteil;
                             if (faktor < 0) faktor = 0;
                             result[PTHERM] *= faktor;
                             result[PEL] *= faktor;
@@ -1879,9 +1898,10 @@ namespace WindowsFormsApplication1
                 if (quelle != null && quelle.Q_max > 0 && cop > 1)
                 {
                     double entnahmeVoll = menge * (1.0 - 1.0 / cop);
-                    if (entnahmeVoll > quelle.SOC)
+                    double quellInhalt = QuellInhalt(quelle);
+                    if (entnahmeVoll > quellInhalt)
                     {
-                        double faktor = entnahmeVoll > 0 ? quelle.SOC / entnahmeVoll : 0;
+                        double faktor = entnahmeVoll > 0 ? quellInhalt / entnahmeVoll : 0;
                         if (faktor < 0) faktor = 0;
                         menge *= faktor;
                     }

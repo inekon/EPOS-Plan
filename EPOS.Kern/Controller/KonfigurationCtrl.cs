@@ -240,6 +240,16 @@ namespace WindowsFormsApplication1
                     dt.Columns.Contains(KuehlungSchema.SPALTE_KUEHLBETRIEB) &&
                     WahrOderFalsch(row[KuehlungSchema.SPALTE_KUEHLBETRIEB]);
 
+                // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 154, #568) ----------
+                //
+                // Fuenftes Feld nach demselben namensbasierten Muster, wieder in BEIDEN
+                // Zweigen gesetzt. Fehlende Spalte (Datenbank vor Schemastand 152), NULL und ein
+                // unlesbarer Wert heissen „leer" - und leer rechnet die Vorgabe
+                // (SimulationSPK.HeizgrenzeWirksam).
+                model.Kessel_Heizgrenze = dt.Columns.Contains(KesselHeizgrenzeSchema.SPALTE)
+                    ? HeizgrenzeOderLeer(row[KesselHeizgrenzeSchema.SPALTE])
+                    : null;
+
                 HeizkesselNachziehen(model);
 
                 return true;
@@ -790,6 +800,66 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 154; Anwenderentscheid 27.09.2026 zu #568)
+
+        /// <summary>
+        /// Der Wert eines gelesenen Feldes der Heizgrenze [°C]: <c>null</c>, <c>DBNull</c>, ein
+        /// unlesbarer Wert und eine Zahl, die nicht endlich ist, ergeben <c>null</c> — „leer",
+        /// und leer rechnet die Vorgabe (<see cref="SimulationSPK.HeizgrenzeWirksam"/>).
+        /// </summary>
+        public static double? HeizgrenzeOderLeer(object feld)
+        {
+            if (feld == null || feld == DBNull.Value) return null;
+            try
+            {
+                double wert = Convert.ToDouble(feld, System.Globalization.CultureInfo.InvariantCulture);
+                return double.IsNaN(wert) || double.IsInfinity(wert) ? (double?)null : wert;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Die Heizgrenze der Kesselbereitschaft eines Projekts [°C], DIALOGFREI und
+        /// NULL-ERHALTEND gelesen: <c>null</c> heißt „leer" (Vorgabe); fehlende Zeile und
+        /// fehlende Spalte ebenso.
+        /// </summary>
+        public static double? KesselHeizgrenzeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            return HeizgrenzeOderLeer(StilleDb.Scalar(
+                "SELECT [" + KesselHeizgrenzeSchema.SPALTE + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+        }
+
+        /// <summary>
+        /// Schreibt die Heizgrenze der Kesselbereitschaft eines Projekts [°C]; <c>null</c> schreibt
+        /// NULL und damit die Vorgabe. Ein EIGENES, zielgenaues UPDATE wie bei
+        /// <see cref="KuehlbetriebSchreiben"/> und aus demselben Grund: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette, und auf einer
+        /// Datenbank ohne die Spalte würde ein erweitertes UPDATE das Speichern der GESAMTEN
+        /// Konfiguration scheitern lassen. <see cref="Insert"/> und <see cref="Update"/> rufen
+        /// diese Methode mit <see cref="KonfigurationModel.Kessel_Heizgrenze"/>.
+        ///
+        /// Rückgabe <c>false</c>, wenn keine Zeile getroffen wurde oder die Spalte fehlt.
+        /// </summary>
+        public static bool KesselHeizgrenzeSchreiben(int idProjekt, double? grenze)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + KesselHeizgrenzeSchema.SPALTE + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.Double, (object)HeizgrenzeOderLeer(grenze) ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
         // --- Projekteinstellung „Anlagenkopplung" (Schemaschritt 122, AK-S1; Anlagenkopplung 8.1)
 
         /// <summary>
@@ -1066,6 +1136,12 @@ namespace WindowsFormsApplication1
                 // Projekt soll dieselbe Zeile zeigen wie ein migriertes - die Spalte
                 // nennt den geltenden Lesepunkt, statt zu schweigen.
                 BoosterLesepunktSchreiben(ID_Projekt, DbWerte.BOOSTER_LESEPUNKT_DAVOR);
+
+                // Schemaschritt 154: die Heizgrenze der Kesselbereitschaft - nachgereicht wie die
+                // Felder darueber, damit die Spaltenliste an der Ordinalkette bleibt. Eine neue
+                // Zeile steht ohnehin auf NULL (= Vorgabe); geschrieben wird nur ein gesetzter Wert.
+                if (model.Kessel_Heizgrenze.HasValue)
+                    KesselHeizgrenzeSchreiben(ID_Projekt, model.Kessel_Heizgrenze);
                 return true;
             }
             catch (Exception ex)
@@ -1135,6 +1211,11 @@ namespace WindowsFormsApplication1
 
                 // Übergabe an dein bestehendes DataRepository
                 DataRepository.ExecuteNonQuery(sql, parameters);
+
+                // Schemaschritt 154: die Heizgrenze der Kesselbereitschaft mit eigenem UPDATE
+                // (leer ⇄ NULL). Das Modell traegt den gelesenen Stand (ZeileUebernehmen) - wer
+                // Update ruft, hat es vorher gelesen.
+                KesselHeizgrenzeSchreiben(ID_Projekt, model.Kessel_Heizgrenze);
                 return true;
             }
             catch (Exception ex)

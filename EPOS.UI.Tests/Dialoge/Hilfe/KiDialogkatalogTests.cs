@@ -865,14 +865,28 @@ public class KiDialogkatalogTests : IDisposable
         Assert.NotNull(d);
 
         // Sechs Werte der Anwendung und — Berichtsvorlagen BV-E1 — Firma und Vorlagenordner
-        // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu je Farbrolle ein Feld.
+        // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu die zwei Vorgaben der
+        // Installation als Wahlfelder und je Farbrolle ein Feld.
         var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
-        Assert.Equal(9 + rollen.Count, d.Felder.Count);
+        Assert.Equal(11 + rollen.Count, d.Felder.Count);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtFirma", d.FindeFeld("bericht_firma")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
                      d.FindeFeld("bericht_vorlagenordner")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtLogo", d.FindeFeld("bericht_logo")!.Eigenschaftspfad);
         Assert.Equal("Logo", d.FindeFeld("bericht_logo")!.Anzeigename);
+
+        // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3): Wahlfelder mit den
+        // Begleitern BerichtVorgabeWordWahl und BerichtVorgabeExcelWahl an der Sichtklasse.
+        KiDialogFeld word = d.FindeFeld("bericht_vorgabe_word")!;
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorgabeWord", word.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Wahl, word.Typ);
+        Assert.Equal("Vorgabe Word-Vorlage", word.Anzeigename);
+        KiDialogFeld excel = d.FindeFeld("bericht_vorgabe_excel")!;
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorgabeExcel", excel.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Wahl, excel.Typ);
+        Assert.Equal("Vorgabe Excel-Vorlage", excel.Anzeigename);
+        foreach (string begleiter in new[] { "BerichtVorgabeWordWahl", "BerichtVorgabeExcelWahl" })
+            Assert.NotNull(typeof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht).GetProperty(begleiter));
 
         foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
         {
@@ -918,18 +932,19 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 7, 5 und 4 Felder.</b>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 8, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>
     /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
-    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" vier
-    /// Einstellwerte (Ausgabe, Zielordner und — Berichtsvorlagen BV-E1 und BV-E7 — die Word- und
-    /// die Excel-Vorlage als Wahl) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
+    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" fünf
+    /// Einstellwerte (Ausgabe, Zielordner, das Szenario des Wirtschaftlichkeitsberichts — Fachvorgabe E31 — und —
+    /// Berichtsvorlagen BV-E1 und BV-E7 — die Word- und die Excel-Vorlage, jeweils als Wahl, sowie die Suche des
+    /// Platzhalterkatalogs) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
     /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_7_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_8_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
@@ -937,11 +952,16 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
         Assert.Equal(6, ueb.Felder.Count);
-        Assert.Equal(7, ber.Felder.Count);
+        Assert.Equal(9, ber.Felder.Count);
+        Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
+        Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("vorlage")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Vorlage", ber.FindeFeld("vorlage")!.Eigenschaftspfad);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("excel_vorlage")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.ExcelVorlage", ber.FindeFeld("excel_vorlage")!.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Text, ber.FindeFeld("katalogsuche")!.Typ);
+        Assert.Equal("BerichtSeiteKiSicht.Katalogsuche", ber.FindeFeld("katalogsuche")!.Eigenschaftspfad);
+        Assert.False(ber.FindeFeld("katalogsuche")!.NurLesen);
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 
@@ -1694,8 +1714,9 @@ public class KiDialogkatalogTests : IDisposable
             "Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =
             "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
-            "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle) und die zwei " +
-            "Aufstellungen; Zeugen sind BerichtSeiteTests und BerichtSeiteVorlagenTests",
+            "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle), die Suche des " +
+            "Platzhalterkatalogs und die zwei Aufstellungen; Zeugen sind BerichtSeiteTests und " +
+            "BerichtSeiteVorlagenTests",
         [KiMaskennamen.PROJEKT_KOPIE] =
             "bindet über die Sichtklasse ProjektKopieKiSicht auf die sieben privaten " +
             "Felder der Maske; Zeuge ist ProjektKopieDialogTests",

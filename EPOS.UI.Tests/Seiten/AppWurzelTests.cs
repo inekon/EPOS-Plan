@@ -341,13 +341,13 @@ public class AppWurzelTests : EposBunitContext
         cut.Render();
 
         Assert.Empty(cut.FindAll(".epos-startseite"));
-        Assert.Single(cut.FindAll(".epos-navigation"));
+        Assert.Single(cut.FindAll(".epos-berichtekosten"));
 
-        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Find(".epos-berichtekosten-zurueck").Click();
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-startseite"));
-        Assert.Empty(cut.FindAll(".epos-navigation"));
+        Assert.Empty(cut.FindAll(".epos-berichtekosten"));
     }
 
     [Fact]
@@ -362,7 +362,7 @@ public class AppWurzelTests : EposBunitContext
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-seite"));
-        Assert.Empty(cut.FindAll(".epos-navigation"));
+        Assert.Empty(cut.FindAll(".epos-berichtekosten"));
     }
 
     // =====================================================================

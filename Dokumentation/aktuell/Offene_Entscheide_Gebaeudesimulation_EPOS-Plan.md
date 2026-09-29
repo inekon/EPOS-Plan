@@ -8,7 +8,9 @@ und M13; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12 (Vermerk dort), ist
 umgesetzt und berührt keinen offenen Punkt. E52 (26.09.2026, Konzept N1.59) hat die acht Punkte P1 bis P8 des
 Teilkonzepts Konditionierungsprofile entschieden (Kapitel 10), P3 abweichend von der Empfehlung, und ändert E27 bei
 K11 (Vermerk dort); Rev. 2 des Teilkonzepts (26.09.2026) brachte die fünf Punkte P9 bis P13, die E53 (26.09.2026,
-Konzept N1.60) am selben Tag entschieden hat — P11 abweichend von der Empfehlung — samt der Heizperiode (Kapitel 10).**
+Konzept N1.60) am selben Tag entschieden hat — P11 abweichend von der Empfehlung — samt der Heizperiode (Kapitel 10).
+E54 (27.09.2026, Konzept N1.62) entscheidet zwei Fragen aus dem Entwurf der zweiten Hälfte von KP1, die nicht im
+Register standen, und berührt keinen offenen Punkt.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,

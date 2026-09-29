@@ -206,11 +206,14 @@ namespace WindowsFormsApplication1
         /// (Gruppenzeilen), je Position Gruppe, Bemessung, Herleitung und Betrag, dazu die Summe (Summenzeile). Die
         /// Probe gegen die angesetzten Betriebskosten steht als Hinweis unter der Tabelle.
         /// </summary>
-        public static Berichtstabelle Betriebskosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario der Positionen (der Wortbericht: das Szenario des Berichts); <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle Betriebskosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                     string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            string imSzenario = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.Betriebskosten != null && x.Betriebskosten.Count > 0 &&
+                x.Szenario == imSzenario && x.Betriebskosten != null && x.Betriebskosten.Count > 0 &&
                 x.IdProjekt == v.IdProjekt);
             if (e == null) return Leer(alle == null || alle.Count == 0 ? nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT)
                                                                         : nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
@@ -274,11 +277,14 @@ namespace WindowsFormsApplication1
         /// <b><c>stand.tabelle.kwkg_module</c></b> — je BHKW-Modul der KWKG-Rechnung eine Zeile mit elf Spalten (mit dem
         /// zweiten Fall des § 2 Nr. 16 KWKG sechzehn); die Herleitung der Sätze steht als Hinweis darunter.
         /// </summary>
-        public static Berichtstabelle KwkgModule(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario der Rechnung (der Wortbericht: das Szenario des Berichts); <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle KwkgModule(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                 string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.KwkgModule != null && x.KwkgModule.Count > 0 &&
+                x.Szenario == sz && x.KwkgModule != null && x.KwkgModule.Count > 0 &&
                 x.IdProjekt == v.IdProjekt);
             if (e == null) return Leer(alle == null || alle.Count == 0 ? nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT)
                                                                         : nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
@@ -395,19 +401,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b><c>stand.tabelle.vermiedene_kosten</c></b> — der Nachweis der vermiedenen Kosten (Arbeit, Leistung, gesamt)
-        /// im Erwartungsfall; leer, wenn der Stand keine vermiedenen Kosten trägt.
+        /// im Erwartungsfall (der Wortbericht: im Szenario des Berichts); leer, wenn der Stand keine vermiedenen Kosten trägt.
         /// </summary>
-        public static Berichtstabelle VermiedeneKosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario; <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle VermiedeneKosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                       string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
-            return VermiedeneKosten(v.IdProjekt, alle, kultur);
+            return VermiedeneKosten(v.IdProjekt, alle, kultur, szenario);
         }
 
         /// <summary>Die Nachweistafel der vermiedenen Kosten zu einer Projektkennung (der Weg des Bausteins).</summary>
-        public static Berichtstabelle VermiedeneKosten(int idProjekt, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        public static Berichtstabelle VermiedeneKosten(int idProjekt, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                       string szenario = null)
         {
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                x.IdProjekt == idProjekt && x.Szenario == sz);
             if (e == null) return Leer(nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), kultur);
             if (e.VermiedenGesamtJahr == 0 && e.VermiedenArbeitJahr == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 

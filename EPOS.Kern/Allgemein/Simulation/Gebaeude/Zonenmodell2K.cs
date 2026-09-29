@@ -156,7 +156,27 @@ namespace WindowsFormsApplication1
 
         // Rechenpuffer der geregelten Lagen, je Übergabeanteil, und des freien Laufs mit
         // stündlichem Zusatzleitwert (kein Zustand).
-        private Fallsystem _freiZusatz;
+        private readonly Fallsystem[] _freiZusatz = new Fallsystem[FREISYSTEM_PLAETZE];
+        private readonly long[] _freiZusatzSchluessel = new long[FREISYSTEM_PLAETZE];
+        private int _freiZusatzBelegt;
+        private int _freiZusatzNaechster;
+
+        /// <summary>
+        /// Die Plätze des Zwischenspeichers freier Fallsysteme (Stufe KP1b, R7): Mit
+        /// Lüftungskalender und Nachtauskühlung kommen je Stunde wenige verschiedene
+        /// Zusatzleitwerte vor, die einander in einem einzigen Platz ständig verdrängten.
+        /// </summary>
+        internal const int FREISYSTEM_PLAETZE = 4;
+
+        /// <summary>Zähler der Neubauten von <see cref="Freisystem"/> — nur Messung (R7), ohne Wirkung.</summary>
+        internal int FreisystemNeubauten;
+
+        /// <summary>
+        /// Die belegbaren Plätze des Zwischenspeichers — <b>nur für die Probe</b> (R7): 0 rechnet
+        /// jedes System einzeln, <see cref="FREISYSTEM_PLAETZE"/> ist der Lauf. Die Zahlen sind in
+        /// jedem Fall dieselben; ein Fallsystem entsteht deterministisch aus seinem Schlüssel.
+        /// </summary>
+        internal int FreisystemPlaetzeFuerProbe { get; set; } = FREISYSTEM_PLAETZE;
         private Fallsystem _heizen;
         private Fallsystem _kuehlen;
         private Fallsystem _kuehlenUebergabe;
@@ -396,8 +416,12 @@ namespace WindowsFormsApplication1
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
+            // Stufe KP1b (E53): Eine Stunde mit Heizsollwert "aus" hat keine Uebergabe - der
+            // Vorlauf bleibt leer wie jenseits der Heizgrenze, und die Stunde zaehlt getrennt
+            // (StundenOhneHeizungH), nicht als Heizgrenzstunde. Ohne Heizkalender ist ThetaSoll
+            // nie NaN, der Ausdruck also derselbe wie bisher.
             double heizMittel = akkHeiz / STUNDE_S;
-            double vorlauf = r.MitUebergabe ? r.VorlaufC : double.NaN;
+            double vorlauf = r.MitUebergabe && r.MitHeizung ? r.VorlaufC : double.NaN;
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
             int grund = 0;
             for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
@@ -598,10 +622,17 @@ namespace WindowsFormsApplication1
         /// Aufruf des vorhandenen Lösers mit fester Randbedingung, ausdrücklich kein
         /// Normnachweis (H-F12). Der Zustand des Modells bleibt unberührt.
         /// </summary>
-        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil)
+        /// <param name="zusatzleitwertWK">
+        /// Ein masseloser Zusatzleitwert Außenluft ↔ Raumluft [W/K] (Stufe KP1b, Konzept 3.6): der
+        /// Luftwechsel <b>über</b> dem Jahresminimum, mit dem R_ext gebildet ist. 0 heißt „nur das
+        /// Minimum" und ist Zeichen für Zeichen die Rechnung des Bestands.
+        /// </param>
+        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil,
+                                             double zusatzleitwertWK = 0.0)
         {
             var r = new Stundenrand(thetaOutC, thetaEqC, thetaRaumC, double.PositiveInfinity, 0.0, 0.0, 0.0,
-                                    heizungStrahlungsanteil: strahlungsanteil);
+                                    heizungStrahlungsanteil: strahlungsanteil,
+                                    zusatzleitwertWK: zusatzleitwertWK);
             Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
             Vektor2 xStationaer = -1.0 * (h.System.Rechner.A.Inverse() * h.B);
             return h.Ausgang(2, xStationaer);
@@ -955,14 +986,35 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Das System des freien Laufs. Der Zusatzleitwert steckt in der Luftbilanz und damit
         /// in A — ohne ihn gilt das im Erbauer gebildete System.
+        ///
+        /// <para><b>Der Zwischenspeicher</b> (Stufe KP1b, R7): Mit Lüftungskalender und
+        /// Nachtauskühlung wechselt der Zusatzleitwert stündlich zwischen wenigen Werten; ein
+        /// einziger Platz baute darum in fast jeder Stunde ein neues Fallsystem. Der Speicher hält
+        /// <see cref="FREISYSTEM_PLAETZE"/> davon, geordnet nach dem <b>bitgenauen</b> Schlüssel,
+        /// und ersetzt bei Überlauf der Reihe nach. Er ändert keine Zahl — das Fallsystem entsteht
+        /// deterministisch aus <c>_gExt + zusatzleitwert</c>.</para>
         /// </summary>
         private Fallsystem Freisystem(double zusatzleitwert)
         {
             if (zusatzleitwert == 0.0) return _frei;
-            if (_freiZusatz == null || _freiZusatz.Schluessel != zusatzleitwert)
-                _freiZusatz = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0,
-                                             gExt: _gExt + zusatzleitwert, schluessel: zusatzleitwert);
-            return _freiZusatz;
+            // Der Schluessel ist BITGENAU: Zwei Zusatzleitwerte, die sich im letzten Bit
+            // unterscheiden, sind zwei Systeme - der Speicher darf nie das falsche liefern.
+            long bits = BitConverter.DoubleToInt64Bits(zusatzleitwert);
+            for (int i = 0; i < _freiZusatzBelegt; i++)
+                if (_freiZusatzSchluessel[i] == bits) return _freiZusatz[i];
+
+            FreisystemNeubauten++;
+            var neu = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0,
+                                     gExt: _gExt + zusatzleitwert, schluessel: zusatzleitwert);
+            int plaetze = FreisystemPlaetzeFuerProbe;
+            if (plaetze <= 0) return neu;
+            if (plaetze > FREISYSTEM_PLAETZE) plaetze = FREISYSTEM_PLAETZE;
+            int platz;
+            if (_freiZusatzBelegt < plaetze) platz = _freiZusatzBelegt++;
+            else { platz = _freiZusatzNaechster; _freiZusatzNaechster = (platz + 1) % plaetze; }
+            _freiZusatz[platz] = neu;
+            _freiZusatzSchluessel[platz] = bits;
+            return neu;
         }
 
         private Fallsystem Heizsystem(double strahlungsanteil)

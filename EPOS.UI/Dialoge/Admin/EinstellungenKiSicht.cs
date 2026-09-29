@@ -1,4 +1,5 @@
 ﻿using EPOS.UI.Dienste;
+using KiKern;
 using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Admin;
@@ -26,7 +27,10 @@ namespace EPOS.UI.Dialoge.Admin;
 ///
 /// <para><b>BV-E1:</b> Firma und Vorlagenordner des Abschnitts „Bericht" gehen über
 /// <see cref="BerichtFirma"/> und <see cref="BerichtVorlagenordner"/> — an den Arbeitsstand
-/// des Dialogs, nicht an den Wertesatz; BV-E2 dazu das Logo über <see cref="BerichtLogo"/>.</para>
+/// des Dialogs, nicht an den Wertesatz; BV-E2 dazu das Logo über <see cref="BerichtLogo"/>.
+/// Die zwei Vorgaben der Installation sind WAHLFELDER (<see cref="BerichtVorgabeWord"/> samt
+/// <see cref="BerichtVorgabeWordWahl"/>, <see cref="BerichtVorgabeExcel"/> samt
+/// <see cref="BerichtVorgabeExcelWahl"/>).</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jeder Zugriff ruft die Delegaten des Dialogs.</para>
 /// </summary>
@@ -149,6 +153,63 @@ public sealed class EinstellungenKiSicht : IKiFeldtafel
         set
         {
             BerichtLogoSetzen?.Invoke(value ?? "");
+            Gesetzt?.Invoke();
+        }
+    }
+
+    // =====================================================================
+    //  Die Vorgaben der Installation (BerichtVorlageWord, BerichtVorlageExcel)
+    //
+    //  Zwei WAHLFELDER: Die Einträge sind die der zwei Auswahlfelder der Rubrik — dieselben
+    //  Listen, die auch die Berichtsseite zeigt, samt dem gesperrten Eintrag einer Vorlage, die es
+    //  nicht mehr gibt. Gesetzt wird in den Arbeitsstand des Dialogs; geschrieben wird im OK-Weg.
+    //  Ohne Feld und bei einem gesperrten Eintrag lehnt der Dialog benannt ab.
+    // =====================================================================
+
+    /// <summary>Liest die vorgegebene Word-Vorlage (<c>Vorlagenzeile.Id</c>); <c>null</c> = keine.</summary>
+    public Func<int?>? BerichtVorgabeWordLesen { get; init; }
+
+    /// <summary>Setzt die vorgegebene Word-Vorlage im Arbeitsstand; wirft mit Grund, wo es nicht geht.</summary>
+    public Action<int?>? BerichtVorgabeWordSetzen { get; init; }
+
+    /// <summary>Die wählbaren Word-Vorlagen als Wahleinträge.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BerichtVorgabeWordEintraege { get; init; }
+
+    /// <summary>Liest die vorgegebene Excel-Vorlage (<c>Vorlagenzeile.Id</c>); <c>null</c> = keine.</summary>
+    public Func<int?>? BerichtVorgabeExcelLesen { get; init; }
+
+    /// <summary>Setzt die vorgegebene Excel-Vorlage im Arbeitsstand; wirft mit Grund, wo es nicht geht.</summary>
+    public Action<int?>? BerichtVorgabeExcelSetzen { get; init; }
+
+    /// <summary>Die wählbaren Excel-Vorlagen als Wahleinträge.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BerichtVorgabeExcelEintraege { get; init; }
+
+    /// <summary>Die wählbaren Word-Vorlagen der Vorgabe.</summary>
+    public IReadOnlyList<KiWahleintrag> BerichtVorgabeWordWahl
+        => BerichtVorgabeWordEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Mit welcher Word-Vorlage ein Bericht ohne eigene Wahl des Stammprojekts entsteht.</summary>
+    public int? BerichtVorgabeWord
+    {
+        get => BerichtVorgabeWordLesen?.Invoke();
+        set
+        {
+            BerichtVorgabeWordSetzen?.Invoke(value);
+            Gesetzt?.Invoke();
+        }
+    }
+
+    /// <summary>Die wählbaren Excel-Vorlagen der Vorgabe.</summary>
+    public IReadOnlyList<KiWahleintrag> BerichtVorgabeExcelWahl
+        => BerichtVorgabeExcelEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Aus welcher Excel-Vorlage die Mappe ohne eigene Wahl des Stammprojekts entsteht.</summary>
+    public int? BerichtVorgabeExcel
+    {
+        get => BerichtVorgabeExcelLesen?.Invoke();
+        set
+        {
+            BerichtVorgabeExcelSetzen?.Invoke(value);
             Gesetzt?.Invoke();
         }
     }

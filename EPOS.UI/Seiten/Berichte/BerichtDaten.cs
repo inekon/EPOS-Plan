@@ -122,6 +122,16 @@ public sealed class BerichtStand
 
     /// <summary>Der Zielordner der Ausgabe.</summary>
     public string Zielordner { get; set; } = "";
+
+    /// <summary>
+    /// Die wählbaren Szenarien des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582) — Nummer und Anzeigetext,
+    /// dieselben Nummern wie auf der Wirtschaftlichkeitsseite. Die PERSISTENZWERTE kennt nur die Hülle
+    /// (Drei-Schichten-Regel). Leer = die Seite führt keine Klappliste.
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Szenarien { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Das gewählte Szenario (0 = „Erwartet“, die Vorgabe).</summary>
+    public int SzenarioId { get; set; }
 }
 
 /// <summary>
@@ -133,7 +143,8 @@ public sealed class BerichtStand
 /// </summary>
 /// <param name="MitWirtschaftlichkeit">Der Baustein „Wirtschaftlichkeit" wird angehakt.</param>
 /// <param name="Varianten">Die angehakten Versionen der Vergleichsgruppe samt Stamm und Referenz.</param>
-/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite.</param>
+/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite — die Berichtsseite übernimmt
+/// es als Vorbelegung ihrer Klappliste (dieselben Nummern, <see cref="BerichtStand.Szenarien"/>).</param>
 /// <param name="SzenarioText">Sein Anzeigetext.</param>
 public sealed record BerichtVorbelegung(bool MitWirtschaftlichkeit, IReadOnlyList<int> Varianten,
                                         int SzenarioId, string SzenarioText);
@@ -152,6 +163,10 @@ public sealed class BerichtAuftrag
 
     /// <summary>Der Zielordner.</summary>
     public string Zielordner { get; set; } = "";
+
+    /// <summary>Das Szenario des Wirtschaftlichkeitsberichts (<see cref="BerichtStand.Szenarien"/>; 0 = Erwartet) — die
+    /// Hülle bildet es auf den Schlüssel der Konfiguration ab.</summary>
+    public int SzenarioId { get; set; }
 
     /// <summary>Die Zahl der angehakten Versionen inklusive Stamm (für die Rückfrage).</summary>
     public int AnzahlMitStamm { get; set; }

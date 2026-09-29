@@ -1241,7 +1241,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Startet das Skript über <c>py</c> (Windows-Starter) oder <c>python3</c>;
+        /// Startet das Skript über <c>py</c> (Windows-Starter) oder <c>python3</c> — jede Fassung
+        /// rechnet gleich, das Skript summiert mit <c>math.fsum</c>;
         /// <c>null</c>, wenn keines von beiden startet.
         /// </summary>
         private static (int, string)? PythonStarten(string skript, string datenbank)

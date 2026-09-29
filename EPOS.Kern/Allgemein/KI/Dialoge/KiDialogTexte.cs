@@ -696,6 +696,8 @@
         internal static string SimHeizstabErl => MyResource.Resource.KI_DLG_SIM_HEIZSTAB_ERL;
         internal static string SimBereitschaftName => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_NAME;
         internal static string SimBereitschaftErl => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_ERL;
+        internal static string SimHeizgrenzeName => MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE;
+        internal static string SimHeizgrenzeErl => MyResource.Resource.KI_DLG_SIM_HEIZGRENZE_ERL;
         internal static string SimWaermebedarfName => MyResource.Resource.KI_DLG_SIM_WBEDARF_NAME;
         internal static string SimWaermebedarfErl => MyResource.Resource.KI_DLG_SIM_WBEDARF_ERL;
         internal static string SimWaermedeckungName => MyResource.Resource.KI_DLG_SIM_WDECKUNG_NAME;
@@ -935,6 +937,8 @@
 
         internal static string KkonfBereitschaftName => MyResource.Resource.SIMERG_LBL_BEREITSCHAFT;
         internal static string KkonfBereitschaftErl => MyResource.Resource.KI_DLG_KKONF_BEREITSCHAFT_ERL;
+        internal static string KkonfHeizgrenzeName => MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE;
+        internal static string KkonfHeizgrenzeErl => MyResource.Resource.KI_DLG_KKONF_HEIZGRENZE_ERL;
         internal static string KkonfBetriebsartName => MyResource.Resource.SIMERG_GRP_BETRIEBSART;
         internal static string KkonfBetriebsartErl => MyResource.Resource.KI_DLG_KKONF_BETRIEBSART_ERL;
         internal static string KkonfGrenzeName => MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE;
@@ -2879,6 +2883,9 @@
         internal static string BkbAusgabeErl => MyResource.Resource.KI_DLG_BKB_AUSGABE_ERL;
         internal static string BkbZielName => MyResource.Resource.BK_BER_LBL_ZIEL;
         internal static string BkbZielErl => MyResource.Resource.KI_DLG_BKB_ZIEL_ERL;
+        // Nach #582: das Szenario der Wirtschaftlichkeit im Bericht
+        internal static string BkbSzenarioName => MyResource.Resource.BK_BER_LBL_SZENARIO;
+        internal static string BkbSzenarioErl => MyResource.Resource.KI_DLG_BKB_SZENARIO_ERL;
         internal static string BkbVariantenName => MyResource.Resource.KI_DLG_BKB_VARIANTEN_NAME;
         internal static string BkbVariantenErl => MyResource.Resource.KI_DLG_BKB_VARIANTEN_ERL;
         internal static string BkbBausteineName => MyResource.Resource.BK_BER_LBL_BAUSTEINE;
@@ -2889,6 +2896,9 @@
         // BV-E7: die Excel-Vorlage (KiDialoge.BerichtExcelVorlagenfeld)
         internal static string BkbExcelVorlageName => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_NAME;
         internal static string BkbExcelVorlageErl => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_ERL;
+        // BV-E1: die Suche des Platzhalterkatalogs (KiDialoge.BerichtKatalogsuchfeld)
+        internal static string BkbKatalogsucheName => MyResource.Resource.KI_DLG_BKB_KATALOGSUCHE_NAME;
+        internal static string BkbKatalogsucheErl => MyResource.Resource.KI_DLG_BKB_KATALOGSUCHE_ERL;
 
         // ---- „Projekt speichern unter"
         internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;
@@ -3190,6 +3200,11 @@
         // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile
         internal static string AdmsetBerichtLogoName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_LOGO);
         internal static string AdmsetBerichtLogoErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_LOGO_ERL;
+        // Die zwei Vorgaben der Installation (BerichtVorlageWord, BerichtVorlageExcel)
+        internal static string AdmsetBerichtVorgabeWordName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORGABE_WORD);
+        internal static string AdmsetBerichtVorgabeWordErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_VORGABE_WORD_ERL;
+        internal static string AdmsetBerichtVorgabeExcelName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORGABE_EXCEL);
+        internal static string AdmsetBerichtVorgabeExcelErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_VORGABE_EXCEL_ERL;
 
         // ---- „Alle Daten" der Erzeugermasken des Projekts
 

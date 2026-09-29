@@ -194,7 +194,11 @@ namespace Auslieferungsvorlage.Tests
             // 152 seit KP1a der Gebaeudesimulation (Schemaschritt 151, KonditionierungSchema, #583):
             // Tab_Konditionierungskalender, Tab_Konditionierungsperiode und Tab_Konditionierungsvorgabe,
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
-            Assert.Equal(152, befund.Strict);
+            //
+            // 153 seit KP1b der Gebaeudesimulation (Schemaschritt 152, KonditionierungVorlagenSchema):
+            // Tab_Konditionierungsvorlage_STAMM, STRICT von ihrer ersten Zeile an; Kalender- und
+            // Vorgabetabelle bleiben nach ihrem Neubau STRICT (der Zieltext traegt ") STRICT" weiter).
+            Assert.Equal(153, befund.Strict);
         }
 
         // =============================================================================
