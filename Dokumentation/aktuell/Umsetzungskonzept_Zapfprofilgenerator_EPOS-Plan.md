@@ -4637,3 +4637,35 @@ erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bric
 | #594 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
 | #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
 | Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N37 (29.09.2026) — Welle #602: Verfahrensvolumina als Wahl der Füllstandslinie; K5 ruht
+
+**Wortlaut** (Anwender, 29.09.2026): „setze um: die Volumina der einzelnen Verfahren als Wahl der
+Füllstandslinie“ und „keine eigenen Messobjekte vorerst“. Protokoll
+[Verfahrensvolumina](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Fuellstand_Verfahrensvolumina.md).
+
+**(a) Verfahrensvolumina (#602).** N36 (d) gilt nicht mehr, soweit es die Verfahren ausschloss: Die Wahl
+„Speichergröße der Füllstandslinie“ führt je Verfahren des Vergleichs einen Eintrag — Bezug = Verfahren + 4:
+5 profilbasiert, 6 DIN 4708, 7 Faustwert mit Gleichzeitigkeit, 8 klassischer Faustwert (nachrichtlich).
+Das Volumen ist die Zahl der Vergleichszeile samt ihrem Gültigkeitsmerkmal; ein Verfahren ohne Volumen
+steht benannt gesperrt. Die Vorgabe löst nie auf ein Verfahren auf. Nur Ergebnisfelder und Darstellung,
+kein Rechenweg der Simulation.
+
+**(b) Schemaschritt 155** (`TwwFuellstandSchema.SCHRITT = KesselHeizgrenzeSchema.SCHRITT + 1`): Neubau
+von `Tab_TwwProjekt` mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` über dasselbe Rezept wie
+Schritt 153 (`TwwBezugsartSchema.Neubau`), kein DML, Grundschema = Schritt; Eintrag in
+`Paketanhebung.STUFEN` (`Art.Ddl`, ältere Pakete tragen 1–4). Testdatenbank: Zellvergleich allein
+`SchemaVersion` 154 → 155, im Schema die Prüfklausel; `Tab_TwwProjekt` von 1045 zellgleich.
+
+**(c) K5 ruht.** Eigene Messobjekte werden vorerst nicht eingespielt. Damit ruhen auch die Bestätigung
+von ZU35 an eigenen Objekten, die √N-Skalierung und die Gleichzeitigkeit großer Hotels sowie der
+Jahresgang aus einer eigenen Hotelmessung (N34, Validierungsbericht 8.6). Das Validierungswerkzeug
+bleibt für offene Fremdreihen nutzbar; der Versand der Datenanfragen ist davon getrennt offen.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #602 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
+| K5 | eigene Messobjekte | Anwender | auf Zuruf |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
