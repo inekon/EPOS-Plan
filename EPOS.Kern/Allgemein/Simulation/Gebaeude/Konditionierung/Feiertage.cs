@@ -93,7 +93,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Tag und Monat als Jahrestag im <b>Gemeinjahr</b> (1 … 365). Der 29. Februar kommt im
-        /// Gemeinjahr nicht vor; er fällt auf den 1. März — eine Feiertagsregel trifft ihn nie.
+        /// Gemeinjahr nicht vor und ergibt −1 wie jedes unmögliche Datum (B13: im Dialog eine
+        /// Fehleingabe, <see cref="Ferienzeit.Jahrestag(string, string)"/>); eine Feiertagsregel trifft
+        /// ihn nie.
         /// </summary>
         public static int Gemeinjahrestag(int monat, int tagImMonat)
         {
