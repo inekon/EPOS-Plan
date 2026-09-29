@@ -70,6 +70,7 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
             Assert.True(KonditionierungSchema.Vollstaendig());
+            // Die Kette bis zum Ziel haelt KonditionierungVorlagenSchemaTests (KP-S1v folgt auf 151).
             Assert.True(SchemaStand.Zielversion >= KonditionierungSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungSchema.SCHRITT + ".");
 

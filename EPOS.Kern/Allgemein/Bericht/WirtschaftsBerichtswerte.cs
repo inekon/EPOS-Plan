@@ -148,15 +148,19 @@ namespace WindowsFormsApplication1
             Versuche(() => _ = w.Parameternachweis(kultur));
             Versuche(() => _ = w.Bilanzkonvention);
             Versuche(() => _ = w.Erzeuger);
+            // Fachvorgabe E31: Der Baustein prüft die Aktualität im Szenario des Berichts, das erst die Konfiguration
+            // des Schreibers nennt — gefragt wird deshalb für jedes der drei Szenarien (je Ergebnis eine Zeile).
             foreach (VariantenDaten v in daten.Varianten)
-            {
-                VariantenDaten stand = v;
-                Versuche(() =>
+                foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
                 {
-                    WirtschaftlichkeitErgebnis e = w.Erwartet(stand.IdProjekt);
-                    if (e != null) _ = w.ErgebnisAktuell(e);
-                });
-            }
+                    VariantenDaten stand = v;
+                    string sz = szenario;
+                    Versuche(() =>
+                    {
+                        WirtschaftlichkeitErgebnis e = w.ImSzenario(stand.IdProjekt, sz);
+                        if (e != null) _ = w.ErgebnisAktuell(e);
+                    });
+                }
             Versuche(() => _ = w.Zeilen(w.IdReferenzTafel));
             Versuche(() => _ = w.KwkgAktiv);
             if (w.Bedarf.Verlauf)
@@ -177,8 +181,9 @@ namespace WindowsFormsApplication1
                         VariantenDaten stand = v;
                         Versuche(() =>
                         {
-                            WirtschaftlichkeitErgebnis erw = w.Erwartet(stand.IdProjekt);
-                            if (erw != null && w.ErgebnisAktuell(erw)) _ = w.Emissionsbilanz(stand.IdProjekt);
+                            // E31: der Baustein fragt das Ergebnis im Szenario des Berichts — irgendein aktuelles genügt.
+                            if (WirtschaftlichkeitSzenario.Alle.Any(sz => w.ErgebnisAktuell(w.ImSzenario(stand.IdProjekt, sz))))
+                                _ = w.Emissionsbilanz(stand.IdProjekt);
                         });
                     }
                 });
@@ -323,7 +328,29 @@ namespace WindowsFormsApplication1
         /// <summary>Das Ergebnis „Erwartet“ eines Stands in <see cref="Ergebnisse"/>; <c>null</c> = keins.</summary>
         public WirtschaftlichkeitErgebnis Erwartet(int idProjekt)
         {
-            return Ergebnisse.FirstOrDefault(x => x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+            return ImSzenario(idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+        }
+
+        /// <summary>Das Ergebnis eines Stands in einem Szenario in <see cref="Ergebnisse"/>; <c>null</c> = keins.</summary>
+        public WirtschaftlichkeitErgebnis ImSzenario(int idProjekt, string szenario)
+        {
+            return Ergebnisse.FirstOrDefault(x => x.IdProjekt == idProjekt && x.Szenario == szenario);
+        }
+
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): der Schlüssel der
+        /// Konfiguration (<see cref="BerichtsKonfiguration.Szenario"/>, Vorgabe Erwartet). Fehlt für einen der Stände
+        /// des Berichts das Ergebnis dieses Szenarios, gilt für den ganzen Baustein Erwartet — keine Tafel mischt die
+        /// Zahlen zweier Szenarien —, und <paramref name="ohneErgebnis"/> nennt die Stände (sonst leer).
+        /// </summary>
+        public string Berichtsszenario(BerichtsKonfiguration konfig, out List<string> ohneErgebnis)
+        {
+            ohneErgebnis = new List<string>();
+            string szenario = WirtschaftlichkeitSzenario.Normiere(konfig?.Szenario);
+            if (szenario == WirtschaftlichkeitSzenario.ERWARTET) return szenario;
+            foreach (VariantenDaten v in _daten.Varianten)
+                if (ImSzenario(v.IdProjekt, szenario) == null) ohneErgebnis.Add(v.IstStamm ? "Stamm" : v.Anzeige);
+            return ohneErgebnis.Count == 0 ? szenario : WirtschaftlichkeitSzenario.ERWARTET;
         }
 
         /// <summary>Die Nachweiszeile des Parametersatzes in einer Kultur (<see cref="WirtschaftlichkeitParameter.Nachweis"/>).</summary>

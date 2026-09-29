@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
         /// Werkzeug, Zielstand, Paketanhebung und Tests verweisen hierher. Wird er umnummeriert,
         /// ändert sich nur diese Zeile.
         /// </summary>
-        public const int SCHRITT = KonditionierungSchema.SCHRITT + 1;
+        public const int SCHRITT = KonditionierungVorlagenSchema.SCHRITT + 1;
 
         /// <summary>Die Tabellen mit einer Bezugsart samt Prüfklausel — die Nutzungsart zuerst.</summary>
         public static readonly IReadOnlyList<string> TABELLEN = new[]

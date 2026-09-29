@@ -116,6 +116,7 @@ namespace WindowsFormsApplication1
                 ["LabelBausteine"] = MyResource.Resource.BK_BER_LBL_BAUSTEINE,
                 ["LabelRechnen"] = MyResource.Resource.BK_BER_LBL_RECHNEN,
                 ["LabelAusgabe"] = MyResource.Resource.BK_BER_LBL_AUSGABE,
+                ["LabelSzenario"] = MyResource.Resource.BK_BER_LBL_SZENARIO,
                 ["LabelZiel"] = MyResource.Resource.BK_BER_LBL_ZIEL,
                 ["LabelFortschritt"] = Text("BKS_LBL_FORTSCHRITT", "Fortschritt"),
                 ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
@@ -207,6 +208,13 @@ namespace WindowsFormsApplication1
             stand.AktiveBausteine = aktiv;
 
             stand.AusgabeId = AusgabeNummer(konfig.Ausgabe);
+            // Fachvorgabe E31 (Nach #582): das Szenario des Wirtschaftlichkeitsberichts — dieselben Nummern und Namen
+            // (WIRT_SZEN_*) wie auf der Wirtschaftlichkeitsseite, gemerkt in der Konfiguration des Stammprojekts.
+            var szenarien = new List<(int, string)>();
+            for (int i = 0; i < SZENARIEN.Length; i++)
+                szenarien.Add((i, WirtschaftlichkeitSzenario.Name(SZENARIEN[i], MyResource.Resource.Culture)));
+            stand.Szenarien = szenarien;
+            stand.SzenarioId = SzenarioNummer(konfig.Szenario);
             // E3/8: Der Vorgabeordner kommt ueber Dienste.Pfade statt ueber
             // Environment.SpecialFolder - das ist Windows und in EPOS.UI.Daten
             // verboten (Waechter SimulationAnsichtQuelleTests). Unter Windows
@@ -682,6 +690,32 @@ namespace WindowsFormsApplication1
             return nummer == 2 ? AUSGABE_BEIDE : (nummer == 1 ? AUSGABE_EXCEL : AUSGABE_WORD);
         }
 
+        /// <summary>
+        /// Die Szenarien der Wirtschaftlichkeit als Nummer — dieselbe Folge wie auf der Wirtschaftlichkeitsseite
+        /// (<c>WirtschaftlichkeitSeiteGaben.SZENARIEN</c>): 0 = Erwartet, 1 = Günstig, 2 = Ungünstig; so bildet die
+        /// Vorbelegung aus „Zum Bericht ›“ ihre Nummer ohne Umweg ab. Die PERSISTENZWERTE kennt nur diese Hülle.
+        /// </summary>
+        private static readonly string[] SZENARIEN =
+        {
+            WirtschaftlichkeitSzenario.ERWARTET,
+            WirtschaftlichkeitSzenario.BEST,
+            WirtschaftlichkeitSzenario.WORST
+        };
+
+        /// <summary>Die Nummer eines gemerkten Szenarios; ohne oder unbekannt 0 (Erwartet).</summary>
+        internal static int SzenarioNummer(string persistenz)
+        {
+            int i = Array.IndexOf(SZENARIEN, WirtschaftlichkeitSzenario.Normiere(persistenz));
+            return i < 0 ? 0 : i;
+        }
+
+        /// <summary>Der Schlüssel zu einer Nummer (Fachvorgabe E31: gespeichert wird der Schlüssel); eine unbekannte
+        /// Nummer heißt Erwartet.</summary>
+        internal static string SzenarioWert(int nummer)
+        {
+            return nummer > 0 && nummer < SZENARIEN.Length ? SZENARIEN[nummer] : WirtschaftlichkeitSzenario.ERWARTET;
+        }
+
         private static BerichtsKonfiguration AusAuftrag(BerichtAuftrag a)
         {
             var k = new BerichtsKonfiguration();
@@ -693,6 +727,7 @@ namespace WindowsFormsApplication1
             k.NeuRechnen = true;
             k.Ausgabe = AusgabeWert(a.AusgabeId);
             k.ZielOrdner = a.Zielordner ?? "";
+            k.Szenario = SzenarioWert(a.SzenarioId);
             return k;
         }
 

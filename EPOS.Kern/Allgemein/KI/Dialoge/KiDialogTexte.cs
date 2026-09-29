@@ -2879,6 +2879,9 @@
         internal static string BkbAusgabeErl => MyResource.Resource.KI_DLG_BKB_AUSGABE_ERL;
         internal static string BkbZielName => MyResource.Resource.BK_BER_LBL_ZIEL;
         internal static string BkbZielErl => MyResource.Resource.KI_DLG_BKB_ZIEL_ERL;
+        // Nach #582: das Szenario der Wirtschaftlichkeit im Bericht
+        internal static string BkbSzenarioName => MyResource.Resource.BK_BER_LBL_SZENARIO;
+        internal static string BkbSzenarioErl => MyResource.Resource.KI_DLG_BKB_SZENARIO_ERL;
         internal static string BkbVariantenName => MyResource.Resource.KI_DLG_BKB_VARIANTEN_NAME;
         internal static string BkbVariantenErl => MyResource.Resource.KI_DLG_BKB_VARIANTEN_ERL;
         internal static string BkbBausteineName => MyResource.Resource.BK_BER_LBL_BAUSTEINE;

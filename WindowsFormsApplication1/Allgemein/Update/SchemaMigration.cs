@@ -4622,12 +4622,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KONDITIONIERUNG = KonditionierungSchema.SCHRITT;
 
+        // ---- Stufe KP1b, Welle W1 (Konzept Konditionierungsprofile 5.1/5.6/5.7, Entwurf KP1b
+        //      Abschnitt 3): Vorlagen, Fremdschluessel, Eindeutigkeit, Nachtauskuehlstunden ----
+
+        /// <summary>
+        /// Schritt <see cref="KonditionierungVorlagenSchema.SCHRITT"/> — <b>die
+        /// Konditionierungsvorlagen</b> (Schritt KP-S1v, Stufe KP1b; Konzept Konditionierungsprofile
+        /// 5.1, 5.6 und 5.7). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG"/> und braucht ihn: Er
+        /// baut dessen Kalender- und Vorgabetabelle neu.
+        ///
+        /// <para><b>Vier Teile in EINEM Vorgang mit abgeschalteten Fremdschlüsseln</b>
+        /// (<see cref="KonditionierungVorlagenSchema.Ausfuehren"/>): die STRICT-Tabelle
+        /// <c>Tab_Konditionierungsvorlage_STAMM</c> mit der Namensregel je Größe; der Fremdschlüssel
+        /// <c>ID_Vorlage</c> → Vorlage <c>ON DELETE CASCADE</c> an Kalender- und Vorgabetabelle per
+        /// Tabellenneubau nach Schritt 96 — umbenannt unter <c>legacy_alter_table = ON</c>, sonst
+        /// zeigte die Periodentabelle danach auf den Hilfsnamen; acht Teilindizes der Eindeutigkeit
+        /// je Eigentümerart; <c>Nachtauskuehlstunden_H</c> an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Vorlagentabelle entsteht leer, der Neubau erhält IDs
+        /// und Zählerstände, die Ergebnisspalten liest kein Rechenweg. Gelöscht werden nur Zeilen,
+        /// deren <c>ID_Vorlage</c> auf keine Vorlage zeigt (benannt, erwartet 0); DUBLETTEN brechen
+        /// den Schritt benannt ab, nichts wird still gelöscht. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG_VORLAGEN = KonditionierungVorlagenSchema.SCHRITT;
+
         // ---- Auftrag A2 (Zapfprofilgenerator, Nachtrag N34, Weg 3 der Hotel-Durchsicht):
         //      die eigene Bezugsart Zimmer und die frueheren Staende der Paketzeilen -----------------
 
         /// <summary>
         /// Schritt <see cref="TwwBezugsartSchema.SCHRITT"/> — <b>die Bezugsart Zimmer</b> (Auftrag A2,
-        /// Entscheide E-A2-1, E-A2-3 und E-A2-4). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG"/>
+        /// Entscheide E-A2-1, E-A2-3 und E-A2-4). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG_VORLAGEN"/>
         /// ohne Reihenfolgebedingung; er braucht die Spalte <c>Bezugsart</c> am Bedarfstag aus Schritt
         /// 124.
         ///
@@ -6654,10 +6679,25 @@ namespace WindowsFormsApplication1
                         "Kalender rechnet der Gebaeudeeingang woertlich wie bisher.",
                         Schritt_Konditionierung),
 
+            // STUFE KP1b, Welle W1 (Konzept Konditionierungsprofile 5.1/5.6/5.7) - Vorlagen,
+            // Fremdschluessel und Eindeutigkeit der Konditionierung, Nachtauskuehlstunden. Der
+            // Neubau laeuft ueber den Kern wie Schritt 96; die Quelle ist KonditionierungVorlagenSchema,
+            // die Nummer steht allein dort. Er steht NACH 151 und muss es: Er baut dessen Tabellen um.
+            new Schritt(SCHRITT_KONDITIONIERUNG_VORLAGEN,
+                        "Konditionierungsvorlagen (Tab_Konditionierungsvorlage_STAMM), Fremdschluessel " +
+                        "ID_Vorlage an Kalender und Vorgaben, Teilindizes der Eindeutigkeit, " +
+                        "Nachtauskuehlstunden_H an den Ergebnistabellen",
+                        "Eine Vorlage haette keinen Ort, eine geloeschte Vorlage liesse ihre Kalender, " +
+                        "Perioden und Vorgaben als Waisen zurueck, die kein foreign_key_check meldet, und " +
+                        "zwei Kalender derselben Groesse eines Eigentuemers hielte allein der Controller " +
+                        "auseinander. KEIN Rechenergebnis aendert sich - die Vorlagentabelle entsteht LEER, " +
+                        "der Neubau erhaelt jede Zeile samt ID, die Ergebnisspalten liest kein Rechenweg.",
+                        Schritt_KonditionierungVorlagen),
+
             // AUFTRAG A2 (Zapfprofilgenerator, N34, Weg 3) - die Bezugsart Zimmer: Neubau der zwei
             // Tww-Tabellen mit einer Bezugsart (Pruefklausel 1..8) und die Nachfuehrung der
             // gespeicherten Paketzeilen in einem frueheren Stand. Die Quelle ist TwwBezugsartSchema,
-            // die Nummer steht allein dort. Er steht NACH 151 ohne Reihenfolgebedingung.
+            // die Nummer steht allein dort. Er steht NACH 152 ohne Reihenfolgebedingung.
             new Schritt(SCHRITT_TWW_BEZUGSART_ZIMMER,
                         "Zapfprofilgenerator: Bezugsart Zimmer (Tab_TwwNutzungsart_STAMM, Tab_TwwBedarfstag_STAMM " +
                         "neu gebaut, Pruefklausel 1..8) und die Paketzeile des Hotels unter ihrem heutigen Namen",
@@ -11448,6 +11488,79 @@ namespace WindowsFormsApplication1
                     KonditionierungSchema.TAB_KALENDER + ", " + KonditionierungSchema.TAB_PERIODE + ", " +
                     KonditionierungSchema.TAB_VORGABE + ") angelegt, neun Indizes. KEIN DML; die Tabellen " +
                     "entstehen LEER, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt KP-S1v — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KONDITIONIERUNG_VORLAGEN"/>, Rezept und Falle bei
+        /// <see cref="KonditionierungVorlagenSchema"/>.
+        ///
+        /// <para><b>Wie Schritt 96:</b> Der Umbau steht nicht hier — er braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt. Jede Berichtszeile des Kerns
+        /// geht ins Protokoll, auch die Zahl der gelöschten Waisen; ein benannter Abbruch
+        /// (Dubletten, Stelle nicht genau einmal, <c>foreign_key_check</c>) lässt die Datei, wie sie
+        /// war, und der nächste Lauf versucht es wieder.</para>
+        /// </summary>
+        private static bool Schritt_KonditionierungVorlagen(Lauf l)
+        {
+            string nr = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[]
+                     {
+                         KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.TAB_PERIODE,
+                         KonditionierungSchema.TAB_VORGABE, ErgebnisGebaeudeSchema.TAB, ZonenkopplungSchema.TAB_ERGEBNIS
+                     })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var bericht = new List<string>();
+            int aenderungen;
+
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    aenderungen = KonditionierungVorlagenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist " +
+                            "wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            // Die Nachprobe: Steht jetzt noch ein Teil offen, hat der Schritt ihn nicht bekommen.
+            if (!KonditionierungVorlagenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach dem Schritt steht die Vorlagentabelle, ein Fremdschluessel, ein " +
+                                  "Teilindex oder eine Ergebnisspalte weiter nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": " + aenderungen.ToString(CultureInfo.InvariantCulture) + " Aenderung(en) am " +
+                    "Schema; Vorlagentabelle, Fremdschluessel " + KonditionierungVorlagenSchema.SPALTE_ID_VORLAGE +
+                    " ON DELETE CASCADE, acht Teilindizes und " +
+                    KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN + " stehen. Werte, Ids und " +
+                    "Zaehlerstaende bleiben - der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

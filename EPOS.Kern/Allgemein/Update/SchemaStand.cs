@@ -683,6 +683,15 @@ namespace WindowsFormsApplication1
         /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
         /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
         /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
+        /// Mit den KONDITIONIERUNGSVORLAGEN (Schritt KP-S1v, Stufe KP1b; Konzept
+        /// Konditionierungsprofile 5.1, 5.6 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/>: <c>Tab_Konditionierungsvorlage_STAMM</c>
+        /// mit ihrer Namensregel, der Fremdschlüssel <c>ID_Vorlage</c> an Kalender- und
+        /// Vorgabetabelle per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+        /// <c>Nachtauskuehlstunden_H</c> an beiden Ergebnistabellen
+        /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
+        /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
+        /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
         /// Mit der BEZUGSART ZIMMER des Zapfprofilgenerators (Auftrag A2, Entscheide E-A2-1, E-A2-3
         /// und E-A2-4; Nachtrag N34) steht das Ziel auf <see cref="TwwBezugsartSchema.SCHRITT"/>:
         /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> neu gebaut mit der
