@@ -18,7 +18,7 @@ Rechenweg, keine Referenzbasis, kein neuer Platzhalter, keine Katalogfassung, ke
 | Oberfläche | Naht `HerkunftDauerhaft`, Hülle, DTO `Originalstand`, Baustein `Vorlagenoriginalzeile.razor` | `fecb4f96` |
 | Tests | 5 Kernfälle, 3 Hüllenfälle, 3 bunit-Fälle | `b22e2721` |
 | Wiki, Papiere | Abschnitt „Vorlage auf der Berichtsseite“, dieses Protokoll, Indexzeile | Papier-Commit |
-| Pfad in der Zeile | Wortlaut mit Pfad, Kürzung, `Originalstand.Titel`, 2 Hüllen- und 1 bunit-Fall | `Pfad-Commit` |
+| Pfad in der Zeile | Wortlaut mit Pfad, Kürzung, `Originalstand.Titel`, 2 Hüllen- und 1 bunit-Fall | `93c15664` |
 
 ## 1 Befund
 
