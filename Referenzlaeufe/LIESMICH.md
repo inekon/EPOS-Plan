@@ -638,6 +638,21 @@ Nachträge unten gelten der Testdatenbank zwischen R23 und R24.
 > Linux **byte-gleich zu R24** (460/460 CSV, `vergleich` GESAMT PASS) — KP1b, die Bezugsart Zimmer und der
 > Schrittwechsel lassen die Basis stehen.
 
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 155, Basis unverändert.** Die Volumina der
+> einzelnen Verfahren als Wahl der Füllstandslinie (Auftrag F1, Umsetzungskonzept Zapfprofilgenerator N36 (d))
+> bringen den Schemaschritt **155** (`TwwFuellstandSchema`, Nummer als `KesselHeizgrenzeSchema.SCHRITT + 1`):
+> `Tab_TwwProjekt` nach dem Hausrezept neu gebaut mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` — 5 … 8 sind
+> die vier Verfahren des Verfahrensvergleichs —, Zeilen, IDs und Zähler unverändert, **kein DML**. Die
+> Testdatenbank wurde aus der Fassung `2e417b36…` (Schemastand 154) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen, ein zweiter Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Zellvergleich über
+> alle Tabellen: allein `Tab_Applikation.SchemaVersion` 154 → 155, im Schema die Prüfklausel von
+> `Tab_TwwProjekt` und in `sqlite_sequence` die Reihenfolge (gleiche Werte, `Tab_TwwProjekt` ans Ende gewandert —
+> Folge des Tabellenneubaus). Neue Fassung **71 622 656 Byte, LFS-SHA-256
+> `2b28fb6f4783e5c64df8c6e2d1691ffca53f362bc6a6735ca8d97fc612d6ee44`**. **Die Basis bleibt:** Die fünfzehn
+> Projekte rechnen darauf auf Linux byte-gleich zum Lauf auf der Fassung `2e417b36…` (460/460 CSV) und
+> `vergleich` gegen R24 meldet GESAMT PASS. `Tab_TwwProjekt` des Referenzprojekts 1045 bleibt zellgleich — die
+> Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt, und die Speicherauslegung ist nachrichtlich.
+
 ## Was hier liegt
 
 | Pfad | Inhalt |
