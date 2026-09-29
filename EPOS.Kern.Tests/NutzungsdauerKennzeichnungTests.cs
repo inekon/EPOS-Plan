@@ -22,7 +22,10 @@ namespace EPOS.Kern.Tests
         private const string VERMERK =
             "Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).";
 
-        /// <summary>Beschriftung und Vermerk des Katalogfeldes; nur dieses Feld trägt einen.</summary>
+        /// <summary>
+        /// Beschriftung und Vermerk des Katalogfeldes; außer ihm tragen nur die Kennlinienfelder des
+        /// Heizkessels einen Vermerk — „leer = Vorgabe" (Konzept Kesselkennlinie, Etappe E1).
+        /// </summary>
         [Theory]
         [InlineData(KatalogBrowserArt.Heizkessel)]
         [InlineData(KatalogBrowserArt.Bhkw)]
@@ -36,8 +39,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(VERMERK, nd.Hinweis);
             Assert.True(nd.Editierbar, "Die Spalte bleibt pflegbar — gekennzeichnet, nicht gesperrt.");
 
-            Assert.All(profil.Detailfelder.Where(f => f.Schluessel != KatalogBrowserProfil.FeldNutzungsdauer),
+            string[] kennlinie =
+            {
+                KatalogBrowserProfil.FeldTeillast30, KatalogBrowserProfil.FeldMindestleistung,
+                KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+            };
+            Assert.All(profil.Detailfelder.Where(f => f.Schluessel != KatalogBrowserProfil.FeldNutzungsdauer &&
+                                                      !kennlinie.Contains(f.Schluessel)),
                        f => Assert.Equal("", f.Hinweis));
+            Assert.All(profil.Detailfelder.Where(f => kennlinie.Contains(f.Schluessel)),
+                       f => Assert.Equal("leer = Vorgabe", f.Hinweis));
         }
 
         /// <summary>Beide Sprachen tragen die Kennzeichnung.</summary>

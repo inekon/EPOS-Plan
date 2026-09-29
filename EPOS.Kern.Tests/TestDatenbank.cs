@@ -793,6 +793,11 @@ namespace EPOS.Kern.Tests
                 // wiederholbar und KEIN DML - eine fertige Tabelle wird uebersprungen.
                 TwwFuellstandSchema.Ausfuehren(null);
 
+                // Schritt KesselKennlinieSchema.SCHRITT (Konzept Kesselkennlinie, Etappe E1, #569): fuenf
+                // Kennlinienspalten an Tab_Heizkessel_STAMM und Tab_Heizkessel. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN DML - die Spalten entstehen leer bzw. mit 0.
+                KesselKennlinieSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

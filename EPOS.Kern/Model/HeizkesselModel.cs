@@ -45,6 +45,34 @@ namespace WindowsFormsApplication1
         public int Vorlauf;
         public int Ruecklauf;
 
+        // --- Kennlinie (Konzept Kesselkennlinie 3.1, Schemaschritt KesselKennlinieSchema.SCHRITT) ---
+        //
+        // Leer (null) heisst „nicht gepflegt" und ist etwas anderes als 0: Was dann gilt, legen
+        // die Etappen E2 bis E4 fest (Normvorgaben, Entscheid F1). In E1 liest kein Rechenweg
+        // die Felder.
+
+        /// <summary>
+        /// Wirkungsgrad bei 30 % Last, heizwertbezogen, als Faktor (Konzept 3.1). Ein Wert über
+        /// 1,5 gilt als Prozentangabe (<see cref="KesselKennlinieWerte.AlsFaktor"/>).
+        /// <c>null</c> = nicht gepflegt.
+        /// </summary>
+        public double? Wirkungsgrad_Teillast30;
+
+        /// <summary>
+        /// Die Brennwertkennlinie rechnen? Zulässig nur bei <see cref="Brennwert"/> — die
+        /// Controller schreiben den Schalter nie ohne ihn.
+        /// </summary>
+        public bool Kennlinie_Brennwert;
+
+        /// <summary>Untere Modulationsgrenze [kW]; <c>null</c> = nicht gepflegt.</summary>
+        public double? Mindestleistung;
+
+        /// <summary>Brennstoff je Start [kWh]; <c>null</c> = nicht gepflegt.</summary>
+        public double? Anfahrverlust_kWh;
+
+        /// <summary>Mindestlaufzeit je Start im Takten [min]; <c>null</c> = nicht gepflegt.</summary>
+        public int? Mindestlaufzeit_min;
+
         public HeizkesselModel()
         {
             ID = 0;
@@ -69,6 +97,11 @@ namespace WindowsFormsApplication1
             Brennwert = false;
             Vorlauf = 0;
             Ruecklauf = 0;
+            Wirkungsgrad_Teillast30 = null;
+            Kennlinie_Brennwert = false;
+            Mindestleistung = null;
+            Anfahrverlust_kWh = null;
+            Mindestlaufzeit_min = null;
         }
     }
 }

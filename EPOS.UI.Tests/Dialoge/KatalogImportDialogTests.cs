@@ -211,16 +211,18 @@ public class KatalogImportDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// <b>Heizkessel</b> (Blatt 3, die Referenzausprägung): sieben Detailfelder,
+    /// <b>Heizkessel</b> (Blatt 3, die Referenzausprägung): neun Detailfelder,
     /// Titel und Filterbeschriftung aus dem Profil.
     /// </summary>
     [Fact]
-    public void Heizkessel_zeigt_seine_sieben_Detailfelder()
+    public void Heizkessel_zeigt_seine_neun_Detailfelder()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel);
 
+        // Neun seit der Kesselkennlinie (Etappe E1): dazu eta bei 30 % Last und die
+        // kleinste Leistung aus Satz 710.01.
         Assert.Equal("Heizkessel Einlesen", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal(7, cut.FindAll(".epos-katalogimport-details label").Count);
+        Assert.Equal(9, cut.FindAll(".epos-katalogimport-details label").Count);
 
         string felder = cut.Find(".epos-katalogimport-details").TextContent;
         Assert.Contains("Name:", felder);
@@ -229,11 +231,35 @@ public class KatalogImportDialogTests : EposBunitContext
         Assert.Contains("thermische Leistung: [kWth]", felder);
         Assert.Contains("Brennstoff:", felder);
         Assert.Contains("Wirkungsgrad: [%]", felder);
+        Assert.Contains("Wirkungsgrad bei 30 % Last: [%]", felder);
+        Assert.Contains("Mindestleistung: [kW]", felder);
         Assert.Contains("Bereitschaftsverluste: [kW]", felder);
 
         // S3.4: Die gefilterte Groesse ist eine SPALTE geworden - der Kopf traegt
         // sie ohne "von:", denn ein Spaltenkopf ist keine Feldbeschriftung.
         Assert.Contains("Th. Leistung [kW]", cut.Find("thead").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Jede Beschriftung ist übersetzt.</b> <see cref="Texte.Zu"/> führt die Schlüssel
+    /// einzeln; einer, den es nicht kennt, stünde als „IMP_…“ auf dem Schirm — so geschehen
+    /// mit den zwei Detailfeldern der Kesselkennlinie, bis diese Probe dazukam.
+    /// </summary>
+    [Fact]
+    public void Jede_Auspraegung_uebersetzt_ihre_Beschriftungen()
+    {
+        foreach (KatalogImportArt art in Enum.GetValues<KatalogImportArt>())
+        {
+            KatalogImportProfil p = KatalogImportProfil.Finde(art, Texte.Zu);
+            foreach (ImportDetailfeld f in p.Detailfelder)
+            {
+                Assert.DoesNotContain("IMP_", f.Bezeichnung ?? "", StringComparison.Ordinal);
+                Assert.DoesNotContain("IMP_", f.Einheit ?? "", StringComparison.Ordinal);
+            }
+            foreach (KatalogImportSpalte s in p.Listenspalten)
+                Assert.DoesNotContain("IMP_", s.Titel ?? "", StringComparison.Ordinal);
+            Assert.DoesNotContain("IMP_", p.Hinweis ?? "", StringComparison.Ordinal);
+        }
     }
 
     /// <summary><b>Pufferspeicher</b> (Blatt 20): fünf Detailfelder, Volumenfilter.</summary>

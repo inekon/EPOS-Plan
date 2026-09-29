@@ -113,7 +113,7 @@
                         FehlerZustand="BeiFehlerZustand" />
 
             <Schalter Bezeichnung="@LabelBrennwert" Wert="@Daten.Brennwert"
-                      WertChanged="w => Daten.Brennwert = w" />
+                      WertChanged="BeiBrennwert" />
 
             <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlaufKurz"
                           Wert="@Daten.Vorlauf" WertChanged="w => Daten.Vorlauf = w"
@@ -123,6 +123,41 @@
                           FehlerZustand="BeiFehlerZustand" />
                 </KindInhalt>
             </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* KENNLINIE (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Anders als oben heisst
+       ein LEERES Feld hier nicht 0, sondern "nicht gepflegt" - dann gilt die Vorgabe
+       (Entscheid F1); der Platzhalter sagt es im Feld. Die Brennwertkennlinie ist nur
+       beim Brennwertkessel bedienbar; der Controller lehnt sie sonst benannt ab. *@
+    <Gruppenkopf Titel="@GruppeKennlinie">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelTeillast30" Einheit="@HinweisTeillast30"
+                        Feldname="@LabelTeillast30Kurz" Platzhalter="@PlatzhalterVorgabe"
+                        Wert="@Daten.Wirkungsgrad_Teillast30"
+                        WertChanged="w => Daten.Wirkungsgrad_Teillast30 = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Schalter Bezeichnung="@LabelKennlinieBrennwert" Wert="@Daten.Kennlinie_Brennwert"
+                      Aktiv="@Daten.Brennwert"
+                      WertChanged="w => Daten.Kennlinie_Brennwert = w && Daten.Brennwert" />
+            <Zahlenfeld Bezeichnung="@LabelMindestleistung" Einheit="kW"
+                        Feldname="@LabelMindestleistungKurz" Platzhalter="@PlatzhalterVorgabe" Min="0"
+                        Wert="@Daten.Mindestleistung" WertChanged="w => Daten.Mindestleistung = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Zahlenfeld Bezeichnung="@LabelAnfahrverlust" Einheit="kWh"
+                        Feldname="@LabelAnfahrverlustKurz" Platzhalter="@PlatzhalterVorgabe" Min="0"
+                        Wert="@Daten.Anfahrverlust_kWh" WertChanged="w => Daten.Anfahrverlust_kWh = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Ganzzahlfeld Bezeichnung="@LabelMindestlaufzeit" Einheit="min"
+                          Feldname="@LabelMindestlaufzeitKurz" Platzhalter="@PlatzhalterVorgabe"
+                          Min="1" Max="60"
+                          Wert="@Daten.Mindestlaufzeit_min" WertChanged="w => Daten.Mindestlaufzeit_min = w"
+                          FehlerZustand="BeiFehlerZustand" />
+                </KindInhalt>
+            </Formularraster>
+            <p class="epos-leisezeile">@HinweisKennlinie</p>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -235,6 +270,22 @@
     [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
+
+    // Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1).
+    [Parameter] public string GruppeKennlinie { get; set; } = "Kennlinie";
+    [Parameter] public string LabelTeillast30 { get; set; } = "Wirkungsgrad bei 30 % Last:";
+    [Parameter] public string LabelTeillast30Kurz { get; set; } = "Wirkungsgrad bei 30 % Last";
+    [Parameter] public string HinweisTeillast30 { get; set; } = "(z. B. 1,05)";
+    [Parameter] public string LabelKennlinieBrennwert { get; set; } = "Brennwertkennlinie";
+    [Parameter] public string LabelMindestleistung { get; set; } = "Mindestleistung:";
+    [Parameter] public string LabelMindestleistungKurz { get; set; } = "Mindestleistung";
+    [Parameter] public string LabelAnfahrverlust { get; set; } = "Anfahrverlust je Start:";
+    [Parameter] public string LabelAnfahrverlustKurz { get; set; } = "Anfahrverlust je Start";
+    [Parameter] public string LabelMindestlaufzeit { get; set; } = "Mindestlaufzeit:";
+    [Parameter] public string LabelMindestlaufzeitKurz { get; set; } = "Mindestlaufzeit";
+    [Parameter] public string PlatzhalterVorgabe { get; set; } = "Vorgabe";
+    [Parameter] public string HinweisKennlinie { get; set; } =
+        "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel.";
 
     // HIER STANDEN DIE TEXTE der Gruppen "Kosten" (GruppeKosten, LabelInvest,
     // LabelInvestKurz, LabelWartung, LabelWartungKurz, LabelWartungEinheit,
@@ -373,6 +424,16 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Der Schalter Brennwertkessel: Fällt er, fällt die Brennwertkennlinie mit — sie ist nur
+    /// beim Brennwertkessel zulässig (Konzept Kesselkennlinie 3.1).
+    /// </summary>
+    private void BeiBrennwert(bool wert)
+    {
+        Daten.Brennwert = wert;
+        if (!wert) Daten.Kennlinie_Brennwert = false;
     }
 
     private void BeiName(string wert)

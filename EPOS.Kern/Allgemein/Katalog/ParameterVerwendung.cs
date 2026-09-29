@@ -250,7 +250,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 1. Heizkessel — Tab_Heizkessel_STAMM (23 Spalten)
+        // 1. Heizkessel — Tab_Heizkessel_STAMM (28 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -322,7 +322,21 @@ namespace WindowsFormsApplication1
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "HeizkesselStammCtrl.Ueberschreiben (Schreibschutz der Auslieferung)"),
                 E("Wartungskosten_Einheit", t("KESSEL_WARTUNG_EINHEIT_LBL"), "", WIRT,
-                  "TechnikPlanwertCtrl.cs:823 (Bezugsgroesse der Wartungskosten)")
+                  "TechnikPlanwertCtrl.cs:823 (Bezugsgroesse der Wartungskosten)"),
+
+                // Die Kennlinie (Konzept Kesselkennlinie 3.1, Etappe E1): gepflegt in Editor und
+                // Aufklapper, gelesen vom Import (Satz 710.01) - gerechnet erst mit den Etappen E2
+                // (Teillast), E3 (Brennwert) und E4 (Takten). Bis dahin DLG, nicht SIM.
+                E("Wirkungsgrad_Teillast30", t("HZKK_LBL_TEILLAST30"), "", DLG,
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E2"),
+                E("Kennlinie_Brennwert", t("HZKK_LBL_KENNLINIE_BRENNWERT"), "", DLG,
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E3"),
+                E("Mindestleistung", t("HZKK_LBL_MINDESTLEISTUNG"), "kW", DLG,
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4"),
+                E("Anfahrverlust_kWh", t("HZKK_LBL_ANFAHRVERLUST"), "kWh", DLG,
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4"),
+                E("Mindestlaufzeit_min", t("HZKK_LBL_MINDESTLAUFZEIT"), "min", DLG,
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4")
             };
         }
 

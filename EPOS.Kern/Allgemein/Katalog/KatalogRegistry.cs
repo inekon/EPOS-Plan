@@ -186,9 +186,12 @@ namespace WindowsFormsApplication1
                 Tabelle = SchemaKatalog.TAB_HEIZKESSEL_STAMM,
                 AusschlussSpalten = new[] { "Investitionskosten", "Wartungskosten",
                     "Wartungskosten_Einheit", "Nutzungsdauer" },
+                // Konzept Kesselkennlinie 3.4 (Etappe E1): Brennwert aus der Bauart, eta30 und
+                // Mindestleistung aus Satz 710.01 - HeizkesselImportSatz.Vergleichswerte.
                 ImportSpalten = new[] { "Firma", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
                     "Wirkungsgrad_Öl", "Raumbedarf", "CO2", "SO2", "NOx", "CO", "Staub",
-                    "Betriebsbereitschaftverlust" }
+                    "Betriebsbereitschaftverlust", "Brennwert", "Wirkungsgrad_Teillast30",
+                    "Mindestleistung" }
             },
             new KatalogDefinition
             {

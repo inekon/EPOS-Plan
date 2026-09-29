@@ -127,6 +127,7 @@ namespace Auslieferungsvorlage
             bericht.Zeile("Ziel        " + (arg.Trocken ? "(--trocken: keine Datei)" : arg.Ziel));
             bericht.Zeile("Beispiele   " + (arg.Beispiele.Count == 0 ? "keine" : arg.Beispiele.Count + " Paket(e)"));
             bericht.Zeile("Tww-Paket   " + (arg.Katalogpaket ?? "keines"));
+            bericht.Zeile("Kesselkatalog " + (arg.Kesselkatalog ?? "keiner (Tab_Heizkessel_STAMM wie in der Quelle)"));
             string paketteil = TwwKataloge.PaketteilOrdner();
             bericht.Zeile("Paketteil   " + (paketteil ?? "(Repowurzel nicht gefunden)") + "   (frei, immer)");
             foreach (string b in arg.Beispiele) bericht.Zeile("            " + b);
@@ -174,6 +175,22 @@ namespace Auslieferungsvorlage
             }
 
             bau.PersonenbezugAbraeumen(sicht);
+
+            // ---- Schritt 3b: die Nachpflege des Kesselkatalogs aus VDI 3805 (Konzept
+            //      Kesselkennlinie, Entscheid F2) - nur mit --kesselkatalog. Allein
+            //      Tab_Heizkessel_STAMM; Projektkopien gibt es in der Vorlage ohnehin nicht mehr.
+            if (arg.Kesselkatalog != null)
+            {
+                bericht.Abschnitt("Schritt 3b — Kesselkatalog aus VDI 3805 Blatt 3");
+                var kk = new KesselkatalogNachpflege.Ergebnis();
+                List<KesselkatalogNachpflege.Dateisatz> saetze =
+                    KesselkatalogNachpflege.Lesen(arg.Kesselkatalog, kk, HeizkesselImportSatz.MaxBrennstoff());
+                KesselkatalogNachpflege.Nachpflegen(saetze, kk, trocken: false);
+                foreach (string zeile in KesselkatalogNachpflege.Bericht(kk, false)) bericht.Zeile(zeile);
+                if (kk.Zeiger.Count > 0)
+                    bericht.Zeile("WARNUNG " + kk.Zeiger.Count + " Kesseldatei(en) sind Git-LFS-Zeiger und wurden " +
+                                  "uebergangen - die Dateien unter VDI-3805-Daten/ aus Git LFS holen.");
+            }
 
             // ---- Schritt 3c: die Tww-Kataloge (eigene Regel, Katalogpaket) ----------
             var tww = new TwwKataloge(bericht);
