@@ -924,8 +924,8 @@ public class KiDialogkatalogTests : IDisposable
     /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
     /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" fünf
     /// Einstellwerte (Ausgabe, Zielordner, das Szenario des Wirtschaftlichkeitsberichts — Fachvorgabe E31 — und —
-    /// Berichtsvorlagen BV-E1 und BV-E7 — die Word- und die Excel-Vorlage, jeweils als Wahl) und drei Anzeigen — die zwei
-    /// Mengen stehen als Aufstellung.</para>
+    /// Berichtsvorlagen BV-E1 und BV-E7 — die Word- und die Excel-Vorlage, jeweils als Wahl, sowie die Suche des
+    /// Platzhalterkatalogs) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
     /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
@@ -938,13 +938,16 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
         Assert.Equal(6, ueb.Felder.Count);
-        Assert.Equal(8, ber.Felder.Count);
+        Assert.Equal(9, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("vorlage")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Vorlage", ber.FindeFeld("vorlage")!.Eigenschaftspfad);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("excel_vorlage")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.ExcelVorlage", ber.FindeFeld("excel_vorlage")!.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Text, ber.FindeFeld("katalogsuche")!.Typ);
+        Assert.Equal("BerichtSeiteKiSicht.Katalogsuche", ber.FindeFeld("katalogsuche")!.Eigenschaftspfad);
+        Assert.False(ber.FindeFeld("katalogsuche")!.NurLesen);
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 
@@ -1697,8 +1700,9 @@ public class KiDialogkatalogTests : IDisposable
             "Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =
             "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
-            "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle) und die zwei " +
-            "Aufstellungen; Zeugen sind BerichtSeiteTests und BerichtSeiteVorlagenTests",
+            "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle), die Suche des " +
+            "Platzhalterkatalogs und die zwei Aufstellungen; Zeugen sind BerichtSeiteTests und " +
+            "BerichtSeiteVorlagenTests",
         [KiMaskennamen.PROJEKT_KOPIE] =
             "bindet über die Sichtklasse ProjektKopieKiSicht auf die sieben privaten " +
             "Felder der Maske; Zeuge ist ProjektKopieDialogTests",

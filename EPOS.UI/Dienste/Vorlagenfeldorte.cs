@@ -184,6 +184,8 @@ public static class Vorlagenfeldorte
         O("tabelle.wirtschaft.szenarien", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.bandbreite");
         O("bild.wirtschaft.spanne", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "bild.spanne");
         O("bild.wirtschaft.kapitalwert_szenarien", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "bild.verlauf");
+        // Standwerte mit Positionsform (stand.<n>.…, variante.<n>.…): die Sensitivität nennt je Stand ihrer Tafel die
+        // Form mit Namen, Mehrjahrestafel und Zahlungsstrom die des Stands, den die Klappliste von Block 2 zeigt.
         O("stand.tabelle.sensitivitaet", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.sensitivitaet");
         O("tabelle.wirtschaft.kennzahlen", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.gliederung");
         O("tabelle.wirtschaft.kennzahlen.guenstig", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.gliederung");

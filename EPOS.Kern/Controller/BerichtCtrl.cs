@@ -293,8 +293,9 @@ namespace WindowsFormsApplication1
         /// <param name="englisch">Entsteht der Bericht auf Englisch? Sprache der Befunde und Texte.</param>
         /// <param name="sicht">Die Vergleichssicht der Ergebnisansicht: 1 oder 2 (Paarvergleich).</param>
         /// <param name="erzwingtWirtschaftlichkeit">Zweiter Einstieg „Bericht erzeugen“ der
-        /// Wirtschaftlichkeitsseite: Führt die Vorlage keinen Schlüssel der Wirtschaftlichkeit, bietet die
-        /// Rückfrage für diesen Lauf die Standardvorlage an und nennt die gewählte.</param>
+        /// Wirtschaftlichkeitsseite: Führt die Vorlage Platzhalter, aber keinen Schlüssel der Wirtschaftlichkeit,
+        /// bietet die Rückfrage für diesen Lauf die Standardvorlage an und nennt die gewählte; eine Vorlage ganz
+        /// ohne Platzhalter bekommt den Bericht an ihr Ende und fragt nicht.</param>
         public Startbefund PruefeVorStart(BerichtsKonfiguration konfig, bool englisch, int sicht,
                                           bool erzwingtWirtschaftlichkeit = false)
         {
@@ -315,7 +316,10 @@ namespace WindowsFormsApplication1
 
             bool sprache = befund?.SpracheAbweichend == true;
             bool sichtUnpassend = befund != null && sicht != 2 && NutztPaarvergleich(befund.Schluessel, projekte - 1);
-            bool ohneWirtschaft = erzwingtWirtschaftlichkeit && befund != null && befund.IstLesbar && !befund.HatWirtschaftlichkeit;
+            // Eine Vorlage ganz ohne Platzhalter bekommt den Bericht an ihr Ende (wie mit {{bericht.inhalt}}) und trägt
+            // damit auch die Wirtschaftlichkeit — sie ist kein Fall „ohne Wirtschaftlichkeit“.
+            bool ohneWirtschaft = erzwingtWirtschaftlichkeit && befund != null && befund.IstLesbar
+                                  && befund.AnzahlPlatzhalter > 0 && !befund.HatWirtschaftlichkeit;
             // BV-Q7 b: Eine abweichende Sprache hält nicht an — der Bericht entsteht in der Sprache der Vorlage.
             bool rueckfrage = befund?.HatFehler == true || sichtUnpassend || ohneWirtschaft;
 

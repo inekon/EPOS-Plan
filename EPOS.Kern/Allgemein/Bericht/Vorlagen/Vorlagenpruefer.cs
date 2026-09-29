@@ -694,6 +694,7 @@ namespace WindowsFormsApplication1
                 PruefeOrt(f, feld);
                 if (!ImKontext(f, feld.Kontext, feld.Schluessel))
                     Kontextfehler(f, feld.Kontext, null);
+                PruefeKapitelImBlock(f, feld);
                 PruefePaarsicht(f, feld.Schluessel);
                 PruefePosition(f, feld);
                 PruefeAngaben(f, feld);

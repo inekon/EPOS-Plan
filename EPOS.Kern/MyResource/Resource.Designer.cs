@@ -42789,6 +42789,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wonach der Platzhalterkatalog der Berichtsseite („Platzhalter…“) filtert: Wörter im Schlüssel und in der Beschreibung, Groß- und Kleinschreibung gleich; ein Platzhalter samt Klammern findet seinen Eintrag ebenso. Die Suche bleibt stehen, bis sie geleert wird, und gilt auch beim nächsten Öffnen des Katalogs; leer zeigt der Katalog alle Platzhalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_KATALOGSUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_KATALOGSUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche im Platzhalterkatalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_KATALOGSUCHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_KATALOGSUCHE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
         /// </summary>
         public static string KI_DLG_BKB_SZENARIO_ERL {
@@ -55034,6 +55052,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT {
             get {
                 return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet ein Kapitel in einem Block „je stand“. Warum erscheint es nur einmal? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KAPITEL_IM_BLOCK", resourceCulture);
             }
         }
         
@@ -89332,6 +89359,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_KAPITEL_DOPPELT_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_KAPITEL_DOPPELT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel {0} steht im Block {1} – gefüllt wird es nur in der ersten Wiederholung ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_IM_BLOCK {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_IM_BLOCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kapitel vor {0} oder hinter {1} setzen; im Block wiederholen sich Werte, Tabellen und Bilder. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_IM_BLOCK_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_IM_BLOCK_TUN", resourceCulture);
             }
         }
         
