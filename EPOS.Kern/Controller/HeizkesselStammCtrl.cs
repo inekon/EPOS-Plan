@@ -280,8 +280,11 @@ namespace WindowsFormsApplication1
         /// Rueckgabewert geworden, damit der Aufrufer die Meldung waehlt.</para>
         ///
         /// <para>Die Spaltenliste bleibt die des Imports: <c>Wartungskosten_Einheit</c>,
-        /// <c>Brennwert</c>, <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT
-        /// (anders als <see cref="Insert"/>) — sie sind Anwenderfelder.</para>
+        /// <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT (anders als
+        /// <see cref="Insert"/>) — sie sind Anwenderfelder. <c>Brennwert</c> (aus der
+        /// Bauart), <c>Wirkungsgrad_Teillast30</c> und <c>Mindestleistung</c> (aus Satz
+        /// 710.01) liefert die Datei seit dem Konzept Kesselkennlinie 3.4; die
+        /// Brennwertkennlinie bleibt 0.</para>
         /// </summary>
         /// <param name="model">Die Importwerte; <c>Name</c> ist der Bezeichner.</param>
         /// <param name="nameOverride">Beim Umbenennen der vom Anwender vergebene Bezeichner.</param>
@@ -309,11 +312,14 @@ namespace WindowsFormsApplication1
                     object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
+                    // Konzept Kesselkennlinie 3.4 (Etappe E1): dazu Brennwert aus der Bauart und
+                    // eta30 und Mindestleistung aus Satz 710.01. Die Brennwertkennlinie bleibt 0
+                    // (Spaltenvorgabe), Anfahrverlust und Mindestlaufzeit leer.
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl,
                              Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Betriebsbereitschaftverlust, ReadOnly, Brennwert, Wirkungsgrad_Teillast30, Mindestleistung)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -334,7 +340,10 @@ namespace WindowsFormsApplication1
                         new DbParam("@co", model.CO),
                         new DbParam("@sta", model.Staub),
                         new DbParam("@bbv", model.Betriebsbereitschaftverlust),
-                        new DbParam("@ro", false)
+                        new DbParam("@ro", false),
+                        new DbParam("@brn", model.Brennwert),
+                        new DbParam("@eta30", KesselKennlinieWerte.Wert(model.Wirkungsgrad_Teillast30)),
+                        new DbParam("@pmin", KesselKennlinieWerte.Wert(model.Mindestleistung))
                     };
 
                     v.Ausfuehren(sql, ps);
@@ -498,13 +507,19 @@ namespace WindowsFormsApplication1
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
         /// (Bezeichner, Beschreibung, Investitionskosten, Wartungskosten(_Einheit),
-        /// Nutzungsdauer, Brennwert, Vorlauf, Ruecklauf, ReadOnly) bleiben unangetastet -
-        /// der Import befuellt sie nicht.
+        /// Nutzungsdauer, Vorlauf, Ruecklauf, Anfahrverlust, Mindestlaufzeit, ReadOnly)
+        /// bleiben unangetastet - der Import befuellt sie nicht.
         /// </summary>
         /// <remarks>
-        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// <para>Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
         /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
-        /// erlauben mit Hinweis).
+        /// erlauben mit Hinweis).</para>
+        /// <para><b>Kennlinie (Konzept Kesselkennlinie 3.4).</b> <c>Brennwert</c> folgt der
+        /// Bauart der Datei; faellt er auf 0, faellt der Schalter der Brennwertkennlinie mit
+        /// (<c>Kennlinie_Brennwert * ?</c>), sonst bleibt er, wie der Anwender ihn gesetzt hat.
+        /// eta30 und Mindestleistung ueberschreiben nur, wenn die Datei einen Wert fuehrt
+        /// (<c>COALESCE</c>) - ein gepflegter Wert geht nicht an eine Luecke der Datei
+        /// verloren.</para>
         /// </remarks>
         public bool UpdateImport(int id)
         {
@@ -514,7 +529,10 @@ namespace WindowsFormsApplication1
                             Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Raumbedarf = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?
+                            Betriebsbereitschaftverlust = ?,
+                            Brennwert = ?, Kennlinie_Brennwert = Kennlinie_Brennwert * ?,
+                            Wirkungsgrad_Teillast30 = COALESCE(?, Wirkungsgrad_Teillast30),
+                            Mindestleistung = COALESCE(?, Mindestleistung)
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -530,6 +548,10 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@brn", this.Brennwert ? 1 : 0),
+                new DbParam("@kbw", this.Brennwert ? 1 : 0),
+                new DbParam("@eta30", KesselKennlinieWerte.Wert(this.Wirkungsgrad_Teillast30)),
+                new DbParam("@pmin", KesselKennlinieWerte.Wert(this.Mindestleistung)),
                 new DbParam("@id", id)
             };
 

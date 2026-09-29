@@ -395,6 +395,10 @@ namespace WindowsFormsApplication1
                             new ImportDetailfeld("THLEISTUNG",    t("IMP_KAT_FELD_THLEISTUNG"),  t("IMP_KAT_EINH_KWTH")),
                             new ImportDetailfeld("BRENNSTOFF",    t("IMP_KAT_FELD_BRENNSTOFF")),
                             new ImportDetailfeld("WIRKUNGSGRAD",  t("IMP_KAT_FELD_WIRKUNGSGRAD"), t("IMP_KAT_EINH_PROZENT")),
+                            // Konzept Kesselkennlinie 3.4: eta bei 30 % Last und die kleinste
+                            // Leistung aus Satz 710.01 - leer, wenn die Datei keine fuehrt.
+                            new ImportDetailfeld("WIRKUNGSGRAD30", t("IMP_KAT_FELD_WIRKUNGSGRAD30"), t("IMP_KAT_EINH_PROZENT")),
+                            new ImportDetailfeld("MINDESTLEISTUNG", t("IMP_KAT_FELD_MINDESTLEISTUNG"), t("IMP_KAT_EINH_KW")),
                             new ImportDetailfeld("VERLUSTE",      t("IMP_KAT_FELD_VERLUSTE"),     t("IMP_KAT_EINH_KW"))
                         }
                     };

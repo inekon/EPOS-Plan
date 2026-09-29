@@ -67,7 +67,8 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `dwd_try_synthetisch_72h.dat` | 72 Stunden im DWD-TRY-Format, ausdrücklich keine amtlichen Daten (Konzept Klimadatenquellen) | selbst erzeugt, synthetisch | eigenes Werk |
 | `ganglinie_mit_kopfzeile.txt` | Ganglinie mit Kopfzeile für den Kopfzeilenschalter (iU9-W14b) | Projektbestand (iU9-W13) | nicht belegt |
 | `heizkessel_buderus.vdi` | drei Sätze mit Emissionswerten und Öl-Brennstoffindex (VDI 3805 Blatt 3) | Ausschnitt aus dem Herstellerkatalog unter `VDI-3805-Daten/` (iU9-W13) | wie der Katalogbestand unter `VDI-3805-Daten/`, nicht belegt |
-| `heizkessel_vaillant.vdi` | fünf Sätze, Wirkungsgrad in Spalte 26 und Rückfall auf 710.01 Spalte 6 | Ausschnitt aus dem Herstellerkatalog unter `VDI-3805-Daten/` (iU9-W13) | wie der Katalogbestand, nicht belegt |
+| `heizkessel_sonderfaelle.vdi` | vier Sätze für Satz 710.01 (Konzept Kesselkennlinie 3.4): ohne Teillastwert, kleinste und größte Leistung vertauscht, Niedertemperaturkessel, Elektrokessel ohne 710.01-Wirkungsgrad (Rückfall auf Satz 700 Spalte 26) | byteechter Ausschnitt (Kopf, Sätze 700, 710.xx, 720) aus dem Herstellerkatalog unter `VDI-3805-Daten/` | wie der Katalogbestand, nicht belegt |
+| `heizkessel_vaillant.vdi` | fünf Sätze, Nennlastwert aus 710.01 Spalte 6, Satz 700 Spalte 26 als Rückfall | Ausschnitt aus dem Herstellerkatalog unter `VDI-3805-Daten/` (iU9-W13) | wie der Katalogbestand, nicht belegt |
 | `ond_muster_10000tl_3profile.ond` | Wechselrichter mit drei ProfilPIO-Fassungen | selbst erzeugt, synthetisch (Konzept Wechselrichter, Anhang A) | eigenes Werk |
 | `ond_muster_2500tl.ond` | Wechselrichter mit den Zahlen des Anhangs A | selbst erzeugt, synthetisch (Konzept Wechselrichter, Anhang A) | eigenes Werk |
 | `pan_jinko_jkm260p.pan` | Moduldatei im PAN-Format | Kopie der PAN-Datei des Bestands unter `VDI-3805-Daten/PV/` (iU9-W13) | Herstellerdatei, nicht belegt |

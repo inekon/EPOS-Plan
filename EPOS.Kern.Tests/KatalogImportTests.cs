@@ -97,15 +97,17 @@ namespace EPOS.Kern.Tests
             Assert.All(c._list, a => Assert.Equal("Brennwert-Kessel", a.m_szBauart));
 
             Assert.Equal("19.3", c._list[0].m_szThLeistung);
-            Assert.Equal("87.4", c._list[0].m_szWirkungsgrad);
+            // Entscheid F3 (29.09.2026): der Nennlastwert aus Satz 710.01 Spalte 6; Spalte 26 des
+            // 700er-Satzes bleibt als Rueckfall erhalten (Nebenbefund N1).
+            Assert.Equal("96", c._list[0].m_szWirkungsgrad);
+            Assert.Equal("87.4", c._list[0].m_szWirkungsgradSatz700);
             Assert.Equal("0.030", c._list[0].m_szVerluste);
             Assert.Equal("121.8", c._list[4].m_szThLeistung);
         }
 
         /// <summary>
-        /// <b>Sonderfall 1 — der Wirkungsgrad-Rueckfall.</b> Die beiden
-        /// ecoCRAFT-Saetze fuehren Spalte 26 leer; ohne den Rueckfall auf
-        /// <c>710.01</c> Spalte 6 stuende die Uebernahme auf dem Platzhalter 1.
+        /// <b>Sonderfall 1 — Spalte 26 leer.</b> Die beiden ecoCRAFT-Saetze fuehren Spalte 26
+        /// leer; der Nennlastwert kommt ohnehin aus <c>710.01</c> Spalte 6 (Entscheid F3).
         /// </summary>
         [Fact]
         public void HeizkesselNimmtDenWirkungsgradAus710Punkt01WennSpalte26LeerBleibt()
@@ -149,7 +151,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, c._list.Count);
             Assert.Equal("GB125-18 - Logamatic  MC110", c._list[0].m_szName);
             Assert.Equal("Buderus", c._list[0].m_szFirma);
-            Assert.Equal("91.3", c._list[0].m_szWirkungsgrad);
+            Assert.Equal("97", c._list[0].m_szWirkungsgrad);
+            Assert.Equal("91.3", c._list[0].m_szWirkungsgradSatz700);
             Assert.Equal("0.116", c._list[0].m_szVerluste);
 
             Assert.All(c._list, a => Assert.Equal("Heizöl EL", a.m_szBrennstoff));
@@ -1104,7 +1107,7 @@ namespace EPOS.Kern.Tests
         /// Inhaltsvergleich gaebe.
         /// </summary>
         [Theory]
-        [InlineData("HEIZKESSEL", 12)]
+        [InlineData("HEIZKESSEL", 15)]   // Kesselkennlinie E1: Brennwert, eta30, Mindestleistung
         [InlineData("PUFFERSPEICHER", 4)]
         [InlineData("SOLARKOLLEKTOREN", 9)]
         [InlineData("WP", 10)]

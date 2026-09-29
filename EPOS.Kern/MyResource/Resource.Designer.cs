@@ -36151,6 +36151,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modell: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_MODELL {
@@ -36255,6 +36264,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_FELD_WIRKUNGSGRAD {
             get {
                 return ResourceManager.GetString("IMP_KAT_FELD_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 30 % Last: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_WIRKUNGSGRAD30 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_WIRKUNGSGRAD30", resourceCulture);
             }
         }
         

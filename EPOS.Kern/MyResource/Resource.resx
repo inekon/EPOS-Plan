@@ -39838,5 +39838,11 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
     <value>Mo;Di;Mi;Do;Fr;Sa;So</value>
   </data>
+  <data name="IMP_KAT_FELD_WIRKUNGSGRAD30" xml:space="preserve">
+    <value>Wirkungsgrad bei 30 % Last:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung:</value>
+  </data>
 </root>
 

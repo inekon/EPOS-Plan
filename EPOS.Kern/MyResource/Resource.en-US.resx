@@ -39831,5 +39831,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
     <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
   </data>
+  <data name="IMP_KAT_FELD_WIRKUNGSGRAD30" xml:space="preserve">
+    <value>Efficiency at 30 % load:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum output:</value>
+  </data>
 </root>
 
