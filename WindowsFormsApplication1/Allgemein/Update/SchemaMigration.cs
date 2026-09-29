@@ -4647,6 +4647,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KONDITIONIERUNG_VORLAGEN = KonditionierungVorlagenSchema.SCHRITT;
 
+        // ---- Auftrag A2 (Zapfprofilgenerator, Nachtrag N34, Weg 3 der Hotel-Durchsicht):
+        //      die eigene Bezugsart Zimmer und die frueheren Staende der Paketzeilen -----------------
+
+        /// <summary>
+        /// Schritt <see cref="TwwBezugsartSchema.SCHRITT"/> — <b>die Bezugsart Zimmer</b> (Auftrag A2,
+        /// Entscheide E-A2-1, E-A2-3 und E-A2-4). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG_VORLAGEN"/>
+        /// ohne Reihenfolgebedingung; er braucht die Spalte <c>Bezugsart</c> am Bedarfstag aus Schritt
+        /// 124.
+        ///
+        /// <para><b>Tabellenneubau und DML</b> (<see cref="TwwBezugsartSchema.Ausfuehren"/>):
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> nach dem Rezept der
+        /// Schritte 96 und 100 neu gebaut, die Prüfklausel der Bezugsart auf 1 bis 8, Zeilen, IDs und
+        /// Zählerstände unverändert; im selben Vorgang führt <c>PaketteilNachfuehrung</c> die
+        /// gespeicherten Zeilen des ausgelieferten Paketteils nach („Hotel (aus Messung)" bzw. „Hotel
+        /// (aus Messung, je Zimmer)" mit Bezugsart Betten → „Hotel (aus Messung, je Zimmer)" mit
+        /// Bezugsart Zimmer, dieselbe ID). Die Nummer steht allein bei
+        /// <see cref="TwwBezugsartSchema"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (Zimmer rechnet wie Betten, kein Referenzprojekt benutzt die
+        /// Hotelzeile), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_BEZUGSART_ZIMMER = TwwBezugsartSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6670,6 +6693,18 @@ namespace WindowsFormsApplication1
                         "auseinander. KEIN Rechenergebnis aendert sich - die Vorlagentabelle entsteht LEER, " +
                         "der Neubau erhaelt jede Zeile samt ID, die Ergebnisspalten liest kein Rechenweg.",
                         Schritt_KonditionierungVorlagen),
+
+            // AUFTRAG A2 (Zapfprofilgenerator, N34, Weg 3) - die Bezugsart Zimmer: Neubau der zwei
+            // Tww-Tabellen mit einer Bezugsart (Pruefklausel 1..8) und die Nachfuehrung der
+            // gespeicherten Paketzeilen in einem frueheren Stand. Die Quelle ist TwwBezugsartSchema,
+            // die Nummer steht allein dort. Er steht NACH 152 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_TWW_BEZUGSART_ZIMMER,
+                        "Zapfprofilgenerator: Bezugsart Zimmer (Tab_TwwNutzungsart_STAMM, Tab_TwwBedarfstag_STAMM " +
+                        "neu gebaut, Pruefklausel 1..8) und die Paketzeile des Hotels unter ihrem heutigen Namen",
+                        "Der Katalogtyp des Hotels fuehrte seine Kennwerte je Zimmer weiter unter der Bezugsart " +
+                        "Betten, und eine Datenbank mit dem frueheren Namen bekaeme beim erneuten Einspielen des " +
+                        "Paketteils eine zweite Zeile. KEIN Rechenergebnis aendert sich - Zimmer rechnet wie Betten.",
+                        Schritt_TwwBezugsartZimmer),
         };
 
         /// <summary>
@@ -11526,6 +11561,74 @@ namespace WindowsFormsApplication1
                     " ON DELETE CASCADE, acht Teilindizes und " +
                     KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN + " stehen. Werte, Ids und " +
                     "Zaehlerstaende bleiben - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bezugsart Zimmer" — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_TWW_BEZUGSART_ZIMMER"/>, Neubau und Nachführung bei
+        /// <see cref="TwwBezugsartSchema"/>: in EINEM Vorgang des Kerns mit abgeschalteten
+        /// Fremdschlüsseln (DDL und DML aus derselben Quelle wie Werkzeug und Testkopie). Jede
+        /// Protokollzeile des Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe
+        /// fragt <see cref="TwwBezugsartSchema.Vollstaendig"/>. Fehlen die Tabellen (Schritt 103) oder
+        /// die Spalte am Bedarfstag (Schritt 124), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_TwwBezugsartZimmer(Lauf l)
+        {
+            string nr = TwwBezugsartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in TwwBezugsartSchema.TABELLEN)
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            if (!DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART))
+            {
+                l.LetzterFehler = "Die Spalte " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "." + TwwSchema.SPALTE_BEZUGSART +
+                                  " fehlt; Schritt 124 ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    TwwBezugsartSchema.Ausfuehren(zeilen);
+                    vollstaendig = TwwBezugsartSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts geaendert; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Die Pruefklausel der Bezugsart oder eine Paketzeile steht nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Bezugsart Zimmer - KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

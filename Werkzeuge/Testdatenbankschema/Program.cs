@@ -2142,6 +2142,30 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + vorl + " Aenderung(en) am Schema in diesem Lauf.");
             }
 
+            // ---- Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34, Weg 3 der
+            //      Hotel-Durchsicht): die Bezugsart Zimmer. Tab_TwwNutzungsart_STAMM und
+            //      Tab_TwwBedarfstag_STAMM neu gebaut mit der Pruefklausel 1..8 (Rezept der Schritte 96
+            //      und 100), dazu die Nachfuehrung der gespeicherten Paketzeilen in einem frueheren Stand
+            //      - aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_TwwBezugsartZimmer bedient
+            //      (TwwBezugsartSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Zeilen, IDs und Zaehlerstaende bleiben; die Hotelzeile der
+            //      Testdatenbank (Status EIGEN) fuehrt die Katalogsaat nach (tww_testkatalog_fiktiv.py),
+            //      kein Referenzprojekt benutzt sie.
+            string nrBezug = TwwBezugsartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBezug + " - Bezugsart Zimmer: offen " + TwwBezugsartSchema.Offen() +
+                              " Tabelle(n), " + PaketteilNachfuehrung.Offen() + " Paketzeile(n).");
+            if (!trocken)
+            {
+                var berichtBezug = new List<string>();
+                int bezug = TwwBezugsartSchema.Ausfuehren(berichtBezug);
+                foreach (string zeile in berichtBezug)
+                    Console.WriteLine("Schritt " + nrBezug + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBezug + " - vollstaendig: " + TwwBezugsartSchema.Vollstaendig() +
+                                  " (erwartet True); " + bezug + " Tabelle(n) in diesem Lauf neu gebaut.");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

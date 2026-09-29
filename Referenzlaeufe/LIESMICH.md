@@ -423,7 +423,7 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 150): 6 Tagesgangsätze
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 153): 6 Tagesgangsätze
 (1 fiktiver, 4 abgeleitete, Hotel), 24 Tagesgänge, 9 Nutzungsarten (3 fiktive, 5 abgeleitete, Hotel),
 26 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
 neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 96 Parameter (54 fiktive, 42 aus dem
@@ -510,6 +510,18 @@ Basis im Arbeitsbaum.
 > 71 622 656 Byte, LFS-SHA-256 `1a86846c52fd06f06c861d9b720549a5906c6bf4634d426c677153e076e03de0`. Die
 > Basis bleibt: Die drei Tabellen der Konditionierung sind leer, und die Ergebnistabellen liest der
 > Referenzlauf nicht.
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 153, Basis unverändert.** Die Bezugsart Zimmer des
+> Zapfprofilgenerators (Auftrag A2, Umsetzungskonzept Zapfprofilgenerator N34 und N36, Weg 3 der Hotel-Durchsicht)
+> bringt den Schemaschritt **153** (`TwwBezugsartSchema`): `Tab_TwwNutzungsart_STAMM` und
+> `Tab_TwwBedarfstag_STAMM` neu gebaut mit der Prüfklausel der Bezugsart 1 bis 8, Zeilen, IDs und Zähler
+> unverändert, dazu die Nachführung der Auslieferungszeilen des Paketteils in einem früheren Stand (in der
+> Testdatenbank keine — ihre Zeilen tragen Status `EIGEN`). Danach führt `Skripte/tww_testkatalog_fiktiv.py`
+> die Hotelzeile auf die Bezugsart Zimmer nach. Zellvergleich gegen die Fassung
+> `1a86846c…`: allein `Tab_Applikation.SchemaVersion` 152 → 153 und `Tab_TwwNutzungsart_STAMM` ID 9
+> `Bezugsart` 3 → 8; im Schema allein die Prüfklausel beider Tabellen. Neue Fassung `621cf64a…`,
+> 71 622 656 Byte. **Die Basis bleibt:** Kein Referenzprojekt benutzt die Hotelzeile (1045 rechnet mit
+> „Wohnen groß (abgeleitet)"), die Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt.
 
 > **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
 > (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`

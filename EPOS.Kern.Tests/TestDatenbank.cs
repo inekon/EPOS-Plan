@@ -776,6 +776,13 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug; wiederholbar - steht alles, oeffnet er keinen Vorgang.
                 KonditionierungVorlagenSchema.Ausfuehren(null);
 
+                // Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34): die Bezugsart
+                // Zimmer - Neubau von Tab_TwwNutzungsart_STAMM und Tab_TwwBedarfstag_STAMM mit der
+                // Pruefklausel 1..8 und die Nachfuehrung der Paketzeilen in einem frueheren Stand. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - eine fertige Tabelle wird
+                // uebersprungen (die Testdatenbank traegt sie).
+                TwwBezugsartSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

@@ -101,7 +101,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwKatalogAusgang.EntwurfUnvollstaendig,
                          TwwNutzungsartCtrl.Neu(Entwurf("Nutzung C", satz) with { BedarfHerkunft = null }).Ausgang);
             Assert.Equal(TwwKatalogAusgang.EntwurfUnvollstaendig,
-                         TwwNutzungsartCtrl.Neu(Entwurf("Nutzung C", satz) with { Bezug = (ZapfBezugsart)8 }).Ausgang);
+                         TwwNutzungsartCtrl.Neu(Entwurf("Nutzung C", satz) with { Bezug = (ZapfBezugsart)9 }).Ausgang);   // 8 ist Zimmer
 
             Assert.Equal(2, TwwNutzungsartCtrl.Liste().Count);
         }

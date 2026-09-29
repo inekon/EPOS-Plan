@@ -224,7 +224,7 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14, schluessel.Count);
+            Assert.Equal(16, schluessel.Count);                 // acht Bezugsarten, 8 = Zimmer
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
             Assert.True(fehlend.Length == 0, "Ohne Text in beiden Sprachen: " + string.Join(", ", fehlend));

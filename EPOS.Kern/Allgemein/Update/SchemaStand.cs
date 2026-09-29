@@ -676,7 +676,7 @@ namespace WindowsFormsApplication1
         /// kein DML. <b>Ergebnisneutral:</b> Kein Rechenweg las sie. Die Nummer steht allein bei
         /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>.
         /// Mit den KONDITIONIERUNGSPROFILEN (Schritt KP-S1, Stufe KP1; Konzept
-        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) steht das Ziel auf
+        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) stand das Ziel auf
         /// <see cref="KonditionierungSchema.SCHRITT"/>: die drei STRICT-Tabellen
         /// <c>Tab_Konditionierungskalender</c>, <c>Tab_Konditionierungsperiode</c> und
         /// <c>Tab_Konditionierungsvorgabe</c> samt neun Indizes, reines DDL
@@ -692,11 +692,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
         /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
         /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        /// Mit der BEZUGSART ZIMMER des Zapfprofilgenerators (Auftrag A2, Entscheide E-A2-1, E-A2-3
+        /// und E-A2-4; Nachtrag N34) steht das Ziel auf <see cref="TwwBezugsartSchema.SCHRITT"/>:
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> neu gebaut mit der
+        /// Prüfklausel der Bezugsart 1 bis 8, dazu die Nachführung der gespeicherten Zeilen des
+        /// ausgelieferten Paketteils (<see cref="PaketteilNachfuehrung"/>).
+        /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
+        /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KonditionierungVorlagenSchema.SCHRITT;
+        public const int Zielversion = TwwBezugsartSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

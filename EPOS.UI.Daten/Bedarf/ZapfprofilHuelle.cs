@@ -720,10 +720,6 @@ namespace WindowsFormsApplication1
                 Auslieferung = n.ReadOnly,
                 Waehlbar = vollstaendig,
                 Sperrgrund = vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig."),
-                // Kennwerte je Zimmer bei der Bezugsart Betten: der Hinweis am Feld der Bezugsmenge.
-                HinweisBezugsmenge = n.BezugsmengeIstZimmerzahl
-                    ? Text_("ZPG_HINW_BEZUGSMENGE_ZIMMER", "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl")
-                    : "",
                 // Die Vorgaben der höheren Stufen (Z4) — Bezug und Faktoren des Katalogs, nie ein Beleg.
                 Kalenderart = (int)n.Kalender,
                 Kalender = Kalendername(n.Kalender),
