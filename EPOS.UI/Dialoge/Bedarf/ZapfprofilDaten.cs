@@ -1178,7 +1178,11 @@ public enum ZapfprofilKartenstand
     AusserhalbGueltigkeit = 4
 }
 
-/// <summary>Der Bezug des Füllstands im Verfahrensvergleich (N10 (k), N11 (d)); die Zahlen sind die des Kerns.</summary>
+/// <summary>
+/// Der Bezug des Füllstands im Verfahrensvergleich (N10 (k), N11 (d)); die Zahlen sind die des
+/// Kerns: 1 … 4 die Größen der Auslegung, 5 … 8 je ein Verfahren des Verfahrensvergleichs mit
+/// genau dem Volumen, das seine Zeile zeigt. Die Vorgabe löst nie auf ein Verfahren auf.
+/// </summary>
 public enum ZapfprofilFuellstandbezug
 {
     /// <summary>Die Vorgabe: Nenninhalt des Punkts, sonst Punkt; ohne Punkt Nenninhalt des Bands, sonst V_max.</summary>
@@ -1186,7 +1190,19 @@ public enum ZapfprofilFuellstandbezug
     NenninhaltPunkt = 1,
     Punkt = 2,
     NenninhaltBand = 3,
-    BandMax = 4
+    BandMax = 4,
+
+    /// <summary>Das Volumen des profilbasierten Verfahrens.</summary>
+    VerfahrenProfilbasiert = 5,
+
+    /// <summary>Das Volumen nach DIN 4708.</summary>
+    VerfahrenDin4708 = 6,
+
+    /// <summary>Das Volumen des Faustwerts mit Gleichzeitigkeit.</summary>
+    VerfahrenGleichzeitigkeit = 7,
+
+    /// <summary>Das Volumen des klassischen Faustwerts — nachrichtlich, aber wählbar.</summary>
+    VerfahrenKlassisch = 8
 }
 
 /// <summary>Wie schwer ein Eintrag der Warnliste wiegt — nie blockierend.</summary>
@@ -1918,7 +1934,8 @@ public sealed class ZapfprofilAuslegungStartDaten
 
     /// <summary>
     /// Die Bezüge des Füllstands (Wertemenge des Schemas, <c>Tab_TwwProjekt.Fuellstand_Bezug</c>) mit ihrem
-    /// Namen; die Vorgabe (0) steht nicht darin — sie nennt der Dialog selbst.
+    /// Namen — die vier Größen der Auslegung (1 … 4) und die vier Verfahren des Vergleichs (5 … 8);
+    /// die Vorgabe (0) steht nicht darin — sie nennt der Dialog selbst.
     /// </summary>
     public List<ZapfprofilKatalogeintragDaten> Fuellstandbezuege { get; set; } = new();
 }

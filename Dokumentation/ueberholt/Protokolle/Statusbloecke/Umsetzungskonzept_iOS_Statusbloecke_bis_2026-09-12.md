@@ -11041,3 +11041,83 @@ verbliebenen `bin/`/`obj/` der sieben Kernprojekte und `.vs/`, sobald Anwendung 
 Studio geschlossen sind. (d) Werkzeugtabelle der Wurzel-`CLAUDE.md` um `Gate`,
 `Gebaeudevergleich` und `WikiUpload` ergänzen. (e) Skriptaufzählung in
 `Referenzlaeufe/LIESMICH.md` vervollständigen.
+
+## #604 — Aufräumen, Teil 2: die Entscheide aus „Nach #602“ (29.09.2026)
+
+Anwenderentscheid 29.09.2026 (wörtlich): „lösche die Entscheide aus dem Block ‚Nach
+#602'“. Basis `e465f067` (#603); fünf Commits im losgelösten Worktree
+`.claude/worktrees/gate604` (HEAD `ba247404`), Opus 5: `84c24044` Klimazonen, `6148c7a5`
+try_Python, `1e8e2f33` Bereinige-Probierpuffer, `e475ffb7` Wechselrichter-Konzept nach
+ueberholt, `ba247404` Aufräumkonzept Stufe 6. Kein Schemaschritt, kein Rechenweg, keine
+Quelltextänderung.
+
+**Klimazonen `DIN4710/` (Wurzel, Commit `84c24044`).** `Zonenkarte_Klimazonen.svg` und
+`.png` gelöscht — byte-gleiche Duplikate der Werkzeugkopie
+`Werkzeuge/KlimazonenPfade/Zonenkarte_Klimazonen.svg` (Hash `5b44866a`, dort neuer) und des
+ausgelieferten `EPOS.UI/wwwroot/bilder/Zonenkarte_Klimazonen.png` (Hash `b2d450ae`).
+`Zonenkarte_Klimazonen.pdf` sowie `Zonenkarte_farbig.pdf`/`.png`/`.svg` nach
+`Quellen/Klimadaten/` verschoben (einzige Quelle, Muster AUF‑Q3); der Wurzelordner ist damit
+weg. Verweis nur noch als Fließtext (Geschichte) in
+`ueberholt/Konzept_Klimazonenkarte_EPOS-Plan.md:156`. **Nebenbefund (vorbestehend, nicht
+Teil von #604):** `Werkzeuge/KlimazonenPfade/erzeugen.py` schreibt auch ohne Argument und
+erzeugt eine Kommentarzeile, die vom Repo-Stand von `KlimazonenPfade.cs` abweicht („das
+Einlesen der Zahl wirft“ statt „`float.Parse` wirft“); die Datei wurde per `git restore`
+zurückgesetzt — der Satz „ohne Argument: nur prüfen“ der Wurzel-`CLAUDE.md` gilt nur für den
+ResourceDesigner.
+
+**`Quellen/Klimadaten/try_Python/` (Commit `6148c7a5`).** Sechs Dateien Versuchscode
+entfernt; Nennungen nur noch als Fließtext in der Statusdatei und unter `ueberholt/`.
+
+**`sql/tools/Bereinige-Probierpuffer.py`/`.sql` (Commit `1e8e2f33`).** Entfernt — kein Code,
+kein Test und kein Werkzeug nennt sie. **`Bereinige-Pufferdubletten.py`/`.sql` bleiben:**
+`EPOS.Kern.Tests/PufferzuordnungWacheTests.cs:60` nennt das Skript in der Meldung eines
+aktiven Wächters als Gegenmittel (`python3 sql/tools/Bereinige-Pufferdubletten.py --db …
+--anwenden`) — Löschen hieße toter Verweis oder Codeänderung, beides außerhalb des Auftrags;
+keine relativen Links auf `Bereinige-*` in `Dokumentation/`, `sql/LIESMICH.md` führt sie
+nicht.
+
+**Konzepte (Commit `e475ffb7`).** `Konzept_Wechselrichter_EPOS-Plan.md` →
+`Dokumentation/ueberholt/`: S1–S3 gebaut, Kapitel 11/12 vollständig entschieden und
+geschlossen, offen nur Windows-Sichtabnahmen; keine Regelquelle — `Doku_PV_Strangauslegung`
+ist die führende Fassung, die Prüfung vom 19.09. empfahl den Umzug. Nachgezogen: die
+Indexzeile in `Dokumentation/LIESMICH.md` (aktuell → ueberholt),
+`Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md:631/639`,
+`Konzept_Setup_InnoSetup_EPOS-Plan.md:30`,
+`Wirtschaftlichkeit_Kosten/2026-09-19_Pruefung_Mockups_Wirtschaftlichkeit.md:290`,
+`ueberholt/CECModuleImporter.md:30`. **Geblieben mit Grund:**
+`Konzept_Katalogfilter_EPOS-Plan.md` (Kapitel 10, vier offene Fachfragen O‑2, O‑7, O‑8,
+O‑9; Regelquelle laut `Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md:70` „Es gilt
+weiter“ und Kühlungskonzept K20), `Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`
+(offen: Durchsicht Mapping § 5.1, Herkunftsführung in Konzept
+Emissionsfaktoren-Quellenwahl, IINAS-Bestätigung; Regelquelle in `EPOS.Kern/CLAUDE.md:107`
+und `Referenzlaeufe/LIESMICH.md:76`), `Konzept_Einheiten_EPOS-Plan.md` (S2/S3 bewusst nicht
+gebaut, Befund U2 im Rechenweg unentschieden, Windows-Abnahme A‑W8‑O5c‑1…4 offen;
+`EPOS.Kern/CLAUDE.md:142` verweist als Herleitung). **Nebenbefund:** das verschobene
+Wechselrichter-Papier trägt Z. 26–27 noch „S2 und S3 sind es nicht“ im Widerspruch zu Kopf
+und Kapitel 8 (Berichtigung seit 19.09. angemahnt, nicht Teil von #604).
+
+**Aufräumkonzept (Commit `ba247404`).** Stufe 6 (#604) additiv ergänzt.
+
+**Worktrees (Hauptsitzung, unversioniert).** `claude/friendly-cray-bfbc6e`,
+`claude/gallant-kowalevski-6c83ed` und der losgelöste Stand `optimistic-ptolemy` samt
+lokalen Zweigen entfernt (alle vollständig auf `origin`, keine ungesicherten Dateien):
+4 553 MB frei (Worktrees 11,1 → 6,6 GB). Geblieben: `konzept-konditionierung` (Zweig nicht
+auf `origin`; ungesichert `Dokumentation/LIESMICH.md`, `Status_Gebaeudesimulation_VDI6007.md`
+und die neue Datei `Gebaeudesimulation/2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md` —
+Übergabe-Notiz, nicht anfassen), `p555` (Wirtschaftlichkeit räumt selbst), `wi31` von der
+Nachbarsitzung bereits entfernt.
+
+**Wachen.** `EPOS.Kern.Tests` Build 0 Fehler; `DokumentationLinkWache`,
+`WikiProduktdatenWache`, `RepositoryOrdnungWache`, `Klimazonen*` 43/43; `erzeugen.py` läuft
+durch (15 Zonen, viewBox 1303,65 × 1349,50). Die Hauptsitzung ergänzt das Ergebnis der
+Wachen auf dem Push-Stand.
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #604“).** (a) `Bereinige-Pufferdubletten.*` behalten oder die
+Wächtermeldung umformulieren und dann löschen — Anwenderentscheid. (b) Die drei
+verbliebenen Konzepte (Katalogfilter, Einheiten, Emissionsarten CO₂-Äquivalent) bleiben in
+`aktuell/` mit den genannten offenen Punkten. (c) `erzeugen.py` schreibt ohne Argument; den
+CLAUDE.md-Hinweis geradeziehen. (d) Widerspruch Z. 26–27 im Wechselrichter-Papier
+berichtigen. (e) `konzept-konditionierung` mit ungesicherter Übergabe-Notiz. (f)
+Kernprojekt-`bin/`/`obj/` und `.vs/` erst bei geschlossener Anwendung löschbar.

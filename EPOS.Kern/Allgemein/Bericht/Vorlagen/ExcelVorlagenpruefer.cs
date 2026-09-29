@@ -129,6 +129,12 @@ namespace WindowsFormsApplication1
             private int? _fassung;
             private string _sprache;
 
+            /// <summary>BV-Q2 (c): die Arten der Blattmarken der Vorlage — Grundlage des Blattstands.</summary>
+            private readonly List<ExcelBerichtGenerator.Blattart> _markenarten = new List<ExcelBerichtGenerator.Blattart>();
+
+            /// <summary>BV-Q2 (c): Hängt die Vorlage die erzeugten Blätter ohne Marke an (<c>EPOS.Blattanhang</c>)?</summary>
+            private bool _haengtAn = true;
+
             internal Sitzung(Pruefstufe stufe, Pruefkontext kontext, Vorlagenkatalogsicht katalog)
             {
                 _stufe = stufe;
@@ -355,6 +361,10 @@ namespace WindowsFormsApplication1
             /// <summary>Konzept 7.2: doppelte Marken, Marken auf Blättern mit Inhalt, Bezüge auf Markenblätter.</summary>
             internal void PruefeMarken(XLWorkbook wb, ExcelVorlagenmappe mappe)
             {
+                // BV-Q2 (c): Blattmarken und Blattanhang sind der Blattstand der Vorlage (ExcelBlattstand).
+                _markenarten.AddRange(mappe.Marken.Select(m => m.Art));
+                _haengtAn = !mappe.OhneBlattanhang;
+
                 foreach (Excelblattmarke m in mappe.Marken.Concat(mappe.DoppelteMarken))
                 {
                     _anzahl++;
@@ -556,8 +566,16 @@ namespace WindowsFormsApplication1
                 bool wirtschaft = _schluessel.Any(k => Vorlagenpruefer.Wirtschaftsbereiche.Any(b => k.StartsWith(b, StringComparison.Ordinal))) ||
                                   _schluessel.Contains("blatt.wirtschaftlichkeit") || _schluessel.Contains("blatt.verlauf") ||
                                   _schluessel.Contains("blatt.checkliste");
+
+                // BV-Q2 (c): der Blattstand — welche Häkchen diese Mappe führt (ExcelBlattstand); er steht in
+                // denselben Feldern, aus denen die Hülle den Kapitelstand der Word-Vorlage baut.
+                bool fuehrtBlaetter = lesbar && ExcelBlattstand.FuehrtBlaetter(_markenarten, _haengtAn);
+                IReadOnlyList<string> bausteine = fuehrtBlaetter
+                    ? ExcelBlattstand.Gefuehrt(_markenarten, _haengtAn, _schluessel)
+                    : null;
+
                 return new Pruefbefund(_stufe, _meldungen, _funde, _anzahl, _schluessel.OrderBy(k => k, StringComparer.Ordinal).ToList(),
-                                       _unbekannte, _fassung, _sprache, SpracheAbweichend, false, wirtschaft, null, summe, lesbar, 0);
+                                       _unbekannte, _fassung, _sprache, SpracheAbweichend, fuehrtBlaetter, wirtschaft, bausteine, summe, lesbar, 0);
             }
         }
     }

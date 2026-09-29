@@ -1953,7 +1953,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der fünfzehn Testprojekte
-(`Referenzlaeufe/2026-09-29_R25_Plattformrand`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-29_R26_Kesselrest`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -4851,3 +4851,23 @@ fiele sie knapper aus, sobald sich Sollwert oder Luftwechsel im Tagfenster auße
 **Folgen.** Keine Codeänderung — so ist KP1b gebaut; Teilkonzept 3.6 und 9.5 nennen die Nutzungszeit der Auslegung
 ausdrücklich. Ohne Personenkalender sind beide Wege gleich; kein Referenzprojekt führt Kalender, die Basis ist nicht
 berührt.
+
+### N1.65 Entscheid E56 — Konditionierungsprofile: Saat, Folgen der Matrix, Altfelder, Vorlagenverwaltung, Luftwechsel
+
+**Anlass.** Der Entwurf der Stufe KP2
+([`Gebaeudesimulation/2026-09-29_Entwurf_KP2.md`](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md)) — zwei Leser, zwei
+unabhängige Entwürfe, eine Gegenprüfung — legt fünf Fragen vor; alles Übrige benennt er als Festlegungen der Umsetzung,
+die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 29.09.2026 alle fünf per Auswahl, nach
+Empfehlung.
+
+| Frage | Entscheid |
+|---|---|
+| F1 Saat der 14 Vorlagen | die vervollständigte Tabelle des Entwurfs (46 Vorgabezeilen; „sonst" = Nacht, Wochenende, Ferien; Schule mit eigenen Zeiten; Nachtfenster ausdrücklich), dazu bei Büro und Schule die neun bundeseinheitlichen Feiertage „wie Sonntag" als Regeln ohne eigene Woche |
+| F2 Folgen der Matrix | ein angelegter, nicht von Hand geänderter Kalender folgt der Matrix ohne Rückfrage, solange sein Matrixbereich dem Generator gleicht; eigene Perioden bleiben; danach gilt P12 |
+| F3 Altfelder | Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur nur im Reiter „Konditionierung"; Reiter 1 zeigt eine Herleitungszeile |
+| F4 Vorlagenverwaltung | aus jeder Kalenderkarte als Blatt im Katalogeditor, auf beiden Plattformen; kein Menüpunkt |
+| F5 Luftwechsel | die Gesamtangabe wird nach einer Rückfrage aufgeteilt: Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = der Rest; der wirksame Luftwechsel bleibt gleich |
+
+**Folgen.** Teilkonzept Konditionierungsprofile 3.1, 3.3, 3.5, 7.1, 7.2, 7.4 und 8 fortgeschrieben, Entscheide in 9.6. Der
+Entwurf veranschlagt KP2 mit 19–22 PT (Konzept 14–18), weil die Oberfläche einen Arbeitsstand im Kern braucht, den das
+Konzept nicht veranschlagt hatte; die Umsetzung folgt auf Auftrag.

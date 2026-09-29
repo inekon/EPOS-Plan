@@ -165,7 +165,7 @@ namespace WindowsFormsApplication1
             public double Amplitudenanteil(double tiefeM)
             {
                 if (tiefeM < 0) tiefeM = 0;
-                return Math.Exp(-tiefeM / Daempfungstiefe);
+                return Plattformrundung.Exp(-tiefeM / Daempfungstiefe);
             }
         }
 
@@ -344,8 +344,8 @@ namespace WindowsFormsApplication1
                 double dt = t1 - t0;
 
                 // exakte Monatsmittel der Regressoren
-                double ca = (Math.Sin(OMEGA * t1) - Math.Sin(OMEGA * t0)) / (OMEGA * dt);
-                double sa = (Math.Cos(OMEGA * t0) - Math.Cos(OMEGA * t1)) / (OMEGA * dt);
+                double ca = (Plattformrundung.Sin(OMEGA * t1) - Plattformrundung.Sin(OMEGA * t0)) / (OMEGA * dt);
+                double sa = (Plattformrundung.Cos(OMEGA * t0) - Plattformrundung.Cos(OMEGA * t1)) / (OMEGA * dt);
                 double r = monatsmittel[m] - jg.Mittel;
 
                 saa += ca * ca;
@@ -416,14 +416,14 @@ namespace WindowsFormsApplication1
             Bodenkennwerte boden = Bodentyp(bodentyp);
 
             double d = boden.Daempfungstiefe;
-            double daempfung = Math.Exp(-tiefeM / d);
+            double daempfung = Plattformrundung.Exp(-tiefeM / d);
             double phasenversatz = tiefeM / d;            // [rad]
 
             double[] profil = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
             {
                 double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
-                profil[t] = (double)(jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg));
+                profil[t] = (double)(jg.Mittel - jg.Amplitude * daempfung * Plattformrundung.Cos(arg));
             }
             return profil;
         }
@@ -459,14 +459,14 @@ namespace WindowsFormsApplication1
             // Dämpfungstiefe d = sqrt(2·a/ω) mit a in m²/h und ω in 1/h.
             double aProStunde = temperaturleitfaehigkeitM2d / 24.0;
             double d = Math.Sqrt(2.0 * aProStunde / OMEGA);
-            double daempfung = Math.Exp(-tiefeM / d);
+            double daempfung = Plattformrundung.Exp(-tiefeM / d);
             double phasenversatz = tiefeM / d;            // [rad]
 
             double[] profil = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
             {
                 double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
-                profil[t] = jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg);
+                profil[t] = jg.Mittel - jg.Amplitude * daempfung * Plattformrundung.Cos(arg);
             }
             return profil;
         }
@@ -672,7 +672,7 @@ namespace WindowsFormsApplication1
             double sollMittel = 9.5, sollAmplitude = 9.0, sollTmin = 480.0;
             double[] synth = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                synth[t] = (double)(sollMittel - sollAmplitude * Math.Cos(OMEGA * (t - sollTmin)));
+                synth[t] = (double)(sollMittel - sollAmplitude * Plattformrundung.Cos(OMEGA * (t - sollTmin)));
 
             Jahresgang jg = AnalysiereJahresgang(synth);
             sb.AppendLine("4. Rueckgewinnung aus synthetischem Jahresgang (T_m 9,5 C, A 9,0 K, t_min 480 h)");
@@ -689,7 +689,7 @@ namespace WindowsFormsApplication1
             double[] gestoert = new double[STUNDEN_JAHR];
             Random rnd = new Random(4640);
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                gestoert[t] = (double)(synth[t] + 4.0 * Math.Sin(2.0 * Math.PI * (t % 24) / 24.0)
+                gestoert[t] = (double)(synth[t] + 4.0 * Plattformrundung.Sin(2.0 * Math.PI * (t % 24) / 24.0)
                                       + 2.0 * (rnd.NextDouble() - 0.5));
             Jahresgang jgG = AnalysiereJahresgang(gestoert);
             double extremAmplitude = 0;
@@ -733,7 +733,7 @@ namespace WindowsFormsApplication1
             allesOk &= PlausibilitaetsProbe(sb, ci, "konstant 12,0 C", konstant, true);
 
             double[] zuKalt = new double[STUNDEN_JAHR];                        // T_m = -30 C
-            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (double)(-30.0 - 5.0 * Math.Cos(OMEGA * (t - 480.0)));
+            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (double)(-30.0 - 5.0 * Plattformrundung.Cos(OMEGA * (t - 480.0)));
             allesOk &= PlausibilitaetsProbe(sb, ci, "T_m = -30 C", zuKalt, false);
 
             allesOk &= PlausibilitaetsProbe(sb, ci, "echter Jahresgang", synth, true);

@@ -22,9 +22,14 @@
 > [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md), ihre Festlegungen im Leitkonzept N1.63;
 > Schemaschritt 152 (`KP-S1v`) trägt 5.7 samt Fremdschlüssel `ID_Vorlage`, Teilindizes und `Nachtauskuehlstunden_H` (5.4).
 
-**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 und E55 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
-entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55); KP0
-und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
+> **Fortgeschrieben am 29.09.2026 mit E56** (Leitkonzept N1.65, 9.6): Für KP2 liegt der
+> [Entwurf](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) vor; entschieden sind die Saat der 14 Vorlagen samt Feiertagen (3.5), das Folgen
+> eines unveränderten angelegten Kalenders (3.3, 7.2), die Altfelder (7.1), der Ort der Vorlagenverwaltung (7.4) und die
+> Aufteilung der Gesamtangabe des Luftwechsels (3.1); der Entwurf veranschlagt KP2 mit 19–22 PT (8).
+
+**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 bis E56 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
+Fragen des KP2-Entwurfs entschieden (E56); KP0 und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
 Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
@@ -220,7 +225,8 @@ KP0. Leitkonzept 15 ist mit N1.59 nachgezogen.
 **Lüftung (F15, fortgeschrieben):** Der Kalender führt die Nutzerlüftung **absolut in 1/h** — die Nachtauskühlung
 verlangt Werte über dem Tageswert, und ein Luftwechsel ist auf das Volumen bezogen, eine Zone erbt ihn also sinnvoll.
 Stammt der Luftwechsel aus der Gesamtangabe `Luftwechselrate`, verlangt jede Lüftungsvorgabe die getrennte Angabe
-(Vorschlag: die heutigen Vorgaben 0,3 und 0,4 1/h). **Gewinne (P1):** `Interne_Waermegewinne` ist ein Dauerwert, der
+(E56: eine Rückfrage teilt die Gesamtangabe auf — Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = der Rest —, der
+wirksame Luftwechsel bleibt gleich). **Gewinne (P1):** `Interne_Waermegewinne` ist ein Dauerwert, der
 meist die Personen schon enthält (B5). Entschieden ist die Trennung, energieerhaltend: Wer einen Personenkalender anlegt
 oder die Personenspalte der Matrix füllt, bekommt als Geräte-Nennwert `Interne_Waermegewinne` minus das Jahresmittel der
 Personenwärme; die Karte zeigt die Rechnung und beide Jahresmittel. **Personen:** Nennwert = Personenzahl × **70 W**
@@ -335,7 +341,9 @@ Matrix) oder **angelegt** (Zeilen; die Matrix ist dann nur Vorgabe, die Karte sa
 den Generator in Zeilen; „Verwerfen" löscht sie und kehrt zur Matrix zurück. **„Matrix erneut anwenden"** auf einen
 angelegten, geänderten Kalender ersetzt nach P12 (a) nur den **Matrixbereich** — Standardwoche, Ferien- und
 Saisonperioden —; eigene Perioden und Ausnahmetage bleiben. Die Rückfrage kommt vorher und nennt, was ersetzt wird und
-was bleibt; dieselbe Regel gilt, wenn eine Vorlage auf einen angelegten Kalender übernommen wird (3.5).
+was bleibt; dieselbe Regel gilt, wenn eine Vorlage auf einen angelegten Kalender übernommen wird (3.5). **Ein angelegter, nicht von Hand geänderter
+Kalender folgt der Matrix (E56):** Solange sein Matrixbereich dem Generator gleicht, übernimmt er jede Änderung der
+Matrix ohne Rückfrage, eigene Perioden bleiben; erst nach einer Handänderung gilt P12 mit Knopf und Rückfrage.
 
 **Bitgleich**, weil nur Werte kopiert werden und der Wochentag aus derselben Maske kommt: Sind die neuen Zellen leer —
 in allen Bestandsdaten —, liefert der Generator den heutigen Sollwertfahrplan, den konstanten Kühlsollwert, den
@@ -421,6 +429,11 @@ ausgelieferten Vorlagen nicht, sie hängt vom Ort ab.
 | Wohnen | Tag 20 °C, Nacht 18 °C (22–6 Uhr) | Tag 26 °C, Nacht 28 °C | — | 100 % | Tag (7–17 Uhr) 50 %, Nacht 100 %, Wochenende 100 % |
 | Büro | Mo–Fr 7–18 Uhr 20 °C, sonst 16 °C, Wochenende und Ferien 16 °C | Tag 26 °C, sonst „aus" | Nacht (18–7 Uhr) und Wochenende 0,1 1/h | Tag 100 %, sonst 10 % | Mo–Fr 8–17 Uhr 100 %, sonst 0 % |
 | Schule | Mo–Fr 7–15 Uhr 20 °C, sonst 16 °C, Ferien 16 °C | Tag 26 °C, sonst „aus" | wie Büro | wie Büro | Mo–Fr 8–14 Uhr 100 %, sonst 0 % |
+
+**Saat (E56):** Ausgeliefert wird die vervollständigte Tabelle des [Entwurfs KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md)
+(Abschnitt 4, 46 Vorgabezeilen): „sonst" heißt Nacht, Wochenende und Ferien; Schule mit eigenen Zeiten (Heizen 7–15,
+Personen 8–14 Uhr) statt „wie Büro"; Nachtfenster ausdrücklich. Büro und Schule tragen dazu die neun
+bundeseinheitlichen Feiertage „wie Sonntag" als Regeln ohne eigene Woche.
 
 **Werkzeuge der Karte:** das Zeitfenster „Tage, von, bis, Wert" für die Standardwoche, die Feiertage als Regel (F11)
 und „Zeitstruktur übernehmen" (Kühlen, Lüftung oder Geräte „wie Heizung" oder „wie Anwesenheit"). Jedes Werkzeug ersetzt
@@ -907,7 +920,9 @@ Perioden, Feiertage. Der Katalogeditor bekommt **in allen Modi** — Projekt, Ka
 „Temperaturen und Ferien" den Reiter **„Konditionierung"**: oben die Matrix, darunter je Größe eine Kalenderkarte,
 eingeklappt mit einer Zeile Zustand („aus der Matrix", „aus Vorlage Büro" oder „angelegt, 3 eigene Perioden"). Unter VDI
 6007 ist die Matrix nur Vorgabe, die Karte sagt es; für Gebäude auf dem Tagesbilanz-Weg zeigt die Matrix nur die Felder
-des Altwegs (2.2).
+des Altwegs (2.2). **Altfelder (E56):** Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und
+Maximalraumtemperatur stehen nur noch im Reiter „Konditionierung"; der Reiter „Gebäude und Hülle" behält
+Luftwechselrate, Kühlung aktiv und Kühlleistung und zeigt eine Herleitungszeile.
 
 ### 7.2 Die Matrix
 
@@ -948,7 +963,7 @@ unter „Abbildung der heutigen Felder" festhält.
 - **Knöpfe:** „Kalender anlegen" schreibt die Kalender aus der Matrix; „Matrix erneut anwenden…" fragt vorher und
   ersetzt nach P12 nur den Matrixbereich — die Rückfrage nennt, was ersetzt wird und was bleibt (eigene Perioden,
   Ausnahmetage). Geschrieben wird mit dem OK des Editors; „Zurücknehmen" nimmt den letzten Schritt des Arbeitsstands
-  zurück.
+  zurück. Ein angelegter, nicht von Hand geänderter Kalender folgt der Matrix ohne Knopf (E56, 3.3).
 - **Schmale Anordnung** unter 900 px: je Größe eine Karte mit den Zeilen untereinander, umschaltbar über fünf Reiter;
   Berührungsziele ≥ 44 px, nichts rollt quer.
 
@@ -970,7 +985,8 @@ und „Übernehmen" (P11). Die Wahl wirkt auf den Arbeitsstand und nur auf diese
 angelegten Kalender, fragt der Dialog vorher und ersetzt nach P12 nur den Matrixbereich (3.5). Die Zeile „Vorlage" der
 Matrix nennt je Spalte die zuletzt übernommene Vorlage und öffnet mit einem Klick die Liste der Karte.
 **„Als Vorlage speichern…"** steht in derselben Karte und fragt Name, Beschreibung und Nutzung; die Größe ist die der
-Karte, ein Doppelname in dieser Liste wird am Feld benannt abgelehnt. **„Vorlagen verwalten"** zeigt die fünf Listen
+Karte, ein Doppelname in dieser Liste wird am Feld benannt abgelehnt. **„Vorlagen verwalten"** — aus jeder Kalenderkarte als Blatt im Katalogeditor, auf beiden Plattformen, kein Menüpunkt
+(E56) — zeigt die fünf Listen
 mit einem Umschalter der Größe; eigene Vorlagen lassen sich dort umbenennen und löschen, ausgelieferte duplizieren;
 Löschen fragt nach und nennt, dass kein Gebäude berührt wird. Wer alle fünf Größen nach einem Muster belegen will,
 wählt es in den fünf Karten — gleiche Namen stehen in jeder Liste an derselben Stelle.
@@ -1018,10 +1034,10 @@ je Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizperiode 1.10.�
 |---|---|---|---|---|---|
 | **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
-| **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 14–18 |
+| **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 14–18; Entwurf: 19–22 (E56) |
 | **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9 |
 | **KP4** | Papiere nachziehen (Rechenschritte mit neuen Schritten „Aufheizrampe" und „Nachtauskühlung", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
-| **Summe** | | | | | **35–49** |
+| **Summe** | | | | | **35–49** (mit dem Entwurf KP2: 40–53) |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
 In KP1 stecken 2–3 PT für die Katalogkalender (P3) und 3–4 PT für Vorgabetabelle, Generator mit fünf Spalten, Vorlagen
@@ -1122,6 +1138,19 @@ Festlegung N1.63 Nr. 12 der Umsetzung KP1b, zur Bestätigung vorgelegt. Der Ents
 | Frage | Entscheid | Folgen |
 |---|---|---|
 | Welche Stunden nehmen die Auslegungswerte (Übergabe, Kälte, Heizlast) und die Prüfung F21 als Nutzungszeit — die Nachtzeit oder die Personenmaske (F16)? | **Die Nachtzeit**, nach Empfehlung („bei der Nachtzeit bleiben“) | keine Codeänderung; die Personenmaske bleibt auf die Kennzahlen beschränkt (F16); 3.6 nennt es |
+
+### 9.6 Entscheide des Anwenders (E56, 29.09.2026)
+
+Fünf Fragen aus dem [Entwurf KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) (Abschnitt 6), per Auswahl entschieden, alle nach
+Empfehlung. Der Entscheid steht als Nachtrag N1.65 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
+
+| Frage | Entscheid | Folgen |
+|---|---|---|
+| F1 Welche Werte tragen die 14 ausgelieferten Vorlagen (ab KP3 eingefroren)? | **Die vervollständigte Tabelle des Entwurfs samt Feiertagen** bei Büro und Schule | 3.5; Schemaschritt der Saat (KP-S1b) mit 46 Vorgabezeilen und den Feiertagsregeln |
+| F2 Folgt ein angelegter, nicht von Hand geänderter Kalender der Matrix? | **Ja** — ohne Rückfrage, solange sein Matrixbereich dem Generator gleicht; danach P12 | 3.3, 7.2; Stufe 2 „Matrix anpassen" wirkt auch nach „Vorlage wählen" |
+| F3 Wo stehen die Altfelder (Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung, Maximalraumtemperatur)? | **Nur im Reiter „Konditionierung"**, Reiter 1 zeigt eine Herleitungszeile | 7.1; eine Eingabestelle je Wert |
+| F4 Wo liegt die Vorlagenverwaltung? | **In jeder Kalenderkarte** als Blatt im Katalogeditor, auf beiden Plattformen | 7.4; kein Menüpunkt, iOS-Hülle unverändert |
+| F5 Wie wird die Gesamtangabe `Luftwechselrate` aufgeteilt, sobald die Lüftung eine Vorgabe bekommt? | **Aufteilen, die Summe bleibt:** Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = der Rest, nach einer Rückfrage | 3.1 (F15) |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 

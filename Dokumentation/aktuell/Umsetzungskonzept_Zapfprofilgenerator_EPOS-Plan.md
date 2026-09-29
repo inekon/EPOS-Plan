@@ -1422,7 +1422,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-29_R25_Plattformrand`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-29_R26_Kesselrest`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -4637,3 +4637,35 @@ erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bric
 | #594 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
 | #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
 | Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N37 (29.09.2026) — Welle #608: Verfahrensvolumina als Wahl der Füllstandslinie; K5 ruht
+
+**Wortlaut** (Anwender, 29.09.2026): „setze um: die Volumina der einzelnen Verfahren als Wahl der
+Füllstandslinie“ und „keine eigenen Messobjekte vorerst“. Protokoll
+[Verfahrensvolumina](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Fuellstand_Verfahrensvolumina.md).
+
+**(a) Verfahrensvolumina (#608).** N36 (d) gilt nicht mehr, soweit es die Verfahren ausschloss: Die Wahl
+„Speichergröße der Füllstandslinie“ führt je Verfahren des Vergleichs einen Eintrag — Bezug = Verfahren + 4:
+5 profilbasiert, 6 DIN 4708, 7 Faustwert mit Gleichzeitigkeit, 8 klassischer Faustwert (nachrichtlich).
+Das Volumen ist die Zahl der Vergleichszeile samt ihrem Gültigkeitsmerkmal; ein Verfahren ohne Volumen
+steht benannt gesperrt. Die Vorgabe löst nie auf ein Verfahren auf. Nur Ergebnisfelder und Darstellung,
+kein Rechenweg der Simulation.
+
+**(b) Schemaschritt 155** (`TwwFuellstandSchema.SCHRITT = KesselHeizgrenzeSchema.SCHRITT + 1`): Neubau
+von `Tab_TwwProjekt` mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` über dasselbe Rezept wie
+Schritt 153 (`TwwBezugsartSchema.Neubau`), kein DML, Grundschema = Schritt; Eintrag in
+`Paketanhebung.STUFEN` (`Art.Ddl`, ältere Pakete tragen 1–4). Testdatenbank: Zellvergleich allein
+`SchemaVersion` 154 → 155, im Schema die Prüfklausel; `Tab_TwwProjekt` von 1045 zellgleich.
+
+**(c) K5 ruht.** Eigene Messobjekte werden vorerst nicht eingespielt. Damit ruhen auch die Bestätigung
+von ZU35 an eigenen Objekten, die √N-Skalierung und die Gleichzeitigkeit großer Hotels sowie der
+Jahresgang aus einer eigenen Hotelmessung (N34, Validierungsbericht 8.6). Das Validierungswerkzeug
+bleibt für offene Fremdreihen nutzbar; der Versand der Datenanfragen ist davon getrennt offen.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #608 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
+| K5 | eigene Messobjekte | Anwender | auf Zuruf |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |

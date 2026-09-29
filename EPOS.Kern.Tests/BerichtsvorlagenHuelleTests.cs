@@ -383,6 +383,189 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  „Original geändert – übernehmen?" (Konzept 10.2, 10.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Ändert sich das Original einer eigenen Vorlage, steht die Zeile unter der Prüfzeile:
+        /// „Original geändert – übernehmen?" mit „Übernehmen" und „Behalten". „Übernehmen" holt das
+        /// Original, prüft voll und lässt die Vorlage gewählt; danach ist die Zeile weg.
+        /// </summary>
+        [Fact]
+        public async Task Die_Zeile_Original_geaendert_bietet_Uebernehmen_und_Behalten()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            int id = Id(gruppe.Stand(), "Angebot");
+            await gruppe.VorlageGewaehlt(id);
+            Assert.Null(gruppe.Stand().Originalzeile);
+
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            byte[] neu = Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}");
+            File.WriteAllBytes(quelle, neu);
+
+            Vorlagenstand stand = gruppe.Stand();
+            Originalstand? zeile = stand.Originalzeile;
+            Assert.NotNull(zeile);
+            // Die ZEILE nennt den Pfad — gekürzt, wenn er lang ist; den vollen trägt ihr Titel.
+            Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, BerichtsvorlagenGaben.PfadKurz(quelle)), zeile!.Text);
+            Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, quelle), zeile.Titel);
+            Assert.Contains("Angebot.docx", zeile.Text, StringComparison.Ordinal);
+            Assert.Equal(BerichtsvorlagenGaben.SYMBOL_WARNUNG, zeile.Symbol);
+            Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Id);
+            Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Text);
+            Assert.True(zeile.Uebernehmen.Aktiv);
+            // Der Kurztext des Knopfes sagt, was er TUT; den Pfad nennt die Zeile.
+            Assert.Equal(R.BK_BER_VORLAGE_TIP_UEBERNEHMEN, zeile.Uebernehmen.Kurztext);
+            Assert.DoesNotContain(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
+            Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN, zeile.Behalten.Id);
+            Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, zeile.Behalten.Text);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN);
+            stand = gruppe.Stand();
+            Assert.Equal(Format(R.BV_VORLAGEN_ORIGINAL_UEBERNOMMEN, "Angebot"), stand.Meldung);
+            Assert.Equal("", stand.Fehler);
+            Assert.Equal(neu, File.ReadAllBytes(angebot.Pfad));
+            Assert.Null(stand.Originalzeile);
+            Assert.Equal(id, stand.VorlageId);
+            Assert.Equal("Angebot.docx", Lade().VorlageWordDatei);
+            // Voll geprüft wie nach „Ersetzen…": der unbekannte Platzhalter steht in der Prüfzeile.
+            Assert.Equal(BerichtsvorlagenGaben.SYMBOL_FEHLER, stand.Pruefzeile!.Symbol);
+            Assert.True(stand.Pruefzeile.HatBefunde);
+        }
+
+        /// <summary>
+        /// „Behalten" lässt die Vorlage stehen und nimmt die Zeile fort, bis sich das Original erneut
+        /// ändert. Eine in Word geöffnete Vorlage sperrt „Übernehmen" WEICH mit Grund.
+        /// </summary>
+        [Fact]
+        public async Task Behalten_nimmt_die_Zeile_fort_und_Word_sperrt_Uebernehmen_weich()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            byte[] vorher = File.ReadAllBytes(angebot.Pfad);
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            await gruppe.VorlageGewaehlt(Id(gruppe.Stand(), "Angebot"));
+
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+            Assert.NotNull(gruppe.Stand().Originalzeile);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN);
+            Vorlagenstand stand = gruppe.Stand();
+            Assert.Equal(Format(R.BV_VORLAGEN_ORIGINAL_BEHALTEN, "Angebot"), stand.Meldung);
+            Assert.Null(stand.Originalzeile);
+            Assert.Equal(vorher, File.ReadAllBytes(angebot.Pfad));
+
+            // Das Original ändert sich ein zweites Mal — und in Word ist die Vorlage offen.
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.ort}}"));
+            File.WriteAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "~$Angebot.docx"), new byte[] { 1 });
+            Originalstand? zeile = gruppe.Stand().Originalzeile;
+            Assert.NotNull(zeile);
+            Assert.False(zeile!.Uebernehmen.Aktiv);
+            Assert.Equal(R.BV_VORLAGEN_IN_WORD, zeile.Uebernehmen.Grund);
+            Assert.True(zeile.Behalten.Aktiv);
+        }
+
+        /// <summary>
+        /// Ohne dauerhaftes Original (iOS: die Vorlage wird beim Hinzufügen in die Sandbox kopiert)
+        /// entsteht die Zeile nicht — und käme ihre Handlung dennoch herein, wird sie BENANNT
+        /// abgelehnt, statt still zu schreiben.
+        /// </summary>
+        [Fact]
+        public async Task Ohne_dauerhaftes_Original_gibt_es_die_Zeile_nicht_und_die_Handlung_wird_benannt_abgelehnt()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Vorlageneintrag angebot = Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            byte[] vorher = File.ReadAllBytes(angebot.Pfad);
+            BerichtsvorlagenGaben ios = Gruppe(new Berichtsvorlagenwege());
+            await ios.VorlageGewaehlt(Id(ios.Stand(), "Angebot"));
+            File.WriteAllBytes(Path.Combine(_quellen, "Angebot.docx"), Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+
+            Assert.Null(ios.Stand().Originalzeile);
+
+            await ios.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN);
+            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER, ios.Stand().Fehler);
+            Assert.Equal(vorher, File.ReadAllBytes(angebot.Pfad));
+
+            await ios.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN);
+            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER, ios.Stand().Fehler);
+        }
+
+        /// <summary>
+        /// Ein langer Pfad wird für die Zeile in der MITTE gekürzt: Anfang und Ende bleiben stehen —
+        /// der Dateiname am Ende ist das Wichtigste —, die Länge bleibt in der Schranke, und ein
+        /// Ersatzpaar wird nicht zerschnitten. Ein kurzer Pfad bleibt, wie er ist.
+        /// </summary>
+        [Fact]
+        public void Ein_langer_Pfad_wird_in_der_Mitte_gekuerzt()
+        {
+            Assert.Equal("", BerichtsvorlagenGaben.PfadKurz(null));
+            const string kurz = @"C:\Vorlagen\Angebot.docx";
+            Assert.Equal(kurz, BerichtsvorlagenGaben.PfadKurz(kurz));
+
+            string lang = @"C:\Büro\Vorlagen\Angebote\Wärmepumpen\2026\Kunden\Süd\Angebot Muster.docx";
+            Assert.True(lang.Length > BerichtsvorlagenGaben.PFAD_HOECHSTLAENGE);
+            string gekuerzt = BerichtsvorlagenGaben.PfadKurz(lang);
+            Assert.True(gekuerzt.Length <= BerichtsvorlagenGaben.PFAD_HOECHSTLAENGE,
+                        $"zu lang: {gekuerzt.Length}");
+            Assert.Contains("…", gekuerzt, StringComparison.Ordinal);
+            Assert.StartsWith(@"C:\Büro\Vorlagen\Ang", gekuerzt, StringComparison.Ordinal);
+            Assert.EndsWith("Angebot Muster.docx", gekuerzt, StringComparison.Ordinal);
+
+            // Ein Ersatzpaar (Emoji im Ordnernamen) bleibt ganz — sonst stünde ein halbes Zeichen da.
+            // Beide Ordnerlängen: einmal fällt die Schnittstelle vorn, einmal hinten ins Paar.
+            foreach (string ordner in new[] { @"C:\Ordner\", @"C:\Ordne\" })
+            {
+                string mitEmoji = ordner + string.Concat(Enumerable.Repeat("🏠", 24)) + @"\Angebot.docx";
+                string emojiKurz = BerichtsvorlagenGaben.PfadKurz(mitEmoji);
+                int strich = emojiKurz.IndexOf('…');
+                Assert.False(char.IsHighSurrogate(emojiKurz[strich - 1]), ordner);
+                Assert.False(char.IsLowSurrogate(emojiKurz[strich + 1]), ordner);
+                Assert.EndsWith(@"\Angebot.docx", emojiKurz, StringComparison.Ordinal);
+            }
+        }
+
+        /// <summary>
+        /// Der Wortlaut der Zeile trägt den Pfad in BEIDEN Sprachen — unter en-US steht der englische
+        /// Satz mit derselben Klammer.
+        /// </summary>
+        [Fact]
+        public async Task Die_Zeile_nennt_den_Pfad_auch_auf_Englisch()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            await gruppe.VorlageGewaehlt(Id(gruppe.Stand(), "Angebot"));
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+
+            using (new Kulturvorrichtung("en-US"))
+            {
+                Originalstand? zeile = gruppe.Stand().Originalzeile;
+                Assert.NotNull(zeile);
+                Assert.StartsWith("Original changed – apply? (", zeile!.Text, StringComparison.Ordinal);
+                Assert.EndsWith(")", zeile.Text, StringComparison.Ordinal);
+                Assert.Contains("Angebot.docx", zeile.Text, StringComparison.Ordinal);
+                Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, quelle), zeile.Titel);
+                Assert.DoesNotContain(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
+            }
+        }
+
+        // =====================================================================
         //  „Hinzufügen…" und „Neue Vorlage…"
         // =====================================================================
 
@@ -1086,8 +1269,10 @@ namespace EPOS.Kern.Tests
             Assert.Contains((IEnumerable<Pruefmeldungszeile>)liste["Meldungen"],
                             m => m.Text == Format(R.VF_PRUEF_UNBEKANNT, "{{projekt.kundename}}"));
 
-            // Der Lauf mit Ausgabe Excel füllt die Vorlage.
-            LaufErgebnis lauf = await Erstellen(gaben, neuLaden(), UiStartweg.Eigene, new[] { BerichtsKonfiguration.B_DECKBLATT }, 1);
+            // Der Lauf mit Ausgabe Excel füllt die Vorlage. Die Häkchen schalten die Blätter der Mappe
+            // (BV-Q2 c): Projektbeschreibung trägt die Übersicht, Variantenvergleich den Vergleich.
+            LaufErgebnis lauf = await Erstellen(gaben, neuLaden(), UiStartweg.Eigene,
+                new[] { BerichtsKonfiguration.B_DECKBLATT, BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_VERGLEICH }, 1);
             Assert.True(lauf.Erfolg, lauf.Fehler);
             Assert.EndsWith(".xlsx", lauf.Datei, StringComparison.Ordinal);
             Assert.Contains(Format(R.BV_XL_LAUF_VORLAGE, "Mappe", R.BV_VORLAGEN_GRUND_ABWEICHUNG), lauf.Meldung);
@@ -1687,7 +1872,9 @@ namespace EPOS.Kern.Tests
                     ImOrdnerZeigen = p => { Aufrufe.Add("ordner:" + p); return Antwort; },
                     InWordOeffnen = p => { Aufrufe.Add("word:" + p); return Antwort; },
                     SchreibgeschuetztOeffnen = p => { Aufrufe.Add("lesen:" + p); return Antwort; },
-                    OrdnerWaehlbar = true
+                    OrdnerWaehlbar = true,
+                    // Wie Windows: Die Datei, aus der „Hinzufügen…“ kopiert hat, bleibt liegen.
+                    HerkunftDauerhaft = true
                 };
             }
         }

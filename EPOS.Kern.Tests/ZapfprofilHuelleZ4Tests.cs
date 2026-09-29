@@ -188,14 +188,35 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilVergleichDaten v = Vergleich(eingang);
             Assert.NotNull(v.BandMaxL);
+            // Acht Einträge: vier Größen der Auslegung, vier Verfahren des Vergleichs (N36 (d)).
             Assert.Equal(new[] { ZapfprofilFuellstandbezug.NenninhaltPunkt, ZapfprofilFuellstandbezug.Punkt,
-                                 ZapfprofilFuellstandbezug.NenninhaltBand, ZapfprofilFuellstandbezug.BandMax },
+                                 ZapfprofilFuellstandbezug.NenninhaltBand, ZapfprofilFuellstandbezug.BandMax,
+                                 ZapfprofilFuellstandbezug.VerfahrenProfilbasiert, ZapfprofilFuellstandbezug.VerfahrenDin4708,
+                                 ZapfprofilFuellstandbezug.VerfahrenGleichzeitigkeit, ZapfprofilFuellstandbezug.VerfahrenKlassisch },
                          v.FuellstandWahl.Select(w => w.Art).ToArray());
-            Assert.Equal(new double?[] { 300.0, 250.0, 500.0, v.BandMaxL }, v.FuellstandWahl.Select(w => w.VolumenL).ToArray());
-            Assert.All(v.FuellstandWahl, w => { Assert.True(w.Waehlbar); Assert.Equal("", w.Sperrgrund); });
+            // Ohne Wohnnutzung gilt der Normvergleich nicht: allein das profilbasierte Verfahren
+            // trägt ein Volumen — und zwar genau das seiner Zeile des Vergleichs.
+            Assert.Equal(new double?[] { 300.0, 250.0, 500.0, v.BandMaxL, v.BandMaxL, null, null, null },
+                         v.FuellstandWahl.Select(w => w.VolumenL).ToArray());
+            Assert.Equal(v.Verfahren.Select(z => z.VolumenL).ToArray(),
+                         v.FuellstandWahl.Skip(4).Select(w => w.VolumenL).ToArray());
+            Assert.All(v.FuellstandWahl.Take(5), w => { Assert.True(w.Waehlbar); Assert.Equal("", w.Sperrgrund); });
+            Assert.Equal("Das Verfahren nach DIN 4708 gilt hier nicht und liefert kein Volumen.",
+                         v.FuellstandWahl[5].Sperrgrund);
+            Assert.Equal("Der Faustwert mit Gleichzeitigkeit ist nicht gerechnet — er braucht einen gültigen " +
+                         "Normvergleich nach DIN 4708 und eine Personenzahl.", v.FuellstandWahl[6].Sperrgrund);
+            Assert.Equal("Der klassische Faustwert ist nicht gerechnet — er braucht eine Personenzahl.",
+                         v.FuellstandWahl[7].Sperrgrund);
             Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, v.FuellstandVorgabeArt);
             Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, v.FuellstandBezugArt);
             Assert.Equal(300.0, v.FuellstandBezugL);
+
+            // Gewählt: das profilbasierte Verfahren — der Füllstand steht bei seinem Volumen.
+            ZapfprofilVergleichDaten profil = Vergleich(
+                eingang with { FuellstandBezugWahl = ZapfFuellstandbezug.VerfahrenProfilbasiert });
+            Assert.Equal(ZapfprofilFuellstandbezug.VerfahrenProfilbasiert, profil.FuellstandBezugArt);
+            Assert.Equal(v.BandMaxL, profil.FuellstandBezugL);
+            Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltPunkt, profil.FuellstandVorgabeArt);
 
             // Gewählt: der Punkt — die Vorgabe nennt weiter den Nenninhalt des Punkts, die Liter bleiben.
             ZapfprofilVergleichDaten punkt = Vergleich(eingang with { FuellstandBezugWahl = ZapfFuellstandbezug.Punkt });
@@ -207,7 +228,8 @@ namespace EPOS.Kern.Tests
             // Ohne Punkt: beide Bezüge des Punkts gesperrt, mit dem Satz des Kerns — in beiden Sprachen.
             ZapfprofilVergleichDaten ohne = Vergleich(eingang with { SummenlinienpunktL = null });
             Assert.Equal(ZapfprofilFuellstandbezug.NenninhaltBand, ohne.FuellstandVorgabeArt);
-            Assert.Equal(new double?[] { null, null, 500.0, ohne.BandMaxL }, ohne.FuellstandWahl.Select(w => w.VolumenL).ToArray());
+            Assert.Equal(new double?[] { null, null, 500.0, ohne.BandMaxL, ohne.BandMaxL, null, null, null },
+                         ohne.FuellstandWahl.Select(w => w.VolumenL).ToArray());
             Assert.Equal("Die Summenlinie hat keinen empfohlenen Punkt.", ohne.FuellstandWahl[0].Sperrgrund);
             Assert.Equal("Die Summenlinie hat keinen empfohlenen Punkt.", ohne.FuellstandWahl[1].Sperrgrund);
             Assert.Equal("", ohne.FuellstandWahl[2].Sperrgrund);
@@ -215,8 +237,12 @@ namespace EPOS.Kern.Tests
             try
             {
                 CultureInfo.CurrentUICulture = EN;
-                Assert.Equal("The cumulative curve has no recommended point.",
-                             Vergleich(eingang with { SummenlinienpunktL = null }).FuellstandWahl[1].Sperrgrund);
+                ZapfprofilVergleichDaten en = Vergleich(eingang with { SummenlinienpunktL = null });
+                Assert.Equal("The cumulative curve has no recommended point.", en.FuellstandWahl[1].Sperrgrund);
+                Assert.Equal("The method according to DIN 4708 does not apply here and yields no volume.",
+                             en.FuellstandWahl[5].Sperrgrund);
+                Assert.Equal("The classic rule of thumb is not calculated — it requires a number of persons.",
+                             en.FuellstandWahl[7].Sperrgrund);
             }
             finally { CultureInfo.CurrentUICulture = vorher; }
         }

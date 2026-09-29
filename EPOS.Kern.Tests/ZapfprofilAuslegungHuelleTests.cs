@@ -501,7 +501,10 @@ namespace EPOS.Kern.Tests
             Assert.True(v.ProfilbasiertVorhanden);                            // Ladefenster 22–6 Uhr, Zapfung am Tag
             Assert.StartsWith("Maßgebender Zeitpunkt der Stundenbilanz: ", v.Zeitpunkt);
             // Die Wahl der Speichergröße der Füllstandslinie: vier Bezüge; ohne Wahl gilt die Vorgabe mit ihrem Volumen.
-            Assert.Equal(4, v.FuellstandWahl.Count);
+            // Acht Einträge: vier Größen der Auslegung, vier Verfahren des Vergleichs (N36 (d)).
+            Assert.Equal(8, v.FuellstandWahl.Count);
+            Assert.Equal(v.Verfahren.Select(z => z.VolumenL).ToArray(),
+                         v.FuellstandWahl.Skip(4).Select(w => w.VolumenL).ToArray());
             Assert.Equal(v.FuellstandBezugArt, v.FuellstandVorgabeArt);
             Assert.Equal(v.FuellstandBezugL, v.FuellstandWahl.Single(w => w.Art == v.FuellstandBezugArt).VolumenL);
             Assert.All(v.FuellstandWahl, w => Assert.Equal(w.Waehlbar, w.Sperrgrund.Length == 0));

@@ -100,7 +100,12 @@ jobs:
       # 12.09.2026): das zoege bei jedem Lauf alle 69 LFS-Objekte (rund 165 MB) und
       # ginge voll auf das LFS-Bandbreitenkontingent. Dieser Job braucht davon nur die
       # Testdatenbank.
+      # Der NACHTLAUF prueft den Arbeitszweig ios_migration_september: Geplante Laeufe nehmen
+      # Workflow und Code immer vom Standardzweig (main), auf dem nicht gearbeitet wird.
+      # Push auf main und Start von Hand pruefen weiter ihren eigenen Stand ('' = Ereignis-Ref).
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'ios_migration_september' || '' }}
 
       - name: LFS-Zwischenlager
         uses: actions/cache@v4

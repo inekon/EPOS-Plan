@@ -1472,7 +1472,8 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 double KesselLeistung = _kesselStunde[i];
-                bool laeuft = _kesselAbgabe[i] > 0;
+                // Ein Rest unter dem Zahlenrand ist kein Lauf (KesselLaeuft).
+                bool laeuft = KesselLaeuft(_kesselAbgabe[i]);
 
                 bool oel = Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9 ||
                            Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22;
@@ -1592,6 +1593,25 @@ namespace WindowsFormsApplication1
         // ===================================================================
         // Betriebsbereitschaft (#568)
         // ===================================================================
+
+        /// <summary>
+        /// LÄUFT der Kessel in dieser Stunde? Er läuft, wenn seine Abgabe den Zahlenrand
+        /// <see cref="Rechenrand.ABSOLUT"/> erreicht; ein Rest darunter ist kein Lauf — keine
+        /// Laufstunde, kein Start, und die Stunde bleibt eine Stillstands- oder
+        /// Bereitschaftsstunde.
+        ///
+        /// <para><b>Warum</b> (Plattformbefund PB‑1, Anwenderentscheid vom 29.09.2026 zum
+        /// Nachzug): Deckt der Kessel nur den Rest einer Vorstufe, sind das 10⁻¹⁶ kWh — ein ulp
+        /// des Bedarfs, den die Stufe davor fast ganz gedeckt hat. Ob dieser Rest 0 ist oder
+        /// nicht, hängt am letzten Bit von <c>Math.Exp</c>/<c>Math.Sin</c> weiter vorn, und das
+        /// rundet Windows anders als Linux: In Projekt 1024 zählte der blanke Vergleich
+        /// <c>&gt; 0</c> je Plattform andere Stunden als Laufstunden (Windows 2577, Linux 5204).
+        /// Derselbe Rand wie am Quellspeicher (<see cref="SimulationWaermepumpe.QuellInhalt"/>).</para>
+        /// </summary>
+        internal static bool KesselLaeuft(double abgabe)
+        {
+            return abgabe >= Rechenrand.ABSOLUT;
+        }
 
         /// <summary>
         /// DIE STUNDENREGEL der Betriebsbereitschaft: Ein stillstehender Kessel ist in der

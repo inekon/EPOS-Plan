@@ -80,7 +80,7 @@ Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
-Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild),
+Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild; #608: Verfahrensvolumina als Einträge dieser Wahl),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
@@ -112,6 +112,7 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
 
 - Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
+- Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
 
 ### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
 
@@ -164,8 +165,11 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Enthält der Bericht mehrere Versionen einer Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel des Variantenvergleichs aus. (#591)
 - Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
 - Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
+- In der Brauchwasser-Auslegung lässt sich die Speichergröße der Füllstandslinie auch auf das Volumen eines der verglichenen Verfahren setzen, etwa DIN 4708. (#608)
 - Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#597)
 - In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
+- Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)
+- Die Häkchen der Berichtsbausteine wirken auch auf die Blätter der Excel-Mappe und richten sich nach der gewählten Excel-Vorlage. (#607)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
