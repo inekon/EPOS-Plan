@@ -161,8 +161,7 @@ am Platz nach (dieselbe ID); Katalogimport, Projektimport, `Werkzeuge/Auslieferu
 (externes Katalogpaket) und `Werkzeuge/ZapfprofilValidierung` lesen eine Zeile im früheren Stand als
 die heutige. Eine Anwenderzeile gleichen Namens (Status `EIGEN` oder `IMPORT`) bleibt, wie sie ist.
 Die Katalogversion taugt als Grenze nicht — der Paketteil führt keine (Regel 2 oben). Das
-Einspielskript spiegelt die Regel für die Testdatenbank (`UMBENANNTE_NUTZUNGSARTEN`); es braucht
-Python 3.12 oder neuer (kompensierte Summe), sonst weichen die erzeugten Träger in der letzten Stelle ab.
+Einspielskript spiegelt die Regel für die Testdatenbank (`UMBENANNTE_NUTZUNGSARTEN`).
 
 **Dauer der Ecodesign-Zapfungen.** Die Tabelle der Verordnung nennt Energie, Volumenstrom und
 Temperaturen, keine Dauer. Setzung: Dauer = Volumen / Volumenstrom, Volumen = Q_tap / (c_w ·
