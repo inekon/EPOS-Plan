@@ -12593,8 +12593,10 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 }
 
 /* 7 x 24 ab 1 150 px Behaelterbreite: die Tabelle des Bestands, aber mit
-   festen Spalten ueber die volle Breite statt Querrollen - 3rem + 24 x
-   (44 px + 2 px) passen in 1 150 px. */
+   festen Spalten ueber die volle Breite statt Querrollen - 46 px + 24 x
+   (44 px + 2 px Polster) = 1 150 px. Mit 3rem (48 px) fehlten zwei Pixel:
+   Bei 1 150 px Behaelter waren die Zellen 43,9 px breit (gemessen mit der
+   Konditionierungsprobe). */
 @container epos-wochenraster (min-width: 1150px) {
     .epos-wochenraster--umbrechend .epos-wochenraster-tabelle {
         display: table;
@@ -12606,7 +12608,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     }
 
     .epos-wochenraster--umbrechend .epos-wochenraster-tabelle thead th:first-child {
-        width: 3rem;
+        width: 46px;
     }
 
     .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody {
@@ -13499,6 +13501,15 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-formularraster .epos-feld--kurz .epos-eingabe {
     flex: 0 0 auto;
     width: var(--epos-kurzfeld-breite);
+}
+
+/* Eine KLAPPLISTE schrumpft mit ihrer Feldspalte, statt das Blatt quer
+   aufzuspreizen: Als Flexkind waere ihr Mindestmass sonst ihr laengster
+   Eintrag (Konditionierungsprobe, 390 px: der Energiestandard „wie
+   Baualtersklasse (unsaniert)" liess das Reiterblatt des Gebaeudeeditors
+   43 px quer rollen). Den vollen Text zeigt die aufgeklappte Liste. */
+.epos-formularraster .epos-feld-zeile > select.epos-eingabe {
+    min-width: 0;
 }
 
 /* Ein Schalter ist kein .epos-feld (sein Kaestchen sitzt VOR dem Text).

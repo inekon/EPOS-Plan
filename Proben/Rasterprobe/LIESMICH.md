@@ -807,3 +807,21 @@ OK-Versuch meldet den Grund und schreibt nichts (gesperrt); kein „Speichern un
 des Wochenrasters je Behälterbreite, 168 Zellen ≥ 44 × 44 px, sechs Zellen „aus“, im breitesten
 Fenster auch an den Schwellen 1 150, 1 149, 600 und 599 px (bausteine). Rückgabe `0` = kein Verstoß,
 `1` = mindestens einer, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 29.09.2026** (Welle U0b; Wirt Release auf Port 5299, Chromium headless über das globale
+Playwright, `kultur=de-DE`): **vorher drei Befunde, nachher kein Verstoß** in 20 Läufen (5 Fälle ×
+4 Breiten, Rückgabe 0).
+
+| Befund | vorher | Ursache | Behebung |
+|---|---|---|---|
+| Reiter 1 rollt bei 390 px quer | 43 px, in allen vier Editorfällen | die Klappliste „Energiestandard“ hielt als Flexkind ihren längsten Eintrag („wie Baualtersklasse (unsaniert)“, 373 px) als Mindestmaß | `.epos-formularraster .epos-feld-zeile > select.epos-eingabe { min-width: 0 }` — Wache `FormularrasterTests` |
+| Titel und ✕ stehen beim Öffnen außerhalb des Bilds | Überlagerung um 70 bis 71 px gerollt, in allen 16 Editorläufen | der Editor fokussierte seine hohe Wurzel ohne `preventScroll` | `FocusAsync(preventScroll: true)` |
+| 7 × 24 an der Schwelle unter dem Berührungsmaß | Zellen 43,91 px bei 1 150 px Behälter (44,00 erst ab 1 152 px) | Tagesspalte 3rem: 48 + 24 × (44 + 2) = 1 152 px | Tagesspalte 46 px — Wache `StilblattTests` |
+
+Nachher, Überlagerung / Dialog / Reiterblatt in px: 390 → 374 / 340 / 340; 820 → 787 / 753 / 753;
+1 180 → 1 133 / 1 099 / 1 099; 1 300 → 1 248 / 1 160 / 1 160 — die Dialogwurzel bleibt in der breiten
+Überlagerung auf ihre 1 160 px gedeckelt. Querrollen überall 0, Überdeckungen 0, Bedienziele unter 44 px
+0 (je Lauf die zwei Felder der Hilfepille mit 28 × 26 px ausgenommen), beim Öffnen gerollt 0 px; Esc,
+✕ und Esc im Feld schließen überall. Wochenraster: Behälter 340 px → 4 × 6 (kleinste Zelle 55,1 px),
+753 → 2 × 12 (56,8), 1 099 → 2 × 12 (85,6), 1 160 → 7 × 24 (44,4); an den Schwellen 1 150 → 7 × 24
+(44,0), 1 149 → 2 × 12, 600 → 2 × 12 (44,0), 599 → 4 × 6; jede Zelle 44 px hoch, sechs Zellen „aus“.

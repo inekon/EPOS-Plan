@@ -810,6 +810,9 @@ public sealed class StilblattTests
 
         string breit = Abfrageblock(css, "@container epos-wochenraster (min-width: 1150px) {");
         Assert.Contains("table-layout: fixed", breit, StringComparison.Ordinal);
+        // 46 px Tagesspalte + 24 × (44 px Zelle + 2 px Polster) = 1 150 px: An der Schwelle hat
+        // jede Zelle ihr Berührungsmaß (mit 3rem waren es 43,9 px, gemessen im Browser).
+        Assert.Contains("width: 46px", breit, StringComparison.Ordinal);
         Assert.Contains("display: table-row;", breit, StringComparison.Ordinal);
         Assert.Contains("content: none", breit, StringComparison.Ordinal);
 

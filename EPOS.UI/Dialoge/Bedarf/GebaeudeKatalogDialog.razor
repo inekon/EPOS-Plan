@@ -1675,7 +1675,10 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne Rollen: In der Ueberlagerung rollte der Fokus auf die (hohe) Wurzel den Bereich
+        // um 70 px - Titel und Kreuz der Ueberlagerung standen beim Oeffnen ausserhalb des Bilds
+        // (Konditionierungsprobe, Stufe KP2).
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
