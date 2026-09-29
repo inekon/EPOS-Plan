@@ -117,18 +117,30 @@ namespace EPOS.Kern.Tests
             teile.AddRange(main.HeaderParts.Select(h => (OpenXmlElement)h.Header));
             teile.AddRange(main.FooterParts.Select(f => (OpenXmlElement)f.Footer));
             return teile.SelectMany(t => t.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
-                        .Select(p => OhneUhrzeit(p.InnerText)).ToList();
+                        .Select(p => OhneRechenstand(p.InnerText)).ToList();
         }
 
+        private static readonly Regex RECHENSTAND =
+            new Regex(@"((?:Rechenstand|Calculated): )\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}", RegexOptions.CultureInvariant);
+
         /// <summary>
-        /// Der Zeitpunkt „Rechenstand: TT.MM.JJJJ hh:mm“ der Parameterzeile ist der Zeitpunkt des
-        /// Wirtschaftlichkeitslaufs; jeder der zwei Füllläufe rechnet neu. Fällt eine Minutengrenze
-        /// zwischen beide, unterschieden sich die Texte allein darin (Kern-Lauf 36569049971,
-        /// Absatz 149: 12:54 gegen 12:55). Der Vergleich gilt der Sprache, nicht der Uhr.
+        /// Der Rechenstand ist der Zeitstempel des Rechenlaufs auf die Minute — jede Füllung
+        /// rechnet neu. Zwei Füllungen auf beiden Seiten eines Minutenwechsels unterscheiden sich
+        /// darin (Kern-Lauf 36569049971); der Vergleich der Sprache sieht deshalb einen Platzhalter.
         /// </summary>
-        private static string OhneUhrzeit(string text)
+        internal static string OhneRechenstand(string text) => RECHENSTAND.Replace(text, "$1‹Zeit›");
+
+        [Fact]
+        public void Der_Sprachvergleich_ist_vom_Rechenstand_unabhaengig()
         {
-            return Regex.Replace(text, @"\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}", "TT.MM.JJJJ hh:mm");
+            Assert.Equal(OhneRechenstand("Parameter · Rechenstand: 29.09.2026 12:54."),
+                         OhneRechenstand("Parameter · Rechenstand: 29.09.2026 12:55."));
+            Assert.Equal(OhneRechenstand("Parameters · Calculated: 29.09.2026 23:59."),
+                         OhneRechenstand("Parameters · Calculated: 30.09.2026 00:00."));
+            Assert.Equal("Rechenstand: ‹Zeit›.", OhneRechenstand("Rechenstand: 01.01.2027 07:05."));
+            // Alles andere bleibt, wie es ist.
+            Assert.NotEqual(OhneRechenstand("i = 3,0 % · Rechenstand: 29.09.2026 12:54."),
+                            OhneRechenstand("i = 3,5 % · Rechenstand: 29.09.2026 12:54."));
         }
     }
 }
