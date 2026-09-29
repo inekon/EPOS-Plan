@@ -21,17 +21,26 @@
    dafuer selbst, er fragt den Dialog nicht").
 
    WAS DER WIRT TUT. Wie bei der Ueberlagerung zeigt/versteckt der Wirt seinen HAUPT-Inhalt
-   selbst (@if Offen/nicht Offen); der Blattwechsel kennt nur SEIN Blatt. Er fokussiert beim
-   OEFFNEN seine KOPFZEILE, nicht die ganze (oft laengere als der Rollbereich hohe) Wurzel:
-   Ein Fokus auf ein Element, das nicht ins Bild passt, rollt den Browser sonst zu dessen
-   UNTEREM statt oberem Rand - die Kopfzeile bliebe unsichtbar, obwohl sie steht. Beim
-   RUECKWEG fokussiert der WIRT seine eigene Wurzel neu - dort steht sein Fokus schon (erster
-   Aufbau), eine zweite Zustaendigkeit hier waere doppelt gemoppelt. Den Rollstand des
-   Haupt-Inhalts merkt sich - schlichter als eine eigene Rollspeicherung per JavaScript - der
-   Browser selbst: Der Wirt haelt seinen Haupt-Teilbaum bis zum naechsten Aufbau unveraendert,
-   der Blattwechsel legt keine zweite WebView und keinen zweiten Rollbehaelter darueber. *@
+   selbst (@if Offen/nicht Offen); der Blattwechsel kennt nur SEIN Blatt. Den TAUSCH des
+   Inhalts aber traegt der Baustein zu Ende, denn der Rollbehaelter (die Ueberlagerung des
+   Wirtes, im eigenen Fenster die Seite) bleibt derselbe und behielte seinen Rollstand:
+   Der Baustein merkt sich den Stand des Wirts, ehe der Teilbaum getauscht ist, rollt das
+   Blatt beim Oeffnen nach oben (epos-blatt.js; gemessen stand das Blatt sonst 124 px
+   gerollt, die Kopfzeile ueber dem Rand) und stellt ihn beim Rueckweg wieder her. Dazu
+   traegt er einen unsichtbaren Anker im Wirtsbaum, der dessen Rollvorfahren findet - auch
+   solange das Blatt zu ist. Fokus: beim OEFFNEN geht er auf die KOPFZEILE des Blattes,
+   nicht auf die ganze (oft laengere als der Rollbereich hohe) Wurzel, und ohne zu rollen;
+   beim RUECKWEG fokussiert der WIRT seine Wurzel neu. Ohne das Modul bleibt das Blatt ohne
+   Rollnachfuehrung - ein Schoenheitsfehler, kein Fehlschlag. *@
 
 @namespace EPOS.UI.Bausteine
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+@* Der Anker steht auch bei geschlossenem Blatt im Wirtsbaum: Von ihm aus findet
+   epos-blatt.js den Rollvorfahren, ehe der Teilbaum getauscht wird. *@
+<span class="epos-blatt-anker" hidden @ref="_anker"></span>
 
 @if (Offen)
 {
@@ -89,24 +98,98 @@
     [Parameter] public string ZurueckText { get; set; } =
         Text("BLATT_ZURUECK", "‹ {0}");
 
+    /// <summary>Das Modul mit dem Rollstand; ein Pfad wie bei <c>Gespraechsverlauf</c>.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-blatt.js";
+
     private ElementReference _wurzel;
+    private ElementReference _anker;
+    private IJSObjectReference? _modul;
+    private Task<double>? _merken;
+    private double? _stand;
     private bool _warOffen;
     private bool _fokusNoetig;
+    private bool _obenNoetig;
+    private bool _rueckwegNoetig;
 
     private string Rueckweg => string.Format(System.Globalization.CultureInfo.CurrentCulture,
         ZurueckText, WirtTitel);
 
     protected override void OnParametersSet()
     {
-        if (Offen && !_warOffen) _fokusNoetig = true;
+        if (Offen && !_warOffen)
+        {
+            _fokusNoetig = true;
+            _obenNoetig = true;
+            // Gemessen wird JETZT: Der Wirtsbaum steht noch, das Blatt ist noch nicht
+            // gezeichnet - danach kann der Browser den Rollstand schon geklemmt haben.
+            _merken = StandMerken();
+        }
+        else if (!Offen && _warOffen)
+        {
+            _rueckwegNoetig = true;
+        }
         _warOffen = Offen;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_fokusNoetig || !Offen) return;
-        _fokusNoetig = false;
-        await _wurzel.FocusAsync();
+        if (Offen && _fokusNoetig)
+        {
+            _fokusNoetig = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
+
+        if (Offen && _obenNoetig)
+        {
+            _obenNoetig = false;
+            await Rollen(0);
+        }
+        else if (!Offen && _rueckwegNoetig)
+        {
+            _rueckwegNoetig = false;
+            if (_merken is not null)
+            {
+                try { _stand = await _merken; }
+                catch (Exception) { _stand = null; }
+                _merken = null;
+            }
+            if (_stand is double stand) await Rollen(stand);
+        }
+    }
+
+    private async Task<double> StandMerken()
+    {
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            return await _modul.InvokeAsync<double>("rollstand", _anker);
+        }
+        catch (Exception)
+        {
+            // Ohne Modul keine Nachfuehrung - das Blatt steht trotzdem da.
+            return 0;
+        }
+    }
+
+    private async Task Rollen(double stand)
+    {
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            await _modul.InvokeVoidAsync("stelleRollstand", _anker, stand);
+        }
+        catch (Exception)
+        {
+            // siehe StandMerken
+        }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try { await _modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg - dann gibt es nichts zu loesen. */ }
     }
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch

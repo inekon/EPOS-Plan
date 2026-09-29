@@ -706,6 +706,44 @@ public sealed class StilblattTests
         Assert.Matches(@"<div class=""epos-leiste"">[\s\S]*?<span class=""epos-status ", leiste);
     }
 
+    /// <summary>
+    /// <b>Nachtrag N35 zu #572 (Blattwechsel):</b> Das Zapfprofil steht als BLATT im Dialog
+    /// „Brauchwasser…" statt als Überlagerung in der Überlagerung. Damit es nichts von seinem Wirt
+    /// verliert, tragen drei Regeln, was die Überlagerung ihm gab: Das Blatt weitet die tragende
+    /// Überlagerung auf das breite Maß (der Gebäudekatalog weiß nichts vom Blatt), seine Fußleiste
+    /// haftet wie die einer eingebetteten Komponente, und der eingebettete Dialog trägt keinen
+    /// zweiten Rand. Gemessen (Chromium, 1 280 × 800 und 1 024 × 700): Überlagerung 1 229 bzw.
+    /// 983 px breit, Querüberlauf 0, eine Überlagerung statt zwei, zwei Hilfepillen.
+    /// </summary>
+    [Fact]
+    public void N35_Das_Blatt_weitet_die_Ueberlagerung_und_haftet_mit_seiner_Fussleiste()
+    {
+        string breit = Regelblock(".epos-ueberlagerung:has(.epos-blatt--breit) {");
+        Assert.Contains("width: min(96vw, 1400px)", breit, StringComparison.Ordinal);
+        Assert.Contains("max-height: 94vh", breit, StringComparison.Ordinal);
+
+        // Dasselbe Maß wie die ausdrückliche Zusatzklasse - eine Zahl, zwei Wege.
+        string ausdruecklich = Regelblock(".epos-ueberlagerung--breit {");
+        Assert.Contains("width: min(96vw, 1400px)", ausdruecklich, StringComparison.Ordinal);
+
+        string fuss = Regelblock(".epos-blatt-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {");
+        Assert.Contains("position: sticky", fuss, StringComparison.Ordinal);
+        Assert.Contains("bottom: calc(-1 * var(--epos-karte-rand))", fuss, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", fuss, StringComparison.Ordinal);
+
+        Assert.Contains("--epos-ueberlagerung-fuss: calc(", Regelblock(
+            ".epos-ueberlagerung:has(.epos-blatt-inhalt > .epos-dialog > .epos-leiste > .epos-status) {"),
+            StringComparison.Ordinal);
+
+        string dialog = Regelblock(".epos-blatt-inhalt > .epos-dialog {");
+        Assert.Contains("padding: 0", dialog, StringComparison.Ordinal);
+
+        // Der Baustein traegt die Klassen, an denen die Regeln haengen.
+        string blatt = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "Blattwechsel.razor"));
+        Assert.Contains("class=\"epos-blatt-inhalt\"", blatt, StringComparison.Ordinal);
+        Assert.Contains("class=\"epos-blatt @ZusatzKlasse\"", blatt, StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 

@@ -778,8 +778,10 @@
 
         if (_fokusZurueckNoetig && !ZapfprofilOffen)
         {
+            // Ohne Rollen: Den Rollstand stellt der Blattwechsel wieder her; ein Fokus auf die
+            // (hohe) Wurzel liesse den Browser ihn sonst neu bestimmen.
             _fokusZurueckNoetig = false;
-            await _wurzel.FocusAsync();
+            await _wurzel.FocusAsync(preventScroll: true);
         }
     }
 

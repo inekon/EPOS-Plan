@@ -2331,6 +2331,15 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     overflow-wrap: break-word;
 }
 
+/* Der eingebettete Dialog eines Blattes traegt keinen eigenen Rand: Die Ueberlagerung des
+   Wirtes hat ihn schon (dieselbe Angleichung wie .epos-ueberlagerung-inhalt > .epos-dialog);
+   sonst stuende das Blatt doppelt eingerueckt. */
+.epos-blatt-inhalt > .epos-dialog {
+    padding: 0;
+    background: transparent;
+    min-width: 0;
+}
+
 /* DIE FUSSLEISTE DES BLATTES HAFTET GENAUSO (#572-Nachtrag): Die Regel oben
    (.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste) greift nicht
    mehr, sobald ein Blatt zwischen der Ueberlagerung und dem eingebetteten

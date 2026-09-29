@@ -1087,6 +1087,73 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.NotNull(ZapfprofilKnopf(cut));
     }
 
+    /// <summary>
+    /// N35: Hin und zurück bleibt der Arbeitsstand des Wirts — die übernommene Summe, der
+    /// angefangene Wert im Eingabefeld —, und es wird nichts geschrieben; geschrieben wird
+    /// erst mit dem OK des Wirts, auch nach einem Besuch auf dem Blatt.
+    /// </summary>
+    [Fact]
+    public void Der_Arbeitsstand_des_Wirts_uebersteht_den_Blattwechsel_und_das_OK_schreibt_weiter()
+    {
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1) };
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { }, zeilen: zeilen,
+                                     geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return ""; });
+
+        cut.Find("input[inputmode=decimal]").Input("33,5");
+        Knopf(cut, "Übernehmen").Click();
+        cut.Find("input[inputmode=decimal]").Input("44,5");   // angefangen, nicht übernommen
+
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.Equal(33.5, zeilen[0].Summe, 6);
+        Assert.Equal("44,5", cut.Find("input[inputmode=decimal]").GetAttribute("value"));
+        Assert.Same(zeilen[0], cut.Instance.Gewaehlt);
+        Assert.Equal(0, geschrieben);
+
+        // Auch das OK des Blattes schreibt nicht - es übernimmt nur in den Arbeitsstand.
+        ZapfprofilKnopf(cut)!.Click();
+        cut.FindAll(".epos-blatt-inhalt .epos-leiste .epos-knopf--primaer").Last().Click();
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.Equal(0, geschrieben);
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(1, geschrieben);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// N35: Nur EINE Ebene zeigt ihre Hilfe. Auf dem Blatt stehen die zwei Hilfepillen des
+    /// Zapfprofils und keine des Wirts (sein Kopf ist vom Baum), zurück stehen die zwei des
+    /// Wirts — und in beiden Fällen gibt es keine Überlagerung, die eine dritte Ebene machte.
+    /// </summary>
+    [Fact]
+    public void Auf_dem_Blatt_steht_nur_die_Hilfe_des_Blattes_und_keine_Ueberlagerung()
+    {
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { });
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-blatt-inhalt"));
+
+        ZapfprofilKnopf(cut)!.Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Equal(2, cut.FindAll(".epos-blatt-inhalt .epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Single(cut.FindAll(".epos-blatt"));
+        Assert.Contains("epos-blatt--breit", cut.Find(".epos-blatt").ClassList);
+
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-blatt-inhalt"));
+    }
+
     /// <summary>ZU4: Zurückschalten geht über die Optionsgruppe und meldet den Weg an die Hülle (die Zonen bleiben dort).</summary>
     [Fact]
     public void Die_Optionsgruppe_setzt_den_Weg_und_schaltet_zurueck()
