@@ -11,27 +11,20 @@
 Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`;
 `EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows.
 
-## Referenzlauf und Plattformbefund PB-1
+## Referenzlauf und Plattform
 
 Schritt 5 von `gate_linux.sh` vergleicht mit der Basis, die `Referenzlaeufe/LIESMICH.md` als aktuelle nennt.
-**Drei Projekte rechnen auf Windows und Linux verschieden:** 1008, 1023 und 1042. Der Grund: `Math.Sin`,
-`Cos`, `Asin`, `Acos` und `Exp` runden unter Windows (UCRT) und Linux (glibc) im letzten Bit verschieden,
-und an zwei Stellen des Rechenkerns kippt davon eine Entscheidung. Ursache, Stellen und
-Entscheidungsvorlage stehen in
+Er gibt die Plattform an, auf der sie eingefroren ist (aus dem Quellpfad ihres `protokoll.txt`), zeigt alle
+roten Projekte und nennt die byte-verschiedenen CSV. Seit R25 rechnen Windows und Linux alle fünfzehn
+Projekte innerhalb der Toleranz gleich; Ursache und Behebung des früheren Unterschieds stehen im Protokoll
 [`PB1_Plattformbefund_Referenzlauf_Protokoll.md`](../../Dokumentation/ueberholt/Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
-Bis zum Anwenderentscheid gilt:
+**Jedes rote Projekt ist ein Befund des geprüften Stands.**
 
 | Basis | Lauf | erwartet |
 |---|---|---|
-| R24 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 15/15 PASS, 460/460 CSV byte-gleich |
-| R24 | Windows | 1008 (52), 1023 (21), 1042 (2) FAIL; 441/460 byte-gleich, im Band verschieden dazu `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024 |
-| eine auf Windows eingefrorene Basis (so R23) | Linux | 1008 (54), 1023 (21), 1042 (2) FAIL |
+| R25 (auf Windows eingefroren) | Windows | 15/15 PASS, 460/460 CSV byte-gleich |
+| R25 | Linux (`gate_linux.sh`, CI) | 15/15 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
 
-Schritt 5 liest die Plattform der Basis aus dem Quellpfad ihres `protokoll.txt`, zeigt alle roten Projekte
-und die byte-verschiedenen CSV und schreibt zu jedem roten Projekt eine Einordnung:
-- **„vorbestehender Plattformbefund PB-1“** — das Projekt steht in `PB1_PROJEKTE`, Basis und Lauf liegen auf
-  verschiedenen Plattformen. Das ist kein Befund des geprüften Stands.
-- **„PB-1-Projekt, aber … prüfen“** und **„NEU“** — das sind Befunde des geprüften Stands.
-
-`gate_windows.sh` rechnet den Referenzlauf nicht. Wer ihn auf Windows gegen R24 rechnet, sieht die zweite
-Zeile der Tabelle. Die CI (`kern.yml`) rechnet auf ubuntu gegen die Linux-Basis und ist nicht berührt.
+Die Linux-Zeile stammt aus der Nachbildung des Linux-Laufs auf Windows. Der erste Lauf auf einem echten
+Linux-Läufer bestätigt oder berichtigt sie. `gate_windows.sh` rechnet den Referenzlauf nicht; die CI
+(`kern.yml`) rechnet auf ubuntu die sieben CI-Projekte.

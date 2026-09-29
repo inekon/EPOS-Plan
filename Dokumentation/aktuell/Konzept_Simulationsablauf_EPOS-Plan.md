@@ -975,4 +975,4 @@ Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein 
 meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests` und der Referenzbasis
-`2026-09-27_R24_Heizgrenze` (Größen `Kessel[i].*` in `aggregate.csv`).
+`2026-09-29_R25_Plattformrand` (Größen `Kessel[i].*` in `aggregate.csv`).

@@ -273,6 +273,11 @@ jobs:
       # R24 (27.09.2026): dieselben sieben Projekte; neu eingefroren, weil ein
       # Heiztag der Kesselbereitschaft das Tagesmittel der Aussentemperatur
       # unter der Heizgrenze des Projekts ist (Vorgabe 15 Grad C).
+      # R25 (29.09.2026): dieselben sieben Projekte; neu eingefroren auf Windows,
+      # weil die Abschaltpruefung der Phase G den Zahlenrand traegt und ein Rest
+      # im Quellspeicher einer Waermepumpe als leer gilt (Plattformbefund PB-1).
+      # Auf ubuntu erwartet: PASS; byte-verschieden im Band heizstab.csv von
+      # 1007 und 1046 (Reste von 1e-17 kWh, UCRT gegen glibc).
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -285,17 +290,17 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-27_R24_Heizgrenze
+      - name: Vergleich mit Referenzbasis 2026-09-29_R25_Plattformrand
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-27_R24_Heizgrenze/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-29_R25_Plattformrand/Projekt_1049 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049; do

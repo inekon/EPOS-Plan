@@ -1,9 +1,10 @@
-# PB-1 — Plattformbefund des Referenzlaufs: Ursache belegt, Entscheid offen (#598)
+# PB-1 — Plattformbefund des Referenzlaufs: Ursache (#598), Zahlenrand und Basis R25 (#599)
 
 Stand: 29.09.2026 · Zweig `ios_migration_september`, gemessen auf `59f3539a` (Kern, Referenzlauf und
 Testdatenbank wie `b5caea3c`) · Windows-Sitzung, Opus 5.5 ohne Agenten · Statuszeile „#598“ in
-[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Kein Rechenweg, keine Basis und keine
-Testdatenbank geändert; jede Messung lief in einem Wegwerfstand des Worktrees, der danach zurückgesetzt wurde.
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). #598 änderte weder Rechenweg noch Basis
+noch Testdatenbank; jede Messung lief in einem Wegwerfstand des Worktrees, der danach zurückgesetzt wurde.
+**#599** setzt den Entscheid (a) um und friert die Basis R25 ein (Abschnitt 8, Statuszeile „#599“).
 
 ## 1 Anlass
 
@@ -121,7 +122,10 @@ Wirkung von (a1) und (a2) auf die Basis (Windows gegen R24, Skalare der `aggrega
 Die zehn übrigen Projekte ändern sich durch (a1) und (a2) nicht. Im Windows-Lauf bleiben dort nur die Reste im
 Band von 1007, 1024 und 1046.
 
-## 5 Entscheidungsvorlage (Anwenderentscheid offen)
+## 5 Entscheidungsvorlage
+
+**Entschieden am 29.09.2026: (a)** — Wortlaut: „Entscheid (a): Rand an Phase G und Quellpuffer, neue Basis
+R25“. Umsetzung in Abschnitt 8.
 
 - **(a) Die Entscheidungen robust machen — Empfehlung.** Dazu gehören (a1) und (a2) aus Abschnitt 4 in einer
   Welle, samt neuer Basis R25 und Protokoll in `Referenzlaeufe/LIESMICH.md`.
@@ -157,6 +161,9 @@ Band von 1007, 1024 und 1046.
   - Linux gegen eine Windows-Basis wie R23: 1008 (54), 1023 (21), 1042 (2).
 - `Referenzlaeufe/LIESMICH.md` trägt die belegte Ursache als Nachtrag zu R24.
 
+Mit R25 fiel die Einordnung wieder weg (Abschnitt 8): Seither rechnen beide Plattformen gleich, und jedes
+rote Projekt ist ein Befund.
+
 ## 7 Wiederholen
 
 Das Verfahren braucht kein Linux, sofern die Basis auf der anderen Plattform eingefroren ist:
@@ -170,3 +177,47 @@ Das Verfahren braucht kein Linux, sofern die Basis auf der anderen Plattform ein
    mit Toleranz 1e‑9 relativ.
 
 Die Skripte lagen im Scratchpad der Sitzung und sind nicht im Repository.
+
+## 8 Umsetzung und Basis R25 (#599)
+
+**Rechenweg** (`EPOS.Kern/Allgemein/Simulation/`):
+- `SimulationPufferspeicher.AbschaltschwelleErreicht()` ist die eine Prüfung der Abschaltschwelle mit
+  Zahlenrand. `HystereseFortschreiben` nimmt sie bitgleich zur Bauart davor; die Abschaltprüfung der
+  Phase G in `Kaskadenschleife` nimmt sie statt `sp.SOC >= sp.Q_max * sp.SchwelleAus`.
+- `SimulationWaermepumpe.QuellInhalt(quelle)` gibt 0 für einen Rest unter `Rechenrand.ABSOLUT`, sonst
+  den Füllstand. Beide Stellen, an denen die Quelle ein Modul begrenzt, lesen ihn: den Direktbetrieb und
+  die Speicherladung. Die zweite Stelle ändert kein Ergebnis der Basis — der Lauf ist byte-gleich zum
+  Messstand aus Abschnitt 4, in dem nur die erste wirkte —, sie hält die Regel einheitlich.
+
+**Tests:** `EPOS.Kern.Tests/PlattformrandTests`, sieben Fälle:
+- die Randprobe auf der Grenze und ein ulp darunter, mit Gegenprobe;
+- der Fall aus 1023 mit dem Windows- und dem Linux-Wert der Entnahme;
+- die Hysterese nimmt dieselbe Prüfung;
+- eine Wache gegen jeden blanken Vergleich mit `Q_max · SchwelleAus` im Kern;
+- `QuellInhalt` an und neben dem Rand;
+- eine Wache, dass in `SimulationWaermepumpe` nur `QuellInhalt` den Füllstand der Quelle liest;
+- der Lauf von 1042 mit 1 575,4 Betriebsstunden für Modul 1 und 5 995,29 für Modul 0. Die Gegenprobe mit
+  1 575,5 ist rot; der Lauf rechnet 1 575,397.
+
+**Basis R25** `Referenzlaeufe/2026-09-29_R25_Plattformrand`, auf Windows eingefroren, 460 CSV,
+2 685 Skalare:
+- Determinismus: ein zweiter Lauf ist 460/460 byte-gleich.
+- Allein der Rechenweg (Windows vorher → R25): 10/15 PASS, 421/460 byte-gleich. Es ändern sich nur 1008,
+  1018, 1023, 1039 und 1042; die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+- Gegen R24: 10/15 PASS, 417/460 byte-gleich.
+- Linux-Nachbildung gegen R25: **GESAMT PASS**, 455/460 byte-gleich, verschieden nur die Reste im Band
+  (1007 und 1046 `heizstab.csv`, 1024 `kessel_leistung.csv`/`kessel_strom.csv`, 1042 `puffer_soc.csv`).
+- R24 ist mit ihrem `protokoll.txt` nach `Dokumentation/ueberholt/Referenzbasen/` gewandert, samt ihrem
+  Abschnitt und den Nachträgen der Testdatenbank zwischen R23 und R24.
+
+**Gate und Papiere:**
+- `gate_linux.sh` ohne die PB-1-Einordnung; Basisplattform, alle roten Projekte und die byte-verschiedenen
+  CSV bleiben.
+- `Werkzeuge/Gate/LIESMICH.md` nennt die Erwartung je Plattform.
+- Den Basisnamen tragen jetzt `CLAUDE.md`, `kern.yml`, `ios.yml`, der Dokumentationsindex, die fünf
+  Konzepte, die die aktuelle Basis nennen, und die Regel in `EPOS.Kern/CLAUDE.md`.
+
+**Offen:**
+- der Lauf auf einem echten Linux-Läufer: die sieben CI-Projekte in `kern.yml` nach dem Push, alle
+  fünfzehn im Cloud-Gate;
+- der Logbuch-Satz mit der Versionsnummer des Anwenders.
