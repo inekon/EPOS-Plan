@@ -32659,11 +32659,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlagen zu dieser Technik ähnelt.
+        /// </summary>
+        public static string HILFE_GRUNDLAGEN_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_GRUNDLAGEN_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlagen: {0} ähnelt.
+        /// </summary>
+        public static string HILFE_GRUNDLAGEN_KURZTEXT {
+            get {
+                return ResourceManager.GetString("HILFE_GRUNDLAGEN_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die ausführliche Beschreibung steht in der Dokumentation. ähnelt.
         /// </summary>
         public static string HILFE_IOS_BESCHREIBUNG {
             get {
                 return ResourceManager.GetString("HILFE_IOS_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlübergabe ähnelt.
+        /// </summary>
+        public static string HILFE_KUEHLUEBERGABE_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_KUEHLUEBERGABE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlung ähnelt.
+        /// </summary>
+        public static string HILFE_KUEHLUNG_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_KUEHLUNG_KNOPF", resourceCulture);
             }
         }
         
@@ -32691,6 +32727,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HILFE_POPUP_LINK {
             get {
                 return ResourceManager.GetString("HILFE_POPUP_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zum Wechselrichter ähnelt.
+        /// </summary>
+        public static string HILFE_WECHSELRICHTER_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_WECHSELRICHTER_KNOPF", resourceCulture);
             }
         }
         

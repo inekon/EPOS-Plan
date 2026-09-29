@@ -1,0 +1,28 @@
+<includeonly><div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:{{{ausrichtung|center}}};gap:6px;margin:0.4em 0"></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Fluss-Anfang
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Fluss-Anfang.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Fluss-Anfang ==
+
+Öffnet ein Flussbild: Kästen ([[Vorlage:Flusskasten]]) und Pfeile ([[Vorlage:Flusspfeil]]) stehen nebeneinander und brechen auf schmalen Bildschirmen um. Mehrere Kästen übereinander stehen zwischen [[Vorlage:Flussspalte-Anfang]] und [[Vorlage:Flussspalte-Ende]]. Geschlossen wird mit [[Vorlage:Fluss-Ende]].
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Standard !! Bedeutung
+|-
+| <code>ausrichtung</code> || nein || <code>center</code> || <code>flex-start</code> für linksbündig
+|}
+
+=== Beispiel ===
+
+<pre>
+{{Fluss-Anfang}}
+{{Flusskasten|Außenluft|Wärmequelle|rolle=umwelt}}
+{{Flusspfeil|Umweltwärme}}
+{{Flusskasten|Wärmepumpe|40 kW|rolle=waerme}}
+{{Flusspfeil|Heizwärme}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Heizkreis|rolle=waerme}}
+{{Flusskasten|Trinkwarmwasser|rolle=waerme}}
+{{Flussspalte-Ende}}
+{{Fluss-Ende}}
+</pre>
+</noinclude>

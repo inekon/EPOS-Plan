@@ -61,7 +61,7 @@ Die Tabelle ''Zuordnung'' hat je Feld des Gebäudeeditors eine Zeile, geordnet n
 * '''Herkunft''' – siehe unten.
 * '''Übernehmen''' – der Haken. Ohne Haken bleibt das Feld des neuen Gebäudes so, wie der Editor es für ein neues Gebäude vorsieht.
 
-{{Anker|baujahr}}Die Zeile ''Baujahr'' in den Kenngrößen trägt die Jahreszahl des Gebäudes. Eine IFC-Datei liefert sie aus der Angabe zum Baujahr des Gebäudes (''Pset_BuildingCommon.YearOfConstruction''); gelesen wird die erste vierstellige Jahreszahl von 1500 bis 2100, der Beleg zeigt den gelesenen Text, etwa „gelesen aus „ca. 1965““. Eine gbXML-Datei führt kein Baujahr; die Zeile bleibt leer. Das Baujahr landet im gleichnamigen Feld des Katalogeditors und ändert keine Vorgabe.
+{{Anker|baujahr}}Die Zeile ''Baujahr'' in den Kenngrößen trägt die Jahreszahl des Gebäudes. Eine IFC-Datei liefert sie aus der Angabe zum Baujahr des Gebäudes (<code>Pset_BuildingCommon.YearOfConstruction</code>); gelesen wird die erste vierstellige Jahreszahl von 1500 bis 2100, der Beleg zeigt den gelesenen Text, etwa „gelesen aus „ca. 1965““. Eine gbXML-Datei führt kein Baujahr; die Zeile bleibt leer. Das Baujahr landet im gleichnamigen Feld des Katalogeditors und ändert keine Vorgabe.
 
 {{Anker|innenflaechenfaktor}}Die Zeile ''Innenflächenfaktor'' in den Kenngrößen trägt die Fläche der inneren Trennflächen – Innenwände und Decken zwischen beheizten Räumen, jede mit beiden Seiten – geteilt durch die Nutzfläche; das Gebäudemodell rechnet damit die Speicherfläche im Inneren. Liegt der Wert außerhalb von 1 bis 5, ist die Zeile gelb: Dann fehlt der Datei vermutlich ein Teil der Innenbauteile, oder sie zählt Flächen mehrfach. Führt die Datei keine Innenflächen, bleibt die Zeile leer, und es gilt die Vorgabe 2,5. Der Wert landet im gleichnamigen Feld des Katalogeditors (Gruppe ''Modellparameter (VDI 6007)'').
 
@@ -95,7 +95,7 @@ Jede dieser Vorgaben lässt sich in der Spalte ''Wert'' ändern – die Herkunft
 
 Für U-Werte, g-Wert und Wärmebrückenkoeffizienten gibt es Vorgaben nur aus der Baualtersklasse; ohne Klasse bleiben diese Zeilen leer, wenn die Datei keinen Wert liefert. Weiter gilt:
 
-* '''Wärmebrücken''' – die Verlustkoeffizienten ψ sind die Vorgabe der Baualtersklasse; die '''Anschlusslängen''' bleiben leer, weil eine Gebäudedatei sie nicht als solche führt. Tragen Sie die Längen im Katalogeditor ein, wenn der Wärmebrückenzuschlag gerechnet werden soll.
+* '''Wärmebrücken''' – die Verlustkoeffizienten <math>\psi</math> sind die Vorgabe der Baualtersklasse; die '''Anschlusslängen''' bleiben leer, weil eine Gebäudedatei sie nicht als solche führt. Tragen Sie die Längen im Katalogeditor ein, wenn der Wärmebrückenzuschlag gerechnet werden soll.
 * '''Bauart''' – wo die Datei Schichtaufbauten mit Stoffwerten führt, leitet EPOS-Plan sie aus den raumseitigen Schichten der Bauteile ab; sonst gilt die Bauart eines neuen Gebäudes. Der Editor bildet daraus die Speicherfähigkeit wie bei jedem neuen Gebäude.
 * '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt dann leer und rechnet mit ihrer Vorgabe. Nennt die Datei keinen Luftwechsel, stehen beide auf ihrer Vorgabe.
 * '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt; sonst gilt die Vorgabe 20 °C.
@@ -133,7 +133,7 @@ Je Materialname zeigt die Tabelle:
 ** ''eigene Zuordnung'' – von Ihnen gewählt; sie geht jedem anderen Treffer vor.
 ** ''ohne Treffer'' – kein Baustoff passt, oder mehrere passen gleich gut.
 * '''Baustoff''' – der zugeordnete Baustoff in einer Klappliste, geordnet nach den Gruppen des Katalogs; je Gruppe stehen die Baustoffe ohne Herstellerangabe zuerst, die übrigen mit ihrem Hersteller.
-* '''Stoffwerte''' – Wärmeleitfähigkeit λ, Rohdichte ρ und spezifische Wärmekapazität c des Baustoffs.
+* '''Stoffwerte''' – Wärmeleitfähigkeit <math>\lambda</math>, Rohdichte <math>\rho</math> und spezifische Wärmekapazität <math>c</math> des Baustoffs.
 * '''Werte''' – woher die Werte der Schichten kommen: ''aus der Datei'', ''aus dem Katalog'', gemischt mit der Zahl der Schichten je Herkunft, oder ''ohne vollständigen Aufbau'', wenn eine andere Schicht derselben Konstruktion keine Werte hat.
 
 {{Anker|stoffwerte}}

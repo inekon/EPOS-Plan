@@ -39880,5 +39880,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus.</value>
   </data>
+  <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
+    <value>Grundlagen: {0}</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Grundlagen zu dieser Technik</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlung</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Hilfe zum Wechselrichter</value>
+  </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlübergabe</value>
+  </data>
 </root>
 

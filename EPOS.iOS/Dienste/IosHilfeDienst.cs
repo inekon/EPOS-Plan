@@ -18,8 +18,9 @@ namespace EPOS.iOS;
 /// <para><b>Was iU10 noch nicht kann.</b> Der Windows-Katalog liefert zu jedem
 /// Ziel auch Kurztext und Beschreibung; sie stammen aus dem Wiki-Zwischen-
 /// speicher, den <c>HelpCatalog</c> pflegt. Den gibt es auf iOS noch nicht.
-/// <see cref="Aufloesen"/> liefert deshalb den Zielnamen als Kurztext und
-/// einen Hinweis als Beschreibung - der Infoknopf ist damit sichtbar und
+/// <see cref="Aufloesen"/> liefert deshalb das lesbare Ziel als Kurztext
+/// (<c>Hilfeziel.Kurztext</c> des Kerns) und einen Hinweis als Beschreibung -
+/// der Infoknopf ist damit sichtbar und
 /// wirksam (er oeffnet die richtige Seite), nur ohne Vorschautext. Das
 /// Nachziehen des Katalogs gehoert zu iU11.</para>
 /// </summary>
@@ -59,7 +60,12 @@ public sealed class IosHilfeDienst : IHilfeDienst
         if (adresse.Length == 0) return null;
 
         return new HilfeEintrag(
-            ziel,
+            // Der Kurztext ist das LESBARE Ziel, nicht der rohe Eintrag der
+            // Zuordnungsdatei: "/wiki/Grundlagen/Kessel_und_Spitzenlast" wird zu
+            // "Grundlagen: Kessel und Spitzenlast", "Berechnung/Wärmepumpe#rechenweg"
+            // zu "Berechnung: Wärmepumpe" - dieselbe Lesbarmachung wie im
+            // Windows-Katalog (Kern, Hilfeziel.Kurztext).
+            Hilfeziel.Kurztext(ziel),
             // Drei-Schichten-Regel (A4): Anzeigetexte ausschliesslich ueber
             // MyResource. Bis iU9-W15b.0g stand hier der deutsche Satz fest im
             // Quelltext - der einzige Verstoss der iOS-Huelle (Befund W15b-B20,

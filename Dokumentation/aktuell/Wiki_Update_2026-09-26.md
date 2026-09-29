@@ -68,15 +68,15 @@ dem eigentlichen Hochladen der Seite ist er mitzunehmen.
 **Nach dem Sammel-Upload (#556) geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten
 Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solarkollektors entfernt;
 #559: Bereitschaftsverlust des Heizkessels in kW; #567: Leerhinweis an Tracker/Stränge/max.
-Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird),
+Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
-#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter),
-Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration),
+#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
+Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
-Rückfallspreizung ohne Temperaturpaar),
+Rückfallspreizung ohne Temperaturpaar; hochgeladen 28.09.2026 mit #611),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
@@ -84,7 +84,7 @@ Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße d
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
-Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“),
+Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; hochgeladen 28.09.2026 mit #611),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
 mit derselben Vorlage und Prüfung),
@@ -94,12 +94,20 @@ Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungs
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
 noch nicht gespeichertes Gebäude aus dem Arbeitsstand),
-Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt),
+Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt; hochgeladen 28.09.2026 mit #611),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
-Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
+Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
 nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
 zurück, mit allen Umrechnungen der Register 62–92).
+
+**Abgleich mit dem Upload vom 28.09.2026 (#611).** Die Technikdokumentation hat am 28.09.2026 die
+Seiten ihrer Welle hochgeladen und dabei Seiten der Hauptlinie im Stand `363096aa` mitgenommen.
+Erledigt sind damit Kühlung, Pufferspeicher, Photovoltaik und die Rechenwegseiten Wärmebedarf,
+Prozesswärme und Strombedarf. Gerätekataloge und Simulation stehen mit dem Stand `363096aa`
+online; ihre späteren Änderungen der Hauptlinie bleiben ausstehend. Nicht hochgeladen und
+unverändert ausstehend sind Simulationsergebnisse, Wirtschaftlichkeit, Gebäude,
+Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 

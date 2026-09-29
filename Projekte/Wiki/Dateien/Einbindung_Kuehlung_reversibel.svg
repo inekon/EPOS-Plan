@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Reversible Luft-Wasser-Wärmepumpe mit Heiz- und Kühlbetrieb (Beispielanlage D, Bürogebäude)
+
+Inhalt: Dieselbe Wärmepumpe A (reversibel, 100 kW) arbeitet im Winter als Heizung und im
+Sommer als Kältemaschine. Ein Umschaltventil im Vorlauf schickt das Wasser entweder in die
+Flächenheizung (40/30 °C) oder in die Kühldecken (16/19 °C); die Rückläufe führen gemeinsam
+zur Wärmepumpe zurück. Links der Heizbetrieb: Die Wärmepumpe nimmt Umweltwärme aus der
+Außenluft auf. Rechts der Kühlbetrieb: Der Kältekreis ist umgekehrt, die Wärme aus dem
+Gebäude geht als Abwärme an die Außenluft. Der jeweils nicht genutzte Kreis ist grau, der
+geschlossene Anschluss des Ventils gefüllt.
+
+Annahmen: Der Vorlauf der Kühldecken bleibt über dem Taupunkt der Raumluft, damit sich kein
+Kondensat bildet. Pufferspeicher und Kessel 1 der Beispielanlage D sind der Übersicht halber
+nicht dargestellt.
+
+Darstellung: Vorlauf durchgezogen, Rücklauf gestrichelt in derselben Farbe, Pfeile in
+Fließrichtung. Farben nach Vorlage:Diagrammfarbe (waerme für Heizwasser und Abwärme, kaelte
+für Kühlwasser, umwelt, strom). Prinzipbild mit gerundeten Beispielwerten, keinem Produkt
+zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="526" viewBox="0 0 900 526" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <marker id="pfeil-1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#3e8e4e"/></marker>
+  <marker id="pfeil-2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#2f74b5"/></marker>
+  <marker id="pfeil-3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+  <marker id="pfeil-4" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#1f9bb0"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="524" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Reversible Wärmepumpe: Heizen im Winter, Kühlen im Sommer</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Beispielanlage D: Bürogebäude, Heizlast 90 kW, Kühlung 80 kW über Kühldecken</text>
+  <rect x="24" y="82" width="420" height="360" rx="10" fill="#fcf6f1"/>
+  <text x="40" y="109" font-size="15" fill="#1f2328" font-weight="600">Winter: Heizbetrieb</text>
+  <text x="40" y="129" font-size="13" fill="#57606a">Wärme aus der Außenluft ins Gebäude</text>
+  <rect x="44" y="222" width="136" height="100" rx="8" fill="#f9f0e8" stroke="#c56a1a" stroke-width="2"/>
+  <text x="112" y="251.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Wärmepumpe A</text>
+  <text x="112" y="268.2" font-size="13" fill="#57606a" text-anchor="middle">reversibel</text>
+  <text x="112" y="285.2" font-size="13" fill="#57606a" text-anchor="middle">Luft-Wasser</text>
+  <text x="112" y="302.2" font-size="13" fill="#57606a" text-anchor="middle">100 kW</text>
+  <path d="M74,168 L74,215.5" fill="none" stroke="#3e8e4e" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <text x="86" y="194" font-size="13" fill="#57606a">Außenluft</text>
+  <path d="M70,382 L70,328.5" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="80" y="374" font-size="13" fill="#57606a">Strom</text>
+  <path d="M180,252 L221,252" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M230,243 L230,185 L253.5,185" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-3)"/>
+  <rect x="260" y="158" width="144" height="56" rx="8" fill="#f9f0e8" stroke="#c56a1a" stroke-width="2"/>
+  <text x="332" y="182.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Flächenheizung</text>
+  <text x="332" y="199.2" font-size="13" fill="#57606a" text-anchor="middle">40/30 °C</text>
+  <path d="M404,200 L424,200 L424,362" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5"/>
+  <path d="M230,261 L230,344 L260,344" fill="none" stroke="#c3c9d0" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="260" y="318" width="144" height="56" rx="8" fill="#f4f5f7" stroke="#c3c9d0" stroke-width="2"/>
+  <text x="332" y="342.2" font-size="14" fill="#656d76" text-anchor="middle" font-weight="600">Kühldecken</text>
+  <text x="332" y="359.2" font-size="13" fill="#656d76" text-anchor="middle">16/19 °C</text>
+  <path d="M404,362 L424,362" fill="none" stroke="#c3c9d0" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M424,362 L424,398 L154,398 L154,328.5" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-3)"/>
+  <circle cx="424" cy="362" r="4" fill="#c56a1a"/>
+  <circle cx="286" cy="398" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M277,398 L290.5,390.2 L290.5,405.8 Z" fill="#57606a"/>
+  <path d="M221,246 L221,258 L230,252 Z" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M236,243 L224,243 L230,252 Z" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M224,261 L236,261 L230,252 Z" fill="#57606a" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M230,252 L243,252" stroke="#57606a" stroke-width="1.6"/>
+  <rect x="243" y="248" width="8" height="8" rx="1.5" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <text x="246" y="280" font-size="13" fill="#57606a">Umschaltventil</text>
+  <rect x="456" y="82" width="420" height="360" rx="10" fill="#f2f9fa"/>
+  <text x="472" y="109" font-size="15" fill="#1f2328" font-weight="600">Sommer: Kühlbetrieb</text>
+  <text x="472" y="129" font-size="13" fill="#57606a">Wärme aus dem Gebäude an die Außenluft</text>
+  <rect x="476" y="222" width="136" height="100" rx="8" fill="#e9f5f7" stroke="#1f9bb0" stroke-width="2"/>
+  <text x="544" y="251.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Wärmepumpe A</text>
+  <text x="544" y="268.2" font-size="13" fill="#57606a" text-anchor="middle">reversibel</text>
+  <text x="544" y="285.2" font-size="13" fill="#57606a" text-anchor="middle">Luft-Wasser</text>
+  <text x="544" y="302.2" font-size="13" fill="#57606a" text-anchor="middle">100 kW</text>
+  <path d="M506,222 L506,174.5" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-3)"/>
+  <text x="518" y="194" font-size="13" fill="#57606a">Außenluft</text>
+  <path d="M502,382 L502,328.5" fill="none" stroke="#2f74b5" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <text x="512" y="374" font-size="13" fill="#57606a">Strom</text>
+  <path d="M612,252 L653,252" fill="none" stroke="#1f9bb0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M662,243 L662,185 L692,185" fill="none" stroke="#c3c9d0" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="692" y="158" width="144" height="56" rx="8" fill="#f4f5f7" stroke="#c3c9d0" stroke-width="2"/>
+  <text x="764" y="182.2" font-size="14" fill="#656d76" text-anchor="middle" font-weight="600">Flächenheizung</text>
+  <text x="764" y="199.2" font-size="13" fill="#656d76" text-anchor="middle">40/30 °C</text>
+  <path d="M836,200 L856,200 L856,362" fill="none" stroke="#c3c9d0" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M662,261 L662,344 L685.5,344" fill="none" stroke="#1f9bb0" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-4)"/>
+  <rect x="692" y="318" width="144" height="56" rx="8" fill="#e9f5f7" stroke="#1f9bb0" stroke-width="2"/>
+  <text x="764" y="342.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Kühldecken</text>
+  <text x="764" y="359.2" font-size="13" fill="#57606a" text-anchor="middle">16/19 °C</text>
+  <path d="M836,362 L856,362" fill="none" stroke="#1f9bb0" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5"/>
+  <path d="M856,362 L856,398 L586,398 L586,328.5" fill="none" stroke="#1f9bb0" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-4)"/>
+  <circle cx="856" cy="362" r="4" fill="#1f9bb0"/>
+  <circle cx="718" cy="398" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M709,398 L722.5,390.2 L722.5,405.8 Z" fill="#57606a"/>
+  <path d="M653,246 L653,258 L662,252 Z" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M668,243 L656,243 L662,252 Z" fill="#57606a" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M656,261 L668,261 L662,252 Z" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M662,252 L675,252" stroke="#57606a" stroke-width="1.6"/>
+  <rect x="675" y="248" width="8" height="8" rx="1.5" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <text x="678" y="280" font-size="13" fill="#57606a">Umschaltventil</text>
+  <text x="856" y="426" font-size="13" fill="#57606a" text-anchor="end">Kühlwasser-Vorlauf über dem Taupunkt halten</text>
+  <!-- Legende -->
+  <path d="M28,474 L54,474" stroke="#c56a1a" stroke-width="3"/>
+  <path d="M60,474 L86,474" stroke="#c56a1a" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="94" y="478.5" font-size="13" fill="#57606a">Heizen: Vorlauf, Rücklauf</text>
+  <path d="M306.5,474 L332.5,474" stroke="#1f9bb0" stroke-width="3"/>
+  <path d="M338.5,474 L364.5,474" stroke="#1f9bb0" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="372.5" y="478.5" font-size="13" fill="#57606a">Kühlen: Vorlauf, Rücklauf</text>
+  <path d="M585,474 L615,474" stroke="#c3c9d0" stroke-width="2"/>
+  <text x="623" y="478.5" font-size="13" fill="#57606a">außer Betrieb</text>
+  <circle cx="754" cy="474" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M763,474 L749.5,481.8 L749.5,466.2 Z" fill="#57606a"/>
+  <text x="771" y="478.5" font-size="13" fill="#57606a">Pumpe</text>
+  <text x="28" y="508" font-size="13" fill="#57606a">Prinzipbild · Beispielwerte, gerundet · Pufferspeicher und Kessel 1 der Anlage D nicht dargestellt</text>
+</svg>
