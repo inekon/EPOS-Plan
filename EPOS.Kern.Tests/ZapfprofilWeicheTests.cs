@@ -289,9 +289,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Fehlt die Katalogversion, kann der Generator für das PROJEKT nicht rechnen: Der Lauf
-        /// bricht benannt ab — und die Bedarfsfelder eines wiederverwendeten Objekts stehen auf
-        /// 0 statt auf den Zahlen des vorigen Laufs (Startseite, Ergebnisvorabrechnung).
+        /// Fehlt die Katalogversion und lässt sich der freie Paketteil nicht nachladen (hier weist die
+        /// Datei jedes Einfügen in den Parameterkatalog ab, <see cref="TwwPaketteilCtrl.Nachladen"/>),
+        /// kann der Generator für das PROJEKT nicht rechnen: Der Lauf bricht benannt ab — und die
+        /// Bedarfsfelder eines wiederverwendeten Objekts stehen auf 0 statt auf den Zahlen des vorigen
+        /// Laufs (Startseite, Ergebnisvorabrechnung).
         /// </summary>
         [Fact]
         public void Ohne_Katalogversion_bricht_der_Lauf_benannt_ab()
@@ -306,6 +308,8 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
             Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             // … dann der Abbruch.
             SimulationProtokoll.NeuStarten();
@@ -323,6 +327,31 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Zapfprofilweg);
             Assert.False(v.Erfolgreich);
             Assert.Contains("Parameterkatalog des Zapfprofils", v.Meldung);
+        }
+
+        /// <summary>
+        /// Fehlt die Katalogversion, lädt der Lauf den freien Paketteil nach
+        /// (<see cref="TwwPaketteilCtrl.Nachladen"/>) und bricht nicht ab: Das Laufprotokoll nennt das
+        /// Nachladen als Hinweis, der Generator rechnet mit der Katalogversion des Pakets.
+        /// </summary>
+        [Fact]
+        public void Ohne_Katalogversion_laedt_der_Lauf_den_freien_Paketteil_nach()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+            Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+
+            SimulationProtokoll.NeuStarten();
+            var waerme = new SimulationWaermebedarf();
+            waerme.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
+
+            Assert.True(string.IsNullOrEmpty(waerme.Fehlertext), waerme.Fehlertext);
+            Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
+            Assert.Contains(SimulationProtokoll.Aktuell.Hinweise,
+                            h => h.StartsWith("Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten", StringComparison.Ordinal));
+            Assert.Equal(TwwPaketteilCtrl.KATALOGVERSION_FREI, ZapfprofilCtrl.AktuelleKatalogversion());
         }
 
         /// <summary>
