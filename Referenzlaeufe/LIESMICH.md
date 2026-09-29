@@ -501,6 +501,17 @@ Basis im Arbeitsbaum.
 > Konditionierungsprofile 10.3), zusammen mit dem neuen Referenzprojekt — bis dahin gibt es keine gesäten
 > Konditionierungsdaten, die sie halten müsste.
 
+> **Nachtrag 27.09.2026 — Schemaschritt 152 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
+> 27.09.2026 zu #568: `Tab_Einstellungen.Kessel_Heizgrenze` (`REAL`, nullbar, ohne Vorgabe; NULL = Vorgabe
+> 15 °C), **reines DDL, kein DML**; Quelle `KesselHeizgrenzeSchema`. Die Testdatenbank wurde aus der Fassung
+> `22b1f882…` (Schemastand 151) mit `Werkzeuge/Testdatenbankschema` nachgezogen — eine Spalte angelegt, ein
+> zweiter Lauf 0/0. Zellvergleich über 11 034 499 Zellen: einzige Abweichungen `Tab_Applikation.SchemaVersion`
+> 151 → 152 und die neue Spalte (25 Zeilen, alle NULL); Tabelle weiter STRICT, `integrity_check` ok,
+> `foreign_key_check` leer; 71 577 600 Byte, LFS-SHA-256
+> `6f0d54587c149b3ac591e3b10209fd63ad9225b915fcc86146647bc82b35cd18`. Mit dem unveränderten Rechenweg
+> rechnen die fünfzehn Projekte darauf byte-gleich gegen R23; die Rechenwirkung kommt mit der Regel selbst
+> (Basis R24).
+
 > **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
 > (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
 > [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.

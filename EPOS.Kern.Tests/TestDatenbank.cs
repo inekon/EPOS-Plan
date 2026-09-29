@@ -769,6 +769,11 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug; wiederholbar, KEIN DML - die Tabellen entstehen leer.
                 KonditionierungSchema.Ausfuehren(null);
 
+                // Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+                // nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML - NULL rechnet die Vorgabe 15 °C.
+                KesselHeizgrenzeSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
