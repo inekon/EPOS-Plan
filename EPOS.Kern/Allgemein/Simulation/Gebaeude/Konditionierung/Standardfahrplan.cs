@@ -88,8 +88,36 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class Standardfahrplan
     {
+        // =================================================================
+        //  Die Rangbänder — die EINE Stelle (N1.61 Nr. 5, Entwurf KP1b Nr. 12)
+        // =================================================================
+        //
+        // Der groessere Rang gewinnt. Die vier Baender liegen so uebereinander, dass jede
+        // Ebene die schwaechere schlaegt und keine eine staerkere verdeckt:
+        //
+        //   100 … 108   Feiertage als Regel   (neun, UNTER den Ferien)
+        //   200 … 203   Ferien 200 + k        (der Generator, vier Zeitraeume)
+        //   310 … 899   eigene und uebernommene Perioden
+        //   900         Saison (Betriebspause)
+        //
+        // WARUM DIE FEIERTAGE UNTEN LIEGEN: Ein Feiertag IN den Ferien soll den Ferienwert
+        // behalten. Stuenden die Feiertage ueber den Ferien, gaelte an ihnen „wie Sonntag"
+        // — bei Ferien „aus" und Sonntag 16 Grad wuerde also mitten in den Ferien geheizt.
+
+        /// <summary>Der Rang der ersten Feiertagsregel; die neun bekommen 100 + k — <b>unter</b> den Ferien.</summary>
+        public const int RANG_FEIERTAG = 100;
+
+        /// <summary>Der Rang der letzten Feiertagsregel (<see cref="RANG_FEIERTAG"/> + 8).</summary>
+        public const int RANG_FEIERTAG_LETZTER = RANG_FEIERTAG + 8;
+
         /// <summary>Der Rang der ersten Ferienperiode; die vier Zeiträume bekommen 200 + k (Konzept 3.3).</summary>
         public const int RANG_FERIEN = 200;
+
+        /// <summary>Der kleinste Rang einer eigenen oder übernommenen Periode — <b>über</b> den Ferien.</summary>
+        public const int RANG_EIGEN = 310;
+
+        /// <summary>Der größte Rang einer eigenen oder übernommenen Periode — <b>unter</b> der Saison.</summary>
+        public const int RANG_EIGEN_LETZTER = 899;
 
         /// <summary>Der Rang der Betriebspause aus der Saisonzeile — <b>über</b> den Perioden der Matrix (Konzept 3.2, 3.3).</summary>
         public const int RANG_SAISON = 900;

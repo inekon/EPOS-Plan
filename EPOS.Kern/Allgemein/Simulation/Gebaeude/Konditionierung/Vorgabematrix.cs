@@ -271,6 +271,29 @@ namespace WindowsFormsApplication1
             return new Vorgabematrix(spalten, Bestand.Erben(gebaeude.Bestand));
         }
 
+        /// <summary>
+        /// <b>Dieselbe Matrix mit EINER ausgetauschten Spalte</b> — die anderen vier und die
+        /// Bestandsfelder bleiben, wie sie sind. „Vorlage übernehmen" braucht sie: Die Zellen der
+        /// Vorlage treten in die Spalte ihrer Größe, und der Generator läuft anschließend über die
+        /// so ergänzte Matrix — mit den <b>Ferienzeiträumen des Ziels</b> (Konzept 3.5).
+        /// </summary>
+        /// <param name="groesse">Die Größe, deren Spalte ersetzt wird.</param>
+        /// <param name="spalte">Die neue Spalte; sie muss zu <paramref name="groesse"/> gehören.</param>
+        /// <exception cref="ArgumentNullException">Die Spalte fehlt.</exception>
+        /// <exception cref="ArgumentException">Die Spalte gehört einer anderen Größe.</exception>
+        public Vorgabematrix MitSpalte(Konditionierungsgroesse groesse, Matrixspalte spalte)
+        {
+            if (spalte == null) throw new ArgumentNullException(nameof(spalte));
+            if (spalte.Groesse != groesse)
+                throw new ArgumentException("Die Spalte gehört der Größe " +
+                                           Konditionierungsgroessen.Kennwort(spalte.Groesse) + ", nicht " +
+                                           Konditionierungsgroessen.Kennwort(groesse) + ".", nameof(spalte));
+            var spalten = new Matrixspalte[5];
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                spalten[(int)g] = g == groesse ? spalte : Spalte(g);
+            return new Vorgabematrix(spalten, Bestand);
+        }
+
         // =================================================================
         //  Die fünf Spalten aus den Bestandsfeldern (Konzept 3.3)
         // =================================================================

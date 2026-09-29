@@ -60541,6 +60541,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_DUPLIKAT_ZUSATZ {
+            get {
+                return ResourceManager.GetString("KOND_MSG_DUPLIKAT_ZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile {1} der Tabelle {0} gibt es nicht — der Wert der Zelle hat dort keinen Platz. ähnelt.
         /// </summary>
         public static string KOND_MSG_EIGNER_FEHLT {
@@ -60550,11 +60559,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Vorlage {0} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_HERKUNFT_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_HERKUNFT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogbau {0} gehört zur Auslieferung (Schloss) — seine Matrix und seine Kalender lassen sich nicht ändern. Legen Sie über „Duplizieren…“ einen eigenen Satz an. ähnelt.
         /// </summary>
         public static string KOND_MSG_KATALOGBAU_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_KATALOGBAU_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Größe {0} ist kein Kalender angelegt — legen Sie ihn erst aus der Matrix an. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KEIN_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KEIN_KALENDER", resourceCulture);
             }
         }
         
@@ -60577,11 +60604,173 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kalender trägt höchstens {1} Perioden, zusammen wären es {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODEN_ZU_VIELE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODEN_ZU_VIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Rangband {0} bis {1} ist kein Platz mehr für eine weitere Periode. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_BAND_VOLL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_BAND_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rang {0} der Regel {1} ist schon belegt — die Perioden lassen sich nicht ohne Verschiebung anlegen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_BELEGT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rang {0} kommt zweimal vor — zwei Perioden gälten für dieselbe Stunde. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_DOPPELT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage lässt sich nicht als Vorlage speichern — dafür gibt es „Duplizieren…“. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_ALS_QUELLE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_ALS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage lässt sich nicht auf eine Vorlage übernehmen — sie wirkt auf Gebäude, Zone oder Katalogbau. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_ALS_ZIEL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_ALS_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage {0} gehört zur Auslieferung (Schloss) — sie lässt sich nicht ändern. Legen Sie über „Duplizieren…“ eine eigene Vorlage an. ähnelt.
         /// </summary>
         public static string KOND_MSG_VORLAGE_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_VORLAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage „{0}“ gibt es in der Liste der Größe {1} schon — Namen unterscheiden sich nicht in Groß- und Kleinschreibung. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name einer Vorlage ist 1 bis {0} Zeichen lang und trägt keine Leerzeichen am Rand. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_NAME_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_NAME_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine der vier Nutzungen einer Vorlage. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage als Regel ({0} von {1} angelegt) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERKZEUG_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERKZEUG_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitfenster {0}, {1}–{2} Uhr = {3} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERKZEUG_ZEITFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERKZEUG_ZEITFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {0} liegt außerhalb der Grenzen {1}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {0} lässt sich nicht mit {1} Nachkommastellen ablegen und käme verändert zurück. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERT_RUNDLAUF {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERT_RUNDLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist kein Wochentag 1 (Montag) bis 7 (Sonntag). ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WOCHENTAG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WOCHENTAG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitfenster {0}–{1} Uhr ist leer oder liegt außerhalb 0 bis 24 Uhr. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITFENSTER_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITFENSTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neujahr;Karfreitag;Ostermontag;Erster Mai;Christi Himmelfahrt;Pfingstmontag;Tag der Deutschen Einheit;Erster Weihnachtstag;Zweiter Weihnachtstag ähnelt.
+        /// </summary>
+        public static string KOND_TEXT_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_TEXT_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo;Di;Mi;Do;Fr;Sa;So ähnelt.
+        /// </summary>
+        public static string KOND_TEXT_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("KOND_TEXT_WOCHENTAGE", resourceCulture);
             }
         }
         

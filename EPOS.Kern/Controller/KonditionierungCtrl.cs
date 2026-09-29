@@ -103,6 +103,26 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            /// <summary>
+            /// <b>Die Id des Satzes, der die Bestandsspalten dieses Eigentümers trägt</b> — das
+            /// Gebäude, die Zone, der Katalogbau oder die Vorlage (die keine führt,
+            /// <see cref="Matrixzellenort"/>). EINE Stelle: Schreibweg und Vorlagen-Controller
+            /// fragen dieselbe.
+            /// </summary>
+            internal long Traegerid
+            {
+                get
+                {
+                    switch (Art)
+                    {
+                        case Kalendereigentuemer.Gebaeude: return IdGebaeude;
+                        case Kalendereigentuemer.Zone: return IdZone.Value;
+                        case Kalendereigentuemer.Katalogbau: return IdStamm;
+                        default: return IdVorlage;
+                    }
+                }
+            }
+
             /// <summary>Die vier Eigentümerspalten als Werte für ein <c>INSERT</c> (NULL, wo sie nicht gilt).</summary>
             internal DbParam[] Spaltenwerte(string praefix)
                 => new[]
@@ -324,11 +344,53 @@ namespace WindowsFormsApplication1
         /// einmal geprüft — auch ein von Hand gebauter Kalender darf keine Reihe verschieben.
         /// </summary>
         public Ergebnis Schreiben(Eigner eigner, Konditionierungskalender kalender)
+            => Schreiben(eigner, kalender, null);
+
+        /// <summary>
+        /// Dieselbe Fassung mit einem <b>Vermerk</b> für die Spalte <c>Bemerkung</c> — die Herkunft
+        /// einer übernommenen Vorlage („aus Vorlage Büro") und der Vermerk eines Werkzeugs stehen
+        /// dort als <b>Text</b>, nie als Id am Ziel (Konzept 3.5, Entwurf KP1b Nr. 11).
+        /// </summary>
+        public Ergebnis Schreiben(Eigner eigner, Konditionierungskalender kalender, string bemerkung)
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (kalender == null) throw new ArgumentNullException(nameof(kalender));
             string schloss = Schloss(eigner);
             if (schloss != null) return Ergebnis.Fehler(schloss);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    Ergebnis e = KalenderSchreiben(v, eigner, kalender, bemerkung);
+                    if (!e.Ok)
+                    {
+                        v.Rollback();
+                        return e;
+                    }
+                    v.Commit();
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    return Ergebnis.Fehler(ex.Message);
+                }
+            }
+            return Ergebnis.Gut;
+        }
+
+        /// <summary>
+        /// <b>Derselbe Schreibweg im laufenden Vorgang</b> — die Klammer hält der Aufrufer. Der
+        /// Vorlagen-Controller braucht sie: „Vorlage übernehmen" schreibt Matrixzellen <b>und</b>
+        /// Kalender, und beides gehört in <b>einen</b> Vorgang (Konzept 5.5). Das Schloss prüft der
+        /// Aufrufer <b>vor</b> dem Vorgang — es steht in der Datenbank, nicht im Arbeitsstand.
+        /// </summary>
+        internal static Ergebnis KalenderSchreiben(DbVorgang v, Eigner eigner,
+                                                   Konditionierungskalender kalender, string bemerkung)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
             if (!Kalenderleser.Rundlaeuft(kalender, out int rang, out int stelle))
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
@@ -346,57 +408,47 @@ namespace WindowsFormsApplication1
             {
                 return Ergebnis.Fehler(ex.Message);
             }
+            if (bemerkung != null) zeile.Bemerkung = bemerkung;
 
             string groesse = Konditionierungsgroessen.Kennwort(kalender.Groesse);
-            using (DbVorgang v = DataRepository.Vorgang())
-            {
-                try
-                {
-                    // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
-                    // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
-                    v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
-                                 eigner.Bedingung() + " AND \"Groesse\" = ?",
-                                 Mit(eigner.Parameter(), new DbParam("@gr", groesse)));
 
-                    v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER +
-                                 "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
-                                 "\"Groesse\", \"Wert\", \"Aus\", \"Woche\", \"Nennwert\", \"Bemerkung\") " +
-                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                 Mit(eigner.Spaltenwerte("@e"),
-                                     new DbParam("@gr", groesse),
-                                     new DbParam("@w", (object)zeile.Wert),
-                                     new DbParam("@a", zeile.Aus ? 1 : 0),
-                                     new DbParam("@wo", (object)zeile.Woche),
-                                     new DbParam("@nw", (object)zeile.Nennwert),
-                                     new DbParam("@bm", (object)zeile.Bemerkung)));
+            // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
+            // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
+            v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
+                         eigner.Bedingung() + " AND \"Groesse\" = ?",
+                         Mit(eigner.Parameter(), new DbParam("@gr", groesse)));
 
-                    object neu = v.Skalar("SELECT last_insert_rowid()");
-                    long idKalender = Convert.ToInt64(neu, CultureInfo.InvariantCulture);
+            v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER +
+                         "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
+                         "\"Groesse\", \"Wert\", \"Aus\", \"Woche\", \"Nennwert\", \"Bemerkung\") " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                         Mit(eigner.Spaltenwerte("@e"),
+                             new DbParam("@gr", groesse),
+                             new DbParam("@w", (object)zeile.Wert),
+                             new DbParam("@a", zeile.Aus ? 1 : 0),
+                             new DbParam("@wo", (object)zeile.Woche),
+                             new DbParam("@nw", (object)zeile.Nennwert),
+                             new DbParam("@bm", (object)zeile.Bemerkung)));
 
-                    foreach (Periodenzeile p in perioden)
-                        v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE +
-                                     "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", \"Ende\", " +
-                                     "\"Feiertagsregel\", \"Wert\", \"Aus\", \"Woche\", \"WieWochentag\") " +
-                                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                     new DbParam("@k", idKalender),
-                                     new DbParam("@r", p.Rang),
-                                     new DbParam("@ar", p.Art),
-                                     new DbParam("@bz", p.Bezeichner),
-                                     new DbParam("@vo", (object)p.Beginn),
-                                     new DbParam("@bi", (object)p.Ende),
-                                     new DbParam("@ft", (object)p.Feiertagsregel),
-                                     new DbParam("@we", (object)p.Wert),
-                                     new DbParam("@au", p.Aus ? 1 : 0),
-                                     new DbParam("@wo", (object)p.Woche),
-                                     new DbParam("@ww", (object)p.WieWochentag));
-                    v.Commit();
-                }
-                catch (Exception ex)
-                {
-                    v.Rollback();
-                    return Ergebnis.Fehler(ex.Message);
-                }
-            }
+            object neu = v.Skalar("SELECT last_insert_rowid()");
+            long idKalender = Convert.ToInt64(neu, CultureInfo.InvariantCulture);
+
+            foreach (Periodenzeile p in perioden)
+                v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE +
+                             "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", \"Ende\", " +
+                             "\"Feiertagsregel\", \"Wert\", \"Aus\", \"Woche\", \"WieWochentag\") " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                             new DbParam("@k", idKalender),
+                             new DbParam("@r", p.Rang),
+                             new DbParam("@ar", p.Art),
+                             new DbParam("@bz", p.Bezeichner),
+                             new DbParam("@vo", (object)p.Beginn),
+                             new DbParam("@bi", (object)p.Ende),
+                             new DbParam("@ft", (object)p.Feiertagsregel),
+                             new DbParam("@we", (object)p.Wert),
+                             new DbParam("@au", p.Aus ? 1 : 0),
+                             new DbParam("@wo", (object)p.Woche),
+                             new DbParam("@ww", (object)p.WieWochentag));
             return Ergebnis.Gut;
         }
 
@@ -511,80 +563,19 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.ZONE_MSG_OHNE_KOPPLUNG, KonditionierungSchema.SCHRITT));
             string schloss = Schloss(eigner);
             if (schloss != null) return Ergebnis.Fehler(schloss);
-            bool bekannt = false;
-            foreach (string z in DbWerte.KOND_ZEILEN)
-                if (string.Equals(zeile, z, StringComparison.Ordinal)) { bekannt = true; break; }
-            if (!bekannt) return Ergebnis.Fehler("Die Zeile „" + (zeile ?? "leer") + "“ ist keine der sechs.");
-
-            // Die Grenzen der Groesse gelten den WERTZEILEN (Tag, Nacht, Wochenende, Ferien). Die
-            // Zeile NENNWERT traegt bei den Lasten einen Wattwert - nicht den Anteil 0 … 1 -, bei der
-            // Lueftung die Infiltration in 1/h; die Zeile SAISON traegt keinen Wert, nur Tage (E53).
-            if (zelle.Belegt && !zelle.Aus)
-            {
-                if (string.Equals(zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal))
-                {
-                    if (Konditionierungsgroessen.HatNennwert(groesse))
-                    {
-                        if (!(zelle.Wert >= 0.0) || double.IsInfinity(zelle.Wert))
-                            return Ergebnis.Fehler("Der Nennwert " + Zahltext(zelle.Wert) +
-                                                   " W ist negativ oder nicht endlich.");
-                    }
-                    else if (!Konditionierungsgroessen.ImBereich(groesse, zelle.Wert))
-                        return Ergebnis.Fehler("Der Wert liegt außerhalb der Grenzen " +
-                                               Konditionierungsgroessen.Bereichstext(groesse) + ".");
-                }
-                else if (!string.Equals(zeile, DbWerte.KOND_ZEILE_SAISON, StringComparison.Ordinal)
-                         && !Konditionierungsgroessen.ImBereich(groesse, zelle.Wert))
-                    return Ergebnis.Fehler("Der Wert liegt außerhalb der Grenzen " +
-                                           Konditionierungsgroessen.Bereichstext(groesse) + ".");
-            }
-
-            string gr = Konditionierungsgroessen.Kennwort(groesse);
-
-            // DIE WEICHE (Konzept 5.6): Wo es eine Bestandsspalte gibt, gehoert der Zahlenwert
-            // dorthin - die Vorgabezeile traegt dann nur "aus", Zeiten und Bedingt_K.
-            Matrixzellenort.Ort ort = Matrixzellenort.Fuer(eigner.Art, groesse, zeile);
-            bool inBestandsspalte = ort.IstBestandsspalte;
-            object wert = zelle.Belegt && !zelle.Aus && !inBestandsspalte ? (object)zelle.Wert : null;
+            string pruefung = ZellePruefen(groesse, zeile, zelle);
+            if (pruefung != null) return Ergebnis.Fehler(pruefung);
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
-                    if (inBestandsspalte && zelle.Belegt && !zelle.Aus)
+                    Ergebnis e = ZelleSchreiben(v, eigner, groesse, zeile, zelle);
+                    if (!e.Ok)
                     {
-                        int zeilen = v.Ausfuehren(
-                            "UPDATE \"" + ort.Tabelle + "\" SET \"" + ort.Spalte + "\" = ? WHERE \"ID\" = ?",
-                            new DbParam("@w", zelle.Wert),
-                            new DbParam("@id", Traegerid(eigner)));
-                        if (zeilen == 0)
-                        {
-                            v.Rollback();
-                            return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                                MyResource.Resource.KOND_MSG_EIGNER_FEHLT, ort.Tabelle,
-                                Traegerid(eigner).ToString(CultureInfo.InvariantCulture)));
-                        }
+                        v.Rollback();
+                        return e;
                     }
-
-                    v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE " +
-                                 eigner.Bedingung() + " AND \"Groesse\" = ? AND \"Zeile\" = ?",
-                                 Mit(eigner.Parameter(), new DbParam("@gr", gr), new DbParam("@ze", zeile)));
-
-                    bool leer = wert == null && !zelle.Aus && !zelle.Von.HasValue && !zelle.Bis.HasValue
-                                && !zelle.BedingtK.HasValue;
-                    if (!leer)
-                        v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
-                                     "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
-                                     "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\", \"Bedingt_K\") " +
-                                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                     Mit(eigner.Spaltenwerte("@e"),
-                                         new DbParam("@gr", gr),
-                                         new DbParam("@ze", zeile),
-                                         new DbParam("@we", wert),
-                                         new DbParam("@au", zelle.Aus ? 1 : 0),
-                                         new DbParam("@vo", (object)zelle.Von),
-                                         new DbParam("@bi", (object)zelle.Bis),
-                                         new DbParam("@bk", (object)zelle.BedingtK)));
                     v.Commit();
                 }
                 catch (Exception ex)
@@ -596,16 +587,94 @@ namespace WindowsFormsApplication1
             return Ergebnis.Gut;
         }
 
-        /// <summary>Die Id des Satzes, der die Bestandsspalten des Eigentümers trägt.</summary>
-        private static long Traegerid(Eigner eigner)
+        /// <summary>
+        /// <b>Was an einer Zelle auch ohne Datenbank prüfbar ist</b>: das Zeilenkennwort und die
+        /// Grenzen der Größe. Die Grenzen gelten den <b>Wertzeilen</b> (Tag, Nacht, Wochenende,
+        /// Ferien); die Zeile <c>NENNWERT</c> trägt bei den Lasten einen Wattwert — nicht den Anteil
+        /// 0 … 1 —, bei der Lüftung die Infiltration in 1/h, und die Zeile <c>SAISON</c> trägt keinen
+        /// Wert, nur Tage (E53, N1.61 Nr. 14).
+        /// </summary>
+        /// <returns><c>null</c>, wenn die Zelle passt, sonst die benannte Ablehnung.</returns>
+        internal static string ZellePruefen(Konditionierungsgroesse groesse, string zeile, Matrixzelle zelle)
         {
-            switch (eigner.Art)
+            bool bekannt = false;
+            foreach (string z in DbWerte.KOND_ZEILEN)
+                if (string.Equals(zeile, z, StringComparison.Ordinal)) { bekannt = true; break; }
+            if (!bekannt) return "Die Zeile „" + (zeile ?? "leer") + "“ ist keine der sechs.";
+
+            if (!zelle.Belegt || zelle.Aus) return null;
+
+            if (string.Equals(zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal))
             {
-                case Kalendereigentuemer.Gebaeude: return eigner.IdGebaeude;
-                case Kalendereigentuemer.Zone: return eigner.IdZone.Value;
-                case Kalendereigentuemer.Katalogbau: return eigner.IdStamm;
-                default: return eigner.IdVorlage;
+                if (Konditionierungsgroessen.HatNennwert(groesse))
+                    return !(zelle.Wert >= 0.0) || double.IsInfinity(zelle.Wert)
+                        ? "Der Nennwert " + Zahltext(zelle.Wert) + " W ist negativ oder nicht endlich."
+                        : null;
+                return Konditionierungsgroessen.ImBereich(groesse, zelle.Wert)
+                    ? null
+                    : "Der Wert liegt außerhalb der Grenzen " +
+                      Konditionierungsgroessen.Bereichstext(groesse) + ".";
             }
+
+            if (string.Equals(zeile, DbWerte.KOND_ZEILE_SAISON, StringComparison.Ordinal)) return null;
+
+            return Konditionierungsgroessen.ImBereich(groesse, zelle.Wert)
+                ? null
+                : "Der Wert liegt außerhalb der Grenzen " +
+                  Konditionierungsgroessen.Bereichstext(groesse) + ".";
+        }
+
+        /// <summary>
+        /// <b>Derselbe Zellenschreibweg im laufenden Vorgang</b> — samt der Weiche
+        /// <see cref="Matrixzellenort"/>: Wo es eine Bestandsspalte gibt, gehört der Zahlenwert
+        /// dorthin, und die Vorgabezeile trägt nur „aus", die Zeiten und <c>Bedingt_K</c>
+        /// (Konzept 5.6). Die Klammer und die Prüfungen (<see cref="Schloss"/>,
+        /// <see cref="ZellePruefen"/>) hält der Aufrufer.
+        /// </summary>
+        internal static Ergebnis ZelleSchreiben(DbVorgang v, Eigner eigner, Konditionierungsgroesse groesse,
+                                                string zeile, Matrixzelle zelle)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            if (zelle == null) throw new ArgumentNullException(nameof(zelle));
+
+            string gr = Konditionierungsgroessen.Kennwort(groesse);
+            Matrixzellenort.Ort ort = Matrixzellenort.Fuer(eigner.Art, groesse, zeile);
+            bool inBestandsspalte = ort.IstBestandsspalte;
+            object wert = zelle.Belegt && !zelle.Aus && !inBestandsspalte ? (object)zelle.Wert : null;
+
+            if (inBestandsspalte && zelle.Belegt && !zelle.Aus)
+            {
+                int zeilen = v.Ausfuehren(
+                    "UPDATE \"" + ort.Tabelle + "\" SET \"" + ort.Spalte + "\" = ? WHERE \"ID\" = ?",
+                    new DbParam("@w", zelle.Wert),
+                    new DbParam("@id", eigner.Traegerid));
+                if (zeilen == 0)
+                    return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KOND_MSG_EIGNER_FEHLT, ort.Tabelle,
+                        eigner.Traegerid.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE " +
+                         eigner.Bedingung() + " AND \"Groesse\" = ? AND \"Zeile\" = ?",
+                         Mit(eigner.Parameter(), new DbParam("@gr", gr), new DbParam("@ze", zeile)));
+
+            bool leer = wert == null && !zelle.Aus && !zelle.Von.HasValue && !zelle.Bis.HasValue
+                        && !zelle.BedingtK.HasValue;
+            if (!leer)
+                v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
+                             "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
+                             "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\", \"Bedingt_K\") " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                             Mit(eigner.Spaltenwerte("@e"),
+                                 new DbParam("@gr", gr),
+                                 new DbParam("@ze", zeile),
+                                 new DbParam("@we", wert),
+                                 new DbParam("@au", zelle.Aus ? 1 : 0),
+                                 new DbParam("@vo", (object)zelle.Von),
+                                 new DbParam("@bi", (object)zelle.Bis),
+                                 new DbParam("@bk", (object)zelle.BedingtK)));
+            return Ergebnis.Gut;
         }
 
         // =================================================================

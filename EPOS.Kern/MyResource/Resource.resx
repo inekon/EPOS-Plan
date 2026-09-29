@@ -39682,4 +39682,68 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_MSG_KOPF_NICHT_ANGELEGT" xml:space="preserve">
     <value>Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben.</value>
   </data>
+  <data name="KOND_MSG_VORLAGE_NAME_UNGUELTIG" xml:space="preserve">
+    <value>Der Name einer Vorlage ist 1 bis {0} Zeichen lang und trägt keine Leerzeichen am Rand.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NAME_DOPPELT" xml:space="preserve">
+    <value>Eine Vorlage „{0}“ gibt es in der Liste der Größe {1} schon — Namen unterscheiden sich nicht in Groß- und Kleinschreibung.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FEHLT" xml:space="preserve">
+    <value>Die Vorlage {0} gibt es nicht.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“ ist keine der vier Nutzungen einer Vorlage.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
+    <value>Eine Vorlage lässt sich nicht als Vorlage speichern — dafür gibt es „Duplizieren…“.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_ALS_ZIEL" xml:space="preserve">
+    <value>Eine Vorlage lässt sich nicht auf eine Vorlage übernehmen — sie wirkt auf Gebäude, Zone oder Katalogbau.</value>
+  </data>
+  <data name="KOND_MSG_HERKUNFT_VORLAGE" xml:space="preserve">
+    <value>aus Vorlage {0}</value>
+  </data>
+  <data name="KOND_MSG_DUPLIKAT_ZUSATZ" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="KOND_MSG_KEIN_KALENDER" xml:space="preserve">
+    <value>Für die Größe {0} ist kein Kalender angelegt — legen Sie ihn erst aus der Matrix an.</value>
+  </data>
+  <data name="KOND_MSG_WERT_AUSSERHALB" xml:space="preserve">
+    <value>Der Wert {0} liegt außerhalb der Grenzen {1}.</value>
+  </data>
+  <data name="KOND_MSG_WERT_RUNDLAUF" xml:space="preserve">
+    <value>Der Wert {0} lässt sich nicht mit {1} Nachkommastellen ablegen und käme verändert zurück.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITFENSTER" xml:space="preserve">
+    <value>Zeitfenster {0}, {1}–{2} Uhr = {3}</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage als Regel ({0} von {1} angelegt)</value>
+  </data>
+  <data name="KOND_MSG_WOCHENTAG_UNGUELTIG" xml:space="preserve">
+    <value>{0} ist kein Wochentag 1 (Montag) bis 7 (Sonntag).</value>
+  </data>
+  <data name="KOND_MSG_ZEITFENSTER_UNGUELTIG" xml:space="preserve">
+    <value>Das Zeitfenster {0}–{1} Uhr ist leer oder liegt außerhalb 0 bis 24 Uhr.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BELEGT" xml:space="preserve">
+    <value>Der Rang {0} der Regel {1} ist schon belegt — die Perioden lassen sich nicht ohne Verschiebung anlegen.</value>
+  </data>
+  <data name="KOND_MSG_RANG_DOPPELT" xml:space="preserve">
+    <value>Der Rang {0} kommt zweimal vor — zwei Perioden gälten für dieselbe Stunde.</value>
+  </data>
+  <data name="KOND_MSG_RANG_BAND_VOLL" xml:space="preserve">
+    <value>Im Rangband {0} bis {1} ist kein Platz mehr für eine weitere Periode.</value>
+  </data>
+  <data name="KOND_MSG_PERIODEN_ZU_VIELE" xml:space="preserve">
+    <value>Ein Kalender trägt höchstens {1} Perioden, zusammen wären es {0}.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE" xml:space="preserve">
+    <value>Neujahr;Karfreitag;Ostermontag;Erster Mai;Christi Himmelfahrt;Pfingstmontag;Tag der Deutschen Einheit;Erster Weihnachtstag;Zweiter Weihnachtstag</value>
+  </data>
+  <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
+    <value>Mo;Di;Mi;Do;Fr;Sa;So</value>
+  </data>
 </root>
+
