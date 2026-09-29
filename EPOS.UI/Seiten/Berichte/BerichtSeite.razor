@@ -352,6 +352,12 @@
                         </div>
                     }
 
+                    @* "Original geaendert - uebernehmen?" (Konzept 10.2/10.3): eine eigene
+                       Zeile unter der Pruefzeile, nur wo es ein Original ausserhalb des
+                       Vorlagenordners gibt. *@
+                    <Vorlagenoriginalzeile Zeile="@_originalzeile" Gesperrt="@GruppeGesperrt"
+                                           Gewaehlt="HandlungKlick" />
+
                     @if (ExcelzeileSichtbar)
                     {
                         @* BV-E7: die Zeile "Excel-Vorlage" - nur, wenn eine Mappe entsteht. *@
@@ -428,6 +434,8 @@
                                 }
                             </div>
                         }
+                        <Vorlagenoriginalzeile Zeile="@_excelOriginalzeile" Gesperrt="@GruppeGesperrt"
+                                               Gewaehlt="HandlungKlick" />
                     }
                 </div>
             }
@@ -754,6 +762,13 @@
     [Parameter] public Pruefstand? Pruefzeile { get; set; }
 
     /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Word-Vorlage
+    /// (Konzept 10.2/10.3); <c>null</c> = keine. Ihre zwei Handlungen meldet die Seite über
+    /// <see cref="HandlungGewaehlt"/> — denselben Weg wie das Menü „…".
+    /// </summary>
+    [Parameter] public Originalstand? Originalzeile { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Überlagerung „Prüfliste" (<c>PrueflisteDialog</c>) — „anzeigen"
     /// in der Prüfzeile öffnet sie; <c>null</c> als Antwort = geht gerade nicht. Ohne Delegat
     /// kein „anzeigen". <c>Geschlossen</c> und <c>TitelAnzeigen</c> setzt die Seite selbst.
@@ -808,6 +823,9 @@
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
     [Parameter] public Pruefstand? ExcelPruefzeile { get; set; }
 
+    /// <summary>Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
+    [Parameter] public Originalstand? ExcelOriginalzeile { get; set; }
+
     /// <summary>BV-E7: der Parametersatz der Prüfliste der Excel-Vorlage; ohne Delegat kein „anzeigen“.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ExcelPrueflisteGaben { get; set; }
 
@@ -859,6 +877,7 @@
     private int? _vorlageId;
     private IReadOnlyList<Handlung> _handlungen = Array.Empty<Handlung>();
     private Pruefstand? _pruefzeile;
+    private Originalstand? _originalzeile;
     private Startrueckfrage? _startrueckfrage;
 
     /// <summary>BV-E9: die Sprache des Berichts aus der Vorlage als Information der Startrückfrage; leer = keine.</summary>
@@ -877,9 +896,11 @@
     private bool _neuExcel;
     private int? _excelVorlageId;
     private Pruefstand? _excelPruefzeile;
+    private Originalstand? _excelOriginalzeile;
     private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
     private int? _gesehenExcelVorlageId;
     private Pruefstand? _gesehenExcelPruefzeile;
+    private Originalstand? _gesehenExcelOriginalzeile;
 
     /// <summary>BV-E2: die Meldung nach dem Klick auf ein weich gesperrtes Häkchen (Banner mit Verfall).</summary>
     private string _bausteinmeldung = "";
@@ -889,6 +910,7 @@
     private int? _gesehenVorlageId;
     private IReadOnlyList<Handlung>? _gesehenHandlungen;
     private Pruefstand? _gesehenPruefzeile;
+    private Originalstand? _gesehenOriginalzeile;
     private Startrueckfrage? _gesehenStartrueckfrage;
     private Kapitelstand? _gesehenKapitelstand;
     private bool _gesehen;
@@ -972,11 +994,13 @@
                    || VorlageId != _gesehenVorlageId
                    || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
                    || !Equals(Pruefzeile, _gesehenPruefzeile)
+                   || !Equals(Originalzeile, _gesehenOriginalzeile)
                    || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
                    || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
+                   || !Equals(ExcelOriginalzeile, _gesehenExcelOriginalzeile)
                    || !ReferenceEquals(ExcelVorlagenhandlungen, _gesehenExcelHandlungen);
         if (!neu) return;
 
@@ -985,22 +1009,26 @@
         _gesehenVorlageId = VorlageId;
         _gesehenHandlungen = Vorlagenhandlungen;
         _gesehenPruefzeile = Pruefzeile;
+        _gesehenOriginalzeile = Originalzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
         _gesehenKapitelstand = Kapitelstand;
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
+        _gesehenExcelOriginalzeile = ExcelOriginalzeile;
         _gesehenExcelHandlungen = ExcelVorlagenhandlungen;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
         _handlungen = Vorlagenhandlungen ?? Array.Empty<Handlung>();
         _pruefzeile = Pruefzeile;
+        _originalzeile = Originalzeile;
         _startrueckfrage = Startrueckfrage;
         _kapitel = Kapitelstand;
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
+        _excelOriginalzeile = ExcelOriginalzeile;
         _excelHandlungen = ExcelVorlagenhandlungen ?? Array.Empty<Handlung>();
     }
 
@@ -1638,12 +1666,14 @@
         _vorlageId = neu.VorlageId;
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
+        _originalzeile = neu.Originalzeile;
         _startrueckfrage = neu.Startrueckfrage;
         _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
+        _excelOriginalzeile = neu.ExcelOriginalzeile;
         _excelHandlungen = neu.ExcelHandlungen ?? Array.Empty<Handlung>();
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";

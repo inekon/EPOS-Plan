@@ -12657,6 +12657,13 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     min-width: 0;
 }
 
+/* Die Zeile "Original geaendert - uebernehmen?" (Konzept Berichtsvorlagen
+   10.2/10.3) steht unmittelbar unter der Pruefzeile und nimmt deren Zeilenform;
+   eigen ist nur der kleine Abstand. */
+.epos-vorlage-originalzeile {
+    margin-top: 2px;
+}
+
 /* ---- Die Pruefliste ------------------------------------------------- */
 
 .epos-vorlage-meldungsgruppe + .epos-vorlage-meldungsgruppe {

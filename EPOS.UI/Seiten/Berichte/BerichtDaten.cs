@@ -261,6 +261,27 @@ public sealed record Benannthandlung(string Id, string Name);
 public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = false, string Knopftext = "");
 
 /// <summary>
+/// Die Zeile „Original geändert – übernehmen?“ UNTER der Prüfzeile einer eigenen Vorlage (Konzept
+/// Berichtsvorlagen 10.2, 10.3): Das Original, aus dem „Hinzufügen…“ die Kopie im Vorlagenordner
+/// gemacht hat, trägt nicht mehr die gemerkte Prüfsumme.
+///
+/// <para>Sie entsteht nur, wo es ein Original AUSSERHALB des Vorlagenordners gibt (unter Windows);
+/// auf iOS wird die Vorlage beim Hinzufügen in die Sandbox kopiert, dann bleibt die Zeile weg
+/// (<c>Berichtsvorlagenwege.HerkunftDauerhaft</c>). <c>null</c> = keine Zeile.</para>
+/// </summary>
+/// <param name="Symbol">Das Zeichen vor dem Text; reine Dekoration wie bei <see cref="Pruefstand"/>.</param>
+/// <param name="Text">„Original geändert – übernehmen?“</param>
+/// <param name="Uebernehmen">
+/// „Übernehmen“: legt das Original erneut über die Kopie. Wie jede <see cref="Handlung"/> weich
+/// gesperrt, solange die Vorlage in Word geöffnet ist — der Grund steht dann am Knopf.
+/// </param>
+/// <param name="Behalten">
+/// „Behalten“: weist diesen Stand des Originals zurück; die Zeile kommt erst wieder, wenn sich das
+/// Original erneut ändert.
+/// </param>
+public sealed record Originalstand(string Symbol, string Text, Handlung Uebernehmen, Handlung Behalten);
+
+/// <summary>
 /// BV-E2 (Konzept Berichtsvorlagen 10.2, „Häkchen (BV-Q1 c)"): <b>was die gewählte Word-Vorlage an
 /// Kapiteln führt</b> — die Grundlage der Häkchenliste. Die Hülle leitet ihn aus der Schnellprüfung
 /// ab (<c>Pruefbefund.Bausteine</c>, <c>Pruefbefund.HatKapitel</c>); die Seite verbindet ihn mit dem
@@ -358,6 +379,13 @@ public sealed record Vorlagenstand
     /// <summary>Die Prüfzeile; <c>null</c> = keine.</summary>
     public Pruefstand? Pruefzeile { get; init; }
 
+    /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?“ unter der Prüfzeile der Word-Vorlage;
+    /// <c>null</c> = keine (kein Original außerhalb des Vorlagenordners, unverändert oder
+    /// zurückgewiesen).
+    /// </summary>
+    public Originalstand? Originalzeile { get; init; }
+
     /// <summary>Die erweiterte Startrückfrage; <c>null</c> = die heutige gilt.</summary>
     public Startrueckfrage? Startrueckfrage { get; init; }
 
@@ -386,6 +414,12 @@ public sealed record Vorlagenstand
 
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
     public Pruefstand? ExcelPruefzeile { get; init; }
+
+    /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?“ unter der Prüfzeile der Excel-Vorlage;
+    /// <c>null</c> = keine. Dieselbe Regel wie <see cref="Originalzeile"/>.
+    /// </summary>
+    public Originalstand? ExcelOriginalzeile { get; init; }
 
     /// <summary>
     /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
