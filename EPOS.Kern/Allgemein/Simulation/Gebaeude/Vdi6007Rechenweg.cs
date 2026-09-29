@@ -261,6 +261,8 @@ namespace WindowsFormsApplication1
                 string werZone = wer + ", " + m.Eingaenge[z].Bezeichnung;
                 HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
                 HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
+                HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
             }
 
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
