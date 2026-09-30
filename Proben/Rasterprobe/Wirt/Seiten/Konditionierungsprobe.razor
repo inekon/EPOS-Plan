@@ -4,7 +4,7 @@
 @using EPOS.UI.Dialoge.Bedarf
 @inject NavigationManager Navigation
 
-@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Welle U0b; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b und U1; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
     Pruefstand, nicht Auslieferung.
 
     Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
@@ -16,6 +16,12 @@
     Zonenweg melden Erfolg, die hergeleiteten Vorgaben der Waermeuebergabe fehlen (sie lesen die
     Klimareihe eines Projekts), der Brauchwasserweg ebenso (keine Schale haengt ihn ein).
 
+    DER REITER "KONDITIONIERUNG" (Welle U1) bekommt den WEG OHNE DATENBANK der Huelle
+    (KonditionierungHuelle.ReinerWeg): Zellen, Kalender, Rueckfragen, "aufteilen" und
+    "Zuruecknehmen" rechnen ueber die reinen Schritte des Kerns; die Vorlagen fehlen ("kein Delegat,
+    kein Knopf"), "Aus dem Katalog erneut uebernehmen..." im Projekt uebernimmt hier den Stand, wie er
+    ist. Der Satz traegt eine leere Konditionierung - wie ein Satz einer Datenbank mit den Tabellen.
+
     Gaben ueber die Adresse:
       ?fall=projekt    Betriebsart Projekt mit zwei Zonen (Zonenweg der Seite)
       ?fall=gesamt     Betriebsart Bearbeiten; die Lueftung als GESAMTANGABE: nur die
@@ -23,6 +29,8 @@
       ?fall=gesperrt   Betriebsart Bearbeiten, ein ausgelieferter Satz - Gesperrt und SperrGrund,
                        wie die Huelle sie fuer ReadOnly setzt (KOND_TXT_HINWEIS_LESEMODUS)
       ?fall=neu        Betriebsart Neu, der leere Satz der Huelle (Vorgabe)
+      ?fall=ohnetabellen  Betriebsart Bearbeiten ohne die Tabellen der Konditionierung - der Weg der
+                       Huelle ohne Datenbank: der Reiter benannt gesperrt (Festlegung 6)
       ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
                        Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
                        Gemeinjahrdatum (Saison von/bis)
@@ -103,8 +111,8 @@
 @code {
     // ------------------------------------------------------------- Adresse
     private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
-                         BAUSTEINE = "bausteine";
-    private static readonly string[] FAELLE = { PROJEKT, GESAMT, GESPERRT, NEU, BAUSTEINE };
+                         OHNE_TABELLEN = "ohnetabellen", BAUSTEINE = "bausteine";
+    private static readonly string[] FAELLE = { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, BAUSTEINE };
     private const string KulturDe = "de-DE", KulturEn = "en-US";
 
     private string _fall = NEU;
@@ -184,6 +192,14 @@
         };
         gaben.Remove("UebergabeHerleitung");   // liest die Klimareihe eines Projekts
 
+        // Welle U1: der Weg der Konditionierung OHNE Datenbank (die reinen Schritte des Kerns); im
+        // Projekt mit „Aus dem Katalog erneut übernehmen…", das hier den Stand übernimmt, wie er ist.
+        if (fall != OHNE_TABELLEN)
+            gaben["Konditionierung"] = fall == PROJEKT
+                ? KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true,
+                                                  katalogErneut: s => KonditionierungErgebnis.Gut(s))
+                : KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false);
+
         switch (fall)
         {
             case PROJEKT:
@@ -191,6 +207,20 @@
                 gaben["Modus"] = GebaeudeKatalogModus.Projekt;
                 gaben["Zonen"] = Zonenweg();
                 gaben["HilfeSchluessel"] = GebaeudeKatalogHuelle.HILFE_PROJEKT;
+                break;
+
+            case NEU:
+                // Der leere Satz der Hülle, mit einer leeren Konditionierung wie in einer Datenbank mit Tabellen.
+                if (gaben.TryGetValue("Daten", out object? leer) && leer is GebaeudeKatalogDaten neu)
+                    neu.Konditionierung = new KonditionierungDaten();
+                break;
+
+            case OHNE_TABELLEN:
+                // Der Weg der Hülle ohne Datenbank: keine Tabellen, der Reiter nennt den Grund.
+                GebaeudeKatalogDaten ohne = Satz("Probehaus ohne Tabellen");
+                ohne.Konditionierung = null;
+                gaben["Daten"] = ohne;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
                 break;
 
             case GESAMT:
@@ -226,6 +256,7 @@
     private static GebaeudeKatalogDaten Satz(string name) => new()
     {
         Name = name,
+        Konditionierung = new KonditionierungDaten(),
         Typ = "Wohnblock",
         Beschreibung = "Synthetischer Satz der Konditionierungsprobe, ohne Datenbank",
         Gebaeudeart = "grosses Mehrfamilienhaus",

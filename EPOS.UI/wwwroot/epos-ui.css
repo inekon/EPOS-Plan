@@ -117,7 +117,6 @@
     --epos-ecke: 6px;                       /* ECKE                         */
     --epos-karte-rand: 16px;                /* KARTE_RAND                   */
     --epos-karte-statuspunkt: 14px;         /* KARTE_STATUSPUNKT            */
-    --epos-infoknopf: 28px;                 /* InfoKnopf.GROESSE            */
 
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
@@ -918,16 +917,19 @@ body {
     color: var(--epos-marke);
 }
 
-/* Der Rahmen um beide Felder: Rundung 16px, Hoehe --epos-infoknopf (28px),
-   ein gemeinsamer Rahmen statt zwei getrennter Formen. Ohne Assistenten
-   steht nur das linke Feld darin - die Pille sieht dann wie ein
-   gewoehnlicher runder Knopf aus. */
+/* Der Rahmen um beide Felder: Rundung einer halben Hoehe, ein gemeinsamer
+   Rahmen statt zwei getrennter Formen. Ohne Assistenten steht nur das linke
+   Feld darin - die Pille sieht dann wie ein gewoehnlicher runder Knopf aus.
+   Jedes Feld ist ein BERUEHRUNGSZIEL (Hausregel 44 px, Stufe KP2 Welle U1)
+   und bestimmt die Hoehe: Die Pille umschliesst es mit ihrem Rahmen, statt es
+   auf eine feste Hoehe zu beschneiden (overflow: hidden schnitte auch die
+   Trefferflaeche). Das Hausmass 28 px des WinForms-Vorbilds InfoKnopf gilt
+   hier nicht - gemessen waren 28 x 26 px. */
 .epos-hilfepille {
     display: inline-flex;
     align-items: stretch;
-    height: var(--epos-infoknopf);
     border: 1px solid var(--epos-rahmen);
-    border-radius: 16px;
+    border-radius: 23px;
     overflow: hidden;
 }
 
@@ -935,7 +937,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: var(--epos-infoknopf);
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
     height: 100%;
     padding: 0 6px;
     margin: 0;
@@ -6679,12 +6682,13 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    der Hilfepille aus InfoKnopf (Farben in .epos-ki-marke-*, Baustein
    InfoKnopf weiter oben). Der Vorlaeufer KiAufrufKnopf war ein 24-40 px
    breiter Textknopf ("KI") LINKS neben dem Infoknopf (Kollisionsregel
-   InfoKnopf.cs:99); die Hoehe haelt er weiter mit --epos-infoknopf gleich.
+   InfoKnopf.cs:99); er haelt dasselbe Beruehrungsmass wie die Hilfepille
+   (--epos-touchziel, Stufe KP2 Welle U1).
    -------------------------------------------------------------------------- */
 .epos-kiknopf {
-    width: var(--epos-infoknopf);
-    height: var(--epos-infoknopf);
-    min-width: var(--epos-infoknopf);
+    width: var(--epos-touchziel);
+    height: var(--epos-touchziel);
+    min-width: var(--epos-touchziel);
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -13401,6 +13405,209 @@ td.epos-vorlage-katalogbeschreibung {
         background: Highlight;
         color: HighlightText;
     }
+}
+
+/* ==========================================================================
+   DER REITER „KONDITIONIERUNG" (Stufe KP2, Welle U1; Teilkonzept
+   Konditionierungsprofile 7.1, 7.2; Entwurf KP2 Festlegung 7) — die
+   Vorgabe-Matrix, die Kalenderkarten und die Zusatzzeilen.
+
+   UMBRUCH AM BEHAELTER, NICHT AM FENSTER: .epos-kond ist ein Container
+   (epos-kond). Unter 900 px Behaelterbreite steht je Groesse eine Spalte
+   der Matrix mit ihrer Karte, umschaltbar ueber fuenf Reiter; ab 900 px
+   die ganze Matrix als Tabelle und die fuenf Karten darunter. Eine
+   Medienabfrage griffe in der Ueberlagerung nie (Entwurf A, D4). Das
+   Markup ist in beiden Anordnungen dasselbe - die Zellen der anderen
+   Spalten blendet das Blatt aus; die gewaehlte traegt .epos-kond--aktiv.
+
+   DIE ZELLEN nehmen die Breite ihrer Spalte (table-layout: fixed, das
+   Eingabefeld 100 %), statt die Tabelle mit seiner Eigenbreite quer zu
+   schieben (Hausregel Stammblatt-Tabelle); die Beschriftung jedes Felds
+   ("Heizen · Tag") wird nur vorgelesen und bleibt IN ihrer Zelle.
+   ========================================================================== */
+
+.epos-kond {
+    container-type: inline-size;
+    container-name: epos-kond;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kond-groessen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-kond-groesse {
+    min-width: 0;
+}
+
+.epos-kond-matrix {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.epos-kond-matrix-titel {
+    caption-side: top;
+    text-align: left;
+    font-weight: 600;
+    padding-bottom: 4px;
+}
+
+.epos-kond-matrix th,
+.epos-kond-matrix td {
+    padding: 4px;
+    vertical-align: top;
+    text-align: left;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kond-matrix th[scope=row] {
+    width: 8.5em;
+    padding-top: 12px;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-matrix th[scope=col] {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-ecke {
+    width: 8.5em;
+}
+
+.epos-kond-zelle {
+    min-width: 0;
+}
+
+.epos-kond-zelle > * + * {
+    margin-top: 4px;
+}
+
+.epos-kond-zelle .epos-feld {
+    position: relative;
+    min-width: 0;
+}
+
+.epos-kond-zelle .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.epos-kond-zelle .epos-feld-zeile {
+    min-width: 0;
+}
+
+.epos-kond-zelle .epos-eingabe {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.epos-kond-leer,
+.epos-kond-text {
+    display: block;
+    padding-top: 8px;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-leer {
+    color: var(--epos-text-leise);
+}
+
+/* Die weich gesperrte Kuehlspalte: der Wert als Knopf mit aria-disabled -
+   derselbe Knopf des Hauses, der Versuch meldet den Grund. */
+.epos-kond-gesperrt {
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+}
+
+/* Schmal (Vorgabe): nur die Spalte und die Karte der gewaehlten Groesse. */
+.epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),
+.epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv),
+.epos-kond-karte:not(.epos-kond--aktiv) {
+    display: none;
+}
+
+.epos-kond-karten {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--epos-rand);
+}
+
+.epos-kond-karte {
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-kond-karte-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 12px;
+}
+
+.epos-kond-karte-titel {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.epos-kond-karte-zustand {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-kond-karte-knoepfe {
+    margin-top: 6px;
+}
+
+/* Die Knopfzeilen des Reiters (Kopf und Karte) brechen zwischen den
+   Knoepfen um, nie im Wort (gemessen: "Zurueckneh|men" bei 390 px). */
+.epos-kond-kopf,
+.epos-kond-karte-knoepfe {
+    flex-wrap: wrap;
+}
+
+@container epos-kond (min-width: 900px) {
+    .epos-kond-groessen {
+        display: none;
+    }
+
+    .epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),
+    .epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv) {
+        display: table-cell;
+    }
+
+    .epos-kond-karte:not(.epos-kond--aktiv) {
+        display: block;
+    }
+
+    .epos-kond-karten {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* Der Gebaeude-Katalogeditor ist nicht auf 1160 px gedeckelt (Stufe KP2,
+   Welle U1; Vorbild .epos-wp-anlage): Die Vorgabe-Matrix aus fuenf Spalten
+   ist keine Bandwurmzeile, und der Behaelter der Konditionierung bricht an
+   SEINER Breite um. Zwei Klassen (0,2,0) schlagen die Grundregel. */
+.epos-dialog.epos-gebk-editor {
+    max-width: none;
 }
 
 /* ==================================================================== */

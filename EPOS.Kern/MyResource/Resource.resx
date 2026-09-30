@@ -40624,5 +40624,89 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_MSG_SP_KALENDER" xml:space="preserve">
     <value>Kalender</value>
   </data>
+  <data name="KOND_TXT_HINWEIS_ZURUECKNEHMEN" xml:space="preserve">
+    <value>„Zurücknehmen“ nimmt den letzten Schritt dieses Reiters zurück; geschrieben wird erst mit OK.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHTS_ZURUECK" xml:space="preserve">
+    <value>Es gibt keinen Schritt, den „Zurücknehmen“ zurücknehmen könnte.</value>
+  </data>
+  <data name="KOND_TXT_NICHTS" xml:space="preserve">
+    <value>nichts</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_MATRIXZELLEN" xml:space="preserve">
+    <value>{0} Zellen der Matrix</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_KALENDER" xml:space="preserve">
+    <value>{0} Kalender</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_STANDARDWOCHE" xml:space="preserve">
+    <value>die Standardwoche</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FERIENPERIODEN" xml:space="preserve">
+    <value>{0} Ferienperioden</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_SAISON" xml:space="preserve">
+    <value>die Saison</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_EIGENE_PERIODEN" xml:space="preserve">
+    <value>{0} eigene Perioden</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FEIERTAGE" xml:space="preserve">
+    <value>{0} Feiertagsregeln</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_NACHTZEITEN" xml:space="preserve">
+    <value>das Nachtfenster</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FERIENZEITRAEUME" xml:space="preserve">
+    <value>die Ferienzeiträume</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_LUFTWECHSEL" xml:space="preserve">
+    <value>die Gesamtangabe des Luftwechsels</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_ZONENKALENDER" xml:space="preserve">
+    <value>{0} Kalender und Zellen von Zonen</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_BAUTEILE" xml:space="preserve">
+    <value>{0} Bauteile</value>
+  </data>
+  <data name="KOND_FRAGE_VERWERFEN" xml:space="preserve">
+    <value>Den angelegten Kalender „{0}“ verwerfen? Es fällt: {1}. Es bleibt: {2}. Danach gilt wieder die Matrix.</value>
+  </data>
+  <data name="KOND_FRAGE_MATRIX_ERNEUT" xml:space="preserve">
+    <value>Die Matrix erneut auf den Kalender „{0}“ anwenden? Ersetzt wird: {1}. Es bleibt: {2}.</value>
+  </data>
+  <data name="KOND_FRAGE_KATALOG_ERNEUT" xml:space="preserve">
+    <value>Die Konditionierung des Gebäudes erneut aus dem Katalogsatz übernehmen? Ersetzt wird die ganze Gebäudeebene: {0}. Es bleibt: {1}.</value>
+  </data>
+  <data name="KOND_FRAGE_AUFTEILEN" xml:space="preserve">
+    <value>Die Lüftung dieses Gebäudes steht als Gesamtangabe: Luftwechselrate {0} 1/h. Eine Vorgabe der Lüftung braucht Infiltration und Nutzerlüftung getrennt. Aufteilen in Infiltration {1} 1/h und Nutzerlüftung {2} 1/h? Die Summe bleibt.</value>
+  </data>
+  <data name="KOND_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
+    <value>„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: {0}. Trotzdem anlegen?</value>
+  </data>
+  <data name="KOND_FRAGE_ZONEN" xml:space="preserve">
+    <value>Betroffene Zonen: {0}.</value>
+  </data>
+  <data name="KOND_FRAGE_OHNE_EINZELHEITEN" xml:space="preserve">
+    <value>„{0}“ ersetzt Angaben dieses Reiters. Fortfahren?</value>
+  </data>
+  <data name="KOND_TXT_KI_ZELLE" xml:space="preserve">
+    <value>Eine Zelle der Vorgabe-Matrix im Reiter „Konditionierung“: {0}, Zeile „{1}“, in {2}. Leer heißt: keine eigene Angabe – es gilt, was die Matrix sonst vorgibt.</value>
+  </data>
+  <data name="KOND_TXT_KI_AUS" xml:space="preserve">
+    <value>„aus“ für {0} in der Zeile „{1}“: wahr = in dieser Zeit wird nicht geheizt bzw. gekühlt; falsch = es gilt der Wert der Zelle.</value>
+  </data>
+  <data name="KOND_TXT_KI_FENSTER" xml:space="preserve">
+    <value>Nachtfenster der Spalte {0}: {1} als volle Stunde 0 bis 23; beide leer = das Nachtfenster der Heizspalte.</value>
+  </data>
+  <data name="KOND_TXT_KI_SAISON" xml:space="preserve">
+    <value>Saison der Spalte {0}: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember). Innerhalb der Saison wird geheizt bzw. gekühlt; beide leer = ganzjährig.</value>
+  </data>
+  <data name="KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Stunden mit Nachtauskühlung:</value>
+  </data>
+  <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Nachtauskühlung</value>
+  </data>
 </root>
 

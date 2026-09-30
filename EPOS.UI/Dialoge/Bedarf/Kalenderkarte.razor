@@ -1,0 +1,70 @@
+﻿@* DIE KALENDERKARTE (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 7.1, 7.5) - je Groesse
+   eine Karte unter der Matrix, EINGEKLAPPT mit einer Zeile Zustand: "aus der Matrix", "aus Vorlage
+   Buero", "angelegt, 3 eigene Perioden" (an einer Zone "vom Gebaeude").
+
+   WAS SIE IN U1 TRAEGT. Nur die Handlungen, die keinen Karteninhalt brauchen: "Kalender anlegen" an
+   einem abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Die
+   Auswahlliste der Vorlagen (U2) und der Inhalt - Grundangabe, Zeitfenster, Wochenraster,
+   Periodenliste, Werkzeuge, Teppichbild (U3) - kommen spaeter in dieselbe Karte.
+
+   KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht. Im Lesemodus
+   (ausgelieferter Satz) steht nur der Zustand. Die Rueckfragen stellt der Wirt (Festlegung 3). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+
+<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "")" data-groesse="@((int)Groesse)"
+         aria-label="@Titel">
+    <div class="epos-kond-karte-kopf">
+        <h3 class="epos-kond-karte-titel">@Titel</h3>
+        <p class="epos-kond-karte-zustand">@Zustand</p>
+    </div>
+    @if (!Lesemodus && (Anlegen.HasDelegate || Verwerfen.HasDelegate || MatrixErneut.HasDelegate))
+    {
+        <div class="epos-zeilenknoepfe epos-kond-karte-knoepfe">
+            @if (!Angelegt && Anlegen.HasDelegate)
+            {
+                <button type="button" class="epos-knopf epos-kond-anlegen" @onclick="Anlegen">@Texte.KnopfKalenderAnlegen</button>
+            }
+            @if (Angelegt && MatrixErneut.HasDelegate)
+            {
+                <button type="button" class="epos-knopf epos-kond-matrix-erneut" @onclick="MatrixErneut">@Texte.KnopfMatrixErneut</button>
+            }
+            @if (Angelegt && Verwerfen.HasDelegate)
+            {
+                <button type="button" class="epos-knopf epos-kond-verwerfen" @onclick="Verwerfen">@Texte.KnopfVerwerfen</button>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    /// <summary>Die Größe der Karte.</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Der Titel — der Name der Größe.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Die Zustandszeile („aus der Matrix", „aus Vorlage Büro", „angelegt, 3 eigene Perioden").</summary>
+    [Parameter] public string Zustand { get; set; } = "";
+
+    /// <summary>Ist der Kalender angelegt? Dann „Matrix erneut anwenden…" und „Verwerfen", sonst „Kalender anlegen".</summary>
+    [Parameter] public bool Angelegt { get; set; }
+
+    /// <summary>Steht die Karte in der schmalen Anordnung vorn (die gewählte Größe)?</summary>
+    [Parameter] public bool Aktiv { get; set; }
+
+    /// <summary>Lesemodus: nur der Zustand, keine Handlung.</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Die Texte (Knöpfe).</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>„Kalender anlegen"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback Anlegen { get; set; }
+
+    /// <summary>„Verwerfen"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback Verwerfen { get; set; }
+
+    /// <summary>„Matrix erneut anwenden…"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback MatrixErneut { get; set; }
+}

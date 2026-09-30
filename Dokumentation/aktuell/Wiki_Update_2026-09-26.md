@@ -35,6 +35,10 @@ Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalog
 | Programm Dokumentation/Projekttransfer (neu) | 722 |
 | Update-Logbuch | 723 |
 
+**Upload auf Zuruf 30.09.2026, Revisionen 724–727** — 04:51–04:52 UTC, Quellen im Stand `d8adcfe2`, nur Seiten
+(Statuszeile #622): Gerätekataloge (724), Gebäude (725), Gebäudeimport (726, Abschnitt „Mehrere Zonen“ aus #620),
+Brauchwasser-Zapfprofil (727). Rücklese byte-gleich, 0 Parse-Warnungen. Das Update-Logbuch blieb unberührt.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
