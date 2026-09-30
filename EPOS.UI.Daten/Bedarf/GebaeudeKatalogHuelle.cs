@@ -412,6 +412,9 @@ namespace WindowsFormsApplication1
                 ["Daten"] = daten,
                 ["Modus"] = modus,
                 ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
+                // Stufe KP2, Welle U1: die Texte des Reiters „Konditionierung" und seiner Rückfragen.
+                ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
+                ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
 
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudetypen()),

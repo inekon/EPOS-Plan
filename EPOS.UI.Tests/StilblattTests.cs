@@ -827,6 +827,59 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Stufe KP2, Welle U1 (Teilkonzept 7.1, Entwurf KP2 Festlegung 7):</b> Der Reiter
+    /// „Konditionierung" bricht am BEHÄLTER um, nicht am Fenster — in der Überlagerung griffe eine
+    /// Medienabfrage nie. Schmal (Vorgabe) steht nur die Spalte und die Karte der gewählten Größe, die
+    /// fünf Reiter darüber; ab 900 px Behälterbreite die ganze Matrix als Tabelle (feste Spaltenanteile,
+    /// jedes Feld nimmt die Breite seiner Zelle) und die Karten darunter, die Reiter fallen. Die
+    /// Beschriftung einer Zelle wird nur vorgelesen (die Tabelle trägt Kopf und Zeile), und die weich
+    /// gesperrte Kühlspalte ist ein Knopf in der Zellenbreite. Farben nur als Token.
+    /// </summary>
+    [Fact]
+    public void KP2_Der_Reiter_Konditionierung_bricht_am_Behaelter_bei_900_px_um()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+
+        string wurzel = Regelblock(".epos-kond {");
+        Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-kond", wurzel, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", wurzel, StringComparison.Ordinal);
+
+        string tabelle = Regelblock(".epos-kond-matrix {");
+        Assert.Contains("table-layout: fixed", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", Regelblock(".epos-kond-zelle .epos-eingabe {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-kond-zelle .epos-eingabe {"), StringComparison.Ordinal);
+
+        // Schmal: die übrigen Spalten und Karten sind aus; kein display:flex an einer Zelle.
+        int schmal = css.IndexOf("\n.epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-karte:not(.epos-kond--aktiv) {\n    display: none;", StringComparison.Ordinal);
+        Assert.True(schmal > 0, "Die schmale Anordnung (nur die gewählte Spalte) fehlt");
+        Assert.DoesNotContain("display: flex", Regelblock(".epos-kond-zelle {"), StringComparison.Ordinal);
+
+        string breit = Abfrageblock(css, "@container epos-kond (min-width: 900px) {");
+        Assert.Contains(".epos-kond-groessen {\n        display: none;", breit, StringComparison.Ordinal);
+        Assert.Contains("display: table-cell;", breit, StringComparison.Ordinal);
+        Assert.Contains(".epos-kond-karte:not(.epos-kond--aktiv) {\n        display: block;", breit, StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", css.Substring(css.IndexOf("\n.epos-kond {", StringComparison.Ordinal),
+                                                     css.IndexOf("/* FORMULARRASTER (Anwenderwunsch", StringComparison.Ordinal)
+                                                     - css.IndexOf("\n.epos-kond {", StringComparison.Ordinal)),
+                              StringComparison.Ordinal);
+
+        // Die Beschriftung der Zelle ist nur vorgelesen - sichtbar versteckt, nicht display:none.
+        string text = Regelblock(".epos-kond-zelle .epos-feld-text {");
+        Assert.Contains("clip-path: inset(50%)", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("display: none", text, StringComparison.Ordinal);
+
+        Assert.Contains("width: 100%", Regelblock(".epos-kond-gesperrt {"), StringComparison.Ordinal);
+
+        foreach (string regel in new[] { ".epos-kond-matrix th,", ".epos-kond-leer {", ".epos-kond-karte {",
+                                         ".epos-kond-karte-zustand {" })
+            Assert.DoesNotContain("#", Regelblock(regel), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
     /// Klammer, die sie schließt.
     /// </summary>

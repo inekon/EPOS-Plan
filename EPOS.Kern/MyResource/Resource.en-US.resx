@@ -40527,5 +40527,71 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_MSG_SP_KALENDER" xml:space="preserve">
     <value>Calendars</value>
   </data>
+  <data name="KOND_TXT_HINWEIS_ZURUECKNEHMEN" xml:space="preserve">
+    <value>“Undo” reverts the last step on this tab; nothing is saved until OK.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHTS_ZURUECK" xml:space="preserve">
+    <value>There is no step that “Undo” could revert.</value>
+  </data>
+  <data name="KOND_TXT_NICHTS" xml:space="preserve">
+    <value>nothing</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_MATRIXZELLEN" xml:space="preserve">
+    <value>{0} matrix cells</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_KALENDER" xml:space="preserve">
+    <value>{0} calendars</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_STANDARDWOCHE" xml:space="preserve">
+    <value>the standard week</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FERIENPERIODEN" xml:space="preserve">
+    <value>{0} holiday periods</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_SAISON" xml:space="preserve">
+    <value>the season</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_EIGENE_PERIODEN" xml:space="preserve">
+    <value>{0} own periods</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FEIERTAGE" xml:space="preserve">
+    <value>{0} public holiday rules</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_NACHTZEITEN" xml:space="preserve">
+    <value>the night window</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_FERIENZEITRAEUME" xml:space="preserve">
+    <value>the holiday periods of the building</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_LUFTWECHSEL" xml:space="preserve">
+    <value>the total air change rate</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_ZONENKALENDER" xml:space="preserve">
+    <value>{0} calendars and cells of zones</value>
+  </data>
+  <data name="KOND_TXT_POSTEN_BAUTEILE" xml:space="preserve">
+    <value>{0} building components</value>
+  </data>
+  <data name="KOND_FRAGE_VERWERFEN" xml:space="preserve">
+    <value>Discard the created calendar “{0}”? Removed: {1}. Kept: {2}. The matrix applies again afterwards.</value>
+  </data>
+  <data name="KOND_FRAGE_MATRIX_ERNEUT" xml:space="preserve">
+    <value>Reapply the matrix to the calendar “{0}”? Replaced: {1}. Kept: {2}.</value>
+  </data>
+  <data name="KOND_FRAGE_KATALOG_ERNEUT" xml:space="preserve">
+    <value>Reapply the conditioning of the building from the catalogue record? The whole building level is replaced: {0}. Kept: {1}.</value>
+  </data>
+  <data name="KOND_FRAGE_AUFTEILEN" xml:space="preserve">
+    <value>The ventilation of this building is given as a total: air change rate {0} 1/h. A ventilation default needs infiltration and occupant ventilation separately. Split into infiltration {1} 1/h and occupant ventilation {2} 1/h? The total stays the same.</value>
+  </data>
+  <data name="KOND_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
+    <value>“Save as” creates a catalogue record with the building level only. Left behind in the project: {0}. Create it anyway?</value>
+  </data>
+  <data name="KOND_FRAGE_ZONEN" xml:space="preserve">
+    <value>Zones concerned: {0}.</value>
+  </data>
+  <data name="KOND_FRAGE_OHNE_EINZELHEITEN" xml:space="preserve">
+    <value>“{0}” replaces entries on this tab. Continue?</value>
+  </data>
 </root>
 

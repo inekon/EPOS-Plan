@@ -61216,6 +61216,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lüftung dieses Gebäudes steht als Gesamtangabe: Luftwechselrate {0} 1/h. Eine Vorgabe der Lüftung braucht Infiltration und Nutzerlüftung getrennt. Aufteilen in Infiltration {1} 1/h und Nutzerlüftung {2} 1/h? Die Summe bleibt. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung des Gebäudes erneut aus dem Katalogsatz übernehmen? Ersetzt wird die ganze Gebäudeebene: {0}. Es bleibt: {1}. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_KATALOG_ERNEUT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_KATALOG_ERNEUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Matrix erneut auf den Kalender „{0}“ anwenden? Ersetzt wird: {1}. Es bleibt: {2}. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_MATRIX_ERNEUT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_MATRIX_ERNEUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ersetzt Angaben dieses Reiters. Fortfahren? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_OHNE_EINZELHEITEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_OHNE_EINZELHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: {0}. Trotzdem anlegen? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den angelegten Kalender „{0}“ verwerfen? Es fällt: {1}. Es bleibt: {2}. Danach gilt wieder die Matrix. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VERWERFEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betroffene Zonen: {0}. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_ZONEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebspause ähnelt.
         /// </summary>
         public static string KOND_LBL_ART_BETRIEBSPAUSE {
@@ -62530,6 +62593,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keinen Schritt, den „Zurücknehmen“ zurücknehmen könnte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_NICHTS_ZURUECK {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_NICHTS_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung steht nicht zur Verfügung: Diese Datenbank trägt die Tabellen der Konditionierung nicht. ähnelt.
         /// </summary>
         public static string KOND_TXT_GRUND_OHNE_TABELLEN {
@@ -62674,6 +62746,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zurücknehmen“ nimmt den letzten Schritt dieses Reiters zurück; geschrieben wird erst mit OK. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel der Gewinne: Geräte {0} W, Personen {1} W, zusammen {2} W = {3} W/m²; Interne Wärmegewinne (Gesamtangabe): {4} W. ähnelt.
         /// </summary>
         public static string KOND_TXT_JAHRESMITTEL {
@@ -62724,6 +62805,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_LEER {
             get {
                 return ResourceManager.GetString("KOND_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts ähnelt.
+        /// </summary>
+        public static string KOND_TXT_NICHTS {
+            get {
+                return ResourceManager.GetString("KOND_TXT_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_BAUTEILE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eigene Perioden ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_EIGENE_PERIODEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_EIGENE_PERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Feiertagsregeln ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ferienperioden ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_FERIENPERIODEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_FERIENPERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Ferienzeiträume ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_FERIENZEITRAEUME {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_FERIENZEITRAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kalender ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gesamtangabe des Luftwechsels ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zellen der Matrix ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_MATRIXZELLEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_MATRIXZELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Nachtfenster ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_NACHTZEITEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_NACHTZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Saison ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Standardwoche ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_STANDARDWOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_STANDARDWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kalender und Zellen von Zonen ähnelt.
+        /// </summary>
+        public static string KOND_TXT_POSTEN_ZONENKALENDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_POSTEN_ZONENKALENDER", resourceCulture);
             }
         }
         
