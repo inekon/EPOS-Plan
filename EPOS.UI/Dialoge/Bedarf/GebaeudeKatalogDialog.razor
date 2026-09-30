@@ -695,7 +695,7 @@
                 Beantwortet="EntfernenBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
     <Rueckfrage Offen="@(_nachFrage is not null)" TitelText="@_frageTitel" Frage="@_frageText" VorgabeNein="true"
                 Beantwortet="NachfrageBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
-    <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@SpeichernUnterFrage"
+    <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@(_speichernUnterText ?? SpeichernUnterFrage)"
                 VorgabeNein="true" Beantwortet="SpeichernUnterBeantwortet"
                 JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
 
@@ -1033,6 +1033,12 @@
     private string _frageTitel = "";
     private string _frageText = "";
     private bool _speichernUnterFrage;
+
+    /// <summary>
+    /// Der Text der Frage von „Speichern unter" aus dem Befund der Konditionierung (Festlegung 3);
+    /// <c>null</c> = die Frage der Zonen.
+    /// </summary>
+    private string? _speichernUnterText;
 
     /// <summary>Die Aufbauten des Projekts — nach dem Übernehmen eines Katalogaufbaus im OK-Weg ergänzt.</summary>
     private List<AufbauWahl> _projektaufbauten = new();
@@ -1974,11 +1980,16 @@
     /// <summary>
     /// „Speichern unter" — dieselben Prüfregeln, angelegt unter dem eingegebenen Namen als
     /// Katalogsatz. Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben
-    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen.
+    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen. Im Projekt nennt die Frage aus dem
+    /// Befund des Wegs Zonen, Bauteile und die Konditionierung der Zonen zusammen (Entwurf KP2
+    /// Festlegung 3); ohne diesen Befund bleibt die Frage der Zonen.
     /// </summary>
     private void BeiSpeichernUnter()
     {
-        if (_arbeit.Zonen.Count > 0)
+        // Im Projekt fragt der Weg der Konditionierung: EINE Frage nennt Zonen, Bauteile und die
+        // Konditionierung der Zonen, die zurueckbleiben (Entwurf KP2 Festlegung 3).
+        _speichernUnterText = Modus == GebaeudeKatalogModus.Projekt ? _kond.SpeichernUnterFrage() : null;
+        if (_speichernUnterText is not null || _arbeit.Zonen.Count > 0)
         {
             _speichernUnterFrage = true;
             return;
@@ -1990,6 +2001,7 @@
     private void SpeichernUnterBeantwortet(bool? antwort)
     {
         _speichernUnterFrage = false;
+        _speichernUnterText = null;
         if (antwort == true) SpeichernUnterSchreiben();
     }
 

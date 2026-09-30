@@ -238,5 +238,84 @@ namespace EPOS.Kern.Tests
             Assert.Equal(vorlagen[0].Name, k.Vorlage);
             Assert.Equal("", weg.Pruefen!(mit));
         }
+
+        // =============================================================================
+        //  Der Reiter über den echten Weg (Stufe KP2, Welle U1, Teilschritt 3)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die Handlungen der Karte gehen über die Delegaten des Wegs</b> — dieselbe
+        /// <see cref="KonditionierungBearbeitung"/>, die der Reiter bedient: „Kalender anlegen",
+        /// „Verwerfen" mit der Rückfrage aus dem Befund VOR dem Schreiben (Vorgabe Nein), „Zurücknehmen"
+        /// (eine Stufe), die Rückfrage „aufteilen" (E56 F5 (a)) als EIN Schritt — und geschrieben wird
+        /// erst im OK-Weg: Bis dahin steht in der Datenbank nichts.
+        /// </summary>
+        [Fact]
+        public void Die_Bearbeitung_des_Reiters_geht_ueber_den_echten_Weg_und_schreibt_erst_mit_OK()
+        {
+            if (!Bereit()) return;
+            string name = FreierKatalogsatz();
+            (GebaeudeKatalogDaten daten, KonditionierungWeg weg) = Katalog(name);
+            daten.LuftwechselInfiltration = null;
+            daten.LuftwechselNutzer = null;
+            daten.Luftwechselrate = 0.7;
+            long kalender = Hoechste(KonditionierungSchema.TAB_KALENDER);
+
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden(daten, neu: false);
+            var meldungen = new List<string>();
+            var b = new KonditionierungBearbeitung(arbeit, () => weg) { Melden = (m, _) => meldungen.Add(m) };
+            Assert.True(b.MitWeg);
+            Assert.Null(b.Sperrgrund);
+
+            // Kalender anlegen - der Generator schreibt ihn in den Arbeitsstand.
+            Assert.True(b.Anlegen(KonditionierungGroesse.Heizen));
+            Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
+            Assert.StartsWith("angelegt", b.Zustand(KonditionierungGroesse.Heizen));
+
+            // Verwerfen fragt aus dem Befund, Vorgabe „Nein"; „Nein" lässt alles.
+            b.Verwerfen(KonditionierungGroesse.Heizen);
+            Assert.NotNull(b.OffeneFrage);
+            Assert.True(b.OffeneFrage!.VorgabeNein);
+            Assert.StartsWith("Den angelegten Kalender „Heizen“ verwerfen? Es fällt: 1 Kalender", b.OffeneFrage.Text);
+            b.Beantworten(false);
+            Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
+
+            b.Verwerfen(KonditionierungGroesse.Heizen);
+            b.Beantworten(true);
+            Assert.False(b.Angelegt(KonditionierungGroesse.Heizen));
+
+            // Zurücknehmen: eine Stufe - der Kalender ist wieder da, danach nichts mehr.
+            Assert.True(b.Zuruecknehmen());
+            Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
+            Assert.False(b.Zuruecknehmen());
+            Assert.Single(meldungen);
+
+            // F5 (a): die Lüftung an einem Gebäude mit Gesamtangabe - die Frage nennt Rate und Aufteilung.
+            Assert.False(b.WertSetzen(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nacht, 1.5));
+            Assert.NotNull(b.OffeneFrage);
+            Assert.False(b.OffeneFrage!.VorgabeNein);
+            Assert.Contains("Luftwechselrate 0,7 1/h", b.OffeneFrage.Text);
+            Assert.Contains("Infiltration 0,3 1/h und Nutzerlüftung 0,4 1/h", b.OffeneFrage.Text);
+            b.Beantworten(true);
+            Assert.Equal(0.3, arbeit.Stand.LuftwechselInfiltration!.Value, 12);
+            Assert.Equal(0.4, arbeit.Stand.LuftwechselNutzer!.Value, 12);
+            Assert.Equal(1.5, b.Wert(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nacht));
+
+            // Bis hierher hat nichts geschrieben.
+            Assert.Equal(kalender, Hoechste(KonditionierungSchema.TAB_KALENDER));
+
+            // Ein Schritt: „Zurücknehmen" stellt Gesamtangabe und leere Zelle wieder her.
+            Assert.True(b.Zuruecknehmen());
+            Assert.Equal(0.7, arbeit.Stand.Luftwechselrate);
+            Assert.Null(arbeit.Stand.LuftwechselInfiltration);
+            Assert.Null(b.Wert(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nacht));
+            Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
+
+            // OK - der Kalender steht danach in der Datenbank.
+            Assert.True(GebaeudeKatalogHuelle.Schreiben(arbeit.Stand, false, name).Erfolg);
+            (GebaeudeKatalogDaten neu, _) = Katalog(name);
+            Assert.Equal(KonditionierungZustand.Angelegt, neu.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Kalender.Zustand);
+        }
     }
 }
