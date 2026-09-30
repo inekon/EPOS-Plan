@@ -117,7 +117,8 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 * '''Betriebsbereitschaft ist ein Deckel.''' Bei 0 h/a ist ein stillstehender Kessel an jedem Heiztag und 24 Stunden nach seinem letzten Lauf betriebsbereit und verliert in diesen Stunden. Ein Wert größer 0 begrenzt Lauf- und Bereitschaftsstunden zusammen; das Laufprotokoll nennt die gekappten Stunden. Der Wert gilt für alle Kessel des Projekts.
 * '''Jahresnutzungsgrad unter dem Katalogwert.''' Gewollt: Er enthält die Stillstandsverluste; je seltener ein Kessel läuft, desto größer der Abstand. Einen Katalogwirkungsgrad von 1 nennt der Reiter als Platzhalter.
 * '''Katalog und Projekt sind getrennt.''' ''Alle Daten anzeigen'' und ''Bearbeiten...'' ändern den Katalogsatz. Ein bereits übernommener Kessel rechnet weiter mit seiner Projektkopie; damit eine Katalogänderung wirkt, nehmen Sie ihn aus dem Projekt und übernehmen ihn neu.
-* '''Keine Taktung, kein Teillastwirkungsgrad.''' Der Kessel gibt je Stunde genau den offenen Rest bis zur Nennleistung ab, mit einem Wirkungsgrad je Brennstoffart; Mindestleistung, Anfahrverluste und Mindestlaufzeiten bildet das Modell nicht ab. ''Starts'' zählt Laufphasen im Stundenraster – höchstens 4&nbsp;380 im Jahr.
+* '''Keine Taktung.''' Der Kessel gibt je Stunde genau den offenen Rest bis zur Nennleistung ab; ''Mindestleistung'', ''Anfahrverlust je Start'' und ''Mindestlaufzeit'' werden gepflegt, rechnen aber nicht mit. ''Starts'' zählt Laufphasen im Stundenraster – höchstens 4&nbsp;380 im Jahr.
+* '''Teillast hängt am Kennzeichen Brennwertkessel.''' Ohne eigenen ''Wirkungsgrad bei 30 % Last'' nimmt der Kessel die Vorgabe seiner Bauart. Trägt ein Brennwertgerät das Kennzeichen ''Brennwertkessel'' nicht, rechnet es wie ein Niedertemperaturkessel ohne Teillastanhebung. Kennzeichen oder Wirkungsgrad im Katalog pflegen und den Kessel neu ins Projekt übernehmen.
 * '''Kesselvorlauf bei Anlagenkopplung.''' Mit ''Heizkreis (AK1)'' bekommt ein gekoppeltes Gebäude ohne Heizkurve den höchsten Vorlauf der Erzeuger, die Heizwärme liefern – ein hoher Kesselvorlauf wird so zu seinem Vorlauf, und an ihm wählt die Wärmepumpe ihre Kennlinie ([[Programm Dokumentation/Simulation#anlagenkopplung|Simulation: Anlagenkopplung]]).
 * '''Höchstens zehn Kessel''' je Projekt; weitere rechnen nicht mit, das Laufprotokoll nennt die Zahl.
 
@@ -133,7 +134,7 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 
 * '''Name''', '''Brennstoff Typ''', '''Leistung [kW]''', '''Beschreibung''' – Anzeige des markierten Kessels; bei einer Zeile des Projekts aus dessen Projektkopie.
 * '''Brennstoff Variante''' – nur bei einer Zeile des Projekts: wechselt die Variante des Energieträgers.
-* '''Brennwertkessel''' – Kennzeichen, nur Anzeige; gerechnet wird mit dem Wirkungsgrad.
+* '''Brennwertkessel''' – Kennzeichen; ohne gepflegten ''Wirkungsgrad bei 30 % Last'' bestimmt es die Vorgabe der Teillastkennlinie ([[#teillastkennlinie|Teillastkennlinie]]).
 * '''Vorlauf''' und '''Rücklauf''' – in °C, aus dem Katalog vorbelegt und je Anlage änderbar. Sie wirken, wenn der Kessel einen Pufferspeicher als Wärmequelle nutzt, bei der Prüfung gegen einen Zielspeicher und bei der Anlagenkopplung.
 * '''Senken: …''' – die Wärmesenken der Anlage; gepflegt werden sie in der ''Simulation Konfiguration''.
 * '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Kessels für die Wirtschaftlichkeit; '''Bearbeiten...''' öffnet ''Administration Heizkessel'' für den markierten Katalogsatz.
@@ -148,6 +149,11 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 * '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in kW.
 * Die Emissionsfelder sind Herstellerangaben und rechnen nicht mit.
 
+Die Gruppe '''Kennlinie''' beschreibt das Verhalten in Teillast; ein leeres Feld heißt „Vorgabe“:
+
+* '''Wirkungsgrad bei 30 % Last''' – η₃₀ als Faktor, bezogen auf den Heizwert wie die Wirkungsgrade oben; Werte über 1,5 gelten als Prozent. Leer nimmt der Kessel die Vorgabe seiner Bauart ([[#teillastkennlinie|Teillastkennlinie]]).
+* '''Brennwertkennlinie''', '''Mindestleistung''', '''Anfahrverlust je Start''', '''Mindestlaufzeit''' – werden gepflegt und aus VDI 3805 gelesen, rechnen aber nicht mit. Die Brennwertkennlinie lässt sich nur bei einem Brennwertkessel setzen.
+
 == Berechnung ==
 
 Nutzwärme, Wirkungsgrad und Brennstoffeinsatz des Heizkessels stehen unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
@@ -155,7 +161,30 @@ Nutzwärme, Wirkungsgrad und Brennstoffeinsatz des Heizkessels stehen unter [[Pr
 === Berechnung in der Simulation ===
 {{Anker|berechnung-in-der-simulation|jahresnutzungsgrad}}
 
-Jede Stunde entscheidet einmal je Kessel: Gibt er Wärme ab, verbraucht er seine brennstoffbasierte Wärme geteilt durch den Wirkungsgrad; steht er und ist betriebsbereit, verbraucht er seine Bereitschaftsleistung; sonst nichts. Der Jahresnutzungsgrad ist die brennstoffbasierte Nutzwärme geteilt durch den Brennstoffverbrauch einschließlich der Stillstandsstunden.
+Jede Stunde entscheidet einmal je Kessel: Gibt er Wärme ab, verbraucht er seine brennstoffbasierte Wärme geteilt durch den Wirkungsgrad seiner Laststufe; steht er und ist betriebsbereit, verbraucht er seine Bereitschaftsleistung; sonst nichts. Der Jahresnutzungsgrad ist die brennstoffbasierte Nutzwärme geteilt durch den Brennstoffverbrauch einschließlich der Stillstandsstunden.
+
+=== Teillastkennlinie ===
+{{Anker|teillastkennlinie|teillast|laststufe}}
+
+Die Laststufe einer Stunde ist die brennstoffbasierte Wärme geteilt durch die Nennleistung. Zwischen 30 % und 100 % Last liegt der Wirkungsgrad auf einer Geraden vom ''Wirkungsgrad bei 30 % Last'' (η₃₀) zum Wirkungsgrad bei Nennlast (η₁₀₀, ''Wirkungsgrad Gas…'' bzw. ''Wirkungsgrad Öl''); unter 30 % gilt η₃₀:
+
+<math>\eta(\beta) = \eta_{30} + (\eta_{100} - \eta_{30}) \cdot \frac{\beta - 0{,}3}{0{,}7}, \quad 0{,}3 \le \beta \le 1</math>
+
+Ist η₃₀ leer, gilt die Vorgabe der Bauart:
+
+{| class="wikitable"
+! Bauart !! erkannt an !! Vorgabe η₃₀
+|-
+| Brennwertkessel || Kennzeichen ''Brennwertkessel'' || η₁₀₀ + 0,06, höchstens das Verhältnis Brennwert zu Heizwert des Brennstoffs (Gas 1,11, Heizöl 1,06, Holz und Pellets 1,08, sonst 1,0)
+|-
+| Standardkessel || Beschreibung beginnt mit der VDI-3805-Bauart „Standard…“ || η₁₀₀ − 0,03
+|-
+| Niedertemperaturkessel || alle übrigen || η₁₀₀ – der Wirkungsgrad ist in jeder Laststufe derselbe
+|}
+
+Ein gepflegter Wert geht immer vor. Ein Elektrokessel rechnet ohne Kennlinie. Das Laufprotokoll nennt je Kessel η₁₀₀ und η₃₀ und ob η₃₀ gepflegt oder die Vorgabe ist.
+
+'''Beispiel.''' Kessel 1, Erdgas, 100 kW, η₁₀₀ = 0,97, η₃₀ = 1,05. In einer Stunde mit 60 kWh Wärme (β = 0,6) gilt η = 1,05 + (0,97 − 1,05) · 0,3 / 0,7 ≈ 1,016; die Stunde braucht 59,1 kWh Brennstoff statt 61,9 kWh bei Nennlastwirkungsgrad.
 
 === Brennstoffverbrauch und Emissionen ===
 {{Anker|brennstoffverbrauch-und-emissionen|emissionen|energietraeger}}
@@ -170,7 +199,7 @@ Ein Kessel mit dem Energieträger ''Elektrische Energie'' ist ein Elektrokessel;
 === Ergebnisse ===
 {{Anker|ergebnisse|deckungsanteil|modultabelle}}
 
-Der Reiter ''Heizkessel'' der Simulationsergebnisse zeigt ''Wärmebedarfsdeckung'', ''Wärmeproduktion der Spitzenkessel'' und ''Restwärmebedarf nach Kessel'', die ''Gesamte Wärmeleistung der Heizkessel'' und die ''Maximale Brennstoffleistung Gas (Hu)'', den ''Brennstoffverbrauch der Spitzenkessel'' je Brennstoff, die Gruppe ''Betrieb'' (Summe aller Kessel) und die Modultabelle ''Wärmeproduktion der einzelnen Spitzenkessel'' mit dem Jahresnutzungsgrad je Kessel. Das Diagramm zeigt die Wärmelast über das Jahr ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]).
+Der Reiter ''Heizkessel'' der Simulationsergebnisse zeigt ''Wärmebedarfsdeckung'', ''Wärmeproduktion der Spitzenkessel'' und ''Restwärmebedarf nach Kessel'', die ''Gesamte Wärmeleistung der Heizkessel'' und die ''Maximale Brennstoffleistung Gas (Hu)'', den ''Brennstoffverbrauch der Spitzenkessel'' je Brennstoff, die Gruppe ''Betrieb'' (Summe aller Kessel, mit ''Mittlerer Wirkungsgrad im Betrieb'' und ''Brennstoff aus Teillast gegenüber Nennlast'' – negativ, wo die Teillast Brennstoff spart) und die Modultabelle ''Wärmeproduktion der einzelnen Spitzenkessel'' mit Jahresnutzungsgrad, η₃₀ (mit „(Vorgabe)“ bei leerem Feld), Wirkungsgrad im Betrieb und mittlerer Laststufe je Kessel. Der Wirkungsgrad im Betrieb ist die Wärme der Laufstunden geteilt durch ihren Brennstoff, ohne Bereitschaftsverlust. Der CSV-Export führt je Brennstoffkessel den Wirkungsgrad jeder Stunde. Das Diagramm zeigt die Wärmelast über das Jahr ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]).
 
 == Siehe auch ==
 

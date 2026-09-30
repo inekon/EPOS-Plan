@@ -282,8 +282,9 @@ namespace WindowsFormsApplication1
                   "SimulationSPK.cs:131; AbweichungsErmittler.cs:95"),
                 E("Firma", t("HZKK_LBL_HERSTELLER"), "", BER,
                   "AbweichungsErmittler.cs:96"),
-                E("Beschreibung", t("HZKK_LBL_BESCHREIBUNG"), "", DLG,
-                  "HeizkesselKatalogDialog.razor (Feld Beschreibung)"),
+                E("Beschreibung", t("HZKK_LBL_BESCHREIBUNG"), "", SIM,
+                  "HeizkesselKatalogDialog.razor (Feld Beschreibung); SimulationSPK.Kesseldaten_Einlesen " +
+                  "(Kesselkennlinie.Bauart: VDI-Bauart „Standard…“ fuer die Normvorgabe von eta30)"),
                 E("Ptherm", t("HZKK_LBL_PTHERM"), "kW", SIM_WIRT_BER,
                   "SimulationSPK.cs:148; WirtschaftlichkeitCtrl.cs:723; AbweichungsErmittler.cs:97"),
                 E("Brennstoff", t("HZKK_LBL_ENERGIETRAEGER"), "", SIM_WIRT,
@@ -313,8 +314,9 @@ namespace WindowsFormsApplication1
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW", SIM,
                   "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde"),
-                E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", BER,
-                  "AbweichungsErmittler.cs:100"),
+                E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", SIM_BER,
+                  "AbweichungsErmittler.cs:100; SimulationSPK.Kesseldaten_Einlesen " +
+                  "(Kesselkennlinie.Bauart: Brennwertkessel fuer die Normvorgabe von eta30)"),
                 E("Vorlauf", t("HZKK_LBL_VORLAUF"), "°C", SIM,
                   "SimulationControl.cs:3890 (KesselTemperaturpaarGepflegt); Warnkriterien.cs:1258"),
                 E("Ruecklauf", t("HZKK_LBL_RUECKLAUF"), "°C", SIM,
@@ -324,11 +326,13 @@ namespace WindowsFormsApplication1
                 E("Wartungskosten_Einheit", t("KESSEL_WARTUNG_EINHEIT_LBL"), "", WIRT,
                   "TechnikPlanwertCtrl.cs:823 (Bezugsgroesse der Wartungskosten)"),
 
-                // Die Kennlinie (Konzept Kesselkennlinie 3.1, Etappe E1): gepflegt in Editor und
-                // Aufklapper, gelesen vom Import (Satz 710.01) - gerechnet erst mit den Etappen E2
-                // (Teillast), E3 (Brennwert) und E4 (Takten). Bis dahin DLG, nicht SIM.
-                E("Wirkungsgrad_Teillast30", t("HZKK_LBL_TEILLAST30"), "", DLG,
-                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E2"),
+                // Die Kennlinie (Konzept Kesselkennlinie 3.1): gepflegt in Editor und Aufklapper,
+                // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2);
+                // die uebrigen vier folgen mit den Etappen E3 (Brennwert) und E4 (Takten) und
+                // bleiben bis dahin DLG.
+                E("Wirkungsgrad_Teillast30", t("HZKK_LBL_TEILLAST30"), "", SIM,
+                  "SimulationSPK.Stunde_Abschluss (Kesselkennlinie.Eta30Wirksam, leer = Normvorgabe nach Bauart); " +
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
                 E("Kennlinie_Brennwert", t("HZKK_LBL_KENNLINIE_BRENNWERT"), "", DLG,
                   "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E3"),
                 E("Mindestleistung", t("HZKK_LBL_MINDESTLEISTUNG"), "kW", DLG,

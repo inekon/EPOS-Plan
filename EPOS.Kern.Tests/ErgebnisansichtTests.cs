@@ -667,7 +667,9 @@ namespace EPOS.Kern.Tests
         /// betragstragend sind 6, und 5 davon (die Kopien der Zeilen von 1040) ohne Dauer —
         /// zusammen 115 von 122, 32 von 39. Das Referenzprojekt Solarthermie 1049 (Kopie von
         /// 1018) bringt dessen 11 Positionen mit, alle ohne Dauer, eine betragstragend (das
-        /// BHKW) — zusammen 126 von 133, 33 von 40.
+        /// BHKW) — zusammen 126 von 133, 33 von 40. Das Referenzprojekt Kesselkennlinie 1050 (Kopie
+        /// von 1023) bringt dessen 2 Positionen mit (Wärmepumpe und Kessel), beide ohne Dauer und
+        /// betragstragend — zusammen 128 von 135, 35 von 42.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
@@ -675,8 +677,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(133, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(126, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(135, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(128, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;
@@ -692,11 +694,12 @@ namespace EPOS.Kern.Tests
                 alle += h.Alle;
                 hinweise += h.Zeilen.Count;
             }
-            Assert.Equal(33, ohne);
-            Assert.Equal(40, alle);
+            Assert.Equal(35, ohne);
+            Assert.Equal(42, alle);
             // Einen Hinweis tragen nur Techniken mit Vorgabe unter T = 20 a: die Wärmepumpe
-            // (18 a) in 1019, 1023, 1024, 1032, 1040 und 1048, das BHKW (15 a) in 1018, 1031 und 1049.
-            Assert.Equal(9, hinweise);
+            // (18 a) in 1019, 1023, 1024, 1032, 1040, 1048 und 1050, das BHKW (15 a) in 1018, 1031
+            // und 1049.
+            Assert.Equal(10, hinweise);
         }
 
         /// <summary>

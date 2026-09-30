@@ -165,6 +165,8 @@ namespace EPOS.Kern.Tests
         [InlineData(Anlagenart.Heizkessel, "Ptherm")]
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
+        [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
+        [InlineData(Anlagenart.Heizkessel, "Brennwert")]
         [InlineData(Anlagenart.Bhkw, "Grenzleistung")]
         [InlineData(Anlagenart.Bhkw, "Wirkungsgrad")]
         [InlineData(Anlagenart.Waermepumpe, "Heizung")]
@@ -423,7 +425,11 @@ namespace EPOS.Kern.Tests
                                    "Wirkungsgrad_Gas", "Wirkungsgrad_Öl", "Investitionskosten",
                                    "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
-                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf" };
+                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
+                                   // Konzept Kesselkennlinie 3.4: die Gruppe „Kennlinie" des Editors
+                                   // (HeizkesselAdminHuelle.Schreiben, AnzeigefelderSchreiben).
+                                   "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert", "Mindestleistung",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
 
                 case Anlagenart.Bhkw:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Motortyp", "Ptherm", "Pel",
