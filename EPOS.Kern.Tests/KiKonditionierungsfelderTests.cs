@@ -28,13 +28,14 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _kultur.Dispose();
 
         private static readonly Regex MUSTER = new(
-            "^kond_(heizen|kuehlen|lueftung|geraete|personen)_((nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?|vorlage)$");
+            "^kond_(heizen|kuehlen|lueftung|geraete|personen)_((nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?|vorlage|woche)$");
 
         [Fact]
-        public void Die_Karte_fuehrt_41_Felder_nach_ihrem_Muster()
+        public void Die_Karte_fuehrt_46_Felder_nach_ihrem_Muster()
         {
+            // 41 Felder der Matrix und der Vorlagen (Wellen U1, U2), dazu je Größe die Woche (Welle U3).
             IReadOnlyList<KiKonditionierungsfelder.Feld> alle = KiKonditionierungsfelder.Alle;
-            Assert.Equal(41, alle.Count);
+            Assert.Equal(46, alle.Count);
             Assert.Equal(alle.Count, alle.Select(f => f.Schluessel).Distinct(StringComparer.Ordinal).Count());
 
             foreach (KiKonditionierungsfelder.Feld f in alle)
@@ -84,7 +85,7 @@ namespace EPOS.Kern.Tests
         {
             foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
             {
-                if (f.Teil == KiKonditionierungsfelder.Teil.Vorlage) continue;   // eine Zeile der Karte, keine Zelle
+                if (f.Teil is KiKonditionierungsfelder.Teil.Vorlage or KiKonditionierungsfelder.Teil.Woche) continue;   // keine Zelle
                 var g = (KonditionierungGroesse)f.Groessenplatz;
                 var z = (KonditionierungZeile)f.Zeilenplatz;
                 Assert.True(KonditionierungBearbeitung.Gibt(g, z), f.Schluessel);
@@ -114,7 +115,7 @@ namespace EPOS.Kern.Tests
         {
             Dictionary<string, KiDialogFeld> felder = KiKonditionierungsfelder.Dialogfelder()
                 .ToDictionary(f => f.Name, StringComparer.Ordinal);
-            Assert.Equal(41, felder.Count);
+            Assert.Equal(46, felder.Count);
 
             KiDialogFeld geraete = felder["kond_geraete_tag"];
             Assert.Equal(KiParameterTyp.Zahl, geraete.Typ);
@@ -158,9 +159,11 @@ namespace EPOS.Kern.Tests
         public void Die_Zonenkarte_fuehrt_die_Matrix_ohne_Kuehlspalte_mit_dem_Heiz_Nachtfenster()
         {
             IReadOnlyList<KiKonditionierungsfelder.Feld> zone = KiKonditionierungsfelder.Zonenfelder;
-            // Ohne Kühlspalte und ohne die Vorlagen (die Karten der Zone bieten keine), dazu das Heiz-Nachtfenster.
+            // Ohne Kühlspalte, ohne die Vorlagen und die Wochen (die Karten der Zone bieten keine), dazu das
+            // Heiz-Nachtfenster.
             int ohneKuehlen = KiKonditionierungsfelder.Alle.Count(f => f.Groesse != Konditionierungsgroesse.Kuehlsoll
-                                                                        && f.Teil != KiKonditionierungsfelder.Teil.Vorlage);
+                                                                        && f.Teil != KiKonditionierungsfelder.Teil.Vorlage
+                                                                        && f.Teil != KiKonditionierungsfelder.Teil.Woche);
             Assert.Equal(ohneKuehlen + 2, zone.Count);
             Assert.Equal(27, zone.Count);
             Assert.DoesNotContain(zone, f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage);
@@ -228,6 +231,55 @@ namespace EPOS.Kern.Tests
         /// speichern" und „Vorlagen verwalten" stehen im eingebauten Wissen des Bereichs Gebäude, mit
         /// deutschen und englischen Suchworten im Titel — die Suche findet sie in beiden Sprachen.
         /// </summary>
+        /// <summary>
+        /// <b>Die Woche je Größe</b> (Welle U3): <c>kond_&lt;größe&gt;_woche</c> schließt die Spalte ab, ein Textfeld
+        /// ohne Zelle, das die Erläuterung mit Größe und Einheit nennt; die Zonenkarte führt sie nicht.
+        /// </summary>
+        [Fact]
+        public void Je_Groesse_ist_die_Woche_ein_Textfeld_am_Ende_der_Spalte()
+        {
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                List<KiKonditionierungsfelder.Feld> spalte = KiKonditionierungsfelder.Alle.Where(f => f.Groesse == g).ToList();
+                KiKonditionierungsfelder.Feld woche = spalte.Last();
+                Assert.Equal(KiKonditionierungsfelder.Teil.Woche, woche.Teil);
+                Assert.EndsWith("_woche", woche.Schluessel);
+                Assert.Equal(-1, woche.Zeilenplatz);
+                Assert.Null(KiKonditionierungsfelder.FindeZone(woche.Schluessel));
+            }
+            KiDialogFeld heizen = KiKonditionierungsfelder.Dialogfelder().Single(f => f.Name == "kond_heizen_woche");
+            Assert.Equal(KiParameterTyp.Text, heizen.Typ);
+            Assert.Contains("168", heizen.Erlaeuterung);
+            Assert.Contains("Heizen", heizen.Erlaeuterung);
+            Assert.Contains("°C", heizen.Erlaeuterung);
+        }
+
+        /// <summary>
+        /// <b>Das Aktionswissen der Karte im Einzelnen</b> (Welle U3): Zeitfenster, Periodenliste, Feiertage und
+        /// Teppichbild — gefunden mit deutschen und englischen Suchworten im Bereich Gebäude.
+        /// </summary>
+        [Fact]
+        public void Das_Aktionswissen_kennt_Zeitfenster_Periodenliste_Feiertage_und_Teppichbild()
+        {
+            const string KARTE = "Konditionierung: Kalender im Einzelnen, Grundangabe, Standardwoche und Zeitfenster (calendar details, base value, standard week, time window)";
+            const string PERIODEN = "Konditionierung: Periodenliste und Rang (period list, rank, date range, public holiday)";
+            const string FEIERTAGE = "Konditionierung: Feiertage als Regel und Zeitstruktur übernehmen (public holidays, apply time structure)";
+            const string TEPPICH = "Konditionierung: Teppichbild des Kalenders (carpet plot, annual view)";
+            (string Frage, string Titel)[] faelle =
+            {
+                ("Zeitfenster", KARTE), ("time window", KARTE), ("Standardwoche", KARTE),
+                ("Periodenliste", PERIODEN), ("period list", PERIODEN),
+                ("Feiertage als Regel", FEIERTAGE), ("apply time structure", FEIERTAGE),
+                ("Teppichbild", TEPPICH), ("carpet plot", TEPPICH),
+            };
+            foreach ((string frage, string titel) in faelle)
+            {
+                WissensAbschnitt a = Assert.Single(HilfeWissen.Abschnitte, x => x.Titel == titel);
+                Assert.Equal(KiChatKontext.B_GEBAEUDE, a.Bereich);
+                Assert.Contains(HilfeWissen.Suchen(frage, KiChatKontext.B_GEBAEUDE, 4, ""), x => x.Titel == titel);
+            }
+        }
+
         [Fact]
         public void Das_Aktionswissen_kennt_die_drei_Handlungen_der_Vorlagen()
         {

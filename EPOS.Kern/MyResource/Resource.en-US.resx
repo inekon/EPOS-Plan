@@ -40890,5 +40890,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_VORSCHAU_OHNE_ANTEILE" xml:space="preserve">
     <value>No week: the column “{0}” has no share – without a share the nominal value applies in every hour or the load is part of the internal heat gains. A share in day, night, weekend or holidays yields the week.</value>
   </data>
+  <data name="KOND_TXT_KI_WOCHE" xml:space="preserve">
+    <value>The week of the created calendar {0} in the card “Calendar details”: 168 values in {1} from Monday 00:00 to Sunday 23:00, separated by “;”, “off” for switched off; a single value (or “off”) is the base value. Setting it works like the weekly grid (one step for “Undo”), empty discards the week in favour of the base value. Only for a created calendar; reading gives the week or the base value, empty = not created.</value>
+  </data>
+  <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
+    <value>The week needs 168 values (Monday 00:00 to Sunday 23:00) or one value for the base value, separated by “;” and “off” for switched off – {0} were passed.</value>
+  </data>
 </root>
 

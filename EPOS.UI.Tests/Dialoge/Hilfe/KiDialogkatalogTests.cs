@@ -1225,9 +1225,10 @@ public class KiDialogkatalogTests : IDisposable
         // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar);
         // mit E47 der Energiestandard (Wahl nach der Verwendung); mit KP2 U1 die 36 Felder der
         // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse); mit KP2 U2
-        // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen").
-        Assert.Equal(88 + 41, d.Felder.Count);
-        Assert.Equal(41, KiKonditionierungsfelder.Alle.Count);
+        // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen"); mit KP2 U3 je Größe die
+        // Woche als Text (Karte im Einzelnen).
+        Assert.Equal(88 + 46, d.Felder.Count);
+        Assert.Equal(46, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
             KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;

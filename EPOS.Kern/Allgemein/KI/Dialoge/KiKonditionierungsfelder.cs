@@ -28,6 +28,11 @@ namespace WindowsFormsApplication1
     /// <c>luftwechsel_infiltration</c>, <c>luftwechsel_nutzer</c>, <c>waermegewinne</c>); das
     /// Nachtfenster der Heizspalte ist <c>nacht_beginn</c>/<c>nacht_ende</c>. Nur der Kühlsollwert der
     /// Nacht hatte noch keines — er heißt nach seiner Spalte <c>kuehl_sollwert_nacht</c>.</para>
+    /// <para><b>Die Karte im Einzelnen</b> (Welle U3): <c>kond_&lt;größe&gt;_woche</c> schließt die Spalte
+    /// ab — die Woche des angelegten Kalenders als Text (168 Werte durch „;" getrennt, „aus" für
+    /// abgeschaltet; ein einzelner Wert ist die Grundangabe). Die Werkzeuge der Karte (Zeitfenster,
+    /// Feiertage, Zeitstruktur, Periodenliste) sind Handlungen mit eigener Eingabe, keine Felder: Der
+    /// Assistent setzt ihr Ergebnis über die Woche oder erklärt sie aus dem Aktionswissen.</para>
     /// <para><b>Drei Masken.</b> Der Katalogeditor (Reiter „Konditionierung") und die Gebäudeverwaltung
     /// (Blatt „Konditionierung", Stufe KP2, Welle U4) führen dieselben Felder an derselben Sichtklasse
     /// (<see cref="SICHT"/>). Der Zonendialog führt die ZONENKARTE (<see cref="Zonenfelder"/>) an seiner
@@ -66,7 +71,13 @@ namespace WindowsFormsApplication1
             DeltaT,
 
             /// <summary>Die Vorlage der Größe (Zeile „Vorlage" der Matrix, keine Zelle).</summary>
-            Vorlage
+            Vorlage,
+
+            /// <summary>
+            /// Die Woche des angelegten Kalenders der Größe als Text (Karte im Einzelnen, Welle U3; keine
+            /// Zelle): 168 Werte oder ein Wert der Grundangabe.
+            /// </summary>
+            Woche
         }
 
         /// <summary>Ein Feld der Karte: Schlüssel, Zelle (Größe, Zeile) und Teil.</summary>
@@ -224,6 +235,10 @@ namespace WindowsFormsApplication1
                     if (z == DbWerte.KOND_ZEILE_NACHT && g == Konditionierungsgroesse.Lueftung)
                         felder.Add(new Feld(basis + "_dt", g, zi, Teil.DeltaT, false));
                 }
+
+                // Die Woche des angelegten Kalenders schließt die Spalte ab (Karte im Einzelnen, Welle U3);
+                // an der Zone trägt die Karte keinen Inhalt im Einzelnen - kein Knopf, also kein Feld.
+                if (!zone) felder.Add(new Feld("kond_" + gw + "_woche", g, -1, Teil.Woche, false));
             }
             return felder;
         }
@@ -268,6 +283,11 @@ namespace WindowsFormsApplication1
             if (f.Teil == Teil.Vorlage)
                 return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_ZEILE_VORLAGE,
                                         KiParameterTyp.Wahl, string.Format(c, MyResource.Resource.KOND_TXT_KI_VORLAGE, groesse));
+            if (f.Teil == Teil.Woche)
+                return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_STANDARDWOCHE,
+                                        KiParameterTyp.Text,
+                                        string.Format(c, MyResource.Resource.KOND_TXT_KI_WOCHE, groesse, Bereich(f).Einheit),
+                                        leerErlaubt: true);
             string zeile = Zeilenname(f);
 
             switch (f.Teil)

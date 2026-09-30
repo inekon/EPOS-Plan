@@ -63277,6 +63277,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Woche des angelegten Kalenders {0} in der Karte „Kalender im Einzelnen“: 168 Werte in {1} von Montag 00:00 bis Sonntag 23:00, durch „;“ getrennt, „aus“ für abgeschaltet; ein einzelner Wert (oder „aus“) ist die Grundangabe. Setzen wirkt wie das Wochenraster (ein Schritt für „Zurücknehmen“), leer verwirft die Woche zugunsten der Grundangabe. Nur an einem angelegten Kalender; Lesen nennt die Woche oder die Grundangabe, leer = nicht angelegt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Woche braucht 168 Werte (Montag 00:00 bis Sonntag 23:00) oder einen Wert für die Grundangabe, durch „;“ getrennt und „aus“ für abgeschaltet – übergeben sind {0}. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_WOCHE_FORMAT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_WOCHE_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zelle der Vorgabe-Matrix im Reiter „Konditionierung“: {0}, Zeile „{1}“, in {2}. Leer heißt: keine eigene Angabe – es gilt, was die Matrix sonst vorgibt. ähnelt.
         /// </summary>
         public static string KOND_TXT_KI_ZELLE {

@@ -507,6 +507,43 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.Null(Karte(cut, KonditionierungGroesse.Geraete).QuerySelector(".epos-kond-vorschau-leer"));
     }
 
+    // =================================================================================
+    // Teilschritt 8: der Assistent — die Woche als Text
+    // =================================================================================
+
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Woche_als_Text_und_die_Grundangabe_als_einen_Wert()
+    {
+        Aufbauen();
+        var tafel = new KonditionierungKiTafel(KiKonditionierungsfelder.Finde);
+        Assert.Null(tafel.Lesen(_bearbeitung, "kond_heizen_woche"));        // nicht angelegt
+
+        // Nicht angelegt: benannt abgelehnt, statt still einen Kalender anzulegen.
+        Assert.Throws<InvalidOperationException>(() => tafel.Setzen(_bearbeitung, "kond_heizen_woche", "20"));
+
+        Assert.True(_bearbeitung.Anlegen(KonditionierungGroesse.Heizen));
+        string text = (string)tafel.Lesen(_bearbeitung, "kond_heizen_woche")!;
+        string[] werte = text.Split(';');
+        Assert.Equal(168, werte.Length);
+        Assert.Equal("20", werte[7]);
+        Assert.Equal("17", werte[23]);
+
+        werte[7] = "aus";
+        werte[8] = "21,5";
+        tafel.Setzen(_bearbeitung, "kond_heizen_woche", string.Join(";", werte));
+        Assert.True(double.IsNaN(Heizkalender.Woche![7]));
+        Assert.Equal(21.5, Heizkalender.Woche![8]);
+
+        tafel.Setzen(_bearbeitung, "kond_heizen_woche", "19");
+        Assert.Equal((KonditionierungAngabe.Wert, (double?)19), (Heizkalender.Angabe, Heizkalender.Wert));
+        Assert.Equal("19", tafel.Lesen(_bearbeitung, "kond_heizen_woche"));
+
+        InvalidOperationException f = Assert.Throws<InvalidOperationException>(
+            () => tafel.Setzen(_bearbeitung, "kond_heizen_woche", "20;21;22"));
+        Assert.Contains("168", f.Message);
+        Assert.Equal(19.0, Heizkalender.Wert);
+    }
+
     [Fact]
     public void Eine_Grundangabe_ohne_Rundlauf_meldet_den_Kern_und_aendert_nichts()
     {
