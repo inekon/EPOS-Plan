@@ -199,6 +199,11 @@ namespace WindowsFormsApplication1
             t.HinweisZoneOhneWirkung = Text_("KOND_TXT_ZONE_OHNE_WIRKUNG", t.HinweisZoneOhneWirkung);
             t.LabelZoneKalender = Text_("KOND_LBL_ZONE_KALENDER", t.LabelZoneKalender);
             t.HinweisZoneMatrix = Text_("KOND_TXT_ZONE_MATRIX", t.HinweisZoneMatrix);
+
+            // Gebäudeverwaltung (Welle U4)
+            t.KnopfKonditionierung = Text_("KOND_BTN_KONDITIONIERUNG", t.KnopfKonditionierung);
+            t.HinweisVerwaltungSpeichern = Text_("KOND_TXT_VERWALTUNG_SPEICHERN", t.HinweisVerwaltungSpeichern);
+            t.HinweisVerwaltungAltfelder = Text_("KOND_TXT_VERWALTUNG_ALTFELDER", t.HinweisVerwaltungAltfelder);
             return t;
         }
 

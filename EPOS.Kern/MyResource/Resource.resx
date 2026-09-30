@@ -40636,5 +40636,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
     <value>Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder.</value>
   </data>
+  <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
+    <value>Konditionierung…</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_SPEICHERN" xml:space="preserve">
+    <value>Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück.</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
+    <value>Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.</value>
+  </data>
 </root>
 

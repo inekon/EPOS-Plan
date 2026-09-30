@@ -21,9 +21,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Stufe 5, V16; Bestand A9; Welle #465) — Katalogliste mit Profil, Auswahlleiste mit
 /// Vergleichen, Duplizieren…, Schloss und Löschen (Verwendungssperre), Fußleiste Speichern ·
 /// Verwerfen · Status · Neu… · Beenden, und ein Stammblatt, das JEDES Feld des Katalogeditors
-/// führt: Kenndaten, Hülle, Fenster, Kenngrößen und „Alle Daten" — auf demselben Arbeitsstand,
-/// mit derselben Prüfung und demselben Schreibweg wie der Editor. Dazu die eigene Maske beim
-/// Hilfe-Assistenten (<c>Form_Gebaeude_Admin</c>).
+/// führt: Kenndaten, Konditionierung (fünf Zustandszeilen und das breite Blatt, Stufe KP2, Welle U4),
+/// Hülle, Fenster, Kenngrößen und „Alle Daten" — auf demselben Arbeitsstand, mit derselben Prüfung und
+/// demselben Schreibweg wie der Editor. Dazu die eigene Maske beim Hilfe-Assistenten
+/// (<c>Form_Gebaeude_Admin</c>).
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
@@ -146,6 +147,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         internal int Typlisten;
         internal bool? Geschlossen;
         internal List<Haus> Katalog = KATALOG.ToList();
+        /// <summary>Passt den Feldsatz jedes gelesenen Satzes an (Stufe KP2, Welle U4: Nachtzeit, Konditionierung).</summary>
+        internal Action<GebaeudeKatalogDaten>? Anpassen;
     }
 
     private IRenderedComponent<GebaeudeAdminDialog> Aufbauen(
@@ -154,18 +157,23 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
         bool mitEditor = true,
         bool mitTypen = true,
-        EPOS.UI.Bausteine.Schlossweg? schloss = null)
+        EPOS.UI.Bausteine.Schlossweg? schloss = null,
+        KonditionierungWeg? konditionierung = null)
     {
         Protokoll pr = p ?? new Protokoll();
         return Render<GebaeudeAdminDialog>(b => b
             .Add(x => x.Katalogzeilen, () => Zeilen(pr.Katalog))
             .Add(x => x.Schloss, schloss)
+            .Add(x => x.Konditionierung, konditionierung)
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Filterstandvorgabe, filterstand ?? new Katalogfilterstand())
             .Add(x => x.Satz, name =>
             {
                 int i = pr.Katalog.FindIndex(h => h.Name == name);
-                return i < 0 ? null : Satz(pr.Katalog[i], i + 1);
+                if (i < 0) return null;
+                GebaeudeStammblattDaten s = Satz(pr.Katalog[i], i + 1);
+                pr.Anpassen?.Invoke(s.Feldsatz!);
+                return s;
             })
             .Add(x => x.Gebaeudetypen, () =>
             {
@@ -217,6 +225,20 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     private static IElement Kennwertfeld(IRenderedComponent<GebaeudeAdminDialog> cut, string bauteil)
         => cut.FindAll($".epos-gebaeude-huellraster tr[data-bauteil={bauteil}] input")[0];
 
+    /// <summary>Ein Eingabefeld des Blatts „Konditionierung" nach seiner Beschriftung („Heizen · Tag").</summary>
+    private static IElement Blattfeld(IRenderedComponent<GebaeudeAdminDialog> cut, string beschriftung)
+        => cut.FindAll("section.epos-blatt label.epos-feld")
+              .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+              .QuerySelector("input, select, textarea")!;
+
+    /// <summary>Öffnet das Blatt „Konditionierung" über den Knopf im Kopf der Stammblattgruppe.</summary>
+    private static void BlattOeffnen(IRenderedComponent<GebaeudeAdminDialog> cut)
+        => cut.Find(".epos-stammblatt button.epos-gebaeude-kondknopf").Click();
+
+    /// <summary>Der Rückknopf des Blatts („‹ Verwaltung Gebäude").</summary>
+    private static void BlattZurueck(IRenderedComponent<GebaeudeAdminDialog> cut)
+        => cut.Find("section.epos-blatt button.epos-blatt-zurueck").Click();
+
     /// <summary>Ein Zahlenfeld des Stammblatts nach seiner Beschriftung.</summary>
     private static IElement Feld(IRenderedComponent<GebaeudeAdminDialog> cut, string beschriftung)
         => cut.FindAll(".epos-stammblatt label.epos-feld")
@@ -230,8 +252,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <summary>
     /// <b>Das Gerüst der Verwaltung</b>: Katalogliste mit fünf Spalten (Name, Gebäudeart,
     /// Verwendung, Baujahr, Fläche), kein Projektteil, keine Vorfilter über der Liste; im
-    /// Stammblatt die Gruppen des Katalogeditors — Kenndaten, Hülle, Fenster, Kenngrößen und
-    /// „Alle Daten"; Fußleiste Speichern · Verwerfen · Neu… · Beenden.
+    /// Stammblatt die Gruppen des Katalogeditors — Kenndaten, Konditionierung, Hülle, Fenster,
+    /// Kenngrößen und „Alle Daten"; Fußleiste Speichern · Verwerfen · Neu… · Beenden.
     /// </summary>
     [Fact]
     public void Das_Geruest_steht_wie_bei_den_Verwaltungen()
@@ -250,7 +272,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]", "Kalender" }, koepfe);
         Assert.Equal(4, cut.FindAll(".epos-katalogliste tbody tr").Count);
 
-        Assert.Equal(new[] { "Kenndaten", "Hülle", "Fenster nach Orientierung", "Kenngrößen", "Alle Daten" },
+        Assert.Equal(new[] { "Kenndaten", "Konditionierung", "Hülle", "Fenster nach Orientierung", "Kenngrößen", "Alle Daten" },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu…", "Beenden" },
                      Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
@@ -481,23 +503,23 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Nachtzeit steht in „Alle Daten" hinter der Nachtabsenkung</b> (E43): zwei Ganzzahlfelder
-    /// mit der Vorgabe als Platzhalter, die als geänderte Felder zählen und über den Weg des Editors
-    /// gespeichert werden.
+    /// <b>Die Nachtzeit steht im Blatt „Konditionierung"</b> (E43, E56 F3 (a); Stufe KP2, Welle U4): EIN
+    /// Feld in der Nachtzelle der Heizspalte; es zählt als geändertes Feld, und „Speichern" der Verwaltung
+    /// schreibt es über den Weg des Editors — das Blatt verwirft beim Rückweg nichts.
     /// </summary>
     [Fact]
-    public void Die_Nachtzeit_steht_in_Alle_Daten_und_wird_gespeichert()
+    public void Die_Nachtzeit_steht_im_Blatt_und_wird_mit_Speichern_geschrieben()
     {
         var p = new Protokoll();
         var cut = Aufbauen(p);
         cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.DoesNotContain(cut.FindAll(".epos-stammblatt label.epos-feld .epos-feld-text"),
+                              f => f.TextContent.StartsWith("Nachtabsenkung", StringComparison.Ordinal));
 
-        Assert.Equal("Vorgabe 22", Feld(cut, "Nachtabsenkung von").GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe 6", Feld(cut, "Nachtabsenkung bis").GetAttribute("placeholder"));
-
-        Feld(cut, "Nachtabsenkung von").Input("23");
-        Feld(cut, "Nachtabsenkung bis").Input("5");
+        BlattOeffnen(cut);
+        Blattfeld(cut, "Heizen · Nachtfenster").Input("23-5");
         Assert.True(cut.Instance.Geaendert);
+        BlattZurueck(cut);
         Knopf(cut, "Speichern").Click();
 
         var (d, neu, _) = Assert.Single(p.Gespeichert);
@@ -506,22 +528,24 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(5, d.NachtEnde);
     }
 
-    /// <summary>Nur eine Grenze hält „Speichern" an — mit der Regel des Kerns — und klappt „Alle Daten" auf.</summary>
+    /// <summary>
+    /// Eine halbe Nachtzeit (aus einem geladenen Satz) hält „Speichern" an — mit der Regel des Kerns — und
+    /// öffnet das Blatt „Konditionierung", in dem ihr Feld steht; das Warnband steht auch dort.
+    /// </summary>
     [Fact]
-    public void Eine_halbe_Nachtzeit_haelt_das_Speichern_an_und_klappt_Alle_Daten_auf()
+    public void Eine_halbe_Nachtzeit_haelt_das_Speichern_an_und_oeffnet_das_Blatt()
     {
-        var p = new Protokoll();
+        var p = new Protokoll { Anpassen = d => { d.NachtBeginn = 22; d.NachtEnde = null; } };
         var cut = Aufbauen(p);
-        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
-        Feld(cut, "Nachtabsenkung von").Input("22");
-        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
-        Assert.False(cut.Instance.AlleDatenOffen);
+        Feld(cut, "Wohn-/Nutzfläche").Input("150");
+        Assert.False(cut.Instance.KonditionierungOffen);
 
         Knopf(cut, "Speichern").Click();
 
         Assert.Empty(p.Gespeichert);
         Assert.Contains("beide eingeben oder beide leer lassen", cut.Instance.Meldung);
-        Assert.True(cut.Instance.AlleDatenOffen);
+        Assert.True(cut.Instance.KonditionierungOffen);
+        Assert.Contains("beide eingeben oder beide leer lassen", cut.Find("section.epos-blatt .epos-warnbanner").TextContent);
     }
 
     /// <summary>Der Vergleich führt Beginn und Ende der Nachtzeit; leer zeigt die Vorgabe.</summary>
@@ -574,35 +598,33 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Eine verletzte Ferienregel klappt „Alle Daten" auf</b> — dort steht ihr Feld; die
-    /// Meldung ist die des Editors.
+    /// <b>Eine verletzte Ferienregel öffnet das Blatt „Konditionierung"</b> — dort stehen die
+    /// Ferienzeiträume (E56 F3 (a)); die Meldung ist die des Editors.
     /// </summary>
     [Fact]
-    public void Eine_Ferienregel_klappt_Alle_Daten_auf()
+    public void Eine_Ferienregel_oeffnet_das_Blatt()
     {
         var p = new Protokoll();
         var cut = Aufbauen(p);
+        BlattOeffnen(cut);
 
-        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
-        Assert.True(cut.Instance.AlleDatenOffen);
-
-        // Winter: Beginn 1. Januar, Ende 1. Februar - der Beginn liegt VOR dem Ende.
-        // Die ersten zwei Ganzzahlfelder sind Beginn und Ende der Nachtzeit (E43).
-        IReadOnlyList<IElement> ferien = cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]");
-        Assert.True(ferien.Count >= 18, ferien.Count.ToString(CultureInfo.InvariantCulture));
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[2].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[3].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[10].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[11].Input("2");
-
-        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
-        Assert.False(cut.Instance.AlleDatenOffen);
+        // Das erste Feld mit Ziffern ist das Nachtfenster der Heizspalte (E43, ein Feld „22–6"),
+        // danach Tag und Monat der vier Ferienanfaenge und -enden.
+        IReadOnlyList<IElement> ziffern = cut.FindAll("section.epos-blatt input[inputmode=numeric]");
+        Assert.True(ziffern.Count >= 17, ziffern.Count.ToString(CultureInfo.InvariantCulture));
+        cut.FindAll("section.epos-blatt input[inputmode=numeric]")[1].Input("1");    // Winter Beginn: 1.2.
+        cut.FindAll("section.epos-blatt input[inputmode=numeric]")[2].Input("2");
+        cut.FindAll("section.epos-blatt input[inputmode=numeric]")[9].Input("1");    // Winter Ende: 1.3.
+        cut.FindAll("section.epos-blatt input[inputmode=numeric]")[10].Input("3");
+        BlattZurueck(cut);
+        Assert.False(cut.Instance.KonditionierungOffen);
 
         Knopf(cut, "Speichern").Click();
 
         Assert.Empty(p.Gespeichert);
         Assert.Equal("Die Ferien müssen über die Jahresgrenze gehen!", cut.Instance.Meldung);
-        Assert.True(cut.Instance.AlleDatenOffen);
+        Assert.True(cut.Instance.KonditionierungOffen);
+        Assert.False(cut.Instance.AlleDatenOffen);
     }
 
     /// <summary>Verwerfen nimmt den Arbeitsstand zurück — Kenndaten wie Hülle; nichts wird geschrieben.</summary>
@@ -1127,7 +1149,13 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text).QuerySelector("input")!;
 
         Schalter("Gebäude wird gekühlt").Change(true);
-        Feld(cut, "Kühlsollwert").Input("26");
+        // Der Kühlsollwert steht in der Spalte „Kühlen" des Blatts „Konditionierung" (E56 F3 (a)).
+        Assert.DoesNotContain(cut.FindAll(".epos-stammblatt label.epos-feld .epos-feld-text"),
+                              f => f.TextContent.Trim() == "Kühlsollwert");
+        BlattOeffnen(cut);
+        Blattfeld(cut, "Kühlen · Tag").Input("26");
+        BlattZurueck(cut);
+        Assert.True(cut.Instance.AlleDatenOffen);
         Assert.Single(cut.FindAll(".epos-gebaeude-alledaten div.gebk-kuehluebergabe"));
         Schalter("Kühlübergabe rechnen (statt idealer Kühlung)").Change(true);
         Feld(cut, "Kühlübergabeart :").Change("2");
@@ -1143,5 +1171,193 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG, d.KuehlUebergabeArt);
         Assert.Equal(15.0, d.KuehlAuslegungVorlauf);
         Assert.Null(d.KuehlVorlaufgrenze);
+    }
+
+    // =================================================================================
+    // Das Blatt „Konditionierung" (Stufe KP2, Welle U4; Entwurf KP2 Festlegung 6, E56 F3 (a))
+    // =================================================================================
+
+    /// <summary>Der reine Weg des Katalogbaus — derselbe Kern wie die Hülle, ohne Datenbank.</summary>
+    private static KonditionierungWeg Katalogweg()
+        => KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false);
+
+    /// <summary>Jeder gelesene Satz trägt eine (leere) Konditionierung — wie aus der Hülle mit Tabellen.</summary>
+    private static Protokoll MitKonditionierung() => new() { Anpassen = d => d.Konditionierung = new KonditionierungDaten() };
+
+    private static IElement Konditionierungsgruppe(IRenderedComponent<GebaeudeAdminDialog> cut)
+        => cut.FindAll("section.epos-stammblattgruppe")
+              .First(s => s.QuerySelector(".epos-stammblattgruppe-titel")?.TextContent == "Konditionierung");
+
+    private static string[] Zustandswerte(IRenderedComponent<GebaeudeAdminDialog> cut)
+        => Konditionierungsgruppe(cut).QuerySelectorAll(".epos-stammblattwert dd").Select(e => e.TextContent.Trim()).ToArray();
+
+    /// <summary>
+    /// <b>Die Gruppe „Konditionierung" trägt fünf Zustandszeilen als Text</b> und im Kopf
+    /// „Konditionierung…"; der Knopf öffnet das BREITE Blatt mit derselben Komponente wie der Reiter
+    /// des Editors — Liste, Stammblatt und Fußleiste stehen dann nicht da, der Rückknopf führt zurück.
+    /// </summary>
+    [Fact]
+    public void Die_Gruppe_Konditionierung_zeigt_fuenf_Zustandszeilen_und_oeffnet_das_breite_Blatt()
+    {
+        var p = MitKonditionierung();
+        var cut = Aufbauen(p, konditionierung: Katalogweg());
+
+        IElement gruppe = Konditionierungsgruppe(cut);
+        Assert.Contains("epos-stammblattgruppe--lesen", gruppe.ClassName);
+        Assert.Empty(gruppe.QuerySelectorAll("input"));
+        Assert.Equal(new[] { "Heizen", "Kühlen", "Lüftung", "Geräte", "Personen" },
+                     gruppe.QuerySelectorAll(".epos-stammblattwert dt").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.All(Zustandswerte(cut), w => Assert.Equal("aus der Matrix", w));
+        Assert.Equal("Konditionierung…", gruppe.QuerySelector("button.epos-gebaeude-kondknopf")!.TextContent.Trim());
+        Assert.Null(gruppe.QuerySelector("p.epos-gebaeude-kondsperre"));
+
+        BlattOeffnen(cut);
+
+        Assert.True(cut.Instance.KonditionierungOffen);
+        IElement blatt = cut.Find("section.epos-blatt");
+        Assert.Contains("epos-blatt--breit", blatt.ClassName);
+        Assert.Equal("Konditionierung", cut.Find(".epos-blatt-titel").TextContent.Trim());
+        Assert.Contains("Verwaltung Gebäude", cut.Find(".epos-blatt-zurueck").TextContent);
+        Assert.Single(cut.FindAll("section.epos-blatt table.epos-kond-matrix"));
+        Assert.Empty(cut.FindAll(".epos-katalograhmen"));
+        Assert.Empty(cut.FindAll(".epos-katalog-dialog > .epos-leiste"));
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Contains("„Speichern“ der Verwaltung schreibt sie", cut.Find(".epos-gebaeude-kondblatt-hinweis").TextContent);
+
+        BlattZurueck(cut);
+        Assert.False(cut.Instance.KonditionierungOffen);
+        Assert.Single(cut.FindAll(".epos-katalograhmen"));
+        Assert.Empty(cut.FindAll("section.epos-blatt"));
+
+        // Esc auf dem Blatt führt zurück, schließt die Verwaltung aber nicht.
+        BlattOeffnen(cut);
+        cut.Find("section.epos-blatt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.KonditionierungOffen);
+        Assert.Null(p.Geschlossen);
+    }
+
+    /// <summary>
+    /// <b>Das Blatt arbeitet am SELBEN Arbeitsstand wie das Stammblatt</b>: Eine Bestandszelle schreibt
+    /// ihr Feld, eine Matrixzelle die Konditionierung (neue Fassung); der Fuß zählt beide, „Speichern" der
+    /// Verwaltung schreibt beide über den Weg des Editors — ein zweites „Speichern" schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Speichern_der_Verwaltung_schreibt_Bestandszelle_und_Matrix_einmal()
+    {
+        var p = MitKonditionierung();
+        var cut = Aufbauen(p, konditionierung: Katalogweg());
+        GebaeudeArbeitsstand arbeit = cut.Instance.Arbeit;
+        BlattOeffnen(cut);
+        Assert.Same(arbeit, cut.Instance.Konditionierungsbearbeitung.Arbeit);
+
+        Blattfeld(cut, "Heizen · Tag").Input("21");
+        Blattfeld(cut, "Personen · Nennwert").Input("1000");
+        Assert.Equal(21.0, cut.Instance.Arbeitsstand.SollTag);
+        Assert.True(cut.Instance.Arbeitsstand.Konditionierung!.Fassung > 0);
+        BlattZurueck(cut);
+
+        Assert.Equal("2 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        Knopf(cut, "Speichern").Click();
+
+        var (d, neu, name) = Assert.Single(p.Gespeichert);
+        Assert.False(neu);
+        Assert.Equal("Haus A", name);
+        Assert.Equal(21.0, d.SollTag);
+        Assert.NotNull(d.Konditionierung);
+        Assert.True(d.Konditionierung!.Fassung > 0);
+        Assert.Equal(1000.0, d.Konditionierung.Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+
+        // Nach dem Schreiben liest die Verwaltung den Satz neu: nichts mehr geändert, kein zweites Schreiben.
+        Assert.False(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+        Assert.Single(p.Gespeichert);
+    }
+
+    /// <summary>„Verwerfen" nimmt auch die Konditionierung zurück; danach ist nichts mehr geändert.</summary>
+    [Fact]
+    public void Verwerfen_nimmt_die_Konditionierung_zurueck()
+    {
+        var p = MitKonditionierung();
+        var cut = Aufbauen(p, konditionierung: Katalogweg());
+        BlattOeffnen(cut);
+        Blattfeld(cut, "Personen · Nennwert").Input("800");
+        BlattZurueck(cut);
+        Assert.True(cut.Instance.Geaendert);
+
+        Knopf(cut, "Verwerfen").Click();
+
+        Assert.False(cut.Instance.Geaendert);
+        Assert.Equal(0, cut.Instance.Arbeitsstand.Konditionierung!.Fassung);
+        Assert.Empty(p.Gespeichert);
+    }
+
+    /// <summary>
+    /// <b>Ein ausgelieferter Satz steht im Blatt im Lesemodus</b>: Werte als Text, keine Eingabe, keine
+    /// Handlung; die leise Zeile nennt den Grund statt des Schreibwegs. Der Knopf der Gruppe bleibt —
+    /// lesen darf man.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_steht_im_Blatt_als_Text()
+    {
+        var cut = Aufbauen(MitKonditionierung(), konditionierung: Katalogweg());
+        Zeilenklick.Zeile(cut, 3);                               // Schule D
+        Assert.Equal("Schule D", cut.Instance.Gewaehlt);
+
+        BlattOeffnen(cut);
+
+        Assert.Empty(cut.FindAll("section.epos-blatt table.epos-kond-matrix input"));
+        Assert.NotEmpty(cut.FindAll("section.epos-blatt span.epos-kond-text"));
+        Assert.Empty(cut.FindAll("section.epos-blatt button.epos-kond-zuruecknehmen"));
+        Assert.DoesNotContain("schreibt sie", cut.Find(".epos-gebaeude-kondblatt-hinweis").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Ohne Weg der Konditionierung</b> (ohne Tabellen) steht das Blatt benannt gesperrt da — die
+    /// Bestandszellen bleiben bedienbar, denn die Altfelder stehen nur noch hier (E56 F3 (a)); die Gruppe
+    /// nennt den Grund unter den Zustandszeilen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Weg_nennt_die_Gruppe_den_Grund_und_die_Bestandszellen_bleiben()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Assert.Contains("Die Konditionierung steht nicht zur Verfügung",
+                        Konditionierungsgruppe(cut).QuerySelector("p.epos-gebaeude-kondsperre")!.TextContent);
+        BlattOeffnen(cut);
+        Assert.Empty(cut.FindAll("section.epos-blatt section.epos-kond-karte"));
+        Blattfeld(cut, "Geräte · Nennwert").Input("7");
+        Blattfeld(cut, "Lüftung · Infiltration").Input("0,2");
+        BlattZurueck(cut);
+        Knopf(cut, "Speichern").Click();
+
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.Equal(7.0, d.Waermegewinne);
+        Assert.Equal(0.2, d.LuftwechselInfiltration);
+    }
+
+    /// <summary>
+    /// <b>Die Altfelder stehen nicht mehr im Stammblatt</b> (E56 F3 (a)): Kenngrößen und „Alle Daten"
+    /// tragen keine Sollwerte, keine Nachtzeit, keine inneren Wärmegewinne, keine Infiltration,
+    /// Nutzerlüftung, Sommerlüftung, keinen Kühlsollwert und keine Maximalraumtemperatur — eine leise
+    /// Zeile in „Alle Daten" sagt, wo sie stehen.
+    /// </summary>
+    [Fact]
+    public void Alle_Daten_verliert_die_Altfelder_und_sagt_wo_sie_stehen()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+
+        List<string> felder = cut.FindAll(".epos-stammblatt label .epos-feld-text")
+                                 .Select(f => f.TextContent.Trim()).ToList();
+        foreach (string altfeld in new[]
+                 {
+                     "Soll am Tag", "Nachtabsenkung", "Soll am Wochenende", "Soll in Ferien", "Maximalraumtemperatur",
+                     "Interne Wärmegewinne", "Infiltration", "Nutzerlüftung", "Sommerlüftung", "Kühlsollwert"
+                 })
+            Assert.DoesNotContain(felder, f => f.StartsWith(altfeld, StringComparison.Ordinal));
+        Assert.Contains(felder, f => f.StartsWith("Raumhöhe", StringComparison.Ordinal));
+        Assert.Contains("stehen in der Gruppe „Konditionierung“", cut.Find(".epos-gebaeude-alledaten").TextContent);
     }
 }

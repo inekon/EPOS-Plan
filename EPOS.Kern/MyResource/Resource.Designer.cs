@@ -61063,6 +61063,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KONDITIONIERUNG {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KONDITIONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string KOND_BTN_LOESCHEN {
@@ -63021,6 +63030,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_TEPPICHBILD {
             get {
                 return ResourceManager.GetString("KOND_TXT_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VERWALTUNG_ALTFELDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VERWALTUNG_ALTFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VERWALTUNG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VERWALTUNG_SPEICHERN", resourceCulture);
             }
         }
         

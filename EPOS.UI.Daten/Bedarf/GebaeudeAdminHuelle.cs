@@ -62,6 +62,12 @@ namespace WindowsFormsApplication1
                     GebaeudeKatalogHuelle.Schreiben),
                 ["HuellTexte"] = GebaeudeKatalogHuelle.Texte(),
                 ["Prueftexte"] = GebaeudeKatalogHuelle.Prueftexte(),
+                // Stufe KP2, Welle U4: das Blatt "Konditionierung" - derselbe Weg des Katalogbaus wie
+                // im Katalogeditor (ohne "aus dem Katalog erneut uebernehmen"); geschrieben wird mit
+                // "Speichern" ueber GebaeudeKatalogHuelle.Schreiben, nur bei geaenderter Fassung.
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
+                ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
+                ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
                 // Stufe AK1 (Anlagenkopplung 8.4, 9.1): die hergeleiteten Vorgaben der
                 // Waermeuebergabe - mit der Klimareihe des geoeffneten Projekts; ohne Projekt
                 // steht die Regel ohne Zahl - und das Vorschaubild des Zeitprogramms.
@@ -169,16 +175,11 @@ namespace WindowsFormsApplication1
             return new Stammblattwert(Text_(schluessel, rueckfall), wert);
         }
 
-        /// <summary>Eine Stunde der Nachtzeit als Text (E43); leer zeigt die Vorgabe („Vorgabe 22").</summary>
-        internal static string Stunde(int? stunde, int vorgabe)
-            => stunde.HasValue
-                ? stunde.Value.ToString(CultureInfo.InvariantCulture)
-                : Text_("GEBK_VORGABE", "Vorgabe {0}").Replace("{0}", vorgabe.ToString(CultureInfo.InvariantCulture));
-
         /// <summary>
         /// „Alle Daten": die übrigen Felder des Katalogeditors als Text, in seinen Abschnitten —
-        /// Kenngrößen, Fenster nach Orientierung, Raumtemperaturen, Wärmebrücken und
-        /// Anschlussmaße, Modellparameter.
+        /// Kenngrößen, Fenster nach Orientierung, Wärmebrücken und Anschlussmaße, Modellparameter.
+        /// Sollwerte, Nachtzeit, Ferien, innere Wärmegewinne, Infiltration, Nutzerlüftung und
+        /// Maximalraumtemperatur stehen im Blatt „Konditionierung" (E56 F3 (a); Stufe KP2, Welle U4).
         /// </summary>
         internal static IReadOnlyList<Stammblattwert> AlleDaten(GebaeudeModel m)
         {
@@ -191,7 +192,6 @@ namespace WindowsFormsApplication1
                 Stammblattwert.Abschnitt(Text_("GEBK_GRP_KENNGROESSEN", "Kenngrößen")),
                 new(Text_("GEBK_LBL_WOHNFLAECHE", "Nutzfläche"), Z(m.Wohnflaeche_gesamt, 1), "m²"),
                 new(Text_("GEBK_LBL_FLAECHE_NUTZER", "Fläche / Nutzer"), Z(m.Flaeche_Nutzer, 1), "m²"),
-                new(Text_("GEBK_LBL_WAERMEGEWINNE", "Interne Wärmegewinne"), Z(m.Interne_Waermegewinne, 0), "W"),
                 new(Text_("GEBK_LBL_FENSTERDURCHLASS", "Fensterdurchlaßgrad"), Z(m.Fensterdurchlassgrad)),
                 new(Text_("GEBK_LBL_RAUMHOEHE", "Raumhöhe"), Z(m.Raumhoehe), "m"),
                 new(Text_("GEBK_LBL_LUFTWECHSEL", "Luftwechselrate"), Z(m.Luftwechselrate), "1/h"),
@@ -204,16 +204,6 @@ namespace WindowsFormsApplication1
                 new(Text_("GEBK_LBL_FF_OST", "Fensterfläche Ost"), N(m.Fensterflaeche_Ost, 1), "m²"),
                 new(Text_("GEBK_LBL_FF_WEST", "Fensterfläche West"), N(m.Fensterflaeche_West, 1), "m²"),
                 new(Text_("GEBK_LBL_FF_OSTWEST", "Fensterfläche Ost + West"), Z(m.Fensterflaeche_OstWest, 1), "m²"),
-
-                Stammblattwert.Abschnitt(Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen")),
-                new(Text_("GEBK_LBL_SOLL_TAG", "Soll am Tag"), Z(m.Raumsolltemperatur_Tag, 1), "°C"),
-                new(Text_("GEBK_LBL_NACHTABSENKUNG", "Nachtabsenkung auf"), Z(m.Raumsolltemperatur_Nachtabsenkung, 1), "°C"),
-                // E43: die Nachtzeit - leer zeigt die Vorgabe (22 bzw. 6), wie der Platzhalter des Editors.
-                new(Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von"), Stunde(m.Nachtabsenkung_Beginn, Nachtzeit.VORGABE_BEGINN), "h"),
-                new(Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis"), Stunde(m.Nachtabsenkung_Ende, Nachtzeit.VORGABE_ENDE), "h"),
-                new(Text_("GEBK_LBL_WE_ABSENKUNG", "Soll am Wochenende (ganztägig)"), Z(m.Raumsolltemperatur_Wochenende, 1), "°C"),
-                new(Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien"), Z(m.Raumsolltemperatur_Ferien, 1), "°C"),
-                new(Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur"), Z(m.Maximaleraumtemperatur, 1), "°C"),
 
                 Stammblattwert.Abschnitt(Text_("GEBK_GRP_SONSTIGES", "Sonstiges")),
                 new(Text_("GEBK_LBL_FENSTER_WAND", "Fenster-Wand"),
@@ -233,8 +223,6 @@ namespace WindowsFormsApplication1
                 new(Text_("GEBK_LBL_INNENFLAECHENFAKTOR", "Innenflächenfaktor"), N(m.Innenflaechenfaktor)),
                 new(Text_("GEBK_LBL_HEIZUNG_STRAHLUNG", "Strahlungsanteil Heizung"), N(m.Heizung_Strahlungsanteil)),
                 new(Text_("GEBK_LBL_HEIZLEISTUNG_MAX", "Heizleistungsgrenze"), N(m.Heizleistung_Max, 1), "kW"),
-                new(Text_("GEBK_LBL_INFILTRATION", "Infiltration"), N(m.Luftwechsel_Infiltration), "1/h"),
-                new(Text_("GEBK_LBL_NUTZERLUEFTUNG", "Nutzerlüftung"), N(m.Luftwechsel_Nutzer), "1/h"),
                 new(Text_("GEBK_LBL_KELLERTEMPERATUR", "Kellertemperatur"), N(m.Kellertemperatur, 1), "°C")
             };
         }

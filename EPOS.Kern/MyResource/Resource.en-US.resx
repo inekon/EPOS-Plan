@@ -40629,5 +40629,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
     <value>An empty cell applies as in the building; the placeholder shows the value. An own cell overrides it, an emptied cell inherits again.</value>
   </data>
+  <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
+    <value>Conditioning…</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_SPEICHERN" xml:space="preserve">
+    <value>The changes belong to the selected record: “Save” in the administration writes them, “Discard” reverts them.</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
+    <value>Setpoints, night time, holiday periods, internal heat gains, infiltration, occupant ventilation, summer ventilation, cooling setpoint and maximum indoor temperature are in the group “Conditioning”.</value>
+  </data>
 </root>
 

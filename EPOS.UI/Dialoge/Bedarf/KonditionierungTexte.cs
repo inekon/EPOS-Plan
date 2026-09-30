@@ -664,4 +664,24 @@ public sealed class KonditionierungTexte
     public string HinweisZoneMatrix { get; set; }
         = "Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine "
           + "geleerte erbt wieder.";
+
+    // ------------------------------------------------------------ Gebäudeverwaltung (Welle U4)
+
+    /// <summary><c>KOND_BTN_KONDITIONIERUNG</c> — Kopf der Stammblattgruppe: öffnet das Blatt „Konditionierung"</summary>
+    public string KnopfKonditionierung { get; set; } = "Konditionierung…";
+
+    /// <summary>
+    /// <c>KOND_TXT_VERWALTUNG_SPEICHERN</c> — die leise Zeile im Blatt der Verwaltung: geschrieben wird mit
+    /// „Speichern" der Fußleiste
+    /// </summary>
+    public string HinweisVerwaltungSpeichern { get; set; }
+        = "Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VERWALTUNG_ALTFELDER</c> — die Herleitungszeile in „Alle Daten": wohin die Felder der
+    /// Konditionierung gewandert sind (E56 F3 (a))
+    /// </summary>
+    public string HinweisVerwaltungAltfelder { get; set; }
+        = "Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, "
+          + "Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.";
 }
