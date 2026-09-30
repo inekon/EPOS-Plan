@@ -86,6 +86,20 @@
   #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_A100 fehlt. Er ist versioniert und gehoert zur Auslieferung (Folgeposten ZU24).
 #endif
 
+; Freier Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): die
+; CSV-Dateien der Katalogdaten, die frei ausgeliefert werden duerfen (Parameter der
+; Stochastik und der Speicherauslegung, Ecodesign-Zapfprofile, Zapfkategorien, die
+; abgeleiteten Nutzungsarten). Dieselben Zeilen stehen in der Vorlagendatenbank, und
+; der Kern traegt sie eingebettet und laedt sie einer aelteren Datenbank ohne
+; Katalogversion selbst nach; als Ordner liegen sie daneben unter {app}\Vorlage.
+; Nur *.csv - die LIESMICH.md des Ordners ist eine Entwicklerunterlage. Der Ordner
+; ist versioniert, keine Zeigerdatei und kein Erzeugnis von build-setup.ps1. Die
+; lokalen Normdaten (Referenzlaeufe\Normzahlen) gehoeren NIE hierher (ZU24).
+#define KatalogpaketFrei  RepoDir + "Referenzlaeufe\Katalogpaket_frei"
+#if !DirExists(KatalogpaketFrei)
+  #error Der Ordner Referenzlaeufe\Katalogpaket_frei fehlt. Er ist versioniert und gehoert zur Auslieferung (freier Paketteil des Zapfprofilgenerators).
+#endif
+
 ; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
 ; die passende Fassung selbst nachlaedt. Gebraucht seit Paket iU8: Die neuen
 ; Dialoge sind Blazor-Komponenten und laufen in einer WebView2. Auf Windows 11
@@ -361,6 +375,13 @@ Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
 ; ueber den Katalog-Import ein. Ein Update ersetzt den Bestand (ignoreversion),
 ; die Deinstallation nimmt ihn mit {app}\Vorlage.
 Source: "{#KatalogVorlageA100}\*"; DestDir: "{app}\Vorlage\Katalogpaket_A100"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Freier Paketteil des Zapfprofilgenerators neben die Vorlagendatenbank: sieben
+; CSV-Dateien, zusammen rund 30 Kilobyte, ohne die LIESMICH.md. Ein Update ersetzt
+; den Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#KatalogpaketFrei}\*.csv"; DestDir: "{app}\Vorlage\Katalogpaket_frei"; \
     Flags: ignoreversion; \
     Components: programm
 

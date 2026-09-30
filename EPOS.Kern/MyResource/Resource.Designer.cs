@@ -117006,6 +117006,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten in diese Datenbank nachgeladen (Katalogversion „{0}“): {1} Parameter, {2} Brauchwasser-Nutzungsarten, {3} Bedarfstage. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_PAKETTEIL_NACHGELADEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_PAKETTEIL_NACHGELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die frei verfügbaren Katalogdaten des Zapfprofilgenerators ließen sich nicht nachladen ({0}) — nichts geändert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion „{0}“ trägt keine Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER {
@@ -117389,6 +117407,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — ohne Katalogversion: {0}. {1} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN", resourceCulture);
             }
         }
         

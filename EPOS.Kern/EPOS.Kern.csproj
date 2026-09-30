@@ -340,6 +340,16 @@
     <EmbeddedResource Include="Allgemein\Hilfe\Berechnung\*.wiki" LogicalName="EPOS.Kern.Hilfe.Berechnung.%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- Der freie Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): Fehlt einer
+       Datenbank die Katalogversion der Brauchwasserparameter, laedt der Kern ihn nach
+       (TwwPaketteilCtrl.Nachladen) - auf Windows und iOS. EINE Quelle: die CSV-Dateien des
+       Repo-Ordners selbst, als Verweis eingebettet, keine Kopie; der feste LogicalName haengt nicht
+       am Ordnerpfad. Nur *.csv - die LIESMICH.md des Ordners ist eine Entwicklerunterlage. Die Wache
+       EPOS.Kern.Tests/TwwPaketteilNachladenTests haelt Ressourcen und Ordner byte-gleich. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Referenzlaeufe\Katalogpaket_frei\*.csv" Link="Katalogpaket_frei\%(Filename)%(Extension)" LogicalName="EPOS.Kern.Katalogpaket_frei.%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- ================================================================== -->
   <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
   <!--                                                                    -->

@@ -834,7 +834,7 @@ namespace Auslieferungsvorlage.Tests
                 new DbParam("?", VERSION), new DbParam("?", herkunft), new DbParam("?", status)));
         }
 
-        /// <summary>Die Rueckfallversion der Paketteil-Zeilen (TwwKataloge.KATALOGVERSION_FREI).</summary>
+        /// <summary>Die Rueckfallversion der Paketteil-Zeilen (ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, Regel N38).</summary>
         private const string TwwKatalogversionFrei = "FREI-1";
 
         /// <summary>Der Vorgabesatz einer Gruppe im Paketteil (Steuerspalte <c>Gruppe</c>).</summary>
