@@ -142,6 +142,33 @@ namespace EPOS.Kern.Tests
             Assert.Null(new GebaeudeStammCtrl().Lies(name).Rahmenanteil);
         }
 
+        /// <summary>
+        /// <b>Das Schloss erreicht den Editor</b> (Stufe KP2, Befund B11): Die Hülle setzt
+        /// <c>Gesperrt</c> samt Grund für einen ausgelieferten Satz in der Betriebsart Bearbeiten —
+        /// statt ihn erst nach dem OK abzulehnen; ein eigener Satz und „Neu" bleiben frei.
+        /// </summary>
+        [Fact]
+        public void Ein_ausgelieferter_Satz_steht_im_Modus_Bearbeiten_gesperrt()
+        {
+            if (!_db.Vorhanden) return;
+
+            DataTable t = DataRepository.GetDataTable("SELECT ID, Bezeichner FROM Tab_Gebaeude_STAMM ORDER BY ID LIMIT 2");
+            string gesperrt = Convert.ToString(t.Rows[0]["Bezeichner"], CultureInfo.InvariantCulture);
+            string eigen = Convert.ToString(t.Rows[1]["Bezeichner"], CultureInfo.InvariantCulture);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 1 WHERE ID = ?",
+                                           new DbParam("?", Convert.ToInt32(t.Rows[0]["ID"], CultureInfo.InvariantCulture)));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE ID = ?",
+                                           new DbParam("?", Convert.ToInt32(t.Rows[1]["ID"], CultureInfo.InvariantCulture)));
+
+            IReadOnlyDictionary<string, object> bearbeiten = GebaeudeKatalogHuelle.Gaben(gesperrt, GebaeudeKatalogModus.Bearbeiten);
+            Assert.Equal(true, bearbeiten["Gesperrt"]);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KOND_TXT_HINWEIS_LESEMODUS, bearbeiten["SperrGrund"]);
+            Assert.Contains("Speichern unter", (string)bearbeiten["SperrGrund"]);
+
+            Assert.False(GebaeudeKatalogHuelle.Gaben(eigen, GebaeudeKatalogModus.Bearbeiten).ContainsKey("Gesperrt"));
+            Assert.False(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu).ContainsKey("Gesperrt"));
+        }
+
         [Fact]
         public void Der_Parametersatz_traegt_das_Textbuendel_und_ohne_Haken_keinen_Brauchwasserweg()
         {
@@ -161,9 +188,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Umsetzungskonzept Zapfprofilgenerator 5.2: Aus der Verwaltung (Modus Admin) reicht der
-        /// Gebäudekatalog der Brauchwasser-Profilliste keinen Zapfprofil-Behälter — ohne Projekt
-        /// kein Zapfprofil-Knopf; im Projekt (Bearbeiten, Neu) je Öffnen einen frischen.
+        /// Umsetzungskonzept Zapfprofilgenerator 5.2: Aus der Verwaltung („Neu…" der
+        /// Gebäudeverwaltung) reicht der Gebäudekatalog der Brauchwasser-Profilliste keinen
+        /// Zapfprofil-Behälter — ohne Projekt kein Zapfprofil-Knopf; im Gebäudedialog des Projekts
+        /// (Bearbeiten, Neu) je Öffnen einen frischen. Die Regel steht in der Hülle der Verwaltung
+        /// (<c>GebaeudeAdminHuelle.KatalogGaben</c>, Stufe KP2): Die Betriebsart „Admin" des Editors,
+        /// an der sie hing, baute kein Aufrufer mehr — die Verwaltung übergibt „Neu".
         /// </summary>
         [Fact]
         public void Aus_der_Verwaltung_reicht_der_Katalog_keinen_Zapfprofil_Behaelter()
@@ -179,20 +209,28 @@ namespace EPOS.Kern.Tests
             };
             try
             {
-                var admin = (Func<IReadOnlyDictionary<string, object>>)
-                    GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Admin)["BrauchwasserGaben"];
-                var projekt = (Func<IReadOnlyDictionary<string, object>>)
+                // Der Weg der Verwaltung: ihr Parametersatz reicht den Editor hinter „Neu…".
+                var editor = (Func<IReadOnlyDictionary<string, object>>)GebaeudeAdminHuelle.Gaben()["KatalogGaben"];
+                IReadOnlyDictionary<string, object> verwaltungsgaben = editor();
+                Assert.Equal(GebaeudeKatalogModus.Neu, verwaltungsgaben["Modus"]);
+                var verwaltung = (Func<IReadOnlyDictionary<string, object>>)verwaltungsgaben["BrauchwasserGaben"];
+
+                var bearbeiten = (Func<IReadOnlyDictionary<string, object>>)
                     GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Bearbeiten)["BrauchwasserGaben"];
+                var neu = (Func<IReadOnlyDictionary<string, object>>)
+                    GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu)["BrauchwasserGaben"];
 
-                admin();
-                projekt();
-                projekt();
+                verwaltung();
+                bearbeiten();
+                bearbeiten();
+                neu();
 
-                Assert.Equal(3, gereicht.Count);
+                Assert.Equal(4, gereicht.Count);
                 Assert.Null(gereicht[0]);
                 Assert.NotNull(gereicht[1]);
                 Assert.NotNull(gereicht[2]);
                 Assert.NotSame(gereicht[1], gereicht[2]);
+                Assert.NotNull(gereicht[3]);   // „Neu" im Gebäudedialog des Projekts: mit Behälter
             }
             finally { Gebaeudewege.BrauchwasserGaben = alt; }
         }
@@ -208,6 +246,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             Pruefe(typeof(GebaeudeKatalogDialog), GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu));
+            Pruefe(typeof(GebaeudeKatalogDialog), GebaeudeAdminHuelle.KatalogGaben());
             Pruefe(typeof(GebaeudeWohnflaecheDialog), GebaeudeWohnflaecheHuelle.Gaben(new Z_ProjGebModel(), "vor 1919"));
             Pruefe(typeof(GebaeudeDialog), GebaeudeHuelle.Gaben(1045, "", Z_ProjGebCtrl.LiesProjekt(1045),
                                                                  wizard: false));

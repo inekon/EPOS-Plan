@@ -273,8 +273,12 @@
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W9.1), auch vorbelegt aus dem Import (G4) -- *@
+    @* Der Editor steht in JEDER Betriebsart in der BREITEN Ueberlagerung (Stufe KP2, Entwurf
+       Festlegung 7): Die Matrix der Konditionierung braucht die Breite; der Reiter bricht am
+       Container um, nicht am Fenster. *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
                    Titel="@(_importweg is not null ? BtnDbNeuText : BtnDbAendernText)"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="() => KatalogeditorFertig(false)">
         <KindInhalt>
             @if (_katalogGaben is not null)
@@ -287,6 +291,7 @@
 
     @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3) ----- *@
     <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="() => ProjekteditorFertig(false)">
         <KindInhalt>
             @if (_projektGaben is not null)

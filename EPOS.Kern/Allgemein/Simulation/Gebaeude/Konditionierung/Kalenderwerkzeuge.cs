@@ -5,10 +5,23 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Woher „Zeitstruktur übernehmen" seine Stunden nimmt (Konzept Konditionierungsprofile 3.5; Entwurf
+    /// KP2, Festlegung 11). Nicht zu verwechseln mit dem Record <c>Zeitstruktur</c> des Zapfprofils.
+    /// </summary>
+    public enum Zeitstrukturquelle
+    {
+        /// <summary>„wie Heizung": die Stunden der Standardwoche des Heizkalenders mit endlichem Wert ≥ Tagwert der Heizspalte.</summary>
+        WieHeizung,
+
+        /// <summary>„wie Anwesenheit": die Stunden der Standardwoche des Personenkalenders mit einem Anteil über 0.</summary>
+        WieAnwesenheit,
+    }
+
+    /// <summary>
     /// <b>Die Werkzeuge der Kalenderkarte</b> (Konzept Konditionierungsprofile 3.5, Stufe KP1b):
     /// das <b>Zeitfenster</b> „Tage, von, bis, Wert" für die Standardwoche, die <b>Feiertage als
-    /// Regel</b> (F11) und die <b>Rangbänder</b>, in denen eine Periode ihren Platz bekommt
-    /// (N1.61 Nr. 5).
+    /// Regel</b> (F11), <b>„Zeitstruktur übernehmen"</b> (Entwurf KP2, Festlegung 11) und die
+    /// <b>Rangbänder</b>, in denen eine Periode ihren Platz bekommt (N1.61 Nr. 5).
     ///
     /// <para><b>Ohne Datenbank, ohne Uhr, ohne Zufall</b>: Jedes Werkzeug nimmt einen
     /// <see cref="Konditionierungskalender"/> und gibt einen neuen zurück — dieselben Eingaben,
@@ -18,12 +31,10 @@ namespace WindowsFormsApplication1
     /// gewöhnliche Perioden und einen lesbaren Vermerk (Konzept 3.5).</para>
     ///
     /// <para><b>Jedes Werkzeug ersetzt genau seinen Zielbereich.</b> Das Zeitfenster fasst nur die
-    /// Stunden seiner Tage an, die Feiertagsregel nur ihre neun Perioden; alles andere bleibt Zeichen
-    /// für Zeichen stehen. Ein Verstoß — ein Wert außerhalb der Grenzen, ein leeres Fenster, ein schon
-    /// belegter Rang — ist ein <b>benannter</b> Befund, keine stille Verschiebung.</para>
-    ///
-    /// <para><b>„Zeitstruktur übernehmen" steht NICHT hier</b> — es kommt mit KP2 (Entwurf KP1b
-    /// Nr. 13).</para>
+    /// Stunden seiner Tage an, die Feiertagsregel nur ihre neun Perioden, die Zeitstruktur nur die
+    /// Standardwoche; alles andere bleibt Zeichen für Zeichen stehen. Ein Verstoß — ein Wert außerhalb
+    /// der Grenzen, ein leeres Fenster, ein schon belegter Rang, ein fehlender Tag- oder Nachtwert — ist
+    /// ein <b>benannter</b> Befund, keine stille Verschiebung.</para>
     /// </summary>
     public static class Kalenderwerkzeuge
     {
@@ -195,6 +206,111 @@ namespace WindowsFormsApplication1
             string t = MyResource.Resource.KOND_TEXT_FEIERTAGE;
             return string.IsNullOrEmpty(t) ? Array.Empty<string>() : t.Split(';');
         }
+
+        // =================================================================
+        //  „Zeitstruktur übernehmen" (Konzept 3.5, Entwurf KP2 Festlegung 11)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Übernimmt die Zeitstruktur der Heizung oder der Anwesenheit in die Standardwoche von Kühlen,
+        /// Lüftung oder Geräten</b> (Konzept 3.5; Entwurf KP2, Festlegung 11). Die Quelle bestimmt je
+        /// Wochenstunde, ob sie „an" ist:
+        /// <list type="bullet">
+        /// <item><b>„wie Heizung"</b>: der Heizkalender trägt dort einen endlichen Wert ≥ dem Tagwert der
+        /// Heizspalte (mit dem Zahlenrand, <see cref="Rechenrand.SchwelleErreicht"/>);</item>
+        /// <item><b>„wie Anwesenheit"</b>: der Personenkalender trägt dort einen Anteil über 0.</item>
+        /// </list>
+        /// Gezählt wird die Standardwoche der Quelle, ohne sie ihre Grundangabe; „aus" ist nie „an".
+        /// Die Stunden „an" bekommen den <b>Tagwert</b> des Ziels, die übrigen seinen <b>Nachtwert</b>.
+        ///
+        /// <para><b>Ersetzt wird nur die Standardwoche</b> — Perioden und Nennwert des Ziels bleiben
+        /// Zeichen für Zeichen. Benannt abgelehnt wird: ein Ziel außer Kühlen, Lüftung und Geräten, ein
+        /// fehlender Tag- oder Nachtwert (beim Kühlen darf er „aus" sein, sonst braucht er eine Zahl), ein
+        /// Wert außerhalb der Grenzen oder ohne bitgleichen Rundlauf, und bei „wie Heizung" ein fehlender
+        /// Tagwert der Heizspalte. Eine Quelle der falschen Größe ist ein Aufruferfehler.</para>
+        /// </summary>
+        /// <param name="ziel">Der Kalender, dessen Standardwoche ersetzt wird: Kühlen, Lüftung oder Geräte.</param>
+        /// <param name="art">„wie Heizung" oder „wie Anwesenheit".</param>
+        /// <param name="quelle">Der Heizkalender bzw. der Personenkalender, dessen Stunden übernommen werden.</param>
+        /// <param name="heizTagwert">Der Tagwert der Heizspalte [°C]; nur „wie Heizung" braucht ihn.</param>
+        /// <param name="tag">Die Tagzelle der Spalte des Ziels — ihr Wert gilt in den Stunden „an".</param>
+        /// <param name="nacht">Die Nachtzelle der Spalte des Ziels — ihr Wert gilt in den übrigen Stunden.</param>
+        /// <exception cref="ArgumentNullException">Ziel, Quelle oder eine Zelle fehlt.</exception>
+        /// <exception cref="ArgumentException">Die Quelle trägt nicht die Größe ihrer Art (Heizen bzw. Personen).</exception>
+        public static Werkzeugbefund ZeitstrukturUebernehmen(Konditionierungskalender ziel, Zeitstrukturquelle art,
+                                                             Konditionierungskalender quelle, double? heizTagwert,
+                                                             Matrixzelle tag, Matrixzelle nacht)
+        {
+            if (ziel == null) throw new ArgumentNullException(nameof(ziel));
+            if (quelle == null) throw new ArgumentNullException(nameof(quelle));
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
+            if (nacht == null) throw new ArgumentNullException(nameof(nacht));
+            bool wieHeizung = art == Zeitstrukturquelle.WieHeizung;
+            Konditionierungsgroesse quellgroesse = wieHeizung ? Konditionierungsgroesse.Heizsoll : Konditionierungsgroesse.Personen;
+            if (quelle.Groesse != quellgroesse)
+                throw new ArgumentException("„" + art + "“ braucht einen Kalender der Größe " +
+                                           Konditionierungsgroessen.Kennwort(quellgroesse) + ", übergeben ist " +
+                                           Konditionierungsgroessen.Kennwort(quelle.Groesse) + ".", nameof(quelle));
+
+            Konditionierungsgroesse g = ziel.Groesse;
+            if (g != Konditionierungsgroesse.Kuehlsoll && g != Konditionierungsgroesse.Lueftung
+                && g != Konditionierungsgroesse.Geraete)
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ZEITSTRUKTUR_ZIEL, Konditionierungsgroessen.Kennwort(g)));
+
+            bool ausErlaubt = g == Konditionierungsgroesse.Kuehlsoll;
+            if (!Zielangabe(tag, ausErlaubt) || !Zielangabe(nacht, ausErlaubt))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT, Konditionierungsgroessen.Kennwort(g)));
+            string wertfehler = Wertpruefung(g, tag) ?? Wertpruefung(g, nacht);
+            if (wertfehler != null) return Werkzeugbefund.Fehler(wertfehler);
+
+            if (wieHeizung && !(heizTagwert.HasValue && double.IsFinite(heizTagwert.Value)))
+                return Werkzeugbefund.Fehler(MyResource.Resource.KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT);
+
+            double[] stundenDerQuelle = WocheAus(quelle);
+            double an = tag.Aus ? double.NaN : tag.Wert;
+            double sonst = nacht.Aus ? double.NaN : nacht.Wert;
+            var woche = new double[Kalenderwoche.WOCHENWERTE];
+            int anzahl = 0;
+            for (int i = 0; i < woche.Length; i++)
+            {
+                double q = stundenDerQuelle[i];
+                bool gilt = double.IsFinite(q)
+                            && (wieHeizung ? Rechenrand.SchwelleErreicht(q, heizTagwert.Value) : q > 0.0);
+                woche[i] = gilt ? an : sonst;
+                if (gilt) anzahl++;
+            }
+
+            var neu = new Konditionierungskalender(g, Kalenderangabe.AusWoche(woche), ziel.Nennwert, ziel.Perioden);
+            string vermerk = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KOND_MSG_WERKZEUG_ZEITSTRUKTUR,
+                wieHeizung ? MyResource.Resource.KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG
+                           : MyResource.Resource.KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT,
+                Zahl(anzahl), Zellentext(tag), Zellentext(nacht));
+            return Werkzeugbefund.Gut(neu, vermerk);
+        }
+
+        /// <summary>Trägt die Zelle eine Angabe, die das Ziel nehmen kann — eine Zahl, beim Kühlen auch „aus"?</summary>
+        private static bool Zielangabe(Matrixzelle zelle, bool ausErlaubt)
+            => zelle.Belegt && (zelle.Aus ? ausErlaubt : double.IsFinite(zelle.Wert));
+
+        /// <summary>Die Grenzen der Größe und der Rundlauf der Wochenspalte — dieselben Regeln wie das Zeitfenster; <c>null</c> = gut.</summary>
+        private static string Wertpruefung(Konditionierungsgroesse g, Matrixzelle zelle)
+        {
+            if (zelle.Aus) return null;
+            if (!Konditionierungsgroessen.ImBereich(g, zelle.Wert))
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_WERT_AUSSERHALB,
+                                     Zahltext(zelle.Wert), Konditionierungsgroessen.Bereichstext(g));
+            if (!Kalenderwoche.Rundlauf(zelle.Wert))
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_WERT_RUNDLAUF,
+                                     Zahltext(zelle.Wert),
+                                     Kalenderwoche.NACHKOMMASTELLEN.ToString(CultureInfo.InvariantCulture));
+            return null;
+        }
+
+        /// <summary>Der Wert einer Zelle im Vermerk: die Zahl invariant, „aus" als Kennwort (wie im Zeitfenster).</summary>
+        private static string Zellentext(Matrixzelle zelle) => zelle.Aus ? DbWerte.KOND_WOCHE_AUS : Zahltext(zelle.Wert);
 
         // =================================================================
         //  Die Rangbänder (N1.61 Nr. 5, Entwurf KP1b Nr. 12)

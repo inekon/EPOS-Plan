@@ -43,8 +43,8 @@ namespace WindowsFormsApplication1
                 case Masken.StromspeicherAdmin:
                     return StromspeicherAdminHuelle.Oeffnen(null);
 
-                // iU9-W9.2: Die Gebaeudeverwaltung ist die Razor-Komponente GebaeudeDialog
-                // im Modus Admin; Form_Gebaeude ist im selben Schritt GELOESCHT (Regel M1).
+                // iU9-W9.2: Die Gebaeudeverwaltung ist die Razor-Komponente GebaeudeAdminDialog
+                // mit der Datenseite GebaeudeAdminHuelle (GebaeudeFenster.Katalogverwaltung).
                 // Die Huelle liefert dasselbe true/false wie MitOk.
                 case Masken.GebaeudeAdmin:
                     return GebaeudeFenster.Katalogverwaltung(null);

@@ -16,8 +16,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Gelesen über dieselben Controller wie der Lauf</b> (<see cref="Lesen"/>):
     /// <c>GebaeudeBedarfCtrl.Projektgebaeude</c>, <c>GebaeudeZonenCtrl.LesenJeGebaeude</c> bzw. auf dem
     /// Klassenweg <c>GebaeudeZonenCtrl.Uebernahme</c>, <c>BauteilaufbauCtrl.LesenJeProjekt</c>,
-    /// <c>BaustoffCtrl.LesenProjekt</c>, <c>KonfigurationCtrl.KuehlbetriebLesen</c>. Kein eigener
-    /// Exportcontroller: Die Hülle ruft <see cref="Lesen"/> auf dem Oberflächenfaden.</para>
+    /// <c>BaustoffCtrl.LesenProjekt</c>, <c>KonfigurationCtrl.KuehlbetriebLesen</c>; die angelegten
+    /// Konditionierungskalender von Gebäude und Zonen über <c>KonditionierungCtrl.Kalender</c> (derselbe
+    /// strenge Leser wie im Lauf, Entwurf KP2 Festlegung 9). Kein eigener Exportcontroller: Die Hülle ruft
+    /// <see cref="Lesen"/> auf dem Oberflächenfaden.</para>
     ///
     /// <para><b>Der Klassenweg rechnet einen Jahreslauf</b> (die Hochrechnung der Übernahme). Seine
     /// Einträge im Simulationsprotokoll gehören dem Export, nicht dem zuletzt gelaufenen Lauf: Sie werden
@@ -63,8 +65,47 @@ namespace WindowsFormsApplication1
         /// <summary>Die Postleitzahl des Standorts — freiwillige Eingabe des Exportdialogs, nicht gespeichert; <c>null</c> = keine.</summary>
         internal string Plz { get; init; }
 
+        /// <summary>
+        /// Die angelegten Konditionierungskalender des Projektgebäudes je Größe (Entwurf KP2, Festlegung 9),
+        /// gelesen über <see cref="KonditionierungCtrl.Kalender"/>; leer = keiner.
+        /// </summary>
+        internal IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> Gebaeudekalender { get; init; }
+            = new Dictionary<Konditionierungsgroesse, Konditionierungskalender>();
+
+        /// <summary>
+        /// Die angelegten Konditionierungskalender der Zonen, je Zonen-Id und Größe; eine Zone ohne Kalender
+        /// fehlt. Der Klassenweg trägt keine (seine Zone ist ein Vorschlag, keine Zeile).
+        /// </summary>
+        internal IReadOnlyDictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender>> Zonenkalender { get; init; }
+            = new Dictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender>>();
+
         /// <summary>Wird das Gebäude auf dem Klassenweg exportiert (keine Zone)?</summary>
         internal bool Klassenweg => Zonen == null || Zonen.Count == 0;
+
+        /// <summary>
+        /// <b>Der Heizkalender, der für eine Zone gilt</b> — Zone vor Gebäude, dieselbe Kette wie im Lauf
+        /// (<see cref="Konditionierungseingang.ErsteQuelle"/>): der angelegte Kalender der Zone, sonst der
+        /// des Gebäudes, sonst <c>null</c>.
+        /// </summary>
+        internal Konditionierungskalender Heizkalender(ZoneModel zone)
+        {
+            if (zone != null && Zonenkalender != null
+                && Zonenkalender.TryGetValue(zone.ID, out IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> eigen)
+                && eigen != null && eigen.TryGetValue(Konditionierungsgroesse.Heizsoll, out Konditionierungskalender z) && z != null)
+                return z;
+            return Gebaeudekalender != null
+                   && Gebaeudekalender.TryGetValue(Konditionierungsgroesse.Heizsoll, out Konditionierungskalender g)
+                ? g
+                : null;
+        }
+
+        /// <summary>
+        /// Trägt das Gebäude oder eine seiner Zonen einen angelegten Kalender, gleich welcher Größe? Dann
+        /// nennt die Verlustliste „Kalender" — die Datei trägt keinen Zeitplan (Festlegung 9).
+        /// </summary>
+        internal bool TraegtKalender
+            => (Gebaeudekalender != null && Gebaeudekalender.Count > 0)
+               || (Zonenkalender != null && Zonenkalender.Values.Any(k => k != null && k.Count > 0));
 
         /// <summary>
         /// Derselbe Satz mit einer anderen Postleitzahl — der Exportdialog bildet den Plan zu jeder
@@ -84,6 +125,8 @@ namespace WindowsFormsApplication1
             Kuehlbetrieb = Kuehlbetrieb,
             Klimaregion = Klimaregion,
             Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
+            Gebaeudekalender = Gebaeudekalender,
+            Zonenkalender = Zonenkalender,
         };
 
         /// <summary>
@@ -116,6 +159,19 @@ namespace WindowsFormsApplication1
             string klimaregion = projekt.m_ID_Klimaregion > 0
                 ? KlimaregionStammCtrl.NameZuProjektregion(projekt.m_ID_Klimaregion, idProjekt) : null;
 
+            // Die angelegten Kalender von Gebäude und Zonen (Entwurf KP2, Festlegung 9) — über den
+            // Leser des Controllers; eine ungültige Zeile fehlt dort benannt, der Export liest sie nicht.
+            var konditionierung = new KonditionierungCtrl();
+            Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudekalender =
+                konditionierung.Kalender(KonditionierungCtrl.Eigner.Gebaeude(g.ID_Gebaeude), out _);
+            var zonenkalender = new Dictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender>>();
+            foreach (ZoneModel z in zonen)
+            {
+                Dictionary<Konditionierungsgroesse, Konditionierungskalender> k =
+                    konditionierung.Kalender(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out _);
+                if (k.Count > 0) zonenkalender[z.ID] = k;
+            }
+
             return new GebaeudeExportSatz
             {
                 IdProjekt = idProjekt,
@@ -130,6 +186,8 @@ namespace WindowsFormsApplication1
                 Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(idProjekt),
                 Klimaregion = string.IsNullOrWhiteSpace(klimaregion) ? null : klimaregion.Trim(),
                 Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
+                Gebaeudekalender = gebaeudekalender,
+                Zonenkalender = zonenkalender,
             };
         }
     }

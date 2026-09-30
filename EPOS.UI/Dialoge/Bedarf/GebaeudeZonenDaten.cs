@@ -89,19 +89,31 @@ public sealed class ZoneDaten
     /// <summary>Die Bauteile der Zone in ihrer Reihenfolge (Rang).</summary>
     public List<BauteilDaten> Bauteile { get; set; } = new();
 
-    /// <summary>Eine entkoppelte Kopie samt Bauteilen — der Arbeitsstand eines Dialogs.</summary>
+    /// <summary>
+    /// Die Konditionierung der Zone im Arbeitsstand (Stufe KP2; Teilkonzept 3.4) — leere Zellen heißen
+    /// „wie das Gebäude"; <c>null</c> = die Hülle reicht keine. Sie reist mit dem Zonenweg (Schritt 3
+    /// des OK-Wegs); ihre <see cref="KonditionierungDaten.Fassung"/> zählt in <see cref="GleicheWerte"/>.
+    /// </summary>
+    public KonditionierungDaten? Konditionierung { get; set; }
+
+    /// <summary>Eine entkoppelte Kopie samt Bauteilen und Konditionierung — der Arbeitsstand eines Dialogs.</summary>
     public ZoneDaten Kopie()
     {
         var k = (ZoneDaten)MemberwiseClone();
         k.Bauteile = Bauteile.Select(b => b.Kopie()).ToList();
+        k.Konditionierung = Konditionierung?.Kopie();
         return k;
     }
 
-    /// <summary>Tragen beide dieselben Werte — Zone und jedes Bauteil, in derselben Reihenfolge?</summary>
+    /// <summary>
+    /// Tragen beide dieselben Werte — Zone, Fassung der Konditionierung und jedes Bauteil, in derselben
+    /// Reihenfolge?
+    /// </summary>
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
             || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben()
+            || Konditionierung?.Fassung != andere.Konditionierung?.Fassung
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)
             if (!Bauteile[i].GleicheWerte(andere.Bauteile[i])) return false;

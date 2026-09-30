@@ -26,7 +26,7 @@
         <span class="epos-feld-text">@Bezeichnung</span>
     }
     <span class="epos-feld-zeile">
-        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
+        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : ZeigtAus ? "epos-eingabe--aus" : "")"
                type="text" inputmode="decimal" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
                placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
@@ -108,7 +108,28 @@
     /// </summary>
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
 
+    /// <summary>
+    /// Nimmt das Feld neben einer Zahl den Zustand „aus" an (Stufe KP2, Welle U0b; Teilkonzept
+    /// Konditionierungsprofile 3.2, P2)? Leer = nein - das Feld kennt nur Zahlen, und sein Markup
+    /// ist das bisherige (Vorgabe). Sonst ist es der Text des Zustands aus dem Buendel des Wirts
+    /// (<c>KOND_LBL_AUS</c>): Eine Eingabe gleich diesem Text - ohne Ruecksicht auf Gross- und
+    /// Kleinschreibung und Leerraum - meldet <see cref="double.NaN"/>, ein Wert
+    /// <see cref="double.NaN"/> zeigt ihn, und das Feld traegt dann den eigenen Zustand
+    /// <c>epos-eingabe--aus</c>. Ein neuer Wert hebt „aus" wieder auf.
+    /// </summary>
+    [Parameter] public string AusText { get; set; } = "";
+
     private string _text = "";
+
+    /// <summary>Nimmt das Feld „aus" an (<see cref="AusText"/> gesetzt)?</summary>
+    private bool MitAus => !string.IsNullOrEmpty(AusText);
+
+    /// <summary>Ist der Text der Zustand „aus"?</summary>
+    private bool IstAusText(string text)
+        => MitAus && string.Equals(text.Trim(), AusText.Trim(), StringComparison.CurrentCultureIgnoreCase);
+
+    /// <summary>Zeigt das Feld gerade den Zustand „aus" (Pruefhilfe fuer Tests)?</summary>
+    public bool ZeigtAus => MitAus && !Fehlerhaft && Wert is double w && double.IsNaN(w);
 
     /// <summary>
     /// Der Anwender hat das Feld GELEERT - nicht: es ist leer. Solange das gilt,
@@ -157,6 +178,14 @@
         if (_geleert) return;
 
         if (!Wert.HasValue && _text.Trim().Length == 0) return;
+
+        // „aus" (nur mit AusText): NaN zeigt den Text des Zustands; ein getippter bleibt stehen.
+        if (MitAus && Wert is double aus && double.IsNaN(aus))
+        {
+            if (!IstAusText(_text)) _text = AusText;
+            return;
+        }
+
         if (Wert.HasValue && Zahlen.ZahlParsen(_text, out double dVorhanden) && dVorhanden == Wert.Value) return;
 
         _text = Zahlen.Anzeigetext(Wert, Nachkommastellen);
@@ -176,6 +205,14 @@
         }
 
         _geleert = false;
+
+        if (IstAusText(_text))
+        {
+            await FehlerSetzen(false);
+            Wert = double.NaN;
+            await WertChanged.InvokeAsync(double.NaN);
+            return;
+        }
 
         if (Zahlen.ZahlParsen(_text, out double dWert) && ImBereich(dWert))
         {

@@ -32,7 +32,8 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// <c>NurLesen="true"</c>, <c>Auswahlfeld</c>, <c>Suchauswahl</c>, <c>Datumsfeld</c>,
 /// <c>Farbfeld</c>, <c>Schalter</c>; <c>Bausteine/</c>: <c>Optionsgruppe</c>,
 /// <c>EnergietraegerWahl</c>, <c>Katalogfelder</c> ohne <c>NurLesen="true"</c>, dazu die Anzeigestufe
-/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6) und nackte
+/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6, und das Datum im Gemeinjahr
+/// <c>Gemeinjahrdatum</c>, KP2) und nackte
 /// <c>input</c>/<c>select</c>/<c>textarea</c>. <c>Dateiwahl</c> ist ein Dateidialog und
 /// kein Einstellwert; Listen und Filter (<c>Katalogliste</c>, <c>Mehrfachauswahl</c>,
 /// <c>Spaltenfilter</c>, <c>Vergleichswahl</c>, <c>Zeilenwahl</c>) sind Auswahlen, keine
@@ -259,7 +260,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
-        new("GebaeudeKatalogDialog", 49),
+        // KP2 U0b: Die Betriebsart „Admin" fällt und mit ihr die Klappliste des Namens; der Name
+        // ist allein das Textfeld (Katalogfeld name): 49 → 48.
+        new("GebaeudeKatalogDialog", 48),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
@@ -837,6 +840,8 @@ public sealed class KiMaskenabdeckungWacheTests
         "Farbfeld", "Schalter", "Optionsgruppe", "EnergietraegerWahl", "Katalogfelder",
         // BV-E6 (Konzept 9.7 „Anmeldung, Texte"): die Anzeigestufe der Platzhalter.
         "Vorlagenfeldumschalter",
+        // KP2, Welle U0b: das Datum im Gemeinjahr (Saison, Perioden der Konditionierung).
+        "Gemeinjahrdatum",
         "input", "select", "textarea"
     };
 

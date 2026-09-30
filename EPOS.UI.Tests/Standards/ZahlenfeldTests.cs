@@ -295,4 +295,81 @@ public class ZahlenfeldTests : BunitContext
 
         Assert.False(cut.Find("input").HasAttribute("placeholder"));
     }
+
+    // =================================================================================
+    // Der Zustand „aus" (AusText; Stufe KP2, Welle U0b)
+    // =================================================================================
+
+    [Fact]
+    public void Ohne_AusText_ist_der_Zustandstext_eine_Fehleingabe_und_das_Markup_das_alte()
+    {
+        bool gemeldet = false;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, 5.0)
+            .Add(x => x.WertChanged, (double? _) => gemeldet = true));
+
+        // Das Markup ohne AusText: die Klasse des Bestands, Zeichen für Zeichen.
+        Assert.Equal("epos-eingabe ", cut.Find("input").GetAttribute("class"));
+
+        cut.Find("input").Input("aus");
+
+        Assert.False(gemeldet);
+        Assert.True(cut.Instance.Fehlerhaft);
+        Assert.False(cut.Instance.ZeigtAus);
+    }
+
+    [Fact]
+    public void Mit_AusText_meldet_der_Zustandstext_NaN_ohne_Ruecksicht_auf_Schreibweise()
+    {
+        var gemeldet = new List<double?>();
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.AusText, "aus")
+            .Add(x => x.Min, 0.0)
+            .Add(x => x.Max, 30.0)
+            .Add(x => x.WertChanged, (double? w) => gemeldet.Add(w)));
+
+        cut.Find("input").Input(" AUS ");
+
+        Assert.Single(gemeldet);
+        Assert.True(double.IsNaN(gemeldet[0]!.Value));
+        Assert.False(cut.Instance.Fehlerhaft);
+        Assert.True(cut.Instance.ZeigtAus);
+        Assert.Contains("epos-eingabe--aus", cut.Find("input").ClassName);
+        Assert.Equal(" AUS ", cut.Find("input").GetAttribute("value"));   // was getippt ist, bleibt stehen
+    }
+
+    [Fact]
+    public void Ein_Wert_NaN_zeigt_den_Zustandstext_und_ein_neuer_Wert_hebt_ihn_auf()
+    {
+        double? erhalten = null;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.AusText, "off")
+            .Add(x => x.Wert, double.NaN)
+            .Add(x => x.WertChanged, (double? w) => erhalten = w));
+
+        Assert.Equal("off", cut.Find("input").GetAttribute("value"));
+        Assert.Contains("epos-eingabe--aus", cut.Find("input").ClassName);
+
+        cut.Find("input").Input("21,5");
+
+        Assert.Equal(21.5, erhalten);
+        Assert.False(cut.Instance.ZeigtAus);
+        Assert.DoesNotContain("epos-eingabe--aus", cut.Find("input").ClassName);
+    }
+
+    [Fact]
+    public void Ein_angefangener_Zustandstext_faerbt_wie_jede_Fehleingabe()
+    {
+        bool gemeldet = false;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.AusText, "aus")
+            .Add(x => x.WertChanged, (double? _) => gemeldet = true));
+
+        cut.Find("input").Input("au");
+
+        Assert.False(gemeldet);
+        Assert.True(cut.Instance.Fehlerhaft);
+        Assert.Contains("epos-fehleingabe", cut.Find("input").ClassName);
+        Assert.DoesNotContain("epos-eingabe--aus", cut.Find("input").ClassName);
+    }
 }

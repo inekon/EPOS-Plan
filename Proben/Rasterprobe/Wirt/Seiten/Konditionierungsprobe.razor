@@ -1,0 +1,318 @@
+﻿@page "/konditionierungsprobe"
+@using System.Resources
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@inject NavigationManager Navigation
+
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Welle U0b; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+    Pruefstand, nicht Auslieferung.
+
+    Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
+    Ueberlagerung, wie Gebaeudedialog und Gebaeudeverwaltung ihn zeigen - OHNE Datenbank. Der
+    Parametersatz ist der der Anwendung (GebaeudeKatalogHuelle.Gaben in der Betriebsart Neu, dem
+    Weg der Huelle ohne Datenbankzugriff); darueber legt die Seite je Fall Daten, Betriebsart,
+    Sperre und Zonenweg. Was in der Anwendung die Datenbank fragt oder schreibt, fragt hier die
+    Seite bzw. schreibt nichts: Gebaeudetypen und -arten sind feste Listen, "Speichern" und der
+    Zonenweg melden Erfolg, die hergeleiteten Vorgaben der Waermeuebergabe fehlen (sie lesen die
+    Klimareihe eines Projekts), der Brauchwasserweg ebenso (keine Schale haengt ihn ein).
+
+    Gaben ueber die Adresse:
+      ?fall=projekt    Betriebsart Projekt mit zwei Zonen (Zonenweg der Seite)
+      ?fall=gesamt     Betriebsart Bearbeiten; die Lueftung als GESAMTANGABE: nur die
+                       Luftwechselrate, Infiltration und Nutzerlueftung leer
+      ?fall=gesperrt   Betriebsart Bearbeiten, ein ausgelieferter Satz - Gesperrt und SperrGrund,
+                       wie die Huelle sie fuer ReadOnly setzt (KOND_TXT_HINWEIS_LESEMODUS)
+      ?fall=neu        Betriebsart Neu, der leere Satz der Huelle (Vorgabe)
+      ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
+                       Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
+                       Gemeinjahrdatum (Saison von/bis)
+      ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie.
+
+    Kreuz und Esc schliessen die Ueberlagerung (Ausgang "kreuz-esc"), Abbrechen und OK den Editor
+    (Ausgang "abbrechen" bzw. "ok"); "Editor oeffnen" stellt ihn neu auf. Gemessen wird die Seite
+    von konditionierungsprobe.mjs (LIESMICH.md). *@
+
+<div class="epos-probe-wirt epos-kondprobe">
+    <section class="epos-dialog">
+        <p id="probe-stand" class="epos-hinweis">
+            Konditionierungsprobe · Fall <strong>@_fall</strong> · Kultur @CultureInfo.CurrentCulture.Name
+            · ohne Datenbank, geschrieben wird nichts
+        </p>
+        <p class="epos-leisezeile" id="probe-wahl">
+            Fall:
+            @foreach (string f in FAELLE)
+            {
+                string adresse = Adresse(fall: f);
+                <a href="@adresse" class="@(f == _fall ? "epos-kondprobe-aktiv" : null)"
+                   @onclick="() => Laden(adresse)" @onclick:preventDefault>@f</a>
+                @(" ")
+            }
+            · Kultur:
+            <a href="@Adresse(kultur: KulturDe)" @onclick="() => Laden(Adresse(kultur: KulturDe))" @onclick:preventDefault>de-DE</a>
+            <a href="@Adresse(kultur: KulturEn)" @onclick="() => Laden(Adresse(kultur: KulturEn))" @onclick:preventDefault>en-US</a>
+        </p>
+        <p class="epos-leisezeile" id="probe-ausgang" data-ausgang="@_ausgang">
+            @(_offen ? "Die Überlagerung steht." : "Die Überlagerung ist zu (" + _ausgang + ").")
+            @if (_gespeichert.Length > 0)
+            {
+                <span id="probe-gespeichert">Gespeichert (Probe, nichts geschrieben): @_gespeichert</span>
+            }
+        </p>
+        @if (!_offen)
+        {
+            <p>
+                <button type="button" class="epos-knopf" id="probe-oeffnen" @onclick="Oeffnen">Editor öffnen</button>
+            </p>
+        }
+    </section>
+
+    <Ueberlagerung Offen="@_offen" Titel="@_titel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="@(() => Zu("kreuz-esc"))">
+        <KindInhalt>
+            @if (_fall == BAUSTEINE)
+            {
+                <section class="epos-dialog epos-kondprobe-bausteine">
+                    <p class="epos-leisezeile">
+                        Wochenraster mit „aus“ und Umbruch nach Behälterbreite (MitAus, Umbrechend) —
+                        ab 1 150 px 7 × 24, ab 600 px 2 × 12, darunter 4 × 6.
+                    </p>
+                    <Wochenraster Wert="@_woche" WertChanged="w => _woche = w" MitAus="true" Umbrechend="true"
+                                  Einheit="°C" Min="-50" Max="100" Kennung="probe-woche" />
+                    <Formularraster>
+                        <KindInhalt>
+                            <Gemeinjahrdatum Bezeichnung="Saison von :" Wert="@_saisonVon"
+                                             WertChanged="w => _saisonVon = w" Feldname="probe-saison-von" />
+                            <Gemeinjahrdatum Bezeichnung="Saison bis :" Wert="@_saisonBis"
+                                             WertChanged="w => _saisonBis = w" Feldname="probe-saison-bis" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <p class="epos-leisezeile" id="probe-saison">
+                        Jahrestage im Gemeinjahr: @(_saisonVon?.ToString(CultureInfo.InvariantCulture) ?? "—")
+                        bis @(_saisonBis?.ToString(CultureInfo.InvariantCulture) ?? "—")
+                    </p>
+                </section>
+            }
+            else if (_gaben is not null)
+            {
+                <GebaeudeKatalogDialog @attributes="_gaben" TitelAnzeigen="false" Geschlossen="EditorZu" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // ------------------------------------------------------------- Adresse
+    private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
+                         BAUSTEINE = "bausteine";
+    private static readonly string[] FAELLE = { PROJEKT, GESAMT, GESPERRT, NEU, BAUSTEINE };
+    private const string KulturDe = "de-DE", KulturEn = "en-US";
+
+    private string _fall = NEU;
+    private string _kultur = "";
+
+    // ------------------------------------------------------------- Zustand
+    private bool _offen;
+    private string _ausgang = "";
+    private string _titel = "";
+    private string _gespeichert = "";
+    private IReadOnlyDictionary<string, object>? _gaben;
+
+    // Fall "bausteine": eine Woche mit „aus" am Sonntagmorgen, Saison 1. Oktober bis 30. April.
+    private double[]? _woche = Wochenwerte();
+    private int? _saisonVon = 274, _saisonBis = 120;
+
+    private static readonly IReadOnlyList<string> Typen = new[] { "Wohnblock", "Schule", "Hotel", "Verwaltung" };
+    private static readonly IReadOnlyList<string> Arten =
+        new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" };
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("fall", out var f) && FAELLE.Contains(f.ToString())) _fall = f.ToString();
+        if (abfrage.TryGetValue("kultur", out var k)) _kultur = k.ToString();
+        Oeffnen();
+    }
+
+    /// <summary>Die Adresse dieser Seite mit geänderten Gaben — geladen wird NEU (neue Schaltung, neue Kultur).</summary>
+    private string Adresse(string? fall = null, string? kultur = null)
+    {
+        var teile = new List<string> { "fall=" + Uri.EscapeDataString(fall ?? _fall) };
+        string k = kultur ?? _kultur;
+        if (k.Length > 0) teile.Add("kultur=" + Uri.EscapeDataString(k));
+        return "konditionierungsprobe?" + string.Join("&", teile);
+    }
+
+    private void Laden(string adresse) => Navigation.NavigateTo(adresse, forceLoad: true);
+
+    // ------------------------------------------------------------- Öffnen und Schließen
+
+    /// <summary>Stellt den Fall neu auf — je Öffnen ein frischer Parametersatz, wie in der Anwendung.</summary>
+    private void Oeffnen()
+    {
+        _gaben = _fall == BAUSTEINE ? null : Gaben(_fall);
+        _titel = _fall switch
+        {
+            PROJEKT => Resource.GEBZ_TITEL_PROJEKT,
+            NEU => Uebersetzt("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),
+            BAUSTEINE => "Bausteine der Konditionierung",
+            _ => Uebersetzt("GEB_BTN_DB_AENDERN", "Gebäude in DB ändern...")
+        };
+        _offen = true;
+    }
+
+    private void Zu(string ausgang)
+    {
+        _offen = false;
+        _ausgang = ausgang;
+    }
+
+    private void EditorZu(bool ok) => Zu(ok ? "ok" : "abbrechen");
+
+    // ------------------------------------------------------------- Die Fälle
+
+    /// <summary>
+    /// Der Parametersatz eines Falls: der der Anwendung (Betriebsart Neu, ohne Datenbank), darüber
+    /// Daten, Betriebsart, Sperre und Zonenweg des Falls; die Wege zur Datenbank weichen der Seite.
+    /// </summary>
+    private IReadOnlyDictionary<string, object> Gaben(string fall)
+    {
+        var gaben = new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu))
+        {
+            ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => Typen),
+            ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => Arten),
+            ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(Speichern)
+        };
+        gaben.Remove("UebergabeHerleitung");   // liest die Klimareihe eines Projekts
+
+        switch (fall)
+        {
+            case PROJEKT:
+                gaben["Daten"] = Satz("Probehaus Projekt");
+                gaben["Modus"] = GebaeudeKatalogModus.Projekt;
+                gaben["Zonen"] = Zonenweg();
+                gaben["HilfeSchluessel"] = GebaeudeKatalogHuelle.HILFE_PROJEKT;
+                break;
+
+            case GESAMT:
+                GebaeudeKatalogDaten gesamt = Satz("Probehaus Gesamtangabe");
+                gesamt.Luftwechselrate = 0.6;
+                gesamt.LuftwechselInfiltration = null;
+                gesamt.LuftwechselNutzer = null;
+                gaben["Daten"] = gesamt;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case GESPERRT:
+                gaben["Daten"] = Satz("Probehaus ausgeliefert");
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                gaben["Gesperrt"] = true;
+                gaben["SperrGrund"] = Uebersetzt("KOND_TXT_HINWEIS_LESEMODUS",
+                    "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine " +
+                    "bearbeitbare Kopie an.");
+                break;
+        }
+        return gaben;
+    }
+
+    /// <summary>Der Schreibweg der Seite: Er schreibt nichts, er merkt sich den Aufruf.</summary>
+    private GebaeudeKatalogErgebnis Speichern(GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)
+    {
+        _gespeichert = (istNeu ? "neu: " : "überschrieben: ") + (daten?.Name ?? bezeichner);
+        _ = InvokeAsync(StateHasChanged);   // der Rückruf kommt aus einem Kind (dem Dialog)
+        return new GebaeudeKatalogErgebnis(true, "");
+    }
+
+    /// <summary>Ein vollständig belegter Satz (das Maß der bunit-Proben): Hülle, Sollwerte, Lüftung getrennt.</summary>
+    private static GebaeudeKatalogDaten Satz(string name) => new()
+    {
+        Name = name,
+        Typ = "Wohnblock",
+        Beschreibung = "Synthetischer Satz der Konditionierungsprobe, ohne Datenbank",
+        Gebaeudeart = "grosses Mehrfamilienhaus",
+        Verwendung = "Wohngebaeude",
+        Baualtersklasse = 4,
+        Bauart = 1,
+        WohnflaecheGesamt = 150,
+        FlaecheNutzer = 35,
+        Waermegewinne = 400,
+        Fensterdurchlassgrad = 0.4,
+        Raumhoehe = 2.5,
+        FensterflaecheNord = 10,
+        FensterflaecheSued = 20,
+        FensterflaecheOstWest = 15,
+        FlaecheAussenwand = 200,
+        Dachflaeche = 120,
+        Grundflaeche = 100,
+        SonstigeFlaechen = 5,
+        UWertAussenwand = 0.3,
+        UWertFenster = 1.3,
+        UWertDachflaeche = 0.2,
+        UWertGrundflaeche = 0.35,
+        UWertSonstiges = 0.5,
+        WbvkFensterWand = 0.1,
+        AnschlussFensterWand = 50,
+        SollTag = 20,
+        NachtAbsenkung = 17,
+        MaxTemperatur = 24,
+        WochenendAbsenkung = 0,
+        SollFerien = 0,
+        Luftwechselrate = 0.5,
+        LuftwechselInfiltration = 0.2,
+        LuftwechselNutzer = 0.3
+    };
+
+    /// <summary>Der Zonenweg der Seite: zwei Zonen mit Bauteilen; „Speichern" meldet Erfolg und schreibt nichts.</summary>
+    private static GebaeudeZonenweg Zonenweg() => new()
+    {
+        Zonen = new[]
+        {
+            new ZoneDaten
+            {
+                Id = 1, Bezeichner = "Wohnen EG", Nutzflaeche = 90,
+                Bauteile =
+                {
+                    new BauteilDaten { Id = 11, Bezeichner = "Außenwand EG", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                       Flaeche = 120, UWert = 0.3, Azimut = 180 },
+                    new BauteilDaten { Id = 12, Bezeichner = "Fenster Süd EG", Bauteilart = DbWerte.BAUTEILART_FENSTER,
+                                       Flaeche = 20, UWert = 1.3, Azimut = 180 },
+                    new BauteilDaten { Id = 13, Bezeichner = "Bodenplatte", Bauteilart = DbWerte.BAUTEILART_BODENPLATTE,
+                                       Flaeche = 100, UWert = 0.35 }
+                }
+            },
+            new ZoneDaten
+            {
+                Id = 2, Bezeichner = "Büro OG", Nutzflaeche = 60, SollTag = 21,
+                Bauteile =
+                {
+                    new BauteilDaten { Id = 21, Bezeichner = "Außenwand OG", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                       Flaeche = 80, UWert = 0.3, Azimut = 0 },
+                    new BauteilDaten { Id = 22, Bezeichner = "Dach", Bauteilart = DbWerte.BAUTEILART_DACH,
+                                       Flaeche = 120, UWert = 0.2 }
+                }
+            }
+        },
+        Speichern = _ => ""
+    };
+
+    /// <summary>
+    /// Eine Heizwoche: werktags 06–22 Uhr 21 °C, sonst 17 °C; am Wochenende 19 °C, Sonntag 0–5 Uhr
+    /// „aus" (NaN) — damit steht der eigene Zellzustand im Bild.
+    /// </summary>
+    private static double[] Wochenwerte()
+    {
+        var w = new double[Wochenraster.WERTE];
+        for (int tag = 0; tag < Wochenraster.TAGE; tag++)
+            for (int h = 0; h < Wochenraster.STUNDEN; h++)
+                w[tag * Wochenraster.STUNDEN + h] = tag >= 5 ? 19 : (h >= 6 && h < 22 ? 21 : 17);
+        for (int h = 0; h < 6; h++) w[6 * Wochenraster.STUNDEN + h] = double.NaN;
+        return w;
+    }
+
+    private static string Uebersetzt(string schluessel, string rueckfall)
+    {
+        string? text = null;
+        try { text = Resource.ResourceManager.GetString(schluessel); }
+        catch (MissingManifestResourceException) { }
+        return string.IsNullOrEmpty(text) ? rueckfall : text;
+    }
+}

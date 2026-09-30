@@ -102,17 +102,27 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Der Name des Verlusts „Kalender": Das Gebäude oder eine Zone trägt einen angelegten
+        /// Konditionierungskalender; die Datei trägt keinen Zeitplan, nur je Raum einen Heizsollwert
+        /// (Entwurf KP2, Festlegung 9). Kein Modellfeld — er steht allein in <see cref="Getragen"/>.
+        /// </summary>
+        internal const string KALENDER = "Kalender";
+
+        /// <summary>
         /// Die benannten Verluste, die ein Satz tatsächlich trägt — die Feldnamen der Zonen und Bauteile
         /// mit einem gesetzten Wert, dazu die Gebäudefelder, die der Export nie mitnimmt (Sollwerte außer
-        /// Tag, Bauweise). Sortiert, damit die Meldung stabil ist.
+        /// Tag, Bauweise), und <see cref="KALENDER"/>, wenn <paramref name="kalender"/> sagt, dass ein
+        /// angelegter Kalender mitreist. Sortiert, damit die Meldung stabil ist.
         /// </summary>
-        internal static IReadOnlyList<string> Getragen(ProjektGebaeudeModel g, IEnumerable<ZoneModel> zonen)
+        internal static IReadOnlyList<string> Getragen(ProjektGebaeudeModel g, IEnumerable<ZoneModel> zonen,
+                                                       bool kalender = false)
         {
             var namen = new SortedSet<string>(System.StringComparer.Ordinal)
             {
                 "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
                 "Maximaleraumtemperatur", "Bauweise",
             };
+            if (kalender) namen.Add(KALENDER);
             if (g != null)
             {
                 if (g.Luftwechsel_Nutzer.HasValue) namen.Add("Luftwechsel_Nutzer");
