@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -398,6 +399,90 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
             .Add(x => x.HinweisOhneKennlinie, EN));
 
         Assert.Equal(EN, cut.Find(".epos-hzkk-ohne-kennlinie").TextContent);
+    }
+
+    // =================================================================================
+    // Die kleine Kurve der Gruppe „Kennlinie" (Konzept Kesselkennlinie 5)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Kurve folgt dem ARBEITSSTAND: Jede Eingabe in ein Feld, das sie bestimmt (η₃₀, Schalter
+    /// Brennwertkennlinie), holt das Bild neu — ungespeichert, mit den Feldern, wie der Dialog sie gerade führt. Eine
+    /// Eingabe in ein fremdes Feld holt es nicht: Das Modell bleibt dieselbe Referenz, und <c>DiagrammSvg</c> behält
+    /// seinen Knotenbaum.
+    /// </summary>
+    [Fact]
+    public void Die_Kurve_folgt_dem_Arbeitsstand()
+    {
+        var gesehen = new List<(double? Eta30, bool Kennlinie)>();
+        var daten = Bestand();
+        var cut = Render<HeizkesselKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.Kennlinienbild, d =>
+            {
+                gesehen.Add((d.Wirkungsgrad_Teillast30, d.Kennlinie_Brennwert));
+                return HeizkesselKennlinienbild.Modell(d);
+            }));
+
+        var bild = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal("hzkk-kennlinie", bild.Instance.Kennung);
+        Assert.Single(gesehen);
+        Assert.Single(bild.Instance.Modell!.Reihen);   // ohne Brennwertkennlinie eine Linie
+
+        cut.FindAll("input[inputmode=decimal]")[4].Input("1,07");
+        Assert.Equal(2, gesehen.Count);
+        Assert.Equal(1.07, gesehen[^1].Eta30);
+        Assert.Equal(1.07, daten.Wirkungsgrad_Teillast30);   // der Arbeitsstand, nicht gespeichert
+
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Equal(3, gesehen.Count);
+        Assert.True(gesehen[^1].Kennlinie);
+        Assert.Equal(3, cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell!.Reihen.Count);
+
+        // Ein Feld, das die Kurve nicht bestimmt: kein neues Bild, dieselbe Modellreferenz.
+        var vorher = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell;
+        cut.FindAll("input[type=text]")[1].Input("Anderes Werk");
+        Assert.Equal(3, gesehen.Count);
+        Assert.Same(vorher, cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell);
+        Assert.Equal(3, cut.Instance.Kennlinienbilder);
+    }
+
+    /// <summary>Ohne Delegat steht kein Bild — ein Wirt ohne Kern (Vorschau, Test) zeichnet die Gruppe ohne Kurve.</summary>
+    [Fact]
+    public void Ohne_Delegat_steht_keine_Kurve()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
+        Assert.Equal(0, cut.Instance.Kennlinienbilder);
+    }
+
+    /// <summary>
+    /// Die Hülle rechnet das Bild aus DERSELBEN Kernfunktion wie der Lauf (<c>Kesselkennlinie.Kurven</c>): mit
+    /// Brennwertkennlinie drei Rückläufe, die die Prüfpunkte treffen; ohne Energieträger gilt die 1 wie beim
+    /// Speichern, ohne Brennwertkessel wirkt der Schalter Brennwertkennlinie nicht.
+    /// </summary>
+    [Fact]
+    public void Das_Bild_der_Huelle_kommt_aus_der_Kernfunktion_des_Laufs()
+    {
+        var daten = Bestand();   // Erdgas, Brennwertkessel, η₁₀₀ 0,94
+        daten.Wirkungsgrad_Teillast30 = 1.04;
+        daten.Kennlinie_Brennwert = true;
+
+        var m = HeizkesselKennlinienbild.Modell(daten);
+        var kurven = WindowsFormsApplication1.Kesselkennlinie.Kurven(0.94, 0.9, 3, true, "Prüfsatz", 1.04, true);
+        Assert.Equal(3, m.Reihen.Count);
+        for (int i = 0; i < 3; i++)
+            Assert.Equal(kurven[i].Punkte.Select(p => p.Wirkungsgrad), m.Reihen[i].Werte);
+        Assert.Equal(1.04, m.Reihen[0].Werte[2], 12);   // 30 % Last bei 30 °C = η₃₀
+        Assert.Equal(0.94, m.Reihen[2].Werte[^1], 12);  // Nennlast über dem Taupunkt = η₁₀₀
+
+        daten.Brennstoff = null;
+        Assert.Equal(3, HeizkesselKennlinienbild.Modell(daten).Reihen.Count);   // ohne Wahl: 1 (Stadtgas)
+
+        daten.Brennwert = false;   // der Schalter bleibt gesetzt, wirkt aber nur beim Brennwertkessel
+        Assert.Single(HeizkesselKennlinienbild.Modell(daten).Reihen);
+        Assert.Null(HeizkesselKennlinienbild.Modell(null!));
     }
 
     [Fact]

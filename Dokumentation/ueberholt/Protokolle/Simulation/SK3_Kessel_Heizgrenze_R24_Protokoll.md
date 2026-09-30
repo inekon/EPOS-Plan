@@ -133,7 +133,7 @@ Siehe „Nach #568“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS
 2. ~~Kollision mit KP1b der Gebäudesimulation~~ gelöst beim Zusammenführen
    ([`Entwurf_KP1b_Konditionierungsprofile.md`](../../Entwurf_KP1b_Konditionierungsprofile.md)):
    KP1b ist Schritt 152, die Bezugsart Zimmer 153, die Heizgrenze 154.
-3. [`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../../aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md)
+3. [`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../Konzept_Kessel_Kennlinie_EPOS-Plan.md)
    (#569, zurückgestellt) plant noch mit „Neueinfrierung R23“ und Schritt 151 — bei Wiederaufnahme
    neu messen.
 4. Sichtabnahme des Feldes „Heizgrenze der Kesselbereitschaft“ in der Windows-Anwendung.

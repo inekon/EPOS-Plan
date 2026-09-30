@@ -671,6 +671,14 @@ namespace Berichtsvorlage
                     r.Add(Beschriftung(de, en));
                     r.Add(Marke("/wenn"));
                 }
+                // Katalog v11: der Betrieb je Heizkessel (Konzept Kesselkennlinie 5) — nur, wenn der Stand Kessel führt.
+                r.Add(Marke("#wenn hat.tabelle.heizkessel"));
+                r.Add(A("Normal", T(L("Betrieb je Heizkessel: Jahresnutzungsgrad, Anteil des Brennwertbetriebs nach Stunden und "
+                                      + "nach Wärme, Starts im Jahr",
+                                      "Operation per boiler: annual efficiency, share of condensing operation by hours and by "
+                                      + "heat, starts per year"))));
+                r.Add(Marke("stand.tabelle.heizkessel"));
+                r.Add(Marke("/wenn"));
                 // Katalog v10: die Kennwerte des Speicherlaufs der Einzelanlage.
                 r.Add(Marke("#wenn stand.hat_speicherlauf"));
                 r.Add(A("Normal", T(L("Stromspeicher: ", "Battery storage: ")), P("stand.speicher.betriebsart"), T(", "),

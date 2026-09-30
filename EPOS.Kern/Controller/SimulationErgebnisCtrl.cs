@@ -478,6 +478,9 @@ namespace WindowsFormsApplication1
         /// <param name="RuecklaufMittelC">mittlerer Rücklauf der Laufstunden [°C], wärmegewichtet</param>
         /// <param name="BrennwertStundenProzent">Anteil der Laufstunden im Brennwertbetrieb [%]</param>
         /// <param name="Starts">Starts des Kessels [1/a] nach Konzept 4.2 (Etappe E4); beim Elektrokessel seine Laufphasen</param>
+        /// <param name="BrennwertWaermeProzent">Anteil der Wärme im Brennwertbetrieb an der Wärme der Laufstunden [%] — dieselbe
+        /// Teilung wie der Anteil über alle Kessel (<see cref="HeizkesselErgebnis.BrennwertWaermeProzent"/>); die Zeile des
+        /// Berichts (Konzept Kesselkennlinie 5)</param>
         public sealed record KesselModulZeile(string Name, double GasMwh, double OelMwh,
                                               double JahresnutzungsgradProzent,
                                               bool MitKennlinie = false,
@@ -488,7 +491,8 @@ namespace WindowsFormsApplication1
                                               bool MitBrennwertkennlinie = false,
                                               double RuecklaufMittelC = 0,
                                               double BrennwertStundenProzent = 0,
-                                              int Starts = 0);
+                                              int Starts = 0,
+                                              double BrennwertWaermeProzent = 0);
 
         public sealed class HeizkesselErgebnis
         {
@@ -741,6 +745,7 @@ namespace WindowsFormsApplication1
                 bool kennlinie = i < SimulationSPK.MAX_SPK && !spk.IstStromkessel(i);
                 bool brennwert = kennlinie && spk.RechnetMitBrennwertkennlinie(i);
                 double ruecklauf = brennwert ? spk.RuecklaufMittel(i) : 0;
+                double waermeLauf = kennlinie ? spk.WaermeBetriebKwh(i) : 0;
                 e.Module.Add(new KesselModulZeile(
                     spk.spk_list[i], spk.s_waerme_Gas_Spk[i], spk.s_waerme_Oel_Spk[i],
                     spk.Kessel_Jahresnutzungsgrad_Spk[i],
@@ -753,7 +758,8 @@ namespace WindowsFormsApplication1
                     double.IsNaN(ruecklauf) ? 0 : ruecklauf,
                     brennwert && spk.Laufstunden_Spk[i] > 0
                         ? spk.Brennwertstunden_Spk[i] * 100.0 / spk.Laufstunden_Spk[i] : 0,
-                    i < SimulationSPK.MAX_SPK ? spk.Starts_Spk[i] : 0));
+                    i < SimulationSPK.MAX_SPK ? spk.Starts_Spk[i] : 0,
+                    brennwert && waermeLauf > 0 ? spk.BrennwertWaerme_KWh_Spk[i] / waermeLauf * 100.0 : 0));
             }
 
             return e;

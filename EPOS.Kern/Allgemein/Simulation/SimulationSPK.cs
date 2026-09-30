@@ -540,8 +540,9 @@ namespace WindowsFormsApplication1
                 // und auf ~0.01 zerlegt. Echte Prozentwerte liegen >= 50, echte Faktoren
                 // <= ~1.1; 1.5 trennt beide sauber (dieselbe Schwelle nutzt
                 // WirtschaftlichkeitCtrl.LiesReferenzkessel seit Review 11).
-                if (Kessel_Wirk_Gas_Spk[i] > 1.5) Kessel_Wirk_Gas_Spk[i] /= 100.0;
-                if (Kessel_Wirk_Oel_Spk[i] > 1.5) Kessel_Wirk_Oel_Spk[i] /= 100.0;
+                // Dieselbe Regel nimmt die Kurve des Katalogeditors (Kesselkennlinie.WirkungsgradAlsFaktor).
+                Kessel_Wirk_Gas_Spk[i] = Kesselkennlinie.WirkungsgradAlsFaktor(Kessel_Wirk_Gas_Spk[i]);
+                Kessel_Wirk_Oel_Spk[i] = Kesselkennlinie.WirkungsgradAlsFaktor(Kessel_Wirk_Oel_Spk[i]);
 
                 Brennstoff_Betrieb_Spk[i] = heizkesselctrl.items[0].Brennstoff;
                 Brennstoff_Art[i] = Brennstoff_Betrieb_Spk[i];
@@ -737,9 +738,7 @@ namespace WindowsFormsApplication1
         public bool WirkungsgradIstPlatzhalter(int index)
         {
             if (index < 0 || index >= MAX_SPK || IstStromkessel(index)) return false;
-            int art = Brennstoff_Art[index];
-            bool oel = art >= 6 && art <= 9 || art >= 18 && art <= 22;
-            double wirk = oel ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
+            double wirk = Kesselkennlinie.IstOel(Brennstoff_Art[index]) ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
             return Math.Abs(wirk - 1.0) < 1e-9;
         }
 
@@ -1731,11 +1730,11 @@ namespace WindowsFormsApplication1
                 // Ein Rest unter dem Zahlenrand ist kein Lauf (KesselLaeuft).
                 bool laeuft = KesselLaeuft(_kesselAbgabe[i]);
 
-                bool oel = Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9 ||
-                           Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22;
+                bool oel = Kesselkennlinie.IstOel(Brennstoff_Art[i]);
 
-                double eta100 = oel ? Kessel_Wirk_Oel_Spk[i] : Kessel_Wirk_Gas_Spk[i];
-                if (eta100 <= 0) eta100 = 0.90; // Fallback
+                // η₁₀₀ nach Brennstoff, 0,90 für einen fehlenden Wert - dieselbe Funktion wie die Kurve des
+                // Katalogeditors (Kesselkennlinie.Kurven).
+                double eta100 = Kesselkennlinie.Nennwirkungsgrad(Kessel_Wirk_Gas_Spk[i], Kessel_Wirk_Oel_Spk[i], Brennstoff_Art[i]);
 
                 // Konzept Kesselkennlinie 4.1 (Etappe E2): der Wirkungsgrad der Laststufe
                 // β = Wärme/Nennleistung. Der Elektrokessel rechnet mit η₁₀₀ wie bisher; beim
@@ -1990,10 +1989,7 @@ namespace WindowsFormsApplication1
         public double Nennwirkungsgrad(int index)
         {
             if (index < 0 || index >= MAX_SPK) return 0;
-            int art = Brennstoff_Art[index];
-            bool oel = art >= 6 && art <= 9 || art >= 18 && art <= 22;
-            double eta100 = oel ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
-            return eta100 <= 0 ? 0.90 : eta100;
+            return Kesselkennlinie.Nennwirkungsgrad(Kessel_Wirk_Gas_Spk[index], Kessel_Wirk_Oel_Spk[index], Brennstoff_Art[index]);
         }
 
         /// <summary>

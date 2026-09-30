@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **231 Bilder**; **194** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **237 Bilder**; **200** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-30.sha256` nennt alle 194 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-30.sha256` nennt alle 200 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -508,3 +508,27 @@ und geht deshalb nicht über die Stufenregel des Stapels; ihre Lücke ist die de
 Teppichbilder und die zwölf Bilder der Stufenregel (Abschnitt oben). Die Windows-Messliste des
 Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: diese zwölf Zeilen geändert,
 neun neu, alle übrigen gleich.
+
+## Kesselkennlinie (Konzept Kesselkennlinie 5): die kleine Kurve des Kesseleditors
+
+`ChartRenderer.KesselkennlinieModell` (Datei `ChartRenderer.Kesselkennlinie.cs`) zeichnet den Wirkungsgrad über der Last,
+720 × 430: x die Laststufe in Prozent der Nennleistung, y der Wirkungsgrad als Faktor, eine Linie samt Punktmarken je
+Reihe — mit Brennwertkennlinie eine je Rücklauf (30, 50, 60 °C), ohne sie eine. Ein reines Pixelbild ohne Zeichenfläche wie
+die Kennlinien der Wärmepumpe; jede Punktmarke nennt ihren Wert, jede Linie führt eine Datenreihe mit der Last als x-Stelle,
+Linien und Legendenfelder tragen die Serienrolle. Die Punkte rechnet der Kern (`Kesselkennlinie.Kurven`) aus fest
+verdrahteten, neutralen Katalogwerten (Gas-Brennwertkessel, η₁₀₀ 0,97, η₃₀ 1,07). Die Proben stehen in
+`Program.Kesselkennlinie.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kesselkennlinie_brennwert` | drei Rückläufe in `SERIE_1` bis `SERIE_3` |
+| Maßprobe | `kesselkennlinie_teillast` | die Teillastkennlinie allein in `SERIE_1` |
+| Gegenprobe | `kesselkennlinie_brennwert_wirkt` | der Schalter Brennwertkennlinie kommt im Bild an |
+| Gegenprobe | `kesselkennlinie_eta30_wirkt` | ein gepflegtes η₃₀ zeichnet anders als die Normvorgabe |
+| SVG-Probe | `svg_kesselkennlinie_brennwert` | Pixelbild der Gruppe (b): keine Zeichenfläche, Reihenbefehle mit Marke, Datenreihen mit x-Stelle |
+| SVG-Probe | `svg_kesselkennlinie_werte` | 30 Werte an den Punktmarken, die Prüfpunkte wörtlich („Last 30 % · Rücklauf 30 °C: 1,070“, „Last 100 % · Rücklauf 60 °C: 0,970“), drei Legendeneinträge; ohne Brennwertkennlinie eine Linie |
+
+Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und zwei SVG-Proben. Kein Bild von vorher ändert sich:
+Die 194 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-09-30.sha256`, dazu die sechs neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen neu, alle übrigen
+gleich.

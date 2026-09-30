@@ -209,6 +209,12 @@
         @if (Daten.Module.Count > 0)
         {
             <Gruppenkopf Titel="@Resource.SIMERG_GRP_MODULE_SPK" />
+            @* Die Marke der Tafel (Katalog v11, ähnlich): Der Bericht führt je Kessel Jahresnutzungsgrad,
+               Brennwertanteil nach Stunden und Wärme und Starts (stand.tabelle.heizkessel). *@
+            <div class="epos-vorlagenfeld-zeile epos-vorlagenfeld-zeile--rechts">
+                <Vorlagenfeldknopf Vorlagenfeld="stand.tabelle.heizkessel" Stufe="Vorlagenfeldstufe.Aehnlich"
+                                   StufenHinweis="@Resource.VF_ORT_KESSELTAFEL" />
+            </div>
             <table class="epos-raster">
                 <thead>
                     <tr>

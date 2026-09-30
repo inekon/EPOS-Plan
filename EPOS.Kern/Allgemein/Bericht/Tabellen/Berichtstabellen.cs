@@ -552,6 +552,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b><c>stand.tabelle.heizkessel</c></b> (Katalog v11, Konzept Kesselkennlinie 5) — der Betrieb je Heizkessel eines
+        /// Stands: Jahresnutzungsgrad η_eff, Anteil des Brennwertbetriebs nach Stunden und nach Wärme, Starts im Jahr.
+        /// </summary>
+        /// <remarks>
+        /// Gelesen werden die Werte des Laufs im Zeitreihensatz (<see cref="ZeitreihenSatz.Kessel"/>) — Brennwertstunden,
+        /// Brennwertwärme und Starts stehen nicht im gespeicherten Ergebnis. Ein Kessel ohne Brennwertkennlinie hat keinen
+        /// Brennwertbetrieb: Strich statt 0, wie im Kessel-Reiter. Ohne Zeitreihensatz bleibt die Tabelle mit Grund leer,
+        /// ohne Kessel ebenso.
+        /// </remarks>
+        public static Berichtstabelle Heizkessel(VariantenDaten v, bool englisch, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            if (v.Zeitreihen == null) return Leer(nameof(R.BV_GRUND_KEINE_ZEITREIHEN), kultur);
+            List<Kesselbetrieb> kessel = v.Zeitreihen.Kessel ?? new List<Kesselbetrieb>();
+            if (kessel.Count == 0) return Leer(nameof(R.BV_GRUND_KEIN_HEIZKESSEL), kultur);
+
+            var t = new Berichtstabelle().Feste(2755, 1700, 1700, 1700, 1500);
+            t.MitKopf(new[]
+            {
+                Zellen.Kopf(BerichtTexte.T("Heizkessel", englisch), Tabellenausrichtung.Links),
+                Zellen.Kopf(BerichtTexte.T("Jahresnutzungsgrad [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Brennwertbetrieb Stunden [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Brennwertbetrieb Wärme [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Starts [1/a]", englisch)),
+            });
+            Tabellenzelle strich = Zellen.Zahl(Tabellenzelle.STRICH, null, null);
+            foreach (Kesselbetrieb k in kessel.Where(k => k != null))
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(k.Name) ? Tabellenzelle.STRICH : k.Name),
+                    Zellen.Zahl(Tabellenformat.F(k.JahresnutzungsgradProzent, 1, kultur), k.JahresnutzungsgradProzent, "N1", einheit: "%"),
+                    k.MitBrennwertkennlinie
+                        ? Zellen.Zahl(Tabellenformat.F(k.BrennwertStundenProzent, 0, kultur), k.BrennwertStundenProzent, "N0", einheit: "%")
+                        : strich,
+                    k.MitBrennwertkennlinie
+                        ? Zellen.Zahl(Tabellenformat.F(k.BrennwertWaermeProzent, 0, kultur), k.BrennwertWaermeProzent, "N0", einheit: "%")
+                        : strich,
+                    Zellen.Zahl(Tabellenformat.F(k.Starts, 0, kultur), k.Starts, "N0"),
+                });
+            return t;
+        }
+
+        /// <summary>
         /// <b><c>stand.tabelle.brennstoffmengen</c></b> — Erzeuger, Bezeichner und Menge in der Abrechnungseinheit
         /// (<see cref="VariantenDaten.Brennstoffmengen"/>, im Sammler erhoben). <paramref name="mitLeerzeile"/>: ohne
         /// Mengen die Zeile „(keine Brennstoffdaten)“ wie im Kapitel; sonst bleibt die Tabelle leer.

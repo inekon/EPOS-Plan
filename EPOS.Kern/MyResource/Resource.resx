@@ -40768,5 +40768,29 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
     <value>Die Vorlage der Spalte {0} im Reiter „Konditionierung“: der Name einer Vorlage aus der Liste dieser Größe. Setzen übernimmt sie wie der Knopf „Übernehmen“ – die Zellen der Vorlage gehen in die Spalte, der Kalender wird angelegt, Nennwert und Saison bleiben; steht schon ein angelegter Kalender, wird nur der Matrixbereich ersetzt. Lesen nennt die zuletzt übernommene Vorlage; leer = keine.</value>
   </data>
+  <data name="HZKK_BILD_KENNLINIE" xml:space="preserve">
+    <value>Wirkungsgrad über der Last</value>
+  </data>
+  <data name="HZKK_BILD_ACHSE_LAST" xml:space="preserve">
+    <value>Last [%]</value>
+  </data>
+  <data name="HZKK_BILD_ACHSE_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Wirkungsgrad</value>
+  </data>
+  <data name="HZKK_BILD_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf {0} °C</value>
+  </data>
+  <data name="HZKK_BILD_TEILLAST" xml:space="preserve">
+    <value>Teillastkennlinie</value>
+  </data>
+  <data name="VF_STAND__TABELLE__HEIZKESSEL" xml:space="preserve">
+    <value>Der Betrieb je Heizkessel des laufenden Stands: Jahresnutzungsgrad, Anteil des Brennwertbetriebs nach Stunden und nach Wärme, Starts im Jahr; aus dem Lauf, nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_HEIZKESSEL" xml:space="preserve">
+    <value>kein Heizkessel im Lauf</value>
+  </data>
+  <data name="VF_ORT_KESSELTAFEL" xml:space="preserve">
+    <value>im Bericht je Stand im Block „je stand“: je Kessel Jahresnutzungsgrad, Brennwertanteil nach Stunden und Wärme, Starts</value>
+  </data>
 </root>
 

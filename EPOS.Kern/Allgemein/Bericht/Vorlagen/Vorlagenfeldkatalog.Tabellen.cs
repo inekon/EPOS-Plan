@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const int FASSUNG_EXCEL_BLATTTABELLEN = 9;
 
+        /// <summary>
+        /// Die Fassung des Betriebs je Heizkessel (Katalog v11, Konzept Kesselkennlinie 5): Jahresnutzungsgrad,
+        /// Brennwertanteil nach Stunden und Wärme und Starts als Tabelle je Stand, Word und Excel.
+        /// </summary>
+        internal const int FASSUNG_KESSEL = 11;
+
         /// <summary>Der Alternativtext der Mustertabelle (Konzept 6.4 Nr. 2).</summary>
         public const string MUSTER_TABELLE = "muster.tabelle";
 
@@ -110,7 +116,8 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld(SchalterDerTabelle(q.Schluessel), Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe,
                     w => jeStand ? Hat(w, v => HatZeilen(quelle.Bau(w.MitStand(v)))) : (object)HatZeilen(quelle.Bau(w)))
                 {
-                    Seit = FASSUNG_TABELLEN,
+                    // Der Schalter ist so alt wie seine Tabelle (die Tabellen der Fassung 4 und die Kesseltafel v11).
+                    Seit = q.Seit,
                     Bedarf = q.Bedarf,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_HAT_TABELLE, nameof(R.VF_MUSTER_HAT_TABELLE), tabelle)
                     {
@@ -203,6 +210,12 @@ namespace WindowsFormsApplication1
                 v, w.Wirtschaft.Ergebnisse.Count == 0 ? null : w.Wirtschaft.Strommatrizen, w.Englisch, w.Kultur)));
             yield return Q(STAND_TABELLE + "emissionsbilanz", S, jeStand((w, v) => Berichtstabellen.Emissionsbilanz(v, w.Wirtschaft, w.Englisch, w.Kultur)),
                            Vorlagenbedarf.Emissionsbilanz);
+
+            // ---------------- je Stand, Katalog v11: der Betrieb je Heizkessel (Werte des Laufs, darum Zeitreihen) ----------------
+            Tabellenquelle kessel = Q(STAND_TABELLE + "heizkessel", S, jeStand((w, v) => Berichtstabellen.Heizkessel(v, w.Englisch, w.Kultur)),
+                                      Vorlagenbedarf.Zeitreihen);
+            kessel.Seit = FASSUNG_KESSEL;
+            yield return kessel;
 
             // ---------------- nur Excel (Katalog v7, BV-E9): die drei Tabellen mit reiner Excel-Quelle ----------------
             Tabellenquelle X(Tabellenquelle q) { q.Seit = FASSUNG_EXCEL_TABELLEN; q.Ausgaben = Vorlagenausgabe.Excel; return q; }

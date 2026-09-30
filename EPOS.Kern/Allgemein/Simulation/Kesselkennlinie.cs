@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
     /// Anfahrverlust. Leere Felder nehmen die Normvorgaben (Konzept 7.1, Entscheid F1). Beide
     /// Schwellen — Mindestleistung und die Vielfachen eines Mindestlaufs — tragen den Zahlenrand.</para>
     /// </remarks>
-    public static class Kesselkennlinie
+    public static partial class Kesselkennlinie
     {
         /// <summary>Die Laststufe des Teillast-Prüfpunkts (30 % der Nennleistung).</summary>
         public const double LASTSTUFE_TEILLAST = 0.3;

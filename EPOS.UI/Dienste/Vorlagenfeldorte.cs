@@ -232,6 +232,8 @@ public static class Vorlagenfeldorte
         O("stand.bild.waermepumpe", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.produktion");
         O("stand.bild.waermepumpe_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.stromverbrauch");
         O("stand.bild.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "bild.heizkessel");
+        // Katalog v11: die Kesseltafel - im Bericht je Kessel Jahresnutzungsgrad, Brennwertanteil und Starts (ähnlich).
+        O("stand.tabelle.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "tafel.kessel");
         O("stand.bild.solarthermie", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_SOLARTHERMIE), "bild.solarthermie");
         O("stand.bild.bhkw", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw");
         O("stand.bild.photovoltaik", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_PHOTOVOLTAIK), "bild.photovoltaik");
