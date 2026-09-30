@@ -102,6 +102,17 @@ namespace WindowsFormsApplication1
         private string _abdeckung = "";
         private string _abdeckungSchluessel;
 
+        /// <summary>
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18): die Stände des Laufs, dem die gezeigten
+        /// Ergebnisse gehören — gesetzt von <see cref="Berechnen"/> mit den Ständen, die er
+        /// gerechnet hat, und vorher einmal beim ersten <see cref="Laden"/> mit den Ständen des
+        /// Laufs, wie ihn die Wahl dann bildet (die gespeicherten Ergebnisse tragen ihren Lauf
+        /// nicht). Weder ein Haken noch eine Referenzwahl noch ein erneutes Laden setzt ihn;
+        /// gegen ihn prüft <see cref="Ansicht"/>, ob die Wahl die Gruppenregel geändert hat.
+        /// <c>null</c> = noch nicht geladen.
+        /// </summary>
+        private List<int> _ergebnisLauf;
+
         /// <summary>Die Verlaufshülle der Seite (ETAPPE E6).</summary>
         private KapitalwertVerlaufHuelle Verlauf
         {
@@ -346,6 +357,10 @@ namespace WindowsFormsApplication1
             // Vergleich, auch wenn sie nicht angehakt ist.
             _referenzzeile = stand.Referenzzeile ?? "";
             _referenzWirksam = wahl.IdReferenz;
+
+            // EZ‑18: Beim ersten Laden gehören die gespeicherten Ergebnisse zum Lauf der Wahl;
+            // danach setzt ihn allein „Berechnen" neu.
+            if (_ergebnisLauf == null) _ergebnisLauf = Laufstaende().Select(s => s.Key).ToList();
 
             var szenarien = new List<ValueTuple<int, string>>();
             for (int i = 0; i < SZENARIEN.Length; i++)
@@ -638,6 +653,26 @@ namespace WindowsFormsApplication1
             _abdeckung = satz;
             _abdeckungSchluessel = schluessel;
             return satz;
+        }
+
+        /// <summary>
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18): Ändert die Wahl — ein Haken, die
+        /// Referenz — die Stände mit Stromverwendung gegenüber dem Lauf der gezeigten Ergebnisse
+        /// (<see cref="_ergebnisLauf"/>), gilt eine andere Gruppenregel; die gespeicherten
+        /// Ergebnisse bleiben bis zum nächsten „Berechnen" stehen und sind veraltet. Die Regel
+        /// steht im Kern (<see cref="WirtschaftlichkeitCtrl.StromGruppenregelGeaendert"/>). Ohne
+        /// gespeicherte Ergebnisse gibt es nichts, was veralten könnte; ein Lesefehler kostet die
+        /// Fahne, nie die Ansicht.
+        /// </summary>
+        private bool GruppenregelVeraltet()
+        {
+            if (_ergebnisLauf == null || _ergebnisse.Count == 0) return false;
+            try
+            {
+                return WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                    _ergebnisLauf, Laufstaende().Select(s => s.Key));
+            }
+            catch { return false; }
         }
 
         /// <summary>
@@ -976,6 +1011,10 @@ namespace WindowsFormsApplication1
             // ETAPPE E9b (U10): der Ausweis „n von m Parametern szenariert" über die Stände des
             // Laufs — er folgt einem Haken wie die Bandbreite, nicht der Szenario-Klappliste.
             ansicht.Szenarioabdeckung = Szenarioabdeckung();
+
+            // EZ‑18: Hat die Wahl die Gruppenregel geändert, sind die gezeigten Ergebnisse bis
+            // zum nächsten „Berechnen" veraltet — die Seite sagt es im Warnband.
+            ansicht.GruppenregelVeraltet = GruppenregelVeraltet();
 
             // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
             // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
@@ -1628,6 +1667,10 @@ namespace WindowsFormsApplication1
                 }, ct);
 
                 _tarifCache = null;
+                // EZ‑18: Die gezeigten Ergebnisse gehören jetzt zu diesem Lauf — seine Stände sind
+                // die, gegen die ein Haken die Gruppenregel prüft.
+                if (_letzteDaten != null)
+                    _ergebnisLauf = _letzteDaten.Varianten.Where(v => v != null).Select(v => v.IdProjekt).ToList();
                 BilanzenAuffrischen();
                 Geladen?.Invoke();
 

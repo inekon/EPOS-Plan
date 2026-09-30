@@ -10882,6 +10882,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
   </data>
+  <data name="KOH_GRUND_RUECKFALL_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt</value>
+  </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>die Komponente Stromsteuer ist abgeschaltet</value>
   </data>
@@ -10969,6 +10972,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
     <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
   </data>
+  <data name="WIRT_BAND_GRUPPENREGEL_VERALTET" xml:space="preserve">
+    <value>Die Auswahl der Versionen ändert die Gruppenregel — Ergebnisse bis zum nächsten Berechnen veraltet.</value>
+  </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>
@@ -10977,6 +10983,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
     <value>Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
+  </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
   </data>
   <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
     <value>{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)</value>

@@ -60644,6 +60644,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_RUECKFALL_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_RUECKFALL_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer ist abgeschaltet ähnelt.
         /// </summary>
         public static string KOH_GRUND_STROM_INAKTIV {
@@ -96050,6 +96059,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl der Versionen ändert die Gruppenregel — Ergebnisse bis zum nächsten Berechnen veraltet. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_GRUPPENREGEL_VERALTET {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_GRUPPENREGEL_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen. ähnelt.
         /// </summary>
         public static string WIRT_BAND_NACHRECHNEN {
@@ -97828,6 +97846,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT {
             get {
                 return ResourceManager.GetString("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT", resourceCulture);
             }
         }
         

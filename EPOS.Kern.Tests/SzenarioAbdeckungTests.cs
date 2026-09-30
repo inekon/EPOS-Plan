@@ -534,5 +534,40 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, drei.Szenariert);
             Assert.Equal(R.WIRT_ANN_ZEITRAUM, drei.Gepflegte[0]);
         }
+
+        /// <summary>
+        /// <b>Der Rückfallträger eines Standes mit Stromverwendung zählt als Stromträger</b>
+        /// (Register EZ‑18, Zählregel § 2.11.5). Das BHKW-Projekt 1018 führt Erdgas E, aber keinen
+        /// zugeordneten Stromträger; seinen Netzbezug bepreist die Kostenrechnung mit dem
+        /// Auslieferungsträger „Elektrische Energie" (60). Der Ausweis zählt ihn mit Arbeits-, Grund-
+        /// und Leistungspreis: m = 11 + 2 (Erdgas E, ohne Leistungspreis) + 3 = 16 — ohne den
+        /// Rückfallträger waren es 13, der bepreiste Strom fehlte ganz. Derselbe Ausweis entsteht, wenn
+        /// der Träger zugeordnet ist.
+        /// </summary>
+        [Fact]
+        public void Der_Rueckfalltraeger_eines_Standes_mit_Stromverwendung_zaehlt_als_Stromtraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            const int BHKW_OHNE_STROMTRAEGER = 1018;
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(BHKW_OHNE_STROMTRAEGER));
+            Assert.Equal(0, Emissionsquelle.StromTraeger(BHKW_OHNE_STROMTRAEGER));
+            Assert.Equal(TRAEGER_STROM, Emissionsquelle.KatalogStromTraeger(BHKW_OHNE_STROMTRAEGER));
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(BHKW_OHNE_STROMTRAEGER);
+            p.SatzBest = SzenarioSatz.Vorgabe(BEST);
+            p.SatzWorst = SzenarioSatz.Vorgabe(WORST);
+            var stand = new[] { new KeyValuePair<int, string>(BHKW_OHNE_STROMTRAEGER, "Stamm") };
+
+            SzenarioAbdeckung rueckfall = SzenarioAbdeckung.Lesen(p, stand);
+            Assert.Equal(GRUNDMENGE + 2 + 3, rueckfall.Parameter);
+            Assert.Equal(0, rueckfall.Szenariert);
+            Assert.Equal(string.Format(DE, R.WIRT_SZ_ABDECKUNG, 0, GRUNDMENGE + 2 + 3), rueckfall.Satz(DE));
+
+            // Derselbe Ausweis mit zugeordnetem Stromträger.
+            Assert.True(new WizardCtrl().TraegerSatzAnlegen(BHKW_OHNE_STROMTRAEGER, TRAEGER_STROM));
+            Assert.Equal(TRAEGER_STROM, Emissionsquelle.StromTraeger(BHKW_OHNE_STROMTRAEGER));
+            Assert.Equal(rueckfall.Parameter, SzenarioAbdeckung.Lesen(p, stand).Parameter);
+        }
     }
 }

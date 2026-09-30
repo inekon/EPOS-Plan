@@ -10875,6 +10875,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>no electricity energy carrier is assigned to the project</value>
   </data>
+  <data name="KOH_GRUND_RUECKFALL_STROMSTEUER" xml:space="preserve">
+    <value>electricity tax component of the default carrier “{0}” not maintained</value>
+  </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>the electricity tax component is switched off</value>
   </data>
@@ -10962,6 +10965,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
     <value>The simulation result is older than the last change to the project — please run the simulation again.</value>
   </data>
+  <data name="WIRT_BAND_GRUPPENREGEL_VERALTET" xml:space="preserve">
+    <value>The selection of versions changes the group rule — results are out of date until the next calculation.</value>
+  </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. Energy costs and emissions are determined without this electricity.</value>
   </data>
@@ -10970,6 +10976,9 @@ The switch is only shown if the project contains such a generator.</value>
   </data>
   <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
     <value>Demand charge {0} of the electricity carrier “{1}” not applied: the version has no generator that uses electricity; the demand charge is then a parameter of load optimisation.</value>
+  </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Demand charge of the residual power tariff with the model “{0}” not applied: the version has no generator that uses electricity; the demand charge is then a parameter of load optimisation.</value>
   </data>
   <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
     <value>{0} €/(kW·a) up to {1} kW, {2} €/(kW·a) above</value>

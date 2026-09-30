@@ -31,7 +31,8 @@ namespace EPOS.Kern.Tests
     /// Netzbezug des Standes ohne stromverwendenden Erzeuger bepreist der Vergleich mit Arbeits-
     /// und Grundpreis, den Leistungspreis des Trägers setzt er nicht an — bei einem solchen Stand
     /// ist er eine Größe der Lastoptimierung und wird benannt. Die Variante mit Stromverwendung
-    /// trägt ihren Leistungspreis unverändert.</para>
+    /// trägt ihren Leistungspreis unverändert. Dasselbe gilt im Rollentarif für den Leistungspreis des
+    /// Reststromtarifs (Anwenderentscheid 30.09.2026, Register EZ‑18).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StromGruppenregelTests : IDisposable
@@ -484,18 +485,25 @@ namespace EPOS.Kern.Tests
             int nurVariante = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
             int lauf = SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter;
 
+            // Hergeleitet: der Stamm allein mit Erdgas E (Arbeits- und Grundpreis); die Variante mit
+            // Erdgas E, ihrem Stromträger — dem Rückfallträger ohne Zuordnung, Arbeits-, Grund- und
+            // Leistungspreis (EZ‑18) — und DV-Entgelt und PPA-Preis ihrer PV-Vergütung.
+            Assert.Equal(GRUNDMENGE + 2, allein);
+            Assert.Equal(GRUNDMENGE + 2 + 3 + 2, nurVariante);
+
             // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit
             // — Arbeits- und Grundpreis, keinen Leistungspreis.
             Assert.Equal(allein + nurVariante - GRUNDMENGE + 2, lauf);
 
-            // Führt der Träger einen Leistungspreis, zählt ihn die Variante mit Wärmepumpe (ihr
-            // Träger aus der Verwendung der Wärmepumpe) — der Stamm ohne Stromverwendung nicht.
+            // Den Leistungspreis zählt die Variante mit Wärmepumpe immer: Ihr Stromträger ist der
+            // Rückfallträger, der ihren Netzbezug bepreist (Register EZ‑18) — ein gepflegter
+            // Leistungspreis ändert m nicht. Der Stamm ohne Stromverwendung zählt ihn nie (EZ‑17).
             DataRepository.ExecuteSQL("UPDATE energy_carrier SET price_power = ? WHERE id = ?",
                 new DbParam("@l", 60.0), new DbParam("@c", STROM));
             int alleinMit = SzenarioAbdeckung.Lesen(p, new[] { stamm }).Parameter;
             int nurVarianteMit = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
             Assert.Equal(allein, alleinMit);
-            Assert.Equal(nurVariante + 1, nurVarianteMit);
+            Assert.Equal(nurVariante, nurVarianteMit);
             Assert.Equal(alleinMit + nurVarianteMit - GRUNDMENGE + 2,
                          SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter);
 
@@ -563,6 +571,69 @@ namespace EPOS.Kern.Tests
             // Wieder angehakt: derselbe Ausweis wie beim Laden.
             waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
             Assert.Equal(beimLaden, anzeigen(0).Szenarioabdeckung);
+        }
+
+        /// <summary>
+        /// <b>Die Seite meldet die Ergebnisse als veraltet, wenn die Wahl die Gruppenregel ändert</b>
+        /// (Anwenderentscheid 30.09.2026, Register EZ‑18). Gruppe 1026 wie oben: allein „Erdwärme"
+        /// (1029) verwendet Strom. Ihr Haken weg ändert die Stromverwender des Laufs — die Ansicht trägt
+        /// <c>GruppenregelVeraltet</c>; der Haken an „Andere WP" (1027, ohne Stromverwendung) nicht.
+        /// Die Referenzwahl zieht „Erdwärme" als Referenz wieder in den Lauf, die Rückkehr zum Stamm
+        /// nimmt sie wieder heraus. „Berechnen" rechnet den Lauf der Wahl, danach ist nichts veraltet.
+        /// </summary>
+        [Fact]
+        public async System.Threading.Tasks.Task Die_Seite_meldet_die_geaenderte_Gruppenregel_bis_zum_naechsten_Berechnen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt IN (?, ?) AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@a", GRUPPE_STAMM), new DbParam("@b", STAMM));
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(VARIANTE));
+
+            // Die Regel des Kerns: allein die Menge der Stromverwender zählt.
+            Assert.True(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM, VARIANTE }, new[] { GRUPPE_STAMM, STAMM }));
+            Assert.False(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM, VARIANTE }, new[] { GRUPPE_STAMM, VARIANTE }));
+            Assert.False(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM }, new[] { GRUPPE_STAMM }));
+
+            var seite = new WirtschaftlichkeitSeiteGaben(GRUPPE_STAMM, "Beispiel WP WG 1");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])();
+            var anzeigen = (Func<int, ErgebnisAnsicht>)gaben["Anzeigen"];
+            var waehlen = (Action<IReadOnlyList<int>>)gaben["VergleichGewaehlt"];
+            var referenz = (Func<int, WirtschaftlichkeitStand>)gaben["ReferenzGewaehlt"];
+            var berechnen = (Func<IReadOnlyList<int>, Action<Laufschritt>, System.Threading.Tasks.Task<LaufErgebnis>>)
+                gaben["Berechnen"];
+            Assert.True(stand.HatErgebnisse, "Die Gruppe 1026 führt keine gespeicherten Ergebnisse.");
+            Assert.False(stand.Ansicht.GruppenregelVeraltet);
+
+            // Ein Haken ohne Wirkung auf die Gruppenregel: „Andere WP" ab.
+            waehlen(new List<int> { GRUPPE_STAMM, VARIANTE });
+            Assert.False(anzeigen(0).GruppenregelVeraltet);
+
+            // Die einzige Stromvariante ab — in jedem Szenario der Klappliste.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM });
+            Assert.True(anzeigen(0).GruppenregelVeraltet);
+            Assert.True(anzeigen(2).GruppenregelVeraltet);
+
+            // Die Referenzwahl „Erdwärme" zieht sie in den Lauf zurück, der Stamm als Referenz nicht.
+            Assert.False(referenz(VARIANTE).Ansicht.GruppenregelVeraltet);
+            Assert.True(referenz(GRUPPE_STAMM).Ansicht.GruppenregelVeraltet);
+
+            // „Berechnen" rechnet den Lauf der Wahl (Stamm und „Andere WP") — nichts ist veraltet.
+            LaufErgebnis lauf = await berechnen(new List<int> { STAMM }, s => { });
+            Assert.True(lauf.Erfolg, lauf.Fehler);
+            Assert.False(anzeigen(0).GruppenregelVeraltet);
+            Assert.False(((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Ansicht.GruppenregelVeraltet);
+
+            // Jetzt ändert der Haken an „Erdwärme" die Regel in der anderen Richtung.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
+            Assert.True(anzeigen(0).GruppenregelVeraltet);
         }
 
         // =================================================================
@@ -735,6 +806,7 @@ namespace EPOS.Kern.Tests
         /// der Wortlaut der Ressource.</summary>
         [Theory]
         [InlineData("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")]
+        [InlineData("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT")]
         [InlineData("WIRT_LP_SATZ_STAFFEL")]
         [InlineData("WIRT_LP_SATZ_SAISON")]
         [InlineData("WIRT_LP_SATZ_MONAT")]
@@ -749,6 +821,149 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(de, en);
             if (schluessel == "WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")
                 Assert.Equal(KostenEmissionRechner.HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, de);
+            if (schluessel == "WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT")
+                Assert.Equal(WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT, de);
+        }
+
+        // =================================================================
+        // Die Stromsteuer-Kohärenz am Rückfallträger (Anwenderentscheid 30.09.2026, EZ‑18)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Vergleich prüft die § 9b-Entlastung des Stamms gegen den Rückfallträger.</b> Für ein
+        /// produzierendes Gewerbe bucht die Kopie der Gruppenregel § 9b auf den bepreisten Netzbezug
+        /// von 16,12 MWh/a; den Netzbezug bepreist ohne Zuordnung „Elektrische Energie", an dem kein
+        /// Stromsteueranteil gepflegt ist. Die Kohärenzzeile nennt ihn als WARNUNG mit dem gebuchten
+        /// Betrag. Die Einzelbetrachtung des Stamms bucht keine Entlastung und prüft nichts.
+        /// </summary>
+        [Fact]
+        public void Im_Vergleich_prueft_die_Kohaerenz_den_Rueckfalltraeger_des_Stamms()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(STAMM);
+            p.Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE;
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, p), STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.True(s.StromsteuerEntlastungJahr1 > 0, "§ 9b = " + s.StromsteuerEntlastungJahr1);
+            KohaerenzHinweis h = Assert.Single(s.KohaerenzHinweise, x => x.Text.Contains("§ 9b", StringComparison.Ordinal));
+            Assert.Equal(KohaerenzSchwere.WARNUNG, h.Schwere);
+            Assert.Equal(s.StromsteuerEntlastungJahr1, h.Betrag.Value, 6);
+            Assert.Contains("Stromsteueranteil des Auslieferungsträgers „Elektrische Energie“ nicht gepflegt", h.Text);
+
+            // Die Einzelbetrachtung: Netzbezug ohne Verwendung, keine Entlastung, keine Zeile.
+            Assert.Equal(0.0, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(stamm, null), 6);
+        }
+
+        // =================================================================
+        // Der Rollentarif unter EZ‑17 (Anwenderentscheid 30.09.2026, EZ‑18)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Rollentarif setzt an der Kopie der Gruppenregel keinen Leistungspreis an.</b> Die
+        /// Tarifstruktur ist aktiv: Bezug 0,30 €/kWh und 8 €/(kW·Monat), Reststrom 0,32 €/kWh, 100 €/a
+        /// und 10 €/(kW·Monat), beide monatlich. Beide Stände führen Stundenreihen mit gleichbleibendem
+        /// Netzbezug (Bedarf = Netzbezug), der Stromträger dazu einen Leistungspreis von 60 €/(kW·a).
+        /// Der Stamm ohne Stromverwendung: 50 + 16,12 MWh × 0,32 €/kWh + 100 = 5.308,40 €/a — ohne
+        /// 12 × 1,8402 kW × 10 = 220,82 €/a Leistungsanteil; die vermiedenen Kosten tragen keinen
+        /// Leistungsanteil (16,12 MWh × (0,30 − 0,32) €/kWh − 100 = −422,40 €/a), und der Hinweis nennt
+        /// das Modell des Reststromtarifs statt des Stromträgers, dessen Preise der Tarif ersetzt. Die
+        /// Variante mit Wärmepumpe: 50 + 6,12 MWh × 0,32 + 100 + 12 × 0,6986 kW × 10 = 2.192,24 €/a —
+        /// ihr Leistungsanteil bleibt (vermieden 12 × 0,6986 × (8 − 10) = −16,77 €/a), kein Hinweis.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_setzt_der_Stand_ohne_Verwendung_keinen_Leistungspreis_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            KostenEmissionRechner.Berechne(stamm);
+            KostenEmissionRechner.Berechne(variante);
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            WirtschaftlichkeitErgebnis s = Finde(alle, STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            WirtschaftlichkeitErgebnis v = Finde(alle, VARIANTE, WirtschaftlichkeitSzenario.ERWARTET);
+
+            double stammKW = NETZBEZUG * 1000.0 / ZeitreihenSatz.Stunden;
+            double varianteKW = (NETZBEZUG - EINSPARUNG) * 1000.0 / ZeitreihenSatz.Stunden;
+
+            // Der Stamm: Arbeits- und Grundpreis des Reststromtarifs, kein Leistungsanteil.
+            Assert.Null(s.Fehlgrund);
+            Assert.Equal(NETZBEZUG * 1000.0 * 0.32 + 100.0, s.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(0.0, s.VermiedenLeistungJahr, 6);
+            Assert.Equal(NETZBEZUG * 1000.0 * (0.30 - 0.32) - 100.0, s.VermiedenGesamtJahr, 2);
+
+            // Der Hinweis nennt das Modell des Reststromtarifs — in jedem Szenario —, nicht den Träger.
+            string hinweis = "Leistungspreis des Reststromtarifs nach dem Modell „" +
+                             WindowsFormsApplication1.MyResource.Resource.TARIF_LM_MONATLICH +
+                             "“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet";
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                WirtschaftlichkeitErgebnis stand = Finde(alle, STAMM, sz);
+                Assert.Contains("Gruppenregel", stand.Hinweis ?? "");
+                Assert.Contains(hinweis, stand.Hinweis ?? "");
+                Assert.DoesNotContain("des Stromträgers „Elektrische Energie“ nicht angesetzt", stand.Hinweis ?? "");
+            }
+
+            // Die Variante mit Stromverwendung rechnet unverändert mit Leistungsanteil.
+            Assert.Null(v.Fehlgrund);
+            Assert.Equal((NETZBEZUG - EINSPARUNG) * 1000.0 * 0.32 + 100.0 + 12.0 * varianteKW * 10.0,
+                         v.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + (NETZBEZUG - EINSPARUNG) * 1000.0 * 0.32 + 100.0 + 12.0 * varianteKW * 10.0,
+                         v.EnergiekostenJahr.Value, 2);
+            Assert.Equal(12.0 * varianteKW * (8.0 - 10.0), v.VermiedenLeistungJahr, 2);
+            Assert.DoesNotContain("nicht angesetzt", v.Hinweis ?? "");
+
+            // Gegenprobe: Mit Leistungsanteil trüge der Stamm 220,82 €/a mehr.
+            Assert.Equal(220.82, 12.0 * stammKW * 10.0, 2);
+        }
+
+        /// <summary>
+        /// Der Hinweis nennt das Modell des Reststromtarifs im Klartext der Tarifstruktur — hier
+        /// die Staffel. Führt der Reststromtarif keinen Leistungspreis, steht kein Hinweis und die
+        /// Zahl ist dieselbe.
+        /// </summary>
+        [Fact]
+        public void Der_Tarifhinweis_nennt_das_Modell_und_ohne_Leistungspreis_keinen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Rollentarif(DbWerte.LEISTUNGSMODELL_STAFFEL, 0.0, 0.0,
+                        new LeistungsStufe(0.0, 40.0, 60.0));
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            double mitStaffel = s.EnergiekostenJahr.Value;
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, mitStaffel, 2);
+            Assert.Contains("nach dem Modell „" + WindowsFormsApplication1.MyResource.Resource.TARIF_LM_STAFFEL +
+                            "“ nicht angesetzt", s.Hinweis ?? "");
+
+            // Ohne Leistungspreis am Reststromtarif: dieselbe Zahl, kein Hinweis.
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 0.0, 0.0);
+            BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out VariantenDaten varianteOhne);
+            stammOhne.Zeitreihen = Stundenreihen(NETZBEZUG);
+            varianteOhne.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            WirtschaftlichkeitErgebnis so = Finde(ctrl.Berechne(ohne, ctrl.LadeParameter(STAMM)),
+                                                  STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Equal(mitStaffel, so.EnergiekostenJahr.Value, 6);
+            Assert.DoesNotContain("nicht angesetzt", so.Hinweis ?? "");
         }
 
         // =================================================================
@@ -830,6 +1045,39 @@ namespace EPOS.Kern.Tests
             var s = new Netzbezugsspitze { JahrKW = jahrKW };
             for (int m = 0; m < 12; m++) s.MonatKW[m] = monatKW;
             return new ZeitreihenSatz { Bezugsspitze = s };
+        }
+
+        /// <summary>Stundenreihen mit gleichbleibendem Netzbezug und demselben Strombedarf — die
+        /// Grundlage der Strommatrix, ohne die der Rollentarif nicht rechnet.</summary>
+        private static ZeitreihenSatz Stundenreihen(double netzbezugMWh)
+        {
+            var z = new ZeitreihenSatz();
+            var reihe = new double[ZeitreihenSatz.Stunden];
+            for (int h = 0; h < reihe.Length; h++) reihe[h] = netzbezugMWh * 1000.0 / ZeitreihenSatz.Stunden;
+            z.Reihen[ZeitreihenSatz.NETZBEZUG] = reihe;
+            z.Reihen[ZeitreihenSatz.STROMBEDARF] = (double[])reihe.Clone();
+            return z;
+        }
+
+        /// <summary>Eine aktive Tarifstruktur im Rollenmodell für den Stamm: Bezug 0,30 €/kWh,
+        /// Reststrom 0,32 €/kWh und 100 €/a, beide Rollen mit <paramref name="modell"/> und den
+        /// Monatspreisen bzw. Stufen.</summary>
+        private static void Rollentarif(string modell, double bezugMonat, double reststromMonat,
+                                        params LeistungsStufe[] stufen)
+        {
+            var t = new TarifParameter { IdStamm = STAMM, Aktiv = true, Modus = DbWerte.TARIF_MODUS_ROLLEN };
+            t.Bezug.ArbeitspreisEurKWh = 0.30;
+            t.Bezug.Leistungsmodell = modell;
+            t.Bezug.MonatspreisEurKWMonat = bezugMonat;
+            t.Bezug.Stufen = new List<LeistungsStufe>(stufen);
+            t.Reststrom.ArbeitspreisEurKWh = 0.32;
+            t.Reststrom.GrundpreisEurJahr = 100.0;
+            t.Reststrom.Leistungsmodell = modell;
+            t.Reststrom.MonatspreisEurKWMonat = reststromMonat;
+            t.Reststrom.Stufen = new List<LeistungsStufe>(stufen);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Assert.True(ctrl.SpeichereTarif(t));
+            Assert.True(ctrl.LadeTarif(STAMM).Wirksam);
         }
     }
 }

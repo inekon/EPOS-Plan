@@ -2066,6 +2066,17 @@ namespace WindowsFormsApplication1
             /// Stromanteil und den Einspeiseerlös dieses Laufs tatsächlich ersetzt hat.</summary>
             public bool RollenGerechnet;
 
+            /// <summary>
+            /// Anwenderentscheid 30.09.2026 (Register EZ‑18) — der Hinweis, dass der Rollentarif
+            /// an einem Stand ohne stromverwendenden Erzeuger (Kopie der Gruppenregel) den
+            /// Leistungspreis seines Reststromtarifs nicht ansetzt; <c>null</c> = kein solcher
+            /// Fall oder der Tarif führt keinen. Er gilt nur, wenn <see cref="RollenGerechnet"/>
+            /// steht, und tritt dann an die Stelle des Hinweises zum Leistungspreis des
+            /// Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>), dessen
+            /// Preise der Rollentarif ersetzt.
+            /// </summary>
+            public string LeistungspreisTarifNichtAngesetzt;
+
             /// <summary>ETAPPE E9a: die Kohärenzzeilen des Szenariolaufs — gepflegte
             /// Szenariowerte, die in diesem Lauf ohne Wirkung bleiben. <b>Reine Ausgabe.</b></summary>
             public List<string> SzenarioHinweise = new List<string>();
@@ -2159,6 +2170,59 @@ namespace WindowsFormsApplication1
                     !ergebnis.ContainsKey(v.IdProjekt))
                     ergebnis[v.IdProjekt] = namen;
             return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Ändert der Wechsel vom Lauf <paramref name="gerechnet"/> zum Lauf
+        /// <paramref name="gewaehlt"/> die Gruppenregel?</b> (Anwenderentscheid 30.09.2026,
+        /// Register EZ‑18) — die Frage der Ergebnisseite nach einem Haken oder einer
+        /// Referenzwahl, deren gespeicherte Ergebnisse bis zum nächsten „Berechnen" gelten.
+        ///
+        /// <para>Die Gruppenregel eines Laufs sind seine Stände mit Stromverwendung
+        /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>; leer, wenn der Lauf nur
+        /// einen Stand führt — dieselben Bedingungen wie <see cref="StromGruppenregel"/>). Sie hat
+        /// sich geändert, wenn diese Menge nicht mehr dieselbe ist UND ein Stand ohne
+        /// Stromverwendung, dessen Ergebnis zum gerechneten Lauf gehört, noch gewählt ist — nur
+        /// seine Zahlen hängen an der Regel. Ein Haken, der die Menge nicht ändert, und ein Lauf,
+        /// in dem jeder Stand Strom verwendet, ändern nichts.</para>
+        /// </summary>
+        internal static bool StromGruppenregelGeaendert(IEnumerable<int> gerechnet, IEnumerable<int> gewaehlt)
+        {
+            List<int> alt = LaufIds(gerechnet), neu = LaufIds(gewaehlt);
+            var beide = new List<int>(alt);
+            foreach (int id in neu) if (!beide.Contains(id)) beide.Add(id);
+
+            List<int> verwender;
+            if (!ProjektEnergietraegerCtrl.GruppeVerwendetStrom(beide, out verwender))
+                return false;   // kein Stand beider Läufe verwendet Strom — die Regel ruht in beiden
+
+            List<int> regelAlt = LaufVerwender(alt, verwender), regelNeu = LaufVerwender(neu, verwender);
+            bool gleich = regelAlt.Count == regelNeu.Count;
+            if (gleich) foreach (int id in regelAlt) if (!regelNeu.Contains(id)) { gleich = false; break; }
+            if (gleich) return false;
+
+            foreach (int id in neu)
+                if (alt.Contains(id) && !verwender.Contains(id)) return true;
+            return false;
+        }
+
+        /// <summary>Die Stände eines Laufs, je einmal, ohne ungültige Kennung.</summary>
+        private static List<int> LaufIds(IEnumerable<int> staende)
+        {
+            var ids = new List<int>();
+            if (staende != null)
+                foreach (int id in staende)
+                    if (id > 0 && !ids.Contains(id)) ids.Add(id);
+            return ids;
+        }
+
+        /// <summary>Die Stromverwender eines Laufs — leer, wenn der Lauf nur einen Stand führt.</summary>
+        private static List<int> LaufVerwender(List<int> lauf, List<int> alleVerwender)
+        {
+            var v = new List<int>();
+            if (lauf.Count < 2) return v;
+            foreach (int id in lauf) if (alleVerwender.Contains(id)) v.Add(id);
+            return v;
         }
 
         /// <summary>
@@ -2533,8 +2597,25 @@ namespace WindowsFormsApplication1
                 LastBedarf = e.Matrix.LastBedarf,
                 LastRestbezug = e.Matrix.LastBezug
             };
+
+            // ---- DER LEISTUNGSPREIS DES TARIFS NUR BEI STROMVERWENDUNG (Anwenderentscheid
+            // 30.09.2026, Register EZ‑18; EZ‑17 gilt auch im Rollentarif) ----
+            //
+            // Die Kopie der Gruppenregel (StromImVergleichBepreisen, nur an Ständen OHNE
+            // stromverwendenden Erzeuger) setzt keinen Leistungsanteil an: Der Reststromtarif
+            // bepreist ihren Netzbezug mit Arbeits- und Grundpreis, den Leistungspreis seines
+            // Modells nicht — er ist an einem solchen Stand eine Größe der Lastoptimierung. Die
+            // Bezugsrolle rechnet ebenso ohne, damit die vermiedenen Kosten keinen
+            // Leistungsanteil ausweisen, den keine Anlage vermeidet. Führt der Reststromtarif
+            // einen Leistungspreis, nennt ihn der Hinweis mit dem Klartext seines Modells; er
+            // tritt an die Stelle des Hinweises zum Leistungspreis des Stromträgers, dessen
+            // Preise der Tarif ersetzt (RechneProjekt). Stände mit Stromverwendung rechnen
+            // unverändert.
+            bool ohneLeistungspreis = v.StromImVergleichBepreisen;
+            TarifRolle bezug = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Bezug) : tarif.Bezug;
+            TarifRolle reststrom = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Reststrom) : tarif.Reststrom;
             StromErloesErgebnis r = StromTarifRechner.Rechne(
-                eingabe, tarif.Bezug, tarif.Reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
+                eingabe, bezug, reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
 
             // KU2 WELLE 3 (Entscheid E34, Kühlkonzept 6.1): Die Reststrommenge der Matrix ist der
             // ganze Netzbezug des Anschlusses - samt dem Anteil, den ein abweichender Kühlträger
@@ -2555,6 +2636,11 @@ namespace WindowsFormsApplication1
             e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur - kuehlAbzug;
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
             e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
+            e.LeistungspreisTarifNichtAngesetzt =
+                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)
+                    ? string.Format(BerichtTexte.Kultur, HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
+                                    Leistungsmodelltext(tarif.Reststrom))
+                    : null;
 
             // ETAPPE E7: Das Rollenmodell kennt EINEN Einspeisetarif für beide Mengen —
             // die Aufteilung kann deshalb nur MENGENPROPORTIONAL sein, und sie wird als
@@ -2580,6 +2666,43 @@ namespace WindowsFormsApplication1
                 e.VermiedenMengeMWh = r.VermiedenMengeMWh;   // B7
                 foreach (string h in r.Herleitung) Melde(e, h);
             }
+        }
+
+        /// <summary>
+        /// <b>Der Leistungspreis des Rollentarifs unter der Gruppenregel</b> (Anwenderentscheid
+        /// 30.09.2026, Register EZ‑18): Bepreist der Rollentarif den Netzbezug eines Standes ohne
+        /// stromverwendenden Erzeuger, setzt er Arbeits- und Grundpreis des Reststromtarifs an, den
+        /// Leistungspreis nicht. Führt der Reststromtarif einen, nennt ihn dieser Hinweis — das
+        /// Gegenstück zu <see cref="KostenEmissionRechner.HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT"/>
+        /// mit dem Klartext des Leistungspreismodells an der Stelle des Satzes.
+        /// {0} = das Modell (<see cref="Leistungsmodelltext"/>).
+        /// </summary>
+        internal static string HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT
+        {
+            get
+            {
+                return T("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT",
+                    "Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand " +
+                    "führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe " +
+                    "der Lastoptimierung.");
+            }
+        }
+
+        /// <summary>
+        /// Der Klartext des Leistungspreismodells einer Tarifrolle — dieselben Texte, mit denen die
+        /// Tarifstruktur das Modell zur Wahl stellt (<c>TARIF_LM_*</c>); ein leeres oder
+        /// unbekanntes Modell gilt wie in <see cref="StromTarifRechner.Leistungskosten"/> als
+        /// monatlich.
+        /// </summary>
+        internal static string Leistungsmodelltext(TarifRolle rolle)
+        {
+            string modell = rolle == null || string.IsNullOrEmpty(rolle.Leistungsmodell)
+                          ? DbWerte.LEISTUNGSMODELL_MONATLICH : rolle.Leistungsmodell;
+            if (string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal))
+                return T("TARIF_LM_STAFFEL", "Staffel (Sommer- und Wintermaximum getrennt)");
+            if (string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal))
+                return T("TARIF_LM_JAHR", "Jahreshöchstlast (Staffel mit Winterpreisen)");
+            return T("TARIF_LM_MONATLICH", "monatlich (Σ zwölf Monatsmaxima × €/kW·Monat)");
         }
 
         /// <summary>
@@ -6617,8 +6740,13 @@ namespace WindowsFormsApplication1
             // eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn diese Zeile
             // (Satz und Träger, gebildet vom KostenEmissionRechner); dieselbe Reise wie die
             // Zeilen darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
-            if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
-                erg.Hinweis = Anhaengen(erg.Hinweis, v.LeistungspreisNichtAngesetzt);
+            // EZ‑18: Hat der Rollentarif den Stromanteil ersetzt, gilt sein Reststromtarif und
+            // nicht der Träger — dann nennt die Zeile den Leistungspreis des Tarifs (Modell),
+            // gebildet in RechneRollentarif, oder es steht keine.
+            string leistungspreisNichtAngesetzt = eingabe.RollenGerechnet
+                ? eingabe.LeistungspreisTarifNichtAngesetzt : v.LeistungspreisNichtAngesetzt;
+            if (!string.IsNullOrEmpty(leistungspreisNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, leistungspreisNichtAngesetzt);
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
@@ -6650,6 +6778,9 @@ namespace WindowsFormsApplication1
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
                     StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1,
+                    // EZ‑18: Bepreist die Gruppenregel den Netzbezug dieses Standes, prüft die
+                    // Stromseite ohne zugeordneten Träger gegen den Rückfallträger.
+                    StromImVergleichBepreist = v.StromImVergleichBepreisen,
                     // ETAPPE E2 (R5): die gebuchte CO₂-Abgabe des Jahres 1 — sie ist der
                     // Betrag, der bei aktivem CO₂-Bestandteil im Arbeitspreis ZWEIMAL
                     // in den Energiekosten steht.
