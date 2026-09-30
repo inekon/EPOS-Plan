@@ -10,7 +10,11 @@ Commits:
 - `50d45284` Testdatenbank mit Referenzprojekt 1050, Skript
 - `147a6730` Merge des lokalen `ios_migration_september` (freier Paketteil) vor dem Einfrieren
 - `c160b20e` Basis R27 eingefroren, R26 archiviert
-- Papiere (Konzept, Wiki-Quelle, dieses Protokoll)
+- `148748fd` Papiere (Konzept, Wiki-Quelle, dieses Protokoll)
+- `a96c1d7d` Merge `origin/ios_migration_september` (`6941a8a1`, Statuszeilen #616/#617)
+- `8cd79488` Merge des lokalen `ios_migration_september` (`a06a3819`, Diagrammzweig; Konflikt nur am Ende beider
+  `.resx`, beide Blöcke behalten, Designer neu gezogen)
+- `ad68ed01` Bestandswachen der Testdatenbank um die Kopie 1050 nachgezogen
 
 ## 1 Auftrag und Entscheide
 
@@ -118,7 +122,19 @@ Referenzkessels, sein Schalter `Brennwert` und die Bauart in `Beschreibung`, daz
 
 ## 6 Gate
 
-GATE_PLATZHALTER
+Gate auf `ad68ed01` (enthält origin `6941a8a1` und den Diagrammzweig `a06a3819`), Linux, `TMPDIR=/dev/shm`:
+
+- Kern-Filter Release: 0 Fehler.
+- Tests mit den xUnit-Schaltern: KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 (1
+  übersprungen), EPOS.UI.Tests 6 956, EPOS.Kern.Tests 9 284 (1 übersprungen) — zusammen **17 202 grün, 0 rot**. Der
+  erste volle Lauf fand fünf Bestandswachen, die die Zeilen der Testdatenbank zählen (Gebäude-, Träger- und
+  Kostenzeilen der Kopie 1050); nachgezogen in `ad68ed01`, danach EPOS.Kern.Tests voll wiederholt.
+- Werkzeugtests: Formularkarte 124, Auslieferungsvorlage 43, Gebaeudevergleich 24, ZapfprofilValidierung 39 — grün.
+- SQL-Prüfer (Python 3.12): 2 135 Texte, 0 Fundstellen.
+- ChartProben: 221 Bilder, 0 Verstöße; 185 Hashes gleich der Linux-Messlatte `Messlatte_2026-09-29.sha256`.
+- `EPOS.Referenzlauf` über alle sechzehn Projekte gegen R27: **GESAMT PASS, 487/487 CSV byte-gleich**; gestört
+  (`--stoerung ulp`) gegen ungestört 16/16 PASS, 480/487 byte-gleich.
+- Windows-Schale (`EnableWindowsTargeting=true`, Debug x64): 0 Fehler.
 
 ## 7 Wiki und Logbuch
 
