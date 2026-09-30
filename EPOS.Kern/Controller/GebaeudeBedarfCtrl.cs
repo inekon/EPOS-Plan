@@ -96,6 +96,13 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
         internal int? SommerlueftungsstundenH;
 
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung [h] (Konzept Konditionierungsprofile 3.7) — nur
+        /// VDI-Weg und nur, wenn eine Nachtauskühlung gesetzt ist, sonst <c>null</c>; dieselbe Zahl,
+        /// die der Lauf als <c>Nachtauskuehlstunden_H</c> nach <c>Tab_ErgebnisGebaeude</c> schreibt.
+        /// </summary>
+        internal int? NachtauskuehlstundenH;
+
         /// <summary>Raumlufttemperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
         internal double[] RaumtemperaturC;
 
@@ -271,6 +278,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur der Zone [°C].</summary>
         internal double ObereRaumtemperaturC;
 
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung der Zone [h]; <c>null</c> ohne Nachtauskühlung —
+        /// die Zahl, die der Lauf nach <c>Tab_ErgebnisZone</c> schreibt.
+        /// </summary>
+        internal int? NachtauskuehlstundenH;
+
         /// <summary>Die Heizlast je Stunde [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
         internal double[] HeizlastKw;
 
@@ -411,6 +424,7 @@ namespace WindowsFormsApplication1
                 ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
                 ergebnis.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                ergebnis.NachtauskuehlstundenH = vdi.StundenMitNachtauskuehlung;
                 ergebnis.RaumtemperaturC = vdi.Raumtemperatur;
                 ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
                 ergebnis.HeizsollwertC = vdi.Heizsollwert;
@@ -492,6 +506,7 @@ namespace WindowsFormsApplication1
                 MittlereRaumtemperaturC = r.MittlereRaumtemperaturHeizzeit,
                 UeberhitzungsstundenH = r.Ueberhitzungsstunden,
                 ObereRaumtemperaturC = r.ThetaMax,
+                NachtauskuehlstundenH = r.StundenMitNachtauskuehlung,
                 RaumtemperaturC = r.Raumtemperatur,
                 OperativeTemperaturC = r.OperativeTemperatur
             };

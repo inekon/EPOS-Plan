@@ -520,6 +520,49 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // -----------------------------------------------------------------
+        //  Das Bezugsjahr einer Vorschau (Teppichbild, Welle K4)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Das Bezugsjahr einer Kalendervorschau</b> (Entwurf KP2, Festlegung 8): im Projekt das
+        /// des Laufs (<see cref="SolardatenCtrl.Referenzjahr"/> — das Jahr der Spotpreisreihe oder die
+        /// Vorgabe), im Katalog dasselbe wie der Lauf ohne Projekt,
+        /// <c>SolardatenCtrl.Referenzjahr(0)</c> = <see cref="DbWerte.SOLAR_REFERENZJAHR_STANDARD"/>.
+        /// Keine Uhr: Ein laufendes Jahr würde die Vorschau am Jahreswechsel verschieben (B13).
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
+        public static int Bezugsjahr(int idProjekt)
+            => SolardatenCtrl.Referenzjahr(idProjekt > 0 ? idProjekt : 0);
+
+        // -----------------------------------------------------------------
+        //  Die angelegten Kalender je Katalogbau (Spalte „Kalender", Welle K4)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Die Zahl der angelegten Kalender je Katalogbau</b> (Entwurf KP2, Festlegung 15) —
+        /// dieselbe Eigentümerspalte <c>ID_Gebaeude_Stamm</c>, über die
+        /// <see cref="KalenderzeilenVon"/> die Kalender eines Katalogbaus liest, in <b>einer</b>
+        /// gruppierten Abfrage für den ganzen Katalog statt einer je Satz. Gezählt werden die
+        /// Größen (0 … 5). Ohne die Tabellen der Konditionierung ist das Verzeichnis leer.
+        /// </summary>
+        public static Dictionary<long, int> KalenderJeKatalogbau()
+        {
+            var zahl = new Dictionary<long, int>();
+            if (!KonditionierungSchema.Lesbar()) return zahl;
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"ID_Gebaeude_Stamm\", COUNT(DISTINCT \"Groesse\") AS \"Anzahl\" FROM \"" +
+                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude_Stamm\" IS NOT NULL " +
+                "GROUP BY \"ID_Gebaeude_Stamm\"");
+            if (t == null) return zahl;
+            foreach (DataRow r in t.Rows)
+            {
+                long? id = L(r, "ID_Gebaeude_Stamm");
+                if (id.HasValue) zahl[id.Value] = (int)(L(r, "Anzahl") ?? 0);
+            }
+            return zahl;
+        }
+
         private static DataTable Lesen(string sql, long idGebaeude, long? idZone)
             => idZone.HasValue
                 ? DataRepository.GetDataTable(sql, new DbParam("@g", idGebaeude), new DbParam("@z", idZone.Value))

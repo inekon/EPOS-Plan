@@ -105,9 +105,10 @@ namespace WindowsFormsApplication1
 
                 // Stufe G3, Welle K: der Katalog ist die Katalogliste des Hauses - dieselben
                 // Zeilen und dasselbe Profil wie die Gebaeudeverwaltung (GebaeudeAdminHuelle);
-                // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr.
+                // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr. KP2 K4
+                // (Festlegung 15): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau.
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                    () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(s => Text_(s, s)),
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(

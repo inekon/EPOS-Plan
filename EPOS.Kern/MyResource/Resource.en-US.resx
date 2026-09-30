@@ -40446,5 +40446,86 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_MSG_ARBEITSSTAND_UNGUELTIG" xml:space="preserve">
     <value>The conditioning cannot be applied: {0}</value>
   </data>
+  <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
+    <value>{0} · reference year {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_KUEHLEN" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_LUEFTUNG" xml:space="preserve">
+    <value>Ventilation</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_GERAETE" xml:space="preserve">
+    <value>Equipment</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_PERSONEN" xml:space="preserve">
+    <value>People</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ACHSE_STUNDE" xml:space="preserve">
+    <value>Hour of day</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ACHSE_WOCHE" xml:space="preserve">
+    <value>Hour of week (Mon 0:00 … Sun 24:00)</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_AUS" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_MONATE" xml:space="preserve">
+    <value>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_WOCHENTAGE" xml:space="preserve">
+    <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_DATUM" xml:space="preserve">
+    <value>{0:00}.{1:00}.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_DATUM_MONAT" xml:space="preserve">
+    <value>{0:00}.–{1:00}.{2:00}.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_STUNDEN" xml:space="preserve">
+    <value>{0}–{1} h</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_WOCHE" xml:space="preserve">
+    <value>standard week</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_GRUNDANGABE" xml:space="preserve">
+    <value>base value</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_PERIODE" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_SAISON" xml:space="preserve">
+    <value>outside the season</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>several sources</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_ZEITRAUM" xml:space="preserve">
+    <value>date range</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_FERIEN" xml:space="preserve">
+    <value>holidays</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_FEIERTAG" xml:space="preserve">
+    <value>public holiday</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_BETRIEBSPAUSE" xml:space="preserve">
+    <value>operating break</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_VEREINFACHT" xml:space="preserve">
+    <value>Simplified to {0} colour steps so that the plot carries at most {1} elements.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_VEREINFACHT_BLOECKE" xml:space="preserve">
+    <value>Simplified to {0} colour steps and blocks of {2} days so that the plot carries at most {1} elements.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_LEER" xml:space="preserve">
+    <value>No calendar available.</value>
+  </data>
+  <data name="KOND_MSG_SP_KALENDER" xml:space="preserve">
+    <value>Calendars</value>
+  </data>
 </root>
 

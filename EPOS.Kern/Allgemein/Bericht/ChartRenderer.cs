@@ -38,8 +38,11 @@ namespace WindowsFormsApplication1
     ///
     /// Feste Farbzuordnung je Erzeuger über alle Diagramme (Konzept Kap. 6):
     /// WP blau, BHKW orange, Kessel grau, Solar gelb, PV grün, Netz/Rest neutral.
+    ///
+    /// <para>Das Teppichbild der Kalenderkarte steht in der zweiten Hälfte
+    /// <c>ChartRenderer.Kalenderteppich.cs</c> (Welle K4).</para>
     /// </summary>
-    public static class ChartRenderer
+    public static partial class ChartRenderer
     {
         // Palette (identisch zum Bestandsbericht).
         public static readonly SKColor C_WP = new SKColor(0x41, 0x72, 0xC4);
@@ -3696,9 +3699,20 @@ namespace WindowsFormsApplication1
         /// <para><b>Eine Reihe, eine Fläche mit Randlinie</b> (DG-E3-2): Füllung in
         /// <c>C_PROFILFLAECHE</c>, Rand in <c>C_PROFILLINIE</c> mit Stärke 2 — dieselben
         /// zwei Farben, die das PNG zieht.</para>
+        ///
+        /// <para><b>Ein nicht endlicher Wert ist eine LÜCKE</b> (Welle K4, Befund B12): „aus" einer
+        /// Kalenderwoche kommt als NaN. Die Fläche und ihre Randlinie brechen dort ab — je
+        /// zusammenhängendem Stück eine Fläche (ab dem linken Rand seines ersten Fachs) und eine
+        /// Linie; die Datenreihe trägt die NaN weiter, der SVG-Weg zeichnet je Stück einen
+        /// geschlossenen Teilpfad. Früher setzte <c>Math.Max(0, NaN)</c> einen NaN-Bildpunkt ab.
+        /// <b>Ohne Lücke bleibt das Bild bitgleich</b> — derselbe Rumpf wie zuvor.</para>
         /// </summary>
+        /// <param name="einheit">Die Einheit der Werte für die Zeigerzeile
+        /// (<see cref="Datenreihe.Einheit"/>), etwa „°C", „1/h" oder „%" je Größe der Kalenderkarte;
+        /// <c>null</c> = keine (der Bestand, das PNG ist ohnehin gleich).</param>
         public static Zeichenmodell StundenprofilModell(string titel, double[] werte, int intervall,
-                                                        string xTitel, string yTitel)
+                                                        string xTitel, string yTitel,
+                                                        string einheit = null)
         {
             int W = 1244, H = 464;
             var z = Modell(W, H);
@@ -3714,8 +3728,9 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
+            // Eine Luecke (K4) zaehlt nicht mit: +unendlich machte die Achse unbrauchbar.
             double maxWert = 0;
-            foreach (double w in werte) if (w > maxWert) maxWert = w;
+            foreach (double w in werte) if (Endlich(w) && w > maxWert) maxWert = w;
             double max = (maxWert > 0 ? maxWert : 1) * 1.1;
 
             // y-Raster in fünf Stufen; die Zahlen tragen so viele Stellen, wie der
@@ -3766,37 +3781,83 @@ namespace WindowsFormsApplication1
                                            new Datenfenster(0, werte.Length, 0, max),
                                            Achsenart.Index);
 
-            // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
-            // steht für das Intervall (n-1, n], wie im Vorläufer.
-            var punkte = new SKPoint[werte.Length];
-            for (int i = 0; i < werte.Length; i++)
-            {
-                float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
-                float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
-                punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
-            }
-
-            var flaechenzug = new SKPoint[punkte.Length + 3];
-            flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
-            flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
-            Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
-            flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
-
             // Das Bild nennt die Reihe nicht (es fuehrt keine Legende); ihr Name ist
             // deshalb die Beschriftung der y-Achse - sie benennt die Groesse.
             string name = string.IsNullOrEmpty(yTitel) ? (titel ?? "") : yTitel;
-            z.Markiert("reihe:" + name, zr =>
+
+            if (werte.All(Endlich))
             {
-                Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
-                Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
-            });
+                // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
+                // steht für das Intervall (n-1, n], wie im Vorläufer.
+                var punkte = new SKPoint[werte.Length];
+                for (int i = 0; i < werte.Length; i++)
+                {
+                    float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
+                    punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+
+                var flaechenzug = new SKPoint[punkte.Length + 3];
+                flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
+                flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
+                Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                    Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                });
+            }
+            else
+            {
+                // WELLE K4 (B12): Je zusammenhaengendem Stueck endlicher Werte eine Flaeche
+                // und eine Linie - dieselben Formeln wie oben; die Flaeche beginnt am LINKEN
+                // Rand des ersten Fachs des Stuecks (fuer das erste Stueck ab Stunde 0 ist
+                // das rc.Left, wie oben).
+                var stuecke = new List<(SKPoint[] Flaechenzug, SKPoint[] Punkte)>();
+                int n = werte.Length;
+                int i = 0;
+                while (i < n)
+                {
+                    while (i < n && !Endlich(werte[i])) i++;
+                    if (i >= n) break;
+                    int anfang = i;
+                    while (i < n && Endlich(werte[i])) i++;
+
+                    var punkte = new SKPoint[i - anfang];
+                    for (int k = anfang; k < i; k++)
+                    {
+                        float x = rc.Left + (float)(k + 1) / n * rc.Width;
+                        float y = (float)(rc.Bottom - Math.Max(0, werte[k]) / max * rc.Height);
+                        punkte[k - anfang] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                    }
+                    float links = rc.Left + (float)anfang / n * rc.Width;
+                    var flaechenzug = new SKPoint[punkte.Length + 3];
+                    flaechenzug[0] = new SKPoint(links, rc.Bottom);
+                    flaechenzug[1] = new SKPoint(links, punkte[0].Y);
+                    Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                    flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+                    stuecke.Add((flaechenzug, punkte));
+                }
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    foreach ((SKPoint[] flaechenzug, SKPoint[] punkte) in stuecke)
+                    {
+                        Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                        Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                    }
+                });
+            }
 
             // EINE Datenreihe fuer beides (DG-E3-2): Fuellung, Randfarbe, Randstaerke.
             // Ihr Fenster beginnt bei 1 - der erste Wert steht am rechten Rand des
-            // ersten Fachs.
+            // ersten Fachs. Eine Luecke traegt sie als NaN weiter; der SVG-Weg bricht
+            // die Flaeche dort (SvgSchreiber.Flaechenzug).
             z.FuegeReihe(new Datenreihe(name, C_PROFILFLAECHE.Ton(), 2f, null, werte,
                                         new Datenfenster(1, werte.Length, 0, max),
-                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton()));
+                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton(), null, einheit));
 
             return z;
         }

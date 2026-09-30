@@ -806,6 +806,12 @@ namespace WindowsFormsApplication1.Zeichnung
         /// Unterkante rückwärts, dann <c>Z</c>. Fehlt <c>Unten</c>, ist die Unterkante
         /// die ACHSENNULL, in das Fenster der Reihe geklemmt — eine Fläche, deren
         /// Achse gar nicht bis null reicht, liefe sonst aus dem Bild.
+        ///
+        /// <para><b>Eine Fläche mit Lücke</b> (Welle K4, Befund B12 — „aus" einer Kalenderwoche als
+        /// NaN): Je zusammenhängendem Stück, in dem Ober- und Unterkante endlich sind, ein eigener
+        /// geschlossener Teilpfad (<c>M … Z</c>); gebündelt wird mit den Bildpunktspalten im
+        /// Verhältnis der Stücklänge. Ein „NaN" im Pfad machte ihn ganz ungültig. Eine Fläche
+        /// ohne Lücke nimmt den Weg darunter, wörtlich wie bisher.</para>
         /// </summary>
         private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf,
                                         int ab, int laenge, bool roh, int spalten,
@@ -819,6 +825,12 @@ namespace WindowsFormsApplication1.Zeichnung
             double[] unten = r.Unten == null
                 ? Gleichwert(laenge, null0)
                 : Teil(r.Unten, ab, laenge);
+
+            if (HatLuecke(oben, 0, laenge - 1) || HatLuecke(unten, 0, laenge - 1))
+            {
+                Flaechenzug(sb, r, rf, schritt, ab, oben, unten, roh, spalten, hoehe, spanne);
+                return;
+            }
 
             IReadOnlyList<Punkt> kanteOben = roh
                 ? Rohkante(oben)
@@ -835,6 +847,42 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, false, XStelle(r, rf, schritt, ab + kanteUnten[i].X),
                       Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
             sb.Append(" Z");
+        }
+
+        /// <summary>
+        /// Die Fläche MIT Lücke (Welle K4): je Stück endlicher Kanten ein geschlossener Teilpfad —
+        /// Oberkante vorwärts, Unterkante rückwärts, <c>Z</c>; Stücke durch ein Leerzeichen getrennt.
+        /// </summary>
+        private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                        int ab, double[] oben, double[] unten, bool roh, int spalten,
+                                        double hoehe, double spanne)
+        {
+            int laenge = oben.Length;
+            int i = 0;
+            while (i < laenge)
+            {
+                while (i < laenge && !(Endlich(oben[i]) && Endlich(unten[i]))) i++;
+                if (i >= laenge) break;
+                int start = i;
+                while (i < laenge && Endlich(oben[i]) && Endlich(unten[i])) i++;
+                int stueck = i - start;
+
+                double[] o = Teil(oben, start, stueck);
+                double[] u = Teil(unten, start, stueck);
+                int teilspalten = (int)Math.Max(1.0, Math.Round((double)spalten * stueck / Math.Max(1, laenge)));
+                IReadOnlyList<Punkt> kanteOben = roh ? Rohkante(o) : Pfadregel.GebuendelteKante(o, teilspalten, true);
+                IReadOnlyList<Punkt> kanteUnten = roh ? Rohkante(u) : Pfadregel.GebuendelteKante(u, teilspalten, false);
+                if (kanteOben.Count == 0 || kanteUnten.Count == 0) continue;
+
+                if (sb.Length > 0) sb.Append(' ');
+                for (int k = 0; k < kanteOben.Count; k++)
+                    Punkt(sb, k == 0, XStelle(r, rf, schritt, ab + start + kanteOben[k].X),
+                          Bildpunkt(kanteOben[k].Y, rf, hoehe, spanne));
+                for (int k = kanteUnten.Count - 1; k >= 0; k--)
+                    Punkt(sb, false, XStelle(r, rf, schritt, ab + start + kanteUnten[k].X),
+                          Bildpunkt(kanteUnten[k].Y, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
         }
 
         private static IReadOnlyList<Punkt> Rohkante(double[] werte)
