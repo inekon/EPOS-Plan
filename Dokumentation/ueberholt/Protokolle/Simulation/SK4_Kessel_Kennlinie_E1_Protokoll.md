@@ -63,7 +63,7 @@ Keine Normtabelle ist abgeschrieben, die Werte sind gerundet.
 
 ## 4 Gate
 
-GATE_PLATZHALTER
+gemeinsames Gate mit #617 auf `0c905536`: Kern-Filter 0 Fehler; Tests KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI 6 951, EPOS.Kern 9 219 (+1 übersprungen) — rot allein `KesselImport710Tests.Alle_Herstellerdateien_liefern_plausible_Kennlinien`: die LFS-Zeigerprobe verglich 24 Byte mit der 23 Zeichen langen Kennung, ohne gezogene Herstellerdateien (CI, Cloud) galten die Zeiger als VDI-Dateien; behoben in `bcd8e0d1`, die Kessel-Tests danach 42/42 grün. Werkzeugtests grün (Auslieferungsvorlage 43/43, ZapfprofilValidierung 39/39); SQL-Prüfer 2 135 Texte, 0 Fundstellen; ChartProben 221 Bilder, 0 Verstöße; die sieben CI-Projekte gegen R26 GESAMT PASS; gestört gegen ungestört PASS; Windows-Schale 0 Fehler.
 
 ## 5 Offene Punkte
 
