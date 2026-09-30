@@ -240,6 +240,80 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Der Bezug des Projekts (Stufe KP2, Welle U1, Teilschritt 4 (c))
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Im Projekt rechnet der Weg mit den Daten des Projekts</b> — wie der Lauf
+        /// (<c>Vdi6007Rechenweg</c>: <c>Waermeuebergabe.KopplungWirksamFuer</c> mit der Stufe aus
+        /// <c>Tab_Einstellungen.Anlagenkopplung</c>, das Referenzjahr des Laufs): Im gekoppelten Projekt
+        /// 1047 (AK1, Heizkreis an, Radiator) ersetzt das Zeitprogramm <c>Sollwertprofil</c> die Woche der
+        /// Heizspalte, und „Kalender anlegen" schreibt genau diese Woche — „abgeleitet bis angelegt,
+        /// bitgleich" (Teilkonzept 3.3). Der Katalog kennt kein Projekt: keine Kopplung, Bezugsjahr 2025.
+        /// </summary>
+        [Fact]
+        public void Im_Projekt_gelten_Anlagenkopplung_und_Referenzjahr_des_Projekts()
+        {
+            if (!Bereit()) return;
+            const int AK1 = 1047;
+            int idZ = Z_ProjGebCtrl.LiesProjekt(AK1)[0].ID_Z;
+            IReadOnlyDictionary<string, object> gaben = GebaeudeKatalogHuelle.ProjektGaben(AK1, idZ);
+            var daten = (GebaeudeKatalogDaten)gaben["Daten"];
+            var weg = (KonditionierungWeg)gaben["Konditionierung"];
+            Assert.True(daten.HeizkreisAktiv);
+
+            // Ein Zeitprogramm der Kopplung - nur im Arbeitsstand, die Datenbank bleibt, wie sie ist.
+            double[] woche = Enumerable.Range(0, 168).Select(h => h % 24 >= 6 && h % 24 < 21 ? 21.0 : 16.0).ToArray();
+            daten.Sollwertprofil = AnlagenkopplungSchema.WochenprofilSchreiben(woche);
+
+            KonditionierungStand s = Gut(weg.Anlegen!(Stand(daten), new KonditionierungOrt(KonditionierungGroesse.Heizen)));
+            KonditionierungKalender k = s.Gebaeude.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Kalender;
+            Assert.Equal(KonditionierungZustand.Angelegt, k.Zustand);
+            Assert.NotNull(k.Woche);
+            Assert.Equal(woche, k.Woche);
+
+            // Der Bezug selbst: Stufe und Referenzjahr aus dem Projekt, im Katalog keiner.
+            KonditionierungHuelle.Bezug projekt = KonditionierungHuelle.Projektbezug(AK1);
+            Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, projekt.Stufe);
+            Assert.Equal(SolardatenCtrl.Referenzjahr(AK1), projekt.Referenzjahr);
+            Assert.Equal(SolardatenCtrl.Referenzjahr(AK1),
+                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude, projekt).Referenzjahr);
+            Assert.Equal(2024, KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude,
+                                                                   projekt with { Referenzjahr = 2024 }).Referenzjahr);
+            KonditionierungHuelle.Bezug katalog = KonditionierungHuelle.Projektbezug(0);
+            Assert.Null(katalog.Stufe);
+            Assert.Equal(Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,
+                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Katalogbau, katalog).Referenzjahr);
+        }
+
+        /// <summary>
+        /// <b>Die Wochenvorschau trägt den Namen ihrer Größe</b> (Stufe KP2, Welle U1, Teilschritt 4 (d)):
+        /// „Vorschau: Woche · Kühlen" statt des Titels des Sollwert-Zeitprogramms der Wärmeübergabe — fünf
+        /// Größen, fünf Titel, jede mit ihrer Einheit.
+        /// </summary>
+        [Fact]
+        public void Die_Wochenvorschau_traegt_den_Titel_ihrer_Groesse()
+        {
+            if (!Bereit()) return;
+            (_, KonditionierungWeg weg) = Katalog(FreierKatalogsatz());
+            double[] woche = Enumerable.Repeat(24.0, 168).ToArray();
+
+            foreach ((KonditionierungGroesse g, string name) in new[]
+                     {
+                         (KonditionierungGroesse.Heizen, "Heizen"), (KonditionierungGroesse.Kuehlen, "Kühlen"),
+                         (KonditionierungGroesse.Lueftung, "Lüftung"), (KonditionierungGroesse.Geraete, "Geräte"),
+                         (KonditionierungGroesse.Personen, "Personen")
+                     })
+            {
+                WindowsFormsApplication1.Zeichnung.Zeichenmodell m = weg.WochenVorschau!(g, woche);
+                Assert.NotNull(m);
+                string svg = WindowsFormsApplication1.Zeichnung.SvgSchreiber.Text(m);
+                Assert.Contains("Vorschau: Woche · " + name, svg);
+                Assert.DoesNotContain(GebaeudeKatalogHuelle.UebergabeTexte().Raster.BildTitel, svg);
+            }
+        }
+
+        // =============================================================================
         //  Der Reiter über den echten Weg (Stufe KP2, Welle U1, Teilschritt 3)
         // =============================================================================
 

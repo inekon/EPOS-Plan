@@ -213,10 +213,17 @@ namespace WindowsFormsApplication1
         /// 8.1). Sonst rechnet das Gebäude wie bisher — byte-gleich (N-A3).
         /// </summary>
         internal static bool KopplungWirksamFuer(ProjektGebaeudeModel g, string stufe)
+            => g != null && KopplungWirksamFuer(g.Heizkreis_Aktiv, g.Uebergabe_Art, stufe);
+
+        /// <summary>
+        /// Dieselbe Regel über die zwei Spalten des Gebäudes — für den Arbeitsstand eines Editors, der
+        /// keine Gebäudezeile des Laufs hat (Stufe KP2, Welle U1: der Weg der Konditionierung im Projekt).
+        /// </summary>
+        internal static bool KopplungWirksamFuer(bool heizkreisAktiv, string uebergabeArt, string stufe)
         {
-            if (g == null || !StufeAn(stufe) || !g.Heizkreis_Aktiv) return false;
-            return !string.IsNullOrWhiteSpace(g.Uebergabe_Art)
-                   && !string.Equals(g.Uebergabe_Art, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
+            if (!StufeAn(stufe) || !heizkreisAktiv) return false;
+            return !string.IsNullOrWhiteSpace(uebergabeArt)
+                   && !string.Equals(uebergabeArt, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
         }
 
         // =====================================================================

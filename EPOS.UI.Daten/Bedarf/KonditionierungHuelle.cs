@@ -363,18 +363,54 @@ namespace WindowsFormsApplication1
         // Der Arbeitsstand
         // =================================================================================
 
-        /// <summary>Der reine Arbeitsstand zu einem Stand der Oberfläche (<paramref name="art"/>: Gebäude oder Katalogbau).</summary>
-        /// <exception cref="ArgumentException">Ein Kalender der Oberfläche ist unvollständig oder ungültig.</exception>
-        internal static Konditionierungsarbeitsstand Arbeitsstand(KonditionierungStand s, Kalendereigentuemer art)
+        /// <summary>
+        /// <b>Der Bezug des Wegs</b> (Stufe KP2, Welle U1, Teilschritt 4 (c)) — was der Lauf aus dem
+        /// PROJEKT nimmt und der Arbeitsstand deshalb auch: die Stufe der Anlagenkopplung
+        /// (<c>Tab_Einstellungen.Anlagenkopplung</c>), das Referenzjahr des Laufs und den Projektschalter
+        /// „Kühlung rechnen". Ein Katalogbau kennt kein Projekt: keine Kopplung, das Bezugsjahr
+        /// <see cref="Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE"/>, die Kühlung allein nach dem
+        /// Gebäude.
+        /// </summary>
+        /// <param name="Stufe">Die Kopplungsstufe des Projekts; <c>null</c> = keine.</param>
+        /// <param name="Referenzjahr">Das Referenzjahr; <c>null</c> = das Bezugsjahr der Vorgabe.</param>
+        /// <param name="Kuehlbetrieb">Rechnet das Projekt die Kühlung? Im Katalog <c>true</c> (unbekannt).</param>
+        internal sealed record Bezug(string Stufe, int? Referenzjahr, bool Kuehlbetrieb = true)
         {
+            /// <summary>Der Bezug eines Katalogbaus.</summary>
+            internal static Bezug Katalog { get; } = new Bezug(null, null);
+        }
+
+        /// <summary>
+        /// Der Bezug eines Projekts — dieselben Quellen wie der Lauf: <see cref="KonfigurationCtrl.AnlagenkopplungLesen"/>,
+        /// <see cref="Konditionierungdatenweg.Bezugsjahr"/> (<c>SolardatenCtrl.Referenzjahr</c>) und
+        /// <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>; ohne Projekt (<paramref name="idProjekt"/> ≤ 0)
+        /// der des Katalogs.
+        /// </summary>
+        internal static Bezug Projektbezug(int idProjekt)
+            => idProjekt > 0
+                ? new Bezug(KonfigurationCtrl.AnlagenkopplungLesen(idProjekt), Konditionierungdatenweg.Bezugsjahr(idProjekt),
+                            KonfigurationCtrl.KuehlbetriebLesen(idProjekt))
+                : Bezug.Katalog;
+
+        /// <summary>
+        /// Der reine Arbeitsstand zu einem Stand der Oberfläche (<paramref name="art"/>: Gebäude oder
+        /// Katalogbau) mit dem Bezug des Projekts: Kopplung und Kühlung nach denselben Regeln wie der Lauf
+        /// (<c>Vdi6007Rechenweg</c>), das Referenzjahr des Laufs.
+        /// </summary>
+        /// <exception cref="ArgumentException">Ein Kalender der Oberfläche ist unvollständig oder ungültig.</exception>
+        internal static Konditionierungsarbeitsstand Arbeitsstand(KonditionierungStand s, Kalendereigentuemer art,
+                                                                  Bezug bezug = null)
+        {
+            bezug ??= Bezug.Katalog;
             GebaeudeKatalogDaten g = s.Gebaeude;
-            bool kuehlung = g.KuehlungAktiv && g.KuehlSollwert.HasValue;
-            Konditionierungsstand gebaeude = Ebene(g.Konditionierung, art, Bestand(g, false, kuehlung));
+            bool kuehlung = bezug.Kuehlbetrieb && g.KuehlungAktiv && g.KuehlSollwert.HasValue;
+            bool kopplung = Waermeuebergabe.KopplungWirksamFuer(g.HeizkreisAktiv, g.UebergabeArt, bezug.Stufe);
+            Konditionierungsstand gebaeude = Ebene(g.Konditionierung, art, Bestand(g, kopplung, kuehlung));
             var zonen = new List<Konditionierungszone>();
             foreach (ZoneDaten z in s.Zonen ?? Array.Empty<ZoneDaten>())
                 zonen.Add(new Konditionierungszone(z.Id, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt,
                                                    Ebene(z.Konditionierung, Kalendereigentuemer.Zone, Bestand(z))));
-            return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, null);
+            return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, bezug.Referenzjahr);
         }
 
         /// <summary>
@@ -422,13 +458,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static KonditionierungErgebnis Schritt(KonditionierungStand stand, Kalendereigentuemer art,
                                                         Func<Konditionierungsarbeitsstand, Konditionierungsschritt> schritt)
+            => Schritt(stand, art, null, schritt);
+
+        /// <summary>Derselbe Schritt mit dem Bezug des Projekts (<see cref="Projektbezug"/>).</summary>
+        internal static KonditionierungErgebnis Schritt(KonditionierungStand stand, Kalendereigentuemer art, Bezug bezug,
+                                                        Func<Konditionierungsarbeitsstand, Konditionierungsschritt> schritt)
         {
             if (stand?.Gebaeude == null)
                 return KonditionierungErgebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, "—"));
             try
             {
-                Konditionierungsarbeitsstand a = Arbeitsstand(stand, art);
+                Konditionierungsarbeitsstand a = Arbeitsstand(stand, art, bezug);
                 Konditionierungsschritt s = schritt(a);
                 if (s.Rueckfrage) return KonditionierungErgebnis.Frage(Rueckfrage(s.Bilanz));
                 if (!s.Ok) return KonditionierungErgebnis.Fehler(s.Meldung);
@@ -495,34 +536,37 @@ namespace WindowsFormsApplication1
         /// <see cref="Kalendereigentuemer.Katalogbau"/>; <paramref name="idGebaeude"/> &gt; 0 nur im Projekt
         /// — dann gibt es „aus dem Katalog erneut übernehmen" und die Rückfrage von „Speichern unter".
         /// Ohne die Tabellen der Konditionierung steht der Weg gesperrt da (<see cref="KonditionierungWeg.Sperre"/>).
+        /// <paramref name="idProjekt"/> gibt im Projekt den Bezug (<see cref="Projektbezug"/>): Kopplung,
+        /// Referenzjahr und Kühlbetrieb wie im Lauf (Stufe KP2, Welle U1, Teilschritt 4 (c)).
         /// </summary>
-        internal static KonditionierungWeg Weg(Kalendereigentuemer art, int idGebaeude)
+        internal static KonditionierungWeg Weg(Kalendereigentuemer art, int idGebaeude, int idProjekt = 0)
         {
             if (!KonditionierungSchema.Lesbar())
                 return new KonditionierungWeg { Sperre = MyResource.Resource.KOND_TXT_GRUND_OHNE_TABELLEN };
             bool projekt = art == Kalendereigentuemer.Gebaeude && idGebaeude > 0;
+            Bezug bezug = Projektbezug(projekt ? idProjekt : 0);
             var vorlagen = new KonditionierungsvorlageCtrl();
 
             return new KonditionierungWeg
             {
-                ZelleSetzen = (s, o, z, c) => Schritt(s, art, a => Konditionierungsarbeit.ZelleSetzen(
+                ZelleSetzen = (s, o, z, c) => Schritt(s, art, bezug, a => Konditionierungsarbeit.ZelleSetzen(
                     a, Ort(o), Zeile(z), Zelle(c, Anteil(Kern(o.Groesse), Zeile(z))))),
-                Anlegen = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.Anlegen(a, Ort(o))),
-                Verwerfen = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.Verwerfen(a, Ort(o))),
-                MatrixErneut = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.MatrixErneut(a, Ort(o))),
+                Anlegen = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Anlegen(a, Ort(o))),
+                Verwerfen = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Verwerfen(a, Ort(o))),
+                MatrixErneut = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.MatrixErneut(a, Ort(o))),
                 KatalogErneut = projekt
-                    ? s => Schritt(s, art, a => Konditionierungsarbeit.KatalogErneut(
+                    ? s => Schritt(s, art, bezug, a => Konditionierungsarbeit.KatalogErneut(
                         a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
                     : null,
-                LuftwechselAufteilen = s => Schritt(s, art, Konditionierungsarbeit.LuftwechselAufteilen),
+                LuftwechselAufteilen = s => Schritt(s, art, bezug, Konditionierungsarbeit.LuftwechselAufteilen),
 
                 Vorlagen = g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
-                VorlageUebernehmen = (s, o, id) => Schritt(s, art, a =>
+                VorlageUebernehmen = (s, o, id) => Schritt(s, art, bezug, a =>
                 {
                     Konditionierungsvorlage v = Vorlage(vorlagen, id, out string m);
                     return v == null ? Konditionierungsschritt.Fehler(m) : Konditionierungsarbeit.VorlageUebernehmen(a, Ort(o), v);
                 }),
-                AlsVorlageSpeichern = (s, o, e) => AlsVorlage(vorlagen, s, art, o, e),
+                AlsVorlageSpeichern = (s, o, e) => AlsVorlage(vorlagen, s, art, bezug, o, e),
                 VorlageUmbenennen = (id, name) =>
                 {
                     KonditionierungCtrl.Ergebnis e = vorlagen.Umbenennen(id, name);
@@ -539,18 +583,18 @@ namespace WindowsFormsApplication1
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
                 },
 
-                Zeitfenster = (s, o, f) => Schritt(s, art, a => Konditionierungsarbeit.Zeitfenster(
+                Zeitfenster = (s, o, f) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitfenster(
                     a, Ort(o), f.Tage, f.Von, f.Bis,
                     f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
-                Feiertage = (s, o, w) => Schritt(s, art, a => Konditionierungsarbeit.Feiertage(a, Ort(o), w)),
-                Zeitstruktur = (s, o, q) => Schritt(s, art, a => Konditionierungsarbeit.Zeitstruktur(
+                Feiertage = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Feiertage(a, Ort(o), w)),
+                Zeitstruktur = (s, o, q) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitstruktur(
                     a, Ort(o), q == KonditionierungZeitstruktur.WieHeizung ? Zeitstrukturquelle.WieHeizung : Zeitstrukturquelle.WieAnwesenheit)),
 
-                Rueckfrage = (s, o, h) => Befund(s, art, o, h, projekt ? idGebaeude : 0),
-                SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art) : null,
+                Rueckfrage = (s, o, h) => Befund(s, art, bezug, o, h, projekt ? idGebaeude : 0),
+                SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art, bezug) : null,
                 WochenVorschau = Vorschau,
-                Lasten = (s, zone) => Lasten(s, art, zone),
-                Pruefen = s => Pruefen(s, art),
+                Lasten = (s, zone) => Lasten(s, art, bezug, zone),
+                Pruefen = s => Pruefen(s, art, bezug),
             };
         }
 
@@ -586,12 +630,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>„Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung 13).</summary>
         private static KonditionierungVorlageErgebnis AlsVorlage(KonditionierungsvorlageCtrl vorlagen, KonditionierungStand s,
-                                                                 Kalendereigentuemer art, KonditionierungOrt o,
+                                                                 Kalendereigentuemer art, Bezug bezug, KonditionierungOrt o,
                                                                  KonditionierungVorlageEingabe eingabe)
         {
             try
             {
-                Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art), Ort(o));
+                Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art, bezug), Ort(o));
                 if (!inhalt.Ok) return new KonditionierungVorlageErgebnis(false, inhalt.Meldung, null);
                 KonditionierungCtrl.Ergebnis e = vorlagen.SpeichernAus(inhalt.Stand, Kern(o.Groesse), eingabe?.Name,
                                                                        eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung ?? KonditionierungNutzung.Keine),
@@ -606,7 +650,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Rückfragebefund VOR einer Handlung (Festlegung 3); <c>null</c> = keine Rückfrage nötig.</summary>
-        private static KonditionierungRueckfrage Befund(KonditionierungStand s, Kalendereigentuemer art, KonditionierungOrt o,
+        private static KonditionierungRueckfrage Befund(KonditionierungStand s, Kalendereigentuemer art, Bezug bezug,
+                                                        KonditionierungOrt o,
                                                         KonditionierungHandlung h, int idGebaeude)
         {
             Konditionierungshandlung? k = h switch
@@ -624,7 +669,7 @@ namespace WindowsFormsApplication1
                 Konditionierungsstand katalog = k == Konditionierungshandlung.KatalogErneut
                     ? GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)
                     : null;
-                return Rueckfrage(Konditionierungsarbeit.Rueckfrage(Arbeitsstand(s, art), o == null ? null : Ort(o), k.Value, katalog));
+                return Rueckfrage(Konditionierungsarbeit.Rueckfrage(Arbeitsstand(s, art, bezug), o == null ? null : Ort(o), k.Value, katalog));
             }
             catch (ArgumentException)
             {
@@ -633,13 +678,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Rückfrage von „Speichern unter" im Projekt: Zonen, Bauteile, Konditionierung zusammen.</summary>
-        private static KonditionierungRueckfrage SpeichernUnterBefund(KonditionierungStand s, Kalendereigentuemer art)
+        private static KonditionierungRueckfrage SpeichernUnterBefund(KonditionierungStand s, Kalendereigentuemer art,
+                                                                      Bezug bezug)
         {
             if (s?.Gebaeude == null) return null;
             try
             {
                 int bauteile = (s.Zonen ?? Array.Empty<ZoneDaten>()).Sum(z => z.Bauteile?.Count ?? 0);
-                return Rueckfrage(Konditionierungsarbeit.RueckfrageSpeichernUnter(Arbeitsstand(s, art), bauteile));
+                return Rueckfrage(Konditionierungsarbeit.RueckfrageSpeichernUnter(Arbeitsstand(s, art, bezug), bauteile));
             }
             catch (ArgumentException)
             {
@@ -647,7 +693,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Vorschau einer Woche (168 Werte in der Einheit der Spalte, NaN = „aus").</summary>
+        /// <summary>
+        /// Die Vorschau einer Woche (168 Werte in der Einheit der Spalte, NaN = „aus") — mit dem Titel
+        /// ihrer Größe („Vorschau: Woche · Kühlen", Stufe KP2, Welle U1, Teilschritt 4 (d)); die Achse
+        /// der Stunden teilt sie mit dem Zeitprogramm der Wärmeübergabe.
+        /// </summary>
         private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Vorschau(KonditionierungGroesse g, double[] werte)
         {
             if (werte == null || werte.Length != Kalenderwoche.WOCHENWERTE) return null;
@@ -658,16 +708,25 @@ namespace WindowsFormsApplication1
                 KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
                 _ => "°C",
             };
-            return ChartRenderer.StundenprofilModell(u.Raster.BildTitel, werte, 24, u.Raster.BildAchseX, einheit);
+            string groesse = g switch
+            {
+                KonditionierungGroesse.Heizen => MyResource.Resource.KOND_LBL_GROESSE_HEIZEN,
+                KonditionierungGroesse.Kuehlen => MyResource.Resource.KOND_LBL_GROESSE_KUEHLEN,
+                KonditionierungGroesse.Lueftung => MyResource.Resource.KOND_LBL_GROESSE_LUEFTUNG,
+                KonditionierungGroesse.Geraete => MyResource.Resource.KOND_LBL_GROESSE_GERAETE,
+                _ => MyResource.Resource.KOND_LBL_GROESSE_PERSONEN,
+            };
+            string titel = MyResource.Resource.KOND_LBL_VORSCHAU_WOCHE + " · " + groesse;
+            return ChartRenderer.StundenprofilModell(titel, werte, 24, u.Raster.BildAchseX, einheit);
         }
 
         /// <summary>Die Herleitung der Lasten (P1) am Gebäude bzw. an einer Zone.</summary>
-        private static KonditionierungLasten Lasten(KonditionierungStand s, Kalendereigentuemer art, int? zone)
+        private static KonditionierungLasten Lasten(KonditionierungStand s, Kalendereigentuemer art, Bezug bezug, int? zone)
         {
             if (s?.Gebaeude == null) return null;
             try
             {
-                Konditionierungsarbeitsstand a = Arbeitsstand(s, art);
+                Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
                 long? ort = zone;
                 Konditionierungszone z = ort.HasValue ? a.Zone(ort.Value) : null;
                 if (ort.HasValue && z == null) return null;
@@ -703,13 +762,13 @@ namespace WindowsFormsApplication1
         /// jedes Kalenders, eindeutiger Rang, höchstens <see cref="Kalenderregel.PERIODEN_MAX"/> Perioden;
         /// leer = gültig. Dieselben Regeln wie im Schreibweg.
         /// </summary>
-        internal static string Pruefen(KonditionierungStand s, Kalendereigentuemer art)
+        internal static string Pruefen(KonditionierungStand s, Kalendereigentuemer art, Bezug bezug = null)
         {
             if (s?.Gebaeude == null) return "";
             Konditionierungsarbeitsstand a;
             try
             {
-                a = Arbeitsstand(s, art);
+                a = Arbeitsstand(s, art, bezug);
             }
             catch (ArgumentException ex)
             {

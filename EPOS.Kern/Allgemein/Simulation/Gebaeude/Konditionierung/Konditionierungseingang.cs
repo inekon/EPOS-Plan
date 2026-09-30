@@ -100,6 +100,11 @@ namespace WindowsFormsApplication1
         /// Zone eine eigene Heiz-Nachtzeile mit Zeiten (<see cref="EigeneNachtzeile"/>), ist die
         /// Heizspalte wirksam — der Bestandszweig kennt nur die Nachtzeit des Gebäudes, die Matrix
         /// der Zone zeigt ihre eigene; so sehen Matrix und Lauf dieselbe.
+        /// <para><b>Die Kette gilt wörtlich</b> (Konzept 3.4; festgelegt in Stufe KP2, Welle U1): Die
+        /// Zone erbt den GANZEN angelegten Kalender des Gebäudes oder führt einen eigenen. Eine eigene
+        /// Zelle der Zone — auch ihre Heiz-Nachtzeile — wirkt unter einem angelegten Kalender des
+        /// Gebäudes erst, wenn die Zone einen eigenen Kalender anlegt („vom Gebäude übernehmen und
+        /// anpassen"); die Zonenmatrix nennt diesen Zustand „vom Gebäude".</para>
         /// </summary>
         /// <param name="nachtzeileDerZone">Trägt die Zone eine eigene Heiz-Nachtzeile mit Zeiten?</param>
         public static Konditionierungskalender ErsteQuelle(
