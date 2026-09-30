@@ -61387,6 +61387,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angabe ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ANGABE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Wochentag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ANGABE_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ANGABE_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebspause ähnelt.
         /// </summary>
         public static string KOND_LBL_ART_BETRIEBSPAUSE {
@@ -61972,6 +61990,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
         /// </summary>
         public static string KOND_LBL_ZEILE_FERIEN {
@@ -62170,6 +62197,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Perioden sind Zeiträume oder Feiertage; „{0}“ gehört zum Matrixbereich und folgt der Matrix. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_ART {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Kalender steht keine Periode mit dem Rang {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine der neun bundeseinheitlichen Feiertagsregeln. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_FEIERTAG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode „{0}“ gehört zum Matrixbereich (Ferien, Saison) und ist nur lesbar; sie folgt der Matrix. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_MATRIXBEREICH {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_MATRIXBEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode braucht einen Namen – ihn nennen Vorschau und Teppichbild als Quelle. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_NAME {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn {0} und Ende {1} müssen Tage 1 … 365 im Gemeinjahr sein. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_PERIODE_TAG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_PERIODE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Rangband {0} bis {1} ist kein Platz mehr für eine weitere Periode. ähnelt.
         /// </summary>
         public static string KOND_MSG_RANG_BAND_VOLL {
@@ -62193,6 +62274,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_RANG_DOPPELT {
             get {
                 return ResourceManager.GetString("KOND_MSG_RANG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode „{0}“ steht nicht im Band der eigenen Perioden ({1} … {2}); ihr Rang bleibt. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_NICHT_EIGENBAND {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_NICHT_EIGENBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode „{0}“ hat schon den höchsten Rang der eigenen Perioden. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_OBEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode „{0}“ hat schon den niedrigsten Rang der eigenen Perioden. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_RANG_UNTEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_RANG_UNTEN", resourceCulture);
             }
         }
         
@@ -62719,6 +62827,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Matrix – nur lesbar ähnelt.
+        /// </summary>
+        public static string KOND_TXT_AUS_MATRIX {
+            get {
+                return ResourceManager.GetString("KOND_TXT_AUS_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ganzjährig ähnelt.
         /// </summary>
         public static string KOND_TXT_GANZJAEHRIG {
@@ -62778,6 +62895,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_GRUND_OHNE_TABELLEN {
             get {
                 return ResourceManager.GetString("KOND_TXT_GRUND_OHNE_TABELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst Name, Tage bzw. Feiertag und die Angabe angeben. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_PERIODE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_PERIODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_RANG_BAND {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_RANG_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode hat schon den höchsten Rang der eigenen Perioden. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_RANG_OBEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_RANG_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Periode hat schon den niedrigsten Rang der eigenen Perioden. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_RANG_UNTEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_RANG_UNTEN", resourceCulture);
             }
         }
         
@@ -63075,6 +63228,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_NICHTS {
             get {
                 return ResourceManager.GetString("KOND_TXT_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Perioden – es gelten Standardwoche bzw. Grundangabe. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_PERIODEN_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_PERIODEN_LEER", resourceCulture);
             }
         }
         

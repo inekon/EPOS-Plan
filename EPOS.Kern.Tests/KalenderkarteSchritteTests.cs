@@ -156,6 +156,105 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new Kalenderherkunft("Büro", "Zeitfenster"), s.Stand.Gebaeude.Herkunft(Konditionierungsgroesse.Heizsoll));
         }
 
+        // =============================================================================
+        //  Die Periodenliste (Festlegung 15)
+        // =============================================================================
+
+        /// <summary>Ferien (Rang 202, Matrixbereich), eine Feiertagsregel (100), zwei eigene Perioden (310, 311).</summary>
+        private static Konditionierungskalender MitPerioden()
+            => new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWoche(Woche(20, 16)), null, new[]
+            {
+                Kalenderregel.Zeitraum(202, DbWerte.KOND_ART_FERIEN, "Sommerferien", 205, 246, Kalenderangabe.AusWert(16.0)),
+                Kalenderregel.Feiertag(100, "Neujahr", DbWerte.KOND_FEIERTAGE[0], Kalenderangabe.AlsWochentag(7)),
+                Kalenderregel.Zeitraum(310, DbWerte.KOND_ART_ZEITRAUM, "Messe", 60, 62, Kalenderangabe.AusWert(22.0)),
+                Kalenderregel.Zeitraum(311, DbWerte.KOND_ART_ZEITRAUM, "Umbau", 100, 120, Kalenderangabe.Abgeschaltet),
+            });
+
+        [Fact]
+        public void Eine_neue_Periode_steht_ueber_der_ranghoechsten_eigenen_im_Eigenband()
+        {
+            Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_ZEITRAUM,
+                " Betriebsausflug ", 150, 150, null, Kalenderangabe.Abgeschaltet);
+            Assert.True(b.Ok, b.Meldung);
+            Kalenderregel neu = b.Kalender.Perioden.Single(p => p.Bezeichner == "Betriebsausflug");
+            Assert.Equal(312, neu.Rang);
+            Assert.Equal(Angabeart.Aus, neu.Angabe.Art);
+            Assert.Equal(5, b.Kalender.Perioden.Count);
+
+            // Ein Feiertag der Art FEIERTAG steht ebenso im Eigenband — über den Ferien.
+            b = Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_FEIERTAG, "Neujahr aus", 0, 0,
+                                                DbWerte.KOND_FEIERTAGE[0], Kalenderangabe.Abgeschaltet);
+            Assert.True(b.Ok, b.Meldung);
+            Assert.Equal(312, b.Kalender.Perioden.Single(p => p.Bezeichner == "Neujahr aus").Rang);
+            Assert.True(b.Kalender.Perioden.Single(p => p.Bezeichner == "Neujahr aus").IstFeiertag);
+        }
+
+        [Fact]
+        public void Ersetzen_haelt_den_Rang_und_der_Matrixbereich_ist_nur_lesbar()
+        {
+            Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), 310, DbWerte.KOND_ART_ZEITRAUM,
+                "Messe", 61, 64, null, Kalenderangabe.AusWert(21.0));
+            Assert.True(b.Ok, b.Meldung);
+            Kalenderregel r = b.Kalender.Perioden.Single(p => p.Rang == 310);
+            Assert.Equal((61, 64, 21.0), (r.Beginn, r.Ende, r.Angabe.Wert));
+
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), 202, DbWerte.KOND_ART_ZEITRAUM, "x", 1, 2, null,
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeLoeschen(MitPerioden(), 202).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), 999, DbWerte.KOND_ART_ZEITRAUM, "x", 1, 2, null,
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+        }
+
+        [Fact]
+        public void Neue_Perioden_sind_Zeitraum_oder_Feiertag_mit_Name_Tagen_und_gueltiger_Angabe()
+        {
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_FERIEN, "Herbst", 280, 290, null,
+                                                         Kalenderangabe.AusWert(16.0)).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_BETRIEBSPAUSE, "Pause", 1, 2, null,
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_ZEITRAUM, "  ", 1, 2, null,
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_ZEITRAUM, "x", 0, 366, null,
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_FEIERTAG, "x", 0, 0, "OSTERSONNTAG",
+                                                         Kalenderangabe.Abgeschaltet).Ok);
+            Assert.False(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_ZEITRAUM, "x", 1, 2, null,
+                                                         Kalenderangabe.AusWert(20.12345)).Ok);
+            // Über den Jahreswechsel ist erlaubt.
+            Assert.True(Kalenderwerkzeuge.PeriodeSetzen(MitPerioden(), null, DbWerte.KOND_ART_ZEITRAUM, "Jahreswechsel", 358, 5, null,
+                                                        Kalenderangabe.AlsWochentag(7)).Ok);
+        }
+
+        [Fact]
+        public void Rang_hoeher_und_niedriger_tauschen_im_Eigenband_und_an_den_Grenzen_wird_benannt_abgelehnt()
+        {
+            Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 310, hoeher: true);
+            Assert.True(b.Ok, b.Meldung);
+            Assert.Equal(311, b.Kalender.Perioden.Single(p => p.Bezeichner == "Messe").Rang);
+            Assert.Equal(310, b.Kalender.Perioden.Single(p => p.Bezeichner == "Umbau").Rang);
+
+            b = Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 311, hoeher: false);
+            Assert.True(b.Ok, b.Meldung);
+            Assert.Equal(310, b.Kalender.Perioden.Single(p => p.Bezeichner == "Umbau").Rang);
+
+            Assert.False(Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 311, hoeher: true).Ok);   // oben
+            Assert.False(Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 310, hoeher: false).Ok);  // unten
+            Assert.False(Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 100, hoeher: true).Ok);   // Feiertagsband
+            Assert.False(Kalenderwerkzeuge.RangVerschieben(MitPerioden(), 202, hoeher: true).Ok);   // Ferien
+            Assert.Null(Kalenderwerkzeuge.Rangpruefung(b.Kalender.Perioden));
+        }
+
+        [Fact]
+        public void Loeschen_nimmt_eine_eigene_Periode_und_eine_Feiertagsregel_und_laesst_den_Rest()
+        {
+            Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.PeriodeLoeschen(MitPerioden(), 310);
+            Assert.True(b.Ok, b.Meldung);
+            Assert.Equal(new[] { 100, 202, 311 }, b.Kalender.Perioden.Select(p => p.Rang).OrderBy(r => r).ToArray());
+            b = Kalenderwerkzeuge.PeriodeLoeschen(MitPerioden(), 100);
+            Assert.True(b.Ok, b.Meldung);
+            Assert.DoesNotContain(b.Kalender.Perioden, p => p.IstFeiertag);
+        }
+
         [Fact]
         public void Ohne_angelegten_Kalender_lehnt_der_Schritt_benannt_ab_statt_einen_anzulegen()
         {

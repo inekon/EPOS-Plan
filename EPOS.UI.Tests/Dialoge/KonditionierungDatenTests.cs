@@ -243,6 +243,9 @@ public sealed class KonditionierungDatenTests
         Zeitstruktur = (s, _, _) => Gut(s),
         Grundangabe = (s, _, _) => Gut(s),
         Standardwoche = (s, _, _) => Gut(s),
+        PeriodeSetzen = (s, _, _, _) => Gut(s),
+        RangVerschieben = (s, _, _, _) => Gut(s),
+        PeriodeLoeschen = (s, _, _) => Gut(s),
         Rueckfrage = (_, _, _) => null,
         SpeichernUnterRueckfrage = _ => null,
         WochenVorschau = (_, _) => null,
@@ -275,6 +278,9 @@ public sealed class KonditionierungDatenTests
         KonditionierungHandlung.LuftwechselAufteilen => new() { LuftwechselAufteilen = s => Gut(s) },
         KonditionierungHandlung.Grundangabe => new() { Grundangabe = (s, _, _) => Gut(s) },
         KonditionierungHandlung.Standardwoche => new() { Standardwoche = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.PeriodeSetzen => new() { PeriodeSetzen = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.RangVerschieben => new() { RangVerschieben = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.PeriodeLoeschen => new() { PeriodeLoeschen = (s, _, _) => Gut(s) },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 

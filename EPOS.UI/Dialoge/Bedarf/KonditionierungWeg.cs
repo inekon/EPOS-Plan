@@ -168,6 +168,35 @@ public sealed class KonditionierungWeg
     public Func<KonditionierungStand, KonditionierungOrt, double[]?, KonditionierungErgebnis>? Standardwoche { get; init; }
 
     /// <summary>
+    /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Periodenliste, Festlegung 15; Welle U3): Zeitraum
+    /// (Tag 1 … 365 im Gemeinjahr) oder Feiertag (eine der neun Regeln), mit Name und Angabe — Wert, „aus"
+    /// oder „wie Wochentag". Dritter Parameter: der Rang der Periode, die ersetzt wird; <c>null</c> = neu
+    /// über der ranghöchsten eigenen Periode im Eigenband. Der Matrixbereich (Ferien, Saison) ist nur lesbar.
+    /// <para>Kern: <c>Konditionierungsarbeit.PeriodeSetzen</c> über <c>Kalenderwerkzeuge.PeriodeSetzen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int?, KonditionierungPeriode, KonditionierungErgebnis>? PeriodeSetzen { get; init; }
+
+    /// <summary>
+    /// <b>Rang ▲▼</b> einer eigenen Periode im Eigenband (Festlegung 15): tauscht den Rang mit der
+    /// nächsten eigenen Periode darüber (<c>true</c>) bzw. darunter.
+    /// <para>Kern: <c>Konditionierungsarbeit.RangVerschieben</c> über <c>Kalenderwerkzeuge.RangVerschieben</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int, bool, KonditionierungErgebnis>? RangVerschieben { get; init; }
+
+    /// <summary>
+    /// <b>Eine eigene Periode löschen</b> (Festlegung 15) — über ihren Rang; der Matrixbereich wird benannt abgelehnt.
+    /// <para>Kern: <c>Konditionierungsarbeit.PeriodeLoeschen</c> über <c>Kalenderwerkzeuge.PeriodeLoeschen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int, KonditionierungErgebnis>? PeriodeLoeschen { get; init; }
+
+    /// <summary>
+    /// Die neun Feiertagsregeln der Periodenliste (Persistenzwert und Anzeigename, F11) — die Auswahl der
+    /// Art „Feiertag"; <c>null</c> = keine (dann bietet die Liste nur Zeiträume an).
+    /// <para>Kern: <c>DbWerte.KOND_FEIERTAGE</c> und <c>Kalenderwerkzeuge.Feiertagsnamen</c>.</para>
+    /// </summary>
+    public IReadOnlyList<KonditionierungFeiertag>? Feiertagsregeln { get; init; }
+
+    /// <summary>
     /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5, 7.5): setzt den Wert in die
     /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in
     /// <see cref="KonditionierungKalender.Vermerk"/>.
@@ -279,6 +308,9 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.LuftwechselAufteilen => LuftwechselAufteilen is not null,
             KonditionierungHandlung.Grundangabe => Grundangabe is not null,
             KonditionierungHandlung.Standardwoche => Standardwoche is not null,
+            KonditionierungHandlung.PeriodeSetzen => PeriodeSetzen is not null,
+            KonditionierungHandlung.RangVerschieben => RangVerschieben is not null,
+            KonditionierungHandlung.PeriodeLoeschen => PeriodeLoeschen is not null,
             _ => false
         };
     }

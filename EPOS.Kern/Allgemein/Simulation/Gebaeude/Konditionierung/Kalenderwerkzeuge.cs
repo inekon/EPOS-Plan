@@ -395,6 +395,179 @@ namespace WindowsFormsApplication1
             return best;
         }
 
+        // =================================================================
+        //  Die Periodenliste (Konzept 3.2 Ebene 3, Entwurf KP2 Festlegung 15; Welle U3)
+        // =================================================================
+
+        /// <summary>Liegt der Rang im Band der eigenen und übernommenen Perioden (310 … 899)?</summary>
+        public static bool ImEigenband(int rang)
+            => rang >= Standardfahrplan.RANG_EIGEN && rang <= Standardfahrplan.RANG_EIGEN_LETZTER;
+
+        /// <summary>
+        /// <b>Legt eine eigene Periode an oder ersetzt eine</b> (Festlegung 15): neu sind nur die Arten
+        /// <c>ZEITRAUM</c> (Tag 1 … 365, Beginn nach Ende heißt über den Jahreswechsel) und <c>FEIERTAG</c>
+        /// (eine der neun Regeln) — Ferien und Saison gehören dem Matrixbereich und folgen der Matrix.
+        /// <paramref name="rang"/> <c>null</c> legt neu an, über der ranghöchsten eigenen Periode im
+        /// Eigenband (sonst am ersten freien Platz dort); ein Rang ersetzt die Periode mit diesem Rang an
+        /// derselben Stelle — nie eine des Matrixbereichs. Name, Tage, Regel und Angabe werden benannt
+        /// geprüft; eine direkte Eingabe: der Vermerk bleibt leer.
+        /// </summary>
+        /// <param name="kalender">Der angelegte Kalender.</param>
+        /// <param name="rang">Der Rang der Periode, die ersetzt wird; <c>null</c> = neu.</param>
+        /// <param name="art">Die Art (Persistenzwert): <c>ZEITRAUM</c> oder <c>FEIERTAG</c>.</param>
+        /// <param name="bezeichner">Der Name — die Quelle, die Vorschau und Teppichbild nennen.</param>
+        /// <param name="beginn">Der erste Tag (nur Zeitraum).</param>
+        /// <param name="ende">Der letzte Tag (nur Zeitraum).</param>
+        /// <param name="feiertagsregel">Die Regel (nur Feiertag).</param>
+        /// <param name="angabe">Die Angabe: Wert, „aus", eigene Woche oder „wie Wochentag".</param>
+        public static Werkzeugbefund PeriodeSetzen(Konditionierungskalender kalender, int? rang, string art, string bezeichner,
+                                                   int beginn, int ende, string feiertagsregel, Kalenderangabe angabe)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            if (angabe == null) throw new ArgumentNullException(nameof(angabe));
+            bool feiertag = string.Equals(art, DbWerte.KOND_ART_FEIERTAG, StringComparison.Ordinal);
+            if (!feiertag && !string.Equals(art, DbWerte.KOND_ART_ZEITRAUM, StringComparison.Ordinal))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_ART, art ?? ""));
+            string name = (bezeichner ?? "").Trim();
+            if (name.Length == 0) return Werkzeugbefund.Fehler(MyResource.Resource.KOND_MSG_PERIODE_NAME);
+            if (feiertag && !Feiertage.Bekannt(feiertagsregel))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_FEIERTAG, feiertagsregel ?? ""));
+            if (!feiertag && (beginn < Kalenderregel.TAG_MIN || beginn > Kalenderregel.TAG_MAX
+                              || ende < Kalenderregel.TAG_MIN || ende > Kalenderregel.TAG_MAX))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_TAG, Zahl(beginn), Zahl(ende)));
+            string angabefehler = Angabefehler(kalender.Groesse, angabe);
+            if (angabefehler != null) return Werkzeugbefund.Fehler(angabefehler);
+
+            var perioden = new List<Kalenderregel>(kalender.Perioden);
+            int neuerRang;
+            int stelle = -1;
+            if (rang.HasValue)
+            {
+                stelle = perioden.FindIndex(p => p.Rang == rang.Value);
+                if (stelle < 0)
+                    return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KOND_MSG_PERIODE_FEHLT, Zahl(rang.Value)));
+                if (Konditionierungsarbeit.IstMatrixbereich(perioden[stelle]))
+                    return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KOND_MSG_PERIODE_MATRIXBEREICH, perioden[stelle].Bezeichner));
+                neuerRang = rang.Value;
+            }
+            else
+            {
+                var belegt = new HashSet<int>();
+                int hoechster = Standardfahrplan.RANG_EIGEN - 1;
+                foreach (Kalenderregel p in perioden)
+                {
+                    belegt.Add(p.Rang);
+                    if (ImEigenband(p.Rang) && p.Rang > hoechster) hoechster = p.Rang;
+                }
+                neuerRang = hoechster + 1;
+                if (neuerRang > Standardfahrplan.RANG_EIGEN_LETZTER)
+                {
+                    // Oben ist das Band voll: der erste freie Platz darin, sonst benannt abgelehnt.
+                    neuerRang = Standardfahrplan.RANG_EIGEN;
+                    while (neuerRang <= Standardfahrplan.RANG_EIGEN_LETZTER && belegt.Contains(neuerRang)) neuerRang++;
+                    if (neuerRang > Standardfahrplan.RANG_EIGEN_LETZTER)
+                        return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                            MyResource.Resource.KOND_MSG_RANG_BAND_VOLL,
+                            Zahl(Standardfahrplan.RANG_EIGEN), Zahl(Standardfahrplan.RANG_EIGEN_LETZTER)));
+                }
+                if (perioden.Count + 1 > Kalenderregel.PERIODEN_MAX)
+                    return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
+                        Zahl(perioden.Count + 1), Zahl(Kalenderregel.PERIODEN_MAX)));
+            }
+
+            Kalenderregel neu = feiertag
+                ? Kalenderregel.Feiertag(neuerRang, name, feiertagsregel, angabe)
+                : Kalenderregel.Zeitraum(neuerRang, DbWerte.KOND_ART_ZEITRAUM, name, beginn, ende, angabe);
+            if (stelle >= 0) perioden[stelle] = neu;
+            else perioden.Add(neu);
+            return Werkzeugbefund.Gut(new Konditionierungskalender(kalender.Groesse, kalender.Grundangabe,
+                                                                   kalender.Nennwert, perioden), "");
+        }
+
+        /// <summary>
+        /// <b>Rang ▲▼ im Eigenband</b> (Festlegung 15): Die Periode tauscht ihren Rang mit der nächsten
+        /// eigenen Periode darüber (<paramref name="hoeher"/>) bzw. darunter — beide im Band 310 … 899.
+        /// Eine Periode außerhalb des Bands (Feiertagsregeln 100 … 108, Ferien, Saison) behält ihren Rang;
+        /// die oberste kann nicht höher, die unterste nicht tiefer — beides benannt abgelehnt.
+        /// </summary>
+        public static Werkzeugbefund RangVerschieben(Konditionierungskalender kalender, int rang, bool hoeher)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            var perioden = new List<Kalenderregel>(kalender.Perioden);
+            int stelle = perioden.FindIndex(p => p.Rang == rang);
+            if (stelle < 0)
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_FEHLT, Zahl(rang)));
+            Kalenderregel r = perioden[stelle];
+            if (!ImEigenband(r.Rang))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_RANG_NICHT_EIGENBAND, r.Bezeichner,
+                    Zahl(Standardfahrplan.RANG_EIGEN), Zahl(Standardfahrplan.RANG_EIGEN_LETZTER)));
+            int nachbar = -1;
+            for (int i = 0; i < perioden.Count; i++)
+            {
+                Kalenderregel p = perioden[i];
+                if (i == stelle || !ImEigenband(p.Rang)) continue;
+                bool richtig = hoeher ? p.Rang > r.Rang : p.Rang < r.Rang;
+                if (!richtig) continue;
+                if (nachbar < 0 || (hoeher ? p.Rang < perioden[nachbar].Rang : p.Rang > perioden[nachbar].Rang)) nachbar = i;
+            }
+            if (nachbar < 0)
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    hoeher ? MyResource.Resource.KOND_MSG_RANG_OBEN : MyResource.Resource.KOND_MSG_RANG_UNTEN, r.Bezeichner));
+            Kalenderregel n = perioden[nachbar];
+            perioden[stelle] = MitRang(r, n.Rang);
+            perioden[nachbar] = MitRang(n, r.Rang);
+            return Werkzeugbefund.Gut(new Konditionierungskalender(kalender.Groesse, kalender.Grundangabe,
+                                                                   kalender.Nennwert, perioden), "");
+        }
+
+        /// <summary>
+        /// <b>Löscht eine eigene Periode</b> (Festlegung 15); eine des Matrixbereichs (Ferien, Saison) ist
+        /// nur lesbar und wird benannt abgelehnt — sie folgt der Matrix.
+        /// </summary>
+        public static Werkzeugbefund PeriodeLoeschen(Konditionierungskalender kalender, int rang)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            var perioden = new List<Kalenderregel>(kalender.Perioden);
+            int stelle = perioden.FindIndex(p => p.Rang == rang);
+            if (stelle < 0)
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_FEHLT, Zahl(rang)));
+            if (Konditionierungsarbeit.IstMatrixbereich(perioden[stelle]))
+                return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_PERIODE_MATRIXBEREICH, perioden[stelle].Bezeichner));
+            perioden.RemoveAt(stelle);
+            return Werkzeugbefund.Gut(new Konditionierungskalender(kalender.Groesse, kalender.Grundangabe,
+                                                                   kalender.Nennwert, perioden), "");
+        }
+
+        /// <summary>Die Angabe einer Periode gegen die Grenzen der Größe; <c>null</c> = gut.</summary>
+        private static string Angabefehler(Konditionierungsgroesse g, Kalenderangabe angabe)
+        {
+            switch (angabe.Art)
+            {
+                case Angabeart.Wert:
+                    return Wertfehler(g, angabe.Wert);
+                case Angabeart.Woche:
+                    foreach (double v in angabe.Woche)
+                    {
+                        if (double.IsNaN(v)) continue;
+                        string f = Wertfehler(g, v);
+                        if (f != null) return f;
+                    }
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
         /// <summary>Die Grenzen der Größe und der Rundlauf der Wochenspalte für einen Wert; <c>null</c> = gut.</summary>
         private static string Wertfehler(Konditionierungsgroesse g, double wert)
         {

@@ -467,6 +467,28 @@ public sealed class KonditionierungBearbeitung
         => Bietet(KonditionierungHandlung.Zeitfenster)
            && Ausfuehren("F|" + g, s => Weg.Zeitfenster!(s, new KonditionierungOrt(g), fenster));
 
+    /// <summary>Die neun Feiertagsregeln der Periodenliste (F11); leer ohne Weg.</summary>
+    public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln
+        => MitWeg ? Weg.Feiertagsregeln ?? Array.Empty<KonditionierungFeiertag>() : Array.Empty<KonditionierungFeiertag>();
+
+    /// <summary>
+    /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Festlegung 15): Zeitraum oder Feiertag;
+    /// <paramref name="rang"/> <c>null</c> = neu im Eigenband. Ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool PeriodeSetzen(KonditionierungGroesse g, int? rang, KonditionierungPeriode periode)
+        => Bietet(KonditionierungHandlung.PeriodeSetzen)
+           && Ausfuehren("P|" + g, s => Weg.PeriodeSetzen!(s, new KonditionierungOrt(g), rang, periode));
+
+    /// <summary><b>Rang ▲▼</b> einer eigenen Periode im Eigenband (Festlegung 15).</summary>
+    public bool RangVerschieben(KonditionierungGroesse g, int rang, bool hoeher)
+        => Bietet(KonditionierungHandlung.RangVerschieben)
+           && Ausfuehren("R|" + g, s => Weg.RangVerschieben!(s, new KonditionierungOrt(g), rang, hoeher));
+
+    /// <summary><b>Eine eigene Periode löschen</b> (Festlegung 15) — „Zurücknehmen" holt sie zurück.</summary>
+    public bool PeriodeLoeschen(KonditionierungGroesse g, int rang)
+        => Bietet(KonditionierungHandlung.PeriodeLoeschen)
+           && Ausfuehren("L|" + g, s => Weg.PeriodeLoeschen!(s, new KonditionierungOrt(g), rang));
+
     // =================================================================================
     // Vorlagen je Größe (Stufe KP2, Welle U2; Teilkonzept 3.5, 7.4)
     // =================================================================================

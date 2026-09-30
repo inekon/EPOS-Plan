@@ -216,6 +216,15 @@ namespace WindowsFormsApplication1
             t.GrundZeitfensterTage = Text_("KOND_TXT_GRUND_ZEITFENSTER_TAGE", t.GrundZeitfensterTage);
             t.GrundZeitfensterZeiten = Text_("KOND_TXT_GRUND_ZEITFENSTER_ZEITEN", t.GrundZeitfensterZeiten);
             t.GrundZeitfensterWert = Text_("KOND_TXT_GRUND_ZEITFENSTER_WERT", t.GrundZeitfensterWert);
+            t.LabelAngabe = Text_("KOND_LBL_ANGABE", t.LabelAngabe);
+            t.LabelAngabeWochentag = Text_("KOND_LBL_ANGABE_WOCHENTAG", t.LabelAngabeWochentag);
+            t.LabelWochentag = Text_("KOND_LBL_WOCHENTAG", t.LabelWochentag);
+            t.TextAusMatrix = Text_("KOND_TXT_AUS_MATRIX", t.TextAusMatrix);
+            t.TextPeriodenLeer = Text_("KOND_TXT_PERIODEN_LEER", t.TextPeriodenLeer);
+            t.GrundPeriodeUnvollstaendig = Text_("KOND_TXT_GRUND_PERIODE", t.GrundPeriodeUnvollstaendig);
+            t.GrundRangOben = Text_("KOND_TXT_GRUND_RANG_OBEN", t.GrundRangOben);
+            t.GrundRangUnten = Text_("KOND_TXT_GRUND_RANG_UNTEN", t.GrundRangUnten);
+            t.GrundRangBand = Text_("KOND_TXT_GRUND_RANG_BAND", t.GrundRangBand);
             return t;
         }
 

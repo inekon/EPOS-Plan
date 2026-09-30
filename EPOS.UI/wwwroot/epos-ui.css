@@ -13717,6 +13717,81 @@ td.epos-vorlage-katalogbeschreibung {
     min-width: var(--epos-touchziel);
 }
 
+/* Die Periodenliste (Festlegung 15): eine schlichte Tabelle ohne
+   Virtualisierung, feste Spaltenanteile, der Text bricht um, statt quer zu
+   rollen. Die Knoepfe einer eigenen Zeile stehen immer (Hausregel), der
+   Flexkasten IN der Zelle; unter 600 px Behaelterbreite faellt die Spalte
+   "Art" (der Name sagt sie), die Knoepfe stehen zwei mal zwei. Der
+   Matrixbereich ist nur lesbar und leise. */
+.epos-kond-perioden {
+    container-type: inline-size;
+    container-name: epos-kond-perioden;
+    min-width: 0;
+}
+
+.epos-kond-periodentabelle {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.epos-kond-periodentabelle th,
+.epos-kond-periodentabelle td {
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-rang {
+    width: 3.5rem;
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-art {
+    width: 7rem;
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-aktionen {
+    width: 204px;
+}
+
+.epos-kond-periode--matrix td {
+    color: var(--epos-text-leise);
+}
+
+.epos-kond-periode-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-kond-periode-knoepfe > .epos-knopf {
+    min-width: var(--epos-touchziel);
+    justify-content: center;
+}
+
+.epos-kond-periode-form {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    min-width: 0;
+}
+
+@container epos-kond-perioden (max-width: 599.98px) {
+    .epos-kond-periodentabelle .epos-kond-periode-art {
+        display: none;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-rang {
+        width: 2.75rem;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-aktionen {
+        width: 104px;
+    }
+}
+
 /* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:
    Umschalter der Groesse, die Liste im Rahmen (Hausregel Liste), die
    gewaehlte Zeile wie die Fokuszeile der Verwaltungen (Flaeche und Balken),

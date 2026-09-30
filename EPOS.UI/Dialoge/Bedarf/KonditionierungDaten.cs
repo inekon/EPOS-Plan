@@ -197,7 +197,16 @@ public enum KonditionierungHandlung
     Grundangabe = 14,
 
     /// <summary>Die Standardwoche der Karte setzen (Wochenraster) oder verwerfen (Welle U3).</summary>
-    Standardwoche = 15
+    Standardwoche = 15,
+
+    /// <summary>Eine eigene Periode anlegen oder ersetzen — Zeitraum oder Feiertag (Festlegung 15, Welle U3).</summary>
+    PeriodeSetzen = 16,
+
+    /// <summary>Rang ▲▼ einer eigenen Periode im Eigenband (Festlegung 15, Welle U3).</summary>
+    RangVerschieben = 17,
+
+    /// <summary>Eine eigene Periode löschen (Festlegung 15, Welle U3).</summary>
+    PeriodeLoeschen = 18
 }
 
 /// <summary>
@@ -292,6 +301,13 @@ public sealed class KonditionierungPeriode
     /// (Festlegung 15); „Matrix erneut anwenden" ersetzt sie.
     /// </summary>
     public bool Matrixbereich { get; set; }
+
+    /// <summary>
+    /// Steht die Periode im Band der eigenen Perioden (Rang 310 … 899)? Gesetzt von der Hülle nach
+    /// <c>Kalenderwerkzeuge.ImEigenband</c> — nur dort verschiebt ▲▼ den Rang (Festlegung 15); eine
+    /// Feiertagsregel im Band 100 … 108 behält ihn.
+    /// </summary>
+    public bool Eigenband { get; set; }
 
     /// <summary>Eine entkoppelte Kopie samt Woche.</summary>
     public KonditionierungPeriode Kopie()
@@ -574,6 +590,14 @@ public sealed record KonditionierungErgebnis(bool Ok, string Meldung, Konditioni
 public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse Groesse, string Name,
                                                  string Beschreibung, KonditionierungNutzung Nutzung,
                                                  bool Ausgeliefert);
+
+/// <summary>
+/// Eine der neun bundeseinheitlichen Feiertagsregeln für die Periodenliste (F11): der Persistenzwert
+/// (<c>DbWerte.KOND_FEIERTAGE</c>, nie übersetzt) und ihr Anzeigename.
+/// </summary>
+/// <param name="Regel">Der Persistenzwert der Regel.</param>
+/// <param name="Name">Der Anzeigename („Neujahr").</param>
+public sealed record KonditionierungFeiertag(string Regel, string Name);
 
 /// <summary>Was „Als Vorlage speichern…" erfragt (Teilkonzept 7.4): Name, Beschreibung, Nutzung.</summary>
 public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, KonditionierungNutzung Nutzung);

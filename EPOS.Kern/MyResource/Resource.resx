@@ -40738,5 +40738,59 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_GRUND_ZEITFENSTER_WERT" xml:space="preserve">
     <value>Erst einen Wert oder „aus“ angeben.</value>
   </data>
+  <data name="KOND_MSG_PERIODE_ART" xml:space="preserve">
+    <value>Neue Perioden sind Zeiträume oder Feiertage; „{0}“ gehört zum Matrixbereich und folgt der Matrix.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_NAME" xml:space="preserve">
+    <value>Die Periode braucht einen Namen – ihn nennen Vorschau und Teppichbild als Quelle.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEIERTAG" xml:space="preserve">
+    <value>„{0}“ ist keine der neun bundeseinheitlichen Feiertagsregeln.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_TAG" xml:space="preserve">
+    <value>Beginn {0} und Ende {1} müssen Tage 1 … 365 im Gemeinjahr sein.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEHLT" xml:space="preserve">
+    <value>Im Kalender steht keine Periode mit dem Rang {0}.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_MATRIXBEREICH" xml:space="preserve">
+    <value>Die Periode „{0}“ gehört zum Matrixbereich (Ferien, Saison) und ist nur lesbar; sie folgt der Matrix.</value>
+  </data>
+  <data name="KOND_MSG_RANG_NICHT_EIGENBAND" xml:space="preserve">
+    <value>Die Periode „{0}“ steht nicht im Band der eigenen Perioden ({1} … {2}); ihr Rang bleibt.</value>
+  </data>
+  <data name="KOND_MSG_RANG_OBEN" xml:space="preserve">
+    <value>Die Periode „{0}“ hat schon den höchsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_MSG_RANG_UNTEN" xml:space="preserve">
+    <value>Die Periode „{0}“ hat schon den niedrigsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_LBL_ANGABE" xml:space="preserve">
+    <value>Angabe</value>
+  </data>
+  <data name="KOND_LBL_ANGABE_WOCHENTAG" xml:space="preserve">
+    <value>wie Wochentag</value>
+  </data>
+  <data name="KOND_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Wochentag</value>
+  </data>
+  <data name="KOND_TXT_AUS_MATRIX" xml:space="preserve">
+    <value>aus der Matrix – nur lesbar</value>
+  </data>
+  <data name="KOND_TXT_PERIODEN_LEER" xml:space="preserve">
+    <value>Keine Perioden – es gelten Standardwoche bzw. Grundangabe.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_PERIODE" xml:space="preserve">
+    <value>Erst Name, Tage bzw. Feiertag und die Angabe angeben.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_OBEN" xml:space="preserve">
+    <value>Die Periode hat schon den höchsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_UNTEN" xml:space="preserve">
+    <value>Die Periode hat schon den niedrigsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_BAND" xml:space="preserve">
+    <value>Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.</value>
+  </data>
 </root>
 

@@ -95,6 +95,19 @@
                           Kennung="@("kond-woche-" + (int)Groesse)" Texte="@Raster"
                           FehlerZustand="FehlerZustand" />
         </section>
+
+        @* ---- Periodenliste (Ebene 3, Festlegung 15): Matrixbereich nur lesbar, eigene Perioden
+           ZEITRAUM oder FEIERTAG, Rang im Eigenband ---- *@
+        <section class="epos-kond-abschnitt epos-kond-periodenabschnitt" aria-label="@Texte.LabelPerioden">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelPerioden</h4>
+            <Periodenliste Perioden="@(Kalender?.Perioden ?? new List<KonditionierungPeriode>())" Texte="@Texte"
+                           Wochentage="@Raster.Tagesnamen" Feiertagsregeln="@Bearbeitung.Feiertagsregeln"
+                           Einheit="@Einheit" Minimum="@Minimum" Maximum="@Maximum"
+                           Setzen="@(Bearbeitung.Bietet(KonditionierungHandlung.PeriodeSetzen) ? (r, p) => Bearbeitung.PeriodeSetzen(Groesse, r, p) : null)"
+                           Verschieben="@(Bearbeitung.Bietet(KonditionierungHandlung.RangVerschieben) ? (r, h) => Bearbeitung.RangVerschieben(Groesse, r, h) : null)"
+                           Loeschen="@(Bearbeitung.Bietet(KonditionierungHandlung.PeriodeLoeschen) ? r => Bearbeitung.PeriodeLoeschen(Groesse, r) : null)"
+                           Geaendert="Geaendert" Verweigert="Verweigert" />
+        </section>
     }
 </div>
 

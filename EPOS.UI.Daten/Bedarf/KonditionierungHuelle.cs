@@ -138,6 +138,7 @@ namespace WindowsFormsApplication1
                 Woche = woche,
                 WieWochentag = tag,
                 Matrixbereich = Konditionierungsarbeit.IstMatrixbereich(r),
+                Eigenband = Kalenderwerkzeuge.ImEigenband(r.Rang),
             };
         }
 
@@ -620,6 +621,12 @@ namespace WindowsFormsApplication1
                     a, Ort(o), w.HasValue ? Skaliert(w.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
                 Standardwoche = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Standardwoche(
                     a, Ort(o), w == null ? null : w.Select(v => Skaliert(v, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false)).ToArray())),
+                PeriodeSetzen = (s, o, rang, p) => Schritt(s, art, bezug, a => Konditionierungsarbeit.PeriodeSetzen(
+                    a, Ort(o), rang, DbWerte.KOND_ARTEN[(int)p.Art], p.Name, p.Von ?? 0, p.Bis ?? 0, p.Feiertagsregel,
+                    Angabe(p.Angabe, p.Wert, p.Woche, p.WieWochentag, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse))))),
+                RangVerschieben = (s, o, rang, hoeher) => Schritt(s, art, bezug, a => Konditionierungsarbeit.RangVerschieben(a, Ort(o), rang, hoeher)),
+                PeriodeLoeschen = (s, o, rang) => Schritt(s, art, bezug, a => Konditionierungsarbeit.PeriodeLoeschen(a, Ort(o), rang)),
+                Feiertagsregeln = Feiertagsregeln(),
                 Zeitfenster = (s, o, f) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitfenster(
                     a, Ort(o), f.Tage, f.Von, f.Bis,
                     f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
@@ -633,6 +640,16 @@ namespace WindowsFormsApplication1
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
                 Pruefen = s => Pruefen(s, art, bezug),
             };
+        }
+
+        /// <summary>Die neun Feiertagsregeln mit ihren Anzeigenamen in der Sprache der Oberfläche (F11).</summary>
+        private static IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln()
+        {
+            IReadOnlyList<string> namen = Kalenderwerkzeuge.Feiertagsnamen();
+            var liste = new List<KonditionierungFeiertag>();
+            for (int k = 0; k < DbWerte.KOND_FEIERTAGE.Count; k++)
+                liste.Add(new KonditionierungFeiertag(DbWerte.KOND_FEIERTAGE[k], k < namen.Count ? namen[k] : DbWerte.KOND_FEIERTAGE[k]));
+            return liste;
         }
 
         private static KonditionierungVorlageDaten VorlageDaten(KonditionierungsvorlageCtrl.Vorlage v)

@@ -1,0 +1,362 @@
+﻿@* DIE PERIODENLISTE DER KALENDERKARTE (Stufe KP2, Welle U3; Teilkonzept Konditionierungsprofile 3.2
+   Ebene 3, 7.5; Entwurf KP2 Festlegung 15) - eine schlichte Tabelle ohne Virtualisierung, die
+   ranghoechste Periode zuerst.
+
+   DER MATRIXBEREICH IST NUR LESBAR. Ferien und Saison erzeugt der Generator aus der Matrix; ihre Zeile
+   sagt "aus der Matrix", eine Handlung gibt es dort nicht - sie folgen der Matrix ("Matrix erneut
+   anwenden..."). Neue Perioden sind ZEITRAUM (Tag 1 ... 365 im Gemeinjahr) oder FEIERTAG (eine der
+   neun Regeln), jede mit Name und Angabe: Wert, "aus" oder "wie Wochentag".
+
+   RANG NUR IM EIGENBAND. Die Knoepfe einer eigenen Zeile stehen IMMER da (Hausregel): Rang hoeher und
+   niedriger (je ein Zeichen als aria-hidden-Element, der Name im title), bearbeiten und loeschen. Wo eine
+   Handlung nicht greift - die oberste Periode kann nicht hoeher, eine Feiertagsregel im Band 100 ... 108
+   wechselt ihren Rang nicht -, ist der Knopf weich gesperrt und nennt den Grund.
+
+   KEIN DELEGAT, KEIN KNOPF. Die Liste rechnet nichts: Anlegen, Ersetzen, Verschieben und Loeschen gehen
+   ueber die Rueckrufe des Wirts (KonditionierungBearbeitung -> Weg -> Kern), und nur, wo er sie reicht. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using EPOS.UI.Bausteine
+
+<div class="epos-kond-perioden">
+    @if (Perioden.Count == 0)
+    {
+        <p class="epos-leisezeile epos-kond-perioden-leer">@Texte.TextPeriodenLeer</p>
+    }
+    else
+    {
+        <table class="epos-kond-periodentabelle">
+            <thead>
+                <tr>
+                    <th scope="col" class="epos-kond-periode-rang">@Texte.SpalteRang</th>
+                    <th scope="col" class="epos-kond-periode-art">@Texte.SpalteArt</th>
+                    <th scope="col">@Texte.SpalteName</th>
+                    <th scope="col">@(Texte.SpalteVon + "–" + Texte.SpalteBis)</th>
+                    <th scope="col">@Texte.SpalteWert</th>
+                    <th scope="col" class="epos-kond-periode-aktionen">@Texte.SpalteAktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (KonditionierungPeriode p in Perioden)
+                {
+                    KonditionierungPeriode periode = p;
+                    <tr @key="periode.Rang" data-rang="@periode.Rang"
+                        class="@(periode.Matrixbereich ? "epos-kond-periode--matrix" : "")">
+                        <td class="epos-kond-periode-rang">@periode.Rang.ToString(CultureInfo.InvariantCulture)</td>
+                        <td class="epos-kond-periode-art">@Artname(periode.Art)</td>
+                        <td>@periode.Name</td>
+                        <td>@Zeitraum(periode)</td>
+                        <td>@Angabetext(periode)</td>
+                        <td class="epos-kond-periode-aktionen">
+                            @if (periode.Matrixbereich)
+                            {
+                                <span class="epos-kond-leer">@Texte.TextAusMatrix</span>
+                            }
+                            else
+                            {
+                                <div class="epos-kond-periode-knoepfe">
+                                    @if (Verschieben is not null)
+                                    {
+                                        string? oben = Ranggrund(periode, hoeher: true);
+                                        string? unten = Ranggrund(periode, hoeher: false);
+                                        <button type="button" class="epos-knopf epos-kond-rang-hoeher"
+                                                aria-label="@Texte.KnopfRangHoeher" title="@(oben ?? Texte.KnopfRangHoeher)"
+                                                aria-disabled="@(oben is null ? null : "true")"
+                                                @onclick="() => RangGeklickt(periode.Rang, true, oben)"><span aria-hidden="true">▲</span></button>
+                                        <button type="button" class="epos-knopf epos-kond-rang-niedriger"
+                                                aria-label="@Texte.KnopfRangNiedriger" title="@(unten ?? Texte.KnopfRangNiedriger)"
+                                                aria-disabled="@(unten is null ? null : "true")"
+                                                @onclick="() => RangGeklickt(periode.Rang, false, unten)"><span aria-hidden="true">▼</span></button>
+                                    }
+                                    @if (Setzen is not null)
+                                    {
+                                        <button type="button" class="epos-knopf epos-kond-periode-bearbeiten"
+                                                aria-label="@Texte.KnopfPeriodeBearbeiten" title="@Texte.KnopfPeriodeBearbeiten"
+                                                @onclick="() => Bearbeiten(periode)"><span aria-hidden="true">✎</span></button>
+                                    }
+                                    @if (Loeschen is not null)
+                                    {
+                                        <button type="button" class="epos-knopf epos-kond-periode-loeschen"
+                                                aria-label="@Texte.KnopfPeriodeLoeschen" title="@Texte.KnopfPeriodeLoeschen"
+                                                @onclick="() => LoeschenGeklickt(periode.Rang)"><span aria-hidden="true">−</span></button>
+                                    }
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (Setzen is not null && _form is null)
+    {
+        <div class="epos-zeilenknoepfe">
+            <button type="button" class="epos-knopf epos-kond-periode-neu" @onclick="Neu">@Texte.KnopfPeriodeNeu</button>
+        </div>
+    }
+    @if (_form is not null)
+    {
+        string? grund = Formgrund;
+        <div class="epos-kond-periode-form" role="group"
+             aria-label="@(_rang is null ? Texte.KnopfPeriodeNeu : Texte.KnopfPeriodeBearbeiten)">
+            <Formularraster>
+                <KindInhalt>
+                    @if (_rang is null)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.SpalteArt" Eintraege="@Arten" Auswahl="@((int)_form.Art)"
+                                     AuswahlChanged="ArtGewaehlt" />
+                    }
+                    <Textfeld Bezeichnung="@Texte.SpalteName" Wert="@_form.Name" WertChanged="w => _form.Name = w ?? string.Empty"
+                              Hoechstlaenge="80" />
+                    @if (_form.Art == KonditionierungPeriodenart.Feiertag)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.ArtFeiertag" Eintraege="@Regeln" Auswahl="@Regelwahl"
+                                     Platzhalter="@Texte.PlatzhalterLeer" AuswahlChanged="RegelGewaehlt" />
+                    }
+                    else
+                    {
+                        <Gemeinjahrdatum Bezeichnung="@Texte.SpalteVon" Meldung="@Texte.MeldungGemeinjahr" Wert="@_form.Von"
+                                         WertChanged="w => _form.Von = w" />
+                        <Gemeinjahrdatum Bezeichnung="@Texte.SpalteBis" Meldung="@Texte.MeldungGemeinjahr" Wert="@_form.Bis"
+                                         WertChanged="w => _form.Bis = w" />
+                    }
+                    <Auswahlfeld Bezeichnung="@Texte.LabelAngabe" Eintraege="@Angaben" Auswahl="@((int)_form.Angabe)"
+                                 AuswahlChanged="w => _form.Angabe = (KonditionierungAngabe)(w ?? 0)" />
+                    @if (_form.Angabe == KonditionierungAngabe.Wert)
+                    {
+                        <Zahlenfeld Bezeichnung="@Texte.SpalteWert" Einheit="@Einheit" Min="@Minimum" Max="@Maximum"
+                                    Wert="@_form.Wert" WertChanged="w => _form.Wert = w" />
+                    }
+                    else if (_form.Angabe == KonditionierungAngabe.WieWochentag)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.LabelWochentag" Eintraege="@Tage" Auswahl="@_form.WieWochentag"
+                                     AuswahlChanged="w => _form.WieWochentag = w" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            <div class="epos-zeilenknoepfe">
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-kond-periode-uebernehmen"
+                        aria-disabled="@(grund is null ? null : "true")" title="@(grund ?? "")"
+                        @onclick="() => Uebernehmen(grund)">@Texte.KnopfUebernehmen</button>
+                <button type="button" class="epos-knopf epos-kond-periode-abbrechen" @onclick="Abbrechen">@Texte.KnopfAbbrechen</button>
+            </div>
+        </div>
+    }
+    <p class="epos-leisezeile">@Texte.HinweisPerioden</p>
+</div>
+
+@code {
+    /// <summary>Die Perioden des Kalenders, die ranghöchste zuerst.</summary>
+    [Parameter] public IReadOnlyList<KonditionierungPeriode> Perioden { get; set; } = Array.Empty<KonditionierungPeriode>();
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die sieben Tagesnamen, Montag zuerst (Anzeige von „wie Wochentag").</summary>
+    [Parameter] public IReadOnlyList<string> Wochentage { get; set; } = new[] { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
+
+    /// <summary>Die neun Feiertagsregeln; leer = die Art „Feiertag" wird nicht angeboten.</summary>
+    [Parameter] public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln { get; set; } = Array.Empty<KonditionierungFeiertag>();
+
+    /// <summary>Die Einheit der Spalte.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Die Untergrenze des Werts im Feld (genau prüft der Kern).</summary>
+    [Parameter] public double? Minimum { get; set; }
+
+    /// <summary>Die Obergrenze des Werts im Feld.</summary>
+    [Parameter] public double? Maximum { get; set; }
+
+    /// <summary>
+    /// Legt an (<c>null</c>) oder ersetzt (Rang) eine Periode — <c>true</c>, wenn es gegriffen hat;
+    /// <c>null</c> = kein „Periode hinzufügen" und kein ✎.
+    /// </summary>
+    [Parameter] public Func<int?, KonditionierungPeriode, bool>? Setzen { get; set; }
+
+    /// <summary>Rang ▲ (<c>true</c>) oder ▼ einer Periode im Eigenband; <c>null</c> = keine Knöpfe.</summary>
+    [Parameter] public Func<int, bool, bool>? Verschieben { get; set; }
+
+    /// <summary>Löscht eine eigene Periode über ihren Rang; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<int, bool>? Loeschen { get; set; }
+
+    /// <summary>Meldet jede Handlung — der Wirt zeichnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Meldet den Versuch an einer weich gesperrten Handlung — mit ihrem Grund.</summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>Die Eingabe des Formulars (Neu oder Bearbeiten); <c>null</c> = zu.</summary>
+    private KonditionierungPeriode? _form;
+
+    /// <summary>Der Rang der Periode, die das Formular ersetzt; <c>null</c> = neu.</summary>
+    private int? _rang;
+
+    /// <summary>Steht das Formular offen? Prüfhilfe für die Tests.</summary>
+    public bool FormularOffen => _form is not null;
+
+    private IReadOnlyList<(int Id, string Text)> Arten
+        => Feiertagsregeln.Count > 0
+            ? new[] { ((int)KonditionierungPeriodenart.Zeitraum, Texte.ArtZeitraum), ((int)KonditionierungPeriodenart.Feiertag, Texte.ArtFeiertag) }
+            : new[] { ((int)KonditionierungPeriodenart.Zeitraum, Texte.ArtZeitraum) };
+
+    private IReadOnlyList<(int Id, string Text)> Regeln
+        => Feiertagsregeln.Select((r, i) => (i, r.Name)).ToList();
+
+    private int? Regelwahl
+    {
+        get
+        {
+            if (_form?.Feiertagsregel is not string r) return null;
+            for (int i = 0; i < Feiertagsregeln.Count; i++)
+                if (string.Equals(Feiertagsregeln[i].Regel, r, StringComparison.Ordinal)) return i;
+            return null;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Angaben => new[]
+    {
+        ((int)KonditionierungAngabe.Wert, Texte.SpalteWert),
+        ((int)KonditionierungAngabe.Aus, Texte.ZelleAus),
+        ((int)KonditionierungAngabe.WieWochentag, Texte.LabelAngabeWochentag),
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Tage
+        => Enumerable.Range(1, 7).Select(t => (t, t - 1 < Wochentage.Count ? Wochentage[t - 1] : t.ToString(CultureInfo.InvariantCulture))).ToList();
+
+    private string Artname(KonditionierungPeriodenart a) => a switch
+    {
+        KonditionierungPeriodenart.Ferien => Texte.ArtFerien,
+        KonditionierungPeriodenart.Feiertag => Texte.ArtFeiertag,
+        KonditionierungPeriodenart.Betriebspause => Texte.ArtBetriebspause,
+        _ => Texte.ArtZeitraum
+    };
+
+    /// <summary>Der Zeitraum als Text („24.07.–03.09."), bei einer Feiertagsregel ihr Name.</summary>
+    private string Zeitraum(KonditionierungPeriode p)
+    {
+        if (!string.IsNullOrEmpty(p.Feiertagsregel))
+            return Feiertagsregeln.FirstOrDefault(r => r.Regel == p.Feiertagsregel)?.Name ?? p.Feiertagsregel!;
+        return Gemeinjahrdatum.Anzeigetext(p.Von) + "–" + Gemeinjahrdatum.Anzeigetext(p.Bis);
+    }
+
+    /// <summary>Die Angabe als Text: Wert mit Einheit, „aus", „eigene Woche" oder „wie So".</summary>
+    private string Angabetext(KonditionierungPeriode p) => p.Angabe switch
+    {
+        KonditionierungAngabe.Wert => (p.Wert is double w ? Zahlen.Anzeigetext(w) : "") + " " + Einheit,
+        KonditionierungAngabe.Aus => Texte.ZelleAus,
+        KonditionierungAngabe.Woche => Texte.WertEigeneWoche,
+        _ => string.Format(CultureInfo.CurrentCulture, Texte.WertWieWochentag,
+                           p.WieWochentag is int t && t >= 1 && t <= Wochentage.Count ? Wochentage[t - 1] : "")
+    };
+
+    /// <summary>
+    /// Warum ▲ bzw. ▼ an dieser Periode nicht greift — außerhalb des Eigenbands, oder sie steht dort schon
+    /// oben bzw. unten; <c>null</c> = frei. Die Regel selbst prüft der Kern.
+    /// </summary>
+    private string? Ranggrund(KonditionierungPeriode p, bool hoeher)
+    {
+        if (!p.Eigenband) return Texte.GrundRangBand;
+        bool nachbar = Perioden.Any(x => x.Eigenband && (hoeher ? x.Rang > p.Rang : x.Rang < p.Rang));
+        return nachbar ? null : hoeher ? Texte.GrundRangOben : Texte.GrundRangUnten;
+    }
+
+    /// <summary>Warum „Übernehmen" des Formulars weich gesperrt steht; <c>null</c> = vollständig.</summary>
+    private string? Formgrund
+    {
+        get
+        {
+            if (_form is null) return null;
+            bool ort = _form.Art == KonditionierungPeriodenart.Feiertag
+                ? !string.IsNullOrEmpty(_form.Feiertagsregel)
+                : _form.Von.HasValue && _form.Bis.HasValue;
+            bool angabe = _form.Angabe switch
+            {
+                KonditionierungAngabe.Wert => _form.Wert.HasValue,
+                KonditionierungAngabe.WieWochentag => _form.WieWochentag.HasValue,
+                _ => true
+            };
+            return string.IsNullOrWhiteSpace(_form.Name) || !ort || !angabe ? Texte.GrundPeriodeUnvollstaendig : null;
+        }
+    }
+
+    private void Neu()
+    {
+        _rang = null;
+        _form = new KonditionierungPeriode { Art = KonditionierungPeriodenart.Zeitraum, Angabe = KonditionierungAngabe.Wert };
+    }
+
+    private void Bearbeiten(KonditionierungPeriode p)
+    {
+        _rang = p.Rang;
+        _form = p.Kopie();
+        if (_form.Angabe == KonditionierungAngabe.Woche) _form.Angabe = KonditionierungAngabe.Wert;
+    }
+
+    private void Abbrechen()
+    {
+        _form = null;
+        _rang = null;
+    }
+
+    private void ArtGewaehlt(int? art)
+    {
+        if (_form is null) return;
+        _form.Art = art == (int)KonditionierungPeriodenart.Feiertag ? KonditionierungPeriodenart.Feiertag : KonditionierungPeriodenart.Zeitraum;
+        if (_form.Art == KonditionierungPeriodenart.Feiertag && _form.Angabe == KonditionierungAngabe.Wert && !_form.Wert.HasValue)
+        {
+            // Die Angabe der Feiertage: „wie Sonntag" (F11) — eine Vorbelegung, keine Pflicht.
+            _form.Angabe = KonditionierungAngabe.WieWochentag;
+            _form.WieWochentag ??= 7;
+        }
+    }
+
+    private void RegelGewaehlt(int? i)
+    {
+        if (_form is null) return;
+        string? alt = Regelwahl is int a ? Feiertagsregeln[a].Name : null;
+        _form.Feiertagsregel = i is int k && k >= 0 && k < Feiertagsregeln.Count ? Feiertagsregeln[k].Regel : null;
+        // Der Name folgt der Regel, solange er leer ist oder noch der Name der vorigen Regel.
+        if (i is int j && j >= 0 && j < Feiertagsregeln.Count && (string.IsNullOrWhiteSpace(_form.Name) || _form.Name == alt))
+            _form.Name = Feiertagsregeln[j].Name;
+    }
+
+    /// <summary>„Übernehmen": über den Wirt in den Arbeitsstand; nur ein gegriffener Schritt schließt das Formular.</summary>
+    private async Task Uebernehmen(string? grund)
+    {
+        if (grund is not null)
+        {
+            await Verweigert.InvokeAsync(grund);
+            return;
+        }
+        if (_form is null || Setzen is null) return;
+        KonditionierungPeriode p = _form.Kopie();
+        p.Name = p.Name.Trim();
+        if (p.Art == KonditionierungPeriodenart.Feiertag) { p.Von = null; p.Bis = null; }
+        else p.Feiertagsregel = null;
+        if (p.Angabe != KonditionierungAngabe.Wert) p.Wert = null;
+        if (p.Angabe != KonditionierungAngabe.WieWochentag) p.WieWochentag = null;
+        p.Woche = null;
+        if (Setzen(_rang, p)) Abbrechen();
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task RangGeklickt(int rang, bool hoeher, string? grund)
+    {
+        if (grund is not null)
+        {
+            await Verweigert.InvokeAsync(grund);
+            return;
+        }
+        Verschieben?.Invoke(rang, hoeher);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task LoeschenGeklickt(int rang)
+    {
+        Loeschen?.Invoke(rang);
+        if (_rang == rang) Abbrechen();
+        await Geaendert.InvokeAsync();
+    }
+}

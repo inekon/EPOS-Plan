@@ -911,6 +911,29 @@ namespace WindowsFormsApplication1
             => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Standardwoche(k, woche),
                                Konditionierungspostenart.Standardwoche);
 
+        /// <summary>
+        /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Festlegung 15) am angelegten Kalender des Orts —
+        /// Zeitraum oder Feiertag; <paramref name="rang"/> <c>null</c> = neu im Eigenband
+        /// (<see cref="Kalenderwerkzeuge.PeriodeSetzen"/>).
+        /// </summary>
+        public static Konditionierungsschritt PeriodeSetzen(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                            int? rang, string art, string bezeichner, int beginn, int ende,
+                                                            string feiertagsregel, Kalenderangabe angabe)
+            => WerkzeugSchritt(stand, ort,
+                               k => Kalenderwerkzeuge.PeriodeSetzen(k, rang, art, bezeichner, beginn, ende, feiertagsregel, angabe),
+                               Konditionierungspostenart.EigenePerioden);
+
+        /// <summary><b>Rang ▲▼ im Eigenband</b> (Festlegung 15; <see cref="Kalenderwerkzeuge.RangVerschieben"/>).</summary>
+        public static Konditionierungsschritt RangVerschieben(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                              int rang, bool hoeher)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.RangVerschieben(k, rang, hoeher),
+                               Konditionierungspostenart.EigenePerioden);
+
+        /// <summary><b>Eine eigene Periode löschen</b> (Festlegung 15; <see cref="Kalenderwerkzeuge.PeriodeLoeschen"/>).</summary>
+        public static Konditionierungsschritt PeriodeLoeschen(Konditionierungsarbeitsstand stand, Konditionierungsort ort, int rang)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.PeriodeLoeschen(k, rang),
+                               Konditionierungspostenart.EigenePerioden);
+
         /// <summary><b>Die Feiertage als Regel</b> (F11) auf den angelegten Kalender des Orts.</summary>
         public static Konditionierungsschritt Feiertage(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                         int wieWochentag)

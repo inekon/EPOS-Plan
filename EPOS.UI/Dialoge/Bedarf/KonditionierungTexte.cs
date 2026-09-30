@@ -715,4 +715,32 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_WERT</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
     public string GrundZeitfensterWert { get; set; } = "Erst einen Wert oder „aus“ angeben.";
+
+    /// <summary><c>KOND_LBL_ANGABE</c> — die Angabe einer Periode im Formular der Periodenliste</summary>
+    public string LabelAngabe { get; set; } = "Angabe";
+
+    /// <summary><c>KOND_LBL_ANGABE_WOCHENTAG</c> — die Angabe „wie Wochentag“ einer Periode</summary>
+    public string LabelAngabeWochentag { get; set; } = "wie Wochentag";
+
+    /// <summary><c>KOND_LBL_WOCHENTAG</c> — der Wochentag der Angabe „wie Wochentag“</summary>
+    public string LabelWochentag { get; set; } = "Wochentag";
+
+    /// <summary><c>KOND_TXT_AUS_MATRIX</c> — die Aktionsspalte einer Periode des Matrixbereichs</summary>
+    public string TextAusMatrix { get; set; } = "aus der Matrix – nur lesbar";
+
+    /// <summary><c>KOND_TXT_PERIODEN_LEER</c> — die leere Periodenliste</summary>
+    public string TextPeriodenLeer { get; set; } = "Keine Perioden – es gelten Standardwoche bzw. Grundangabe.";
+
+    /// <summary><c>KOND_TXT_GRUND_PERIODE</c> — der Grund des weich gesperrten „Übernehmen“ im Formular</summary>
+    public string GrundPeriodeUnvollstaendig { get; set; } = "Erst Name, Tage bzw. Feiertag und die Angabe angeben.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_OBEN</c> — der Grund des weich gesperrten ▲</summary>
+    public string GrundRangOben { get; set; } = "Die Periode hat schon den höchsten Rang der eigenen Perioden.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_UNTEN</c> — der Grund des weich gesperrten ▼</summary>
+    public string GrundRangUnten { get; set; } = "Die Periode hat schon den niedrigsten Rang der eigenen Perioden.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_BAND</c> — der Grund der weich gesperrten ▲▼ außerhalb des Eigenbands</summary>
+    public string GrundRangBand { get; set; }
+        = "Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.";
 }
