@@ -780,7 +780,11 @@ zeigen — ohne Datenbank. Der Parametersatz ist der der Anwendung (`GebaeudeKat
 Betriebsart Neu, dem Weg der Hülle ohne Datenbankzugriff); darüber legt die Seite je Fall Daten,
 Betriebsart, Sperre und Zonenweg. Gebäudetypen und -arten sind feste Listen, „Speichern“ und der
 Zonenweg melden Erfolg und schreiben nichts, die hergeleiteten Vorgaben der Wärmeübergabe (Klimareihe
-eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen.
+eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen. Der Reiter „Konditionierung“
+bekommt den Weg der Hülle ohne Datenbank (`KonditionierungHuelle.ReinerWeg`): Zellen, Kalender, Rückfragen,
+„aufteilen“ und „Zurücknehmen“ rechnen über die reinen Schritte des Kerns; die Vorlagen fehlen, „Aus dem
+Katalog erneut übernehmen…“ übernimmt im Fall `projekt` den Stand, wie er ist. Jeder Satz trägt eine leere
+Konditionierung, wie ein Satz einer Datenbank mit den Tabellen.
 
 | Adresse | Fall |
 |---|---|
@@ -788,6 +792,7 @@ eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen.
 | `…?fall=gesamt` | Bearbeiten; die Lüftung als Gesamtangabe — nur `Luftwechselrate` (0,6), Infiltration und Nutzerlüftung leer |
 | `…?fall=gesperrt` | Bearbeiten, ein ausgelieferter Satz: `Gesperrt` und `SperrGrund`, wie die Hülle sie für `ReadOnly` setzt |
 | `…?fall=neu` | Betriebsart Neu, der leere Satz der Hülle (Vorgabe) |
+| `…?fall=ohnetabellen` | Bearbeiten ohne die Tabellen der Konditionierung: der Reiter benannt gesperrt, nur die Bestandszellen |
 | `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
 | `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
 
@@ -798,14 +803,20 @@ node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner auß
 Gemessen je Fall bei 390 × 844, 820 × 1 180, 1 180 × 820 und 1 300 × 900, jeder Reiter angewählt: kein
 Querrollen (`scrollWidth ≤ clientWidth`) für Seite, Überlagerung und Reiterblatt; die Überlagerung ganz
 im Fenster und `min(96vw, 1400px)` breit; beim Öffnen stehen ihr Titel und ihr Kreuz im Bild;
-Bedienziele ≥ 44 × 44 px (ein Kästchen mit seiner Beschriftung; die Hilfepille hat das Hausmaß 28 px und
-wird nur genannt); im Reiterblatt überdeckt kein Bedienziel ein anderes und keines ragt heraus; Esc, ✕
+Bedienziele ≥ 44 × 44 px (ein Kästchen mit seiner Beschriftung, auch die zwei Felder der Hilfepille); im
+Reiterblatt überdeckt kein Bedienziel ein anderes und keines ragt heraus; Esc, ✕
 und Esc aus einem Feld schließen. Je Fall dazu: zwei Zonen im Reiter „Zonen“ (projekt); Infiltration
 und Nutzerlüftung leer, die Herleitungszeile nennt 0,60 1/h aus der Luftwechselrate (gesamt);
 Grundzeile mit Schloss, OK weich gesperrt mit dem Grund als `title`, „Speichern unter“ frei, der
 OK-Versuch meldet den Grund und schreibt nichts (gesperrt); kein „Speichern unter“ (neu); die Anordnung
 des Wochenrasters je Behälterbreite, 168 Zellen ≥ 44 × 44 px, sechs Zellen „aus“, im breitesten
-Fenster auch an den Schwellen 1 150, 1 149, 600 und 599 px (bausteine). Rückgabe `0` = kein Verstoß,
+Fenster auch an den Schwellen 1 150, 1 149, 600 und 599 px (bausteine). Im Reiter „Konditionierung“ der
+Umbruch am Behälter: ab 900 px fünf Spalten der Matrix und alle Karten, darunter eine Spalte, höchstens eine
+Karte und die fünf Reiter je Größe, die Tabelle ohne Querrollen; je Fall „Kalender anlegen“ und
+„Zurücknehmen“ neben „Aus dem Katalog erneut übernehmen…“ (projekt), die Rückfrage „aufteilen“ an der
+Gesamtangabe, nach „Ja“ Infiltration 0,3, Nutzerlüftung 0,3, Nachtauskühlung 2 und das Feld ΔT (gesamt),
+die Werte als Text ohne Feld und ohne Knopf (gesperrt), Karten mit „Kalender anlegen“ (neu), der Grund
+statt der Karten (ohnetabellen). Rückgabe `0` = kein Verstoß,
 `1` = mindestens einer, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
 **Ergebnis vom 29.09.2026** (Welle U0b; Wirt Release auf Port 5299, Chromium headless über das globale
@@ -825,3 +836,24 @@ Nachher, Überlagerung / Dialog / Reiterblatt in px: 390 → 374 / 340 / 340; 82
 ✕ und Esc im Feld schließen überall. Wochenraster: Behälter 340 px → 4 × 6 (kleinste Zelle 55,1 px),
 753 → 2 × 12 (56,8), 1 099 → 2 × 12 (85,6), 1 160 → 7 × 24 (44,4); an den Schwellen 1 150 → 7 × 24
 (44,0), 1 149 → 2 × 12, 600 → 2 × 12 (44,0), 599 → 4 × 6; jede Zelle 44 px hoch, sechs Zellen „aus“.
+
+**Ergebnis vom 30.09.2026** (Welle U1; Wirt Release auf Port 5299, Chromium headless über das globale
+Playwright, `kultur=de-DE`): **kein Verstoß** in 24 Läufen (6 Fälle × 4 Breiten, Rückgabe 0). Zwei
+Befunde aus den Fotos des ersten Laufs sind behoben: „Zurückneh|men“ brach bei 390 px im Wort, „Verwerfe|n“
+in der Karte bei 1 180 px — die Knopfzeilen von Kopf und Karte brechen jetzt zwischen den Knöpfen um, und
+ab 900 px stehen die fünf Karten in einer Reihe (`minmax(200px, 1fr)`; Wache `StilblattTests`); die zwei
+Felder der Saison nennen im Platzhalter Start und Ende.
+
+| Fenster | Überlagerung / Dialog | Behälter „Konditionierung“ | Matrix | Karten sichtbar |
+|---|---|---|---|---|
+| 390 × 844 | 374 / 340 px | 340 px | eine Spalte, fünf Reiter je Größe | 1 von 5 |
+| 820 × 1 180 | 787 / 753 px | 753 px | eine Spalte, fünf Reiter je Größe | 1 von 5 |
+| 1 180 × 820 | 1 133 / 1 099 px | 1 099 px | fünf Spalten, keine Reiter | 5 von 5 |
+| 1 300 × 900 | 1 248 / 1 214 px | 1 214 px | fünf Spalten, keine Reiter | 5 von 5 |
+
+Der Editor ist nicht mehr auf 1 160 px gedeckelt (1 300 px: Dialog 1 214 statt 1 160 px). Die Hilfepille
+misst 44 × 44 px je Feld; Bedienziele unter 44 px, Überdeckungen, Querrollen und beim Öffnen gerollt: je 0.
+Felder der Matrix: 25 mit Weg (neu, gesamt, projekt), 0 und 25 Texte im Lesemodus (gesperrt), 8
+Bestandszellen ohne Tabellen (ohne Kühlspalte, die ohne „Gebäude wird gekühlt“ weich gesperrt ist). „Kalender
+anlegen“ an „Heizen“ ergibt „angelegt, 0 eigene Perioden“, danach ist „Zurücknehmen“ frei. Das Wochenraster
+der Bausteine misst wie im Ergebnis vom 29.09.2026; die Fotos liegen außerhalb des Repositorys.

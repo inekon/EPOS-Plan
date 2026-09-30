@@ -154,13 +154,15 @@
             (int? start, int? ende) = Bearbeitung.Zeiten(g, z);
             string startfeld = feld + " · " + Texte.LabelSaisonStart;
             string endefeld = feld + " · " + Texte.LabelSaisonEnde;
+            @* Die Beschriftung der Zelle wird nur vorgelesen - der Platzhalter sagt, welches Feld Start
+               und welches Ende ist; "leer heisst ganzjaehrig" steht im Vermerk (Titel). *@
             <Gemeinjahrdatum Bezeichnung="@startfeld" Feldname="@startfeld" FehlerZustand="FehlerZustand"
                              Titel="@Texte.HinweisSaison" Meldung="@Texte.MeldungGemeinjahr"
-                             Platzhalter="@Texte.PlatzhalterGanzjaehrig" Wert="@start"
+                             Platzhalter="@Texte.LabelSaisonStart" Wert="@start"
                              WertChanged="w => SaisonSetzen(g, w, true)" />
             <Gemeinjahrdatum Bezeichnung="@endefeld" Feldname="@endefeld" FehlerZustand="FehlerZustand"
                              Titel="@Texte.HinweisSaison" Meldung="@Texte.MeldungGemeinjahr"
-                             Platzhalter="@Texte.PlatzhalterGanzjaehrig" Wert="@ende"
+                             Platzhalter="@Texte.LabelSaisonEnde" Wert="@ende"
                              WertChanged="w => SaisonSetzen(g, w, false)" />
             return;
         }

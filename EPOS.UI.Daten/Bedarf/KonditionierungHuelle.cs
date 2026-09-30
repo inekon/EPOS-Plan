@@ -545,8 +545,36 @@ namespace WindowsFormsApplication1
                 return new KonditionierungWeg { Sperre = MyResource.Resource.KOND_TXT_GRUND_OHNE_TABELLEN };
             bool projekt = art == Kalendereigentuemer.Gebaeude && idGebaeude > 0;
             Bezug bezug = Projektbezug(projekt ? idProjekt : 0);
-            var vorlagen = new KonditionierungsvorlageCtrl();
+            Func<KonditionierungStand, KonditionierungErgebnis> katalog = projekt
+                ? s => Schritt(s, art, bezug, a => Konditionierungsarbeit.KatalogErneut(
+                    a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
+                : null;
+            return Bauen(art, bezug, projekt, projekt ? idGebaeude : 0, new KonditionierungsvorlageCtrl(), katalog);
+        }
 
+        /// <summary>
+        /// <b>Der Weg ohne Datenbank</b> — allein die reinen Schritte über dem Arbeitsstand: Zellen,
+        /// Kalender, Werkzeuge der Karte, Rückfragebefunde, Vorschau, Lasten und Prüfung. Die Vorlagen und
+        /// „Aus dem Katalog erneut übernehmen…" fehlen (sie lesen bzw. schreiben die Datenbank) — „kein
+        /// Delegat, kein Knopf". Für Prüfstände ohne Datenbank (die Konditionierungsprobe des Wirts);
+        /// <paramref name="katalogErneut"/> setzt ein Prüfstand, der den Knopf zeigen will.
+        /// </summary>
+        /// <param name="art">Gebäude (Projekt) oder Katalogbau.</param>
+        /// <param name="projekt">Steht der Editor im Projekt? Dann fragt „Speichern unter" nach den Zonen.</param>
+        /// <param name="bezug">Der Bezug des Projekts; <c>null</c> = der des Katalogs.</param>
+        /// <param name="katalogErneut">„Aus dem Katalog erneut übernehmen…" des Prüfstands; <c>null</c> = keiner.</param>
+        internal static KonditionierungWeg ReinerWeg(Kalendereigentuemer art, bool projekt, Bezug bezug = null,
+                                                     Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut = null)
+            => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, null, katalogErneut);
+
+        /// <summary>
+        /// Baut das Bündel: je Handlung ein Delegat über den reinen Schritt. <paramref name="vorlagen"/>
+        /// <c>null</c> = ohne die Wege der Vorlagen (ohne Datenbank).
+        /// </summary>
+        private static KonditionierungWeg Bauen(Kalendereigentuemer art, Bezug bezug, bool projekt, int idGebaeude,
+                                                KonditionierungsvorlageCtrl vorlagen,
+                                                Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut)
+        {
             return new KonditionierungWeg
             {
                 ZelleSetzen = (s, o, z, c) => Schritt(s, art, bezug, a => Konditionierungsarbeit.ZelleSetzen(
@@ -554,30 +582,27 @@ namespace WindowsFormsApplication1
                 Anlegen = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Anlegen(a, Ort(o))),
                 Verwerfen = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Verwerfen(a, Ort(o))),
                 MatrixErneut = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.MatrixErneut(a, Ort(o))),
-                KatalogErneut = projekt
-                    ? s => Schritt(s, art, bezug, a => Konditionierungsarbeit.KatalogErneut(
-                        a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
-                    : null,
+                KatalogErneut = katalogErneut,
                 LuftwechselAufteilen = s => Schritt(s, art, bezug, Konditionierungsarbeit.LuftwechselAufteilen),
 
-                Vorlagen = g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
-                VorlageUebernehmen = (s, o, id) => Schritt(s, art, bezug, a =>
+                Vorlagen = vorlagen == null ? null : g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
+                VorlageUebernehmen = vorlagen == null ? null : (s, o, id) => Schritt(s, art, bezug, a =>
                 {
                     Konditionierungsvorlage v = Vorlage(vorlagen, id, out string m);
                     return v == null ? Konditionierungsschritt.Fehler(m) : Konditionierungsarbeit.VorlageUebernehmen(a, Ort(o), v);
                 }),
-                AlsVorlageSpeichern = (s, o, e) => AlsVorlage(vorlagen, s, art, bezug, o, e),
-                VorlageUmbenennen = (id, name) =>
+                AlsVorlageSpeichern = vorlagen == null ? null : (s, o, e) => AlsVorlage(vorlagen, s, art, bezug, o, e),
+                VorlageUmbenennen = vorlagen == null ? null : (id, name) =>
                 {
                     KonditionierungCtrl.Ergebnis e = vorlagen.Umbenennen(id, name);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
                 },
-                VorlageLoeschen = id =>
+                VorlageLoeschen = vorlagen == null ? null : id =>
                 {
                     KonditionierungCtrl.Ergebnis e = vorlagen.Loeschen(id);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, null);
                 },
-                VorlageDuplizieren = (id, name) =>
+                VorlageDuplizieren = vorlagen == null ? null : (id, name) =>
                 {
                     KonditionierungCtrl.Ergebnis e = vorlagen.Duplizieren(id, name, out long neu);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
@@ -590,7 +615,7 @@ namespace WindowsFormsApplication1
                 Zeitstruktur = (s, o, q) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitstruktur(
                     a, Ort(o), q == KonditionierungZeitstruktur.WieHeizung ? Zeitstrukturquelle.WieHeizung : Zeitstrukturquelle.WieAnwesenheit)),
 
-                Rueckfrage = (s, o, h) => Befund(s, art, bezug, o, h, projekt ? idGebaeude : 0),
+                Rueckfrage = (s, o, h) => Befund(s, art, bezug, o, h, idGebaeude),
                 SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art, bezug) : null,
                 WochenVorschau = Vorschau,
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),

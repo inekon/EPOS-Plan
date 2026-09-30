@@ -1,5 +1,5 @@
 // =====================================================================
-//  KONDITIONIERUNGSPROBE (Stufe KP2, Welle U0b) — der Gebäude-Katalogeditor
+//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b und U1) — der Gebäude-Katalogeditor
 //  in der BREITEN Überlagerung, im echten Browser
 // =====================================================================
 //
@@ -14,8 +14,8 @@
 //    - die Überlagerung ganz im Fenster, ihre Breite min(96vw, 1 400 px), und
 //      beim Öffnen stehen ihr Titel und ihr Kreuz im Bild (nicht weggerollt);
 //    - Bedienziele ≥ 44 × 44 px (Knopf, Feld, Klappliste, Reiter; ein
-//      Kästchen zählt mit seiner Beschriftung; die Hilfepille hat das
-//      Hausmaß 28 px und wird nur genannt);
+//      Kästchen zählt mit seiner Beschriftung; auch die zwei Felder der
+//      Hilfepille, Welle U1);
 //    - im Reiterblatt überdeckt kein Bedienziel ein anderes und keines ragt
 //      aus dem Blatt (Reiter 1 darf in der breiten Überlagerung nicht leiden);
 //    - Esc und ✕ schließen die Überlagerung, Esc auch aus einem Feld heraus;
@@ -25,7 +25,14 @@
 //      freies „Speichern unter“ (gesperrt; OK meldet den Grund und schreibt
 //      nichts), kein „Speichern unter“ (neu), die Anordnung des Wochenrasters
 //      je Behälterbreite samt sechs Zellen „aus“, im breitesten Fenster auch
-//      an den Schwellen 1 150/1 149/600/599 px, jede Zelle ≥ 44 px (bausteine).
+//      an den Schwellen 1 150/1 149/600/599 px, jede Zelle ≥ 44 px (bausteine);
+//    - der Reiter „Konditionierung“ (Welle U1): Umbruch am BEHÄLTER — ab 900 px
+//      die Matrix mit fünf Spalten und fünf Karten, darunter eine Spalte, eine
+//      Karte und fünf Reiter je Größe; die Tabelle rollt nicht quer. Je Fall:
+//      „Kalender anlegen“ und „Zurücknehmen“ (projekt), die Rückfrage
+//      „aufteilen“ an der Gesamtangabe samt Ergebnis (gesamt), die Werte als
+//      Text ohne Handlung (gesperrt), Karten mit „Kalender anlegen“ (neu), der
+//      benannt gesperrte Reiter ohne Karten (ohnetabellen).
 //
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
 //    node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--nur <fall>] [--kultur de-DE]
@@ -53,7 +60,7 @@ const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
 const KULTUR = arg('kultur', 'de-DE');
 
-const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'bausteine'];
+const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'bausteine'];
 const FENSTER = [
   { breite: 390, hoehe: 844 },     // Telefon hochkant
   { breite: 820, hoehe: 1180 },    // Tablet hochkant
@@ -95,12 +102,10 @@ const MESSEN = ([ziel, tol]) => {
     return `${z.el.tagName.toLowerCase()}${z.el.type && z.el.tagName === 'INPUT' ? '[' + z.el.type + ']' : ''}` +
            `.${(z.el.className || '').toString().split(' ').filter(Boolean).slice(0, 2).join('.')} „${t}“`;
   };
-  // AUSNAHME: die Hilfepille im Dialogkopf (Fragezeichen und Assistent) hat
-  // das Hausmaß --epos-infoknopf (28 px, Vorbild InfoKnopf 28 × 28) - eine
-  // Festlegung des Hauses, nicht dieses Editors. Sie wird gezählt und
-  // genannt, aber nicht als Verstoß gewertet.
+  // Die Hilfepille zählt wie jedes Bedienziel (Welle U1: 44 px statt des
+  // Hausmaßes 28 px); ihre Maße stehen zusätzlich im Protokoll.
   const pille = z => z.el.classList.contains('epos-hilfepille__feld');
-  const klein = ziele.filter(z => !pille(z) && (z.m.b < ziel - tol || z.m.h < ziel - tol))
+  const klein = ziele.filter(z => z.m.b < ziel - tol || z.m.h < ziel - tol)
     .map(z => `${name(z)} ${z.m.b}×${z.m.h}`);
   const pillen = ziele.filter(pille).map(z => `${z.m.b}×${z.m.h}`);
 
@@ -134,6 +139,37 @@ const MESSEN = ([ziel, tol]) => {
     reiter: aktiv ? aktiv.innerText.replace(/\s+/g, ' ').trim() : '',
     ziele: ziele.length, zieleBlatt: imBlatt.length, klein, pillen, ueberdeckt, heraus
   };
+};
+
+// Der Reiter „Konditionierung“ (Welle U1): der Behälter .epos-kond, die
+// sichtbaren Spalten der Matrix, die sichtbaren Reiter je Größe und Karten.
+const KOND = () => {
+  const k = document.querySelector('.epos-ueberlagerung .epos-kond');
+  if (!k) return null;
+  const sichtbar = el => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
+  const tab = k.querySelector('table.epos-kond-matrix');
+  const alle = sel => [...k.querySelectorAll(sel)];
+  return {
+    breite: k.clientWidth,
+    spalten: alle('table.epos-kond-matrix th[scope=col]').filter(sichtbar).length,
+    reiter: alle('.epos-kond-groessen [role=tab]').filter(sichtbar).length,
+    karten: alle('.epos-kond-karte').filter(sichtbar).length,
+    alleKarten: alle('.epos-kond-karte').length,
+    felder: alle('table.epos-kond-matrix input').length,
+    texte: alle('table.epos-kond-matrix .epos-kond-text').length,
+    tabQuer: tab ? tab.scrollWidth - tab.clientWidth : 0,
+    sperre: ((k.querySelector('.epos-kond-sperrzeile') || {}).innerText || '').trim(),
+    kopf: alle('.epos-kond-kopf button').map(b => b.innerText.trim()),
+    anlegen: alle('.epos-kond-karte button.epos-kond-anlegen').filter(sichtbar).length
+  };
+};
+
+// Ein Feld der Matrix nach seiner (vorgelesenen) Beschriftung.
+const FELD = text => {
+  const l = [...document.querySelectorAll('.epos-ueberlagerung label.epos-feld')]
+    .find(f => ((f.querySelector('.epos-feld-text') || {}).textContent || '').trim() === text);
+  const e = l ? l.querySelector('input') : null;
+  return e ? { wert: e.value, platzhalter: e.getAttribute('placeholder') || '' } : null;
 };
 
 // Fall "bausteine": die Anordnung des Wochenrasters aus den Kästen seiner
@@ -206,7 +242,7 @@ async function fall(browser, name, f) {
       `Überlagerung ${m.ueb.b} px (quer ${m.ueb.quer}), Dialog ${m.dialog ? m.dialog.b : '—'} px, ` +
       `Blatt ${m.blatt ? m.blatt.b + ' px (quer ' + m.blatt.quer + ')' : '—'}, Seite quer ${m.seiteQuer}, ` +
       `Ziele ${m.ziele} (im Blatt ${m.zieleBlatt}), unter 44: ${m.klein.length}` +
-      (m.pillen.length ? ` (Hilfepille ${m.pillen.join(', ')} ausgenommen)` : '') +
+      (m.pillen.length ? ` (Hilfepille ${m.pillen.join(', ')})` : '') +
       `, überdeckt: ${m.ueberdeckt.length}, heraus: ${m.heraus.length}`;
     console.log(zeile);
     if (m.stilblatt !== 'fixed') melde(marke, 'Stilblatt nicht geladen (Überlagerung ' + m.stilblatt + ')');
@@ -219,6 +255,18 @@ async function fall(browser, name, f) {
     for (const k of m.klein) melde(marke, `Reiter ${i + 1}: Bedienziel unter 44 px: ${k}`);
     for (const u of m.ueberdeckt) melde(marke, `Reiter ${i + 1}: Bedienziele überdecken sich: ${u}`);
     for (const h of m.heraus) melde(marke, `Reiter ${i + 1}: Bedienziel ragt aus dem Blatt: ${h}`);
+    const k = await seite.evaluate(KOND);
+    if (k) {
+      const breit = k.breite >= 900;
+      console.log(`  Konditionierung: Behälter ${k.breite} px → ${k.spalten} Spalte(n), ${k.reiter} Reiter je Größe, ` +
+                  `${k.karten}/${k.alleKarten} Karten sichtbar, Felder ${k.felder}, Texte ${k.texte}, quer ${k.tabQuer}` +
+                  (k.sperre ? `; Grund „${k.sperre.slice(0, 50)}…“` : '') + (k.kopf.length ? `; Kopf: ${k.kopf.join(' | ')}` : ''));
+      if (breit && (k.spalten !== 5 || k.reiter !== 0 || k.karten !== k.alleKarten))
+        melde(marke, `Konditionierung breit (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
+      if (!breit && (k.spalten !== 1 || k.reiter !== 5 || k.karten !== Math.min(1, k.alleKarten)))
+        melde(marke, `Konditionierung schmal (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
+      if (k.tabQuer > 0) melde(marke, `die Matrix rollt quer (${k.tabQuer} px)`);
+    }
     if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_${reiter ? 'reiter' + (i + 1) : 'blatt'}.png` });
   }
   if (reiter) { await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300); }
@@ -234,27 +282,75 @@ async function fall(browser, name, f) {
     await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
   }
   if (name === 'gesamt') {
-    // Die Gesamtangabe: Infiltration und Nutzerlüftung leer (ohne Platzhalter -
-    // es gilt die Luftwechselrate), die Herleitungszeile nennt den wirksamen
-    // Luftwechsel 0,60 aus der Luftwechselrate.
-    const l = await seite.evaluate(() => {
-      const eingabe = text => {
-        const x = [...document.querySelectorAll('.epos-ueberlagerung label.epos-feld')]
-          .find(f => ((f.querySelector('.epos-feld-text') || {}).innerText || '').trim() === text);
-        const e = x ? x.querySelector('input') : null;
-        return e ? { wert: e.value, platzhalter: e.getAttribute('placeholder') || '' } : null;
-      };
+    // Die Gesamtangabe: Luftwechselrate 0,6 im ersten Reiter samt Herleitung 0,60;
+    // Infiltration und Nutzerlüftung stehen leer in der Spalte „Lüftung“ des
+    // Reiters „Konditionierung“ (E56 F3 (a)).
+    const r1 = await seite.evaluate(([feld]) => {
       const zeile = [...document.querySelectorAll('.epos-ueberlagerung .epos-herleitung-text')]
         .map(e => e.innerText.trim()).find(t => t.includes('0,60')) || '';
-      return { rate: eingabe('Luftwechselrate :'), infiltration: eingabe('Infiltration :'),
-               nutzer: eingabe('Nutzerlüftung :'), zeile };
-    });
-    console.log(`  Lüftung: Luftwechselrate „${l.rate?.wert}“, Infiltration „${l.infiltration?.wert}“, ` +
-                `Nutzerlüftung „${l.nutzer?.wert}“; Herleitung „${l.zeile}“`);
-    if (!l.rate || l.rate.wert !== '0,6') melde(marke, 'die Luftwechselrate steht nicht als 0,6 da');
-    for (const [n, e] of [['Infiltration', l.infiltration], ['Nutzerlüftung', l.nutzer]])
+      return { rate: eval(feld)('Luftwechselrate :'), zeile };
+    }, [FELD.toString()]);
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(400);
+    const vor = await seite.evaluate(([feld]) => ({
+      infiltration: eval(feld)('Lüftung · Infiltration'), nutzer: eval(feld)('Lüftung · Nutzerlüftung')
+    }), [FELD.toString()]);
+    console.log(`  Lüftung: Luftwechselrate „${r1.rate?.wert}“, Infiltration „${vor.infiltration?.wert}“, ` +
+                `Nutzerlüftung „${vor.nutzer?.wert}“; Herleitung „${r1.zeile}“`);
+    if (!r1.rate || r1.rate.wert !== '0,6') melde(marke, 'die Luftwechselrate steht nicht als 0,6 da');
+    for (const [n, e] of [['Infiltration', vor.infiltration], ['Nutzerlüftung', vor.nutzer]])
       if (!e || e.wert !== '') melde(marke, `${n} ist nicht leer`);
-    if (!l.zeile) melde(marke, 'keine Herleitungszeile mit dem wirksamen Luftwechsel 0,60');
+    if (!r1.zeile) melde(marke, 'keine Herleitungszeile mit dem wirksamen Luftwechsel 0,60');
+
+    // F5 (a): die Nachtauskühlung an der Gesamtangabe fragt „aufteilen“; „Ja“ teilt auf
+    // (Infiltration 0,3, Nutzerlüftung 0,3) und setzt die Zelle - ein Schritt.
+    const groesse = seite.locator('.epos-ueberlagerung .epos-kond-groessen [role=tab]').nth(2);
+    if (await groesse.isVisible()) { await groesse.click(); await schlaf(300); }
+    const nacht = seite.locator('.epos-ueberlagerung label.epos-feld', { hasText: 'Lüftung · Nachtauskühlung' }).locator('input');
+    await nacht.fill('2'); await schlaf(500);
+    const frage = ((await seite.locator('.epos-rueckfrage-text').allInnerTexts())[0] || '').trim();
+    console.log(`  Aufteilen: „${frage.slice(0, 90)}…“`);
+    if (!frage.includes('0,6') || !frage.includes('0,3')) melde(marke, 'die Rückfrage „aufteilen“ nennt Rate und Aufteilung nicht');
+    if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_aufteilen.png` });
+    await seite.locator('.epos-rueckfrage button', { hasText: /^Ja$/ }).click(); await schlaf(500);
+    const nach = await seite.evaluate(([feld]) => ({
+      infiltration: eval(feld)('Lüftung · Infiltration'), nutzer: eval(feld)('Lüftung · Nutzerlüftung'),
+      nacht: eval(feld)('Lüftung · Nachtauskühlung'), dt: eval(feld)('Lüftung · ΔT Außenluft')
+    }), [FELD.toString()]);
+    console.log(`  Nach „Ja“: Infiltration „${nach.infiltration?.wert}“, Nutzerlüftung „${nach.nutzer?.wert}“, ` +
+                `Nachtauskühlung „${nach.nacht?.wert}“, ΔT ${nach.dt ? 'steht (Platzhalter ' + nach.dt.platzhalter + ')' : 'fehlt'}`);
+    if (nach.infiltration?.wert !== '0,3' || nach.nutzer?.wert !== '0,3' || nach.nacht?.wert !== '2')
+      melde(marke, 'nach „aufteilen“ stehen Infiltration, Nutzerlüftung und Nachtauskühlung nicht richtig');
+    if (!nach.dt) melde(marke, 'ΔT der Nachtauskühlung fehlt');
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+  }
+  if (name === 'projekt') {
+    // „Kalender anlegen“ an der Karte „Heizen“ und „Zurücknehmen“ im Kopf.
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(400);
+    const kopf = await seite.evaluate(KOND);
+    await seite.locator('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"] button.epos-kond-anlegen').click();
+    await schlaf(500);
+    const p = await seite.evaluate(() => ({
+      zustand: ((document.querySelector('.epos-kond-karte[data-groesse="0"] .epos-kond-karte-zustand') || {}).innerText || '').trim(),
+      zurueck: (document.querySelector('.epos-kond-zuruecknehmen') || { getAttribute: () => 'fehlt' }).getAttribute('aria-disabled')
+    }));
+    console.log(`  Projekt: Kopf ${kopf.kopf.join(' | ')}; Heizen nach „Kalender anlegen“: „${p.zustand}“, ` +
+                `Zurücknehmen aria-disabled=${p.zurueck}`);
+    if (kopf.kopf.length !== 2) melde(marke, 'im Kopf fehlen „Aus dem Katalog erneut übernehmen…“ oder „Zurücknehmen“');
+    if (!p.zustand.startsWith('angelegt')) melde(marke, '„Kalender anlegen“ legt nicht an');
+    if (p.zurueck !== null) melde(marke, '„Zurücknehmen“ ist nach dem Anlegen noch gesperrt');
+    if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_angelegt.png` });
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+  }
+  if (name === 'gesperrt' || name === 'neu' || name === 'ohnetabellen') {
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(400);
+    const k = await seite.evaluate(KOND);
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+    if (name === 'gesperrt' && (k.felder !== 0 || k.texte === 0 || k.anlegen !== 0 || k.kopf.length !== 0))
+      melde(marke, `Lesemodus: ${k.felder} Felder, ${k.texte} Texte, ${k.anlegen} Knöpfe „Kalender anlegen“`);
+    if (name === 'neu' && (k.felder === 0 || k.anlegen === 0 || k.sperre))
+      melde(marke, `Neu: ${k.felder} Felder, ${k.anlegen} Knöpfe „Kalender anlegen“, Grund „${k.sperre}“`);
+    if (name === 'ohnetabellen' && (!k.sperre || k.alleKarten !== 0 || k.felder === 0))
+      melde(marke, `ohne Tabellen: Grund „${k.sperre}“, ${k.alleKarten} Karten, ${k.felder} Felder`);
   }
   if (name === 'gesperrt' || name === 'neu') {
     const s = await seite.evaluate(() => {

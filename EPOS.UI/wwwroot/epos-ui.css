@@ -13571,6 +13571,13 @@ td.epos-vorlage-katalogbeschreibung {
     margin-top: 6px;
 }
 
+/* Die Knopfzeilen des Reiters (Kopf und Karte) brechen zwischen den
+   Knoepfen um, nie im Wort (gemessen: "Zurueckneh|men" bei 390 px). */
+.epos-kond-kopf,
+.epos-kond-karte-knoepfe {
+    flex-wrap: wrap;
+}
+
 @container epos-kond (min-width: 900px) {
     .epos-kond-groessen {
         display: none;
@@ -13586,7 +13593,7 @@ td.epos-vorlage-katalogbeschreibung {
     }
 
     .epos-kond-karten {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 }
 

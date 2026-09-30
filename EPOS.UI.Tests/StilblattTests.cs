@@ -874,6 +874,12 @@ public sealed class StilblattTests
 
         Assert.Contains("width: 100%", Regelblock(".epos-kond-gesperrt {"), StringComparison.Ordinal);
 
+        // Die Knopfzeilen (Kopf und Karte) brechen zwischen den Knöpfen um, nie im Wort — gemessen in der
+        // Konditionierungsprobe: „Zurückneh|men“ bei 390 px, „Verwerfe|n“ in der Karte bei 1 180 px.
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-kond-kopf,"), StringComparison.Ordinal);
+        // Fünf Karten in einer Reihe, sobald die Matrix als Tabelle steht (Behälter ab 900 px).
+        Assert.Contains("repeat(auto-fill, minmax(200px, 1fr))", breit, StringComparison.Ordinal);
+
         foreach (string regel in new[] { ".epos-kond-matrix th,", ".epos-kond-leer {", ".epos-kond-karte {",
                                          ".epos-kond-karte-zustand {" })
             Assert.DoesNotContain("#", Regelblock(regel), StringComparison.Ordinal);
