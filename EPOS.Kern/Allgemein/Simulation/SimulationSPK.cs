@@ -9,7 +9,8 @@ namespace WindowsFormsApplication1
     // Die fehleranfällige und pauschale Jahres-Verlustberechnung (mit den fiktiven Betriebsstunden und der asymmetrischen Bereitschaft)
     // wurde komplett entfernt. Stattdessen wird der Brennstoffverbrauch nun stündlich direkt in der Simulationsschleife ermittelt:
     //
-    // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den stündlichen Wirkungsgrad ermittelt.
+    // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den Wirkungsgrad seiner Laststufe
+    //   ermittelt (Teillastkennlinie, Kesselkennlinie.Eta; Konzept Kesselkennlinie 4.1).
     // - Steht er in einer Stunde still und ist er betriebsbereit (Heiztag oder Nachlauf, #568), wird
     //   ihm für diese exakte Stunde der Bereitschaftsverlust als Brennstoffverbrauch (Wärmeverlust)
     //   aufgeschlagen; außerhalb der Betriebsbereitschaft ist er abgeschaltet und verliert nichts.
@@ -264,6 +265,47 @@ namespace WindowsFormsApplication1
         int[] Brennstoff_Art = new int[MAX_SPK];
         double[] Kessel_Leistung_Spk = new double[MAX_SPK];
 
+        // ------------------------------------------------------------------
+        // TEILLASTKENNLINIE (Konzept Kesselkennlinie 4.1, Etappe E2)
+        //
+        // Je Stunde rechnet ein Brennstoffkessel mit dem Wirkungsgrad seiner Laststufe
+        // (Kesselkennlinie.Eta), gestützt auf η₁₀₀ (Wirkungsgrad_Gas/_Öl) und η₃₀
+        // (Wirkungsgrad_Teillast30, leer = Normvorgabe nach Bauart, Entscheid F1). Das
+        // wirksame η₃₀ bildet Stunde_Abschluss aus dem η₁₀₀ derselben Stunde — so folgt die
+        // Vorgabe immer dem Nennwert, mit dem der Kessel wirklich rechnet.
+        // ------------------------------------------------------------------
+
+        /// <summary>Gepflegtes η₃₀ je Kessel, wie es in der Projektkopie steht; <c>null</c> = leer.</summary>
+        private readonly double?[] _eta30Gepflegt = new double?[MAX_SPK];
+
+        /// <summary>Bauart je Kessel für die Normvorgabe (<see cref="Kesselkennlinie.Bauart"/>).</summary>
+        private readonly KesselBauart[] _bauart = new KesselBauart[MAX_SPK];
+
+        /// <summary>Brennstoffbasierte Wärme der Laufstunden je Kessel [kWh/a] — Bezug der Mittelwerte.</summary>
+        private readonly double[] _waermeBetriebKwh = new double[MAX_SPK];
+
+        /// <summary>
+        /// Wirkungsgrad je Kessel und Stunde (Faktor) — in Laufstunden η(β), sonst 0; angelegt in
+        /// <see cref="Vorbereiten_Zweikanalig"/> für die Kessel des Laufs, sonst <c>null</c>.
+        /// Nur Anzeige und Export (Konzept 5), keine Rechengröße.
+        /// </summary>
+        private readonly double[][] _wirkungsgradStunde = new double[MAX_SPK][];
+
+        /// <summary>
+        /// BRENNSTOFF DER LAUFSTUNDEN je Kessel [kWh/a]: Σ Wärme/η(β) — der Brennstoffeinsatz
+        /// ohne Bereitschaftsverlust. <see cref="Kessel_Verbrauch_MWh_Spk"/> ist dieser Wert plus
+        /// <see cref="Bereitschaftsverlust_KWh_Spk"/>.
+        /// </summary>
+        public double[] BrennstoffBetrieb_KWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// MEHRBRENNSTOFF AUS TEILLAST je Kessel [kWh/a] gegenüber dem Betrieb mit η₁₀₀:
+        /// Σ (Wärme/η(β) − Wärme/η₁₀₀) über die Laufstunden (Konzept 4.1 Punkt 7). Negativ, wo
+        /// der Kessel in Teillast besser arbeitet als bei Nennlast (Brennwertkessel); beim
+        /// Niedertemperatur- und beim Elektrokessel 0.
+        /// </summary>
+        public double[] TeillastMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
+
         // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
         // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
         // Heizkessel_Simulation, Bilanz_und_Nutzungsgrad auf EINEM Bedarfsvektor). Er
@@ -376,6 +418,24 @@ namespace WindowsFormsApplication1
 
                 Brennstoff_Betrieb_Spk[i] = heizkesselctrl.items[0].Brennstoff;
                 Brennstoff_Art[i] = Brennstoff_Betrieb_Spk[i];
+
+                // Konzept Kesselkennlinie 4.1 (Etappe E2): η₃₀ der Projektkopie und die Bauart
+                // für die Normvorgabe eines leeren Felds (7.1, Entscheid F1).
+                _eta30Gepflegt[i] = heizkesselctrl.items[0].Wirkungsgrad_Teillast30;
+                _bauart[i] = Kesselkennlinie.Bauart(heizkesselctrl.items[0].Brennwert,
+                                                    heizkesselctrl.items[0].Beschreibung);
+                if (Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i]))
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "KESSEL_KENNLINIE_" + spk_list[i],
+                        MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                            System.Globalization.CultureInfo.CurrentCulture,
+                            TeillastwirkungsgradIstVorgabe(i)
+                                ? MyResource.Resource.SIMENG_KESSEL_KENNLINIE_VORGABE
+                                : MyResource.Resource.SIMENG_KESSEL_KENNLINIE_GEPFLEGT,
+                            spk_list[i],
+                            Nennwirkungsgrad(i).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                            Teillastwirkungsgrad(i).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                            BauartText(_bauart[i])));
 
                 Betriebsbereitschaft_Verluste[i] =
                     BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
@@ -1255,6 +1315,7 @@ namespace WindowsFormsApplication1
             {
                 int idAnlage = (i < spk_anlagen_ids.Count) ? spk_anlagen_ids[i] : 0;
                 _kesselSenke.Add(SenkeZuAnlage(senken, idAnlage));
+                _wirkungsgradStunde[i] = new double[8760];
             }
 
             _anzahlZweikanalig = Anzahl;
@@ -1478,8 +1539,14 @@ namespace WindowsFormsApplication1
                 bool oel = Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9 ||
                            Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22;
 
-                double wirk = oel ? Kessel_Wirk_Oel_Spk[i] : Kessel_Wirk_Gas_Spk[i];
-                if (wirk <= 0) wirk = 0.90; // Fallback
+                double eta100 = oel ? Kessel_Wirk_Oel_Spk[i] : Kessel_Wirk_Gas_Spk[i];
+                if (eta100 <= 0) eta100 = 0.90; // Fallback
+
+                // Konzept Kesselkennlinie 4.1 (Etappe E2): der Wirkungsgrad der Laststufe
+                // β = Wärme/Nennleistung. Der Elektrokessel rechnet mit η₁₀₀ wie bisher; beim
+                // Niedertemperaturkessel ohne eigenes η₃₀ ist η₃₀ = η₁₀₀ und die Kurve flach —
+                // beide Wege sind Stunde für Stunde bitgleich zum festen Wirkungsgrad.
+                double wirk = WirkungsgradDerStunde(i, KesselLeistung, eta100);
 
                 double stuendlicherBrennstoffverbrauchKW;
 
@@ -1490,6 +1557,13 @@ namespace WindowsFormsApplication1
                 {
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
                     stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
+
+                    // E2: der Brennstoff der Laufstunde und sein Teillastanteil gegenüber η₁₀₀.
+                    _waermeBetriebKwh[i] += KesselLeistung;
+                    BrennstoffBetrieb_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
+                    TeillastMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - KesselLeistung / eta100;
+                    if (_wirkungsgradStunde[i] != null && stunde >= 0 && stunde < 8760)
+                        _wirkungsgradStunde[i][stunde] = wirk;
 
                     Laufstunden_Spk[i]++;
                     if (!_liefVorstunde[i]) Starts_Spk[i]++;
@@ -1530,6 +1604,106 @@ namespace WindowsFormsApplication1
                 if (stunde >= 0 && stunde < 8760)
                     Kesselleistung_stuendlich[stunde] += (double)KesselLeistung;
             }
+        }
+
+        /// <summary>
+        /// Der Wirkungsgrad des Kessels <paramref name="i"/> in einer Stunde mit der
+        /// brennstoffbasierten Wärme <paramref name="waermeKwh"/> (Konzept Kesselkennlinie 4.1):
+        /// <see cref="Kesselkennlinie.Eta"/> bei der Laststufe der Stunde, mit dem wirksamen η₃₀
+        /// zu <paramref name="eta100"/>. Der Elektrokessel rechnet mit <paramref name="eta100"/>.
+        /// </summary>
+        private double WirkungsgradDerStunde(int i, double waermeKwh, double eta100)
+        {
+            if (!Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i])) return eta100;
+            double eta30 = Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[i], eta100, _bauart[i], Brennstoff_Art[i]);
+            return Kesselkennlinie.Eta(Kesselkennlinie.Laststufe(waermeKwh, Kessel_Leistung_Spk[i]), eta100, eta30);
+        }
+
+        /// <summary>
+        /// Der Wirkungsgrad bei Nennlast η₁₀₀, mit dem der Kessel <paramref name="index"/> rechnet
+        /// (Faktor, Öl- oder Gasfeld nach Brennstoff, 0,90 für einen fehlenden Wert); 0 außerhalb.
+        /// </summary>
+        public double Nennwirkungsgrad(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            int art = Brennstoff_Art[index];
+            bool oel = art >= 6 && art <= 9 || art >= 18 && art <= 22;
+            double eta100 = oel ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
+            return eta100 <= 0 ? 0.90 : eta100;
+        }
+
+        /// <summary>
+        /// Das wirksame η₃₀ des Kessels <paramref name="index"/> (Faktor) — gepflegt oder die
+        /// Normvorgabe nach Bauart; beim Elektrokessel η₁₀₀ (keine Kennlinie). 0 außerhalb.
+        /// </summary>
+        public double Teillastwirkungsgrad(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double eta100 = Nennwirkungsgrad(index);
+            if (!Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[index])) return eta100;
+            return Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[index], eta100, _bauart[index], Brennstoff_Art[index]);
+        }
+
+        /// <summary>
+        /// Rechnet der Kessel <paramref name="index"/> mit der NORMVORGABE für η₃₀ (Feld leer,
+        /// Konzept 7.1)? Der Elektrokessel nicht — er hat keine Kennlinie.
+        /// </summary>
+        public bool TeillastwirkungsgradIstVorgabe(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || IstStromkessel(index)) return false;
+            return !Kesselkennlinie.Eta30IstGepflegt(KesselKennlinieWerte.AlsFaktor(_eta30Gepflegt[index]));
+        }
+
+        /// <summary>Die Bauart des Kessels <paramref name="index"/> für die Normvorgabe.</summary>
+        public KesselBauart Bauart(int index)
+            => index >= 0 && index < MAX_SPK ? _bauart[index] : KesselBauart.Niedertemperatur;
+
+        /// <summary>Der Anzeigetext einer Bauart (Laufprotokoll, Ergebnisreiter).</summary>
+        public static string BauartText(KesselBauart bauart)
+        {
+            switch (bauart)
+            {
+                case KesselBauart.Brennwert: return MyResource.Resource.KESSEL_BAUART_BRENNWERT;
+                case KesselBauart.Standard: return MyResource.Resource.KESSEL_BAUART_STANDARD;
+                default: return MyResource.Resource.KESSEL_BAUART_NIEDERTEMPERATUR;
+            }
+        }
+
+        /// <summary>
+        /// Der MITTLERE WIRKUNGSGRAD IM BETRIEB des Kessels <paramref name="index"/> (Faktor):
+        /// Wärme der Laufstunden durch ihren Brennstoff, also η(β) wärmegewichtet über das Jahr —
+        /// ohne Bereitschaftsverlust, anders als der Jahresnutzungsgrad. 0 ohne Laufstunde.
+        /// </summary>
+        public double WirkungsgradBetrieb(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double b = BrennstoffBetrieb_KWh_Spk[index];
+            return b > 0 ? _waermeBetriebKwh[index] / b : 0;
+        }
+
+        /// <summary>
+        /// Die Stundenreihe des Wirkungsgrads des Kessels <paramref name="index"/> (Faktor; in
+        /// Stillstandsstunden 0) — Lesezugriff für den Zeitreihen-Export; <c>null</c> außerhalb.
+        /// </summary>
+        public double[] WirkungsgradStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _wirkungsgradStunde[index] : null;
+
+        /// <summary>
+        /// Die brennstoffbasierte WÄRME DER LAUFSTUNDEN des Kessels <paramref name="index"/>
+        /// [kWh/a] — der Zähler von <see cref="WirkungsgradBetrieb"/>. 0 außerhalb.
+        /// </summary>
+        public double WaermeBetriebKwh(int index)
+            => index >= 0 && index < MAX_SPK ? _waermeBetriebKwh[index] : 0;
+
+        /// <summary>
+        /// Die MITTLERE LASTSTUFE IM BETRIEB des Kessels <paramref name="index"/> (0 … 1):
+        /// Wärme der Laufstunden durch Laufstunden mal Nennleistung. 0 ohne Laufstunde.
+        /// </summary>
+        public double LaststufeMittel(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double nenn = Kessel_Leistung_Spk[index] * Laufstunden_Spk[index];
+            return nenn > 0 ? _waermeBetriebKwh[index] / nenn : 0;
         }
 
         /// <summary>Jahressummen, Emissionen und Jahresnutzungsgrad des zweikanaligen Wegs.</summary>
@@ -1776,6 +1950,14 @@ namespace WindowsFormsApplication1
             Array.Clear(Bereitschaftsstunden_Spk, 0, MAX_SPK);
             Array.Clear(Bereitschaftsverlust_KWh_Spk, 0, MAX_SPK);
             Array.Clear(_liefVorstunde, 0, MAX_SPK);
+
+            // Kesselkennlinie (Etappe E2): Kennlinienwerte und Mitschrift sind Laufzustand.
+            Array.Clear(_eta30Gepflegt, 0, MAX_SPK);
+            Array.Clear(_bauart, 0, MAX_SPK);
+            Array.Clear(_waermeBetriebKwh, 0, MAX_SPK);
+            Array.Clear(BrennstoffBetrieb_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(TeillastMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(_wirkungsgradStunde, 0, MAX_SPK);
             for (int j = 0; j < MAX_SPK; j++) _letzteLaufstunde[j] = int.MinValue;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
