@@ -107,9 +107,16 @@ Welle aus, #630 nach fetch: Punkte 1, 3 und 4 zusammen, dazu Punkt 2" — alle v
 
 ## Gate
 
-Offen — durch die Orchestrierung.
+Gate #630 auf `acaf32a4a` (Windows, Worktree `p630`, 30.09.2026 12:42–12:56): Kern-Filter Release 0 Fehler; ChartProben 194
+Bilder, alle grün — die lokale Windows-Messlatte wurde von 185 auf 194 Hashes nachgezogen (neun Kalenderbilder aus KP2 K4,
+zwölf Stapelbilder aus der Stufenregel des Stapels, alle aus Wellen der Nachbarn; Sicherung der alten Liste liegt neben ihr);
+Tests 17 611 grün, 2 übersprungen, 0 rot (Kern 9 526, UI 7 123, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27);
+Dokumentationswachen 35 grün; Referenzlauf der sieben CI-Projekte gegen `2026-09-30_R29_Kesseltakten`: 7/7 PASS,
+2 497 978 Werte; Windows-Schale 0 Fehler (Agent).
 
 ## Commit
 
-Code `fe05913cb`, `aa688d81c`, `34c499fdd`, `562dd61e9`; Papiere im Papier-Commit dieses Zweigs; Merge, Statuszeile und
-Push offen (Orchestrierung).
+Code `fe05913cb` (Rollentarif), `aa688d81c` (Rückfallträger im Ausweis), `34c499fdd` (Stromsteuer-Kohärenz), `562dd61e9`
+(Veraltet-Band), Papiere `bd19c43b0`, Merge `acaf32a4a` mit origin (#629-Nachträge, Basis R29; Konflikte im Index-Zähler und
+im Logbuch 1.2.0.6 beidseitig übernommen); Statuszeile #630 und das Gate-Feld im Papier-Commit der Orchestrierung (Zweig `p630`,
+Push auf `ios_migration_september`).
