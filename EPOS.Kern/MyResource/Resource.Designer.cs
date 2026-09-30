@@ -61882,6 +61882,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung lässt sich nicht übernehmen: {0} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ARBEITSSTAND_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ARBEITSSTAND_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
         /// </summary>
         public static string KOND_MSG_DUPLIKAT_ZUSATZ {
@@ -61914,6 +61923,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_KATALOGBAU_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_KATALOGBAU_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gebäude gibt es keinen Katalogsatz, aus dem es erneut übernommen werden kann. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KATALOG_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KATALOG_FEHLT", resourceCulture);
             }
         }
         
@@ -62013,6 +62031,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_VORLAGE_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_VORLAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage gehört zur Größe {0}, gewählt ist die Größe {1}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_GROESSE", resourceCulture);
             }
         }
         
@@ -62125,6 +62152,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „Zeitstruktur übernehmen“ fehlt ein Kalender der Größe {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_QUELLE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT {
@@ -62157,6 +62193,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_ZEITSTRUKTUR_ZIEL {
             get {
                 return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT {0} K gehört allein zur Nachtzeile der Lüftung und liegt zwischen 0 und 5 K. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZELLE_DELTA_T {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZELLE_DELTA_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeiten {0} … {1} passen nicht zur Zeile {2}: Die Nachtzeile nimmt Stunden 0 bis 23, die Saison Tage 1 bis 365 (beide oder keinen), jede andere Zeile keine Zeiten. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZELLE_ZEITEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZELLE_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ behielte ihre Werte nicht: {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_UNBEHEIZT", resourceCulture);
             }
         }
         

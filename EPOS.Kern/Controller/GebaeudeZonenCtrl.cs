@@ -767,6 +767,96 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Was der OK-Weg der Zonen ergeben hat</b> (Stufe KP2, Welle K2; Befund B10): neben Ok und
+        /// Meldung die <b>Zuordnung</b> der vorläufigen Ids — so trägt der Arbeitsstand nach dem OK die
+        /// endgültigen, und ein zweites OK schreibt nichts doppelt.
+        /// </summary>
+        /// <param name="Ok">Ist alles geschrieben?</param>
+        /// <param name="Meldung">Der Grund, wenn nicht; leer bei Erfolg.</param>
+        /// <param name="Zonen">Vorläufige Id (≤ 0) → endgültige Id jeder neuen Zone.</param>
+        /// <param name="Bauteile">Je endgültiger Zonen-Id die Ids ihrer Bauteile in Listenfolge (auch neue).</param>
+        /// <param name="Luftstroeme">Die Ids der Luftströme in Listenfolge; <c>null</c>, wenn sie ungeändert blieben.</param>
+        /// <param name="KonditionierungGeschrieben">Wie viele Zonen ihre Konditionierung geschrieben haben (nur Geändertes).</param>
+        public sealed record Schreibergebnis(bool Ok, string Meldung, IReadOnlyDictionary<int, int> Zonen,
+                                             IReadOnlyDictionary<int, IReadOnlyList<int>> Bauteile,
+                                             IReadOnlyList<int> Luftstroeme, int KonditionierungGeschrieben)
+        {
+            /// <summary>Der benannte Fehlschlag — nichts ist geschrieben.</summary>
+            public static Schreibergebnis Fehler(string meldung)
+                => new Schreibergebnis(false, meldung ?? "", new Dictionary<int, int>(),
+                                       new Dictionary<int, IReadOnlyList<int>>(), null, 0);
+        }
+
+        /// <summary>
+        /// <b>OK im Projekt, Schritt 3: die Zonen samt ihrer Konditionierung</b> (Stufe KP2, Welle K2;
+        /// Entwurf KP2 Abschnitt 2, Befund B10) — das Aggregat (<see cref="SpeichernJeGebaeude(int, IList{ZoneModel}, IList{ZonenluftstromModel})"/>)
+        /// und je Zone ihre Ebene (<see cref="KonditionierungCtrl.StandSchreiben"/>, nur Geändertes) in
+        /// EINEM Vorgang unter der <see cref="Vorgangsklammer"/>. <paramref name="konditionierung"/> ist nach
+        /// der Id der Zone im Arbeitsstand geschlüsselt — auch nach einer vorläufigen: Nach der Id-Vergabe
+        /// schreibt der Weg sie unter der endgültigen. Eine Zone ohne Eintrag lässt ihre Tabellen stehen;
+        /// die einer entfernten Zone fallen mit ihr (Kaskade). Scheitert ein Schritt, fällt alles zurück.
+        /// </summary>
+        public Schreibergebnis Schreiben(int idGebaeude, IList<ZoneModel> zonen, IList<ZonenluftstromModel> luftstroeme,
+                                         IReadOnlyDictionary<int, Konditionierungsstand> konditionierung)
+        {
+            List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
+            var zonenVorher = liste.Select(z => (Zone: z, Id: z.ID)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                try
+                {
+                    Ergebnis e = SpeichernJeGebaeude(idGebaeude, liste, luftstroeme);
+                    if (!e.Ok)
+                    {
+                        v.Rollback();
+                        return Schreibergebnis.Fehler(e.Meldung);
+                    }
+
+                    var zuordnung = new Dictionary<int, int>();
+                    foreach ((ZoneModel z, int alt) in zonenVorher)
+                        if (alt <= 0) zuordnung.TryAdd(alt, z.ID);
+                    var bauteile = new Dictionary<int, IReadOnlyList<int>>();
+                    foreach (ZoneModel z in liste)
+                        bauteile[z.ID] = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b => b.ID).ToList();
+                    IReadOnlyList<int> luft = luftstroeme?.Where(l => l != null).Select(l => l.ID).ToList();
+
+                    int geschrieben = 0;
+                    if (konditionierung != null && konditionierung.Count > 0)
+                    {
+                        var ctrl = new KonditionierungCtrl();
+                        foreach (KeyValuePair<int, Konditionierungsstand> p in konditionierung)
+                        {
+                            if (p.Value == null) continue;
+                            int id = p.Key > 0 ? p.Key : zuordnung.TryGetValue(p.Key, out int n) ? n : 0;
+                            if (id <= 0 || !liste.Any(z => z.ID == id)) continue;     // nicht (mehr) in der Liste
+                            KonditionierungCtrl.Ergebnis k = ctrl.StandSchreiben(
+                                v, KonditionierungCtrl.Eigner.Zone(idGebaeude, id), p.Value.AlsArt(Kalendereigentuemer.Zone),
+                                mitBestand: false, out bool zeile);
+                            if (!k.Ok)
+                            {
+                                v.Rollback();
+                                return Schreibergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, k.Meldung));
+                            }
+                            if (zeile) geschrieben++;
+                        }
+                    }
+
+                    v.Commit();
+                    return new Schreibergebnis(true, "", zuordnung, bauteile, luft, geschrieben);
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    return Schreibergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, ex.Message));
+                }
+            }
+        }
+
         // =================================================================
         //  Schreiben — der Bauteilvorschlag eines Imports (G4b)
         // =================================================================

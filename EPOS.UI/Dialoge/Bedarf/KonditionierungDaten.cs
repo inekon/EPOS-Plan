@@ -185,7 +185,13 @@ public enum KonditionierungHandlung
     Zeitstruktur = 11,
 
     /// <summary>„Aus dem Katalog erneut übernehmen…" — nur im Projekt (Festlegung 4).</summary>
-    KatalogErneut = 12
+    KatalogErneut = 12,
+
+    /// <summary>
+    /// „Aufteilen" — die Antwort auf die Rückfrage nach E56 F5 (a): die Gesamtangabe <c>Luftwechselrate</c>
+    /// wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung = Rest; die Summe bleibt.
+    /// </summary>
+    LuftwechselAufteilen = 13
 }
 
 /// <summary>
@@ -532,11 +538,24 @@ public sealed record KonditionierungOrt(KonditionierungGroesse Groesse, int? Zon
 /// <param name="Stand">Der neue Stand; <c>null</c> im Fehlerfall.</param>
 public sealed record KonditionierungErgebnis(bool Ok, string Meldung, KonditionierungStand? Stand)
 {
+    /// <summary>
+    /// <b>Die Rückfrage, ohne die die Handlung nicht weitergeht</b> (Stufe KP2, Welle K2) — etwa
+    /// „aufteilen" nach E56 F5 (a), wenn die Lüftung eine Vorgabe bekommt und das Ziel nur die
+    /// Gesamtangabe <c>Luftwechselrate</c> trägt. Dann ist <see cref="Ok"/> <c>false</c>, der Stand
+    /// <c>null</c> und nichts geändert; nach „Ja" ruft der Reiter den Delegaten der Antwort
+    /// (<see cref="KonditionierungWeg.LuftwechselAufteilen"/>) und wiederholt die Handlung.
+    /// </summary>
+    public KonditionierungRueckfrage? Rueckfrage { get; init; }
+
     /// <summary>Der gute Fall.</summary>
     public static KonditionierungErgebnis Gut(KonditionierungStand stand) => new(true, "", stand);
 
     /// <summary>Der benannte Fehlschlag.</summary>
     public static KonditionierungErgebnis Fehler(string meldung) => new(false, meldung ?? "", null);
+
+    /// <summary>Die Rückfrage vor der Handlung — nichts geändert.</summary>
+    public static KonditionierungErgebnis Frage(KonditionierungRueckfrage rueckfrage)
+        => new(false, "", null) { Rueckfrage = rueckfrage };
 }
 
 /// <summary>Eine Vorlage der Auswahlliste einer Größe (Teilkonzept 3.5, 7.4).</summary>
@@ -603,7 +622,10 @@ public enum KonditionierungPostenart
     Luftwechsel = 9,
 
     /// <summary>Kalender der Zonen, die ein Schritt mit anlegt (F2) oder zurücklässt.</summary>
-    Zonenkalender = 10
+    Zonenkalender = 10,
+
+    /// <summary>Bauteile der Zonen — „Speichern unter" im Projekt nimmt sie nicht mit (Festlegung 3).</summary>
+    Bauteile = 11
 }
 
 /// <summary>Ein Posten eines Rückfragebefunds: was und wie viel.</summary>
