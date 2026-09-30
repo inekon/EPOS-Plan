@@ -1949,7 +1949,11 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Contains(SPERRGRUND, cut.Find(".epos-warnbanner").TextContent);
     }
 
-    /// <summary>„Speichern unter" bleibt am gesperrten Satz frei — es legt eine eigene Kopie an.</summary>
+    /// <summary>
+    /// „Speichern unter" bleibt am gesperrten Satz frei — es legt eine eigene Kopie an. Quelle ist der
+    /// ausgelieferte Ursprungssatz (B2); der Dialog bleibt offen und arbeitet an der Kopie weiter (B1), das
+    /// nächste OK trifft sie und nicht den ausgelieferten Satz.
+    /// </summary>
     [Fact]
     public void Speichern_unter_bleibt_am_gesperrten_Satz_frei()
     {
@@ -1963,8 +1967,13 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus A (eigen)");
         Knopf(cut, "Speichern unter").Click();
 
-        Assert.Equal(new[] { (true, "Haus A (eigen)") }, aufrufe);
+        Assert.Equal(new[] { (true, "Haus A") }, aufrufe);
         Assert.False(cut.Instance.IstGesperrt);   // der neue Satz ist ein eigener
+        Assert.Equal("Haus A (eigen)", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(new[] { (true, "Haus A"), (false, "Haus A (eigen)") }, aufrufe);
     }
 
     /// <summary>Ohne Sperre steht keine Grundzeile, und OK trägt weder Sperre noch Grund.</summary>

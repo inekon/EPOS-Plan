@@ -2071,6 +2071,7 @@
         if (Modus != GebaeudeKatalogModus.Projekt)
         {
             _ursprungsname = neu;
+            _entsperrt = true;   // der Dialog arbeitet am neuen, eigenen Satz - ihm gilt das Schloss nicht (B11)
             _arbeit.Geschrieben();
         }
         // Gruen mit Haken wie jedes „angelegt" des Hauses (WarnStufe.Erfolg); es steht, bis die
