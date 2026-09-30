@@ -136,6 +136,12 @@ Gate auf `ad68ed01` (enthält origin `6941a8a1` und den Diagrammzweig `a06a3819`
   (`--stoerung ulp`) gegen ungestört 16/16 PASS, 480/487 byte-gleich.
 - Windows-Schale (`EnableWindowsTargeting=true`, Debug x64): 0 Fehler.
 
+Nach dem Merge mit origin `94f91fed` (#618, KP2; Merge `2ed8ecd6`, automatisch) dasselbe Gate noch einmal: Kern-Filter
+0 Fehler; Tests **17 319 grün, 0 rot** (EPOS.Kern.Tests 9 333, EPOS.UI.Tests 7 024, KiKern.Tests 549,
+SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27; 2 übersprungen); Werkzeugtests 124/43/24/39 grün; SQL-Prüfer
+2 135 Texte, 0 Fundstellen; ChartProben 221 Bilder, 0 Verstöße, Messlatte gleich; sechzehn Projekte gegen R27
+GESAMT PASS, 487/487 byte-gleich, gestört 16/16 PASS (480/487); Windows-Schale 0 Fehler.
+
 ## 7 Wiki und Logbuch
 
 Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Heizkessel.wiki`: Abschnitt „Teillastkennlinie“ (Formel,
