@@ -40692,5 +40692,29 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
     <value>The template of the column {0} on the “Conditioning” tab: the name of a template from the list of this quantity. Setting it applies the template like the “Apply” button – the cells of the template go into the column, the calendar is created, nominal value and season remain; if a calendar is already created, only the matrix range is replaced. Reading gives the template applied last; empty = none.</value>
   </data>
+  <data name="KOND_MSG_WOCHE_LAENGE" xml:space="preserve">
+    <value>A standard week has exactly {1} cells; {0} were passed.</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
+    <value>Calendar details</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
+    <value>Create the calendar first – until then it follows the matrix.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_GRUNDANGABE" xml:space="preserve">
+    <value>The base value applies in every hour without a standard week or period; a standard week takes its place.</value>
+  </data>
+  <data name="KOND_TXT_GRUNDANGABE_WOCHE" xml:space="preserve">
+    <value>The standard week replaces the base value; “Discard standard week” returns to it.</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Create standard week</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_VERWERFEN" xml:space="preserve">
+    <value>Discard standard week</value>
+  </data>
+  <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
+    <value>No standard week yet – the grid shows the base value.</value>
+  </data>
 </root>
 

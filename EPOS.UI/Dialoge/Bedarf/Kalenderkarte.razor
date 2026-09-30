@@ -14,8 +14,9 @@
    Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
    einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
    ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
-   letzten (Hausregel "die teure Stufe laeuft entprellt"). Der Inhalt - Grundangabe, Zeitfenster,
-   Wochenraster, Periodenliste, Werkzeuge, Teppichbild (U3) - kommt spaeter in dieselbe Karte.
+   letzten (Hausregel "die teure Stufe laeuft entprellt"). Seit Welle U3 klappt "Kalender im
+   Einzelnen" den Inhalt auf, den der Wirt als Einzelheiten reicht (KalenderkarteInhalt): Grundangabe,
+   Wochenraster, Zeitfenster, Periodenliste, Werkzeuge, Teppichbild.
 
    KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht; die Liste nur mit
    Vorlagen (der Wirt reicht sie nur, wenn der Weg "Uebernehmen" bietet). Im Lesemodus (ausgelieferter
@@ -26,11 +27,18 @@
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
-<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "")" data-groesse="@((int)Groesse)"
+<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "") @(_offen && Einzelheiten is not null && !Lesemodus ? "epos-kond-karte--offen" : "")"
+         data-groesse="@((int)Groesse)"
          aria-label="@Titel">
     <div class="epos-kond-karte-kopf">
         <h3 class="epos-kond-karte-titel">@Titel</h3>
         <p class="epos-kond-karte-zustand">@Zustand</p>
+        @if (!Lesemodus && Einzelheiten is not null)
+        {
+            @* Klappt die Karte auf (Teilkonzept 7.5): Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild. *@
+            <button type="button" class="epos-knopf epos-kond-einzelheiten" aria-expanded="@(_offen ? "true" : "false")"
+                    @onclick="() => _offen = !_offen">@Texte.KnopfEinzelheiten</button>
+        }
     </div>
     @if (!Lesemodus && Vorlagen is not null)
     {
@@ -128,6 +136,10 @@
             }
         </div>
     }
+    @if (!Lesemodus && _offen && Einzelheiten is not null)
+    {
+        @Einzelheiten
+    }
     @if (!Lesemodus && Vorschau is not null)
     {
         <div class="epos-kond-vorschau">
@@ -173,6 +185,22 @@
 
     /// <summary>„Matrix erneut anwenden…"; ohne Rückruf kein Knopf.</summary>
     [Parameter] public EventCallback MatrixErneut { get; set; }
+
+    /// <summary>
+    /// Der Inhalt der aufgeklappten Karte (Welle U3; Teilkonzept 7.5) — Grundangabe, Woche, Perioden,
+    /// Werkzeuge, Teppichbild; <c>null</c> = kein Knopf „Kalender im Einzelnen".
+    /// </summary>
+    [Parameter] public RenderFragment? Einzelheiten { get; set; }
+
+    /// <summary>Steht die Karte aufgeklappt beim ersten Zeichnen (Prüfstand, Rückweg)?</summary>
+    [Parameter] public bool Aufgeklappt { get; set; }
+
+    /// <summary>Ist die Karte aufgeklappt? Prüfhilfe für die Tests.</summary>
+    public bool Offen => _offen;
+
+    private bool _offen;
+
+    protected override void OnInitialized() => _offen = Aufgeklappt;
 
     // ------------------------------------------------------------ Vorlagen (Welle U2)
 

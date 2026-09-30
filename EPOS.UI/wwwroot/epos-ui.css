@@ -13664,6 +13664,45 @@ td.epos-vorlage-katalogbeschreibung {
     overflow-wrap: anywhere;
 }
 
+/* DIE KARTE IM EINZELNEN (Stufe KP2, Welle U3; Teilkonzept 7.5): "Kalender
+   im Einzelnen" klappt den Inhalt auf - Grundangabe, Wochenraster,
+   Zeitfenster, Periodenliste, Werkzeuge, Teppichbild. Die aufgeklappte Karte
+   nimmt im breiten Raster die ganze Zeile, sonst drueckte das Wochenraster
+   sie quer (eine Spalte ist rund 200 px breit). */
+.epos-kond-karte--offen {
+    grid-column: 1 / -1;
+}
+
+.epos-kond-einzelheiten {
+    margin-left: auto;
+}
+
+.epos-kond-inhalt {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kond-abschnitt {
+    min-width: 0;
+}
+
+.epos-kond-abschnitt-titel {
+    margin: 0 0 4px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.epos-kond-inhalt-grund,
+.epos-kond-grundangabe-woche {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
 /* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:
    Umschalter der Groesse, die Liste im Rahmen (Hausregel Liste), die
    gewaehlte Zeile wie die Fokuszeile der Verwaltungen (Flaeche und Balken),

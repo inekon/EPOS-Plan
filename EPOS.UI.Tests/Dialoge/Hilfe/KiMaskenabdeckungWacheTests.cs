@@ -135,6 +135,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
         new("KonditionierungVorlagenverwaltung", "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U3 (Teilkonzept 7.5): der Inhalt der aufgeklappten Kalenderkarte.
+        new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -311,6 +313,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
         new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
             "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte; die Standardwoche steht im
+        // Baustein Wochenraster.
+        new("KalenderkarteInhalt", 1, "die Grundangabe und die Standardwoche führt die Feldkarte als " +
+            "kond_<größe>_woche (die Woche als Text; eine Grundangabe ist eine Woche mit 168 gleichen Werten)"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

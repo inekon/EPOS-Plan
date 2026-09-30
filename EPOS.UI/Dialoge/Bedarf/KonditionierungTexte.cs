@@ -674,4 +674,29 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_LBL_SPALTE_AKTIONEN</c> — die Aktionsspalte der Vorlagenverwaltung</summary>
     public string SpalteAktionen { get; set; } = "Aktionen";
+
+    // ------------------------------------------------------------ Die Karte im Einzelnen (Welle U3)
+
+    /// <summary><c>KOND_BTN_EINZELHEITEN</c> — klappt die Karte auf: Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild</summary>
+    public string KnopfEinzelheiten { get; set; } = "Kalender im Einzelnen";
+
+    /// <summary><c>KOND_TXT_GRUND_NICHT_ANGELEGT</c> — der Grund der weich gesperrten Handlungen der aufgeklappten Karte</summary>
+    public string GrundNichtAngelegt { get; set; } = "Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.";
+
+    /// <summary><c>KOND_TXT_HINWEIS_GRUNDANGABE</c> — unter der Grundangabe</summary>
+    public string HinweisGrundangabe { get; set; }
+        = "Die Grundangabe gilt in jeder Stunde ohne Standardwoche und ohne Periode; eine Standardwoche tritt an ihre Stelle.";
+
+    /// <summary><c>KOND_TXT_GRUNDANGABE_WOCHE</c> — an Stelle der Grundangabe, solange eine Standardwoche gilt</summary>
+    public string TextGrundangabeWoche { get; set; }
+        = "Die Standardwoche tritt an die Stelle der Grundangabe; „Standardwoche verwerfen“ kehrt zu ihr zurück.";
+
+    /// <summary><c>KOND_BTN_WOCHE_ANLEGEN</c> — macht aus der Grundangabe eine Standardwoche</summary>
+    public string KnopfWocheAnlegen { get; set; } = "Standardwoche anlegen";
+
+    /// <summary><c>KOND_BTN_WOCHE_VERWERFEN</c> — zurück zur Grundangabe (häufigster Wert der Woche)</summary>
+    public string KnopfWocheVerwerfen { get; set; } = "Standardwoche verwerfen";
+
+    /// <summary><c>KOND_TXT_WOCHE_VORGABE</c> — über dem Wochenraster ohne Standardwoche</summary>
+    public string TextWocheVorgabe { get; set; } = "Noch keine Standardwoche – das Raster zeigt die Grundangabe.";
 }

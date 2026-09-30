@@ -191,7 +191,13 @@ public enum KonditionierungHandlung
     /// „Aufteilen" — die Antwort auf die Rückfrage nach E56 F5 (a): die Gesamtangabe <c>Luftwechselrate</c>
     /// wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung = Rest; die Summe bleibt.
     /// </summary>
-    LuftwechselAufteilen = 13
+    LuftwechselAufteilen = 13,
+
+    /// <summary>Die Grundangabe der Karte setzen — ein Wert oder „aus"; eine Standardwoche fällt (Welle U3).</summary>
+    Grundangabe = 14,
+
+    /// <summary>Die Standardwoche der Karte setzen (Wochenraster) oder verwerfen (Welle U3).</summary>
+    Standardwoche = 15
 }
 
 /// <summary>

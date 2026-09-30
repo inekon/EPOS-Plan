@@ -152,6 +152,22 @@ public sealed class KonditionierungWeg
     // ------------------------------------------------------------------ Werkzeuge der Karte
 
     /// <summary>
+    /// <b>Die Grundangabe</b> der aufgeklappten Karte (Teilkonzept 3.2 Ebene 1, 7.5; Welle U3): ein Wert
+    /// in der Einheit der Spalte (Anteile in Prozent) oder <c>null</c> = „aus". Eine Standardwoche fällt
+    /// dabei — Grundangabe und Woche stehen nie zugleich. Eine direkte Eingabe: die Herkunft bleibt.
+    /// <para>Kern: <c>Konditionierungsarbeit.Grundangabe</c> über <c>Kalenderwerkzeuge.Grundangabe</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, double?, KonditionierungErgebnis>? Grundangabe { get; init; }
+
+    /// <summary>
+    /// <b>Die Standardwoche</b> aus dem Wochenraster der Karte (Teilkonzept 3.2 Ebene 2, 7.5; Welle U3):
+    /// 168 Werte ab Montag 00:00 in der Einheit der Spalte, <see cref="double.NaN"/> = „aus"; <c>null</c>
+    /// verwirft die Woche, an ihre Stelle tritt die Grundangabe mit dem häufigsten Wert der Woche.
+    /// <para>Kern: <c>Konditionierungsarbeit.Standardwoche</c> über <c>Kalenderwerkzeuge.Standardwoche</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, double[]?, KonditionierungErgebnis>? Standardwoche { get; init; }
+
+    /// <summary>
     /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5, 7.5): setzt den Wert in die
     /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in
     /// <see cref="KonditionierungKalender.Vermerk"/>.
@@ -261,6 +277,8 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.Zeitstruktur => Zeitstruktur is not null,
             KonditionierungHandlung.KatalogErneut => KatalogErneut is not null,
             KonditionierungHandlung.LuftwechselAufteilen => LuftwechselAufteilen is not null,
+            KonditionierungHandlung.Grundangabe => Grundangabe is not null,
+            KonditionierungHandlung.Standardwoche => Standardwoche is not null,
             _ => false
         };
     }

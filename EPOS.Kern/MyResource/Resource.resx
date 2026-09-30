@@ -40699,5 +40699,29 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
     <value>Die Vorlage der Spalte {0} im Reiter „Konditionierung“: der Name einer Vorlage aus der Liste dieser Größe. Setzen übernimmt sie wie der Knopf „Übernehmen“ – die Zellen der Vorlage gehen in die Spalte, der Kalender wird angelegt, Nennwert und Saison bleiben; steht schon ein angelegter Kalender, wird nur der Matrixbereich ersetzt. Lesen nennt die zuletzt übernommene Vorlage; leer = keine.</value>
   </data>
+  <data name="KOND_MSG_WOCHE_LAENGE" xml:space="preserve">
+    <value>Eine Standardwoche hat genau {1} Zellen, übergeben sind {0}.</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
+    <value>Kalender im Einzelnen</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
+    <value>Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_GRUNDANGABE" xml:space="preserve">
+    <value>Die Grundangabe gilt in jeder Stunde ohne Standardwoche und ohne Periode; eine Standardwoche tritt an ihre Stelle.</value>
+  </data>
+  <data name="KOND_TXT_GRUNDANGABE_WOCHE" xml:space="preserve">
+    <value>Die Standardwoche tritt an die Stelle der Grundangabe; „Standardwoche verwerfen“ kehrt zu ihr zurück.</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Standardwoche anlegen</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_VERWERFEN" xml:space="preserve">
+    <value>Standardwoche verwerfen</value>
+  </data>
+  <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
+    <value>Noch keine Standardwoche – das Raster zeigt die Grundangabe.</value>
+  </data>
 </root>
 

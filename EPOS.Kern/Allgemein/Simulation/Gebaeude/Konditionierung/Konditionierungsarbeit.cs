@@ -444,7 +444,9 @@ namespace WindowsFormsApplication1
         /// <b>Ein Werkzeug der Karte</b> auf den angelegten Kalender einer Größe
         /// (<see cref="Kalenderwerkzeuge"/>): Ohne angelegten Kalender gibt es nichts zu ändern — das
         /// wird benannt abgelehnt, statt still einen anzulegen. Der Vermerk des Werkzeugs geht in die
-        /// Herkunft; die Vorlage darin bleibt (B8: <c>Bemerkung</c> = Herkunft · letzter Vermerk).
+        /// Herkunft; die Vorlage darin bleibt (B8: <c>Bemerkung</c> = Herkunft · letzter Vermerk). Eine
+        /// direkte Eingabe (Grundangabe, Standardwoche, Periodenliste; Welle U3) trägt keinen Vermerk —
+        /// dann bleibt die Herkunft samt dem letzten Werkzeugvermerk, wie sie war.
         /// </summary>
         public static Ebenenergebnis Werkzeug(Konditionierungsstand ebene, Konditionierungsgroesse groesse,
                                              Func<Konditionierungskalender, Kalenderwerkzeuge.Werkzeugbefund> werkzeug)
@@ -457,7 +459,10 @@ namespace WindowsFormsApplication1
                                                            Konditionierungsgroessen.Kennwort(groesse)));
             Kalenderwerkzeuge.Werkzeugbefund b = werkzeug(k);
             if (!b.Ok) return Ebenenergebnis.Fehler(b.Meldung);
-            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, ebene.Herkunft(groesse).MitVermerk(b.Vermerk)));
+            Kalenderherkunft herkunft = string.IsNullOrEmpty(b.Vermerk)
+                ? ebene.Herkunft(groesse)
+                : ebene.Herkunft(groesse).MitVermerk(b.Vermerk);
+            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, herkunft));
         }
 
         /// <summary>
@@ -886,6 +891,24 @@ namespace WindowsFormsApplication1
         public static Konditionierungsschritt Zeitfenster(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                           IReadOnlyList<int> tage, int von, int bis, double? wert)
             => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Zeitfenster(k, tage, von, bis, wert),
+                               Konditionierungspostenart.Standardwoche);
+
+        /// <summary>
+        /// <b>Die Grundangabe</b> (Ebene 1) des angelegten Kalenders am Ort — ein Wert oder „aus"
+        /// (<paramref name="wert"/> <c>null</c>); eine Standardwoche fällt dabei (Konzept 3.2).
+        /// </summary>
+        public static Konditionierungsschritt Grundangabe(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                          double? wert)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Grundangabe(k, wert),
+                               Konditionierungspostenart.Standardwoche);
+
+        /// <summary>
+        /// <b>Die Standardwoche</b> (Ebene 2) des angelegten Kalenders am Ort — 168 Zellen, NaN = „aus";
+        /// <c>null</c> verwirft sie zugunsten der Grundangabe (<see cref="Kalenderwerkzeuge.Standardwoche"/>).
+        /// </summary>
+        public static Konditionierungsschritt Standardwoche(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                            IReadOnlyList<double> woche)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Standardwoche(k, woche),
                                Konditionierungspostenart.Standardwoche);
 
         /// <summary><b>Die Feiertage als Regel</b> (F11) auf den angelegten Kalender des Orts.</summary>

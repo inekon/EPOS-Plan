@@ -616,6 +616,10 @@ namespace WindowsFormsApplication1
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
                 },
 
+                Grundangabe = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Grundangabe(
+                    a, Ort(o), w.HasValue ? Skaliert(w.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
+                Standardwoche = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Standardwoche(
+                    a, Ort(o), w == null ? null : w.Select(v => Skaliert(v, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false)).ToArray())),
                 Zeitfenster = (s, o, f) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitfenster(
                     a, Ort(o), f.Tage, f.Von, f.Bis,
                     f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),

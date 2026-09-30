@@ -313,6 +313,101 @@ namespace WindowsFormsApplication1
         private static string Zellentext(Matrixzelle zelle) => zelle.Aus ? DbWerte.KOND_WOCHE_AUS : Zahltext(zelle.Wert);
 
         // =================================================================
+        //  Grundangabe und Standardwoche (Konzept 3.2 Ebenen 1 und 2; Stufe KP2, Welle U3)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Setzt die Grundangabe</b> (Ebene 1): ein Wert für alle Stunden oder „aus". Führt der
+        /// Kalender eine Standardwoche, tritt die Grundangabe an ihre Stelle — die Woche fällt
+        /// (Konzept 3.2: beide stehen nie zugleich). Perioden und Nennwert bleiben Zeichen für Zeichen.
+        /// Eine direkte Eingabe, kein Werkzeug: Der Vermerk ist leer, die Herkunft bleibt.
+        /// </summary>
+        /// <param name="kalender">Der angelegte Kalender.</param>
+        /// <param name="wert">Der Wert in den Grenzen der Größe (Anteile 0 … 1); <c>null</c> heißt „aus".</param>
+        public static Werkzeugbefund Grundangabe(Konditionierungskalender kalender, double? wert)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            Kalenderangabe angabe = Kalenderangabe.Abgeschaltet;
+            if (wert.HasValue)
+            {
+                string fehler = Wertfehler(kalender.Groesse, wert.Value);
+                if (fehler != null) return Werkzeugbefund.Fehler(fehler);
+                angabe = Kalenderangabe.AusWert(wert.Value);
+            }
+            return Werkzeugbefund.Gut(new Konditionierungskalender(kalender.Groesse, angabe, kalender.Nennwert,
+                                                                   kalender.Perioden), "");
+        }
+
+        /// <summary>
+        /// <b>Setzt die Standardwoche</b> (Ebene 2) — die 168 Zellen des Wochenrasters, Montag 00:00
+        /// zuerst, <see cref="double.NaN"/> = „aus"; jede Zahl in den Grenzen der Größe und mit
+        /// bitgleichem Rundlauf. <paramref name="woche"/> <c>null</c> <b>verwirft</b> die Woche: An ihre
+        /// Stelle tritt die Grundangabe mit ihrem häufigsten endlichen Wert
+        /// (<see cref="HaeufigsterWert"/>), ohne einen „aus". Perioden und Nennwert bleiben; der Vermerk
+        /// ist leer (eine direkte Eingabe).
+        /// </summary>
+        public static Werkzeugbefund Standardwoche(Konditionierungskalender kalender, IReadOnlyList<double> woche)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            Kalenderangabe angabe;
+            if (woche == null)
+            {
+                if (kalender.Grundangabe.Art != Angabeart.Woche) return Werkzeugbefund.Gut(kalender, "");
+                double? h = HaeufigsterWert(kalender.Standardwoche);
+                angabe = h.HasValue ? Kalenderangabe.AusWert(h.Value) : Kalenderangabe.Abgeschaltet;
+            }
+            else
+            {
+                if (woche.Count != Kalenderwoche.WOCHENWERTE)
+                    return Werkzeugbefund.Fehler(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KOND_MSG_WOCHE_LAENGE, Zahl(woche.Count),
+                        Zahl(Kalenderwoche.WOCHENWERTE)));
+                foreach (double v in woche)
+                {
+                    if (double.IsNaN(v)) continue;
+                    string fehler = Wertfehler(kalender.Groesse, v);
+                    if (fehler != null) return Werkzeugbefund.Fehler(fehler);
+                }
+                angabe = Kalenderangabe.AusWoche(woche);
+            }
+            return Werkzeugbefund.Gut(new Konditionierungskalender(kalender.Groesse, angabe, kalender.Nennwert,
+                                                                   kalender.Perioden), "");
+        }
+
+        /// <summary>
+        /// <b>Der häufigste endliche Wert einer Woche</b> — bei Gleichstand der höhere (dieselbe Regel
+        /// wie der gbXML-Export, E55); <c>null</c>, wenn keine Stunde eine Zahl trägt.
+        /// </summary>
+        public static double? HaeufigsterWert(IReadOnlyList<double> woche)
+        {
+            if (woche == null) return null;
+            var zahl = new Dictionary<double, int>();
+            foreach (double v in woche)
+                if (double.IsFinite(v)) zahl[v] = zahl.TryGetValue(v, out int n) ? n + 1 : 1;
+            double? best = null;
+            int bestZahl = 0;
+            foreach (KeyValuePair<double, int> e in zahl)
+                if (e.Value > bestZahl || (e.Value == bestZahl && best.HasValue && e.Key > best.Value))
+                {
+                    best = e.Key;
+                    bestZahl = e.Value;
+                }
+            return best;
+        }
+
+        /// <summary>Die Grenzen der Größe und der Rundlauf der Wochenspalte für einen Wert; <c>null</c> = gut.</summary>
+        private static string Wertfehler(Konditionierungsgroesse g, double wert)
+        {
+            if (!Konditionierungsgroessen.ImBereich(g, wert))
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_WERT_AUSSERHALB,
+                                     Zahltext(wert), Konditionierungsgroessen.Bereichstext(g));
+            if (!Kalenderwoche.Rundlauf(wert))
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_WERT_RUNDLAUF,
+                                     Zahltext(wert), Kalenderwoche.NACHKOMMASTELLEN.ToString(CultureInfo.InvariantCulture));
+            return null;
+        }
+
+        // =================================================================
         //  Die Rangbänder (N1.61 Nr. 5, Entwurf KP1b Nr. 12)
         // =================================================================
 

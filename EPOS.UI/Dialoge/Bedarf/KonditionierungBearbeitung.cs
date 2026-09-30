@@ -422,6 +422,44 @@ public sealed class KonditionierungBearbeitung
     }
 
     // =================================================================================
+    // Die Karte im Einzelnen (Stufe KP2, Welle U3; Teilkonzept 3.2, 7.5)
+    // =================================================================================
+
+    /// <summary>
+    /// Warum die Handlungen der aufgeklappten Karte weich gesperrt stehen — ohne angelegten Kalender gibt
+    /// es nichts zu ändern (der Kern lehnt es benannt ab, statt still einen anzulegen); <c>null</c> = frei.
+    /// </summary>
+    public string? Kartensperre(KonditionierungGroesse g) => Angelegt(g) ? null : Texte.GrundNichtAngelegt;
+
+    /// <summary>
+    /// Die 168 Werte, die ohne Standardwoche gelten — die Grundangabe als Raster (Wert oder „aus");
+    /// <c>null</c>, wenn der Kalender eine Woche führt oder nicht angelegt ist. Das Wochenraster zeigt sie
+    /// gesperrt, und „Standardwoche anlegen" macht daraus die Woche.
+    /// </summary>
+    public double[]? Grundangabewoche(KonditionierungGroesse g)
+    {
+        KonditionierungKalender? k = Kalender(g);
+        if (k is null || k.Zustand != KonditionierungZustand.Angelegt || k.Angabe == KonditionierungAngabe.Woche) return null;
+        return Wochenwerte(k);
+    }
+
+    /// <summary>
+    /// <b>Die Grundangabe</b> (Ebene 1) — ein Wert oder <c>null</c> = „aus"; eine Standardwoche fällt
+    /// dabei. Ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool GrundangabeSetzen(KonditionierungGroesse g, double? wert)
+        => Bietet(KonditionierungHandlung.Grundangabe)
+           && Ausfuehren("G|" + g, s => Weg.Grundangabe!(s, new KonditionierungOrt(g), wert));
+
+    /// <summary>
+    /// <b>Die Standardwoche</b> (Ebene 2) aus dem Wochenraster — 168 Werte, NaN = „aus"; <c>null</c>
+    /// verwirft sie zugunsten der Grundangabe. Jede Eingabe ist ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool StandardwocheSetzen(KonditionierungGroesse g, double[]? woche)
+        => Bietet(KonditionierungHandlung.Standardwoche)
+           && Ausfuehren("S|" + g, s => Weg.Standardwoche!(s, new KonditionierungOrt(g), woche));
+
+    // =================================================================================
     // Vorlagen je Größe (Stufe KP2, Welle U2; Teilkonzept 3.5, 7.4)
     // =================================================================================
 

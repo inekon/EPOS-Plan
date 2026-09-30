@@ -202,6 +202,15 @@ namespace WindowsFormsApplication1
             t.TextVorlageDupliziert = Text_("KOND_TXT_VORLAGE_DUPLIZIERT", t.TextVorlageDupliziert);
             t.TextVorlagenLeer = Text_("KOND_TXT_VORLAGEN_LEER", t.TextVorlagenLeer);
             t.SpalteAktionen = Text_("KOND_LBL_SPALTE_AKTIONEN", t.SpalteAktionen);
+
+            // Die Karte im Einzelnen (Welle U3)
+            t.KnopfEinzelheiten = Text_("KOND_BTN_EINZELHEITEN", t.KnopfEinzelheiten);
+            t.GrundNichtAngelegt = Text_("KOND_TXT_GRUND_NICHT_ANGELEGT", t.GrundNichtAngelegt);
+            t.HinweisGrundangabe = Text_("KOND_TXT_HINWEIS_GRUNDANGABE", t.HinweisGrundangabe);
+            t.TextGrundangabeWoche = Text_("KOND_TXT_GRUNDANGABE_WOCHE", t.TextGrundangabeWoche);
+            t.KnopfWocheAnlegen = Text_("KOND_BTN_WOCHE_ANLEGEN", t.KnopfWocheAnlegen);
+            t.KnopfWocheVerwerfen = Text_("KOND_BTN_WOCHE_VERWERFEN", t.KnopfWocheVerwerfen);
+            t.TextWocheVorgabe = Text_("KOND_TXT_WOCHE_VORGABE", t.TextWocheVorgabe);
             return t;
         }
 
