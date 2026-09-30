@@ -485,18 +485,25 @@ namespace EPOS.Kern.Tests
             int nurVariante = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
             int lauf = SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter;
 
+            // Hergeleitet: der Stamm allein mit Erdgas E (Arbeits- und Grundpreis); die Variante mit
+            // Erdgas E, ihrem Stromträger — dem Rückfallträger ohne Zuordnung, Arbeits-, Grund- und
+            // Leistungspreis (EZ‑18) — und DV-Entgelt und PPA-Preis ihrer PV-Vergütung.
+            Assert.Equal(GRUNDMENGE + 2, allein);
+            Assert.Equal(GRUNDMENGE + 2 + 3 + 2, nurVariante);
+
             // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit
             // — Arbeits- und Grundpreis, keinen Leistungspreis.
             Assert.Equal(allein + nurVariante - GRUNDMENGE + 2, lauf);
 
-            // Führt der Träger einen Leistungspreis, zählt ihn die Variante mit Wärmepumpe (ihr
-            // Träger aus der Verwendung der Wärmepumpe) — der Stamm ohne Stromverwendung nicht.
+            // Den Leistungspreis zählt die Variante mit Wärmepumpe immer: Ihr Stromträger ist der
+            // Rückfallträger, der ihren Netzbezug bepreist (Register EZ‑18) — ein gepflegter
+            // Leistungspreis ändert m nicht. Der Stamm ohne Stromverwendung zählt ihn nie (EZ‑17).
             DataRepository.ExecuteSQL("UPDATE energy_carrier SET price_power = ? WHERE id = ?",
                 new DbParam("@l", 60.0), new DbParam("@c", STROM));
             int alleinMit = SzenarioAbdeckung.Lesen(p, new[] { stamm }).Parameter;
             int nurVarianteMit = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
             Assert.Equal(allein, alleinMit);
-            Assert.Equal(nurVariante + 1, nurVarianteMit);
+            Assert.Equal(nurVariante, nurVarianteMit);
             Assert.Equal(alleinMit + nurVarianteMit - GRUNDMENGE + 2,
                          SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter);
 
