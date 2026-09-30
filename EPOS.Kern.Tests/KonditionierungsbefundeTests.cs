@@ -311,6 +311,46 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Befund aus K3: die Feiertagsregeln einer Vorlage liegen UNTER den Ferien
+        // =============================================================================
+
+        /// <summary>
+        /// Die Feiertagsregeln einer Vorlage gehören in ihr Band 100 … 108 — unter die Ferien
+        /// (<see cref="Standardfahrplan.RANG_FEIERTAG"/>): Ein Feiertag in den Ferien behält den Ferienwert.
+        /// Am Stand K2-4 kamen sie über das Eigenband 310+ ÜBER die Ferien.
+        /// </summary>
+        [Fact]
+        public void Die_Feiertagsregeln_einer_Vorlage_liegen_im_Feiertagsband_unter_den_Ferien()
+        {
+            Konditionierungskalender basis = new Konditionierungskalender(HEIZ, Kalenderangabe.AusWert(20.0), null,
+                                                                          Array.Empty<Kalenderregel>());
+            Kalenderwerkzeuge.Werkzeugbefund f = Kalenderwerkzeuge.Feiertagsregeln(basis, 7);
+            Assert.True(f.Ok, f.Meldung);
+            Konditionierungsstand inhalt = Konditionierungsstand.Leer(Kalendereigentuemer.Vorlage, null)
+                .MitVorgabe(HEIZ, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(20.0))
+                .MitKalender(HEIZ, new Konditionierungskalender(HEIZ, basis.Grundangabe, null, f.Kalender.Perioden),
+                             Kalenderherkunft.Keine);
+            var vorlage = new Konditionierungsvorlage(9, "Schule", HEIZ, inhalt);
+
+            // Weihnachtsferien 355 … 365 mit 12 °C; Sonntag (Wochenende) 16 °C.
+            Matrixeingang bestand = Bestand();
+            bestand.SollFerien = 12.0;
+            bestand.Ferienbeginn[1] = 355.0;
+            bestand.Ferienende[1] = 365.0;
+            var a = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, bestand), null, 201.0, 2025);
+
+            Konditionierungsarbeitsstand b = Gut(Konditionierungsarbeit.VorlageUebernehmen(a, Ort(HEIZ), vorlage));
+            Konditionierungskalender k = b.Gebaeude.Kalender(HEIZ);
+            var feiertage = k.Perioden.Where(p => p.IstFeiertag).ToList();
+            Assert.Equal(9, feiertage.Count);
+            Assert.All(feiertage, p => Assert.InRange(p.Rang, Standardfahrplan.RANG_FEIERTAG, Standardfahrplan.RANG_FEIERTAG_LETZTER));
+
+            // Der 25. Dezember (Tag 359) liegt in den Ferien: der Ferienwert, nicht „wie Sonntag".
+            double[] reihe = k.Auswerten(b.W0, b.Referenzjahr);
+            Assert.Equal(12.0, reihe[(359 - 1) * 24 + 12]);
+        }
+
+        // =============================================================================
         //  E56 F5 (a) / B3 — „aufteilen", die Summe bleibt
         // =============================================================================
 

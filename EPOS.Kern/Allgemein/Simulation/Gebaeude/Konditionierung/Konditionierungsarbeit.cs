@@ -343,8 +343,9 @@ namespace WindowsFormsApplication1
         /// <b>Generator, Vorlage und Bestand zu einem Kalender</b> (P12, N1.61 Nr. 13): die
         /// Grundangabe vom Generator, es sei denn, die Vorlage bringt eine Standardwoche mit; der
         /// Matrixbereich vom Generator (Ferien und Saison DES ZIELS); die eigenen Perioden eines
-        /// vorhandenen Kalenders samt Rang; die Perioden der Vorlage im Eigenband dazu — eine
-        /// Feiertagsregel, die schon steht, nur einmal.
+        /// vorhandenen Kalenders samt Rang; die Perioden der Vorlage im Eigenband dazu, ihre
+        /// Feiertagsregeln aber im Feiertagsband 100 + k unter den Ferien — eine Feiertagsregel, die
+        /// schon steht, nur einmal; ein belegter Rang wird benannt abgelehnt.
         /// </summary>
         public static Konditionierungskalender Zusammenfuehren(Konditionierungskalender generator,
                                                                Konditionierungskalender ausVorlage,
@@ -372,12 +373,34 @@ namespace WindowsFormsApplication1
                 belegt.Add(r.Rang);
             }
 
+            // Die Feiertagsregeln der Vorlage kommen in IHR Band 100 + k — UNTER die Ferien, damit ein
+            // Feiertag in den Ferien den Ferienwert behaelt (Standardfahrplan.RANG_FEIERTAG; dieselbe
+            // Stelle wie das Werkzeug Kalenderwerkzeuge.Feiertagsregeln). Die uebrigen Perioden der
+            // Vorlage gehen ins Eigenband 310+.
             var ausDerVorlage = new List<Kalenderregel>();
             if (ausVorlage != null)
                 foreach (Kalenderregel r in ausVorlage.Perioden)
                 {
-                    if (r.IstFeiertag && !feiertagsregeln.Add(r.Feiertagsregel)) continue;
-                    ausDerVorlage.Add(r);
+                    if (!r.IstFeiertag)
+                    {
+                        ausDerVorlage.Add(r);
+                        continue;
+                    }
+                    if (!feiertagsregeln.Add(r.Feiertagsregel)) continue;          // steht schon: nur einmal
+                    int k = Feiertagsstelle(r.Feiertagsregel);
+                    if (k < 0)
+                    {
+                        ausDerVorlage.Add(r);
+                        continue;
+                    }
+                    int rang = Standardfahrplan.RANG_FEIERTAG + k;
+                    if (!belegt.Add(rang))
+                    {
+                        fehler = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_RANG_BELEGT,
+                                               rang.ToString(CultureInfo.InvariantCulture), r.Feiertagsregel);
+                        return null;
+                    }
+                    perioden.Add(Kalenderwerkzeuge.MitRang(r, rang));
                 }
 
             fehler = Kalenderwerkzeuge.ImEigenband(ausDerVorlage, belegt, out List<Kalenderregel> vergeben);
@@ -407,6 +430,14 @@ namespace WindowsFormsApplication1
                 fehler = ex.Message;
                 return null;
             }
+        }
+
+        /// <summary>Die Stelle einer Feiertagsregel in <see cref="DbWerte.KOND_FEIERTAGE"/>; −1 = keine.</summary>
+        private static int Feiertagsstelle(string regel)
+        {
+            for (int k = 0; k < DbWerte.KOND_FEIERTAGE.Count; k++)
+                if (string.Equals(DbWerte.KOND_FEIERTAGE[k], regel, StringComparison.Ordinal)) return k;
+            return -1;
         }
 
         /// <summary>
