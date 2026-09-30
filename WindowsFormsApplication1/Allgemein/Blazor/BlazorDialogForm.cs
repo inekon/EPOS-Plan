@@ -152,6 +152,17 @@ namespace WindowsFormsApplication1
             // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
             // weiterhin gegen T - nicht gegen die Verpackung.
             _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
+
+            // DIE FENSTERMARKE (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest"):
+            // Diese Huelle - und nur sie - sagt dem Stilblatt, dass der Dialog in
+            // #app die Wurzel eines EIGENEN Fensters ist. Dann haften seine
+            // Kopfzeile und seine Schlussleiste am Fenster, und nur der Inhalt
+            // dazwischen rollt. "body::after" haengt die Marke HINTER #app an:
+            // Der Dialog, seine Masse und die Regeln "#app > ..." bleiben
+            // unberuehrt (EPOS.UI/Bausteine/Fenstermarke.razor, epos-ui.css
+            // Abschnitt "Dialog im eigenen Fenster"). Die Marke zeichnet nichts
+            // und kann nicht werfen - sie braucht keine Fehlerschranke.
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Fenstermarke>("body::after");
             Controls.Add(_web);
 
             // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.

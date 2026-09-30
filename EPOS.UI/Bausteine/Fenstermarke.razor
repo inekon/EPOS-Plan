@@ -1,0 +1,24 @@
+﻿@* Fenstermarke - die EINE Angabe "dieser Dialog ist die Wurzel eines EIGENEN
+   Fensters" (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest": In den Dialogen,
+   die unter Windows als eigenes Fenster laufen, bleiben Kopfzeile und
+   Schlussleiste stehen, nur der Inhalt dazwischen rollt).
+
+   WER SIE SETZT. Allein die Fensterhuelle BlazorDialogForm: Sie haengt die
+   Marke als zweite Wurzelkomponente an das Ende von <body> ("body::after"),
+   neben den Dialog in #app. Die Hauptfensterhuelle (BlazorSeite) und die
+   iOS-Huelle setzen sie nicht.
+
+   WARUM EINE MARKE UND NICHT "#app > .epos-dialog". Auf iOS haengt an #app die
+   AppWurzel, und ihre Ansichten (Kostenverwaltung, Nutzungsdauern, Speichern
+   unter, Als Variante ...) stehen dort ohne Kopfleiste UNMITTELBAR unter #app -
+   im DOM nicht zu unterscheiden von einem Fensterdialog unter Windows. Dass es
+   ein Fenster ist, weiss nur die Huelle.
+
+   WAS SIE ZEICHNET. Ein leeres, verborgenes Element: keine Flaeche, kein Mass,
+   nichts fuer den Bildschirmleser. Das Stilblatt fragt nur, OB es dasteht
+   (body:has(> .epos-fenstermarke), Abschnitt "Dialog im eigenen Fenster" in
+   epos-ui.css); die Wache steht in EPOS.UI.Tests/FensterrahmenTests. *@
+
+@namespace EPOS.UI.Bausteine
+
+<span class="epos-fenstermarke" hidden></span>
