@@ -1882,8 +1882,13 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* Das SVG fuellt die Breite und behaelt sein Seitenverhaeltnis; breiter als
-   gezeichnet wird es nicht - dieselbe Massregel wie beim PNG (W11b-B-4). */
-.epos-diagramm-svg-flaeche svg {
+   gezeichnet wird es nicht - dieselbe Massregel wie beim PNG (W11b-B-4).
+   NUR DAS AEUSSERE SVG (Kindkombinator). Das innere <svg class="epos-flaeche">
+   haengt mit x, y, width und height an seiner Zeichenflaeche; traefe es diese
+   Regel, zoegen Chromium und WebView2 es auf die volle Bildbreite und -hoehe
+   (1 240 x 560 statt 1 100 x 360, am Baustein gemessen) - die Kurven lagen dann
+   gestreckt unter der Nulllinie und rechts ueber der Achse. */
+.epos-diagramm-svg-flaeche > svg {
     display: block;
     width: 100%;
     height: auto;
@@ -9397,7 +9402,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 
 /* EIN DIAGRAMM IN EINER GRUPPE (Jahresverlauf, Ganglinie) fuellt ihre Breite
    und nicht mehr: Das SVG behaelt sein Seitenverhaeltnis (Regel von
-   .epos-diagramm-svg-flaeche svg), die Gruppe rollt nie quer. */
+   .epos-diagramm-svg-flaeche > svg), die Gruppe rollt nie quer. */
 .epos-stammblattgruppe .epos-diagramm-svg {
     max-width: 100%;
 }

@@ -234,6 +234,19 @@ drei Reihen ist **gebündelt** die Vorgabe — halb so groß wie das PNG, kein V
 und ein Zoom über etwa das Vierfache lädt den Ausschnitt als rohen Pfad nach (ein Rundlauf
 pro Zoomstufe, nicht pro Radrast).
 
+**Stapel:** Eine Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle`),
+gehen weder roh noch gebündelt — deren Zickzack innerhalb einer Bildpunktspalte ließe die
+Schichten blass und löchrig erscheinen und die Summe über den Stapel greifen. Bei mehr Werten
+als Bildpunktspalten zeichnen sie je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange
+ein Tag schmaler als vier Spalten ist, sonst je Spalte (`Pfadregel.Stufen`) — und zwar ALLE mit
+den Werten derselben Stunde: der Spitzenstunde der Bezugsgröße (`Datenreihe.Bezug`: die
+Summen- oder Bedarfslinie, sonst die Oberkante des Stapels; `Pfadregel.Spitzenstunden`). So
+teilen Nachbarschichten ihre Kante genau, der Stapel bleibt je Stufe additiv, und ein
+taktender Erzeuger steht nicht als Band auf Nennleistung da — der Höchstwert je Kante täte
+beides nicht. Das Bild nennt unter der Achse, was eine Stufe zeigt, die Zeigerzeile die
+gezeigte Stunde mit Datum und Uhrzeit; nachgeladen wird wie bei jeder anderen Reihe ab dem
+Vierfachen.
+
 ## 6 Empfehlung
 
 **Option B**, in Etappen, mit D1 als bewusstem Zwischenstand: ein Zeichenmodell im Kern,

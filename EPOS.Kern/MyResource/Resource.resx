@@ -39979,5 +39979,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
     <value>Hilfe zur Kühlübergabe</value>
   </data>
+  <data name="CHART_HINWEIS_STUFE_TAG" xml:space="preserve">
+    <value>je Tag die Stunde der Tagesspitze</value>
+  </data>
+  <data name="CHART_HINWEIS_STUFE_SPALTE" xml:space="preserve">
+    <value>je Bildpunkt die Stunde der Spitze</value>
+  </data>
+  <data name="CHART_ZEIGER_SPITZENSTUNDE" xml:space="preserve">
+    <value>Spitzenstunde {0}, {1}</value>
+  </data>
 </root>
 

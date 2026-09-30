@@ -39972,5 +39972,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
     <value>Help on cooling emission</value>
   </data>
+  <data name="CHART_HINWEIS_STUFE_TAG" xml:space="preserve">
+    <value>per day the hour of the daily peak</value>
+  </data>
+  <data name="CHART_HINWEIS_STUFE_SPALTE" xml:space="preserve">
+    <value>per pixel the hour of the peak</value>
+  </data>
+  <data name="CHART_ZEIGER_SPITZENSTUNDE" xml:space="preserve">
+    <value>Peak hour {0}, {1}</value>
+  </data>
 </root>
 
