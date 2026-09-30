@@ -29,6 +29,13 @@ namespace EPOS.Kern.Tests
     /// Hs/Hi und nie unter der trockenen Kurve; die Rücklaufkette lässt NaN durchfallen. Im Lauf
     /// rechnet allein 1050 mit ihr (Rückfall 50 °C); die Stufen Heizkreis (1047 mit AK1),
     /// Senkenspeicher und gepflegtes Paar hält je ein Fall an einer Arbeitskopie.</para>
+    ///
+    /// <para><b>Das Takten (Konzept 4.2, Etappe E4).</b> Unter der Mindestleistung zählt eine
+    /// Laufstunde so viele Starts, wie Mindestläufe ihre Wärme braucht, höchstens ⌊60/t⌋; an den
+    /// Vielfachen eines Mindestlaufs und an der Mindestleistung entscheidet der Zahlenrand. Leere
+    /// Felder nehmen die Normvorgaben (7.1): 30 % bzw. 60 % der Nennleistung, 0,002 h × Nennleistung,
+    /// 10 min. Im Lauf rechnet 1050 mit gepflegter Mindestleistung und gepflegtem Anfahrverlust,
+    /// 1023 mit den Vorgaben; der Elektrokessel zählt seine Laufphasen und verliert nichts.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class KesselKennlinieTests : IDisposable
@@ -323,6 +330,127 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  Takten (Konzept 4.2, Etappe E4)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Normvorgaben der Taktwerte (Konzept 7.1, Entscheid F1):</b> Mindestleistung 30 % der
+        /// Nennleistung beim Gas-Brennwertkessel, 60 % bei jedem übrigen Brennstoffkessel; Anfahrverlust
+        /// 0,002 h × Nennleistung (20 kW → 0,04 kWh); Mindestlaufzeit 10 min.
+        /// </summary>
+        [Theory]
+        [InlineData(KesselBauart.Brennwert, BRENNSTOFF_ERDGAS, 20.0, 6.0)]
+        [InlineData(KesselBauart.Brennwert, 14, 100.0, 30.0)]
+        [InlineData(KesselBauart.Brennwert, BRENNSTOFF_HEIZOEL, 20.0, 12.0)]
+        [InlineData(KesselBauart.Niedertemperatur, BRENNSTOFF_ERDGAS, 20.0, 12.0)]
+        [InlineData(KesselBauart.Standard, BRENNSTOFF_PELLETS, 50.0, 30.0)]
+        [InlineData(KesselBauart.Brennwert, BRENNSTOFF_ERDGAS, 0.0, 0.0)]
+        public void Die_Mindestleistung_nimmt_die_Normvorgabe_nach_Bauart_und_Brennstoff(
+            KesselBauart bauart, int brennstoff, double nenn, double erwartet)
+        {
+            Assert.Equal(erwartet, Kesselkennlinie.MindestleistungVorgabe(nenn, bauart, brennstoff), 12);
+            Assert.Equal(erwartet, Kesselkennlinie.MindestleistungWirksam(null, nenn, bauart, brennstoff), 12);
+        }
+
+        [Fact]
+        public void Anfahrverlust_und_Mindestlaufzeit_nehmen_die_Normvorgaben()
+        {
+            Assert.Equal(0.04, Kesselkennlinie.AnfahrverlustVorgabe(20.0), 12);
+            Assert.Equal(0.04, Kesselkennlinie.AnfahrverlustWirksam(null, 20.0), 12);
+            Assert.Equal(0.0, Kesselkennlinie.AnfahrverlustVorgabe(0.0));
+            Assert.Equal(10, Kesselkennlinie.MindestlaufzeitWirksam(null));
+            Assert.Equal(6, Kesselkennlinie.StartsHoechstens(Kesselkennlinie.MindestlaufzeitWirksam(null)));
+        }
+
+        /// <summary>
+        /// <b>Ein gepflegter Wert geht vor:</b> auch eine gepflegte 0 (Mindestleistung 0 = moduliert bis
+        /// null, Anfahrverlust 0 = Starts ohne Brennstoff); ein negativer oder nicht endlicher Wert nimmt
+        /// die Vorgabe. Die Mindestleistung bleibt höchstens die Nennleistung, die Mindestlaufzeit
+        /// höchstens eine Stunde.
+        /// </summary>
+        [Fact]
+        public void Ein_gepflegter_Taktwert_geht_vor_der_Vorgabe()
+        {
+            const KesselBauart bw = KesselBauart.Brennwert;
+            Assert.Equal(3.86, Kesselkennlinie.MindestleistungWirksam(3.86, 19.3, bw, BRENNSTOFF_ERDGAS));
+            Assert.Equal(0.0, Kesselkennlinie.MindestleistungWirksam(0.0, 19.3, bw, BRENNSTOFF_ERDGAS));
+            Assert.Equal(19.3, Kesselkennlinie.MindestleistungWirksam(25.0, 19.3, bw, BRENNSTOFF_ERDGAS));
+            Assert.Equal(0.3 * 19.3, Kesselkennlinie.MindestleistungWirksam(-1.0, 19.3, bw, BRENNSTOFF_ERDGAS), 12);
+            Assert.Equal(0.3 * 19.3, Kesselkennlinie.MindestleistungWirksam(double.NaN, 19.3, bw, BRENNSTOFF_ERDGAS), 12);
+
+            Assert.Equal(0.1, Kesselkennlinie.AnfahrverlustWirksam(0.1, 19.3));
+            Assert.Equal(0.0, Kesselkennlinie.AnfahrverlustWirksam(0.0, 19.3));
+            Assert.Equal(0.002 * 19.3, Kesselkennlinie.AnfahrverlustWirksam(-0.5, 19.3), 12);
+
+            Assert.Equal(15, Kesselkennlinie.MindestlaufzeitWirksam(15));
+            Assert.Equal(60, Kesselkennlinie.MindestlaufzeitWirksam(90));
+            Assert.Equal(10, Kesselkennlinie.MindestlaufzeitWirksam(0));
+        }
+
+        /// <summary>
+        /// <b>Wann taktet der Kessel?</b> Bei 0 &lt; Q &lt; P_min — eine Wärme unter dem Zahlenrand ist kein
+        /// Lauf, eine Wärme, die die Mindestleistung bis auf den Rand erreicht, moduliert; mit P_min = 0
+        /// taktet kein Kessel.
+        /// </summary>
+        [Fact]
+        public void Der_Kessel_taktet_nur_zwischen_null_und_der_Mindestleistung()
+        {
+            Assert.True(Kesselkennlinie.Taktet(2.0, 6.0));
+            Assert.True(Kesselkennlinie.Taktet(5.9, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(6.0, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(6.0 - 1e-12, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(8.0, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(0.0, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(Rechenrand.ABSOLUT / 10, 6.0));
+            Assert.False(Kesselkennlinie.Taktet(2.0, 0.0));
+            Assert.False(Kesselkennlinie.Taktet(double.NaN, 6.0));
+        }
+
+        /// <summary>
+        /// <b>Die Starts einer Taktstunde:</b> min(⌊60/t⌋, ⌈Q / (P_min · t/60)⌉), mindestens einer. Mit
+        /// P_min = 6 kW und 10 min ist ein Mindestlauf 1 kWh: 0,5 kWh → 1, 1 kWh → 1, 1,5 kWh → 2,
+        /// 5,9 kWh → 6. Mit 7 min passen nur acht Läufe in die Stunde (⌊60/7⌋), obwohl 5,99 kWh neun
+        /// bräuchten.
+        /// </summary>
+        [Theory]
+        [InlineData(0.5, 6.0, 10, 1)]
+        [InlineData(1.0, 6.0, 10, 1)]
+        [InlineData(1.5, 6.0, 10, 2)]
+        [InlineData(3.0, 6.0, 10, 3)]
+        [InlineData(5.9, 6.0, 10, 6)]
+        [InlineData(5.99, 6.0, 7, 8)]
+        [InlineData(10.0, 30.0, 60, 1)]
+        [InlineData(2.0, 6.0, 1, 20)]
+        public void Die_Taktstunde_zaehlt_so_viele_Starts_wie_Mindestlaeufe_die_Waerme_braucht(
+            double waerme, double pmin, int laufzeit, int erwartet)
+        {
+            Assert.Equal(erwartet, Kesselkennlinie.StartsImTakt(waerme, pmin, laufzeit));
+        }
+
+        /// <summary>
+        /// <b>Der Zahlenrand an den Vielfachen eines Mindestlaufs:</b> 0,1 + 0,2 ist binär
+        /// 0,30000000000000004 und geteilt durch den Mindestlauf 0,1 kWh 3,0000000000000004 — ein
+        /// blankes Aufrunden zählte vier Starts. Die Wärme deckt drei Mindestläufe bis auf den Rand.
+        /// </summary>
+        [Fact]
+        public void Am_Vielfachen_eines_Mindestlaufs_kippt_die_Startzahl_nicht_am_letzten_Bit()
+        {
+            double waerme = 0.1 + 0.2;
+            double pmin = 0.6;   // 10 min → 0,1 kWh je Mindestlauf
+            Assert.Equal(4.0, Math.Ceiling(waerme / (pmin * 10 / 60.0)));
+            Assert.Equal(3, Kesselkennlinie.StartsImTakt(waerme, pmin, 10));
+            Assert.Equal(4, Kesselkennlinie.StartsImTakt(waerme + 1e-6, pmin, 10));
+        }
+
+        [Fact]
+        public void Der_Elektrokessel_taktet_nicht()
+        {
+            Assert.False(Kesselkennlinie.RechnetMitTakten(SimulationSPK.BRENNSTOFF_STROM));
+            Assert.True(Kesselkennlinie.RechnetMitTakten(BRENNSTOFF_ERDGAS));
+            Assert.True(Kesselkennlinie.RechnetMitTakten(BRENNSTOFF_KOHLE));
+        }
+
+        // =================================================================
         //  Der Lauf
         // =================================================================
 
@@ -330,7 +458,7 @@ namespace EPOS.Kern.Tests
         /// <b>1023: Brennwertkessel mit leerem η₃₀.</b> Er rechnet mit der Vorgabe 0,934; jede
         /// Laufstunde trägt η(β) der Kurve, der Brennstoff der Laufstunden ist Σ Q/η(β), und
         /// gegenüber η₁₀₀ spart die Teillast Brennstoff. Der Jahresverbrauch ist dieser Brennstoff
-        /// plus der Bereitschaftsverlust.
+        /// plus der Anfahrverlust der Starts (Etappe E4) plus der Bereitschaftsverlust.
         /// </summary>
         [Fact]
         public void Der_Brennwertkessel_von_1023_rechnet_je_Stunde_mit_der_Kurve_und_der_Vorgabe()
@@ -370,7 +498,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(mehr, spk.TeillastMehrbrennstoff_KWh_Spk[0], 6);
             Assert.True(spk.TeillastMehrbrennstoff_KWh_Spk[0] < 0, "Die Teillast spart beim Brennwertkessel Brennstoff.");
 
-            Assert.Equal((brennstoff + spk.Bereitschaftsverlust_KWh_Spk[0]) / 1000.0, spk.Kessel_Verbrauch_MWh_Spk[0], 9);
+            Assert.Equal((brennstoff + spk.Anfahrverlust_KWh_Spk[0] + spk.Bereitschaftsverlust_KWh_Spk[0]) / 1000.0,
+                         spk.Kessel_Verbrauch_MWh_Spk[0], 9);
             Assert.Equal(waerme / brennstoff, spk.WirkungsgradBetrieb(0), 12);
             Assert.InRange(spk.WirkungsgradBetrieb(0), ETA100_1023, eta30);
             Assert.Equal(waerme / (laufstunden * nenn), spk.LaststufeMittel(0), 12);
@@ -474,9 +603,17 @@ namespace EPOS.Kern.Tests
                                  spk.Bereitschaftsverlust_KWh_Spk[0] / 1000.0;
             Assert.Equal(erwartetMwh, spk.Kessel_Verbrauch_MWh_Spk[0], 9);
 
+            // Etappe E4: kein Taktmodell - die Starts sind die Laufphasen, ohne Anfahrverlust.
+            Assert.False(spk.RechnetMitTakten(0));
+            Assert.Equal(spk.Laufphasen_Spk[0], spk.Starts_Spk[0]);
+            Assert.Equal(0, spk.Taktstunden_Spk[0]);
+            Assert.Equal(0.0, spk.Anfahrverlust_KWh_Spk[0]);
+            Assert.Equal(0.0, spk.Mindestleistung(0));
+
             var erg = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);
             Assert.False(erg.MitKennlinie);
             Assert.False(erg.Module.Single().MitKennlinie);
+            Assert.Equal(spk.Starts_Spk[0], erg.Module.Single().Starts);
         }
 
         /// <summary>
@@ -550,7 +687,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, spk.TeillastMehrbrennstoff_KWh_Spk[0]);
             Assert.Equal(50.0, spk.RuecklaufMittel(0), 9);
             Assert.Equal(erwartet, spk.WirkungsgradBetrieb(0), 9);
-            Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 80.6, 80.7);
+            // Etappe E4: dazu der Anfahrverlust der Starts (gepflegt 0,1 kWh je Start).
+            Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 80.8, 80.9);
 
             // Die Ergebnisseite ruft dieselben Zahlen.
             var erg = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);
@@ -689,6 +827,137 @@ namespace EPOS.Kern.Tests
 
             string kopf = WindowsFormsApplication1.MyResource.Resource.SIMENG_KESSEL_KENNLINIE_GEPFLEGT.Split('{')[0];
             Assert.Contains(laeufer.Protokoll.Hinweise, h => h.Contains(kopf) && h.Contains("1,050"));
+        }
+
+        // =================================================================
+        //  Takten im Lauf (Etappe E4)
+        // =================================================================
+
+        /// <summary>
+        /// <b>1050: Takten mit gepflegten Werten.</b> Mindestleistung 3,86 kW und Anfahrverlust 0,1 kWh
+        /// sind gepflegt, die Mindestlaufzeit nimmt die Vorgabe 10 min. Stunde für Stunde nachgerechnet:
+        /// Eine Laufstunde unter der Mindestleistung zählt die Starts des Takts, jede andere einen Start
+        /// nach einer Stillstandsstunde; jeder Start kostet 0,1 kWh. Starts = Laufphasen + Σ über die
+        /// Taktstunden (Starts − Übergang); der Jahresverbrauch trägt den Anfahrverlust.
+        /// </summary>
+        [Fact]
+        public void Das_Referenzprojekt_1050_taktet_mit_seinen_gepflegten_Werten()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_REFERENZ, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            Assert.True(spk.RechnetMitTakten(0));
+            Assert.Equal(3.86, spk.Mindestleistung(0), 12);
+            Assert.Equal(0.1, spk.AnfahrverlustJeStart(0), 12);
+            Assert.Equal(Kesselkennlinie.VORGABE_MINDESTLAUFZEIT_MIN, spk.Mindestlaufzeit(0));
+            Assert.False(spk.MindestleistungIstVorgabe(0));
+            Assert.False(spk.AnfahrverlustIstVorgabe(0));
+            Assert.True(spk.MindestlaufzeitIstVorgabe(0));
+
+            double[] eta = spk.WirkungsgradStunden(0);
+            int starts = 0, laufphasen = 0, taktstunden = 0, taktUeberhang = 0;
+            bool vorher = false;
+            for (int h = 0; h < 8760; h++)
+            {
+                bool laeuft = eta[h] != 0;
+                if (laeuft)
+                {
+                    double q = spk.Kesselleistung_stuendlich[h];
+                    int s;
+                    if (Kesselkennlinie.Taktet(q, 3.86))
+                    {
+                        s = Kesselkennlinie.StartsImTakt(q, 3.86, 10);
+                        Assert.InRange(s, 1, 6);
+                        taktstunden++;
+                        taktUeberhang += s - (vorher ? 0 : 1);
+                    }
+                    else
+                    {
+                        s = vorher ? 0 : 1;
+                    }
+                    starts += s;
+                    if (!vorher) laufphasen++;
+                }
+                vorher = laeuft;
+            }
+            Assert.True(taktstunden > 0, "1050 taktet in keiner Stunde.");
+            Assert.Equal(starts, spk.Starts_Spk[0]);
+            Assert.Equal(laufphasen, spk.Laufphasen_Spk[0]);
+            Assert.Equal(taktstunden, spk.Taktstunden_Spk[0]);
+            Assert.Equal(spk.Laufphasen_Spk[0] + taktUeberhang, spk.Starts_Spk[0]);
+            Assert.Equal(starts * 0.1, spk.Anfahrverlust_KWh_Spk[0], 6);
+            Assert.Equal((spk.BrennstoffBetrieb_KWh_Spk[0] + spk.Anfahrverlust_KWh_Spk[0] + spk.Bereitschaftsverlust_KWh_Spk[0]) / 1000.0,
+                         spk.Kessel_Verbrauch_MWh_Spk[0], 9);
+
+            // Die Ergebnisseite ruft dieselben Zahlen.
+            var erg = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);
+            Assert.Equal(spk.Starts_Spk[0], erg.Starts);
+            Assert.Equal(spk.Taktstunden_Spk[0], erg.Taktstunden);
+            Assert.Equal(spk.Anfahrverlust_KWh_Spk[0], erg.AnfahrverlustKwh, 9);
+            Assert.Equal(spk.Starts_Spk[0], erg.Module.Single().Starts);
+
+            // Das Laufprotokoll nennt die Taktwerte samt Herkunft und das Jahr.
+            string werte = WindowsFormsApplication1.MyResource.Resource.SIMENG_KESSEL_TAKTWERTE.Split('{')[0];
+            Assert.Contains(laeufer.Protokoll.Hinweise, h => h.Contains(werte) && h.Contains("3,86") &&
+                h.Contains(WindowsFormsApplication1.MyResource.Resource.KESSEL_WERT_GEPFLEGT) &&
+                h.Contains(WindowsFormsApplication1.MyResource.Resource.KESSEL_WERT_VORGABE));
+            string jahr = WindowsFormsApplication1.MyResource.Resource.SIMENG_KESSEL_TAKTEN_BETRIEB.Split('{')[0];
+            Assert.Contains(laeufer.Protokoll.Hinweise, h => h.Contains(jahr) &&
+                h.Contains(spk.Starts_Spk[0].ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>1023: Takten mit den Normvorgaben.</b> Die drei Felder sind leer; der Gas-Brennwertkessel
+        /// (19,3 kW) rechnet mit 30 % Mindestleistung, 0,002 h × Nennleistung und 10 min.
+        /// </summary>
+        [Fact]
+        public void Der_Kessel_von_1023_taktet_mit_den_Normvorgaben()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_BRENNWERT, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            double nenn = spk.Maximale_Kesselleistung_Spk;
+            Assert.True(spk.MindestleistungIstVorgabe(0) && spk.AnfahrverlustIstVorgabe(0) && spk.MindestlaufzeitIstVorgabe(0));
+            Assert.Equal(Kesselkennlinie.VORGABE_MINDESTLEISTUNG_GAS_BRENNWERT * nenn, spk.Mindestleistung(0), 12);
+            Assert.Equal(Kesselkennlinie.VORGABE_ANFAHRVERLUST_STUNDEN * nenn, spk.AnfahrverlustJeStart(0), 12);
+            Assert.Equal(10, spk.Mindestlaufzeit(0));
+            Assert.True(spk.Taktstunden_Spk[0] > 0);
+            Assert.True(spk.Starts_Spk[0] > spk.Laufphasen_Spk[0], "Im Takt zählt eine Stunde mehr als ihren Übergang.");
+            Assert.Equal(spk.Starts_Spk[0] * spk.AnfahrverlustJeStart(0), spk.Anfahrverlust_KWh_Spk[0], 6);
+        }
+
+        /// <summary>
+        /// <b>Eine gepflegte Mindestleistung 0</b> (moduliert bis null) lässt keinen Takt zu: Die Starts
+        /// sind die Laufphasen, und der Anfahrverlust fällt je Laufphase einmal an.
+        /// </summary>
+        [Fact]
+        public void Mit_der_Mindestleistung_null_zaehlt_der_Kessel_nur_seine_Laufphasen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Heizkessel SET Mindestleistung = 0 WHERE ID_Projekt = ?",
+                                                  new DbParam("@p", PROJEKT_BRENNWERT)));
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_BRENNWERT, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            Assert.False(spk.MindestleistungIstVorgabe(0));
+            Assert.Equal(0.0, spk.Mindestleistung(0));
+            Assert.Equal(0, spk.Taktstunden_Spk[0]);
+            Assert.Equal(spk.Laufphasen_Spk[0], spk.Starts_Spk[0]);
+            Assert.Equal(spk.Laufphasen_Spk[0] * spk.AnfahrverlustJeStart(0), spk.Anfahrverlust_KWh_Spk[0], 9);
         }
     }
 }

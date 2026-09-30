@@ -142,8 +142,10 @@ namespace EPOS.Kern.Tests
             // E27: vor E27 13,0557 t/a — der negative Netzbezug (−27,46 MWh × 435 g/kWh
             // = −11,9451 t/a) stand als Gutschrift darin. Kessel E2b (Schemaschritt 158): Der
             // Kessel rechnet als Brennwertkessel mit der Normvorgabe von η₃₀ und verbrennt
-            // weniger Gas; vor E2b 25,0008 t/a.
-            Assert.Equal(24.8496, v.CO2Gesamt.Value, 4);
+            // weniger Gas; vor E2b 25,0008 t/a. Kessel E4 (Takten): Der Kessel läuft im Mittel bei 3 %
+            // seiner Nennleistung, taktet in fast jeder Laufstunde und zahlt je Start den
+            // Anfahrverlust (+1,11 MWh Gas); vor E4 24,8496 t/a.
+            Assert.Equal(25.116, v.CO2Gesamt.Value, 4);
         }
 
         // =====================================================================

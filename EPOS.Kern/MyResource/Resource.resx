@@ -28039,7 +28039,7 @@ Möchten Sie das zulassen?</value>
     <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+    <value>Summe über alle Kessel. Starts zählen Brennerstarts: einen je Laufphase, in einer Stunde unter der Mindestleistung so viele, wie Mindestläufe die Wärme brauchen; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>
@@ -28055,6 +28055,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMERG_LBL_STARTS" xml:space="preserve">
     <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_TAKTSTUNDEN" xml:space="preserve">
+    <value>Taktstunden unter der Mindestleistung</value>
+  </data>
+  <data name="SIMERG_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust</value>
+  </data>
+  <data name="SIMERG_TIP_TAKTEN_SPK" xml:space="preserve">
+    <value>Ein Brennstoffkessel taktet, wenn seine Wärme in einer Stunde unter der Mindestleistung liegt: Die Stunde zählt so viele Starts, wie Mindestläufe (Mindestleistung über die Mindestlaufzeit) die Wärme brauchen, höchstens so viele, wie in die Stunde passen. Jede andere Laufstunde zählt einen Start, wenn der Kessel davor stand. Jeder Start kostet den Anfahrverlust als Brennstoff. Leere Felder nehmen die Normvorgaben: Mindestleistung 30 % der Nennleistung beim Gas-Brennwertkessel, sonst 60 %, Mindestlaufzeit 10 min, Anfahrverlust 0,002 h mal Nennleistung.</value>
   </data>
   <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
     <value>davon aus Puffer (andere Erzeuger):</value>
@@ -40384,6 +40393,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HZKK_HINT_KENNLINIE" xml:space="preserve">
     <value>Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel.</value>
   </data>
+  <data name="HZKK_HINT_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein mit seiner Teillastkennlinie.</value>
+  </data>
   <data name="HZKK_MSG_KENNLINIE_OHNE_BRENNWERT" xml:space="preserve">
     <value>Die Brennwertkennlinie ist nur bei einem Brennwertkessel zulässig.</value>
   </data>
@@ -40438,6 +40450,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KESSEL_BAUART_STANDARD" xml:space="preserve">
     <value>Standardkessel</value>
   </data>
+  <data name="KESSEL_WERT_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="KESSEL_WERT_VORGABE" xml:space="preserve">
+    <value>Normvorgabe</value>
+  </data>
   <data name="SIMERG_LBL_WIRKUNGSGRAD_BETRIEB" xml:space="preserve">
     <value>Mittlerer Wirkungsgrad im Betrieb</value>
   </data>
@@ -40445,7 +40463,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Brennstoff aus Teillast gegenüber Nennlast</value>
   </data>
   <data name="SIMERG_TIP_KENNLINIE_SPK" xml:space="preserve">
-    <value>Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teillast Brennstoff spart.</value>
+    <value>Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Anfahr- und Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teillast Brennstoff spart.</value>
   </data>
   <data name="SIM_SPALTE_ETA30" xml:space="preserve">
     <value>η₃₀ [%]</value>
@@ -40489,6 +40507,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad.</value>
   </data>
+  <data name="SIMENG_KESSEL_TAKTWERTE" xml:space="preserve">
+    <value>Takten „{0}“: Mindestleistung {1} kW ({2}), Mindestlaufzeit {3} min ({4}), Anfahrverlust {5} kWh je Start ({6}).</value>
+  </data>
+  <data name="SIMENG_KESSEL_TAKTEN_BETRIEB" xml:space="preserve">
+    <value>Takten „{0}“: {1} Starts, {2} Laufphasen, {3} Taktstunden unter der Mindestleistung, Anfahrverlust {4:N1} kWh/a.</value>
+  </data>
   <data name="SIMERG_LBL_BRENNWERT_STUNDENANTEIL" xml:space="preserve">
     <value>Betriebsstunden im Brennwertbetrieb</value>
   </data>
@@ -40509,6 +40533,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIM_SPALTE_BRENNWERTANTEIL" xml:space="preserve">
     <value>Brennwertbetrieb [%]</value>
+  </data>
+  <data name="SIM_SPALTE_STARTS" xml:space="preserve">
+    <value>Starts [1/a]</value>
   </data>
   <data name="CHART_CSV_KESSEL_RUECKLAUF" xml:space="preserve">
     <value>{0} Rücklauf [°C]</value>

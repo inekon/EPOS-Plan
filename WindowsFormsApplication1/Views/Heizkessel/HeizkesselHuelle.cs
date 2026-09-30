@@ -177,6 +177,9 @@ namespace WindowsFormsApplication1
                 ["PlatzhalterVorgabe"] = Text_("HZKK_PLATZHALTER_VORGABE", "Vorgabe"),
                 ["HinweisKennlinie"] = Text_("HZKK_HINT_KENNLINIE",
                     "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel."),
+                ["HinweisOhneKennlinie"] = Text_("HZKK_HINT_OHNE_KENNLINIE",
+                    "Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein " +
+                    "mit seiner Teillastkennlinie."),
 
                 // HIER STANDEN DIE TEXTSCHLÜSSEL der Gruppen „Kosten",
                 // „Emissionen nach BEHG-V" und „Emissionsfaktoren" (GruppeKosten,

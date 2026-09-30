@@ -294,6 +294,14 @@ jobs:
       # fuehrt (E3); unter den sieben aendern sich Brennstoff, Nutzungsgrad und
       # Kesselemissionen von 1007, 1030, 1045, 1046 und 1049, alle Zeitreihen
       # bleiben byte-gleich. Die Brennwertkennlinie rechnet allein 1050.
+      # R29 (30.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil jeder Brennstoffkessel unter seiner Mindestleistung taktet
+      # (Kesselkennlinie E4: Starts je Taktstunde, Anfahrverlust je Start, leere
+      # Felder mit den Normvorgaben) und aggregate.csv je Kessel sechs
+      # Taktschluessel fuehrt; unter den sieben aendern sich Starts, Brennstoff,
+      # Nutzungsgrad und Kesselemissionen von 1007, 1030, 1045, 1046 und 1049
+      # (1045 und 1049 auch die Gasspitze), 1017 und 1047 (Elektrokessel) nur um
+      # die neuen Schluessel; alle Zeitreihen bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -306,24 +314,24 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-30_R28_Kesselbrennwert
+      - name: Vergleich mit Referenzbasis 2026-09-30_R29_Kesseltakten
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-30_R28_Kesselbrennwert/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-30_R29_Kesseltakten/Projekt_1049 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
-      # Plattformnachweis (Befund PB-1, Basis R28): dieselben sieben Projekte noch
+      # Plattformnachweis (Befund PB-1, Basis R29): dieselben sieben Projekte noch
       # einmal mit --stoerung ulp. Exp, Sin, Cos, Asin und Acos der Naht
       # Plattformrundung (Gebaeudematrix, Sonnenstand, Erdreich, Kollektor,
       # Tagesbilanz) runden dann wie eine andere C-Bibliothek: etwa jedes

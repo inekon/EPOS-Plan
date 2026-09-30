@@ -32965,6 +32965,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein mit seiner Teillastkennlinie. ähnelt.
+        /// </summary>
+        public static string HZKK_HINT_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("HZKK_HINT_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 1,05) ähnelt.
         /// </summary>
         public static string HZKK_HINT_TEILLAST30 {
@@ -39919,6 +39928,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KESSEL_WARTUNG_LBL {
             get {
                 return ResourceManager.GetString("KESSEL_WARTUNG_LBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
+        /// </summary>
+        public static string KESSEL_WERT_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("KESSEL_WERT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normvorgabe ähnelt.
+        /// </summary>
+        public static string KESSEL_WERT_VORGABE {
+            get {
+                return ResourceManager.GetString("KESSEL_WERT_VORGABE", resourceCulture);
             }
         }
         
@@ -76971,6 +76998,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Takten „{0}“: {1} Starts, {2} Laufphasen, {3} Taktstunden unter der Mindestleistung, Anfahrverlust {4:N1} kWh/a. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_TAKTEN_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_TAKTEN_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Takten „{0}“: Mindestleistung {1} kW ({2}), Mindestlaufzeit {3} min ({4}), Anfahrverlust {5} kWh je Start ({6}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_TAKTWERTE {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_TAKTWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicher {0} ({1}): Das Klassen-Set {2} passt nicht zur Alt-Verwendung „{3}&quot;. Gerechnet wird das Set; die Rolle in Anzeige und Ergebniszeile lautet „{4}&quot;. ähnelt.
         /// </summary>
         public static string SIMENG_KLASSENSET_ROLLE {
@@ -78004,6 +78049,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ANFAHRVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_BEREITSCHAFT {
@@ -78535,6 +78589,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktstunden unter der Mindestleistung ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_TAKTSTUNDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_TAKTSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff aus Teillast gegenüber Nennlast ähnelt.
         /// </summary>
         public static string SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF {
@@ -78823,7 +78886,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Brennerstarts: einen je Laufphase, in einer Stunde unter der Mindestleistung so viele, wie Mindestläufe die Wärme brauchen; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_BETRIEB_SPK {
             get {
@@ -78859,7 +78922,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teillast Brennstof [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Anfahr- und Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teilla [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string SIMERG_TIP_KENNLINIE_SPK {
             get {
@@ -78882,6 +78945,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_MAX_WAERMELAST {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_MAX_WAERMELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Brennstoffkessel taktet, wenn seine Wärme in einer Stunde unter der Mindestleistung liegt: Die Stunde zählt so viele Starts, wie Mindestläufe (Mindestleistung über die Mindestlaufzeit) die Wärme brauchen, höchstens so viele, wie in die Stunde passen. Jede andere Laufstunde zählt einen Start, wenn der Kessel davor stand. Jeder Start kostet den Anfahrverlust als Brennstoff. Leere Felder nehmen die Normvorgaben: Mindestleistung 30 % der Nennleistung beim Gas-Brennwertkessel, sonst 60 %, Mindestlaufzeit 10  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_TAKTEN_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_TAKTEN_SPK", resourceCulture);
             }
         }
         
@@ -84256,6 +84328,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_SPEICHER {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts [1/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_STARTS {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_STARTS", resourceCulture);
             }
         }
         

@@ -172,6 +172,12 @@
                                    hinweis: Resource.SIMERG_TIP_KENNLINIE_SPK)
                         @Wertzeile(Resource.SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF, Zahl(Daten.TeillastMehrbrennstoffKwh), "kWh/a",
                                    hinweis: Resource.SIMERG_TIP_KENNLINIE_SPK)
+                        @* Etappe E4 (Konzept 4.2): das Takten unter der Mindestleistung und sein
+                           Anfahrverlust - ebenfalls nur beim Brennstoffkessel. *@
+                        @Wertzeile(Resource.SIMERG_LBL_TAKTSTUNDEN, Ganz(Daten.Taktstunden), "h/a",
+                                   hinweis: Resource.SIMERG_TIP_TAKTEN_SPK)
+                        @Wertzeile(Resource.SIMERG_LBL_ANFAHRVERLUST, Zahl(Daten.AnfahrverlustKwh), "kWh/a",
+                                   hinweis: Resource.SIMERG_TIP_TAKTEN_SPK)
                     }
                     @* Konzept Kesselkennlinie 5 (Etappe E3): was die Brennwertkennlinie im Jahr
                        bewirkt - nur, wenn ein Kessel mit ihr rechnet. *@
@@ -211,6 +217,7 @@
                         <th scope="col">@Resource.SIM_SPALTE_BRENNSTOFFE</th>
                         <th scope="col">@Resource.SIM_SPALTE_OEL</th>
                         <th scope="col">@Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD</th>
+                        <th scope="col" title="@BetriebHinweis">@Resource.SIM_SPALTE_STARTS</th>
                         @if (Daten.MitKennlinie)
                         {
                             <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_ETA30</th>
@@ -234,6 +241,7 @@
                             <td class="epos-simerg-zahl">@Zahl(m.GasMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.OelMwh)</td>
                             <td class="epos-simerg-zahl">@m.JahresnutzungsgradProzent.ToString("F1", Kultur)</td>
+                            <td class="epos-simerg-zahl">@Ganz(m.Starts)</td>
                             @if (Daten.MitKennlinie)
                             {
                                 @* Der Elektrokessel hat keine Kennlinie: Strich statt 0. *@
