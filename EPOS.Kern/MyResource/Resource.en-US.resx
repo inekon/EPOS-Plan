@@ -40611,5 +40611,23 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Night purge ventilation</value>
   </data>
+  <data name="KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER" xml:space="preserve">
+    <value>The building has no created calendar “{0}” – zone “{1}” has nothing to copy; “Create calendar” creates its own from the matrix.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
+    <value>as building</value>
+  </data>
+  <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
+    <value>The building's ventilation is given as a total “air change rate”. Split it in the “Conditioning” tab of the building; the zone then takes its own ventilation values.</value>
+  </data>
+  <data name="KOND_TXT_ZONE_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Without effect while the zone follows the calendar of the building.</value>
+  </data>
+  <data name="KOND_LBL_ZONE_KALENDER" xml:space="preserve">
+    <value>Calendars of the zone</value>
+  </data>
+  <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
+    <value>An empty cell applies as in the building; the placeholder shows the value. An own cell overrides it, an emptied cell inherits again.</value>
+  </data>
 </root>
 

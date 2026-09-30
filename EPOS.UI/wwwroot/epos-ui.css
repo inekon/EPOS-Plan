@@ -13605,6 +13605,72 @@ td.epos-vorlage-katalogbeschreibung {
     max-width: none;
 }
 
+/* ==========================================================================
+   DIE ZONENMATRIX (Stufe KP2, Welle U4; Teilkonzept Konditionierungsprofile
+   3.4, 7.3) — dieselbe Matrix und dieselben Karten wie am Gebaeude, dazu je
+   Groesse eine Zustandszeile ("vom Gebaeude", "eigener Kalender", "aus der
+   Matrix") mit "Vom Gebaeude uebernehmen und anpassen". Schmal steht nur die
+   Zeile der gewaehlten Groesse, wie ihre Spalte und Karte.
+
+   OHNE WIRKUNG: Folgt die Zone in einer Groesse dem Kalender des Gebaeudes,
+   steht ihre Spalte leiser da; der Grund steht am Element (title) und in der
+   Zustandszeile. Die Eingabe bleibt bedienbar - sie wirkt nach "uebernehmen
+   und anpassen".
+   ========================================================================== */
+
+.epos-dialog.epos-zonendialog {
+    max-width: none;
+}
+
+.epos-kond-matrix td.epos-kond--ohnewirkung {
+    background: var(--epos-flaeche);
+}
+
+.epos-kond-zonenzustand {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-kond-zonenzustand-titel {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-kond-zonenzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    min-width: 0;
+}
+
+.epos-kond-zonenzeile-name {
+    font-weight: 600;
+    min-width: 6em;
+}
+
+.epos-kond-zonenzeile-zustand {
+    color: var(--epos-text-leise);
+}
+
+.epos-kond-zonenzeile-grund {
+    flex-basis: 100%;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-zonenzeile:not(.epos-kond--aktiv) {
+    display: none;
+}
+
+@container epos-kond (min-width: 900px) {
+    .epos-kond-zonenzeile:not(.epos-kond--aktiv) {
+        display: flex;
+    }
+}
+
 /* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */

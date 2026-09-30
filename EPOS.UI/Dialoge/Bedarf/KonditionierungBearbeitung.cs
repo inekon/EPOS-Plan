@@ -31,10 +31,18 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Stand davor und danach; Eingaben in dieselbe Zelle hintereinander sind EIN Schritt. Zurückgesetzt
 /// wird je Feld nur, was noch so steht, wie die Handlung es hinterließ — eine spätere Eingabe an einem
 /// anderen Feld bleibt.</para>
+/// <para><b>Die Zonenmatrix</b> (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3): Mit einer Zone gebaut
+/// (<see cref="KonditionierungBearbeitung(GebaeudeArbeitsstand, ZoneDaten, Func{KonditionierungWeg?}, Func{KonditionierungTexte}?, Func{KonditionierungFragetexte}?)"/>)
+/// wirkt jede Handlung am Ort der Zone: Die Bestandszellen sind die Felder der Zone (leer = „wie das
+/// Gebäude"), die neuen Zellen und Kalender ihre <see cref="ZoneDaten.Konditionierung"/>, alle Zeiten
+/// stehen in der Zelle. Das Gebäude liest sie nur — ein Schritt, der das Gebäude ändern wollte (die
+/// Aufteilung der Gesamtangabe), wird benannt abgelehnt; geschrieben wird mit dem OK des Wirts. Die
+/// Platzhalter nennen, was eine leere Zelle erbt (<see cref="Erbplatzhalter"/>).</para>
 /// </remarks>
 public sealed class KonditionierungBearbeitung
 {
     private readonly GebaeudeArbeitsstand _arbeit;
+    private readonly ZoneDaten? _zone;
     private readonly Func<KonditionierungWeg?> _weg;
     private readonly Func<KonditionierungTexte> _texte;
     private readonly Func<KonditionierungFragetexte> _fragen;
@@ -56,6 +64,19 @@ public sealed class KonditionierungBearbeitung
         _fragen = fragen ?? (() => f);
     }
 
+    /// <summary>
+    /// <b>Die Bearbeitung der Zonenmatrix</b> (Stufe KP2, Welle U4): <paramref name="zone"/> ist der
+    /// Arbeitsstand des Zonendialogs — ihn ändern die Handlungen; <paramref name="arbeit"/> der
+    /// Arbeitsstand des Gebäudeeditors, den sie nur lesen (Gebäude und übrige Zonen).
+    /// </summary>
+    public KonditionierungBearbeitung(GebaeudeArbeitsstand arbeit, ZoneDaten zone, Func<KonditionierungWeg?> weg,
+                                      Func<KonditionierungTexte>? texte = null,
+                                      Func<KonditionierungFragetexte>? fragen = null)
+        : this(arbeit, weg, texte, fragen)
+    {
+        _zone = zone ?? throw new ArgumentNullException(nameof(zone));
+    }
+
     /// <summary>Meldet eine benannte Ablehnung oder einen Hinweis an den Dialog (sein Banner).</summary>
     public Action<string, WarnStufe>? Melden { get; set; }
 
@@ -64,6 +85,15 @@ public sealed class KonditionierungBearbeitung
 
     /// <summary>Der Feldsatz des Arbeitsstands.</summary>
     public GebaeudeKatalogDaten Stand => _arbeit.Stand;
+
+    /// <summary>Die Zone, deren Matrix bearbeitet wird; <c>null</c> = das Gebäude bzw. der Katalogbau.</summary>
+    public ZoneDaten? Zone => _zone;
+
+    /// <summary>Wird die Matrix einer Zone bearbeitet?</summary>
+    public bool IstZone => _zone is not null;
+
+    /// <summary>Der Ort einer Handlung: die Größe an der Zone bzw. am Gebäude.</summary>
+    private KonditionierungOrt Ort(KonditionierungGroesse g) => new(g, _zone?.Id);
 
     /// <summary>Der Weg; ohne Gaben das leere Bündel.</summary>
     public KonditionierungWeg Weg => _weg() ?? KonditionierungWeg.Keiner;
@@ -74,14 +104,18 @@ public sealed class KonditionierungBearbeitung
     /// <summary>Die Texte der Rückfragen.</summary>
     public KonditionierungFragetexte Fragen => _fragen();
 
-    /// <summary>Die Konditionierung des Feldsatzes; <c>null</c> ohne Tabellen oder ohne Gaben.</summary>
-    public KonditionierungDaten? Daten => Stand.Konditionierung;
+    /// <summary>
+    /// Die Konditionierung des Feldsatzes bzw. der Zone; <c>null</c> ohne Tabellen oder ohne Gaben — an
+    /// einer neuen Zone auch, solange sie noch keine Zelle trägt.
+    /// </summary>
+    public KonditionierungDaten? Daten => _zone is not null ? _zone.Konditionierung : Stand.Konditionierung;
 
     /// <summary>
-    /// Geht die Bearbeitung über den Weg? Nur mit Konditionierung im Feldsatz, dem Delegaten
-    /// „Zelle setzen" und ohne <see cref="KonditionierungWeg.Sperre"/>.
+    /// Geht die Bearbeitung über den Weg? Nur mit Konditionierung im Feldsatz (an einer Zone: am
+    /// Gebäude), dem Delegaten „Zelle setzen" und ohne <see cref="KonditionierungWeg.Sperre"/>.
     /// </summary>
-    public bool MitWeg => Daten is not null && Weg.Sperre is null && Weg.ZelleSetzen is not null;
+    public bool MitWeg => Stand.Konditionierung is not null && (_zone is not null || Daten is not null)
+                          && Weg.Sperre is null && Weg.ZelleSetzen is not null;
 
     /// <summary>
     /// Warum Kalender, neue Zellen und Handlungen nicht zur Verfügung stehen (Festlegung 6: „ohne
@@ -89,8 +123,13 @@ public sealed class KonditionierungBearbeitung
     /// </summary>
     public string? Sperrgrund => MitWeg ? null : Weg.Sperre is { Length: > 0 } s ? s : Texte.GrundOhneTabellen;
 
-    /// <summary>Bietet der Reiter den Knopf dieser Handlung an? („kein Delegat, kein Knopf")</summary>
-    public bool Bietet(KonditionierungHandlung h) => MitWeg && Weg.Bietet(h);
+    /// <summary>
+    /// Bietet der Reiter den Knopf dieser Handlung an? („kein Delegat, kein Knopf") „Aus dem Katalog erneut
+    /// übernehmen…" gibt es nur am Gebäude, „Vom Gebäude übernehmen und anpassen" nur an einer Zone.
+    /// </summary>
+    public bool Bietet(KonditionierungHandlung h)
+        => MitWeg && Weg.Bietet(h)
+           && (IstZone ? h != KonditionierungHandlung.KatalogErneut : h != KonditionierungHandlung.VomGebaeude);
 
     // =================================================================================
     // Die Zellen der Matrix
@@ -222,7 +261,9 @@ public sealed class KonditionierungBearbeitung
     /// <summary>Die Zeiten der Zelle: das Nachtfenster (Stunden) bzw. die Saison (Jahrestage).</summary>
     public (int? Von, int? Bis) Zeiten(KonditionierungGroesse g, KonditionierungZeile z)
     {
-        if (g == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Nacht) return (Stand.NachtBeginn, Stand.NachtEnde);
+        // Am Gebäude stehen die Heiz-Nachtzeiten in den Bestandsspalten (Festlegung 5), an einer Zone in der Zelle.
+        if (!IstZone && g == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Nacht)
+            return (Stand.NachtBeginn, Stand.NachtEnde);
         KonditionierungZelle? c = Zelle(g, z);
         return (c?.Von, c?.Bis);
     }
@@ -246,8 +287,26 @@ public sealed class KonditionierungBearbeitung
         }
     }
 
-    /// <summary>Der Wert einer Bestandszelle aus ihrem Feld (<see cref="KonditionierungDaten.Bestandsfeld"/>).</summary>
-    private double? Bestandswert(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
+    /// <summary>
+    /// Der Wert einer Bestandszelle aus ihrem Feld (<see cref="KonditionierungDaten.Bestandsfeld"/>); an
+    /// einer Zone das Feld der Zone (leer = „wie das Gebäude"), die Kühlspalte folgt dem Gebäude (bis KU3).
+    /// </summary>
+    private double? Bestandswert(KonditionierungGroesse g, KonditionierungZeile z)
+        => _zone is ZoneDaten zone ? Zonenwert(zone, g, z) : Gebaeudewert(g, z);
+
+    private static double? Zonenwert(ZoneDaten zone, KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
+    {
+        (KonditionierungGroesse.Heizen, KonditionierungZeile.Tag) => zone.SollTag,
+        (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht) => zone.SollNacht,
+        (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende) => zone.SollWochenende,
+        (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien) => zone.SollFerien,
+        (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => zone.LuftwechselInfiltration,
+        (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag) => zone.LuftwechselNutzer,
+        (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert) => zone.InterneWaermegewinne,
+        _ => null
+    };
+
+    private double? Gebaeudewert(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
     {
         (KonditionierungGroesse.Heizen, KonditionierungZeile.Tag) => Stand.SollTag,
         (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht) => Stand.NachtAbsenkung,
@@ -261,9 +320,23 @@ public sealed class KonditionierungBearbeitung
         _ => null
     };
 
-    /// <summary>Schreibt den Wert einer Bestandszelle unmittelbar in ihr Feld.</summary>
+    /// <summary>Schreibt den Wert einer Bestandszelle unmittelbar in ihr Feld (an einer Zone in das der Zone).</summary>
     private void BestandswertSetzen(KonditionierungGroesse g, KonditionierungZeile z, double? w)
     {
+        if (_zone is ZoneDaten zone)
+        {
+            switch (g, z)
+            {
+                case (KonditionierungGroesse.Heizen, KonditionierungZeile.Tag): zone.SollTag = w; break;
+                case (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht): zone.SollNacht = w; break;
+                case (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende): zone.SollWochenende = w; break;
+                case (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien): zone.SollFerien = w; break;
+                case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert): zone.LuftwechselInfiltration = w; break;
+                case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag): zone.LuftwechselNutzer = w; break;
+                case (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert): zone.InterneWaermegewinne = w; break;
+            }
+            return;
+        }
         switch (g, z)
         {
             case (KonditionierungGroesse.Heizen, KonditionierungZeile.Tag): Stand.SollTag = w; break;
@@ -306,7 +379,7 @@ public sealed class KonditionierungBearbeitung
         (int? von, int? bis) = Zeiten(g, z);
         var zelle = new KonditionierungZelle { Wert = zahl, Aus = aus, Von = von, Bis = bis, DeltaT = alt.DeltaT };
         bool leeren = bestand && zahl is null && !aus;
-        return Ausfuehren("W|" + g + "|" + z, s => Weg.ZelleSetzen!(s, new KonditionierungOrt(g), z, zelle),
+        return Ausfuehren("W|" + g + "|" + z, s => Weg.ZelleSetzen!(s, Ort(g), z, zelle),
                           leeren ? () => BestandswertSetzen(g, z, null) : null);
     }
 
@@ -318,7 +391,8 @@ public sealed class KonditionierungBearbeitung
     public bool ZeitenSetzen(KonditionierungGroesse g, KonditionierungZeile z, int? von, int? bis)
     {
         if (!Gibt(g, z) || z is not (KonditionierungZeile.Nacht or KonditionierungZeile.Saison)) return false;
-        bool heiznacht = g == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Nacht;
+        // Die Heiz-Nachtzeiten stehen nur an Gebäude und Katalogbau in Bestandsspalten; an einer Zone in der Zelle.
+        bool heiznacht = !IstZone && g == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Nacht;
         if (!MitWeg)
         {
             if (!heiznacht) return false;
@@ -340,7 +414,7 @@ public sealed class KonditionierungBearbeitung
         // Leer am Nachtfenster der Heizspalte: Der Kern lässt eine leere Zeit stehen; hier heißt leer die
         // Vorgabe - die Spalten werden danach NULL.
         bool leeren = heiznacht && !von.HasValue && !bis.HasValue;
-        return Ausfuehren("Z|" + g + "|" + z, s => Weg.ZelleSetzen!(s, new KonditionierungOrt(g), z, zelle),
+        return Ausfuehren("Z|" + g + "|" + z, s => Weg.ZelleSetzen!(s, Ort(g), z, zelle),
                           leeren ? () => { Stand.NachtBeginn = null; Stand.NachtEnde = null; } : null);
     }
 
@@ -353,7 +427,7 @@ public sealed class KonditionierungBearbeitung
         KonditionierungZelle alt = Zelle(g, z) ?? new KonditionierungZelle();
         var zelle = alt.Kopie();
         zelle.DeltaT = k is double w && double.IsFinite(w) ? w : null;
-        return Ausfuehren("D|" + g + "|" + z, s => Weg.ZelleSetzen!(s, new KonditionierungOrt(g), z, zelle));
+        return Ausfuehren("D|" + g + "|" + z, s => Weg.ZelleSetzen!(s, Ort(g), z, zelle));
     }
 
     // =================================================================================
@@ -374,25 +448,122 @@ public sealed class KonditionierungBearbeitung
     {
         KonditionierungKalender? k = Kalender(g);
         KonditionierungTexte t = Texte;
+        if (VomGebaeude(g)) return t.ZustandGebaeude;
         if (k is null || k.Zustand == KonditionierungZustand.Abgeleitet) return t.ZustandMatrix;
-        if (k.Zustand == KonditionierungZustand.VomGebaeude) return t.ZustandGebaeude;
+        if (k.Zustand == KonditionierungZustand.VomGebaeude) return IstZone ? t.ZustandMatrix : t.ZustandGebaeude;
         if (!string.IsNullOrEmpty(k.Vorlage)) return string.Format(CultureInfo.CurrentCulture, t.ZustandVorlage, k.Vorlage);
         return k.EigenePerioden == 1
             ? t.ZustandAngelegtEine
             : string.Format(CultureInfo.CurrentCulture, t.ZustandAngelegt, k.EigenePerioden);
     }
 
+    // =================================================================================
+    // Die Zone: vom Gebäude, übernehmen und anpassen, geerbte Zellen (Stufe KP2, Welle U4)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Folgt die Zone dem Kalender des Gebäudes?</b> (Teilkonzept 3.4) — das Gebäude hat den Kalender
+    /// der Größe angelegt, die Zone keinen eigenen. Dann sind die Zellen der Zone in dieser Größe ohne
+    /// Wirkung, bis „Vom Gebäude übernehmen und anpassen" eine eigene Kopie anlegt.
+    /// </summary>
+    public bool VomGebaeude(KonditionierungGroesse g)
+        => IstZone && !Angelegt(g)
+           && Stand.Konditionierung?.Spalte(g).Kalender.Zustand == KonditionierungZustand.Angelegt;
+
+    /// <summary>
+    /// Die Zustandszeile einer Größe an der Zone: „vom Gebäude", „eigener Kalender" oder „aus der Matrix".
+    /// </summary>
+    public string Zonenzustand(KonditionierungGroesse g)
+        => VomGebaeude(g) ? Texte.ZustandGebaeude : Angelegt(g) ? Texte.ZustandEigen : Texte.ZustandMatrix;
+
+    /// <summary>
+    /// <b>„Vom Gebäude übernehmen und anpassen"</b> — die Zone bekommt eine eigene Kopie des angelegten
+    /// Gebäudekalenders (Teilkonzept 3.4, 7.3); danach wirken ihre Zellen.
+    /// </summary>
+    public bool VomGebaeudeUebernehmen(KonditionierungGroesse g)
+        => Bietet(KonditionierungHandlung.VomGebaeude) && VomGebaeude(g)
+           && Ausfuehren("U|" + g, s => Weg.VomGebaeude!(s, Ort(g)));
+
+    /// <summary>
+    /// Was eine leere Bestandszelle der Zone erbt, wo der Weg kein Erbe liefert (ohne
+    /// Konditionierungstabellen, ohne Gaben) — der Zonendialog reicht seine Vorgabenkaskade; <c>null</c> =
+    /// „wie Gebäude".
+    /// </summary>
+    public Func<KonditionierungGroesse, KonditionierungZeile, double?>? Bestandserbe { get; set; }
+
+    /// <summary>Die geerbten Zellen der Zone und die Nutzfläche, für die sie gebildet sind.</summary>
+    private (KonditionierungDaten? Daten, double? Nutzflaeche, bool Gebildet) _erbe;
+
+    /// <summary>
+    /// <b>Was die Zone vom Gebäude erbt</b> — je Zelle der Wert, den eine leere Zelle gerade gälte
+    /// (<see cref="KonditionierungWeg.Geerbt"/>); <c>null</c> am Gebäude, ohne Weg oder ohne Delegat.
+    /// Neu gebildet, sobald die Nutzfläche der Zone wechselt (sie schlüsselt die Anteile).
+    /// </summary>
+    public KonditionierungDaten? Erbe
+    {
+        get
+        {
+            if (_zone is null || !MitWeg || Weg.Geerbt is null) return null;
+            if (_erbe.Gebildet && _erbe.Nutzflaeche == _zone.Nutzflaeche) return _erbe.Daten;
+            KonditionierungDaten? d;
+            try { d = Weg.Geerbt(Eingabestand(), _zone.Id); }
+            catch (Exception) { d = null; }
+            _erbe = (d, _zone.Nutzflaeche, true);
+            return d;
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Platzhalter einer leeren Zonenzelle</b> (Teilkonzept 7.3): „Vorgabe {Wert}" aus dem Erbe
+    /// („aus" wie in der Zelle, Anteile in %), ohne Angabe „wie Gebäude"; am Gebäude <c>null</c>.
+    /// </summary>
+    public string? Erbplatzhalter(KonditionierungGroesse g, KonditionierungZeile z)
+    {
+        if (!IstZone) return null;
+        KonditionierungTexte t = Texte;
+        KonditionierungZelle? c = Gibt(g, z) ? Erbe?.Spalte(g).Zelle(z) : null;
+        if (c is null && Erbe is null && Bestandserbe?.Invoke(g, z) is double b)
+            c = new KonditionierungZelle { Wert = b };
+        if (c is null || (!c.Aus && c.Wert is null)) return t.PlatzhalterWieGebaeude;
+        string wert = c.Aus
+            ? t.ZelleAus
+            : Zahlen.Anzeigetext(Math.Round(c.Wert!.Value, 4)) + (IstAnteil(g, z) ? " %" : "");
+        return string.Format(CultureInfo.CurrentCulture, t.PlatzhalterVorgabe, wert);
+    }
+
+    /// <summary>
+    /// Das Nachtfenster, das eine Zonenzelle ohne eigene Zeiten erbt (Spalte, sonst Heizspalte des
+    /// Gebäudes); (<c>null</c>, <c>null</c>) = die Vorgabe 22–6 Uhr.
+    /// </summary>
+    public (int? Von, int? Bis) Erbfenster(KonditionierungGroesse g)
+    {
+        KonditionierungSpalte? s = Erbe?.Spalte(g), h = Erbe?.Spalte(KonditionierungGroesse.Heizen);
+        return (s?.Nacht.Von ?? h?.Nacht.Von, s?.Nacht.Bis ?? h?.Nacht.Bis);
+    }
+
+    /// <summary>
+    /// <b>Ein neuer Anfang</b> — nach einem Satzwechsel, „Verwerfen" oder dem Speichern des Wirts: Der
+    /// Schritt für „Zurücknehmen", eine offene Rückfrage und das Erbe gelten nicht mehr.
+    /// </summary>
+    public void Neubeginn()
+    {
+        _letzter = null;
+        OffeneFrage = null;
+        LetzteMeldung = null;
+        _erbe = default;
+    }
+
     /// <summary>„Kalender anlegen" — der Generator schreibt den Kalender aus der Matrix in den Arbeitsstand.</summary>
     public bool Anlegen(KonditionierungGroesse g)
         => Bietet(KonditionierungHandlung.Anlegen)
-           && Ausfuehren("A|" + g, s => Weg.Anlegen!(s, new KonditionierungOrt(g)));
+           && Ausfuehren("A|" + g, s => Weg.Anlegen!(s, Ort(g)));
 
     /// <summary>„Verwerfen" — nach der Rückfrage (Vorgabe Nein) fällt der angelegte Kalender samt Perioden.</summary>
     public void Verwerfen(KonditionierungGroesse g)
     {
         if (!Bietet(KonditionierungHandlung.Verwerfen)) return;
         MitRueckfrage(KonditionierungHandlung.Verwerfen, g, Texte.KnopfVerwerfen,
-                      () => Ausfuehren("V|" + g, s => Weg.Verwerfen!(s, new KonditionierungOrt(g))));
+                      () => Ausfuehren("V|" + g, s => Weg.Verwerfen!(s, Ort(g))));
     }
 
     /// <summary>„Matrix erneut anwenden…" — nach der Rückfrage ersetzt es nur den Matrixbereich (P12).</summary>
@@ -400,7 +571,7 @@ public sealed class KonditionierungBearbeitung
     {
         if (!Bietet(KonditionierungHandlung.MatrixErneut)) return;
         MitRueckfrage(KonditionierungHandlung.MatrixErneut, g, Texte.KnopfMatrixErneut,
-                      () => Ausfuehren("M|" + g, s => Weg.MatrixErneut!(s, new KonditionierungOrt(g))));
+                      () => Ausfuehren("M|" + g, s => Weg.MatrixErneut!(s, Ort(g))));
     }
 
     /// <summary>
@@ -448,7 +619,7 @@ public sealed class KonditionierungBearbeitung
             KonditionierungRueckfrage? befund;
             try
             {
-                befund = Weg.Rueckfrage(Eingabestand(), new KonditionierungOrt(g), h);
+                befund = Weg.Rueckfrage(Eingabestand(), Ort(g), h);
             }
             catch (Exception ex)
             {
@@ -571,6 +742,18 @@ public sealed class KonditionierungBearbeitung
         _letzter = null;
         OffeneFrage = null;
 
+        if (_zone is ZoneDaten eigene)
+        {
+            // An einer Zone: nur ihre Felder und ihre Konditionierung.
+            ZoneDaten? zv = s.Vorher.Zonen.FirstOrDefault(x => x.Id == eigene.Id);
+            ZoneDaten? zn = s.Nachher.Zonen.FirstOrDefault(x => x.Id == eigene.Id);
+            if (zv is null || zn is null) return true;
+            foreach (Zonenfeld f in ZONENFELDER)
+                if (Gleich(f.Lesen(eigene), f.Lesen(zn))) f.Setzen(eigene, f.Lesen(zv));
+            eigene.Konditionierung = ZurueckOderLeer(eigene.Konditionierung, zv.Konditionierung, zn.Konditionierung);
+            return true;
+        }
+
         GebaeudeKatalogDaten jetzt = Stand, vor = s.Vorher.Gebaeude, nach = s.Nachher.Gebaeude;
         foreach (Feld f in FELDER)
             if (Gleich(f.Lesen(jetzt), f.Lesen(nach))) f.Setzen(jetzt, f.Lesen(vor));
@@ -589,6 +772,17 @@ public sealed class KonditionierungBearbeitung
             z.Konditionierung = Zurueck(z.Konditionierung, zv.Konditionierung, zn.Konditionierung);
         }
         return true;
+    }
+
+    /// <summary>
+    /// Wie <see cref="Zurueck"/>, auch wenn die Zone davor noch keine Konditionierung trug (eine neue Zone
+    /// vor ihrer ersten Zelle): dann eine leere mit neuer Fassung — der OK-Weg schreibt sie leer.
+    /// </summary>
+    private static KonditionierungDaten? ZurueckOderLeer(KonditionierungDaten? jetzt, KonditionierungDaten? vor,
+                                                        KonditionierungDaten? nach)
+    {
+        if (vor is not null || jetzt is null || nach is null || jetzt.Fassung != nach.Fassung) return Zurueck(jetzt, vor, nach);
+        return new KonditionierungDaten { Fassung = jetzt.Fassung + 1 };
     }
 
     /// <summary>Die Konditionierung von davor, wenn sie noch die von danach ist — mit neuer Fassung.</summary>
@@ -614,7 +808,16 @@ public sealed class KonditionierungBearbeitung
         GebaeudeKatalogDaten g = Stand.Kopie();
         g.Ferienbeginn = _arbeit.Ferienbeginne();
         g.Ferienende = _arbeit.Ferienenden();
-        return new KonditionierungStand(g, _arbeit.Zonen.Select(z => z.Kopie()).ToList());
+        List<ZoneDaten> zonen = _arbeit.Zonen.Select(z => z.Kopie()).ToList();
+        if (_zone is ZoneDaten eigene)
+        {
+            // An einer Zone: ihr Arbeitsstand an ihrer Stelle - eine neue Zone steht noch nicht in der
+            // Liste des Wirts (erst sein OK legt sie an) und kommt ans Ende.
+            int i = zonen.FindIndex(z => z.Id == eigene.Id);
+            if (i >= 0) zonen[i] = eigene.Kopie();
+            else zonen.Add(eigene.Kopie());
+        }
+        return new KonditionierungStand(g, zonen);
     }
 
     /// <summary>
@@ -664,6 +867,12 @@ public sealed class KonditionierungBearbeitung
     private void AufteilenFragen(string schluessel, Func<KonditionierungStand, KonditionierungErgebnis> handlung,
                                  Action? danach, KonditionierungStand vor)
     {
+        if (IstZone)
+        {
+            // Die Aufteilung ändert das Gebäude - das liest der Zonendialog nur (Stufe KP2, Welle U4).
+            Fehler(Texte.HinweisZoneAufteilen);
+            return;
+        }
         if (Weg.LuftwechselAufteilen is null)
         {
             Fehler(Texte.TextPostenLuftwechsel);
@@ -735,6 +944,14 @@ public sealed class KonditionierungBearbeitung
     /// </summary>
     private void Uebernehmen(KonditionierungStand vor, KonditionierungStand neu)
     {
+        if (_zone is ZoneDaten eigene)
+        {
+            // An einer Zone: nur sie - das Gebäude und die übrigen Zonen liest der Zonendialog bloß.
+            if (neu.Zonen.FirstOrDefault(x => x.Id == eigene.Id) is not ZoneDaten zn) return;
+            foreach (Zonenfeld f in ZONENFELDER) f.Setzen(eigene, f.Lesen(zn));
+            eigene.Konditionierung = zn.Konditionierung;
+            return;
+        }
         GebaeudeKatalogDaten ziel = Stand, n = neu.Gebaeude;
         foreach (Feld f in FELDER) f.Setzen(ziel, f.Lesen(n));
         if (!Gleich(n.Ferienbeginn, vor.Gebaeude.Ferienbeginn) || !Gleich(n.Ferienende, vor.Gebaeude.Ferienende))

@@ -61963,6 +61963,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender der Zone ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZONE_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZONE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung lässt sich nicht übernehmen: {0} ähnelt.
         /// </summary>
         public static string KOND_MSG_ARBEITSSTAND_UNGUELTIG {
@@ -62566,6 +62575,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZONE_UNBEHEIZT {
@@ -62872,6 +62890,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
+        /// </summary>
+        public static string KOND_TXT_PLATZHALTER_WIE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_PLATZHALTER_WIE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ähnelt.
         /// </summary>
         public static string KOND_TXT_POSTEN_BAUTEILE {
@@ -63075,6 +63102,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_WERT_WIE_WOCHENTAG {
             get {
                 return ResourceManager.GetString("KOND_TXT_WERT_WIE_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des Gebäudes auf; danach trägt die Zone eigene Lüftungswerte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_MATRIX {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_OHNE_WIRKUNG", resourceCulture);
             }
         }
         

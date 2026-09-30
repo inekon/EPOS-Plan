@@ -40618,5 +40618,23 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Nachtauskühlung</value>
   </data>
+  <data name="KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER" xml:space="preserve">
+    <value>Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
+    <value>Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des Gebäudes auf; danach trägt die Zone eigene Lüftungswerte.</value>
+  </data>
+  <data name="KOND_TXT_ZONE_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt.</value>
+  </data>
+  <data name="KOND_LBL_ZONE_KALENDER" xml:space="preserve">
+    <value>Kalender der Zone</value>
+  </data>
+  <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
+    <value>Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder.</value>
+  </data>
 </root>
 

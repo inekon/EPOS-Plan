@@ -192,6 +192,13 @@ namespace WindowsFormsApplication1
             t.TextPostenLuftwechsel = Text_("KOND_TXT_POSTEN_LUFTWECHSEL", t.TextPostenLuftwechsel);
             t.TextPostenZonenkalender = Text_("KOND_TXT_POSTEN_ZONENKALENDER", t.TextPostenZonenkalender);
             t.TextPostenBauteile = Text_("KOND_TXT_POSTEN_BAUTEILE", t.TextPostenBauteile);
+
+            // Zonenmatrix (Welle U4)
+            t.PlatzhalterWieGebaeude = Text_("KOND_TXT_PLATZHALTER_WIE_GEBAEUDE", t.PlatzhalterWieGebaeude);
+            t.HinweisZoneAufteilen = Text_("KOND_TXT_ZONE_AUFTEILEN", t.HinweisZoneAufteilen);
+            t.HinweisZoneOhneWirkung = Text_("KOND_TXT_ZONE_OHNE_WIRKUNG", t.HinweisZoneOhneWirkung);
+            t.LabelZoneKalender = Text_("KOND_LBL_ZONE_KALENDER", t.LabelZoneKalender);
+            t.HinweisZoneMatrix = Text_("KOND_TXT_ZONE_MATRIX", t.HinweisZoneMatrix);
             return t;
         }
 

@@ -73,6 +73,10 @@
 
 <div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* Stufe KP2, Welle U4: Steht der Zonendialog als BLATT, zeichnet der Editor seinen Haupt-Inhalt
+       nicht (Baustein Blattwechsel, unten). *@
+    @if (_zoneOffen is null)
+    {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
@@ -655,26 +659,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung: der Zonendialog (Ebene 3, Stufe G3) ----------------- *@
-    <Ueberlagerung Offen="@(_zoneOffen is not null)" Titel="@ZonenDialogTexte.Titel"
-                   Geschlossen="() => ZoneFertig(null)">
-        <KindInhalt>
-            @if (_zoneOffen is not null)
-            {
-                <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
-                             NutzflaechePflicht="@ZonendialogPflicht"
-                             Gebaeude="@_arbeit.Vorgaben" Zonenzahl="@ZonendialogZonenzahl"
-                             Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
-                             Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
-                             KopplungSperre="@Zonen?.KopplungSperre"
-                             Projektaufbauten="@_projektaufbauten"
-                             Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
-                             Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
-                             Geschlossen="ZoneFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
     @* --- Ueberlagerung: der Luftaustausch zwischen den Zonen (Ebene 3, Stufe G6b) --- *@
     <Ueberlagerung Offen="@_luftOffen" Titel="@LuftaustauschTexte.Titel"
                    Geschlossen="() => LuftaustauschFertig(null)">
@@ -718,6 +702,34 @@
             }
         </Aktionen>
     </SpeichernLeiste>
+    }
+
+    @* --- Der Zonendialog als BLATT (Ebene 3; Stufe KP2, Welle U4) ------------------------------
+       Hausregel "ein Unterdialog mit eigenen Spalten ist ein Blatt": Die Zonenmatrix und das
+       Bauteilraster tragen eigene Spalten, der Bauteildialog eine eigene Ueberlagerung. Rueckweg,
+       Esc und der Rueckknopf fuehren zurueck wie Abbrechen; das OK des Zonendialogs uebernimmt die
+       Zone in den Arbeitsstand, geschrieben wird mit dem OK des Editors. *@
+    <Blattwechsel Offen="@(_zoneOffen is not null)" WirtTitel="@TitelText" Titel="@ZonenDialogTexte.Titel"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="() => ZoneFertig(null)">
+        <KindInhalt>
+            @if (_zoneOffen is not null)
+            {
+                <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
+                             NutzflaechePflicht="@ZonendialogPflicht"
+                             Gebaeude="@_arbeit.Vorgaben" Zonenzahl="@ZonendialogZonenzahl"
+                             Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
+                             Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
+                             KopplungSperre="@Zonen?.KopplungSperre"
+                             Projektaufbauten="@_projektaufbauten"
+                             Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
+                             Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
+                             Gebaeudestand="@_arbeit" Konditionierung="@Konditionierung"
+                             KonditionierungTexte="@KonditionierungTexte" KonditionierungFragen="@KonditionierungFragen"
+                             HuelleTexte="@Texte" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein"
+                             Geschlossen="ZoneFertig" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
 </div>
 
 @code {
@@ -1395,6 +1407,7 @@
     private void ZoneFertig(ZoneDaten? ergebnis)
     {
         _zoneOffen = null;
+        _fokusNachBlatt = true;   // der Wirt fokussiert beim Rueckweg seine Wurzel (Baustein Blattwechsel)
         if (ergebnis is null) return;
         if (!_arbeit.ZoneErsetzen(ergebnis)) _arbeit.ZoneAnlegen(ergebnis);
         _meldung = "";
@@ -1657,8 +1670,16 @@
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
 
+    /// <summary>Ist der Zonendialog als Blatt eben zu? Dann geht der Fokus zurück an die Wurzel, ohne zu rollen.</summary>
+    private bool _fokusNachBlatt;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_fokusNachBlatt && _zoneOffen is null)
+        {
+            _fokusNachBlatt = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         // Ohne Rollen: In der Ueberlagerung rollte der Fokus auf die (hohe) Wurzel den Bereich

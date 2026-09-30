@@ -191,7 +191,13 @@ public enum KonditionierungHandlung
     /// „Aufteilen" — die Antwort auf die Rückfrage nach E56 F5 (a): die Gesamtangabe <c>Luftwechselrate</c>
     /// wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung = Rest; die Summe bleibt.
     /// </summary>
-    LuftwechselAufteilen = 13
+    LuftwechselAufteilen = 13,
+
+    /// <summary>
+    /// „Vom Gebäude übernehmen und anpassen" — nur an einer Zone (Teilkonzept 3.4, 7.3): legt eine eigene
+    /// Kopie des angelegten Gebäudekalenders an (Stufe KP2, Welle U4).
+    /// </summary>
+    VomGebaeude = 14
 }
 
 /// <summary>

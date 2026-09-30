@@ -640,4 +640,28 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_TXT_POSTEN_BAUTEILE</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
     public string TextPostenBauteile { get; set; } = "{0} Bauteile";
+
+    // ------------------------------------------------------------ Zonenmatrix (Welle U4)
+
+    /// <summary><c>KOND_TXT_PLATZHALTER_WIE_GEBAEUDE</c> — Platzhalter einer leeren Zonenzelle ohne Wert des Gebäudes</summary>
+    public string PlatzhalterWieGebaeude { get; set; } = "wie Gebäude";
+
+    /// <summary>
+    /// <c>KOND_TXT_ZONE_AUFTEILEN</c> — an einer Zone, deren Gebäude die Lüftung als Gesamtangabe führt:
+    /// aufgeteilt wird am Gebäude
+    /// </summary>
+    public string HinweisZoneAufteilen { get; set; }
+        = "Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des "
+          + "Gebäudes auf; danach trägt die Zone eigene Lüftungswerte.";
+
+    /// <summary><c>KOND_TXT_ZONE_OHNE_WIRKUNG</c> — Kurztext der Zellen einer Größe, die dem Gebäudekalender folgt</summary>
+    public string HinweisZoneOhneWirkung { get; set; } = "Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt.";
+
+    /// <summary><c>KOND_LBL_ZONE_KALENDER</c> — Überschrift der Zustandszeilen je Größe in der Zone</summary>
+    public string LabelZoneKalender { get; set; } = "Kalender der Zone";
+
+    /// <summary><c>KOND_TXT_ZONE_MATRIX</c> — die leise Zeile unter der Zonenmatrix: leer erbt</summary>
+    public string HinweisZoneMatrix { get; set; }
+        = "Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine "
+          + "geleerte erbt wieder.";
 }

@@ -584,6 +584,10 @@ namespace WindowsFormsApplication1
                 MatrixErneut = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.MatrixErneut(a, Ort(o))),
                 KatalogErneut = katalogErneut,
                 LuftwechselAufteilen = s => Schritt(s, art, bezug, Konditionierungsarbeit.LuftwechselAufteilen),
+                // Stufe KP2, Welle U4: die Zonenmatrix - „vom Gebäude übernehmen und anpassen" und die
+                // Platzhalter der geerbten Zellen.
+                VomGebaeude = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(o))),
+                Geerbt = (s, zone) => Geerbt(s, art, bezug, zone),
 
                 Vorlagen = vorlagen == null ? null : g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
                 VorlageUebernehmen = vorlagen == null ? null : (s, o, id) => Schritt(s, art, bezug, a =>
@@ -671,6 +675,40 @@ namespace WindowsFormsApplication1
             {
                 return new KonditionierungVorlageErgebnis(false, string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message), null);
+            }
+        }
+
+        /// <summary>
+        /// <b>Was eine Zone vom Gebäude erbt</b> (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3) — die Zellen
+        /// der Erbmatrix (<see cref="Konditionierungsarbeitsstand.Erbmatrix"/>), JEDE mit ihrem Wert, auch
+        /// eine Bestandszelle, Anteile in Prozent; je Größe „vom Gebäude", wo das Gebäude einen Kalender
+        /// angelegt hat, sonst „aus der Matrix". <c>null</c>, wenn es die Zone nicht gibt oder der Stand
+        /// ungültig ist.
+        /// </summary>
+        internal static KonditionierungDaten Geerbt(KonditionierungStand s, Kalendereigentuemer art, Bezug bezug, int zone)
+        {
+            if (s?.Gebaeude == null) return null;
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
+                if (a.Zone(zone) == null) return null;
+                Vorgabematrix m = a.Erbmatrix(zone);
+                var d = new KonditionierungDaten();
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    KonditionierungSpalte spalte = d.Spalte(Oberflaeche(g));
+                    foreach (KonditionierungZeile z in ZEILEN)
+                        Setzen(spalte, z, Zelle(m.Spalte(g).Zeile(Zeile(z)), Anteil(g, Zeile(z))));
+                    spalte.Kalender = new KonditionierungKalender
+                    {
+                        Zustand = a.Gebaeude.Kalender(g) != null ? KonditionierungZustand.VomGebaeude : KonditionierungZustand.Abgeleitet
+                    };
+                }
+                return d;
+            }
+            catch (ArgumentException)
+            {
+                return null;
             }
         }
 

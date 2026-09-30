@@ -210,7 +210,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // wird mit Klicks. Der Bauteildialog führt vierzehn Maskenfelder (Art, Bezeichnung, Fläche,
         // Azimut, Neigung, Randbedingung, Nachbarzone, Zuordnung, g-Wert, Rahmenanteil, Verschattung,
         // ψ·L, U-Wert, Aufbau im Projekt); die Suchauswahl des Katalogaufbaus ist bewusst draußen.
-        new("ZonenDialog", 16),
+        // KP2 U4: Sollwerte, Infiltration, Nutzerlüftung und Gewinne stehen in der Zonenmatrix
+        // (Baustein KonditionierungMatrix über ZonenKonditionierung, dieselben Katalogfelder): 16 → 9.
+        new("ZonenDialog", 9),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.

@@ -606,6 +606,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Matrix, die eine Zone vom Gebäude erbt</b> (Konzept 3.4, 7.3; Stufe KP2, Welle U4) — die
+        /// wirksame Matrix der Zone ohne ihre eigenen Zellen und Bestandswerte, mit ihrer Nutzfläche (der
+        /// Flächenanteil schlüsselt innere Gewinne, Bewohner und den Personen-Nennwert). Aus ihr stehen die
+        /// Platzhalter „Vorgabe …" der Zonenmatrix: Was eine leere Zelle der Zone gerade gälte.
+        /// </summary>
+        /// <exception cref="ArgumentException">Die Zone gibt es nicht.</exception>
+        public Vorgabematrix Erbmatrix(long zone)
+        {
+            if (Zone(zone) == null)
+                throw new ArgumentException("Die Zone " + zone.ToString(CultureInfo.InvariantCulture) +
+                                            " steht nicht im Arbeitsstand.", nameof(zone));
+            return MitEbene(zone, Konditionierungsstand.Leer(Kalendereigentuemer.Zone, null)).Matrix(zone);
+        }
+
+        /// <summary>
         /// <b>Der Kalender, der an einem Ort gilt</b> — die erste Quelle der Kette (Konzept 3.4):
         /// angelegt an der Zone, angelegt am Gebäude, sonst abgeleitet aus der wirksamen Matrix, wo sie
         /// eine Angabe trägt. Der Kalender des Gebäudes trägt an einer Zone ihren Nennwert
