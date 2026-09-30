@@ -1,4 +1,6 @@
-﻿using WindowsFormsApplication1;
+﻿using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -8,7 +10,8 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Gebäude-Katalogeditor und die Gebäudeverwaltung (<see cref="GebaeudeKatalogKiSicht"/>, Karte
 /// <c>Alle</c>) und der Zonendialog (<see cref="ZonenKiSicht"/>, Karte <c>Zonenfelder</c>). Gelesen und
 /// gesetzt wird über die <see cref="KonditionierungBearbeitung"/> des Wirts — derselbe Weg wie die
-/// Zellen der Matrix, mit Zellenort, Folgeregel und Rückfrage.
+/// Zellen der Matrix, mit Zellenort, Folgeregel und Rückfrage; die Vorlage einer Größe
+/// (<c>kond_&lt;größe&gt;_vorlage</c>, Welle U2) mit der Aktion des Knopfs „Übernehmen".
 /// </summary>
 /// <remarks>
 /// Ein Zeitfenster hat nur beide Grenzen zusammen (E53, E43): Die erste gesetzte Grenze wartet in der
@@ -24,6 +27,21 @@ public sealed class KonditionierungKiTafel
 
     /// <param name="finde">Die Karte: <c>KiKonditionierungsfelder.Finde</c> bzw. <c>FindeZone</c>.</param>
     public KonditionierungKiTafel(Func<string, KiKonditionierungsfelder.Feld?> finde) => _finde = finde;
+
+    /// <summary>
+    /// <b>Die Wahlquellen der Vorlagefelder</b> (<c>kond_&lt;größe&gt;_vorlage</c>, Welle U2): je Größe die
+    /// Liste der Karte, Schlüssel und Text der Name — derselbe, den das Feld liest; gefragt bei jedem
+    /// Zugriff, denn „Als Vorlage speichern…" und die Vorlagenverwaltung ändern die Listen, solange der
+    /// Wirt offen steht. Die Tafel kennt keine Begleiteigenschaft, deshalb meldet der Wirt die Listen mit
+    /// an — der Katalogeditor und die Gebäudeverwaltung (Welle U4) mit derselben Liste.
+    /// </summary>
+    public static (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] Vorlagenlisten(
+        Func<KonditionierungBearbeitung> bearbeitung)
+        => KiKonditionierungsfelder.Alle
+            .Where(f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage)
+            .Select(f => (f.Schluessel, (Func<IReadOnlyList<KiWahleintrag>>)(() => KiMaskenanmeldung.Eintraege(
+                bearbeitung().Vorlagen((KonditionierungGroesse)f.Groessenplatz), v => v.Name, v => v.Name))))
+            .ToArray();
 
     /// <summary>Die Ablehnung einer Handlung — mit dem Grund, den der Reiter nennt.</summary>
     public static InvalidOperationException Ablehnung(KonditionierungBearbeitung b)
@@ -50,6 +68,8 @@ public sealed class KonditionierungKiTafel
                 return _halb.TryGetValue(Fenster(schluessel), out var hb) ? hb.Bis : b.Zeiten(g, z).Bis;
             case KiKonditionierungsfelder.Teil.DeltaT:
                 return b.DeltaT;
+            case KiKonditionierungsfelder.Teil.Vorlage:
+                return b.Herkunft(g);
             default:
                 return b.Wert(g, z) is double w && double.IsFinite(w) ? w : null;
         }
@@ -93,11 +113,42 @@ public sealed class KonditionierungKiTafel
             case KiKonditionierungsfelder.Teil.DeltaT:
                 ok = b.DeltaTSetzen(wert as double?);
                 break;
+            case KiKonditionierungsfelder.Teil.Vorlage:
+                VorlageUebernehmen(b, g, wert as string);
+                return;
             default:
                 ok = b.WertSetzen(g, z, wert as double?);
                 break;
         }
         if (!ok) throw Ablehnung(b);
+    }
+
+    /// <summary>
+    /// <b>Die Vorlage einer Größe</b> (Welle U2; Entwurf KP2 D9) — mit der Aktion des Knopfs
+    /// „Übernehmen": wählen und übernehmen, in den Arbeitsstand; geschrieben wird mit dem OK bzw. dem
+    /// „Speichern" des Wirts. Ein Name, den die Liste der Karte nicht führt, wird benannt abgelehnt. Eine
+    /// Rückfrage (P12 am angelegten Kalender, „aufteilen" an der Gesamtangabe der Lüftung) beantwortet der
+    /// Assistent nicht selbst: Sie steht danach im Reiter, und die Ablehnung nennt sie.
+    /// </summary>
+    private static void VorlageUebernehmen(KonditionierungBearbeitung b, KonditionierungGroesse g, string? name)
+    {
+        System.Globalization.CultureInfo c = System.Globalization.CultureInfo.CurrentCulture;
+        string feld = KonditionierungBearbeitung.Groessenname(b.Texte, g) + " · "
+                      + WindowsFormsApplication1.MyResource.Resource.KOND_LBL_ZEILE_VORLAGE;
+        IReadOnlyList<KonditionierungVorlageDaten> liste = b.Vorlagen(g);
+        if (!b.MitVorlagen || liste.Count == 0)
+            throw new InvalidOperationException(
+                b.Sperrgrund ?? string.Format(c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_LEER, feld));
+        string gesucht = (name ?? "").Trim();
+        KonditionierungVorlageDaten? v = liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.Ordinal))
+                                         ?? liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.OrdinalIgnoreCase));
+        if (v is null)
+            throw new InvalidOperationException(string.Format(
+                c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_UNBEKANNT, feld, gesucht,
+                string.Join(", ", liste.Select(x => x.Name))));
+        if (!b.VorlageWaehlen(g, v.Id) || !b.VorlageUebernehmen(g) || b.OffeneFrage is not null
+            || !string.Equals(b.Herkunft(g), v.Name, StringComparison.Ordinal))
+            throw Ablehnung(b);
     }
 
     private static string Fenster(string schluessel) => schluessel[..schluessel.LastIndexOf('_')];

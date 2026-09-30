@@ -554,25 +554,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Weg ohne Datenbank</b> — allein die reinen Schritte über dem Arbeitsstand: Zellen,
-        /// Kalender, Werkzeuge der Karte, Rückfragebefunde, Vorschau, Lasten und Prüfung. Die Vorlagen und
-        /// „Aus dem Katalog erneut übernehmen…" fehlen (sie lesen bzw. schreiben die Datenbank) — „kein
-        /// Delegat, kein Knopf". Für Prüfstände ohne Datenbank (die Konditionierungsprobe des Wirts);
-        /// <paramref name="katalogErneut"/> setzt ein Prüfstand, der den Knopf zeigen will.
+        /// Kalender, Werkzeuge der Karte, Rückfragebefunde, Vorschau, Lasten und Prüfung. „Aus dem Katalog
+        /// erneut übernehmen…" fehlt (es liest die Datenbank), die Vorlagen ebenso — es sei denn, der
+        /// Prüfstand reicht eine Ablage ohne Datenbank (<see cref="Konditionierungsvorlagenablage"/>, Stufe
+        /// KP2, Welle U2) — „kein Delegat, kein Knopf". Für Prüfstände ohne Datenbank (die
+        /// Konditionierungsprobe des Wirts, die bunit-Proben); <paramref name="katalogErneut"/> setzt ein
+        /// Prüfstand, der den Knopf zeigen will.
         /// </summary>
         /// <param name="art">Gebäude (Projekt) oder Katalogbau.</param>
         /// <param name="projekt">Steht der Editor im Projekt? Dann fragt „Speichern unter" nach den Zonen.</param>
         /// <param name="bezug">Der Bezug des Projekts; <c>null</c> = der des Katalogs.</param>
         /// <param name="katalogErneut">„Aus dem Katalog erneut übernehmen…" des Prüfstands; <c>null</c> = keiner.</param>
+        /// <param name="vorlagen">Die Vorlagen des Prüfstands (etwa <see cref="Konditionierungsvorlagenablage.AusSaat"/>); <c>null</c> = keine.</param>
         internal static KonditionierungWeg ReinerWeg(Kalendereigentuemer art, bool projekt, Bezug bezug = null,
-                                                     Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut = null)
-            => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, null, katalogErneut);
+                                                     Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut = null,
+                                                     IKonditionierungsvorlagen vorlagen = null)
+            => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, vorlagen, katalogErneut);
 
         /// <summary>
         /// Baut das Bündel: je Handlung ein Delegat über den reinen Schritt. <paramref name="vorlagen"/>
         /// <c>null</c> = ohne die Wege der Vorlagen (ohne Datenbank).
         /// </summary>
         private static KonditionierungWeg Bauen(Kalendereigentuemer art, Bezug bezug, bool projekt, int idGebaeude,
-                                                KonditionierungsvorlageCtrl vorlagen,
+                                                IKonditionierungsvorlagen vorlagen,
                                                 Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut)
         {
             return new KonditionierungWeg
@@ -592,12 +596,16 @@ namespace WindowsFormsApplication1
                 Vorlagen = vorlagen == null ? null : g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
                 VorlageUebernehmen = vorlagen == null ? null : (s, o, id) => Schritt(s, art, bezug, a =>
                 {
-                    Konditionierungsvorlage v = Vorlage(vorlagen, id, out string m);
+                    Konditionierungsvorlage v = vorlagen.Inhalt(id, out string m);
                     return v == null ? Konditionierungsschritt.Fehler(m) : Konditionierungsarbeit.VorlageUebernehmen(a, Ort(o), v);
                 }),
                 AlsVorlageSpeichern = vorlagen == null ? null : (s, o, e) => AlsVorlage(vorlagen, s, art, bezug, o, e),
                 VorlageUmbenennen = vorlagen == null ? null : (id, name) =>
                 {
+                    // Die Namensregel zuerst: Ihre Ablehnung nennt der Dialog AM FELD (Teilkonzept 7.4).
+                    KonditionierungsvorlageCtrl.Vorlage alt = vorlagen.Lesen(id);
+                    string regel = alt == null || alt.Ausgeliefert ? null : vorlagen.NamePruefen(alt.Groesse, name, id);
+                    if (regel != null) return new KonditionierungVorlageErgebnis(false, regel, null) { AmNamen = true };
                     KonditionierungCtrl.Ergebnis e = vorlagen.Umbenennen(id, name);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
                 },
@@ -643,25 +651,17 @@ namespace WindowsFormsApplication1
         private static string Nutzung(KonditionierungNutzung n)
             => n == KonditionierungNutzung.Keine ? null : DbWerte.KOND_NUTZUNGEN[(int)n - 1];
 
-        /// <summary>Eine Vorlage samt Inhalt aus der Datenbank; <c>null</c> mit Meldung, wenn es sie nicht gibt.</summary>
-        private static Konditionierungsvorlage Vorlage(KonditionierungsvorlageCtrl vorlagen, long id, out string meldung)
-        {
-            KonditionierungsvorlageCtrl.Vorlage v = vorlagen.Lesen(id);
-            if (v == null)
-            {
-                meldung = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_VORLAGE_FEHLT,
-                                        id.ToString(CultureInfo.InvariantCulture));
-                return null;
-            }
-            Konditionierungsstand inhalt = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Vorlage(id), out meldung);
-            return meldung != null ? null : new Konditionierungsvorlage(id, v.Bezeichner, v.Groesse, inhalt);
-        }
-
-        /// <summary>„Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung 13).</summary>
-        private static KonditionierungVorlageErgebnis AlsVorlage(KonditionierungsvorlageCtrl vorlagen, KonditionierungStand s,
+        /// <summary>
+        /// „Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung
+        /// 13). Die Namensregel läuft zuerst: Ihre Ablehnung (etwa ein Doppelname in der Liste) nennt der
+        /// Dialog am Feld (<see cref="KonditionierungVorlageErgebnis.AmNamen"/>).
+        /// </summary>
+        private static KonditionierungVorlageErgebnis AlsVorlage(IKonditionierungsvorlagen vorlagen, KonditionierungStand s,
                                                                  Kalendereigentuemer art, Bezug bezug, KonditionierungOrt o,
                                                                  KonditionierungVorlageEingabe eingabe)
         {
+            string regel = vorlagen.NamePruefen(Kern(o.Groesse), eingabe?.Name, 0);
+            if (regel != null) return new KonditionierungVorlageErgebnis(false, regel, null) { AmNamen = true };
             try
             {
                 Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art, bezug), Ort(o));

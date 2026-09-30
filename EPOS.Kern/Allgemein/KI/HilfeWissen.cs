@@ -533,6 +533,47 @@ namespace WindowsFormsApplication1
                     "mit Nachtauskühlung zeigt der Bedarfsdialog des Gebäudes, wenn eine gesetzt ist. Sie wirkt im " +
                     "Rechenweg nach VDI 6007."),
 
+                // ---- Vorlagen der Konditionierung (Stufe KP2, Welle U2) ----------------------------
+                // Die drei Handlungen der Vorlagen an der Kalenderkarte: Übernehmen, Als Vorlage
+                // speichern, Verwalten. Suchworte beider Sprachen im Titel, Inhalt auf Deutsch.
+                new WissensAbschnitt("Konditionierung: Vorlage übernehmen (apply template)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Jede Kalenderkarte im Reiter 'Konditionierung' trägt eine Auswahlliste der Vorlagen ihrer " +
+                    "Größe (Heizen, Kühlen, Lüftung, Geräte, Personen) - die ausgelieferten mit Schloss zuerst, dann " +
+                    "die eigenen, in allen fünf Listen in derselben Reihenfolge. Wer eine Vorlage wählt, sieht " +
+                    "darunter ihre Beschreibung und die Woche, die sich ergäbe, noch bevor er etwas ändert. " +
+                    "'Übernehmen' schreibt die Zellen der Vorlage in die Spalte der Matrix (eine leere Zelle der " +
+                    "Vorlage lässt den Wert des Gebäudes stehen) und legt den Kalender der Größe an; Nennwert und " +
+                    "Saison bleiben, wie sie sind. Die Karte und die Zeile 'Vorlage' der Matrix nennen danach die " +
+                    "Herkunft ('aus Vorlage Büro'). Steht die Größe schon mit einem angelegten Kalender da, fragt " +
+                    "der Reiter vorher und nennt, was ersetzt wird und was bleibt: Ersetzt wird nur der Teil, der " +
+                    "aus der Matrix stammt, eigene Perioden und Feiertage bleiben; vorgewählt ist 'Nein'. Steht die " +
+                    "Lüftung als Gesamtangabe, fragt er zuerst, ob er sie aufteilen soll. Geschrieben wird mit OK " +
+                    "des Editors, Abbrechen verwirft die Übernahme. Der Assistent übernimmt eine Vorlage über das " +
+                    "Feld 'Vorlage' der Größe; eine Rückfrage beantwortet der Anwender selbst."),
+
+                new WissensAbschnitt("Konditionierung: Als Vorlage speichern (save as template)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "'Als Vorlage speichern…' an der Kalenderkarte legt aus der Spalte der Größe und, wenn er " +
+                    "angelegt ist, aus ihrem Kalender eine eigene Vorlage an. Unter dem Knopf öffnet sich ein kleines " +
+                    "Formular: Name (Pflicht, in der Liste der Größe eindeutig), Beschreibung und Nutzung. " +
+                    "Nennwert und Saison gehören zum Gebäude und gehen nicht in die Vorlage. Anders als der übrige " +
+                    "Reiter schreibt 'Speichern' die Vorlage SOFORT - unabhängig von OK oder Abbrechen des Editors; " +
+                    "das sagt eine Zeile unter dem Knopf. Danach steht die neue Vorlage in der Liste. Ein Name, den " +
+                    "die Liste schon führt, färbt das Feld und nennt den Grund."),
+
+                new WissensAbschnitt("Konditionierung: Vorlagen verwalten (manage templates)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "'Vorlagen verwalten' an der Kalenderkarte öffnet im Katalogeditor ein Blatt mit den Vorlagen " +
+                    "der fünf Größen; ein Umschalter wählt die Größe, '‹' oder Esc führen zurück in den Editor. Je " +
+                    "Vorlage zeigt eine Zeile Name und Nutzung, eine ausgelieferte dazu das Schloss; ein Klick auf " +
+                    "den Namen zeigt ihre Woche. " +
+                    "Eine ausgelieferte Vorlage (Schloss) lässt sich nur duplizieren; eine eigene lässt sich " +
+                    "umbenennen, duplizieren und löschen - Löschen fragt vorher. Jede dieser Handlungen wirkt " +
+                    "SOFORT auf die Vorlagen, nicht erst mit dem OK des Editors, und ändert kein Gebäude: Ein " +
+                    "Kalender, der aus einer gelöschten Vorlage stammt, behält seine Werte und nennt weiter ihren " +
+                    "Namen. Danach sind die Auswahllisten der Karten neu gelesen."),
+
                 new WissensAbschnitt("Energiebedarf berechnen", "Energiebedarf",
                     "Der Wärmebedarf setzt sich zusammen aus dem Gebäudebedarf, externen Lastgängen, Prozesswärme, " +
                     "Brauchwasser und den Netzverlusten. Der Strombedarf entsteht aus Stromprofilen und " +

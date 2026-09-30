@@ -204,6 +204,16 @@ namespace WindowsFormsApplication1
             t.KnopfKonditionierung = Text_("KOND_BTN_KONDITIONIERUNG", t.KnopfKonditionierung);
             t.HinweisVerwaltungSpeichern = Text_("KOND_TXT_VERWALTUNG_SPEICHERN", t.HinweisVerwaltungSpeichern);
             t.HinweisVerwaltungAltfelder = Text_("KOND_TXT_VERWALTUNG_ALTFELDER", t.HinweisVerwaltungAltfelder);
+
+            // Vorlagen je Karte (Welle U2)
+            t.TextVorschauVorlage = Text_("KOND_TXT_VORSCHAU_VORLAGE", t.TextVorschauVorlage);
+            t.GrundKeineVorlage = Text_("KOND_TXT_GRUND_KEINE_VORLAGE", t.GrundKeineVorlage);
+            t.TextVorlageGespeichert = Text_("KOND_TXT_VORLAGE_GESPEICHERT", t.TextVorlageGespeichert);
+            t.TextVorlageUmbenannt = Text_("KOND_TXT_VORLAGE_UMBENANNT", t.TextVorlageUmbenannt);
+            t.TextVorlageGeloescht = Text_("KOND_TXT_VORLAGE_GELOESCHT", t.TextVorlageGeloescht);
+            t.TextVorlageDupliziert = Text_("KOND_TXT_VORLAGE_DUPLIZIERT", t.TextVorlageDupliziert);
+            t.TextVorlagenLeer = Text_("KOND_TXT_VORLAGEN_LEER", t.TextVorlagenLeer);
+            t.SpalteAktionen = Text_("KOND_LBL_SPALTE_AKTIONEN", t.SpalteAktionen);
             return t;
         }
 
@@ -221,6 +231,8 @@ namespace WindowsFormsApplication1
             f.SpeichernUnter = Text_("KOND_FRAGE_SPEICHERN_UNTER", f.SpeichernUnter);
             f.Zonen = Text_("KOND_FRAGE_ZONEN", f.Zonen);
             f.OhneEinzelheiten = Text_("KOND_FRAGE_OHNE_EINZELHEITEN", f.OhneEinzelheiten);
+            f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
+            f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
             return f;
         }
 

@@ -684,4 +684,38 @@ public sealed class KonditionierungTexte
     public string HinweisVerwaltungAltfelder { get; set; }
         = "Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, "
           + "Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.";
+
+    // ------------------------------------------------------------ Vorlagen je Karte (Welle U2)
+
+    /// <summary>
+    /// <c>KOND_TXT_VORSCHAU_VORLAGE</c> — über der Vorschau, solange eine Vorlage gewählt, aber nicht
+    /// übernommen ist; „{0}“ ist der Name der Vorlage (ein Datenwert)
+    /// </summary>
+    public string TextVorschauVorlage { get; set; } = "Vorschau mit der Vorlage „{0}“ – übernommen wird erst mit „Übernehmen“.";
+
+    /// <summary><c>KOND_TXT_GRUND_KEINE_VORLAGE</c> — der Grund des weich gesperrten „Übernehmen“</summary>
+    public string GrundKeineVorlage { get; set; } = "Erst eine Vorlage aus der Liste wählen.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VORLAGE_GESPEICHERT</c> — die leise Zeile nach „Als Vorlage speichern…“; „{0}“ der Name
+    /// </summary>
+    public string TextVorlageGespeichert { get; set; } = "Vorlage „{0}“ gespeichert – sie steht jetzt in der Liste dieser Größe.";
+
+    /// <summary><c>KOND_TXT_VORLAGE_UMBENANNT</c> — die Zeile der Verwaltung; „{0}“ der neue Name</summary>
+    public string TextVorlageUmbenannt { get; set; } = "Vorlage umbenannt in „{0}“.";
+
+    /// <summary><c>KOND_TXT_VORLAGE_GELOESCHT</c> — die Zeile der Verwaltung; „{0}“ der Name</summary>
+    public string TextVorlageGeloescht { get; set; } = "Vorlage „{0}“ gelöscht.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VORLAGE_DUPLIZIERT</c> — die Zeile der Verwaltung; „{0}“ der Name der Kopie, „{1}“ der
+    /// Name der Quelle
+    /// </summary>
+    public string TextVorlageDupliziert { get; set; } = "Vorlage „{0}“ als Kopie von „{1}“ angelegt.";
+
+    /// <summary><c>KOND_TXT_VORLAGEN_LEER</c> — die leere Liste einer Größe</summary>
+    public string TextVorlagenLeer { get; set; } = "Diese Größe hat noch keine Vorlage.";
+
+    /// <summary><c>KOND_LBL_SPALTE_AKTIONEN</c> — die Aktionsspalte der Vorlagenverwaltung</summary>
+    public string SpalteAktionen { get; set; } = "Aktionen";
 }

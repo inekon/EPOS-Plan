@@ -33,9 +33,12 @@ namespace WindowsFormsApplication1
     /// aber <b>duplizieren</b>. Die Prüfung ist <see cref="KonditionierungCtrl.Schloss"/>; eine
     /// eigene Spalte dafür gibt es nicht.</para>
     ///
-    /// <para><b>Die Oberfläche kommt mit KP2.</b> Hier steht die Datenbankseite.</para>
+    /// <para><b>Die Oberfläche kommt mit KP2.</b> Hier steht die Datenbankseite; die Regeln ohne
+    /// Datenbank — Namensregel, Nutzung, eindeutiger Name, Reihenfolge der Liste — stehen als reine
+    /// Funktionen daneben und gelten ebenso für die Ablage ohne Datenbank
+    /// (<see cref="Konditionierungsvorlagenablage"/>, Stufe KP2, Welle U2).</para>
     /// </summary>
-    public sealed class KonditionierungsvorlageCtrl
+    public sealed class KonditionierungsvorlageCtrl : IKonditionierungsvorlagen
     {
         /// <summary>
         /// <b>Ein Kopfsatz der Vorlagenliste</b> — was die Auswahlliste der Kalenderkarte zeigt.
@@ -88,6 +91,52 @@ namespace WindowsFormsApplication1
                 KonditionierungVorlagenSchema.TAB_VORLAGE + "\" WHERE \"ID\" = ?",
                 new DbParam("@id", id));
             return t == null || t.Rows.Count == 0 ? null : Aus(t.Rows[0]);
+        }
+
+        /// <summary>
+        /// <b>Eine Vorlage samt Inhalt</b> — Kopf und Ebene der Art <see cref="Kalendereigentuemer.Vorlage"/>,
+        /// die Eingabe des reinen Schritts „Vorlage übernehmen" (Stufe KP2, Welle U2); <c>null</c> mit
+        /// benannter Meldung, wenn es sie nicht gibt oder ihr Inhalt nicht lesbar ist.
+        /// </summary>
+        public Konditionierungsvorlage Inhalt(long id, out string meldung)
+        {
+            Vorlage v = Lesen(id);
+            if (v == null)
+            {
+                meldung = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_VORLAGE_FEHLT,
+                                        id.ToString(CultureInfo.InvariantCulture));
+                return null;
+            }
+            Konditionierungsstand inhalt = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Vorlage(id), out meldung);
+            return meldung != null ? null : new Konditionierungsvorlage(id, v.Bezeichner, v.Groesse, inhalt);
+        }
+
+        /// <summary>
+        /// <b>Die Reihenfolge der Auswahlliste</b> (Teilkonzept 7.4) als reine Funktion — dieselbe wie
+        /// <c>ORDER BY IIF("ReadOnly" = 1, 0, 1), "Bezeichner" COLLATE NOCASE, "ID"</c> in
+        /// <see cref="Liste"/>: die ausgelieferten zuerst, dann nach Name ohne Unterschied der
+        /// Groß- und Kleinschreibung von A bis Z (NOCASE faltet nur diese), zuletzt nach Id. So stehen
+        /// gleiche Namen in jeder Liste an derselben Stelle.
+        /// </summary>
+        public static int Vergleichen(Vorlage a, Vorlage b)
+        {
+            if (ReferenceEquals(a, b)) return 0;
+            if (a == null) return -1;
+            if (b == null) return 1;
+            int r = (a.Ausgeliefert ? 0 : 1).CompareTo(b.Ausgeliefert ? 0 : 1);
+            if (r != 0) return r;
+            r = string.CompareOrdinal(AsciiKlein(a.Bezeichner), AsciiKlein(b.Bezeichner));
+            return r != 0 ? r : a.Id.CompareTo(b.Id);
+        }
+
+        /// <summary>Faltet nur A … Z auf a … z — wie <c>COLLATE NOCASE</c> in SQLite.</summary>
+        private static string AsciiKlein(string s)
+        {
+            if (s == null) return "";
+            var z = s.ToCharArray();
+            for (int i = 0; i < z.Length; i++)
+                if (z[i] >= 'A' && z[i] <= 'Z') z[i] = (char)(z[i] + ('a' - 'A'));
+            return new string(z);
         }
 
         private static Vorlage Aus(DataRow r)
@@ -470,9 +519,7 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.KOND_MSG_VORLAGE_FEHLT, id.ToString(CultureInfo.InvariantCulture)));
 
             string wunsch = (bezeichner ?? "").Trim();
-            if (wunsch.Length == 0)
-                wunsch = Gekuerzt(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOND_MSG_DUPLIKAT_ZUSATZ, v.Bezeichner));
+            if (wunsch.Length == 0) wunsch = Kopiename(v.Bezeichner);
             string name = Eindeutig(v.Groesse, wunsch);
             string meldung;
             name = Namenspruefung(v.Groesse, name, 0, out meldung);
@@ -574,6 +621,22 @@ namespace WindowsFormsApplication1
         /// <returns>Der getrimmte Name.</returns>
         public static string Namenspruefung(Konditionierungsgroesse groesse, string bezeichner, long ausser,
                                             out string meldung)
+            => Namensregel(groesse, bezeichner, Namen(groesse, ausser), out meldung);
+
+        /// <inheritdoc/>
+        public string NamePruefen(Konditionierungsgroesse groesse, string bezeichner, long ausser)
+        {
+            Namenspruefung(groesse, bezeichner, ausser, out string meldung);
+            return meldung;
+        }
+
+        /// <summary>
+        /// <b>Die Namensregel ohne Datenbank</b> (Stufe KP2, Welle U2) — dieselbe Regel wie
+        /// <see cref="Namenspruefung"/> gegen die Namen <paramref name="vorhandene"/> der Liste (ohne den
+        /// eigenen beim Umbenennen). Die Ablage ohne Datenbank und die Datenbankseite prüfen so gleich.
+        /// </summary>
+        public static string Namensregel(Konditionierungsgroesse groesse, string bezeichner,
+                                         IEnumerable<string> vorhandene, out string meldung)
         {
             meldung = null;
             string name = (bezeichner ?? "").Trim();
@@ -585,7 +648,7 @@ namespace WindowsFormsApplication1
                 return name;
             }
 
-            foreach (string vorhanden in Namen(groesse, ausser))
+            foreach (string vorhanden in vorhandene ?? Array.Empty<string>())
                 if (string.Equals(vorhanden, name, StringComparison.OrdinalIgnoreCase))
                 {
                     meldung = string.Format(CultureInfo.CurrentCulture,
@@ -620,10 +683,18 @@ namespace WindowsFormsApplication1
         /// gekürzt auf die Höchstlänge.
         /// </summary>
         private static string Eindeutig(Konditionierungsgroesse groesse, string wunsch)
+            => EindeutigerName(Namen(groesse, 0), wunsch);
+
+        /// <summary>
+        /// Derselbe eindeutige Name ohne Datenbank — gegen die Namen <paramref name="namen"/> der Liste
+        /// (Stufe KP2, Welle U2; die Ablage ohne Datenbank).
+        /// </summary>
+        public static string EindeutigerName(IReadOnlyCollection<string> namen, string wunsch)
         {
-            List<string> namen = Namen(groesse, 0);
+            var liste = new List<string>(namen ?? Array.Empty<string>());
             string kandidat = Gekuerzt(wunsch);
-            for (int n = 2; Belegt(namen, kandidat) && n < 1000; n++)
+            wunsch = wunsch ?? "";
+            for (int n = 2; Belegt(liste, kandidat) && n < 1000; n++)
             {
                 string zusatz = " (" + n.ToString(CultureInfo.InvariantCulture) + ")";
                 int platz = KonditionierungVorlagenSchema.BEZEICHNER_MAX_ZEICHEN - zusatz.Length;
@@ -639,6 +710,13 @@ namespace WindowsFormsApplication1
                 if (string.Equals(n, kandidat, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
         }
+
+        /// <summary>
+        /// Der Name der Kopie ohne eigenen Wunsch: „Name (Kopie)" (<c>KOND_MSG_DUPLIKAT_ZUSATZ</c>), gekürzt
+        /// — derselbe Satz für Datenbank und Ablage.
+        /// </summary>
+        public static string Kopiename(string quelle)
+            => Gekuerzt(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_DUPLIKAT_ZUSATZ, quelle));
 
         private static string Gekuerzt(string name)
         {
@@ -684,8 +762,11 @@ namespace WindowsFormsApplication1
             return Zahl(v.Skalar("SELECT last_insert_rowid()"));
         }
 
-        /// <summary>Die Nutzung muss eine der vier sein (oder fehlen) — kein stiller Eigenwert.</summary>
-        private static string Nutzungspruefung(string nutzung, out string meldung)
+        /// <summary>
+        /// Die Nutzung muss eine der vier sein (oder fehlen) — kein stiller Eigenwert; eine reine Regel,
+        /// die auch die Ablage ohne Datenbank nimmt.
+        /// </summary>
+        public static string Nutzungspruefung(string nutzung, out string meldung)
         {
             meldung = null;
             string n = Leer(nutzung);

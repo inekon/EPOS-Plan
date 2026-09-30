@@ -1384,4 +1384,33 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         var (d, _, _) = Assert.Single(p.Gespeichert);
         Assert.Equal(900.0, d.Konditionierung!.Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
     }
+
+    /// <summary>
+    /// <b>Die Vorlagen im Blatt der Verwaltung beim Assistenten</b> (Welle U2 über U4): Der Weg des
+    /// Katalogbaus reicht die Vorlagen; die Verwaltung meldet ihre Listen als Wahl an —
+    /// <c>kond_heizen_vorlage</c> nennt die Einträge der Karte, Setzen übernimmt „Büro" wie der Knopf, das
+    /// Feld liest danach die Herkunft, und „Speichern" schreibt die Konditionierung mit.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_uebernimmt_eine_Vorlage_im_Blatt_der_Verwaltung()
+    {
+        var p = MitKonditionierung();
+        KonditionierungWeg weg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false,
+                                                                vorlagen: Konditionierungsvorlagenablage.AusSaat());
+        var cut = Aufbauen(p, konditionierung: weg);
+
+        KiFeldzugang heizen = KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_ADMIN, "kond_heizen_vorlage");
+        Assert.NotNull(heizen);
+        Assert.NotNull(heizen.Eintraege);
+        Assert.Contains(heizen.Eintraege(), e => e.Text == "Büro");
+
+        heizen.Setzen("Büro");
+        cut.Render();
+
+        Assert.Equal("Büro", heizen.Lesen());
+        Assert.True(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.True(d.Konditionierung!.Fassung > 0);
+    }
 }

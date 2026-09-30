@@ -4,7 +4,7 @@
 @using EPOS.UI.Dialoge.Bedarf
 @inject NavigationManager Navigation
 
-@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
     Pruefstand, nicht Auslieferung.
 
     Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
@@ -18,9 +18,12 @@
 
     DER REITER "KONDITIONIERUNG" (Welle U1) bekommt den WEG OHNE DATENBANK der Huelle
     (KonditionierungHuelle.ReinerWeg): Zellen, Kalender, Rueckfragen, "aufteilen" und
-    "Zuruecknehmen" rechnen ueber die reinen Schritte des Kerns; die Vorlagen fehlen ("kein Delegat,
-    kein Knopf"), "Aus dem Katalog erneut uebernehmen..." im Projekt uebernimmt hier den Stand, wie er
-    ist. Der Satz traegt eine leere Konditionierung - wie ein Satz einer Datenbank mit den Tabellen.
+    "Zuruecknehmen" rechnen ueber die reinen Schritte des Kerns; "Aus dem Katalog erneut uebernehmen..." im
+    Projekt uebernimmt hier den Stand, wie er ist. Der Satz traegt eine leere Konditionierung - wie ein
+    Satz einer Datenbank mit den Tabellen. DIE VORLAGEN (Welle U2) kommen aus der Ablage ohne Datenbank
+    mit den 14 ausgelieferten Vorlagen der Saat (Konditionierungsvorlagenablage.AusSaat, je Oeffnen neu):
+    Auswahlliste, Vorschau, Uebernehmen, "Als Vorlage speichern..." und die Verwaltung als Blatt wirken
+    wie in der Anwendung, geschrieben wird nur in die Ablage der Seite.
 
     Gaben ueber die Adresse:
       ?fall=projekt    Betriebsart Projekt mit zwei Zonen (Zonenweg der Seite)
@@ -31,6 +34,7 @@
       ?fall=neu        Betriebsart Neu, der leere Satz der Huelle (Vorgabe)
       ?fall=ohnetabellen  Betriebsart Bearbeiten ohne die Tabellen der Konditionierung - der Weg der
                        Huelle ohne Datenbank: der Reiter benannt gesperrt (Festlegung 6)
+      ?fall=vorlagen   Betriebsart Bearbeiten, der volle Satz - die Vorlagen je Karte (Welle U2)
       ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
                        Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
                        Gemeinjahrdatum (Saison von/bis)
@@ -46,7 +50,7 @@
 
 <div class="epos-probe-wirt epos-kondprobe">
     <section class="epos-dialog">
-        <p id="probe-stand" class="epos-hinweis">
+        <p id="probe-stand" class="epos-hinweis" data-vorlagen="@(_ablage?.Anzahl ?? 0)">
             Konditionierungsprobe · Fall <strong>@_fall</strong> · Kultur @CultureInfo.CurrentCulture.Name
             · ohne Datenbank, geschrieben wird nichts
         </p>
@@ -133,8 +137,10 @@
 @code {
     // ------------------------------------------------------------- Adresse
     private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
-                         OHNE_TABELLEN = "ohnetabellen", BAUSTEINE = "bausteine", VERWALTUNG = "verwaltung";
-    private static readonly string[] FAELLE = { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, BAUSTEINE, VERWALTUNG };
+                         OHNE_TABELLEN = "ohnetabellen", VORLAGEN = "vorlagen", BAUSTEINE = "bausteine",
+                         VERWALTUNG = "verwaltung";
+    private static readonly string[] FAELLE =
+        { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE, VERWALTUNG };
     private const string KulturDe = "de-DE", KulturEn = "en-US";
 
     private string _fall = NEU;
@@ -146,6 +152,9 @@
     private string _titel = "";
     private string _gespeichert = "";
     private IReadOnlyDictionary<string, object>? _gaben;
+
+    /// <summary>Die Vorlagen der Seite (Welle U2): die 14 der Saat, ohne Datenbank; je Öffnen neu.</summary>
+    private Konditionierungsvorlagenablage? _ablage;
 
     // Fall "bausteine": eine Woche mit „aus" am Sonntagmorgen, Saison 1. Oktober bis 30. April.
     private double[]? _woche = Wochenwerte();
@@ -179,7 +188,11 @@
     /// <summary>Stellt den Fall neu auf — je Öffnen ein frischer Parametersatz, wie in der Anwendung.</summary>
     private void Oeffnen()
     {
+        _ablage = _fall is BAUSTEINE or OHNE_TABELLEN ? null : Konditionierungsvorlagenablage.AusSaat();
         _gaben = _fall is BAUSTEINE or VERWALTUNG ? null : Gaben(_fall);
+        // Die Verwaltung (Welle U4) bekommt denselben Weg ohne Datenbank samt den Vorlagen der Saat - wie in
+        // der Anwendung, wo die Hülle ihr den Weg des Katalogbaus mit den Vorlagen reicht.
+        _verwaltungWeg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, vorlagen: _ablage);
         _titel = _fall switch
         {
             PROJEKT => Resource.GEBZ_TITEL_PROJEKT,
@@ -217,11 +230,12 @@
 
         // Welle U1: der Weg der Konditionierung OHNE Datenbank (die reinen Schritte des Kerns); im
         // Projekt mit „Aus dem Katalog erneut übernehmen…", das hier den Stand übernimmt, wie er ist.
+        // Welle U2: dazu die Vorlagen aus der Ablage der Seite.
         if (fall != OHNE_TABELLEN)
             gaben["Konditionierung"] = fall == PROJEKT
                 ? KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true,
-                                                  katalogErneut: s => KonditionierungErgebnis.Gut(s))
-                : KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false);
+                                                  katalogErneut: s => KonditionierungErgebnis.Gut(s), vorlagen: _ablage)
+                : KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, vorlagen: _ablage);
 
         switch (fall)
         {
@@ -243,6 +257,11 @@
                 GebaeudeKatalogDaten ohne = Satz("Probehaus ohne Tabellen");
                 ohne.Konditionierung = null;
                 gaben["Daten"] = ohne;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case VORLAGEN:
+                gaben["Daten"] = Satz("Probehaus Vorlagen");
                 gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
                 break;
 
@@ -274,7 +293,7 @@
     private readonly Katalogfilterstand _verwaltungFilter = new();
     private Katalogfilterprofil? _verwaltungProfil;
     private IReadOnlyList<Katalogfilterzeile>? _verwaltungZeilen;
-    private readonly KonditionierungWeg _verwaltungWeg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false);
+    private KonditionierungWeg? _verwaltungWeg;
     private readonly GebaeudeHuelleTexte _huellTexte = GebaeudeKatalogHuelle.Texte();
     private readonly GebaeudePrueftexte _prueftexte = GebaeudeKatalogHuelle.Prueftexte();
     private readonly KonditionierungTexte _kondTexte = KonditionierungTexteHuelle.Texte();

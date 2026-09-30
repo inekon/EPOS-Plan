@@ -376,6 +376,15 @@ public class KiDialogkatalogTests : IDisposable
         // selbst auf.
         KiMaskennamen.BHKW                 => new[] { "energietraeger" },
 
+        // KP2 U2: Die Vorlagenlisten der fünf Kalenderkarten kennt nur der Wirt (seine Bearbeitung
+        // des Reiters); die Tafel der Sichtklasse hat keine Begleiteigenschaft, der Wirt meldet sie an.
+        // KP2 U4: ebenso die Verwaltung - ihr Blatt „Konditionierung" trägt dieselben Karten
+        // (KonditionierungKiTafel.Vorlagenlisten).
+        KiMaskennamen.GEBAEUDE_KATALOG or KiMaskennamen.GEBAEUDE_ADMIN
+                                           => new[] { "kond_heizen_vorlage", "kond_kuehlen_vorlage",
+                                                      "kond_lueftung_vorlage", "kond_geraete_vorlage",
+                                                      "kond_personen_vorlage" },
+
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
         // Begleiteigenschaft <Eigenschaft>Wahl - den Weg findet der Waechter selbst.
@@ -1215,9 +1224,10 @@ public class KiDialogkatalogTests : IDisposable
         // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse; mit E43
         // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar);
         // mit E47 der Energiestandard (Wahl nach der Verwendung); mit KP2 U1 die 36 Felder der
-        // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse).
-        Assert.Equal(88 + 36, d.Felder.Count);
-        Assert.Equal(36, KiKonditionierungsfelder.Alle.Count);
+        // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse); mit KP2 U2
+        // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen").
+        Assert.Equal(88 + 41, d.Felder.Count);
+        Assert.Equal(41, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
             KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;

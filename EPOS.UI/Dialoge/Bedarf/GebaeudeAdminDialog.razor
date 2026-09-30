@@ -619,7 +619,10 @@
         // #465: eine EIGENE Maske - die Projektdialog-Sicht Form_Gebaeude bleibt beim
         // Projektdialog. Die Feldkarte ist die des Katalogeditors (KiDialoge.GebaeudeVerwaltung),
         // die Sicht dieselbe Klasse auf DEMSELBEN Arbeitsstand.
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken());
+        // Stufe KP2, Welle U4: die Vorlagefelder der Matrix (kond_<groesse>_vorlage) als Wahl - dieselben
+        // Listen wie die Karten des Blatts „Konditionierung" (der Weg der Huelle reicht die Vorlagen).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken(),
+                                          KonditionierungKiTafel.Vorlagenlisten(() => _kond));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

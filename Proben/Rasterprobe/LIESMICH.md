@@ -782,9 +782,12 @@ Betriebsart, Sperre und Zonenweg. Gebäudetypen und -arten sind feste Listen, �
 Zonenweg melden Erfolg und schreiben nichts, die hergeleiteten Vorgaben der Wärmeübergabe (Klimareihe
 eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen. Der Reiter „Konditionierung“
 bekommt den Weg der Hülle ohne Datenbank (`KonditionierungHuelle.ReinerWeg`): Zellen, Kalender, Rückfragen,
-„aufteilen“ und „Zurücknehmen“ rechnen über die reinen Schritte des Kerns; die Vorlagen fehlen, „Aus dem
-Katalog erneut übernehmen…“ übernimmt im Fall `projekt` den Stand, wie er ist. Jeder Satz trägt eine leere
-Konditionierung, wie ein Satz einer Datenbank mit den Tabellen.
+„aufteilen“ und „Zurücknehmen“ rechnen über die reinen Schritte des Kerns; „Aus dem Katalog erneut
+übernehmen…“ übernimmt im Fall `projekt` den Stand, wie er ist. Jeder Satz trägt eine leere Konditionierung,
+wie ein Satz einer Datenbank mit den Tabellen. Die Vorlagen (Welle U2) kommen aus der Ablage ohne Datenbank
+mit den 14 ausgelieferten Vorlagen der Saat (`Konditionierungsvorlagenablage.AusSaat`, je Öffnen neu):
+Auswahlliste, Vorschau, „Übernehmen“, „Als Vorlage speichern…“ und die Verwaltung als Blatt wirken wie in der
+Anwendung, geschrieben wird nur in die Ablage der Seite.
 
 | Adresse | Fall |
 |---|---|
@@ -793,6 +796,7 @@ Konditionierung, wie ein Satz einer Datenbank mit den Tabellen.
 | `…?fall=gesperrt` | Bearbeiten, ein ausgelieferter Satz: `Gesperrt` und `SperrGrund`, wie die Hülle sie für `ReadOnly` setzt |
 | `…?fall=neu` | Betriebsart Neu, der leere Satz der Hülle (Vorgabe) |
 | `…?fall=ohnetabellen` | Bearbeiten ohne die Tabellen der Konditionierung: der Reiter benannt gesperrt, nur die Bestandszellen |
+| `…?fall=vorlagen` | Bearbeiten, der volle Satz: die Vorlagen je Karte und die Vorlagenverwaltung (Welle U2) |
 | `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
 | `…?fall=verwaltung` | die Gebäudeverwaltung (`GebaeudeAdminDialog`, Welle U4) wie in ihrem eigenen Fenster, ohne Überlagerung: drei Katalogbauten (einer ausgeliefert), Stammblatt mit der Gruppe „Konditionierung“ und dem breiten Blatt über demselben Weg ohne Datenbank |
 | `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
@@ -817,7 +821,15 @@ Karte und die fünf Reiter je Größe, die Tabelle ohne Querrollen; je Fall „K
 „Zurücknehmen“ neben „Aus dem Katalog erneut übernehmen…“ (projekt), die Rückfrage „aufteilen“ an der
 Gesamtangabe, nach „Ja“ Infiltration 0,3, Nutzerlüftung 0,3, Nachtauskühlung 2 und das Feld ΔT (gesamt),
 die Werte als Text ohne Feld und ohne Knopf (gesperrt), Karten mit „Kalender anlegen“ (neu), der Grund
-statt der Karten (ohnetabellen). Rückgabe `0` = kein Verstoß,
+statt der Karten (ohnetabellen). Die Vorlagen (Welle U2): in `projekt`, `gesamt`, `neu` und `vorlagen` je Karte
+eine Auswahlliste, zusammen die 14 der Ablage, „Büro“ in jeder zuerst; im Fall `vorlagen` an der Karte
+„Heizen“ „Übernehmen“ ohne Wahl weich gesperrt, die Wahl „Büro“ mit Schloss, Beschreibung und Vorschau der
+Woche, „Übernehmen“ (Herkunft in Karte und Zeile „Vorlage“, die Wahl danach leer), die Rückfrage P12 an den
+angelegten Kalender („Nein“ lässt die Herkunft), „Als Vorlage speichern…“ inline (Formular gemessen, die
+eigene Vorlage danach zuletzt in der Liste) und die Verwaltung als Blatt (der Editor daneben ausgeblendet,
+die Liste der Größe samt der eigenen, Löschen an den ausgelieferten weich gesperrt mit Grund, Vorschau per
+Klick, Umschalter „Personen“, Esc führt zurück in den Editor); Karte, Formular und Blatt je auf Bedienziele,
+Überdeckung und Querrollen gemessen. Rückgabe `0` = kein Verstoß,
 `1` = mindestens einer, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
 **Ergebnis vom 29.09.2026** (Welle U0b; Wirt Release auf Port 5299, Chromium headless über das globale
@@ -858,6 +870,28 @@ Felder der Matrix: 25 mit Weg (neu, gesamt, projekt), 0 und 25 Texte im Lesemodu
 Bestandszellen ohne Tabellen (ohne Kühlspalte, die ohne „Gebäude wird gekühlt“ weich gesperrt ist). „Kalender
 anlegen“ an „Heizen“ ergibt „angelegt, 0 eigene Perioden“, danach ist „Zurücknehmen“ frei. Das Wochenraster
 der Bausteine misst wie im Ergebnis vom 29.09.2026; die Fotos liegen außerhalb des Repositorys.
+
+**Ergebnis vom 30.09.2026** (Welle U2; Wirt Release, Chromium headless über das globale Playwright,
+`kultur=de-DE`): **vorher drei Befunde, nachher kein Verstoß** in 28 Läufen (7 Fälle × 4 Breiten, Rückgabe 0).
+
+| Befund | vorher | Ursache | Behebung |
+|---|---|---|---|
+| Zoomleiste der Vorschau unter dem Berührungsmaß | 71 × 26 und 43 × 26 px an jedem Vorschaubild, in Karte und Verwaltung, alle vier Breiten | `DiagrammSvg` zeichnet seine Zoomleiste; eine Woche in der Karte braucht keinen Zeitbereich | `OhneZoom="true"` an beiden Vorschauen — bunit `KalenderkarteTests`, `KonditionierungVorlagenDialogTests` |
+| „Übernehmen“ überdeckt die Auswahlliste | 84 px (1 180) bzw. 61 px (1 300) in allen fünf Karten ab 900 px | die Klappliste hielt als Flexkind ihren längsten Eintrag als Mindestmaß, die Zeile brach nicht um | `.epos-kond-vorlagewahl` bricht um, Feld `flex: 1 1 10rem`, Liste `min-width: 0` — Wache `StilblattTests` |
+| Kopf des Blatts ragt heraus | Titel der Verwaltung 57 px aus dem Blatt bei 390 px, die Überlagerung rollt 41 px quer | `.epos-blatt-kopf` brach nicht um: „‹ {Wirtstitel}“ und Titel in einer Zeile | `.epos-blatt-kopf { flex-wrap: wrap }` im Baustein — Wache `StilblattTests` |
+
+| Fenster | Behälter „Konditionierung“ | Karten | Vorschau „Büro“ | Blatt der Verwaltung |
+|---|---|---|---|---|
+| 390 × 844 | 340 px | 1 von 5 | 312 px | 340 px, quer 0 |
+| 820 × 1 180 | 753 px | 1 von 5 | 725 px | 753 px, quer 0 |
+| 1 180 × 820 | 1 099 px | 5 von 5, „Übernehmen“ unter der Liste | 184 px | 1 099 px, quer 0 |
+| 1 300 × 900 | 1 214 px | 5 von 5, „Übernehmen“ unter der Liste | 207 px | 1 214 px, quer 0 |
+
+Die fünf Listen führen 3/3/2/3/3 Vorlagen, zusammen die 14 der Ablage, „Büro“ überall zuerst. Nach
+„Übernehmen“ steht „aus Vorlage Büro“ in der Karte und „Büro“ in der Zeile „Vorlage“ der Matrix, die
+Rückfrage P12 nennt die Vorlage und was ersetzt wird. Bedienziele unter 44 px, Überdeckungen, Querrollen und herausragende Ziele: je 0 — auch mit dem offenen
+Formular „Als Vorlage speichern…“ und im Blatt der Verwaltung (22 Ziele); die Fotos liegen außerhalb des
+Repositorys.
 
 **Welle U4 — Zonendialog als Blatt und Blatt „Konditionierung“ der Verwaltung.** Der Fall `projekt` öffnet
 nach „Kalender anlegen“ an „Heizen“ die Zone „Wohnen EG“ („Öffnen…“ im Reiter „Zonen“) als breites Blatt

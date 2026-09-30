@@ -43,6 +43,22 @@
         </tr>
     </thead>
     <tbody>
+        @* Die Zeile "Vorlage" (Teilkonzept 7.2, Welle U2): je Spalte die zuletzt uebernommene Vorlage -
+           die Herkunft des angelegten Kalenders, sonst "-". Nur mit Weg und auf dem VDI-Weg, wo es
+           Kalender gibt; eine Anzeige, keine Zelle. *@
+        @if (Bearbeitung.MitWeg && !Altweg)
+        {
+            <tr class="epos-kond-herkunftzeile" data-zeile="vorlage">
+                <th scope="row">@Texte.ZeileVorlage</th>
+                @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+                {
+                    string? herkunft = Bearbeitung.Herkunft(g);
+                    <td class="epos-kond-herkunft @Spaltenklasse(g)" data-groesse="@((int)g)">
+                        <span class="@(herkunft is null ? "epos-kond-leer" : "epos-kond-text")">@(herkunft ?? Texte.PlatzhalterLeer)</span>
+                    </td>
+                }
+            </tr>
+        }
         @foreach (KonditionierungZeile z in KonditionierungBearbeitung.Zeilen)
         {
             KonditionierungZeile zeile = z;

@@ -1287,8 +1287,11 @@ body {
     outline-offset: 1px;
 }
 
-/* Eine Fehleingabe faerbt - sie meldet nicht (Program.ZahlFaerben). */
-.epos-fehleingabe {
+/* Eine Fehleingabe faerbt - sie meldet nicht (Program.ZahlFaerben). Ein
+   abgelehnter Name der Konditionierungsvorlagen (Welle U2) faerbt ebenso;
+   den Grund nennt die Zeile unter dem Feld. */
+.epos-fehleingabe,
+.epos-kond-feldfehler .epos-eingabe {
     background: var(--epos-fehleingabe);
 }
 
@@ -2119,7 +2122,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         color: rgb(24, 98, 24);
     }
 
-    .epos-fehleingabe {
+    .epos-fehleingabe,
+    .epos-kond-feldfehler .epos-eingabe {
         forced-color-adjust: none;
         background: rgb(255, 235, 235);
         color: rgb(44, 44, 42);
@@ -2328,8 +2332,12 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     min-width: 0;
 }
 
+/* Der Kopf bricht um, wenn "‹ {Wirtstitel}" und Titel nicht in eine Zeile
+   passen - sonst ragt der Titel aus dem Blatt und die Ueberlagerung rollt
+   quer (Konditionierungsprobe, Welle U2: 57 px bei 390 px). */
 .epos-blatt-kopf {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--epos-rand);
 }
@@ -13535,6 +13543,16 @@ td.epos-vorlage-katalogbeschreibung {
     display: none;
 }
 
+/* Die Zeile "Vorlage" (Welle U2): eine Anzeige der Herkunft je Spalte -
+   schmal wie die Zellen nur die der gewaehlten Groesse. */
+.epos-kond-herkunft {
+    min-width: 0;
+}
+
+.epos-kond-matrix td.epos-kond-herkunft:not(.epos-kond--aktiv) {
+    display: none;
+}
+
 .epos-kond-karten {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -13578,6 +13596,124 @@ td.epos-vorlage-katalogbeschreibung {
     flex-wrap: wrap;
 }
 
+/* DIE VORLAGEN DER KARTE (Stufe KP2, Welle U2; Teilkonzept 7.4): die
+   Auswahlliste im Kopf (Baustein-Anordnung .epos-vorlage-wahl, das Schloss
+   daneben), die Beschreibung der gewaehlten Vorlage und die Vorschau der
+   Woche ueber die ganze Breite der Karte. */
+.epos-kond-vorlagewahl,
+.epos-kond-vorschau {
+    margin-top: 6px;
+    min-width: 0;
+}
+
+/* In der schmalen Karte (ab 900 px rund 200 px breit) bricht die Zeile um:
+   "Uebernehmen" geht unter die Liste, statt sie zu ueberdecken, und die
+   Liste haelt ihren laengsten Eintrag nicht als Mindestmass (gemessen in
+   der Konditionierungsprobe: 61 bis 84 px Ueberdeckung). */
+.epos-kond-vorlagewahl {
+    flex-wrap: wrap;
+}
+
+.epos-kond-vorlagewahl > .epos-feld {
+    flex: 1 1 10rem;
+}
+
+.epos-kond-vorlagewahl .epos-feld-zeile > select.epos-eingabe {
+    min-width: 0;
+}
+
+.epos-kond-vorlage-beschreibung,
+.epos-kond-vorschau-vorlage {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* "Als Vorlage speichern…" inline (Festlegung 13): die Abfrage unter der
+   Knopfzeile, abgesetzt; ein abgelehnter Name faerbt SEIN Feld und nennt
+   den Grund direkt darunter (Hausregel: der Grund steht, wo man hinsieht). */
+.epos-kond-vorlagenknoepfe {
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.epos-kond-vorlage-speichern {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    min-width: 0;
+}
+
+.epos-kond-vorlage-name {
+    min-width: 0;
+}
+
+.epos-kond-feldmeldung {
+    margin: 2px 0 0;
+    color: var(--epos-stufe-fehler);
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-vorlage-sofort,
+.epos-kond-vorlage-gespeichert {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:
+   Umschalter der Groesse, die Liste im Rahmen (Hausregel Liste), die
+   gewaehlte Zeile wie die Fokuszeile der Verwaltungen (Flaeche und Balken),
+   darunter Beschreibung und Vorschau. Die Zeilenhandlungen stehen immer;
+   unter 600 px Behaelterbreite brechen sie in der Zelle um, statt die Liste
+   quer rollen zu lassen. */
+.epos-kond-verwaltung {
+    container-type: inline-size;
+    container-name: epos-kond-verwaltung;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kond-verwaltung-sofort {
+    margin: 0;
+}
+
+.epos-kond-verwaltung-groessen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-kond-vorlagenliste {
+    width: 100%;
+}
+
+.epos-kond-vorlagenliste > tbody > tr.epos-kond-vorlage--gewaehlt > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-kond-vorlagenliste > tbody > tr.epos-kond-vorlage--gewaehlt > td:first-child {
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+}
+
+.epos-kond-vorlage-namenszelle .epos-schloss {
+    margin-left: 6px;
+}
+
+.epos-kond-verwaltung-vorschau {
+    min-width: 0;
+}
+
+@container epos-kond-verwaltung (max-width: 599.98px) {
+    .epos-kond-vorlagenliste td.epos-zellenaktionen {
+        white-space: normal;
+    }
+
+    .epos-kond-vorlagenliste .epos-zellenaktionen-inhalt {
+        flex-wrap: wrap;
+    }
+}
+
 @container epos-kond (min-width: 900px) {
     .epos-kond-groessen {
         display: none;
@@ -13585,6 +13721,10 @@ td.epos-vorlage-katalogbeschreibung {
 
     .epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),
     .epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv) {
+        display: table-cell;
+    }
+
+    .epos-kond-matrix td.epos-kond-herkunft:not(.epos-kond--aktiv) {
         display: table-cell;
     }
 

@@ -17,7 +17,10 @@ namespace WindowsFormsApplication1
     /// <c>tag</c>, <c>nacht</c>, <c>wochenende</c>, <c>ferien</c>, <c>saison</c>), dazu
     /// <c>_aus</c> (Heizen und Kühlen: der Zustand „aus"), <c>_von</c>/<c>_bis</c> (das Nachtfenster
     /// einer Spalte in vollen Stunden, die Saison in Tagen des Gemeinjahrs) und
-    /// <c>kond_lueftung_nacht_dt</c> (ΔT der Nachtauskühlung).</para>
+    /// <c>kond_lueftung_nacht_dt</c> (ΔT der Nachtauskühlung). Je Größe eröffnet
+    /// <c>kond_&lt;größe&gt;_vorlage</c> die Spalte (Welle U2; Entwurf KP2 D9): die Zeile „Vorlage" über dem
+    /// Nennwert als WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen
+    /// nennt die Herkunft des angelegten Kalenders.</para>
     /// <para><b>Bestandszellen behalten ihre Namen</b> (Entwurf KP2, Festlegung 5): Heizen Tag, Nacht,
     /// Wochenende und Ferien, Kühlen Tag, Infiltration, Nutzerlüftung und innere Wärmegewinne stehen
     /// schon unter ihren Katalogfeldern (<c>soll_tag</c>, <c>nachtabsenkung</c>,
@@ -33,7 +36,8 @@ namespace WindowsFormsApplication1
     /// Zone steht es in der Zelle, nicht in Bestandsspalten); ihre Bestandszellen stehen schon unter den
     /// Feldern der Zone (<c>soll_tag</c>, <c>soll_nacht</c>, <c>soll_wochenende</c>, <c>soll_ferien</c>,
     /// <c>infiltration</c>, <c>nutzerlueftung</c>, <c>gewinne</c>). Leer heißt an der Zone „wie
-    /// Gebäude".</para>
+    /// Gebäude". Die Vorlage einer Größe führt die Zonenkarte nicht — die Karten der Zone bieten keine
+    /// Vorlagen.</para>
     /// </remarks>
     public static class KiKonditionierungsfelder
     {
@@ -59,7 +63,10 @@ namespace WindowsFormsApplication1
             Bis,
 
             /// <summary>ΔT der Nachtauskühlung.</summary>
-            DeltaT
+            DeltaT,
+
+            /// <summary>Die Vorlage der Größe (Zeile „Vorlage" der Matrix, keine Zelle).</summary>
+            Vorlage
         }
 
         /// <summary>Ein Feld der Karte: Schlüssel, Zelle (Größe, Zeile) und Teil.</summary>
@@ -83,11 +90,14 @@ namespace WindowsFormsApplication1
             /// <summary>Der Platz der Größe in <see cref="Konditionierungsgroessen.Alle"/> — die Spalte der Oberfläche.</summary>
             public int Groessenplatz => IndexIn(Konditionierungsgroessen.Alle, Groesse);
 
-            /// <summary>Der Platz der Zeile in <see cref="DbWerte.KOND_ZEILEN"/> — die Zeile der Oberfläche.</summary>
+            /// <summary>
+            /// Der Platz der Zeile in <see cref="DbWerte.KOND_ZEILEN"/> — die Zeile der Oberfläche; <c>-1</c> =
+            /// keine Zelle (<see cref="Teil.Vorlage"/>).
+            /// </summary>
             public int Zeilenplatz { get; }
 
-            /// <summary>Das Zeilenkennwort (<see cref="DbWerte.KOND_ZEILEN"/>).</summary>
-            public string Zeile => DbWerte.KOND_ZEILEN[Zeilenplatz];
+            /// <summary>Das Zeilenkennwort (<see cref="DbWerte.KOND_ZEILEN"/>); <c>null</c> = keine Zelle.</summary>
+            public string Zeile => Zeilenplatz < 0 ? null : DbWerte.KOND_ZEILEN[Zeilenplatz];
 
             /// <summary>Was das Feld an der Zelle trägt.</summary>
             public Teil Teil { get; }
@@ -177,6 +187,12 @@ namespace WindowsFormsApplication1
                 // An der Zone ist die Kuehlspalte gesperrt (Zonenregel, bis KU3).
                 if (zone && g == Konditionierungsgroesse.Kuehlsoll) continue;
                 string gw = GROESSENWORT[(int)g];
+
+                // Die Zeile „Vorlage" eröffnet die Spalte — keine Zelle, die Aktion des Knopfs „Übernehmen".
+                // An der Zone bietet die Karte keine Vorlagen (Welle U2 am Gebäude und Katalogbau): kein
+                // Knopf, also kein Feld.
+                if (!zone) felder.Add(new Feld("kond_" + gw + "_vorlage", g, -1, Teil.Vorlage, false));
+
                 for (int zi = 0; zi < DbWerte.KOND_ZEILEN.Count; zi++)
                 {
                     string z = DbWerte.KOND_ZEILEN[zi];
@@ -247,9 +263,12 @@ namespace WindowsFormsApplication1
         private static KiDialogFeld Dialogfeld(Feld f, bool zone)
         {
             string groesse = Groessenname(f.Groesse);
-            string zeile = Zeilenname(f);
             string pfad = (zone ? ZONENSICHT : SICHT) + "." + f.Schluessel;
             CultureInfo c = CultureInfo.CurrentCulture;
+            if (f.Teil == Teil.Vorlage)
+                return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_ZEILE_VORLAGE,
+                                        KiParameterTyp.Wahl, string.Format(c, MyResource.Resource.KOND_TXT_KI_VORLAGE, groesse));
+            string zeile = Zeilenname(f);
 
             switch (f.Teil)
             {
