@@ -212,6 +212,19 @@ Nur, was die Schale selbst braucht; alles Übrige kommt über `EPOS.Kern`.
   zweites `Main`). Ein Harness dort erbt die `Directory.*.props` der Wurzel; deshalb
   `<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>` setzen, sonst
   scheitert der Restore (NU1008).
+- **Absturz ohne Meldung:** Endet die Anwendung wortlos und nennt die Ereignisanzeige
+  (Anwendung, „Application Error“) `KERNELBASE.dll` mit Ausnahmecode `0xc000041d`
+  (STATUS_FATAL_USER_CALLBACK_EXCEPTION), ist eine .NET-Ausnahme aus einem Rückruf der WebView2
+  herausgelaufen — vorbei an der Fehlerschranke `Wurzel<T>` (der WinForms-BlazorWebView führt
+  kein `UnhandledException`-Ereignis) und ohne Eintrag „.NET Runtime“. Die Ursache steht im
+  **Ausnahmeprotokoll** `Logs\Ausnahmen.txt` neben der Datenbank (`EPOS.Kern/Allgemein/Diagnose/Ausnahmeprotokoll.cs`,
+  eingeschaltet in `Program.Main`): jede ausgelöste Ausnahme mit Aufrufstapel, sofort geschrieben;
+  die letzte vor dem Kopf des nächsten Laufs ist die gesuchte. Vorgehen: diese Datei anfordern,
+  nicht den Weg raten. Ohne Datei: Visual Studio mit „Common Language Runtime Exceptions“ beim
+  Auslösen anhalten lassen. Einträge „EdgeWebView“ (INFO) und „Profilerstellungs-API“ (0x2509)
+  der Ereignisanzeige gehören nicht zum Absturz. Der Weg vom Menü zum Fenster fängt Ausnahmen
+  selbst ab (`Blazorsprung.Ausfuehren` zeigt sie als Meldung) — ein wortloser Absturz liegt
+  deshalb im Fenster, nicht in Menü, Hülle oder Navigation.
 - **Kultur:** Die Anzeigekultur setzt `WindowsSprache` beim Start; ein Sprachwechsel läuft
   über `Application.Restart`, weil Masken ihre Texte beim Aufbau lesen.
 - **Visual Studio regeneriert `../EPOS.Kern/MyResource/Resource.Designer.cs` selbst**, sobald

@@ -126,6 +126,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   zuschreibt. Quelltexte: `.cs`, `.csproj`, `.resx` UTF-8 **mit** BOM und CRLF; Markdown
   UTF-8 **ohne** BOM (`.editorconfig`). Ältere Dateien können noch Windows-1252 ohne BOM
   sein — vor dem Bearbeiten die Bytes messen und byte-erhaltend schreiben.
+- **Absturz der Windows-Anwendung ohne Meldung** (Ereignisanzeige: `KERNELBASE.dll`,
+  `0xc000041d`): Die Ursache steht im Ausnahmeprotokoll `Logs\Ausnahmen.txt` neben der
+  Datenbank — zuerst diese Datei anfordern; Vorgehen in
+  [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md) unter „Fallstricke“.
 - Die Python-Werkzeuge der Tabelle unten laufen auf Windows über den Starter `py` (`python3`
   gibt es dort nicht), mit `PYTHONIOENCODING=utf-8` davor, weil sie Unicode ausgeben.
   `Proben/ChartProben` und `EPOS.Referenzlauf` stehen **nicht** im Kern-Filter — wer sie mit
