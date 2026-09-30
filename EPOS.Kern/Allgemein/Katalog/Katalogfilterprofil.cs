@@ -1000,6 +1000,10 @@ namespace WindowsFormsApplication1
         /// <para><b>Rang:</b> Name und Flaeche stehen immer; Gebaeudeart und Baualtersklasse bei Platz;
         /// die Verwendung weicht als erste — sie ist die grobe Einteilung, die der Name meist
         /// schon verraet, und eine gefilterte Spalte weicht ohnehin nie.</para>
+        ///
+        /// <para><b>Die sechste Spalte „Kalender"</b> (Entwurf KP2, Festlegung 15) zaehlt die
+        /// angelegten Konditionierungskalender des Katalogbaus (0 … 5); sie weicht mit der
+        /// Verwendung. Die Zahl liefert <c>GebaeudeKatalogkalender.Katalogfilterzeilen</c>.</para>
         /// </summary>
         public static Katalogfilterprofil FuerGebaeude(Func<string, string> text = null)
         {
@@ -1014,10 +1018,19 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpGebaeudeart, t("KFLT_SP_GEBAEUDEART"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpVerwendung, t("KFLT_SP_VERWENDUNG"), rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpBaualtersklasse, t("KFLT_SP_BAUALTERSKLASSE"), rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl)
+                    new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpKonditionierungskalender, t("KOND_MSG_SP_KALENDER"), "",
+                                      Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                 }
             };
         }
+
+        /// <summary>
+        /// <b>„Kalender"</b> eines Katalogbaus (Entwurf KP2, Festlegung 15) — die Zahl der angelegten
+        /// Konditionierungskalender, 0 … 5 (eine je Größe). Nicht <see cref="SpKalender"/>: Der ist die
+        /// Kalenderart einer Brauchwasser-Nutzungsart, ein Text.
+        /// </summary>
+        public const string SpKonditionierungskalender = "KONDKALENDER";
 
         /// <summary>
         /// <b>Die Gebaeudetypen</b> (V16; Bestand A10) — Name, Zahl der Tageskurven und
