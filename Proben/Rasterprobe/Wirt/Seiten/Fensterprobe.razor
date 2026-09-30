@@ -10,8 +10,9 @@
     Auslieferung.
 
     Sie stellt einen echten Dialog so in den Browser, wie BlazorDialogForm ihn unter Windows
-    zeigt: als WURZEL in #app, daneben (hinter #app) die Fenstermarke - dasselbe DOM wie
-    body > div#app > .epos-dialog in der WebView2, ohne Datenbank. Gemessen wird von
+    zeigt: als WURZEL in #app, dahinter in #app die Fenstermarke (Fensterwurzel) - dasselbe
+    DOM wie body > div#app > .epos-dialog + span.epos-fenstermarke in der WebView2, ohne
+    Datenbank. Gemessen wird von
     fensterprobe.mjs (LIESMICH.md), ob Kopfzeile und Schlussleiste am Fenster haften, ob das
     letzte Inhaltselement ueber dem Fuss sichtbar wird, ob ein angesprungenes Feld sichtbar
     bleibt, ob Ueberlagerung und Katalogdialog unveraendert stehen.
@@ -105,11 +106,11 @@
             <p>unbekannter Fall: @_fall</p>
             break;
     }
+    @if (_marke)
+    {
+        <Fenstermarke />
+    }
 </div>
-@if (_marke)
-{
-    <Fenstermarke />
-}
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
 @code {
@@ -187,7 +188,6 @@
         Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL,
         SperrzeitVon = 0,
         SperrzeitBis = 0,
-        Nutzungszeit = 24,
         HeizstabLeistung = 6
     };
 

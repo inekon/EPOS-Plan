@@ -2400,9 +2400,10 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    Inhalt dazwischen rollt. Kein zweiter OK-Knopf, keine Tastenkuerzel.
 
    WO ES GILT - so eng wie moeglich:
-   - Nur im eigenen Fenster. body traegt die Fenstermarke (Baustein
-     Fenstermarke, gesetzt allein von BlazorDialogForm), und der Dialog ist die
-     Wurzel in #app (Wurzel<T> und Fehlerschranke zeichnen nichts Eigenes).
+   - Nur im eigenen Fenster. #app traegt hinter dem Dialog die Fenstermarke
+     (Baustein Fenstermarke, gezeichnet von der Fensterwurzel, die allein
+     BlazorDialogForm anmeldet), und der Dialog ist das erste Kind von #app
+     (Wurzel<T> und Fehlerschranke zeichnen nichts Eigenes).
      "#app > .epos-dialog" allein reichte nicht: Auf iOS stehen die Ansichten
      der AppWurzel (Kostenverwaltung, Speichern unter ...) ebenso unmittelbar
      unter #app, und das Hauptfenster haengt dort .epos-hauptfenster an.
@@ -2432,7 +2433,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    Ueberlagerung (40/41). Solange eine Ueberlagerung steht, rollt das
    Dokument ohnehin nicht (html:has(.epos-ueberlagerung) oben).
    ========================================================================== */
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child {
     position: sticky;
     top: 0;
     z-index: 2;
@@ -2442,8 +2443,8 @@ body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) >
     background: var(--epos-karte-flaeche);
 }
 
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer),
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer),
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss {
     position: sticky;
     bottom: 0;
     z-index: 2;
@@ -2457,8 +2458,8 @@ body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) >
    Fluss steht - verborgene Anker und Ueberlagerungen stehen ausserhalb. Die
    Dublettenpruefung zeigt ihr Protokoll UNTER der Schlussleiste; mit dem negativen
    Rand laege deren Flaeche 6 px ueber dessen Beschriftung. */
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
     margin-bottom: calc(-1 * var(--epos-karte-rand));
 }
 
@@ -2473,7 +2474,7 @@ body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) >
    (Gebaeudedialog ab 552 px, 125 px hoch) - dort rechnet das Polster eine
    Knopfzeile mehr; einzeilige Leisten lassen dann nur etwas mehr Luft.
    Gemessen: Fensterprobe (Proben/Rasterprobe/LIESMICH.md). */
-html:has(> body > .epos-fenstermarke) {
+html:has(> body > #app > .epos-fenstermarke) {
     --epos-fenster-kopf: calc(var(--epos-karte-rand) + var(--epos-touchziel) + 11px);
     --epos-fenster-fuss: calc(var(--epos-touchziel) + var(--epos-karte-rand) + 9px);
     --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var(--epos-rand));
@@ -2483,7 +2484,7 @@ html:has(> body > .epos-fenstermarke) {
 }
 
 @media (max-width: 760px) {
-    html:has(> body > .epos-fenstermarke) {
+    html:has(> body > #app > .epos-fenstermarke) {
         --epos-fenster-polster-unten: calc(var(--epos-fenster-fuss) + var(--epos-touchziel) + 12px + var(--epos-rand));
     }
 }
@@ -2496,10 +2497,10 @@ html:has(> body > .epos-fenstermarke) {
    dagegen nicht). Die Fussleiste ist hier die Leiste, in der ein Geschwister
    VOR dem Primaerknopf oder er selbst den Fokus traegt - ein :has im :has
    gibt es nicht. */
-html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),
-html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > :focus ~ .epos-knopf--primaer),
-html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > .epos-knopf--primaer:focus),
-html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss :focus) {
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > :focus ~ .epos-knopf--primaer),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > .epos-knopf--primaer:focus),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss :focus) {
     scroll-padding: 0;
 }
 
@@ -2509,7 +2510,7 @@ html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos
    das Warnband, OK und Abbrechen gehoeren dem Wirt. Mit bottom: 0 haftete das
    Band HINTER dessen Schlussleiste und waere verdeckt - es haftet deshalb um
    die Fusshoehe hoeher, und Band und Leiste stehen zusammen im Bild. */
-body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) .epos-dialog--eingebettet > .epos-dialog-fuss {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) .epos-dialog--eingebettet > .epos-dialog-fuss {
     bottom: var(--epos-fenster-fuss);
 }
 

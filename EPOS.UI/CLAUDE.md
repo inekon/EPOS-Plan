@@ -184,8 +184,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Komponente keinen eigenen (`epos-dialog-kopf--ohnetitel`) — über `TitelText=""` oder ein
   eigenes `TitelAnzeigen`, am Tag der Einbettung RECHTS von `@attributes`. Wache:
   `UeberlagerungstitelTests`; ein `@attributes`-Satz bleibt dort Handarbeit (bunit-Fall im Wirt).
-- **Im eigenen Fenster stehen Kopf und Schlussleiste fest:** `BlazorDialogForm` hängt die
-  `Fenstermarke` hinter `#app`; dann haften das erste Kind der Dialogwurzel (`.epos-dialog-kopf`)
+- **Im eigenen Fenster stehen Kopf und Schlussleiste fest:** `BlazorDialogForm` meldet an
+  `#app` die `Fensterwurzel<T>` an, die hinter dem Dialog die `Fenstermarke` zeichnet — EINE
+  Wurzelkomponente; keine zweite an `body::after` (belegt der BlazorWebView selbst, eine zweite
+  Anmeldung beendet den Prozess wortlos). Dann haften das erste Kind der Dialogwurzel (`.epos-dialog-kopf`)
   oben und die Leiste mit dem Primärknopf als eigenem Kind unten, nur der Inhalt rollt
   (`epos-ui.css`, „Dialog im eigenen Fenster"; nicht in Katalogdialogen, Überlagerung und Blatt).
   Deshalb steht der Kopf zuerst, und **eine Knopfzeile mitten im Inhalt trägt keinen

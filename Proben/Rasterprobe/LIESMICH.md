@@ -968,7 +968,7 @@ liegen außerhalb des Repositorys.
 **Zweck.** Ein Dialog im eigenen Fenster (`BlazorDialogForm`) rollt als **Dokument**. Nach dem
 Anwenderentscheid vom 30.09.2026 („Kopf+Fuß fest") haften dort die Kopfzeile und die Schlussleiste am
 Fenster, nur der Inhalt dazwischen rollt — `epos-ui.css`, Abschnitt „Dialog im eigenen Fenster", an die
-`Fenstermarke` gebunden, die allein `BlazorDialogForm` hinter `#app` hängt. Die Seite stellt echte Dialoge
+`Fenstermarke` gebunden, die allein die Fensterwurzel von `BlazorDialogForm` in `#app` hinter den Dialog zeichnet. Die Seite stellt echte Dialoge
 so in den Browser, wie die WebView2 sie zeigt: `body > div#app > .epos-dialog`, dahinter die Marke — ohne
 Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel hält die Wache
 `EPOS.UI.Tests/FensterrahmenTests`.
@@ -989,7 +989,7 @@ node fensterprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb de
 ```
 
 Gemessen bei **1 088 × 624** (Fenstermaß des Anwenders) und **520 × 624** (`Fenstermass.MindestBreite`).
-Je Fensterdialog: die Marke steht hinter `#app`, der Dialog ist höher als das Fenster; bei Rollstand oben,
+Je Fensterdialog: die Marke steht in `#app` hinter dem Dialog, der Dialog ist höher als das Fenster; bei Rollstand oben,
 Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
 über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
 andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter

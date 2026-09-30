@@ -15,8 +15,9 @@ namespace EPOS.UI.Tests;
 /// Fenster, nur der Inhalt dazwischen rollt.
 ///
 /// <para><b>Wie es gebaut ist.</b> Die Fensterhülle <c>BlazorDialogForm</c> — und nur sie —
-/// hängt neben dem Dialog in <c>#app</c> den Baustein <see cref="Fenstermarke"/> an das Ende
-/// von <c>&lt;body&gt;</c>. Das Hausblatt lässt dann, und nur dann, das erste Kind der
+/// meldet an <c>#app</c> die <see cref="Fensterwurzel{TInhalt}"/> an; sie zeichnet den Dialog
+/// und dahinter den Baustein <see cref="Fenstermarke"/> — EINE Wurzelkomponente, kein
+/// Selektor wie <c>body::after</c>, den der BlazorWebView selbst belegt. Das Hausblatt lässt dann, und nur dann, das erste Kind der
 /// Dialogwurzel (<c>.epos-dialog-kopf</c>) oben und die Leiste mit dem Primärknopf unten
 /// haften (<c>epos-ui.css</c>, Abschnitt „Dialog im eigenen Fenster"). Die Katalogdialoge
 /// (<c>.epos-katalog-dialog</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
@@ -42,7 +43,7 @@ namespace EPOS.UI.Tests;
 public sealed class FensterrahmenTests : EposBunitContext
 {
     /// <summary>Der Wurzelanker der Regeln im Hausblatt.</summary>
-    private const string ANKER = "body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog)";
+    private const string ANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog)";
 
     // =====================================================================
     //  1 - Die Marke
@@ -61,19 +62,68 @@ public sealed class FensterrahmenTests : EposBunitContext
         Assert.Equal("", elemente[0].TextContent);
     }
 
+    /// <summary>
+    /// Die Fensterwurzel zeichnet den Dialog (über <c>Wurzel</c> samt Fehlerschranke, ohne
+    /// eigene Hülle) und DAHINTER die Marke; der Parametersatz kommt unverändert beim Dialog an.
+    /// </summary>
+    [Fact]
+    public void Die_Fensterwurzel_zeichnet_den_Dialog_und_dahinter_die_Marke()
+    {
+        var cut = Render<Fensterwurzel<Probedialog>>(p => p.AddUnmatched("Titel", "Probe"));
+
+        var elemente = cut.Nodes.OfType<AngleSharp.Dom.IElement>().ToList();
+        Assert.Equal(2, elemente.Count);
+        Assert.Equal("epos-dialog", elemente[0].ClassName);
+        Assert.Equal("Probe", elemente[0].TextContent);
+        Assert.Equal("epos-fenstermarke", elemente[1].ClassName);
+    }
+
+    /// <summary>
+    /// Kein Wurzelselektor mit <c>::after</c>/<c>::before</c> in der Windows-Schale: Der
+    /// BlazorWebView belegt <c>body::after</c> selbst (Nachladen der Stilblätter mit den
+    /// Entwicklerwerkzeugen); eine zweite Anmeldung wirft in der Fensterprozedur und beendet
+    /// den Prozess ohne Meldung (<c>0xc000041d</c>).
+    /// </summary>
+    [Fact]
+    public void Kein_Wurzelselektor_der_Schale_belegt_einen_Pseudoort()
+    {
+        string schale = Path.Combine(Wurzel(), "WindowsFormsApplication1");
+        string[] treffer = Directory.GetFiles(schale, "*.cs", SearchOption.AllDirectories)
+            .Where(p => !p.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar)
+                     && !p.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+            .Where(p => Regex.IsMatch(Code(File.ReadAllText(p)), @"RootComponents\.Add<[^;]*""[^""]*::(after|before)"""))
+            .ToArray();
+        Assert.Empty(treffer);
+    }
+
+    /// <summary>Ein kleinster Dialog für die Fensterwurzel.</summary>
+    private sealed class Probedialog : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        [Microsoft.AspNetCore.Components.Parameter] public string Titel { get; set; } = "";
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder b)
+        {
+            b.OpenElement(0, "div");
+            b.AddAttribute(1, "class", "epos-dialog");
+            b.AddContent(2, Titel);
+            b.CloseElement();
+        }
+    }
+
     // =====================================================================
     //  2 - Wer sie setzt
     // =====================================================================
 
     [Fact]
-    public void Allein_die_Fensterhuelle_setzt_die_Marke_hinter_app()
+    public void Allein_die_Fensterhuelle_setzt_die_Marke_in_app()
     {
         string form = Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorDialogForm.cs"));
-        Assert.Equal(1, Vorkommen(form, "RootComponents.Add<EPOS.UI.Bausteine.Fenstermarke>(\"body::after\")"));
-        // Der Dialog selbst bleibt die Wurzel in #app - darauf bauen die Regeln "#app > ...".
-        Assert.Contains("RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>(\"#app\", parameter)", form);
+        // EINE Wurzelkomponente: die Fensterwurzel an #app - sie zeichnet Dialog und Marke.
+        Assert.Equal(1, Vorkommen(form, "RootComponents.Add<EPOS.UI.Bausteine.Fensterwurzel<TKomponente>>(\"#app\", parameter)"));
+        Assert.Equal(1, Vorkommen(form, "RootComponents.Add"));
 
         Assert.DoesNotContain("Fenstermarke", Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorSeite.cs")));
+        Assert.DoesNotContain("Fensterwurzel", Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorSeite.cs")));
         string ios = Path.Combine(Wurzel(), "EPOS.iOS", "HauptSeite.cs");
         if (File.Exists(ios))
             Assert.DoesNotContain("Fenstermarke", Code(File.ReadAllText(ios)));
@@ -112,11 +162,11 @@ public sealed class FensterrahmenTests : EposBunitContext
 
         // Das angesprungene Feld: scroll-padding am Dokument, nur mit der Marke - und
         // keins, solange der Fokus in Kopf oder Fuss steht.
-        string polster = Regelblock("html:has(> body > .epos-fenstermarke) {");
+        string polster = Regelblock("html:has(> body > #app > .epos-fenstermarke) {");
         Assert.Contains("scroll-padding-top: var(--epos-fenster-polster-oben);", polster);
         Assert.Contains("scroll-padding-bottom: var(--epos-fenster-polster-unten);", polster);
         Assert.Contains("scroll-padding: 0;", Regelblock(
-            "html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),"));
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),"));
 
         // Kein anderer Ort im Blatt laesst den Dialogkopf haften.
         string css = Hausblatt();

@@ -3,9 +3,11 @@
    die unter Windows als eigenes Fenster laufen, bleiben Kopfzeile und
    Schlussleiste stehen, nur der Inhalt dazwischen rollt).
 
-   WER SIE SETZT. Allein die Fensterhuelle BlazorDialogForm: Sie haengt die
-   Marke als zweite Wurzelkomponente an das Ende von <body> ("body::after"),
-   neben den Dialog in #app. Die Hauptfensterhuelle (BlazorSeite) und die
+   WER SIE SETZT. Allein die Fensterwurzel (Fensterwurzel<T>), die nur die
+   Fensterhuelle BlazorDialogForm an #app anmeldet: Sie zeichnet den Dialog und
+   dahinter die Marke - EINE Wurzelkomponente. Eine eigene Wurzel an
+   "body::after" kollidierte mit dem BlazorWebView, der diesen Selektor selbst
+   belegt (Entwicklerwerkzeuge). Die Hauptfensterhuelle (BlazorSeite) und die
    iOS-Huelle setzen sie nicht.
 
    WARUM EINE MARKE UND NICHT "#app > .epos-dialog". Auf iOS haengt an #app die
@@ -16,7 +18,7 @@
 
    WAS SIE ZEICHNET. Ein leeres, verborgenes Element: keine Flaeche, kein Mass,
    nichts fuer den Bildschirmleser. Das Stilblatt fragt nur, OB es dasteht
-   (body:has(> .epos-fenstermarke), Abschnitt "Dialog im eigenen Fenster" in
+   (#app:has(> .epos-fenstermarke), Abschnitt "Dialog im eigenen Fenster" in
    epos-ui.css); die Wache steht in EPOS.UI.Tests/FensterrahmenTests. *@
 
 @namespace EPOS.UI.Bausteine

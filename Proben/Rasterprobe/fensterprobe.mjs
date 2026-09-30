@@ -12,7 +12,7 @@
 //
 //  JE FENSTERDIALOG (Heizkessel, BHKW, Waermepumpen, Gebaeude, Dublettenpruefung):
 //    - die Seite steht wie in der WebView2: body > #app > .epos-dialog, die
-//      Fenstermarke hinter #app; der Dialog ist hoeher als das Fenster;
+//      Fenstermarke in #app hinter dem Dialog; der Dialog ist hoeher als das Fenster;
 //    - Rollstand oben, Mitte, Ende: der Kopf oben buendig (top 0), die
 //      Schlussleiste unten buendig (bottom = Fensterhoehe), beide ueber die
 //      volle Breite der Wurzel;
@@ -346,7 +346,7 @@ try {
       console.log(`- ${name}`);
       const seite = await oeffnen(browser, fall, f);
       const aufbau = await seite.evaluate(() => ({
-        marke: !!document.querySelector('body > .epos-fenstermarke'),
+        marke: !!document.querySelector('body > #app > .epos-fenstermarke'),
         wurzel: !!document.querySelector('body > #app > .epos-dialog:not(.epos-katalog-dialog)'),
       }));
       if (!aufbau.marke || !aufbau.wurzel) { console.log('  AUFBAUFEHLER: ' + JSON.stringify(aufbau)); process.exit(2); }

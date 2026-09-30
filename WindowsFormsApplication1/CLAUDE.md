@@ -225,6 +225,10 @@ Nur, was die Schale selbst braucht; alles Übrige kommt über `EPOS.Kern`.
   der Ereignisanzeige gehören nicht zum Absturz. Der Weg vom Menü zum Fenster fängt Ausnahmen
   selbst ab (`Blazorsprung.Ausfuehren` zeigt sie als Meldung) — ein wortloser Absturz liegt
   deshalb im Fenster, nicht in Menü, Hülle oder Navigation.
+- **Wurzelkomponenten eines Fensters:** genau eine, an `#app`. Pseudoorte wie `body::after`
+  belegt der BlazorWebView selbst (Nachladen der Stilblätter mit den Entwicklerwerkzeugen); eine
+  zweite Anmeldung desselben Selektors wirft in `AddRootComponentAsync` während der
+  Fensterprozedur und beendet den Prozess wortlos. Wache: `EPOS.UI.Tests/FensterrahmenTests`.
 - **Kultur:** Die Anzeigekultur setzt `WindowsSprache` beim Start; ein Sprachwechsel läuft
   über `Application.Restart`, weil Masken ihre Texte beim Aufbau lesen.
 - **Visual Studio regeneriert `../EPOS.Kern/MyResource/Resource.Designer.cs` selbst**, sobald
