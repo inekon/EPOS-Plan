@@ -13,8 +13,11 @@
    (eine tiefe Kopie des hereingereichten Satzes) und schreibt allein im OK-Weg der
    SpeichernLeiste: OK prueft, speichert und schliesst; Abbrechen, Esc und das Kreuz
    schliessen ohne zu schreiben. Die Pruefregeln (Konzept 4.8) stehen genau einmal, in
-   Pruefen(). "Speichern unter" (nur im Modus Bearbeiten) nimmt denselben Weg, legt aber
-   unter dem eingegebenen Namen neu an - eine Zeile ueber der Leiste sagt das. Der
+   Pruefen(). "Speichern unter" (Modus Bearbeiten und Projekt) prueft ebenso, legt unter dem
+   eingegebenen Namen einen Katalogsatz an und laesst den Dialog OFFEN (E27, Entwurf KP2
+   B1/B2) - eine Zeile ueber der Leiste sagt das. Die Konditionierung kommt vom Ursprungssatz;
+   im Katalogmodus arbeitet der Dialog danach am neuen Satz weiter, im Projektmodus bleibt
+   der Projektzustand stehen, bis OK ihn schreibt. Der
    zweite Reiter hat keinen eigenen Stand und keinen Uebernahmeknopf mehr; seine
    Ableitungen (Maximaltemperatur < 1 -> 24, die Flags Wochenende und Ferien,
    Winterferienbeginn 0 -> 366) laufen im OK-Weg. WW_Bedarf zeigt kein Feld; er reist
@@ -88,6 +91,17 @@
         <Herleitungszeile Text="@Vorbelegung" />
     }
 
+    @* DAS SCHLOSS (Stufe KP2, Befund B11): Ein ausgelieferter Satz steht mit seinem Grund da -
+       leise, wo der Anwender hinsieht; der Grund steht auch am weich gesperrten OK, und erst der
+       Versuch bringt ihn als Meldung. "Speichern unter" bleibt frei. *@
+    @if (IstGesperrt)
+    {
+        <p class="epos-herleitung epos-gebk-sperrzeile">
+            <Kennzeichen />
+            <span class="epos-herleitung-text">@SperrGrund</span>
+        </p>
+    }
+
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
         <KindInhalt>
 
@@ -99,16 +113,8 @@
                         <KindInhalt>
                             <Formularraster>
                                 <KindInhalt>
-                            @if (Modus == GebaeudeKatalogModus.Admin)
-                            {
-                                <Auswahlfeld Bezeichnung="@LabelName" Eintraege="@Namenseintraege"
-                                             Auswahl="@_namensindex" AuswahlChanged="NamenWaehlen" />
-                            }
-                            else
-                            {
-                                <Textfeld Bezeichnung="@LabelName" Wert="@_stand.Name"
-                                          WertChanged="w => _stand.Name = w" />
-                            }
+                            <Textfeld Bezeichnung="@LabelName" Wert="@_stand.Name"
+                                      WertChanged="w => _stand.Name = w" />
                             @if (Modus == GebaeudeKatalogModus.Projekt)
                             {
                                 <Herleitungszeile Text="@NameProjektzeile" />
@@ -787,7 +793,8 @@
         }
     }
 
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis"
+                     OkSperrgrund="@(IstGesperrt ? SperrGrund : null)">
         <Aktionen>
             @if (SpeichernUnterMoeglich)
             {
@@ -820,6 +827,32 @@
     /// </summary>
     [Parameter] public string Vorbelegung { get; set; } = "";
 
+    /// <summary>
+    /// <b>Ist der Satz gesperrt?</b> (Stufe KP2, Befund B11) — die Hülle setzt es für einen
+    /// ausgelieferten Katalogsatz (<c>ReadOnly</c>) in der Betriebsart Bearbeiten, statt erst nach
+    /// dem OK abzulehnen. Dann steht die Grundzeile mit <see cref="SperrGrund"/>, OK ist WEICH
+    /// gesperrt (der Grund am Knopf, ein Klick meldet ihn und schreibt nichts, auch nicht über den
+    /// Assistenten), „Speichern unter" bleibt frei. Den feldgenauen Lesemodus bringt Welle U1.
+    /// </summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Der Grund der Sperre — aus dem Bündel der Konditionierung (<c>KOND_TXT_HINWEIS_LESEMODUS</c>,
+    /// <c>KonditionierungTexte.HinweisLesemodus</c>); der Vorgabewert ist der deutsche Rückfall.
+    /// </summary>
+    [Parameter] public string SperrGrund { get; set; }
+        = "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine "
+        + "bearbeitbare Kopie an.";
+
+    /// <summary>
+    /// Hat der Dialog einen NEUEN Satz angelegt („Speichern unter", Neu)? Ein eigener Satz trägt kein
+    /// Schloss — arbeitet der Dialog danach weiter, gilt die Sperre des geladenen Satzes nicht mehr.
+    /// </summary>
+    private bool _entsperrt;
+
+    /// <summary>Gilt das Schloss gerade? Der Parameter, solange der Dialog keinen neuen Satz angelegt hat.</summary>
+    public bool IstGesperrt => Gesperrt && !_entsperrt;
+
     /// <summary>Die Gebäudetypen der Klappliste (<c>Abfrage_Gebaeudetypen</c>).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudetypen { get; set; }
 
@@ -828,12 +861,6 @@
 
     /// <summary>Die 13 Baualtersklassen A bis M in ihrer festen Reihenfolge (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
-
-    /// <summary>Die Namen aller Katalogsätze — nur im Modus Admin gebraucht.</summary>
-    [Parameter] public Func<IReadOnlyList<string>>? Katalognamen { get; set; }
-
-    /// <summary>Lädt einen Katalogsatz nach Namen — der Klapplistenwechsel im Modus Admin.</summary>
-    [Parameter] public Func<string, GebaeudeKatalogDaten?>? Lies { get; set; }
 
     /// <summary>
     /// Schreibt den Satz — der EINE Schreibweg, gerufen allein im OK-Weg. Zweiter
@@ -1043,8 +1070,6 @@
 
     private IReadOnlyList<string> _typen = Array.Empty<string>();
     private IReadOnlyList<string> _arten = Array.Empty<string>();
-    private IReadOnlyList<string> _namen = Array.Empty<string>();
-    private int? _namensindex;
     private IReadOnlyDictionary<string, object>? _brauchwasserGaben;
     private bool _geschrieben;
 
@@ -1080,7 +1105,10 @@
     /// <summary>Der Abdruck des Stands, mit dem Schritt 1 (Gebäudedaten) zuletzt geschrieben hat; <c>null</c> = noch nicht.</summary>
     private string? _abdruckGeschrieben;
 
-    /// <summary>Der Name, den das Überschreiben trifft — der Stand beim Öffnen bzw. Laden.</summary>
+    /// <summary>
+    /// Der Name, den das Überschreiben trifft — der Stand beim Öffnen bzw. Laden; im Katalogmodus
+    /// nach „Speichern unter" der neue Satz. Zugleich die Quelle der Konditionierung für „Speichern unter".
+    /// </summary>
     private string _ursprungsname = "";
 
     // Die Ferien als Tag und Monat - die Zerlegung der Jahrestage fuer die Anzeige; sie
@@ -1562,16 +1590,6 @@
         _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null, Zonen?.Luftstroeme);
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
-        if (Modus == GebaeudeKatalogModus.Admin)
-        {
-            _namen = Katalognamen?.Invoke() ?? Array.Empty<string>();
-            if (_namen.Count > 0)
-            {
-                _namensindex = 0;
-                SatzLaden(_namen[0]);
-            }
-        }
-
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
                                           () => KiSicht(), KiHaken());
     }
@@ -1632,14 +1650,8 @@
         return liste;
     }
 
-    /// <summary>In der KATALOGVERWALTUNG WÄHLT der Name den Satz, sonst BENENNT er ihn.</summary>
-    private void KiNameSetzen(string wert)
-    {
-        if (Modus != GebaeudeKatalogModus.Admin) { _stand.Name = wert ?? ""; return; }
-
-        for (int i = 0; i < _namen.Count; i++)
-            if (string.Equals(_namen[i], wert, StringComparison.Ordinal)) { NamenWaehlen(i); return; }
-    }
+    /// <summary>Der Name BENENNT den Satz, der geschrieben wird.</summary>
+    private void KiNameSetzen(string wert) => _stand.Name = wert ?? "";
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf. <b>„Speichern" ist der OK-Weg
@@ -1650,6 +1662,10 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Pruefen = () => Pruefen(Modus == GebaeudeKatalogModus.Neu) ? "" : _meldung,
+        // Das Schloss (B11): Ein gesperrter Satz ist für den Assistenten schreibgeschützt; die
+        // Absage nennt den Grund samt Weg („Speichern unter").
+        Schreibgeschuetzt = () => IstGesperrt,
+        Schreibschutzgrund = () => IstGesperrt ? SperrGrund : "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
@@ -1658,6 +1674,7 @@
         if (Speichern is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
+        if (IstGesperrt) return KiKern.KiErgebnis.Abgelehnt(SperrGrund);   // das Schloss (B11) gilt auch hier
 
         bool istNeu = Modus == GebaeudeKatalogModus.Neu;
         bool ok = Modus == GebaeudeKatalogModus.Projekt
@@ -1674,7 +1691,10 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne Rollen: In der Ueberlagerung rollte der Fokus auf die (hohe) Wurzel den Bereich
+        // um 70 px - Titel und Kreuz der Ueberlagerung standen beim Oeffnen ausserhalb des Bilds
+        // (Konditionierungsprobe, Stufe KP2).
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -1705,7 +1725,6 @@
     private IReadOnlyList<(int Id, string Text)> Arteintraege => Eintraege(_arten, _stand.Gebaeudeart);
     private int? Artindex => Index(_arten, _stand.Gebaeudeart);
 
-    private IReadOnlyList<(int Id, string Text)> Namenseintraege => Liste(_namen);
     private IReadOnlyList<(int Id, string Text)> Klasseneintraege => Liste(Baualtersklassen);
     private IReadOnlyList<(int Id, string Text)> Bauarteintraege => Liste(Bauarten);
     private IReadOnlyList<(int Id, string Text)> Verwendungseintraege => Liste(Verwendungen);
@@ -1755,27 +1774,6 @@
 
     /// <summary>Die Randbedingung der Bodenplatte; Erdreich bleibt NULL, wenn es NULL war.</summary>
     private void RandbedingungWaehlen(int? i) => _arbeit.RandbedingungWaehlen(i);
-
-    /// <summary>Der Namenswechsel im Modus Admin lädt den gewählten Satz.</summary>
-    private void NamenWaehlen(int? i)
-    {
-        _namensindex = i;
-        if (i is null || i.Value < 0 || i.Value >= _namen.Count) return;
-        SatzLaden(_namen[i.Value]);
-    }
-
-    private void SatzLaden(string name)
-    {
-        GebaeudeKatalogDaten? satz = Lies?.Invoke(name);
-        if (satz is null) return;
-
-        StandSetzen(satz);
-
-        // Der Rundweg zu W9-O-2: Die BAUART kommt aus der gespeicherten Bauweise.
-        _stand.Bauart = Gebaeudebauweise.BauartAusBauweise(
-            _stand.Bauweise, _stand.WohnflaecheGesamt ?? 0);
-        _meldung = "";
-    }
 
     private string Ferienname(int n)
         => (Ferienzeitraeume is not null && Ferienzeitraeume.Count > n) ? Ferienzeitraeume[n] : "";
@@ -1898,6 +1896,7 @@
 
         _geschrieben = true;
         _ursprungsname = bezeichner;
+        if (istNeu) _entsperrt = true;   // der neue Satz ist ein eigener - ihm gilt das Schloss nicht (B11)
         _arbeit.Geschrieben();
         _meldung = "";
         return true;
@@ -1911,6 +1910,14 @@
     private async Task BeiErgebnis(bool ok)
     {
         if (!ok) { await Abbrechen(); return; }
+
+        // Das Schloss (B11): OK ist weich gesperrt - der Versuch meldet den Grund, geschrieben
+        // wird nichts, und der Dialog bleibt offen; „Speichern unter" ist der Weg zur Kopie.
+        if (IstGesperrt)
+        {
+            Melden(SperrGrund, WarnStufe.Warnung);
+            return;
+        }
 
         // Betriebsart Projekt (G3): die Projektkopie samt Zonen, in benannten Schritten.
         if (Modus == GebaeudeKatalogModus.Projekt)
@@ -2010,31 +2017,66 @@
     }
 
     /// <summary>
-    /// „Speichern unter" — derselbe OK-Weg, angelegt unter dem eingegebenen Namen als Katalogsatz.
-    /// Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben (Softwarearchitektur 2.9): Der
-    /// Katalogsatz trägt keine Zonen.
+    /// „Speichern unter" — dieselben Prüfregeln, angelegt unter dem eingegebenen Namen als
+    /// Katalogsatz. Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben
+    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen.
     /// </summary>
-    private async Task BeiSpeichernUnter()
+    private void BeiSpeichernUnter()
     {
         if (_arbeit.Zonen.Count > 0)
         {
             _speichernUnterFrage = true;
             return;
         }
-        await SpeichernUnterSchreiben();
+        SpeichernUnterSchreiben();
     }
 
-    /// <summary>Die Antwort auf die Rückfrage: Ja führt den Weg zu Ende, Nein hält den Dialog offen (3.3 Punkt 6).</summary>
-    private async Task SpeichernUnterBeantwortet(bool? antwort)
+    /// <summary>Die Antwort auf die Rückfrage: Ja schreibt, Nein schreibt nichts — der Dialog bleibt in beiden Fällen offen (3.3 Punkt 6, E27).</summary>
+    private void SpeichernUnterBeantwortet(bool? antwort)
     {
         _speichernUnterFrage = false;
-        if (antwort == true) await SpeichernUnterSchreiben();
+        if (antwort == true) SpeichernUnterSchreiben();
     }
 
-    private async Task SpeichernUnterSchreiben()
+    /// <summary>
+    /// <b>„Speichern unter" schreibt den neuen Katalogsatz und lässt den Dialog OFFEN</b> — der nicht
+    /// schließende Zweitknopf (Entscheid E27; Entwurf KP2, Befunde B1 und B2, Festlegung 2).
+    /// <list type="bullet">
+    /// <item><b>Die Quelle der Konditionierung ist der Ursprungssatz:</b> Der Satz trägt den neuen
+    /// Namen, der Bezeichner des Delegaten ist <see cref="_ursprungsname"/> — unter ihm sucht die
+    /// Hülle im Katalogmodus Matrix und Kalender (im Projektmodus nimmt sie das Projektgebäude).</item>
+    /// <item><b>Im Katalogmodus</b> arbeitet der Dialog danach am NEUEN Satz weiter: Er ist der
+    /// Ursprungsname, der Arbeitsstand gilt als geschrieben — das nächste OK überschreibt den neuen
+    /// Satz, nicht das Original.</item>
+    /// <item><b>Im Projektmodus</b> bleibt der Projektzustand unberührt (Ursprungsname, Abdruck,
+    /// Bezugswerte des Arbeitsstands): Das nächste OK schreibt die Projektkopie vollständig.</item>
+    /// </list>
+    /// <see cref="_geschrieben"/> meldet dem Aufrufer beim Schließen, dass er seine Listen auffrischt.
+    /// </summary>
+    private void SpeichernUnterSchreiben()
     {
-        if (!Schreiben(istNeu: true, bezeichner: _stand.Name)) return;
-        await Geschlossen.InvokeAsync(true);
+        if (!Pruefen(true)) return;
+        if (Speichern is null) return;
+
+        Ableiten();
+        GebaeudeKatalogErgebnis ergebnis = Speichern(_stand, true, _ursprungsname);
+        if (!ergebnis.Erfolg)
+        {
+            Melden(ergebnis.Meldung, WarnStufe.Warnung);
+            return;
+        }
+
+        _geschrieben = true;
+        string neu = _stand.Name ?? "";
+        if (Modus != GebaeudeKatalogModus.Projekt)
+        {
+            _ursprungsname = neu;
+            _entsperrt = true;   // der Dialog arbeitet am neuen, eigenen Satz - ihm gilt das Schloss nicht (B11)
+            _arbeit.Geschrieben();
+        }
+        // Gruen mit Haken wie jedes „angelegt" des Hauses (WarnStufe.Erfolg); es steht, bis die
+        // naechste Handlung es ersetzt.
+        Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Erfolg);
     }
 
     private void Melden(string text, WarnStufe stufe)

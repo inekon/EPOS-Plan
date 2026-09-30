@@ -36,7 +36,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968",
       "1969 bis 1978", "1979 bis 1983", "1984 bis 1994", "1995 bis 2001", "2002 bis 2009",
       "2010 bis 2015", "2016 bis 2020", "ab 2021" };
-    private static readonly string[] NAMEN = { "Haus A", "Haus B", "Hotel C" };
     private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
     private const string REITER2 = "Temperaturen und Ferien";
@@ -93,7 +92,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         GebaeudeKatalogDaten? daten = null,
         GebaeudeKatalogModus modus = GebaeudeKatalogModus.Bearbeiten,
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
-        Func<string, GebaeudeKatalogDaten?>? lies = null,
         Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
         Action<bool>? geschlossen = null,
         bool titelAnzeigen = true)
@@ -104,8 +102,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
             .Add(x => x.Gebaeudetypen, () => TYPEN)
             .Add(x => x.Gebaeudearten, () => ARTEN)
             .Add(x => x.Baualtersklassen, KLASSEN)
-            .Add(x => x.Katalognamen, () => NAMEN)
-            .Add(x => x.Lies, lies ?? (n => Satz(n)))
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))
             .Add(x => x.BrauchwasserGaben, brauchwasser)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
@@ -813,21 +809,118 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Haus A", bezeichner);
     }
 
+    // =================================================================================
+    // „Speichern unter" — der nicht schließende Zweitknopf (E27; Entwurf KP2, B1, B2, Festlegung 2)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Katalogmodus:</b> Der Delegat bekommt den Satz unter dem NEUEN Namen und als Bezeichner den
+    /// URSPRUNGSNAMEN — unter ihm sucht die Hülle die Quelle der Konditionierung (B2). Der Dialog bleibt
+    /// offen und meldet den neuen Satz (B1); danach arbeitet er am neuen Satz weiter: Das nächste OK
+    /// überschreibt ihn, nicht das Original.
+    /// </summary>
     [Fact]
-    public void Speichern_unter_legt_unter_dem_neuen_Namen_an_und_schliesst()
+    public void Speichern_unter_legt_aus_dem_Ursprungssatz_an_und_arbeitet_am_neuen_Satz_weiter()
     {
-        string bezeichner = "";
-        bool? neu = null;
+        var aufrufe = new List<(bool IstNeu, string Bezeichner, string Name)>();
         bool? geschlossen = null;
-        var cut = Aufbauen(speichern: (_, istNeu, bez) => { neu = istNeu; bezeichner = bez; return new(true, ""); },
+        var cut = Aufbauen(speichern: (d, istNeu, bez) => { aufrufe.Add((istNeu, bez, d.Name)); return new(true, ""); },
                            geschlossen: b => geschlossen = b);
 
         cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Kopie");
         Knopf(cut, "Speichern unter").Click();
 
-        Assert.True(neu);
-        Assert.Equal("Haus Kopie", bezeichner);
+        var (istNeu, bezeichner, name) = Assert.Single(aufrufe);
+        Assert.True(istNeu);
+        Assert.Equal("Haus A", bezeichner);
+        Assert.Equal("Haus Kopie", name);
+        Assert.Null(geschlossen);
+        Assert.Equal("Katalogsatz „Haus Kopie“ angelegt.", cut.Instance.Meldung);
+        Assert.Contains("Katalogsatz „Haus Kopie“ angelegt.", cut.Find(".epos-warnbanner--erfolg").TextContent);
+        Assert.Equal("Haus Kopie", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(2, aufrufe.Count);
+        Assert.False(aufrufe[1].IstNeu);
+        Assert.Equal("Haus Kopie", aufrufe[1].Bezeichner);
         Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// Nach „Speichern unter" meldet auch Abbrechen <c>true</c> zurück — der Aufrufer frischt seine
+    /// Listen auf, denn ein Katalogsatz ist geschrieben.
+    /// </summary>
+    [Fact]
+    public void Nach_Speichern_unter_meldet_Abbrechen_geschrieben()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(geschlossen: b => geschlossen = b);
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Kopie");
+        Knopf(cut, "Speichern unter").Click();
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "Abbrechen").Click();
+
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// <b>Projektmodus:</b> „Speichern unter" legt den Katalogsatz an und lässt den Projektzustand
+    /// unberührt — der Dialog bleibt offen, der Ursprungsname bleibt der der Projektkopie, und das
+    /// folgende OK schreibt die Projektkopie vollständig (Schritt 1 wird nicht übersprungen).
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_im_Projekt_bleibt_offen_und_OK_schreibt_danach_die_Projektkopie()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner, string Name, double? Raumhoehe)>();
+        bool? geschlossen = null;
+        var cut = Aufbauen(modus: GebaeudeKatalogModus.Projekt,
+                           speichern: (d, istNeu, bez) => { aufrufe.Add((istNeu, bez, d.Name, d.Raumhoehe)); return new(true, ""); },
+                           geschlossen: b => geschlossen = b);
+
+        Eingabe(cut, "Raumhöhe :").Input("3");
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Katalog");
+        Knopf(cut, "Speichern unter").Click();
+
+        var (istNeu, bezeichner, name, hoehe) = Assert.Single(aufrufe);
+        Assert.True(istNeu);
+        Assert.Equal("Haus A", bezeichner);
+        Assert.Equal("Haus Katalog", name);
+        Assert.Equal(3.0, hoehe);
+        Assert.Null(geschlossen);
+        Assert.Equal("Katalogsatz „Haus Katalog“ angelegt.", cut.Instance.Meldung);
+        Assert.Equal("Haus A", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(2, aufrufe.Count);
+        Assert.False(aufrufe[1].IstNeu);
+        Assert.Equal("Haus A", aufrufe[1].Bezeichner);
+        Assert.Equal(3.0, aufrufe[1].Raumhoehe);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>Eine abgelehnte Anlage (etwa ein vergebener Name) meldet und hält den Dialog am Ursprungssatz.</summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_unter_haelt_den_Ursprungssatz()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(speichern: (_, istNeu, _) => istNeu
+                               ? new GebaeudeKatalogErgebnis(false, "Ein Gebäude mit diesem Namen steht schon im Katalog.")
+                               : new GebaeudeKatalogErgebnis(true, ""),
+                           geschlossen: b => geschlossen = b);
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus B");
+        Knopf(cut, "Speichern unter").Click();
+
+        Assert.Equal("Ein Gebäude mit diesem Namen steht schon im Katalog.", cut.Instance.Meldung);
+        Assert.Equal("Haus A", cut.Instance.Ursprungsname);
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "Abbrechen").Click();
+        Assert.False(geschlossen);
     }
 
     // =================================================================================
@@ -873,25 +966,26 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Neubau", bezeichner);
     }
 
+    /// <summary>
+    /// <b>Drei Betriebsarten, der Name ist immer ein Textfeld</b> (Stufe KP2, Welle U0b): Die
+    /// Betriebsart „Admin" — der Name als Klappliste aller Katalogsätze — ist entfallen; die
+    /// Gebäudeverwaltung ist eine eigene Komponente und ruft den Editor nur für „Neu…".
+    /// </summary>
     [Fact]
-    public void Im_Modus_Admin_ist_der_Name_eine_Klappliste_ohne_Speichern_unter()
+    public void Es_gibt_drei_Betriebsarten_und_der_Name_ist_ein_Textfeld()
     {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
+        Assert.Equal(new[] { "Bearbeiten", "Neu", "Projekt" }, Enum.GetNames<GebaeudeKatalogModus>());
 
-        Assert.NotNull(Klappliste(cut, "Name :"));
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern unter");
-        Assert.Contains("Haus A", cut.Markup);
-        Assert.Contains("Hotel C", cut.Markup);
-    }
+        foreach (GebaeudeKatalogModus modus in Enum.GetValues<GebaeudeKatalogModus>())
+        {
+            var cut = Aufbauen(modus: modus);
+            Assert.Equal("input", Feld(cut, "Name :").QuerySelector("input, select")!.LocalName);
+            Assert.Equal("Haus A", Eingabe(cut, "Name :").GetAttribute("value"));
+        }
 
-    [Fact]
-    public void Im_Modus_Admin_laedt_der_Namenswechsel_den_gewaehlten_Satz()
-    {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
-
-        Klappliste(cut, "Name :").Change("2");   // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
+        // Die Parameter der Klappliste gibt es nicht mehr.
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Katalognamen"));
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Lies"));
     }
 
     // =================================================================================
@@ -1148,23 +1242,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Ok(cut);
 
         Assert.Equal(9876, geschrieben);
-    }
-
-    [Fact]
-    public void Das_Laden_leitet_die_Bauart_aus_der_gespeicherten_Bauweise_ab()
-    {
-        GebaeudeKatalogDaten geladen = Satz("Hotel C");
-        geladen.WohnflaecheGesamt = 100;
-        geladen.Bauweise = 10000;      // spez. 100 -> sehr schwer
-        geladen.Bauart = 0;            // absichtlich unpassend
-
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin, lies: _ => geladen);
-
-        Klappliste(cut, "Name :").Change("2");     // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
-        Assert.Equal(2, cut.Instance.Arbeitsstand.Bauart);
-        Assert.Equal(10000, cut.Instance.Arbeitsstand.Bauweise);
     }
 
     // =================================================================================
@@ -1819,5 +1896,113 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Assert.Equal(23, cut.Instance.Arbeitsstand.NachtBeginn);
         Assert.Equal(5, cut.Instance.Arbeitsstand.NachtEnde);
+    }
+
+    // =================================================================================
+    // Das Schloss erreicht den Editor (Stufe KP2, Welle U0b; Befund B11)
+    // =================================================================================
+
+    private const string SPERRGRUND =
+        "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an.";
+
+    /// <summary>Ein ausgelieferter Satz im Modus Bearbeiten, wie die Hülle ihn reicht.</summary>
+    private IRenderedComponent<GebaeudeKatalogDialog> AufbauenGesperrt(
+        List<(bool IstNeu, string Bezeichner)> aufrufe, Action<bool>? geschlossen = null)
+        => Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, Satz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, (_, istNeu, bez) => { aufrufe.Add((istNeu, bez)); return new GebaeudeKatalogErgebnis(true, ""); })
+            .Add(x => x.Gesperrt, true)
+            .Add(x => x.SperrGrund, SPERRGRUND)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>
+    /// <b>Ein gesperrter Satz nennt seinen Grund, und OK schreibt nicht</b>: die Grundzeile mit
+    /// Schloss, OK WEICH gesperrt (anklickbar, <c>aria-disabled</c>, der Grund als <c>title</c>),
+    /// der Versuch meldet den Grund, schreibt nichts und hält den Dialog offen.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Satz_nennt_seinen_Grund_und_OK_schreibt_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        bool? geschlossen = null;
+        var cut = AufbauenGesperrt(aufrufe, b => geschlossen = b);
+
+        IElement zeile = cut.Find(".epos-gebk-sperrzeile");
+        Assert.Contains(SPERRGRUND, zeile.TextContent);
+        Assert.NotNull(zeile.QuerySelector(".epos-schloss"));
+        Assert.True(cut.Instance.IstGesperrt);
+
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("disabled"));
+        Assert.Equal("true", ok.GetAttribute("aria-disabled"));
+        Assert.Equal(SPERRGRUND, ok.GetAttribute("title"));
+
+        Ok(cut);
+
+        Assert.Empty(aufrufe);
+        Assert.Null(geschlossen);
+        Assert.Equal(SPERRGRUND, cut.Instance.Meldung);
+        Assert.Contains(SPERRGRUND, cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// „Speichern unter" bleibt am gesperrten Satz frei — es legt eine eigene Kopie an. Quelle ist der
+    /// ausgelieferte Ursprungssatz (B2); der Dialog bleibt offen und arbeitet an der Kopie weiter (B1), das
+    /// nächste OK trifft sie und nicht den ausgelieferten Satz.
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_bleibt_am_gesperrten_Satz_frei()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        var cut = AufbauenGesperrt(aufrufe);
+
+        IElement knopf = Knopf(cut, "Speichern unter");
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus A (eigen)");
+        Knopf(cut, "Speichern unter").Click();
+
+        Assert.Equal(new[] { (true, "Haus A") }, aufrufe);
+        Assert.False(cut.Instance.IstGesperrt);   // der neue Satz ist ein eigener
+        Assert.Equal("Haus A (eigen)", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(new[] { (true, "Haus A"), (false, "Haus A (eigen)") }, aufrufe);
+    }
+
+    /// <summary>Ohne Sperre steht keine Grundzeile, und OK trägt weder Sperre noch Grund.</summary>
+    [Fact]
+    public void Ohne_Sperre_steht_keine_Grundzeile_und_OK_ist_frei()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-gebk-sperrzeile"));
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("aria-disabled"));
+        Assert.False(ok.HasAttribute("title"));
+        Assert.False(cut.Instance.IstGesperrt);
+    }
+
+    /// <summary>Für den Assistenten ist der gesperrte Satz schreibgeschützt — mit Grund und Weg.</summary>
+    [Fact]
+    public async Task Der_Assistent_schreibt_einen_gesperrten_Satz_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        AufbauenGesperrt(aufrufe);
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDE_KATALOG);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(SPERRGRUND, haken.Schutzgrund());
+
+        KiKern.KiErgebnis ergebnis = await haken.Speichern!();
+        Assert.False(ergebnis.Erfolg);
+        Assert.Equal(SPERRGRUND, ergebnis.Text);
+        Assert.Empty(aufrufe);
     }
 }

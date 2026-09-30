@@ -48,7 +48,7 @@ Die Fußleiste trägt ''Fläche und Verbrauch…'', ''Gebäude im Projekt bearbe
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
 
-Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben. Über ''Hülle und Zonen…'' bearbeitet derselbe Editor die Kopie eines Gebäudes im Projekt; was dort gilt, beschreibt [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]].
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an; der Editor bleibt offen und arbeitet danach am neuen Satz weiter – ein weiteres ''OK'' speichert in ihm, nicht im Ausgangssatz. Ein Satz der Auslieferung lässt sich nicht überschreiben. Über ''Hülle und Zonen…'' bearbeitet derselbe Editor die Kopie eines Gebäudes im Projekt; was dort gilt, beschreibt [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]].
 
 === Reiter „Gebäude und Hülle" ===
 {{Anker|gebaeude-und-huelle}}
@@ -214,7 +214,7 @@ Weicht ein eingetragener U-Wert um mehr als 10 % vom U-Wert des Aufbaus ab, sagt
 === Zone, Katalog und Projekt ===
 {{Anker|zone-katalog}}
 
-* '''Speichern unter''' im Editor eines Gebäudes mit Zonen fragt vor dem Schreiben: „Der Katalogsatz trägt die Zone „…" mit n Bauteilen nicht mit – trotzdem speichern?", mit mehreren Zonen entsprechend für alle Zonen; sie bleiben an der Projektkopie. Ein Katalogsatz trägt keine Zonen; wer ihn später ins Projekt holt, bekommt ein Gebäude ohne Zone, das den Klassenweg rechnet.
+* '''Speichern unter''' im Editor eines Gebäudes mit Zonen fragt vor dem Schreiben: „Der Katalogsatz trägt die Zone „…" mit n Bauteilen nicht mit – trotzdem speichern?", mit mehreren Zonen entsprechend für alle Zonen; sie bleiben an der Projektkopie. Der Editor bleibt danach offen; die Projektkopie schreibt erst ''OK''. Ein Katalogsatz trägt keine Zonen; wer ihn später ins Projekt holt, bekommt ein Gebäude ohne Zone, das den Klassenweg rechnet.
 * '''Ändern''' im Projektdialog: Mit Zonen gilt die Flächen- oder Verbrauchsangabe des Projekts nicht, und Bedarfsart, Wert und Jahresnutzungsgrad sind gesperrt (siehe [[#verbrauch|Gebäude: Verbrauch]]).
 * '''Projekt duplizieren''' und der [[Programm Dokumentation/Projekttransfer|Projekttransfer]] nehmen Zonen, Bauteile, Trennflächen, Luftströme und Aufbauten mit.
 * Wird das Gebäude aus dem Projekt entfernt, gehen seine Zonen mit.

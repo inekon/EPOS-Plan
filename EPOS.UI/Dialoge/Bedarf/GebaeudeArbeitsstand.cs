@@ -802,7 +802,10 @@ public sealed class GebaeudeArbeitsstand
 
     /// <summary>
     /// Der Abdruck des Stands für die Herleitung — ändert er sich, ist die hergeleitete Zahl
-    /// neu zu bilden. Er umfasst jede Eigenschaft des Feldsatzes samt der Ferienfelder.
+    /// neu zu bilden. Er umfasst jede Eigenschaft des Feldsatzes samt der Ferienfelder; die
+    /// Konditionierung vertritt ihre <see cref="KonditionierungDaten.Fassung"/> (Stufe KP2,
+    /// Befund B10: ihre Listen sähe der Abdruck sonst nicht, und ein zweites OK des Projekts
+    /// übersprünge eine geänderte Konditionierung).
     /// </summary>
     public string Abdruck()
     {
@@ -811,6 +814,7 @@ public sealed class GebaeudeArbeitsstand
         {
             object? w = p.GetValue(Stand);
             if (w is int[] feld) sb.Append(string.Join(",", feld));
+            else if (w is KonditionierungDaten k) sb.Append("K").Append(k.Fassung.ToString(CultureInfo.InvariantCulture));
             else if (w is IFormattable f) sb.Append(f.ToString(null, CultureInfo.InvariantCulture));
             else sb.Append(w);
             sb.Append('|');

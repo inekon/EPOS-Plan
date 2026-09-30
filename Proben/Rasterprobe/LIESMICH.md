@@ -710,7 +710,7 @@ ASPNETCORE_URLS=http://127.0.0.1:5299 \
 | `/gebaeudeimport?datei=ifc4_zonen.ifc` | **mehrere Zonen** (Stufe G6c): Zonenregel im Kopf (vorbelegt je Geschoss), Bilanz, Zonen mit aufklappbaren Räumen, Flächen je Zone als virtualisierte Katalogliste mit drei Filtern; mit `datei=gbxml_zonen_viele.xml` und der Regel X3 die Obergrenze samt Knopf für die gröbere Regel |
 | `…&flaechen=<n>` | die Liste „Flächen je Zone“ bekommt n Zeilen — die der Probe reihum wiederholt (Fälle GI und GJ der Rasterprobe) |
 | `…&kultur=en-US` bzw. `de-DE` | Kultur und Sprache (Ressourcentexte, Zahlen der Übernahme); der Seitenabruf setzt dafür das Kulturkeks, das die Schaltung (`/_blazor`) liest — ohne `kultur=` gilt die Kultur des Prozesses |
-| `…&dialog=gebaeude` | der Gebäudedialog des Projekts (wie `katalogprobe?maske=projekt-gebaeude`, zwölf synthetische Katalogsätze) **mit** „Importieren (gbXML, IFC)…"; der Zuordnungsdialog steht in seiner Überlagerung, nach OK öffnet der **vorbelegte Katalogeditor** im Modus Neu, nach dessen OK steht das Gebäude in der Projektliste samt Meldung. Der Editor bekommt den Parametersatz der Anwendung (`GebaeudeKatalogHuelle.Gaben`); nur seine Wege zur Datenbank weichen der Seite: Typen, Arten, Katalognamen und die Namensprüfung der Übernahme gegen den synthetischen Katalog, „Lies" findet nichts, die hergeleiteten Vorgaben der Wärmeübergabe fehlen, „Speichern" schreibt nichts. Die übrigen Beschriftungen des Gebäudedialogs bleiben seine deutschen Vorgaben |
+| `…&dialog=gebaeude` | der Gebäudedialog des Projekts (wie `katalogprobe?maske=projekt-gebaeude`, zwölf synthetische Katalogsätze) **mit** „Importieren (gbXML, IFC)…"; der Zuordnungsdialog steht in seiner Überlagerung, nach OK öffnet der **vorbelegte Katalogeditor** im Modus Neu, nach dessen OK steht das Gebäude in der Projektliste samt Meldung. Der Editor bekommt den Parametersatz der Anwendung (`GebaeudeKatalogHuelle.Gaben`); nur seine Wege zur Datenbank weichen der Seite: Typen, Arten und die Namensprüfung der Übernahme gegen den synthetischen Katalog, die hergeleiteten Vorgaben der Wärmeübergabe fehlen, „Speichern" schreibt nichts. Die übrigen Beschriftungen des Gebäudedialogs bleiben seine deutschen Vorgaben |
 
 Geschrieben wird nirgends; der Wirt bleibt außerhalb jeder Projektmappe und CI. Schalter für
 Probe, Kultur, Grenze und Fall stehen oben auf der Seite (sie laden neu, damit die Schaltung die
@@ -771,3 +771,57 @@ Gemessen bei 1 280 × 900 und 820 × 1 180: Stilblatt geladen; vier Reiter, jede
 Kurzform und das Leistenende in eigener Zeile; die Warnung in `--epos-warn-text`; nichts ragt aus dem
 Fenster, die Seite rollt nicht quer. Ein langer Stammname kürzt sich mit Auslassung (voller Name im
 `title`), wird es enger, fällt die Beschriftung „Stamm:“ weg. Rückgabe `0` = kein Verstoß.
+
+## Konditionierungsprobe (Stufe KP2) — Seite `/konditionierungsprobe`
+
+**Zweck.** Die Cloud-Vorabnahme der Oberflächenwellen von KP2 (Entwurf KP2, Abschnitt 7): der echte
+`GebaeudeKatalogDialog` in der **breiten** Überlagerung, wie Gebäudedialog und Gebäudeverwaltung ihn
+zeigen — ohne Datenbank. Der Parametersatz ist der der Anwendung (`GebaeudeKatalogHuelle.Gaben` in der
+Betriebsart Neu, dem Weg der Hülle ohne Datenbankzugriff); darüber legt die Seite je Fall Daten,
+Betriebsart, Sperre und Zonenweg. Gebäudetypen und -arten sind feste Listen, „Speichern“ und der
+Zonenweg melden Erfolg und schreiben nichts, die hergeleiteten Vorgaben der Wärmeübergabe (Klimareihe
+eines Projekts) und der Brauchwasserweg (keine Schale hängt ihn ein) fehlen.
+
+| Adresse | Fall |
+|---|---|
+| `/konditionierungsprobe?fall=projekt` | Betriebsart Projekt mit zwei Zonen (Wohnen EG, Büro OG) samt Bauteilen |
+| `…?fall=gesamt` | Bearbeiten; die Lüftung als Gesamtangabe — nur `Luftwechselrate` (0,6), Infiltration und Nutzerlüftung leer |
+| `…?fall=gesperrt` | Bearbeiten, ein ausgelieferter Satz: `Gesperrt` und `SperrGrund`, wie die Hülle sie für `ReadOnly` setzt |
+| `…?fall=neu` | Betriebsart Neu, der leere Satz der Hülle (Vorgabe) |
+| `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
+| `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
+
+```bash
+node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--kultur de-DE]
+```
+
+Gemessen je Fall bei 390 × 844, 820 × 1 180, 1 180 × 820 und 1 300 × 900, jeder Reiter angewählt: kein
+Querrollen (`scrollWidth ≤ clientWidth`) für Seite, Überlagerung und Reiterblatt; die Überlagerung ganz
+im Fenster und `min(96vw, 1400px)` breit; beim Öffnen stehen ihr Titel und ihr Kreuz im Bild;
+Bedienziele ≥ 44 × 44 px (ein Kästchen mit seiner Beschriftung; die Hilfepille hat das Hausmaß 28 px und
+wird nur genannt); im Reiterblatt überdeckt kein Bedienziel ein anderes und keines ragt heraus; Esc, ✕
+und Esc aus einem Feld schließen. Je Fall dazu: zwei Zonen im Reiter „Zonen“ (projekt); Infiltration
+und Nutzerlüftung leer, die Herleitungszeile nennt 0,60 1/h aus der Luftwechselrate (gesamt);
+Grundzeile mit Schloss, OK weich gesperrt mit dem Grund als `title`, „Speichern unter“ frei, der
+OK-Versuch meldet den Grund und schreibt nichts (gesperrt); kein „Speichern unter“ (neu); die Anordnung
+des Wochenrasters je Behälterbreite, 168 Zellen ≥ 44 × 44 px, sechs Zellen „aus“, im breitesten
+Fenster auch an den Schwellen 1 150, 1 149, 600 und 599 px (bausteine). Rückgabe `0` = kein Verstoß,
+`1` = mindestens einer, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 29.09.2026** (Welle U0b; Wirt Release auf Port 5299, Chromium headless über das globale
+Playwright, `kultur=de-DE`): **vorher drei Befunde, nachher kein Verstoß** in 20 Läufen (5 Fälle ×
+4 Breiten, Rückgabe 0).
+
+| Befund | vorher | Ursache | Behebung |
+|---|---|---|---|
+| Reiter 1 rollt bei 390 px quer | 43 px, in allen vier Editorfällen | die Klappliste „Energiestandard“ hielt als Flexkind ihren längsten Eintrag („wie Baualtersklasse (unsaniert)“, 373 px) als Mindestmaß | `.epos-formularraster .epos-feld-zeile > select.epos-eingabe { min-width: 0 }` — Wache `FormularrasterTests` |
+| Titel und ✕ stehen beim Öffnen außerhalb des Bilds | Überlagerung um 70 bis 71 px gerollt, in allen 16 Editorläufen | der Editor fokussierte seine hohe Wurzel ohne `preventScroll` | `FocusAsync(preventScroll: true)` |
+| 7 × 24 an der Schwelle unter dem Berührungsmaß | Zellen 43,91 px bei 1 150 px Behälter (44,00 erst ab 1 152 px) | Tagesspalte 3rem: 48 + 24 × (44 + 2) = 1 152 px | Tagesspalte 46 px — Wache `StilblattTests` |
+
+Nachher, Überlagerung / Dialog / Reiterblatt in px: 390 → 374 / 340 / 340; 820 → 787 / 753 / 753;
+1 180 → 1 133 / 1 099 / 1 099; 1 300 → 1 248 / 1 160 / 1 160 — die Dialogwurzel bleibt in der breiten
+Überlagerung auf ihre 1 160 px gedeckelt. Querrollen überall 0, Überdeckungen 0, Bedienziele unter 44 px
+0 (je Lauf die zwei Felder der Hilfepille mit 28 × 26 px ausgenommen), beim Öffnen gerollt 0 px; Esc,
+✕ und Esc im Feld schließen überall. Wochenraster: Behälter 340 px → 4 × 6 (kleinste Zelle 55,1 px),
+753 → 2 × 12 (56,8), 1 099 → 2 × 12 (85,6), 1 160 → 7 × 24 (44,4); an den Schwellen 1 150 → 7 × 24
+(44,0), 1 149 → 2 × 12, 600 → 2 × 12 (44,0), 599 → 4 × 6; jede Zelle 44 px hoch, sechs Zellen „aus“.

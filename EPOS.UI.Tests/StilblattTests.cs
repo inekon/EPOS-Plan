@@ -800,6 +800,72 @@ public sealed class StilblattTests
                     "Der Kontrastmodus der Warnung fehlt");
     }
 
+    /// <summary>
+    /// <b>Stufe KP2, Welle U0b (Entwurf KP2 Festlegung 7):</b> Das Wochenraster der Kalenderkarten
+    /// ordnet sich nach der Breite seines BEHÄLTERS an — Container-Abfrage wie der Katalograhmen,
+    /// keine Medienabfrage —: je Tag 4 × 6 als Vorgabe, 2 × 12 ab 600 px, 7 × 24 als feste Tabelle ab
+    /// 1 150 px; jede Zelle behält das Berührungsmaß. „aus" ist ein eigener Zellzustand, nicht nur
+    /// eine Farbe. Ohne die Zusätze bleibt das Raster des Bestands (AK1) stehen, wie es war. Die
+    /// Maße im Browser misst die Wirtseite <c>/konditionierungsprobe</c> der Rasterprobe.
+    /// </summary>
+    [Fact]
+    public void KP2_Das_Wochenraster_bricht_am_Behaelter_um_und_aus_ist_ein_eigener_Zustand()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+
+        string wurzel = Regelblock(".epos-wochenraster--umbrechend {");
+        Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-wochenraster", wurzel, StringComparison.Ordinal);
+
+        Assert.Contains("grid-template-columns: repeat(6, minmax(var(--epos-touchziel), 1fr))",
+                        Regelblock(".epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody tr {"),
+                        StringComparison.Ordinal);
+        Assert.Contains("content: attr(data-stunde)",
+                        Regelblock(".epos-wochenraster--umbrechend .epos-wochenraster-tabelle td::before {"),
+                        StringComparison.Ordinal);
+
+        string mittel = Abfrageblock(css, "@container epos-wochenraster (min-width: 600px) {");
+        Assert.Contains("grid-template-columns: 3rem repeat(12, minmax(var(--epos-touchziel), 1fr))", mittel,
+                        StringComparison.Ordinal);
+        Assert.Contains("grid-row: span 2", mittel, StringComparison.Ordinal);
+
+        string breit = Abfrageblock(css, "@container epos-wochenraster (min-width: 1150px) {");
+        Assert.Contains("table-layout: fixed", breit, StringComparison.Ordinal);
+        // 46 px Tagesspalte + 24 × (44 px Zelle + 2 px Polster) = 1 150 px: An der Schwelle hat
+        // jede Zelle ihr Berührungsmaß (mit 3rem waren es 43,9 px, gemessen im Browser).
+        Assert.Contains("width: 46px", breit, StringComparison.Ordinal);
+        Assert.Contains("display: table-row;", breit, StringComparison.Ordinal);
+        Assert.Contains("content: none", breit, StringComparison.Ordinal);
+
+        // Der Bestand: ohne Zusatz rollt das Raster quer in seiner Hülle, die Zelle hat ihr Maß.
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-wochenraster-huelle {"), StringComparison.Ordinal);
+        Assert.Contains("width: 3.6em", Regelblock(".epos-wochenraster-tabelle .epos-eingabe {"), StringComparison.Ordinal);
+
+        string aus = Regelblock(".epos-eingabe--aus {");
+        Assert.Contains("border-style: dashed", aus, StringComparison.Ordinal);
+        Assert.Contains("font-style: italic", aus, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", aus, StringComparison.Ordinal);   // Farben nur als Token
+    }
+
+    /// <summary>
+    /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
+    /// Klammer, die sie schließt.
+    /// </summary>
+    private static string Abfrageblock(string css, string kopf)
+    {
+        int a = css.IndexOf("\n" + kopf, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Abfrage \"" + kopf + "\" steht nicht im Hausblatt");
+        int auf = css.IndexOf('{', a);
+        int tiefe = 0;
+        for (int i = auf; i < css.Length; i++)
+        {
+            if (css[i] == '{') tiefe++;
+            else if (css[i] == '}' && --tiefe == 0) return css.Substring(auf + 1, i - auf - 1);
+        }
+        Assert.Fail("Die Abfrage \"" + kopf + "\" wird nicht geschlossen");
+        return "";
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 

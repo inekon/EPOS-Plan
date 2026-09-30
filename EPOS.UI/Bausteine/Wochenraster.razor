@@ -16,13 +16,25 @@
 
    STRENG (H-F10). Er meldet nur ein VOLLSTAENDIGES Raster nach aussen; eine leere oder
    ungueltige Zelle meldet er als Fehlerfeld (FehlerZustand) und laesst das Raster, wie es
-   war - kein Auffuellen, keine erfundene Stunde. *@
+   war - kein Auffuellen, keine erfundene Stunde.
+
+   ZWEI ABSCHALTBARE ZUSAETZE (Stufe KP2, Welle U0b; Teilkonzept Konditionierungsprofile 7.5,
+   Entwurf KP2 Festlegung 7) fuer die Kalenderkarten der Konditionierung. BEIDE SIND AUS ALS
+   VORGABE, und ohne sie ist das Markup Zeichen fuer Zeichen das bisherige (Wache
+   WochenrasterTests): AK1 und AK2 bleiben unberuehrt.
+   - MitAus: Eine Zelle nimmt eine Zahl ODER den Zustand „aus" (Text aus dem Buendel, P2) und
+     meldet ihn als NaN; die Zelle zeigt ihn als eigenen Zustand (Zahlenfeld.AusText). Auch der
+     Wert fuer die ganze Zeile nimmt „aus" an, eine leise Zeile erklaert den Zustand.
+   - Umbrechend: Das Raster ordnet sich nach der Breite seines BEHAELTERS an (Container-Abfrage
+     wie der Katalograhmen): ab 1 150 px 7 x 24, darunter je Tag 2 x 12, unter 600 px 4 x 6 -
+     nichts rollt quer, jede Zelle behaelt ihr Beruehrungsmass; in den schmalen Anordnungen
+     steht die Stunde ueber der Zelle (data-stunde). *@
 
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
 @using WindowsFormsApplication1.Zeichnung
 
-<div class="epos-wochenraster" data-kennung="@Kennung">
+<div class="@Wurzelklasse" data-kennung="@Kennung">
 
     @if (Wert is null)
     {
@@ -34,7 +46,7 @@
             <Auswahlfeld Bezeichnung="@Texte.LabelZeile" Eintraege="@Tageseintraege"
                          Auswahl="@_zeile" AuswahlChanged="i => _zeile = i ?? 0" />
             <Zahlenfeld Bezeichnung="@Texte.LabelZeilenwert" Einheit="@Einheit" Min="@Min" Max="@Max"
-                        Nachkommastellen="@Nachkommastellen"
+                        Nachkommastellen="@Nachkommastellen" AusText="@AusText"
                         Wert="@_zeilenwert" WertChanged="w => _zeilenwert = w" />
             <button type="button" class="epos-knopf" disabled="@(!_zeilenwert.HasValue)"
                     @onclick="ZeileSetzen">@Texte.KnopfZeileSetzen</button>
@@ -42,6 +54,10 @@
             <button type="button" class="epos-knopf" @onclick="() => Kopieren(WOCHENENDE)">@Texte.KnopfWochenende</button>
             <button type="button" class="epos-knopf" @onclick="() => Kopieren(ALLE)">@Texte.KnopfAlle</button>
         </div>
+        @if (MitAus)
+        {
+            <p class="epos-wochenraster-hinweis epos-wochenraster-hinweis--aus">@Texte.HinweisAus</p>
+        }
     }
 
     <div class="epos-wochenraster-huelle">
@@ -64,9 +80,9 @@
                         @for (int h = 0; h < STUNDEN; h++)
                         {
                             int stunde = h;
-                            <td>
+                            <td data-stunde="@(Umbrechend ? stunde.ToString("00", CultureInfo.InvariantCulture) : null)">
                                 <Zahlenfeld Titel="@Zellname(tag, stunde)" Min="@Min" Max="@Max"
-                                            Nachkommastellen="@Nachkommastellen"
+                                            Nachkommastellen="@Nachkommastellen" AusText="@AusText"
                                             Aktiv="@(Aktiv && Wert is not null)"
                                             Feldname="@Zellname(tag, stunde)" FehlerZustand="ZelleMeldet"
                                             Wert="@Zellwert(tag, stunde)"
@@ -156,6 +172,27 @@
     /// der Grenzen oder eine GELEERTE Zelle. Der Name ist <see cref="WochenrasterTexte.Zelle"/>.
     /// </summary>
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>
+    /// Nimmt eine Zelle neben einer Zahl den Zustand „aus" an (Stufe KP2, Welle U0b; P2)? Die Zelle
+    /// meldet ihn als <see cref="double.NaN"/> und zeigt ihn als eigenen Zustand; der Text ist
+    /// <see cref="WochenrasterTexte.Aus"/>. Vorgabe <c>false</c> — das Raster des Bestands (AK1, AK2).
+    /// </summary>
+    [Parameter] public bool MitAus { get; set; }
+
+    /// <summary>
+    /// Ordnet sich das Raster nach der Breite seines Behälters an (Stufe KP2, Welle U0b; Teilkonzept
+    /// 7.5, Entwurf KP2 Festlegung 7)? Ab 1 150 px 7 × 24, darunter je Tag 2 × 12, unter 600 px 4 × 6 —
+    /// nichts rollt quer. Der Behälter muss dem Raster seine Breite geben (Container-Abfrage).
+    /// Vorgabe <c>false</c>: Das Raster rollt quer in seiner Hülle wie im Bestand.
+    /// </summary>
+    [Parameter] public bool Umbrechend { get; set; }
+
+    /// <summary>Die Klassen der Wurzel — mit <see cref="Umbrechend"/> die Anordnung nach Behälterbreite.</summary>
+    private string Wurzelklasse => Umbrechend ? "epos-wochenraster epos-wochenraster--umbrechend" : "epos-wochenraster";
+
+    /// <summary>Der Text des Zustands „aus" für die Zellen; leer ohne <see cref="MitAus"/>.</summary>
+    private string AusText => MitAus ? Texte.Aus : "";
 
     private int? _zeile = 0;
     private double? _zeilenwert;

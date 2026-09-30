@@ -71,8 +71,7 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Exists"] = new Func<string, bool>(n => new GebaeudeStammCtrl().Lies(n) != null),
                 // Der Katalogeditor nur noch fuer "Neu..." (AD-Q6, #465) - bearbeitet wird im Stammblatt.
-                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu)),
+                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogGaben),
                 ["TitelText"] = Titel(),
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
@@ -88,6 +87,20 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// <b>Der Parametersatz des Katalogeditors hinter „Neu…"</b> — der des Editors in der
+        /// Betriebsart <see cref="GebaeudeKatalogModus.Neu"/>, mit EINER Abweichung: Aus der
+        /// Verwaltung gehört der Gebäudekatalog keinem Projekt, also reicht der Weg zur
+        /// Brauchwasser-Profilliste keinen Zapfprofil-Behälter; der Bedarfsprofil-Dialog zeigt dann
+        /// weder Knopf noch Optionsgruppe (Umsetzungskonzept Zapfprofilgenerator 5.2). Die Regel
+        /// stand bis Stufe KP2 an der Betriebsart „Admin" des Editors, die kein Aufrufer mehr baute.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> KatalogGaben()
+            => new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu))
+            {
+                ["BrauchwasserGaben"] = GebaeudeKatalogHuelle.Brauchwasserweg(mitZapfprofil: false)
+            };
 
         /// <summary>
         /// Ein Satz fürs Stammblatt: Kenndaten, Kennzahlen, die Hülle der vier Bauteile und

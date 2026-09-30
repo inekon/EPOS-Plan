@@ -397,6 +397,86 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Hülle und Zonen | envelope and zones | Knopf des Gebäudedialogs |
 | Katalogsatz | catalogue record | ein Satz des Gebäudekatalogs |
 
+### Konditionierungsprofile
+
+Die Begriffe des Reiters „Konditionierung" im Gebäude-Katalogeditor: Vorgabe-Matrix, Kalender, Vorlagen und
+Aufheizoptimierung (Konzept [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.7, Entwurf
+[KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
+**vor** den englischen Ressourcenwerten fest (Entscheid E28 zu U4, wie oben). Was in dieser Tafel schon steht, gilt
+unverändert weiter: Infiltration, Nutzerlüftung, Sommerlüftung, Heizsollwert, obere Raumtemperatur, Überhitzungsstunden,
+Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg. Die Vorlagennamen („Wohnen", „Büro",
+„Schule") sind Daten und bleiben deutsch (§ 10); übersetzt wird ihre **Nutzung** als Anzeigewert.
+
+| DE | EN | Anmerkung |
+|---|---|---|
+| Konditionierung | conditioning | Oberbegriff für Sollwerte, Lüftung und innere Gewinne einer Zone; Reiter „Konditionierung" → „Conditioning" (`KOND_LBL_REITER`) |
+| Vorgabe-Matrix | defaults matrix | die Tabelle des Reiters (fünf Größen × Nennwert, Tag, Nacht, Wochenende, Ferien, Saison), aus der der Generator die Kalender macht; Kurzform „Matrix" → „matrix" |
+| Größe (der Konditionierung) | quantity | eine der fünf Größen Heizen, Kühlen, Lüftung, Geräte, Personen; je Größe ein Kalender und eine Vorlagenliste; die Kennwörter `HEIZSOLL` … `PERSONEN` sind Persistenzwerte (§ 10) |
+| Heizen | heating | Größe: Heizsollwert in °C, auch „aus"; Spalte „Heizen °C" (`KOND_LBL_SPALTE_HEIZEN`); Heizsollwert → heating setpoint (oben) |
+| Kühlen | cooling | Größe: Kühlsollwert in °C, auch „aus"; wirkt nur mit Kühlbetrieb im Projekt (§ 6); Spalte „Kühlen °C" (`KOND_LBL_SPALTE_KUEHLEN`) |
+| Kühlsollwert | cooling setpoint | wie Heizsollwert (oben, § 4); die Bestandstexte `GEBK_LBL_KUEHL_SOLLWERT` und `GEBK_ZEILE_KUEHLUNG_*` schreiben noch „set point" |
+| Lüftung | ventilation | Größe: Nutzerlüftung in 1/h, die Infiltration bleibt konstant darunter (Begriffe oben); Spalte „Lüftung 1/h" (`KOND_LBL_SPALTE_LUEFTUNG`) |
+| Geräte | equipment | Größe: Geräte und Anlage einschließlich Beleuchtung, als Anteil 0 … 100 % eines Nennwerts in W; Spalte „Geräte W bzw. %" → „Equipment W or %" |
+| Personen | people | Größe: Anwesenheit der Personen als Anteil eines Nennwerts (Zahl × 70 W, sensible Wärme); Spalte „Personen W bzw. %" → „People W or %" |
+| Anwesenheit | occupancy | Anteil 0 … 100 % im Kalender der Größe Personen; Zeitstruktur „wie Anwesenheit" → „as occupancy" |
+| Nennwert | nominal value | Zeile der Matrix: der Bezugswert in W (Geräte, Personen) bzw. die Infiltration in 1/h, auf den sich die Anteile beziehen; **nicht** „Nennleistung" (→ rated output, § 6) |
+| Interne Wärmegewinne | internal heat gains | Summe aus Geräten und Personen; Feld `Interne_Waermegewinne`, Bestand `GEBK_LBL_WAERMEGEWINNE` |
+| Jahresmittel | annual mean | Mittel über die 8760 Stunden; Herleitungszeile der Gewinne unter der Matrix (`KOND_TXT_JAHRESMITTEL`) |
+| Maximalraumtemperatur | maximum indoor temperature | Zusatzzeile neben der Matrix: die Grenze der Überhitzungsstunden (Feld `Maximaleraumtemperatur`); dieselbe Größe wie „obere Raumtemperatur" (oben), Bestand `GEBK_LBL_MAXTEMPERATUR` schreibt „Maximum room temperature" |
+| Kalender (abgeleitet / angelegt) | calendar (derived / created) | Stundenreihe (8760 Werte) einer Größe je Zone; abgeleitet = der Lauf erzeugt ihn aus der Matrix, angelegt = Zeilen in der Datenbank, die Matrix ist dann nur Vorgabe |
+| Kalenderkarte | calendar card | einklappbare Karte je Größe unter der Matrix mit einer Zustandszeile: „aus der Matrix" → „from the matrix", „aus Vorlage Büro" → „from template Büro", „angelegt, 3 eigene Perioden" → „created, 3 own periods" |
+| Grundangabe | base value | Ebene 1 des Kalenders: ein Wert oder „aus" |
+| Standardwoche | standard week | Ebene 2 des Kalenders: 168 Zellen von Montag 00:00 bis Sonntag 23:00; „Wochenprofil" (§ 7) bleibt der allgemeine Begriff |
+| Wochenraster | weekly grid | der Baustein zur Standardwoche: 7 × 24 Zellen mit dem Zellzustand „aus" |
+| Periode | period | Ebene 3 des Kalenders: Beginn und Ende (Jahrestage im Gemeinjahr) oder eine Feiertagsregel, mit Rang und Art; **nicht** „Bezugsperiode" (§ 13 oben) |
+| Rang | rank | 1 … 999, eindeutig je Kalender; die ranghöchste Periode eines Tages gilt |
+| Art (einer Periode) | type | Zeitraum, Ferien, Feiertag, Betriebspause → date range, holidays, public holiday, operating break; die Persistenzwerte `ZEITRAUM`, `FERIEN`, `FEIERTAG`, `BETRIEBSPAUSE` bleiben deutsch (§ 10) |
+| Betriebspause | operating break | Art einer Periode: „aus" außerhalb der Saison; der Generator bildet Heiz- und Kühlperiode darauf ab |
+| eigene Periode | own period | von Hand angelegt, nicht Teil des Matrixbereichs; im Kartenzustand „angelegt, 3 eigene Perioden" |
+| Ausnahmetag | exception day | ein einzelner Tag mit eigener Angabe, angelegt als Periode über einen Tag; bleibt wie die eigenen Perioden beim erneuten Anwenden der Matrix |
+| Matrixbereich | matrix area | Standardwoche, Ferien- und Saisonperioden eines Kalenders — das ersetzt „Matrix erneut anwenden" |
+| Heizperiode | heating period | Saison der Heizspalte: Start und Ende als Datum im Gemeinjahr; innerhalb wird geheizt, außerhalb steht die Größe auf „aus"; leer = ganzjährig |
+| Kühlperiode | cooling period | dasselbe für die Kühlspalte |
+| Saison | season | Zeile der Matrix für Heiz- bzw. Kühlperiode (Start, Ende); leer = ganzjährig → „year-round" |
+| Nachtauskühlung | night purge ventilation | erhöhter Luftwechsel im Nachtfenster der Lüftungsspalte, nur bedingt wirksam (wie die Sommerlüftung: Raumluft über der Schwelle, Außenluft mindestens ΔT kühler); Kernmeldungen `SIMENG_KOND_NACHTKUEHL_*` schreiben noch „night cooling" |
+| Nachtauskühlstunden | night purge ventilation hours | Kennzahl `Nachtauskuehlstunden_H` in Bedarfsdialog, Ergebnis und Bericht |
+| Sommerlüftungsstunden | summer ventilation hours | Kennzahl `Sommerlueftungsstunden_H`, neben den Nachtauskühlstunden |
+| Nachtfenster | night window | die Nachtzeit einer Spalte (von / bis, volle Stunde 0 … 23), leer = das der Heizspalte; bei Heizen „Nachtabsenkung von / bis" (oben) |
+| Aufheizzeit | preheat time | Dauer der Aufheizrampe vor einem Sprung des Heizsollwerts nach oben (Stufe KP3) |
+| Aufheizleistung | preheat power | die Leistung, mit der die Aufheizung bemessen wird (Stufe KP3) |
+| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3) |
+| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6) |
+| Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
+| Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
+| Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |
+| Bezugsjahr | reference year | das Jahr, dessen Wochentage und Feiertage Vorschau, Teppichbild und Lauf verwenden; nicht „Bezugsperiode" (§ 13 oben) |
+| Gemeinjahr | common year | Jahr mit 365 Tagen ohne 29.02.; Kalender und Ferienzeiträume rechnen darin; „TT.MM." → „DD.MM." |
+| Zeitfenster | time window | Werkzeug der Karte: Tage, von, bis, Wert — der Weg zur Standardwoche ohne Zellenarbeit |
+| Zeitstruktur übernehmen | apply time structure | Werkzeug der Karte für Kühlen, Lüftung und Geräte: „wie Heizung" → „as heating" oder „wie Anwesenheit" → „as occupancy"; Übernehmen → Apply (§ 8) |
+| Teppichbild | carpet plot | Jahresbild der Vorschau: Tage × Stunden, Farbe = Wert, „aus" als eigene Fläche; die Unterschrift nennt das Bezugsjahr |
+| aus (Zellzustand) | off | Zustand einer Zelle bei Heizen und Kühlen und in der Standardwoche jeder Größe (Lüftung 0 1/h, Anteile 0 %); das Kennwort „aus" in gespeicherten Wochen (`KOND_WOCHE_AUS`) bleibt deutsch (§ 10) |
+| Kalender anlegen | create calendar | Knopf der Matrix: schreibt die Kalender aus der Matrix; „Verwerfen" → „Discard" löscht sie und kehrt zur Matrix zurück |
+| Matrix erneut anwenden | reapply matrix | ersetzt nur den Matrixbereich, eigene Perioden und Ausnahmetage bleiben; die Rückfrage nennt beides |
+| Zurücknehmen | undo | nimmt den letzten Schritt des Arbeitsstands zurück |
+| Vorlage | template | vorbefüllter Kalender einer Größe, ausgeliefert oder eigen; Auswahlliste je Kalenderkarte, Zeile „Vorlage" der Matrix |
+| Vorlage übernehmen | apply template | wirkt auf Gebäude, Zone oder Katalogbau und nur auf eine Größe (Übernehmen → Apply, § 8); Nennwert und Saison des Ziels bleiben |
+| Als Vorlage speichern | save as template | Knopf der Karte: Name, Beschreibung, Nutzung; ohne Nennwert und Saison; wird sofort gespeichert |
+| Vorlagen verwalten | manage templates | Blatt im Katalogeditor, aus jeder Kalenderkarte; fünf Listen mit Umschalter der Größe |
+| Nutzung (einer Vorlage) | type of use | Wohnen, Büro, Schule, Sonstige → residential, office, school, other; Anzeigewerte, die Persistenzwerte `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE` bleiben deutsch (§ 10); vgl. Nutzungsart (§ 14) |
+| ausgeliefert / eigen | delivered / own | Vorlage oder Katalogsatz der Auslieferung (`ReadOnly`) bzw. vom Anwender angelegt |
+| gesperrt (Schloss) | locked | Sätze und Vorlagen der Auslieferung; „nur lesbar" → „read-only"; der Lesemodus nennt den Grund |
+| Speichern unter | save as | legt eine bearbeitbare Kopie unter neuem Namen an; Bestand `GEBK_HINWEIS_SPEICHERN_UNTER` |
+| Duplizieren | duplicate | Kopie einer ausgelieferten Vorlage oder eines Katalogsatzes; Kernmeldungen „Duplicate…" |
+| Umbenennen | rename | eigene Vorlagen in der Verwaltung |
+| Katalogbau | catalogue building | ein Gebäude des Gebäudekatalogs, Träger von Matrix und Kalendern; „Katalogsatz" (oben) ist der allgemeine Begriff |
+| Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
+| erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |
+| Vom Gebäude übernehmen und anpassen | copy from building and adjust | Zone: legt eine eigene Kopie des Gebäudekalenders an |
+
+Abweichende Bestandstexte: Die Kernmeldungen `SIMENG_KOND_*` (Stufe KP1) schreiben an einigen Stellen „heating season",
+„night cooling", „input matrix" und „set point", der Gebäudedialog (`GEBK_*`) „set point" und „Maximum room temperature".
+Für neue Schlüssel gilt diese Tafel (§ 12).
+
 ## 14. Trinkwarmwasser und Zapfprofil
 
 Die Begriffe des Zapfprofilgenerators (Dialog „Brauchwasser-Zapfprofil", Ressourcen `ZPG_*`).

@@ -25038,7 +25038,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; der Dialog bleibt offen. ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_SPEICHERN_UNTER {
             get {
@@ -26088,6 +26088,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_RREST {
             get {
                 return ResourceManager.GetString("GEBK_MSG_RREST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_SPEICHERN_UNTER_ANGELEGT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_SPEICHERN_UNTER_ANGELEGT", resourceCulture);
             }
         }
         
@@ -44985,7 +44994,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Projekt; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BETRIEBSART_ERL {
             get {
@@ -45417,7 +45426,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes; er benennt den Satz, der geschrieben wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_NAME_ERL {
             get {
@@ -61018,6 +61027,888 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Vorlage speichern… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ALS_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ALS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
+        /// </summary>
+        public static string KOND_BTN_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erben ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ERBEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ERBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage als Regel anlegen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_BTN_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender anlegen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALENDER_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALENDER_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneut übernehmen… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KATALOG_ERNEUT {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KATALOG_ERNEUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Matrix erneut anwenden… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_MATRIX_ERNEUT {
+            get {
+                return ResourceManager.GetString("KOND_BTN_MATRIX_ERNEUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Periode bearbeiten ähnelt.
+        /// </summary>
+        public static string KOND_BTN_PERIODE_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_PERIODE_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Periode löschen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_PERIODE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_PERIODE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Periode hinzufügen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_PERIODE_NEU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_PERIODE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang erhöhen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_RANG_HOEHER {
+            get {
+                return ResourceManager.GetString("KOND_BTN_RANG_HOEHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang senken ähnelt.
+        /// </summary>
+        public static string KOND_BTN_RANG_NIEDRIGER {
+            get {
+                return ResourceManager.GetString("KOND_BTN_RANG_NIEDRIGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string KOND_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vom Gebäude übernehmen und anpassen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_UEBERNEHMEN_ANPASSEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_UEBERNEHMEN_ANPASSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_UMBENENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagen verwalten ähnelt.
+        /// </summary>
+        public static string KOND_BTN_VORLAGEN_VERWALTEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_VORLAGEN_VERWALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitfenster eintragen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ZEITFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ZEITFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstruktur übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebspause ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ART_BETRIEBSPAUSE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ART_BETRIEBSPAUSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ART_FEIERTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ART_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ART_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ART_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ART_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ART_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus ähnelt.
+        /// </summary>
+        public static string KOND_LBL_AUS {
+            get {
+                return ResourceManager.GetString("KOND_LBL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT Außenluft ähnelt.
+        /// </summary>
+        public static string KOND_LBL_AUSSENABSTAND {
+            get {
+                return ResourceManager.GetString("KOND_LBL_AUSSENABSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelle auf „aus“ setzen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_AUS_SCHALTER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_AUS_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien (ganztägig) ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FELD_HEIZEN_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FELD_HEIZEN_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Wochenende (ganztägig) ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FELD_HEIZEN_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FELD_HEIZEN_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienzeiträume ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FERIENZEITRAEUME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FERIENZEITRAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE_GERAETE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE_HEIZEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lüftung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE_LUEFTUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE_LUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GROESSE_PERSONEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GROESSE_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundangabe ähnelt.
+        /// </summary>
+        public static string KOND_LBL_GRUNDANGABE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_GRUNDANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration ähnelt.
+        /// </summary>
+        public static string KOND_LBL_INFILTRATION {
+            get {
+                return ResourceManager.GetString("KOND_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KATALOG_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KATALOG_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe-Matrix ähnelt.
+        /// </summary>
+        public static string KOND_LBL_MATRIX {
+            get {
+                return ResourceManager.GetString("KOND_LBL_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximalraumtemperatur ähnelt.
+        /// </summary>
+        public static string KOND_LBL_MAXRAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("KOND_LBL_MAXRAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtauskühlung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NACHTAUSKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NACHTAUSKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NACHTFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NACHTFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster bis ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NACHTFENSTER_BIS {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NACHTFENSTER_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster von ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NACHTFENSTER_VON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NACHTFENSTER_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzerlüftung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZUNG_BUERO {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZUNG_BUERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZUNG_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schule ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZUNG_SCHULE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZUNG_SCHULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZUNG_SONSTIGE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZUNG_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_NUTZUNG_WOHNEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_NUTZUNG_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perioden ähnelt.
+        /// </summary>
+        public static string KOND_LBL_PERIODEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_PERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_REITER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_REITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ende der Saison ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SAISON_ENDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SAISON_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Start der Saison ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SAISON_START {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SAISON_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommerlüftung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SOMMERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SOMMERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_ART {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bis ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_BIS {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte W bzw. % ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_GERAETE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen °C ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_HEIZEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen °C ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lüftung 1/h ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_LUEFTUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_LUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen W bzw. % ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_PERSONEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_RANG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_VON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_WERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche ähnelt.
+        /// </summary>
+        public static string KOND_LBL_STANDARDWOCHE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_STANDARDWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teppichbild ähnelt.
+        /// </summary>
+        public static string KOND_LBL_TEPPICHBILD {
+            get {
+                return ResourceManager.GetString("KOND_LBL_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagen der Konditionierung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgeliefert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_AUSGELIEFERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_EIGEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau: Woche ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORSCHAU_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORSCHAU_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WERKZEUG_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WERKZEUG_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstruktur ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WERKZEUG_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WERKZEUG_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Anwesenheit ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WIE_ANWESENHEIT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WIE_ANWESENHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Heizung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WIE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WIE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenraster ähnelt.
+        /// </summary>
+        public static string KOND_LBL_WOCHENRASTER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_WOCHENRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nacht ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_NACHT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennwert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_NENNWERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_NENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_TAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEILE_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEILE_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitfenster ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEITFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEITFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bis ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEITFENSTER_BIS {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEITFENSTER_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEITFENSTER_TAGE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEITFENSTER_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEITFENSTER_VON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEITFENSTER_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZEITFENSTER_WERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZEITFENSTER_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
         /// </summary>
         public static string KOND_MSG_DUPLIKAT_ZUSATZ {
@@ -61198,6 +62089,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstruktur {0}: {1} Wochenstunden = {2}, sonst {3} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERKZEUG_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERKZEUG_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {0} liegt außerhalb der Grenzen {1}. ähnelt.
         /// </summary>
         public static string KOND_MSG_WERT_AUSSERHALB {
@@ -61225,11 +62125,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizkalender des Gebäudes „{0}“ trägt {1} Ferienperioden; das Zapfprofil übernimmt die {2} ranghöchsten. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZAPF_FERIEN_GEKUERZT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZAPF_FERIEN_GEKUERZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitfenster {0}–{1} Uhr ist leer oder liegt außerhalb 0 bis 24 Uhr. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZEITFENSTER_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KOND_MSG_ZEITFENSTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur wie Heizung“ braucht den Tagwert der Heizspalte. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Anwesenheit ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Heizung ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ wirkt auf Kühlen, Lüftung oder Geräte, nicht auf {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_ZIEL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_ZIEL", resourceCulture);
             }
         }
         
@@ -61248,6 +62202,375 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TEXT_WOCHENTAGE {
             get {
                 return ResourceManager.GetString("KOND_TEXT_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ganzjährig ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GANZJAEHRIG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GANZJAEHRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GEMEINJAHR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GEMEINJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung steht nicht zur Verfügung: Diese Datenbank trägt die Tabellen der Konditionierung nicht. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_OHNE_TABELLEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_OHNE_TABELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone folgt dem Kalender des Gebäudes. „Vom Gebäude übernehmen und anpassen“ legt eine eigene Kopie an. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_VOM_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_VOM_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte: {0} W = Interne Wärmegewinne {1} W − Jahresmittel der Personenwärme {2} W ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HERLEITUNG_GERAETE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HERLEITUNG_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen: {0} × {1} W = {2} W (sensible Wärme) ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HERLEITUNG_PERSONEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HERLEITUNG_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur stehen im Reiter „Konditionierung“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_ALTFELDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_ALTFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „aus“: Die Größe ist in dieser Stunde abgeschaltet (Heizen und Kühlen ohne Betrieb, Nutzerlüftung 0 1/h, Anteile 0 %). Ein neuer Wert in der Zelle hebt „aus“ wieder auf. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_AUS {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt die neun bundeseinheitlichen Feiertage als Regel an, jeweils wie Sonntag. Länderfeiertage legen Sie als eigene Perioden an. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_LESEMODUS {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_LESEMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt nur bedingt: Die Raumluft liegt über der Schwelle und die Außenluft ist mindestens ΔT kühler (Vorgabe 2 K). Einen Schalter gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_NACHTAUSKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_NACHTAUSKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Nachtfenster der Heizspalte ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_NACHTFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_NACHTFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Matrixbereich ist nur lesbar; neue Perioden sind Zeiträume oder Feiertage. Bei Überschneidung gilt die Periode mit dem höheren Rang. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_PERIODEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_PERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innerhalb der Saison wird geheizt bzw. gekühlt, außerhalb steht die Größe auf „aus“; leer heißt ganzjährig. Start und Ende gibt es nur zusammen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Gebäude rechnet auf dem Rechenweg „Tagesbilanz (Bestandsweg)“: Die Matrix zeigt nur die Felder, die dieser Weg liest; Kalender und weitere Zellen wirken erst unter VDI 6007. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_TAGESBILANZ {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine unbeheizte Zone hat weder Heiz- noch Kühlwerte; Lüftung, Geräte und Personen gelten. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter VDI 6007 ist die Matrix Vorgabe; angelegte Kalender gehen vor. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_VDI6007 {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „wie Heizung“ nimmt die Stunden, in denen mit dem Tagwert oder höher geheizt wird, „wie Anwesenheit“ die Stunden mit Anwesenheit. Diese Stunden bekommen den Tagwert der Größe, alle übrigen ihren Nachtwert; ersetzt wird nur die Standardwoche. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel der Gewinne: Geräte {0} W, Personen {1} W, zusammen {2} W = {3} W/m²; Interne Wärmegewinne (Gesamtangabe): {4} W. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_JAHRESMITTEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_JAHRESMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KATALOG_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KATALOG_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KUEHLEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KUEHLEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht möglich. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KUEHLEN_ZONE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KUEHLEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string KOND_TXT_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_QUELLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsjahr {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_TEPPICHBILD {
+            get {
+                return ResourceManager.GetString("KOND_TXT_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORGABE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferte Vorlage — nur lesbar; Duplizieren legt eine bearbeitbare Kopie an. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Vorlage gewählt ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Löschen der Vorlage „{0}“ wird kein Gebäude, keine Zone und kein Katalogsatz berührt; schon übernommene Werte bleiben. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage wird sofort gespeichert, nicht erst mit dem OK des Editors. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_SOFORT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_SOFORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage nimmt die Matrixspalte und, falls angelegt, den Kalender dieser Größe mit — ohne Nennwert und Saison. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen wirkt nur auf diese Größe. Nennwert und Saison des Ziels bleiben; leere Zellen der Vorlage lassen die Zellen des Ziels unverändert. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Woche ähnelt.
+        /// </summary>
+        public static string KOND_TXT_WERT_EIGENE_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_WERT_EIGENE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_WERT_WIE_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_WERT_WIE_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angelegt, {0} eigene Perioden ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_ANGELEGT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angelegt, 1 eigene Periode ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_ANGELEGT_EINE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_ANGELEGT_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Kalender ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_EIGEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vom Gebäude ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Matrix ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_MATRIX {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Vorlage {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_VORLAGE", resourceCulture);
             }
         }
         
@@ -118487,6 +119810,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_JAHRESREIHE_STOCHASTISCH {
             get {
                 return ResourceManager.GetString("ZPG_WARN_JAHRESREIHE_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienperioden gekürzt ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_KALENDERFERIEN_GEKUERZT {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_KALENDERFERIEN_GEKUERZT", resourceCulture);
             }
         }
         

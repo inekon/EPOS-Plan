@@ -1003,7 +1003,9 @@ namespace WindowsFormsApplication1
             ZapfprofilRechner.HINWEIS_ANZEIGETEMPERATUR, ZapfprofilRechner.HINWEIS_STUNDENSCHWELLE,
             // Stufe Z4b: der Jahresgang über die eingespielten Typtage (N14).
             Typtagzuordnung.HINWEIS_ANZAHL, Typtagzuordnung.HINWEIS_FAKTOR_NULL, Typtagzuordnung.HINWEIS_SKALIERUNG,
-            Typtagzuordnung.HINWEIS_FERIEN, Typtagzuordnung.HINWEIS_OHNE_GANG
+            Typtagzuordnung.HINWEIS_FERIEN, Typtagzuordnung.HINWEIS_OHNE_GANG,
+            // Entwurf KP2, Festlegung 10: mehr Ferienperioden im Heizkalender des Gebäudes, als eine Zone Paare führt.
+            ZapfprofilCtrl.HINWEIS_KALENDERFERIEN_GEKUERZT
         };
 
         /// <summary>Ein Hinweis der Bilanz als Eintrag der Warnliste: Titel aus <c>ZPG_WARN_…</c>, sonst „Hinweis"; Satz des Kerns; Stufe nach der Warnlogik.</summary>

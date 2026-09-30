@@ -628,6 +628,29 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal("", uebergeben);
     }
 
+    /// <summary>
+    /// <b>Der Katalogeditor steht in jeder Betriebsart in der BREITEN Überlagerung</b> (Stufe KP2,
+    /// Welle U0b; Entwurf KP2 Festlegung 7) — „Gebäude in DB ändern…" wie „Gebäude in DB neu…";
+    /// die Matrix der Konditionierung braucht die Breite. Den Reiter 1 darin misst die Wirtseite
+    /// <c>/konditionierungsprobe</c> der Rasterprobe.
+    /// </summary>
+    [Fact]
+    public void Der_Katalogeditor_steht_in_der_breiten_Ueberlagerung()
+    {
+        var cut = Aufbauen(katalogGaben: _ => new Dictionary<string, object>());
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB ändern...").Click();
+        Assert.True(cut.Instance.KatalogeditorOffen);
+        Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.KatalogeditorOffen);
+
+        Knopf(cut, "Gebäude in DB neu...").Click();
+        Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
+    }
+
     [Fact]
     public void Loeschen_fragt_nach_und_meldet_danach()
     {
