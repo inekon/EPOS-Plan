@@ -330,6 +330,15 @@ namespace WindowsFormsApplication1
         public const string FeldCo = "CO";
         public const string FeldStaub = "STAUB";
 
+        // Die Kennlinie des Heizkessels (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1):
+        // eta bei 30 % Last, der Schalter der Brennwertkennlinie und die drei Groessen des
+        // Taktmodells. Leer heisst „nicht gepflegt" (Vorgabe).
+        public const string FeldTeillast30 = "WIRKUNGSGRAD_TEILLAST30";
+        public const string FeldKennlinieBrennwert = "KENNLINIE_BRENNWERT";
+        public const string FeldMindestleistung = "MINDESTLEISTUNG";
+        public const string FeldAnfahrverlust = "ANFAHRVERLUST";
+        public const string FeldMindestlaufzeit = "MINDESTLAUFZEIT";
+
         public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
         public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
         public const string FeldWirkungsgradTh = "WIRKUNGSGRAD_TH";
@@ -433,6 +442,25 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "%",
                                                   BrowserFeldArt.Zahl, editierbar: true),
+
+                            // Die Kennlinie (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Leer
+                            // heisst hier NICHT 0, sondern „Vorgabe" (Entscheid F1) - der Vermerk
+                            // sagt es; der Speicherweg schreibt ein leeres Feld als NULL.
+                            new BrowserDetailfeld(FeldTeillast30,   t("HZKK_LBL_TEILLAST30"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldKennlinieBrennwert, t("HZKK_LBL_KENNLINIE_BRENNWERT"), "",
+                                                  BrowserFeldArt.Schalter, editierbar: true),
+                            new BrowserDetailfeld(FeldMindestleistung, t("HZKK_LBL_MINDESTLEISTUNG"), "kW",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldAnfahrverlust, t("HZKK_LBL_ANFAHRVERLUST"), "kWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldMindestlaufzeit, t("HZKK_LBL_MINDESTLAUFZEIT"), "min",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+
                             new BrowserDetailfeld(FeldRaumbedarf,   t("HZKK_LBL_RAUMBEDARF"), "m³",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWartungskosten, t("KESSEL_WARTUNG_LBL") + ":", "",

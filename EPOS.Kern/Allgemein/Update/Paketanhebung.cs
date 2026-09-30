@@ -212,6 +212,7 @@ namespace WindowsFormsApplication1
             new Stufe(154, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
             new Stufe(TwwFuellstandSchema.SCHRITT, Art.Ddl,
                       "Verfahrensvolumina als Bezug der Füllstandslinie — Tab_TwwProjekt mit der Prüfklausel 1 bis 8"),
+            new Stufe(KesselKennlinieSchema.SCHRITT, Art.Ddl, "Kennlinienspalten des Heizkessels"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

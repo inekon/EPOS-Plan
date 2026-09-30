@@ -22944,7 +22944,7 @@ Do you want to allow this?</value>
     <value>The energy carrier of the boiler; it decides which efficiency is used.</value>
   </data>
   <data name="KI_DLG_HK_BRENNWERT_ERL" xml:space="preserve">
-    <value>Yes = the boiler is calculated as a condensing boiler.</value>
+    <value>Yes = condensing unit. The flag describes and filters the catalogue; whether the condensing curve is used is decided by the separate switch “Condensing curve”.</value>
   </data>
   <data name="KI_DLG_PSP_NAME_ERL" xml:space="preserve">
     <value>The name of the storage tank in the catalogue.</value>
@@ -28612,6 +28612,15 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
     <value>The draw-off profile generator is available (catalogue version “{0}”).</value>
+  </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — no catalogue version: {0}. {1}</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHGELADEN" xml:space="preserve">
+    <value>The draw-off profile generator has loaded its freely available catalogue data into this database (catalogue version “{0}”): {1} parameters, {2} domestic hot water types of use, {3} design days.</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The freely available catalogue data of the draw-off profile generator could not be loaded ({0}) — nothing changed.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN" xml:space="preserve">
     <value>A zone without data.</value>
@@ -40322,6 +40331,75 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT" xml:space="preserve">
     <value>“Time structure as heating” needs the day value of the heating column.</value>
+  </data>
+  <data name="IMP_KAT_FELD_WIRKUNGSGRAD30" xml:space="preserve">
+    <value>Efficiency at 30 % load:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum output:</value>
+  </data>
+  <data name="HZKK_GRP_KENNLINIE" xml:space="preserve">
+    <value>Efficiency curve</value>
+  </data>
+  <data name="HZKK_LBL_TEILLAST30" xml:space="preserve">
+    <value>Efficiency at 30 % load:</value>
+  </data>
+  <data name="HZKK_FELD_TEILLAST30" xml:space="preserve">
+    <value>Efficiency at 30 % load</value>
+  </data>
+  <data name="HZKK_HINT_TEILLAST30" xml:space="preserve">
+    <value>(e.g. 1.05)</value>
+  </data>
+  <data name="HZKK_LBL_KENNLINIE_BRENNWERT" xml:space="preserve">
+    <value>Condensing curve</value>
+  </data>
+  <data name="HZKK_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum output:</value>
+  </data>
+  <data name="HZKK_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum output</value>
+  </data>
+  <data name="HZKK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Start-up loss per start:</value>
+  </data>
+  <data name="HZKK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>Start-up loss per start</value>
+  </data>
+  <data name="HZKK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Minimum run time:</value>
+  </data>
+  <data name="HZKK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Minimum run time</value>
+  </data>
+  <data name="HZKK_PLATZHALTER_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="HZKK_HINT_KENNLINIE" xml:space="preserve">
+    <value>Empty = default. The condensing curve applies to condensing boilers only.</value>
+  </data>
+  <data name="HZKK_MSG_KENNLINIE_OHNE_BRENNWERT" xml:space="preserve">
+    <value>The condensing curve is only permitted for a condensing boiler.</value>
+  </data>
+  <data name="KBROW_HINT_LEER_VORGABE" xml:space="preserve">
+    <value>empty = default</value>
+  </data>
+  <data name="KBROW_MSG_WERT_KEINE_ZAHL" xml:space="preserve">
+    <value>“{0}”: “{1}” is not a valid number.</value>
+  </data>
+  <data name="KI_DLG_HK_TEILLAST30_ERL" xml:space="preserve">
+    <value>Boiler efficiency at 30 % load, based on the net calorific value, as a factor (e.g. 1.05; a value above 1.5 counts as a percentage). Empty = default.</value>
+  </data>
+  <data name="KI_DLG_HK_KENNLINIE_BRENNWERT_ERL" xml:space="preserve">
+    <value>Yes = use the condensing curve for this boiler (efficiency depending on the return temperature). Only permitted for a condensing boiler.</value>
+  </data>
+  <data name="KI_DLG_HK_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Lowest output the burner can modulate down to; below it the boiler cycles. At most the thermal output. Empty = default.</value>
+  </data>
+  <data name="KI_DLG_HK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Additional fuel per burner start in kWh. Empty = default.</value>
+  </data>
+  <data name="KI_DLG_HK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Minimum run time per burner start in minutes (1 to 60). Empty = default.</value>
   </data>
   <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
     <value>Fundamentals: {0}</value>

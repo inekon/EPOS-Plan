@@ -150,6 +150,8 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
 
 - Ein Katalogpaket der Brauchwasser-Nutzungsarten darf die Spalte ‚Katalogversion‘ weglassen; seine Zeilen treten dann der Katalogversion des Katalogs bei, in den sie kommen. (#615)
+- Heizkessel führen im Katalog die Gruppe ‚Kennlinie‘ (Wirkungsgrad bei 30 % Last, Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit); der VDI-3805-Import liest Wirkungsgrade und kleinste Leistung und kennzeichnet Brennwertkessel. (#616)
+- Fehlen einer Datenbank die frei verfügbaren Katalogdaten des Brauchwasser-Zapfprofils, lädt EPOS-Plan sie selbsttätig nach; sie liegen zudem im Programmordner unter Vorlage\Katalogpaket_frei. (#617)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

@@ -154,7 +154,15 @@ namespace WindowsFormsApplication1
                 SO2: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldSo2),
                 NOx: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldNox),
                 CO: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldCo),
-                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub));
+                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub),
+                // Die Kennlinie (Konzept Kesselkennlinie 3.1) als TEXT: Ein leeres Feld heisst
+                // hier „Vorgabe" (NULL), nicht 0 - der Kern liest und prueft ihn.
+                Teillast30: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillast30),
+                KennlinieBrennwert:
+                    KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldKennlinieBrennwert),
+                Mindestleistung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestleistung),
+                Anfahrverlust: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                Mindestlaufzeit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit));
 
             HeizkesselStammCtrl.SpeicherErgebnis e =
                 HeizkesselStammCtrl.AnzeigefelderSchreiben(name, werte);
