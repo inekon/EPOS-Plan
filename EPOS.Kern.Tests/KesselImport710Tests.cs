@@ -227,11 +227,14 @@ namespace EPOS.Kern.Tests
 
         private static bool IstLfsZeiger(string pfad)
         {
-            byte[] kopf = new byte[24];
+            // Der Kopf ist genau so lang wie die Kennung - ein Byte mehr ('.' aus
+            // „git-lfs.github.com") liesse keinen Zeiger je gleich sein.
+            const string kennung = "version https://git-lfs";
+            byte[] kopf = new byte[kennung.Length];
             using (FileStream s = File.OpenRead(pfad))
             {
                 int n = s.Read(kopf, 0, kopf.Length);
-                return n == kopf.Length && Encoding.ASCII.GetString(kopf) == "version https://git-lfs";
+                return n == kopf.Length && Encoding.ASCII.GetString(kopf) == kennung;
             }
         }
 
