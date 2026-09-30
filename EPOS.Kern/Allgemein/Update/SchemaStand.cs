@@ -716,11 +716,18 @@ namespace WindowsFormsApplication1
         /// Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit), reines DDL
         /// (<see cref="KesselKennlinieSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
         /// Spalten. Die Nummer steht allein bei <see cref="KesselKennlinieSchema.SCHRITT"/>.
+        /// Danach, mit der SAAT DER 14 AUSGELIEFERTEN KONDITIONIERUNGSVORLAGEN (KP-S1b, Entscheid
+        /// E56 F1 (b); Konzept Konditionierungsprofile 3.5 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>: 14 Vorlagen mit
+        /// <c>ReadOnly = 1</c>, 46 Vorgabezeilen und bei Büro und Schule die neun Feiertagsregeln,
+        /// reines DML (<see cref="KonditionierungsvorlagenSaatSchema"/>). <b>Ergebnisneutral:</b>
+        /// kein Referenzprojekt trägt eine Vorlage. Die Nummer steht allein bei
+        /// <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselKennlinieSchema.SCHRITT;
+        public const int Zielversion = KonditionierungsvorlagenSaatSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
