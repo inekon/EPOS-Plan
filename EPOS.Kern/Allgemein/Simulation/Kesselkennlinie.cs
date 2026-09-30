@@ -41,10 +41,16 @@ namespace WindowsFormsApplication1
     /// mit dem Zahlenrand). Die Kurve ist lineare Arithmetik und braucht keine Plattformnaht.</para>
     /// <para><b>Elektrokessel</b> (Brennstoff 13) rechnen nie mit Kennlinie
     /// (<see cref="RechnetMitKennlinie"/>).</para>
-    /// <para>Die Brennwertkennlinie (Rücklauf, Kondensationsgewinn) und das Takten folgen mit den
-    /// Etappen E3 und E4; der Schalter <c>Kennlinie_Brennwert</c> und die Felder
-    /// <c>Mindestleistung</c>, <c>Anfahrverlust_kWh</c>, <c>Mindestlaufzeit_min</c> rechnen hier
-    /// noch nicht mit.</para>
+    /// <para><b>Die Brennwertkennlinie (Konzept 4.1 Punkte 3 bis 5, Etappe E3)</b> rechnet nur ein
+    /// Brennwertkessel mit <c>Kennlinie_Brennwert</c> = 1 (<see cref="RechnetMitBrennwertkennlinie"/>):
+    /// Die trockene Teillastkurve stützt sich auf η₃₀,tr = η₃₀ − Δ₃₀, weil η₃₀ bei 30 °C Rücklauf
+    /// gemessen ist, und der Kondensationsgewinn Δ₃₀ · g(T_RL) kommt nach dem Rücklauf der Stunde
+    /// dazu (<see cref="EtaBrennwert"/>). Den Rücklauf wählt <see cref="Ruecklauf"/> aus der
+    /// Rücklaufkette. Die Kurve ist in β und in T_RL stetig, lineare Arithmetik ohne Funktion der
+    /// Plattformnaht; die EINE neue Schwelle — läuft die Stunde im Brennwertbetrieb? — entscheidet
+    /// <see cref="Brennwertbetrieb"/> über den Zahlenrand. Das Takten folgt mit Etappe E4; die Felder
+    /// <c>Mindestleistung</c>, <c>Anfahrverlust_kWh</c>, <c>Mindestlaufzeit_min</c> rechnen hier noch
+    /// nicht mit.</para>
     /// </remarks>
     public static class Kesselkennlinie
     {
@@ -180,5 +186,175 @@ namespace WindowsFormsApplication1
                 : LASTSTUFE_TEILLAST;
             return eta30 + (eta100 - eta30) * ((b - LASTSTUFE_TEILLAST) / (1.0 - LASTSTUFE_TEILLAST));
         }
+
+        // =====================================================================
+        //  Brennwertkennlinie (Konzept 4.1 Punkte 3 bis 5, Etappe E3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der PRÜFRÜCKLAUF des Teillastwirkungsgrads beim Brennwertkessel [°C]: η₃₀ ist bei 30 %
+        /// Last und 30 °C Rücklauf gemessen (Richtlinie 92/42/EWG). Bei diesem Rücklauf ist der
+        /// Kondensationsanteil 1.
+        /// </summary>
+        public const double RUECKLAUF_PRUEFPUNKT_C = 30;
+
+        /// <summary>
+        /// Obergrenze des Kondensationsanteils g: Unter dem Prüfrücklauf steigt der Gewinn weiter,
+        /// höchstens auf das 1,2-Fache von Δ₃₀ (Konzept 4.1 Punkt 5).
+        /// </summary>
+        public const double KONDENSATIONSANTEIL_MAX = 1.2;
+
+        /// <summary>
+        /// RÜCKFALL-RÜCKLAUF [°C], wenn die Kette weder Heizkreis noch Speicher noch gepflegtes Paar
+        /// findet (Anwenderentscheid F5: 50 °C) — dieselbe Zahl wie der Rückfall des Kessel-Hubs
+        /// (<see cref="SimulationControl.KESSEL_RUECKLAUF_RUECKFALL"/>, Rückfallpaar 70/50 °C).
+        /// </summary>
+        public const double RUECKLAUF_RUECKFALL_C = SimulationControl.KESSEL_RUECKLAUF_RUECKFALL;
+
+        /// <summary>Abgastaupunkt der Gase (Erdgas, Flüssiggas, Biogas) [°C], gerundet.</summary>
+        public const double TAUPUNKT_GAS_C = 57;
+
+        /// <summary>Abgastaupunkt der Heizöle [°C], gerundet.</summary>
+        public const double TAUPUNKT_OEL_C = 47;
+
+        /// <summary>Abgastaupunkt von Holz und Holzpellets [°C], gerundet.</summary>
+        public const double TAUPUNKT_HOLZ_C = 50;
+
+        /// <summary>Kondensationsgewinn bei 30 °C Rücklauf, Gase (auf Hi bezogen, Faktor).</summary>
+        public const double KONDENSATIONSGEWINN30_GAS = 0.08;
+
+        /// <summary>Kondensationsgewinn bei 30 °C Rücklauf, Heizöle (auf Hi bezogen, Faktor).</summary>
+        public const double KONDENSATIONSGEWINN30_OEL = 0.04;
+
+        /// <summary>
+        /// Kondensationsgewinn bei 30 °C Rücklauf, Holz und Holzpellets (auf Hi bezogen, Faktor) —
+        /// eigene gerundete Ableitung: wie beim Heizöl rund zwei Drittel des Brennwertüberschusses
+        /// (Hs/Hi − 1 = 0,08).
+        /// </summary>
+        public const double KONDENSATIONSGEWINN30_HOLZ = 0.05;
+
+        /// <summary>
+        /// Der ABGASTAUPUNKT des Brennstoffs [°C] — dieselben Brennstoffgruppen wie <see cref="HsHi"/>;
+        /// <see cref="double.NaN"/> für einen Brennstoff ohne Brennwertnutzung.
+        /// </summary>
+        public static double Taupunkt(int brennstoffArt)
+        {
+            if ((brennstoffArt >= 1 && brennstoffArt <= 5) || brennstoffArt == 14) return TAUPUNKT_GAS_C;
+            if ((brennstoffArt >= 6 && brennstoffArt <= 9) || (brennstoffArt >= 18 && brennstoffArt <= 22)) return TAUPUNKT_OEL_C;
+            if (brennstoffArt == 12 || brennstoffArt == 15) return TAUPUNKT_HOLZ_C;
+            return double.NaN;
+        }
+
+        /// <summary>
+        /// Der KONDENSATIONSGEWINN Δ₃₀ des Brennstoffs bei 30 °C Rücklauf (Faktor, auf Hi bezogen);
+        /// 0 für einen Brennstoff ohne Brennwertnutzung.
+        /// </summary>
+        public static double Kondensationsgewinn30(int brennstoffArt)
+        {
+            if ((brennstoffArt >= 1 && brennstoffArt <= 5) || brennstoffArt == 14) return KONDENSATIONSGEWINN30_GAS;
+            if ((brennstoffArt >= 6 && brennstoffArt <= 9) || (brennstoffArt >= 18 && brennstoffArt <= 22)) return KONDENSATIONSGEWINN30_OEL;
+            if (brennstoffArt == 12 || brennstoffArt == 15) return KONDENSATIONSGEWINN30_HOLZ;
+            return 0.0;
+        }
+
+        /// <summary>
+        /// Rechnet ein Kessel mit der BRENNWERTKENNLINIE? Nur ein Brennwertkessel
+        /// (<paramref name="brennwert"/>) mit gewählter Kennlinie (<paramref name="kennlinieBrennwert"/>,
+        /// Konzept 3.1) und einem Brennstoff mit Kondensationsgewinn; der Elektrokessel nie.
+        /// </summary>
+        public static bool RechnetMitBrennwertkennlinie(bool brennwert, bool kennlinieBrennwert, int brennstoffArt)
+            => brennwert && kennlinieBrennwert && RechnetMitKennlinie(brennstoffArt) &&
+               Kondensationsgewinn30(brennstoffArt) > 0;
+
+        /// <summary>
+        /// Der KONDENSATIONSANTEIL g(T_RL) = (T_Tau − T_RL)/(T_Tau − 30), auf [0, 1,2] geklemmt:
+        /// 0 am und über dem Taupunkt, 1 beim Prüfrücklauf 30 °C. Stetig in T_RL — die Klemmung
+        /// schaltet keinen Zustand. Ein nicht endlicher Rücklauf oder Taupunkt trägt keinen Gewinn.
+        /// </summary>
+        public static double Kondensationsanteil(double ruecklaufC, double taupunktC)
+        {
+            if (!Endlich(ruecklaufC) || !Endlich(taupunktC)) return 0.0;
+            double spanne = taupunktC - RUECKLAUF_PRUEFPUNKT_C;
+            if (!(spanne > 0)) return 0.0;
+            double g = (taupunktC - ruecklaufC) / spanne;
+            if (!(g > 0)) return 0.0;
+            return g < KONDENSATIONSANTEIL_MAX ? g : KONDENSATIONSANTEIL_MAX;
+        }
+
+        /// <summary>
+        /// Das TROCKENE η₃₀ des Brennwertkessels: η₃₀ − Δ₃₀ — der Kondensationsanteil, den der bei
+        /// 30 °C Rücklauf gemessene Wert enthält, wird herausgenommen (Konzept 4.1 Punkt 3).
+        /// </summary>
+        public static double Eta30Trocken(double eta30, int brennstoffArt)
+            => eta30 - Kondensationsgewinn30(brennstoffArt);
+
+        /// <summary>
+        /// Der WIRKUNGSGRAD DER BRENNWERTKENNLINIE (Konzept 4.1 Punkte 3 bis 5):
+        /// η_eff = η_tr(β) + Δ₃₀ · g(T_RL), mit der trockenen Teillastkurve
+        /// η_tr(β) = <see cref="Eta"/>(β, η₁₀₀, η₃₀ − Δ₃₀). Höchstens Hs/Hi des Brennstoffs; die
+        /// Obergrenze nimmt nur den Kondensationsgewinn zurück, nie unter die trockene Kurve (wie die
+        /// Normvorgabe in E2). <paramref name="etaTrocken"/> gibt η_tr(β) zurück — die Aufteilung des
+        /// Mehrbrennstoffs in Teillast und Brennwertnutzung.
+        /// </summary>
+        /// <remarks>
+        /// Probe (Konzept 4.1 Punkt 5): β = 0,3 und T_RL = 30 °C ergibt η₃₀, β = 1 und T_RL am oder über
+        /// dem Taupunkt ergibt η₁₀₀ — der Katalog wird an beiden Prüfpunkten getroffen.
+        /// </remarks>
+        public static double EtaBrennwert(double laststufe, double eta100, double eta30, double ruecklaufC,
+                                          int brennstoffArt, out double etaTrocken)
+        {
+            double delta30 = Kondensationsgewinn30(brennstoffArt);
+            etaTrocken = Eta(laststufe, eta100, Eta30Trocken(eta30, brennstoffArt));
+            double eff = etaTrocken + delta30 * Kondensationsanteil(ruecklaufC, Taupunkt(brennstoffArt));
+            double grenze = HsHi(brennstoffArt);
+            if (eff <= grenze) return eff;
+            return grenze > etaTrocken ? grenze : etaTrocken;
+        }
+
+        /// <summary>
+        /// Läuft eine Stunde im BRENNWERTBETRIEB — liegt der Rücklauf unter dem Taupunkt? Eine neue
+        /// Betriebsschwelle, deshalb über den Zahlenrand (<see cref="Rechenrand.SchwelleErreicht"/>,
+        /// Schwelle ist der Taupunkt, Wert der Rücklauf): Ein Rücklauf, der dezimal genau auf dem
+        /// Taupunkt liegt, zählt nicht und kippt nicht am letzten Bit.
+        /// </summary>
+        public static bool Brennwertbetrieb(double ruecklaufC, double taupunktC)
+            => Endlich(ruecklaufC) && Endlich(taupunktC) && !Rechenrand.SchwelleErreicht(ruecklaufC, taupunktC);
+
+        /// <summary>
+        /// Die RÜCKLAUFKETTE einer Stunde (Konzept 4.1 Punkt 4) — die erste belegte Stufe gilt:
+        /// (a) der gerechnete Rücklauf des Heizkreises (Anlagenkopplung), NaN fällt durch; (b) der
+        /// Senkenspeicher (<c>RL_eff</c>, geschichtet die unterste Schicht); (c) das gepflegte Paar
+        /// Anlage → Katalog; (d) der Rückfall <see cref="RUECKLAUF_RUECKFALL_C"/>. Eine Stufe ohne
+        /// endlichen Wert fällt durch.
+        /// </summary>
+        public static double Ruecklauf(double heizkreisC, double speicherC, double? paarC, out Ruecklaufstufe stufe)
+        {
+            if (Endlich(heizkreisC)) { stufe = Ruecklaufstufe.Heizkreis; return heizkreisC; }
+            if (Endlich(speicherC)) { stufe = Ruecklaufstufe.Speicher; return speicherC; }
+            if (paarC.HasValue && Endlich(paarC.Value)) { stufe = Ruecklaufstufe.Paar; return paarC.Value; }
+            stufe = Ruecklaufstufe.Rueckfall;
+            return RUECKLAUF_RUECKFALL_C;
+        }
+
+        private static bool Endlich(double v) => !double.IsNaN(v) && !double.IsInfinity(v);
+    }
+
+    /// <summary>
+    /// Die Stufe der Rücklaufkette, aus der der Rücklauf einer Stunde stammt
+    /// (<see cref="Kesselkennlinie.Ruecklauf"/>, Konzept Kesselkennlinie 4.1 Punkt 4).
+    /// </summary>
+    public enum Ruecklaufstufe
+    {
+        /// <summary>(a) Der gerechnete Rücklauf des Heizkreises (Anlagenkopplung).</summary>
+        Heizkreis = 0,
+
+        /// <summary>(b) Der Senkenspeicher des Kessels.</summary>
+        Speicher = 1,
+
+        /// <summary>(c) Das gepflegte Temperaturpaar an Anlage bzw. Heizkessel.</summary>
+        Paar = 2,
+
+        /// <summary>(d) Der Rückfall 50 °C.</summary>
+        Rueckfall = 3
     }
 }

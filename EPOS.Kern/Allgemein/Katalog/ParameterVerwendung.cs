@@ -327,14 +327,16 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.cs:823 (Bezugsgroesse der Wartungskosten)"),
 
                 // Die Kennlinie (Konzept Kesselkennlinie 3.1): gepflegt in Editor und Aufklapper,
-                // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2);
-                // die uebrigen vier folgen mit den Etappen E3 (Brennwert) und E4 (Takten) und
-                // bleiben bis dahin DLG.
+                // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2), der
+                // Schalter der Brennwertkennlinie mit dem Ruecklauf (E3); die uebrigen drei folgen mit
+                // der Etappe E4 (Takten) und bleiben bis dahin DLG.
                 E("Wirkungsgrad_Teillast30", t("HZKK_LBL_TEILLAST30"), "", SIM,
                   "SimulationSPK.Stunde_Abschluss (Kesselkennlinie.Eta30Wirksam, leer = Normvorgabe nach Bauart); " +
                   "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
-                E("Kennlinie_Brennwert", t("HZKK_LBL_KENNLINIE_BRENNWERT"), "", DLG,
-                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E3"),
+                E("Kennlinie_Brennwert", t("HZKK_LBL_KENNLINIE_BRENNWERT"), "", SIM,
+                  "SimulationSPK.Kesseldaten_Einlesen (Kesselkennlinie.RechnetMitBrennwertkennlinie) und " +
+                  "Stunde_Abschluss (Kesselkennlinie.EtaBrennwert, Ruecklaufkette); " +
+                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
                 E("Mindestleistung", t("HZKK_LBL_MINDESTLEISTUNG"), "kW", DLG,
                   "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4"),
                 E("Anfahrverlust_kWh", t("HZKK_LBL_ANFAHRVERLUST"), "kWh", DLG,

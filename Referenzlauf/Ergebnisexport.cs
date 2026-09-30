@@ -428,6 +428,18 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(p + "EtaBetrieb", Zahl(kennlinie ? spk.WirkungsgradBetrieb(i) : 0)));
                     skalare.Add(Neu(p + "LaststufeMittel", Zahl(kennlinie ? spk.LaststufeMittel(i) : 0)));
                     skalare.Add(Neu(p + "TeillastKwh", Zahl(spk.TeillastMehrbrennstoff_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.1/5 (Etappe E3): was die Brennwertkennlinie im Jahr
+                    // bewirkt - mittlerer Ruecklauf der Laufstunden (waermegewichtet), Stunden und
+                    // Waerme im Brennwertbetrieb, Mehrbrennstoff aus Brennwertnutzung gegenueber der
+                    // trockenen Teillastkurve. JEDER Kessel fuehrt die Schluessel (ohne
+                    // Brennwertkennlinie 0) - dieselbe Regel wie oben: Ein spaeter eingeschalteter
+                    // Kessel aendert eine Zahl, statt einen Schluessel hinzuzufuegen.
+                    double ruecklauf = spk.RuecklaufMittel(i);
+                    skalare.Add(Neu(p + "RuecklaufMittel", Zahl(double.IsNaN(ruecklauf) ? 0 : ruecklauf)));
+                    skalare.Add(Neu(p + "Brennwertstunden", Zahl(spk.Brennwertstunden_Spk[i])));
+                    skalare.Add(Neu(p + "BrennwertWaermeKwh", Zahl(spk.BrennwertWaerme_KWh_Spk[i])));
+                    skalare.Add(Neu(p + "BrennwertKwh", Zahl(spk.BrennwertMehrbrennstoff_KWh_Spk[i])));
                 }
             }
 

@@ -173,6 +173,19 @@
                         @Wertzeile(Resource.SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF, Zahl(Daten.TeillastMehrbrennstoffKwh), "kWh/a",
                                    hinweis: Resource.SIMERG_TIP_KENNLINIE_SPK)
                     }
+                    @* Konzept Kesselkennlinie 5 (Etappe E3): was die Brennwertkennlinie im Jahr
+                       bewirkt - nur, wenn ein Kessel mit ihr rechnet. *@
+                    @if (Daten.MitBrennwertkennlinie)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_RUECKLAUF_MITTEL, Daten.RuecklaufMittelC.ToString("F1", Kultur), "°C",
+                                   hinweis: Resource.SIMERG_TIP_BRENNWERT_SPK)
+                        @Wertzeile(Resource.SIMERG_LBL_BRENNWERT_STUNDENANTEIL, Daten.BrennwertStundenProzent.ToString("F0", Kultur), "%",
+                                   hinweis: Resource.SIMERG_TIP_BRENNWERT_SPK)
+                        @Wertzeile(Resource.SIMERG_LBL_BRENNWERT_WAERMEANTEIL, Daten.BrennwertWaermeProzent.ToString("F0", Kultur), "%",
+                                   hinweis: Resource.SIMERG_TIP_BRENNWERT_SPK)
+                        @Wertzeile(Resource.SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF, Zahl(Daten.BrennwertMehrbrennstoffKwh), "kWh/a",
+                                   hinweis: Resource.SIMERG_TIP_BRENNWERT_SPK)
+                    }
                 </dl>
             </section>
         </div>
@@ -204,6 +217,11 @@
                             <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_WIRKUNGSGRAD_BETRIEB</th>
                             <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_LASTSTUFE</th>
                         }
+                        @if (Daten.MitBrennwertkennlinie)
+                        {
+                            <th scope="col" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_RUECKLAUF_MITTEL</th>
+                            <th scope="col" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_BRENNWERTANTEIL</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -222,6 +240,12 @@
                                 <td class="epos-simerg-zahl">@(m.MitKennlinie ? Eta30Text(m) : STRICH)</td>
                                 <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.WirkungsgradBetriebProzent.ToString("F1", Kultur) : STRICH)</td>
                                 <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.LaststufeProzent.ToString("F0", Kultur) : STRICH)</td>
+                            }
+                            @if (Daten.MitBrennwertkennlinie)
+                            {
+                                @* Ohne Brennwertkennlinie rechnet der Kessel ohne Rücklauf: Strich statt 0. *@
+                                <td class="epos-simerg-zahl">@(m.MitBrennwertkennlinie ? m.RuecklaufMittelC.ToString("F1", Kultur) : STRICH)</td>
+                                <td class="epos-simerg-zahl">@(m.MitBrennwertkennlinie ? m.BrennwertStundenProzent.ToString("F0", Kultur) : STRICH)</td>
                             }
                         </tr>
                     }
