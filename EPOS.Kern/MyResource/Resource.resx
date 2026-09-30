@@ -40708,5 +40708,38 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Nachtauskühlung</value>
   </data>
+  <data name="KOND_TXT_VORSCHAU_VORLAGE" xml:space="preserve">
+    <value>Vorschau mit der Vorlage „{0}“ – übernommen wird erst mit „Übernehmen“.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_KEINE_VORLAGE" xml:space="preserve">
+    <value>Erst eine Vorlage aus der Liste wählen.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_GESPEICHERT" xml:space="preserve">
+    <value>Vorlage „{0}“ gespeichert – sie steht jetzt in der Liste dieser Größe.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_UMBENANNT" xml:space="preserve">
+    <value>Vorlage umbenannt in „{0}“.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_GELOESCHT" xml:space="preserve">
+    <value>Vorlage „{0}“ gelöscht.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_DUPLIZIERT" xml:space="preserve">
+    <value>Vorlage „{0}“ als Kopie von „{1}“ angelegt.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGEN_LEER" xml:space="preserve">
+    <value>Diese Größe hat noch keine Vorlage.</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Die Vorlage „{0}“ auf den angelegten Kalender „{1}“ übernehmen? Ersetzt wird: {2}. Es bleibt: {3}.</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Vorlage „{0}“ löschen?</value>
+  </data>
+  <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
+    <value>Die Vorlage der Spalte {0} im Reiter „Konditionierung“: der Name einer Vorlage aus der Liste dieser Größe. Setzen übernimmt sie wie der Knopf „Übernehmen“ – die Zellen der Vorlage gehen in die Spalte, der Kalender wird angelegt, Nennwert und Saison bleiben; steht schon ein angelegter Kalender, wird nur der Matrixbereich ersetzt. Lesen nennt die zuletzt übernommene Vorlage; leer = keine.</value>
+  </data>
 </root>
 

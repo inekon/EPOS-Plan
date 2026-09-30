@@ -4,7 +4,7 @@
 **Stufe** KP2 der [Konditionierungsprofile](../../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) ·
 **Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../../aktuell/Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) ·
 **Entscheid** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) · **Festlegungen der
-Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1)
+Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1), #626 (U2)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
 Vorlagen, Nachtauskühlung). Das Protokoll wächst mit jeder Welle; jede Welle bekommt einen Abschnitt unter 2 und eine
@@ -134,6 +134,22 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
   Verstoß. Zwei Fotobefunde behoben: Knöpfe brachen im Wort („Zurückneh|men" bei 390 px, „Verwerfe|n" bei 1 180 px) —
   die Knopfzeilen brechen jetzt zwischen den Knöpfen.
 
+### U2 — Vorlagen je Karte und Vorlagenverwaltung
+
+- **Auswahlliste** der Vorlagen je Karte (ausgelieferte zuerst, mit Schloss; dieselbe Reihenfolge in allen Listen) und
+  entprellte **Vorschau der Woche** vor dem Übernehmen. Im Kern `IKonditionierungsvorlagen` mit der reinen
+  `Konditionierungsvorlagenablage` (Saat ohne Datenbank) und einer gemeinsamen Namensregel.
+- **Übernehmen** nach P12: Rückfrage am angelegten Kalender, „aufteilen" an der Gesamtangabe; danach folgt der Kalender
+  der Matrix (F2 a). Die Zeile „Vorlage" zeigt die Herkunft.
+- **„Als Vorlage speichern…"** inline, sofort mit eigenem OK (Festlegung 13), ohne Nennwert und Saison (E54).
+- **Vorlagenverwaltung** als Blatt im Katalogeditor aus jeder Karte (F4 a) — von U4 hierher genommen, damit nur eine
+  Welle die Karte anfasst.
+- **Zählfall KN6** („Büro" in allen fünf Größen): breit 11, mit Gesamtangabe der Lüftung 12, mit fünf angelegten
+  Kalendern 16, schmal 15 Handgriffe.
+- **Assistent:** `kond_<größe>_vorlage` wählt und übernimmt wie der Knopf; eine Rückfrage bleibt im Reiter stehen.
+- **Probe:** Zoomleiste der Vorschau unter 44 px, „Übernehmen" überdeckte die Liste, Kopf des Verwaltungsblatts ragte
+  bei 390 px heraus — behoben; 28 Läufe ohne Verstoß.
+
 ## 3. Schemaschritte
 
 **157** (K3, `KonditionierungsvorlagenSaatSchema`): reines DML, die 14 Vorlagen samt Feiertagskalendern; Nummer als `KesselKennlinieSchema.SCHRITT + 1` — 156 hat die Kessel-Kennlinie (#616) belegt.
@@ -183,6 +199,9 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 | Abnahme K2 im Worktree (`9bd0d01b`) | Kern 9 339, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
 | Abnahme K4 im Worktree (`60c213d1`) | Kern 9 307, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben 231 Bilder gleich der neuen Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
 | Gate KP2c auf K2 und K4 zusammen (`77a3e06f`) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte `Messlatte_2026-09-30` (194), Tests Kern 9 365, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 15/15 **PASS, 460/460 CSV byte-gleich gegen R26**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 142 Texte); Windows-Schale 0 Fehler; Auslieferungsvorlage 44/44. |
+| Abnahme U2 im Worktree (`12b9b6f1`) | Kern 9 379, UI 7 110, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 28 Läufe ohne Verstoß |
+| Gate KP2d auf U2 mit `origin` #624/#625 (`57901bba`) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (194), Tests Kern 9 446, UI 7 115, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R27**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 142 Texte); Windows-Schale 0 Fehler; Auslieferungsvorlage 44/44. Abnahme im Worktree auf `12b9b6f1`: Kern 9 379, UI 7 110, Referenzlauf 460/460 gegen R26, Konditionierungsprobe 28 Läufe ohne Verstoß. |
+| Kern-Lauf auf `15b33156` (#623) | grün (36673572516) |
 | Abnahme U1 im Worktree (`ad742770`) | Kern 9 372, UI 7 082, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 24 Läufe ohne Verstoß, 76 Fotos außerhalb des Repositorys |
 | Nach dem Merge U1 (`4d82a032`) | Kern-Filter 0; UI 7 082; Kern 1 413 gezielt grün; Windows-Schale 0 |
 | Kern-Lauf auf `d8adcfe2` (#621) | grün (36664696918) |
@@ -191,8 +210,8 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 
 ## 6. Offen
 
-- **Wellen** **U2** (Vorlagen je Karte, danach SA1),
-  **U3** (Karte), **U4** (Zonen, Katalog, Verwaltung), **U5** (Abschluss, SA2).
+- **Wellen** **U4** (Zonen, Katalog, Verwaltung — in Abnahme), **SA1** nach U2,
+  **U3** (Karte), **U5** (Abschluss, SA2).
 - **Windows-Sichtprobe** der schon sichtbaren Änderungen, mit SA1: „Speichern unter" bleibt offen (Katalog und Projekt),
   breite Überlagerung des Katalogeditors, Grundzeile und weich gesperrtes OK an einem ausgelieferten Satz.
 - **Wiki:** Quelle „Gebäude" nachgezogen („Speichern unter"); Upload mit dem nächsten Sammel-Upload, Logbuch-Satz in der

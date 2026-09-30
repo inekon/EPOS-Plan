@@ -1,5 +1,5 @@
 // =====================================================================
-//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b und U1) — der Gebäude-Katalogeditor
+//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1 und U2) — der Gebäude-Katalogeditor
 //  in der BREITEN Überlagerung, im echten Browser
 // =====================================================================
 //
@@ -33,6 +33,15 @@
 //      „aufteilen“ an der Gesamtangabe samt Ergebnis (gesamt), die Werte als
 //      Text ohne Handlung (gesperrt), Karten mit „Kalender anlegen“ (neu), der
 //      benannt gesperrte Reiter ohne Karten (ohnetabellen).
+//    - die Vorlagen (Welle U2) aus der Ablage der Seite mit den 14 der Saat: je
+//      Karte die Auswahlliste, zusammen 14 Einträge, „Büro“ in jeder Liste
+//      zuerst; im Fall „vorlagen“ Wahl „Büro“ mit Beschreibung und Vorschau der
+//      Woche, „Übernehmen“ (Herkunft in Karte und Zeile „Vorlage“, Wahl leer),
+//      die Rückfrage P12 am angelegten Kalender („Nein“ lässt alles), „Als
+//      Vorlage speichern…“ inline (Formular gemessen, danach steht die eigene
+//      Vorlage zuletzt in der Liste) und die Verwaltung als BLATT: Liste der
+//      Größe samt der eigenen, Vorschau per Klick, Umschalter, Bedienziele,
+//      Überdeckung und Querrollen im Blatt; Esc führt zurück in den Editor.
 //
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
 //    node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--nur <fall>] [--kultur de-DE]
@@ -60,7 +69,7 @@ const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
 const KULTUR = arg('kultur', 'de-DE');
 
-const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'bausteine'];
+const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'vorlagen', 'bausteine'];
 const FENSTER = [
   { breite: 390, hoehe: 844 },     // Telefon hochkant
   { breite: 820, hoehe: 1180 },    // Tablet hochkant
@@ -76,15 +85,16 @@ const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
 // --------------------------------------------------- Messung im Browser
 // Gemessen wird in der Überlagerung; das Reiterblatt ist das sichtbare
-// .epos-reiter-blatt (nur das aktive steht im Baum).
-const MESSEN = ([ziel, tol]) => {
+// .epos-reiter-blatt (nur das aktive steht im Baum) - oder, mit dem dritten
+// Wert, ein anderer Behälter (Welle U2: das Blatt der Vorlagenverwaltung).
+const MESSEN = ([ziel, tol, behaelter]) => {
   const r = el => { const b = el.getBoundingClientRect();
     return { l: +b.left.toFixed(1), o: +b.top.toFixed(1), r: +b.right.toFixed(1), u: +b.bottom.toFixed(1),
              b: +b.width.toFixed(1), h: +b.height.toFixed(1) }; };
   const quer = el => el ? el.scrollWidth - el.clientWidth : null;
   const ueb = document.querySelector('.epos-ueberlagerung');
   if (!ueb) return { fehler: 'keine .epos-ueberlagerung im Baum' };
-  const blatt = ueb.querySelector('.epos-reiter-blatt');
+  const blatt = ueb.querySelector(behaelter || '.epos-reiter-blatt');
   const dialog = ueb.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog');
 
   // Die Bedienziele: sichtbar, mit Fläche; ein Kästchen oder Knopf der Wahl
@@ -160,7 +170,59 @@ const KOND = () => {
     tabQuer: tab ? tab.scrollWidth - tab.clientWidth : 0,
     sperre: ((k.querySelector('.epos-kond-sperrzeile') || {}).innerText || '').trim(),
     kopf: alle('.epos-kond-kopf button').map(b => b.innerText.trim()),
-    anlegen: alle('.epos-kond-karte button.epos-kond-anlegen').filter(sichtbar).length
+    anlegen: alle('.epos-kond-karte button.epos-kond-anlegen').filter(sichtbar).length,
+    // Welle U2: je Karte die Auswahlliste der Vorlagen (Einträge ohne den Platzhalter)
+    // und die Zeile „Vorlage“ der Matrix
+    listen: alle('.epos-kond-karte .epos-kond-vorlagewahl select').map(l =>
+      [...l.options].filter(o => o.value !== '').map(o => o.textContent.trim())),
+    herkunft: alle('td.epos-kond-herkunft').map(t => t.innerText.trim())
+  };
+};
+
+// Welle U2: die Karte einer Größe - Wahl, Beschreibung, Vorschau, Zustand, Knöpfe.
+const KARTE = g => {
+  const k = document.querySelector(`.epos-ueberlagerung .epos-kond-karte[data-groesse="${g}"]`);
+  if (!k) return null;
+  const text = sel => ((k.querySelector(sel) || {}).innerText || '').trim();
+  const liste = k.querySelector('.epos-kond-vorlagewahl select');
+  const svg = k.querySelector('.epos-kond-vorschau svg');
+  const knopf = k.querySelector('button.epos-kond-uebernehmen');
+  return {
+    zustand: text('.epos-kond-karte-zustand'),
+    wahl: liste && liste.selectedOptions[0] ? liste.selectedOptions[0].textContent.trim() : '',
+    wert: liste ? liste.value : null,
+    eintraege: liste ? [...liste.options].filter(o => o.value !== '').map(o => o.textContent.trim()) : [],
+    beschreibung: text('.epos-kond-vorlage-beschreibung'),
+    vorschauVorlage: text('.epos-kond-vorschau-vorlage'),
+    vorschau: svg ? { b: +svg.getBoundingClientRect().width.toFixed(1),
+                      formen: svg.querySelectorAll('path, polyline, rect').length } : null,
+    uebernehmenGesperrt: knopf ? knopf.getAttribute('aria-disabled') : 'fehlt',
+    formular: !!k.querySelector('.epos-kond-vorlage-speichern'),
+    gespeichert: text('.epos-kond-vorlage-gespeichert'),
+    schloss: !!k.querySelector('.epos-vorlage-schlossplatz')
+  };
+};
+
+// Welle U2: das Blatt der Vorlagenverwaltung.
+const VERWALTUNG = () => {
+  const b = document.querySelector('.epos-ueberlagerung section.epos-blatt');
+  if (!b) return null;
+  const text = (el, sel) => ((el.querySelector(sel) || {}).innerText || '').trim();
+  const zeilen = [...b.querySelectorAll('table.epos-kond-vorlagenliste tbody tr')];
+  const svg = b.querySelector('.epos-kond-verwaltung-vorschau svg');
+  return {
+    titel: text(b, '.epos-blatt-titel'),
+    zurueck: text(b, '.epos-blatt-zurueck'),
+    groesse: text(b, 'button.epos-kond-verwaltung-groesse[aria-selected=true]'),
+    namen: zeilen.map(z => text(z, '.epos-kond-vorlage-zeigen')).filter(n => n.length > 0),
+    schloesser: b.querySelectorAll('table.epos-kond-vorlagenliste .epos-schloss').length,
+    // Löschen steht an jeder Zeile; an einer ausgelieferten weich gesperrt (Grund am Knopf).
+    loeschen: [...b.querySelectorAll('table.epos-kond-vorlagenliste button.epos-kond-loeschen')]
+      .filter(k => k.getAttribute('aria-disabled') !== 'true').length,
+    loeschenGesperrt: [...b.querySelectorAll('table.epos-kond-vorlagenliste button.epos-kond-loeschen')]
+      .filter(k => k.getAttribute('aria-disabled') === 'true' && (k.getAttribute('title') || '').length > 0).length,
+    vorschau: svg ? svg.querySelectorAll('path, polyline, rect').length : 0,
+    editorSichtbar: !!document.querySelector('.epos-ueberlagerung .epos-reiter-blatt')
   };
 };
 
@@ -395,6 +457,20 @@ async function fall(browser, name, f) {
       if (s.unter) melde(marke, '„Speichern unter“ im Modus Neu');
     }
   }
+  if (name !== 'bausteine' && name !== 'ohnetabellen' && name !== 'gesperrt') {
+    // Welle U2: je Karte die Auswahlliste; zusammen die 14 der Saat, „Büro“ in jeder zuerst.
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(400);
+    const k = await seite.evaluate(KOND);
+    const soll = await seite.evaluate(() => +document.querySelector('#probe-stand').dataset.vorlagen);
+    const summe = k.listen.reduce((n, l) => n + l.length, 0);
+    console.log(`  Vorlagen: ${k.listen.length} Listen mit ${k.listen.map(l => l.length).join('/')} Einträgen ` +
+                `(zusammen ${summe}, Ablage ${soll}), zuerst „${[...new Set(k.listen.map(l => l[0]))].join('|')}“`);
+    if (k.listen.length !== 5) melde(marke, `${k.listen.length} statt 5 Auswahllisten der Vorlagen`);
+    if (summe !== soll || soll !== 14) melde(marke, `die Listen führen ${summe} Vorlagen, die Ablage ${soll} (soll 14)`);
+    if (k.listen.some(l => l[0] !== 'Büro')) melde(marke, '„Büro“ steht nicht in jeder Liste zuerst');
+    await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+  }
+  if (name === 'vorlagen') await vorlagen(seite, marke, f);
   const anordnung = b => b.behaelter >= 1150 ? [1, 24, '7 × 24'] : b.behaelter >= 600 ? [2, 12, '2 × 12'] : [4, 6, '4 × 6'];
   if (name === 'bausteine' && f.breite >= 1300) {
     // An den Schwellen selbst (nur im breitesten Fenster ist Platz für 1 150 px).
@@ -457,6 +533,120 @@ async function fall(browser, name, f) {
   if (fehler.length) melde(marke, 'Fehler im Browser: ' + fehler.slice(0, 3).join(' | '));
   await kontext.close();
   return erstes;
+}
+
+// ------------------------------------------------------------ Welle U2: die Vorlagen
+// Wahl mit Vorschau, Übernehmen, Rückfrage P12, „Als Vorlage speichern…“ und die
+// Verwaltung als Blatt - an der Karte „Heizen“ (sie steht auch schmal vorn).
+async function vorlagen(seite, marke, f) {
+  const karte = seite.locator('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
+  const pruefe = async (was, behaelter) => {
+    const m = await seite.evaluate(MESSEN, [ZIEL, TOL, behaelter || '']);
+    if (m.fehler) { melde(marke, m.fehler); return; }
+    console.log(`  ${was}: ${m.blatt ? 'Behälter ' + m.blatt.b + ' px (quer ' + m.blatt.quer + ')' : 'kein Behälter'}, ` +
+                `Seite quer ${m.seiteQuer}, Überlagerung quer ${m.ueb.quer}, Ziele ${m.ziele} (im Behälter ${m.zieleBlatt}), ` +
+                `unter 44: ${m.klein.length}, überdeckt: ${m.ueberdeckt.length}, heraus: ${m.heraus.length}`);
+    if (!m.blatt) melde(marke, `${was}: kein Behälter ${behaelter || '.epos-reiter-blatt'}`);
+    if (m.seiteQuer > 0 || m.ueb.quer > 0 || (m.blatt && m.blatt.quer > 0)) melde(marke, `${was}: Querrollen`);
+    for (const k of m.klein) melde(marke, `${was}: Bedienziel unter 44 px: ${k}`);
+    for (const u of m.ueberdeckt) melde(marke, `${was}: Bedienziele überdecken sich: ${u}`);
+    for (const h of m.heraus) melde(marke, `${was}: Bedienziel ragt heraus: ${h}`);
+  };
+  // Ein Foto zeigt das Fenster; die Karte wird dafür ins Bild gerollt (sie steht unter der Matrix).
+  const foto = async (teil, ziel) => {
+    if (!FOTOS) return;
+    if (ziel) await ziel.scrollIntoViewIfNeeded();
+    await seite.screenshot({ path: `${FOTOS}/vorlagen_${f.breite}_${teil}.png` });
+  };
+
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(500);
+  const vor = await seite.evaluate(KARTE, 0);
+  console.log(`  Heizen vor der Wahl: „${vor.zustand}“, ${vor.eintraege.length} Vorlagen, ` +
+              `Übernehmen aria-disabled=${vor.uebernehmenGesperrt}`);
+  if (vor.uebernehmenGesperrt !== 'true') melde(marke, '„Übernehmen“ ist ohne Wahl nicht weich gesperrt');
+
+  // Wahl „Büro“: Beschreibung und Vorschau der Woche, die „Übernehmen“ ergäbe (nach der Wahl sofort).
+  await karte.locator('.epos-kond-vorlagewahl select').selectOption({ label: 'Büro' }); await schlaf(900);
+  const wahl = await seite.evaluate(KARTE, 0);
+  console.log(`  Wahl „${wahl.wahl}“: Schloss ${wahl.schloss ? 'ja' : 'nein'}, Beschreibung „${wahl.beschreibung.slice(0, 40)}…“, ` +
+              `„${wahl.vorschauVorlage}“, Vorschau ${wahl.vorschau ? wahl.vorschau.b + ' px, ' + wahl.vorschau.formen + ' Formen' : 'fehlt'}, ` +
+              `Übernehmen aria-disabled=${wahl.uebernehmenGesperrt}`);
+  if (wahl.wahl !== 'Büro' || !wahl.schloss || !wahl.beschreibung || !wahl.vorschauVorlage.includes('Büro'))
+    melde(marke, 'die Wahl „Büro“ zeigt Schloss, Beschreibung oder Vorschauzeile nicht');
+  if (!wahl.vorschau || wahl.vorschau.formen === 0) melde(marke, 'keine Vorschau der Woche');
+  if (wahl.uebernehmenGesperrt !== null) melde(marke, '„Übernehmen“ bleibt nach der Wahl gesperrt');
+  await pruefe('Karte mit Wahl');
+  await foto('vorschau', karte);
+
+  // „Übernehmen“: Herkunft in der Karte (breit auch in der Zeile „Vorlage“), die Wahl ist danach leer (F2 (a)).
+  await karte.locator('button.epos-kond-uebernehmen').click(); await schlaf(700);
+  const nach = await seite.evaluate(KARTE, 0);
+  const kond = await seite.evaluate(KOND);
+  console.log(`  Nach „Übernehmen“: „${nach.zustand}“, Wahl ${nach.wert === '' ? 'leer' : '„' + nach.wahl + '“'}, ` +
+              `Zeile „Vorlage“: ${kond.herkunft.length ? kond.herkunft.map(h => h || '—').join(' | ') : '—'}`);
+  if (!nach.zustand.includes('Büro')) melde(marke, '„Übernehmen“ nennt die Herkunft nicht');
+  if (nach.wert !== '') melde(marke, 'die Wahl ist nach „Übernehmen“ nicht leer');
+  if (kond.spalten === 5 && kond.herkunft[0] !== 'Büro') melde(marke, 'die Zeile „Vorlage“ nennt „Büro“ nicht');
+  await foto('uebernommen', karte);
+
+  // Noch einmal an den angelegten Kalender: die Rückfrage P12, „Nein“ lässt alles.
+  const zweite = vor.eintraege[1];
+  await karte.locator('.epos-kond-vorlagewahl select').selectOption({ label: zweite }); await schlaf(700);
+  await karte.locator('button.epos-kond-uebernehmen').click(); await schlaf(500);
+  const frage = ((await seite.locator('.epos-rueckfrage-text').allInnerTexts())[0] || '').trim();
+  console.log(`  Rückfrage P12 („${zweite}“): „${frage.slice(0, 110)}…“`);
+  if (!frage.includes(zweite)) melde(marke, 'die Rückfrage P12 nennt die Vorlage nicht');
+  await foto('rueckfrage');
+  await seite.locator('.epos-rueckfrage button', { hasText: /^Nein$/ }).click(); await schlaf(500);
+  const nein = await seite.evaluate(KARTE, 0);
+  if (!nein.zustand.includes('Büro')) melde(marke, '„Nein“ hat die Herkunft geändert');
+
+  // „Als Vorlage speichern…“: das Formular inline; „Speichern“ schreibt sofort, die eigene steht zuletzt.
+  await karte.locator('button.epos-kond-als-vorlage').click(); await schlaf(400);
+  await pruefe('„Als Vorlage speichern…“');
+  await foto('als-vorlage', karte.locator('.epos-kond-vorlage-speichern'));
+  await karte.locator('.epos-kond-vorlage-name input').fill('Probe eigene'); await schlaf(200);
+  await karte.locator('button.epos-kond-vorlage-schreiben').click(); await schlaf(700);
+  const eigen = await seite.evaluate(KARTE, 0);
+  console.log(`  Gespeichert: „${eigen.gespeichert}“; Liste ${eigen.eintraege.length} ` +
+              `(zuletzt „${eigen.eintraege[eigen.eintraege.length - 1]}“)`);
+  if (eigen.formular || !eigen.gespeichert || eigen.eintraege.length !== vor.eintraege.length + 1
+      || eigen.eintraege[eigen.eintraege.length - 1] !== 'Probe eigene')
+    melde(marke, '„Als Vorlage speichern…“ legt die eigene Vorlage nicht zuletzt in die Liste');
+
+  // Die Verwaltung als Blatt: die Liste der Größe, Vorschau per Klick, Umschalter; Esc führt zurück.
+  await karte.locator('button.epos-kond-verwalten').click(); await schlaf(600);
+  let v = await seite.evaluate(VERWALTUNG);
+  if (!v) { melde(marke, '„Vorlagen verwalten“ öffnet kein Blatt'); return; }
+  console.log(`  Verwaltung: „${v.zurueck}“ · „${v.titel}“ · Größe „${v.groesse}“, ${v.namen.length} Vorlagen ` +
+              `(${v.schloesser} Schlösser, Löschen ${v.loeschen} frei / ${v.loeschenGesperrt} weich gesperrt mit Grund), ` +
+              `Editor daneben: ${v.editorSichtbar ? 'ja' : 'nein'}`);
+  if (v.editorSichtbar) melde(marke, 'der Editor steht neben dem Blatt');
+  if (v.namen.length !== eigen.eintraege.length || v.loeschen !== 1 || v.loeschenGesperrt !== v.schloesser)
+    melde(marke, 'die Verwaltung zeigt die Liste der Größe nicht samt der eigenen');
+  await pruefe('Verwaltung', 'section.epos-blatt');
+  await foto('verwaltung');
+  await seite.locator('.epos-ueberlagerung table.epos-kond-vorlagenliste .epos-kond-vorlage-zeigen').first().click();
+  await schlaf(700);
+  v = await seite.evaluate(VERWALTUNG);
+  console.log(`  Vorschau in der Verwaltung: ${v.vorschau} Formen`);
+  if (!v.vorschau) melde(marke, 'die Verwaltung zeigt keine Vorschau der gewählten Vorlage');
+  await pruefe('Verwaltung mit Vorschau', 'section.epos-blatt');
+  await foto('verwaltung-vorschau');
+  await seite.locator('.epos-ueberlagerung button.epos-kond-verwaltung-groesse[data-groesse="4"]').click(); await schlaf(500);
+  const personen = await seite.evaluate(VERWALTUNG);
+  console.log(`  Umschalter „${personen.groesse}“: ${personen.namen.length} Vorlagen (${personen.namen.slice(0, 3).join(', ')} …)`);
+  if (!personen.namen.length || personen.namen[0] !== 'Büro') melde(marke, 'der Umschalter zeigt die Liste „Personen“ nicht');
+  await seite.keyboard.press('Escape'); await schlaf(600);
+  const zurueck = await seite.evaluate(() => ({
+    ueb: !!document.querySelector('.epos-ueberlagerung'),
+    blatt: !!document.querySelector('.epos-ueberlagerung section.epos-blatt'),
+    kond: !!document.querySelector('.epos-ueberlagerung .epos-kond')
+  }));
+  console.log(`  Esc im Blatt: Überlagerung ${zurueck.ueb ? 'steht' : 'zu'}, Blatt ${zurueck.blatt ? 'offen' : 'zu'}, ` +
+              `Reiter „Konditionierung“ ${zurueck.kond ? 'wieder da' : 'fehlt'}`);
+  if (!zurueck.ueb || zurueck.blatt || !zurueck.kond) melde(marke, 'Esc im Blatt führt nicht zurück in den Editor');
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
 }
 
 // ------------------------------------------------------------ Ablauf
