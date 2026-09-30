@@ -153,11 +153,14 @@ namespace WindowsFormsApplication1
             if (w0 < 0)
                 throw Fehler(name, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
 
+            // Festlegung 5 (Entwurf KP2): eine eigene Heiz-Nachtzeile der Zone macht die Heizspalte wirksam.
+            bool nachtzeileDerZone = Konditionierungseingang.EigeneNachtzeile(zonenvorgaben);
+
             var satz = new Konditionierungssatz(w0, referenzjahr);
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
                 Konditionierungskalender k = Konditionierungseingang.ErsteQuelle(
-                    g, matrix, zoneangelegt, gebaeudeangelegt, out Fahrplanlesung befund);
+                    g, matrix, zoneangelegt, gebaeudeangelegt, nachtzeileDerZone, out Fahrplanlesung befund);
                 if (befund != null && befund.Befund != Fahrplanbefund.Erzeugt &&
                     befund.Befund != Fahrplanbefund.KeineAngabe)
                     throw Fehler(name, string.Format(CultureInfo.CurrentCulture,

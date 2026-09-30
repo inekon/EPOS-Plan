@@ -254,8 +254,15 @@ namespace EPOS.Kern.Tests
             };
             Konditionierungsarbeitsstand c = b.MitGebaeude(b.Gebaeude.MitKalender(Konditionierungsgroesse.Heizsoll,
                 new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, k.Grundangabe, null, perioden), null));
-            c = Gut(Konditionierungsarbeit.ZelleSetzen(
-                c, Ort(Konditionierungsgroesse.Heizsoll), DbWerte.KOND_ZEILE_SAISON, Matrixzelle.NurZeiten(274, 120)));
+            // Der Kalender folgt der Matrix (E56 F2 (a)) — die Kollision fällt schon beim Setzen der Saison auf.
+            Konditionierungsschritt folgen = Konditionierungsarbeit.ZelleSetzen(
+                c, Ort(Konditionierungsgroesse.Heizsoll), DbWerte.KOND_ZEILE_SAISON, Matrixzelle.NurZeiten(274, 120));
+            Assert.False(folgen.Ok);
+            Assert.Contains("900", folgen.Meldung, StringComparison.Ordinal);
+
+            // Steht die Saison schon in der Matrix, lehnt „Matrix erneut anwenden" ebenso benannt ab.
+            c = c.MitGebaeude(c.Gebaeude.MitVorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_SAISON,
+                                                    Matrixzelle.NurZeiten(274, 120)));
             Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(c, Ort(Konditionierungsgroesse.Heizsoll));
             Assert.False(s.Ok);
             Assert.Contains("900", s.Meldung, StringComparison.Ordinal);
@@ -418,10 +425,10 @@ namespace EPOS.Kern.Tests
             Konditionierungsarbeitsstand a = Stand(Zone(-1, "Anbau"));
             Assert.Equal(Konditionierungsarbeit.Abdruck(a), Konditionierungsarbeit.Abdruck(Stand(Zone(-1, "Anbau"))));
             Konditionierungsarbeitsstand b = Gut(Konditionierungsarbeit.ZelleSetzen(
-                a, Ort(Konditionierungsgroesse.Personen, -1), DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(0.5)));
+                a, Ort(Konditionierungsgroesse.Geraete, -1), DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(0.5)));
             Assert.NotEqual(Konditionierungsarbeit.Abdruck(a), Konditionierungsarbeit.Abdruck(b));
             Konditionierungsarbeitsstand c = Gut(Konditionierungsarbeit.ZelleSetzen(
-                b, Ort(Konditionierungsgroesse.Personen, -1), DbWerte.KOND_ZEILE_TAG, Matrixzelle.Leer));
+                b, Ort(Konditionierungsgroesse.Geraete, -1), DbWerte.KOND_ZEILE_TAG, Matrixzelle.Leer));
             Assert.Equal(Konditionierungsarbeit.Abdruck(a), Konditionierungsarbeit.Abdruck(c));
         }
 

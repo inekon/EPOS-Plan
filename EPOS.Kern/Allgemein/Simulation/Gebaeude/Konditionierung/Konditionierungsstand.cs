@@ -588,9 +588,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Konditionierungskalender GeltenderKalender(Konditionierungsgroesse g, long? zone)
         {
-            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zk =
-                zone.HasValue ? Zone(zone.Value)?.Stand.Angelegt() : null;
-            return Konditionierungseingang.ErsteQuelle(g, Matrix(zone), zk, Gebaeude.Angelegt(), out _);
+            Konditionierungsstand z = zone.HasValue ? Zone(zone.Value)?.Stand : null;
+            return Konditionierungseingang.ErsteQuelle(g, Matrix(zone), z?.Angelegt(), Gebaeude.Angelegt(),
+                                                       z != null && Konditionierungseingang.EigeneNachtzeile(z.Vorgabezeilen()),
+                                                       out _);
         }
 
         /// <summary>

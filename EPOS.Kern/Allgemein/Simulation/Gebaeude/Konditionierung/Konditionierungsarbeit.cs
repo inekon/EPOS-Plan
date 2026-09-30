@@ -118,6 +118,13 @@ namespace WindowsFormsApplication1
         /// An einer Zone heißt eine unbelegte Bestandszelle „wie das Gebäude" — ihr Feld wird leer;
         /// an Gebäude und Katalogbau lässt sie die Spalte stehen (die Spalte führt immer einen Wert).
         /// Die Prüfung (<see cref="Zellenpruefung"/>) hält der Aufrufer.
+        ///
+        /// <para><b>Nachtzeiten (B6, Festlegung 5):</b> An Gebäude und Katalogbau stehen die Zeiten der
+        /// Heiz-Nachtzeile allein in <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c> — die Vorgabezeile trägt
+        /// sie nicht, so zeigen Matrix und Lauf dieselbe Nachtzeit; eine leere Zeit lässt die Spalte
+        /// stehen. An der Zone bleiben sie in der Vorgabezeile und machen die Heizspalte wirksam.</para>
+        /// <para><b>Merker (B7):</b> Ein Heizwert Wochenende bzw. Ferien setzt an Gebäude und Katalogbau
+        /// den Merker nach der Regel des Dialogs (<see cref="Merker"/>).</para>
         /// </summary>
         public static Ebenenergebnis Eintragen(Konditionierungsstand ebene, Konditionierungsgroesse groesse,
                                               string zeile, Matrixzelle zelle)
@@ -132,14 +139,57 @@ namespace WindowsFormsApplication1
             if (Matrixzellenort.HatBestandsspalte(e.Art, groesse, zeile))
             {
                 if (zelle.Belegt && !zelle.Aus)
-                    e = e.MitBestand(b => Bestandswert(b, groesse, zeile, zelle.Wert));
+                    e = e.MitBestand(b =>
+                    {
+                        Bestandswert(b, groesse, zeile, zelle.Wert);
+                        Merker(b, ebene.Art, groesse, zeile);
+                    });
                 else if (!zelle.Belegt && e.Art == Kalendereigentuemer.Zone)
                     e = e.MitBestand(b => Bestandswert(b, groesse, zeile, null));
+
+                int? von = zelle.Von, bis = zelle.Bis;
+                if (NachtzeitImBestand(e.Art, groesse, zeile))
+                {
+                    if (von.HasValue || bis.HasValue)
+                        e = e.MitBestand(b =>
+                        {
+                            if (von.HasValue) b.NachtBeginn = von;
+                            if (bis.HasValue) b.NachtEnde = bis;
+                        });
+                    von = null;
+                    bis = null;
+                }
                 vorgabe = zelle.Aus
-                    ? Matrixzelle.Abgeschaltet(zelle.Von, zelle.Bis, zelle.BedingtK)
-                    : Matrixzelle.NurZeiten(zelle.Von, zelle.Bis, zelle.BedingtK);
+                    ? Matrixzelle.Abgeschaltet(von, bis, zelle.BedingtK)
+                    : Matrixzelle.NurZeiten(von, bis, zelle.BedingtK);
             }
             return Ebenenergebnis.Gut(e.MitVorgabe(groesse, zeile, vorgabe));
+        }
+
+        /// <summary>
+        /// Stehen die Zeiten dieser Zeile in den Bestandsspalten <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>?
+        /// Genau die Heiz-Nachtzeile an Gebäude und Katalogbau (B6, <see cref="Matrixzellenort.Nachtzeittabelle"/>).
+        /// </summary>
+        public static bool NachtzeitImBestand(Kalendereigentuemer art, Konditionierungsgroesse groesse, string zeile)
+            => groesse == Konditionierungsgroesse.Heizsoll
+               && string.Equals(zeile, DbWerte.KOND_ZEILE_NACHT, StringComparison.Ordinal)
+               && Matrixzellenort.Nachtzeittabelle(art) != null;
+
+        /// <summary>
+        /// <b>Die Merker nach der Regel des Dialogs</b> (B7; <c>GebaeudeArbeitsstand.Ableiten</c>): Der
+        /// Heizwert Wochenende setzt <c>Wochenende</c> auf 1, wenn er wirkt
+        /// (<see cref="Gebaeudemodellvorgaben.WochenendsollwertWirksam"/>), sonst 0; der Heizwert Ferien
+        /// ebenso <c>Ferien</c> (<see cref="Gebaeudemodellvorgaben.FeriensollwertWirksam"/>). Nur an
+        /// Gebäude und Katalogbau — die Zone erbt die Merker vom Gebäude.
+        /// </summary>
+        public static void Merker(Matrixeingang b, Kalendereigentuemer art, Konditionierungsgroesse groesse, string zeile)
+        {
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            if (groesse != Konditionierungsgroesse.Heizsoll || Matrixzellenort.Nachtzeittabelle(art) == null) return;
+            if (string.Equals(zeile, DbWerte.KOND_ZEILE_WOCHENENDE, StringComparison.Ordinal) && b.SollWochenende.HasValue)
+                b.Wochenendmerker = Gebaeudemodellvorgaben.WochenendsollwertWirksam(b.SollWochenende.Value) ? 1.0 : 0.0;
+            else if (string.Equals(zeile, DbWerte.KOND_ZEILE_FERIEN, StringComparison.Ordinal) && b.SollFerien.HasValue)
+                b.Ferienmerker = Gebaeudemodellvorgaben.FeriensollwertWirksam(b.SollFerien.Value) ? 1.0 : 0.0;
         }
 
         /// <summary>
@@ -185,7 +235,9 @@ namespace WindowsFormsApplication1
             if (l.Befund != Fahrplanbefund.Erzeugt) return Ebenenergebnis.Fehler(Abgelehnt(l));
             Konditionierungskalender neu = MatrixbereichMischen(alt, l.Kalender, out string fehler);
             if (fehler != null) return Ebenenergebnis.Fehler(fehler);
-            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, neu, Kalenderherkunft.Keine));
+            // B8: Die Herkunft „aus Vorlage …" bleibt; der Vermerk des letzten Werkzeugs beschreibt die
+            // ersetzte Standardwoche nicht mehr und fällt.
+            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, neu, new Kalenderherkunft(ebene.Herkunft(groesse).Vorlage, null)));
         }
 
         /// <summary>
@@ -361,7 +413,7 @@ namespace WindowsFormsApplication1
         /// <b>Ein Werkzeug der Karte</b> auf den angelegten Kalender einer Größe
         /// (<see cref="Kalenderwerkzeuge"/>): Ohne angelegten Kalender gibt es nichts zu ändern — das
         /// wird benannt abgelehnt, statt still einen anzulegen. Der Vermerk des Werkzeugs geht in die
-        /// Herkunft.
+        /// Herkunft; die Vorlage darin bleibt (B8: <c>Bemerkung</c> = Herkunft · letzter Vermerk).
         /// </summary>
         public static Ebenenergebnis Werkzeug(Konditionierungsstand ebene, Konditionierungsgroesse groesse,
                                              Func<Konditionierungskalender, Kalenderwerkzeuge.Werkzeugbefund> werkzeug)
@@ -374,7 +426,7 @@ namespace WindowsFormsApplication1
                                                            Konditionierungsgroessen.Kennwort(groesse)));
             Kalenderwerkzeuge.Werkzeugbefund b = werkzeug(k);
             if (!b.Ok) return Ebenenergebnis.Fehler(b.Meldung);
-            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, new Kalenderherkunft(null, b.Vermerk)));
+            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, ebene.Herkunft(groesse).MitVermerk(b.Vermerk)));
         }
 
         /// <summary>
@@ -452,6 +504,17 @@ namespace WindowsFormsApplication1
         /// <b>Eine Zelle setzen</b> (Entwurf KP2 Abschnitt 2): Die Zelle trägt den gewollten Zustand
         /// samt Wert, auch den einer Bestandszelle. Geprüft wird wie am Schreibweg
         /// (<see cref="Zellenpruefung"/>), eingetragen über die Weiche (<see cref="Eintragen"/>).
+        /// Danach die Regeln des Editors:
+        /// <list type="bullet">
+        /// <item>eine unbeheizte Zone trägt weder Heiz- noch Kühlzellen, die Kühlspalte einer Zone folgt
+        /// dem Gebäude (Konzept 3.4, E49 A4 (a)) — beides benannt abgelehnt;</item>
+        /// <item>eine Lüftungszelle über der Gesamtangabe <c>Luftwechselrate</c> verlangt erst die
+        /// Rückfrage „aufteilen" (E56 F5 (a), <see cref="LuftwechselAufteilen"/>);</item>
+        /// <item>P1 beim Übergang der Personenspalte (<see cref="Personenvorschlag"/>,
+        /// <see cref="Personenlast"/>);</item>
+        /// <item>angelegte, nicht von Hand geänderte Kalender folgen der Matrix (E56 F2 (a),
+        /// <see cref="Folgen"/>).</item>
+        /// </list>
         /// </summary>
         public static Konditionierungsschritt ZelleSetzen(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                           string zeile, Matrixzelle zelle)
@@ -461,34 +524,63 @@ namespace WindowsFormsApplication1
             if (zelle == null) throw new ArgumentNullException(nameof(zelle));
             Konditionierungsstand ebene = stand.Ebene(ort.Zone);
             if (ebene == null) return ZoneFehlt(ort);
+            string regel = Zonenregel(stand, ort);
+            if (regel != null) return Konditionierungsschritt.Fehler(regel);
 
             string pruefung = Zellenpruefung(ort.Groesse, zeile, zelle);
             if (pruefung != null) return Konditionierungsschritt.Fehler(pruefung);
+            if (ort.Groesse == Konditionierungsgroesse.Lueftung && Konditionierungsstand.Traegt(zelle)
+                && Gesamtangabe(stand, ort))
+                return Konditionierungsschritt.Frage(Bilanz(Ersetzt(Konditionierungspostenart.Luftwechsel, 1)));
 
             Ebenenergebnis r = Eintragen(ebene, ort.Groesse, zeile, zelle);
             if (!r.Ok) return Konditionierungsschritt.Fehler(r.Meldung);
             Konditionierungsarbeitsstand neu = stand.MitEbene(ort.Zone, r.Stand);
+            if (ort.Groesse == Konditionierungsgroesse.Personen
+                && !string.Equals(zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal))
+                neu = Personenvorschlag(neu, ort, ohneAnteil: false);
+            neu = Personenlast(stand, neu, ort);
+            string fehler = Folgen(stand, ref neu);
+            if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
             return Konditionierungsschritt.Gut(neu, Bilanz(Ersetzt(Konditionierungspostenart.Matrixzellen, 1)));
         }
 
         /// <summary>
         /// <b>„Kalender anlegen"</b> am Ort (Konzept 3.3): der Generator über der wirksamen Matrix des
-        /// Orts, mit dem Rundlauf; ein vorhandener Kalender derselben Größe wird ersetzt.
+        /// Orts, mit dem Rundlauf; ein vorhandener Kalender derselben Größe wird ersetzt. Am Gebäude
+        /// legt derselbe Schritt die Kalender der Zonen mit eigenen Werten mit an (F2 Regel 2, B4 —
+        /// „Anlegen ändert keine Reihe", <see cref="Zonenkalender"/>); ein Personenkalender bringt P1 mit.
         /// </summary>
         public static Konditionierungsschritt Anlegen(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
         {
             if (stand == null) throw new ArgumentNullException(nameof(stand));
             if (ort == null) throw new ArgumentNullException(nameof(ort));
-            Konditionierungsstand ebene = stand.Ebene(ort.Zone);
-            if (ebene == null) return ZoneFehlt(ort);
+            if (stand.Ebene(ort.Zone) == null) return ZoneFehlt(ort);
+            string regel = Zonenregel(stand, ort);
+            if (regel != null) return Konditionierungsschritt.Fehler(regel);
 
-            Ebenenergebnis r = KalenderAnlegen(ebene, stand.Matrix(ort.Zone), ort.Groesse);
+            Konditionierungsarbeitsstand a = ort.Groesse == Konditionierungsgroesse.Personen
+                ? Personenvorschlag(stand, ort, ohneAnteil: true)
+                : stand;
+            Ebenenergebnis r = KalenderAnlegen(a.Ebene(ort.Zone), a.Matrix(ort.Zone), ort.Groesse);
             if (!r.Ok) return Konditionierungsschritt.Fehler(r.Meldung);
-            return Konditionierungsschritt.Gut(stand.MitEbene(ort.Zone, r.Stand),
-                                               Bilanz(Ersetzt(Konditionierungspostenart.Kalender, 1)));
+            Konditionierungsarbeitsstand neu = a.MitEbene(ort.Zone, r.Stand);
+
+            var zonen = new List<string>();
+            if (!ort.Zone.HasValue)
+            {
+                string f = Zonenkalender(ref neu, ort.Groesse, zonen);
+                if (f != null) return Konditionierungsschritt.Fehler(f);
+            }
+            neu = Personenlast(stand, neu, ort);
+            string fehler = Folgen(stand, ref neu);
+            if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
+            return Konditionierungsschritt.Gut(neu, new Konditionierungsbilanz(
+                new[] { Ersetzt(Konditionierungspostenart.Kalender, 1), Ersetzt(Konditionierungspostenart.Zonenkalender, zonen.Count) },
+                null, zonen));
         }
 
-        /// <summary><b>„Verwerfen"</b> am Ort: Der angelegte Kalender fällt samt Perioden, die Matrix bleibt.</summary>
+        /// <summary><b>„Verwerfen"</b> am Ort: Der angelegte Kalender fällt samt Perioden, die Matrix bleibt; P1 beim Übergang.</summary>
         public static Konditionierungsschritt Verwerfen(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
         {
             if (stand == null) throw new ArgumentNullException(nameof(stand));
@@ -497,8 +589,11 @@ namespace WindowsFormsApplication1
             if (ebene == null) return ZoneFehlt(ort);
             Konditionierungskalender k = ebene.Kalender(ort.Groesse);
             if (k == null) return Konditionierungsschritt.Gut(stand);
-            return Konditionierungsschritt.Gut(stand.MitEbene(ort.Zone, KalenderVerwerfen(ebene, ort.Groesse)),
-                                               Bilanz(Kalenderposten(k, mitKalender: true)));
+            Konditionierungsarbeitsstand neu = stand.MitEbene(ort.Zone, KalenderVerwerfen(ebene, ort.Groesse));
+            neu = Personenlast(stand, neu, ort);
+            string fehler = Folgen(stand, ref neu);
+            if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
+            return Konditionierungsschritt.Gut(neu, Bilanz(Kalenderposten(k, mitKalender: true)));
         }
 
         /// <summary><b>„Matrix erneut anwenden"</b> am Ort (P12 (a)) — nur der Matrixbereich; ohne angelegten Kalender „Anlegen".</summary>
@@ -509,16 +604,17 @@ namespace WindowsFormsApplication1
             Konditionierungsstand ebene = stand.Ebene(ort.Zone);
             if (ebene == null) return ZoneFehlt(ort);
             Konditionierungskalender alt = ebene.Kalender(ort.Groesse);
+            if (alt == null) return Anlegen(stand, ort);
             Ebenenergebnis r = MatrixbereichErsetzen(ebene, stand.Matrix(ort.Zone), ort.Groesse);
             if (!r.Ok) return Konditionierungsschritt.Fehler(r.Meldung);
-            return Konditionierungsschritt.Gut(stand.MitEbene(ort.Zone, r.Stand),
-                                               alt == null ? Bilanz(Ersetzt(Konditionierungspostenart.Kalender, 1))
-                                                           : MatrixbereichBilanz(alt));
+            return Konditionierungsschritt.Gut(stand.MitEbene(ort.Zone, r.Stand), MatrixbereichBilanz(alt));
         }
 
         /// <summary>
         /// <b>„Vorlage übernehmen"</b> am Ort (P11, P12): nur in der Größe der Vorlage; die Zellen der
-        /// Vorlage in die Spalte, der Kalender angelegt (<see cref="VorlageEintragen"/>).
+        /// Vorlage in die Spalte, der Kalender angelegt (<see cref="VorlageEintragen"/>). Dieselben
+        /// Regeln wie „Zelle setzen" und „Anlegen": Zonenregel, Rückfrage „aufteilen" (F5),
+        /// Zonenkalender am Gebäude (B4), P1, Folgen (F2).
         /// </summary>
         public static Konditionierungsschritt VorlageUebernehmen(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                                  Konditionierungsvorlage vorlage)
@@ -532,15 +628,227 @@ namespace WindowsFormsApplication1
                 return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KOND_MSG_VORLAGE_GROESSE,
                     Konditionierungsgroessen.Kennwort(vorlage.Groesse), Konditionierungsgroessen.Kennwort(ort.Groesse)));
+            string regel = Zonenregel(stand, ort);
+            if (regel != null) return Konditionierungsschritt.Fehler(regel);
+
+            Konditionierungsstand inhalt = vorlage.Inhalt ?? Konditionierungsstand.Leer(Kalendereigentuemer.Vorlage, null);
+            if (ort.Groesse == Konditionierungsgroesse.Lueftung && inhalt.VorgabenAnzahl > 0 && Gesamtangabe(stand, ort))
+                return Konditionierungsschritt.Frage(Bilanz(Ersetzt(Konditionierungspostenart.Luftwechsel, 1)));
 
             Konditionierungskalender alt = ebene.Kalender(ort.Groesse);
             Ebenenergebnis r = VorlageEintragen(ebene, stand.Matrix(ort.Zone), vorlage);
             if (!r.Ok) return Konditionierungsschritt.Fehler(r.Meldung);
-            int zellen = (vorlage.Inhalt ?? Konditionierungsstand.Leer(Kalendereigentuemer.Vorlage, null)).VorgabenAnzahl;
+            Konditionierungsarbeitsstand neu = stand.MitEbene(ort.Zone, r.Stand);
+
+            var zonen = new List<string>();
+            if (!ort.Zone.HasValue)
+            {
+                string f = Zonenkalender(ref neu, ort.Groesse, zonen);
+                if (f != null) return Konditionierungsschritt.Fehler(f);
+            }
+            if (ort.Groesse == Konditionierungsgroesse.Personen)
+                neu = Personenvorschlag(neu, ort, ohneAnteil: true);
+            neu = Personenlast(stand, neu, ort);
+            string fehler = Folgen(stand, ref neu);
+            if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
+
+            int zellen = inhalt.VorgabenAnzahl;
             Konditionierungsbilanz b = alt == null
-                ? Bilanz(Ersetzt(Konditionierungspostenart.Matrixzellen, zellen), Ersetzt(Konditionierungspostenart.Kalender, 1))
+                ? new Konditionierungsbilanz(new[]
+                  {
+                      Ersetzt(Konditionierungspostenart.Matrixzellen, zellen), Ersetzt(Konditionierungspostenart.Kalender, 1),
+                      Ersetzt(Konditionierungspostenart.Zonenkalender, zonen.Count),
+                  }, null, zonen)
                 : MatrixbereichBilanz(alt, zellen);
-            return Konditionierungsschritt.Gut(stand.MitEbene(ort.Zone, r.Stand), b);
+            return Konditionierungsschritt.Gut(neu, b);
+        }
+
+        /// <summary>
+        /// <b>„Aufteilen"</b> — die Antwort auf die Rückfrage nach F5 (E56 F5 (a), B3): Die Gesamtangabe
+        /// <c>Luftwechselrate</c> des Gebäudes wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung =
+        /// der Rest; <b>der wirksame Luftwechsel bleibt</b> (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?)"/>).
+        /// Der Rest wird dezimal gebildet, damit er rund läuft (0,7 − 0,3 = 0,4, nicht 0,39999…). Die
+        /// Zonen erben die Aufteilung; trägt das Gebäude keine Gesamtangabe, ändert sich nichts.
+        /// </summary>
+        public static Konditionierungsschritt LuftwechselAufteilen(Konditionierungsarbeitsstand stand)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            Matrixeingang b = stand.Gebaeude.Bestand;
+            if (!Gesamtangabe(b)) return Konditionierungsschritt.Gut(stand);
+
+            double rate = b.Luftwechselrate.Value;
+            double infiltration = Math.Min(Gebaeudemodellvorgaben.LuftwechselInfiltration, rate);
+            double nutzer = (double)((decimal)rate - (decimal)infiltration);
+            Konditionierungsarbeitsstand neu = stand.MitGebaeude(stand.Gebaeude.MitBestand(x =>
+            {
+                x.LuftwechselInfiltration = infiltration;
+                x.LuftwechselNutzer = nutzer;
+                HerkunftDesLuftwechsels(x);
+            }));
+            string fehler = Folgen(stand, ref neu);
+            if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
+            return Konditionierungsschritt.Gut(neu, Bilanz(Ersetzt(Konditionierungspostenart.Luftwechsel, 1)));
+        }
+
+        // ---- Die Regeln der Schritte ----
+
+        /// <summary>
+        /// <b>Was eine Zone nicht trägt</b> (Konzept 3.4): Eine unbeheizte Zone hat weder Heiz- noch
+        /// Kühlkalender (N1.56 Festlegung 2), und die Kühlspalte einer Zone folgt dem Gebäude, bis KU3
+        /// Kühlkalender je Zone bringt (E49 A4 (a)). <c>null</c> = der Schritt darf.
+        /// </summary>
+        private static string Zonenregel(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
+        {
+            if (!ort.Zone.HasValue) return null;
+            Konditionierungszone z = stand.Zone(ort.Zone.Value);
+            if (z == null) return null;
+            bool klima = ort.Groesse == Konditionierungsgroesse.Heizsoll || ort.Groesse == Konditionierungsgroesse.Kuehlsoll;
+            if (klima && !z.IstBeheizt)
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_UNBEHEIZT, z.Name);
+            if (ort.Groesse == Konditionierungsgroesse.Kuehlsoll)
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_KUEHLEN, z.Name);
+            return null;
+        }
+
+        /// <summary>Trägt der Ort nur die Gesamtangabe <c>Luftwechselrate</c> (F15)? An einer Zone die aufgelösten Felder.</summary>
+        private static bool Gesamtangabe(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
+        {
+            Konditionierungszone z = ort.Zone.HasValue ? stand.Zone(ort.Zone.Value) : null;
+            return Gesamtangabe(z == null ? stand.Gebaeude.Bestand : stand.AufgeloesterBestand(z));
+        }
+
+        /// <summary>Stammt der wirksame Luftwechsel aus der Gesamtangabe?</summary>
+        public static bool Gesamtangabe(Matrixeingang b)
+        {
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            Gebaeudemodellvorgaben.WirksamerLuftwechsel(b.Luftwechselrate, b.LuftwechselInfiltration, b.LuftwechselNutzer,
+                                                        out Luftwechselherkunft herkunft);
+            return herkunft == WindowsFormsApplication1.Luftwechselherkunft.Luftwechselrate;
+        }
+
+        /// <summary>
+        /// <b>Der Personen-Nennwert als Vorschlag</b> (P1, Konzept 3.1): Trägt die Personenspalte am Ort
+        /// einen Anteil (oder wird ein Personenkalender angelegt, <paramref name="ohneAnteil"/>) und keinen
+        /// Nennwert, bekommt die Ebene Personenzahl × 70 W, auf 0,1 W gerundet (Rundlauf). Die
+        /// Personenzahl kommt aus <c>Bewohner</c> (an der Zone der Flächenanteil); ohne sie kein Vorschlag.
+        /// </summary>
+        private static Konditionierungsarbeitsstand Personenvorschlag(Konditionierungsarbeitsstand stand,
+                                                                      Konditionierungsort ort, bool ohneAnteil)
+        {
+            Vorgabematrix m = stand.Matrix(ort.Zone);
+            Matrixspalte s = m.Personen;
+            if (s.Nennwert.Belegt) return stand;
+            if (!ohneAnteil && !(s.Tag.Belegt || s.Nacht.Belegt || s.Wochenende.Belegt || s.Ferien.Belegt)) return stand;
+            Konditionierungszone z = ort.Zone.HasValue ? stand.Zone(ort.Zone.Value) : null;
+            Matrixeingang b = z == null ? stand.Gebaeude.Bestand : stand.AufgeloesterBestand(z);
+            double vorschlag = Math.Round(PersonenNennwertVorschlag(b.Bewohner, 0.0, null), 1, MidpointRounding.AwayFromZero);
+            if (!(vorschlag > 0.0)) return stand;
+            Konditionierungsstand e = stand.Ebene(ort.Zone).MitVorgabe(Konditionierungsgroesse.Personen,
+                                                                     DbWerte.KOND_ZEILE_NENNWERT, Matrixzelle.AusWert(vorschlag));
+            return stand.MitEbene(ort.Zone, e);
+        }
+
+        /// <summary>
+        /// <b>Energie bleibt (P1)</b> beim Übergang der Personenspalte am Ort (Entwurf KP2,
+        /// Festlegung 5): Wird sie wirksam (es gilt ein Personenkalender, angelegt oder abgeleitet),
+        /// sinkt <c>Interne_Waermegewinne</c> der Ebene um das Jahresmittel der Personenwärme, nie unter
+        /// 0; fällt sie weg, kommt das Jahresmittel des bisherigen Kalenders dazu. Innerhalb eines
+        /// Zustands ändert sich nichts. An der Zone wird der aufgelöste Wert ihr eigener. Auf 4
+        /// Nachkommastellen gerundet (Rundlauf).
+        /// </summary>
+        private static Konditionierungsarbeitsstand Personenlast(Konditionierungsarbeitsstand vor,
+                                                                 Konditionierungsarbeitsstand nach, Konditionierungsort ort)
+        {
+            Konditionierungskalender kVor = vor.GeltenderKalender(Konditionierungsgroesse.Personen, ort.Zone);
+            Konditionierungskalender kNach = nach.GeltenderKalender(Konditionierungsgroesse.Personen, ort.Zone);
+            if ((kVor == null) == (kNach == null)) return nach;
+
+            Konditionierungszone z = ort.Zone.HasValue ? vor.Zone(ort.Zone.Value) : null;
+            double? iwg = (z == null ? vor.Gebaeude.Bestand : vor.AufgeloesterBestand(z)).InterneWaermegewinne;
+            if (!iwg.HasValue) return nach;
+            double neu = kNach != null
+                ? GeraeteNennwertNachPersonen(iwg.Value, kNach, nach.W0, nach.Referenzjahr)
+                : iwg.Value + PersonenJahresmittelW(kVor, vor.W0, vor.Referenzjahr);
+            neu = Math.Round(neu, 4, MidpointRounding.AwayFromZero);
+            return nach.MitEbene(ort.Zone, nach.Ebene(ort.Zone).MitBestand(b => b.InterneWaermegewinne = neu));
+        }
+
+        /// <summary>
+        /// <b>F2 Regel 2 (B4)</b> — nach Anlegen oder Vorlage am Gebäude: Jede Zone ohne eigenen
+        /// Kalender der Größe, deren Matrix einen anderen Kalender ergäbe als die des Gebäudes (eigene
+        /// Zellen, eigene Bestandswerte, Flächenanteil), bekommt ihren abgeleiteten Kalender angelegt —
+        /// sonst erbte sie den des Gebäudes und verlöre ihre Werte. Unbeheizte Zonen tragen weder Heiz-
+        /// noch Kühlkalender. Scheitert der Generator an einer Zone, wird benannt abgelehnt.
+        /// </summary>
+        /// <returns><c>null</c> oder die benannte Ablehnung.</returns>
+        private static string Zonenkalender(ref Konditionierungsarbeitsstand stand, Konditionierungsgroesse groesse,
+                                            ICollection<string> zonen)
+        {
+            Fahrplanlesung lg = Standardfahrplan.Erzeugen(stand.Matrix(null), groesse, rundlaufPruefen: false);
+            foreach (Konditionierungszone z in stand.Zonen)
+            {
+                if (z.Stand.Kalender(groesse) != null) continue;
+                bool klima = groesse == Konditionierungsgroesse.Heizsoll || groesse == Konditionierungsgroesse.Kuehlsoll;
+                if (klima && !z.IstBeheizt) continue;
+                Fahrplanlesung lz = Standardfahrplan.Erzeugen(stand.Matrix(z.Id), groesse, rundlaufPruefen: true);
+                if (lz.Befund == Fahrplanbefund.KeineAngabe) continue;
+                if (lz.Befund != Fahrplanbefund.Erzeugt)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_KALENDER,
+                                         z.Name, Abgelehnt(lz));
+                if (lg.Befund == Fahrplanbefund.Erzeugt && Kalendervergleich.KalenderGleich(lz.Kalender, lg.Kalender))
+                    continue;
+                stand = stand.MitEbene(z.Id, z.Stand.MitKalender(groesse, lz.Kalender, Kalenderherkunft.Keine));
+                zonen.Add(z.Name);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Ein angelegter, nicht von Hand geänderter Kalender folgt der Matrix</b> (E56 F2 (a),
+        /// Konzept 3.3): Für jede Ebene und Größe, deren Kalender der Schritt nicht selbst gesetzt hat
+        /// und dessen Matrixbereich dem Generator der ALTEN Matrix gleicht, wird der Matrixbereich aus
+        /// der NEUEN Matrix ersetzt — eigene Perioden und Herkunft bleiben. Gleicht er nicht (eine
+        /// Handänderung), bleibt er; dann gilt P12 mit „Matrix erneut anwenden…". Läuft der Generator
+        /// nicht rund oder kollidiert ein Rang, lehnt der ganze Schritt benannt ab.
+        /// </summary>
+        /// <returns><c>null</c> oder die benannte Ablehnung.</returns>
+        private static string Folgen(Konditionierungsarbeitsstand vor, ref Konditionierungsarbeitsstand nach)
+        {
+            var orte = new List<long?> { null };
+            foreach (Konditionierungszone z in nach.Zonen) orte.Add(z.Id);
+            foreach (long? ort in orte)
+            {
+                Konditionierungsstand eVor = vor.Ebene(ort);
+                Konditionierungsstand e = nach.Ebene(ort);
+                if (eVor == null || e == null) continue;
+                bool geaendert = false;
+                Vorgabematrix mVor = null, mNach = null;
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    Konditionierungskalender k = e.Kalender(g);
+                    if (k == null || !Kalendervergleich.KalenderGleich(eVor.Kalender(g), k)) continue;
+                    mVor ??= vor.Matrix(ort);
+                    Fahrplanlesung la = Standardfahrplan.Erzeugen(mVor, g, rundlaufPruefen: false);
+                    if (la.Befund != Fahrplanbefund.Erzeugt || !Kalendervergleich.MatrixbereichGleich(k, la.Kalender)) continue;
+                    mNach ??= nach.Matrix(ort);
+                    Fahrplanlesung ln = Standardfahrplan.Erzeugen(mNach, g, rundlaufPruefen: true);
+                    string fehler = null;
+                    Konditionierungskalender neu = null;
+                    if (ln.Befund != Fahrplanbefund.Erzeugt) fehler = Abgelehnt(ln);
+                    else if (!Kalendervergleich.MatrixbereichGleich(k, ln.Kalender))
+                        neu = MatrixbereichMischen(k, ln.Kalender, out fehler);
+                    if (fehler != null)
+                        return ort.HasValue
+                            ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_KALENDER,
+                                            nach.Zone(ort.Value).Name, fehler)
+                            : fehler;
+                    if (neu == null) continue;
+                    e = e.MitKalender(g, neu, e.Herkunft(g));
+                    geaendert = true;
+                }
+                if (geaendert) nach = nach.MitEbene(ort, e);
+            }
+            return null;
         }
 
         /// <summary><b>Das Zeitfenster „Tage, von, bis, Wert"</b> auf den angelegten Kalender des Orts.</summary>
