@@ -1,6 +1,6 @@
 # P630 — Rollentarif unter EZ‑17, Rückfallträger im Ausweis, Stromsteuer-Kohärenz, Veraltet-Hinweis am Haken (Protokoll, 30.09.2026)
 
-Statuszeile folgt (#630 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile folgt (#633 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P630_Auftrag_2026-09-30.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P630_Auftrag_2026-09-30.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P556_Leistungspreis_Gruppenregel_Protokoll.md`](P556_Leistungspreis_Gruppenregel_Protokoll.md)
 (#612) und [`P555_Gruppenregel_Konzeptnachlese_Protokoll.md`](P555_Gruppenregel_Konzeptnachlese_Protokoll.md) (#603). Zweig
@@ -87,7 +87,7 @@ Welle aus, #630 nach fetch: Punkte 1, 3 und 4 zusammen, dazu Punkt 2" — alle v
   Rückfallträger), § 6.1 (Zeile P630, P556 auf #612), § 6.2 (Wachen), § 6.3 Nr. 39 geschlossen.
 - Register: EZ‑18 mit dem Wortlaut und den vier Punkten, EZ‑17 auf #612 mit Verweis, Quellenabsatz, Familientafel
   (R‑EZ 18), Kopf. `Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`: Verweis auf EZ‑13 bis EZ‑18.
-- Statusdatei: Nach #612 (a), Nach #603 (b), (c) und die Nr. 39 in (d), Nach #555 (d) als erledigt mit #630; keine
+- Statusdatei: Nach #612 (a), Nach #603 (b), (c) und die Nr. 39 in (d), Nach #555 (d) als erledigt mit #633; keine
   Statuszeile.
 - Wiki-Quelle `Programm Dokumentation - Wirtschaftlichkeit.wiki`: Anker `vergleichswahl` (Band am Haken), `hinweisband`
   und `neu-berechnen` (Anlass des Bandes), `szenarioabdeckung` (Rückfallträger), `kohaerenz` (§ 9b am Katalogträger),
@@ -107,7 +107,7 @@ Welle aus, #630 nach fetch: Punkte 1, 3 und 4 zusammen, dazu Punkt 2" — alle v
 
 ## Gate
 
-Gate #630 auf `acaf32a4a` (Windows, Worktree `p630`, 30.09.2026 12:42–12:56): Kern-Filter Release 0 Fehler; ChartProben 194
+Gate #633 auf `acaf32a4a` (Windows, Worktree `p630`, 30.09.2026 12:42–12:56): Kern-Filter Release 0 Fehler; ChartProben 194
 Bilder, alle grün — die lokale Windows-Messlatte wurde von 185 auf 194 Hashes nachgezogen (neun Kalenderbilder aus KP2 K4,
 zwölf Stapelbilder aus der Stufenregel des Stapels, alle aus Wellen der Nachbarn; Sicherung der alten Liste liegt neben ihr);
 Tests 17 611 grün, 2 übersprungen, 0 rot (Kern 9 526, UI 7 123, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27);
@@ -118,5 +118,5 @@ Dokumentationswachen 35 grün; Referenzlauf der sieben CI-Projekte gegen `2026-0
 
 Code `fe05913cb` (Rollentarif), `aa688d81c` (Rückfallträger im Ausweis), `34c499fdd` (Stromsteuer-Kohärenz), `562dd61e9`
 (Veraltet-Band), Papiere `bd19c43b0`, Merge `acaf32a4a` mit origin (#629-Nachträge, Basis R29; Konflikte im Index-Zähler und
-im Logbuch 1.2.0.6 beidseitig übernommen); Statuszeile #630 und das Gate-Feld im Papier-Commit der Orchestrierung (Zweig `p630`,
+im Logbuch 1.2.0.6 beidseitig übernommen); Statuszeile #633 und das Gate-Feld im Papier-Commit der Orchestrierung (Zweig `p630`,
 Push auf `ios_migration_september`).
