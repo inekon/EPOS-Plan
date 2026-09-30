@@ -15381,6 +15381,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wirkungsgrad [-] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_KESSEL_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("CHART_CSV_KESSEL_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang [kW] ähnelt.
         /// </summary>
         public static string CHART_CSV_PROFIL_LASTGANG {
@@ -39829,6 +39838,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_VORLAGE_ZEILE {
             get {
                 return ResourceManager.GetString("KDLG_VORLAGE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel ähnelt.
+        /// </summary>
+        public static string KESSEL_BAUART_BRENNWERT {
+            get {
+                return ResourceManager.GetString("KESSEL_BAUART_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niedertemperaturkessel ähnelt.
+        /// </summary>
+        public static string KESSEL_BAUART_NIEDERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("KESSEL_BAUART_NIEDERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardkessel ähnelt.
+        /// </summary>
+        public static string KESSEL_BAUART_STANDARD {
+            get {
+                return ResourceManager.GetString("KESSEL_BAUART_STANDARD", resourceCulture);
             }
         }
         
@@ -75666,6 +75702,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkennlinie „{0}“: η₁₀₀ {1}, η₃₀ {2} (gepflegter Wert, {3}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_KENNLINIE_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_KENNLINIE_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkennlinie „{0}“: η₁₀₀ {1}, η₃₀ {2} — Normvorgabe für einen {3}, weil kein eigener Wert gepflegt ist. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_KENNLINIE_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_KENNLINIE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel: Im Projekt sind {0} Kessel hinterlegt, die Simulation unterstützt maximal {1}. Es werden nur die ersten {2} Kessel berücksichtigt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_MAX_UEBERSCHRITTEN {
@@ -76521,6 +76575,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Vorgabe) ähnelt.
+        /// </summary>
+        public static string SIMERG_ETA30_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMERG_ETA30_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
         /// </summary>
         public static string SIMERG_GRP_AUSLEGUNG {
@@ -77212,6 +77275,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff aus Teillast gegenüber Nennlast ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_UEBERSCHUSS {
@@ -77325,6 +77397,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_WAERMEUEBERSCHUSS {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_WAERMEUEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Wirkungsgrad im Betrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WIRKUNGSGRAD_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WIRKUNGSGRAD_BETRIEB", resourceCulture);
             }
         }
         
@@ -77505,6 +77586,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teillast Brennstof [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_KENNLINIE_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_KENNLINIE_SPK", resourceCulture);
             }
         }
         
@@ -82721,6 +82811,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η₃₀ [%] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_ETA30 {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_ETA30", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
         /// </summary>
         public static string SIM_SPALTE_FLAECHE {
@@ -82753,6 +82852,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_LADEN {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlere Laststufe [%] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_LASTSTUFE {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_LASTSTUFE", resourceCulture);
             }
         }
         
@@ -82897,6 +83005,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_WAERMEPRODUKTION {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_WAERMEPRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad im Betrieb [%] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_WIRKUNGSGRAD_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_WIRKUNGSGRAD_BETRIEB", resourceCulture);
             }
         }
         

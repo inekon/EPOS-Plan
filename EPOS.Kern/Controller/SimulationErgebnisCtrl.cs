@@ -465,9 +465,22 @@ namespace WindowsFormsApplication1
         //  Heizkessel
         // =================================================================
 
-        /// <summary>Eine Zeile der Kesseltabelle.</summary>
+        /// <summary>
+        /// Eine Zeile der Kesseltabelle. Die Kennliniengrößen (Konzept Kesselkennlinie 5, Etappe E2)
+        /// tragen Vorgaben, mit denen eine Zeile ohne Kennlinie — der Elektrokessel — sie nicht zeigt:
+        /// <paramref name="MitKennlinie"/> false.
+        /// </summary>
+        /// <param name="TeillastwirkungsgradProzent">das wirksame η₃₀ [%], gepflegt oder Normvorgabe</param>
+        /// <param name="TeillastVorgabe">η₃₀ ist die Normvorgabe nach Bauart (Feld leer)</param>
+        /// <param name="WirkungsgradBetriebProzent">mittlerer Wirkungsgrad der Laufstunden [%], wärmegewichtet</param>
+        /// <param name="LaststufeProzent">mittlere Laststufe der Laufstunden [%]</param>
         public sealed record KesselModulZeile(string Name, double GasMwh, double OelMwh,
-                                              double JahresnutzungsgradProzent);
+                                              double JahresnutzungsgradProzent,
+                                              bool MitKennlinie = false,
+                                              double TeillastwirkungsgradProzent = 0,
+                                              bool TeillastVorgabe = false,
+                                              double WirkungsgradBetriebProzent = 0,
+                                              double LaststufeProzent = 0);
 
         public sealed class HeizkesselErgebnis
         {
@@ -509,6 +522,24 @@ namespace WindowsFormsApplication1
 
             /// <summary>Bereitschaftsverlust aller Kessel [kWh/a] — Teil des Brennstoffeinsatzes.</summary>
             public double BereitschaftsverlustKwh;
+
+            /// <summary>
+            /// Führt der Lauf mindestens einen Brennstoffkessel, also einen Kessel mit
+            /// Teillastkennlinie (Konzept Kesselkennlinie 4.1)? Der Elektrokessel hat keine.
+            /// </summary>
+            public bool MitKennlinie;
+
+            /// <summary>
+            /// Mittlerer Wirkungsgrad der Brennstoffkessel im Betrieb [%]: Wärme der Laufstunden
+            /// durch ihren Brennstoff, über alle Brennstoffkessel — ohne Bereitschaftsverlust.
+            /// </summary>
+            public double WirkungsgradBetriebProzent;
+
+            /// <summary>
+            /// Mehrbrennstoff aus Teillast gegenüber dem Betrieb mit η₁₀₀ [kWh/a], Summe über die
+            /// Brennstoffkessel; negativ, wo die Teillast Brennstoff spart (Brennwertkessel).
+            /// </summary>
+            public double TeillastMehrbrennstoffKwh;
 
             /// <summary>
             /// Die WIRKSAME Heizgrenze des Laufs [°C] — ein Tag mit einem Tagesmittel der
@@ -619,6 +650,7 @@ namespace WindowsFormsApplication1
             e.Heiztage = spk.Heiztage_Anzahl;
 
             int kessel = Math.Min(spk.spk_list.Count, SimulationSPK.MAX_SPK);
+            double waermeBetrieb = 0, brennstoffBetrieb = 0;
             for (int i = 0; i < kessel; i++)
             {
                 e.Laufstunden += spk.Laufstunden_Spk[i];
@@ -626,12 +658,28 @@ namespace WindowsFormsApplication1
                 e.Bereitschaftsstunden += spk.Bereitschaftsstunden_Spk[i];
                 e.BereitschaftsverlustKwh += spk.Bereitschaftsverlust_KWh_Spk[i];
                 if (spk.WirkungsgradIstPlatzhalter(i)) e.NutzungsgradPlatzhalter.Add(spk.spk_list[i]);
+
+                // Konzept Kesselkennlinie 5 (Etappe E2): die Teillastgrößen der Brennstoffkessel.
+                if (spk.IstStromkessel(i)) continue;
+                e.MitKennlinie = true;
+                waermeBetrieb += spk.WaermeBetriebKwh(i);
+                brennstoffBetrieb += spk.BrennstoffBetrieb_KWh_Spk[i];
+                e.TeillastMehrbrennstoffKwh += spk.TeillastMehrbrennstoff_KWh_Spk[i];
             }
+            e.WirkungsgradBetriebProzent = brennstoffBetrieb > 0 ? waermeBetrieb / brennstoffBetrieb * 100.0 : 0;
 
             for (int i = 0; i < spk.spk_list.Count; i++)
+            {
+                bool kennlinie = i < SimulationSPK.MAX_SPK && !spk.IstStromkessel(i);
                 e.Module.Add(new KesselModulZeile(
                     spk.spk_list[i], spk.s_waerme_Gas_Spk[i], spk.s_waerme_Oel_Spk[i],
-                    spk.Kessel_Jahresnutzungsgrad_Spk[i]));
+                    spk.Kessel_Jahresnutzungsgrad_Spk[i],
+                    kennlinie,
+                    kennlinie ? spk.Teillastwirkungsgrad(i) * 100.0 : 0,
+                    kennlinie && spk.TeillastwirkungsgradIstVorgabe(i),
+                    kennlinie ? spk.WirkungsgradBetrieb(i) * 100.0 : 0,
+                    kennlinie ? spk.LaststufeMittel(i) * 100.0 : 0));
+            }
 
             return e;
         }

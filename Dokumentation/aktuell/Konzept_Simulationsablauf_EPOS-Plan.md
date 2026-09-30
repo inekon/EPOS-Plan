@@ -958,6 +958,19 @@ Heizkessel-Reiter zeigt dieselben Zahlen als Gruppe „Betrieb“ (Summe über d
 nennt die wirksame Heizgrenze; der
 Jahresnutzungsgrad ist die Nutzwärme geteilt durch den gesamten Brennstoffeinsatz (Laufstunden und Bereitschaft).
 
+**Teillastkennlinie** ([Konzept Kesselkennlinie](Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1). Ein
+laufender Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner Laststufe β = brennstoffbasierte
+Wärme / Nennleistung: zwischen β = 0,3 und 1 linear von η₃₀ (`Wirkungsgrad_Teillast30`) nach η₁₀₀
+(`Wirkungsgrad_Gas`/`_Öl`), darunter η₃₀ (`Kesselkennlinie.Eta`, gerufen in `SimulationSPK.Stunde_Abschluss`).
+Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart: Brennwertkessel (`Brennwert` = 1) η₁₀₀ + 0,06, höchstens
+Hs/Hi des Brennstoffs; Standardkessel (Beschreibung „Standard…“) η₁₀₀ − 0,03; sonst η₁₀₀ — der
+Niedertemperaturkessel rechnet damit Stunde für Stunde wie mit festem Wirkungsgrad. Die Kurve ist stetig und
+hat keine Betriebsschwelle. Der Reiter zeigt in der Gruppe „Betrieb“ den mittleren Wirkungsgrad im Betrieb
+(Wärme der Laufstunden durch ihren Brennstoff) und den Brennstoff aus Teillast gegenüber Nennlast, die
+Kesseltabelle je Kessel η₃₀ (mit „(Vorgabe)“), den Wirkungsgrad im Betrieb und die mittlere Laststufe; der
+CSV-Export führt je Brennstoffkessel die Stundenreihe des Wirkungsgrads, das Laufprotokoll η₁₀₀ und η₃₀ samt
+Herkunft.
+
 **Elektrokessel** (`Tab_Heizkessel.Brennstoff` = 13). Sein Strom steht über den Stromverbrauch der
 Stufe im Reststrombedarf und damit im Netzbezug, den Kostenrechnung und Emissionsbilanz bewerten.
 Seine Modulzeile führt deshalb keinen Brennstoffverbrauch, und er trägt **keine Kesselemission**
@@ -974,5 +987,5 @@ höchste Stundenwert von Wärmeabgabe ÷ Wirkungsgrad, bei mehreren Kesseln die 
 Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
-Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests` und der Referenzbasis
-`2026-09-29_R26_Kesselrest` (Größen `Kessel[i].*` in `aggregate.csv`).
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests` und der
+Referenzbasis `2026-09-30_R27_Kesselteillast` (Größen `Kessel[i].*` in `aggregate.csv`).

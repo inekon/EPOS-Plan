@@ -164,6 +164,15 @@
                                hinweis: BetriebHinweis)
                     @Wertzeile(Resource.SIMERG_LBL_BEREITSCHAFTSVERLUST, Zahl(Daten.BereitschaftsverlustKwh), "kWh/a",
                                hinweis: BetriebHinweis)
+                    @* Konzept Kesselkennlinie 5 (Etappe E2): was die Teillastkennlinie im Jahr
+                       bewirkt - nur mit einem Brennstoffkessel; der Elektrokessel hat keine. *@
+                    @if (Daten.MitKennlinie)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, Zahl(Daten.WirkungsgradBetriebProzent), "%",
+                                   hinweis: Resource.SIMERG_TIP_KENNLINIE_SPK)
+                        @Wertzeile(Resource.SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF, Zahl(Daten.TeillastMehrbrennstoffKwh), "kWh/a",
+                                   hinweis: Resource.SIMERG_TIP_KENNLINIE_SPK)
+                    }
                 </dl>
             </section>
         </div>
@@ -189,6 +198,12 @@
                         <th scope="col">@Resource.SIM_SPALTE_BRENNSTOFFE</th>
                         <th scope="col">@Resource.SIM_SPALTE_OEL</th>
                         <th scope="col">@Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD</th>
+                        @if (Daten.MitKennlinie)
+                        {
+                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_ETA30</th>
+                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_WIRKUNGSGRAD_BETRIEB</th>
+                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_LASTSTUFE</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -201,6 +216,13 @@
                             <td class="epos-simerg-zahl">@Zahl(m.GasMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.OelMwh)</td>
                             <td class="epos-simerg-zahl">@m.JahresnutzungsgradProzent.ToString("F1", Kultur)</td>
+                            @if (Daten.MitKennlinie)
+                            {
+                                @* Der Elektrokessel hat keine Kennlinie: Strich statt 0. *@
+                                <td class="epos-simerg-zahl">@(m.MitKennlinie ? Eta30Text(m) : STRICH)</td>
+                                <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.WirkungsgradBetriebProzent.ToString("F1", Kultur) : STRICH)</td>
+                                <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.LaststufeProzent.ToString("F0", Kultur) : STRICH)</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -252,6 +274,19 @@
 
 @code {
     private const string MWH = "MWh/a";
+
+    /// <summary>Zelle einer Kennliniengröße ohne Kennlinie (Elektrokessel).</summary>
+    private const string STRICH = "–";
+
+    /// <summary>
+    /// Das wirksame η₃₀ einer Kesselzeile [%] — mit dem Zusatz „(Vorgabe)“, wenn das Feld leer
+    /// ist und die Normvorgabe nach Bauart gilt (Konzept Kesselkennlinie 7.1).
+    /// </summary>
+    private static string Eta30Text(WindowsFormsApplication1.SimulationErgebnisCtrl.KesselModulZeile m)
+    {
+        string wert = m.TeillastwirkungsgradProzent.ToString("F1", Kultur);
+        return m.TeillastVorgabe ? string.Format(Kultur, Resource.SIMERG_ETA30_VORGABE, wert) : wert;
+    }
 
     private static System.Globalization.CultureInfo Kultur
         => System.Globalization.CultureInfo.CurrentCulture;
