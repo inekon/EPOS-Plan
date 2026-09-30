@@ -17795,6 +17795,9 @@ Please go through the project page again so that the data of the selected projec
   <data name="WIRT_GL_NOMINAL" xml:space="preserve">
     <value>nominal {0}</value>
   </data>
+  <data name="WIRT_GL_NOMINAL_TIPP" xml:space="preserve">
+    <value>Sum of payments over {0} years, not discounted</value>
+  </data>
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Difference {0} − {1}</value>
   </data>

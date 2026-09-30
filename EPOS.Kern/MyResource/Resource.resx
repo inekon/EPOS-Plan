@@ -17784,6 +17784,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="WIRT_GL_NOMINAL" xml:space="preserve">
     <value>nominal {0}</value>
   </data>
+  <data name="WIRT_GL_NOMINAL_TIPP" xml:space="preserve">
+    <value>Summe der Zahlungen über {0} Jahre, nicht abgezinst</value>
+  </data>
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Differenz {0} − {1}</value>
   </data>

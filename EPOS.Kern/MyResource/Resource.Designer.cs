@@ -97724,6 +97724,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Zahlungen über {0} Jahre, nicht abgezinst ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NOMINAL_TIPP {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NOMINAL_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende ähnelt.
         /// </summary>
         public static string WIRT_GL_RESTWERT {

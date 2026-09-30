@@ -1582,11 +1582,13 @@
                                 @for (int i = 0; i < z.Zellen.Count; i++)
                                 {
                                     string unter = z.Unterwert(i);
+                                    string unterTitel = z.TitelZuUnterwert(i);
                                     <td class="epos-matrix-zelle">
                                         @z.Zellen[i]
                                         @if (unter.Length > 0)
                                         {
-                                            <span class="epos-wirt-nominal">@unter</span>
+                                            <span class="epos-wirt-nominal"
+                                                  title="@(unterTitel.Length > 0 ? unterTitel : null)">@unter</span>
                                         }
                                     </td>
                                 }

@@ -150,6 +150,17 @@ public sealed class MatrixZeile
            ? Unterwerte[spalte] ?? "" : "";
 
     /// <summary>
+    /// Je Zelle der Kurztext zur zweiten Zeile (Tooltip an „nominal …": „Summe der Zahlungen
+    /// über T Jahre, nicht abgezinst"). Leer oder kürzer als <see cref="Zellen"/> = keiner.
+    /// </summary>
+    public IReadOnlyList<string> Unterwerttitel { get; set; } = Array.Empty<string>();
+
+    /// <summary>Der Kurztext zur zweiten Zeile der Zelle <paramref name="spalte"/>; <c>""</c> = keiner.</summary>
+    public string TitelZuUnterwert(int spalte)
+        => Unterwerttitel is not null && spalte >= 0 && spalte < Unterwerttitel.Count
+           ? Unterwerttitel[spalte] ?? "" : "";
+
+    /// <summary>
     /// Der Kurztext der Zeile — was die Größe umfasst (Tooltip am Titel, etwa an den
     /// Wärmegestehungskosten); leer = keiner. Die Hülle übernimmt ihn aus der Zeilendefinition
     /// des Kerns.

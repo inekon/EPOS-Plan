@@ -555,7 +555,12 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
             {
                 IElement? nominal = zellen[s].QuerySelector(".epos-wirt-nominal");
                 if (r == 0) Assert.Null(nominal);                               // Investition: Jahr 0
-                else Assert.StartsWith("nominal ", nominal!.TextContent);
+                else
+                {
+                    Assert.StartsWith("nominal ", nominal!.TextContent);
+                    // Anwenderentscheid 30.09.2026: der Kurztext an „nominal …".
+                    Assert.Equal("Summe der Zahlungen über 20 Jahre, nicht abgezinst", nominal.GetAttribute("title"));
+                }
                 Assert.False(string.IsNullOrWhiteSpace(Barwert(zellen[s])));
             }
             Assert.Null(zellen[3].QuerySelector(".epos-wirt-nominal"));         // Differenzspalte ohne
@@ -668,19 +673,24 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
                               Unterwerte = new[] { "", "", "", "" } },
             new MatrixZeile { Titel = "Betriebskosten",
                               Zellen = new[] { "−10.000", "−14.000", "−12.000", "−4.000" },
-                              Unterwerte = new[] { "nominal 12.000", "nominal 17.000", "nominal 15.000", "" } },
+                              Unterwerte = new[] { "nominal −12.000", "nominal −17.000", "nominal −15.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Energiekosten", Kennzeichen = "einschließlich CO₂-Abgabe",
                               Zellen = new[] { "−150.000", "−80.000", "−100.000", "+70.000" },
-                              Unterwerte = new[] { "nominal 190.000", "nominal 100.000", "nominal 125.000", "" } },
+                              Unterwerte = new[] { "nominal −190.000", "nominal −100.000", "nominal −125.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Erlöse", Kennzeichen = "zahlungswirksam — Block A",
                               Zellen = new[] { "0", "+3.000", "+20.000", "+3.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 4.000", "nominal 26.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +4.000", "nominal +26.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Ersatzbeschaffungen",
                               Zellen = new[] { "0", "−2.000", "−5.000", "−2.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 3.000", "nominal 8.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal −3.000", "nominal −8.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Restwert am Ende",
                               Zellen = new[] { "0", "+5.300", "+4.000", "+5.300" },
-                              Unterwerte = new[] { "nominal 0", "nominal 9.600", "nominal 7.200", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +9.600", "nominal +7.200", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Nettobarwert", IstSumme = true,
                               Zellen = new[] { "−160.000", "−147.700", "−183.000", "+12.300" } }
         }
