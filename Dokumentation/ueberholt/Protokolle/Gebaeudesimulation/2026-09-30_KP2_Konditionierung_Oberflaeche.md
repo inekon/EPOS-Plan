@@ -4,7 +4,7 @@
 **Stufe** KP2 der [Konditionierungsprofile](../../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) ·
 **Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../../aktuell/Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) ·
 **Entscheid** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) · **Festlegungen der
-Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4)
+Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
 Vorlagen, Nachtauskühlung). Das Protokoll wächst mit jeder Welle; jede Welle bekommt einen Abschnitt unter 2 und eine
@@ -113,6 +113,27 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Spalte „Kalender"** der Gebäude-Katalogauswahl und der Verwaltung: Zahl der angelegten Kalender je Katalogbau.
 - **`NachtauskuehlstundenH`** in Bedarfsauskunft, Hülle und DTO (Gebäude und Zone), noch ohne sichtbare Zeile.
 
+### U1 — Reiter „Konditionierung" und Matrix
+
+- **Reiter** in allen Modi des Gebäudeeditors: Vorgabe-Matrix der fünf Größen, am Behälter umbrechend (breit Tabelle
+  und fünf Karten, schmal fünf Reiter je Größe); Karten eingeklappt mit Zustandszeile und den Handlungen Kalender
+  anlegen, Verwerfen, „Matrix erneut anwenden…", Zurücknehmen; Lesemodus mit Grund; ohne Konditionierungstabellen
+  benannt gesperrt.
+- **Rückfragen** aus dem Befund vor dem Schreiben; „aufteilen" der Gesamtangabe (F5); „aus dem Katalog erneut
+  übernehmen…" im Reiterkopf; „Speichern unter" im Projekt stellt eine Frage für Zonen, Bauteile und Konditionierung.
+  Vor OK wird nichts geschrieben (Integrationsproben für Anlegen, Verwerfen, Zurücknehmen, „aufteilen").
+- **Altfelder (F3 a)** nur noch im Reiter; Reiter 1 behält Luftwechselrate, „Kühlung aktiv", Kühlleistung,
+  Kühlübergabe und eine Herleitungszeile.
+- **Projektbezug** des Wegs: Referenzjahr, Kühlbetrieb und Anlagenkopplung aus dem Projekt
+  (`Waermeuebergabe.KopplungWirksamFuer`); Vorschautitel je Größe.
+- **Hausweit:** `Zahlen.ZahlParsen` nur endlich; Hilfepille und KI-Ring 44 px; breiter Editor ohne Deckel.
+- **Assistent:** Feldkarte der Matrix aus `KiKonditionierungsfelder` (36 Felder, `IKiFeldtafel`); Aktionswissen
+  „Matrix", „Kalender anlegen", „Nachtauskühlung".
+- **Bedarfsdialog:** Zeile „Stunden mit Nachtauskühlung" und Zonenspalte nur mit Wert.
+- **Konditionierungsprobe:** reiner Weg ohne Datenbank (`KonditionierungHuelle.ReinerWeg`), neue Fälle; 24 Läufe ohne
+  Verstoß. Zwei Fotobefunde behoben: Knöpfe brachen im Wort („Zurückneh|men" bei 390 px, „Verwerfe|n" bei 1 180 px) —
+  die Knopfzeilen brechen jetzt zwischen den Knöpfen.
+
 ## 3. Schemaschritte
 
 **157** (K3, `KonditionierungsvorlagenSaatSchema`): reines DML, die 14 Vorlagen samt Feiertagskalendern; Nummer als `KesselKennlinieSchema.SCHRITT + 1` — 156 hat die Kessel-Kennlinie (#616) belegt.
@@ -132,7 +153,14 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Rangband der Feiertagsregeln (K3):** `KonditionierungsvorlageCtrl.Uebernehmen` legt die Feiertagsregeln einer
   Vorlage ins Eigenband (Rang 310 und mehr), über die Ferien; das Teilkonzept stellt sie darunter. Bei der Saat ohne
   Wirkung (Ferienwert gleich Sonntagswert); an K2 übergeben, das die Übernahme als reinen Schritt neu fasst.
-- **Offene Punkte aus K2 für U1:** Eine Zelle an einer Zone, die den angelegten Kalender des Gebäudes erbt, wirkt erst
+- **Festlegungen der Welle U1:** (1) Die Kette steht nach Teilkonzept 3.4 wörtlich: Unter einem angelegten
+  Gebäudekalender wirken Zonenzelle und Heiz-Nachtzeile erst, wenn die Zone einen eigenen Kalender führt („vom Gebäude
+  übernehmen und anpassen"). (2) Auf dem Tagesbilanz-Weg zeigt die Matrix nur die Altweg-Felder (Teilkonzept 2.2), der
+  Kühlsollwert ist dort nicht bearbeitbar. (3) Die Kühlspalte sperrt allein „Kühlung aktiv"; der Projektbezug schließt
+  den Kühlbetrieb ein wie die Rechnung. (4) Das Aktionswissen ist deutsch, die englischen Suchwörter stehen in den
+  Titeln. (5) Das Stammblatt der Verwaltung behält die Altfelder bis U4. (6) Die Setzer des Assistenten für die
+  Bestandsfelder laufen im Editor über den Weg.
+- **Offene Punkte aus K2 für U1** (erledigt mit U1, siehe Festlegung 1 und Projektbezug): Eine Zelle an einer Zone, die den angelegten Kalender des Gebäudes erbt, wirkt erst
   mit eigenem Zonenkalender; eine eigene Heiz-Nachtzeile der Zone wird übergangen, wenn das Gebäude einen angelegten
   Heizkalender hat; die Hülle nimmt die Anlagenkopplung als unwirksam und das Referenzjahr fest mit 2025.
 - **Verwaltung ohne Spalte:** Das gemeinsame Profil der Gebäudeauswahl trägt seit K4 die Spalte „Kalender"; die
@@ -155,12 +183,15 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 | Abnahme K2 im Worktree (`9bd0d01b`) | Kern 9 339, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
 | Abnahme K4 im Worktree (`60c213d1`) | Kern 9 307, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben 231 Bilder gleich der neuen Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
 | Gate KP2c auf K2 und K4 zusammen (`77a3e06f`) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte `Messlatte_2026-09-30` (194), Tests Kern 9 365, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 15/15 **PASS, 460/460 CSV byte-gleich gegen R26**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 142 Texte); Windows-Schale 0 Fehler; Auslieferungsvorlage 44/44. |
+| Abnahme U1 im Worktree (`ad742770`) | Kern 9 372, UI 7 082, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 24 Läufe ohne Verstoß, 76 Fotos außerhalb des Repositorys |
+| Nach dem Merge U1 (`4d82a032`) | Kern-Filter 0; UI 7 082; Kern 1 413 gezielt grün; Windows-Schale 0 |
+| Kern-Lauf auf `d8adcfe2` (#621) | grün (36664696918) |
 | Kern-Lauf auf `2a767569` (#619) | grün (36657553771) |
 | Nach dem Merge K3 (`a221dd41`) | Kern-Filter 0 Fehler; 328 gezielte Tests (Konditionierung, Schema, Wachen) grün; Referenzlauf 15/15 PASS, 460/460 byte-gleich gegen R26 |
 
 ## 6. Offen
 
-- **Wellen** **U1** (Reiter und Matrix, läuft), **U2** (Vorlagen je Karte, danach SA1),
+- **Wellen** **U2** (Vorlagen je Karte, danach SA1),
   **U3** (Karte), **U4** (Zonen, Katalog, Verwaltung), **U5** (Abschluss, SA2).
 - **Windows-Sichtprobe** der schon sichtbaren Änderungen, mit SA1: „Speichern unter" bleibt offen (Katalog und Projekt),
   breite Überlagerung des Katalogeditors, Grundzeile und weich gesperrtes OK an einem ausgelieferten Satz.
