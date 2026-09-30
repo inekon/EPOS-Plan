@@ -67,12 +67,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = ?",
                                   GebaeudeKatalogverweis.INDEX));
 
-            // 29 Projektgebäude: die 26 des Schritts 121, 10653 (die Kopie von 10599 im
+            // 30 Projektgebäude: die 26 des Schritts 121, 10653 (die Kopie von 10599 im
             // Referenzprojekt der Anlagenkopplung 1047), die Kopie von 10645 im Prüfprojekt
-            // PV mit Preisen 1048 und die Kopie des Gebäudes von 1018 im Referenzprojekt
-            // Solarthermie 1049 - jede mit dem Verweis ihrer Vorlage.
-            Assert.Equal(29L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
-            Assert.Equal(29L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
+            // PV mit Preisen 1048, die Kopie des Gebäudes von 1018 im Referenzprojekt
+            // Solarthermie 1049 und 10656, die Kopie von 10628 im Referenzprojekt
+            // Kesselkennlinie 1050 - jede mit dem Verweis ihrer Vorlage.
+            Assert.Equal(30L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
+            Assert.Equal(30L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
                                    "ON s.ID = g.ID_Gebaeude_Stamm WHERE s.Bezeichner = g.Gebaeudename"));
             Assert.Equal(0L, Zahl(GebaeudeKatalogverweis.ZaehlungOhneVerweis()));
             Assert.Equal((long)STAMM_EFH, Zahl("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
@@ -105,14 +106,15 @@ namespace EPOS.Kern.Tests
             // Ein gesetzter Verweis bleibt stehen, auch wenn der Name anderes sagt.
             Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = ? WHERE ID = 10599", STAMM_EFH);
 
-            // 25 = 29 Projektgebäude - 10599 (gesetzt) - 3 ohne eindeutigen Namen; darin 10653, die
+            // 26 = 30 Projektgebäude - 10599 (gesetzt) - 3 ohne eindeutigen Namen; darin 10653, die
             // Kopie von 10599 im Referenzprojekt der Anlagenkopplung 1047, die Kopie von 10645
-            // im Prüfprojekt PV mit Preisen 1048 und die Kopie des Gebäudes von 1018 im
-            // Referenzprojekt Solarthermie 1049.
-            Assert.Equal(25L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
+            // im Prüfprojekt PV mit Preisen 1048, die Kopie des Gebäudes von 1018 im
+            // Referenzprojekt Solarthermie 1049 und 10656, die Kopie von 10628 im Referenzprojekt
+            // Kesselkennlinie 1050.
+            Assert.Equal(26L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
             GebaeudeKatalogverweis.Bericht b = GebaeudeKatalogverweis.Ausfuehren();
 
-            Assert.Equal(25L, b.Nachgetragen);
+            Assert.Equal(26L, b.Nachgetragen);
             Assert.Equal(3L, b.OhneVerweis);                 // 1 ohne Katalogsatz + 2 mehrdeutig
             Assert.Null(Wert("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = 'MFH-H-U-112' " +
