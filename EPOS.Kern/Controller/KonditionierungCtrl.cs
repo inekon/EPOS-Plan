@@ -530,10 +530,7 @@ namespace WindowsFormsApplication1
         /// vergibt: <c>FERIEN</c> (die Ferienzeiträume) und <c>BETRIEBSPAUSE</c> (die Saison).
         /// <c>ZEITRAUM</c> und <c>FEIERTAG</c> gehören dem Anwender und bleiben.
         /// </summary>
-        public static bool IstMatrixbereich(Kalenderregel r)
-            => r != null
-               && (string.Equals(r.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal)
-                   || string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal));
+        public static bool IstMatrixbereich(Kalenderregel r) => Konditionierungsarbeit.IstMatrixbereich(r);
 
         // =================================================================
         //  Vorgabezeilen schreiben
@@ -596,33 +593,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <returns><c>null</c>, wenn die Zelle passt, sonst die benannte Ablehnung.</returns>
         internal static string ZellePruefen(Konditionierungsgroesse groesse, string zeile, Matrixzelle zelle)
-        {
-            bool bekannt = false;
-            foreach (string z in DbWerte.KOND_ZEILEN)
-                if (string.Equals(zeile, z, StringComparison.Ordinal)) { bekannt = true; break; }
-            if (!bekannt) return "Die Zeile „" + (zeile ?? "leer") + "“ ist keine der sechs.";
-
-            if (!zelle.Belegt || zelle.Aus) return null;
-
-            if (string.Equals(zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal))
-            {
-                if (Konditionierungsgroessen.HatNennwert(groesse))
-                    return !(zelle.Wert >= 0.0) || double.IsInfinity(zelle.Wert)
-                        ? "Der Nennwert " + Zahltext(zelle.Wert) + " W ist negativ oder nicht endlich."
-                        : null;
-                return Konditionierungsgroessen.ImBereich(groesse, zelle.Wert)
-                    ? null
-                    : "Der Wert liegt außerhalb der Grenzen " +
-                      Konditionierungsgroessen.Bereichstext(groesse) + ".";
-            }
-
-            if (string.Equals(zeile, DbWerte.KOND_ZEILE_SAISON, StringComparison.Ordinal)) return null;
-
-            return Konditionierungsgroessen.ImBereich(groesse, zelle.Wert)
-                ? null
-                : "Der Wert liegt außerhalb der Grenzen " +
-                  Konditionierungsgroessen.Bereichstext(groesse) + ".";
-        }
+            => Konditionierungsarbeit.Zellenpruefung(groesse, zeile, zelle);
 
         /// <summary>
         /// <b>Derselbe Zellenschreibweg im laufenden Vorgang</b> — samt der Weiche
@@ -688,14 +659,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double PersonenNennwertVorschlag(double? bewohner, double nutzflaecheM2,
                                                        double? flaecheJeNutzer)
-        {
-            double zahl = bewohner.HasValue && bewohner.Value > 0.0
-                ? bewohner.Value
-                : flaecheJeNutzer.HasValue && flaecheJeNutzer.Value > 0.0 && nutzflaecheM2 > 0.0
-                    ? nutzflaecheM2 / flaecheJeNutzer.Value
-                    : 0.0;
-            return zahl * Matrixeingang.PERSON_W;
-        }
+            => Konditionierungsarbeit.PersonenNennwertVorschlag(bewohner, nutzflaecheM2, flaecheJeNutzer);
 
         /// <summary>
         /// <b>Der Geräte-Nennwert nach dem Anlegen eines Personenkalenders</b> (P1 (b),
@@ -709,29 +673,15 @@ namespace WindowsFormsApplication1
         public static double GeraeteNennwertNachPersonen(double interneWaermegewinneW,
                                                         Konditionierungskalender personen,
                                                         int w0, int referenzjahr)
-        {
-            if (personen == null) return interneWaermegewinneW;
-            double mittel = PersonenJahresmittelW(personen, w0, referenzjahr);
-            double rest = interneWaermegewinneW - mittel;
-            return rest > 0.0 ? rest : 0.0;
-        }
+            => Konditionierungsarbeit.GeraeteNennwertNachPersonen(interneWaermegewinneW, personen, w0, referenzjahr);
 
         /// <summary>Das Jahresmittel der Personenwärme [W] — Anteil × Nennwert über 8 760 Stunden.</summary>
         public static double PersonenJahresmittelW(Konditionierungskalender personen, int w0, int referenzjahr)
-        {
-            if (personen == null) return 0.0;
-            double nennwert = personen.Nennwert ?? 0.0;
-            double[] anteil = personen.Auswerten(w0, referenzjahr);
-            double summe = 0.0;
-            foreach (double a in anteil) summe += a;
-            return summe * nennwert / anteil.Length;
-        }
+            => Konditionierungsarbeit.PersonenJahresmittelW(personen, w0, referenzjahr);
 
         // =================================================================
         //  Kleine Helfer
         // =================================================================
-
-        private static string Zahltext(double w) => w.ToString("G6", CultureInfo.InvariantCulture);
 
         private static DbParam[] Mit(DbParam[] erste, params DbParam[] weitere)
         {

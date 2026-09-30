@@ -40345,5 +40345,35 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
     <value>Hilfe zur Kühlübergabe</value>
   </data>
+  <data name="KOND_MSG_ZELLE_ZEITEN" xml:space="preserve">
+    <value>Die Zeiten {0} … {1} passen nicht zur Zeile {2}: Die Nachtzeile nimmt Stunden 0 bis 23, die Saison Tage 1 bis 365 (beide oder keinen), jede andere Zeile keine Zeiten.</value>
+  </data>
+  <data name="KOND_MSG_ZELLE_DELTA_T" xml:space="preserve">
+    <value>ΔT {0} K gehört allein zur Nachtzeile der Lüftung und liegt zwischen 0 und 5 K.</value>
+  </data>
+  <data name="KOND_MSG_ZONE_FEHLT" xml:space="preserve">
+    <value>Die Zone {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_GROESSE" xml:space="preserve">
+    <value>Die Vorlage gehört zur Größe {0}, gewählt ist die Größe {1}.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_QUELLE" xml:space="preserve">
+    <value>Für „Zeitstruktur übernehmen“ fehlt ein Kalender der Größe {0}.</value>
+  </data>
+  <data name="KOND_MSG_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender.</value>
+  </data>
+  <data name="KOND_MSG_ZONE_KUEHLEN" xml:space="preserve">
+    <value>Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht.</value>
+  </data>
+  <data name="KOND_MSG_ZONE_KALENDER" xml:space="preserve">
+    <value>Die Zone „{0}“ behielte ihre Werte nicht: {1}</value>
+  </data>
+  <data name="KOND_MSG_KATALOG_FEHLT" xml:space="preserve">
+    <value>Zu diesem Gebäude gibt es keinen Katalogsatz, aus dem es erneut übernommen werden kann.</value>
+  </data>
+  <data name="KOND_MSG_ARBEITSSTAND_UNGUELTIG" xml:space="preserve">
+    <value>Die Konditionierung lässt sich nicht übernehmen: {0}</value>
+  </data>
 </root>
 

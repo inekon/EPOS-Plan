@@ -420,70 +420,7 @@ namespace WindowsFormsApplication1
                                                                 Konditionierungskalender ausVorlage,
                                                                 Konditionierungskalender alt,
                                                                 out string fehler)
-        {
-            fehler = null;
-            var perioden = new List<Kalenderregel>();
-            var belegt = new HashSet<int>();
-            var feiertagsregeln = new HashSet<string>(StringComparer.Ordinal);
-
-            // (1) Die eigenen Perioden des Bestands - sie behalten ihren Rang (P12).
-            if (alt != null)
-                foreach (Kalenderregel r in alt.Perioden)
-                {
-                    if (KonditionierungCtrl.IstMatrixbereich(r)) continue;
-                    perioden.Add(r);
-                    belegt.Add(r.Rang);
-                    if (r.IstFeiertag) feiertagsregeln.Add(r.Feiertagsregel);
-                }
-
-            // (2) Der Matrixbereich aus dem Generator (Ferien des ZIELS, Saison des Ziels).
-            foreach (Kalenderregel r in generator.Perioden)
-            {
-                perioden.Add(r);
-                belegt.Add(r.Rang);
-            }
-
-            // (3) Die Perioden der Vorlage - eine Feiertagsregel nur einmal.
-            var ausDerVorlage = new List<Kalenderregel>();
-            if (ausVorlage != null)
-                foreach (Kalenderregel r in ausVorlage.Perioden)
-                {
-                    if (r.IstFeiertag && !feiertagsregeln.Add(r.Feiertagsregel)) continue;
-                    ausDerVorlage.Add(r);
-                }
-
-            fehler = Kalenderwerkzeuge.ImEigenband(ausDerVorlage, belegt, out List<Kalenderregel> vergeben);
-            if (fehler != null) return null;
-            perioden.AddRange(vergeben);
-
-            fehler = Kalenderwerkzeuge.Rangpruefung(perioden);
-            if (fehler != null) return null;
-
-            if (perioden.Count > Kalenderregel.PERIODEN_MAX)
-            {
-                fehler = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
-                    perioden.Count.ToString(CultureInfo.InvariantCulture),
-                    Kalenderregel.PERIODEN_MAX.ToString(CultureInfo.InvariantCulture));
-                return null;
-            }
-
-            // Die Standardwoche der Vorlage liegt ueber der Grundangabe des Generators; der
-            // NENNWERT bleibt der des Generators - eine Vorlage traegt keinen (E54).
-            Kalenderangabe grund = ausVorlage != null && ausVorlage.Grundangabe.Art == Angabeart.Woche
-                ? ausVorlage.Grundangabe
-                : generator.Grundangabe;
-
-            try
-            {
-                return new Konditionierungskalender(generator.Groesse, grund, generator.Nennwert, perioden);
-            }
-            catch (ArgumentException ex)
-            {
-                fehler = ex.Message;
-                return null;
-            }
-        }
+            => Konditionierungsarbeit.Zusammenfuehren(generator, ausVorlage, alt, out fehler);
 
         // =================================================================
         //  Umbenennen, Löschen, Duplizieren (Konzept 5.7)
