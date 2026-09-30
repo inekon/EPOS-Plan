@@ -544,7 +544,13 @@ public sealed class KonditionierungBearbeitung
     /// der Lüftung auf der aufgeteilten Probe); sonst die des angelegten Kalenders, beim abgeleiteten
     /// die, die „Kalender anlegen" auf einer Kopie ergäbe. Geändert wird nichts; <c>null</c> = keine.
     /// </summary>
-    public double[]? Vorschauwoche(KonditionierungGroesse g)
+    public double[]? Vorschauwoche(KonditionierungGroesse g) => Vorschauwoche(g, GewaehlteVorlage(g)?.Id);
+
+    /// <summary>
+    /// Die Woche der Vorschau mit der Vorlage <paramref name="vorlage"/> (<c>null</c> = der Kalender, wie
+    /// er gilt) — die Vorschau der Vorlagenverwaltung, die die Wahl der Karte nicht anfasst.
+    /// </summary>
+    public double[]? Vorschauwoche(KonditionierungGroesse g, long? vorlage)
     {
         if (!MitWeg) return null;
         try
@@ -552,8 +558,8 @@ public sealed class KonditionierungBearbeitung
             var ort = new KonditionierungOrt(g);
             KonditionierungStand s = Eingabestand();
             Func<KonditionierungStand, KonditionierungErgebnis>? probe = null;
-            if (GewaehlteVorlage(g) is KonditionierungVorlageDaten v && Weg.VorlageUebernehmen is not null)
-                probe = x => Weg.VorlageUebernehmen(x, ort, v.Id);
+            if (vorlage is long id && Weg.VorlageUebernehmen is not null)
+                probe = x => Weg.VorlageUebernehmen(x, ort, id);
             else if (Angelegt(g))
                 return Wochenwerte(Kalender(g));
             else if (Weg.Anlegen is not null)
@@ -576,10 +582,56 @@ public sealed class KonditionierungBearbeitung
 
     /// <summary>Das Bild der Vorschau (<see cref="KonditionierungWeg.WochenVorschau"/>); <c>null</c> = keines.</summary>
     public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Vorschau(KonditionierungGroesse g)
+        => Bild(g, Vorschauwoche(g));
+
+    /// <summary>Das Bild der Vorschau mit der Vorlage <paramref name="vorlage"/> — die Vorlagenverwaltung.</summary>
+    public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Vorschau(KonditionierungGroesse g, long vorlage)
+        => Bild(g, Vorschauwoche(g, vorlage));
+
+    private WindowsFormsApplication1.Zeichnung.Zeichenmodell? Bild(KonditionierungGroesse g, double[]? woche)
     {
-        if (Weg.WochenVorschau is null || Vorschauwoche(g) is not double[] woche) return null;
+        if (Weg.WochenVorschau is null || woche is null) return null;
         try { return Weg.WochenVorschau(g, woche); }
         catch (Exception) { return null; }
+    }
+
+    // ---- Die Vorlagenverwaltung (F4 (a), Festlegung 13): jede Handlung schreibt SOFORT ----
+
+    /// <summary>
+    /// Bietet der Weg die Vorlagenverwaltung? Mit der Liste und mindestens einer ihrer Handlungen
+    /// (Umbenennen, Löschen, Duplizieren) — „kein Delegat, kein Knopf".
+    /// </summary>
+    public bool MitVerwaltung
+        => MitWeg && Weg.Vorlagen is not null
+           && (Weg.Bietet(KonditionierungHandlung.VorlageUmbenennen) || Weg.Bietet(KonditionierungHandlung.VorlageLoeschen)
+               || Weg.Bietet(KonditionierungHandlung.VorlageDuplizieren));
+
+    /// <summary>Eine eigene Vorlage umbenennen — schreibt sofort; eine Ablehnung des Namens kommt mit <c>AmNamen</c>.</summary>
+    public KonditionierungVorlageErgebnis VorlageUmbenennen(long id, string name)
+        => Vorlagenhandlung(KonditionierungHandlung.VorlageUmbenennen, () => Weg.VorlageUmbenennen!(id, name));
+
+    /// <summary>Eine eigene Vorlage löschen — schreibt sofort; kein Gebäude wird berührt.</summary>
+    public KonditionierungVorlageErgebnis VorlageLoeschen(long id)
+        => Vorlagenhandlung(KonditionierungHandlung.VorlageLoeschen, () => Weg.VorlageLoeschen!(id));
+
+    /// <summary>Eine Vorlage duplizieren — auch eine ausgelieferte; die Kopie heißt „Name (Kopie)", eindeutig.</summary>
+    public KonditionierungVorlageErgebnis VorlageDuplizieren(long id)
+        => Vorlagenhandlung(KonditionierungHandlung.VorlageDuplizieren, () => Weg.VorlageDuplizieren!(id, ""));
+
+    private KonditionierungVorlageErgebnis Vorlagenhandlung(KonditionierungHandlung h, Func<KonditionierungVorlageErgebnis> handlung)
+    {
+        if (!Bietet(h)) return new KonditionierungVorlageErgebnis(false, Sperrgrund ?? Texte.GrundOhneTabellen, null);
+        KonditionierungVorlageErgebnis e;
+        try
+        {
+            e = handlung();
+        }
+        catch (Exception ex)
+        {
+            e = new KonditionierungVorlageErgebnis(false, ex.Message, null);
+        }
+        if (e.Ok) VorlagenNeuLaden();
+        return e;
     }
 
     /// <summary>

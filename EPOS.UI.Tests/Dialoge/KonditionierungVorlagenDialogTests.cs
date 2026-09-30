@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
@@ -98,6 +99,146 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
 
     private static IElement Knopf(IRenderedComponent<GebaeudeKatalogDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    // =================================================================================
+    // Die Vorlagenverwaltung als Blatt (E56 F4 (a), Festlegung 13)
+    // =================================================================================
+
+    private static IElement Blatt(IRenderedComponent<GebaeudeKatalogDialog> cut) => cut.Find("section.epos-blatt");
+
+    /// <summary>Die Zeile einer Vorlage in der Liste der Verwaltung.</summary>
+    private static IElement Zeile(IRenderedComponent<GebaeudeKatalogDialog> cut, string name)
+        => cut.FindAll("table.epos-kond-vorlagenliste tbody tr")
+              .First(z => (z.QuerySelector(".epos-kond-vorlage-zeigen")?.TextContent.Trim() ?? "") == name);
+
+    private static List<string> Namen(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.FindAll("table.epos-kond-vorlagenliste .epos-kond-vorlage-zeigen").Select(b => b.TextContent.Trim()).ToList();
+
+    [Fact]
+    public void Vorlagen_verwalten_oeffnet_das_Blatt_im_Editor_und_Esc_fuehrt_zurueck()
+    {
+        var cut = Editor(Konditionierungsvorlagenablage.AusSaat());
+        ReiterWaehlen(cut, REITER);
+        Karte(cut, KonditionierungGroesse.Lueftung).QuerySelector("button.epos-kond-verwalten")!.Click();
+
+        // Das Blatt tauscht den Inhalt des Editors: kein Reiter, keine Fußleiste, dafür Rückknopf und Titel.
+        Assert.True(cut.Instance.VorlagenblattOffen);
+        Assert.Empty(cut.FindAll(".epos-reiter"));
+        Assert.Empty(cut.FindAll(".epos-speichernleiste, .epos-leiste button.epos-knopf--primaer"));
+        Assert.Equal("Vorlagen der Konditionierung", Blatt(cut).QuerySelector(".epos-blatt-titel")!.TextContent.Trim());
+        Assert.StartsWith("‹", Blatt(cut).QuerySelector(".epos-blatt-zurueck")!.TextContent.Trim());
+        Assert.Contains("sofort gespeichert", Blatt(cut).QuerySelector(".epos-kond-verwaltung-sofort")!.TextContent);
+
+        // Die Größe der Karte steht vorn; die Liste mit Kennzeichen, die Handlungen immer sichtbar.
+        Assert.Equal("true", cut.Find("button.epos-kond-verwaltung-groesse[data-groesse='2']").GetAttribute("aria-selected"));
+        Assert.Equal(new[] { "Büro", "Schule" }, Namen(cut));
+        Assert.Equal(2, cut.FindAll("table.epos-kond-vorlagenliste .epos-schloss").Count);
+        Assert.Equal(2, cut.FindAll("table.epos-kond-vorlagenliste button.epos-kond-duplizieren").Count);
+
+        // Esc führt zurück - der Editor bleibt offen, die Karte der Lüftung steht vorn.
+        Blatt(cut).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.VorlagenblattOffen);
+        Assert.Null(_ausgang);
+        Assert.Contains("epos-kond--aktiv", Karte(cut, KonditionierungGroesse.Lueftung).ClassList);
+        Assert.Empty(_geschrieben);
+    }
+
+    [Fact]
+    public void Ausgelieferte_nur_duplizieren_eigene_umbenennen_und_loeschen_jeweils_sofort()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Editor(ablage);
+        ReiterWaehlen(cut, REITER);
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-verwalten")!.Click();
+
+        // Das Schloss: Umbenennen und Löschen weich gesperrt mit Grund; der Versuch meldet ihn.
+        IElement umbenennen = Zeile(cut, "Büro").QuerySelector("button.epos-kond-umbenennen")!;
+        Assert.Equal("true", umbenennen.GetAttribute("aria-disabled"));
+        Assert.Contains("nur lesbar", umbenennen.GetAttribute("title"));
+        umbenennen.Click();
+        Assert.Contains("nur lesbar", Blatt(cut).QuerySelector(".epos-warnbanner")!.TextContent);
+        Zeile(cut, "Büro").QuerySelector("button.epos-kond-loeschen")!.Click();
+        Assert.Null(cut.FindAll(".epos-rueckfrage").FirstOrDefault());
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Heizsoll).Count);
+
+        // Duplizieren schreibt sofort: „Büro (Kopie)", eigen, gewählt, mit Vorschau.
+        Zeile(cut, "Büro").QuerySelector("button.epos-kond-duplizieren")!.Click();
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen", "Büro (Kopie)" }, Namen(cut));
+        Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro (Kopie)" && !v.Ausgeliefert);
+        Assert.Equal("Vorlage „Büro (Kopie)“ als Kopie von „Büro“ angelegt.",
+                     cut.Find(".epos-kond-verwaltung-zeile").TextContent.Trim());
+        Assert.Equal("true", Zeile(cut, "Büro (Kopie)").GetAttribute("aria-selected"));
+        Assert.NotNull(cut.Find(".epos-kond-verwaltung-vorschau svg"));
+        Assert.Null(Zeile(cut, "Büro (Kopie)").QuerySelector(".epos-schloss"));
+
+        // Umbenennen am Namensfeld: ein Doppelname steht am Feld und schreibt nichts.
+        Zeile(cut, "Büro (Kopie)").QuerySelector("button.epos-kond-umbenennen")!.Click();
+        cut.Find("table.epos-kond-vorlagenliste .epos-kond-vorlage-name input").Input("schule");
+        cut.Find("button.epos-kond-umbenennen-schreiben").Click();
+        Assert.Contains("epos-kond-feldfehler", cut.Find("table.epos-kond-vorlagenliste .epos-kond-vorlage-name").ClassList);
+        Assert.Contains("„schule“", cut.Find(".epos-kond-feldmeldung").TextContent);
+        Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro (Kopie)");
+        cut.Find("table.epos-kond-vorlagenliste .epos-kond-vorlage-name input").Input("Kontor");
+        cut.Find("button.epos-kond-umbenennen-schreiben").Click();
+        Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Kontor");
+        Assert.Equal("Vorlage umbenannt in „Kontor“.", cut.Find(".epos-kond-verwaltung-zeile").TextContent.Trim());
+
+        // Löschen fragt (Vorgabe Nein) und nennt, dass kein Gebäude berührt wird.
+        Zeile(cut, "Kontor").QuerySelector("button.epos-kond-loeschen")!.Click();
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.StartsWith("Die Vorlage „Kontor“ löschen?", frage.Trim());
+        Assert.Contains("kein Gebäude", frage);
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Nein").Click();
+        Assert.Contains("Kontor", Namen(cut));
+        Zeile(cut, "Kontor").QuerySelector("button.epos-kond-loeschen")!.Click();
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+        Assert.DoesNotContain("Kontor", Namen(cut));
+        Assert.DoesNotContain(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Kontor");
+        Assert.Equal("Vorlage „Kontor“ gelöscht.", cut.Find(".epos-kond-verwaltung-zeile").TextContent.Trim());
+
+        // Zurück: der Editor schrieb nichts, die Karte kennt die Liste neu.
+        cut.Find("button.epos-blatt-zurueck").Click();
+        Assert.Empty(_geschrieben);
+        Assert.Null(_ausgang);
+        Assert.Equal(3, Karte(cut, KonditionierungGroesse.Heizen).QuerySelectorAll(".epos-kond-vorlagewahl option[value]:not([value=''])").Length);
+    }
+
+    [Fact]
+    public void Der_Umschalter_zeigt_die_Liste_jeder_Groesse()
+    {
+        var cut = Editor(Konditionierungsvorlagenablage.AusSaat());
+        ReiterWaehlen(cut, REITER);
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-verwalten")!.Click();
+
+        cut.Find("button.epos-kond-verwaltung-groesse[data-groesse='4']").Click();
+        Assert.Equal("true", cut.Find("button.epos-kond-verwaltung-groesse[data-groesse='4']").GetAttribute("aria-selected"));
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen" }, Namen(cut));
+        Assert.Equal("4", cut.Find("table.epos-kond-vorlagenliste").GetAttribute("data-groesse"));
+
+        // Ein Klick auf den Namen zeigt Beschreibung und Vorschau am Ziel.
+        Zeile(cut, "Wohnen").QuerySelector(".epos-kond-vorlage-zeigen")!.Click();
+        Assert.Contains("EPOS-Muster", cut.Find(".epos-kond-verwaltung-vorschau .epos-kond-vorlage-beschreibung").TextContent);
+        Assert.NotNull(cut.Find(".epos-kond-verwaltung-vorschau svg"));
+    }
+
+    [Fact]
+    public void Ohne_Handlungen_der_Verwaltung_im_Weg_steht_kein_Knopf()
+    {
+        KonditionierungWeg basis = KalenderkarteTests.Weg(Konditionierungsvorlagenablage.AusSaat());
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, Vollsatz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Konditionierung, new KonditionierungWeg
+            {
+                ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Vorlagen = basis.Vorlagen,
+                VorlageUebernehmen = basis.VorlageUebernehmen, AlsVorlageSpeichern = basis.AlsVorlageSpeichern
+            })
+            .Add(x => x.EntprellungMs, 0));
+        ReiterWaehlen(cut, REITER);
+
+        Assert.Equal(5, cut.FindAll("button.epos-kond-als-vorlage").Count);
+        Assert.Empty(cut.FindAll("button.epos-kond-verwalten"));
+    }
 
     [Fact]
     public void Uebernehmen_wird_mit_OK_geschrieben_samt_Herkunft()

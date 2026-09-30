@@ -73,6 +73,11 @@
 
 <div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* DAS BLATT DER VORLAGENVERWALTUNG (Stufe KP2, Welle U2; E56 F4 (a)) tauscht den INHALT des Editors
+       (Baustein Blattwechsel, unten): Kopf, Reiter und Fussleiste stehen nur bei geschlossenem Blatt; der
+       Arbeitsstand bleibt dabei, wie er ist. *@
+    @if (_vorlagenBlatt is null)
+    {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
@@ -536,6 +541,7 @@
                                            GruppeFerienAnfang="@GruppeFerienAnfang" GruppeFerienEnde="@GruppeFerienEnde"
                                            Ferienzeitraeume="@Ferienzeitraeume" LabelTag="@LabelTag" LabelMonat="@LabelMonat"
                                            JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" EntprellungMs="@EntprellungMs"
+                                           VorlagenVerwalten="VorlagenVerwaltenOeffnen" Vorn="@_kondVorn"
                                            Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
 
                     @if (BrauchwasserGaben is not null)
@@ -718,6 +724,18 @@
             }
         </Aktionen>
     </SpeichernLeiste>
+    }
+
+    <Blattwechsel Offen="@(_vorlagenBlatt is not null)" WirtTitel="@TitelText" Titel="@KonditionierungTexte.LabelVerwaltung"
+                  Zurueck="VorlagenVerwaltenZurueck">
+        <KindInhalt>
+            @if (_vorlagenBlatt is KonditionierungGroesse blattgroesse)
+            {
+                <KonditionierungVorlagenverwaltung Bearbeitung="@_kond" Groesse="@blattgroesse" Texte="@KonditionierungTexte"
+                                                   Fragen="@KonditionierungFragen" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
 </div>
 
 @code {
@@ -1659,6 +1677,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await FokusNachBlatt();
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         // Ohne Rollen: In der Ueberlagerung rollte der Fokus auf die (hohe) Wurzel den Bereich
@@ -2059,8 +2078,50 @@
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
             || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
-            || _kond.OffeneFrage is not null) return Task.CompletedTask;
+            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null) return Task.CompletedTask;
         return Abbrechen();
+    }
+
+    // =================================================================================
+    // Das Blatt der Vorlagenverwaltung (Stufe KP2, Welle U2; E56 F4 (a))
+    // =================================================================================
+
+    /// <summary>Die Größe, mit der die Vorlagenverwaltung als Blatt steht; <c>null</c> = das Blatt ist zu.</summary>
+    private KonditionierungGroesse? _vorlagenBlatt;
+
+    /// <summary>Muss die Wurzel nach dem Rückweg vom Blatt den Fokus zurückbekommen?</summary>
+    private bool _fokusNachBlatt;
+
+    /// <summary>Steht die Vorlagenverwaltung als Blatt? Prüfhilfe für die Tests.</summary>
+    public bool VorlagenblattOffen => _vorlagenBlatt is not null;
+
+    /// <summary>Die Größe, die im Reiter „Konditionierung" nach dem Rückweg vom Blatt vorn steht.</summary>
+    private KonditionierungGroesse _kondVorn = KonditionierungGroesse.Heizen;
+
+    /// <summary>„Vorlagen verwalten" einer Kalenderkarte: das Blatt mit der Größe der Karte.</summary>
+    private void VorlagenVerwaltenOeffnen(KonditionierungGroesse g)
+    {
+        _vorlagenBlatt = g;
+        _kondVorn = g;
+    }
+
+    /// <summary>
+    /// „‹ Wirt" und Esc des Blattes: zurück in den Editor. Die Verwaltung hat sofort geschrieben — die
+    /// Karten lesen ihre Listen neu; der Arbeitsstand ist unberührt.
+    /// </summary>
+    private void VorlagenVerwaltenZurueck()
+    {
+        _vorlagenBlatt = null;
+        _kond.VorlagenNeuLaden();
+        _fokusNachBlatt = true;
+    }
+
+    /// <summary>Der Rückweg vom Blatt fokussiert die Wurzel, ohne zu rollen (der Blattwechsel stellt den Rollstand her).</summary>
+    private async Task FokusNachBlatt()
+    {
+        if (!_fokusNachBlatt || _vorlagenBlatt is not null) return;
+        _fokusNachBlatt = false;
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>

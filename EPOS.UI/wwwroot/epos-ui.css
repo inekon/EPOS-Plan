@@ -13639,6 +13639,61 @@ td.epos-vorlage-katalogbeschreibung {
     overflow-wrap: anywhere;
 }
 
+/* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:
+   Umschalter der Groesse, die Liste im Rahmen (Hausregel Liste), die
+   gewaehlte Zeile wie die Fokuszeile der Verwaltungen (Flaeche und Balken),
+   darunter Beschreibung und Vorschau. Die Zeilenhandlungen stehen immer;
+   unter 600 px Behaelterbreite brechen sie in der Zelle um, statt die Liste
+   quer rollen zu lassen. */
+.epos-kond-verwaltung {
+    container-type: inline-size;
+    container-name: epos-kond-verwaltung;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kond-verwaltung-sofort {
+    margin: 0;
+}
+
+.epos-kond-verwaltung-groessen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-kond-vorlagenliste {
+    width: 100%;
+}
+
+.epos-kond-vorlagenliste > tbody > tr.epos-kond-vorlage--gewaehlt > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-kond-vorlagenliste > tbody > tr.epos-kond-vorlage--gewaehlt > td:first-child {
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+}
+
+.epos-kond-vorlage-namenszelle .epos-schloss {
+    margin-left: 6px;
+}
+
+.epos-kond-verwaltung-vorschau {
+    min-width: 0;
+}
+
+@container epos-kond-verwaltung (max-width: 599.98px) {
+    .epos-kond-vorlagenliste td.epos-zellenaktionen {
+        white-space: normal;
+    }
+
+    .epos-kond-vorlagenliste .epos-zellenaktionen-inhalt {
+        flex-wrap: wrap;
+    }
+}
+
 @container epos-kond (min-width: 900px) {
     .epos-kond-groessen {
         display: none;

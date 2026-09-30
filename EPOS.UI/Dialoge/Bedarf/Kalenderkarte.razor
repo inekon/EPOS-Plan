@@ -60,11 +60,20 @@
             <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@v.Beschreibung</p>
         }
     }
-    @if (!Lesemodus && AlsVorlageSpeichern is not null)
+    @if (!Lesemodus && (AlsVorlageSpeichern is not null || VorlagenVerwalten.HasDelegate))
     {
         <div class="epos-zeilenknoepfe epos-kond-vorlagenknoepfe">
-            <button type="button" class="epos-knopf epos-kond-als-vorlage" aria-expanded="@(_speichernOffen ? "true" : "false")"
-                    title="@Texte.HinweisVorlageSpeichern" @onclick="SpeichernUmschalten">@Texte.KnopfAlsVorlage</button>
+            @if (AlsVorlageSpeichern is not null)
+            {
+                <button type="button" class="epos-knopf epos-kond-als-vorlage" aria-expanded="@(_speichernOffen ? "true" : "false")"
+                        title="@Texte.HinweisVorlageSpeichern" @onclick="SpeichernUmschalten">@Texte.KnopfAlsVorlage</button>
+            }
+            @if (VorlagenVerwalten.HasDelegate)
+            {
+                @* F4 (a): die Verwaltung als Blatt im Katalogeditor - der Wirt tauscht seinen Inhalt. *@
+                <button type="button" class="epos-knopf epos-kond-verwalten" title="@Texte.LabelVerwaltung"
+                        @onclick="VorlagenVerwalten">@Texte.KnopfVorlagenVerwalten</button>
+            }
         </div>
         @if (_speichernOffen)
         {
@@ -203,6 +212,12 @@
 
     /// <summary>Meldet eine benannte Ablehnung, die kein Feld betrifft — der Wirt zeigt sie im Banner.</summary>
     [Parameter] public EventCallback<string> Abgelehnt { get; set; }
+
+    /// <summary>
+    /// „Vorlagen verwalten" (E56 F4 (a)): Der Wirt öffnet die Verwaltung als Blatt im Katalogeditor;
+    /// ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback VorlagenVerwalten { get; set; }
 
     /// <summary>
     /// Rechnet das Bild der Vorschau (Woche der gewählten Vorlage am Ziel bzw. des geltenden Kalenders);

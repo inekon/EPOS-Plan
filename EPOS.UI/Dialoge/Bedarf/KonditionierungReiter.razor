@@ -107,6 +107,9 @@
                                AlsVorlageSpeichern="@(Bearbeitung.Bietet(KonditionierungHandlung.AlsVorlageSpeichern)
                                                       ? e => Bearbeitung.AlsVorlageSpeichern(groesse, e) : null)"
                                VorlageGespeichert="VorlagenGeaendert" Abgelehnt="Abgelehnt"
+                               VorlagenVerwalten="@(VorlagenVerwalten.HasDelegate && Bearbeitung.MitVerwaltung
+                                                    ? EventCallback.Factory.Create(this, () => VorlagenVerwalten.InvokeAsync(groesse))
+                                                    : default)"
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
                                Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs" />
             }
@@ -261,6 +264,20 @@
 
     /// <summary>Entprellung der Vorschau in den Karten [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
+    /// Öffnet die Vorlagenverwaltung als Blatt des Wirts (E56 F4 (a)) — mit der Größe der Karte;
+    /// ohne Rückruf (oder ohne Handlungen der Verwaltung im Weg) kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<KonditionierungGroesse> VorlagenVerwalten { get; set; }
+
+    /// <summary>
+    /// Die Größe, die beim Aufbau vorn steht (schmale Anordnung) — der Wirt reicht die der Karte, aus der
+    /// das Blatt der Vorlagenverwaltung kam, damit der Rückweg dort landet; Vorgabe Heizen.
+    /// </summary>
+    [Parameter] public KonditionierungGroesse Vorn { get; set; } = KonditionierungGroesse.Heizen;
+
+    protected override void OnInitialized() => _groesse = Vorn;
 
     /// <summary>Die Größe, deren Spalte und Karte schmal vorn stehen.</summary>
     private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;

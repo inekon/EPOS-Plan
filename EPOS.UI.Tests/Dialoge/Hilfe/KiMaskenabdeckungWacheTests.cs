@@ -133,6 +133,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (Teilkonzept 7.4): die Kalenderkarte mit der Auswahlliste der Vorlagen ihrer Größe.
         new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
+        new("KonditionierungVorlagenverwaltung", "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -305,6 +307,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen wählt nur, was „Übernehmen“ übernimmt — eine Wahl vor " +
             "der Handlung, kein Einstellwert; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
             "speichern…“, die mit eigenem OK sofort schreibt"),
+        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
+        new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
+            "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
