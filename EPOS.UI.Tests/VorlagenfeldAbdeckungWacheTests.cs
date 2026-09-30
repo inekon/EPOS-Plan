@@ -48,6 +48,7 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Berichte/WirtschaftlichkeitSeite.razor", "tabelle.wirtschaft.nicht_monetaer"),
         ("Berichte/UebersichtSeite.razor", "tabelle.komponenten.matrix"),
         ("Berichte/AnhangEChecklisteKnopf.razor", "tabelle.anhang_e.checkliste"),
+        ("Simulation/HeizkesselReiter.razor", "stand.tabelle.heizkessel"),
     };
 
     /// <summary>

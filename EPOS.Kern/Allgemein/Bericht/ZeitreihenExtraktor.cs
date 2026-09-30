@@ -49,7 +49,10 @@ namespace WindowsFormsApplication1
                     z.Reihen[ZeitreihenSatz.BHKW_STROM] = D(sim.simulation_bhkw.stromproduktion);
                 }
                 if (sim.bSimulationKessel && sim.simulation_spk != null)
+                {
                     z.Reihen[ZeitreihenSatz.KESSEL_WAERME] = D(sim.simulation_spk.Kesselleistung_stuendlich);
+                    Kesselbetriebswerte(sim, z);
+                }
                 if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
                     z.Reihen[ZeitreihenSatz.SOLAR_WAERME] = D(sim.simulation_solarthermie.Waermeproduktion);
 
@@ -227,6 +230,20 @@ namespace WindowsFormsApplication1
             }
 
             return z.Reihen.Count > 0 ? z : null;
+        }
+
+        /// <summary>
+        /// <b>Der Betrieb je Heizkessel</b> (Konzept Kesselkennlinie 5, Bericht): Jahresnutzungsgrad, Brennwertanteil nach
+        /// Stunden und Wärme und Starts. Keine Rechnung hier — die Zeilen sind die des Kessel-Reiters
+        /// (<see cref="SimulationErgebnisCtrl.Heizkessel"/>), einmal gerufen: Bericht und Oberfläche nennen dieselben Zahlen.
+        /// </summary>
+        private static void Kesselbetriebswerte(SimulationControl sim, ZeitreihenSatz z)
+        {
+            SimulationErgebnisCtrl.HeizkesselErgebnis kessel = SimulationErgebnisCtrl.Heizkessel(sim, null);
+            if (kessel == null) return;
+            foreach (SimulationErgebnisCtrl.KesselModulZeile m in kessel.Module)
+                z.Kessel.Add(new Kesselbetrieb(m.Name, m.JahresnutzungsgradProzent, m.MitBrennwertkennlinie,
+                                               m.BrennwertStundenProzent, m.BrennwertWaermeProzent, m.Starts));
         }
 
         /// <summary>

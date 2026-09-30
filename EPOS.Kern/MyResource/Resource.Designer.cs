@@ -12308,6 +12308,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Heizkessel im Lauf ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein Logo eingestellt ähnelt.
         /// </summary>
         public static string BV_GRUND_KEIN_LOGO {
@@ -91712,6 +91721,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht je Stand im Block „je stand“: je Kessel Jahresnutzungsgrad, Brennwertanteil nach Stunden und Wärme, Starts ähnelt.
+        /// </summary>
+        public static string VF_ORT_KESSELTAFEL {
+            get {
+                return ResourceManager.GetString("VF_ORT_KESSELTAFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen ähnelt.
         /// </summary>
         public static string VF_ORT_KOMPONENTEN {
@@ -93868,6 +93886,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__TABELLE__ERZEUGER {
             get {
                 return ResourceManager.GetString("VF_STAND__TABELLE__ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrieb je Heizkessel des laufenden Stands: Jahresnutzungsgrad, Anteil des Brennwertbetriebs nach Stunden und nach Wärme, Starts im Jahr; aus dem Lauf, nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__HEIZKESSEL", resourceCulture);
             }
         }
         

@@ -631,6 +631,21 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>
+    /// <summary>
+    /// Der Betrieb EINES Heizkessels im Lauf (Konzept Kesselkennlinie 5, Bericht) — die Zeile der Tabelle
+    /// <c>stand.tabelle.heizkessel</c>.
+    /// </summary>
+    /// <param name="Name">Bezeichner des Kessels.</param>
+    /// <param name="JahresnutzungsgradProzent">η_eff: Nutzwärme durch Brennstoffeinsatz über das Jahr [%] — samt Teillast,
+    /// Brennwertnutzung, Anfahr- und Bereitschaftsverlust.</param>
+    /// <param name="MitBrennwertkennlinie">Rechnet der Kessel mit der Brennwertkennlinie? Nur dann gibt es einen
+    /// Brennwertbetrieb.</param>
+    /// <param name="BrennwertStundenProzent">Anteil der Laufstunden mit Rücklauf unter dem Taupunkt [%].</param>
+    /// <param name="BrennwertWaermeProzent">Anteil der Wärme dieser Stunden an der Wärme der Laufstunden [%].</param>
+    /// <param name="Starts">Starts im Jahr nach Konzept 4.2; beim Elektrokessel seine Laufphasen.</param>
+    public sealed record Kesselbetrieb(string Name, double JahresnutzungsgradProzent, bool MitBrennwertkennlinie,
+                                       double BrennwertStundenProzent, double BrennwertWaermeProzent, int Starts);
+
     public class Abweichung
     {
         public string Gewerk = "";      // z. B. "Wärmepumpe", "Gebäude", "Anlage"
@@ -809,6 +824,16 @@ namespace WindowsFormsApplication1
         /// nicht als Reihe.</para>
         /// </summary>
         public Dictionary<int, Netzbezugsspitze> Kaeltestromspitzen = new Dictionary<int, Netzbezugsspitze>();
+
+        /// <summary>
+        /// <b>Der Betrieb je Heizkessel</b> (Konzept Kesselkennlinie 5, Bericht): Jahresnutzungsgrad, Anteil des
+        /// Brennwertbetriebs nach Stunden und Wärme und Starts — in der Folge der Kessel des Laufs. Leer ohne Kessel.
+        ///
+        /// <para>Brennwertstunden, Brennwertwärme und Starts stehen nicht im gespeicherten Ergebnis; sie kennt nur der
+        /// Lauf. Sie reisen deshalb wie <see cref="Bezugsspitze"/> als Werte des Laufs mit — eingesammelt über
+        /// <c>SimulationErgebnisCtrl.Heizkessel</c>, dieselben Zahlen, die der Kessel-Reiter zeigt.</para>
+        /// </summary>
+        public List<Kesselbetrieb> Kessel = new List<Kesselbetrieb>();
 
         /// <summary>
         /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die

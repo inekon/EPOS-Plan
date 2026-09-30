@@ -40776,5 +40776,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="HZKK_BILD_TEILLAST" xml:space="preserve">
     <value>Part-load curve</value>
   </data>
+  <data name="VF_STAND__TABELLE__HEIZKESSEL" xml:space="preserve">
+    <value>The operation of each boiler of the current case: annual efficiency, share of condensing operation by hours and by heat, starts per year; from the run, only in the block {{#je stand}}.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_HEIZKESSEL" xml:space="preserve">
+    <value>no boiler in the run</value>
+  </data>
+  <data name="VF_ORT_KESSELTAFEL" xml:space="preserve">
+    <value>in the report per version in the “per version” block: per boiler annual efficiency, condensing share by hours and heat, starts</value>
+  </data>
 </root>
 

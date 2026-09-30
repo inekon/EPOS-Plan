@@ -72,7 +72,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Vorlagenbedarf.Zeitreihen, bild.Bedarf);
                 Assert.Equal(name == Berichtsbilder.ERGEBNISBILD_STREUWOLKE ? Vorlagenausgabe.Word : Vorlagenausgabe.Beide, bild.Ausgaben);
             }
-            Assert.Equal(10, Vorlagenfeldkatalog.KatalogfassungWord);
+            // Die Fassung 10 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v11: Kesseltafel).
+            Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 10);
         }
 
         [Fact]

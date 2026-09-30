@@ -353,6 +353,12 @@ namespace WindowsFormsApplication1
             { "Spitze [kW]", "Peak [kW]" },
             { "T oben Mittel [°C]", "T top mean [°C]" },
             { "T oben Minimum [°C]", "T top minimum [°C]" },
+            // Konzept Kesselkennlinie 5 - der Betrieb je Heizkessel (stand.tabelle.heizkessel, Katalog v11).
+            { "Heizkessel", "Boiler" },
+            { "Jahresnutzungsgrad [%]", "Annual efficiency [%]" },
+            { "Brennwertbetrieb Stunden [%]", "Condensing operation, hours [%]" },
+            { "Brennwertbetrieb Wärme [%]", "Condensing operation, heat [%]" },
+            { "Starts [1/a]", "Starts [1/a]" },
             { "Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)",
               "Storage temperatures in characteristic weeks (winter/transition/summer)" },
 
