@@ -13,7 +13,8 @@ Commits:
 - `7339b540` Kurve im Kesseleditor: Kern, Renderer, Hülle, Dialog, ChartProben samt Messlatte, Tests
 - `85637ef6` Kesseltafel im Katalog v11, Sammler, Marke im Kessel-Reiter, Vorlagen neu erzeugt, Tests
 - Papiere: Konzept nach `ueberholt/`, Index, Verweise, Wiki-Quellen, dieses Protokoll (Commit danach)
-- Merge `origin/ios_migration_september` vor dem Gate und Gate-Zahlen (Commits danach)
+- `c5b5f9e3` Merge `origin/ios_migration_september` (`edc2f463`: Statuszeilen #629, #630), konfliktfrei
+- Gate-Zahlen in diesem Protokoll im Commit danach
 
 ## 1 Auftrag
 
@@ -110,7 +111,22 @@ Korrekturen“, SK3–SK7 und den Codekommentaren von `KesselKennlinieSchema` un
 
 ## 5 Gate
 
-(Gate-Zahlen im Commit danach.)
+Gate auf dem Merge-Stand `c5b5f9e3` (enthält origin `edc2f463`: Statuszeilen #629 und #630; Testdatenbank unverändert
+`5d59041f…`), Linux, `TMPDIR=/dev/shm`, `Werkzeuge/Gate/gate_linux.sh` samt Werkzeugtests, SQL-Prüfer und Schale:
+
+- Kern-Filter Release: 0 Fehler.
+- Tests mit den xUnit-Schaltern: KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 (1 übersprungen),
+  EPOS.UI.Tests 7 124, EPOS.Kern.Tests 9 535 (1 übersprungen) — zusammen **17 621 grün, 0 rot**; Dokumentationswachen 35
+  grün.
+- Werkzeugtests mit normaler Build-Ausgabe: Formularkarte 124, Auslieferungsvorlage 44, Gebaeudevergleich 24,
+  ZapfprofilValidierung 39 — grün; `Werkzeuge/Berichtsvorlage` führt kein eigenes Testprojekt, seine Wachen
+  (`BerichtsvorlageDateiWacheTests`, `AuslieferungsvorlagenWacheTests`, `WordBausteinvorlageTests`,
+  `AusfuehrlichRundlaufTests`, `KurzberichtRundlaufTests`, `VorlagenprueferTests`) laufen in EPOS.Kern.Tests grün mit.
+- SQL-Prüfer: Selbsttest 35/0; 2 145 Texte, 0 Fundstellen.
+- ChartProben: 237 Bilder, 0 Verstöße; 200 Hashes gleich der Linux-Messlatte `Messlatte_2026-09-30.sha256`.
+- `EPOS.Referenzlauf` über alle sechzehn Projekte gegen R29: **GESAMT PASS, 487/487 CSV byte-gleich**; gestört
+  (`--stoerung ulp`) gegen ungestört 16/16 PASS.
+- Windows-Schale (`EnableWindowsTargeting=true`, Debug x64): 0 Fehler.
 
 ## 6 Wiki und Logbuch
 
