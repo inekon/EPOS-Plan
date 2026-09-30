@@ -984,6 +984,18 @@ Anlage und Kessel, sonst 50 °C. „Brennwertbetrieb“ ist eine Stunde mit Rüc
 Brennwertbetrieb und den Brennwertbrennstoff; das Laufprotokoll nennt die Stufen der Rücklaufkette und meldet
 einen Kessel, dessen Rücklauf in mindestens der Hälfte der Betriebsstunden über dem Taupunkt lag.
 
+**Takten** (Konzept Kesselkennlinie 4.2). Liegt die brennstoffbasierte Wärme Q eines Brennstoffkessels in einer
+Laufstunde unter seiner Mindestleistung P_min (`Kesselkennlinie.Taktet`, beide Enden am Zahlenrand), zählt die Stunde
+min(⌊60/t⌋, ⌈Q/(P_min · t/60)⌉) Starts — so viele Mindestläufe der Mindestlaufzeit t, wie die Wärme braucht
+(`Kesselkennlinie.StartsImTakt`, Zahlenrand an den Vielfachen eines Mindestlaufs); jede andere Laufstunde zählt einen
+Start, wenn der Kessel in der Vorstunde stand. Jeder Start kostet den Anfahrverlust als Brennstoff; er steht im
+Kesselverbrauch, im Jahresnutzungsgrad, in den Emissionen und in der Gasspitze der Stunde, nicht im mittleren
+Wirkungsgrad im Betrieb. Leere Felder nehmen die Normvorgaben: Mindestleistung 30 % der Nennleistung beim
+Gas-Brennwertkessel, sonst 60 %, Anfahrverlust 0,002 h × Nennleistung, Mindestlaufzeit 10 min. Der Elektrokessel
+taktet nicht; seine Starts sind seine Laufphasen. Der Reiter zeigt Taktstunden, Anfahrverlust und je Kessel die
+Starts; das Laufprotokoll nennt die Taktwerte samt Herkunft (gepflegt oder Normvorgabe) und Starts, Laufphasen und
+Taktstunden des Jahres.
+
 **Elektrokessel** (`Tab_Heizkessel.Brennstoff` = 13). Sein Strom steht über den Stromverbrauch der
 Stufe im Reststrombedarf und damit im Netzbezug, den Kostenrechnung und Emissionsbilanz bewerten.
 Seine Modulzeile führt deshalb keinen Brennstoffverbrauch, und er trägt **keine Kesselemission**
@@ -996,9 +1008,9 @@ senkt nur seinen Jahresnutzungsgrad und steht weder im Netzbezug noch in einer E
 anderer Erzeuger), übrige Erzeuger / ungedeckt (`SimulationErgebnisCtrl.KesselbildReihen`). Die Zeile
 „Restwärmebedarf nach Kessel“ ist Stufeneingang minus Kesselwärme, „davon aus Puffer (andere
 Erzeuger)“ ihr Anteil aus fremder Ladung. „Maximale Brennstoffleistung Gas (Hu)“ ist je Gaskessel der
-höchste Stundenwert von Wärmeabgabe ÷ Wirkungsgrad, bei mehreren Kesseln die Summe dieser
-Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
+höchste Stundenwert des Brennstoffs (Wärmeabgabe ÷ Wirkungsgrad plus Anfahrverlust der Starts), bei mehreren Kesseln
+die Summe dieser Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R28_Kesselbrennwert` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R29_Kesseltakten` (Größen `Kessel[i].*` in `aggregate.csv`).
