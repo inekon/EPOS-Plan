@@ -28620,6 +28620,15 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist verfügbar (Katalogversion „{0}“).</value>
   </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION_NACHLADEN" xml:space="preserve">
+    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — ohne Katalogversion: {0}. {1}</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHGELADEN" xml:space="preserve">
+    <value>Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten in diese Datenbank nachgeladen (Katalogversion „{0}“): {1} Parameter, {2} Brauchwasser-Nutzungsarten, {3} Bedarfstage.</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die frei verfügbaren Katalogdaten des Zapfprofilgenerators ließen sich nicht nachladen ({0}) — nichts geändert.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN" xml:space="preserve">
     <value>Eine Zone ohne Angaben.</value>
   </data>

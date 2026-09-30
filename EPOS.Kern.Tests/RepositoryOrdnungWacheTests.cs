@@ -319,6 +319,8 @@ namespace EPOS.Kern.Tests
             NormzahlenOrdner + "/probe.xlsx",
             NormzahlenOrdner + "/din4708/probe.xlsx",
             NormzahlenOrdner + "/zapfprofil/LIESMICH.md",
+            // Die gefüllte Kopie der Paketvorlage A100 (ZU24): lokal zum Prüfen, nie versioniert.
+            NormzahlenOrdner + "/Katalogpaket_A100/Tab_TwwNutzungsart_STAMM.csv",
         };
 
         /// <summary>Alle Pfade unter dem Normzahlenordner außer dem <c>LIESMICH.md</c>.</summary>

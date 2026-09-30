@@ -84,17 +84,26 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("Tab_", v.Klartext);
         }
 
+        /// <summary>
+        /// Ohne Katalogversion lädt <see cref="ZapfprofilCtrl.Verfuegbar"/> zuerst den freien Paketteil
+        /// nach (<see cref="TwwPaketteilNachladenTests"/>). Hier weist die Datei jedes Einfügen in den
+        /// Parameterkatalog ab — so bleibt die Katalogversion aus, und die benannte Ablehnung ist zu sehen.
+        /// </summary>
         [Fact]
         public void Ohne_Katalogversion_ist_der_Generator_benannt_nicht_verfuegbar()
         {
             using var db = new TwwTestdatenbank();
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM +
+                                           "\" BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             ZapfVerfuegbarkeit ohne = ZapfprofilCtrl.Verfuegbar();
             Assert.False(ohne.Ja);
             Assert.Equal(ZapfVerfuegbarkeitsgrund.KeineKatalogversion, ohne.Grund);
             Assert.Contains("Parameterkatalog des Zapfprofils", ohne.Klartext);
-            Assert.DoesNotContain("Tab_", ohne.Klartext);
+            Assert.DoesNotContain("Tab_", ((ZapfSatz)ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)).Klartext);
+            Assert.Equal("PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN", ohne.Nachladen?.Kennung);
 
+            DataRepository.ExecuteNonQuery("DROP TRIGGER \"Probe_Abweisen\"");
             TwwTestdatenbank.ParameterAnlegen("Probe.Eins", 1.0, "T1");
             ZapfVerfuegbarkeit mit = ZapfprofilCtrl.Verfuegbar();
             Assert.True(mit.Ja);
