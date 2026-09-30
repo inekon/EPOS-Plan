@@ -162,7 +162,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Brennwertkessel mit eingeschalteter Brennwertkennlinie rechnen je Stunde mit dem Rücklauf aus Heizkreis, Speicher oder Temperaturpaar; unter dem Taupunkt steigt ihr Wirkungsgrad. (#627)
 - Die Szenarioabdeckung der Wirtschaftlichkeit zählt die angehakten Versionen samt Referenz und folgt einem Haken sofort. (#603; mit #633 eingetragen, Version bestätigt der Anwender beim Upload)
 - Ändert die Versionsauswahl die Gruppenregel, meldet die Wirtschaftlichkeitsseite die Ergebnisse bis zum nächsten Berechnen als veraltet. (#633 vorläufig; Version bestätigt der Anwender beim Upload)
-- Heizkessel takten unter ihrer Mindestleistung: Die Simulation zählt die Brennerstarts und rechnet je Start einen Anfahrverlust als Brennstoff; leere Felder nehmen Vorgaben. (#633)
+- Heizkessel takten unter ihrer Mindestleistung: Die Simulation zählt die Brennerstarts und rechnet je Start einen Anfahrverlust als Brennstoff; leere Felder nehmen Vorgaben. (#630)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
