@@ -10,7 +10,9 @@ namespace WindowsFormsApplication1
     // wurde komplett entfernt. Stattdessen wird der Brennstoffverbrauch nun stündlich direkt in der Simulationsschleife ermittelt:
     //
     // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den Wirkungsgrad seiner Laststufe
-    //   ermittelt (Teillastkennlinie, Kesselkennlinie.Eta; Konzept Kesselkennlinie 4.1).
+    //   ermittelt (Teillastkennlinie, Kesselkennlinie.Eta; Konzept Kesselkennlinie 4.1), beim
+    //   Brennwertkessel mit Brennwertkennlinie zusätzlich über den Rücklauf der Stunde
+    //   (Kesselkennlinie.EtaBrennwert, Etappe E3).
     // - Steht er in einer Stunde still und ist er betriebsbereit (Heiztag oder Nachlauf, #568), wird
     //   ihm für diese exakte Stunde der Bereitschaftsverlust als Brennstoffverbrauch (Wärmeverlust)
     //   aufgeschlagen; außerhalb der Betriebsbereitschaft ist er abgeschaltet und verliert nichts.
@@ -306,6 +308,75 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] TeillastMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
 
+        // ------------------------------------------------------------------
+        // BRENNWERTKENNLINIE (Konzept Kesselkennlinie 4.1 Punkte 3 bis 5, Etappe E3)
+        //
+        // Ein Brennwertkessel mit Kennlinie_Brennwert = 1 rechnet je Laufstunde mit
+        // η_eff = η_tr(β) + Δ₃₀ · g(T_RL) (Kesselkennlinie.EtaBrennwert). Den Rücklauf der Stunde
+        // liefert die Kette (Kesselkennlinie.Ruecklauf): (a) Heizkreisrücklauf der
+        // Anlagenkopplung, (b) Senkenspeicher, EINMAL je Stunde in Stunde_Start gelesen,
+        // (c) gepflegtes Paar, (d) Rückfall 50 °C. Jeder andere Kessel rechnet Stunde für
+        // Stunde wie in E2.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Der gerechnete RÜCKLAUF DES HEIZKREISES [°C je Stunde], NaN ohne gekoppelten Bedarf
+        /// (Anlagenkopplung AK1, <c>HeizkreisProjekt.RuecklaufC</c>) — Stufe (a) der Rücklaufkette.
+        /// Eingang wie <see cref="Aussentemperatur_Projekt"/>, gesetzt von <c>SimulationControl</c>
+        /// vor <see cref="Vorbereiten_Zweikanalig"/>; <c>null</c> ohne Kopplung.
+        /// </summary>
+        public double[] Heizkreisruecklauf;
+
+        /// <summary>
+        /// Liest das GEPFLEGTE Paar einer Anlage (<c>Tab_Energieanlagen.ID</c>) und liefert seinen
+        /// Rücklauf [°C], <c>null</c> ohne Paar — Stufe (c) der Rücklaufkette. Eingang, gesetzt von
+        /// <c>SimulationControl</c> (dieselbe Kette Anlage → Heizkessel wie der Kessel-Hub);
+        /// <c>null</c> = keine Stufe (c). Gefragt nur für Kessel mit Brennwertkennlinie.
+        /// </summary>
+        public Func<int, double?> RuecklaufPaarLesen;
+
+        /// <summary>Rechnet der Kessel mit der Brennwertkennlinie?</summary>
+        private readonly bool[] _brennwertKennlinie = new bool[MAX_SPK];
+
+        /// <summary>Rücklauf des gepflegten Paars je Kessel [°C]; <c>null</c> = keins (Stufe c).</summary>
+        private readonly double?[] _ruecklaufPaar = new double?[MAX_SPK];
+
+        /// <summary>Senkenspeicher je Kessel (Stufe b); <c>null</c> = keiner.</summary>
+        private readonly SimulationPufferspeicher[] _ruecklaufSpeicher = new SimulationPufferspeicher[MAX_SPK];
+
+        /// <summary>Rücklauf aus dem Senkenspeicher der laufenden Stunde [°C]; NaN ohne Speicher.</summary>
+        private readonly double[] _speicherRuecklauf = new double[MAX_SPK];
+
+        /// <summary>
+        /// Rücklauf je Kessel und Stunde [°C] — in Laufstunden der Brennwertkennlinie T_RL, sonst 0;
+        /// angelegt nur für Kessel mit Brennwertkennlinie. Nur Anzeige und Export (Konzept 5).
+        /// </summary>
+        private readonly double[][] _ruecklaufStunde = new double[MAX_SPK][];
+
+        /// <summary>Laufstunden je Kessel und Stufe der Rücklaufkette (Protokoll).</summary>
+        private readonly int[][] _ruecklaufStufen = new int[MAX_SPK][];
+
+        /// <summary>Σ Wärme · Rücklauf der Laufstunden je Kessel [kWh·°C] — Zähler des mittleren Rücklaufs.</summary>
+        private readonly double[] _ruecklaufGewichtet = new double[MAX_SPK];
+
+        /// <summary>
+        /// BRENNWERTSTUNDEN je Kessel [h/a]: Laufstunden der Brennwertkennlinie mit einem Rücklauf
+        /// unter dem Taupunkt (<see cref="Kesselkennlinie.Brennwertbetrieb"/>).
+        /// </summary>
+        public int[] Brennwertstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>Brennstoffbasierte Wärme der <see cref="Brennwertstunden_Spk"/> je Kessel [kWh/a].</summary>
+        public double[] BrennwertWaerme_KWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// MEHRBRENNSTOFF AUS BRENNWERTNUTZUNG je Kessel [kWh/a] gegenüber der trockenen Teillastkurve:
+        /// Σ (Wärme/η_eff − Wärme/η_tr(β)) über die Laufstunden (Konzept 4.1 Punkt 7) — negativ, wo der
+        /// Kondensationsgewinn Brennstoff spart; ohne Brennwertkennlinie 0. Zusammen mit
+        /// <see cref="TeillastMehrbrennstoff_KWh_Spk"/> (dann gegenüber η_tr) ist das der Mehrbrennstoff
+        /// gegenüber η₁₀₀.
+        /// </summary>
+        public double[] BrennwertMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
+
         // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
         // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
         // Heizkessel_Simulation, Bilanz_und_Nutzungsgrad auf EINEM Bedarfsvektor). Er
@@ -424,6 +495,10 @@ namespace WindowsFormsApplication1
                 _eta30Gepflegt[i] = heizkesselctrl.items[0].Wirkungsgrad_Teillast30;
                 _bauart[i] = Kesselkennlinie.Bauart(heizkesselctrl.items[0].Brennwert,
                                                     heizkesselctrl.items[0].Beschreibung);
+                // Etappe E3: die Brennwertkennlinie nur auf ausdrückliche Wahl am Brennwertkessel
+                // (Konzept 3.1) und mit einem Brennstoff, der kondensiert.
+                _brennwertKennlinie[i] = Kesselkennlinie.RechnetMitBrennwertkennlinie(
+                    heizkesselctrl.items[0].Brennwert, heizkesselctrl.items[0].Kennlinie_Brennwert, Brennstoff_Art[i]);
                 if (Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i]))
                     SimulationProtokoll.Aktuell.HinweisEinmal(
                         "KESSEL_KENNLINIE_" + spk_list[i],
@@ -1316,6 +1391,16 @@ namespace WindowsFormsApplication1
                 int idAnlage = (i < spk_anlagen_ids.Count) ? spk_anlagen_ids[i] : 0;
                 _kesselSenke.Add(SenkeZuAnlage(senken, idAnlage));
                 _wirkungsgradStunde[i] = new double[8760];
+
+                // Etappe E3: Stufe (c) der Rücklaufkette und die Mitschrift - nur für Kessel mit
+                // Brennwertkennlinie; jeder andere Kessel liest nichts zusätzlich.
+                if (_brennwertKennlinie[i])
+                {
+                    _ruecklaufPaar[i] = (RuecklaufPaarLesen != null && idAnlage > 0) ? RuecklaufPaarLesen(idAnlage) : null;
+                    _ruecklaufStunde[i] = new double[8760];
+                    _ruecklaufStufen[i] = new int[4];
+                    BrennwertkennlinieMelden(i);
+                }
             }
 
             _anzahlZweikanalig = Anzahl;
@@ -1358,6 +1443,15 @@ namespace WindowsFormsApplication1
                 _kesselStunde[i] = 0;
                 _kesselAbgabe[i] = 0;
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
+
+                // Etappe E3, Stufe (b) der Rücklaufkette: der Senkenspeicher EINMAL je Stunde, am
+                // Stundenanfang - der Zustand am Ende der Vorstunde, wie der Lesepunkt „Davor" der
+                // Booster-Quelltemperatur. Geschichtet die unterste Schicht, sonst RL_eff.
+                if (_brennwertKennlinie[i])
+                {
+                    SimulationPufferspeicher sp = _ruecklaufSpeicher[i];
+                    _speicherRuecklauf[i] = sp == null ? double.NaN : (sp.Geschichtet ? sp.T_unten : sp.RL_eff);
+                }
             }
 
             double eingang = Kaskadenschleife.RestSumme(rest);
@@ -1555,13 +1649,43 @@ namespace WindowsFormsApplication1
                 // Verzweigung ist Wort für Wort die bisherige.
                 if (laeuft)
                 {
+                    // Etappe E3 (Konzept 4.1 Punkte 3 bis 5): Der Brennwertkessel mit Kennlinie rechnet
+                    // mit η_eff aus Laststufe UND Rücklauf der Stunde; die trockene Kurve η_tr trennt den
+                    // Teillastanteil vom Kondensationsgewinn. Jeder andere Kessel: wirk wie in E2.
+                    double wirkTrocken = wirk;
+                    double ruecklauf = double.NaN;
+                    if (_brennwertKennlinie[i])
+                    {
+                        ruecklauf = RuecklaufDerStunde(i, stunde, out Ruecklaufstufe stufe);
+                        wirk = WirkungsgradBrennwert(i, KesselLeistung, eta100, ruecklauf, out wirkTrocken);
+                        _ruecklaufStufen[i][(int)stufe]++;
+                    }
+
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
                     stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
 
-                    // E2: der Brennstoff der Laufstunde und sein Teillastanteil gegenüber η₁₀₀.
+                    // E2: der Brennstoff der Laufstunde und sein Teillastanteil gegenüber η₁₀₀ - beim
+                    // Brennwertkessel mit Kennlinie der trockenen Kurve, der Rest ist Brennwertnutzung (E3).
                     _waermeBetriebKwh[i] += KesselLeistung;
                     BrennstoffBetrieb_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
-                    TeillastMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - KesselLeistung / eta100;
+                    if (_brennwertKennlinie[i])
+                    {
+                        double brennstoffTrocken = KesselLeistung / wirkTrocken;
+                        TeillastMehrbrennstoff_KWh_Spk[i] += brennstoffTrocken - KesselLeistung / eta100;
+                        BrennwertMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - brennstoffTrocken;
+                        _ruecklaufGewichtet[i] += KesselLeistung * ruecklauf;
+                        if (_ruecklaufStunde[i] != null && stunde >= 0 && stunde < 8760)
+                            _ruecklaufStunde[i][stunde] = ruecklauf;
+                        if (Kesselkennlinie.Brennwertbetrieb(ruecklauf, Kesselkennlinie.Taupunkt(Brennstoff_Art[i])))
+                        {
+                            Brennwertstunden_Spk[i]++;
+                            BrennwertWaerme_KWh_Spk[i] += KesselLeistung;
+                        }
+                    }
+                    else
+                    {
+                        TeillastMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - KesselLeistung / eta100;
+                    }
                     if (_wirkungsgradStunde[i] != null && stunde >= 0 && stunde < 8760)
                         _wirkungsgradStunde[i][stunde] = wirk;
 
@@ -1617,6 +1741,123 @@ namespace WindowsFormsApplication1
             if (!Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i])) return eta100;
             double eta30 = Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[i], eta100, _bauart[i], Brennstoff_Art[i]);
             return Kesselkennlinie.Eta(Kesselkennlinie.Laststufe(waermeKwh, Kessel_Leistung_Spk[i]), eta100, eta30);
+        }
+
+        /// <summary>
+        /// Der Wirkungsgrad eines Kessels MIT Brennwertkennlinie in einer Laufstunde (Konzept 4.1
+        /// Punkte 3 bis 5, Etappe E3): <see cref="Kesselkennlinie.EtaBrennwert"/> bei Laststufe und
+        /// Rücklauf der Stunde, mit dem wirksamen η₃₀ (gepflegt oder Normvorgabe) zu
+        /// <paramref name="eta100"/>. <paramref name="wirkTrocken"/> ist η_tr(β).
+        /// </summary>
+        private double WirkungsgradBrennwert(int i, double waermeKwh, double eta100, double ruecklaufC,
+                                             out double wirkTrocken)
+        {
+            double eta30 = Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[i], eta100, _bauart[i], Brennstoff_Art[i]);
+            return Kesselkennlinie.EtaBrennwert(Kesselkennlinie.Laststufe(waermeKwh, Kessel_Leistung_Spk[i]),
+                                                eta100, eta30, ruecklaufC, Brennstoff_Art[i], out wirkTrocken);
+        }
+
+        /// <summary>
+        /// Der RÜCKLAUF einer Stunde für den Kessel <paramref name="i"/> nach der Kette
+        /// (<see cref="Kesselkennlinie.Ruecklauf"/>): Heizkreis der Anlagenkopplung, Senkenspeicher (in
+        /// <see cref="Stunde_Start"/> gelesen), gepflegtes Paar, Rückfall 50 °C.
+        /// </summary>
+        private double RuecklaufDerStunde(int i, int stunde, out Ruecklaufstufe stufe)
+        {
+            double heizkreis = (Heizkreisruecklauf != null && stunde >= 0 && stunde < Heizkreisruecklauf.Length)
+                ? Heizkreisruecklauf[stunde] : double.NaN;
+            return Kesselkennlinie.Ruecklauf(heizkreis, _speicherRuecklauf[i], _ruecklaufPaar[i], out stufe);
+        }
+
+        /// <summary>
+        /// Setzt den SENKENSPEICHER eines Kessels mit Brennwertkennlinie — Stufe (b) der Rücklaufkette
+        /// (Etappe E3). Aufgerufen von <c>SimulationControl</c>, nachdem die Speicher-Registry offen ist,
+        /// mit dem ersten Puffer der Senkenliste in Rangfolge. Ohne Brennwertkennlinie wirkungslos.
+        /// </summary>
+        public void RuecklaufSpeicherSetzen(int index, SimulationPufferspeicher speicher)
+        {
+            if (index < 0 || index >= MAX_SPK || !_brennwertKennlinie[index]) return;
+            _ruecklaufSpeicher[index] = speicher;
+        }
+
+        /// <summary>Rechnet der Kessel <paramref name="index"/> mit der Brennwertkennlinie (Etappe E3)?</summary>
+        public bool RechnetMitBrennwertkennlinie(int index)
+            => index >= 0 && index < MAX_SPK && _brennwertKennlinie[index];
+
+        /// <summary>
+        /// Der MITTLERE RÜCKLAUF der Laufstunden des Kessels <paramref name="index"/> [°C], wärmegewichtet;
+        /// NaN ohne Brennwertkennlinie oder ohne Laufstunde.
+        /// </summary>
+        public double RuecklaufMittel(int index)
+        {
+            if (!RechnetMitBrennwertkennlinie(index)) return double.NaN;
+            double w = _waermeBetriebKwh[index];
+            return w > 0 ? _ruecklaufGewichtet[index] / w : double.NaN;
+        }
+
+        /// <summary>
+        /// Die Stundenreihe des Rücklaufs des Kessels <paramref name="index"/> [°C; in Stillstandsstunden
+        /// 0] — nur mit Brennwertkennlinie, sonst <c>null</c>. Lesezugriff für den Zeitreihen-Export.
+        /// </summary>
+        public double[] RuecklaufStunden(int index)
+            => RechnetMitBrennwertkennlinie(index) ? _ruecklaufStunde[index] : null;
+
+        /// <summary>
+        /// Laufstunden des Kessels <paramref name="index"/> je Stufe der Rücklaufkette; 0 ohne
+        /// Brennwertkennlinie.
+        /// </summary>
+        public int RuecklaufStufenstunden(int index, Ruecklaufstufe stufe)
+            => RechnetMitBrennwertkennlinie(index) && _ruecklaufStufen[index] != null ? _ruecklaufStufen[index][(int)stufe] : 0;
+
+        /// <summary>Laufprotokoll beim Aufbau: Stützwerte der Brennwertkennlinie eines Kessels.</summary>
+        private void BrennwertkennlinieMelden(int i)
+        {
+            int art = Brennstoff_Art[i];
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "KESSEL_BRENNWERTKENNLINIE_" + spk_list[i],
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KESSEL_BRENNWERTKENNLINIE,
+                    spk_list[i],
+                    Kesselkennlinie.Taupunkt(art).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.Kondensationsgewinn30(art).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.Eta30Trocken(Teillastwirkungsgrad(i), art).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.HsHi(art).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                    (_ruecklaufPaar[i].HasValue ? _ruecklaufPaar[i].Value : Kesselkennlinie.RUECKLAUF_RUECKFALL_C)
+                        .ToString("0.#", System.Globalization.CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>
+        /// Laufprotokoll am Jahresende: woher der Rücklauf der Laufstunden kam, sein Mittel und der
+        /// Brennwertbetrieb; dazu die Kohärenzzeile (Konzept 5), wenn der Rücklauf in mindestens der
+        /// Hälfte der Betriebsstunden über dem Taupunkt lag.
+        /// </summary>
+        private void BrennwertBetriebMelden(int i)
+        {
+            if (!_brennwertKennlinie[i] || Laufstunden_Spk[i] <= 0) return;
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_BRENNWERT_BETRIEB,
+                    spk_list[i],
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Heizkreis),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Speicher),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Paar),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Rueckfall),
+                    RuecklaufMittel(i).ToString("0.0", k),
+                    Brennwertstunden_Spk[i], Laufstunden_Spk[i]));
+
+            // Ganzzahlig verglichen (Stunden über dem Taupunkt ≥ die Hälfte der Laufstunden) - die
+            // Kohärenzzeile kippt so nicht an der Rundung eines Quotienten.
+            int stundenUeber = Laufstunden_Spk[i] - Brennwertstunden_Spk[i];
+            double ueber = stundenUeber / (double)Laufstunden_Spk[i];
+            if (stundenUeber * 2 >= Laufstunden_Spk[i])
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "KESSEL_BRENNWERT_UEBER_TAUPUNKT_" + spk_list[i],
+                    MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                        MyResource.Resource.SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT,
+                        spk_list[i], (ueber * 100.0).ToString("0", k),
+                        Kesselkennlinie.Taupunkt(Brennstoff_Art[i]).ToString("0.#", k)));
         }
 
         /// <summary>
@@ -1712,6 +1953,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 BereitschaftDeckeln(i);
+                BrennwertBetriebMelden(i);
 
                 s_waerme_Gas_Spk[i] /= 1000;
                 s_waerme_Oel_Spk[i] /= 1000;
@@ -1959,6 +2201,19 @@ namespace WindowsFormsApplication1
             Array.Clear(TeillastMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
             Array.Clear(_wirkungsgradStunde, 0, MAX_SPK);
             for (int j = 0; j < MAX_SPK; j++) _letzteLaufstunde[j] = int.MinValue;
+
+            // Brennwertkennlinie (Etappe E3): Schalter, Rücklaufkette und Mitschrift sind Laufzustand;
+            // Heizkreisruecklauf und RuecklaufPaarLesen sind Eingang und bleiben.
+            Array.Clear(_brennwertKennlinie, 0, MAX_SPK);
+            Array.Clear(_ruecklaufPaar, 0, MAX_SPK);
+            Array.Clear(_ruecklaufSpeicher, 0, MAX_SPK);
+            for (int j = 0; j < MAX_SPK; j++) _speicherRuecklauf[j] = double.NaN;
+            Array.Clear(_ruecklaufStunde, 0, MAX_SPK);
+            Array.Clear(_ruecklaufStufen, 0, MAX_SPK);
+            Array.Clear(_ruecklaufGewichtet, 0, MAX_SPK);
+            Array.Clear(Brennwertstunden_Spk, 0, MAX_SPK);
+            Array.Clear(BrennwertWaerme_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(BrennwertMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);

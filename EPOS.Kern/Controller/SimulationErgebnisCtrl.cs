@@ -474,13 +474,19 @@ namespace WindowsFormsApplication1
         /// <param name="TeillastVorgabe">η₃₀ ist die Normvorgabe nach Bauart (Feld leer)</param>
         /// <param name="WirkungsgradBetriebProzent">mittlerer Wirkungsgrad der Laufstunden [%], wärmegewichtet</param>
         /// <param name="LaststufeProzent">mittlere Laststufe der Laufstunden [%]</param>
+        /// <param name="MitBrennwertkennlinie">der Kessel rechnet mit der Brennwertkennlinie (Etappe E3)</param>
+        /// <param name="RuecklaufMittelC">mittlerer Rücklauf der Laufstunden [°C], wärmegewichtet</param>
+        /// <param name="BrennwertStundenProzent">Anteil der Laufstunden im Brennwertbetrieb [%]</param>
         public sealed record KesselModulZeile(string Name, double GasMwh, double OelMwh,
                                               double JahresnutzungsgradProzent,
                                               bool MitKennlinie = false,
                                               double TeillastwirkungsgradProzent = 0,
                                               bool TeillastVorgabe = false,
                                               double WirkungsgradBetriebProzent = 0,
-                                              double LaststufeProzent = 0);
+                                              double LaststufeProzent = 0,
+                                              bool MitBrennwertkennlinie = false,
+                                              double RuecklaufMittelC = 0,
+                                              double BrennwertStundenProzent = 0);
 
         public sealed class HeizkesselErgebnis
         {
@@ -540,6 +546,33 @@ namespace WindowsFormsApplication1
             /// Brennstoffkessel; negativ, wo die Teillast Brennstoff spart (Brennwertkessel).
             /// </summary>
             public double TeillastMehrbrennstoffKwh;
+
+            /// <summary>
+            /// Rechnet mindestens ein Kessel des Laufs mit der Brennwertkennlinie (Konzept
+            /// Kesselkennlinie 4.1, Etappe E3)? Nur dann zeigt der Reiter die Brennwertgrößen.
+            /// </summary>
+            public bool MitBrennwertkennlinie;
+
+            /// <summary>Laufstunden der Kessel mit Brennwertkennlinie [h/a].</summary>
+            public int BrennwertLaufstunden;
+
+            /// <summary>Davon Stunden im Brennwertbetrieb (Rücklauf unter dem Taupunkt) [h/a].</summary>
+            public int Brennwertstunden;
+
+            /// <summary>Anteil der <see cref="Brennwertstunden"/> an den <see cref="BrennwertLaufstunden"/> [%].</summary>
+            public double BrennwertStundenProzent;
+
+            /// <summary>Anteil der Wärme im Brennwertbetrieb an der Wärme der Laufstunden dieser Kessel [%].</summary>
+            public double BrennwertWaermeProzent;
+
+            /// <summary>
+            /// Mehrbrennstoff aus Brennwertnutzung gegenüber der trockenen Teillastkurve [kWh/a], Summe
+            /// über die Kessel mit Brennwertkennlinie — negativ, wo die Kondensation Brennstoff spart.
+            /// </summary>
+            public double BrennwertMehrbrennstoffKwh;
+
+            /// <summary>Mittlerer Rücklauf der Laufstunden dieser Kessel [°C], wärmegewichtet; 0 ohne Laufstunde.</summary>
+            public double RuecklaufMittelC;
 
             /// <summary>
             /// Die WIRKSAME Heizgrenze des Laufs [°C] — ein Tag mit einem Tagesmittel der
@@ -668,9 +701,31 @@ namespace WindowsFormsApplication1
             }
             e.WirkungsgradBetriebProzent = brennstoffBetrieb > 0 ? waermeBetrieb / brennstoffBetrieb * 100.0 : 0;
 
+            // Konzept Kesselkennlinie 5 (Etappe E3): die Brennwertgrößen der Kessel mit Brennwertkennlinie.
+            double waermeBrennwertKessel = 0, waermeBrennwertBetrieb = 0, ruecklaufGewichtet = 0;
+            for (int i = 0; i < kessel; i++)
+            {
+                if (!spk.RechnetMitBrennwertkennlinie(i)) continue;
+                e.MitBrennwertkennlinie = true;
+                e.BrennwertLaufstunden += spk.Laufstunden_Spk[i];
+                e.Brennwertstunden += spk.Brennwertstunden_Spk[i];
+                e.BrennwertMehrbrennstoffKwh += spk.BrennwertMehrbrennstoff_KWh_Spk[i];
+                double w = spk.WaermeBetriebKwh(i);
+                waermeBrennwertKessel += w;
+                waermeBrennwertBetrieb += spk.BrennwertWaerme_KWh_Spk[i];
+                double rl = spk.RuecklaufMittel(i);
+                if (w > 0 && !double.IsNaN(rl)) ruecklaufGewichtet += w * rl;
+            }
+            e.BrennwertStundenProzent = e.BrennwertLaufstunden > 0
+                ? e.Brennwertstunden * 100.0 / e.BrennwertLaufstunden : 0;
+            e.BrennwertWaermeProzent = waermeBrennwertKessel > 0 ? waermeBrennwertBetrieb / waermeBrennwertKessel * 100.0 : 0;
+            e.RuecklaufMittelC = waermeBrennwertKessel > 0 ? ruecklaufGewichtet / waermeBrennwertKessel : 0;
+
             for (int i = 0; i < spk.spk_list.Count; i++)
             {
                 bool kennlinie = i < SimulationSPK.MAX_SPK && !spk.IstStromkessel(i);
+                bool brennwert = kennlinie && spk.RechnetMitBrennwertkennlinie(i);
+                double ruecklauf = brennwert ? spk.RuecklaufMittel(i) : 0;
                 e.Module.Add(new KesselModulZeile(
                     spk.spk_list[i], spk.s_waerme_Gas_Spk[i], spk.s_waerme_Oel_Spk[i],
                     spk.Kessel_Jahresnutzungsgrad_Spk[i],
@@ -678,7 +733,11 @@ namespace WindowsFormsApplication1
                     kennlinie ? spk.Teillastwirkungsgrad(i) * 100.0 : 0,
                     kennlinie && spk.TeillastwirkungsgradIstVorgabe(i),
                     kennlinie ? spk.WirkungsgradBetrieb(i) * 100.0 : 0,
-                    kennlinie ? spk.LaststufeMittel(i) * 100.0 : 0));
+                    kennlinie ? spk.LaststufeMittel(i) * 100.0 : 0,
+                    brennwert,
+                    double.IsNaN(ruecklauf) ? 0 : ruecklauf,
+                    brennwert && spk.Laufstunden_Spk[i] > 0
+                        ? spk.Brennwertstunden_Spk[i] * 100.0 / spk.Laufstunden_Spk[i] : 0));
             }
 
             return e;

@@ -15381,6 +15381,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Rücklauf [°C] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_KESSEL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("CHART_CSV_KESSEL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wirkungsgrad [-] ähnelt.
         /// </summary>
         public static string CHART_CSV_KESSEL_WIRKUNGSGRAD {
@@ -61135,6 +61144,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KONDITIONIERUNG {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KONDITIONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string KOND_BTN_LOESCHEN {
@@ -62107,6 +62125,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender der Zone ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ZONE_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ZONE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung lässt sich nicht übernehmen: {0} ähnelt.
         /// </summary>
         public static string KOND_MSG_ARBEITSSTAND_UNGUELTIG {
@@ -62800,6 +62827,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZONE_UNBEHEIZT {
@@ -63196,6 +63232,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster der Spalte {0} der Zone: {1} als volle Stunde 0 bis 23; beide leer = wie Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_FENSTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison der Spalte {0} der Zone: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember); beide leer = wie Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zelle der Zonenmatrix im Zonendialog: {0}, Zeile „{1}“, in {2}. Leer heißt „wie Gebäude“: Es gilt, was das Gebäude vorgibt – Geräte und Personen im Flächenanteil der Zone. Folgt die Zone einem angelegten Kalender des Gebäudes, wirkt die Zelle erst nach „Vom Gebäude übernehmen und anpassen“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_ZELLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_ZELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KUEHLEN_GESPERRT {
@@ -63237,6 +63300,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_PERIODEN_LEER {
             get {
                 return ResourceManager.GetString("KOND_TXT_PERIODEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
+        /// </summary>
+        public static string KOND_TXT_PLATZHALTER_WIE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_PLATZHALTER_WIE_GEBAEUDE", resourceCulture);
             }
         }
         
@@ -63372,6 +63444,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_VERMERK {
             get {
                 return ResourceManager.GetString("KOND_TXT_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VERWALTUNG_ALTFELDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VERWALTUNG_ALTFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VERWALTUNG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VERWALTUNG_SPEICHERN", resourceCulture);
             }
         }
         
@@ -63516,6 +63606,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_WOCHE_VORGABE {
             get {
                 return ResourceManager.GetString("KOND_TXT_WOCHE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des Gebäudes auf; danach trägt die Zone eigene Lüftungswerte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_MATRIX {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZONE_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZONE_OHNE_WIRKUNG", resourceCulture);
             }
         }
         
@@ -76656,6 +76773,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Taupunkt {1} °C, Kondensationsgewinn bei 30 °C Rücklauf {2}, η₃₀ trocken {3}, Obergrenze Hs/Hi {4}. Der Rücklauf kommt aus dem Heizkreis der Anlagenkopplung, sonst aus dem Senkenspeicher, sonst gilt {5} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERTKENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERTKENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERT_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft: Heizgrenze {0:0.#} °C, {1} Heiztage — an ihnen und 24 h nach seiner letzten Laufstunde trägt ein stillstehender Kessel seinen Bereitschaftsverlust. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_HEIZGRENZE {
@@ -76706,6 +76850,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf aus dem Senkenspeicher {1} ({2}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_RUECKLAUF_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_RUECKLAUF_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unterste Schicht, je Stunde gelesen ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT", resourceCulture);
             }
         }
         
@@ -77824,6 +77986,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff aus Brennwertnutzung ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden im Brennwertbetrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_STUNDENANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_STUNDENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme im Brennwertbetrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_WAERMEANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_WAERMEANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer (andere Erzeuger): ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
@@ -78090,6 +78279,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Rücklauf im Betrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RUECKLAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RUECKLAUF_MITTEL", resourceCulture);
             }
         }
         
@@ -78540,6 +78738,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BHKW_EINSPEISUNG {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Brennwertkessel mit Brennwertkennlinie rechnet je Stunde zusätzlich mit dem Rücklauf: Unter dem Taupunkt des Abgases kondensiert Wasserdampf, und der Wirkungsgrad steigt bis zum Kondensationsgewinn bei 30 °C Rücklauf. Der Rücklauf kommt aus dem gerechneten Heizkreis (Anlagenkopplung), sonst aus dem Senkenspeicher, sonst aus dem gepflegten Temperaturpaar, sonst gilt 50 °C. Brennwertbetrieb heißt: Rücklauf unter dem Taupunkt. Der Brennwertbrennstoff ist der Minderverbrauch gegenüber der trockenen Teillast [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BRENNWERT_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
             }
         }
         
@@ -83765,6 +83972,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertbetrieb [%] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_BRENNWERTANTEIL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_BRENNWERTANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
         /// </summary>
         public static string SIM_SPALTE_EINSPEISEHOEHE {
@@ -83887,6 +84103,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_RANG {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf [°C] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_RUECKLAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_RUECKLAUF_MITTEL", resourceCulture);
             }
         }
         
@@ -88763,6 +88988,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_ANHEBUNG_GRENZE {
             get {
                 return ResourceManager.GetString("TRANSFER_ANHEBUNG_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung) ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_KESSEL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT", resourceCulture);
             }
         }
         
@@ -105144,7 +105378,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone. ähnelt.
         /// </summary>
         public static string ZONDLG_ZEILE_VORGABEN {
             get {

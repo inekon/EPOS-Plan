@@ -24,8 +24,17 @@
        Bauart, Beschreibung; der Name ist Lesewert (umbenannt wird ueber
        Duplizieren...). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die
        Verwaltung Gebaeudetypen als Ueberlagerung.
-     * HUELLE, FENSTER, KENNGROESSEN und - aufklappbar - ALLE DATEN (Temperaturen,
-       Ferien, Modellparameter, Rechenweg, Kuehlung) zeichnet der Baustein
+     * KONDITIONIERUNG (Stufe KP2, Welle U4; Entwurf KP2 Festlegung 6, E56 F3 (a)): fuenf
+       Zustandszeilen (Heizen, Kuehlen, Lueftung, Geraete, Personen - "aus der Matrix",
+       "angelegt, 3 eigene Perioden" ...) und im Kopf "Konditionierung...": Es oeffnet ein
+       BREITES BLATT (Baustein Blattwechsel) mit derselben Komponente wie der Reiter des
+       Katalogeditors (KonditionierungReiter) am SELBEN Arbeitsstand - Vorgabe-Matrix,
+       Kalenderkarten, Sollwerte, Nachtzeit, Ferien, innere Waermegewinne, Infiltration,
+       Nutzerlueftung, Sommerlueftung, Kuehlsollwert und Maximalraumtemperatur stehen nur dort.
+       "Speichern" der Verwaltung schreibt sie mit, "Verwerfen" nimmt sie zurueck; ein
+       Auslieferungssatz steht im Blatt im Lesemodus (Werte als Text).
+     * HUELLE, FENSTER, KENNGROESSEN und - aufklappbar - ALLE DATEN (Modellparameter,
+       Rechenweg, Waermeuebergabe, Kuehlung) zeichnet der Baustein
        GebaeudeStammblattFelder.
    EINE WAHRHEIT: Alle Felder schreiben in DENSELBEN Arbeitsstand wie der
    Katalogeditor (GebaeudeArbeitsstand); "Speichern" prueft mit dessen Regeln,
@@ -47,8 +56,9 @@
    Pruefen und Speichern sind die Wege des Knopfes, ein Auslieferungssatz ist
    schreibgeschuetzt.
 
-   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, schmales Blatt,
-   Dialog); Enter ist nicht belegt - die Knoepfe schreiben sofort. *@
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, Rueckfrage, Blatt
+   "Konditionierung", schmales Blatt, Dialog); Enter ist nicht belegt - die Knoepfe schreiben
+   sofort. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -60,6 +70,10 @@
 <div class="epos-dialog epos-katalog-dialog epos-gebaeude-admin" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* Stufe KP2, Welle U4: Steht das Blatt "Konditionierung", zeichnet die Verwaltung ihren
+       Haupt-Inhalt nicht (Baustein Blattwechsel, unten). *@
+    @if (!_kondOffen)
+    {
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
@@ -144,6 +158,25 @@
                         </KindInhalt>
                     </Stammblattgruppe>
 
+                    @* KONDITIONIERUNG (Stufe KP2, Welle U4): fuenf Zustandszeilen als Text; der Knopf im
+                       Kopf oeffnet das breite Blatt mit Matrix, Karten und den Altfeldern (E56 F3 (a)). *@
+                    @if (_satz is not null)
+                    {
+                        <Stammblattgruppe Titel="@KonditionierungTexte.Reiter" Lesemodus="true"
+                                          Werte="@Konditionierungswerte">
+                            <Kopf>
+                                <button type="button" class="epos-textknopf epos-gebaeude-kondknopf"
+                                        @onclick="KonditionierungOeffnen">@KonditionierungTexte.KnopfKonditionierung</button>
+                            </Kopf>
+                            <Nachsatz>
+                                @if (_kond.Sperrgrund is string sperre)
+                                {
+                                    <p class="epos-leisezeile epos-gebaeude-kondsperre">@sperre</p>
+                                }
+                            </Nachsatz>
+                        </Stammblattgruppe>
+                    }
+
                     @* HUELLE, FENSTER, KENNGROESSEN, ALLE DATEN - der Baustein schreibt in
                        denselben Arbeitsstand; im Lesemodus stehen Huelle und "Alle Daten"
                        als Text, wie der Kern sie formatiert. *@
@@ -158,7 +191,8 @@
                                                   Beschriftungen="@Beschriftungen"
                                                   UebergabeHerleitung="@UebergabeHerleitung"
                                                   WochenVorschau="@WochenVorschau"
-                                                  EntprellungMs="@EntprellungMs" />
+                                                  EntprellungMs="@EntprellungMs"
+                                                  HinweisAltfelder="@KonditionierungTexte.HinweisVerwaltungAltfelder" />
                     }
                 </Gruppen>
             </Stammblatt>
@@ -193,6 +227,38 @@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Beenden">@BtnBeendenText</button>
     </div>
+    }
+
+    @* --- Das Blatt "Konditionierung" (Stufe KP2, Welle U4; Entwurf KP2 Festlegung 6) ----------
+       Dieselbe Komponente wie der Reiter des Katalogeditors, am SELBEN Arbeitsstand: Jede Handlung
+       geht in den Arbeitsstand des gewaehlten Satzes, "Speichern" der Fussleiste schreibt sie mit
+       (die leise Zeile sagt es), "Verwerfen" nimmt sie zurueck. Rueckknopf und Esc fuehren zurueck
+       zum Stammblatt, ohne etwas zu verwerfen. Ein Auslieferungssatz steht im Lesemodus. *@
+    <Blattwechsel Offen="@_kondOffen" WirtTitel="@TitelText" Titel="@KonditionierungTexte.Reiter"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="KonditionierungZurueck">
+        <KindInhalt>
+            @if (_kondOffen)
+            {
+                <div class="epos-gebaeude-kondblatt">
+                    @if (_meldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+                    }
+                    <p class="epos-leisezeile epos-gebaeude-kondblatt-hinweis">@Blatthinweis</p>
+                    <KonditionierungReiter Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuellTexte"
+                                           Projekt="false" Lesemodus="@_auslieferung" Altweg="@(!_arbeit.IstVdi6007)"
+                                           Kuehlsperre="@Kuehlsperre" Sollwertzeile="@_arbeit.Sollwertzeile"
+                                           LabelMaxTemperatur="@Beschriftungen.LabelMaxTemperatur"
+                                           GruppeFerienAnfang="@Beschriftungen.GruppeFerienAnfang"
+                                           GruppeFerienEnde="@Beschriftungen.GruppeFerienEnde"
+                                           Ferienzeitraeume="@Beschriftungen.Ferienzeitraeume"
+                                           LabelTag="@Beschriftungen.LabelTag" LabelMonat="@Beschriftungen.LabelMonat"
+                                           JaText="@JaText" NeinText="@NeinText"
+                                           Geaendert="Nachziehen" FehlerZustand="BeiFehlerzustand" />
+                </div>
+            }
+        </KindInhalt>
+    </Blattwechsel>
 
     @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -- *@
     <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
@@ -303,6 +369,19 @@
 
     /// <summary>Die übrigen Beschriftungen des Stammblatts — sie füllen sich selbst aus <c>MyResource</c>.</summary>
     [Parameter] public GebaeudeStammblattTexte Beschriftungen { get; set; } = new();
+
+    /// <summary>
+    /// Der Weg der Konditionierung des Katalogbaus (Stufe KP2, Welle U4) — derselbe wie im
+    /// Katalogeditor; <c>null</c> = das Blatt nennt den Grund, Matrix, Karten und Handlungen fehlen,
+    /// die Bestandszellen bleiben bedienbar.
+    /// </summary>
+    [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
+    /// <summary>Die Texte des Blatts „Konditionierung" (Stufe KP2, Welle U4).</summary>
+    [Parameter] public KonditionierungTexte KonditionierungTexte { get; set; } = new();
+
+    /// <summary>Die Texte der Rückfragen des Blatts „Konditionierung" (Stufe KP2, Welle U4).</summary>
+    [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
 
     /// <summary>Löscht einen Satz; <c>false</c> = er blieb stehen.</summary>
     [Parameter] public Func<string, bool>? Loeschen { get; set; }
@@ -447,6 +526,16 @@
     private bool _gebaeudetypOffen;
     private bool _alleDatenOffen;
 
+    // ---- das Blatt „Konditionierung" (Stufe KP2, Welle U4) ----------------------------------
+    /// <summary>Die Bearbeitung der Konditionierung — über DEMSELBEN Arbeitsstand wie das Stammblatt.</summary>
+    private KonditionierungBearbeitung _kond = default!;
+
+    /// <summary>Steht das Blatt „Konditionierung"?</summary>
+    private bool _kondOffen;
+
+    /// <summary>Ist das Blatt eben zu? Dann fokussiert die Verwaltung ihre Wurzel, ohne zu rollen.</summary>
+    private bool _fokusNachBlatt;
+
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
     private EventCallback _schlossHandlung;
@@ -488,6 +577,12 @@
     public GebaeudeKatalogDaten Arbeitsstand => _arbeit.Stand;
     /// <summary>Ist „Alle Daten" aufgeklappt? (Prüfhilfe)</summary>
     public bool AlleDatenOffen => _alleDatenOffen;
+    /// <summary>Steht das Blatt „Konditionierung"? (Prüfhilfe)</summary>
+    public bool KonditionierungOffen => _kondOffen;
+    /// <summary>Die Bearbeitung der Konditionierung (Prüfhilfe).</summary>
+    public KonditionierungBearbeitung Konditionierungsbearbeitung => _kond;
+    /// <summary>Der Arbeitsstand selbst (Prüfhilfe: Blatt und Stammblatt teilen ihn).</summary>
+    public GebaeudeArbeitsstand Arbeit => _arbeit;
 
     // =====================================================================
     // Aufbau
@@ -508,16 +603,35 @@
         _typen = Gebaeudetypen?.Invoke() ?? Array.Empty<string>();
         _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
 
+        // Stufe KP2, Welle U4: die Bearbeitung des Blatts „Konditionierung" am Arbeitsstand des
+        // Stammblatts. Eine Fehleingabe in der Matrix und die Maximalraumtemperatur haengen am Blatt
+        // (E56 F3 (a)) - die Pruefung oeffnet es.
+        _kond = new KonditionierungBearbeitung(_arbeit, () => Konditionierung, () => KonditionierungTexte,
+                                               () => KonditionierungFragen)
+        {
+            Melden = Melden
+        };
+        _arbeit.IstKonditionierungsfeld = feld => _kond.IstMatrixfeld(feld)
+                                                  || feld == GebaeudeArbeitsstand.Feld(Beschriftungen.LabelMaxTemperatur);
+
         KatalogLaden();
 
         // #465: eine EIGENE Maske - die Projektdialog-Sicht Form_Gebaeude bleibt beim
         // Projektdialog. Die Feldkarte ist die des Katalogeditors (KiDialoge.GebaeudeVerwaltung),
         // die Sicht dieselbe Klasse auf DEMSELBEN Arbeitsstand.
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken());
+        // Stufe KP2, Welle U4: die Vorlagefelder der Matrix (kond_<groesse>_vorlage) als Wahl - dieselben
+        // Listen wie die Karten des Blatts „Konditionierung" (der Weg der Huelle reicht die Vorlagen).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken(),
+                                          KonditionierungKiTafel.Vorlagenlisten(() => _kond));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_fokusNachBlatt && !_kondOffen)
+        {
+            _fokusNachBlatt = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await _wurzel.FocusAsync();
@@ -557,7 +671,10 @@
                 HuellTexte.RandErdreich, HuellTexte.RandKeller, HuellTexte.RandAussenluft
             }),
             Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : "",
-            Texte = HuellTexte
+            Texte = HuellTexte,
+            // Stufe KP2, Welle U4: die Vorgabe-Matrix des Blatts „Konditionierung" als Feldtafel - über
+            // dieselbe Bearbeitung wie die Zellen des Blatts, am selben Arbeitsstand.
+            Konditionierung = _kond
         });
     }
 
@@ -608,7 +725,7 @@
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _auslieferung,
         Schreibschutzgrund = () => Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt,
-        Pruefen = () => _arbeit.Pruefen(false, Prueftexte, HuellTexte)?.Meldung ?? "",
+        Pruefen = () => _arbeit.Pruefen(false, Pruefwortlaut, HuellTexte)?.Meldung ?? "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
@@ -692,8 +809,15 @@
         Zuruecksetzen();
     }
 
-    /// <summary>Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen).</summary>
-    private void Zuruecksetzen() => _arbeit.Laden(_geladen, neu: false);
+    /// <summary>
+    /// Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen) — samt der
+    /// Konditionierung; „Zurücknehmen" und eine offene Rückfrage des Blatts fallen mit.
+    /// </summary>
+    private void Zuruecksetzen()
+    {
+        _arbeit.Laden(_geladen, neu: false);
+        _kond.Neubeginn();
+    }
 
     // =====================================================================
     // Stammblatt: Kopf und Kenndaten
@@ -953,10 +1077,13 @@
     {
         if (Speichern is null) return false;
 
-        GebaeudePruefbefund? befund = _arbeit.Pruefen(false, Prueftexte, HuellTexte);
+        GebaeudePruefbefund? befund = _arbeit.Pruefen(false, Pruefwortlaut, HuellTexte);
         if (befund is not null)
         {
-            if (befund.Bereich != GebaeudePruefbereich.Huelle) _alleDatenOffen = true;
+            // Stufe KP2, Welle U4: Haengt die Regel an Matrix, Nachtzeit oder Ferien, oeffnet sie das
+            // Blatt „Konditionierung" - dort steht das Feld (E56 F3 (a)).
+            if (befund.Temperaturen) _kondOffen = true;
+            else if (befund.Bereich != GebaeudePruefbereich.Huelle) _alleDatenOffen = true;
             SpeichernAbgelehnt(befund.Meldung);
             return false;
         }
@@ -981,6 +1108,62 @@
     {
         Zuruecksetzen();
         _meldung = "";
+    }
+
+    // =====================================================================
+    // Das Blatt „Konditionierung" (Stufe KP2, Welle U4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Prüftexte der Verwaltung: die inneren Wärmegewinne heißen wie ihre Zelle in der Matrix
+    /// (Nennwert der Geräte, E56 F3 (a)) — die Pflichtmeldung nennt das Feld mit dem Namen, den das
+    /// Blatt trägt, wie im Katalogeditor.
+    /// </summary>
+    private GebaeudePrueftexte Pruefwortlaut
+    {
+        get
+        {
+            GebaeudePrueftexte p = Prueftexte.Kopie();
+            p.FeldWaermegewinne = KonditionierungBearbeitung.Feldname(KonditionierungTexte, KonditionierungGroesse.Geraete,
+                                                                      KonditionierungZeile.Nennwert);
+            return p;
+        }
+    }
+
+    /// <summary>Die fünf Zustandszeilen der Gruppe: je Größe „aus der Matrix", „angelegt, 3 eigene Perioden" …</summary>
+    private IReadOnlyList<Stammblattwert> Konditionierungswerte
+        => KonditionierungDaten.Alle.Select(g => new Stammblattwert(_kond.Groessenname(g), _kond.Zustand(g))).ToList();
+
+    /// <summary>
+    /// Die leise Zeile über dem Reiter: Ein eigener Satz sagt, wer schreibt („Speichern" der
+    /// Verwaltung); ein Auslieferungssatz nennt den Grund des Lesemodus.
+    /// </summary>
+    private string Blatthinweis
+        => _auslieferung
+            ? (Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt)
+            : KonditionierungTexte.HinweisVerwaltungSpeichern;
+
+    /// <summary>
+    /// Der Grund der weich gesperrten Kühlspalte (Teilkonzept 7.2, E32) — ohne „Gebäude wird gekühlt"
+    /// wirkt sie nicht; <c>null</c> = bedienbar. Wie im Katalogeditor.
+    /// </summary>
+    private string? Kuehlsperre => _arbeit.Stand.KuehlungAktiv ? null : KonditionierungTexte.GrundKuehlenGesperrt;
+
+    /// <summary>„Konditionierung…" — das breite Blatt über dem Arbeitsstand des gewählten Satzes.</summary>
+    private void KonditionierungOeffnen()
+    {
+        if (_satz is null) return;
+        _kondOffen = true;
+    }
+
+    /// <summary>
+    /// Rückknopf und Esc des Blatts: zurück zum Stammblatt. Die Eingaben bleiben im Arbeitsstand
+    /// („Speichern" schreibt sie, „Verwerfen" nimmt sie zurück) — nichts geht still verloren.
+    /// </summary>
+    private void KonditionierungZurueck()
+    {
+        _kondOffen = false;
+        _fokusNachBlatt = true;
     }
 
     // =====================================================================
@@ -1332,7 +1515,7 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrage || _duplizierfrage || _schloss.FrageOffen || _gebaeudetypOffen
-            || _katalogGaben is not null)
+            || _katalogGaben is not null || _kondOffen || _kond.OffeneFrage is not null)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).

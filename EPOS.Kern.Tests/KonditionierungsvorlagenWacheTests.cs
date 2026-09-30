@@ -82,13 +82,14 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - die Saattabelle (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf die Kesselkennlinie (156), sie ist das Ziel, und das Register führt sie als Katalogschritt.</summary>
+        /// <summary>Die Nummer folgt lückenlos auf die Kesselkennlinie (156), der Zielstand reicht bis zu ihr, und das Register führt sie als Katalogschritt.</summary>
         [Fact]
         public void Die_Nummer_folgt_auf_die_Kesselkennlinie_und_ist_das_Ziel()
         {
             Assert.Equal(KesselKennlinieSchema.SCHRITT + 1, KonditionierungsvorlagenSaatSchema.SCHRITT);
             Assert.Equal(157, KonditionierungsvorlagenSaatSchema.SCHRITT);
-            Assert.Equal(KonditionierungsvorlagenSaatSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KonditionierungsvorlagenSaatSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungsvorlagenSaatSchema.SCHRITT + ".");
             Paketanhebung.Stufe stufe = Assert.Single(Paketanhebung.Stufen,
                                                       s => s.Nr == KonditionierungsvorlagenSaatSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, stufe.Wirkung);

@@ -122,6 +122,10 @@ namespace EPOS.Kern.Tests
                     zeile["Vorlauf"] = 60;                 // vor 150 führte der Kollektor sie
                     zeile["Ruecklauf"] = 30;
                 }
+                else if (tabelle == "Tab_Heizkessel")
+                {
+                    zeile["Brennwert"] = 0;                // vor dem Nachzug (Kesselkennlinie E2b) ohne Kennzeichen
+                }
             });
 
             int neu = io.Importieren(alt, "Anhebung 93", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
@@ -132,6 +136,14 @@ namespace EPOS.Kern.Tests
                                                     && z.Contains(SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture)));
             Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 98:", StringComparison.Ordinal));
             Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 148:", StringComparison.Ordinal));
+            Assert.Contains(io.LetzterBericht, z => z.StartsWith(
+                "Schritt " + KesselBrennwertNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture) + ":", StringComparison.Ordinal));
+
+            // Kesselkennlinie E2b: Der Projektkessel (Katalogsatz ein Brennwertkessel) trägt das
+            // Kennzeichen wieder, wie in der Quelle.
+            Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT MIN(Brennwert) FROM Tab_Heizkessel WHERE ID_Projekt = ?", new DbParam("@p", neu)),
+                CultureInfo.InvariantCulture));
 
             DataTable bhkwNeu = DataRepository.GetDataTable(
                 "SELECT Bezeichner, Wirkungsgrad, Wirkungsgrad_el, Wirkungsgrad_th FROM Tab_BHKW WHERE ID_Projekt = ? ORDER BY Bezeichner",

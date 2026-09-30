@@ -322,6 +322,54 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.DoesNotContain(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, ohne.Markup);
     }
 
+    /// <summary>
+    /// Konzept Kesselkennlinie 5 (Etappe E3): Rechnet ein Kessel mit der Brennwertkennlinie, nennt die
+    /// Gruppe „Betrieb" den mittleren Rücklauf, den Anteil der Stunden und der Wärme im
+    /// Brennwertbetrieb und den Brennwertbrennstoff; die Kesseltabelle trägt Rücklauf und
+    /// Brennwertanteil, die Zeile eines Kessels ohne Brennwertkennlinie Striche. Ohne einen solchen
+    /// Kessel fehlen Zeilen und Spalten.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Brennwertgroessen_nur_mit_Brennwertkennlinie()
+    {
+        var erg = Kessel();
+        erg.MitKennlinie = true;
+        erg.MitBrennwertkennlinie = true;
+        erg.RuecklaufMittelC = 43.21;
+        erg.BrennwertStundenProzent = 87.6;
+        erg.BrennwertWaermeProzent = 91.4;
+        erg.BrennwertMehrbrennstoffKwh = -2345.6;
+        erg.Module.Clear();
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 98.1,
+                                                                     true, 105.0, false, 99.1, 62.0,
+                                                                     true, 43.21, 87.6));
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 2", 10.0, 0.0, 90.5,
+                                                                     true, 93.4, true, 89.5, 30.0));
+
+        var seite = KesselZeichnen(erg);
+        string[] betrieb = seite.FindAll("dl.epos-simerg-werte")
+                                .Select(l => l.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray())
+                                .First(z => z.Contains(Resource.SIMERG_LBL_BETRIEBSSTUNDEN));
+        Assert.Contains(Resource.SIMERG_LBL_RUECKLAUF_MITTEL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_STUNDENANTEIL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_WAERMEANTEIL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF, betrieb);
+        Assert.Contains("43,2", seite.Markup);
+        Assert.Contains("-2.345,60", seite.Markup);
+
+        Assert.Equal(10, seite.FindAll("table.epos-raster thead th").Count);
+        var zellen = seite.FindAll("table.epos-raster tbody tr")
+                          .Select(r => r.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray())
+                          .ToArray();
+        Assert.Equal(new[] { "43,2", "88" }, zellen[0].Skip(8).ToArray());
+        Assert.Equal(new[] { "–", "–" }, zellen[1].Skip(8).ToArray());
+
+        erg.MitBrennwertkennlinie = false;
+        var ohne = KesselZeichnen(erg);
+        Assert.Equal(8, ohne.FindAll("table.epos-raster thead th").Count);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_RUECKLAUF_MITTEL, ohne.Markup);
+    }
+
     /// <summary>Ohne Platzhalter steht keine Kohärenzzeile.</summary>
     [Fact]
     public void Kessel_ohne_Platzhalter_zeigt_keine_Nutzungsgradzeile()

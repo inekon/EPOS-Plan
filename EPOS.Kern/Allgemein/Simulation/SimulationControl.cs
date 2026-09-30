@@ -1365,6 +1365,7 @@ namespace WindowsFormsApplication1
                 // des Laufs unter der Heizgrenze des Projekts.
                 simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
                 simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
+                KesselRuecklaufEingaengeSetzen();
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
@@ -1426,6 +1427,10 @@ namespace WindowsFormsApplication1
             // Rechenreihenfolge (Rechenebenen der Kaskadenschleife) und beim Heizkessel
             // zusätzlich die Eintrittstemperatur.
             QuellbezuegeAufbauen(kontext);
+
+            // KESSELKENNLINIE E3: Stufe (b) der Rücklaufkette - der Senkenspeicher eines Kessels mit
+            // Brennwertkennlinie. Erst jetzt, weil die Registry offen sein muss.
+            KesselRuecklaufSpeicherSetzen();
 
             // PAKET B1 (Konzept 8.2, L8): Temperaturkopplung der Wärmepumpen-Module.
             // MUSS hier stehen - nach QuellspeicherUebernehmen (erst dort wird die
@@ -2045,6 +2050,7 @@ namespace WindowsFormsApplication1
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
             simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
             simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
+            KesselRuecklaufEingaengeSetzen();
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))
@@ -4128,6 +4134,65 @@ namespace WindowsFormsApplication1
             ruecklauf = KESSEL_RUECKLAUF_RUECKFALL;
             return "Rückfall " + KESSEL_VORLAUF_RUECKFALL.ToString("0.#") + "/" +
                    KESSEL_RUECKLAUF_RUECKFALL.ToString("0.#") + " °C";
+        }
+
+        /// <summary>
+        /// KESSELKENNLINIE E3 — die Eingänge der Rücklaufkette vor dem Aufbau der Kessel: (a) der
+        /// gerechnete Rücklauf des Heizkreises (Anlagenkopplung AK1; <c>null</c> ohne gekoppeltes
+        /// Gebäude, wie der Vorlauf der Wärmepumpe) und (c) der Leseweg des gepflegten Paars. Beide
+        /// fragt der Kessel nur, wenn er mit der Brennwertkennlinie rechnet.
+        /// </summary>
+        private void KesselRuecklaufEingaengeSetzen()
+        {
+            simulation_spk.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
+            simulation_spk.RuecklaufPaarLesen = KesselRuecklaufGepflegt;
+        }
+
+        /// <summary>
+        /// Der Rücklauf des GEPFLEGTEN Paars einer Kesselanlage [°C] — Stufe (c) der Rücklaufkette,
+        /// über dieselbe Kette Anlage → Heizkessel wie der Kessel-Hub
+        /// (<see cref="KesselTemperaturpaarGepflegt"/>); <c>null</c> ohne vollständiges Paar.
+        /// </summary>
+        private static double? KesselRuecklaufGepflegt(int idAnlage)
+        {
+            return KesselTemperaturpaarGepflegt(idAnlage, out _, out double ruecklauf) ? ruecklauf : (double?)null;
+        }
+
+        /// <summary>
+        /// KESSELKENNLINIE E3 — Stufe (b) der Rücklaufkette: Für jeden Kessel mit Brennwertkennlinie der
+        /// erste Pufferspeicher seiner Senkenliste in Rangfolge (dieselbe Wahl wie das Bezugspaar
+        /// „Berechnet", <see cref="BerechnetesBezugspaar"/>), als Instanz dieses Laufs aus der Registry.
+        /// Der Kessel liest ihn je Stunde einmal (<c>RL_eff</c>, geschichtet die unterste Schicht).
+        /// </summary>
+        private void KesselRuecklaufSpeicherSetzen()
+        {
+            if (!_kesselInSchleife || simulation_spk == null) return;
+
+            for (int index = 0; index < simulation_spk.KesselAnzahl; index++)
+            {
+                if (!simulation_spk.RechnetMitBrennwertkennlinie(index)) continue;
+                Senkenliste senken = simulation_spk.KesselSenke(index);
+                if (senken == null) continue;
+
+                foreach (Senkenzeile z in senken.Zeilen)
+                {
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
+
+                    SimulationPufferspeicher ziel;
+                    if (!speicherRegistry.TryGetValue(z.IDPuffer, out ziel) || ziel == null) continue;
+                    if (ziel.VL_eff <= ziel.RL_eff) continue;
+
+                    simulation_spk.RuecklaufSpeicherSetzen(index, ziel);
+                    Protokoll.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KESSEL_RUECKLAUF_SPEICHER,
+                        simulation_spk.spk_list[index], ziel.BezeichnerAnzeige(),
+                        ziel.Geschichtet
+                            ? MyResource.Resource.SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT
+                            : ziel.RL_eff.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " °C"));
+                    break;
+                }
+            }
         }
 
         /// <summary>

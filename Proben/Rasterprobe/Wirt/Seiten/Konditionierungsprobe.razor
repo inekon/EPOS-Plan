@@ -4,7 +4,7 @@
 @using EPOS.UI.Dialoge.Bedarf
 @inject NavigationManager Navigation
 
-@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1 und U2; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
     Pruefstand, nicht Auslieferung.
 
     Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
@@ -38,6 +38,10 @@
       ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
                        Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
                        Gemeinjahrdatum (Saison von/bis)
+      ?fall=verwaltung die GEBAEUDEVERWALTUNG (Welle U4) wie in ihrem eigenen Fenster, ohne
+                       Ueberlagerung: drei Katalogbauten (einer ausgeliefert), das Stammblatt mit
+                       der Gruppe "Konditionierung" und dem breiten Blatt "Konditionierung..." ueber
+                       demselben Weg ohne Datenbank; "Speichern" meldet Erfolg und schreibt nichts.
       ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie.
 
     Kreuz und Esc schliessen die Ueberlagerung (Ausgang "kreuz-esc"), Abbrechen und OK den Editor
@@ -64,7 +68,8 @@
             <a href="@Adresse(kultur: KulturEn)" @onclick="() => Laden(Adresse(kultur: KulturEn))" @onclick:preventDefault>en-US</a>
         </p>
         <p class="epos-leisezeile" id="probe-ausgang" data-ausgang="@_ausgang">
-            @(_offen ? "Die Überlagerung steht." : "Die Überlagerung ist zu (" + _ausgang + ").")
+            @(_fall == VERWALTUNG ? (_ausgang.Length > 0 ? "Die Verwaltung ist beendet." : "Die Verwaltung steht wie in ihrem eigenen Fenster.")
+              : _offen ? "Die Überlagerung steht." : "Die Überlagerung ist zu (" + _ausgang + ").")
             @if (_gespeichert.Length > 0)
             {
                 <span id="probe-gespeichert">Gespeichert (Probe, nichts geschrieben): @_gespeichert</span>
@@ -78,7 +83,24 @@
         }
     </section>
 
-    <Ueberlagerung Offen="@_offen" Titel="@_titel" Zusatzklasse="epos-ueberlagerung--breit"
+    @if (_fall == VERWALTUNG)
+    {
+        @* Welle U4: die Verwaltung steht wie in ihrem eigenen Fenster - ohne Ueberlagerung. *@
+        <GebaeudeAdminDialog Katalogzeilen="@(() => VerwaltungZeilen)"
+                             Katalogprofil="@VerwaltungProfil"
+                             Filterstandvorgabe="@_verwaltungFilter"
+                             Satz="@VerwaltungSatz"
+                             Gebaeudetypen="@(() => Typen)"
+                             Gebaeudearten="@(() => Arten)"
+                             Baualtersklassen="@Klassen"
+                             Speichern="@Speichern"
+                             HuellTexte="@_huellTexte" Prueftexte="@_prueftexte"
+                             Konditionierung="@_verwaltungWeg"
+                             KonditionierungTexte="@_kondTexte" KonditionierungFragen="@_kondFragen"
+                             Geschlossen="@(_ => Zu("beenden"))" />
+    }
+
+    <Ueberlagerung Offen="@(_offen && _fall != VERWALTUNG)" Titel="@_titel" Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="@(() => Zu("kreuz-esc"))">
         <KindInhalt>
             @if (_fall == BAUSTEINE)
@@ -115,8 +137,10 @@
 @code {
     // ------------------------------------------------------------- Adresse
     private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
-                         OHNE_TABELLEN = "ohnetabellen", VORLAGEN = "vorlagen", BAUSTEINE = "bausteine";
-    private static readonly string[] FAELLE = { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE };
+                         OHNE_TABELLEN = "ohnetabellen", VORLAGEN = "vorlagen", BAUSTEINE = "bausteine",
+                         VERWALTUNG = "verwaltung";
+    private static readonly string[] FAELLE =
+        { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE, VERWALTUNG };
     private const string KulturDe = "de-DE", KulturEn = "en-US";
 
     private string _fall = NEU;
@@ -165,12 +189,16 @@
     private void Oeffnen()
     {
         _ablage = _fall is BAUSTEINE or OHNE_TABELLEN ? null : Konditionierungsvorlagenablage.AusSaat();
-        _gaben = _fall == BAUSTEINE ? null : Gaben(_fall);
+        _gaben = _fall is BAUSTEINE or VERWALTUNG ? null : Gaben(_fall);
+        // Die Verwaltung (Welle U4) bekommt denselben Weg ohne Datenbank samt den Vorlagen der Saat - wie in
+        // der Anwendung, wo die Hülle ihr den Weg des Katalogbaus mit den Vorlagen reicht.
+        _verwaltungWeg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, vorlagen: _ablage);
         _titel = _fall switch
         {
             PROJEKT => Resource.GEBZ_TITEL_PROJEKT,
             NEU => Uebersetzt("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),
             BAUSTEINE => "Bausteine der Konditionierung",
+            VERWALTUNG => Uebersetzt("GEBA_TITEL", "Verwaltung Gebäude"),
             _ => Uebersetzt("GEB_BTN_DB_AENDERN", "Gebäude in DB ändern...")
         };
         _offen = true;
@@ -256,6 +284,66 @@
                 break;
         }
         return gaben;
+    }
+
+    // ------------------------------------------------------------- Die Verwaltung (Welle U4)
+    private static readonly string[] VERWALTUNG_SAETZE = { "Probehaus Verwaltung", "Probehaus Büro", "Probehaus ausgeliefert" };
+    private static readonly IReadOnlyList<string> Klassen =
+        new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978" };
+    private readonly Katalogfilterstand _verwaltungFilter = new();
+    private Katalogfilterprofil? _verwaltungProfil;
+    private IReadOnlyList<Katalogfilterzeile>? _verwaltungZeilen;
+    private KonditionierungWeg? _verwaltungWeg;
+    private readonly GebaeudeHuelleTexte _huellTexte = GebaeudeKatalogHuelle.Texte();
+    private readonly GebaeudePrueftexte _prueftexte = GebaeudeKatalogHuelle.Prueftexte();
+    private readonly KonditionierungTexte _kondTexte = KonditionierungTexteHuelle.Texte();
+    private readonly KonditionierungFragetexte _kondFragen = KonditionierungTexteHuelle.Fragen();
+
+    private Katalogfilterprofil VerwaltungProfil => _verwaltungProfil ??= Katalogfilterprofil.FuerGebaeude(s => Uebersetzt(s, s));
+
+    /// <summary>Die Liste der Verwaltung: drei Katalogbauten, der letzte ausgeliefert (Schloss).</summary>
+    private IReadOnlyList<Katalogfilterzeile> VerwaltungZeilen => _verwaltungZeilen ??= VERWALTUNG_SAETZE
+        .Select((name, i) => new Katalogfilterzeile(i + 1, name) { Geschuetzt = i == 2 }
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpGebaeudeart, Arten[i])
+            .MitText(Katalogfilterprofil.SpVerwendung, "Wohngebäude")
+            .MitText(Katalogfilterprofil.SpBaualtersklasse, Klassen[4])
+            .MitZahl(Katalogfilterprofil.SpFlaecheM2, 150, 0))
+        .ToList();
+
+    /// <summary>Ein Satz der Verwaltung: der vollständig belegte Satz der Probe als Feldsatz (samt leerer Konditionierung).</summary>
+    private GebaeudeStammblattDaten? VerwaltungSatz(string name)
+    {
+        int i = Array.IndexOf(VERWALTUNG_SAETZE, name);
+        if (i < 0) return null;
+        return new GebaeudeStammblattDaten
+        {
+            Id = i + 1,
+            Name = name,
+            Typ = "Wohnblock",
+            Gebaeudeart = Arten[i],
+            Verwendung = "Wohngebaeude",
+            Baualtersklasse = 4,
+            Beschreibung = "Synthetischer Satz der Konditionierungsprobe, ohne Datenbank",
+            Wohnflaeche = 150,
+            HgesWK = 512.3,
+            Rechenweg = "VDI 6007",
+            Auslieferung = i == 2,
+            Huelle = new[]
+            {
+                new Stammblattwert("Außenwand", "200,0 m² · U 0,30 W/(m²K)"),
+                new Stammblattwert("Fenster", "45,0 m² · U 1,30 W/(m²K)"),
+                new Stammblattwert("Dachfläche", "120,0 m² · U 0,20 W/(m²K)"),
+                new Stammblattwert("Grundfläche", "100,0 m² · U 0,35 W/(m²K)")
+            },
+            AlleDaten = new[]
+            {
+                Stammblattwert.Abschnitt("Kenngrößen"),
+                new Stammblattwert("Raumhöhe", "2,50", "m"),
+                new Stammblattwert("Luftwechselrate", "0,50", "1/h")
+            },
+            Feldsatz = Satz(name)
+        };
     }
 
     /// <summary>Der Schreibweg der Seite: Er schreibt nichts, er merkt sich den Aufruf.</summary>

@@ -102,6 +102,28 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<KonditionierungStand, KonditionierungErgebnis>? LuftwechselAufteilen { get; init; }
 
+    // ------------------------------------------------------------------ Zonen (Stufe KP2, Welle U4)
+
+    /// <summary>
+    /// <b>„Vom Gebäude übernehmen und anpassen"</b> (Teilkonzept 3.4, 7.3) — nur an einer Zone
+    /// (<see cref="KonditionierungOrt.Zone"/>): Sie folgt dem angelegten Kalender des Gebäudes; die
+    /// Handlung legt ihr eine eigene Kopie an, samt Woche, Perioden und Herkunft, ein Anteilskalender
+    /// mit dem Nennwert der Zone (eigener Wert oder Flächenanteil).
+    /// <para>Kern: <c>Konditionierungsarbeit.VomGebaeudeUebernehmen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, KonditionierungErgebnis>? VomGebaeude { get; init; }
+
+    /// <summary>
+    /// <b>Was eine Zone vom Gebäude erbt</b> (Teilkonzept 3.4, 7.3) — die Zellen, die eine leere Zelle
+    /// der Zone gerade gälte: jede Zelle mit ihrem Wert, AUCH eine Bestandszelle (Heizen Tag … Ferien,
+    /// Infiltration, Nutzerlüftung, innere Gewinne im Flächenanteil), dazu das Nachtfenster und je
+    /// Größe der Zustand „vom Gebäude" oder „aus der Matrix". Zweiter Parameter: die Id der Zone im
+    /// Arbeitsstand. Die Platzhalter „Vorgabe …" der Zonenmatrix; <c>null</c> = keine Angabe (dann
+    /// „wie Gebäude").
+    /// <para>Kern: <c>Konditionierungsarbeitsstand.Erbmatrix</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, int, KonditionierungDaten?>? Geerbt { get; init; }
+
     // ------------------------------------------------------------------ Vorlagen je Größe
 
     /// <summary>
@@ -306,6 +328,7 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.Zeitstruktur => Zeitstruktur is not null,
             KonditionierungHandlung.KatalogErneut => KatalogErneut is not null,
             KonditionierungHandlung.LuftwechselAufteilen => LuftwechselAufteilen is not null,
+            KonditionierungHandlung.VomGebaeude => VomGebaeude is not null,
             KonditionierungHandlung.Grundangabe => Grundangabe is not null,
             KonditionierungHandlung.Standardwoche => Standardwoche is not null,
             KonditionierungHandlung.PeriodeSetzen => PeriodeSetzen is not null,

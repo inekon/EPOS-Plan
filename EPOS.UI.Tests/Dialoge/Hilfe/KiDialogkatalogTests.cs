@@ -376,9 +376,12 @@ public class KiDialogkatalogTests : IDisposable
         // selbst auf.
         KiMaskennamen.BHKW                 => new[] { "energietraeger" },
 
-        // KP2 U2: Die Vorlagenlisten der fünf Kalenderkarten kennt nur der Editor (seine Bearbeitung
+        // KP2 U2: Die Vorlagenlisten der fünf Kalenderkarten kennt nur der Wirt (seine Bearbeitung
         // des Reiters); die Tafel der Sichtklasse hat keine Begleiteigenschaft, der Wirt meldet sie an.
-        KiMaskennamen.GEBAEUDE_KATALOG     => new[] { "kond_heizen_vorlage", "kond_kuehlen_vorlage",
+        // KP2 U4: ebenso die Verwaltung - ihr Blatt „Konditionierung" trägt dieselben Karten
+        // (KonditionierungKiTafel.Vorlagenlisten).
+        KiMaskennamen.GEBAEUDE_KATALOG or KiMaskennamen.GEBAEUDE_ADMIN
+                                           => new[] { "kond_heizen_vorlage", "kond_kuehlen_vorlage",
                                                       "kond_lueftung_vorlage", "kond_geraete_vorlage",
                                                       "kond_personen_vorlage" },
 
@@ -1282,12 +1285,13 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_ADMIN)!;
 
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBA_TITEL, verwaltung.Anzeigename);
-        // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen),
-        // − die Felder der Vorgabe-Matrix (KP2 U1: die Verwaltung trägt den Reiter „Konditionierung" nicht,
-        // ihre Stammblattgruppe kommt mit Welle U4)
-        Assert.Equal(editor.Felder.Count - 4 - KiKonditionierungsfelder.Alle.Count, verwaltung.Felder.Count);
+        // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen);
+        // die Felder der Vorgabe-Matrix führt die Verwaltung wie der Editor (KP2 U4: das Blatt
+        // „Konditionierung" am selben Arbeitsstand, dieselbe Feldtafel).
+        Assert.Equal(editor.Felder.Count - 4, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
-        Assert.DoesNotContain(verwaltung.Felder, f => KiKonditionierungsfelder.Finde(f.Name) is not null);
+        foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
+            Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_ADMIN, verwaltung.FindeFeld(f.Schluessel)!), f.Schluessel);
 
         KiDialogFeld satz = verwaltung.FindeFeld("satz")!;
         Assert.True(satz.IstWahl);
@@ -1299,8 +1303,7 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
-                || KiKonditionierungsfelder.Finde(e.Name) is not null) continue;
+            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");
             Assert.Equal(e.Eigenschaftspfad, v!.Eigenschaftspfad);
@@ -1315,6 +1318,38 @@ public class KiDialogkatalogTests : IDisposable
 
         Assert.Equal(new[] { "speichern", "verwerfen", "beenden" },
                      verwaltung.Knoepfe.Select(k => k.Name).ToArray());
+    }
+
+    /// <summary>
+    /// <b>Der Zonendialog führt die Zonenmatrix als FELDTAFEL</b> (Stufe KP2, Welle U4; Teilkonzept 3.4,
+    /// 7.3) — aus dem Profil <c>KiKonditionierungsfelder</c> (Zonenkarte) an der Sichtklasse
+    /// <c>ZonenKiSicht</c>: ohne die Kühlspalte, mit dem Nachtfenster der Heizspalte, ohne die
+    /// Bestandszellen (die Zone führt sie unter ihren eigenen Namen); die Erläuterung sagt „wie Gebäude".
+    /// </summary>
+    [Fact]
+    public void Der_Zonendialog_fuehrt_die_Zonenmatrix_als_Feldtafel()
+    {
+        KiDialog zone = KiDialoge.Katalog.Finde(KiMaskennamen.ZONE)!;
+        Assert.NotEmpty(KiKonditionierungsfelder.Zonenfelder);
+        foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Zonenfelder)
+        {
+            KiDialogFeld feld = zone.FindeFeld(f.Schluessel)!;
+            Assert.True(feld is not null, f.Schluessel);
+            Assert.Equal("ZonenKiSicht." + f.Schluessel, feld!.Eigenschaftspfad);
+            Assert.True(IstTafelfeld(KiMaskennamen.ZONE, feld), f.Schluessel);
+            Assert.False(feld.NurLesen, f.Schluessel);
+            if (f.Teil == KiKonditionierungsfelder.Teil.Wert)
+                Assert.Contains("wie Gebäude", feld.Erlaeuterung, StringComparison.Ordinal);
+        }
+        Assert.DoesNotContain(zone.Felder, f => f.Name.StartsWith("kond_kuehlen", StringComparison.Ordinal));
+        Assert.False(zone.KenntFeld("kuehl_sollwert_nacht"));
+        Assert.True(zone.KenntFeld("kond_heizen_nacht_von"));
+        Assert.True(zone.KenntFeld("kond_heizen_nacht_bis"));
+        Assert.True(zone.KenntFeld("kond_personen_nennwert"));
+        // Die Bestandszellen stehen unter den Namen der Zone - nicht ein zweites Mal.
+        foreach (string bestand in new[] { "soll_tag", "soll_nacht", "soll_wochenende", "soll_ferien", "infiltration",
+                                           "nutzerlueftung", "gewinne" })
+            Assert.False(IstTafelfeld(KiMaskennamen.ZONE, zone.FindeFeld(bestand)!), bestand);
     }
 
     /// <summary>

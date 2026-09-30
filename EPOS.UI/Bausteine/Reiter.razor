@@ -114,6 +114,40 @@
     /// </summary>
     [Parameter] public EventCallback<string> Verweigert { get; set; }
 
+    /// <summary>
+    /// Die Reihenfolge der Blaetter als Schluesselliste; <c>null</c> (Vorgabe) = die Folge der
+    /// Anmeldung. Ohne sie landet ein Blatt, das erst NACH dem ersten Zeichnen erscheint (ein
+    /// Erzeugerblatt, das der Lauf nachreicht), hinten - hinter einem Blatt, das im Markup
+    /// danach steht. Ein Schluessel, den die Liste nicht nennt, bleibt in Anmeldefolge hinten.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Reihenfolge { get; set; }
+
+    protected override void OnParametersSet() => Ordnen();
+
+    /// <summary>Ordnet die Blaetter stabil nach <see cref="Reihenfolge"/>.</summary>
+    private void Ordnen()
+    {
+        if (Reihenfolge == null || _blaetter.Count < 2) return;
+        List<Reiterblatt> geordnet = _blaetter
+            .Select((b, i) => (Blatt: b, Anmeldung: i))
+            .OrderBy(x => Rang(x.Blatt.Schluessel))
+            .ThenBy(x => x.Anmeldung)
+            .Select(x => x.Blatt)
+            .ToList();
+        if (geordnet.SequenceEqual(_blaetter)) return;
+        _blaetter.Clear();
+        _blaetter.AddRange(geordnet);
+        _neuAngemeldet = true;
+    }
+
+    private int Rang(string schluessel)
+    {
+        if (Reihenfolge == null) return int.MaxValue;
+        for (int i = 0; i < Reihenfolge.Count; i++)
+            if (string.Equals(Reihenfolge[i], schluessel, StringComparison.Ordinal)) return i;
+        return int.MaxValue;
+    }
+
     /// <summary>Der tatsaechlich sichtbare Schluessel - Vorgabe oder erstes Blatt.</summary>
     public string AktiverSchluessel
     {
@@ -197,6 +231,7 @@
         if (_blaetter.Contains(blatt)) return;
         _blaetter.Add(blatt);
         _neuAngemeldet = true;
+        Ordnen();
     }
 
     /// <summary>Ein Blatt verschwindet wieder.</summary>

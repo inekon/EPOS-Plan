@@ -700,6 +700,46 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Vom Gebäude übernehmen und anpassen"</b> an einer Zone (Konzept 3.4, 7.3; Stufe KP2, Welle
+        /// U4): Die Zone folgt dem angelegten Kalender des Gebäudes („vom Gebäude") — dieser Schritt legt
+        /// ihr eine eigene KOPIE an, samt Woche, Perioden und Herkunft; Vererbung einzelner Perioden gibt
+        /// es nicht. Ein Anteilskalender trägt den Nennwert der Zone (eigener Wert oder Flächenanteil,
+        /// <see cref="Konditionierungseingang.ErsteQuelleDerZone"/>). Danach wirken die Zellen der Zone
+        /// über „Matrix erneut anwenden" bzw. die Folgeregel (E56 F2 (a)). Dieselben Regeln wie „Anlegen":
+        /// die Zonenregel (unbeheizt, Kühlen bis KU3); ohne angelegten Kalender des Gebäudes wird benannt
+        /// abgelehnt, ein eigener Kalender der Zone bleibt, wie er ist.
+        /// </summary>
+        public static Konditionierungsschritt VomGebaeudeUebernehmen(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            if (ort == null) throw new ArgumentNullException(nameof(ort));
+            if (!ort.Zone.HasValue || stand.Zone(ort.Zone.Value) == null) return ZoneFehlt(ort);
+            Konditionierungszone z = stand.Zone(ort.Zone.Value);
+            string regel = Zonenregel(stand, ort);
+            if (regel != null) return Konditionierungsschritt.Fehler(regel);
+            if (z.Stand.Kalender(ort.Groesse) != null) return Konditionierungsschritt.Gut(stand);
+            if (stand.Gebaeude.Kalender(ort.Groesse) == null)
+                return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER, Groessenname(ort.Groesse), z.Name));
+
+            Konditionierungskalender kopie = stand.GeltenderKalender(ort.Groesse, ort.Zone);
+            Konditionierungsarbeitsstand neu = stand.MitEbene(ort.Zone,
+                z.Stand.MitKalender(ort.Groesse, kopie, stand.Gebaeude.Herkunft(ort.Groesse)));
+            return Konditionierungsschritt.Gut(neu, new Konditionierungsbilanz(
+                new[] { Ersetzt(Konditionierungspostenart.Kalender, 1) }, null, new[] { z.Name }));
+        }
+
+        /// <summary>Der Anzeigename einer Größe (<c>KOND_LBL_GROESSE_*</c>) für die Meldungen.</summary>
+        internal static string Groessenname(Konditionierungsgroesse g) => g switch
+        {
+            Konditionierungsgroesse.Heizsoll => MyResource.Resource.KOND_LBL_GROESSE_HEIZEN,
+            Konditionierungsgroesse.Kuehlsoll => MyResource.Resource.KOND_LBL_GROESSE_KUEHLEN,
+            Konditionierungsgroesse.Lueftung => MyResource.Resource.KOND_LBL_GROESSE_LUEFTUNG,
+            Konditionierungsgroesse.Geraete => MyResource.Resource.KOND_LBL_GROESSE_GERAETE,
+            _ => MyResource.Resource.KOND_LBL_GROESSE_PERSONEN,
+        };
+
+        /// <summary>
         /// <b>„Aufteilen"</b> — die Antwort auf die Rückfrage nach F5 (E56 F5 (a), B3): Die Gesamtangabe
         /// <c>Luftwechselrate</c> des Gebäudes wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung =
         /// der Rest; <b>der wirksame Luftwechsel bleibt</b> (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?)"/>).

@@ -73,10 +73,10 @@
 
 <div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    @* DAS BLATT DER VORLAGENVERWALTUNG (Stufe KP2, Welle U2; E56 F4 (a)) tauscht den INHALT des Editors
-       (Baustein Blattwechsel, unten): Kopf, Reiter und Fussleiste stehen nur bei geschlossenem Blatt; der
-       Arbeitsstand bleibt dabei, wie er ist. *@
-    @if (_vorlagenBlatt is null)
+    @* ZWEI BLAETTER tauschen den INHALT des Editors (Baustein Blattwechsel, unten): der Zonendialog
+       (Stufe KP2, Welle U4) und die Vorlagenverwaltung (Welle U2; E56 F4 (a)). Kopf, Reiter und
+       Fussleiste stehen nur, solange keines steht; der Arbeitsstand bleibt dabei, wie er ist. *@
+    @if (_zoneOffen is null && _vorlagenBlatt is null)
     {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
@@ -661,26 +661,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung: der Zonendialog (Ebene 3, Stufe G3) ----------------- *@
-    <Ueberlagerung Offen="@(_zoneOffen is not null)" Titel="@ZonenDialogTexte.Titel"
-                   Geschlossen="() => ZoneFertig(null)">
-        <KindInhalt>
-            @if (_zoneOffen is not null)
-            {
-                <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
-                             NutzflaechePflicht="@ZonendialogPflicht"
-                             Gebaeude="@_arbeit.Vorgaben" Zonenzahl="@ZonendialogZonenzahl"
-                             Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
-                             Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
-                             KopplungSperre="@Zonen?.KopplungSperre"
-                             Projektaufbauten="@_projektaufbauten"
-                             Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
-                             Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
-                             Geschlossen="ZoneFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
     @* --- Ueberlagerung: der Luftaustausch zwischen den Zonen (Ebene 3, Stufe G6b) --- *@
     <Ueberlagerung Offen="@_luftOffen" Titel="@LuftaustauschTexte.Titel"
                    Geschlossen="() => LuftaustauschFertig(null)">
@@ -726,6 +706,34 @@
     </SpeichernLeiste>
     }
 
+    @* --- Der Zonendialog als BLATT (Ebene 3; Stufe KP2, Welle U4) ------------------------------
+       Hausregel "ein Unterdialog mit eigenen Spalten ist ein Blatt": Die Zonenmatrix und das
+       Bauteilraster tragen eigene Spalten, der Bauteildialog eine eigene Ueberlagerung. Rueckweg,
+       Esc und der Rueckknopf fuehren zurueck wie Abbrechen; das OK des Zonendialogs uebernimmt die
+       Zone in den Arbeitsstand, geschrieben wird mit dem OK des Editors. *@
+    <Blattwechsel Offen="@(_zoneOffen is not null)" WirtTitel="@TitelText" Titel="@ZonenDialogTexte.Titel"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="() => ZoneFertig(null)">
+        <KindInhalt>
+            @if (_zoneOffen is not null)
+            {
+                <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
+                             NutzflaechePflicht="@ZonendialogPflicht"
+                             Gebaeude="@_arbeit.Vorgaben" Zonenzahl="@ZonendialogZonenzahl"
+                             Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
+                             Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
+                             KopplungSperre="@Zonen?.KopplungSperre"
+                             Projektaufbauten="@_projektaufbauten"
+                             Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
+                             Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
+                             Gebaeudestand="@_arbeit" Konditionierung="@Konditionierung"
+                             KonditionierungTexte="@KonditionierungTexte" KonditionierungFragen="@KonditionierungFragen"
+                             HuelleTexte="@Texte" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein"
+                             Geschlossen="ZoneFertig" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
+
+    @* --- Die Vorlagenverwaltung als BLATT (Stufe KP2, Welle U2; E56 F4 (a)) ----------------------- *@
     <Blattwechsel Offen="@(_vorlagenBlatt is not null)" WirtTitel="@TitelText" Titel="@KonditionierungTexte.LabelVerwaltung"
                   Zurueck="VorlagenVerwaltenZurueck">
         <KindInhalt>
@@ -1413,6 +1421,7 @@
     private void ZoneFertig(ZoneDaten? ergebnis)
     {
         _zoneOffen = null;
+        _fokusNachBlatt = true;   // der Wirt fokussiert beim Rueckweg seine Wurzel (Baustein Blattwechsel)
         if (ergebnis is null) return;
         if (!_arbeit.ZoneErsetzen(ergebnis)) _arbeit.ZoneAnlegen(ergebnis);
         _meldung = "";
@@ -1646,11 +1655,7 @@
     /// die Listen mit an.
     /// </summary>
     private (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] KiVorlagenlisten()
-        => KiKonditionierungsfelder.Alle
-            .Where(f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage)
-            .Select(f => (f.Schluessel, (Func<IReadOnlyList<KiWahleintrag>>)(() => KiMaskenanmeldung.Eintraege(
-                _kond.Vorlagen((KonditionierungGroesse)f.Groessenplatz), v => v.Name, v => v.Name))))
-            .ToArray();
+        => KonditionierungKiTafel.Vorlagenlisten(() => _kond);
 
     /// <summary>Der Name BENENNT den Satz, der geschrieben wird.</summary>
     private void KiNameSetzen(string wert) => _stand.Name = wert ?? "";
@@ -2103,7 +2108,10 @@
     /// <summary>Die Größe, mit der die Vorlagenverwaltung als Blatt steht; <c>null</c> = das Blatt ist zu.</summary>
     private KonditionierungGroesse? _vorlagenBlatt;
 
-    /// <summary>Muss die Wurzel nach dem Rückweg vom Blatt den Fokus zurückbekommen?</summary>
+    /// <summary>
+    /// Muss die Wurzel nach dem Rückweg von einem Blatt (Vorlagenverwaltung, Zonendialog) den Fokus
+    /// zurückbekommen?
+    /// </summary>
     private bool _fokusNachBlatt;
 
     /// <summary>Steht die Vorlagenverwaltung als Blatt? Prüfhilfe für die Tests.</summary>
@@ -2133,7 +2141,7 @@
     /// <summary>Der Rückweg vom Blatt fokussiert die Wurzel, ohne zu rollen (der Blattwechsel stellt den Rollstand her).</summary>
     private async Task FokusNachBlatt()
     {
-        if (!_fokusNachBlatt || _vorlagenBlatt is not null) return;
+        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null) return;
         _fokusNachBlatt = false;
         await _wurzel.FocusAsync(preventScroll: true);
     }

@@ -175,6 +175,13 @@ namespace WindowsFormsApplication1
                 if (eta == null || spk.IstStromkessel(i)) continue;
                 spalten.Add(new CsvSpalte(
                     string.Format(MyResource.Resource.CHART_CSV_KESSEL_WIRKUNGSGRAD, spk.KesselName(i)), eta));
+
+                // Etappe E3: beim Kessel mit Brennwertkennlinie der Rücklauf der Laufstunden
+                // (0 in Stillstandsstunden).
+                double[] ruecklauf = spk.RuecklaufStunden(i);
+                if (ruecklauf != null)
+                    spalten.Add(new CsvSpalte(
+                        string.Format(MyResource.Resource.CHART_CSV_KESSEL_RUECKLAUF, spk.KesselName(i)), ruecklauf));
             }
 
             CsvExportClass.Export(

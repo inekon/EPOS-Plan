@@ -723,11 +723,19 @@ namespace WindowsFormsApplication1
         /// reines DML (<see cref="KonditionierungsvorlagenSaatSchema"/>). <b>Ergebnisneutral:</b>
         /// kein Referenzprojekt trägt eine Vorlage. Die Nummer steht allein bei
         /// <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>.
+        /// Danach, mit dem BRENNWERTKENNZEICHEN DER PROJEKTKESSEL (Konzept Kesselkennlinie, Etappe
+        /// E2b; Anwenderentscheid B-1 vom 30.09.2026) steht das Ziel auf
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/>: <c>Brennwert</c> = 1 in jeder Projektkopie
+        /// <c>Tab_Heizkessel</c>, deren Katalogsatz ein Brennwertkessel ist (ohne eindeutigen
+        /// Katalogsatz nach der Bauart in der Beschreibung), nur gesetzt, nie gelöscht, reines DML
+        /// (<see cref="KesselBrennwertNachzug"/>). <b>Rechenwirksam:</b> Die Normvorgabe von η₃₀
+        /// folgt der Bauart; die Referenzbasis ist neu eingefroren. Die Nummer steht allein bei
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KonditionierungsvorlagenSaatSchema.SCHRITT;
+        public const int Zielversion = KesselBrennwertNachzug.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

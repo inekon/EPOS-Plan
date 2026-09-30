@@ -193,6 +193,18 @@ namespace WindowsFormsApplication1
             t.TextPostenZonenkalender = Text_("KOND_TXT_POSTEN_ZONENKALENDER", t.TextPostenZonenkalender);
             t.TextPostenBauteile = Text_("KOND_TXT_POSTEN_BAUTEILE", t.TextPostenBauteile);
 
+            // Zonenmatrix (Welle U4)
+            t.PlatzhalterWieGebaeude = Text_("KOND_TXT_PLATZHALTER_WIE_GEBAEUDE", t.PlatzhalterWieGebaeude);
+            t.HinweisZoneAufteilen = Text_("KOND_TXT_ZONE_AUFTEILEN", t.HinweisZoneAufteilen);
+            t.HinweisZoneOhneWirkung = Text_("KOND_TXT_ZONE_OHNE_WIRKUNG", t.HinweisZoneOhneWirkung);
+            t.LabelZoneKalender = Text_("KOND_LBL_ZONE_KALENDER", t.LabelZoneKalender);
+            t.HinweisZoneMatrix = Text_("KOND_TXT_ZONE_MATRIX", t.HinweisZoneMatrix);
+
+            // Gebäudeverwaltung (Welle U4)
+            t.KnopfKonditionierung = Text_("KOND_BTN_KONDITIONIERUNG", t.KnopfKonditionierung);
+            t.HinweisVerwaltungSpeichern = Text_("KOND_TXT_VERWALTUNG_SPEICHERN", t.HinweisVerwaltungSpeichern);
+            t.HinweisVerwaltungAltfelder = Text_("KOND_TXT_VERWALTUNG_ALTFELDER", t.HinweisVerwaltungAltfelder);
+
             // Vorlagen je Karte (Welle U2)
             t.TextVorschauVorlage = Text_("KOND_TXT_VORSCHAU_VORLAGE", t.TextVorschauVorlage);
             t.GrundKeineVorlage = Text_("KOND_TXT_GRUND_KEINE_VORLAGE", t.GrundKeineVorlage);

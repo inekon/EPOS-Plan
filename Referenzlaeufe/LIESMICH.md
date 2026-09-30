@@ -358,8 +358,11 @@ linear von η₃₀ nach η₁₀₀. Ein leeres η₃₀ nimmt die Normvorgabe 
 macht den Brennwertkessel (η₁₀₀ + 0,06), eine Beschreibung mit der VDI-Bauart „Standard…“ den
 Standardkessel (η₁₀₀ − 0,03), sonst gilt η₁₀₀. Die gepflegte Kennlinie, der Schalter `Brennwert`
 und die Bauart verschieben damit Brennstoff, `Kessel[i].Eta30`, `.EtaBetrieb`, `.TeillastKwh`,
-den Jahresnutzungsgrad und die Kesselemissionen; Brennwertkennlinie, Mindestleistung,
-Anfahrverlust und Mindestlaufzeit rechnen mit den Etappen E3 und E4.
+den Jahresnutzungsgrad und die Kesselemissionen. Ein Brennwertkessel mit `Kennlinie_Brennwert` = 1
+rechnet zusätzlich mit dem Rücklauf der Stunde (`Kesselkennlinie.EtaBrennwert`): Heizkreis der
+Anlagenkopplung, sonst Senkenspeicher, sonst das gepflegte Temperaturpaar an Anlage und Kessel, sonst
+50 °C — was davon greift, verschiebt `.RuecklaufMittel`, `.Brennwertstunden`, `.BrennwertWaermeKwh`
+und `.BrennwertKwh`. Mindestleistung, Anfahrverlust und Mindestlaufzeit rechnen mit der Etappe E4.
 
 > **Wer gesäte Kesseldaten eines Referenzprojekts in der Testdatenbank ändert, friert im selben
 > Schritt die Basis neu ein und begründet den Wechsel hier.**
@@ -371,10 +374,13 @@ Anfahrverlust und Mindestlaufzeit rechnen mit den Etappen E3 und E4.
 > fünf Kennlinienspalten seines Kessels (`Wirkungsgrad_Teillast30`, `Kennlinie_Brennwert`,
 > `Mindestleistung`, `Anfahrverlust_kWh`, `Mindestlaufzeit_min`; gepflegt allein in 1050: η₃₀ 1,05,
 > Brennwertkennlinie 1, 3,86 kW, 0,1 kWh, Mindestlaufzeit leer), sein Schalter `Brennwert` und die
-> Bauart in `Beschreibung` (1023 und 1050 Brennwertkessel, die übrigen Brennstoffkessel
-> Niedertemperaturkessel) sowie das Anlegen oder Entfernen des Referenzprojekts 1050. Gehalten
-> werden Regel und Zahlen von `EPOS.Kern.Tests/KesselBereitschaftTests` und
-> `EPOS.Kern.Tests/KesselKennlinieTests`; die Zeilen von 1050 legt
+> Bauart in `Beschreibung` (jeder Brennstoffkessel der Referenzprojekte ist Brennwertkessel, seit dem
+> Schemaschritt 158 auch in der Projektkopie; die Elektrokessel 1017, 1024 und 1047 tragen das Kennzeichen
+> nicht), beim Referenzprojekt 1050 dazu, was den Rücklauf seiner Brennwertkennlinie bestimmt (Temperaturpaar
+> `Vorlauf`/`Ruecklauf` an Anlagenzeile und Projektkessel, die Senken des Kessels in `Z_AnlageSenke`, die
+> Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung`), sowie das Anlegen oder Entfernen des Referenzprojekts
+> 1050. Gehalten werden Regel und Zahlen von `EPOS.Kern.Tests/KesselBereitschaftTests`,
+> `EPOS.Kern.Tests/KesselKennlinieTests` und `EPOS.Kern.Tests/KesselBrennwertNachzugTests`; die Zeilen von 1050 legt
 > [`Skripte/referenzprojekt_1050_kesselkennlinie.cs`](Skripte/referenzprojekt_1050_kesselkennlinie.cs) an.
 
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
@@ -480,7 +486,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-30_R27_Kesselteillast`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-30_R28_Kesselbrennwert`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -493,11 +499,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
 `2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug`, `2026-09-26_R20_Zapfprofil`, `2026-09-26_R21_BhkwDeckung` und
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
-`2026-09-29_R26_Kesselrest` am 30.09.2026**
-(44 Basen, alle zwanzig Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-29_R26_Kesselrest` und `2026-09-30_R27_Kesselteillast` am 30.09.2026**
+(45 Basen, alle einundzwanzig Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 44 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 45 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -507,95 +513,101 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-30_R27_Kesselteillast/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **2 920 Skalare**, gerechnet mit dem
+**`2026-09-30_R28_Kesselbrennwert/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **2 984 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **156**, 81 690 624 Byte, LFS-SHA-256
-`5bca909d901db93c211884ade28f9853cb6df60731e54111f7a605922b2909ac`). Gegen diese Basis hält
+`Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
+`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
 `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
 `EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
-die Kesselstunden von Projekt 1024 und `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023
-und die gesäte Kennlinie des Referenzprojekts 1050. 1050 steht nicht in der CI-Auswahl;
-`Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007
+sowie die Brennwertkennlinie des Referenzprojekts 1050 und `EPOS.Kern.Tests/KesselBrennwertNachzugTests` das
+Brennwertkennzeichen der Projektkessel. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass 1: Die Teillastkennlinie des Heizkessels** (Konzept Kesselkennlinie, Etappe E2; Anwenderauftrag
-> 29.09.2026, Entscheide F1 und F4). Ein Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner
-> Laststufe β = Wärme/Nennleistung: zwischen 30 % und 100 % linear von η₃₀ nach η₁₀₀, darunter η₃₀
-> (`Kesselkennlinie.Eta`, gerufen in `SimulationSPK.Stunde_Abschluss`). Ein leeres η₃₀ nimmt die Normvorgabe
-> nach Bauart (F1, Konzept 7.1): Brennwertkessel (`Brennwert` = 1) η₁₀₀ + 0,06 bis Hs/Hi des Brennstoffs,
-> Standardkessel (VDI-Bauart „Standard…“) η₁₀₀ − 0,03, alle übrigen als Niedertemperaturkessel η₁₀₀. In den
-> fünfzehn bisherigen Projekten trägt kein Kessel ein eigenes η₃₀, und allein 1023 führt in der Projektkopie
-> `Brennwert` = 1. Alle übrigen Brennstoffkessel rechnen deshalb mit flacher Kurve, Stunde für Stunde bitgleich
-> zum festen Wirkungsgrad; die Elektrokessel (1017, 1024, 1047) haben keine Kennlinie.
+> **Anlass 1: Das Brennwertkennzeichen der Projektkessel** (Konzept Kesselkennlinie, Etappe E2b;
+> Anwenderentscheid B-1 vom 30.09.2026, „Auch Projekte nachziehen“). Schemaschritt **158**
+> (`KesselBrennwertNachzug`) setzt `Brennwert` = 1 in jeder Projektkopie `Tab_Heizkessel`, deren Katalogsatz ein
+> Brennwertkessel ist — über den Bezeichner gefunden, nach seinem Schalter oder seiner Bauart —, ohne eindeutigen
+> Katalogsatz nach der Bauart in der Beschreibung der Kopie; nur gesetzt, nie gelöscht. In der Testdatenbank trifft
+> er 19 Projektkopien, darunter die Brennstoffkessel aller Referenzprojekte außer 1023 und 1050, die das
+> Kennzeichen schon trugen; die Elektrokessel (1017, 1024, 1047) bleiben ohne. Ohne eigenes η₃₀ rechnen diese
+> Kessel mit der Normvorgabe des Brennwertkessels η₁₀₀ + 0,06 (höchstens Hs/Hi) statt mit flacher Kurve.
 >
-> **Anlass 2: Das Referenzprojekt 1050 „Kesselkennlinie“** (Konzept 4.3, F4) — Kopie von 1023 mit gepflegter
-> Kennlinie, sechzehntes Projekt der Basis, nicht in der CI-Auswahl (Abschnitt „Das Referenzprojekt 1050“
-> unten). Brennwertkennlinie und Taktfelder rechnen erst mit den Etappen E3 und E4.
+> **Anlass 2: Die Brennwertkennlinie** (Etappe E3; Konzept 4.1 Punkte 3 bis 5, Entscheid F5). Ein
+> Brennwertkessel mit `Kennlinie_Brennwert` = 1 rechnet je Laufstunde η_eff = η_tr(β) + Δ₃₀ · g(T_RL), mit der
+> trockenen Kurve aus η₃₀,tr = η₃₀ − Δ₃₀ und g = (T_Tau − T_RL)/(T_Tau − 30) auf [0; 1,2], höchstens Hs/Hi
+> (`Kesselkennlinie.EtaBrennwert`, gerufen in `SimulationSPK.Stunde_Abschluss`). Den Rücklauf liefert die Kette
+> Heizkreis der Anlagenkopplung → Senkenspeicher (`RL_eff`, geschichtet die unterste Schicht) → gepflegtes Paar →
+> 50 °C. In der Basis rechnet allein 1050 so — ohne Kopplung, Senkenspeicher und Paar mit dem Rückfall 50 °C.
 >
-> **Anlass 3: fünf neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].Eta100`, `.Eta30` (wirksam, gepflegt
-> oder Normvorgabe), `.EtaBetrieb` (Wärme der Laufstunden durch ihren Brennstoff), `.LaststufeMittel` und
-> `.TeillastKwh` (Mehrbrennstoff aus Teillast gegenüber η₁₀₀, negativ als Ersparnis).
+> **Anlass 3: vier neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].RuecklaufMittel` (wärmegewichtet),
+> `.Brennwertstunden`, `.BrennwertWaermeKwh` und `.BrennwertKwh` (Mehrbrennstoff aus Brennwertnutzung gegenüber der
+> trockenen Kurve, negativ als Ersparnis); ohne Brennwertkennlinie je 0.
 >
-> **A/B gegen R26** (beide auf Linux; `vergleich` mit `--ohne` für die fünf neuen Schlüssel): **14/15 PASS**,
-> 459/460 CSV byte-gleich, wenn `aggregate.csv` ohne die neuen Schlüssel verglichen wird; 1050 steht nur im
-> neuen Lauf. Zerlegt nach Ursache:
+> **A/B gegen R27** (beide auf Linux; `vergleich` mit `--ohne` für die vier neuen Schlüssel): **4/16 PASS** (1017,
+> 1023, 1024, 1047), 471/487 CSV byte-gleich — abgewichen ist allein `aggregate.csv`, jede Zeitreihe ist byte-gleich
+> (Wärme und Laufstunden ändern sich nicht, nur der Brennstoff dafür). Zerlegt nach Ursache über einen Zwischenlauf
+> mit dem Rechenweg E3 auf der Testdatenbank `052f5aa8…` (Schemastand 157, vor dem Schritt 158):
 >
 > | Ursache | CSV | Befund |
 > |---|---|---|
-> | Rechenweg Teillast und Normvorgabe | 1 | `aggregate.csv` von 1023: Gasverbrauch 91,42 → 91,02 MWh/a (−0,4 %), Jahresnutzungsgrad 87,29 → 87,67 %, `Em.Kessel.Co2T` 21,94 → 21,85 t/a, `Em.Kessel.NoxKg` 10,06 → 10,01 kg/a — jenseits der Toleranz. η₃₀ = 0,874 + 0,06 = 0,934; der Kessel läuft im Mittel bei 82 % Last, sein Wirkungsgrad im Betrieb ist 0,878, die Teillast spart 396 kWh/a. Wärme (79,80 MWh/a) und alle Zeitreihen bleiben. |
-> | neue Skalare | 15 | `aggregate.csv` jedes Projekts um die fünf Kennlinienschlüssel je Kessel gewachsen (75 Skalare); die übrigen Werte der vierzehn Projekte außer 1023 byte-gleich |
-> | neues Projekt | 27 | `Projekt_1050/`: bei derselben Wärme wie 1023 Gasverbrauch 81,96 MWh/a, Jahresnutzungsgrad 97,37 %, Wirkungsgrad im Betrieb 0,975, Teillast −424 kWh/a |
+> | E2b: Brennwertkennzeichen (Schritt 158) | 11 | `aggregate.csv` von 1007, 1008, 1018, 1030, 1039, 1040, 1041, 1042, 1045, 1046 und 1049: η₃₀ = η₁₀₀ + 0,06 statt η₁₀₀, Brennstoff −0,6 % (1039, Laststufe 0,76) bis −5,7 % (Kessel meist unter 30 % Last), mit ihm die Kesselemissionen; Tafel unten |
+> | E3: Brennwertkennlinie | 1 | `aggregate.csv` von 1050: Gasverbrauch 81,96 → 80,66 MWh/a, Jahresnutzungsgrad 97,37 → 98,94 %, Wirkungsgrad im Betrieb 0,975 → 0,991 (= 0,97 + 0,08 · 7/27 in jeder der 5 053 Laufstunden), Teillastbrennstoff −424 → 0 kWh/a (η₃₀,tr = 1,05 − 0,08 = η₁₀₀, die trockene Kurve ist flach), Brennwertbrennstoff −1 722 kWh/a, Gasspitze 19,90 → 19,48 kW |
+> | neue Skalare | 16 | `aggregate.csv` jedes Projekts um die vier Schlüssel je Kessel gewachsen (64 Skalare) |
 >
-> Die Brennstoffkessel von 1007, 1008, 1018, 1030, 1039, 1040, 1041, 1042, 1045, 1046 und 1049 bleiben
-> unverändert (Tafel je Kesselprojekt im Protokoll
-> [`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md)).
-> Die sieben CI-Projekte sind innerhalb der Toleranz gleich und bis auf die neuen Schlüssel byte-gleich.
+> Je Projekt mit geändertem Kessel (Brennstoff = `HeizkesselModul[0].Verbrauch` in MWh/a, Nutzungsgrad in %):
 >
-> **Die Einfrierregel „gesäte Kesseldaten“ ist erweitert** (oben): Kennlinienspalten, `Brennwert` und Bauart
-> eines Referenzkessels sowie das Anlegen oder Entfernen von 1050. **Kein Fehlschlag, keine Ablehnung:** 16/16
-> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487 CSV byte-gleich.
-> **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben sieben Dateien
-> wie mit R26.
+> | Projekt | η₁₀₀ | η₃₀ R27 → R28 | Brennstoff R27 → R28 | Nutzungsgrad R27 → R28 | η Betrieb | Laststufe | Teillast kWh/a | Brennwert kWh/a |
+> |---|---|---|---|---|---|---|---|---|
+> | 1007, 1046 | 0,876 | 0,876 → 0,936 | 10,55 → 10,01 (−5,1 %) | 85,80 → 90,43 | 0,924 | 0,23 | −540 | 0 |
+> | 1008 | 0,876 | 0,876 → 0,936 | 23,65 → 22,86 (−3,3 %) | 86,90 → 89,89 | 0,906 | 0,38 | −787 | 0 |
+> | 1018 | 1,000 | 1,000 → 1,060 | 11,09 → 10,46 (−5,7 %) | 100,00 → 106,00 | 1,060 | 0,03 | −628 | 0 |
+> | 1030 | 1,000 | 1,000 → 1,060 | 5 403,10 → 5 203,20 (−3,7 %) | 100,00 → 103,84 | 1,038 | 0,36 | −199 903 | 0 |
+> | 1039 | 0,980 | 0,980 → 1,040 | 295,17 → 293,35 (−0,6 %) | 98,00 → 98,61 | 0,986 | 0,76 | −1 818 | 0 |
+> | 1040 | 1,000 | 1,000 → 1,060 | 16,19 → 15,27 (−5,7 %) | 100,00 → 105,96 | 1,060 | 0,09 | −911 | 0 |
+> | 1041 | 1,000 | 1,000 → 1,060 | 149,91 → 142,85 (−4,7 %) | 100,00 → 104,94 | 1,049 | 0,21 | −7 061 | 0 |
+> | 1042 | 0,980 | 0,980 → 1,040 | 19,32 → 18,21 (−5,7 %) | 98,00 → 104,00 | 1,040 | 0,05 | −1 115 | 0 |
+> | 1045 | 1,000 | 1,000 → 1,060 | 22,27 → 21,01 (−5,7 %) | 100,00 → 105,97 | 1,060 | 0,09 | −1 255 | 0 |
+> | 1049 | 1,000 | 1,000 → 1,060 | 6,32 → 5,96 (−5,7 %) | 100,00 → 106,00 | 1,060 | 0,06 | −358 | 0 |
+> | 1050 | 0,970 | 1,050 → 1,050 | 81,96 → 80,66 (−1,6 %) | 97,37 → 98,94 | 0,991 | 0,82 | 0 | −1 722 |
+>
+> Die Kessel mit dem Platzhalter η₁₀₀ = 1,0 (1018, 1030, 1040, 1041, 1045, 1049) kommen damit auf einen
+> heizwertbezogenen Jahresnutzungsgrad über 100 % — richtig für einen Brennwertkessel in Teillast und unter Hs/Hi,
+> aber auf einem ungepflegten Nennwert gerechnet; die Ergebnisseite nennt den Platzhalter weiterhin. Von den
+> sieben CI-Projekten verschieben sich 1007, 1030, 1045, 1046 und 1049; 1017 und 1047 (Elektrokessel) wachsen nur
+> um die neuen Schlüssel.
+>
+> **Die Einfrierregel „gesäte Kesseldaten“ ist erweitert** (oben): beim Referenzprojekt 1050 auch, was den Rücklauf
+> seiner Brennwertkennlinie bestimmt. **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet.
+> **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:**
+> gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben sieben Dateien wie mit R27.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
->   --ziel Referenzlaeufe/2026-09-30_R27_Kesselteillast
+>   --ziel Referenzlaeufe/2026-09-30_R28_Kesselbrennwert
 > ```
 >
-> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
 
-### Die Vorgängerbasis R26 `2026-09-29_R26_Kesselrest`
+### Die Vorgängerbasis R27 `2026-09-30_R27_Kesselteillast`
 
-Fünfzehn Projekte, 460 CSV, 2 685 Skalare, auf Linux eingefroren, getragen bis zur Testdatenbank `111be189…`
-(Schemastand 156 samt Nachpflege des Kesselkatalogs); mit R27 aus dem Arbeitsbaum gefallen, Protokoll, Anlass und
-die Nachträge der Schemaschritte 155 und 156 unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R26
-und R27 hat sich die Testdatenbank allein um das Referenzprojekt 1050 geändert (`111be189…` → `5bca909d…`): Der
-Kopierweg legt nur Zeilen des neuen Projekts an, die Vorlage 1023 ist nach dem Abdruck des Skripts zellgleich.
-
-> **Nachtrag 30.09.2026 — Schemaschritt 157 (die 14 ausgelieferten Konditionierungsvorlagen), Basis
-> unverändert.** KP-S1b nach Entscheid E56 F1 (b) (Teilkonzept Konditionierungsprofile 3.5, Entwurf KP2
-> Abschnitt 4): reines DML aus `KonditionierungsvorlagenSaatSchema` (Nummer als `KesselKennlinieSchema.SCHRITT + 1`,
-> Saat in `KonditionierungsvorlagenSaattabelle`) — 14 Vorlagen mit `ReadOnly = 1` in
-> `Tab_Konditionierungsvorlage_STAMM` (Wohnen, Büro, Schule je Größe, die Lüftung ohne Wohnen), 46 Vorgabezeilen und
-> bei Büro und Schule je ein Kalender ohne Woche mit den neun Feiertagsregeln „wie Sonntag“ (10 Kalender,
-> 90 Perioden). Die Testdatenbank ist aus der Fassung `111be189…` (Schemastand 156) mit
-> `Werkzeuge/Testdatenbankschema` auf **157** gezogen; ein zweiter Lauf legt nichts an (Zeilen gleich).
-> Zeilenvergleich über alle Tabellen: neu allein die 14 + 46 + 10 + 90 Zeilen der vier Konditionierungstabellen,
-> dazu `SchemaVersion` 156 → 157 und vier Zählerzeilen in `sqlite_sequence`; alle übrigen Tabellen zeilengleich,
-> Schema unverändert (153 STRICT-Tabellen); `integrity_check` ok, `foreign_key_check` leer. Neue Fassung
-> **71 634 944 Byte, LFS-SHA-256 `005f36609d7e4adb1d2eefaf16a7697439d2209b52552c4c94e4ddf56e917da5`**. **Die Basis
-> bleibt:** Kein Referenzprojekt trägt eine Vorlage, und die Leser des Laufs filtern über `ID_Gebaeude`; die
-> fünfzehn Projekte rechnen auf dieser Fassung gegen R26 GESAMT PASS mit 460/460 CSV byte-gleich, der gestörte
-> Lauf PASS. Keine Einfrierregel ist berührt; erst ein Referenzprojekt, das eine Vorlage benutzt (KP3), friert
-> ihre Werte ein.
+Sechzehn Projekte, 487 CSV, 2 920 Skalare, auf Linux eingefroren, getragen bis zur Testdatenbank `052f5aa8…`
+(Schemastand 157, 81 698 816 Byte: das Referenzprojekt 1050 und die Saat der 14 Konditionierungsvorlagen, beim
+Zusammenführen beider Stände neu eingespielt; R27 rechnet darauf 487/487 CSV byte-gleich); mit R28 aus dem
+Arbeitsbaum gefallen, Protokoll, Anlass und der Nachtrag des Schemaschritts 157 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R27 und
+R28 hat sich die Testdatenbank allein um den Schemaschritt 158 geändert (`052f5aa8…` → `5d59041f…`): 19 Zellen
+`Tab_Heizkessel.Brennwert` 0 → 1 und `SchemaVersion` 157 → 158; alle übrigen Tabellen zeilengleich, Schema
+unverändert, `integrity_check` ok, `foreign_key_check` leer.
 
 ## Was hier liegt
 
@@ -683,8 +695,10 @@ danach ein Gas-Brennwertkessel 19,3 kW am Heizkreis), am Projektkessel die neutr
 Kesselkennlinie 4.3 — η₁₀₀ (`Wirkungsgrad_Gas`) 0,97, η₃₀ 1,05, `Kennlinie_Brennwert` 1, `Mindestleistung`
 3,86 kW (20 % der Nennleistung), `Anfahrverlust_kWh` 0,1, `Mindestlaufzeit_min` leer (Normvorgabe). Es steht in
 der Basis, **nicht** in der CI-Liste (Entscheid F4); für seine Zeilen gilt die Einfrierregel „gesäte
-Kesseldaten“ oben. Mit E2 rechnet es die Teillastkurve aus dem gepflegten η₃₀; der Schalter der
-Brennwertkennlinie und die Taktfelder wirken mit den Etappen E3 und E4 — beide frieren die Basis neu ein.
+Kesseldaten“ oben. Es rechnet die Teillastkurve aus dem gepflegten η₃₀ und als einziges Referenzprojekt die
+Brennwertkennlinie: ohne Anlagenkopplung, Senkenspeicher und gepflegtes Paar mit dem Rückfall-Rücklauf 50 °C, also
+in jeder Laufstunde mit η = 0,97 + 0,08 · 7/27 (η₃₀,tr = 1,05 − 0,08 = η₁₀₀, die trockene Kurve ist flach). Die
+Taktfelder wirken mit der Etappe E4 und frieren die Basis neu ein.
 
 ```bash
 dotnet run Referenzlaeufe/Skripte/referenzprojekt_1050_kesselkennlinie.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
@@ -755,13 +769,13 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Re
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <ordner> <ordner>_stoerung
 ```
 
-Stand mit R27 (Zahlenrand an Phase G, Quellspeicher und Kessellauf; Teillastkennlinie des Kessels ohne
-Betriebsschwelle): alle sechzehn Projekte GESAMT PASS, 480/487 CSV byte-gleich, die übrigen sieben nur mit
+Stand mit R28 (Zahlenrand an Phase G, Quellspeicher und Kessellauf; Teil- und Brennwertkennlinie des Kessels
+als lineare Arithmetik, der Brennwertbetrieb am Zahlenrand): alle sechzehn Projekte GESAMT PASS, 480/487 CSV byte-gleich, die übrigen sieben nur mit
 Rechenresten von höchstens 10⁻⁸ (Heizstab 1007/1046, Kessel 1024, Quellpuffer 1042, BHKW-Restwärme 1018,
 Wärmepumpe 1045). **Gegenprobe:** Mit dem blanken
 Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 durch — der Nachweis sieht
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
-(`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R27 487/487 CSV byte-gleich.
+(`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R28 487/487 CSV byte-gleich.
 
 ## Bedienung
 

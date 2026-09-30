@@ -128,7 +128,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeKuehluebergabeFelder",   "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U1 (Teilkonzept Konditionierungsprofile 7.1): der Reiter „Konditionierung" des
         // Katalogeditors - Maximalraumtemperatur und Ferien im Reiter, die Vorgabe-Matrix darin. Der
-        // Editor meldet sie als Form_Gebaeude1 an; die Stammblatt-Verwaltung trägt den Reiter nicht.
+        // Editor meldet sie als Form_Gebaeude1 an. KP2, Welle U4: Die Verwaltung trägt denselben
+        // Baustein im Blatt „Konditionierung" (Form_Gebaeude_Admin, dieselben Felder über
+        // GebaeudeKatalogKiSicht); die Tabelle führt je Kind EINEN Wirt.
         new("KonditionierungReiter",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (Teilkonzept 7.4): die Kalenderkarte mit der Auswahlliste der Vorlagen ihrer Größe.
@@ -218,7 +220,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // wird mit Klicks. Der Bauteildialog führt vierzehn Maskenfelder (Art, Bezeichnung, Fläche,
         // Azimut, Neigung, Randbedingung, Nachbarzone, Zuordnung, g-Wert, Rahmenanteil, Verschattung,
         // ψ·L, U-Wert, Aufbau im Projekt); die Suchauswahl des Katalogaufbaus ist bewusst draußen.
-        new("ZonenDialog", 16),
+        // KP2 U4: Sollwerte, Infiltration, Nutzerlüftung und Gewinne stehen in der Zonenmatrix
+        // (Baustein KonditionierungMatrix über ZonenKonditionierung, dieselben Katalogfelder; die übrigen
+        // Zellen sind die Felder kond_* der Zonenkarte, Feldtafel ZonenKiSicht): 16 → 9.
+        new("ZonenDialog", 9),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
@@ -284,8 +289,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
-        new("GebaeudeStammblattFelder", 38, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
-            "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
+        // KP2 U4, E56 F3 (a): Sollwerte, Nachtzeit, Ferien, Wärmegewinne, Infiltration, Nutzerlüftung,
+        // Sommerlüftung und Kühlsollwert stehen im Blatt „Konditionierung" der Verwaltung (Bausteine
+        // KonditionierungReiter und KonditionierungMatrix, dieselben Katalogfelder): 38 → 22.
+        new("GebaeudeStammblattFelder", 22, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
+            "des Hüll-Rasters ist gerechnet"),
         new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
             "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
         new("GebaeudeWohnflaecheDialog", 5, "der Schalter „dezentral“ steht in beiden Zweigen (mit und ohne Zone) - EIN Katalogfeld"),

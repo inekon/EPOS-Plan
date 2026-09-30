@@ -7,11 +7,22 @@
    IMMER sichtbaren Zeilenknoepfen (oeffnen, entfernen), der Abschlusszeile "+ Neues Bauteil ..."
    und dem Summenfuss (Sigma A je Gruppe, H_T).
 
-   STUFE G6b (W2): die Werte der Zone (Raumhoehe, Volumen, beheizt, Sollwerte, Lueftung, Gewinne,
-   Bewohner, Heizung) - ein leeres Feld zeigt "Vorgabe: <Wert>" aus der Vorgabenkaskade des Kerns
-   (Zonenvorgaben), ein anteiliger Wert mit seinem Flaechenanteil; Kuehlung, Nachtzeit und Ferien
-   kommen vom Gebaeude (A4 a). Im Bauteilraster die Spalte "Nachbar" und die Trennflaechen, die
-   eine andere Zone mit dieser fuehrt, gespiegelt und nur zum Lesen ("gefuehrt von ...").
+   STUFE G6b (W2): die Werte der Zone (Raumhoehe, Volumen, beheizt, Maximalraumtemperatur, Bewohner,
+   Heizung) - ein leeres Feld zeigt "Vorgabe: <Wert>" aus der Vorgabenkaskade des Kerns
+   (Zonenvorgaben), ein anteiliger Wert mit seinem Flaechenanteil. Im Bauteilraster die Spalte
+   "Nachbar" und die Trennflaechen, die eine andere Zone mit dieser fuehrt, gespiegelt und nur zum
+   Lesen ("gefuehrt von ...").
+
+   STUFE KP2, WELLE U4: DIE ZONENMATRIX (Teilkonzept 3.4, 7.3; Entwurf KP2 D12). Sollwerte, Lueftung
+   und Gewinne stehen in der Gruppe "Werte" als Vorgabe-Matrix der Zone (Baustein ZonenKonditionierung
+   ueber derselben KonditionierungMatrix wie am Gebaeude): leer = "wie Gebaeude", der Platzhalter
+   nennt den geerbten Wert; je Groesse eine Zustandszeile ("vom Gebaeude" mit Grund, "Vom Gebaeude
+   uebernehmen und anpassen"); die Kuehlspalte weich gesperrt bis KU3. Die Aenderungen gehen ueber die
+   Bearbeitung am Ort der Zone in DIESEN Arbeitsstand; OK gibt ihn samt Konditionierung zurueck, das
+   OK des Gebaeudeeditors schreibt.
+
+   EIN BLATT, KEINE UEBERLAGERUNG (Hausregel "ein Unterdialog mit eigenen Spalten ist ein Blatt"):
+   Der Gebaeudeeditor zeigt den Dialog ueber den Baustein Blattwechsel mit TitelAnzeigen="false".
 
    DIE ZEILE IST NUR ANZEIGE. Bearbeitet wird ein Bauteil im Bauteildialog (Ueberlagerung der
    Ebene 4); dessen OK uebernimmt die Zeile in DIESEN Arbeitsstand, geschrieben wird erst mit
@@ -43,7 +54,7 @@
 
     @if (_meldung.Length > 0)
     {
-        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
     <Formularraster>
@@ -60,8 +71,9 @@
 
     @* Stufe G6b (W2): die Werte der Zone - ein leeres Feld uebernimmt den Wert des Gebaeudes und
        zeigt ihn als Platzhalter "Vorgabe: ..." aus der Vorgabenkaskade des Kerns (Zonenvorgaben),
-       ein anteiliger Wert mit dem Flaechenanteil. Eine unbeheizte Zone schwingt frei: Sollwerte und
-       Heizung stehen dann nicht da (ihre Werte bleiben im Arbeitsstand). *@
+       ein anteiliger Wert mit dem Flaechenanteil. Eine unbeheizte Zone schwingt frei: Heizung und
+       Maximalraumtemperatur stehen dann nicht da (ihre Werte bleiben im Arbeitsstand).
+       Stufe KP2, Welle U4: Sollwerte, Lueftung und Gewinne stehen in der Zonenmatrix darunter. *@
     <Gruppenkopf Titel="@Texte.GruppeWerte">
         <KindInhalt>
             <Formularraster>
@@ -78,43 +90,12 @@
                               WertChanged="w => Setzen(() => _stand.IstBeheizt = w)" />
                     @if (_stand.IstBeheizt)
                     {
-                        <Zahlenfeld Bezeichnung="@Texte.LabelSollTag" Einheit="°C"
-                                    Platzhalter="@Vorgabe(_vorgaben?.SollTag, 1)"
-                                    Feldname="@Texte.LabelSollTag" FehlerZustand="FehlerMelden"
-                                    Wert="@_stand.SollTag" WertChanged="w => Setzen(() => _stand.SollTag = w)" />
-                        <Zahlenfeld Bezeichnung="@Texte.LabelSollNacht" Einheit="°C"
-                                    Platzhalter="@Vorgabe(_vorgaben?.SollNacht, 1)"
-                                    Feldname="@Texte.LabelSollNacht" FehlerZustand="FehlerMelden"
-                                    Wert="@_stand.SollNacht" WertChanged="w => Setzen(() => _stand.SollNacht = w)" />
-                        <Zahlenfeld Bezeichnung="@Texte.LabelSollWochenende" Einheit="°C"
-                                    Platzhalter="@Vorgabe(_vorgaben?.SollWochenende, 1)"
-                                    Feldname="@Texte.LabelSollWochenende" FehlerZustand="FehlerMelden"
-                                    Wert="@_stand.SollWochenende" WertChanged="w => Setzen(() => _stand.SollWochenende = w)" />
-                        <Zahlenfeld Bezeichnung="@Texte.LabelSollFerien" Einheit="°C"
-                                    Platzhalter="@Vorgabe(_vorgaben?.SollFerien, 1)"
-                                    Feldname="@Texte.LabelSollFerien" FehlerZustand="FehlerMelden"
-                                    Wert="@_stand.SollFerien" WertChanged="w => Setzen(() => _stand.SollFerien = w)" />
                         <Zahlenfeld Bezeichnung="@Texte.LabelMaxTemperatur" Einheit="°C"
                                     Platzhalter="@Vorgabe(_vorgaben?.Maximaleraumtemperatur, 1)"
                                     Feldname="@Texte.LabelMaxTemperatur" FehlerZustand="FehlerMelden"
                                     Wert="@_stand.Maximaleraumtemperatur"
                                     WertChanged="w => Setzen(() => _stand.Maximaleraumtemperatur = w)" />
                     }
-                    <Zahlenfeld Bezeichnung="@Texte.LabelInfiltration" Einheit="1/h" Min="0.01" Max="10"
-                                Platzhalter="@LuftwechselVorgabe(_vorgaben?.LuftwechselInfiltration, Gebaeudemodellvorgaben.LuftwechselInfiltration)"
-                                Feldname="@Texte.LabelInfiltration" FehlerZustand="FehlerMelden"
-                                Wert="@_stand.LuftwechselInfiltration"
-                                WertChanged="w => Setzen(() => _stand.LuftwechselInfiltration = w)" />
-                    <Zahlenfeld Bezeichnung="@Texte.LabelNutzerlueftung" Einheit="1/h" Min="0" Max="10"
-                                Platzhalter="@LuftwechselVorgabe(_vorgaben?.LuftwechselNutzer, Gebaeudemodellvorgaben.LuftwechselNutzer)"
-                                Feldname="@Texte.LabelNutzerlueftung" FehlerZustand="FehlerMelden"
-                                Wert="@_stand.LuftwechselNutzer"
-                                WertChanged="w => Setzen(() => _stand.LuftwechselNutzer = w)" />
-                    <Zahlenfeld Bezeichnung="@Texte.LabelGewinne" Einheit="W" Min="0"
-                                Platzhalter="@Vorgabe(_vorgaben?.InterneWaermegewinne, 0)"
-                                Feldname="@Texte.LabelGewinne" FehlerZustand="FehlerMelden"
-                                Wert="@_stand.InterneWaermegewinne"
-                                WertChanged="w => Setzen(() => _stand.InterneWaermegewinne = w)" />
                     <Zahlenfeld Bezeichnung="@Texte.LabelBewohner" Min="0"
                                 Platzhalter="@Vorgabe(_vorgaben?.Bewohner, 1)"
                                 Feldname="@Texte.LabelBewohner" FehlerZustand="FehlerMelden"
@@ -142,6 +123,11 @@
             {
                 <Herleitungszeile Text="@Luftwechselzeile" />
             }
+
+            @* Stufe KP2, Welle U4: die Vorgabe-Matrix der Zone (Teilkonzept 3.4, 7.3). *@
+            <ZonenKonditionierung Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuelleTexte"
+                                  JaText="@JaText" NeinText="@NeinText"
+                                  Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
         </KindInhalt>
     </Gruppenkopf>
 
@@ -301,12 +287,48 @@
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Zone.btn_Help";
 
+    // --- Die Zonenmatrix (Stufe KP2, Welle U4) -----------------------------------
+
+    /// <summary>
+    /// Der Arbeitsstand des Gebäudeeditors — das Gebäude und die übrigen Zonen, aus denen die Zone erbt;
+    /// der Zonendialog liest ihn nur. <c>null</c> = ohne Gebäude (die Matrix zeigt dann „wie Gebäude").
+    /// </summary>
+    [Parameter] public GebaeudeArbeitsstand? Gebaeudestand { get; set; }
+
+    /// <summary>
+    /// Der Weg der Konditionierung — derselbe Parameter wie im Gebäudeeditor; die Handlungen wirken am
+    /// Ort der Zone. <c>null</c> = ohne Weg (nur die Bestandszellen der Zone sind bedienbar).
+    /// </summary>
+    [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
+    /// <summary>Die Texte der Konditionierung (Bündel, Präfixe <c>KOND_LBL_</c>, <c>KOND_BTN_</c>, <c>KOND_TXT_</c>).</summary>
+    [Parameter] public KonditionierungTexte KonditionierungTexte { get; set; } = new();
+
+    /// <summary>Die Rückfragen der Konditionierung (Bündel, Präfix <c>KOND_FRAGE_</c>).</summary>
+    [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur (Platzhalter der Matrix am Gebäude).</summary>
+    [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>„Ja" der Rückfragen.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfragen.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
     // --- Stand -----------------------------------------------------------------
 
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private ZoneDaten _stand = new();
     private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die Bearbeitung der Zonenmatrix am Ort dieser Zone (Stufe KP2, Welle U4).</summary>
+    private KonditionierungBearbeitung _kond = default!;
+
+    /// <summary>Die Bearbeitung der Zonenmatrix. Prüfhilfe für die Tests.</summary>
+    public KonditionierungBearbeitung Konditionierungsbearbeitung => _kond;
     private readonly HashSet<string> _fehlerfelder = new();
 
     private BauteilDaten? _bauteil;
@@ -329,7 +351,39 @@
     {
         _stand = (Zone ?? new ZoneDaten()).Kopie();
         VorgabenNachziehen();
+        _kond = new KonditionierungBearbeitung(Gebaeudestand ?? new GebaeudeArbeitsstand(), _stand, () => Konditionierung,
+                                               () => KonditionierungTexte, () => KonditionierungFragen)
+        {
+            Melden = (text, stufe) => { _meldung = text ?? ""; _meldungStufe = stufe; },
+            Bestandserbe = Bestandserbe
+        };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZONE, () => KiSicht(), KiHaken());
+    }
+
+    /// <summary>
+    /// Eine Handlung der Zonenmatrix hat den Arbeitsstand geändert: Die Vorgaben der übrigen Felder
+    /// ziehen nach (etwa der Luftwechsel), eine alte Meldung fällt, wenn die Handlung keine neue brachte.
+    /// </summary>
+    private void KonditionierungGeaendert() => VorgabenNachziehen();
+
+    /// <summary>
+    /// Was eine leere Bestandszelle der Zone vom Gebäude erbt, wo der Weg kein Erbe liefert (ohne
+    /// Konditionierungstabellen, ohne Gaben): dieselbe Vorgabenkaskade wie die übrigen Felder.
+    /// </summary>
+    private double? Bestandserbe(KonditionierungGroesse g, KonditionierungZeile z)
+    {
+        if (_vorgaben is null) return null;
+        return (g, z) switch
+        {
+            (KonditionierungGroesse.Heizen, KonditionierungZeile.Tag) => _vorgaben.SollTag.Wert,
+            (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht) => _vorgaben.SollNacht.Wert,
+            (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende) => _vorgaben.SollWochenende.Wert,
+            (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien) => _vorgaben.SollFerien.Wert,
+            (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => _vorgaben.LuftwechselInfiltration.Wert,
+            (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag) => _vorgaben.LuftwechselNutzer.Wert,
+            (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert) => _vorgaben.InterneWaermegewinne.Wert,
+            _ => null
+        };
     }
 
     /// <summary>Setzt einen Wert der Zone und zieht die Vorgaben nach — Tastatur und Assistent gehen diesen Weg.</summary>
@@ -364,7 +418,8 @@
             BezeichnungSetzen = w => _stand.Bezeichner = w ?? "",
             NutzflaecheLesen = () => _stand.Nutzflaeche,
             NutzflaecheSetzen = w => Setzen(() => _stand.Nutzflaeche = w),
-            // Stufe G6b (W2): die Werte der Zone - Setzen nimmt denselben Weg wie die Tastatur.
+            // Stufe G6b (W2): die Werte der Zone - Setzen nimmt denselben Weg wie die Tastatur; die
+            // Bestandszellen der Matrix (Sollwerte, Lueftung, Gewinne) gehen ueber ihre Zelle (KP2 U4).
             RaumhoeheLesen = () => _stand.Raumhoehe,
             RaumhoeheSetzen = w => Setzen(() => _stand.Raumhoehe = w),
             VolumenLesen = () => _stand.Volumen,
@@ -372,21 +427,21 @@
             BeheiztLesen = () => _stand.IstBeheizt,
             BeheiztSetzen = w => Setzen(() => _stand.IstBeheizt = w),
             SollTagLesen = () => _stand.SollTag,
-            SollTagSetzen = w => Setzen(() => _stand.SollTag = w),
+            SollTagSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Tag, w),
             SollNachtLesen = () => _stand.SollNacht,
-            SollNachtSetzen = w => Setzen(() => _stand.SollNacht = w),
+            SollNachtSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht, w),
             SollWochenendeLesen = () => _stand.SollWochenende,
-            SollWochenendeSetzen = w => Setzen(() => _stand.SollWochenende = w),
+            SollWochenendeSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende, w),
             SollFerienLesen = () => _stand.SollFerien,
-            SollFerienSetzen = w => Setzen(() => _stand.SollFerien = w),
+            SollFerienSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien, w),
             MaxTemperaturLesen = () => _stand.Maximaleraumtemperatur,
             MaxTemperaturSetzen = w => Setzen(() => _stand.Maximaleraumtemperatur = w),
             InfiltrationLesen = () => _stand.LuftwechselInfiltration,
-            InfiltrationSetzen = w => Setzen(() => _stand.LuftwechselInfiltration = w),
+            InfiltrationSetzen = w => Zelle(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert, w),
             NutzerlueftungLesen = () => _stand.LuftwechselNutzer,
-            NutzerlueftungSetzen = w => Setzen(() => _stand.LuftwechselNutzer = w),
+            NutzerlueftungSetzen = w => Zelle(KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag, w),
             GewinneLesen = () => _stand.InterneWaermegewinne,
-            GewinneSetzen = w => Setzen(() => _stand.InterneWaermegewinne = w),
+            GewinneSetzen = w => Zelle(KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert, w),
             BewohnerLesen = () => _stand.Bewohner,
             BewohnerSetzen = w => Setzen(() => _stand.Bewohner = w),
             StrahlungsanteilLesen = () => _stand.HeizungStrahlungsanteil,
@@ -396,8 +451,20 @@
             BauteileLesen = () => _stand.Bauteile,
             ArtText = ArtText,
             RandText = RandText,
-            NachbarText = NachbarText
+            NachbarText = NachbarText,
+            // Stufe KP2, Welle U4: die Zonenmatrix als Feldtafel - über dieselbe Bearbeitung wie die Zellen.
+            Konditionierung = _kond
         };
+    }
+
+    /// <summary>
+    /// Eine Bestandszelle der Zone über die Bearbeitung der Zonenmatrix (Stufe KP2, Welle U4) — derselbe
+    /// Weg wie ihr Feld in der Matrix (Zonenregel, Zellenort); eine Ablehnung trägt den Grund des Reiters.
+    /// </summary>
+    private void Zelle(KonditionierungGroesse g, KonditionierungZeile z, double? wert)
+    {
+        if (!_kond.WertSetzen(g, z, wert)) throw KonditionierungKiTafel.Ablehnung(_kond);
+        VorgabenNachziehen();
     }
 
     /// <summary>
@@ -449,18 +516,6 @@
         => _vorgaben is null ? ""
            : _vorgaben.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.Leer ? Texte.VorgabeUnbegrenzt
            : Vorgabe(_vorgaben.HeizleistungMaxKw, 1);
-
-    /// <summary>
-    /// Infiltration und Nutzerlüftung: tragen weder Zone noch Gebäude einen Wert und hat das Gebäude
-    /// eine Luftwechselrate, gilt sie (dann kein Platzhalter, die Zeile nennt sie); sonst die Vorgabe.
-    /// </summary>
-    private string LuftwechselVorgabe(Vorgabewert? v, double modell)
-    {
-        if (_vorgaben is null || v is not Vorgabewert w) return "";
-        if (w.Herkunft != Vorgabeherkunft.Leer) return Vorgabe(w, 2);
-        bool beideLeer = !_vorgaben.LuftwechselInfiltration.Wert.HasValue && !_vorgaben.LuftwechselNutzer.Wert.HasValue;
-        return beideLeer && _vorgaben.Luftwechselrate > 0.0 ? "" : Vorgabe(w, 2, modell);
-    }
 
     /// <summary>Der Luftwechsel der Zone [1/h] und woher er kommt — dieselbe Regel wie im Kern.</summary>
     private string Luftwechselzeile
@@ -634,8 +689,8 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        // Esc kaskadiert: der offene Bauteildialog wertet ihn selbst aus.
-        if (e.Key != "Escape" || _bauteil is not null) return Task.CompletedTask;
+        // Esc kaskadiert: der offene Bauteildialog und eine Rueckfrage der Zonenmatrix werten ihn selbst aus.
+        if (e.Key != "Escape" || _bauteil is not null || _kond.OffeneFrage is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 

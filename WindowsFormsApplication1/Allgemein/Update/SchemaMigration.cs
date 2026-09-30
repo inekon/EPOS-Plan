@@ -4746,6 +4746,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KONDITIONIERUNGSVORLAGEN_SAAT = KonditionierungsvorlagenSaatSchema.SCHRITT;
 
+        // ---- Konzept Kesselkennlinie, Etappe E2b (Anwenderentscheid B-1 vom 30.09.2026): das
+        //      Brennwertkennzeichen der Projektkessel -------------------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="KesselBrennwertNachzug.SCHRITT"/> — <b>das Brennwertkennzeichen der
+        /// Projektkessel</b> (Konzept Kesselkennlinie, Etappe E2b; Anwenderentscheid B-1 „Auch Projekte
+        /// nachziehen"). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNGSVORLAGEN_SAAT"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DML:</b> <c>Brennwert</c> = 1 in jeder Projektkopie <c>Tab_Heizkessel</c>,
+        /// deren Katalogsatz (über den Bezeichner, bei widersprüchlichen Sätzen nach der Leistung) ein
+        /// Brennwertkessel ist; ohne eindeutigen Katalogsatz nach der Bauart in der Beschreibung. Nur
+        /// gesetzt, nie gelöscht; was ohne Zuordnung bleibt, steht benannt im Protokoll. Quelle
+        /// <see cref="KesselBrennwertNachzug"/>; die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Rechenwirksam</b> (die Normvorgabe von η₃₀ folgt der Bauart, Konzept 7.1),
+        /// <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_BRENNWERT_NACHZUG = KesselBrennwertNachzug.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6825,6 +6845,17 @@ namespace WindowsFormsApplication1
                         "ausgelieferte Vorlage fuer Heizen, Kuehlen, Lueftung, Geraete und Personen. KEIN " +
                         "Rechenergebnis aendert sich - kein Referenzprojekt traegt eine Vorlage.",
                         Schritt_KonditionierungsvorlagenSaat),
+            // KONZEPT KESSELKENNLINIE, ETAPPE E2b (Anwenderentscheid B-1 vom 30.09.2026) - das
+            // Brennwertkennzeichen der Projektkessel nach ihrem Katalogsatz (ohne eindeutigen
+            // Katalogsatz nach der Beschreibung): nur gesetzt, nie geloescht. Reines DML; die Quelle
+            // ist KesselBrennwertNachzug, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_BRENNWERT_NACHZUG,
+                        "Tab_Heizkessel: Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung",
+                        "Ein Brennwertkessel, dessen Projektkopie das Kennzeichen nicht traegt, rechnete als " +
+                        "Niedertemperaturkessel: Die Normvorgabe des Wirkungsgrads bei 30 % Last richtet sich " +
+                        "nach der Bauart der Projektkopie. Mit dem Kennzeichen rechnet er mit der Vorgabe des " +
+                        "Brennwertkessels - das Rechenergebnis solcher Projekte aendert sich gewollt.",
+                        Schritt_KesselBrennwertNachzug),
         };
 
         /// <summary>
@@ -11956,6 +11987,70 @@ namespace WindowsFormsApplication1
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": ausgelieferte Konditionierungsvorlagen - KEIN Rechenergebnis aendert sich, der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Brennwertkennzeichen der Projektkessel" — Anlass und Regel stehen bei
+        /// <see cref="SCHRITT_KESSEL_BRENNWERT_NACHZUG"/>, die Anweisungen bei
+        /// <see cref="KesselBrennwertNachzug"/>: über den KERN mit <c>?</c>-Parametern in einem
+        /// <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Berichtszeile des Kerns (gesetzt, ohne Zuordnung, widersprüchlicher Katalog) geht ins
+        /// Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="KesselBrennwertNachzug.Vollstaendig"/>. Fehlt eine der Kesseltabellen, ist das
+        /// ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselBrennwertNachzug(Lauf l)
+        {
+            string nr = KesselBrennwertNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { KesselBrennwertNachzug.TAB_PROJEKT, KesselBrennwertNachzug.TAB_STAMM })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KesselBrennwertNachzug.Ausfuehren(zeilen);
+                    vollstaendig = KesselBrennwertNachzug.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (gesetzte Kennzeichen bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Nach dem Schritt traegt noch eine Projektkopie ohne Brennwertkennzeichen einen " +
+                      "Brennwertkessel-Katalogsatz.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Brennwertkennzeichen der Projektkessel - gekennzeichnete Brennstoffkessel ohne " +
+                    "eigenes eta30 rechnen ab dem naechsten Lauf mit der Normvorgabe des Brennwertkessels.");
             return true;
         }
 

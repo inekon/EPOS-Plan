@@ -193,20 +193,26 @@ public enum KonditionierungHandlung
     /// </summary>
     LuftwechselAufteilen = 13,
 
+    /// <summary>
+    /// „Vom Gebäude übernehmen und anpassen" — nur an einer Zone (Teilkonzept 3.4, 7.3): legt eine eigene
+    /// Kopie des angelegten Gebäudekalenders an (Stufe KP2, Welle U4).
+    /// </summary>
+    VomGebaeude = 14,
+
     /// <summary>Die Grundangabe der Karte setzen — ein Wert oder „aus"; eine Standardwoche fällt (Welle U3).</summary>
-    Grundangabe = 14,
+    Grundangabe = 15,
 
     /// <summary>Die Standardwoche der Karte setzen (Wochenraster) oder verwerfen (Welle U3).</summary>
-    Standardwoche = 15,
+    Standardwoche = 16,
 
     /// <summary>Eine eigene Periode anlegen oder ersetzen — Zeitraum oder Feiertag (Festlegung 15, Welle U3).</summary>
-    PeriodeSetzen = 16,
+    PeriodeSetzen = 17,
 
     /// <summary>Rang ▲▼ einer eigenen Periode im Eigenband (Festlegung 15, Welle U3).</summary>
-    RangVerschieben = 17,
+    RangVerschieben = 18,
 
     /// <summary>Eine eigene Periode löschen (Festlegung 15, Welle U3).</summary>
-    PeriodeLoeschen = 18
+    PeriodeLoeschen = 19
 }
 
 /// <summary>
