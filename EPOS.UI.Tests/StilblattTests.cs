@@ -880,6 +880,43 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Die Hilfepille hält das Berührungsmaß</b> (Stufe KP2, Welle U1, Nebenbefund aus U0b): Beide
+    /// Felder — Fragezeichen und Assistent — und der Ring des KI-Knopfs sind mindestens
+    /// <c>--epos-touchziel</c> (44 px) hoch und breit; das Hausmaß 28 px des WinForms-Vorbilds
+    /// (<c>--epos-infoknopf</c>) gilt in der Oberfläche nicht mehr — gemessen waren 28 × 26 px.
+    /// </summary>
+    [Fact]
+    public void KP2_Die_Hilfepille_und_der_KI_Ring_halten_das_Beruehrungsmass()
+    {
+        // Die Felder bestimmen die Höhe; eine feste Höhe der Pille schnitte mit overflow: hidden die
+        // Trefferfläche ab.
+        Assert.DoesNotContain("height:", Regelblock(".epos-hilfepille {"), StringComparison.Ordinal);
+        string feld = Regelblock(".epos-hilfepille__feld {");
+        Assert.Contains("min-width: var(--epos-touchziel)", feld, StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", feld, StringComparison.Ordinal);
+
+        string ring = Regelblock(".epos-kiknopf {");
+        Assert.Contains("width: var(--epos-touchziel)", ring, StringComparison.Ordinal);
+        Assert.Contains("height: var(--epos-touchziel)", ring, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("var(--epos-infoknopf)", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Gebäude-Katalogeditor ist nicht auf 1 160 px gedeckelt</b> (Stufe KP2, Welle U1,
+    /// Nebenbefund aus U0b; Vorbild <c>.epos-wp-anlage</c>): Die Matrix aus fünf Spalten ist keine
+    /// Bandwurmzeile — im breiten Fenster und in der breiten Überlagerung nimmt der Editor die Breite,
+    /// und der Behälter der Konditionierung bricht an SEINER Breite um.
+    /// </summary>
+    [Fact]
+    public void KP2_Der_Gebaeudeeditor_nimmt_die_Breite_ohne_Deckel()
+    {
+        Assert.Contains("max-width: 1160px", Regelblock(".epos-dialog {"), StringComparison.Ordinal);
+        Assert.Contains("max-width: none", Regelblock(".epos-dialog.epos-gebk-editor {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
     /// Klammer, die sie schließt.
     /// </summary>

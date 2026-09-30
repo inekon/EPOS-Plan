@@ -443,6 +443,18 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
               .QuerySelector("input")!;
 
     /// <summary>
+    /// Die Wurzel trägt die Marke des breiten Editors (<c>epos-gebk-editor</c>): Das Stilblatt nimmt ihr
+    /// den Deckel der <c>.epos-dialog</c> (Stufe KP2, Welle U1; <c>StilblattTests</c>).
+    /// </summary>
+    [Fact]
+    public void Die_Wurzel_traegt_die_Marke_des_breiten_Editors()
+    {
+        var cut = Aufbauen();
+        IElement wurzel = cut.Find("div.epos-dialog");
+        Assert.Contains("epos-gebk-editor", wurzel.ClassName);
+    }
+
+    /// <summary>
     /// <b>Die Altfelder stehen nur noch im Reiter „Konditionierung"</b> (Stufe KP2, Welle U1; E56 F3 (a)):
     /// Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur.
     /// Der erste Reiter behält Luftwechselrate, „Gebäude wird gekühlt", Kühlleistungsgrenze und
