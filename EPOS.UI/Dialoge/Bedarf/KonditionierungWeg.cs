@@ -13,8 +13,9 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// bietet keinen.</para>
 /// <para><b>Arbeitsstand statt Schreiben je Knopf.</b> Jede Handlung bekommt den
 /// <see cref="KonditionierungStand"/> und gibt einen NEUEN zurück (<see cref="KonditionierungErgebnis"/>);
-/// der Reiter übernimmt ihn in den Arbeitsstand und zählt die <see cref="KonditionierungDaten.Fassung"/>
-/// hoch. <b>Geschrieben wird allein im OK-Weg des Editors</b> — die Konditionierung reist im Feldsatz
+/// der Reiter übernimmt ihn in den Arbeitsstand. Die <see cref="KonditionierungDaten.Fassung"/> jeder
+/// Ebene, die die Handlung geändert hat — auch einer Zone, deren Kalender „Anlegen" am Gebäude mit
+/// anlegt (F2 Regel 2) —, hat die Hülle schon hochgezählt; der Reiter zählt nur, was er selbst ändert. <b>Geschrieben wird allein im OK-Weg des Editors</b> — die Konditionierung reist im Feldsatz
 /// (<see cref="GebaeudeKatalogDaten.Konditionierung"/>) und an den Zonen
 /// (<see cref="ZoneDaten.Konditionierung"/>) durch <c>Speichern</c> bzw. den Zonenweg; einen eigenen
 /// Schreibdelegaten gibt es deshalb nicht. Ausgenommen sind die Vorlagen: „Als Vorlage speichern…"
@@ -48,9 +49,10 @@ public sealed class KonditionierungWeg
     /// geänderten Kalenders (F2, E56) und — nach der Rückfrage — die Aufteilung der Gesamtangabe
     /// <c>Luftwechselrate</c> (F5: Infiltration = min(0,3; Rate), Nutzerlüftung = Rest). Die Zelle
     /// trägt den gewollten Zustand samt Wert, auch den einer Bestandszelle.
-    /// <para>Kern heute: <c>KonditionierungCtrl.Vorgabe</c> mit <c>ZellePruefen</c>/<c>ZelleSchreiben</c>
-    /// (Datenbank) und <c>Matrixzellenort.Fuer</c>; K2: der reine Schritt „Zelle setzen" des
-    /// Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.ZelleSetzen</c> (rein; Weiche <c>Matrixzellenort</c>), getragen
+    /// von der Hülle <c>KonditionierungHuelle.Weg</c>; der Datenbankweg <c>KonditionierungCtrl.Vorgabe</c>
+    /// ist eine dünne Hülle darüber. Die Rückfrage „aufteilen" kommt als
+    /// <see cref="KonditionierungErgebnis.Rueckfrage"/>.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungZeile, KonditionierungZelle, KonditionierungErgebnis>? ZelleSetzen { get; init; }
 
@@ -88,6 +90,16 @@ public sealed class KonditionierungWeg
     /// Arbeitsstands.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungErgebnis>? KatalogErneut { get; init; }
+
+    /// <summary>
+    /// <b>„Aufteilen"</b> (E56 F5 (a), Befund B3) — die Antwort auf die Rückfrage, die
+    /// <see cref="ZelleSetzen"/> oder <see cref="VorlageUebernehmen"/> als
+    /// <see cref="KonditionierungErgebnis.Rueckfrage"/> meldet: Die Gesamtangabe <c>Luftwechselrate</c> des
+    /// Gebäudes wird Infiltration = min(0,3 1/h; Rate) und Nutzerlüftung = Rest; der wirksame Luftwechsel
+    /// bleibt. Danach wiederholt der Reiter die Handlung.
+    /// <para>Kern: <c>Konditionierungsarbeit.LuftwechselAufteilen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungErgebnis>? LuftwechselAufteilen { get; init; }
 
     // ------------------------------------------------------------------ Vorlagen je Größe
 
@@ -173,6 +185,15 @@ public sealed class KonditionierungWeg
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungHandlung, KonditionierungRueckfrage?>? Rueckfrage { get; init; }
 
     /// <summary>
+    /// <b>Die Rückfrage von „Speichern unter" im Projekt</b> (Festlegung 3): Der neue Katalogsatz nimmt nur
+    /// die Gebäudeebene mit — die Frage nennt Zonen, ihre Bauteile und ihre Konditionierung zusammen
+    /// (<see cref="KonditionierungRueckfrage.Bleibt"/>, <see cref="KonditionierungPostenart.Bauteile"/>);
+    /// <c>null</c> = keine Rückfrage nötig. Ohne Delegat fragt der Dialog ohne Einzelheiten.
+    /// <para>Kern: <c>Konditionierungsarbeit.RueckfrageSpeichernUnter</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungRueckfrage?>? SpeichernUnterRueckfrage { get; init; }
+
+    /// <summary>
     /// <b>Die Vorschau der Woche</b> (Teilkonzept 7.5): 168 Werte einer Größe in der Einheit ihrer
     /// Spalte, <see cref="double.NaN"/> = „aus" (als Lücke) → Zeichenmodell für <c>DiagrammSvg</c>;
     /// <c>null</c> = kein Bild. Der Reiter reicht ihn als <c>Vorschau</c> an das Wochenraster.
@@ -236,6 +257,7 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.Feiertage => Feiertage is not null,
             KonditionierungHandlung.Zeitstruktur => Zeitstruktur is not null,
             KonditionierungHandlung.KatalogErneut => KatalogErneut is not null,
+            KonditionierungHandlung.LuftwechselAufteilen => LuftwechselAufteilen is not null,
             _ => false
         };
     }

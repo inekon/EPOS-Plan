@@ -183,6 +183,55 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Als Vorlage speichern…" aus dem Arbeitsstand</b> (Stufe KP2, Welle K2; Festlegung 13): Der
+        /// Inhalt kommt schon gefiltert aus <see cref="Konditionierungsarbeit.AlsVorlage"/> (E54: ohne
+        /// Nennwert und Saison, Bestandszellen als Vorgabezellen) — hier entstehen Kopf und Zeilen in EINEM
+        /// Vorgang, mit derselben Namens- und Nutzungsregel wie <see cref="Speichern"/>. Schreibt sofort.
+        /// </summary>
+        public KonditionierungCtrl.Ergebnis SpeichernAus(Konditionierungsstand inhalt, Konditionierungsgroesse groesse,
+                                                         string bezeichner, string beschreibung, string nutzung, out long id)
+        {
+            id = 0;
+            if (inhalt == null) throw new ArgumentNullException(nameof(inhalt));
+            string bereit = Bereit();
+            if (bereit != null) return KonditionierungCtrl.Ergebnis.Fehler(bereit);
+            string name = Namenspruefung(groesse, bezeichner, 0, out string meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            string nutzungswert = Nutzungspruefung(nutzung, out meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                try
+                {
+                    long neu = KopfAnlegen(v, groesse, name, beschreibung, nutzungswert);
+                    if (neu <= 0)
+                    {
+                        v.Rollback();
+                        return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                    }
+                    KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                        v, KonditionierungCtrl.Eigner.Vorlage(neu), inhalt.AlsArt(Kalendereigentuemer.Vorlage),
+                        mitBestand: false, out _);
+                    if (!e.Ok)
+                    {
+                        v.Rollback();
+                        return e;
+                    }
+                    v.Commit();
+                    id = neu;
+                    return KonditionierungCtrl.Ergebnis.Gut;
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
         /// Trägt die Zahlenwerte der <b>Bestandsspalten</b> der Quelle in die Vorgabezeilen der
         /// Vorlage nach — und die Nachtzeiten, wo die Quelle sie in
         /// <c>Nachtabsenkung_Beginn/_Ende</c> führt statt in einer Vorgabezeile (E54: Nacht

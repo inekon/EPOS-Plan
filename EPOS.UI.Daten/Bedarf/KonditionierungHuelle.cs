@@ -1,0 +1,748 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// <b>Die Hülle der Konditionierung</b> (Stufe KP2, Welle K2, Teilschritt 5; Entwurf KP2 Abschnitt 2):
+    /// Sie übersetzt zwischen der Datenseite des Reiters (<see cref="KonditionierungDaten"/>,
+    /// <see cref="KonditionierungStand"/>, Anteile in Prozent) und dem reinen Arbeitsstand des Kerns
+    /// (<see cref="Konditionierungsarbeitsstand"/>, Anteile 0 … 1), füllt die Konditionierung beim Lesen
+    /// und trägt den <see cref="KonditionierungWeg"/> aus den reinen Schritten der
+    /// <see cref="Konditionierungsarbeit"/>. Geschrieben wird allein im OK-Weg des Editors
+    /// (<see cref="GebaeudeKatalogHuelle"/>); ausgenommen sind die Vorlagen (Festlegung 13).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Eine Wahrheit.</b> Die neun Bestandszellen, die Nachtzeiten der Heizspalte, die Merker und
+    /// die Ferienzeiträume stehen in den Feldern von <see cref="GebaeudeKatalogDaten"/> bzw.
+    /// <see cref="ZoneDaten"/>; die Hülle bildet daraus den <see cref="Matrixeingang"/> und schreibt nach
+    /// einem Schritt nur die Felder zurück, die er geändert hat. Die Zellen der Bestandsspalten tragen im
+    /// gespeicherten Stand keinen Wert (Konzept 5.6).</para>
+    /// <para><b>Die Fassung.</b> Jede Ebene, die ein Schritt ändert — auch eine Zone, deren Kalender
+    /// „Anlegen" am Gebäude mit anlegt (F2 Regel 2) —, bekommt ihre <see cref="KonditionierungDaten.Fassung"/>
+    /// um eins erhöht; der OK-Weg schreibt nur eine Ebene mit geänderter Fassung, und dort nur, was sich
+    /// gegen die Datenbank geändert hat.</para>
+    /// </remarks>
+    internal static class KonditionierungHuelle
+    {
+        // =================================================================================
+        // Größen, Zeilen, Prozent
+        // =================================================================================
+
+        /// <summary>Die Größe des Kerns zu einer Größe der Oberfläche — dieselbe Reihenfolge.</summary>
+        internal static Konditionierungsgroesse Kern(KonditionierungGroesse g) => Konditionierungsgroessen.Alle[(int)g];
+
+        /// <summary>Die Größe der Oberfläche zu einer Größe des Kerns.</summary>
+        internal static KonditionierungGroesse Oberflaeche(Konditionierungsgroesse g)
+            => (KonditionierungGroesse)Array.IndexOf(Konditionierungsgroessen.Alle, g);
+
+        /// <summary>Das Zeilenkennwort einer Zeile der Oberfläche.</summary>
+        internal static string Zeile(KonditionierungZeile z) => DbWerte.KOND_ZEILEN[(int)z];
+
+        private static readonly KonditionierungZeile[] ZEILEN =
+        {
+            KonditionierungZeile.Nennwert, KonditionierungZeile.Tag, KonditionierungZeile.Nacht,
+            KonditionierungZeile.Wochenende, KonditionierungZeile.Ferien, KonditionierungZeile.Saison,
+        };
+
+        /// <summary>Trägt die Zelle einen Anteil (Geräte und Personen außer dem Nennwert) — dann in Prozent an der Oberfläche?</summary>
+        private static bool Anteil(Konditionierungsgroesse g, string zeile)
+            => Konditionierungsgroessen.HatNennwert(g) && !string.Equals(zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal);
+
+        /// <summary>Ein Anteil 0 … 1 als Prozent — dezimal gerechnet, damit 0,1 genau 10 wird; „aus" (NaN) bleibt.</summary>
+        internal static double Prozent(double anteil)
+            => double.IsFinite(anteil) && Math.Abs(anteil) < 1e12 ? (double)((decimal)anteil * 100m) : anteil;
+
+        /// <summary>Prozent als Anteil 0 … 1 — dezimal gerechnet; „aus" (NaN) bleibt.</summary>
+        internal static double AusProzent(double prozent)
+            => double.IsFinite(prozent) && Math.Abs(prozent) < 1e12 ? (double)((decimal)prozent / 100m) : prozent;
+
+        private static double Skaliert(double wert, bool anteil, bool nachProzent)
+            => !anteil ? wert : nachProzent ? Prozent(wert) : AusProzent(wert);
+
+        // =================================================================================
+        // Zellen und Kalender
+        // =================================================================================
+
+        /// <summary>Eine Zelle des Kerns an der Oberfläche.</summary>
+        internal static KonditionierungZelle Zelle(Matrixzelle c, bool anteil)
+            => new KonditionierungZelle
+            {
+                Wert = c != null && c.Belegt && !c.Aus ? Skaliert(c.Wert, anteil, true) : (double?)null,
+                Aus = c != null && c.Aus,
+                Von = c?.Von,
+                Bis = c?.Bis,
+                DeltaT = c?.BedingtK,
+            };
+
+        /// <summary>Eine Zelle der Oberfläche im Kern; leer = <see cref="Matrixzelle.Leer"/>.</summary>
+        internal static Matrixzelle Zelle(KonditionierungZelle z, bool anteil)
+        {
+            if (z == null || z.Leer) return Matrixzelle.Leer;
+            if (z.Aus) return Matrixzelle.Abgeschaltet(z.Von, z.Bis, z.DeltaT);
+            return z.Wert.HasValue
+                ? Matrixzelle.AusWert(Skaliert(z.Wert.Value, anteil, false), z.Von, z.Bis, z.DeltaT)
+                : Matrixzelle.NurZeiten(z.Von, z.Bis, z.DeltaT);
+        }
+
+        private static void Setzen(KonditionierungSpalte s, KonditionierungZeile z, KonditionierungZelle zelle)
+        {
+            switch (z)
+            {
+                case KonditionierungZeile.Nennwert: s.Nennwert = zelle; break;
+                case KonditionierungZeile.Tag: s.Tag = zelle; break;
+                case KonditionierungZeile.Nacht: s.Nacht = zelle; break;
+                case KonditionierungZeile.Wochenende: s.Wochenende = zelle; break;
+                case KonditionierungZeile.Ferien: s.Ferien = zelle; break;
+                default: s.Saison = zelle; break;
+            }
+        }
+
+        /// <summary>Ein angelegter Kalender des Kerns an der Oberfläche, samt Herkunft und Matrixbereich.</summary>
+        internal static KonditionierungKalender Kalender(Konditionierungskalender k, Kalenderherkunft h, bool anteil)
+        {
+            var d = new KonditionierungKalender
+            {
+                Zustand = KonditionierungZustand.Angelegt,
+                Nennwert = k.Nennwert,
+                Vorlage = h?.Vorlage,
+                Vermerk = h?.Vermerk,
+            };
+            Angabe(k.Grundangabe, anteil, out KonditionierungAngabe art, out double? wert, out double[] woche, out _);
+            d.Angabe = art;
+            d.Wert = wert;
+            d.Woche = woche;
+            d.Perioden = k.Perioden.OrderByDescending(p => p.Rang).Select(p => Periode(p, anteil)).ToList();
+            return d;
+        }
+
+        private static KonditionierungPeriode Periode(Kalenderregel r, bool anteil)
+        {
+            Angabe(r.Angabe, anteil, out KonditionierungAngabe art, out double? wert, out double[] woche, out int? tag);
+            int index = -1;
+            for (int i = 0; i < DbWerte.KOND_ARTEN.Count; i++)
+                if (string.Equals(DbWerte.KOND_ARTEN[i], r.Art, StringComparison.Ordinal)) index = i;
+            return new KonditionierungPeriode
+            {
+                Rang = r.Rang,
+                Art = index < 0 ? KonditionierungPeriodenart.Zeitraum : (KonditionierungPeriodenart)index,
+                Name = r.Bezeichner ?? "",
+                Von = r.IstFeiertag ? (int?)null : r.Beginn,
+                Bis = r.IstFeiertag ? (int?)null : r.Ende,
+                Feiertagsregel = r.IstFeiertag ? r.Feiertagsregel : null,
+                Angabe = art,
+                Wert = wert,
+                Woche = woche,
+                WieWochentag = tag,
+                Matrixbereich = Konditionierungsarbeit.IstMatrixbereich(r),
+            };
+        }
+
+        private static void Angabe(Kalenderangabe a, bool anteil, out KonditionierungAngabe art, out double? wert,
+                                   out double[] woche, out int? wieWochentag)
+        {
+            wert = null;
+            woche = null;
+            wieWochentag = null;
+            switch (a.Art)
+            {
+                case Angabeart.Wert:
+                    art = KonditionierungAngabe.Wert;
+                    wert = Skaliert(a.Wert, anteil, true);
+                    break;
+                case Angabeart.Aus:
+                    art = KonditionierungAngabe.Aus;
+                    break;
+                case Angabeart.Woche:
+                    art = KonditionierungAngabe.Woche;
+                    woche = a.Woche.Select(v => Skaliert(v, anteil, true)).ToArray();
+                    break;
+                default:
+                    art = KonditionierungAngabe.WieWochentag;
+                    wieWochentag = a.WieWochentag;
+                    break;
+            }
+        }
+
+        /// <summary>Die Angabe der Oberfläche im Kern — ein unvollständiger Satz ist eine <see cref="ArgumentException"/>.</summary>
+        private static Kalenderangabe Angabe(KonditionierungAngabe art, double? wert, double[] woche, int? wieWochentag, bool anteil)
+        {
+            switch (art)
+            {
+                case KonditionierungAngabe.Wert:
+                    if (!wert.HasValue) throw new ArgumentException("Eine Wertangabe ohne Wert.", nameof(wert));
+                    return Kalenderangabe.AusWert(Skaliert(wert.Value, anteil, false));
+                case KonditionierungAngabe.Aus:
+                    return Kalenderangabe.Abgeschaltet;
+                case KonditionierungAngabe.Woche:
+                    if (woche == null) throw new ArgumentException("Eine Wochenangabe ohne Woche.", nameof(woche));
+                    return Kalenderangabe.AusWoche(woche.Select(v => Skaliert(v, anteil, false)).ToArray());
+                default:
+                    if (!wieWochentag.HasValue) throw new ArgumentException("„wie Wochentag“ ohne Wochentag.", nameof(wieWochentag));
+                    return Kalenderangabe.AlsWochentag(wieWochentag.Value);
+            }
+        }
+
+        /// <summary>Ein angelegter Kalender der Oberfläche im Kern.</summary>
+        internal static Konditionierungskalender Kalender(KonditionierungKalender d, Konditionierungsgroesse g)
+        {
+            bool anteil = Konditionierungsgroessen.HatNennwert(g);
+            Kalenderangabe grund = Angabe(d.Angabe, d.Wert, d.Woche, null, anteil);
+            var perioden = new List<Kalenderregel>();
+            foreach (KonditionierungPeriode p in d.Perioden ?? new List<KonditionierungPeriode>())
+            {
+                Kalenderangabe a = Angabe(p.Angabe, p.Wert, p.Woche, p.WieWochentag, anteil);
+                string art = DbWerte.KOND_ARTEN[(int)p.Art];
+                perioden.Add(!string.IsNullOrEmpty(p.Feiertagsregel)
+                    ? Kalenderregel.Feiertag(p.Rang, p.Name ?? "", p.Feiertagsregel, a)
+                    : Kalenderregel.Zeitraum(p.Rang, art, p.Name ?? "", p.Von ?? 0, p.Bis ?? 0, a));
+            }
+            return new Konditionierungskalender(g, grund, d.Nennwert, perioden);
+        }
+
+        // =================================================================================
+        // Ebenen
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Eine Ebene des Kerns an der Oberfläche</b> — die 30 Zellen, je Größe der angelegte Kalender;
+        /// sonst „aus der Matrix", an einer Zone „vom Gebäude", wo das Gebäude einen angelegt hat.
+        /// </summary>
+        internal static KonditionierungDaten Daten(Konditionierungsstand e, Konditionierungsstand gebaeude, int fassung)
+        {
+            var d = new KonditionierungDaten { Fassung = fassung };
+            if (e == null) return d;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                KonditionierungSpalte s = d.Spalte(Oberflaeche(g));
+                foreach (KonditionierungZeile z in ZEILEN)
+                    Setzen(s, z, Zelle(e.Vorgabe(g, Zeile(z)), Anteil(g, Zeile(z))));
+                Konditionierungskalender k = e.Kalender(g);
+                s.Kalender = k != null
+                    ? Kalender(k, e.Herkunft(g), Konditionierungsgroessen.HatNennwert(g))
+                    : new KonditionierungKalender
+                    {
+                        Zustand = gebaeude != null && gebaeude.Kalender(g) != null
+                            ? KonditionierungZustand.VomGebaeude
+                            : KonditionierungZustand.Abgeleitet
+                    };
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// <b>Eine Ebene der Oberfläche im Kern</b> über dem gegebenen Bestand. Eine Zelle mit
+        /// Bestandsspalte trägt keinen Wert (er steht im Feld), die Heiz-Nachtzeile an Gebäude und
+        /// Katalogbau keine Zeiten (sie stehen in <c>NachtBeginn</c>/<c>NachtEnde</c>, B6).
+        /// </summary>
+        /// <exception cref="ArgumentException">Ein Kalender der Oberfläche ist unvollständig oder ungültig.</exception>
+        internal static Konditionierungsstand Ebene(KonditionierungDaten d, Kalendereigentuemer art, Matrixeingang bestand)
+        {
+            Konditionierungsstand e = Konditionierungsstand.Leer(art, bestand);
+            if (d == null) return e;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                KonditionierungSpalte s = d.Spalte(Oberflaeche(g));
+                foreach (KonditionierungZeile z in ZEILEN)
+                {
+                    string zeile = Zeile(z);
+                    Matrixzelle c = Zelle(s.Zelle(z), Anteil(g, zeile));
+                    if (Matrixzellenort.HatBestandsspalte(art, g, zeile) && c.Belegt && !c.Aus)
+                        c = Matrixzelle.NurZeiten(c.Von, c.Bis, c.BedingtK);
+                    if (Konditionierungsarbeit.NachtzeitImBestand(art, g, zeile))
+                        c = c.Aus ? Matrixzelle.Abgeschaltet(null, null, c.BedingtK) : Matrixzelle.NurZeiten(null, null, c.BedingtK);
+                    e = e.MitVorgabe(g, zeile, c);
+                }
+                if (s.Kalender?.Zustand == KonditionierungZustand.Angelegt)
+                    e = e.MitKalender(g, Kalender(s.Kalender, g), new Kalenderherkunft(s.Kalender.Vorlage, s.Kalender.Vermerk));
+            }
+            return e;
+        }
+
+        // =================================================================================
+        // Bestand
+        // =================================================================================
+
+        /// <summary>
+        /// Die Bestandsfelder eines Feldsatzes — wie <see cref="GebaeudeKatalogHuelle.NachModell"/> sie
+        /// schreibt: Nutzfläche ist die Wohnfläche, Bewohner = Wohnfläche ÷ Fläche je Nutzer (0 → 35 m²).
+        /// </summary>
+        internal static Matrixeingang Bestand(GebaeudeKatalogDaten g, bool kopplungWirksam, bool kuehlungWirksam)
+        {
+            var b = new Matrixeingang
+            {
+                SollTag = g.SollTag,
+                SollNacht = g.NachtAbsenkung,
+                SollWochenende = g.WochenendAbsenkung,
+                SollFerien = g.SollFerien,
+                NachtBeginn = g.NachtBeginn,
+                NachtEnde = g.NachtEnde,
+                Ferienmerker = g.Ferien,
+                Wochenendmerker = g.Wochenende,
+                Sollwertprofil = g.Sollwertprofil,
+                KopplungWirksam = kopplungWirksam,
+                KuehlSollwert = g.KuehlSollwert,
+                KuehlSollwertNacht = g.KuehlSollwertNacht,
+                KuehlungWirksam = kuehlungWirksam,
+                LuftwechselInfiltration = g.LuftwechselInfiltration,
+                LuftwechselNutzer = g.LuftwechselNutzer,
+                Luftwechselrate = g.Luftwechselrate,
+                InterneWaermegewinne = g.Waermegewinne,
+                Bewohner = g.WohnflaecheGesamt is double w && w > 0.0
+                    ? Gebaeudevorgaben.BewohnerAusFlaeche(w, g.FlaecheNutzer ?? 0.0)
+                    : (double?)null,
+                Maximaleraumtemperatur = g.MaxTemperatur,
+            };
+            for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME; i++)
+            {
+                b.Ferienbeginn[i] = g.Ferienbeginn != null && i < g.Ferienbeginn.Length ? g.Ferienbeginn[i] : 0;
+                b.Ferienende[i] = g.Ferienende != null && i < g.Ferienende.Length ? g.Ferienende[i] : 0;
+            }
+            Konditionierungsarbeit.HerkunftDesLuftwechsels(b);
+            return b;
+        }
+
+        /// <summary>Die eigenen Bestandsfelder einer Zone; leer heißt „wie das Gebäude".</summary>
+        internal static Matrixeingang Bestand(ZoneDaten z)
+            => new Matrixeingang
+            {
+                SollTag = z.SollTag,
+                SollNacht = z.SollNacht,
+                SollWochenende = z.SollWochenende,
+                SollFerien = z.SollFerien,
+                Maximaleraumtemperatur = z.Maximaleraumtemperatur,
+                LuftwechselInfiltration = z.LuftwechselInfiltration,
+                LuftwechselNutzer = z.LuftwechselNutzer,
+                InterneWaermegewinne = z.InterneWaermegewinne,
+                Bewohner = z.Bewohner,
+            };
+
+        /// <summary>Schreibt in den Feldsatz nur, was sich zwischen den zwei Beständen geändert hat.</summary>
+        private static void Zurueck(GebaeudeKatalogDaten g, Matrixeingang alt, Matrixeingang neu)
+        {
+            static bool Anders(double? a, double? b) => !Kalendervergleich.Gleich(a, b);
+            if (Anders(alt.SollTag, neu.SollTag)) g.SollTag = neu.SollTag;
+            if (Anders(alt.SollNacht, neu.SollNacht)) g.NachtAbsenkung = neu.SollNacht;
+            if (Anders(alt.SollWochenende, neu.SollWochenende)) g.WochenendAbsenkung = neu.SollWochenende;
+            if (Anders(alt.SollFerien, neu.SollFerien)) g.SollFerien = neu.SollFerien;
+            if (Anders(alt.KuehlSollwert, neu.KuehlSollwert)) g.KuehlSollwert = neu.KuehlSollwert;
+            if (Anders(alt.KuehlSollwertNacht, neu.KuehlSollwertNacht)) g.KuehlSollwertNacht = neu.KuehlSollwertNacht;
+            if (Anders(alt.LuftwechselInfiltration, neu.LuftwechselInfiltration)) g.LuftwechselInfiltration = neu.LuftwechselInfiltration;
+            if (Anders(alt.LuftwechselNutzer, neu.LuftwechselNutzer)) g.LuftwechselNutzer = neu.LuftwechselNutzer;
+            if (Anders(alt.Luftwechselrate, neu.Luftwechselrate)) g.Luftwechselrate = neu.Luftwechselrate;
+            if (Anders(alt.InterneWaermegewinne, neu.InterneWaermegewinne)) g.Waermegewinne = neu.InterneWaermegewinne;
+            if (alt.NachtBeginn != neu.NachtBeginn) g.NachtBeginn = neu.NachtBeginn;
+            if (alt.NachtEnde != neu.NachtEnde) g.NachtEnde = neu.NachtEnde;
+            if (Anders(alt.Ferienmerker, neu.Ferienmerker)) g.Ferien = neu.Ferienmerker;
+            if (Anders(alt.Wochenendmerker, neu.Wochenendmerker)) g.Wochenende = neu.Wochenendmerker;
+            for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME && g.Ferienbeginn != null && g.Ferienende != null
+                            && i < g.Ferienbeginn.Length && i < g.Ferienende.Length; i++)
+            {
+                if (Anders(alt.Ferienbeginn[i], neu.Ferienbeginn[i])) g.Ferienbeginn[i] = (int)neu.Ferienbeginn[i];
+                if (Anders(alt.Ferienende[i], neu.Ferienende[i])) g.Ferienende[i] = (int)neu.Ferienende[i];
+            }
+        }
+
+        /// <summary>Schreibt in die Zone nur, was sich geändert hat.</summary>
+        private static void Zurueck(ZoneDaten z, Matrixeingang alt, Matrixeingang neu)
+        {
+            static bool Anders(double? a, double? b) => !Kalendervergleich.Gleich(a, b);
+            if (Anders(alt.SollTag, neu.SollTag)) z.SollTag = neu.SollTag;
+            if (Anders(alt.SollNacht, neu.SollNacht)) z.SollNacht = neu.SollNacht;
+            if (Anders(alt.SollWochenende, neu.SollWochenende)) z.SollWochenende = neu.SollWochenende;
+            if (Anders(alt.SollFerien, neu.SollFerien)) z.SollFerien = neu.SollFerien;
+            if (Anders(alt.LuftwechselInfiltration, neu.LuftwechselInfiltration)) z.LuftwechselInfiltration = neu.LuftwechselInfiltration;
+            if (Anders(alt.LuftwechselNutzer, neu.LuftwechselNutzer)) z.LuftwechselNutzer = neu.LuftwechselNutzer;
+            if (Anders(alt.InterneWaermegewinne, neu.InterneWaermegewinne)) z.InterneWaermegewinne = neu.InterneWaermegewinne;
+        }
+
+        // =================================================================================
+        // Der Arbeitsstand
+        // =================================================================================
+
+        /// <summary>Der reine Arbeitsstand zu einem Stand der Oberfläche (<paramref name="art"/>: Gebäude oder Katalogbau).</summary>
+        /// <exception cref="ArgumentException">Ein Kalender der Oberfläche ist unvollständig oder ungültig.</exception>
+        internal static Konditionierungsarbeitsstand Arbeitsstand(KonditionierungStand s, Kalendereigentuemer art)
+        {
+            GebaeudeKatalogDaten g = s.Gebaeude;
+            bool kuehlung = g.KuehlungAktiv && g.KuehlSollwert.HasValue;
+            Konditionierungsstand gebaeude = Ebene(g.Konditionierung, art, Bestand(g, false, kuehlung));
+            var zonen = new List<Konditionierungszone>();
+            foreach (ZoneDaten z in s.Zonen ?? Array.Empty<ZoneDaten>())
+                zonen.Add(new Konditionierungszone(z.Id, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt,
+                                                   Ebene(z.Konditionierung, Kalendereigentuemer.Zone, Bestand(z))));
+            return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, null);
+        }
+
+        /// <summary>
+        /// <b>Der neue Stand der Oberfläche</b> nach einem Schritt: eine Kopie des alten, in der jede
+        /// geänderte Ebene ihre Felder, ihre Konditionierung und eine um eins erhöhte Fassung trägt; die
+        /// übrigen Zonen bekommen nur den Zustand „vom Gebäude" neu.
+        /// </summary>
+        internal static KonditionierungStand Stand(KonditionierungStand alt, Konditionierungsarbeitsstand vor,
+                                                   Konditionierungsarbeitsstand neu)
+        {
+            KonditionierungStand s = alt.Kopie();
+            if (!vor.Gebaeude.Gleich(neu.Gebaeude, mitBestand: true))
+            {
+                Zurueck(s.Gebaeude, vor.Gebaeude.Bestand, neu.Gebaeude.Bestand);
+                s.Gebaeude.Konditionierung = Daten(neu.Gebaeude, null, (alt.Gebaeude.Konditionierung?.Fassung ?? 0) + 1);
+            }
+            foreach (ZoneDaten z in s.Zonen)
+            {
+                Konditionierungszone kv = vor.Zone(z.Id), kn = neu.Zone(z.Id);
+                if (kv == null || kn == null) continue;
+                bool geaendert = !kv.Stand.Gleich(kn.Stand, mitBestand: true);
+                if (geaendert) Zurueck(z, kv.Stand.Bestand, kn.Stand.Bestand);
+                int fassung = z.Konditionierung?.Fassung ?? 0;
+                if (geaendert || z.Konditionierung != null)
+                    z.Konditionierung = Daten(kn.Stand, neu.Gebaeude, geaendert ? fassung + 1 : fassung);
+            }
+            return s;
+        }
+
+        /// <summary>Ein Befund des Kerns an der Oberfläche.</summary>
+        internal static KonditionierungRueckfrage Rueckfrage(Konditionierungsbilanz b)
+            => b == null
+                ? null
+                : new KonditionierungRueckfrage(
+                    b.Ersetzt.Select(p => new KonditionierungPosten((KonditionierungPostenart)(int)p.Art, p.Anzahl)).ToList(),
+                    b.Bleibt.Select(p => new KonditionierungPosten((KonditionierungPostenart)(int)p.Art, p.Anzahl)).ToList(),
+                    b.Zonen.ToList());
+
+        private static Konditionierungsort Ort(KonditionierungOrt o) => new Konditionierungsort(Kern(o.Groesse), o.Zone);
+
+        /// <summary>
+        /// Ein reiner Schritt am Stand der Oberfläche: übersetzen, rechnen, zurück übersetzen. Eine
+        /// Rückfrage des Kerns (F5) kommt als <see cref="KonditionierungErgebnis.Rueckfrage"/>, ein
+        /// ungültiger Stand als benannte Ablehnung.
+        /// </summary>
+        internal static KonditionierungErgebnis Schritt(KonditionierungStand stand, Kalendereigentuemer art,
+                                                        Func<Konditionierungsarbeitsstand, Konditionierungsschritt> schritt)
+        {
+            if (stand?.Gebaeude == null)
+                return KonditionierungErgebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, "—"));
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(stand, art);
+                Konditionierungsschritt s = schritt(a);
+                if (s.Rueckfrage) return KonditionierungErgebnis.Frage(Rueckfrage(s.Bilanz));
+                if (!s.Ok) return KonditionierungErgebnis.Fehler(s.Meldung);
+                return KonditionierungErgebnis.Gut(Stand(stand, a, s.Stand));
+            }
+            catch (ArgumentException ex)
+            {
+                return KonditionierungErgebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message));
+            }
+        }
+
+        // =================================================================================
+        // Lesen: die Konditionierung beim Öffnen
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Konditionierung eines Eigentümers beim Öffnen</b> (Fassung 0); <c>null</c> ohne die
+        /// Tabellen der Konditionierung — dann nennt der Reiter seinen Grund.
+        /// </summary>
+        internal static KonditionierungDaten Lesen(KonditionierungCtrl.Eigner eigner, Konditionierungsstand gebaeude = null)
+        {
+            if (eigner == null || !KonditionierungSchema.Lesbar()) return null;
+            Konditionierungsstand e = new KonditionierungCtrl().StandLesen(eigner, out _);
+            return Daten(e, gebaeude, 0);
+        }
+
+        /// <summary>Die Konditionierung eines neuen Satzes: leer, alle Kalender aus der Matrix; <c>null</c> ohne Tabellen.</summary>
+        internal static KonditionierungDaten Leer() => KonditionierungSchema.Lesbar() ? new KonditionierungDaten() : null;
+
+        // =================================================================================
+        // Schreiben: die Ebene für den OK-Weg
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Ebene, die der OK-Weg schreibt</b> — nur bei geänderter Fassung (&gt; 0); sonst <c>null</c>,
+        /// und die Tabellen bleiben, wie sie sind („ohne Änderung schreibt der OK-Weg wie heute").
+        /// <paramref name="immer"/>: auch ohne Änderung — „Speichern unter" nimmt die Konditionierung des
+        /// Arbeitsstands mit (Festlegung 2).
+        /// </summary>
+        internal static Konditionierungsstand Schreibstand(GebaeudeKatalogDaten g, Kalendereigentuemer art, bool immer = false)
+        {
+            if (g?.Konditionierung == null || (!immer && g.Konditionierung.Fassung <= 0)) return null;
+            return Ebene(g.Konditionierung, art, Bestand(g, false, g.KuehlungAktiv && g.KuehlSollwert.HasValue));
+        }
+
+        /// <summary>Die Ebenen der Zonen für den Schritt 3 des OK-Wegs — nur die mit geänderter Fassung.</summary>
+        internal static IReadOnlyDictionary<int, Konditionierungsstand> Zonenstaende(IReadOnlyList<ZoneDaten> zonen)
+        {
+            var d = new Dictionary<int, Konditionierungsstand>();
+            foreach (ZoneDaten z in zonen ?? Array.Empty<ZoneDaten>())
+                if (z?.Konditionierung != null && z.Konditionierung.Fassung > 0)
+                    d[z.Id] = Ebene(z.Konditionierung, Kalendereigentuemer.Zone, Bestand(z));
+            return d;
+        }
+
+        // =================================================================================
+        // Der Weg
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Weg der Konditionierung</b> für den Editor — je Handlung ein Delegat über den reinen
+        /// Schritt. <paramref name="art"/> ist <see cref="Kalendereigentuemer.Gebaeude"/> im Projekt, sonst
+        /// <see cref="Kalendereigentuemer.Katalogbau"/>; <paramref name="idGebaeude"/> &gt; 0 nur im Projekt
+        /// — dann gibt es „aus dem Katalog erneut übernehmen" und die Rückfrage von „Speichern unter".
+        /// Ohne die Tabellen der Konditionierung steht der Weg gesperrt da (<see cref="KonditionierungWeg.Sperre"/>).
+        /// </summary>
+        internal static KonditionierungWeg Weg(Kalendereigentuemer art, int idGebaeude)
+        {
+            if (!KonditionierungSchema.Lesbar())
+                return new KonditionierungWeg { Sperre = MyResource.Resource.KOND_TXT_GRUND_OHNE_TABELLEN };
+            bool projekt = art == Kalendereigentuemer.Gebaeude && idGebaeude > 0;
+            var vorlagen = new KonditionierungsvorlageCtrl();
+
+            return new KonditionierungWeg
+            {
+                ZelleSetzen = (s, o, z, c) => Schritt(s, art, a => Konditionierungsarbeit.ZelleSetzen(
+                    a, Ort(o), Zeile(z), Zelle(c, Anteil(Kern(o.Groesse), Zeile(z))))),
+                Anlegen = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.Anlegen(a, Ort(o))),
+                Verwerfen = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.Verwerfen(a, Ort(o))),
+                MatrixErneut = (s, o) => Schritt(s, art, a => Konditionierungsarbeit.MatrixErneut(a, Ort(o))),
+                KatalogErneut = projekt
+                    ? s => Schritt(s, art, a => Konditionierungsarbeit.KatalogErneut(
+                        a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
+                    : null,
+                LuftwechselAufteilen = s => Schritt(s, art, Konditionierungsarbeit.LuftwechselAufteilen),
+
+                Vorlagen = g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
+                VorlageUebernehmen = (s, o, id) => Schritt(s, art, a =>
+                {
+                    Konditionierungsvorlage v = Vorlage(vorlagen, id, out string m);
+                    return v == null ? Konditionierungsschritt.Fehler(m) : Konditionierungsarbeit.VorlageUebernehmen(a, Ort(o), v);
+                }),
+                AlsVorlageSpeichern = (s, o, e) => AlsVorlage(vorlagen, s, art, o, e),
+                VorlageUmbenennen = (id, name) =>
+                {
+                    KonditionierungCtrl.Ergebnis e = vorlagen.Umbenennen(id, name);
+                    return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
+                },
+                VorlageLoeschen = id =>
+                {
+                    KonditionierungCtrl.Ergebnis e = vorlagen.Loeschen(id);
+                    return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, null);
+                },
+                VorlageDuplizieren = (id, name) =>
+                {
+                    KonditionierungCtrl.Ergebnis e = vorlagen.Duplizieren(id, name, out long neu);
+                    return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
+                },
+
+                Zeitfenster = (s, o, f) => Schritt(s, art, a => Konditionierungsarbeit.Zeitfenster(
+                    a, Ort(o), f.Tage, f.Von, f.Bis,
+                    f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
+                Feiertage = (s, o, w) => Schritt(s, art, a => Konditionierungsarbeit.Feiertage(a, Ort(o), w)),
+                Zeitstruktur = (s, o, q) => Schritt(s, art, a => Konditionierungsarbeit.Zeitstruktur(
+                    a, Ort(o), q == KonditionierungZeitstruktur.WieHeizung ? Zeitstrukturquelle.WieHeizung : Zeitstrukturquelle.WieAnwesenheit)),
+
+                Rueckfrage = (s, o, h) => Befund(s, art, o, h, projekt ? idGebaeude : 0),
+                SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art) : null,
+                WochenVorschau = Vorschau,
+                Lasten = (s, zone) => Lasten(s, art, zone),
+                Pruefen = s => Pruefen(s, art),
+            };
+        }
+
+        private static KonditionierungVorlageDaten VorlageDaten(KonditionierungsvorlageCtrl.Vorlage v)
+            => v == null
+                ? null
+                : new KonditionierungVorlageDaten(v.Id, Oberflaeche(v.Groesse), v.Bezeichner ?? "", v.Beschreibung ?? "",
+                                                  Nutzung(v.Nutzung), v.Ausgeliefert);
+
+        private static KonditionierungNutzung Nutzung(string wert)
+        {
+            for (int i = 0; i < DbWerte.KOND_NUTZUNGEN.Count; i++)
+                if (string.Equals(DbWerte.KOND_NUTZUNGEN[i], wert, StringComparison.Ordinal)) return (KonditionierungNutzung)(i + 1);
+            return KonditionierungNutzung.Keine;
+        }
+
+        private static string Nutzung(KonditionierungNutzung n)
+            => n == KonditionierungNutzung.Keine ? null : DbWerte.KOND_NUTZUNGEN[(int)n - 1];
+
+        /// <summary>Eine Vorlage samt Inhalt aus der Datenbank; <c>null</c> mit Meldung, wenn es sie nicht gibt.</summary>
+        private static Konditionierungsvorlage Vorlage(KonditionierungsvorlageCtrl vorlagen, long id, out string meldung)
+        {
+            KonditionierungsvorlageCtrl.Vorlage v = vorlagen.Lesen(id);
+            if (v == null)
+            {
+                meldung = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_VORLAGE_FEHLT,
+                                        id.ToString(CultureInfo.InvariantCulture));
+                return null;
+            }
+            Konditionierungsstand inhalt = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Vorlage(id), out meldung);
+            return meldung != null ? null : new Konditionierungsvorlage(id, v.Bezeichner, v.Groesse, inhalt);
+        }
+
+        /// <summary>„Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung 13).</summary>
+        private static KonditionierungVorlageErgebnis AlsVorlage(KonditionierungsvorlageCtrl vorlagen, KonditionierungStand s,
+                                                                 Kalendereigentuemer art, KonditionierungOrt o,
+                                                                 KonditionierungVorlageEingabe eingabe)
+        {
+            try
+            {
+                Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art), Ort(o));
+                if (!inhalt.Ok) return new KonditionierungVorlageErgebnis(false, inhalt.Meldung, null);
+                KonditionierungCtrl.Ergebnis e = vorlagen.SpeichernAus(inhalt.Stand, Kern(o.Groesse), eingabe?.Name,
+                                                                       eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung ?? KonditionierungNutzung.Keine),
+                                                                       out long id);
+                return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
+            }
+            catch (ArgumentException ex)
+            {
+                return new KonditionierungVorlageErgebnis(false, string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message), null);
+            }
+        }
+
+        /// <summary>Der Rückfragebefund VOR einer Handlung (Festlegung 3); <c>null</c> = keine Rückfrage nötig.</summary>
+        private static KonditionierungRueckfrage Befund(KonditionierungStand s, Kalendereigentuemer art, KonditionierungOrt o,
+                                                        KonditionierungHandlung h, int idGebaeude)
+        {
+            Konditionierungshandlung? k = h switch
+            {
+                KonditionierungHandlung.MatrixErneut => Konditionierungshandlung.MatrixErneut,
+                KonditionierungHandlung.VorlageUebernehmen => Konditionierungshandlung.VorlageUebernehmen,
+                KonditionierungHandlung.Verwerfen => Konditionierungshandlung.Verwerfen,
+                KonditionierungHandlung.KatalogErneut => Konditionierungshandlung.KatalogErneut,
+                _ => null,
+            };
+            if (!k.HasValue || s?.Gebaeude == null) return null;
+            if (k == Konditionierungshandlung.KatalogErneut && idGebaeude <= 0) return null;
+            try
+            {
+                Konditionierungsstand katalog = k == Konditionierungshandlung.KatalogErneut
+                    ? GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)
+                    : null;
+                return Rueckfrage(Konditionierungsarbeit.Rueckfrage(Arbeitsstand(s, art), o == null ? null : Ort(o), k.Value, katalog));
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Die Rückfrage von „Speichern unter" im Projekt: Zonen, Bauteile, Konditionierung zusammen.</summary>
+        private static KonditionierungRueckfrage SpeichernUnterBefund(KonditionierungStand s, Kalendereigentuemer art)
+        {
+            if (s?.Gebaeude == null) return null;
+            try
+            {
+                int bauteile = (s.Zonen ?? Array.Empty<ZoneDaten>()).Sum(z => z.Bauteile?.Count ?? 0);
+                return Rueckfrage(Konditionierungsarbeit.RueckfrageSpeichernUnter(Arbeitsstand(s, art), bauteile));
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Die Vorschau einer Woche (168 Werte in der Einheit der Spalte, NaN = „aus").</summary>
+        private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Vorschau(KonditionierungGroesse g, double[] werte)
+        {
+            if (werte == null || werte.Length != Kalenderwoche.WOCHENWERTE) return null;
+            WaermeuebergabeTexte u = GebaeudeKatalogHuelle.UebergabeTexte();
+            string einheit = g switch
+            {
+                KonditionierungGroesse.Lueftung => "1/h",
+                KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+                _ => "°C",
+            };
+            return ChartRenderer.StundenprofilModell(u.Raster.BildTitel, werte, 24, u.Raster.BildAchseX, einheit);
+        }
+
+        /// <summary>Die Herleitung der Lasten (P1) am Gebäude bzw. an einer Zone.</summary>
+        private static KonditionierungLasten Lasten(KonditionierungStand s, Kalendereigentuemer art, int? zone)
+        {
+            if (s?.Gebaeude == null) return null;
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(s, art);
+                long? ort = zone;
+                Konditionierungszone z = ort.HasValue ? a.Zone(ort.Value) : null;
+                if (ort.HasValue && z == null) return null;
+                Matrixeingang b = z == null ? a.Gebaeude.Bestand : a.AufgeloesterBestand(z);
+                Vorgabematrix m = a.Matrix(ort);
+                Matrixzelle pn = m.Personen.Nennwert;
+                double personenNenn = pn.Belegt && !pn.Aus
+                    ? pn.Wert
+                    : Konditionierungsarbeit.PersonenNennwertVorschlag(b.Bewohner, 0.0, null);
+                double personenMittel = Konditionierungsarbeit.PersonenJahresmittelW(
+                    a.GeltenderKalender(Konditionierungsgroesse.Personen, ort), a.W0, a.Referenzjahr);
+                double geraeteNenn = b.InterneWaermegewinne ?? 0.0;
+                Konditionierungskalender gk = a.GeltenderKalender(Konditionierungsgroesse.Geraete, ort);
+                double geraeteMittel = geraeteNenn;
+                if (gk != null)
+                {
+                    double[] anteil = gk.Auswerten(a.W0, a.Referenzjahr);
+                    double summe = 0.0;
+                    foreach (double v in anteil) summe += v;
+                    geraeteMittel = summe * (gk.Nennwert ?? geraeteNenn) / anteil.Length;
+                }
+                return new KonditionierungLasten(b.Bewohner, Matrixeingang.PERSON_W, personenNenn, personenMittel,
+                                                 geraeteNenn, geraeteMittel, z == null ? a.Nutzflaeche : z.Nutzflaeche);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Prüfregeln des Kerns</b> über die Konditionierung des Stands — Grenzen je Zelle, Rundlauf
+        /// jedes Kalenders, eindeutiger Rang, höchstens <see cref="Kalenderregel.PERIODEN_MAX"/> Perioden;
+        /// leer = gültig. Dieselben Regeln wie im Schreibweg.
+        /// </summary>
+        internal static string Pruefen(KonditionierungStand s, Kalendereigentuemer art)
+        {
+            if (s?.Gebaeude == null) return "";
+            Konditionierungsarbeitsstand a;
+            try
+            {
+                a = Arbeitsstand(s, art);
+            }
+            catch (ArgumentException ex)
+            {
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message);
+            }
+            var ebenen = new List<Konditionierungsstand> { a.Gebaeude };
+            ebenen.AddRange(a.Zonen.Select(z => z.Stand));
+            foreach (Konditionierungsstand e in ebenen)
+            {
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                    foreach (string zeile in DbWerte.KOND_ZEILEN)
+                    {
+                        Matrixzelle c = e.Vorgabe(g, zeile);
+                        if (!Konditionierungsstand.Traegt(c)) continue;
+                        string f = Konditionierungsarbeit.Zellenpruefung(g, zeile, c);
+                        if (f != null) return f;
+                    }
+                foreach (Konditionierungskalender k in e.Angelegt().Values)
+                {
+                    if (!Kalenderleser.Rundlaeuft(k, out int rang, out int stelle))
+                        return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
+                                             Fahrplanbefund.RundlaufVerletzt.ToString(),
+                                             "Rang " + rang.ToString(CultureInfo.InvariantCulture) + ", Stelle " +
+                                             stelle.ToString(CultureInfo.InvariantCulture));
+                    string r = Kalenderwerkzeuge.Rangpruefung(k.Perioden.ToList());
+                    if (r != null) return r;
+                    if (k.Perioden.Count > Kalenderregel.PERIODEN_MAX)
+                        return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
+                                             k.Perioden.Count.ToString(CultureInfo.InvariantCulture),
+                                             Kalenderregel.PERIODEN_MAX.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+            return "";
+        }
+    }
+}

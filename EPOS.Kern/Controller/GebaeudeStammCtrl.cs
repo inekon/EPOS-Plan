@@ -1108,6 +1108,19 @@ namespace WindowsFormsApplication1
             return Konditionierungsarbeit.Rueckfrage(projekt, null, Konditionierungshandlung.KatalogErneut, katalog);
         }
 
+        /// <summary>
+        /// <b>Die Konditionierung des Katalogbaus einer Projektkopie</b> — die Ebene, aus der „erneut
+        /// übernehmen" liest (Stufe KP2, Festlegung 4); <c>null</c>, wenn es keinen Katalogbau oder keine
+        /// Konditionierungstabellen gibt. Für die Hülle, die den Schritt am Arbeitsstand fährt.
+        /// </summary>
+        public static Konditionierungsstand KatalogebeneDerKopie(int idGebaeude, out string meldung)
+        {
+            meldung = null;
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue || !KonditionierungSchema.Lesbar()) return null;
+            return new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out meldung);
+        }
+
         /// <summary>Der Katalogbau einer Projektkopie — über <c>ID_Gebaeude_Stamm</c>, sonst über den Namen; <c>null</c> = keiner.</summary>
         private static long? KatalogbauDerKopie(int idGebaeude)
         {

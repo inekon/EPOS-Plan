@@ -898,6 +898,14 @@
     /// </summary>
     [Parameter] public GebaeudeZonenweg? Zonen { get; set; }
 
+    /// <summary>
+    /// Der Weg der Konditionierung (Stufe KP2, Welle K2): die Handlungen des Reiters „Konditionierung"
+    /// über die reinen Schritte des Kerns, gefüllt von der Hülle. Der Reiter bindet ihn in Welle U1;
+    /// bis dahin trägt der Dialog ihn nur. Die Konditionierung selbst reist im Feldsatz
+    /// (<see cref="GebaeudeKatalogDaten.Konditionierung"/>) und an den Zonen durch den OK-Weg.
+    /// </summary>
+    [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
     /// <summary>Die Texte der Zonen im Editor (Bündel, Präfix <c>GEBZ_</c>).</summary>
     [Parameter] public GebaeudeZonenTexte ZonenTexte { get; set; } = new();
 
