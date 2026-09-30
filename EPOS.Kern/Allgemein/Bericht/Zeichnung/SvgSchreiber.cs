@@ -864,6 +864,13 @@ namespace WindowsFormsApplication1.Zeichnung
         /// teilen. Eine Schicht schließt mit der Treppe ihrer Unterkante rückwärts und
         /// <c>Z</c> — dieselbe Regel auf dieselben Zahlen wie die Oberkante der Schicht
         /// darunter, also genau deren Kante. Eine Linie bleibt offen.
+        ///
+        /// <para><b>Eine Lücke bleibt Lücke</b> (Kopf der Stufenregel): Steht die Reihe in der
+        /// Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder Unterkante —,
+        /// lässt die Treppe die Stufe aus. Je Stück ohne Lücke ein eigener Teilpfad
+        /// (<see cref="Pfadregel.Stufenstuecke"/>), eine Schicht je Stück mit <c>Z</c> geschlossen,
+        /// Stücke durch ein Leerzeichen getrennt — wie der Flächenzug mit Lücke. Ohne Lücke ist es
+        /// ein einziges Stück, wörtlich die Treppe über alle Stufen.</para>
         /// </summary>
         private static void Stufentreppe(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
                                          int ab, int biss, int laenge, int spalten,
@@ -873,21 +880,45 @@ namespace WindowsFormsApplication1.Zeichnung
             double breite = XStelle(r, rf, schritt, biss) - x0;
             IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(r.Werte.Length, ab, laenge, spalten);
             int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(r), ab, laenge), stufen);
+            double[] oben = Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden);
 
-            IReadOnlyList<(double Anteil, double Wert)> oben =
-                Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden));
-            for (int i = 0; i < oben.Count; i++)
-                Punkt(sb, i == 0, x0 + breite * oben[i].Anteil, Bildpunkt(oben[i].Wert, rf, hoehe, spanne));
-
-            if (r.Art != Reihenart.Flaeche) return;
+            if (r.Art != Reihenart.Flaeche)
+            {
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben))
+                {
+                    if (sb.Length > 0) sb.Append(' ');
+                    Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                }
+                return;
+            }
 
             double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
             double[] unterkante = r.Unten == null ? Gleichwert(laenge, null0) : Teil(r.Unten, ab, laenge);
-            IReadOnlyList<(double Anteil, double Wert)> unten =
-                Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(unterkante, stunden));
-            for (int i = unten.Count - 1; i >= 0; i--)
-                Punkt(sb, false, x0 + breite * unten[i].Anteil, Bildpunkt(unten[i].Wert, rf, hoehe, spanne));
-            sb.Append(" Z");
+            double[] unten = Pfadregel.Stundenwerte(unterkante, stunden);
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben, unten))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                Treppenzug(sb, Pfadregel.Treppe(stufen, unten, von, bis), false, x0, breite, rf, hoehe, spanne);
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>
+        /// Die Punkte einer Treppe in den Pfad — <paramref name="vorwaerts"/> von links nach
+        /// rechts, mit <c>M</c> am ersten Punkt; sonst rückwärts als Fortsetzung (die
+        /// Unterkante einer Schicht).
+        /// </summary>
+        private static void Treppenzug(StringBuilder sb, IReadOnlyList<(double Anteil, double Wert)> treppe,
+                                       bool vorwaerts, double x0, double breite, Datenfenster rf,
+                                       double hoehe, double spanne)
+        {
+            if (vorwaerts)
+                for (int i = 0; i < treppe.Count; i++)
+                    Punkt(sb, i == 0, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+            else
+                for (int i = treppe.Count - 1; i >= 0; i--)
+                    Punkt(sb, false, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
         }
 
         /// <summary>

@@ -576,6 +576,17 @@ namespace WindowsFormsApplication1.Zeichnung
         // Dann zeichnet sie den Tagesgang als Kurve ueber mehrere Stufen. Den Tag
         // kennen nur die festen Jahresraster (8 760 Stunden, 35 040
         // Viertelstunden); jede andere Reihe buendelt je Spalte.
+        //
+        // EINE LUECKE BLEIBT LUECKE: Ein nicht endlicher Wert (NaN - etwa "aus"
+        // einer Kalenderwoche) waehlt keine Spitzenstunde; eine Stufe ohne
+        // endlichen Bezugswert nimmt ihre erste Stunde. Steht eine Reihe in der
+        // Spitzenstunde einer Stufe nicht endlich da - eine Schicht an Ober- oder
+        // Unterkante -, ist die Stufe fuer sie eine LUECKE: Die Treppe bricht
+        // dort ab und setzt nach der Luecke mit eigenem Teilpfad neu an (je
+        // Stueck eine Schicht geschlossen, eine Linie offen). Die Luecke steht
+        // nie als Null da, und keine Nachbarstufe reicht in sie hinein. Weil
+        // alle Reihen dieselbe Stunde lesen, fehlt eine Schicht genau in den
+        // Stufen, in denen auch die Zeigerzeile sie nicht nennt.
         // =================================================================
 
         /// <summary>
@@ -747,7 +758,8 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>
         /// <b>Die Werte einer Reihe in den Spitzenstunden</b> (<see cref="Spitzenstunden"/>)
         /// — je Stufe die Kante einer Stapelschicht oder einer Hüllkurve. Ein nicht endlicher
-        /// oder fehlender Wert steht auf null.
+        /// oder fehlender Wert ist eine LÜCKE und bleibt <see cref="double.NaN"/>
+        /// (<see cref="Stufenstuecke"/> lässt die Stufe dann aus).
         /// </summary>
         /// <param name="werte">Die Werte des Ausschnitts in Datenkoordinaten.</param>
         /// <param name="stunden">Die Spitzenstunde je Stufe (Index im Ausschnitt).</param>
@@ -758,10 +770,43 @@ namespace WindowsFormsApplication1.Zeichnung
             for (int s = 0; s < stunden.Length; s++)
             {
                 int i = stunden[s];
-                double w = werte != null && i >= 0 && i < werte.Length ? werte[i] : 0.0;
-                ergebnis[s] = double.IsNaN(w) || double.IsInfinity(w) ? 0.0 : w;
+                double w = werte != null && i >= 0 && i < werte.Length ? werte[i] : double.NaN;
+                ergebnis[s] = double.IsNaN(w) || double.IsInfinity(w) ? double.NaN : w;
             }
             return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Stücke ohne Lücke</b> (Kopf der Stufenregel): die Läufe aufeinanderfolgender
+        /// Stufen, in denen ALLE übergebenen Stufenwerte endlich sind, je als erste und
+        /// letzte Stufe. Eine Schicht übergibt Ober- und Unterkante — beide Kanten brechen so
+        /// in denselben Stufen ab. Ohne Lücke ist es ein einziges Stück über alle Stufen.
+        /// </summary>
+        /// <param name="stufenwerte">Die Werte je Stufe (<see cref="Stundenwerte"/>), eine
+        /// Reihe oder mehrere gleich lange.</param>
+        public static IReadOnlyList<(int Von, int Bis)> Stufenstuecke(params double[][] stufenwerte)
+        {
+            var stuecke = new List<(int, int)>();
+            if (stufenwerte == null || stufenwerte.Length == 0) return stuecke;
+            int n = int.MaxValue;
+            foreach (double[] w in stufenwerte) n = Math.Min(n, w == null ? 0 : w.Length);
+            int s = 0;
+            while (s < n)
+            {
+                while (s < n && !AlleEndlich(stufenwerte, s)) s++;
+                if (s >= n) break;
+                int von = s;
+                while (s < n && AlleEndlich(stufenwerte, s)) s++;
+                stuecke.Add((von, s - 1));
+            }
+            return stuecke;
+        }
+
+        private static bool AlleEndlich(double[][] reihen, int s)
+        {
+            foreach (double[] w in reihen)
+                if (double.IsNaN(w[s]) || double.IsInfinity(w[s])) return false;
+            return true;
         }
 
         /// <summary>
@@ -775,18 +820,30 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <param name="stufenwerte">Die Werte je Stufe (<see cref="Stundenwerte"/>).</param>
         public static IReadOnlyList<(double Anteil, double Wert)> Treppe(IReadOnlyList<Stufe> stufen,
                                                                          double[] stufenwerte)
+            => Treppe(stufen, stufenwerte, 0, stufen == null ? -1 : stufen.Count - 1);
+
+        /// <summary>
+        /// Die Treppe der Stufen <paramref name="von"/> … <paramref name="bis"/> — ein Stück
+        /// ohne Lücke (<see cref="Stufenstuecke"/>); sonst wie <see cref="Treppe(IReadOnlyList{Stufe}, double[])"/>.
+        /// </summary>
+        public static IReadOnlyList<(double Anteil, double Wert)> Treppe(IReadOnlyList<Stufe> stufen,
+                                                                         double[] stufenwerte,
+                                                                         int von, int bis)
         {
             var punkte = new List<(double, double)>();
             if (stufen == null || stufenwerte == null || stufen.Count == 0
                 || stufenwerte.Length < stufen.Count) return punkte;
-            punkte.Add((stufen[0].Links, stufenwerte[0]));
-            for (int s = 1; s < stufen.Count; s++)
+            if (von < 0) von = 0;
+            if (bis > stufen.Count - 1) bis = stufen.Count - 1;
+            if (bis < von) return punkte;
+            punkte.Add((stufen[von].Links, stufenwerte[von]));
+            for (int s = von + 1; s <= bis; s++)
             {
                 if (stufenwerte[s].Equals(stufenwerte[s - 1])) continue;
                 punkte.Add((stufen[s].Links, stufenwerte[s - 1]));
                 punkte.Add((stufen[s].Links, stufenwerte[s]));
             }
-            punkte.Add((stufen[stufen.Count - 1].Rechts, stufenwerte[stufen.Count - 1]));
+            punkte.Add((stufen[bis].Rechts, stufenwerte[bis]));
             return punkte;
         }
 

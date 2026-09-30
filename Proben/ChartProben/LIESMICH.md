@@ -437,7 +437,8 @@ keine Flächenreihe.
 
 Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
 Stapels** (`Pfadregel.Stufen`, `Pfadregel.Spitzenstunden`, `Pfadregel.Stundenwerte`,
-`Pfadregel.Treppe` in `EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
+`Pfadregel.Stufenstuecke`, `Pfadregel.Treppe` in
+`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
 Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur,
 Kanten), zeichnet je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange ein Tag
 schmaler als vier Bildpunktspalten ist, sonst je Spalte —, und zwar ALLE mit den Werten
@@ -451,6 +452,20 @@ auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspi
 (`CHART_HINWEIS_STUFE_TAG`). Die überlagerte Produktion der Wärmepumpenseite (eine Säulengruppe
 über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
 Dauerlinie stapelt nicht.
+
+**Eine Lücke bleibt Lücke.** Ein nicht endlicher Wert (NaN — etwa „aus“ einer Kalenderwoche)
+wählt keine Spitzenstunde; eine Stufe ohne endlichen Bezugswert nimmt ihre erste Stunde. Steht
+eine Reihe in der Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder
+Unterkante —, ist die Stufe für sie eine Lücke: Die Treppe bricht dort ab und setzt danach mit
+eigenem Teilpfad neu an (`Pfadregel.Stufenstuecke`; im SVG je Stück ein Teilpfad, eine Schicht
+mit `Z` geschlossen, im PNG je Stück ein Vieleck oder Linienzug). Die Lücke steht nie als Null
+da, keine Nachbarstufe reicht in sie hinein, und die Zeigerzeile nennt die Schicht in dieser
+Stufe nicht. Ein Vormittag „aus“ an einem Tag mit der Spitze am Abend ist deshalb keine Lücke,
+ein Tag, dem allein die Spitzenstunde fehlt, schon. Die Proben stehen in `PfadregelTests.cs`
+(`EineLueckeBleibtLuecke`), `SvgSchreiberTests.cs`
+(`EineStapelschichtMitLueckeZeigtDieLueckeAlsLuecke`) und `ChartRendererTests.cs`
+(`Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke`); kein Probebild trägt eine Stapelschicht mit
+Lücke, die Messlatte berührt das nicht.
 
 Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
 `erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
@@ -486,6 +501,10 @@ gröber. `KalenderwocheModell` ist die Woche einer Größe mit Einheit; NaN („
 | SVG-Probe | `svg_kalenderteppich_grenze_und_aus` | jedes Teppichbild höchstens 2 000 Elemente (Büro 169, Lüftung 521, Grenzbild 121), das Grenzbild nennt seine Vergröberung; jedes „aus"-Feld `RASTER_LOCH` mit genau einer Schraffur in `RAHMEN`; die Werte am Feld wörtlich |
 | SVG-Probe | `svg_kalenderwoche_luecke` | die Fläche der Woche zerfällt in fünf Teilpfade (roh und gebündelt), kein „NaN", die Einheit steht an der Reihe; ohne Lücke ein Zug |
 
-Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Kein Bild von vorher hat sich
-geändert: alle 185 Zeilen der Vorgängerdatei stehen unverändert in `Messlatte_2026-09-30.sha256` (194 Zeilen). Die
-Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: alte Zeilen gleich, neun neu.
+Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Die
+Teppichbilder ändern kein Bild von vorher. Die Woche ist ein Stundenprofil ohne Stapelschicht
+und geht deshalb nicht über die Stufenregel des Stapels; ihre Lücke ist die des Flächenzugs
+(`SvgSchreiber.Flaechenzug`). `Messlatte_2026-09-30.sha256` trägt beide Stände — die neun
+Teppichbilder und die zwölf Bilder der Stufenregel (Abschnitt oben). Die Windows-Messliste des
+Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: diese zwölf Zeilen geändert,
+neun neu, alle übrigen gleich.

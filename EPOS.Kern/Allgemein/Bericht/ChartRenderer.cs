@@ -5173,10 +5173,17 @@ namespace WindowsFormsApplication1
             foreach (Reihe r in stapel)
             {
                 if (r.Stapelgruppe != gruppe) continue;
-                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Math.Max(r.Werte[i], 0);
+                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Stapelbeitrag(r.Werte[i]);
             }
             return n > 0 ? summe.Max() : 0;
         }
+
+        /// <summary>
+        /// <b>Der Beitrag eines Werts zur Lage des Stapels</b>: nicht negativ, und eine LÜCKE
+        /// (nicht endlich) trägt nichts bei — die Schichten darüber liegen dort, als fehlte die
+        /// Schicht mit der Lücke; sie selbst zeigt die Lücke als Lücke (<see cref="StapelZeichnen"/>).
+        /// </summary>
+        private static double Stapelbeitrag(double wert) => Endlich(wert) ? Math.Max(wert, 0) : 0.0;
 
         /// <summary>
         /// Die Deckung einer Stapelschicht: voll. Eine Schicht ist ein geschlossenes Band;
@@ -5262,13 +5269,26 @@ namespace WindowsFormsApplication1
             {
                 var oben = new double[n];
                 for (int i = 0; i < n; i++)
-                    oben[i] = unten[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                    oben[i] = unten[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
+
+                // EINE LUECKE (Reihe.Luecken, ein nicht endlicher Wert) bleibt Luecke: Die
+                // Oberkante der Schicht ist dort NaN - SVG- und PNG-Weg lassen die Stelle aus,
+                // die Stufenregel die Stufe (Kopf der Stufenregel in Pfadregel) -, die Schichten
+                // darueber liegen auf der Summe ohne sie (Stapelbeitrag). Ohne Luecke ist die
+                // Lage fuer die naechste Schicht genau die Oberkante.
+                double[] lage = oben;
+                for (int i = 0; i < n && i < r.Werte.Length; i++)
+                {
+                    if (Endlich(r.Werte[i])) continue;
+                    if (ReferenceEquals(lage, oben)) oben = (double[])oben.Clone();
+                    oben[i] = double.NaN;
+                }
 
                 double[] unterkante = unten;
                 if (alsKanten)
                 {
                     kanten.Add((r, oben, unterkante));
-                    unten = oben;
+                    unten = lage;
                     continue;
                 }
                 baender.Add((r, oben, unterkante));
@@ -5282,7 +5302,7 @@ namespace WindowsFormsApplication1
                                                      alpha == STAPEL_DECKEND ? Ton(r) : Ton(r, alpha),
                                                      0f, null, oben, gruppenfenster,
                                                      Reihenart.Flaeche, unterkante, Bezug: bezug));
-                unten = oben;
+                unten = lage;
             }
 
             // DAS BILD (PNG, Druck): Eine DECKENDE Schicht malt von der Achse bis zu ihrer
@@ -5327,7 +5347,7 @@ namespace WindowsFormsApplication1
             {
                 if (r.Stapelgruppe != gruppe) continue;
                 for (int i = 0; i < n; i++)
-                    oben[i] = oben[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                    oben[i] = oben[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
             }
             return oben;
         }
@@ -8077,16 +8097,24 @@ namespace WindowsFormsApplication1
         {
             if (werte == null || werte.Length < 2) return;
             int schritt = Math.Max(1, werte.Length / (int)rc.Width);
-            var punkte = new List<SKPoint>();
+            // Ein nicht endlicher Wert ist eine LUECKE: Die Linie bricht dort ab und setzt beim
+            // naechsten endlichen Wert neu an - wie der SVG-Weg. Ohne Luecke ein einziger Zug.
+            var stuecke = new List<List<SKPoint>> { new List<SKPoint>() };
             for (int i = 0; i < werte.Length; i += schritt)
             {
+                if (!Endlich(werte[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<SKPoint>());
+                    continue;
+                }
                 float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
                 float y = rc.Bottom - (float)((werte[i] - min) / (max - min) * rc.Height);
-                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                stuecke[stuecke.Count - 1].Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
             }
-            if (punkte.Count >= 2)
-                Linienzug(z, punkte.ToArray(),
-                          Stift(farbe, staerke, null, Strichverbindung.Rund));
+            foreach (List<SKPoint> punkte in stuecke)
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(),
+                              Stift(farbe, staerke, null, Strichverbindung.Rund));
         }
 
         /// <summary>
@@ -8109,13 +8137,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Treppe der Stufenwerte in Bildpunkten</b> (Stufenregel des Stapels, siehe
         /// <see cref="Pfadregel"/>): je Stufe eine waagrechte Kante auf dem Wert der Reihe in
-        /// der Spitzenstunde der Stufe, von links nach rechts.
+        /// der Spitzenstunde der Stufe, von links nach rechts — für die Stufen
+        /// <paramref name="von"/> … <paramref name="bis"/>, ein Stück ohne Lücke
+        /// (<see cref="Pfadregel.Stufenstuecke"/>).
         /// </summary>
-        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, int[] stunden,
-                                                   double[] werte, double min, double max)
+        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, double[] stufenwerte,
+                                                   int von, int bis, double min, double max)
         {
             var punkte = new List<SKPoint>();
-            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(werte, stunden)))
+            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, stufenwerte, von, bis))
             {
                 float x = rc.Left + (float)(rc.Width * anteil);
                 float y = rc.Bottom - (float)((wert - min) / (max - min) * rc.Height);
@@ -8138,7 +8168,9 @@ namespace WindowsFormsApplication1
         /// über den Erzeugern): Führt sie mehr Werte, als das Rechteck Bildpunktspalten
         /// hat, zeichnet sie die Treppe ihrer Werte in den Spitzenstunden — dieselbe Stunde
         /// je Stufe wie die Schichten des Stapels —, statt je Spalte die ganze Spanne ihres
-        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>.
+        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>. Eine Stufe, in deren
+        /// Spitzenstunde sie nicht endlich ist, bleibt eine Lücke: je Stück ohne Lücke ein
+        /// eigener Linienzug, wie der SVG-Weg.
         /// </summary>
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
         /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
@@ -8154,9 +8186,13 @@ namespace WindowsFormsApplication1
                 return;
             }
             IReadOnlyList<Stufe> stufen = Stapelstufen(rc, werte.Length, gesamt, ab);
-            List<SKPoint> punkte = Treppenpunkte(rc, stufen, Spitzenstunden(stufen, bezug, werte), werte, min, max);
-            if (punkte.Count >= 2)
-                Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
+            double[] stufenwerte = Pfadregel.Stundenwerte(werte, Spitzenstunden(stufen, bezug, werte));
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(stufenwerte))
+            {
+                List<SKPoint> punkte = Treppenpunkte(rc, stufen, stufenwerte, von, bis, min, max);
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
+            }
         }
 
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
@@ -8175,28 +8211,51 @@ namespace WindowsFormsApplication1
             // (die Oberkante der Schicht darunter, dieselben Zahlen in derselben Stunde)
             // rueckwaerts. Jede Stufe ist damit bis zur Kante gedeckt, und die Dicke der
             // Schicht ist ihr Wert in der Spitzenstunde; bis hierher stand jeder siebte
-            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt.
+            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt. Eine Stufe, in
+            // deren Spitzenstunde eine Kante nicht endlich ist, bleibt eine LUECKE: je Stueck
+            // ohne Luecke ein eigenes Vieleck, wie der SVG-Weg (Kopf der Stufenregel).
             if (n > Bildpunktspalten(rc))
             {
                 IReadOnlyList<Stufe> stufen = Stapelstufen(rc, n, gesamt, ab);
                 int[] stunden = Spitzenstunden(stufen, bezug, oben);
-                List<SKPoint> kante = Treppenpunkte(rc, stufen, stunden, oben, 0, max);
-                List<SKPoint> boden = Treppenpunkte(rc, stufen, stunden, unten, 0, max);
-                boden.Reverse();
-                kante.AddRange(boden);
-                if (kante.Count >= 3)
-                    Vieleck(z, kante.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                double[] kantenwerte = Pfadregel.Stundenwerte(oben, stunden);
+                double[] bodenwerte = Pfadregel.Stundenwerte(unten, stunden);
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(kantenwerte, bodenwerte))
+                {
+                    List<SKPoint> kante = Treppenpunkte(rc, stufen, kantenwerte, von, bis, 0, max);
+                    List<SKPoint> boden = Treppenpunkte(rc, stufen, bodenwerte, von, bis, 0, max);
+                    boden.Reverse();
+                    kante.AddRange(boden);
+                    if (kante.Count >= 3)
+                        Vieleck(z, kante.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                }
                 return;
             }
 
+            // Je Stueck, in dem Ober- und Unterkante endlich sind, ein Vieleck: die Oberkante
+            // vorwaerts, die Unterkante rueckwaerts. Eine LUECKE (nicht endlich) bricht die
+            // Flaeche wie im SVG-Weg; ohne Luecke ist es ein einziges Vieleck.
             int schritt = Math.Max(1, n / (int)rc.Width);
-            var pfad = new List<SKPoint>();
+            var stuecke = new List<List<int>> { new List<int>() };
             for (int i = 0; i < n; i += schritt)
-                pfad.Add(Punkt(rc, i, n, oben[i], max));
-            for (int i = ((n - 1) / schritt) * schritt; i >= 0; i -= schritt)
-                pfad.Add(Punkt(rc, i, n, unten[i], max));
-            if (pfad.Count >= 3)
-                Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+            {
+                if (!Endlich(oben[i]) || !Endlich(unten[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<int>());
+                    continue;
+                }
+                stuecke[stuecke.Count - 1].Add(i);
+            }
+            foreach (List<int> stueck in stuecke)
+            {
+                var pfad = new List<SKPoint>();
+                foreach (int i in stueck)
+                    pfad.Add(Punkt(rc, i, n, oben[i], max));
+                for (int k = stueck.Count - 1; k >= 0; k--)
+                    pfad.Add(Punkt(rc, stueck[k], n, unten[stueck[k]], max));
+                if (pfad.Count >= 3)
+                    Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+            }
         }
 
         private static SKPoint Punkt(SKRect rc, int i, int n, double wert, double max)

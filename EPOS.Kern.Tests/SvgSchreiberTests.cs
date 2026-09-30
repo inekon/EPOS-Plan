@@ -664,6 +664,81 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Eine Schicht mit Lücke zeigt im Stufenweg die Lücke als Lücke</b> (Kopf der
+        /// Stufenregel, Zusammenführung mit der Lücke der Welle K4): Eine Stufe ist für eine
+        /// Reihe genau dann Lücke, wenn sie in der Spitzenstunde der Stufe nicht endlich ist.
+        /// Die Treppe lässt die Stufe aus und setzt danach mit eigenem Teilpfad neu an — keine
+        /// Null, kein NaN, keine Nachbarstufe in der Lücke. Hier: eine ganze Woche „aus"
+        /// (Lücke), ein Vormittag „aus" an einem Tag mit der Spitze um 18 Uhr (keine Lücke —
+        /// die Stufe zeigt 18 Uhr), und ein Tag, an dem allein die Spitzenstunde fehlt (Lücke).
+        /// Die Schicht darüber bricht in denselben Stufen ab und teilt je Stück die Kante; die
+        /// begleitende Linie bricht offen ab.
+        /// </summary>
+        [Fact]
+        public void EineStapelschichtMitLueckeZeigtDieLueckeAlsLuecke()
+        {
+            var bezug = new double[8760];
+            var a = new double[8760];
+            var b = new double[8760];
+            var bedarf = new double[8760];
+            for (int t = 0; t < 8760; t++)
+            {
+                int tag = t / 24, stunde = t % 24;
+                bezug[t] = stunde == 18 ? 30.0 : 10.0;
+                bool aus = (tag >= 70 && tag <= 76)              // eine ganze Woche
+                           || (tag == 100 && stunde < 12)        // ein Vormittag
+                           || (tag == 200 && stunde == 18);      // allein die Spitzenstunde
+                a[t] = aus ? double.NaN : 10.0;
+                b[t] = a[t] + 5.0;
+                bedarf[t] = tag >= 70 && tag <= 76 ? double.NaN : 15.0;
+            }
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 1100f, 360f),
+                                             new Datenfenster(0, 8759, 0, 50));
+            var schichtA = new Datenreihe("A", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, a,
+                                          flaeche.Daten, Reihenart.Flaeche, new double[8760], Bezug: bezug);
+            var schichtB = new Datenreihe("B", Farbton.Aus(Farbrolle.WAERME_KESSEL), 0f, null, b,
+                                          flaeche.Daten, Reihenart.Flaeche, a, Bezug: bezug);
+            var linie = new Datenreihe("S", Farbton.Aus(Farbrolle.BEDARF), 2f, null, bedarf,
+                                       flaeche.Daten, Huelle: true, Bezug: bezug);
+            Assert.Equal(Stufenart.Tag, SvgSchreiber.Stufenansicht(schichtA, flaeche));
+
+            string dA = SvgSchreiber.Reihenpfad(schichtA, flaeche, false);
+            string dB = SvgSchreiber.Reihenpfad(schichtB, flaeche, false);
+            string dS = SvgSchreiber.Reihenpfad(linie, flaeche, false);
+            foreach (string d in new[] { dA, dB, dS }) Assert.DoesNotContain("NaN", d);
+
+            // Drei Stücke: Tag 0-69, 77-199, 201-364; der Vormittag des Tages 100 bricht nicht.
+            string[] stueckeA = dA.Split(new[] { " Z" }, StringSplitOptions.RemoveEmptyEntries)
+                                  .Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
+            Assert.Equal(3, stueckeA.Length);
+            Assert.All(stueckeA, s => Assert.StartsWith("M ", s));
+            double[] Xe(string s) => Punkte(s).Select(p => double.Parse(p.Split(',')[0], CultureInfo.InvariantCulture)).ToArray();
+            double tagX(int tag) => tag * 24.0;                      // Grenze des Tages in x (Stunde)
+            (double von, double bis)[] erwartet = { (0, tagX(70)), (tagX(77), tagX(200)), (tagX(201), 8759) };
+            for (int k = 0; k < 3; k++)
+            {
+                double[] x = Xe(stueckeA[k]);
+                Assert.Equal(erwartet[k].von, x.Min(), 1);
+                Assert.Equal(erwartet[k].bis, x.Max(), 1);
+                // Keine Null in der Luecke: jeder Punkt der Schicht steht auf ihrer Oberkante 10
+                // (y = 360 - 10/50 * 360 = 288) oder auf ihrer Unterkante 0 (y = 360).
+                Assert.All(Punkte(stueckeA[k]), p => Assert.Contains(p.Split(',')[1], new[] { "288", "360" }));
+            }
+
+            // Die Schicht darueber: dieselben Stuecke, je Stueck ihre Unterkante = Oberkante von A.
+            string[] stueckeB = dB.Split(new[] { " Z" }, StringSplitOptions.RemoveEmptyEntries)
+                                  .Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
+            Assert.Equal(3, stueckeB.Length);
+            for (int k = 0; k < 3; k++)
+                Assert.Equal(Kanten(stueckeA[k]).Oben, Kanten(stueckeB[k]).Unten.Reverse().ToArray());
+
+            // Die Linie: offen, zwei Stuecke um die Woche.
+            Assert.DoesNotContain("Z", dS);
+            Assert.Equal(2, dS.Split(new[] { "M " }, StringSplitOptions.RemoveEmptyEntries).Length);
+            Assert.DoesNotContain(Xe(dS), x => x > tagX(70) + 0.5 && x < tagX(77) - 0.5);
+        }
+
+        /// <summary>
         /// <b>Stufenstunde und Stufenansicht</b> — was die Oberfläche am Zeiger und unter der
         /// Achse nennt: Im Jahresbild ist die Stufe der Tag, und an jeder Stelle des Tages
         /// steht die Spitzenstunde der Bezugsgröße; im vierfachen Ausschnitt ist die Stufe die

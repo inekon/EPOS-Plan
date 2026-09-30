@@ -304,7 +304,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Spitzenstunden, Stundenwerte und Treppe</b>: je Stufe die Stunde des größten
         /// endlichen Bezugswerts — bei Gleichstand die erste, ohne endlichen Wert die erste
-        /// der Stufe —, die Werte einer Reihe in genau diesen Stunden (nicht endlich = 0), und
+        /// der Stufe —, die Werte einer Reihe in genau diesen Stunden (nicht endlich = Lücke), und
         /// die Treppe steht je Stufe waagrecht und springt an der Grenze senkrecht — gleiche
         /// Nachbarn ergeben keinen Zwischenpunkt.
         /// </summary>
@@ -326,7 +326,7 @@ namespace EPOS.Kern.Tests
 
             double[] stufenwerte = Pfadregel.Stundenwerte(werte, stunden);
             Assert.Equal(new[] { 20.0, 30.0, 50.0, 70.0 }, stufenwerte);
-            Assert.Equal(new[] { 0.0 }, Pfadregel.Stundenwerte(werte, new[] { 5 }));   // NaN → 0
+            Assert.True(double.IsNaN(Pfadregel.Stundenwerte(werte, new[] { 5 })[0]));  // NaN bleibt Lücke
 
             IReadOnlyList<(double Anteil, double Wert)> treppe = Pfadregel.Treppe(stufen, stufenwerte);
             Assert.Equal(new (double, double)[]
@@ -338,6 +338,53 @@ namespace EPOS.Kern.Tests
             // Gleiche Nachbarn: eine einzige waagrechte Kante.
             Assert.Equal(new (double, double)[] { (0.0, 4.0), (1.0, 4.0) },
                          Pfadregel.Treppe(stufen, new[] { 4.0, 4.0, 4.0, 4.0 }).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Eine Lücke bleibt Lücke</b> (Kopf der Stufenregel): Die Spitzenstunde wählt nur
+        /// unter endlichen Bezugswerten; ist die Reihe in dieser Stunde nicht endlich, ist die
+        /// Stufe für sie eine Lücke. Die Stücke ohne Lücke nehmen Ober- und Unterkante
+        /// zusammen — eine Schicht bricht an beiden Kanten in denselben Stufen ab —, und die
+        /// Treppe eines Stücks reicht genau von seiner ersten bis zu seiner letzten Stufe:
+        /// keine Null in der Lücke, keine Nachbarstufe hinein.
+        /// </summary>
+        [Fact]
+        public void EineLueckeBleibtLuecke()
+        {
+            var stufen = new List<Stufe>
+            {
+                new Stufe(0, 1, 0.0, 0.2), new Stufe(2, 3, 0.2, 0.4), new Stufe(4, 5, 0.4, 0.6),
+                new Stufe(6, 7, 0.6, 0.8), new Stufe(8, 9, 0.8, 1.0)
+            };
+            // Der Bezug ist in Stufe 2 ganz Lücke → dort die erste Stunde (4).
+            var bezug = new double[] { 1, 9, 9, 1, double.NaN, double.NaN, 1, 9, 9, 1 };
+            // Die Oberkante: in Stufe 2 aus; die Unterkante: in Stunde 7 (Spitze der Stufe 3) aus.
+            var oben = new double[] { 5, 6, 7, 5, double.NaN, double.NaN, 6, 8, 9, 5 };
+            var unten = new double[] { 1, 2, 3, 1, double.NaN, double.NaN, 2, double.NaN, 4, 1 };
+
+            int[] stunden = Pfadregel.Spitzenstunden(bezug, stufen);
+            Assert.Equal(new[] { 1, 2, 4, 7, 8 }, stunden);
+
+            double[] o = Pfadregel.Stundenwerte(oben, stunden);
+            double[] u = Pfadregel.Stundenwerte(unten, stunden);
+            Assert.True(double.IsNaN(o[2]) && double.IsNaN(u[2]) && double.IsNaN(u[3]));
+
+            // Die Oberkante allein (eine Linie): zwei Stücke um die Stufe 2.
+            Assert.Equal(new[] { (0, 1), (3, 4) }, Pfadregel.Stufenstuecke(o).ToArray());
+            // Die Schicht: auch Stufe 3 fällt aus, weil ihre Unterkante dort Lücke ist.
+            Assert.Equal(new[] { (0, 1), (4, 4) }, Pfadregel.Stufenstuecke(o, u).ToArray());
+            // Ohne Lücke: ein einziges Stück über alle Stufen.
+            Assert.Equal(new[] { (0, 4) }, Pfadregel.Stufenstuecke(new[] { 1.0, 2, 3, 4, 5 }).ToArray());
+            Assert.Empty(Pfadregel.Stufenstuecke(new[] { double.NaN, double.NaN }));
+
+            // Die Treppe eines Stücks: nur seine Stufen, kein NaN, keine Null.
+            Assert.Equal(new (double, double)[] { (0.0, 6.0), (0.2, 6.0), (0.2, 7.0), (0.4, 7.0) },
+                         Pfadregel.Treppe(stufen, o, 0, 1).ToArray());
+            Assert.Equal(new (double, double)[] { (0.6, 8.0), (0.8, 8.0), (0.8, 9.0), (1.0, 9.0) },
+                         Pfadregel.Treppe(stufen, o, 3, 4).ToArray());
+            // Das ganze Stück ist wörtlich die Treppe über alle Stufen.
+            double[] voll = { 1, 2, 3, 4, 5 };
+            Assert.Equal(Pfadregel.Treppe(stufen, voll).ToArray(), Pfadregel.Treppe(stufen, voll, 0, 4).ToArray());
         }
 
         /// <summary>
