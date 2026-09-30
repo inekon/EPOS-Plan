@@ -1463,7 +1463,7 @@
                         @foreach (MatrixZeile z in tafel.Zeilen)
                         {
                             <tr>
-                                <th scope="row" class="epos-matrix-titel">
+                                <th scope="row" class="epos-matrix-titel" title="@Kurztitel(z)">
                                     @z.Titel
                                     @if (!string.IsNullOrEmpty(z.Kennzeichen))
                                     {
@@ -1781,8 +1781,8 @@
             <tbody>
                 @foreach (MatrixZeile z in m.Zeilen)
                 {
-                    <tr>
-                        <th scope="row" class="epos-matrix-titel">@z.Titel</th>
+                    <tr class="@(z.Leise ? "epos-wirt-herleitungszeile" : null)">
+                        <th scope="row" class="epos-matrix-titel" title="@Kurztitel(z)">@z.Titel</th>
                         @foreach (string zelle in z.Zellen)
                         {
                             <td class="epos-matrix-zelle">@zelle</td>
@@ -1792,6 +1792,11 @@
             </tbody>
         </table>
     </div>;
+
+    /// <summary>Der Kurztext einer Zeile als Tooltip am Titel (die Wärmegestehungskosten sagen,
+    /// was sie umfassen); <c>null</c> = kein Attribut.</summary>
+    private static string? Kurztitel(MatrixZeile z)
+        => string.IsNullOrEmpty(z.Kurztext) ? null : z.Kurztext;
 
     /// <summary>Die Klasse einer Tafelzeile: die Referenzzeile der Bandbreite hinterlegt, eine
     /// Summenzeile (ETAPPE E8a) abgesetzt; sonst keine.</summary>

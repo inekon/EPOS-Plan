@@ -96761,6 +96761,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} × {2} €/{1} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_ARBEIT {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + CO₂ {0} €/a ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_CO2 {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Menge × Preis liegt mit der nächsten Rechnung vor ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + {0} €/a Grundpreis ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_GRUND {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + {0} €/a Leistungspreis ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Menge × Preis ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Menge × Preis ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_TRAEGER_ZEILE_ALLE {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_TRAEGER_ZEILE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ENK_ZEILE {
@@ -97522,6 +97585,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FUSS_VORGABEN {
             get {
                 return ResourceManager.GetString("WIRT_FUSS_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_KURZTEXT {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt. ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT", resourceCulture);
             }
         }
         

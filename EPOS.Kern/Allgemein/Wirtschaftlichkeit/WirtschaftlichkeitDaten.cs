@@ -1534,6 +1534,23 @@ namespace WindowsFormsApplication1
             new List<EnergieAnlageNachweis>();
 
         /// <summary>
+        /// Die Energiekosten je Energieträger — Menge × Arbeitspreis, Grund- und Leistungspreis und
+        /// der Anteil an der CO₂-Abgabe des ersten Jahres (<see cref="EnergieTraegerNachweis"/>),
+        /// aus denselben Zahlen wie <see cref="EnergiekostenJahr"/>. Sie trägt die
+        /// Herleitungszeilen unter „Energiekosten" und reist im Nachweisumschlag mit (Fassung 12);
+        /// leer bei einem gespeicherten Lauf ohne diese Aufstellung.
+        /// </summary>
+        public List<EnergieTraegerNachweis> EnergiekostenJeTraeger =
+            new List<EnergieTraegerNachweis>();
+
+        /// <summary>
+        /// Die Zerlegung des Zählers der Wärmegestehungskosten dieses Laufs
+        /// (<see cref="Waermegestehung.Zerlegung"/>) — reine Auskunft des frischen Laufs, nicht
+        /// gespeichert; <c>null</c> ohne Kennzahl oder bei einem geladenen Stand.
+        /// </summary>
+        internal Waermegestehung.Zerlegung GestehungZerlegung;
+
+        /// <summary>
         /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1, BW2/BF2) — die Zeilen der
         /// Kohärenzprüfung: Widersprüche zwischen einer gebuchten Steuergutschrift und
         /// dem Steueranteil, den der erfasste Energiepreis ausweist. Leere Liste =
@@ -1618,7 +1635,12 @@ namespace WindowsFormsApplication1
         public double? KapitalwertDiff;        // KW gegenüber Stamm [€] (null beim Stamm)
         public double? AnnuitaetKW;            // KapitalwertDiff × a(i,T) [€/a] (null beim Stamm)
         public double? AmortisationJahre;      // dynamisch, ohne Restwert (null = nie/Stamm)
-        public double? Gestehungskosten;       // Wärmegestehungskosten [€/kWh]
+        /// <summary>
+        /// Wärmegestehungskosten [€/kWh] — nur die Wärmeerzeugung: Anlagen, Brennstoff, Strom der
+        /// Wärmeerzeuger, abzüglich ihrer Erlöse, annuisiert, je kWh Wärmebedarf; Haushaltsstrom,
+        /// PV und Stromspeicher zählen nicht (<see cref="Waermegestehung"/>).
+        /// </summary>
+        public double? Gestehungskosten;
 
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
@@ -1678,6 +1700,122 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
         public double KostenEur;
+    }
+
+    /// <summary>
+    /// Die ENERGIEKOSTEN EINES ENERGIETRÄGERS: Menge in seiner Abrechnungseinheit × Arbeitspreis,
+    /// dazu sein Grund- und Leistungspreis — so, wie sie in die Jahressumme
+    /// <see cref="WirtschaftlichkeitErgebnis.EnergiekostenJahr"/> eingegangen sind. Gebildet vom
+    /// <see cref="KostenEmissionRechner"/> aus denselben Mengen und Preisen wie die Summe; hier wird
+    /// nichts zweites gerechnet.
+    ///
+    /// <para><b>Zwei Leser.</b> Die Herleitungszeile unter „Energiekosten" („7.850 kWh ×
+    /// 0,35 €/kWh + 120 €/a Grundpreis + CO₂ 450 €/a") und die Wärmegestehungskosten
+    /// (<see cref="Waermegestehung.Energiekosten"/>), die je Träger nur den Einsatz der
+    /// Wärmeerzeuger und ihren Anteil an Grund- und Leistungspreis nehmen.</para>
+    ///
+    /// <para><b>Persistiert im Nachweisumschlag</b> (Fassung 12); einem älteren Umschlag fehlt die
+    /// Aufstellung, dann sagt die Herleitungszeile, dass sie mit der nächsten Rechnung vorliegt.</para>
+    /// </summary>
+    public class EnergieTraegerNachweis
+    {
+        /// <summary><c>energy_carrier.id</c> des Trägers.</summary>
+        public int CarrierId;
+
+        /// <summary>Name des Energieträgers, mit dem gerechnet wurde.</summary>
+        public string Traeger = "";
+
+        /// <summary>Der Träger bepreist den Netzbezug des Projekts (Stromträger des Projekts).</summary>
+        public bool Netzstrom;
+
+        /// <summary>Bepreiste Menge [MWh/a], heizwertbezogen (Strom: Netzbezug des Trägers).</summary>
+        public double MengeMWh;
+
+        /// <summary>Menge in der ABRECHNUNGSEINHEIT des Trägers (Liter, kg, m³, kWh) — die Größe,
+        /// mit der der Arbeitspreis multipliziert wurde.</summary>
+        public double MengeAbrechnung;
+
+        /// <summary>Abrechnungseinheit des Trägers; „kWh" bei Abrechnung je kWh.</summary>
+        public string Einheit = "";
+
+        /// <summary>Arbeitspreis je Abrechnungseinheit [€].</summary>
+        public double PreisJeEinheit;
+
+        /// <summary>Arbeitskosten [€/a] = <see cref="MengeAbrechnung"/> × <see cref="PreisJeEinheit"/>.</summary>
+        public double ArbeitEur;
+
+        /// <summary>Grundpreis des Trägers [€/a] (bei eigenen Kältestromzählern je Zähler summiert).</summary>
+        public double GrundpreisEur;
+
+        /// <summary>Leistungsanteil des Trägers [€/a] (vorgehaltene Leistung bzw. Bezugsspitze).</summary>
+        public double LeistungEur;
+
+        /// <summary>
+        /// Anteil des Trägers an der CO₂-Abgabe des ersten Jahres [€/a] — gesetzt von der
+        /// Wirtschaftlichkeit (<see cref="MitCo2Abgabe"/>); 0 ohne abgabepflichtige Menge.
+        /// </summary>
+        public double Co2AbgabeEur;
+
+        /// <summary>Abgabepflichtige CO₂-Menge dieses Trägers [t/a] (reines CO₂, BEHG) — der
+        /// Schlüssel, nach dem die CO₂-Abgabe auf die Träger aufgeteilt wird.</summary>
+        public double BehgT;
+
+        /// <summary>Menge flüssiger Biomasse, die ohne Nachhaltigkeitsnachweis abgabepflichtig
+        /// würde [MWh/a] (L13) — der zweite Teil desselben Schlüssels.</summary>
+        public double BiogenBehgMWh;
+
+        /// <summary>Einsatz der WÄRMEERZEUGER auf diesem Träger [MWh/a] — Brennstoff von Kessel und
+        /// BHKW, beim Stromträger der Strom von Wärmepumpe, Heizstab und Elektrokessel.</summary>
+        public double WaermeMengeMWh;
+
+        /// <summary>Verbrauch ALLER Verbraucher dieses Trägers [MWh/a] — die Bezugsgröße des
+        /// Anteils der Wärmeerzeuger an Grund- und Leistungspreis.</summary>
+        public double VerbrauchGesamtMWh;
+
+        /// <summary>Arbeitskosten der Wärmemenge [€/a] (beim Strom ohne Anrechnung von
+        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis).</summary>
+        public double WaermeArbeitEur;
+
+        /// <summary>Energiekosten des Trägers [€/a] = Arbeit + Grundpreis + Leistungsanteil.</summary>
+        public double SummeEur() { return ArbeitEur + GrundpreisEur + LeistungEur; }
+
+        /// <summary>Flache Kopie.</summary>
+        public EnergieTraegerNachweis Kopie() { return (EnergieTraegerNachweis)MemberwiseClone(); }
+
+        /// <summary>
+        /// Die Aufstellung mit dem Anteil jedes Trägers an der CO₂-Abgabe des ersten Jahres —
+        /// als KOPIE (die Aufstellung der Variante bleibt unberührt). Aufgeteilt wird
+        /// <paramref name="co2AbgabeEur"/> nach der abgabepflichtigen Menge
+        /// (<see cref="BehgT"/>, dazu <see cref="BiogenBehgMWh"/> × Standardwert ohne
+        /// Nachweis): dieselbe Menge, aus der die Abgabe entstand, also keine zweite Rechnung.
+        /// </summary>
+        internal static List<EnergieTraegerNachweis> MitCo2Abgabe(IList<EnergieTraegerNachweis> quelle,
+                                                                 double co2AbgabeEur,
+                                                                 double efOhneNachweisGJeKwh)
+        {
+            var liste = new List<EnergieTraegerNachweis>();
+            if (quelle == null) return liste;
+            double summe = 0.0;
+            foreach (EnergieTraegerNachweis t in quelle)
+                if (t != null) summe += Gewicht(t, efOhneNachweisGJeKwh);
+            foreach (EnergieTraegerNachweis t in quelle)
+            {
+                if (t == null) continue;
+                EnergieTraegerNachweis k = t.Kopie();
+                k.Co2AbgabeEur = summe > 0 && co2AbgabeEur != 0
+                    ? co2AbgabeEur * Gewicht(t, efOhneNachweisGJeKwh) / summe : 0.0;
+                liste.Add(k);
+            }
+            return liste;
+        }
+
+        private static double Gewicht(EnergieTraegerNachweis t, double efOhneNachweisGJeKwh)
+        {
+            double g = Math.Max(0.0, t.BehgT);
+            if (efOhneNachweisGJeKwh > 0 && t.BiogenBehgMWh > 0)
+                g += t.BiogenBehgMWh * efOhneNachweisGJeKwh / 1000.0;
+            return g;
+        }
     }
 
     /// <summary>

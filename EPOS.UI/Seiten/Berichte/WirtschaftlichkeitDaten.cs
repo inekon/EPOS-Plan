@@ -148,6 +148,19 @@ public sealed class MatrixZeile
     public string Unterwert(int spalte)
         => Unterwerte is not null && spalte >= 0 && spalte < Unterwerte.Count
            ? Unterwerte[spalte] ?? "" : "";
+
+    /// <summary>
+    /// Der Kurztext der Zeile — was die Größe umfasst (Tooltip am Titel, etwa an den
+    /// Wärmegestehungskosten); leer = keiner. Die Hülle übernimmt ihn aus der Zeilendefinition
+    /// des Kerns.
+    /// </summary>
+    public string Kurztext { get; set; } = "";
+
+    /// <summary>
+    /// Eine leise Herleitungszeile (Menge × Preis unter den Energiekosten) — die Seite setzt
+    /// sie zurück. Nur Darstellung.
+    /// </summary>
+    public bool Leise { get; set; }
 }
 
 /// <summary>

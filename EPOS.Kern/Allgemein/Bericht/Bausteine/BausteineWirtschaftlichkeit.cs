@@ -657,6 +657,14 @@ namespace WindowsFormsApplication1
                         if (i < z.Zellen.Count && z.Zellen[i].Warnung != null) k.HinweisRoh(z.Zellen[i].Warnung);
                 k.Abstand();
             }
+
+            // Die Wärmegestehungskosten umfassen NUR die Wärmeerzeugung (Anwenderentscheid
+            // 30.09.2026) — der Kurztext der Zeile steht einmal unter der Tafel, wie auf der Seite
+            // am Titel.
+            if (alle != null && alle.Any(e => e != null && e.Gestehungskosten.HasValue &&
+                                              string.Equals(e.Szenario, szenario, StringComparison.Ordinal)))
+                k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_GESTEHUNGSKOSTEN + ": " +
+                             MyResource.Resource.WIRT_GESTEHUNG_KURZTEXT + ".");
         }
 
         /// <summary>
