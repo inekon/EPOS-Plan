@@ -9,7 +9,9 @@
   `$GATE_ABLAGE/GATE<Nr>` (Vorgabe `/tmp/gate`).
 
 Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`;
-`EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows.
+`EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows. Kommen Probebilder
+hinzu (zuletzt neun der Kalenderkarte, `Messlatte_2026-09-30.sha256`), zieht das nächste Windows-Gate die lokale Liste nach
+— jede alte Zeile muss gleich bleiben, die neuen kommen dazu.
 
 ## Referenzlauf und Plattform
 

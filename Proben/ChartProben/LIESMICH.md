@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-26.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-09-30.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-26.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-09-30.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **221 Bilder**; **185** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **231 Bilder**; **194** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-26.sha256` nennt alle 185 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-30.sha256` nennt alle 194 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -434,3 +434,28 @@ der Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normiert
 tragen keine Flächenreihe und bleiben byte-gleich — auf Windows nachgewiesen wie oben
 beschrieben: alle Bilder des Stands davor gleich, eines neu. Die Zeile der Messlatte zieht der
 nächste Lauf auf dem Linux-Läufer nach.
+
+## Konditionierungsprofile (KP2, Welle K4): Teppichbild und Woche mit Lücke
+
+`ChartRenderer.KalenderteppichModell` (Datei `ChartRenderer.Kalenderteppich.cs`) zeichnet das Teppichbild eines
+Kalenders aus `Kalenderteppich` (Kern): x die 365 Tage des Bezugsjahres, y die 24 Stunden, Farbe der Wert. Stunden
+gleicher Farbstufe und Folgetage mit denselben Läufen und derselben Quelle werden zu Rechtecken; „aus" ist die eigene
+Rolle `RASTER_LOCH` mit einer Schraffur als EIN Streckenzug je Fläche; über 2 000 Elementen zeichnet das Bild benannt
+gröber. `KalenderwocheModell` ist die Woche einer Größe mit Einheit; NaN („aus") bricht die Fläche des Stundenprofils
+(ohne NaN ist das Stundenprofil bitgleich). Die Proben stehen in `Program.Kalenderteppich.cs`, Bezugsjahr 2025:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kalenderteppich_heizen_buero` | Heizen „Büro" mit Neujahr, Herbstferien und Heizperiode; 1244 × 464, `HEIZWAERME` und `RASTER_LOCH` |
+| Maßprobe | `kalenderteppich_lueftung_aus` | Lüftung, nachts und am Wochenende „aus"; `SERIE_6` und `RASTER_LOCH` |
+| Maßprobe | `kalenderwoche_aus` | die Lüftungswoche mit „aus" als Lücke; `PROFILLINIE` und die Profilfläche |
+| Gegenprobe | `kalenderteppich_aus_wirkt` | dieselbe Woche mit 0 statt „aus" zeichnet anders |
+| Gegenprobe | `kalenderteppich_ferien_wirkt` | Heizen mit und ohne Herbstferien |
+| Gegenprobe | `kalenderwoche_luecke_wirkt` | die Woche mit und ohne Lücke |
+| SVG-Probe | `svg_c_kalenderteppich_heizen_buero`, `svg_c_kalenderteppich_lueftung_aus` | Pixelbildprobe der Gruppe (c): jedes Feld mit `data-wert`, Titel, Legende schaltet vorhandene Elemente |
+| SVG-Probe | `svg_kalenderteppich_grenze_und_aus` | jedes Teppichbild höchstens 2 000 Elemente (Büro 169, Lüftung 521, Grenzbild 121), das Grenzbild nennt seine Vergröberung; jedes „aus"-Feld `RASTER_LOCH` mit genau einer Schraffur in `RAHMEN`; die Werte am Feld wörtlich |
+| SVG-Probe | `svg_kalenderwoche_luecke` | die Fläche der Woche zerfällt in fünf Teilpfade (roh und gebündelt), kein „NaN", die Einheit steht an der Reihe; ohne Lücke ein Zug |
+
+Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Kein Bild von vorher hat sich
+geändert: alle 185 Zeilen der Vorgängerdatei stehen unverändert in `Messlatte_2026-09-30.sha256` (194 Zeilen). Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: alte Zeilen gleich, neun neu.
