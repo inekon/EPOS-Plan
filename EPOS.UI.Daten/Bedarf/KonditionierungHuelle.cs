@@ -631,6 +631,7 @@ namespace WindowsFormsApplication1
                 RangVerschieben = (s, o, rang, hoeher) => Schritt(s, art, bezug, a => Konditionierungsarbeit.RangVerschieben(a, Ort(o), rang, hoeher)),
                 PeriodeLoeschen = (s, o, rang) => Schritt(s, art, bezug, a => Konditionierungsarbeit.PeriodeLoeschen(a, Ort(o), rang)),
                 Feiertagsregeln = Feiertagsregeln(),
+                SollwertprofilUebernehmen = s => Schritt(s, art, bezug, Konditionierungsarbeit.SollwertprofilUebernehmen),
                 Zeitfenster = (s, o, f) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitfenster(
                     a, Ort(o), f.Tage, f.Von, f.Bis,
                     f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),

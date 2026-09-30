@@ -238,6 +238,8 @@ namespace WindowsFormsApplication1
             t.GrundRangUnten = Text_("KOND_TXT_GRUND_RANG_UNTEN", t.GrundRangUnten);
             t.GrundRangBand = Text_("KOND_TXT_GRUND_RANG_BAND", t.GrundRangBand);
             t.TextTeppichLeer = Text_("KOND_TXT_TEPPICH_LEER", t.TextTeppichLeer);
+            t.KnopfInDenKalender = Text_("KOND_BTN_IN_DEN_KALENDER", t.KnopfInDenKalender);
+            t.HinweisInDenKalender = Text_("KOND_TXT_HINWEIS_IN_DEN_KALENDER", t.HinweisInDenKalender);
             return t;
         }
 
@@ -257,6 +259,7 @@ namespace WindowsFormsApplication1
             f.OhneEinzelheiten = Text_("KOND_FRAGE_OHNE_EINZELHEITEN", f.OhneEinzelheiten);
             f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
             f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
+            f.Sollwertprofil = Text_("KOND_FRAGE_SOLLWERTPROFIL", f.Sollwertprofil);
             return f;
         }
 

@@ -219,6 +219,15 @@ public sealed class KonditionierungWeg
     public IReadOnlyList<KonditionierungFeiertag>? Feiertagsregeln { get; init; }
 
     /// <summary>
+    /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5; Welle U3): das
+    /// Sollwert-Zeitprogramm (<c>Sollwertprofil</c>) wird die Standardwoche des Heizkalenders — ist er nicht
+    /// angelegt, wird er zuerst angelegt; Perioden und Herkunft eines angelegten bleiben. Die Rückfrage vor
+    /// einem angelegten Kalender stellt der Reiter.
+    /// <para>Kern: <c>Konditionierungsarbeit.SollwertprofilUebernehmen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungErgebnis>? SollwertprofilUebernehmen { get; init; }
+
+    /// <summary>
     /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5, 7.5): setzt den Wert in die
     /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in
     /// <see cref="KonditionierungKalender.Vermerk"/>.
@@ -342,6 +351,7 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.PeriodeSetzen => PeriodeSetzen is not null,
             KonditionierungHandlung.RangVerschieben => RangVerschieben is not null,
             KonditionierungHandlung.PeriodeLoeschen => PeriodeLoeschen is not null,
+            KonditionierungHandlung.SollwertprofilUebernehmen => SollwertprofilUebernehmen is not null,
             _ => false
         };
     }

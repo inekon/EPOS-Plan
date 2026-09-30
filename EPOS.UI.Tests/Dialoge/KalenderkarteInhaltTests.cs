@@ -1,6 +1,8 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dienste;
+using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -22,6 +24,7 @@ public class KalenderkarteInhaltTests : EposBunitContext
     public KalenderkarteInhaltTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
     private KonditionierungBearbeitung _bearbeitung = default!;
@@ -366,6 +369,91 @@ public class KalenderkarteInhaltTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal(2, bilder), TimeSpan.FromSeconds(5));
         Thread.Sleep(300);
         Assert.Equal(2, bilder);                          // und kein zweites
+    }
+
+    // =================================================================================
+    // Teilschritt 6: „In den Kalender übernehmen" an der Wärmeübergabe (Teilkonzept 5.5)
+    // =================================================================================
+
+    /// <summary>Ein Katalogbau mit Heizkreis und einem Sollwert-Zeitprogramm: werktags 7–17 Uhr 21 °C, sonst 16 °C.</summary>
+    private static GebaeudeKatalogDaten MitZeitprogramm()
+    {
+        GebaeudeKatalogDaten d = KalenderkarteTests.Satz();
+        d.HeizkreisAktiv = true;
+        d.UebergabeArt = DbWerte.UEBERGABE_RADIATOR;
+        var w = new double[168];
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+                w[t * 24 + h] = t < 5 && h >= 7 && h < 17 ? 21 : 16;
+        d.Sollwertprofil = AnlagenkopplungSchema.WochenprofilSchreiben(w);
+        return d;
+    }
+
+    private IRenderedComponent<GebaeudeKatalogDialog> Dialog(GebaeudeKatalogDaten d)
+        => Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, d)
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
+            .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
+            .Add(x => x.Baualtersklassen, new[] { "bis 1859" })
+            .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, ""))
+            .Add(x => x.Konditionierung, KalenderkarteTests.Weg(null))
+            .Add(x => x.EntprellungMs, 0));
+
+    [Fact]
+    public void In_den_Kalender_uebernehmen_legt_den_Heizkalender_mit_der_Woche_des_Zeitprogramms_an_und_zeigt_ihn()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Dialog(MitZeitprogramm());
+        IElement knopf = cut.Find("div.gebk-waermeuebergabe button.epos-uebergabe-in-den-kalender");
+        Assert.Equal("In den Kalender übernehmen", knopf.TextContent.Trim());
+        knopf.Click();
+
+        KonditionierungBearbeitung b = cut.Instance.Konditionierungsbearbeitung;
+        KonditionierungKalender k = b.Kalender(KonditionierungGroesse.Heizen)!;
+        Assert.Equal(KonditionierungZustand.Angelegt, k.Zustand);
+        Assert.Equal(21.0, k.Woche![7]);
+        Assert.Equal(16.0, k.Woche![5 * 24 + 10]);
+        Assert.False(string.IsNullOrEmpty(k.Vermerk));
+        // Das Zeitprogramm bleibt stehen (AK1); der Dialog steht im Reiter „Konditionierung", Heizen aufgeklappt.
+        Assert.NotNull(cut.Instance.Arbeitsstand.Sollwertprofil);
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
+        Assert.NotNull(cut.Find("section.epos-kond-karte[data-groesse='0'] .epos-kond-inhalt"));
+
+        // „Zurücknehmen" nimmt die Übernahme als EINEN Schritt zurück.
+        cut.Find("button.epos-kond-zuruecknehmen").Click();
+        Assert.False(b.Angelegt(KonditionierungGroesse.Heizen));
+    }
+
+    [Fact]
+    public void Vor_einem_angelegten_Heizkalender_fragt_In_den_Kalender_uebernehmen_mit_Vorgabe_Nein()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Dialog(MitZeitprogramm());
+        KonditionierungBearbeitung b = cut.Instance.Konditionierungsbearbeitung;
+        Assert.True(b.Anlegen(KonditionierungGroesse.Heizen));
+        double vor = b.Kalender(KonditionierungGroesse.Heizen)!.Woche![7];
+
+        cut.Find("div.gebk-waermeuebergabe button.epos-uebergabe-in-den-kalender").Click();
+        Assert.NotNull(b.OffeneFrage);
+        Assert.True(b.OffeneFrage!.VorgabeNein);
+        Assert.Contains("ersetzt die Standardwoche", b.OffeneFrage.Text);
+        Assert.Equal(vor, b.Kalender(KonditionierungGroesse.Heizen)!.Woche![7]);
+
+        b.Beantworten(true);
+        Assert.Equal(21.0, b.Kalender(KonditionierungGroesse.Heizen)!.Woche![7]);
+    }
+
+    [Fact]
+    public void Ohne_Zeitprogramm_oder_ohne_Weg_steht_kein_Knopf_In_den_Kalender_uebernehmen()
+    {
+        GebaeudeKatalogDaten d = MitZeitprogramm();
+        d.Sollwertprofil = null;
+        Assert.Empty(Dialog(d).FindAll("button.epos-uebergabe-in-den-kalender"));
+
+        IRenderedComponent<GebaeudeKatalogDialog> ohneWeg = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, MitZeitprogramm())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, "")));
+        Assert.Empty(ohneWeg.FindAll("button.epos-uebergabe-in-den-kalender"));
     }
 
     [Fact]

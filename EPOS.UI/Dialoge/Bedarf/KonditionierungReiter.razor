@@ -112,7 +112,7 @@
                                                     : default)"
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
                                Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs"
-                               Aufgeklappt="@KartenAufgeklappt"
+                               Aufgeklappt="@(KartenAufgeklappt || groesse == AufgeklappteGroesse)"
                                Einzelheiten="@(MitEinzelheiten ? Einzelheiten(groesse) : null)" />
             }
         </div>
@@ -281,6 +281,12 @@
 
     /// <summary>Stehen die Kalenderkarten beim Aufbau aufgeklappt (Prüfstand der Karte im Einzelnen)?</summary>
     [Parameter] public bool KartenAufgeklappt { get; set; }
+
+    /// <summary>
+    /// Die Karte, die beim Aufbau aufgeklappt steht — der Wirt reicht Heizen nach „In den Kalender
+    /// übernehmen" an der Wärmeübergabe; <c>null</c> = keine.
+    /// </summary>
+    [Parameter] public KonditionierungGroesse? AufgeklappteGroesse { get; set; }
 
     protected override void OnInitialized() => _groesse = Vorn;
 

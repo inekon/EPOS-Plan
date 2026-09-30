@@ -668,6 +668,23 @@ public sealed class KonditionierungBearbeitung
         catch (Exception) { return null; }
     }
 
+    /// <summary>
+    /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5): das Sollwert-Zeitprogramm
+    /// wird die Standardwoche des Heizkalenders. Vor einem angelegten Heizkalender fragt der Reiter
+    /// (Vorgabe „Nein"); sonst legt der Weg ihn an und setzt die Woche — ein Schritt für „Zurücknehmen".
+    /// <c>false</c> = der Weg bietet es nicht.
+    /// </summary>
+    public bool SollwertprofilUebernehmen()
+    {
+        if (!Bietet(KonditionierungHandlung.SollwertprofilUebernehmen)) return false;
+        Action handlung = () => Ausfuehren("I", s => Weg.SollwertprofilUebernehmen!(s));
+        if (Angelegt(KonditionierungGroesse.Heizen))
+            OffeneFrage = new Rueckfrage(Knopftext(Texte.KnopfInDenKalender), Fragen.Sollwertprofil, VorgabeNein: true, handlung);
+        else
+            handlung();
+        return true;
+    }
+
     /// <summary>Die neun Feiertagsregeln der Periodenliste (F11); leer ohne Weg.</summary>
     public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln
         => MitWeg ? Weg.Feiertagsregeln ?? Array.Empty<KonditionierungFeiertag>() : Array.Empty<KonditionierungFeiertag>();

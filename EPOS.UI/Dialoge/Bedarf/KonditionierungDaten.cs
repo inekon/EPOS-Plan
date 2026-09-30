@@ -212,7 +212,13 @@ public enum KonditionierungHandlung
     RangVerschieben = 18,
 
     /// <summary>Eine eigene Periode löschen (Festlegung 15, Welle U3).</summary>
-    PeriodeLoeschen = 19
+    PeriodeLoeschen = 19,
+
+    /// <summary>
+    /// „In den Kalender übernehmen" an der Wärmeübergabe (Teilkonzept 5.5, Welle U3): das Sollwert-Zeitprogramm
+    /// wird die Standardwoche des Heizkalenders.
+    /// </summary>
+    SollwertprofilUebernehmen = 20
 }
 
 /// <summary>

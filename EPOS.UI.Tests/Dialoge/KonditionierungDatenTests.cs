@@ -248,6 +248,7 @@ public sealed class KonditionierungDatenTests
         PeriodeSetzen = (s, _, _, _) => Gut(s),
         RangVerschieben = (s, _, _, _) => Gut(s),
         PeriodeLoeschen = (s, _, _) => Gut(s),
+        SollwertprofilUebernehmen = s => Gut(s),
         Rueckfrage = (_, _, _) => null,
         SpeichernUnterRueckfrage = _ => null,
         WochenVorschau = (_, _) => null,
@@ -284,6 +285,7 @@ public sealed class KonditionierungDatenTests
         KonditionierungHandlung.PeriodeSetzen => new() { PeriodeSetzen = (s, _, _, _) => Gut(s) },
         KonditionierungHandlung.RangVerschieben => new() { RangVerschieben = (s, _, _, _) => Gut(s) },
         KonditionierungHandlung.PeriodeLoeschen => new() { PeriodeLoeschen = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.SollwertprofilUebernehmen => new() { SollwertprofilUebernehmen = s => Gut(s) },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 

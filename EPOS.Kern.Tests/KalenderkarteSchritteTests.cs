@@ -255,6 +255,50 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(b.Kalender.Perioden, p => p.IstFeiertag);
         }
 
+        // =============================================================================
+        //  „In den Kalender übernehmen" (Teilkonzept 5.5)
+        // =============================================================================
+
+        private static Konditionierungsarbeitsstand MitProfil(string profil, bool angelegt)
+        {
+            var b = new Matrixeingang { SollTag = 20, SollNacht = 17, NachtBeginn = 22, NachtEnde = 6, Sollwertprofil = profil };
+            Konditionierungsstand e = Konditionierungsstand.Leer(Kalendereigentuemer.Katalogbau, b);
+            if (angelegt)
+                e = e.MitKalender(Konditionierungsgroesse.Heizsoll, MitPerioden(), new Kalenderherkunft("Büro", null));
+            return new Konditionierungsarbeitsstand(e, null);
+        }
+
+        [Fact]
+        public void Das_Zeitprogramm_wird_die_Standardwoche_des_Heizkalenders_und_legt_ihn_wo_noetig_an()
+        {
+            string profil = AnlagenkopplungSchema.WochenprofilSchreiben(Woche(21, 15));
+            Konditionierungsschritt s = Konditionierungsarbeit.SollwertprofilUebernehmen(MitProfil(profil, angelegt: false));
+            Assert.True(s.Ok, s.Meldung);
+            Konditionierungskalender k = s.Stand.Gebaeude.Kalender(Konditionierungsgroesse.Heizsoll);
+            Assert.NotNull(k);
+            Assert.Equal(21.0, k.Standardwoche[Kalenderwoche.Stelle(0, 7)]);
+            Assert.Equal(15.0, k.Standardwoche[Kalenderwoche.Stelle(0, 23)]);
+            Assert.False(string.IsNullOrEmpty(s.Stand.Gebaeude.Herkunft(Konditionierungsgroesse.Heizsoll).Vermerk));
+            Assert.Equal(profil, s.Stand.Gebaeude.Bestand.Sollwertprofil);
+
+            // Am angelegten Kalender bleiben Perioden und Vorlage.
+            s = Konditionierungsarbeit.SollwertprofilUebernehmen(MitProfil(profil, angelegt: true));
+            Assert.True(s.Ok, s.Meldung);
+            k = s.Stand.Gebaeude.Kalender(Konditionierungsgroesse.Heizsoll);
+            Assert.Equal(4, k.Perioden.Count);
+            Assert.Equal(21.0, k.Standardwoche[Kalenderwoche.Stelle(2, 12)]);
+            Assert.Equal("Büro", s.Stand.Gebaeude.Herkunft(Konditionierungsgroesse.Heizsoll).Vorlage);
+        }
+
+        [Fact]
+        public void Ohne_gueltiges_Zeitprogramm_wird_benannt_abgelehnt()
+        {
+            Assert.False(Konditionierungsarbeit.SollwertprofilUebernehmen(MitProfil(null, angelegt: false)).Ok);
+            Konditionierungsschritt s = Konditionierungsarbeit.SollwertprofilUebernehmen(MitProfil("20;20", angelegt: true));
+            Assert.False(s.Ok);
+            Assert.False(string.IsNullOrEmpty(s.Meldung));
+        }
+
         [Fact]
         public void Ohne_angelegten_Kalender_lehnt_der_Schritt_benannt_ab_statt_einen_anzulegen()
         {

@@ -974,6 +974,37 @@ namespace WindowsFormsApplication1
             => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.PeriodeLoeschen(k, rang),
                                Konditionierungspostenart.EigenePerioden);
 
+        /// <summary>
+        /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5; Welle U3): Das
+        /// Sollwert-Zeitprogramm des Gebäudes (<c>Sollwertprofil</c>, AK1) wird die Standardwoche des
+        /// Heizkalenders. Ist er nicht angelegt, legt der Schritt ihn zuerst an wie „Kalender anlegen"
+        /// (samt F2 Regel 2); Perioden und Herkunft eines angelegten bleiben, der Vermerk nennt die
+        /// Übernahme (B8). Das Zeitprogramm selbst bleibt stehen — für AK1 lesbar. Ohne gültiges
+        /// Zeitprogramm wird benannt abgelehnt; ein Wert außerhalb der Grenzen des Heizsollwerts ebenso.
+        /// </summary>
+        public static Konditionierungsschritt SollwertprofilUebernehmen(Konditionierungsarbeitsstand stand)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(stand.Gebaeude.Bestand.Sollwertprofil);
+            if (p.Befund != AnlagenkopplungSchema.WochenprofilBefund.Gelesen)
+                return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_SOLLWERTPROFIL_FEHLT, p.Befund.ToString()));
+            var ort = new Konditionierungsort(Konditionierungsgroesse.Heizsoll);
+            Konditionierungsarbeitsstand a = stand;
+            if (a.Gebaeude.Kalender(Konditionierungsgroesse.Heizsoll) == null)
+            {
+                Konditionierungsschritt angelegt = Anlegen(a, ort);
+                if (!angelegt.Ok) return angelegt;
+                a = angelegt.Stand;
+            }
+            string vermerk = MyResource.Resource.KOND_MSG_WERKZEUG_SOLLWERTPROFIL;
+            return WerkzeugSchritt(a, ort, k =>
+            {
+                Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.Standardwoche(k, p.Werte);
+                return b.Ok ? Kalenderwerkzeuge.Werkzeugbefund.Gut(b.Kalender, vermerk) : b;
+            }, Konditionierungspostenart.Standardwoche);
+        }
+
         /// <summary><b>Die Feiertage als Regel</b> (F11) auf den angelegten Kalender des Orts.</summary>
         public static Konditionierungsschritt Feiertage(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                         int wieWochentag)

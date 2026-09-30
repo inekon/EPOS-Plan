@@ -791,4 +791,11 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_TXT_TEPPICH_LEER</c> — an Stelle des Teppichbilds, wenn die Größe keinen Kalender ergibt</summary>
     public string TextTeppichLeer { get; set; }
         = "Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile).";
+
+    /// <summary><c>KOND_BTN_IN_DEN_KALENDER</c> — an der Wärmeübergabe: das Zeitprogramm wird die Standardwoche des Heizkalenders</summary>
+    public string KnopfInDenKalender { get; set; } = "In den Kalender übernehmen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_IN_DEN_KALENDER</c> — die leise Zeile unter „In den Kalender übernehmen“</summary>
+    public string HinweisInDenKalender { get; set; }
+        = "Das Zeitprogramm wird die Standardwoche des Heizkalenders im Reiter „Konditionierung“; geschrieben wird mit OK, „Zurücknehmen“ nimmt es zurück.";
 }

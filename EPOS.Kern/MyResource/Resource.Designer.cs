@@ -61126,6 +61126,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Kalender übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_IN_DEN_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_BTN_IN_DEN_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender anlegen ähnelt.
         /// </summary>
         public static string KOND_BTN_KALENDER_ANLEGEN {
@@ -61356,6 +61365,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_FRAGE_OHNE_EINZELHEITEN {
             get {
                 return ResourceManager.GetString("KOND_FRAGE_OHNE_EINZELHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Sollwert-Zeitprogramm ersetzt die Standardwoche des angelegten Heizkalenders; Perioden und Herkunft bleiben. Übernehmen? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_SOLLWERTPROFIL {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_SOLLWERTPROFIL", resourceCulture);
             }
         }
         
@@ -62332,6 +62350,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude trägt kein gültiges Sollwert-Zeitprogramm ({0}) – es gibt nichts in den Kalender zu übernehmen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_SOLLWERTPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_SOLLWERTPROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
         /// </summary>
         public static string KOND_MSG_SP_KALENDER {
@@ -62652,6 +62679,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_WERKZEUG_FEIERTAGE {
             get {
                 return ResourceManager.GetString("KOND_MSG_WERKZEUG_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche aus dem Sollwert-Zeitprogramm der Wärmeübergabe ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERKZEUG_SOLLWERTPROFIL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERKZEUG_SOLLWERTPROFIL", resourceCulture);
             }
         }
         
@@ -63057,6 +63093,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_GRUNDANGABE {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_GRUNDANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitprogramm wird die Standardwoche des Heizkalenders im Reiter „Konditionierung“; geschrieben wird mit OK, „Zurücknehmen“ nimmt es zurück. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_IN_DEN_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_IN_DEN_KALENDER", resourceCulture);
             }
         }
         
