@@ -97643,6 +97643,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {

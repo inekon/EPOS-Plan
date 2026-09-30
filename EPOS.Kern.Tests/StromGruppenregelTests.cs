@@ -31,7 +31,8 @@ namespace EPOS.Kern.Tests
     /// Netzbezug des Standes ohne stromverwendenden Erzeuger bepreist der Vergleich mit Arbeits-
     /// und Grundpreis, den Leistungspreis des Trägers setzt er nicht an — bei einem solchen Stand
     /// ist er eine Größe der Lastoptimierung und wird benannt. Die Variante mit Stromverwendung
-    /// trägt ihren Leistungspreis unverändert.</para>
+    /// trägt ihren Leistungspreis unverändert. Dasselbe gilt im Rollentarif für den Leistungspreis des
+    /// Reststromtarifs (Anwenderentscheid 30.09.2026, Register EZ‑18).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StromGruppenregelTests : IDisposable
@@ -735,6 +736,7 @@ namespace EPOS.Kern.Tests
         /// der Wortlaut der Ressource.</summary>
         [Theory]
         [InlineData("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")]
+        [InlineData("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT")]
         [InlineData("WIRT_LP_SATZ_STAFFEL")]
         [InlineData("WIRT_LP_SATZ_SAISON")]
         [InlineData("WIRT_LP_SATZ_MONAT")]
@@ -749,6 +751,115 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(de, en);
             if (schluessel == "WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")
                 Assert.Equal(KostenEmissionRechner.HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, de);
+            if (schluessel == "WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT")
+                Assert.Equal(WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT, de);
+        }
+
+        // =================================================================
+        // Der Rollentarif unter EZ‑17 (Anwenderentscheid 30.09.2026, EZ‑18)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Rollentarif setzt an der Kopie der Gruppenregel keinen Leistungspreis an.</b> Die
+        /// Tarifstruktur ist aktiv: Bezug 0,30 €/kWh und 8 €/(kW·Monat), Reststrom 0,32 €/kWh, 100 €/a
+        /// und 10 €/(kW·Monat), beide monatlich. Beide Stände führen Stundenreihen mit gleichbleibendem
+        /// Netzbezug (Bedarf = Netzbezug), der Stromträger dazu einen Leistungspreis von 60 €/(kW·a).
+        /// Der Stamm ohne Stromverwendung: 50 + 16,12 MWh × 0,32 €/kWh + 100 = 5.308,40 €/a — ohne
+        /// 12 × 1,8402 kW × 10 = 220,82 €/a Leistungsanteil; die vermiedenen Kosten tragen keinen
+        /// Leistungsanteil (16,12 MWh × (0,30 − 0,32) €/kWh − 100 = −422,40 €/a), und der Hinweis nennt
+        /// das Modell des Reststromtarifs statt des Stromträgers, dessen Preise der Tarif ersetzt. Die
+        /// Variante mit Wärmepumpe: 50 + 6,12 MWh × 0,32 + 100 + 12 × 0,6986 kW × 10 = 2.192,24 €/a —
+        /// ihr Leistungsanteil bleibt (vermieden 12 × 0,6986 × (8 − 10) = −16,77 €/a), kein Hinweis.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_setzt_der_Stand_ohne_Verwendung_keinen_Leistungspreis_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            KostenEmissionRechner.Berechne(stamm);
+            KostenEmissionRechner.Berechne(variante);
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            WirtschaftlichkeitErgebnis s = Finde(alle, STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            WirtschaftlichkeitErgebnis v = Finde(alle, VARIANTE, WirtschaftlichkeitSzenario.ERWARTET);
+
+            double stammKW = NETZBEZUG * 1000.0 / ZeitreihenSatz.Stunden;
+            double varianteKW = (NETZBEZUG - EINSPARUNG) * 1000.0 / ZeitreihenSatz.Stunden;
+
+            // Der Stamm: Arbeits- und Grundpreis des Reststromtarifs, kein Leistungsanteil.
+            Assert.Null(s.Fehlgrund);
+            Assert.Equal(NETZBEZUG * 1000.0 * 0.32 + 100.0, s.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(0.0, s.VermiedenLeistungJahr, 6);
+            Assert.Equal(NETZBEZUG * 1000.0 * (0.30 - 0.32) - 100.0, s.VermiedenGesamtJahr, 2);
+
+            // Der Hinweis nennt das Modell des Reststromtarifs — in jedem Szenario —, nicht den Träger.
+            string hinweis = "Leistungspreis des Reststromtarifs nach dem Modell „" +
+                             WindowsFormsApplication1.MyResource.Resource.TARIF_LM_MONATLICH +
+                             "“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet";
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                WirtschaftlichkeitErgebnis stand = Finde(alle, STAMM, sz);
+                Assert.Contains("Gruppenregel", stand.Hinweis ?? "");
+                Assert.Contains(hinweis, stand.Hinweis ?? "");
+                Assert.DoesNotContain("des Stromträgers „Elektrische Energie“ nicht angesetzt", stand.Hinweis ?? "");
+            }
+
+            // Die Variante mit Stromverwendung rechnet unverändert mit Leistungsanteil.
+            Assert.Null(v.Fehlgrund);
+            Assert.Equal((NETZBEZUG - EINSPARUNG) * 1000.0 * 0.32 + 100.0 + 12.0 * varianteKW * 10.0,
+                         v.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + (NETZBEZUG - EINSPARUNG) * 1000.0 * 0.32 + 100.0 + 12.0 * varianteKW * 10.0,
+                         v.EnergiekostenJahr.Value, 2);
+            Assert.Equal(12.0 * varianteKW * (8.0 - 10.0), v.VermiedenLeistungJahr, 2);
+            Assert.DoesNotContain("nicht angesetzt", v.Hinweis ?? "");
+
+            // Gegenprobe: Mit Leistungsanteil trüge der Stamm 220,82 €/a mehr.
+            Assert.Equal(220.82, 12.0 * stammKW * 10.0, 2);
+        }
+
+        /// <summary>
+        /// Der Hinweis nennt das Modell des Reststromtarifs im Klartext der Tarifstruktur — hier
+        /// die Staffel. Führt der Reststromtarif keinen Leistungspreis, steht kein Hinweis und die
+        /// Zahl ist dieselbe.
+        /// </summary>
+        [Fact]
+        public void Der_Tarifhinweis_nennt_das_Modell_und_ohne_Leistungspreis_keinen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Rollentarif(DbWerte.LEISTUNGSMODELL_STAFFEL, 0.0, 0.0,
+                        new LeistungsStufe(0.0, 40.0, 60.0));
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            double mitStaffel = s.EnergiekostenJahr.Value;
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, mitStaffel, 2);
+            Assert.Contains("nach dem Modell „" + WindowsFormsApplication1.MyResource.Resource.TARIF_LM_STAFFEL +
+                            "“ nicht angesetzt", s.Hinweis ?? "");
+
+            // Ohne Leistungspreis am Reststromtarif: dieselbe Zahl, kein Hinweis.
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 0.0, 0.0);
+            BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out VariantenDaten varianteOhne);
+            stammOhne.Zeitreihen = Stundenreihen(NETZBEZUG);
+            varianteOhne.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            WirtschaftlichkeitErgebnis so = Finde(ctrl.Berechne(ohne, ctrl.LadeParameter(STAMM)),
+                                                  STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Equal(mitStaffel, so.EnergiekostenJahr.Value, 6);
+            Assert.DoesNotContain("nicht angesetzt", so.Hinweis ?? "");
         }
 
         // =================================================================
@@ -830,6 +941,39 @@ namespace EPOS.Kern.Tests
             var s = new Netzbezugsspitze { JahrKW = jahrKW };
             for (int m = 0; m < 12; m++) s.MonatKW[m] = monatKW;
             return new ZeitreihenSatz { Bezugsspitze = s };
+        }
+
+        /// <summary>Stundenreihen mit gleichbleibendem Netzbezug und demselben Strombedarf — die
+        /// Grundlage der Strommatrix, ohne die der Rollentarif nicht rechnet.</summary>
+        private static ZeitreihenSatz Stundenreihen(double netzbezugMWh)
+        {
+            var z = new ZeitreihenSatz();
+            var reihe = new double[ZeitreihenSatz.Stunden];
+            for (int h = 0; h < reihe.Length; h++) reihe[h] = netzbezugMWh * 1000.0 / ZeitreihenSatz.Stunden;
+            z.Reihen[ZeitreihenSatz.NETZBEZUG] = reihe;
+            z.Reihen[ZeitreihenSatz.STROMBEDARF] = (double[])reihe.Clone();
+            return z;
+        }
+
+        /// <summary>Eine aktive Tarifstruktur im Rollenmodell für den Stamm: Bezug 0,30 €/kWh,
+        /// Reststrom 0,32 €/kWh und 100 €/a, beide Rollen mit <paramref name="modell"/> und den
+        /// Monatspreisen bzw. Stufen.</summary>
+        private static void Rollentarif(string modell, double bezugMonat, double reststromMonat,
+                                        params LeistungsStufe[] stufen)
+        {
+            var t = new TarifParameter { IdStamm = STAMM, Aktiv = true, Modus = DbWerte.TARIF_MODUS_ROLLEN };
+            t.Bezug.ArbeitspreisEurKWh = 0.30;
+            t.Bezug.Leistungsmodell = modell;
+            t.Bezug.MonatspreisEurKWMonat = bezugMonat;
+            t.Bezug.Stufen = new List<LeistungsStufe>(stufen);
+            t.Reststrom.ArbeitspreisEurKWh = 0.32;
+            t.Reststrom.GrundpreisEurJahr = 100.0;
+            t.Reststrom.Leistungsmodell = modell;
+            t.Reststrom.MonatspreisEurKWMonat = reststromMonat;
+            t.Reststrom.Stufen = new List<LeistungsStufe>(stufen);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Assert.True(ctrl.SpeichereTarif(t));
+            Assert.True(ctrl.LadeTarif(STAMM).Wirksam);
         }
     }
 }

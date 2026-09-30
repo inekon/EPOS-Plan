@@ -10978,6 +10978,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
     <value>Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
   </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
+  </data>
   <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
     <value>{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)</value>
   </data>

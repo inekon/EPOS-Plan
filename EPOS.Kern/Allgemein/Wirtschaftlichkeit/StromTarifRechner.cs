@@ -251,6 +251,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Führt die Rolle einen Leistungspreis nach ihrem Modell — einen Monatspreis
+        /// (<c>MONATLICH</c>, auch für ein leeres oder unbekanntes Modell wie in
+        /// <see cref="Leistungskosten"/>), eine Stufe mit Sommer- oder Winterpreis
+        /// (<c>STAFFEL</c>) bzw. mit Winterpreis (<c>JAHRESHOECHSTLAST</c>, das allein die
+        /// Winterpreise liest)? Ein Preis von 0 ist kein Leistungspreis.
+        /// </summary>
+        public static bool LeistungspreisGepflegt(TarifRolle rolle)
+        {
+            if (rolle == null) return false;
+            string modell = string.IsNullOrEmpty(rolle.Leistungsmodell)
+                          ? DbWerte.LEISTUNGSMODELL_MONATLICH : rolle.Leistungsmodell;
+            bool staffel = string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal);
+            bool jahr = string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal);
+            if (!staffel && !jahr) return rolle.MonatspreisEurKWMonat != 0;
+            if (rolle.Stufen == null) return false;
+            foreach (LeistungsStufe s in rolle.Stufen)
+                if (s != null && (jahr ? s.PreisWinter != 0 : s.Gepflegt)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Dieselbe Rolle OHNE Leistungspreis — Arbeits- und Grundpreis und das Modell
+        /// bleiben, Monatspreis und Staffel entfallen. Die Rechnung trägt dann keinen
+        /// Leistungsanteil, und die Herleitung nennt weiter das Modell der Rolle. Die übergebene
+        /// Rolle bleibt unverändert (Anwenderentscheid 30.09.2026, Register EZ‑18: der
+        /// Leistungspreis des Reststromtarifs gilt an einem Stand ohne stromverwendenden
+        /// Erzeuger nicht).
+        /// </summary>
+        public static TarifRolle OhneLeistungspreis(TarifRolle rolle)
+        {
+            if (rolle == null) return null;
+            return new TarifRolle
+            {
+                Rolle = rolle.Rolle,
+                ArbeitspreisEurKWh = rolle.ArbeitspreisEurKWh,
+                GrundpreisEurJahr = rolle.GrundpreisEurJahr,
+                Leistungsmodell = rolle.Leistungsmodell,
+                MonatspreisEurKWMonat = 0,
+                Stufen = new List<LeistungsStufe>()
+            };
+        }
+
+        /// <summary>
         /// Die vollständige Kette: vermiedene Kosten nach der Differenzmethode plus
         /// Einspeiseerlös.
         ///
