@@ -982,6 +982,8 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
                 return _halb.TryGetValue(schluessel[..schluessel.LastIndexOf('_')], out var hb) ? hb.Bis : b.Zeiten(g, z).Bis;
             case KiKonditionierungsfelder.Teil.DeltaT:
                 return b.DeltaT;
+            case KiKonditionierungsfelder.Teil.Vorlage:
+                return b.Herkunft(g);
             default:
                 return b.Wert(g, z) is double w && double.IsFinite(w) ? w : null;
         }
@@ -1026,11 +1028,42 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
             case KiKonditionierungsfelder.Teil.DeltaT:
                 ok = b.DeltaTSetzen(wert as double?);
                 break;
+            case KiKonditionierungsfelder.Teil.Vorlage:
+                VorlageUebernehmen(b, g, wert as string);
+                return;
             default:
                 ok = b.WertSetzen(g, z, wert as double?);
                 break;
         }
         if (!ok) throw Ablehnung(b);
+    }
+
+    /// <summary>
+    /// <b>Die Vorlage einer Größe</b> (Welle U2; Entwurf KP2 D9) — mit der Aktion des Knopfs
+    /// „Übernehmen": wählen und übernehmen, in den Arbeitsstand; geschrieben wird mit dem OK des Editors.
+    /// Ein Name, den die Liste der Karte nicht führt, wird benannt abgelehnt. Eine Rückfrage (P12 am
+    /// angelegten Kalender, „aufteilen" an der Gesamtangabe der Lüftung) beantwortet der Assistent nicht
+    /// selbst: Sie steht danach im Reiter, und die Ablehnung nennt sie.
+    /// </summary>
+    private static void VorlageUebernehmen(KonditionierungBearbeitung b, KonditionierungGroesse g, string? name)
+    {
+        System.Globalization.CultureInfo c = System.Globalization.CultureInfo.CurrentCulture;
+        string feld = KonditionierungBearbeitung.Groessenname(b.Texte, g) + " · "
+                      + WindowsFormsApplication1.MyResource.Resource.KOND_LBL_ZEILE_VORLAGE;
+        IReadOnlyList<KonditionierungVorlageDaten> liste = b.Vorlagen(g);
+        if (!b.MitVorlagen || liste.Count == 0)
+            throw new InvalidOperationException(
+                b.Sperrgrund ?? string.Format(c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_LEER, feld));
+        string gesucht = (name ?? "").Trim();
+        KonditionierungVorlageDaten? v = liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.Ordinal))
+                                         ?? liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.OrdinalIgnoreCase));
+        if (v is null)
+            throw new InvalidOperationException(string.Format(
+                c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_UNBEKANNT, feld, gesucht,
+                string.Join(", ", liste.Select(x => x.Name))));
+        if (!b.VorlageWaehlen(g, v.Id) || !b.VorlageUebernehmen(g) || b.OffeneFrage is not null
+            || !string.Equals(b.Herkunft(g), v.Name, StringComparison.Ordinal))
+            throw Ablehnung(b);
     }
 }
 

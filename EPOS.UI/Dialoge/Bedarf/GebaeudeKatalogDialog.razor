@@ -1577,7 +1577,7 @@
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
-                                          () => KiSicht(), KiHaken());
+                                          () => KiSicht(), KiHaken(), KiVorlagenlisten());
     }
 
     /// <summary>Übernimmt einen Satz als Arbeitsstand — beim Öffnen und beim Namenswechsel.</summary>
@@ -1637,6 +1637,20 @@
             liste.Add(new KiWahleintrag(Verwendungswerte[i], Verwendungen[i]));
         return liste;
     }
+
+    /// <summary>
+    /// Je Größe die Liste der Karte als Wahl des Assistenten (<c>kond_&lt;größe&gt;_vorlage</c>, Stufe KP2,
+    /// Welle U2): Schlüssel und Text sind der Name — derselbe, den das Feld liest; gefragt bei jedem
+    /// Zugriff, denn „Als Vorlage speichern…" und die Verwaltung ändern die Listen, solange der Editor
+    /// offen steht. Die Tafel der Sichtklasse kennt keine Begleiteigenschaft, deshalb meldet der Wirt
+    /// die Listen mit an.
+    /// </summary>
+    private (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] KiVorlagenlisten()
+        => KiKonditionierungsfelder.Alle
+            .Where(f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage)
+            .Select(f => (f.Schluessel, (Func<IReadOnlyList<KiWahleintrag>>)(() => KiMaskenanmeldung.Eintraege(
+                _kond.Vorlagen((KonditionierungGroesse)f.Groessenplatz), v => v.Name, v => v.Name))))
+            .ToArray();
 
     /// <summary>Der Name BENENNT den Satz, der geschrieben wird.</summary>
     private void KiNameSetzen(string wert) => _stand.Name = wert ?? "";

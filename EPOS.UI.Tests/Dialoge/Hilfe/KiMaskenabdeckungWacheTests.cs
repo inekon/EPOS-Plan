@@ -301,12 +301,13 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),
-        // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - eine Wahl VOR der Handlung „Übernehmen“,
-        // die den Arbeitsstand erst mit dem Knopf ändert; dazu Name, Beschreibung und Nutzung der Abfrage
-        // „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit eigenem OK, die sofort schreibt).
-        new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen wählt nur, was „Übernehmen“ übernimmt — eine Wahl vor " +
-            "der Handlung, kein Einstellwert; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
-            "speichern…“, die mit eigenem OK sofort schreibt"),
+        // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
+        // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
+        // Beschreibung und Nutzung der Abfrage „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit
+        // eigenem OK, die sofort schreibt).
+        new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
+            "Aktion von „Übernehmen“; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
+            "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
         new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
             "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),

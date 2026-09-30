@@ -276,4 +276,54 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Assert.Equal(KonditionierungZustand.Abgeleitet, satz.Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender.Zustand);
         Assert.Equal(17, satz.NachtAbsenkung);
     }
+
+    // =================================================================================
+    // Der Assistent (Entwurf KP2 D9: kond_<größe>_vorlage mit der Aktion des Knopfs)
+    // =================================================================================
+
+    private static KiFeldzugang KiFeld(string name) => KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, name)!;
+
+    /// <summary>
+    /// <b>Der Assistent übernimmt eine Vorlage</b> über das Feld <c>kond_&lt;größe&gt;_vorlage</c> — eine
+    /// Wahl aus der Liste der Karte, gesetzt mit der Aktion des Knopfs „Übernehmen" in den Arbeitsstand;
+    /// gelesen nennt es die Herkunft. Ein Name, den die Liste nicht führt, wird benannt abgelehnt; steht
+    /// schon ein angelegter Kalender, bleibt die Rückfrage P12 dem Anwender, und der Assistent nennt sie.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_uebernimmt_eine_Vorlage_mit_der_Aktion_des_Knopfs()
+    {
+        var cut = Editor(Konditionierungsvorlagenablage.AusSaat());
+        KonditionierungBearbeitung b = cut.Instance.Konditionierungsbearbeitung;
+
+        KiFeldzugang heizen = KiFeld("kond_heizen_vorlage");
+        Assert.True(heizen.IstWahl);
+        Assert.True(heizen.Setzbar);
+        Assert.Equal(b.Vorlagen(KonditionierungGroesse.Heizen).Select(v => v.Name),
+                     heizen.Wahleintraege().Select(e => e.Schluessel));
+        Assert.Null(heizen.Lesen());
+
+        heizen.Setzen("Büro");
+        Assert.Equal("Büro", heizen.Lesen());
+        Assert.Equal("Büro", b.Herkunft(KonditionierungGroesse.Heizen));
+        Assert.Null(b.GewaehlteVorlage(KonditionierungGroesse.Heizen));   // E56 F2 (a): die Wahl ist danach leer
+        Assert.Empty(_geschrieben);                                       // geschrieben wird mit OK
+
+        // Ein Name, den die Liste nicht führt: benannt abgelehnt, nichts geändert.
+        var unbekannt = Assert.Throws<InvalidOperationException>(() => heizen.Setzen("Sternwarte"));
+        Assert.Contains("Sternwarte", unbekannt.Message);
+        Assert.Equal("Büro", heizen.Lesen());
+
+        // Der Kalender steht angelegt: Die Rückfrage P12 bleibt dem Anwender, der Assistent nennt sie.
+        var frage = Assert.Throws<InvalidOperationException>(() => heizen.Setzen("Schule"));
+        Assert.NotNull(b.OffeneFrage);
+        Assert.Equal(b.OffeneFrage!.Text, frage.Message);
+        Assert.Equal("Büro", heizen.Lesen());
+        cut.Render();
+        ReiterWaehlen(cut, REITER);
+        cut.FindAll(".epos-rueckfrage button").First(x => x.TextContent.Trim() == "Ja").Click();
+        Assert.Equal("Schule", heizen.Lesen());
+
+        Knopf(cut, "OK").Click();
+        Assert.Equal("Schule", Assert.Single(_geschrieben).Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender.Vorlage);
+    }
 }
