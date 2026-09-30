@@ -62782,6 +62782,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „aus“ für {0} in der Zeile „{1}“: wahr = in dieser Zeit wird nicht geheizt bzw. gekühlt; falsch = es gilt der Wert der Zelle. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_AUS {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster der Spalte {0}: {1} als volle Stunde 0 bis 23; beide leer = das Nachtfenster der Heizspalte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_FENSTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison der Spalte {0}: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember). Innerhalb der Saison wird geheizt bzw. gekühlt; beide leer = ganzjährig. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zelle der Vorgabe-Matrix im Reiter „Konditionierung“: {0}, Zeile „{1}“, in {2}. Leer heißt: keine eigene Angabe – es gilt, was die Matrix sonst vorgibt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZELLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KUEHLEN_GESPERRT {

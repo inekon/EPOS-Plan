@@ -1724,6 +1724,7 @@ public sealed class GebaeudeArbeitsstand
         return new GebaeudeKatalogKiSicht
         {
             StandLesen = () => Stand,
+            Konditionierung = wege.Konditionierung,
 
             NameLesen = wege.NameLesen,
             NameSetzen = wege.NameSetzen,
@@ -1978,6 +1979,13 @@ public sealed class GebaeudeKiWege
 
     /// <summary>Der Name des Ferienzeitraums je Zeile (Winter, Ostern, Sommer, Herbst).</summary>
     public Func<int, string>? Ferienname { get; init; }
+
+    /// <summary>
+    /// Die Bearbeitung des Reiters „Konditionierung" (Stufe KP2, Welle U1) — nur der Katalogeditor
+    /// reicht sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix, und die Bestandszellen
+    /// gehen über denselben Weg wie die Zellen des Reiters.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
 
     /// <summary>Die Texte der VDI-Struktur — für die Namen der Übergabearten und die Ablehnungen der Wärmeübergabe.</summary>
     public GebaeudeHuelleTexte? Texte { get; init; }

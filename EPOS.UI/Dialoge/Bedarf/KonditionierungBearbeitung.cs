@@ -712,8 +712,13 @@ public sealed class KonditionierungBearbeitung
 
     private void Fehler(string meldung)
     {
-        if (!string.IsNullOrEmpty(meldung)) Melden?.Invoke(meldung, WarnStufe.Warnung);
+        if (string.IsNullOrEmpty(meldung)) return;
+        LetzteMeldung = meldung;
+        Melden?.Invoke(meldung, WarnStufe.Warnung);
     }
+
+    /// <summary>Die letzte benannte Ablehnung des Wegs — der Assistent nennt sie als Grund.</summary>
+    public string? LetzteMeldung { get; private set; }
 
     /// <summary>Merkt den Schritt; Eingaben in dieselbe Zelle hintereinander sind EIN Schritt.</summary>
     private void Merken(string schluessel, KonditionierungStand vor, KonditionierungStand nach)

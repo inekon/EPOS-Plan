@@ -94,9 +94,11 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
         Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
         Action<bool>? geschlossen = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        KonditionierungWeg? konditionierung = null)
         => Render<GebaeudeKatalogDialog>(p => p
             .Add(x => x.Daten, daten ?? Satz())
+            .Add(x => x.Konditionierung, konditionierung)
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Modus, modus)
             .Add(x => x.Gebaeudetypen, () => TYPEN)
@@ -1859,6 +1861,73 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal(8.0, cut.Instance.Arbeitsstand.KuehlleistungMax);
         ReiterWaehlen(cut, REITER2);
         Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Der Assistent liest und setzt die Zellen der Vorgabe-Matrix</b> (Stufe KP2, Welle U1) — als
+    /// Felder der Tafel aus dem Profil <c>KiKonditionierungsfelder</c>, über denselben Weg wie die Zellen
+    /// des Reiters: eine neue Zelle, „aus", eine Bestandszelle unter ihrem Namen (<c>soll_tag</c>) und ein
+    /// Nachtfenster, dessen erste Grenze auf die zweite wartet. Ohne Konditionierung nennt er den Grund.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Zellen_der_Matrix()
+    {
+        var aufrufe = new List<string>();
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = (s, o, z, c) =>
+            {
+                aufrufe.Add(o.Groesse + " " + z);
+                GebaeudeKatalogDaten g = s.Gebaeude.Kopie();
+                g.Konditionierung ??= new KonditionierungDaten();
+                KonditionierungZelle ziel = g.Konditionierung.Spalte(o.Groesse).Zelle(z);
+                ziel.Wert = c.Wert;
+                ziel.Aus = c.Aus;
+                ziel.Von = c.Von;
+                ziel.Bis = c.Bis;
+                if (o.Groesse == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Tag) g.SollTag = c.Wert;
+                g.Konditionierung.Weiterzaehlen();
+                return KonditionierungErgebnis.Gut(new KonditionierungStand(g, s.Zonen));
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Aufbauen(daten, konditionierung: weg);
+
+        WindowsFormsApplication1.KiFeldzugang Feld(string name)
+            => KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, name)!;
+
+        Feld("kond_geraete_tag").Setzen(80.0);
+        Assert.Equal(80.0, Feld("kond_geraete_tag").Lesen());
+        Assert.Equal(new[] { "Geraete Tag" }, aufrufe);
+
+        Feld("kond_heizen_nacht_aus").Setzen(true);
+        Assert.Equal(true, Feld("kond_heizen_nacht_aus").Lesen());
+
+        // Die Bestandszelle unter ihrem Namen - über den Weg der Matrix.
+        Feld("soll_tag").Setzen(21.0);
+        Assert.Equal("Heizen Tag", aufrufe[^1]);
+        Assert.Equal(21.0, cut.Instance.Arbeitsstand.SollTag);
+
+        // Ein Nachtfenster hat nur beide Grenzen zusammen: die erste wartet.
+        int vorher = aufrufe.Count;
+        Feld("kond_geraete_nacht_von").Setzen(20);
+        Assert.Equal(vorher, aufrufe.Count);
+        Assert.Equal(20, Feld("kond_geraete_nacht_von").Lesen());
+        Feld("kond_geraete_nacht_bis").Setzen(5);
+        Assert.Equal("Geraete Nacht", aufrufe[^1]);
+        Assert.Equal(5, Feld("kond_geraete_nacht_bis").Lesen());
+
+        cut.Render();
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("80", Eingabe(cut, "Geräte · Tag").GetAttribute("value"));
+        Assert.Equal("20–5", Eingabe(cut, "Geräte · Nachtfenster").GetAttribute("value"));
+
+        // Ohne Konditionierung (ohne Tabellen, ohne Gaben): benannt abgelehnt.
+        Aufbauen();
+        var fehler = Assert.Throws<InvalidOperationException>(() => Feld("kond_geraete_tag").Setzen(50.0));
+        Assert.Contains("Konditionierung", fehler.Message);
+        Assert.Null(Feld("kond_geraete_tag").Lesen());
     }
 
     // =================================================================================

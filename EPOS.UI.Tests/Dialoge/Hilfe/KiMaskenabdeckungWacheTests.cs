@@ -292,7 +292,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Nachtfenster je Spalte, ΔT der Nachtauskühlung und Start/Ende der Saison.
         new("KonditionierungMatrix", 5, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
             "nachtabsenkung, nacht_beginn/nacht_ende, wochenendabsenkung, soll_ferien, kuehl_sollwert, " +
-            "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne)"),
+            "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne); die übrigen Zellen, „aus“, " +
+            "Nachtfenster, ΔT und Saison die Felder kond_* aus dem Profil KiKonditionierungsfelder (Feldtafel)"),
         // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),

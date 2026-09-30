@@ -40600,5 +40600,17 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_FRAGE_OHNE_EINZELHEITEN" xml:space="preserve">
     <value>„{0}“ ersetzt Angaben dieses Reiters. Fortfahren?</value>
   </data>
+  <data name="KOND_TXT_KI_ZELLE" xml:space="preserve">
+    <value>Eine Zelle der Vorgabe-Matrix im Reiter „Konditionierung“: {0}, Zeile „{1}“, in {2}. Leer heißt: keine eigene Angabe – es gilt, was die Matrix sonst vorgibt.</value>
+  </data>
+  <data name="KOND_TXT_KI_AUS" xml:space="preserve">
+    <value>„aus“ für {0} in der Zeile „{1}“: wahr = in dieser Zeit wird nicht geheizt bzw. gekühlt; falsch = es gilt der Wert der Zelle.</value>
+  </data>
+  <data name="KOND_TXT_KI_FENSTER" xml:space="preserve">
+    <value>Nachtfenster der Spalte {0}: {1} als volle Stunde 0 bis 23; beide leer = das Nachtfenster der Heizspalte.</value>
+  </data>
+  <data name="KOND_TXT_KI_SAISON" xml:space="preserve">
+    <value>Saison der Spalte {0}: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember). Innerhalb der Saison wird geheizt bzw. gekühlt; beide leer = ganzjährig.</value>
+  </data>
 </root>
 

@@ -61,7 +61,6 @@ namespace EPOS.Kern.Tests
                 { KiChatKontext.B_ASSISTENT,        "Bedienwissen ausstehend" },
                 { KiChatKontext.B_BHKW,             "Rechenweg vorhanden, Bedienwissen ausstehend" },
                 { KiChatKontext.B_BRAUCHWASSER,     "Rechenweg vorhanden, Bedienwissen ausstehend" },
-                { KiChatKontext.B_GEBAEUDE,         "Bedienwissen ausstehend" },
                 { KiChatKontext.B_HAUPTFENSTER,     "Bedienwissen ausstehend" },
                 { KiChatKontext.B_HEIZKESSEL,       "Rechenweg vorhanden, Bedienwissen ausstehend" },
                 { KiChatKontext.B_KOSTEN,           "Bedienwissen ausstehend" },

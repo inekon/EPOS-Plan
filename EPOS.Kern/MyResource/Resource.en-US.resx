@@ -40593,5 +40593,17 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_FRAGE_OHNE_EINZELHEITEN" xml:space="preserve">
     <value>“{0}” replaces entries on this tab. Continue?</value>
   </data>
+  <data name="KOND_TXT_KI_ZELLE" xml:space="preserve">
+    <value>A cell of the defaults matrix on the “Conditioning” tab: {0}, row “{1}”, in {2}. Empty means no value of its own – whatever the matrix otherwise specifies applies.</value>
+  </data>
+  <data name="KOND_TXT_KI_AUS" xml:space="preserve">
+    <value>“off” for {0} in row “{1}”: true = no heating or cooling during this time; false = the cell value applies.</value>
+  </data>
+  <data name="KOND_TXT_KI_FENSTER" xml:space="preserve">
+    <value>Night window of the {0} column: {1} as a full hour from 0 to 23; both empty = the night window of the heating column.</value>
+  </data>
+  <data name="KOND_TXT_KI_SAISON" xml:space="preserve">
+    <value>Season of the {0} column: {1} as a day of a common year (1 = 1 January, 365 = 31 December). Heating or cooling runs within the season; both empty = all year.</value>
+  </data>
 </root>
 
