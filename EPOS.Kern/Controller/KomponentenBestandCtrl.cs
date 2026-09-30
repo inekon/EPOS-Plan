@@ -233,9 +233,10 @@ namespace WindowsFormsApplication1
             bwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + idProjekt);
             for (int n = 0; n < bwctrl.rows; n++) Merken(BRAUCHWASSER, bwctrl.items[n].szBezeichner);
 
-            Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
-            svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < svctrl.rows; n++) Merken(STROMSTD, svctrl.items[n].m_szVerbraucher);
+            // SV1: der Name der Projektkopie, auf die die Zeile per ID zeigt - wie ihn die
+            // Kachel der Startseite zeigt -, nicht der Bezeichner der Zuordnungszeile.
+            foreach (Z_ProjektStromverbraucherModel sv in Z_ProjektStromverbraucherCtrl.LiesProjekt(idProjekt))
+                Merken(STROMSTD, sv.m_szVerbraucher);
 
             Z_ProjektStromganglinieCtrl sgctrl = new Z_ProjektStromganglinieCtrl();
             sgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + idProjekt);

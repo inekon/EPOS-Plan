@@ -234,6 +234,13 @@ wie im Lauf — und fällt nur für einen dem PROJEKT unbekannten Namen auf den 
 zurück (`ProfilQuelle.Rueckfall`, mit **Kopf UND Typprofil**, sonst erscheint eine fremde
 Monatsverteilung). **Eine Zahl der Vorschau wird am Lauf gemessen, nicht am Katalog.**
 
+**Die Zuordnung Projekt ↔ Stromverbraucher gilt über die ID, nicht über den Bezeichner.**
+`Z_Projekt_Stromverbraucher.ID_Stromverbraucher` zeigt auf die Projektkopie; Lauf (je
+Zuordnungszeile), Vorschau, Summensicherung, Assistent, Komponentenbestand und Speichern gehen
+darüber (`ProfilQuelle.ZuordnungIdSpalte`, `StromverbraucherStammCtrl.GetProjektIdUeberId`), und
+Kopf- wie Typsatz werden nur im eigenen Projekt gelesen — nie die gleichnamige Kopie eines
+fremden Projekts.
+
 ## Eine Auskunft ruft den Rechenweg des Laufs — sie schreibt ihn nicht ab
 
 Eine Zahl, die der Anwender neben eine Kennzahl der Ergebnisseite legt, muss dieselbe sein — sie
