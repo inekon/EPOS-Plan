@@ -52464,15 +52464,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer dieser Anlage in Jahren; sie ist Pflichtangabe — ohne sie meldet der OK-Knopf. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WPA_NUTZUNGSDAUER_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WPA_NUTZUNGSDAUER_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Referenz-Kraftwerkspark, gegen den die Stromgutschrift gerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_PARK_ERL {
@@ -102035,15 +102026,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_BIVALENT {
             get {
                 return ResourceManager.GetString("WPA_LBL_BIVALENT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
-        /// </summary>
-        public static string WPA_LBL_NUTZUNGSZEIT {
-            get {
-                return ResourceManager.GetString("WPA_LBL_NUTZUNGSZEIT", resourceCulture);
             }
         }
         

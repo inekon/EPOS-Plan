@@ -33,7 +33,6 @@ public class WaermepumpenDialogTests : EposBunitContext
         Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL,
         SperrzeitVon = 0,
         SperrzeitBis = 0,
-        Nutzungszeit = 24,
         HeizstabLeistung = 6
     };
 

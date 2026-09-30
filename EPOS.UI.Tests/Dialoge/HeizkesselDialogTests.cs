@@ -1466,6 +1466,25 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Weg der Hülle</b> (<c>TemperaturVorbelegung.Kessel</c>, den
+    /// <c>HeizkesselHuelle</c> beim Aufbau und beim Aufnehmen ruft): Ein Modell ohne Paar und
+    /// ohne Kessel bekommt 70/50 °C INS MODELL — damit speichert OK es — und die Zeile dazu;
+    /// ein gepflegtes Paar bleibt, wie es ist, ohne Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Huelle_legt_die_Vorbelegung_ins_Modell()
+    {
+        var ohne = new WErzeugerModel { ID = 100001, ID_Type = WizardItemClass.KESSEL_TYP };
+        Assert.Equal("Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.",
+                     TemperaturVorbelegung.Kessel(ohne, wizard: false));
+        Assert.Equal((70, 50), (ohne.Vorlauf, ohne.Ruecklauf));
+
+        var gepflegt = new WErzeugerModel { ID = 7, ID_Type = WizardItemClass.KESSEL_TYP, Vorlauf = 80, Ruecklauf = 60 };
+        Assert.Equal("", TemperaturVorbelegung.Kessel(gepflegt, wizard: true));
+        Assert.Equal((80, 60), (gepflegt.Vorlauf, gepflegt.Ruecklauf));
+    }
+
+    /// <summary>
     /// Eine Eingabe macht das Paar zu dem des Anwenders: Die Herkunftszeile verschwindet,
     /// der Wert geht ins Modell, die Senkenzeile bleibt.
     /// </summary>

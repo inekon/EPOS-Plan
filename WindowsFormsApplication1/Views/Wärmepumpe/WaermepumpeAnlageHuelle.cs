@@ -142,6 +142,12 @@ namespace WindowsFormsApplication1
 
                 ["TemperaturenPruefen"] = new Func<int?, int?, string>(TemperaturenPruefen),
 
+                // Anwenderauftrag 30.09.2026: Der Dialog zieht einen noch unberuehrten
+                // Rueckfallvorschlag nach, wenn ein anderer Vorlauf gewaehlt wird - ueber
+                // denselben Weg, den AusModell beim Aufbau nimmt.
+                ["RuecklaufVorbelegen"] = new Action<WaermepumpeAnlageDaten>(
+                    d => TemperaturVorbelegung.Waermepumpe(d)),
+
                 ["KostenBereit"] = new Func<bool>(
                     () => WErzeugerCtrl.AnlagenzeileNachziehen(modell, projektId)),
                 ["Kostensumme"] = new Func<(double, double)>(() => Kostensumme(modell)),
@@ -258,7 +264,6 @@ namespace WindowsFormsApplication1
                 ["LabelVorlauf"] = Text_("WPA_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
                 ["LabelRuecklaufKurz"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
-                ["LabelNutzungszeit"] = Text_("WPA_LBL_NUTZUNGSZEIT", "Nutzungsdauer"),
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["HerleitungKatalog"] = Text_("WPA_HERLEITUNG_KATALOG",
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
@@ -537,7 +542,9 @@ namespace WindowsFormsApplication1
                 Sperrung = m.Sperrung,
                 SperrzeitVon = m.Sperrzeit_von,
                 SperrzeitBis = m.Sperrzeit_bis,
-                Nutzungszeit = m.Nutzungszeit,
+                // Die Nutzungsdauer (Tab_Energieanlagen.Nutzungszeit) fuehrt der Feldsatz
+                // nicht mehr (Anwenderauftrag 30.09.2026) - der Wert bleibt am Modell, wie
+                // er gelesen wurde, und reist mit Loeschen + Neuanlegen unveraendert mit.
                 BivalenterBetrieb = m.Bivalenter_Betrieb,
                 CarrierId = m.ID_Carrier,
 
@@ -582,6 +589,11 @@ namespace WindowsFormsApplication1
                 Solaranteil = m.Solaranteil,
                 RendeMix = m.rendeMix
             };
+
+            // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
+            // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell
+            // kommt er erst mit dem OK (NachModell).
+            TemperaturVorbelegung.Waermepumpe(d);
             return d;
         }
 
@@ -619,7 +631,6 @@ namespace WindowsFormsApplication1
             m.Volumen = d.Volumen;
             m.rendeMix = d.RendeMix;
             m.Solaranteil = d.Solaranteil;
-            m.Nutzungszeit = d.Nutzungszeit ?? 0;
 
             // Ä23: Die Stammfelder der gewaehlten Waermepumpe gehoeren zur Zeile -
             // sonst zeigte die Verwaltungsliste nach einem Wechsel 0 kW. Seit dem

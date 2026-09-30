@@ -12982,9 +12982,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="WPA_LBL_BIS" xml:space="preserve">
     <value>Sperrzeit bis</value>
   </data>
-  <data name="WPA_LBL_NUTZUNGSZEIT" xml:space="preserve">
-    <value>Nutzungsdauer</value>
-  </data>
   <data name="WPA_LBL_BIVALENT" xml:space="preserve">
     <value>Bivalenter Betrieb</value>
   </data>
@@ -22613,9 +22610,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WPA_RUECKLAUF_ERL" xml:space="preserve">
     <value>Rücklauftemperatur der Anlage in °C, ganze Zahl und frei eingebbar; die angezeigten Werte sind ein Vorschlag.</value>
-  </data>
-  <data name="KI_DLG_WPA_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>Nutzungsdauer dieser Anlage in Jahren; sie ist Pflichtangabe — ohne sie meldet der OK-Knopf.</value>
   </data>
   <data name="KI_DLG_WPA_HEIZSTAB_ERL" xml:space="preserve">
     <value>Soll der Heizstab dieser Wärmepumpe im Lauf mitgerechnet werden? Ja setzt eine hinterlegte Heizstableistung voraus.</value>

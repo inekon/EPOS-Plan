@@ -705,25 +705,13 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// DIE VORBELEGUNG VON VOR- UND RUECKLAUF (Anwenderauftrag 30.09.2026): Ist das Paar
-        /// der Zeile unvollstaendig, setzt der Kern das Paar ein, mit dem die Simulation
-        /// ohne Eintrag rechnet (<c>AnlagenTemperaturen.KesselPaarVorbelegen</c>) - IN DAS
-        /// MODELL, damit es mit OK gespeichert wird; ein Abbruch verwirft die Liste des
-        /// Aufrufers ohnehin. Zurueck kommt die fertige Herleitungszeile, leer, wenn nichts
-        /// vorbelegt wurde.
+        /// DIE VORBELEGUNG VON VOR- UND RUECKLAUF (Anwenderauftrag 30.09.2026) - der
+        /// plattformfreie Weg <see cref="TemperaturVorbelegung.Kessel"/>: ein
+        /// unvollstaendiges Paar bekommt das Paar, mit dem die Simulation ohne Eintrag
+        /// rechnet, IM MODELL; zurueck kommt die Herleitungszeile.
         /// </summary>
-        /// <remarks>
-        /// <c>ID_Kessel</c> zeigt auf den KATALOGSATZ nur im Assistenten und nur bei einer
-        /// dort frisch aufgenommenen Zeile (vorläufige Id ab
-        /// <see cref="WizardItemClass.ID_UNGESPEICHERT_START"/>); die Projektkopie entsteht
-        /// dort erst beim Speichern (<c>WizardCtrl</c>). Jede andere Zeile zeigt auf ihre
-        /// Projektkopie in <c>Tab_Heizkessel</c> — derselbe Satz, den die Simulation liest.
-        /// </remarks>
         private static string Vorbelegen(WErzeugerModel m, bool wizard)
-        {
-            bool stammverweis = wizard && m.ID >= WizardItemClass.ID_UNGESPEICHERT_START;
-            return AnlagenTemperaturen.Herleitung(AnlagenTemperaturen.KesselPaarVorbelegen(m, stammverweis));
-        }
+            => TemperaturVorbelegung.Kessel(m, wizard);
 
         private static ErzeugerZeile ZeileZu(WErzeugerModel m, string temperaturHerleitung)
         {

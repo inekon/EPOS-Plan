@@ -6496,10 +6496,9 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageKiSicht.Nutzungszeit",
-                                     KiDialogTexte.WpaNutzungsdauerName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.WpaNutzungsdauerErl,
-                                     einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
+                    // Die „nutzungsdauer" dieser Maske ist entfallen (Anwenderauftrag
+                    // 30.09.2026): Sie steht im Kostendialog an den Investitionspositionen
+                    // (Maske Kostenverwaltung, Feld „nutzungsdauer").
 
                     // ---- Die Projekteinstellung neben der Auslegung (Welle #458) -----
                     //
