@@ -124,14 +124,9 @@ Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand s
    Geräte/Personen Anteil 0 … 1. Die Konditionierung gehört fachlich der Gebäudesimulation (KP2) — mit deren
    Übergabepapier [`2026-09-30_Uebergabe_KP2_Abschluss.md`](../Gebaeudesimulation/2026-09-30_Uebergabe_KP2_Abschluss.md)
    abstimmen.
-6. **Absturz beim Öffnen von Administration → Wärmebedarf & Heizung → Brauchwasser → Brauchwasserprofile**
-   (Anwenderbefund 30.09.2026; Ereignisanzeige: `EPOS_Plan.exe` 1.2.0.3, `KERNELBASE.dll`, `0xc000041d`): eine
-   Ausnahme aus einem WebView2-Rückruf im neuen Fenster. Menü, Hülle, Sprung und Navigation sind geprüft (derselbe
-   Weg wie Prozesswärme und Stromverbraucher, `BedarfAdminHuelle`), der Kern-Datenweg läuft gegen die Testdatenbank
-   fehlerfrei; der Fenstermarken-Selektor `body::after` wird von `blazor.webview.js` unterstützt. Mit #639 schreibt
-   das Ausnahmeprotokoll jede Ausnahme nach `Logs\Ausnahmen.txt` neben der Datenbank — **nächster Schritt: den
-   Anwender nach einem neuen Build und einem Klick um diese Datei bitten**, dann die Ursache beheben. Offen auch:
-   öffnen Prozesswärme und Stromverbraucher im selben Build?
+6. **Absturz beim Öffnen der Dialogfenster — behoben (#640).** Ursache: die Fenstermarke aus #638 als zweite
+   Wurzelkomponente an `body::after`, den der BlazorWebView mit den Entwicklerwerkzeugen selbst belegt. Jetzt
+   `Fensterwurzel<T>` als einzige Wurzel an `#app`. Offen: Sichtprobe beim Anwender im Windows-Build.
 7. **Beim Anwender offen:** Windows-Lauf gegen die aktuelle Basis; auf Windows neue Zeilen in der Messliste der
    ChartProben (Kessel-Bilder aus #635); Sichtabnahme im Windows-Build (#628, #631, #635–#638 und die
    Parkzweige); Wiki-Sammel-Upload samt Logbuch 1.2.0.6; alte Zweige `d433600a` (#574) und
