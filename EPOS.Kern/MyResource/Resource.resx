@@ -40018,5 +40018,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="CHART_CSV_KESSEL_WIRKUNGSGRAD" xml:space="preserve">
     <value>{0} Wirkungsgrad [-]</value>
   </data>
+  <data name="CHART_HINWEIS_STUFE_TAG" xml:space="preserve">
+    <value>je Tag die Stunde der Tagesspitze</value>
+  </data>
+  <data name="CHART_HINWEIS_STUFE_SPALTE" xml:space="preserve">
+    <value>je Bildpunkt die Stunde der Spitze</value>
+  </data>
+  <data name="CHART_ZEIGER_SPITZENSTUNDE" xml:space="preserve">
+    <value>Spitzenstunde {0}, {1}</value>
+  </data>
 </root>
 

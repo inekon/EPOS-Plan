@@ -547,38 +547,169 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die gebuendelte Flaeche ist die KONSERVATIVE HUELLE</b> (DG-E3-2): je
-        /// Bildpunktspalte der Hoechstwert der Oberkante und der Kleinstwert der
-        /// Unterkante — hoechstens ein Punkt je Spalte und Kante, und nie weniger
-        /// Flaeche als roh.
+        /// <b>Eine gebuendelte Flaeche OHNE Unterkante ist die KONSERVATIVE HUELLE</b>
+        /// (DG-E3-2): je Bildpunktspalte der Hoechstwert der Oberkante, unten die
+        /// Achsennull — hoechstens ein Punkt je Spalte und Kante, und nie weniger Flaeche
+        /// als roh. So zeichnet eine Flaeche, die keine Stapelschicht ist.
         /// </summary>
         [Fact]
-        public void EineGebuendelteFlaecheTraegtHoechstUndKleinstwert()
+        public void EineGebuendelteFlaecheOhneUntenTraegtDenHoechstwert()
         {
             var oben = new double[20000];
-            var unten = new double[20000];
-            for (int i = 0; i < oben.Length; i++)
-            {
-                unten[i] = 10 + 5 * Math.Sin(i * 0.7);
-                oben[i] = unten[i] + 20 + 10 * Math.Sin(i * 0.31);
-            }
+            for (int i = 0; i < oben.Length; i++) oben[i] = 30 + 10 * Math.Sin(i * 0.31);
 
             Zeichenmodell m = Modell(200, 100);
             m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:F" });
             m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
                                            new Datenfenster(0, oben.Length - 1, 0, 50));
             m.FuegeReihe(new Datenreihe("F", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, oben,
-                                        null, Reihenart.Flaeche, unten));
+                                        null, Reihenart.Flaeche));
 
             SvgKnoten pfad = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
                 .Single(k => Wert(k, "class") == "epos-reihe");
             string d = Wert(pfad, "d");
 
             Assert.False(Pfadregel.Roh(oben.Length, 1));
+            Assert.False(Pfadregel.IstStapelschicht(m.Reihen[0]));
             Assert.EndsWith(" Z", d);
             int punkte = d.Count(c => c == ',');
             Assert.True(punkte <= 2 * 100, "hoechstens ein Punkt je Spalte und Kante: " + punkte);
             Assert.True(punkte >= 2 * 100 - 2, "und mindestens einer je Spalte: " + punkte);
+        }
+
+        /// <summary>
+        /// <b>Eine STAPELSCHICHT mit mehr Werten als Spalten geht als TREPPE</b>
+        /// (Stufenregel des Stapels): je Spalte eine waagrechte Kante auf dem Wert in der
+        /// Spitzenstunde der Bezugsgröße, Ober- UND Unterkante in derselben Stunde. Die
+        /// Unterkante der Schicht darueber ist deshalb Punkt fuer Punkt die Oberkante dieser
+        /// Schicht — zwischen zwei Schichten bleibt keine Luecke und nichts ueberlappt, und
+        /// keine Bildpunktspalte wird nur anteilig gedeckt (Anwenderbefund 29.09.2026: blasse,
+        /// loechrige Baender). Ist die Oberkante die Bezugsgröße, geht ihr Gipfel nicht verloren.
+        /// </summary>
+        [Fact]
+        public void EineStapelschichtGehtAlsTreppeUndTeiltIhreKante()
+        {
+            var unten = new double[20000];
+            var mitte = new double[20000];
+            var oben = new double[20000];
+            for (int i = 0; i < unten.Length; i++)
+            {
+                unten[i] = 10 + 5 * Math.Sin(i * 0.7);
+                mitte[i] = unten[i] + 12 + 6 * Math.Sin(i * 0.31);
+                oben[i] = mitte[i] + 4 + 3 * Math.Cos(i * 0.13);
+            }
+
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:A" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                           new Datenfenster(0, oben.Length - 1, 0, 50));
+            m.FuegeReihe(new Datenreihe("A", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, mitte,
+                                        null, Reihenart.Flaeche, unten, Bezug: oben));
+            m.FuegeReihe(new Datenreihe("B", Farbton.Aus(Farbrolle.WAERME_KESSEL), 0f, null, oben,
+                                        null, Reihenart.Flaeche, mitte, Bezug: oben));
+
+            SvgKnoten[] pfade = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Where(k => Wert(k, "class") == "epos-reihe").ToArray();
+            (string[] obenA, string[] untenA) = Kanten(Wert(pfade[0], "d"));
+            (string[] obenB, string[] untenB) = Kanten(Wert(pfade[1], "d"));
+
+            Assert.True(Pfadregel.IstStapelschicht(m.Reihen[0]));
+            Assert.True(Pfadregel.Spaltenweise(m.Reihen[0], oben.Length, 100));
+
+            // Die geteilte Kante: Unterkante von B ist die Oberkante von A, rueckwaerts.
+            Assert.Equal(obenA, untenB.Reverse().ToArray());
+
+            // Eine Treppe: je zwei Nachbarpunkte liegen waagrecht ODER senkrecht.
+            foreach (string[] kante in new[] { obenA, untenA, obenB, untenB })
+                for (int i = 1; i < kante.Length; i++)
+                {
+                    string[] a = kante[i - 1].Split(','), b = kante[i].Split(',');
+                    Assert.True(a[0] == b[0] || a[1] == b[1], "keine Stufe: " + kante[i - 1] + " -> " + kante[i]);
+                }
+
+            // Hoechstens zwei Punkte je Spalte und Kante; der Gipfel steht (y von oben).
+            Assert.True(obenB.Length <= 2 * 100 + 1, "hoechstens zwei Punkte je Spalte: " + obenB.Length);
+            double gipfel = obenB.Min(p => double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture));
+            Assert.Equal(50.0 - oben.Max(), gipfel, 2);
+        }
+
+        /// <summary>
+        /// <b>Eine Linie, die einen Stapel begleitet (<c>Huelle</c>), geht als offene
+        /// Treppe</b> — je Spalte ihr Wert in der Spitzenstunde; ohne Bezugsgröße ist das
+        /// ihre eigene Spitze —, statt je Spalte die ganze Spanne ihres Zickzacks zu fuellen.
+        /// Ohne den Schalter bleibt dieselbe Linie, wie sie war (gebuendelt, Minimum und
+        /// Maximum).
+        /// </summary>
+        [Fact]
+        public void EineHuellkurveGehtAlsOffeneTreppe()
+        {
+            var werte = new double[20000];
+            for (int i = 0; i < werte.Length; i++) werte[i] = 25 + 20 * Math.Sin(i * 0.9);
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                             new Datenfenster(0, werte.Length - 1, 0, 50));
+
+            var huelle = new Datenreihe("S", Farbton.Aus(Farbrolle.BEDARF), 3f, null, werte,
+                                        flaeche.Daten, Huelle: true);
+            var linie = huelle with { Huelle = false };
+
+            string d = SvgSchreiber.Reihenpfad(huelle, flaeche, false);
+            string[] punkte = Punkte(d);
+            Assert.DoesNotContain("Z", d);
+            // Jeder Punkt der Treppe steht auf dem Hoechstwert seiner Spalte: hier fast 45.
+            Assert.All(punkte, p => Assert.InRange(double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture),
+                                                   0.0, 50.0 - 44.0));
+            // Die gewoehnliche Linie reicht je Spalte bis zum Minimum hinunter.
+            Assert.Contains(Punkte(SvgSchreiber.Reihenpfad(linie, flaeche, false)),
+                            p => double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture) > 50.0 - 6.0);
+        }
+
+        /// <summary>
+        /// <b>Stufenstunde und Stufenansicht</b> — was die Oberfläche am Zeiger und unter der
+        /// Achse nennt: Im Jahresbild ist die Stufe der Tag, und an jeder Stelle des Tages
+        /// steht die Spitzenstunde der Bezugsgröße; im vierfachen Ausschnitt ist die Stufe die
+        /// Spalte, im engen Ausschnitt steht jede Stunde (keine Stufe, −1). Eine gewöhnliche
+        /// Linie steht nie in Stufen.
+        /// </summary>
+        [Fact]
+        public void StufenstundeUndStufenansichtFolgenDemPfad()
+        {
+            var bezug = new double[8760];
+            var schicht = new double[8760];
+            for (int t = 0; t < bezug.Length; t++)
+            {
+                int stunde = t % 24;
+                bezug[t] = stunde == (t / 24 % 2 == 0 ? 7 : 19) ? 30.0 : 10.0;   // Spitze um 7 bzw. 19 Uhr
+                schicht[t] = stunde == 3 ? 40.0 : 5.0;                          // eigene Spitze um 3 Uhr
+            }
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 1100f, 360f),
+                                             new Datenfenster(0, 8759, 0, 50));
+            var reihe = new Datenreihe("K", Farbton.Aus(Farbrolle.WAERME_KESSEL), 0f, null, schicht,
+                                       flaeche.Daten, Reihenart.Flaeche, new double[8760], Bezug: bezug);
+            var linie = new Datenreihe("L", Farbton.Aus(Farbrolle.BEDARF), 2f, null, bezug, flaeche.Daten);
+
+            Assert.Equal(Stufenart.Tag, SvgSchreiber.Stufenansicht(reihe, flaeche));
+            Assert.Equal(7, SvgSchreiber.Stufenstunde(reihe, flaeche, 0.0));          // Tag 0: 7 Uhr
+            Assert.Equal(7, SvgSchreiber.Stufenstunde(reihe, flaeche, 23.4));
+            Assert.Equal(24 + 19, SvgSchreiber.Stufenstunde(reihe, flaeche, 30.0));   // Tag 1: 19 Uhr
+            Assert.Equal(8760 - 24 + 7, SvgSchreiber.Stufenstunde(reihe, flaeche, 8759.0));   // Tag 364
+
+            Assert.Equal(Stufenart.Spalte, SvgSchreiber.Stufenansicht(reihe, flaeche, 500, 2690));
+            int imFenster = SvgSchreiber.Stufenstunde(reihe, flaeche, 500, 2690, 1000.0);
+            Assert.InRange(imFenster, 995, 1005);                                      // je Spalte zwei Stunden
+
+            Assert.Equal(Stufenart.Keine, SvgSchreiber.Stufenansicht(reihe, flaeche, 500, 1230));
+            Assert.Equal(-1, SvgSchreiber.Stufenstunde(reihe, flaeche, 500, 1230, 1000.0));
+            Assert.Equal(Stufenart.Keine, SvgSchreiber.Stufenansicht(linie, flaeche));
+            Assert.Equal(-1, SvgSchreiber.Stufenstunde(linie, flaeche, 100.0));
+        }
+
+        /// <summary>Ober- und Unterkante eines geschlossenen Flaechenzugs (Punktpaare).</summary>
+        private static (string[] Oben, string[] Unten) Kanten(string d)
+        {
+            string[] punkte = Punkte(d);
+            double xMax = punkte.Max(p => double.Parse(p.Split(',')[0], CultureInfo.InvariantCulture));
+            int ende = Array.FindIndex(punkte, p => double.Parse(p.Split(',')[0], CultureInfo.InvariantCulture) == xMax);
+            return (punkte.Take(ende + 1).ToArray(), punkte.Skip(ende + 1).ToArray());
         }
 
         // =====================================================================

@@ -167,9 +167,15 @@ namespace EPOS.Kern.Tests
         /// zeigt dort zwei verschiedene Farben (links Bedarf, rechts leer).
         ///
         /// <para>Geometrie (ErzeugerStapel, W=1240, keine zweite Achse): die
-        /// Zeichenflaeche liegt bei (100|110)-(1200|470). xLinks/xRechts liegen im
-        /// linken/rechten Drittel; yBedarf faellt in eine Hoehe, die NUR der Bedarf
-        /// erreicht (50 &lt; Hoehe &lt; 100), yBlend in die gemeinsame Hoehe (0 bis 50).</para>
+        /// Zeichenflaeche liegt bei (100|110)-(1200|470), die Achse reicht bis 100.
+        /// xLinks/xRechts liegen im linken/rechten Drittel; yBedarf faellt in eine Hoehe,
+        /// die NUR der Bedarf erreicht (50 &lt; Hoehe &lt; 100), yUnter in die gemeinsame
+        /// Hoehe (0 bis 50), yKante auf die Oberkante der Produktion (50).</para>
+        ///
+        /// <para><b>Die Produktion liegt als KANTE ueber dem Bedarf</b> (Anwenderbefund
+        /// 29.09.2026, „klare Trennung“): Als halbtransparente Flaeche mischte sie sich mit
+        /// dem Bedarf zu einer Farbe, die in keiner Legende steht. Jetzt deckt der Bedarf
+        /// auch unter ihr, und ihre Oberkante steht in ihrer eigenen Farbe darueber.</para>
         /// </summary>
         [Fact]
         public void ErzeugerStapel_Jahresganglinie_ueberlagert_Bedarf_und_Produktion_ganzflaechig()
@@ -185,27 +191,26 @@ namespace EPOS.Kern.Tests
             byte[] png = ChartRenderer.ErzeugerStapel("T", stapel, null, null, "kW",
                                                       ChartRenderer.Achse.Jahresstunden, false);
 
-            const int xLinks = 265, xRechts = 1035, yBedarf = 200, yBlend = 380;
+            const int xLinks = 265, xRechts = 1035, yBedarf = 200, yUnter = 380, yKante = 290;
 
             using (SKBitmap bild = SKBitmap.Decode(png))
             {
                 SKColor bedarfLinks = bild.GetPixel(xLinks, yBedarf);
                 SKColor bedarfRechts = bild.GetPixel(xRechts, yBedarf);
-                SKColor blendLinks = bild.GetPixel(xLinks, yBlend);
-                SKColor blendRechts = bild.GetPixel(xRechts, yBlend);
 
                 // Beide Drittel zeigen dieselbe Bedarfsfarbe - nicht mehr links Bedarf,
-                // rechts leer (der gemeldete Befund).
+                // rechts leer (der gemeldete Befund) - und zwar DECKEND.
                 Assert.Equal(bedarfLinks, bedarfRechts);
-                Assert.NotEqual(SKColors.White, bedarfLinks);
+                Assert.Equal(SKColors.Red, bedarfLinks);
 
-                // Beide Drittel zeigen dieselbe halbtransparent gemischte Farbe.
-                Assert.Equal(blendLinks, blendRechts);
-                Assert.NotEqual(SKColors.White, blendLinks);
+                // Unter der Produktion bleibt der Bedarf rein sichtbar: keine Mischfarbe.
+                Assert.Equal(SKColors.Red, bild.GetPixel(xLinks, yUnter));
+                Assert.Equal(SKColors.Red, bild.GetPixel(xRechts, yUnter));
 
-                // Die Mischung unterscheidet sich sichtbar vom reinen Bedarf - die
-                // Produktion liegt tatsaechlich (halbtransparent) darueber.
-                Assert.NotEqual(bedarfLinks, blendLinks);
+                // Die Produktion liegt tatsaechlich darueber - als Kante in ihrer Farbe,
+                // in beiden Dritteln auf derselben Hoehe.
+                Assert.Equal(SKColors.Blue, bild.GetPixel(xLinks, yKante));
+                Assert.Equal(SKColors.Blue, bild.GetPixel(xRechts, yKante));
             }
         }
 
