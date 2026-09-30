@@ -36,8 +36,10 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, object>
             {
+                // Festlegung 15 (KP2): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau,
+                // dasselbe Profil wie die Katalogauswahl des Projekts.
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                    () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(Uebersetzen),
                 ["Satz"] = new Func<string, GebaeudeStammblattDaten>(Satz),
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => TagVCtrl.Typen()),
