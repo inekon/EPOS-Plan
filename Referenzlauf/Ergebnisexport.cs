@@ -440,6 +440,19 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(p + "Brennwertstunden", Zahl(spk.Brennwertstunden_Spk[i])));
                     skalare.Add(Neu(p + "BrennwertWaermeKwh", Zahl(spk.BrennwertWaerme_KWh_Spk[i])));
                     skalare.Add(Neu(p + "BrennwertKwh", Zahl(spk.BrennwertMehrbrennstoff_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.2/5 (Etappe E4): das Takten. "Starts" oben zaehlt seither die
+                    // Starts nach 4.2 (im Takt so viele, wie Mindestlaeufe die Waerme braucht); die
+                    // Uebergaenge aus -> an stehen als Laufphasen daneben. Dazu die Taktstunden, der
+                    // Anfahrverlust im Jahr und die drei Taktwerte, mit denen der Kessel rechnet (gepflegt
+                    // oder Normvorgabe). Der Elektrokessel ohne Taktmodell fuehrt die Schluessel mit 0 - bis
+                    // auf die Laufphasen, die er wie jeder Kessel zaehlt.
+                    skalare.Add(Neu(p + "Laufphasen", Zahl(spk.Laufphasen_Spk[i])));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(spk.Taktstunden_Spk[i])));
+                    skalare.Add(Neu(p + "AnfahrKwh", Zahl(spk.Anfahrverlust_KWh_Spk[i])));
+                    skalare.Add(Neu(p + "MindestleistungKw", Zahl(spk.Mindestleistung(i))));
+                    skalare.Add(Neu(p + "AnfahrverlustJeStartKwh", Zahl(spk.AnfahrverlustJeStart(i))));
+                    skalare.Add(Neu(p + "MindestlaufzeitMin", Zahl(spk.Mindestlaufzeit(i))));
                 }
             }
 

@@ -18,7 +18,9 @@ namespace WindowsFormsApplication1
     /// 3.1): <see cref="SchalterZumSchreiben"/> schreibt ihn nie ohne <c>Brennwert</c> = 1, und
     /// <see cref="Verstoss"/> lehnt die Kombination in den Katalogwegen benannt ab. Grund: Ein
     /// Anwenderkatalog mit gesetztem <c>Brennwert</c> soll nicht still anders rechnen.</para>
-    /// <para><b>In E1 liest kein Rechenweg die Felder.</b></para>
+    /// <para><b>Der Rechenweg liest die Felder aus der Projektkopie</b> (<c>SimulationSPK</c>): η₃₀ die
+    /// Teillastkennlinie (E2), der Schalter die Brennwertkennlinie (E3), Mindestleistung, Anfahrverlust
+    /// und Mindestlaufzeit das Takten (E4); ein leeres Feld nimmt dort die Normvorgabe.</para>
     /// </remarks>
     public static class KesselKennlinieWerte
     {
