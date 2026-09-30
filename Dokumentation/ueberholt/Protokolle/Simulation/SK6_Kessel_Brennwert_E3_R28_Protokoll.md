@@ -10,7 +10,13 @@ Commits:
 - `53c4487c` Testdatenbank auf Schemastand 158, Kommentar des 1050-Skripts
 - `5d220896` trockenes η₃₀ auf zwölf Stellen gerundet
 - `63c5a774` Basis R28 eingefroren, R27 archiviert, Basisname nachgezogen
-- Papiere (Konzept, Wiki-Quelle, dieses Protokoll, Index) im Commit danach
+- `73f3c39c` Papiere (Konzept, Wiki-Quelle, dieses Protokoll, Index)
+- `8a7aff77` Merge `origin/ios_migration_september` (#620, #621 KP2 K2/K4)
+- `e9948a3c` gepinnte Anker und Wachen nachgezogen (siehe 6)
+- `59f44afa` Merge `origin/ios_migration_september` (#622, #623 KP2 U1)
+- `47d4f6a6` Merge `origin/ios_migration_september` (#624 Stapeldiagramme, #625 E2); Konflikte: Ressourcen (beide
+  Seiten angehängt), `Proben/ChartProben/LIESMICH.md` und `gate_linux.sh` in der Fassung von origin
+- Gate-Zahlen in diesem Protokoll im Commit danach
 
 ## 1 Auftrag und Entscheide
 
@@ -152,7 +158,24 @@ Kopplungsstufe).
 
 ## 6 Gate
 
-(folgt nach dem Merge mit `origin/ios_migration_september`)
+Gate auf `47d4f6a6` (enthält origin `8de405d3`), Linux, `TMPDIR=/dev/shm`:
+
+- Kern-Filter Release: 0 Fehler.
+- Tests mit den xUnit-Schaltern: KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 (1
+  übersprungen), EPOS.UI.Tests 7 088, EPOS.Kern.Tests 9 470 (1 übersprungen) — zusammen **17 520 grün, 0 rot**. Der
+  erste volle Lauf nach dem Merge `8a7aff77` fand elf rote Fälle, alle Folge von E2b oder vom Schritt 158: die Kapitalwertanker
+  von 1030 (drei Szenarien) und 1048, die Zerlegung der Anker 1030 (Kesselbrennstoff 5 403,1 → 5 203,2 MWh, ΔKW
+  −9 247 593,78 → −8 917 333,40 €), die CO₂-Summe von 1018 (25,0008 → 24,8496 t/a), zwei Bereitschaftsfälle an 1007
+  (der Verbrauch trägt jetzt die Teillastkorrektur), die Wache der Konditionierungsvorlagen (Zielstand ≥ 157), die
+  Gegenprobe der Bemessungsmatrix (sie verglich den Altlauf mit dem frischen Lauf; jetzt Ableitung und Lauf desselben
+  Laufs, Toleranz der Nutzungsgrad-Rundung auf zwei Stellen) und ein toter Verweis der Basenhistorie auf R27.
+  Nachgezogen in `e9948a3c`; nach jedem der beiden folgenden Merges alle fünf Testprojekte voll wiederholt.
+- Werkzeugtests: Formularkarte 124, Auslieferungsvorlage 44, Gebaeudevergleich 24, ZapfprofilValidierung 39 — grün.
+- SQL-Prüfer (Python 3.12): 2 145 Texte, 0 Fundstellen.
+- ChartProben: 231 Bilder, 0 Verstöße; 194 Hashes gleich der Linux-Messlatte `Messlatte_2026-09-30.sha256`.
+- `EPOS.Referenzlauf` über alle sechzehn Projekte gegen R28: **GESAMT PASS, 487/487 CSV byte-gleich**; gestört
+  (`--stoerung ulp`) gegen ungestört 16/16 PASS, 480/487 byte-gleich.
+- Windows-Schale (`EnableWindowsTargeting=true`, Debug x64): 0 Fehler.
 
 ## 7 Wiki und Logbuch
 
@@ -175,3 +198,7 @@ Logbuch unter **1.2.0.6** (Vorschlag):
 4. Brennstofftafel (7.2) gegen DIN EN 15316-4-1 abgleichen; Δ₃₀ von Holz und Pellets ist eine eigene Ableitung.
 5. Windows-Lauf gegen R28 steht aus (erwartet wie in `Werkzeuge/Gate/LIESMICH.md`).
 6. Statuszeile in `Status_iOS_Migration.md` beim Zusammenführen.
+7. Die Ableitung des Kesselbrennstoffs aus Wärme und Nutzungsgrad (`HilfsstromRechner.KesselBrennstoffMWh`, für
+   gespeicherte Läufe ohne Verbrauchsspalte) ist nur bei genau 100 % exakt: Der Nutzungsgrad wird auf zwei Stellen
+   gerundet gespeichert (Abweichung relativ unter 1e-4, an 1030 +7,48 €/a). Seit E2b liegen Brennwertkessel über 100 %;
+   der Kommentar „exakte Umkehrung“ in `WirtschaftlichkeitCtrl` gilt damit nur noch näherungsweise.
