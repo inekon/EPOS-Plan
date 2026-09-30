@@ -527,7 +527,29 @@ namespace WindowsFormsApplication1
         /// Ferienzeiträume, Merker, Kühlung und Gesamtangabe kommen vom Gebäude. Dieselben Werte, mit
         /// denen der Lauf die Zone rechnet.
         /// </summary>
-        public Matrixeingang AufgeloesterBestand(Konditionierungszone zone)
+        public Matrixeingang AufgeloesterBestand(Konditionierungszone zone) => AufgeloesterBestand(zone, out _);
+
+        /// <summary>
+        /// Der Flächenanteil einer Zone — A_Zone / A_Gebäude aus der Vorgabenkaskade
+        /// (<see cref="Zonenvorgaben.Flaechenanteil"/>); 1 ohne eigene Nutzfläche.
+        /// </summary>
+        public double Flaechenanteil(Konditionierungszone zone)
+        {
+            AufgeloesterBestand(zone, out double anteil);
+            return anteil;
+        }
+
+        /// <summary>
+        /// Die Nennwerte einer Zone (Konzept 3.4; Stufe KP2, Welle U4): ihr eigener Geräte- und
+        /// Personen-Nennwert und ihr Flächenanteil — was ein Anteilskalender an ihr multipliziert.
+        /// </summary>
+        public Zonennennwerte Nennwerte(Konditionierungszone zone)
+        {
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
+            return Zonennennwerte.Aus(Flaechenanteil(zone), zone.Stand.Bestand, zone.Stand.Vorgabezeilen());
+        }
+
+        private Matrixeingang AufgeloesterBestand(Konditionierungszone zone, out double flaechenanteil)
         {
             if (zone == null) throw new ArgumentNullException(nameof(zone));
             Matrixeingang g = Gebaeude.Bestand;
@@ -546,6 +568,7 @@ namespace WindowsFormsApplication1
                 LuftwechselInfiltration: z.LuftwechselInfiltration, LuftwechselNutzer: z.LuftwechselNutzer,
                 InterneWaermegewinne: z.InterneWaermegewinne, Bewohner: z.Bewohner);
             Zonenvorgaben v = Zonenvorgaben.Bilden(eingaben, gebaeude, _zonen.Length);
+            flaechenanteil = v.Flaechenanteil;
 
             Matrixeingang e = g.Kopie();
             e.SollTag = z.SollTag ?? g.SollTag;
@@ -567,7 +590,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die wirksame Matrix eines Orts</b> — am Gebäude seine eigene, an einer Zone die
         /// Kaskade wie im Lauf (<see cref="Konditionierungdatenweg"/>): die Zeilen der Zone über denen
-        /// des Gebäudes, beide über den aufgelösten Bestandsfeldern der Zone.
+        /// des Gebäudes, beide über den aufgelösten Bestandsfeldern der Zone, der Personen-Nennwert als
+        /// Nennwert der Zone (<see cref="Konditionierungseingang.Zonenmatrix"/>, Konzept 3.4).
         /// </summary>
         /// <exception cref="ArgumentException">Die Zone gibt es nicht.</exception>
         public Vorgabematrix Matrix(long? zone)
@@ -576,22 +600,26 @@ namespace WindowsFormsApplication1
             Konditionierungszone z = Zone(zone.Value)
                 ?? throw new ArgumentException("Die Zone " + zone.Value.ToString(CultureInfo.InvariantCulture) +
                                                " steht nicht im Arbeitsstand.", nameof(zone));
-            Matrixeingang b = AufgeloesterBestand(z);
+            Matrixeingang b = AufgeloesterBestand(z, out double anteil);
             Vorgabematrix gebaeudematrix = Vorgabematrix.Bilden(b, Gebaeude.Vorgabezeilen());
-            return Vorgabematrix.Bilden(b.Kopie(), z.Stand.Vorgabezeilen(), Kalendereigentuemer.Zone).Erben(gebaeudematrix);
+            return Konditionierungseingang.Zonenmatrix(b, z.Stand.Vorgabezeilen(), gebaeudematrix, anteil);
         }
 
         /// <summary>
         /// <b>Der Kalender, der an einem Ort gilt</b> — die erste Quelle der Kette (Konzept 3.4):
         /// angelegt an der Zone, angelegt am Gebäude, sonst abgeleitet aus der wirksamen Matrix, wo sie
-        /// eine Angabe trägt. <c>null</c> heißt: der Bestandszweig.
+        /// eine Angabe trägt. Der Kalender des Gebäudes trägt an einer Zone ihren Nennwert
+        /// (<see cref="Konditionierungseingang.ErsteQuelleDerZone"/>). <c>null</c> heißt: der Bestandszweig.
         /// </summary>
         public Konditionierungskalender GeltenderKalender(Konditionierungsgroesse g, long? zone)
         {
-            Konditionierungsstand z = zone.HasValue ? Zone(zone.Value)?.Stand : null;
-            return Konditionierungseingang.ErsteQuelle(g, Matrix(zone), z?.Angelegt(), Gebaeude.Angelegt(),
-                                                       z != null && Konditionierungseingang.EigeneNachtzeile(z.Vorgabezeilen()),
-                                                       out _);
+            Konditionierungszone kz = zone.HasValue ? Zone(zone.Value) : null;
+            Konditionierungsstand z = kz?.Stand;
+            if (kz == null)
+                return Konditionierungseingang.ErsteQuelle(g, Matrix(zone), null, Gebaeude.Angelegt(), false, out _);
+            return Konditionierungseingang.ErsteQuelleDerZone(g, Matrix(zone), z.Angelegt(), Gebaeude.Angelegt(),
+                                                              Konditionierungseingang.EigeneNachtzeile(z.Vorgabezeilen()),
+                                                              Nennwerte(kz), out _);
         }
 
         /// <summary>
