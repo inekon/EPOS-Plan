@@ -960,3 +960,81 @@ Breite 405 Elemente, 354 davon mit Wert; am ersten Feld steht „Mi 01.01., 0–
 zwischen den Jahren (Zeitraum)“. Die übrigen acht Fälle messen wie im Ergebnis der Welle U4; der Reiter
 „Konditionierung“ steht in der neuen Reiterfolge an zweiter Stelle, Matrix und Karten wie dort. Die Fotos
 liegen außerhalb des Repositorys.
+
+---
+
+## Fensterprobe (Kopf+Fuß fest) — Seite `/fensterprobe`
+
+**Zweck.** Ein Dialog im eigenen Fenster (`BlazorDialogForm`) rollt als **Dokument**. Nach dem
+Anwenderentscheid vom 30.09.2026 („Kopf+Fuß fest") haften dort die Kopfzeile und die Schlussleiste am
+Fenster, nur der Inhalt dazwischen rollt — `epos-ui.css`, Abschnitt „Dialog im eigenen Fenster", an die
+`Fenstermarke` gebunden, die allein `BlazorDialogForm` hinter `#app` hängt. Die Seite stellt echte Dialoge
+so in den Browser, wie die WebView2 sie zeigt: `body > div#app > .epos-dialog`, dahinter die Marke — ohne
+Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel hält die Wache
+`EPOS.UI.Tests/FensterrahmenTests`.
+
+| Adresse | Fall |
+|---|---|
+| `/fensterprobe?fall=heizkessel` | `HeizkesselDialog`, zwei Projektzeilen, 40 Katalogzeilen, Kostenknöpfe (eine Knopfzeile mitten im Inhalt) |
+| `…?fall=bhkw` | `BhkwDialog`, ebenso |
+| `…?fall=waermepumpen` | `WaermepumpenDialog` mit eingebetteter Detailansicht; die Temperaturprüfung schlägt an (Warnband im Fußblock der Detailansicht) |
+| `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
+| `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
+| `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
+| `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
+| `…&zeilen=<n>`, `…&kultur=de-DE\|en-US` | Katalogzeilen; Kultur und Sprache wie bei `/gebaeudeimport` |
+
+```bash
+node fensterprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--ohne-gegenprobe]
+```
+
+Gemessen bei **1 088 × 624** (Fenstermaß des Anwenders) und **520 × 624** (`Fenstermass.MindestBreite`).
+Je Fensterdialog: die Marke steht hinter `#app`, der Dialog ist höher als das Fenster; bei Rollstand oben,
+Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
+über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
+andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter
+Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Wärmepumpen: OK bei Rollstand 0 — das Band
+des Wirts steht oben im Bild, das Band der Detailansicht über der Schlussleiste und unverdeckt
+(`elementFromPoint`). Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
+frei darunter. Überlagerung (Gebäude → „Simulation…"): ihr Fuß haftet an ihrem Boden, der Kopf des
+Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
+und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
+jede Zahl dieselbe wie mit `marke=0`.
+
+**Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
+Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
+Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
+Protokoll überdecken. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
+grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 30.09.2026** (Wirt Release auf Port 5299, Chromium headless über das globale Playwright,
+`kultur=de-DE`): **kein Verstoß, Gegenprobe rot** (Rückgabe 0).
+
+| Fall | Fenster | Kopf / Fuß | Dokument / Rollweg | am Ende | Tabulator |
+|---|---|---|---|---|---|
+| Heizkessel | 1 088 × 624 | 71 / 69 px | 1 437 / 813 px | Inhalt bis 520 px, Leiste 555–624 px | 72 Schritte, 0 verdeckt, 0 Sprünge |
+| BHKW | 1 088 × 624 | 71 / 69 px | 1 485 / 861 px | Inhalt bis 520 px, Leiste 555–624 px | 73, 0, 0 |
+| Wärmepumpen | 1 088 × 624 | 71 / 69 px | 2 014 / 1 390 px | Inhalt bis 535 px, Leiste 555–624 px | 78, 0, 0 |
+| Gebäude | 1 088 × 624 | 71 / 69 px | 1 253 / 629 px | Inhalt bis 520 px, Leiste 555–624 px | 73, 0, 0 |
+| Dublettenprüfung | 1 088 × 624 | 71 / 69 px | 781 / 157 px | Leiste 347–416 px, Protokoll 426–608 px | 8, 0, 0 |
+| Heizkessel | 520 × 624 | 71 / 69 px | 1 821 / 1 197 px | Inhalt bis 520 px, Leiste 555–624 px | 66, 0, 0 |
+| BHKW | 520 × 624 | 71 / 69 px | 1 913 / 1 289 px | Inhalt bis 520 px, Leiste 555–624 px | 69, 0, 0 |
+| Wärmepumpen | 520 × 624 | 71 / 69 px | 2 621 / 1 997 px | Inhalt bis 535 px, Leiste 555–624 px | 72, 0, 0 |
+| Gebäude | 520 × 624 | 71 / **125** px (zweizeilig) | 1 665 / 1 041 px | Inhalt bis 464 px, Leiste 499–624 px | 65, 0, 0 |
+| Dublettenprüfung | 520 × 624 | 71 / 125 px | 883 / 259 px | Leiste 292–417 px, Protokoll 427–608 px | 8, 0, 0 |
+
+Wärmepumpen, Band der Detailansicht: 515–555 px bei 1 088 px (Leiste ab 555), 497–555 px bei 520 px;
+das Band des Wirts steht bei Rollstand 0 unter dem Kopf (109–149 px). Überlagerung: 31–593 px hoch, ihr Fuß
+523–592 px oben wie unten gerollt (Boden der Überlagerung 592 px), Kopf des Unterdialogs `static`, Fenster-
+kopf und -fuß unter der Abdunkelung; mit und ohne Marke dieselben Zahlen. Katalogdialog: Kopf 16–62 px,
+Fuß 564–608 px, Dokument 624 px, beide `static`; mit und ohne Marke dieselben Zahlen. Gegenprobe: ohne Marke
+12 Haft-Verstöße je Fensterdialog (Dublettenprüfung 7 bzw. 8), ohne `scroll-padding` 5 bis 10 verdeckte
+Felder je Dialog, eingebettetes Band mit `bottom: 0` verdeckt, Dublettenfuß mit negativem Rand über dem
+Protokoll.
+
+**Grenzen.** Einen **schreibgeschützten** Textbereich rollt Chromium beim Fokus nicht ins Bild (ein
+bearbeitbarer rollt) — mit und ohne die Regel; die Probe misst dort nur, ob Kopf oder Fuß verdecken, was von
+ihm im Fenster steht (Dublettenprüfung: Protokoll bei 520 px unterhalb des Fensters, Details angeschnitten).
+Die Höhen im `scroll-padding` sind gerechnet, nicht gemessen: 71 und 69 px, unter 760 px Fensterbreite eine
+Knopfzeile mehr. Die WebView2 selbst misst die Probe nicht — sie ist dasselbe Chromium; die Sichtprobe am
+Gerät bleibt ein Abnahmepunkt unter Windows.
