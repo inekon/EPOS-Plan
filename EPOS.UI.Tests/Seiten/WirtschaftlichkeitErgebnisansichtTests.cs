@@ -741,6 +741,87 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Veraltet-Hinweis am Haken</b> (Anwenderentscheid 30.09.2026, Register EZ‑18): Ändert
+    /// ein Haken die Stände mit Stromverwendung des Laufs, meldet die Hülle die Gruppenregel als
+    /// geändert (<see cref="ErgebnisAnsicht.GruppenregelVeraltet"/>), und das Warnband zeigt den
+    /// eigenen Satz über dem Knopf „Neu berechnen". Im Prüfstand verwendet allein „WP klein" Strom
+    /// („Kessel neu" nicht): Der Haken an „Kessel neu" ändert nichts, „WP klein" abgehakt setzt das
+    /// Band, wieder angehakt fällt es weg; „Berechnen" rechnet den Lauf der Wahl und räumt es.
+    /// Gerechnet wird nur auf Zuruf.
+    /// </summary>
+    [Fact]
+    public void Der_Haken_an_der_einzigen_Stromvariante_meldet_die_Ergebnisse_als_veraltet()
+    {
+        var gewaehlt = new List<int> { STAMM, WP, BHKW };
+        var gerechnet = new List<int> { STAMM, WP, BHKW };     // der Lauf der gespeicherten Ergebnisse
+        int laeufe = 0;
+
+        // Die Hülle als Delegat: Die Gruppenregel ist die Menge der Stromverwender des Laufs —
+        // hier allein „WP klein".
+        ErgebnisAnsicht Ansicht()
+        {
+            ErgebnisAnsicht a = VolleAnsicht();
+            a.GruppenregelVeraltet = gerechnet.Contains(WP) != gewaehlt.Contains(WP);
+            return a;
+        }
+        WirtschaftlichkeitStand Stand()
+        {
+            WirtschaftlichkeitStand s = Voll();
+            s.Varianten[2].Bezeichner = "Kessel neu";
+            s.GewaehlteVarianten = gewaehlt.ToArray();
+            s.Ansicht = Ansicht();
+            return s;
+        }
+
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, Stand)
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { gewaehlt = l.ToList(); })
+            .Add(x => x.Anzeigen, (int id) => Ansicht())
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                laeufe++;
+                gerechnet = new List<int> { STAMM };
+                gerechnet.AddRange(v);
+                return Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "Berechnet." });
+            }));
+
+        string satz = WindowsFormsApplication1.MyResource.Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
+        bool Band() => cut.FindAll(".epos-wirt-warnband .epos-warnbanner").Any(b => b.TextContent.Contains(satz));
+        IElement Haken(int zeile) => cut.FindAll(".epos-raster tbody input[type=checkbox]")[zeile];
+
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band());
+
+        // „Kessel neu" abgehakt: keine Wirkung auf die Gruppenregel, kein Band.
+        Haken(2).Change(false);
+        Assert.Equal(new[] { STAMM, WP }, cut.Instance.Gewaehlte);
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band());
+
+        // „WP klein" abgehakt: Die einzige Version mit Stromverwendung fällt aus dem Lauf.
+        Haken(1).Change(false);
+        Assert.True(cut.Instance.GruppenregelVeraltet);
+        Assert.True(Band());
+        Assert.Contains(cut.FindAll(".epos-wirt-warnband button"),
+                        b => b.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.WIRT_BTN_NEU_BERECHNEN));
+        Assert.Equal(0, laeufe);                                   // kein automatisches Rechnen
+
+        // Wieder angehakt: Es gilt die Gruppenregel der gespeicherten Ergebnisse.
+        Haken(1).Change(true);
+        Assert.False(Band());
+
+        // Abgehakt und „Neu berechnen" im Band: Der Lauf der Wahl ist gerechnet, das Band weg.
+        Haken(1).Change(false);
+        Assert.True(Band());
+        cut.FindAll(".epos-wirt-warnband button")
+           .First(b => b.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.WIRT_BTN_NEU_BERECHNEN))
+           .Click();
+        cut.WaitForAssertion(() => Assert.False(Band()));
+        Assert.Equal(1, laeufe);
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+    }
+
+    /// <summary>
     /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Ausweis (seit E9b
     /// an der Stelle des Hinweistexts) in
     /// „Was ist angenommen?" — je Szenario in der Reihenfolge der Bandbreite (Ungünstig ·

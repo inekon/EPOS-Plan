@@ -2173,6 +2173,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Ändert der Wechsel vom Lauf <paramref name="gerechnet"/> zum Lauf
+        /// <paramref name="gewaehlt"/> die Gruppenregel?</b> (Anwenderentscheid 30.09.2026,
+        /// Register EZ‑18) — die Frage der Ergebnisseite nach einem Haken oder einer
+        /// Referenzwahl, deren gespeicherte Ergebnisse bis zum nächsten „Berechnen" gelten.
+        ///
+        /// <para>Die Gruppenregel eines Laufs sind seine Stände mit Stromverwendung
+        /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>; leer, wenn der Lauf nur
+        /// einen Stand führt — dieselben Bedingungen wie <see cref="StromGruppenregel"/>). Sie hat
+        /// sich geändert, wenn diese Menge nicht mehr dieselbe ist UND ein Stand ohne
+        /// Stromverwendung, dessen Ergebnis zum gerechneten Lauf gehört, noch gewählt ist — nur
+        /// seine Zahlen hängen an der Regel. Ein Haken, der die Menge nicht ändert, und ein Lauf,
+        /// in dem jeder Stand Strom verwendet, ändern nichts.</para>
+        /// </summary>
+        internal static bool StromGruppenregelGeaendert(IEnumerable<int> gerechnet, IEnumerable<int> gewaehlt)
+        {
+            List<int> alt = LaufIds(gerechnet), neu = LaufIds(gewaehlt);
+            var beide = new List<int>(alt);
+            foreach (int id in neu) if (!beide.Contains(id)) beide.Add(id);
+
+            List<int> verwender;
+            if (!ProjektEnergietraegerCtrl.GruppeVerwendetStrom(beide, out verwender))
+                return false;   // kein Stand beider Läufe verwendet Strom — die Regel ruht in beiden
+
+            List<int> regelAlt = LaufVerwender(alt, verwender), regelNeu = LaufVerwender(neu, verwender);
+            bool gleich = regelAlt.Count == regelNeu.Count;
+            if (gleich) foreach (int id in regelAlt) if (!regelNeu.Contains(id)) { gleich = false; break; }
+            if (gleich) return false;
+
+            foreach (int id in neu)
+                if (alt.Contains(id) && !verwender.Contains(id)) return true;
+            return false;
+        }
+
+        /// <summary>Die Stände eines Laufs, je einmal, ohne ungültige Kennung.</summary>
+        private static List<int> LaufIds(IEnumerable<int> staende)
+        {
+            var ids = new List<int>();
+            if (staende != null)
+                foreach (int id in staende)
+                    if (id > 0 && !ids.Contains(id)) ids.Add(id);
+            return ids;
+        }
+
+        /// <summary>Die Stromverwender eines Laufs — leer, wenn der Lauf nur einen Stand führt.</summary>
+        private static List<int> LaufVerwender(List<int> lauf, List<int> alleVerwender)
+        {
+            var v = new List<int>();
+            if (lauf.Count < 2) return v;
+            foreach (int id in lauf) if (alleVerwender.Contains(id)) v.Add(id);
+            return v;
+        }
+
+        /// <summary>
         /// Die Standnamen für den Hinweis der Gruppenregel, je in den Anführungszeichen der
         /// Sprache — genommen aus der Vorlage selbst, die ihren Stand {0} schon so setzt
         /// (deutsch „…“, englisch "…"). Ohne Namen „?".

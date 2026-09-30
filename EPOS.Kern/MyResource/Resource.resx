@@ -10972,6 +10972,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
     <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
   </data>
+  <data name="WIRT_BAND_GRUPPENREGEL_VERALTET" xml:space="preserve">
+    <value>Die Auswahl der Versionen ändert die Gruppenregel — Ergebnisse bis zum nächsten Berechnen veraltet.</value>
+  </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>

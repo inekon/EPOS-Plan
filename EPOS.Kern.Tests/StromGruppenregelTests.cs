@@ -573,6 +573,69 @@ namespace EPOS.Kern.Tests
             Assert.Equal(beimLaden, anzeigen(0).Szenarioabdeckung);
         }
 
+        /// <summary>
+        /// <b>Die Seite meldet die Ergebnisse als veraltet, wenn die Wahl die Gruppenregel ändert</b>
+        /// (Anwenderentscheid 30.09.2026, Register EZ‑18). Gruppe 1026 wie oben: allein „Erdwärme"
+        /// (1029) verwendet Strom. Ihr Haken weg ändert die Stromverwender des Laufs — die Ansicht trägt
+        /// <c>GruppenregelVeraltet</c>; der Haken an „Andere WP" (1027, ohne Stromverwendung) nicht.
+        /// Die Referenzwahl zieht „Erdwärme" als Referenz wieder in den Lauf, die Rückkehr zum Stamm
+        /// nimmt sie wieder heraus. „Berechnen" rechnet den Lauf der Wahl, danach ist nichts veraltet.
+        /// </summary>
+        [Fact]
+        public async System.Threading.Tasks.Task Die_Seite_meldet_die_geaenderte_Gruppenregel_bis_zum_naechsten_Berechnen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt IN (?, ?) AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@a", GRUPPE_STAMM), new DbParam("@b", STAMM));
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(VARIANTE));
+
+            // Die Regel des Kerns: allein die Menge der Stromverwender zählt.
+            Assert.True(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM, VARIANTE }, new[] { GRUPPE_STAMM, STAMM }));
+            Assert.False(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM, VARIANTE }, new[] { GRUPPE_STAMM, VARIANTE }));
+            Assert.False(WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
+                new[] { GRUPPE_STAMM, STAMM }, new[] { GRUPPE_STAMM }));
+
+            var seite = new WirtschaftlichkeitSeiteGaben(GRUPPE_STAMM, "Beispiel WP WG 1");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])();
+            var anzeigen = (Func<int, ErgebnisAnsicht>)gaben["Anzeigen"];
+            var waehlen = (Action<IReadOnlyList<int>>)gaben["VergleichGewaehlt"];
+            var referenz = (Func<int, WirtschaftlichkeitStand>)gaben["ReferenzGewaehlt"];
+            var berechnen = (Func<IReadOnlyList<int>, Action<Laufschritt>, System.Threading.Tasks.Task<LaufErgebnis>>)
+                gaben["Berechnen"];
+            Assert.True(stand.HatErgebnisse, "Die Gruppe 1026 führt keine gespeicherten Ergebnisse.");
+            Assert.False(stand.Ansicht.GruppenregelVeraltet);
+
+            // Ein Haken ohne Wirkung auf die Gruppenregel: „Andere WP" ab.
+            waehlen(new List<int> { GRUPPE_STAMM, VARIANTE });
+            Assert.False(anzeigen(0).GruppenregelVeraltet);
+
+            // Die einzige Stromvariante ab — in jedem Szenario der Klappliste.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM });
+            Assert.True(anzeigen(0).GruppenregelVeraltet);
+            Assert.True(anzeigen(2).GruppenregelVeraltet);
+
+            // Die Referenzwahl „Erdwärme" zieht sie in den Lauf zurück, der Stamm als Referenz nicht.
+            Assert.False(referenz(VARIANTE).Ansicht.GruppenregelVeraltet);
+            Assert.True(referenz(GRUPPE_STAMM).Ansicht.GruppenregelVeraltet);
+
+            // „Berechnen" rechnet den Lauf der Wahl (Stamm und „Andere WP") — nichts ist veraltet.
+            LaufErgebnis lauf = await berechnen(new List<int> { STAMM }, s => { });
+            Assert.True(lauf.Erfolg, lauf.Fehler);
+            Assert.False(anzeigen(0).GruppenregelVeraltet);
+            Assert.False(((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Ansicht.GruppenregelVeraltet);
+
+            // Jetzt ändert der Haken an „Erdwärme" die Regel in der anderen Richtung.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
+            Assert.True(anzeigen(0).GruppenregelVeraltet);
+        }
+
         // =================================================================
         // Der Leistungspreis nur bei Stromverwendung (Anwenderentscheid 29.09.2026, EZ‑17)
         // =================================================================

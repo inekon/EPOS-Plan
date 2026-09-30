@@ -95870,6 +95870,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl der Versionen ändert die Gruppenregel — Ergebnisse bis zum nächsten Berechnen veraltet. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_GRUPPENREGEL_VERALTET {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_GRUPPENREGEL_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen. ähnelt.
         /// </summary>
         public static string WIRT_BAND_NACHRECHNEN {
