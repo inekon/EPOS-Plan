@@ -244,6 +244,63 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.False(double.IsNaN(w[4 * 24 + 23]));  // Fr 23 Uhr bleibt
     }
 
+    // =================================================================================
+    // Teilschritt 4: Feiertage und Zeitstruktur
+    // =================================================================================
+
+    [Fact]
+    public void Feiertage_als_Regel_legt_die_neun_Regeln_wie_Sonntag_an_einmal_und_mit_Vermerk()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-feiertage-anlegen").Click();
+
+        List<KonditionierungPeriode> regeln = Heizkalender.Perioden.Where(p => p.Art == KonditionierungPeriodenart.Feiertag).ToList();
+        Assert.Equal(9, regeln.Count);
+        Assert.All(regeln, p => Assert.Equal((KonditionierungAngabe.WieWochentag, (int?)7), (p.Angabe, p.WieWochentag)));
+        Assert.All(regeln, p => Assert.InRange(p.Rang, 100, 108));
+        Assert.False(string.IsNullOrEmpty(Heizkalender.Vermerk));
+        // In der Periodenliste: eigene Zeilen, ▲▼ weich gesperrt (Feiertagsband).
+        IElement zeile = Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector("tr[data-rang='100']")!;
+        Assert.Equal("true", zeile.QuerySelector("button.epos-kond-rang-hoeher")!.GetAttribute("aria-disabled"));
+
+        // Wiederholbar: keine Regel doppelt.
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-feiertage-anlegen").Click();
+        Assert.Equal(9, Heizkalender.Perioden.Count(p => p.Art == KonditionierungPeriodenart.Feiertag));
+    }
+
+    [Fact]
+    public void Zeitstruktur_wie_Heizung_setzt_die_Geraete_in_den_Heizstunden_auf_den_Tagwert_sonst_auf_den_Nachtwert()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        Assert.True(_bearbeitung.WertSetzen(KonditionierungGroesse.Geraete, KonditionierungZeile.Nacht, 10));
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Geraete);
+        // Heizen trägt die Zeitstruktur nicht selbst — dort gibt es das Werkzeug nicht.
+        Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-einzelheiten").Click();
+        Assert.Null(Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-wie-heizung"));
+
+        Knopf(Inhalt(cut, KonditionierungGroesse.Geraete), "epos-kond-wie-heizung").Click();
+        KonditionierungKalender k = _bearbeitung.Kalender(KonditionierungGroesse.Geraete)!;
+        Assert.Equal(KonditionierungAngabe.Woche, k.Angabe);
+        // Heizen: Tag 20 °C von 6 bis 22 Uhr, sonst 17 °C — die Heizstunden bekommen 100 %, die übrigen 10 %.
+        Assert.Equal(100.0, k.Woche![0 * 24 + 7]);
+        Assert.Equal(10.0, k.Woche![0 * 24 + 23]);
+        Assert.Equal(100.0, k.Woche![6 * 24 + 12]);
+        Assert.Contains("Zuletzt angewandt:", Inhalt(cut, KonditionierungGroesse.Geraete).QuerySelector(".epos-kond-vermerk")!.TextContent);
+    }
+
+    [Fact]
+    public void Zeitstruktur_wie_Anwesenheit_ohne_Personenkalender_meldet_den_Grund_und_aendert_nichts()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Lueftung);
+        KonditionierungKalender vor = _bearbeitung.Kalender(KonditionierungGroesse.Lueftung)!.Kopie();
+        Knopf(Inhalt(cut, KonditionierungGroesse.Lueftung), "epos-kond-wie-anwesenheit").Click();
+        Assert.Single(_meldungen);
+        Assert.Equal(vor.Angabe, _bearbeitung.Kalender(KonditionierungGroesse.Lueftung)!.Angabe);
+        Assert.Null(_bearbeitung.Kalender(KonditionierungGroesse.Lueftung)!.Vermerk);
+    }
+
     [Fact]
     public void Eine_Grundangabe_ohne_Rundlauf_meldet_den_Kern_und_aendert_nichts()
     {

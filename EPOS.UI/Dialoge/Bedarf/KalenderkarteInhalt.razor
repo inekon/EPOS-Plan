@@ -108,6 +108,34 @@
                            Loeschen="@(Bearbeitung.Bietet(KonditionierungHandlung.PeriodeLoeschen) ? r => Bearbeitung.PeriodeLoeschen(Groesse, r) : null)"
                            Geaendert="Geaendert" Verweigert="Verweigert" />
         </section>
+
+        @* ---- Werkzeuge (Teilkonzept 3.5): die Feiertage als Regel (F11) und "Zeitstruktur uebernehmen"
+           (Festlegung 11, nur Kuehlen, Lueftung, Geraete). Jedes ersetzt genau seinen Zielbereich und
+           hinterlaesst einen Vermerk in der Herkunft (B8). ---- *@
+        @if (Bearbeitung.Bietet(KonditionierungHandlung.Feiertage))
+        {
+            <section class="epos-kond-abschnitt epos-kond-feiertage" aria-label="@Texte.LabelWerkzeugFeiertage">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.LabelWerkzeugFeiertage</h4>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-feiertage-anlegen" title="@Texte.HinweisFeiertage"
+                            @onclick="FeiertageAnlegen">@Texte.KnopfFeiertage</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisFeiertage</p>
+            </section>
+        }
+        @if (MitZeitstruktur)
+        {
+            <section class="epos-kond-abschnitt epos-kond-zeitstruktur" aria-label="@Texte.KnopfZeitstruktur">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.KnopfZeitstruktur</h4>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-wie-heizung" title="@Texte.HinweisZeitstruktur"
+                            @onclick="() => ZeitstrukturUebernehmen(KonditionierungZeitstruktur.WieHeizung)">@Texte.LabelWieHeizung</button>
+                    <button type="button" class="epos-knopf epos-kond-wie-anwesenheit" title="@Texte.HinweisZeitstruktur"
+                            @onclick="() => ZeitstrukturUebernehmen(KonditionierungZeitstruktur.WieAnwesenheit)">@Texte.LabelWieAnwesenheit</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisZeitstruktur</p>
+            </section>
+        }
     }
 </div>
 
@@ -217,6 +245,27 @@
             }
             return _raster;
         }
+    }
+
+    // ------------------------------------------------------------ Die Werkzeuge Feiertage und Zeitstruktur
+
+    /// <summary>„Zeitstruktur übernehmen" gibt es nur für Kühlen, Lüftung und Geräte (Festlegung 11).</summary>
+    private bool MitZeitstruktur
+        => Bearbeitung.Bietet(KonditionierungHandlung.Zeitstruktur)
+           && Groesse is KonditionierungGroesse.Kuehlen or KonditionierungGroesse.Lueftung or KonditionierungGroesse.Geraete;
+
+    /// <summary>Die neun Feiertage als Regel „wie Sonntag" (F11); eine vorhandene Regel wird nicht doppelt angelegt.</summary>
+    private async Task FeiertageAnlegen()
+    {
+        Bearbeitung.FeiertageAnlegen(Groesse);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>„wie Heizung" bzw. „wie Anwesenheit": ersetzt nur die Standardwoche (Festlegung 11).</summary>
+    private async Task ZeitstrukturUebernehmen(KonditionierungZeitstruktur quelle)
+    {
+        Bearbeitung.ZeitstrukturUebernehmen(Groesse, quelle);
+        await Geaendert.InvokeAsync();
     }
 
     // ------------------------------------------------------------ Das Zeitfenster

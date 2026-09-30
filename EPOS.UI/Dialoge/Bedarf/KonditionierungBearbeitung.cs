@@ -638,6 +638,23 @@ public sealed class KonditionierungBearbeitung
         => Bietet(KonditionierungHandlung.Zeitfenster)
            && Ausfuehren("F|" + g, s => Weg.Zeitfenster!(s, new KonditionierungOrt(g), fenster));
 
+    /// <summary>
+    /// <b>Die Feiertage als Regel</b> (F11): die neun bundeseinheitlichen Feiertage „wie Wochentag"
+    /// (Vorgabe 7 = Sonntag) im Feiertagsband unter den Ferien; eine vorhandene Regel bleibt, wie sie ist.
+    /// Der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool FeiertageAnlegen(KonditionierungGroesse g, int wieWochentag = 7)
+        => Bietet(KonditionierungHandlung.Feiertage)
+           && Ausfuehren("H|" + g, s => Weg.Feiertage!(s, new KonditionierungOrt(g), wieWochentag));
+
+    /// <summary>
+    /// <b>„Zeitstruktur übernehmen"</b> (Festlegung 11): Kühlen, Lüftung oder Geräte „wie Heizung" oder
+    /// „wie Anwesenheit" — ersetzt nur die Standardwoche; der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool ZeitstrukturUebernehmen(KonditionierungGroesse g, KonditionierungZeitstruktur quelle)
+        => Bietet(KonditionierungHandlung.Zeitstruktur)
+           && Ausfuehren("Y|" + g, s => Weg.Zeitstruktur!(s, new KonditionierungOrt(g), quelle));
+
     /// <summary>Die neun Feiertagsregeln der Periodenliste (F11); leer ohne Weg.</summary>
     public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln
         => MitWeg ? Weg.Feiertagsregeln ?? Array.Empty<KonditionierungFeiertag>() : Array.Empty<KonditionierungFeiertag>();
