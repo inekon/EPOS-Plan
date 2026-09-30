@@ -866,6 +866,17 @@ public sealed class KonditionierungBearbeitung
         }
     }
 
+    /// <summary>
+    /// <b>Warum die Vorschau kein Bild hat</b> (Welle U3, offener Punkt aus U2): Geräte und Personen ohne
+    /// einen Anteil in Tag, Nacht, Wochenende oder Ferien ergeben keinen Kalender — der Nennwert gilt in
+    /// jeder Stunde bzw. die Last steckt in den inneren Wärmegewinnen; sonst der allgemeine Grund.
+    /// </summary>
+    public string VorschauLeergrund(KonditionierungGroesse g)
+        => g is KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen && !Angelegt(g)
+           && !Zeilen.Any(z => IstAnteil(g, z) && Wert(g, z).HasValue)
+            ? string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauOhneAnteile, Groessenname(g))
+            : Texte.TextVorschauLeer;
+
     /// <summary>Das Bild der Vorschau (<see cref="KonditionierungWeg.WochenVorschau"/>); <c>null</c> = keines.</summary>
     public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Vorschau(KonditionierungGroesse g)
         => Bild(g, Vorschauwoche(g));

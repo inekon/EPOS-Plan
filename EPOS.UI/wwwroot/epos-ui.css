@@ -13558,6 +13558,22 @@ td.epos-vorlage-katalogbeschreibung {
     display: none;
 }
 
+/* Ein Klick auf die Zeile "Vorlage" oeffnet die Auswahlliste der Karte
+   (Teilkonzept 7.2, Welle U3): ein Knopf ueber die Breite der Zelle, der
+   Name bricht um, statt die Spalte zu weiten. */
+.epos-kond-herkunft-knopf {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-vorschau-leer {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
 .epos-kond-karten {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

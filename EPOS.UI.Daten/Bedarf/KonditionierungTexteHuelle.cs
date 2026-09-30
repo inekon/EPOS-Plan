@@ -240,6 +240,9 @@ namespace WindowsFormsApplication1
             t.TextTeppichLeer = Text_("KOND_TXT_TEPPICH_LEER", t.TextTeppichLeer);
             t.KnopfInDenKalender = Text_("KOND_BTN_IN_DEN_KALENDER", t.KnopfInDenKalender);
             t.HinweisInDenKalender = Text_("KOND_TXT_HINWEIS_IN_DEN_KALENDER", t.HinweisInDenKalender);
+            t.HinweisVorlageZeile = Text_("KOND_TXT_HINWEIS_VORLAGE_ZEILE", t.HinweisVorlageZeile);
+            t.TextVorschauLeer = Text_("KOND_TXT_VORSCHAU_LEER", t.TextVorschauLeer);
+            t.TextVorschauOhneAnteile = Text_("KOND_TXT_VORSCHAU_OHNE_ANTEILE", t.TextVorschauOhneAnteile);
             return t;
         }
 

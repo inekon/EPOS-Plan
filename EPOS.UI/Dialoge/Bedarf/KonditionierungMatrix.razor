@@ -54,7 +54,19 @@
                 {
                     string? herkunft = Bearbeitung.Herkunft(g);
                     <td class="epos-kond-herkunft @Spaltenklasse(g)" data-groesse="@((int)g)">
-                        <span class="@(herkunft is null ? "epos-kond-leer" : "epos-kond-text")">@(herkunft ?? Texte.PlatzhalterLeer)</span>
+                        @if (VorlageZeigen.HasDelegate && !Lesemodus && Bearbeitung.MitVorlagen)
+                        {
+                            @* Teilkonzept 7.2: ein Klick oeffnet die Auswahlliste der Karte dieser Groesse. *@
+                            KonditionierungGroesse groesse = g;
+                            <button type="button" class="epos-knopf epos-kond-herkunft-knopf" data-groesse="@((int)groesse)"
+                                    title="@Texte.HinweisVorlageZeile" @onclick="() => VorlageZeigen.InvokeAsync(groesse)">
+                                <span class="@(herkunft is null ? "epos-kond-leer" : "epos-kond-text")">@(herkunft ?? Texte.PlatzhalterLeer)</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="@(herkunft is null ? "epos-kond-leer" : "epos-kond-text")">@(herkunft ?? Texte.PlatzhalterLeer)</span>
+                        }
                     </td>
                 }
             </tr>
@@ -111,6 +123,12 @@
 
     /// <summary>Meldet jede Eingabe — der Wirt zeichnet Herleitungen und Karten neu.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Ein Klick auf die Zeile „Vorlage" einer Spalte (Teilkonzept 7.2): Der Wirt öffnet die Auswahlliste
+    /// der Karte dieser Größe; ohne Rückruf bleibt die Zeile eine Anzeige.
+    /// </summary>
+    [Parameter] public EventCallback<KonditionierungGroesse> VorlageZeigen { get; set; }
 
     /// <summary>Meldet den Fehlerzustand eines Felds an den Arbeitsstand (Sammelmeldung beim OK).</summary>
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }

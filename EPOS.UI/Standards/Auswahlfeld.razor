@@ -32,7 +32,7 @@
         <span class="epos-feld-text">@Bezeichnung</span>
     }
     <span class="epos-feld-zeile">
-        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
+        <select @ref="_select" class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
                 aria-label="@(string.IsNullOrEmpty(Kurzname) ? null : Kurzname)"
                 disabled="@(!Aktiv)" @onchange="BeiAuswahl">
             @if (Platzhalter is not null)
@@ -51,6 +51,14 @@
 </label>
 
 @code {
+    private ElementReference _select;
+
+    /// <summary>
+    /// Setzt den Fokus auf die Liste und rollt sie ins Bild — für einen Wirt, der sie von anderer Stelle
+    /// „öffnet" (Zeile „Vorlage" der Konditionierungsmatrix; Stufe KP2, Welle U3).
+    /// </summary>
+    public ValueTask FokusAsync() => _select.FocusAsync(preventScroll: false);
+
     /// <summary>
     /// Schluessel der leeren Zeile im <c>@@key</c> der Optionen. Er muss von jeder
     /// Eintrags-Id verschieden sein; <c>int.MinValue</c> kommt als Katalog-Id nicht vor.

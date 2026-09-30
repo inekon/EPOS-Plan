@@ -70,6 +70,7 @@
     <KonditionierungMatrix Bearbeitung="@Bearbeitung" Texte="@Texte" HuelleTexte="@HuelleTexte"
                            Lesemodus="@Lesemodus" Kuehlsperre="@Kuehlsperre" Altweg="@Altweg"
                            AktiveGroesse="@_groesse" PlatzhalterPersonen="@PersonenPlatzhalter"
+                           VorlageZeigen="VorlageZeigen"
                            Geaendert="Geaendert" FehlerZustand="FehlerZustand" />
 
     @if (!string.IsNullOrEmpty(Sollwertzeile))
@@ -113,6 +114,8 @@
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
                                Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs"
                                Aufgeklappt="@(KartenAufgeklappt || groesse == AufgeklappteGroesse)"
+                               ListeZeigen="@(_listeZeigen.TryGetValue(groesse, out int anlass) ? anlass : 0)"
+                               VorschauLeer="@Bearbeitung.VorschauLeergrund(groesse)"
                                Einzelheiten="@(MitEinzelheiten ? Einzelheiten(groesse) : null)" />
             }
         </div>
@@ -419,6 +422,19 @@
     {
         Bearbeitung.Melden?.Invoke(grund, WarnStufe.Hinweis);
         await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Je Größe der Anlass, die Auswahlliste der Karte zu zeigen (ein Zähler je Klick auf die Zeile „Vorlage").</summary>
+    private readonly Dictionary<KonditionierungGroesse, int> _listeZeigen = new();
+
+    /// <summary>
+    /// Die Zeile „Vorlage" der Matrix (Teilkonzept 7.2): Die Größe kommt nach vorn (schmal ihr Reiter), und
+    /// die Karte fokussiert ihre Auswahlliste und rollt sie ins Bild.
+    /// </summary>
+    private void VorlageZeigen(KonditionierungGroesse g)
+    {
+        _groesse = g;
+        _listeZeigen[g] = (_listeZeigen.TryGetValue(g, out int n) ? n : 0) + 1;
     }
 
     /// <summary>Die Wahl der Auswahlliste einer Karte — sie ändert den Arbeitsstand nicht.</summary>

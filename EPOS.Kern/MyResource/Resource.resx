@@ -40888,5 +40888,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_FRAGE_SOLLWERTPROFIL" xml:space="preserve">
     <value>Das Sollwert-Zeitprogramm ersetzt die Standardwoche des angelegten Heizkalenders; Perioden und Herkunft bleiben. Übernehmen?</value>
   </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ZEILE" xml:space="preserve">
+    <value>Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_LEER" xml:space="preserve">
+    <value>Keine Vorschau – für diese Größe ergibt sich keine Woche.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_OHNE_ANTEILE" xml:space="preserve">
+    <value>Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.</value>
+  </data>
 </root>
 

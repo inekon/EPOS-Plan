@@ -798,4 +798,17 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_TXT_HINWEIS_IN_DEN_KALENDER</c> — die leise Zeile unter „In den Kalender übernehmen“</summary>
     public string HinweisInDenKalender { get; set; }
         = "Das Zeitprogramm wird die Standardwoche des Heizkalenders im Reiter „Konditionierung“; geschrieben wird mit OK, „Zurücknehmen“ nimmt es zurück.";
+
+    /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ZEILE</c> — Titel der Zeile „Vorlage“: ein Klick öffnet die Auswahlliste der Karte</summary>
+    public string HinweisVorlageZeile { get; set; } = "Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte.";
+
+    /// <summary><c>KOND_TXT_VORSCHAU_LEER</c> — an Stelle der Vorschau, wenn sich keine Woche ergibt</summary>
+    public string TextVorschauLeer { get; set; } = "Keine Vorschau – für diese Größe ergibt sich keine Woche.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VORSCHAU_OHNE_ANTEILE</c> — an Stelle der Vorschau bei Geräten und Personen ohne Anteil; „{0}“
+    /// die Größe
+    /// </summary>
+    public string TextVorschauOhneAnteile { get; set; }
+        = "Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.";
 }

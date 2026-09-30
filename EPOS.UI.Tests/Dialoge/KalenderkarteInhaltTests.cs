@@ -456,6 +456,57 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.Empty(ohneWeg.FindAll("button.epos-uebergabe-in-den-kalender"));
     }
 
+    // =================================================================================
+    // Teilschritt 7: offene Punkte aus U2
+    // =================================================================================
+
+    [Fact]
+    public void Ein_Klick_auf_die_Zeile_Vorlage_bringt_die_Groesse_nach_vorn_und_fokussiert_die_Auswahlliste_ihrer_Karte()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen(KalenderkarteTests.Weg(Konditionierungsvorlagenablage.AusSaat()));
+        Assert.Equal(KonditionierungGroesse.Heizen, cut.Instance.AktiveGroesse);
+        int vor = JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+
+        IElement zelle = cut.Find("tr[data-zeile='vorlage'] button.epos-kond-herkunft-knopf[data-groesse='3']");
+        Assert.Equal("Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte.", zelle.GetAttribute("title"));
+        zelle.Click();
+
+        Assert.Equal(KonditionierungGroesse.Geraete, cut.Instance.AktiveGroesse);
+        Assert.Contains("epos-kond--aktiv", Karte(cut, KonditionierungGroesse.Geraete).ClassList);
+        cut.WaitForAssertion(() => Assert.Equal(vor + 1,
+            JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase))));
+    }
+
+    [Fact]
+    public void Ohne_Vorlagen_im_Weg_und_im_Lesemodus_bleibt_die_Zeile_Vorlage_eine_Anzeige()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        Assert.Empty(cut.FindAll("button.epos-kond-herkunft-knopf"));
+        cut = Aufbauen(KalenderkarteTests.Weg(Konditionierungsvorlagenablage.AusSaat()), lesemodus: true);
+        Assert.Empty(cut.FindAll("button.epos-kond-herkunft-knopf"));
+    }
+
+    [Fact]
+    public void Geraete_und_Personen_ohne_Anteile_zeigen_einen_benannten_Leerzustand_statt_Kein_Diagramm()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        foreach (KonditionierungGroesse g in new[] { KonditionierungGroesse.Geraete, KonditionierungGroesse.Personen })
+        {
+            IElement vorschau = Karte(cut, g).QuerySelector(".epos-kond-vorschau")!;
+            Assert.DoesNotContain("Kein Diagramm vorhanden", vorschau.TextContent);
+            string grund = vorschau.QuerySelector(".epos-kond-vorschau-leer")!.TextContent;
+            Assert.Contains("trägt keinen Anteil", grund);
+            Assert.Contains(_bearbeitung.Groessenname(g), grund);
+        }
+        // Heizen hat seine Woche.
+        Assert.Null(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorschau-leer"));
+
+        // Mit einem Anteil ergibt sich die Woche.
+        Assert.True(_bearbeitung.WertSetzen(KonditionierungGroesse.Geraete, KonditionierungZeile.Nacht, 20));
+        cut.Render();
+        Assert.Null(Karte(cut, KonditionierungGroesse.Geraete).QuerySelector(".epos-kond-vorschau-leer"));
+    }
+
     [Fact]
     public void Eine_Grundangabe_ohne_Rundlauf_meldet_den_Kern_und_aendert_nichts()
     {

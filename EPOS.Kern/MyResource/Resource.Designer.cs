@@ -63178,6 +63178,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_VORLAGE_ZEILE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_VORLAGE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht. ähnelt.
         /// </summary>
         public static string KOND_TXT_HINWEIS_ZEITFENSTER {
@@ -63624,6 +63633,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_VORLAGE_UMBENANNT {
             get {
                 return ResourceManager.GetString("KOND_TXT_VORLAGE_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorschau – für diese Größe ergibt sich keine Woche. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORSCHAU_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORSCHAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORSCHAU_OHNE_ANTEILE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORSCHAU_OHNE_ANTEILE", resourceCulture);
             }
         }
         

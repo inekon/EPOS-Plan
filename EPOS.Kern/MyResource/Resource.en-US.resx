@@ -40881,5 +40881,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_FRAGE_SOLLWERTPROFIL" xml:space="preserve">
     <value>The setpoint time program replaces the standard week of the created heating calendar; periods and origin remain. Apply?</value>
   </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ZEILE" xml:space="preserve">
+    <value>Opens the template list of this quantity in its card.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_LEER" xml:space="preserve">
+    <value>No preview – this quantity yields no week.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_OHNE_ANTEILE" xml:space="preserve">
+    <value>No week: the column “{0}” has no share – without a share the nominal value applies in every hour or the load is part of the internal heat gains. A share in day, night, weekend or holidays yields the week.</value>
+  </data>
 </root>
 
