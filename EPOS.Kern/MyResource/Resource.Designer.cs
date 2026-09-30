@@ -15381,6 +15381,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Rücklauf [°C] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_KESSEL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("CHART_CSV_KESSEL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wirkungsgrad [-] ähnelt.
         /// </summary>
         public static string CHART_CSV_KESSEL_WIRKUNGSGRAD {
@@ -76485,6 +76494,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Taupunkt {1} °C, Kondensationsgewinn bei 30 °C Rücklauf {2}, η₃₀ trocken {3}, Obergrenze Hs/Hi {4}. Der Rücklauf kommt aus dem Heizkreis der Anlagenkopplung, sonst aus dem Senkenspeicher, sonst gilt {5} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERTKENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERTKENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERT_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft: Heizgrenze {0:0.#} °C, {1} Heiztage — an ihnen und 24 h nach seiner letzten Laufstunde trägt ein stillstehender Kessel seinen Bereitschaftsverlust. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_HEIZGRENZE {
@@ -76535,6 +76571,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf aus dem Senkenspeicher {1} ({2}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_RUECKLAUF_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_RUECKLAUF_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unterste Schicht, je Stunde gelesen ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT", resourceCulture);
             }
         }
         
@@ -77653,6 +77707,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff aus Brennwertnutzung ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden im Brennwertbetrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_STUNDENANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_STUNDENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme im Brennwertbetrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNWERT_WAERMEANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNWERT_WAERMEANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer (andere Erzeuger): ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
@@ -77919,6 +78000,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Rücklauf im Betrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RUECKLAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RUECKLAUF_MITTEL", resourceCulture);
             }
         }
         
@@ -78369,6 +78459,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BHKW_EINSPEISUNG {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Brennwertkessel mit Brennwertkennlinie rechnet je Stunde zusätzlich mit dem Rücklauf: Unter dem Taupunkt des Abgases kondensiert Wasserdampf, und der Wirkungsgrad steigt bis zum Kondensationsgewinn bei 30 °C Rücklauf. Der Rücklauf kommt aus dem gerechneten Heizkreis (Anlagenkopplung), sonst aus dem Senkenspeicher, sonst aus dem gepflegten Temperaturpaar, sonst gilt 50 °C. Brennwertbetrieb heißt: Rücklauf unter dem Taupunkt. Der Brennwertbrennstoff ist der Minderverbrauch gegenüber der trockenen Teillast [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BRENNWERT_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
             }
         }
         
@@ -83594,6 +83693,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertbetrieb [%] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_BRENNWERTANTEIL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_BRENNWERTANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
         /// </summary>
         public static string SIM_SPALTE_EINSPEISEHOEHE {
@@ -83716,6 +83824,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_RANG {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf [°C] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_RUECKLAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_RUECKLAUF_MITTEL", resourceCulture);
             }
         }
         
@@ -88592,6 +88709,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_ANHEBUNG_GRENZE {
             get {
                 return ResourceManager.GetString("TRANSFER_ANHEBUNG_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung) ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_KESSEL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT", resourceCulture);
             }
         }
         

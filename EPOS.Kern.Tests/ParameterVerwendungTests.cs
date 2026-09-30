@@ -167,6 +167,7 @@ namespace EPOS.Kern.Tests
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
         [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
         [InlineData(Anlagenart.Heizkessel, "Brennwert")]
+        [InlineData(Anlagenart.Heizkessel, "Kennlinie_Brennwert")]
         [InlineData(Anlagenart.Bhkw, "Grenzleistung")]
         [InlineData(Anlagenart.Bhkw, "Wirkungsgrad")]
         [InlineData(Anlagenart.Waermepumpe, "Heizung")]

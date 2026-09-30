@@ -100,7 +100,8 @@
         @* Die Position des gezeigten Stands fuer die Positionsform der Platzhaltermarken
            (stand.<n>.…, variante.<n>.…); ohne sie nennt die Marke keine. *@
         <CascadingValue Value="@_daten.Vorlagenfeldposition">
-        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL">
+        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL"
+                Reihenfolge="@Blattfolge">
             <KindInhalt>
 
                 @* DER REITER „PARAMETER" IST MIT #216 GEFALLEN (Windows-Abnahme
@@ -505,6 +506,13 @@
             return liste.Select(s => (s, SimulationBlattnamen.Text(s))).ToList();
         }
     }
+
+    /// <summary>
+    /// Die Folge der Blaetter fuer die Leiste — dieselbe wie <see cref="Blaetter"/>: Ein
+    /// Erzeugerblatt, das erst der Lauf nachreicht, steht an seinem Platz und nicht hinter
+    /// „Ergebnis“, das immer das letzte Blatt ist.
+    /// </summary>
+    private IReadOnlyList<string> Blattfolge => Blaetter.Select(b => b.Schluessel).ToList();
 
     /// <summary>Laeuft die Simulation gerade? (Pruefhilfe)</summary>
     public bool Laeuft => _laeuft;

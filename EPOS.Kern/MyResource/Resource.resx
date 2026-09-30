@@ -40471,6 +40471,48 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="CHART_ZEIGER_SPITZENSTUNDE" xml:space="preserve">
     <value>Spitzenstunde {0}, {1}</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_KESSEL_BRENNWERT" xml:space="preserve">
+    <value>Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERTKENNLINIE" xml:space="preserve">
+    <value>Brennwertkennlinie „{0}“: Taupunkt {1} °C, Kondensationsgewinn bei 30 °C Rücklauf {2}, η₃₀ trocken {3}, Obergrenze Hs/Hi {4}. Der Rücklauf kommt aus dem Heizkreis der Anlagenkopplung, sonst aus dem Senkenspeicher, sonst gilt {5} °C.</value>
+  </data>
+  <data name="SIMENG_KESSEL_RUECKLAUF_SPEICHER" xml:space="preserve">
+    <value>Brennwertkennlinie „{0}“: Rücklauf aus dem Senkenspeicher {1} ({2}).</value>
+  </data>
+  <data name="SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT" xml:space="preserve">
+    <value>unterste Schicht, je Stunde gelesen</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_BETRIEB" xml:space="preserve">
+    <value>Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
+    <value>Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad.</value>
+  </data>
+  <data name="SIMERG_LBL_BRENNWERT_STUNDENANTEIL" xml:space="preserve">
+    <value>Betriebsstunden im Brennwertbetrieb</value>
+  </data>
+  <data name="SIMERG_LBL_BRENNWERT_WAERMEANTEIL" xml:space="preserve">
+    <value>Wärme im Brennwertbetrieb</value>
+  </data>
+  <data name="SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff aus Brennwertnutzung</value>
+  </data>
+  <data name="SIMERG_LBL_RUECKLAUF_MITTEL" xml:space="preserve">
+    <value>Mittlerer Rücklauf im Betrieb</value>
+  </data>
+  <data name="SIMERG_TIP_BRENNWERT_SPK" xml:space="preserve">
+    <value>Ein Brennwertkessel mit Brennwertkennlinie rechnet je Stunde zusätzlich mit dem Rücklauf: Unter dem Taupunkt des Abgases kondensiert Wasserdampf, und der Wirkungsgrad steigt bis zum Kondensationsgewinn bei 30 °C Rücklauf. Der Rücklauf kommt aus dem gerechneten Heizkreis (Anlagenkopplung), sonst aus dem Senkenspeicher, sonst aus dem gepflegten Temperaturpaar, sonst gilt 50 °C. Brennwertbetrieb heißt: Rücklauf unter dem Taupunkt. Der Brennwertbrennstoff ist der Minderverbrauch gegenüber der trockenen Teillastkurve — negativ, wo die Kondensation Brennstoff spart.</value>
+  </data>
+  <data name="SIM_SPALTE_RUECKLAUF_MITTEL" xml:space="preserve">
+    <value>Rücklauf [°C]</value>
+  </data>
+  <data name="SIM_SPALTE_BRENNWERTANTEIL" xml:space="preserve">
+    <value>Brennwertbetrieb [%]</value>
+  </data>
+  <data name="CHART_CSV_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>{0} Rücklauf [°C]</value>
+  </data>
   <data name="KOND_MSG_ZELLE_ZEITEN" xml:space="preserve">
     <value>Die Zeiten {0} … {1} passen nicht zur Zeile {2}: Die Nachtzeile nimmt Stunden 0 bis 23, die Saison Tage 1 bis 365 (beide oder keinen), jede andere Zeile keine Zeiten.</value>
   </data>

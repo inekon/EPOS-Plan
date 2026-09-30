@@ -969,7 +969,20 @@ hat keine Betriebsschwelle. Der Reiter zeigt in der Gruppe „Betrieb“ den mit
 (Wärme der Laufstunden durch ihren Brennstoff) und den Brennstoff aus Teillast gegenüber Nennlast, die
 Kesseltabelle je Kessel η₃₀ (mit „(Vorgabe)“), den Wirkungsgrad im Betrieb und die mittlere Laststufe; der
 CSV-Export führt je Brennstoffkessel die Stundenreihe des Wirkungsgrads, das Laufprotokoll η₁₀₀ und η₃₀ samt
-Herkunft.
+Herkunft. Das Kennzeichen `Brennwert` der Projektkopie folgt dem Katalogsatz (Schemaschritt 158,
+`KesselBrennwertNachzug`).
+
+**Brennwertkennlinie** ([Konzept Kesselkennlinie](Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1 Punkte 3 bis 5). Ein
+Brennwertkessel mit `Kennlinie_Brennwert` = 1 rechnet je Laufstunde η_eff = η_tr(β) + Δ₃₀ · g(T_RL): die trockene
+Kurve aus η₃₀ − Δ₃₀, der Kondensationsanteil g = (T_Tau − T_RL)/(T_Tau − 30) auf [0; 1,2], höchstens Hs/Hi
+(`Kesselkennlinie.EtaBrennwert`; Taupunkt und Δ₃₀ je Brennstoffgruppe: Gas 57 °C/0,08, Heizöl 47 °C/0,04, Holz und
+Pellets 50 °C/0,05). Der Rücklauf der Stunde kommt aus dem Heizkreis der Anlagenkopplung
+(`HeizkreisProjekt.RuecklaufC`, NaN fällt durch), sonst aus dem ersten Pufferspeicher der Senkenliste (`RL_eff`,
+geschichtet die unterste Schicht, einmal je Stunde in `Stunde_Start` gelesen), sonst aus dem gepflegten Paar an
+Anlage und Kessel, sonst 50 °C. „Brennwertbetrieb“ ist eine Stunde mit Rücklauf unter dem Taupunkt
+(`Rechenrand.SchwelleErreicht`). Der Reiter zeigt mittleren Rücklauf, Anteil der Stunden und der Wärme im
+Brennwertbetrieb und den Brennwertbrennstoff; das Laufprotokoll nennt die Stufen der Rücklaufkette und meldet
+einen Kessel, dessen Rücklauf in mindestens der Hälfte der Betriebsstunden über dem Taupunkt lag.
 
 **Elektrokessel** (`Tab_Heizkessel.Brennstoff` = 13). Sein Strom steht über den Stromverbrauch der
 Stufe im Reststrombedarf und damit im Netzbezug, den Kostenrechnung und Emissionsbilanz bewerten.
@@ -987,5 +1000,5 @@ höchste Stundenwert von Wärmeabgabe ÷ Wirkungsgrad, bei mehreren Kesseln die 
 Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
-Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests` und der
-Referenzbasis `2026-09-30_R27_Kesselteillast` (Größen `Kessel[i].*` in `aggregate.csv`).
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R28_Kesselbrennwert` (Größen `Kessel[i].*` in `aggregate.csv`).

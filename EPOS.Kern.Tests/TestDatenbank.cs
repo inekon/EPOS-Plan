@@ -804,6 +804,11 @@ namespace EPOS.Kern.Tests
                 // 152; wiederholbar - gesaet wird nur unter fehlender Groesse und fehlendem Namen.
                 KonditionierungsvorlagenSaatSchema.Ausfuehren(null);
 
+                // Schritt KesselBrennwertNachzug.SCHRITT (Kesselkennlinie E2b, Anwenderentscheid B-1): das
+                // Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar - nur gesetzt, nie geloescht.
+                KesselBrennwertNachzug.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

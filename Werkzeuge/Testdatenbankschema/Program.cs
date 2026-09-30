@@ -2258,6 +2258,30 @@ namespace Testdatenbankschema
                                   KonditionierungsvorlagenSaatSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KesselBrennwertNachzug.SCHRITT (Konzept Kesselkennlinie, Etappe E2b;
+            //      Anwenderentscheid B-1 vom 30.09.2026): Brennwert = 1 in jeder Projektkopie
+            //      Tab_Heizkessel, deren Katalogsatz (ueber den Bezeichner, bei widerspruechlichen
+            //      Saetzen nach der Leistung) ein Brennwertkessel ist; ohne eindeutigen Katalogsatz nach
+            //      der Bauart in der Beschreibung. Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KesselBrennwertNachzug bedient; nur gesetzt, nie geloescht.
+            //
+            //      REFERENZLAUF NICHT BYTE-GLEICH: Jeder so gekennzeichnete Brennstoffkessel ohne eigenes
+            //      eta30 rechnet mit der Normvorgabe des Brennwertkessels - die Einfrierregel "gesaete
+            //      Kesseldaten" verlangt eine neue Basis (Referenzlaeufe/LIESMICH.md).
+            string nrBrennwert = KesselBrennwertNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBrennwert + " - Brennwertkennzeichen der Projektkessel: " +
+                              (KesselBrennwertNachzug.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBrennwert = new List<string>();
+                KesselBrennwertNachzug.Ausfuehren(berichtBrennwert);
+                foreach (string zeile in berichtBrennwert)
+                    Console.WriteLine("Schritt " + nrBrennwert + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBrennwert + " - vollstaendig: " +
+                                  KesselBrennwertNachzug.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

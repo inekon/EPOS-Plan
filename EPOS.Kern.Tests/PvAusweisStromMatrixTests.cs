@@ -240,9 +240,13 @@ namespace EPOS.Kern.Tests
             // E27 (Entscheid E27‑Q2 a): Anker neu gesetzt. Die zwölf BHKW-Überschussstunden
             // minderten den Netzbezug nicht mehr (4.357,78 → 4.358,17 MWh, +0,39 MWh ×
             // 0,25 €/kWh = +97,50 €/a Energiekosten); vor E27 −31.141.242,708693754.
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -31142971.061503537 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -31311485.338977072 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -31007010.798322424 };
+            // Kessel E2b (Schemaschritt 158): Der Gaskessel trägt das Brennwertkennzeichen seines
+            // Katalogsatzes und rechnet mit der Normvorgabe von η₃₀ (5.403,10 → 5.203,20 MWh Gas,
+            // −15.992 €/a Energiekosten, −2.638,68 €/a CO₂-Abgabe); vor E2b −31.142.971,061503537
+            // (Erwartet), −31.311.485,338977072 (Best), −31.007.010,798322424 (Worst).
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -30812710.6704642 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -30978281.063290827 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -30679642.905571833 };
         }
 
         /// <summary>KWKG-Zuschlag Jahr 1 von 1030 vor E26 [€] — der KWK-Split trägt ihn.</summary>

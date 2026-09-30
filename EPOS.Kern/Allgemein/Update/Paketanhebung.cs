@@ -215,6 +215,8 @@ namespace WindowsFormsApplication1
             new Stufe(KesselKennlinieSchema.SCHRITT, Art.Ddl, "Kennlinienspalten des Heizkessels"),
             new Stufe(KonditionierungsvorlagenSaatSchema.SCHRITT, Art.Katalog,
                       "die 14 ausgelieferten Konditionierungsvorlagen"),
+            new Stufe(KesselBrennwertNachzug.SCHRITT, Art.Umformung,
+                      "Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung", SchrittKesselBrennwert),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -678,6 +680,25 @@ namespace WindowsFormsApplication1
                 ? string.Format(CultureInfo.CurrentCulture,
                     Text("TRANSFER_ANHEBUNG_S148_UNKLAR", "{0} (unklar: {1})"), zeile, string.Join("; ", unklar))
                 : zeile;
+        }
+
+        /// <summary>
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/> — <see cref="KesselBrennwertNachzug"/> an den
+        /// Projektkesseln des Pakets. Den Katalogsatz sucht die Stufe dort, wo ihn das Programm nach
+        /// dem Einspielen sucht: im Katalog des Ziels, über den Bezeichner. Ohne lesbaren Katalog gilt
+        /// die Beschreibung.
+        /// </summary>
+        private static string SchrittKesselBrennwert(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, KesselBrennwertNachzug.TAB_PROJEKT, "ID", KesselBrennwertNachzug.SPALTE, "Bezeichner"))
+                return null;
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "Beschreibung");
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "Ptherm");
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "ID_Projekt");
+            KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(db.Zugriff, Umformzugriff.Datenbank, null);
+            if (b.Gesetzt == 0) return null;
+            return Zeilen(b.Gesetzt, Text("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT",
+                "Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)"));
         }
 
         // =================================================================
