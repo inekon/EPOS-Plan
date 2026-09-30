@@ -131,6 +131,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Editor meldet sie als Form_Gebaeude1 an; die Stammblatt-Verwaltung trägt den Reiter nicht.
         new("KonditionierungReiter",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U2 (Teilkonzept 7.4): die Kalenderkarte mit der Auswahlliste der Vorlagen ihrer Größe.
+        new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -297,6 +299,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),
+        // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - eine Wahl VOR der Handlung „Übernehmen“,
+        // die den Arbeitsstand erst mit dem Knopf ändert.
+        new("Kalenderkarte", 1, "die Auswahlliste der Vorlagen wählt nur, was „Übernehmen“ übernimmt — eine Wahl vor " +
+            "der Handlung, kein Einstellwert"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

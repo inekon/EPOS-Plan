@@ -97,7 +97,12 @@
                                Aktiv="@(groesse == _groesse)" Lesemodus="@Lesemodus" Texte="@Texte"
                                Anlegen="@Rueckruf(KonditionierungHandlung.Anlegen, () => Bearbeitung.Anlegen(groesse))"
                                Verwerfen="@Rueckruf(KonditionierungHandlung.Verwerfen, () => Bearbeitung.Verwerfen(groesse))"
-                               MatrixErneut="@Rueckruf(KonditionierungHandlung.MatrixErneut, () => Bearbeitung.MatrixErneut(groesse))" />
+                               MatrixErneut="@Rueckruf(KonditionierungHandlung.MatrixErneut, () => Bearbeitung.MatrixErneut(groesse))"
+                               Vorlagen="@(Bearbeitung.MitVorlagen ? Bearbeitung.Vorlagen(groesse) : null)"
+                               GewaehlteVorlage="@Bearbeitung.GewaehlteVorlage(groesse)?.Id"
+                               VorlageGewaehlt="@(id => VorlageWaehlen(groesse, id))"
+                               Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
+                               Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs" />
             }
         </div>
     }
@@ -248,6 +253,9 @@
     /// <summary>Meldet den Fehlerzustand eines Felds an den Arbeitsstand.</summary>
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
 
+    /// <summary>Entprellung der Vorschau in den Karten [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
     /// <summary>Die Größe, deren Spalte und Karte schmal vorn stehen.</summary>
     private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
 
@@ -343,6 +351,13 @@
     private async Task Zuruecknehmen()
     {
         Bearbeitung.Zuruecknehmen();
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Wahl der Auswahlliste einer Karte — sie ändert den Arbeitsstand nicht.</summary>
+    private async Task VorlageWaehlen(KonditionierungGroesse g, long? id)
+    {
+        Bearbeitung.VorlageWaehlen(g, id);
         await Geaendert.InvokeAsync();
     }
 

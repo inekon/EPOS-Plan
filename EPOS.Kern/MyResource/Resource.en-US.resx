@@ -40611,5 +40611,38 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Night purge ventilation</value>
   </data>
+  <data name="KOND_TXT_VORSCHAU_VORLAGE" xml:space="preserve">
+    <value>Preview with the template “{0}” – nothing is applied until “Apply”.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_KEINE_VORLAGE" xml:space="preserve">
+    <value>Choose a template from the list first.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_GESPEICHERT" xml:space="preserve">
+    <value>Template “{0}” saved – it is now in the list of this quantity.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_UMBENANNT" xml:space="preserve">
+    <value>Template renamed to “{0}”.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_GELOESCHT" xml:space="preserve">
+    <value>Template “{0}” deleted.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_DUPLIZIERT" xml:space="preserve">
+    <value>Template “{0}” created as a copy of “{1}”.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGEN_LEER" xml:space="preserve">
+    <value>There is no template for this quantity yet.</value>
+  </data>
+  <data name="KOND_LBL_SPALTE_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply the template “{0}” to the created calendar “{1}”? Replaced: {2}. Kept: {3}.</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the template “{0}”?</value>
+  </data>
+  <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
+    <value>The template of the column {0} on the “Conditioning” tab: the name of a template from the list of this quantity. Setting it applies the template like the “Apply” button – the cells of the template go into the column, the calendar is created, nominal value and season remain; if a calendar is already created, only the matrix range is replaced. Reading gives the template applied last; empty = none.</value>
+  </data>
 </root>
 

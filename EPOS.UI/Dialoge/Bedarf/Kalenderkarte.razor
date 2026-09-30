@@ -1,16 +1,26 @@
-﻿@* DIE KALENDERKARTE (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 7.1, 7.5) - je Groesse
-   eine Karte unter der Matrix, EINGEKLAPPT mit einer Zeile Zustand: "aus der Matrix", "aus Vorlage
-   Buero", "angelegt, 3 eigene Perioden" (an einer Zone "vom Gebaeude").
+﻿@* DIE KALENDERKARTE (Stufe KP2, Wellen U1 und U2; Teilkonzept Konditionierungsprofile 7.1, 7.4, 7.5) - je
+   Groesse eine Karte unter der Matrix, mit einer Zeile Zustand: "aus der Matrix", "aus Vorlage Buero",
+   "angelegt, 3 eigene Perioden" (an einer Zone "vom Gebaeude").
 
-   WAS SIE IN U1 TRAEGT. Nur die Handlungen, die keinen Karteninhalt brauchen: "Kalender anlegen" an
-   einem abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Die
-   Auswahlliste der Vorlagen (U2) und der Inhalt - Grundangabe, Zeitfenster, Wochenraster,
-   Periodenliste, Werkzeuge, Teppichbild (U3) - kommen spaeter in dieselbe Karte.
+   WAS SIE TRAEGT. Die Handlungen, die keinen Karteninhalt brauchen: "Kalender anlegen" an einem
+   abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Seit Welle U2 im
+   Kopf die AUSWAHLLISTE der Vorlagen ihrer Groesse (Teilkonzept 7.4): die ausgelieferten zuerst, dann die
+   eigenen - gleiche Namen stehen so in jeder Liste an derselben Stelle; eine ausgelieferte traegt neben
+   der Liste das Kennzeichen (Schloss), eine eigene nicht. Darunter die VORSCHAU der Woche: mit gewaehlter
+   Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
+   einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
+   ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
+   letzten (Hausregel "die teure Stufe laeuft entprellt"). Der Inhalt - Grundangabe, Zeitfenster,
+   Wochenraster, Periodenliste, Werkzeuge, Teppichbild (U3) - kommt spaeter in dieselbe Karte.
 
-   KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht. Im Lesemodus
-   (ausgelieferter Satz) steht nur der Zustand. Die Rueckfragen stellt der Wirt (Festlegung 3). *@
+   KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht; die Liste nur mit
+   Vorlagen (der Wirt reicht sie nur, wenn der Weg "Uebernehmen" bietet). Im Lesemodus (ausgelieferter
+   Satz) steht nur der Zustand. Die Rueckfragen stellt der Wirt (Festlegung 3). *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "")" data-groesse="@((int)Groesse)"
          aria-label="@Titel">
@@ -18,6 +28,24 @@
         <h3 class="epos-kond-karte-titel">@Titel</h3>
         <p class="epos-kond-karte-zustand">@Zustand</p>
     </div>
+    @if (!Lesemodus && Vorlagen is not null)
+    {
+        <div class="epos-vorlage-wahl epos-kond-vorlagewahl">
+            <Auswahlfeld Bezeichnung="@Texte.LabelVorlageAuswahl" Kurzname="@(Titel + " · " + Texte.LabelVorlageAuswahl)"
+                         Eintraege="@Eintraege" Auswahl="@Wahl" Platzhalter="@Texte.TextVorlageKeine"
+                         AuswahlChanged="Waehlen" />
+            @if (Gewaehlt is { Ausgeliefert: true })
+            {
+                <span class="epos-vorlage-schlossplatz">
+                    <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
+                </span>
+            }
+        </div>
+        @if (Gewaehlt is KonditionierungVorlageDaten v && v.Beschreibung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@v.Beschreibung</p>
+        }
+    }
     @if (!Lesemodus && (Anlegen.HasDelegate || Verwerfen.HasDelegate || MatrixErneut.HasDelegate))
     {
         <div class="epos-zeilenknoepfe epos-kond-karte-knoepfe">
@@ -33,6 +61,17 @@
             {
                 <button type="button" class="epos-knopf epos-kond-verwerfen" @onclick="Verwerfen">@Texte.KnopfVerwerfen</button>
             }
+        </div>
+    }
+    @if (!Lesemodus && Vorschau is not null)
+    {
+        <div class="epos-kond-vorschau">
+            @if (Gewaehlt is KonditionierungVorlageDaten g)
+            {
+                <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, g.Name)</p>
+            }
+            <DiagrammSvg Modell="@_modell" Kennung="@("kond-vorschau-" + (int)Groesse)" Bezeichnung="@Texte.LabelVorschauWoche"
+                         Einheit="@Einheit" />
         </div>
     }
 </section>
@@ -67,4 +106,110 @@
 
     /// <summary>„Matrix erneut anwenden…"; ohne Rückruf kein Knopf.</summary>
     [Parameter] public EventCallback MatrixErneut { get; set; }
+
+    // ------------------------------------------------------------ Vorlagen (Welle U2)
+
+    /// <summary>
+    /// Die Vorlagen dieser Größe in der Reihenfolge des Kerns (die ausgelieferten zuerst); <c>null</c> =
+    /// keine Auswahlliste („kein Delegat, kein Knopf"), leer = eine Liste nur mit „keine Vorlage gewählt".
+    /// </summary>
+    [Parameter] public IReadOnlyList<KonditionierungVorlageDaten>? Vorlagen { get; set; }
+
+    /// <summary>Die gewählte, noch nicht übernommene Vorlage (ihre Id); <c>null</c> = keine.</summary>
+    [Parameter] public long? GewaehlteVorlage { get; set; }
+
+    /// <summary>Meldet die Wahl der Auswahlliste — <c>null</c> = „keine Vorlage gewählt".</summary>
+    [Parameter] public EventCallback<long?> VorlageGewaehlt { get; set; }
+
+    /// <summary>
+    /// Rechnet das Bild der Vorschau (Woche der gewählten Vorlage am Ziel bzw. des geltenden Kalenders);
+    /// <c>null</c> = keine Vorschau. Gerufen wird nur bei neuem <see cref="Vorschauschluessel"/>.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell?>? Vorschau { get; set; }
+
+    /// <summary>Der Schlüssel der Vorschau — ändert er sich, wird sie (entprellt) neu gerechnet.</summary>
+    [Parameter] public string Vorschauschluessel { get; set; } = "";
+
+    /// <summary>Entprellung der Vorschau nach einer Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>Die Einträge der Auswahlliste: Id und Name (ein Datenwert, nicht übersetzt).</summary>
+    private IReadOnlyList<(int Id, string Text)> Eintraege
+        => (Vorlagen ?? Array.Empty<KonditionierungVorlageDaten>())
+           .Where(v => v.Id > 0 && v.Id <= int.MaxValue)
+           .Select(v => ((int)v.Id, v.Name))
+           .ToList();
+
+    /// <summary>Die Wahl als Id der Liste.</summary>
+    private int? Wahl => Gewaehlt is KonditionierungVorlageDaten v ? (int)v.Id : null;
+
+    /// <summary>Die gewählte Vorlage, wenn sie in der Liste steht.</summary>
+    private KonditionierungVorlageDaten? Gewaehlt
+        => GewaehlteVorlage is long id ? Vorlagen?.FirstOrDefault(v => v.Id == id) : null;
+
+    /// <summary>Die Einheit der Spalte für den Wert am Zeiger.</summary>
+    private string Einheit => Groesse switch
+    {
+        KonditionierungGroesse.Lueftung => "1/h",
+        KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+        _ => "°C"
+    };
+
+    private Task Waehlen(int? id) => VorlageGewaehlt.InvokeAsync(id);
+
+    // ------------------------------------------------------------ Die Vorschau, entprellt
+
+    private Zeichenmodell? _modell;
+    private string? _schluessel;
+    private long? _wahlDavor;
+    private bool _gerechnet;
+    private CancellationTokenSource? _entprellung;
+
+    protected override void OnParametersSet()
+    {
+        if (Vorschau is null || Lesemodus)
+        {
+            _entprellung?.Cancel();
+            _modell = null;
+            _schluessel = null;
+            _gerechnet = false;
+            return;
+        }
+        if (_gerechnet && Vorschauschluessel == _schluessel) return;
+        bool sofort = !_gerechnet || EntprellungMs <= 0 || GewaehlteVorlage != _wahlDavor;
+        _schluessel = Vorschauschluessel;
+        _wahlDavor = GewaehlteVorlage;
+        _gerechnet = true;
+        _entprellung?.Cancel();
+        if (sofort)
+            _modell = Rechnen();
+        else
+            _ = Entprellt(_schluessel);
+    }
+
+    /// <summary>Rechnet die Vorschau nach der Ruhezeit — nur, wenn kein neuerer Schlüssel kam.</summary>
+    private async Task Entprellt(string schluessel)
+    {
+        var cts = _entprellung = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(EntprellungMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (cts.IsCancellationRequested || schluessel != _schluessel) return;
+        _modell = Rechnen();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Zeichenmodell? Rechnen()
+    {
+        try { return Vorschau?.Invoke(); }
+        catch (Exception) { return null; }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _entprellung?.Cancel();
 }

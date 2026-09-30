@@ -415,6 +415,175 @@ public sealed class KonditionierungBearbeitung
     }
 
     // =================================================================================
+    // Vorlagen je Größe (Stufe KP2, Welle U2; Teilkonzept 3.5, 7.4)
+    // =================================================================================
+
+    private static readonly IReadOnlyList<KonditionierungVorlageDaten> KEINE_VORLAGEN = Array.Empty<KonditionierungVorlageDaten>();
+
+    /// <summary>Die Listen je Größe, einmal gelesen — ein Zeichenlauf fragt die Datenbank nicht.</summary>
+    private readonly Dictionary<KonditionierungGroesse, IReadOnlyList<KonditionierungVorlageDaten>> _vorlagen = new();
+
+    /// <summary>Die Wahl der Auswahlliste je Größe (noch nicht übernommen).</summary>
+    private readonly Dictionary<KonditionierungGroesse, long> _gewaehlt = new();
+
+    /// <summary>
+    /// Führt die Karte die Auswahlliste? Nur mit „Übernehmen" samt Liste im Weg („kein Delegat, kein
+    /// Knopf", <see cref="KonditionierungWeg.Bietet"/>).
+    /// </summary>
+    public bool MitVorlagen => Bietet(KonditionierungHandlung.VorlageUebernehmen);
+
+    /// <summary>
+    /// <b>Die Vorlagen einer Größe</b> in der Reihenfolge des Kerns — die ausgelieferten zuerst, dann nach
+    /// Name; gleiche Namen stehen so in jeder Liste an derselben Stelle. Gelesen wird einmal je Größe,
+    /// bis <see cref="VorlagenNeuLaden"/> die Listen verwirft.
+    /// </summary>
+    public IReadOnlyList<KonditionierungVorlageDaten> Vorlagen(KonditionierungGroesse g)
+    {
+        if (!MitWeg || Weg.Vorlagen is null) return KEINE_VORLAGEN;
+        if (_vorlagen.TryGetValue(g, out IReadOnlyList<KonditionierungVorlageDaten>? liste)) return liste;
+        try
+        {
+            liste = Weg.Vorlagen(g) ?? KEINE_VORLAGEN;
+        }
+        catch (Exception ex)
+        {
+            Fehler(ex.Message);
+            liste = KEINE_VORLAGEN;
+        }
+        _vorlagen[g] = liste;
+        return liste;
+    }
+
+    /// <summary>
+    /// Verwirft die gelesenen Listen — nach „Als Vorlage speichern…" und nach jeder Handlung der
+    /// Verwaltung; eine Wahl, deren Vorlage es nicht mehr gibt, fällt.
+    /// </summary>
+    public void VorlagenNeuLaden()
+    {
+        _vorlagen.Clear();
+        foreach (KonditionierungGroesse g in _gewaehlt.Keys.ToList())
+            if (!Vorlagen(g).Any(v => v.Id == _gewaehlt[g])) _gewaehlt.Remove(g);
+    }
+
+    /// <summary>Die gewählte, noch nicht übernommene Vorlage einer Größe; <c>null</c> = keine.</summary>
+    public KonditionierungVorlageDaten? GewaehlteVorlage(KonditionierungGroesse g)
+        => _gewaehlt.TryGetValue(g, out long id) ? Vorlagen(g).FirstOrDefault(v => v.Id == id) : null;
+
+    /// <summary>
+    /// Wählt eine Vorlage der Liste (<c>null</c> = keine). Nur eine Vorlage DIESER Liste — eine andere
+    /// Id wird abgelehnt (<c>false</c>). Die Wahl ändert den Arbeitsstand nicht; erst
+    /// <see cref="VorlageUebernehmen"/> tut es.
+    /// </summary>
+    public bool VorlageWaehlen(KonditionierungGroesse g, long? id)
+    {
+        if (id is not long v)
+        {
+            _gewaehlt.Remove(g);
+            return true;
+        }
+        if (!Vorlagen(g).Any(x => x.Id == v)) return false;
+        _gewaehlt[g] = v;
+        return true;
+    }
+
+    /// <summary>
+    /// <b>„Übernehmen"</b> (P11, P12): die gewählte Vorlage in die Matrixspalte und den Kalender der
+    /// Größe — über den Weg des Kerns in den Arbeitsstand; geschrieben wird mit dem OK des Editors.
+    /// Trägt das Ziel schon einen angelegten Kalender dieser Größe, fragt der Reiter VORHER aus dem
+    /// Befund (was ersetzt wird, was bleibt, Vorgabe „Nein"); steht die Lüftung als Gesamtangabe, kommt
+    /// die Rückfrage „aufteilen" (F5). Danach ist die Wahl leer: Die Karte zeigt den Kalender, der der
+    /// Matrix folgt (E56 F2 (a)). <c>false</c> = keine Wahl oder kein Weg.
+    /// </summary>
+    public bool VorlageUebernehmen(KonditionierungGroesse g)
+    {
+        if (!MitVorlagen || GewaehlteVorlage(g) is not KonditionierungVorlageDaten v) return false;
+        long id = v.Id;
+        Action handlung = () => Ausfuehren("T|" + g, s => Weg.VorlageUebernehmen!(s, new KonditionierungOrt(g), id),
+                                           () => _gewaehlt.Remove(g));
+        if (Angelegt(g))
+            MitRueckfrage(KonditionierungHandlung.VorlageUebernehmen, g, Texte.KnopfUebernehmen, handlung, vorlage: v.Name);
+        else
+            handlung();
+        return true;
+    }
+
+    /// <summary>
+    /// <b>Die Woche der Vorschau</b> einer Karte (Teilkonzept 7.4, 7.5) — 168 Werte in der Einheit der
+    /// Spalte, <see cref="double.NaN"/> = „aus". Mit gewählter Vorlage die Woche, die „Übernehmen" auf
+    /// einer KOPIE des Arbeitsstands ergäbe (an den Ferienzeiträumen des Ziels; an einer Gesamtangabe
+    /// der Lüftung auf der aufgeteilten Probe); sonst die des angelegten Kalenders, beim abgeleiteten
+    /// die, die „Kalender anlegen" auf einer Kopie ergäbe. Geändert wird nichts; <c>null</c> = keine.
+    /// </summary>
+    public double[]? Vorschauwoche(KonditionierungGroesse g)
+    {
+        if (!MitWeg) return null;
+        try
+        {
+            var ort = new KonditionierungOrt(g);
+            KonditionierungStand s = Eingabestand();
+            Func<KonditionierungStand, KonditionierungErgebnis>? probe = null;
+            if (GewaehlteVorlage(g) is KonditionierungVorlageDaten v && Weg.VorlageUebernehmen is not null)
+                probe = x => Weg.VorlageUebernehmen(x, ort, v.Id);
+            else if (Angelegt(g))
+                return Wochenwerte(Kalender(g));
+            else if (Weg.Anlegen is not null)
+                probe = x => Weg.Anlegen(x, ort);
+            if (probe is null) return null;
+
+            KonditionierungErgebnis e = probe(s);
+            if (!e.Ok && e.Rueckfrage is not null && Weg.LuftwechselAufteilen is not null
+                && Weg.LuftwechselAufteilen(s) is { Ok: true, Stand: KonditionierungStand geteilt })
+                e = probe(geteilt);
+            return e is { Ok: true, Stand: KonditionierungStand neu }
+                ? Wochenwerte(neu.Gebaeude.Konditionierung?.Spalte(g).Kalender)
+                : null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Das Bild der Vorschau (<see cref="KonditionierungWeg.WochenVorschau"/>); <c>null</c> = keines.</summary>
+    public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Vorschau(KonditionierungGroesse g)
+    {
+        if (Weg.WochenVorschau is null || Vorschauwoche(g) is not double[] woche) return null;
+        try { return Weg.WochenVorschau(g, woche); }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>
+    /// Der Schlüssel der Vorschau: Er ändert sich, wenn sich etwas ändert, das die Woche ändern kann — die
+    /// Fassung der Konditionierung (jede Handlung, auch eine Bestandszelle über den Weg), die Wahl, die
+    /// Kühlung und die Kopplung der Heizspalte. Die Karte rechnet nur bei neuem Schlüssel, entprellt.
+    /// </summary>
+    public string Vorschauschluessel(KonditionierungGroesse g)
+        => string.Join("|", (Daten?.Fassung ?? -1).ToString(CultureInfo.InvariantCulture),
+                       GewaehlteVorlage(g)?.Id.ToString(CultureInfo.InvariantCulture) ?? "-",
+                       Stand.KuehlungAktiv ? "k" : "-", Stand.HeizkreisAktiv ? "h" : "-",
+                       Stand.UebergabeArt ?? "", Stand.Sollwertprofil ?? "");
+
+    /// <summary>Die 168 Werte eines Kalenders: Woche, Wert oder „aus"; <c>null</c> ohne Kalender.</summary>
+    private static double[]? Wochenwerte(KonditionierungKalender? k)
+    {
+        if (k is null || k.Zustand != KonditionierungZustand.Angelegt) return null;
+        switch (k.Angabe)
+        {
+            case KonditionierungAngabe.Woche:
+                return k.Woche is { Length: WOCHENWERTE } w ? (double[])w.Clone() : null;
+            case KonditionierungAngabe.Wert:
+                return Enumerable.Repeat(k.Wert ?? double.NaN, WOCHENWERTE).ToArray();
+            case KonditionierungAngabe.Aus:
+                return Enumerable.Repeat(double.NaN, WOCHENWERTE).ToArray();
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>Die Zahl der Stunden einer Woche.</summary>
+    private const int WOCHENWERTE = 168;
+
+    // =================================================================================
     // Rückfragen
     // =================================================================================
 
@@ -438,7 +607,7 @@ public sealed class KonditionierungBearbeitung
     /// Einzelheiten.
     /// </summary>
     private void MitRueckfrage(KonditionierungHandlung h, KonditionierungGroesse g, string titel, Action handlung,
-                               bool immer = false)
+                               bool immer = false, string? vorlage = null)
     {
         string text;
         if (Weg.Rueckfrage is null)
@@ -460,13 +629,17 @@ public sealed class KonditionierungBearbeitung
                 handlung();
                 return;
             }
-            text = Fragetext(h, g, befund);
+            text = Fragetext(h, g, befund, vorlage);
         }
         OffeneFrage = new Rueckfrage(Knopftext(titel), text, VorgabeNein: true, handlung);
     }
 
-    /// <summary>Der Text einer Rückfrage aus ihrem Befund: was ersetzt wird, was bleibt, die Zonen mit Namen.</summary>
-    public string Fragetext(KonditionierungHandlung h, KonditionierungGroesse g, KonditionierungRueckfrage? befund)
+    /// <summary>
+    /// Der Text einer Rückfrage aus ihrem Befund: was ersetzt wird, was bleibt, die Zonen mit Namen;
+    /// <paramref name="vorlage"/> nennt beim Übernehmen die Vorlage.
+    /// </summary>
+    public string Fragetext(KonditionierungHandlung h, KonditionierungGroesse g, KonditionierungRueckfrage? befund,
+                            string? vorlage = null)
     {
         CultureInfo c = CultureInfo.CurrentCulture;
         string ersetzt = Posten(befund?.Ersetzt);
@@ -476,6 +649,8 @@ public sealed class KonditionierungBearbeitung
             KonditionierungHandlung.Verwerfen => string.Format(c, Fragen.Verwerfen, Groessenname(g), ersetzt, bleibt),
             KonditionierungHandlung.MatrixErneut => string.Format(c, Fragen.MatrixErneut, Groessenname(g), ersetzt, bleibt),
             KonditionierungHandlung.KatalogErneut => string.Format(c, Fragen.KatalogErneut, ersetzt, bleibt),
+            KonditionierungHandlung.VorlageUebernehmen
+                => string.Format(c, Fragen.VorlageUebernehmen, vorlage ?? "", Groessenname(g), ersetzt, bleibt),
             _ => string.Format(c, Fragen.OhneEinzelheiten, Groessenname(g))
         };
         if (befund is { Zonen.Count: > 0 })

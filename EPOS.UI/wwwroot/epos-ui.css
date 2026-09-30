@@ -13578,6 +13578,22 @@ td.epos-vorlage-katalogbeschreibung {
     flex-wrap: wrap;
 }
 
+/* DIE VORLAGEN DER KARTE (Stufe KP2, Welle U2; Teilkonzept 7.4): die
+   Auswahlliste im Kopf (Baustein-Anordnung .epos-vorlage-wahl, das Schloss
+   daneben), die Beschreibung der gewaehlten Vorlage und die Vorschau der
+   Woche ueber die ganze Breite der Karte. */
+.epos-kond-vorlagewahl,
+.epos-kond-vorschau {
+    margin-top: 6px;
+    min-width: 0;
+}
+
+.epos-kond-vorlage-beschreibung,
+.epos-kond-vorschau-vorlage {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
 @container epos-kond (min-width: 900px) {
     .epos-kond-groessen {
         display: none;
