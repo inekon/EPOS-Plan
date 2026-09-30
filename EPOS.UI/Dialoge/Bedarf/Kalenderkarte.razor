@@ -60,6 +60,48 @@
             <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@v.Beschreibung</p>
         }
     }
+    @if (!Lesemodus && AlsVorlageSpeichern is not null)
+    {
+        <div class="epos-zeilenknoepfe epos-kond-vorlagenknoepfe">
+            <button type="button" class="epos-knopf epos-kond-als-vorlage" aria-expanded="@(_speichernOffen ? "true" : "false")"
+                    title="@Texte.HinweisVorlageSpeichern" @onclick="SpeichernUmschalten">@Texte.KnopfAlsVorlage</button>
+        </div>
+        @if (_speichernOffen)
+        {
+            @* "ALS VORLAGE SPEICHERN…" INLINE (Teilkonzept 7.4, Festlegung 13): Name, Beschreibung,
+               Nutzung; die Groesse ist die der Karte. "Speichern" schreibt SOFORT mit diesem eigenen OK -
+               die leise Zeile darunter sagt es; ein Doppelname wird AM FELD genannt. *@
+            <div class="epos-kond-vorlage-speichern" role="group" aria-label="@Texte.KnopfAlsVorlage">
+                <Formularraster>
+                    <KindInhalt>
+                        <div class="epos-kond-vorlage-name @(_nameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_name" WertChanged="NameGeaendert"
+                                      Hoechstlaenge="80" />
+                            @if (_nameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_nameFehler</p>
+                            }
+                        </div>
+                        <Textfeld Bezeichnung="@Texte.LabelVorlageBeschreibung" Wert="@_beschreibung"
+                                  WertChanged="w => _beschreibung = w" Mehrzeilig="true" Zeilen="2" Hoechstlaenge="400" />
+                        <Auswahlfeld Bezeichnung="@Texte.LabelVorlageNutzung" Eintraege="@Nutzungen" Auswahl="@_nutzung"
+                                     AuswahlChanged="w => _nutzung = w ?? 0" />
+                    </KindInhalt>
+                </Formularraster>
+                <p class="epos-leisezeile epos-kond-vorlage-sofort">@Texte.HinweisVorlageSofort @Texte.HinweisVorlageSpeichern</p>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-knopf--primaer epos-kond-vorlage-schreiben"
+                            @onclick="Speichern">@Texte.KnopfSpeichern</button>
+                    <button type="button" class="epos-knopf epos-kond-vorlage-abbrechen"
+                            @onclick="SpeichernAbbrechen">@Texte.KnopfAbbrechen</button>
+                </div>
+            </div>
+        }
+        @if (_gespeichert is not null)
+        {
+            <p class="epos-leisezeile epos-kond-vorlage-gespeichert" role="status">@_gespeichert</p>
+        }
+    }
     @if (!Lesemodus && (Anlegen.HasDelegate || Verwerfen.HasDelegate || MatrixErneut.HasDelegate))
     {
         <div class="epos-zeilenknoepfe epos-kond-karte-knoepfe">
@@ -151,6 +193,18 @@
     [Parameter] public EventCallback<string> Verweigert { get; set; }
 
     /// <summary>
+    /// „Als Vorlage speichern…" (E54, Festlegung 13): schreibt SOFORT und gibt das Ergebnis zurück — eine
+    /// Ablehnung des Namens nennt die Karte am Feld; <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<KonditionierungVorlageEingabe, KonditionierungVorlageErgebnis>? AlsVorlageSpeichern { get; set; }
+
+    /// <summary>Meldet, dass eine Vorlage geschrieben wurde — der Wirt liest die Listen neu.</summary>
+    [Parameter] public EventCallback VorlageGespeichert { get; set; }
+
+    /// <summary>Meldet eine benannte Ablehnung, die kein Feld betrifft — der Wirt zeigt sie im Banner.</summary>
+    [Parameter] public EventCallback<string> Abgelehnt { get; set; }
+
+    /// <summary>
     /// Rechnet das Bild der Vorschau (Woche der gewählten Vorlage am Ziel bzw. des geltenden Kalenders);
     /// <c>null</c> = keine Vorschau. Gerufen wird nur bei neuem <see cref="Vorschauschluessel"/>.
     /// </summary>
@@ -189,6 +243,69 @@
     /// <summary>Ein weich gesperrter Knopf meldet den Grund; sonst geht es an den Wirt.</summary>
     private Task UebernehmenGeklickt(string? grund)
         => grund is null ? Uebernehmen.InvokeAsync() : Verweigert.InvokeAsync(grund);
+
+    // ------------------------------------------------------------ „Als Vorlage speichern…" (inline)
+
+    private bool _speichernOffen;
+    private string _name = "";
+    private string _beschreibung = "";
+    private int? _nutzung = 0;
+    private string? _nameFehler;
+    private string? _gespeichert;
+
+    /// <summary>Die Nutzungen der Abfrage: „ohne Angabe", Wohnen, Büro, Schule, Sonstige (Anzeigewerte).</summary>
+    private IReadOnlyList<(int Id, string Text)> Nutzungen => new[]
+    {
+        ((int)KonditionierungNutzung.Keine, Texte.NutzungKeine),
+        ((int)KonditionierungNutzung.Wohnen, Texte.NutzungWohnen),
+        ((int)KonditionierungNutzung.Buero, Texte.NutzungBuero),
+        ((int)KonditionierungNutzung.Schule, Texte.NutzungSchule),
+        ((int)KonditionierungNutzung.Sonstige, Texte.NutzungSonstige),
+    };
+
+    private void SpeichernUmschalten()
+    {
+        _speichernOffen = !_speichernOffen;
+        _nameFehler = null;
+        _gespeichert = null;
+    }
+
+    private void NameGeaendert(string w)
+    {
+        _name = w ?? "";
+        _nameFehler = null;
+    }
+
+    private void SpeichernAbbrechen()
+    {
+        _speichernOffen = false;
+        _nameFehler = null;
+        _name = "";
+        _beschreibung = "";
+        _nutzung = 0;
+    }
+
+    /// <summary>
+    /// Das eigene OK der Abfrage: schreibt sofort. Eine Ablehnung des Namens steht am Feld und hält die
+    /// Abfrage offen; jede andere geht an den Wirt (Banner).
+    /// </summary>
+    private async Task Speichern()
+    {
+        if (AlsVorlageSpeichern is null) return;
+        var eingabe = new KonditionierungVorlageEingabe(_name, _beschreibung,
+                                                         (KonditionierungNutzung)(_nutzung ?? 0));
+        KonditionierungVorlageErgebnis e = AlsVorlageSpeichern(eingabe);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _nameFehler = e.Meldung;
+            else await Abgelehnt.InvokeAsync(e.Meldung);
+            return;
+        }
+        string name = e.Vorlage?.Name ?? _name.Trim();
+        SpeichernAbbrechen();
+        _gespeichert = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageGespeichert, name);
+        await VorlageGespeichert.InvokeAsync();
+    }
 
     // ------------------------------------------------------------ Die Vorschau, entprellt
 

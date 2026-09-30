@@ -1287,8 +1287,11 @@ body {
     outline-offset: 1px;
 }
 
-/* Eine Fehleingabe faerbt - sie meldet nicht (Program.ZahlFaerben). */
-.epos-fehleingabe {
+/* Eine Fehleingabe faerbt - sie meldet nicht (Program.ZahlFaerben). Ein
+   abgelehnter Name der Konditionierungsvorlagen (Welle U2) faerbt ebenso;
+   den Grund nennt die Zeile unter dem Feld. */
+.epos-fehleingabe,
+.epos-kond-feldfehler .epos-eingabe {
     background: var(--epos-fehleingabe);
 }
 
@@ -2119,7 +2122,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         color: rgb(24, 98, 24);
     }
 
-    .epos-fehleingabe {
+    .epos-fehleingabe,
+    .epos-kond-feldfehler .epos-eingabe {
         forced-color-adjust: none;
         background: rgb(255, 235, 235);
         color: rgb(44, 44, 42);
@@ -13600,6 +13604,37 @@ td.epos-vorlage-katalogbeschreibung {
 
 .epos-kond-vorlage-beschreibung,
 .epos-kond-vorschau-vorlage {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* "Als Vorlage speichern…" inline (Festlegung 13): die Abfrage unter der
+   Knopfzeile, abgesetzt; ein abgelehnter Name faerbt SEIN Feld und nennt
+   den Grund direkt darunter (Hausregel: der Grund steht, wo man hinsieht). */
+.epos-kond-vorlagenknoepfe {
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.epos-kond-vorlage-speichern {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    min-width: 0;
+}
+
+.epos-kond-vorlage-name {
+    min-width: 0;
+}
+
+.epos-kond-feldmeldung {
+    margin: 2px 0 0;
+    color: var(--epos-stufe-fehler);
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-vorlage-sofort,
+.epos-kond-vorlage-gespeichert {
     margin: 4px 0 0;
     overflow-wrap: anywhere;
 }

@@ -104,6 +104,9 @@
                                Uebernehmen="@Rueckruf(KonditionierungHandlung.VorlageUebernehmen, () => Bearbeitung.VorlageUebernehmen(groesse))"
                                UebernehmenSperre="@(groesse == KonditionierungGroesse.Kuehlen ? Kuehlsperre : null)"
                                Verweigert="Verweigert"
+                               AlsVorlageSpeichern="@(Bearbeitung.Bietet(KonditionierungHandlung.AlsVorlageSpeichern)
+                                                      ? e => Bearbeitung.AlsVorlageSpeichern(groesse, e) : null)"
+                               VorlageGespeichert="VorlagenGeaendert" Abgelehnt="Abgelehnt"
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
                                Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs" />
             }
@@ -354,6 +357,16 @@
     private async Task Zuruecknehmen()
     {
         Bearbeitung.Zuruecknehmen();
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Eine Vorlage wurde geschrieben: Die Karten zeigen die neu gelesenen Listen.</summary>
+    private async Task VorlagenGeaendert() => await Geaendert.InvokeAsync();
+
+    /// <summary>Eine benannte Ablehnung einer Karte (etwa „Als Vorlage speichern…"): die Warnung im Banner.</summary>
+    private async Task Abgelehnt(string meldung)
+    {
+        if (!string.IsNullOrEmpty(meldung)) Bearbeitung.Melden?.Invoke(meldung, WarnStufe.Warnung);
         await Geaendert.InvokeAsync();
     }
 

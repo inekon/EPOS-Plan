@@ -515,6 +515,29 @@ public sealed class KonditionierungBearbeitung
     }
 
     /// <summary>
+    /// <b>„Als Vorlage speichern…"</b> (E54, Festlegung 13): legt aus der Spalte und, falls angelegt, dem
+    /// Kalender der Größe eine eigene Vorlage an — ohne Nennwert und Saison. Schreibt SOFORT mit eigenem
+    /// OK, nicht mit dem des Editors, und ändert den Arbeitsstand nicht; danach sind die Listen neu
+    /// gelesen. Eine Ablehnung des Namens kommt mit <see cref="KonditionierungVorlageErgebnis.AmNamen"/>.
+    /// </summary>
+    public KonditionierungVorlageErgebnis AlsVorlageSpeichern(KonditionierungGroesse g, KonditionierungVorlageEingabe eingabe)
+    {
+        if (!Bietet(KonditionierungHandlung.AlsVorlageSpeichern))
+            return new KonditionierungVorlageErgebnis(false, Sperrgrund ?? Texte.GrundOhneTabellen, null);
+        KonditionierungVorlageErgebnis e;
+        try
+        {
+            e = Weg.AlsVorlageSpeichern!(Eingabestand(), new KonditionierungOrt(g), eingabe);
+        }
+        catch (Exception ex)
+        {
+            e = new KonditionierungVorlageErgebnis(false, ex.Message, null);
+        }
+        if (e.Ok) VorlagenNeuLaden();
+        return e;
+    }
+
+    /// <summary>
     /// <b>Die Woche der Vorschau</b> einer Karte (Teilkonzept 7.4, 7.5) — 168 Werte in der Einheit der
     /// Spalte, <see cref="double.NaN"/> = „aus". Mit gewählter Vorlage die Woche, die „Übernehmen" auf
     /// einer KOPIE des Arbeitsstands ergäbe (an den Ferienzeiträumen des Ziels; an einer Gesamtangabe

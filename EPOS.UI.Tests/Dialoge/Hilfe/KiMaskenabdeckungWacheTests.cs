@@ -300,9 +300,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - eine Wahl VOR der Handlung „Übernehmen“,
-        // die den Arbeitsstand erst mit dem Knopf ändert.
-        new("Kalenderkarte", 1, "die Auswahlliste der Vorlagen wählt nur, was „Übernehmen“ übernimmt — eine Wahl vor " +
-            "der Handlung, kein Einstellwert"),
+        // die den Arbeitsstand erst mit dem Knopf ändert; dazu Name, Beschreibung und Nutzung der Abfrage
+        // „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit eigenem OK, die sofort schreibt).
+        new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen wählt nur, was „Übernehmen“ übernimmt — eine Wahl vor " +
+            "der Handlung, kein Einstellwert; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
+            "speichern…“, die mit eigenem OK sofort schreibt"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

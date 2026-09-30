@@ -339,6 +339,109 @@ public class KalenderkarteTests : EposBunitContext
         Assert.Null(_arbeit.Stand.LuftwechselNutzer);
     }
 
+    // =================================================================================
+    // „Als Vorlage speichern…" (E54, Festlegung 13)
+    // =================================================================================
+
+    /// <summary>Öffnet die Abfrage „Als Vorlage speichern…" der Karte und füllt sie.</summary>
+    private static void AlsVorlageAusfuellen(IRenderedComponent<KonditionierungReiter> cut, KonditionierungGroesse g,
+                                             string name, string beschreibung, string nutzung)
+    {
+        Karte(cut, g).QuerySelector("button.epos-kond-als-vorlage")!.Click();
+        IElement abfrage = Karte(cut, g).QuerySelector(".epos-kond-vorlage-speichern")!;
+        abfrage.QuerySelector(".epos-kond-vorlage-name input")!.Input(name);
+        abfrage = Karte(cut, g).QuerySelector(".epos-kond-vorlage-speichern")!;
+        abfrage.QuerySelector("textarea")!.Input(beschreibung);
+        IElement nutzungen = Karte(cut, g).QuerySelector(".epos-kond-vorlage-speichern select")!;
+        nutzungen.Change(nutzungen.QuerySelectorAll("option").First(o => o.TextContent.Trim() == nutzung).GetAttribute("value")!);
+    }
+
+    [Fact]
+    public void Als_Vorlage_speichern_schreibt_sofort_ohne_Nennwert_und_Saison_und_die_Vorlage_steht_in_der_Liste()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Aufbauen(Weg(ablage));
+        _bearbeitung.WertSetzen(KonditionierungGroesse.Personen, KonditionierungZeile.Nennwert, 500);
+        _bearbeitung.WertSetzen(KonditionierungGroesse.Personen, KonditionierungZeile.Tag, 80);
+        _bearbeitung.ZeitenSetzen(KonditionierungGroesse.Heizen, KonditionierungZeile.Saison, 274, 120);
+        cut.Render();
+        int fassung = _arbeit.Stand.Konditionierung!.Fassung;
+
+        AlsVorlageAusfuellen(cut, KonditionierungGroesse.Personen, "Kontor", "eigene Anwesenheit", "Büro");
+        Assert.Contains("sofort gespeichert", Karte(cut, KonditionierungGroesse.Personen).QuerySelector(".epos-kond-vorlage-sofort")!.TextContent);
+        Karte(cut, KonditionierungGroesse.Personen).QuerySelector("button.epos-kond-vorlage-schreiben")!.Click();
+
+        // Geschrieben ist sofort - in die Ablage, mit Nutzung, ohne Nennwert; die Zeile sagt es.
+        KonditionierungsvorlageCtrl.Vorlage neu = ablage.Liste(Konditionierungsgroesse.Personen).Single(v => v.Bezeichner == "Kontor");
+        Assert.False(neu.Ausgeliefert);
+        Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, neu.Nutzung);
+        Assert.Equal("eigene Anwesenheit", neu.Beschreibung);
+        Konditionierungsstand inhalt = ablage.Inhalt(neu.Id, out _).Inhalt;
+        Assert.Equal(0.8, inhalt.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_TAG).Wert, 10);
+        Assert.False(Konditionierungsstand.Traegt(inhalt.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_NENNWERT)));
+        Assert.Equal(1, inhalt.VorgabenAnzahl);
+        Assert.Equal("Vorlage „Kontor“ gespeichert – sie steht jetzt in der Liste dieser Größe.",
+                     Karte(cut, KonditionierungGroesse.Personen).QuerySelector(".epos-kond-vorlage-gespeichert")!.TextContent.Trim());
+        Assert.Null(Karte(cut, KonditionierungGroesse.Personen).QuerySelector(".epos-kond-vorlage-speichern"));
+
+        // Die neue Vorlage steht in der Liste, hinter den ausgelieferten; der Arbeitsstand ist unberührt.
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen", "Kontor" },
+                     Liste(cut, KonditionierungGroesse.Personen).QuerySelectorAll("option").Where(o => o.GetAttribute("value") != "")
+                                                                 .Select(o => o.TextContent.Trim()));
+        Assert.Equal(fassung, _arbeit.Stand.Konditionierung!.Fassung);
+        Assert.Empty(_meldungen);
+
+        // Aus der Heizspalte: die Saison bleibt dem Objekt (E54).
+        AlsVorlageAusfuellen(cut, KonditionierungGroesse.Heizen, "Mit Saison", "", "ohne Angabe");
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-vorlage-schreiben")!.Click();
+        KonditionierungsvorlageCtrl.Vorlage heiz = ablage.Liste(Konditionierungsgroesse.Heizsoll).Single(v => v.Bezeichner == "Mit Saison");
+        Assert.Null(heiz.Nutzung);
+        Konditionierungsstand heizInhalt = ablage.Inhalt(heiz.Id, out _).Inhalt;
+        Assert.False(Konditionierungsstand.Traegt(heizInhalt.Vorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_SAISON)));
+        Assert.Equal(20, heizInhalt.Vorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_TAG).Wert);
+        Assert.Equal((22, 6), (heizInhalt.Vorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_NACHT).Von,
+                               heizInhalt.Vorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_NACHT).Bis));
+    }
+
+    [Fact]
+    public void Ein_Doppelname_wird_am_Feld_genannt_und_nichts_geschrieben()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Aufbauen(Weg(ablage));
+
+        AlsVorlageAusfuellen(cut, KonditionierungGroesse.Heizen, "büro", "", "ohne Angabe");
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-vorlage-schreiben")!.Click();
+
+        IElement name = Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorlage-name")!;
+        Assert.Contains("epos-kond-feldfehler", name.ClassList);
+        Assert.Contains("„büro“", name.QuerySelector(".epos-kond-feldmeldung")!.TextContent);
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Heizsoll).Count);
+        Assert.NotNull(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorlage-speichern"));  // bleibt offen
+        Assert.Empty(_meldungen);                                                                           // kein Banner
+
+        // Ein neuer Name nimmt die Meldung weg; Abbrechen schließt ohne zu schreiben.
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorlage-name input")!.Input("Kontor");
+        Assert.DoesNotContain("epos-kond-feldfehler", Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorlage-name")!.ClassList);
+        Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-vorlage-abbrechen")!.Click();
+        Assert.Null(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorlage-speichern"));
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Heizsoll).Count);
+    }
+
+    [Fact]
+    public void Ohne_Delegat_steht_kein_Als_Vorlage_speichern()
+    {
+        KonditionierungWeg basis = Weg(Konditionierungsvorlagenablage.AusSaat());
+        var ohne = new KonditionierungWeg
+        {
+            ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Vorlagen = basis.Vorlagen,
+            VorlageUebernehmen = basis.VorlageUebernehmen, WochenVorschau = basis.WochenVorschau
+        };
+        var cut = Aufbauen(ohne);
+
+        Assert.Equal(5, cut.FindAll(".epos-kond-vorlagewahl").Count);
+        Assert.Empty(cut.FindAll("button.epos-kond-als-vorlage"));
+    }
+
     /// <summary>Eine Bearbeitung über einem frischen Satz — für Fälle, die den Reiter selbst aufbauen.</summary>
     private KonditionierungBearbeitung Bearbeitung(KonditionierungWeg weg)
     {
