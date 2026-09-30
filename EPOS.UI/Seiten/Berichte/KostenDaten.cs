@@ -125,4 +125,13 @@ public sealed class KostenStand
 
     /// <summary>Die Fußzeile mit allen Befunden (Vorbild <c>BK_KOSTEN_STATUS</c> &amp;c.).</summary>
     public string Statuszeile { get; set; } = "";
+
+    /// <summary>
+    /// Stammen angezeigte Energiekosten aus einem gespeicherten Ergebnis, das nicht mehr zum
+    /// Simulationslauf seines Projekts passt? Dann steht über den Kacheln das Band
+    /// „… bitte neu berechnen" der Wirtschaftlichkeitsseite. Die Frage beantwortet die Hülle
+    /// mit derselben Kernmethode wie die Wirtschaftlichkeit (<c>ErgebnisAktuell</c>) —
+    /// für das Projekt der Kacheln und jede Version im Vergleich.
+    /// </summary>
+    public bool Nachrechnen { get; set; }
 }

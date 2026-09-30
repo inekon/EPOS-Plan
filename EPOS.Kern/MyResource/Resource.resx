@@ -5868,6 +5868,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOSTEN_BTN_VERWALTUNG" xml:space="preserve">
     <value>Kostenverwaltung öffnen…</value>
   </data>
+  <data name="BK_KOSTEN_NEU_BERECHNEN_TIPP" xml:space="preserve">
+    <value>Rechnet die Wirtschaftlichkeit der Versionen im Vergleich neu und speichert sie — derselbe Lauf wie „Neu berechnen“ im Reiter „Wirtschaftlichkeit“.</value>
+  </data>
   <data name="BK_KOSTEN_PROJEKT" xml:space="preserve">
     <value>Projekt: {0}</value>
   </data>

@@ -8672,6 +8672,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Wirtschaftlichkeit der Versionen im Vergleich neu und speichert sie — derselbe Lauf wie „Neu berechnen“ im Reiter „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_NEU_BERECHNEN_TIPP {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_NEU_BERECHNEN_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} — ohne Anlagenzuordnung ähnelt.
         /// </summary>
         public static string BK_KOSTEN_NICHT_VERBAUT {

@@ -792,4 +792,249 @@ public class KostenSeiteTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENSEITE, "projektzeile");
         Assert.False(projekt.Setzbar);
     }
+
+    // =====================================================================
+    //  „Neu berechnen" — der Lauf der Wirtschaftlichkeitsseite auf dem Kosten-Reiter
+    //  (Anwenderauftrag: Die Energiekosten blieben bis zu „Neu berechnen" im Reiter
+    //  Wirtschaftlichkeit auf dem Stand eines alten Laufs stehen.)
+    // =====================================================================
+
+    /// <summary>Stamm und zwei Varianten; im Vergleich stehen der Stamm und „WP groß".</summary>
+    private static KostenStand DreiVersionen()
+    {
+        KostenStand stand = Standard();
+        stand.Versionen = new[]
+        {
+            new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
+                                Projektname = "Musterhaus", IstStamm = true },
+            new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
+                                Projektname = "Musterhaus - WP klein" },
+            new VarianteZeile { IdProjekt = 1032, Art = "Variante", Bezeichner = "WP groß",
+                                Projektname = "Musterhaus - WP groß" }
+        };
+        stand.GewaehlteVarianten = new[] { 1030, 1032 };
+        return stand;
+    }
+
+    /// <summary>Der Stand, den die Hülle nach dem Lauf liefert: neue Energiekosten, neuer Stand.</summary>
+    private static KostenStand NachDemLauf()
+    {
+        KostenStand stand = Standard();
+        stand.Kacheln = new[]
+        {
+            stand.Kacheln[0], stand.Kacheln[1],
+            new KachelZeile { Titel = "Energie", Wert = "2.747,50 €/a" }
+        };
+        stand.Vergleich = new[]
+        {
+            stand.Vergleich[1], stand.Vergleich[2],
+            new MatrixZeile { Titel = "Energie [€/a]", Zellen = new[] { "2.747,50 €/a", "2.100,00 €/a" } }
+        };
+        stand.Statuszeile = "3 Investitionsposition(en) · Stand: 30.09.2026 12:00";
+        return stand;
+    }
+
+    private static Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>> Fertig(
+        LaufErgebnis? ergebnis = null)
+        => (v, m) => Task.FromResult(ergebnis ?? new LaufErgebnis { Erfolg = true });
+
+    private static IElement Rechenknopf(IRenderedComponent<KostenSeite> cut)
+        => cut.Find(".epos-kostenkopf .epos-kosten-neuberechnen");
+
+    /// <summary>Kein Delegat, kein Knopf — ohne Rechenweg der Hülle zeichnet die Seite wie bisher.</summary>
+    [Fact]
+    public void Ohne_Rechenweg_fehlt_der_Knopf_Neu_berechnen()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.VerwaltungGaben, (KostenZeile? _) => LeererSatz())
+            .Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz()));
+
+        Assert.Empty(cut.FindAll(".epos-kosten-neuberechnen"));
+        Assert.Equal(2, cut.FindAll(".epos-kostenkopf button").Count);
+        Assert.Empty(cut.FindAll(".epos-kosten-fortschritt"));
+    }
+
+    /// <summary>Er steht in der Kopfreihe RECHTS neben den beiden Verwaltungen — keine zweite Leiste.</summary>
+    [Fact]
+    public void Mit_Rechenweg_steht_Neu_berechnen_rechts_in_der_Kopfreihe()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.VerwaltungGaben, (KostenZeile? _) => LeererSatz())
+            .Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz())
+            .Add(x => x.Berechnen, Fertig()));
+
+        var knoepfe = cut.FindAll(".epos-kostenkopf button");
+        Assert.Equal(3, knoepfe.Count);
+        Assert.Contains("epos-kosten-neuberechnen", knoepfe[2].ClassName);
+        Assert.Equal("Neu berechnen", knoepfe[2].TextContent.Trim());
+        Assert.Contains("Wirtschaftlichkeit der Versionen im Vergleich", knoepfe[2].GetAttribute("title"));
+        Assert.False(knoepfe[2].HasAttribute("disabled"));
+        Assert.Single(cut.FindAll(".epos-leiste"));
+    }
+
+    [Fact]
+    public void Ohne_Projekt_ist_Neu_berechnen_gesperrt()
+    {
+        var cut = Zeige(p => p.Add(x => x.Berechnen, Fertig()), Standard(bedienbar: false));
+
+        Assert.True(Rechenknopf(cut).HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Neu_berechnen_ruft_den_Rechenweg_mit_den_gewaehlten_Varianten_ohne_Stamm()
+    {
+        IReadOnlyList<int>? ids = null;
+        int aufrufe = 0;
+        var cut = Zeige(p => p.Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+        {
+            ids = v;
+            aufrufe++;
+            return Task.FromResult(new LaufErgebnis { Erfolg = true });
+        }), DreiVersionen());
+
+        Rechenknopf(cut).Click();
+
+        Assert.Equal(1, aufrufe);
+        Assert.Equal(new[] { 1032 }, ids!);
+    }
+
+    [Fact]
+    public void Waehrend_des_Laufs_ist_alles_gesperrt_und_der_Fortschritt_steht()
+    {
+        var lauf = new TaskCompletionSource<LaufErgebnis>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Action<Laufschritt>? melder = null;
+        int aufrufe = 0, abgebrochen = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.VerwaltungGaben, (KostenZeile? _) => LeererSatz())
+            .Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz())
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { })
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                aufrufe++;
+                melder = m;
+                return lauf.Task;
+            })
+            .Add(x => x.Abbrechen, () => abgebrochen++));
+
+        Rechenknopf(cut).Click();
+
+        Assert.True(cut.Instance.Beschaeftigt);
+        foreach (IElement k in cut.FindAll(".epos-kostenkopf button"))
+            Assert.True(k.HasAttribute("disabled"), k.TextContent);
+        foreach (IElement h in cut.FindAll(".epos-vergleichswahl input[type=checkbox]"))
+            Assert.True(h.HasAttribute("disabled"));
+        Assert.Single(cut.FindAll(".epos-kosten-fortschritt progress"));
+
+        melder!(new Laufschritt(1, 3, "Stammprojekt"));
+        cut.WaitForAssertion(() => Assert.Equal("(1/3) Stammprojekt",
+            cut.Find(".epos-kosten-fortschritt .epos-fortschritt-text").TextContent));
+
+        // Ein zweiter Klick während des Laufs startet keinen zweiten.
+        Rechenknopf(cut).Click();
+        Assert.Equal(1, aufrufe);
+
+        cut.Find(".epos-kosten-fortschritt .epos-fortschritt-abbruch").Click();
+        Assert.Equal(1, abgebrochen);
+
+        lauf.SetResult(new LaufErgebnis { Erfolg = true });
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.Beschaeftigt));
+        Assert.Empty(cut.FindAll(".epos-kosten-fortschritt"));
+        Assert.False(Rechenknopf(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>Danach stehen Kacheln, Gegenüberstellung und Statuszeile „Stand: …" des neuen Laufs.</summary>
+    [Fact]
+    public void Nach_dem_Lauf_liest_die_Seite_neu()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { })
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                _stand = NachDemLauf();
+                return Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "Berechnet." });
+            }));
+        Assert.Contains("3.400,00 €/a", cut.FindAll(".epos-kennzahlkachel")[2].TextContent);
+
+        Rechenknopf(cut).Click();
+
+        Assert.Equal(2, _geladen);
+        Assert.Contains("2.747,50 €/a", cut.FindAll(".epos-kennzahlkachel")[2].TextContent);
+        Assert.Contains("2.747,50 €/a", cut.Find(".epos-kostenvergleich").TextContent);
+        IElement status = cut.Find(".epos-status");
+        Assert.Contains("Stand: 30.09.2026 12:00", status.TextContent);
+        Assert.DoesNotContain("epos-status--fehler", status.ClassName);
+    }
+
+    [Fact]
+    public void Ein_Fehler_des_Laufs_steht_in_der_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Berechnen, Fertig(new LaufErgebnis
+        {
+            Fehler = "Fehler bei der Wirtschaftlichkeitsberechnung: Simulation gescheitert."
+        })));
+
+        Rechenknopf(cut).Click();
+
+        IElement status = cut.Find(".epos-status");
+        Assert.Equal("Fehler bei der Wirtschaftlichkeitsberechnung: Simulation gescheitert.",
+                     status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+        Assert.Equal(2, _geladen);
+        Assert.False(cut.Instance.Beschaeftigt);
+    }
+
+    /// <summary>Scheitert der Rechenweg selbst (er wirft), steht der Grund benannt da — nie still.</summary>
+    [Fact]
+    public void Ein_Ausnahmefehler_des_Rechenwegs_steht_in_der_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Berechnen,
+            (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+                throw new InvalidOperationException("Datenbank gesperrt")));
+
+        Rechenknopf(cut).Click();
+
+        IElement status = cut.Find(".epos-status");
+        Assert.Equal("Fehler bei der Wirtschaftlichkeitsberechnung: Datenbank gesperrt", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+        Assert.False(cut.Instance.Beschaeftigt);
+        Assert.False(Rechenknopf(cut).HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Ein_Abbruch_steht_in_der_Statuszeile_und_laedt_nicht_neu()
+    {
+        var cut = Zeige(p => p.Add(x => x.Berechnen, Fertig(new LaufErgebnis { Abgebrochen = true })));
+
+        Rechenknopf(cut).Click();
+
+        Assert.Equal("Vorgang abgebrochen.", cut.Find(".epos-status").TextContent);
+        Assert.Equal(1, _geladen);
+    }
+
+    /// <summary>
+    /// Passt ein angezeigtes gespeichertes Ergebnis nicht mehr zum Simulationslauf, steht das
+    /// Band der Wirtschaftlichkeitsseite ÜBER Gegenüberstellung und Kacheln.
+    /// </summary>
+    [Fact]
+    public void Das_Band_nachrechnen_steht_ueber_Gegenueberstellung_und_Kacheln()
+    {
+        KostenStand stand = Standard();
+        stand.Nachrechnen = true;
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { }), stand);
+
+        IElement band = cut.Find(".epos-warnbanner");
+        Assert.Contains("aus einem älteren Lauf — bitte neu berechnen", band.TextContent);
+        string markup = cut.Markup;
+        int bandStelle = markup.IndexOf("aus einem älteren Lauf", StringComparison.Ordinal);
+        Assert.True(bandStelle < markup.IndexOf("epos-kostenvergleich", StringComparison.Ordinal));
+        Assert.True(bandStelle < markup.IndexOf("epos-kennzahlkachel", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Ohne_veralteten_Lauf_steht_kein_Band()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
 }

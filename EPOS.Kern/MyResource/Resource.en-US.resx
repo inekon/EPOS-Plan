@@ -5852,6 +5852,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOSTEN_BTN_VERWALTUNG" xml:space="preserve">
     <value>Open cost management…</value>
   </data>
+  <data name="BK_KOSTEN_NEU_BERECHNEN_TIPP" xml:space="preserve">
+    <value>Recalculates the economics of the versions in the comparison and saves them — the same run as “Recalculate” on the “Economics” tab.</value>
+  </data>
   <data name="BK_KOSTEN_PROJEKT" xml:space="preserve">
     <value>Project: {0}</value>
   </data>

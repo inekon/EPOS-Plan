@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -47,6 +48,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die geteilte Vergleichswahl der drei Seiten (W5‑B‑5); die Rahmenhülle setzt sie.</summary>
         internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
 
+        /// <summary>
+        /// Der Rechenweg des Knopfes „Neu berechnen" — gesetzt von der Rahmenhülle
+        /// (<c>BerichteKostenHuelle</c>): DERSELBE Lauf wie „Neu berechnen" der
+        /// Wirtschaftlichkeitsseite derselben Gruppe, keine zweite Rechnung. Die Seite reicht die
+        /// gewählten Versionen der geteilten Vergleichswahl ohne Stamm hinein.
+        /// <c>null</c> (eine Seite ohne Rahmen, ein Prüfstand) oder eine Seite ohne Gruppe heißt:
+        /// kein Knopf — der Parameter bleibt dann aus dem Satz.
+        /// </summary>
+        internal Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>> Berechnen { get; set; }
+
+        /// <summary>Bricht den laufenden Rechenweg ab (<see cref="Berechnen"/>); <c>null</c> = kein Abbrechen.</summary>
+        internal Action Abbrechen { get; set; }
+
         // Befundlisten der Fußzeile — wortgleich zum Vorläufer.
         private readonly List<string> _ohnePosition = new List<string>();
         private readonly List<string> _nichtVerbaut = new List<string>();
@@ -87,7 +101,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<KostenStand>(Laden),
                 ["VerwaltungGaben"] = new Func<KostenZeile, IReadOnlyDictionary<string, object>>(
@@ -120,6 +134,15 @@ namespace WindowsFormsApplication1
                 ["NeinText"] = T("BKS_BTN_NEIN", "Nein"),
                 ["HilfeSchluessel"] = "UcBkKosten.btn_Help"
             };
+
+            // „Neu berechnen" nur mit Rahmenhülle UND Gruppe: Gerechnet wird die
+            // Wirtschaftlichkeit der Vergleichsgruppe, und ohne Stamm gibt es keine.
+            if (Berechnen != null && _idStamm > 0)
+            {
+                gaben["Berechnen"] = Berechnen;
+                if (Abbrechen != null) gaben["Abbrechen"] = Abbrechen;
+            }
+            return gaben;
         }
 
         // =====================================================================
@@ -192,6 +215,10 @@ namespace WindowsFormsApplication1
 
             stand.Kacheln = new List<KachelZeile> { kInvest, kBetrieb, kEnergie };
             stand.Vorlagenfeldposition = VorlagenfeldpositionHuelle.Von(_idProjekt);
+
+            // Das Band „… bitte neu berechnen": das Projekt der Kacheln hier, jede Version
+            // im Vergleich in der Gegenueberstellung.
+            stand.Nachrechnen = w.Veraltet;
             Gegenueberstellung(stand, kultur, w);
             stand.Komponenten = Komponenten(kultur);
             stand.TraegerSpalten = Traegerspalten();
@@ -257,6 +284,7 @@ namespace WindowsFormsApplication1
                             : (string.IsNullOrEmpty(v.Bezeichner) ? v.Projektname : v.Bezeichner));
                 speicher.Add(v.Speicher ?? "");
                 Kostenwerte w = v.IdProjekt == _idProjekt ? werteProjekt : Kostenwerte.Lies(_wirt, v.IdProjekt);
+                if (w.Veraltet) stand.Nachrechnen = true;
                 invest.Add(w.InvestText(kultur));
                 betrieb.Add(w.BetriebText(kultur));
                 energie.Add(w.EnergieText(kultur));
@@ -318,6 +346,14 @@ namespace WindowsFormsApplication1
             internal string EnergieHinweis = "";
             internal bool EnergieNull = true;
 
+            /// <summary>
+            /// Das gespeicherte Ergebnis passt nicht mehr zum Simulationslauf seines Projekts —
+            /// dieselbe Frage (<see cref="WirtschaftlichkeitCtrl.ErgebnisAktuell"/>), mit der die
+            /// Wirtschaftlichkeitsseite ihr Band „… bitte neu berechnen" und die Reiterzeile ihr
+            /// „veraltet" stellen. Ohne gespeichertes Ergebnis ist nichts veraltet, es fehlt.
+            /// </summary>
+            internal bool Veraltet;
+
             internal static Kostenwerte Lies(WirtschaftlichkeitCtrl wirt, int idProjekt)
             {
                 var w = new Kostenwerte();
@@ -359,6 +395,7 @@ namespace WindowsFormsApplication1
                     {
                         w.Energie = erg.EnergiekostenJahr.Value;
                         w.EnergieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
+                        w.Veraltet = !wirt.ErgebnisAktuell(erg);
                         w.EnergieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
                             erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
                     }
