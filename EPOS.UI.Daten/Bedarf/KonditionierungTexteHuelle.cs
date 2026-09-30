@@ -237,6 +237,7 @@ namespace WindowsFormsApplication1
             t.GrundRangOben = Text_("KOND_TXT_GRUND_RANG_OBEN", t.GrundRangOben);
             t.GrundRangUnten = Text_("KOND_TXT_GRUND_RANG_UNTEN", t.GrundRangUnten);
             t.GrundRangBand = Text_("KOND_TXT_GRUND_RANG_BAND", t.GrundRangBand);
+            t.TextTeppichLeer = Text_("KOND_TXT_TEPPICH_LEER", t.TextTeppichLeer);
             return t;
         }
 

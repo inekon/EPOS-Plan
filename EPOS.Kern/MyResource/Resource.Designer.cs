@@ -63439,6 +63439,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile). ähnelt.
+        /// </summary>
+        public static string KOND_TXT_TEPPICH_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_TEPPICH_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zuletzt angewandt: {0} ähnelt.
         /// </summary>
         public static string KOND_TXT_VERMERK {

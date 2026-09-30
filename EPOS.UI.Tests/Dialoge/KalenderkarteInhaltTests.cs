@@ -301,6 +301,73 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.Null(_bearbeitung.Kalender(KonditionierungGroesse.Lueftung)!.Vermerk);
     }
 
+    // =================================================================================
+    // Teilschritt 5: das Teppichbild
+    // =================================================================================
+
+    [Fact]
+    public void Das_Teppichbild_zeigt_den_Kalender_wie_er_gilt_mit_Bezugsjahr_und_Wert_samt_Quelle_am_Element()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-einzelheiten").Click();
+        IElement teppich = Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-teppich")!;
+        // Auch vor dem Anlegen: der Kalender aus der Matrix.
+        IElement[] felder = teppich.QuerySelectorAll("[data-wert]").ToArray();
+        Assert.NotEmpty(felder);
+        Assert.True(felder.Length <= 2000);
+        Assert.Contains(felder, f => f.GetAttribute("data-wert")!.Contains("20 °C") && f.GetAttribute("data-wert")!.Contains("·"));
+        Assert.Contains("2025", teppich.QuerySelector(".epos-kond-teppich-zeile")!.TextContent);
+        Assert.Contains("2025", teppich.TextContent);
+
+        // Nach dem Anlegen und einem Zeitfenster mit „aus": das Bild zeigt die eigene Fläche „aus".
+        Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-anlegen").Click();
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Von").Input("0");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Bis").Input("6");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Wert").Input("aus");
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen").Click();
+        Assert.NotEmpty(Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelectorAll(".epos-kond-teppich [data-reihe='aus'], .epos-kond-teppich [data-rolle='aus'], .epos-kond-teppich [data-wert*='aus']"));
+    }
+
+    [Fact]
+    public void Ohne_Kalender_der_Groesse_nennt_das_Teppichbild_seinen_Leerzustand()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        Knopf(Karte(cut, KonditionierungGroesse.Personen), "epos-kond-einzelheiten").Click();
+        IElement teppich = Inhalt(cut, KonditionierungGroesse.Personen).QuerySelector(".epos-kond-teppich")!;
+        Assert.Contains("Kein Jahresbild", teppich.QuerySelector(".epos-kond-teppich-leer")!.TextContent);
+        Assert.Empty(teppich.QuerySelectorAll("svg"));
+    }
+
+    [Fact]
+    public void Das_Teppichbild_rechnet_beim_Oeffnen_sofort_und_nach_Eingaben_entprellt_einmal()
+    {
+        int bilder = 0;
+        KonditionierungWeg basis = KalenderkarteTests.Weg(null);
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Standardwoche = basis.Standardwoche,
+            Grundangabe = basis.Grundangabe, Bezugsjahr = basis.Bezugsjahr,
+            Teppichbild = (s, o) =>
+            {
+                if (o.Groesse == KonditionierungGroesse.Heizen) bilder++;
+                return basis.Teppichbild!(s, o);
+            }
+        };
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen(weg, entprellungMs: 150);
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
+        Assert.Equal(1, bilder);                          // beim Öffnen sofort
+
+        foreach (string eingabe in new[] { "21", "22", "23" })
+        {
+            Rasterzelle(Inhalt(cut, KonditionierungGroesse.Heizen), "Heizen · Mo 07 Uhr").Input(eingabe);
+            cut.Render();
+        }
+        Assert.Equal(1, bilder);
+        cut.WaitForAssertion(() => Assert.Equal(2, bilder), TimeSpan.FromSeconds(5));
+        Thread.Sleep(300);
+        Assert.Equal(2, bilder);                          // und kein zweites
+    }
+
     [Fact]
     public void Eine_Grundangabe_ohne_Rundlauf_meldet_den_Kern_und_aendert_nichts()
     {

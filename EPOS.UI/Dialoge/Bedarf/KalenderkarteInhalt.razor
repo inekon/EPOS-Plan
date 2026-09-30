@@ -13,8 +13,11 @@
    Bearbeitung. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
 @using EPOS.UI.Bausteine
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <div class="epos-kond-inhalt" data-groesse="@((int)Groesse)">
     @if (Sperre is string grund)
@@ -137,6 +140,30 @@
             </section>
         }
     }
+
+    @* ---- Teppichbild (Teilkonzept 7.5, Festlegung 8): Tage x Stunden des Kalenders, wie er gilt - auch
+       vor dem Anlegen; "aus" als eigene Flaeche, das Bezugsjahr im Titel. Antippen eines Felds nennt
+       Zeitraum, Wert und Quelle (data-wert). Entprellt wie die Vorschau: beim Oeffnen sofort, nach einer
+       Eingabe erst EntprellungMs nach der letzten. ---- *@
+    @if (Bearbeitung.Weg.Teppichbild is not null && Bearbeitung.MitWeg)
+    {
+        <section class="epos-kond-abschnitt epos-kond-teppich" aria-label="@Texte.LabelTeppichbild">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelTeppichbild</h4>
+            @if (_teppich is null)
+            {
+                <p class="epos-leisezeile epos-kond-teppich-leer">@Texte.TextTeppichLeer</p>
+            }
+            else
+            {
+                <DiagrammSvg Modell="@_teppich" Kennung="@("kond-teppich-" + (int)Groesse)" Bezeichnung="@Texte.LabelTeppichbild"
+                             Einheit="@Einheit" OhneZoom="true" LegendeSchaltbar="false" />
+            }
+            @if (Teppichzeile is string zeile)
+            {
+                <p class="epos-leisezeile epos-kond-teppich-zeile">@zeile</p>
+            }
+        </section>
+    }
 </div>
 
 @code {
@@ -246,6 +273,69 @@
             return _raster;
         }
     }
+
+    // ------------------------------------------------------------ Das Teppichbild, entprellt
+
+    /// <summary>Entprellung des Teppichbilds nach einer Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    private Zeichenmodell? _teppich;
+    private string? _teppichSchluessel;
+    private bool _teppichGerechnet;
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Wie oft das Teppichbild gerechnet wurde. Prüfhilfe (entprellt, nicht je Eingabe).</summary>
+    public int Teppichlaeufe { get; private set; }
+
+    /// <summary>Die Bildunterschrift mit dem Bezugsjahr des Wegs; ohne Bezugsjahr keine.</summary>
+    private string? Teppichzeile
+        => Bearbeitung.Weg.Bezugsjahr is int jahr
+            ? string.Format(CultureInfo.CurrentCulture, Texte.TextTeppichbild, jahr.ToString(CultureInfo.InvariantCulture))
+            : null;
+
+    protected override void OnParametersSet()
+    {
+        if (Bearbeitung.Weg.Teppichbild is null || !Bearbeitung.MitWeg)
+        {
+            _entprellung?.Cancel();
+            _teppich = null;
+            _teppichGerechnet = false;
+            return;
+        }
+        string schluessel = Bearbeitung.Vorschauschluessel(Groesse);
+        if (_teppichGerechnet && schluessel == _teppichSchluessel) return;
+        bool sofort = !_teppichGerechnet || EntprellungMs <= 0;
+        _teppichSchluessel = schluessel;
+        _teppichGerechnet = true;
+        _entprellung?.Cancel();
+        if (sofort) Teppichrechnen();
+        else _ = Entprellt(schluessel);
+    }
+
+    private async Task Entprellt(string schluessel)
+    {
+        var cts = _entprellung = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(EntprellungMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (cts.IsCancellationRequested || schluessel != _teppichSchluessel) return;
+        Teppichrechnen();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Teppichrechnen()
+    {
+        Teppichlaeufe++;
+        _teppich = Bearbeitung.Teppichbild(Groesse);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _entprellung?.Cancel();
 
     // ------------------------------------------------------------ Die Werkzeuge Feiertage und Zeitstruktur
 

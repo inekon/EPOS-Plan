@@ -40870,5 +40870,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_GRUND_RANG_BAND" xml:space="preserve">
     <value>Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.</value>
   </data>
+  <data name="KOND_TXT_TEPPICH_LEER" xml:space="preserve">
+    <value>Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile).</value>
+  </data>
 </root>
 

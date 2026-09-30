@@ -40863,5 +40863,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_GRUND_RANG_BAND" xml:space="preserve">
     <value>Only periods in the band of own periods change their rank; public holiday rules stay below the holidays.</value>
   </data>
+  <data name="KOND_TXT_TEPPICH_LEER" xml:space="preserve">
+    <value>No annual plot – the matrix yields no calendar for this quantity (for example without shares).</value>
+  </data>
 </root>
 

@@ -281,6 +281,14 @@ public sealed class KonditionierungWeg
     public Func<KonditionierungStand, KonditionierungOrt, Zeichenmodell?>? Teppichbild { get; init; }
 
     /// <summary>
+    /// Das Bezugsjahr, gegen das Vorschau und Teppichbild Wochentage und Feiertage auflösen — im Projekt das
+    /// des Laufs, im Katalog das der Vorgabe (Festlegung 8); die Karte nennt es unter dem Teppichbild.
+    /// <c>null</c> = keins.
+    /// <para>Kern: <c>Konditionierungsarbeitsstand.Referenzjahr</c> über den Bezug der Hülle.</para>
+    /// </summary>
+    public int? Bezugsjahr { get; init; }
+
+    /// <summary>
     /// <b>Die Herleitung der Lasten</b> (P1, Teilkonzept 7.2) für die Nennwertzeile und die Zeile der
     /// Jahresmittel; zweiter Parameter: die Zone (<c>null</c> = Gebäude bzw. Katalogbau).
     /// <para>Kern: <c>Konditionierungsarbeit.PersonenNennwertVorschlag</c>, <c>PersonenJahresmittelW</c>,

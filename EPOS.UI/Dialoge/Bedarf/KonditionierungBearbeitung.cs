@@ -655,6 +655,19 @@ public sealed class KonditionierungBearbeitung
         => Bietet(KonditionierungHandlung.Zeitstruktur)
            && Ausfuehren("Y|" + g, s => Weg.Zeitstruktur!(s, new KonditionierungOrt(g), quelle));
 
+    /// <summary>
+    /// <b>Das Teppichbild</b> der Größe (Teilkonzept 7.5, Festlegung 8) — Tage × Stunden des Kalenders, wie
+    /// er gilt (angelegt, sonst aus der Matrix), gegen das Bezugsjahr des Wegs; <c>null</c> = keins (ohne
+    /// Delegat, ohne Weg oder ohne Kalender). Die Karte ruft es entprellt (Schlüssel
+    /// <see cref="Vorschauschluessel"/>).
+    /// </summary>
+    public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Teppichbild(KonditionierungGroesse g)
+    {
+        if (!MitWeg || Weg.Teppichbild is null) return null;
+        try { return Weg.Teppichbild(Eingabestand(), new KonditionierungOrt(g)); }
+        catch (Exception) { return null; }
+    }
+
     /// <summary>Die neun Feiertagsregeln der Periodenliste (F11); leer ohne Weg.</summary>
     public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln
         => MitWeg ? Weg.Feiertagsregeln ?? Array.Empty<KonditionierungFeiertag>() : Array.Empty<KonditionierungFeiertag>();

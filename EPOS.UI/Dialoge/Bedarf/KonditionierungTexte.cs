@@ -787,4 +787,8 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_TXT_GRUND_RANG_BAND</c> — der Grund der weich gesperrten ▲▼ außerhalb des Eigenbands</summary>
     public string GrundRangBand { get; set; }
         = "Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.";
+
+    /// <summary><c>KOND_TXT_TEPPICH_LEER</c> — an Stelle des Teppichbilds, wenn die Größe keinen Kalender ergibt</summary>
+    public string TextTeppichLeer { get; set; }
+        = "Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile).";
 }
