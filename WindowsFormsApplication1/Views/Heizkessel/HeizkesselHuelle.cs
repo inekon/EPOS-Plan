@@ -181,6 +181,12 @@ namespace WindowsFormsApplication1
                     "Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein " +
                     "mit seiner Teillastkennlinie."),
 
+                // Die kleine Kurve der Gruppe (Konzept Kesselkennlinie 5): plattformfrei gerechnet in
+                // HeizkesselKennlinienbild - dieselbe Kernfunktion wie der Lauf, zum Arbeitsstand des Dialogs.
+                ["Kennlinienbild"] = new Func<HeizkesselKatalogDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    HeizkesselKennlinienbild.Modell),
+                ["BildKennlinieText"] = Text_("HZKK_BILD_KENNLINIE", "Wirkungsgrad über der Last"),
+
                 // HIER STANDEN DIE TEXTSCHLÜSSEL der Gruppen „Kosten",
                 // „Emissionen nach BEHG-V" und „Emissionsfaktoren" (GruppeKosten,
                 // LabelInvest…, LabelWartung…, LabelRaumbedarf…, LabelNutzungsdauer…,

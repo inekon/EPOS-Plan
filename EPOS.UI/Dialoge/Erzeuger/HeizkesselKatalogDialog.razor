@@ -41,6 +41,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -166,6 +167,18 @@
                 </KindInhalt>
             </Formularraster>
             <p class="epos-leisezeile">@HinweisKennlinie</p>
+
+            @* DIE KLEINE KURVE (Konzept Kesselkennlinie 5): der Wirkungsgrad ueber der Last bei 30, 50
+               und 60 °C Ruecklauf, ohne Brennwertkennlinie eine Linie. Sie folgt dem ARBEITSSTAND, auch
+               ungespeicherten Eingaben; die Huelle rechnet sie im Kern aus derselben Funktion wie der Lauf.
+               Das Modell wird nur neu geholt, wenn sich ein Feld aendert, das die Kurve bestimmt - sonst
+               verwuerfe jeder Tastendruck in einem fremden Feld mit dem Knotenbaum auch die abgewaehlten
+               Linien der Legende. *@
+            @if (Kennlinienbild is not null)
+            {
+                <DiagrammSvg Modell="@AktuellesKennlinienbild()" Kennung="hzkk-kennlinie"
+                             Bezeichnung="@BildKennlinieText" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -307,6 +320,41 @@
     /// Brennwertkennlinie (Pruefhilfe fuer Tests).
     /// </summary>
     public bool OhneBrennwertkennlinie => Daten.Brennwert && !Daten.Kennlinie_Brennwert;
+
+    /// <summary>
+    /// Das Bild der Gruppe „Kennlinie“ zum Arbeitsstand: der Wirkungsgrad über der Last (Konzept Kesselkennlinie 5).
+    /// Die Hülle rechnet es im Kern — dieselbe Funktion wie der Lauf, leere Felder mit der Normvorgabe. Ohne Delegat
+    /// steht kein Bild.
+    /// </summary>
+    [Parameter] public Func<HeizkesselKatalogDaten, Zeichenmodell?>? Kennlinienbild { get; set; }
+
+    /// <summary>Die Bezeichnung des Bilds für die Sprachausgabe.</summary>
+    [Parameter] public string BildKennlinieText { get; set; } = "Wirkungsgrad über der Last";
+
+    /// <summary>Die Felder, die die Kurve bestimmen, beim letzten Holen des Bilds.</summary>
+    private (double? Gas, double? Oel, int? Brennstoff, bool Brennwert, string? Beschreibung, double? Eta30,
+             bool KennlinieBrennwert)? _kurvenstand;
+
+    private Zeichenmodell? _kennlinienbild;
+
+    /// <summary>Wie oft das Bild geholt wurde (Pruefhilfe fuer Tests).</summary>
+    public int Kennlinienbilder { get; private set; }
+
+    /// <summary>
+    /// Das Bild zum Arbeitsstand, zwischengespeichert: neu geholt nur, wenn sich Wirkungsgrade, Energieträger,
+    /// Brennwertschalter, Beschreibung (die Bauart „Standard…“), η₃₀ oder der Schalter Brennwertkennlinie geändert haben.
+    /// </summary>
+    private Zeichenmodell? AktuellesKennlinienbild()
+    {
+        if (Kennlinienbild is null) return null;
+        var stand = (Daten.Wirkungsgrad_Gas, Daten.Wirkungsgrad_Oel, Daten.Brennstoff, Daten.Brennwert,
+                     Daten.Beschreibung, Daten.Wirkungsgrad_Teillast30, Daten.Kennlinie_Brennwert);
+        if (_kurvenstand == stand) return _kennlinienbild;
+        _kurvenstand = stand;
+        _kennlinienbild = Kennlinienbild(Daten);
+        Kennlinienbilder++;
+        return _kennlinienbild;
+    }
 
     // HIER STANDEN DIE TEXTE der Gruppen "Kosten" (GruppeKosten, LabelInvest,
     // LabelInvestKurz, LabelWartung, LabelWartungKurz, LabelWartungEinheit,

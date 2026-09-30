@@ -32812,6 +32812,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Last [%] ähnelt.
+        /// </summary>
+        public static string HZKK_BILD_ACHSE_LAST {
+            get {
+                return ResourceManager.GetString("HZKK_BILD_ACHSE_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string HZKK_BILD_ACHSE_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("HZKK_BILD_ACHSE_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad über der Last ähnelt.
+        /// </summary>
+        public static string HZKK_BILD_KENNLINIE {
+            get {
+                return ResourceManager.GetString("HZKK_BILD_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf {0} °C ähnelt.
+        /// </summary>
+        public static string HZKK_BILD_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("HZKK_BILD_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkennlinie ähnelt.
+        /// </summary>
+        public static string HZKK_BILD_TEILLAST {
+            get {
+                return ResourceManager.GetString("HZKK_BILD_TEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
         /// </summary>
         public static string HZKK_BTN_SPEICHERN_UNTER {

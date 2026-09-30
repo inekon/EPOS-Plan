@@ -1306,6 +1306,10 @@ namespace ChartProben
             // „aus": Mass-, Gegen- und SVG-Proben in Program.Kalenderteppich.cs.
             KalenderteppichProben(ziel);
 
+            // KONZEPT KESSELKENNLINIE 5 - die kleine Kurve des Kesseleditors, Wirkungsgrad ueber der
+            // Last je Ruecklauf: Mass-, Gegen- und SVG-Proben in Program.Kesselkennlinie.cs.
+            KesselkennlinieProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell
