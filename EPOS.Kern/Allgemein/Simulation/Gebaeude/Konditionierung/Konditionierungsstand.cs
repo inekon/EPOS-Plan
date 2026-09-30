@@ -569,22 +569,7 @@ namespace WindowsFormsApplication1
                 InterneWaermegewinne: z.InterneWaermegewinne, Bewohner: z.Bewohner);
             Zonenvorgaben v = Zonenvorgaben.Bilden(eingaben, gebaeude, _zonen.Length);
             flaechenanteil = v.Flaechenanteil;
-
-            Matrixeingang e = g.Kopie();
-            e.SollTag = z.SollTag ?? g.SollTag;
-            e.SollNacht = z.SollNacht ?? g.SollNacht;
-            e.SollWochenende = z.SollWochenende ?? g.SollWochenende;
-            e.SollFerien = z.SollFerien ?? g.SollFerien;
-            e.Maximaleraumtemperatur = z.Maximaleraumtemperatur ?? g.Maximaleraumtemperatur;
-            e.LuftwechselInfiltration = z.LuftwechselInfiltration ?? g.LuftwechselInfiltration;
-            e.LuftwechselNutzer = z.LuftwechselNutzer ?? g.LuftwechselNutzer;
-            e.InterneWaermegewinne = z.InterneWaermegewinne.HasValue || g.InterneWaermegewinne.HasValue
-                ? v.InterneWaermegewinne.Wert : null;
-            e.Bewohner = z.Bewohner.HasValue || g.Bewohner.HasValue ? v.Bewohner.Wert : null;
-            Gebaeudemodellvorgaben.WirksamerLuftwechsel(e.Luftwechselrate, e.LuftwechselInfiltration,
-                                                        e.LuftwechselNutzer, out Luftwechselherkunft herkunft);
-            e.LuftwechselAusGesamtangabe = herkunft == Luftwechselherkunft.Luftwechselrate;
-            return e;
+            return Konditionierungseingang.ZonenBestand(g, eingaben, v);
         }
 
         /// <summary>

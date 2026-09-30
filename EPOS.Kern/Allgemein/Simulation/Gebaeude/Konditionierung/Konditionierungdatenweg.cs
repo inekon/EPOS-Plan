@@ -65,6 +65,32 @@ namespace WindowsFormsApplication1
             List<Kalenderzeile> zonenkalender = idZone.HasValue ? Kalenderzeilen(idGebaeude, idZone) : null;
             List<Periodenzeile> zonenperioden = idZone.HasValue ? Periodenzeilen(idGebaeude, idZone) : null;
             List<Vorgabezeile> zonenvorgaben = idZone.HasValue ? Vorgabezeilen(idGebaeude, idZone) : null;
+            return Satz(gebaeude, kalenderzeilen, perioden, vorgaben, zonenkalender, zonenperioden, zonenvorgaben,
+                        idZone, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam);
+        }
+
+        /// <summary>
+        /// <b>Der Satz aus den gelesenen Zeilen</b> — der Datenbankweg ohne die Datenbank (Stufe KP2, Welle
+        /// U4): dieselbe Kette über den Zeilen, die <see cref="Satz(ProjektGebaeudeModel, bool[], int, bool, bool, long?)"/>
+        /// gelesen hat. Die Probe hält hier den Datenbankweg gegen den Speicherweg.
+        /// </summary>
+        internal static Konditionierungssatz Satz(ProjektGebaeudeModel gebaeude,
+                                                  List<Kalenderzeile> kalenderzeilen, List<Periodenzeile> perioden,
+                                                  List<Vorgabezeile> vorgaben, List<Kalenderzeile> zonenkalender,
+                                                  List<Periodenzeile> zonenperioden, List<Vorgabezeile> zonenvorgaben,
+                                                  long? idZone, bool[] wochenende, int referenzjahr,
+                                                  bool kopplungWirksam, bool kuehlungWirksam)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            kalenderzeilen ??= new List<Kalenderzeile>();
+            perioden ??= new List<Periodenzeile>();
+            vorgaben ??= new List<Vorgabezeile>();
+            if (idZone.HasValue)
+            {
+                zonenkalender ??= new List<Kalenderzeile>();
+                zonenperioden ??= new List<Periodenzeile>();
+                zonenvorgaben ??= new List<Vorgabezeile>();
+            }
 
             bool leer = kalenderzeilen.Count == 0 && vorgaben.Count == 0
                         && (zonenkalender == null || zonenkalender.Count == 0)
@@ -72,32 +98,41 @@ namespace WindowsFormsApplication1
             if (leer) return null;      // wörtlich der Bestandszweig
 
             Matrixeingang bestand = Konditionierungseingang.Bestand(gebaeude, kopplungWirksam, kuehlungWirksam);
+            Zonennennwerte nennwerte = null;
+            if (idZone.HasValue) bestand = Zonenbestand(gebaeude, idZone.Value, bestand, zonenvorgaben, out nennwerte);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
                 Angelegt(kalenderzeilen, perioden, gebaeude.Gebaeudename);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt =
                 idZone.HasValue ? Angelegt(zonenkalender, zonenperioden, gebaeude.Gebaeudename) : null;
             return SatzBilden(gebaeude.Gebaeudename, bestand, vorgaben, gebaeudeangelegt,
                               idZone.HasValue ? zonenvorgaben : null, zoneangelegt, wochenende, referenzjahr,
-                              idZone.HasValue ? Nennwerte(gebaeude, idZone.Value, zonenvorgaben) : null);
+                              nennwerte);
         }
 
         /// <summary>
-        /// <b>Die Nennwerte einer Zone im Lauf</b> (Konzept 3.4; Stufe KP2, Welle U4): der Flächenanteil
-        /// aus derselben Vorgabenkaskade wie ihre inneren Gewinne (<see cref="Zonenvorgaben"/>), die
-        /// eigenen inneren Gewinne der Zone und ihr eigener Personen-Nennwert. Führt die Gebäudezeile
-        /// die Zone nicht, gilt der Anteil 1 — wie ohne eigene Nutzfläche.
+        /// <b>Der Bestand und die Nennwerte einer Zone im Lauf</b> (Teilkonzept 3.4; Stufe KP2, Welle U4):
+        /// die Bestandsfelder aufgelöst wie im Arbeitsstand (<see cref="Konditionierungseingang.ZonenBestand"/>
+        /// — eigene Sollwerte, Lüftung und Bewohner der Zone, die inneren Gewinne im Flächenanteil), der
+        /// Flächenanteil aus derselben Vorgabenkaskade, die eigenen inneren Gewinne der Zone und ihr eigener
+        /// Personen-Nennwert. Führt die Gebäudezeile die Zone nicht, bleibt der Bestand des Gebäudes und
+        /// der Anteil 1 — wie ohne eigene Nutzfläche.
         /// </summary>
-        private static Zonennennwerte Nennwerte(ProjektGebaeudeModel gebaeude, long idZone, List<Vorgabezeile> zonenvorgaben)
+        private static Matrixeingang Zonenbestand(ProjektGebaeudeModel gebaeude, long idZone, Matrixeingang bestand,
+                                                  List<Vorgabezeile> zonenvorgaben, out Zonennennwerte nennwerte)
         {
             GebaeudeZonensatz zone = null;
             foreach (GebaeudeZonensatz z in gebaeude.Zonen ?? new List<GebaeudeZonensatz>())
                 if (z != null && z.ZonenId == idZone) { zone = z; break; }
-            if (zone == null) return Zonennennwerte.Aus(1.0, null, zonenvorgaben);
+            if (zone == null)
+            {
+                nennwerte = Zonennennwerte.Aus(1.0, null, zonenvorgaben);
+                return bestand;
+            }
             Zoneneingaben e = zone.EingabenOderNutzflaeche();
-            double anteil = Zonenvorgaben.Bilden(e, Gebaeudevorgaben.Aus(gebaeude), Math.Max(1, gebaeude.Zonen.Count))
-                                         .Flaechenanteil;
-            return Zonennennwerte.Aus(anteil, new Matrixeingang { InterneWaermegewinne = e.InterneWaermegewinne },
-                                      zonenvorgaben);
+            Zonenvorgaben v = Zonenvorgaben.Bilden(e, Gebaeudevorgaben.Aus(gebaeude), Math.Max(1, gebaeude.Zonen.Count));
+            nennwerte = Zonennennwerte.Aus(v.Flaechenanteil, new Matrixeingang { InterneWaermegewinne = e.InterneWaermegewinne },
+                                           zonenvorgaben);
+            return Konditionierungseingang.ZonenBestand(bestand, e, v);
         }
 
         /// <summary>

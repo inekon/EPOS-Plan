@@ -127,6 +127,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der aufgelöste Bestand einer Zone</b> (Teilkonzept 3.4; Stufe KP2, Welle U4) — die EINE
+        /// Stelle für den Lauf (<see cref="Konditionierungdatenweg"/>) und den Arbeitsstand
+        /// (<see cref="Konditionierungsarbeitsstand.AufgeloesterBestand"/>): Sollwerte,
+        /// Maximalraumtemperatur und Lüftung „Zone, sonst Gebäude", innere Gewinne und Bewohner aus der
+        /// Vorgabenkaskade (eigener Wert, sonst Gebäude × Flächenanteil) — nur, wenn Zone oder Gebäude
+        /// einen Wert führen; Nachtzeit, Ferienzeiträume, Merker und Kühlung kommen vom Gebäude, die
+        /// Gesamtangabe der Lüftung folgt den aufgelösten Feldern. Ohne eigene Werte und mit dem Anteil 1
+        /// ist jedes Feld das des Gebäudes.
+        /// </summary>
+        /// <param name="gebaeude">Die Bestandsfelder des Gebäudes.</param>
+        /// <param name="zone">Die eigenen Angaben der Zone.</param>
+        /// <param name="vorgaben">Die Vorgabenkaskade der Zone (<see cref="Zonenvorgaben.Bilden"/>).</param>
+        public static Matrixeingang ZonenBestand(Matrixeingang gebaeude, Zoneneingaben zone, Zonenvorgaben vorgaben)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
+            if (vorgaben == null) throw new ArgumentNullException(nameof(vorgaben));
+            Matrixeingang e = gebaeude.Kopie();
+            e.SollTag = zone.SollTag ?? gebaeude.SollTag;
+            e.SollNacht = zone.SollNacht ?? gebaeude.SollNacht;
+            e.SollWochenende = zone.SollWochenende ?? gebaeude.SollWochenende;
+            e.SollFerien = zone.SollFerien ?? gebaeude.SollFerien;
+            e.Maximaleraumtemperatur = zone.Maximaleraumtemperatur ?? gebaeude.Maximaleraumtemperatur;
+            e.LuftwechselInfiltration = zone.LuftwechselInfiltration ?? gebaeude.LuftwechselInfiltration;
+            e.LuftwechselNutzer = zone.LuftwechselNutzer ?? gebaeude.LuftwechselNutzer;
+            e.InterneWaermegewinne = zone.InterneWaermegewinne.HasValue || gebaeude.InterneWaermegewinne.HasValue
+                ? vorgaben.InterneWaermegewinne.Wert : null;
+            e.Bewohner = zone.Bewohner.HasValue || gebaeude.Bewohner.HasValue ? vorgaben.Bewohner.Wert : null;
+            Gebaeudemodellvorgaben.WirksamerLuftwechsel(e.Luftwechselrate, e.LuftwechselInfiltration,
+                                                        e.LuftwechselNutzer, out Luftwechselherkunft herkunft);
+            e.LuftwechselAusGesamtangabe = herkunft == Luftwechselherkunft.Luftwechselrate;
+            return e;
+        }
+
+        /// <summary>
         /// <b>Die wirksame Matrix einer Zone</b> (Konzept 3.4; Stufe KP2, Welle U4) — die EINE Stelle für
         /// den Lauf (<see cref="Konditionierungdatenweg"/>) und den Arbeitsstand
         /// (<see cref="Konditionierungsarbeitsstand.Matrix"/>): die Zeilen der Zone je Zelle über der
