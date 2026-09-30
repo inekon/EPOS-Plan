@@ -58,9 +58,12 @@ namespace EPOS.Kern.Tests
         // Kessel E2b (Schemaschritt 158): Der kopierte Gaskessel trägt das Brennwertkennzeichen
         // seines Katalogsatzes und rechnet mit der Normvorgabe von η₃₀ — weniger Brennstoff;
         // vorher −237.134,7270351314 / −204.001,50754334457 / −279.852,53447363194.
-        private const double KW_ERWARTET = -235093.77985765776;
-        private const double KW_BEST = -202123.0925563547;
-        private const double KW_WORST = -277543.44727093074;
+        // Kessel E4 (Takten): Der Kessel taktet unter der Mindestleistung (Normvorgabe) und zahlt
+        // je Start den Anfahrverlust — mehr Brennstoff; vorher −235.093,77985765776 /
+        // −202.123,0925563547 / −277.543,44727093074.
+        private const double KW_ERWARTET = -236955.12368351375;
+        private const double KW_BEST = -203836.20702448947;
+        private const double KW_WORST = -279649.33479979425;
 
         /// <summary>Die kopierten Investitionszeilen der Vorlage 1040 (20 Zeilen, Erwartet).</summary>
         private const double INVEST_KOPIE = 54975.5;

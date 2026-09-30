@@ -48,9 +48,13 @@ namespace WindowsFormsApplication1
     /// dazu (<see cref="EtaBrennwert"/>). Den Rücklauf wählt <see cref="Ruecklauf"/> aus der
     /// Rücklaufkette. Die Kurve ist in β und in T_RL stetig, lineare Arithmetik ohne Funktion der
     /// Plattformnaht; die EINE neue Schwelle — läuft die Stunde im Brennwertbetrieb? — entscheidet
-    /// <see cref="Brennwertbetrieb"/> über den Zahlenrand. Das Takten folgt mit Etappe E4; die Felder
-    /// <c>Mindestleistung</c>, <c>Anfahrverlust_kWh</c>, <c>Mindestlaufzeit_min</c> rechnen hier noch
-    /// nicht mit.</para>
+    /// <see cref="Brennwertbetrieb"/> über den Zahlenrand.</para>
+    /// <para><b>Das Takten (Konzept 4.2, Etappe E4)</b> rechnet jeder Brennstoffkessel
+    /// (<see cref="RechnetMitTakten"/>): Liegt die Wärme einer Laufstunde unter der Mindestleistung
+    /// (<see cref="Taktet"/>), zählt die Stunde so viele Starts, wie Mindestläufe die Wärme braucht,
+    /// höchstens 60 durch die Mindestlaufzeit (<see cref="StartsImTakt"/>); jeder Start kostet den
+    /// Anfahrverlust. Leere Felder nehmen die Normvorgaben (Konzept 7.1, Entscheid F1). Beide
+    /// Schwellen — Mindestleistung und die Vielfachen eines Mindestlaufs — tragen den Zahlenrand.</para>
     /// </remarks>
     public static class Kesselkennlinie
     {
@@ -345,6 +349,159 @@ namespace WindowsFormsApplication1
             if (paarC.HasValue && Endlich(paarC.Value)) { stufe = Ruecklaufstufe.Paar; return paarC.Value; }
             stufe = Ruecklaufstufe.Rueckfall;
             return RUECKLAUF_RUECKFALL_C;
+        }
+
+        // =====================================================================
+        //  Takten (Konzept 4.2, Etappe E4)
+        // =====================================================================
+
+        /// <summary>
+        /// Normvorgabe der Mindestleistung des Gas-Brennwertkessels: 30 % der Nennleistung (Konzept 7.1,
+        /// Prüfpunkt Teillast 30 % als untere Grenze der Modulation).
+        /// </summary>
+        public const double VORGABE_MINDESTLEISTUNG_GAS_BRENNWERT = 0.3;
+
+        /// <summary>Normvorgabe der Mindestleistung jedes übrigen Brennstoffkessels: 60 % der Nennleistung.</summary>
+        public const double VORGABE_MINDESTLEISTUNG_SONST = 0.6;
+
+        /// <summary>
+        /// Normvorgabe des Anfahrverlusts je Start: so viele Stunden Nennleistung, hier 0,002 h (rund 7 s
+        /// Volllastbrennstoff; 20 kW → 0,04 kWh) — eigene Abschätzung, keine Normquelle (Konzept 7.1).
+        /// </summary>
+        public const double VORGABE_ANFAHRVERLUST_STUNDEN = 0.002;
+
+        /// <summary>Normvorgabe der Mindestlaufzeit je Start [min] (Konzept 7.1).</summary>
+        public const int VORGABE_MINDESTLAUFZEIT_MIN = 10;
+
+        /// <summary>Minuten je Stunde — das Raster des Laufs, gegen das die Mindestlaufzeit steht.</summary>
+        public const int MINUTEN_JE_STUNDE = 60;
+
+        /// <summary>
+        /// Rechnet ein Kessel dieses Brennstoffs das Takten? Jeder Brennstoffkessel; der Elektrokessel
+        /// bekommt kein Taktmodell (Konzept 7.1) und zählt seine Starts als Laufphasen.
+        /// </summary>
+        public static bool RechnetMitTakten(int brennstoffArt) => RechnetMitKennlinie(brennstoffArt);
+
+        /// <summary>Ist der Brennstoff ein Gas (<c>Tab_Brennstoff_Stamm</c> 1–5, 14)?</summary>
+        public static bool IstGas(int brennstoffArt)
+            => (brennstoffArt >= 1 && brennstoffArt <= 5) || brennstoffArt == 14;
+
+        /// <summary>
+        /// Die NORMVORGABE der Mindestleistung [kW] (Konzept 7.1, Entscheid F1): 30 % der Nennleistung
+        /// beim Gas-Brennwertkessel, 60 % bei jedem übrigen Brennstoffkessel; 0 ohne Nennleistung.
+        /// </summary>
+        public static double MindestleistungVorgabe(double nennleistungKw, KesselBauart bauart, int brennstoffArt)
+        {
+            if (!(nennleistungKw > 0) || double.IsInfinity(nennleistungKw)) return 0.0;
+            double anteil = bauart == KesselBauart.Brennwert && IstGas(brennstoffArt)
+                ? VORGABE_MINDESTLEISTUNG_GAS_BRENNWERT
+                : VORGABE_MINDESTLEISTUNG_SONST;
+            return anteil * nennleistungKw;
+        }
+
+        /// <summary>
+        /// Trägt der Kessel eine verwendbare eigene Mindestleistung (endlich und nicht negativ)? Eine
+        /// gepflegte 0 heißt „moduliert bis null“ — der Kessel taktet dann nie.
+        /// </summary>
+        public static bool MindestleistungIstGepflegt(double? mindestleistungKw)
+            => mindestleistungKw.HasValue && Endlich(mindestleistungKw.Value) && mindestleistungKw.Value >= 0;
+
+        /// <summary>
+        /// Die WIRKSAME Mindestleistung [kW]: der gepflegte Wert, höchstens die Nennleistung, sonst die
+        /// <see cref="MindestleistungVorgabe"/>.
+        /// </summary>
+        public static double MindestleistungWirksam(double? gepflegtKw, double nennleistungKw,
+                                                    KesselBauart bauart, int brennstoffArt)
+        {
+            if (!MindestleistungIstGepflegt(gepflegtKw))
+                return MindestleistungVorgabe(nennleistungKw, bauart, brennstoffArt);
+            double wert = gepflegtKw.Value;
+            return nennleistungKw > 0 && wert > nennleistungKw ? nennleistungKw : wert;
+        }
+
+        /// <summary>
+        /// Die NORMVORGABE des Anfahrverlusts je Start [kWh]: <see cref="VORGABE_ANFAHRVERLUST_STUNDEN"/>
+        /// mal Nennleistung; 0 ohne Nennleistung.
+        /// </summary>
+        public static double AnfahrverlustVorgabe(double nennleistungKw)
+        {
+            if (!(nennleistungKw > 0) || double.IsInfinity(nennleistungKw)) return 0.0;
+            return VORGABE_ANFAHRVERLUST_STUNDEN * nennleistungKw;
+        }
+
+        /// <summary>
+        /// Trägt der Kessel einen verwendbaren eigenen Anfahrverlust (endlich und nicht negativ)? Eine
+        /// gepflegte 0 zählt Starts ohne Brennstoff (Konzept 4.2: die Startzahl wird auch ohne
+        /// Anfahrverlust ausgewiesen).
+        /// </summary>
+        public static bool AnfahrverlustIstGepflegt(double? anfahrverlustKwh)
+            => anfahrverlustKwh.HasValue && Endlich(anfahrverlustKwh.Value) && anfahrverlustKwh.Value >= 0;
+
+        /// <summary>Der WIRKSAME Anfahrverlust je Start [kWh]: gepflegt, sonst die Vorgabe.</summary>
+        public static double AnfahrverlustWirksam(double? gepflegtKwh, double nennleistungKw)
+            => AnfahrverlustIstGepflegt(gepflegtKwh) ? gepflegtKwh.Value : AnfahrverlustVorgabe(nennleistungKw);
+
+        /// <summary>Trägt der Kessel eine verwendbare eigene Mindestlaufzeit (mindestens eine Minute)?</summary>
+        public static bool MindestlaufzeitIstGepflegt(int? mindestlaufzeitMin)
+            => mindestlaufzeitMin.HasValue && mindestlaufzeitMin.Value >= 1;
+
+        /// <summary>
+        /// Die WIRKSAME Mindestlaufzeit [min]: gepflegt (höchstens eine Stunde, das Raster des Laufs),
+        /// sonst <see cref="VORGABE_MINDESTLAUFZEIT_MIN"/>.
+        /// </summary>
+        public static int MindestlaufzeitWirksam(int? gepflegtMin)
+        {
+            if (!MindestlaufzeitIstGepflegt(gepflegtMin)) return VORGABE_MINDESTLAUFZEIT_MIN;
+            return gepflegtMin.Value < MINUTEN_JE_STUNDE ? gepflegtMin.Value : MINUTEN_JE_STUNDE;
+        }
+
+        /// <summary>
+        /// Die größte Zahl Starts einer Stunde: so viele Mindestläufe, wie ganz in die Stunde passen,
+        /// ⌊60 / Mindestlaufzeit⌋ — die ganzzahlige Lesart von „60 / Mindestlaufzeit“ (Konzept 4.2).
+        /// </summary>
+        public static int StartsHoechstens(int mindestlaufzeitMin)
+            => MINUTEN_JE_STUNDE / LaufzeitImRaster(mindestlaufzeitMin);
+
+        /// <summary>Die Mindestlaufzeit auf das Raster einer Stunde geklemmt: 1 … 60 min.</summary>
+        private static int LaufzeitImRaster(int mindestlaufzeitMin)
+            => mindestlaufzeitMin < 1 ? 1 : (mindestlaufzeitMin > MINUTEN_JE_STUNDE ? MINUTEN_JE_STUNDE : mindestlaufzeitMin);
+
+        /// <summary>
+        /// TAKTET der Kessel in einer Stunde mit der brennstoffbasierten Wärme <paramref name="waermeKwh"/>?
+        /// Nach Konzept 4.2 bei 0 &lt; Q &lt; P_min. Beide Enden sind Betriebsschwellen und tragen den
+        /// Zahlenrand: Eine Wärme unter <see cref="Rechenrand.ABSOLUT"/> ist kein Lauf (wie
+        /// <see cref="SimulationSPK.KesselLaeuft"/>), und wer die Mindestleistung bis auf den Rand erreicht,
+        /// moduliert (<see cref="Rechenrand.SchwelleErreicht"/>, Schwelle ist die Mindestleistung mal eine
+        /// Stunde, Wert die Wärme). Mit P_min = 0 taktet kein Kessel.
+        /// </summary>
+        public static bool Taktet(double waermeKwh, double mindestleistungKw)
+            => Endlich(waermeKwh) && Endlich(mindestleistungKw) &&
+               waermeKwh >= Rechenrand.ABSOLUT &&
+               !Rechenrand.SchwelleErreicht(waermeKwh, mindestleistungKw);
+
+        /// <summary>
+        /// Die STARTS EINER TAKTSTUNDE (Konzept 4.2): min(⌊60/t⌋, ⌈Q / (P_min · t/60)⌉) — so viele
+        /// Mindestläufe (P_min über die Mindestlaufzeit t), wie die Wärme der Stunde braucht, höchstens
+        /// so viele, wie in die Stunde passen; mindestens einer.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Zahlenrand an den Vielfachen eines Mindestlaufs.</b> ⌈x⌉ springt an jeder ganzen Zahl;
+        /// eine Wärme, die dezimal genau zwei Mindestläufe ist, darf nicht am letzten Bit drei zählen.
+        /// Deshalb wird nicht geteilt und aufgerundet, sondern der kleinste Start gesucht, dessen
+        /// Mindestläufe die Wärme bis auf den Rand decken: <see cref="Rechenrand.SchwelleErreicht"/> mit
+        /// der Wärme als Schwelle — die Leserichtung ist vertauscht wie bei einer Untergrenze, weil die
+        /// Frage lautet, ob die Wärme die Vielfachen ÜBERSTEIGT. Keine Wandlung nach <c>int</c> auf einer
+        /// Rechengröße: Die Startzahl entsteht als Zähler.
+        /// </remarks>
+        public static int StartsImTakt(double waermeKwh, double mindestleistungKw, int mindestlaufzeitMin)
+        {
+            int t = LaufzeitImRaster(mindestlaufzeitMin);
+            int hoechstens = MINUTEN_JE_STUNDE / t;
+            double mindestlaufKwh = mindestleistungKw * t / MINUTEN_JE_STUNDE;
+            int starts = 1;
+            while (starts < hoechstens && !Rechenrand.SchwelleErreicht(starts * mindestlaufKwh, waermeKwh))
+                starts++;
+            return starts;
         }
 
         private static bool Endlich(double v) => !double.IsNaN(v) && !double.IsInfinity(v);

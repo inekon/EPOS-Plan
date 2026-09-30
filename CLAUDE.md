@@ -152,16 +152,16 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-30_R28_Kesselbrennwert`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-09-30_R29_Kesseltakten`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
 gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, Projekt 1049 rechnet als
 Kopie von 1018 ein Kollektorfeld vor BHKW und Kessel, das direkt und über den Puffer deckt —
 mit der Nachrang-Vorgabe 30 % am Puffer, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
-Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie und
-Brennwertkennlinie am Rückfall-Rücklauf, gehalten von `EPOS.Kern.Tests/KesselKennlinieTests`, und steht nicht in
-der CI-Auswahl,
+Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie,
+Brennwertkennlinie am Rückfall-Rücklauf und gepflegten Taktwerten, gehalten von
+`EPOS.Kern.Tests/KesselKennlinieTests`, und steht nicht in der CI-Auswahl,
 allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
@@ -208,7 +208,7 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   eines Referenzprojekts, die Bereitschaftsleistung seines Kessels, dessen fünf Kennlinienspalten
   (`Wirkungsgrad_Teillast30`, `Kennlinie_Brennwert`, `Mindestleistung`, `Anfahrverlust_kWh`,
   `Mindestlaufzeit_min`), sein Schalter `Brennwert` und die Bauart in `Beschreibung`, die über die
-  Normvorgabe von η₃₀ entscheiden, beim Referenzprojekt 1050 dazu, was den Rücklauf seiner
+  Normvorgaben von η₃₀ und Mindestleistung entscheiden, beim Referenzprojekt 1050 dazu, was den Rücklauf seiner
   Brennwertkennlinie bestimmt (Temperaturpaar an Anlage und Kessel, Senken des Kessels,
   Kopplungsstufe), und das Anlegen oder Entfernen des Referenzprojekts 1050.
 
@@ -221,7 +221,7 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 | Workflow | Läuft von selbst | Nur auf Zuruf (*Actions → Run workflow*) |
 |---|---|---|
-| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben, Referenzlauf der sieben Projekte gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
+| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der sieben Projekte gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
 | [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC auf dem Arbeitszweig `ios_migration_september` (der geplante Lauf nimmt den Workflow von `main` und checkt den Arbeitszweig aus; **zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
 | [`ios.yml`](.github/workflows/ios.yml) | nie | baut die iOS-Hülle auf `macos-26`, startet sie im Simulator und rechnet Projekt 1030 gegen die Basis; 15–20 Minuten, **zählt zehnfach** |
 

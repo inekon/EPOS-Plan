@@ -28041,7 +28041,7 @@ Do you want to allow this?</value>
     <value>Boiler efficiency 100 % (placeholder) for "{0}" — maintain the catalogue value: fuel input here equals heat production.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day with a mean outdoor temperature below {0} °C, or 24 h run-on); only in these the standby loss is charged.</value>
+    <value>Sum over all boilers. Starts count burner starts: one per operating phase, and in an hour below the minimum output as many as minimum runs the heat requires; standby hours are idle hours in which the boiler is kept ready (heating day with a mean outdoor temperature below {0} °C, or 24 h run-on); only in these the standby loss is charged.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Highest hourly load of the total heat demand (space heating + domestic hot water + process heat).</value>
@@ -28057,6 +28057,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMERG_LBL_STARTS" xml:space="preserve">
     <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_TAKTSTUNDEN" xml:space="preserve">
+    <value>Cycling hours below minimum output</value>
+  </data>
+  <data name="SIMERG_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Start-up loss</value>
+  </data>
+  <data name="SIMERG_TIP_TAKTEN_SPK" xml:space="preserve">
+    <value>A fuel-fired boiler cycles when its heat in an hour stays below the minimum output: the hour counts as many starts as minimum runs (minimum output over the minimum run time) the heat requires, at most as many as fit into the hour. Every other operating hour counts one start if the boiler was idle before. Every start costs the start-up loss as fuel. Empty fields take the standard defaults: minimum output 30 % of the rated output for a gas condensing boiler, otherwise 60 %, minimum run time 10 min, start-up loss 0.002 h times rated output.</value>
   </data>
   <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
     <value>of which from buffer (other generators):</value>
@@ -40386,6 +40395,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="HZKK_HINT_KENNLINIE" xml:space="preserve">
     <value>Empty = default. The condensing curve applies to condensing boilers only.</value>
   </data>
+  <data name="HZKK_HINT_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Condensing boiler without condensing curve: the return temperature has no effect; the boiler uses its part-load curve only.</value>
+  </data>
   <data name="HZKK_MSG_KENNLINIE_OHNE_BRENNWERT" xml:space="preserve">
     <value>The condensing curve is only permitted for a condensing boiler.</value>
   </data>
@@ -40440,6 +40452,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KESSEL_BAUART_STANDARD" xml:space="preserve">
     <value>standard boiler</value>
   </data>
+  <data name="KESSEL_WERT_GEPFLEGT" xml:space="preserve">
+    <value>maintained</value>
+  </data>
+  <data name="KESSEL_WERT_VORGABE" xml:space="preserve">
+    <value>standard default</value>
+  </data>
   <data name="SIMERG_LBL_WIRKUNGSGRAD_BETRIEB" xml:space="preserve">
     <value>Mean efficiency in operation</value>
   </data>
@@ -40447,7 +40465,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Fuel from part load compared with full load</value>
   </data>
   <data name="SIMERG_TIP_KENNLINIE_SPK" xml:space="preserve">
-    <value>Fuel-fired boilers use the efficiency of their load ratio in every hour: between 30 % and 100 % of the rated output linear from η30 to η100, below that η30. An empty η30 takes the standard default by type (condensing boiler η100 + 0.06, low-temperature boiler η100, standard boiler η100 − 0.03). The mean efficiency is the heat of the operating hours divided by their fuel, without standby loss; the part-load fuel is the additional consumption compared with operation at η100 — negative where part load saves fuel.</value>
+    <value>Fuel-fired boilers use the efficiency of their load ratio in every hour: between 30 % and 100 % of the rated output linear from η30 to η100, below that η30. An empty η30 takes the standard default by type (condensing boiler η100 + 0.06, low-temperature boiler η100, standard boiler η100 − 0.03). The mean efficiency is the heat of the operating hours divided by their fuel, without start-up and standby loss; the part-load fuel is the additional consumption compared with operation at η100 — negative where part load saves fuel.</value>
   </data>
   <data name="SIM_SPALTE_ETA30" xml:space="preserve">
     <value>η30 [%]</value>
@@ -40491,6 +40509,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Condensing boiler “{0}”: the return temperature is above the dew point ({2} °C) in {1} % of the operating hours — the boiler does not use the condensing effect then. A lower return temperature (heating circuit, storage) raises the efficiency.</value>
   </data>
+  <data name="SIMENG_KESSEL_TAKTWERTE" xml:space="preserve">
+    <value>Cycling “{0}”: minimum output {1} kW ({2}), minimum run time {3} min ({4}), start-up loss {5} kWh per start ({6}).</value>
+  </data>
+  <data name="SIMENG_KESSEL_TAKTEN_BETRIEB" xml:space="preserve">
+    <value>Cycling “{0}”: {1} starts, {2} operating phases, {3} cycling hours below the minimum output, start-up loss {4:N1} kWh/a.</value>
+  </data>
   <data name="SIMERG_LBL_BRENNWERT_STUNDENANTEIL" xml:space="preserve">
     <value>Operating hours in condensing mode</value>
   </data>
@@ -40511,6 +40535,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SIM_SPALTE_BRENNWERTANTEIL" xml:space="preserve">
     <value>Condensing mode [%]</value>
+  </data>
+  <data name="SIM_SPALTE_STARTS" xml:space="preserve">
+    <value>Starts [1/a]</value>
   </data>
   <data name="CHART_CSV_KESSEL_RUECKLAUF" xml:space="preserve">
     <value>{0} return temperature [°C]</value>

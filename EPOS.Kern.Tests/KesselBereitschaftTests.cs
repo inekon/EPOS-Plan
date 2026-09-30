@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Teillast.</b> Der Kessel von 1007 ist ein Brennwertkessel (Schemaschritt 158 zieht
     /// das Kennzeichen aus dem Katalog nach); er rechnet mit der Normvorgabe von η₃₀, und seine
     /// Teillast spart Brennstoff. Der Verbrauch ist deshalb Wärme durch η₁₀₀ plus Teillastkorrektur
-    /// plus Bereitschaftsverlust.</para>
+    /// plus Anfahrverlust der Starts (Etappe E4) plus Bereitschaftsverlust.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class KesselBereitschaftTests : IDisposable
@@ -98,7 +98,9 @@ namespace EPOS.Kern.Tests
 
             double teillastKwh = spk.TeillastMehrbrennstoff_KWh_Spk[0];
             Assert.True(teillastKwh < 0, "Die Teillast spart beim Brennwertkessel Brennstoff.");
-            double erwartetMwh = waermeMwh / wirk + teillastKwh / 1000.0 + bereitschaftKwh / 1000.0;
+            double anfahrKwh = spk.Anfahrverlust_KWh_Spk[0];
+            Assert.True(anfahrKwh > 0, "Jeder Start kostet den Anfahrverlust der Normvorgabe.");
+            double erwartetMwh = waermeMwh / wirk + teillastKwh / 1000.0 + anfahrKwh / 1000.0 + bereitschaftKwh / 1000.0;
             Assert.Equal(erwartetMwh, spk.Kessel_Verbrauch_MWh_Spk[0], 9);
 
             // Das Laufprotokoll nennt die Bereitschaftsstunden je Kessel.
@@ -326,6 +328,7 @@ namespace EPOS.Kern.Tests
 
             double erwartetMwh = spk.s_waerme_Gas_Spk[0] / spk.Kessel_Wirk_Gas_Spk[0] +
                                  spk.TeillastMehrbrennstoff_KWh_Spk[0] / 1000.0 +
+                                 spk.Anfahrverlust_KWh_Spk[0] / 1000.0 +
                                  erlaubt * BEREITSCHAFT_1007_KW / 1000.0;
             Assert.Equal(erwartetMwh, spk.Kessel_Verbrauch_MWh_Spk[0], 9);
 

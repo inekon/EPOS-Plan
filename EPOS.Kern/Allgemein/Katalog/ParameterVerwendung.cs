@@ -328,8 +328,8 @@ namespace WindowsFormsApplication1
 
                 // Die Kennlinie (Konzept Kesselkennlinie 3.1): gepflegt in Editor und Aufklapper,
                 // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2), der
-                // Schalter der Brennwertkennlinie mit dem Ruecklauf (E3); die uebrigen drei folgen mit
-                // der Etappe E4 (Takten) und bleiben bis dahin DLG.
+                // Schalter der Brennwertkennlinie mit dem Ruecklauf (E3), Mindestleistung,
+                // Anfahrverlust und Mindestlaufzeit mit dem Takten (E4) - leer je die Normvorgabe.
                 E("Wirkungsgrad_Teillast30", t("HZKK_LBL_TEILLAST30"), "", SIM,
                   "SimulationSPK.Stunde_Abschluss (Kesselkennlinie.Eta30Wirksam, leer = Normvorgabe nach Bauart); " +
                   "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
@@ -337,12 +337,15 @@ namespace WindowsFormsApplication1
                   "SimulationSPK.Kesseldaten_Einlesen (Kesselkennlinie.RechnetMitBrennwertkennlinie) und " +
                   "Stunde_Abschluss (Kesselkennlinie.EtaBrennwert, Ruecklaufkette); " +
                   "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
-                E("Mindestleistung", t("HZKK_LBL_MINDESTLEISTUNG"), "kW", DLG,
-                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4"),
-                E("Anfahrverlust_kWh", t("HZKK_LBL_ANFAHRVERLUST"), "kWh", DLG,
-                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4"),
-                E("Mindestlaufzeit_min", t("HZKK_LBL_MINDESTLAUFZEIT"), "min", DLG,
-                  "HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel); Rechenweg ab E4")
+                E("Mindestleistung", t("HZKK_LBL_MINDESTLEISTUNG"), "kW", SIM,
+                  "SimulationSPK.TaktwerteBilden und Stunde_Abschluss (Kesselkennlinie.MindestleistungWirksam, Taktet; " +
+                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
+                E("Anfahrverlust_kWh", t("HZKK_LBL_ANFAHRVERLUST"), "kWh", SIM,
+                  "SimulationSPK.TaktwerteBilden und Stunde_Abschluss (Kesselkennlinie.AnfahrverlustWirksam; " +
+                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
+                E("Mindestlaufzeit_min", t("HZKK_LBL_MINDESTLAUFZEIT"), "min", SIM,
+                  "SimulationSPK.TaktwerteBilden und Stunde_Abschluss (Kesselkennlinie.MindestlaufzeitWirksam, StartsImTakt; " +
+                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)")
             };
         }
 

@@ -142,11 +142,40 @@ namespace WindowsFormsApplication1
         public int[] Laufstunden_Spk = new int[MAX_SPK];
 
         /// <summary>
-        /// STARTS je Kessel [1/a]: Laufstunden, denen eine Stillstandsstunde vorausgeht
-        /// (die erste Laufstunde des Jahres zählt als Start). Im Stundenraster ist das die
-        /// Zahl der Laufphasen, nicht der Brennerstarts innerhalb einer Stunde.
+        /// STARTS je Kessel [1/a] nach Konzept Kesselkennlinie 4.2 (Etappe E4): In einer
+        /// TAKTSTUNDE (0 &lt; Q &lt; Mindestleistung, <see cref="Kesselkennlinie.Taktet"/>) zählt die
+        /// Stunde so viele Starts, wie Mindestläufe ihre Wärme braucht
+        /// (<see cref="Kesselkennlinie.StartsImTakt"/>); jede andere Laufstunde zählt einen Start,
+        /// wenn der Kessel in der Vorstunde stand (die erste Laufstunde des Jahres zählt als Start).
+        /// Der Elektrokessel hat kein Taktmodell: Seine Starts sind seine <see cref="Laufphasen_Spk"/>.
+        ///
+        /// <para><b>Wie beide Zählungen zusammenhängen:</b> Außerhalb der Taktstunden ist ein Start
+        /// genau ein Übergang aus → an, also eine Laufphase. In einer Taktstunde ersetzt die Startzahl
+        /// des Takts den Übergang (er ist ihr erster Start, wenn die Vorstunde stand). Damit gilt
+        /// Starts = Laufphasen + Σ über die Taktstunden (Starts der Stunde − 1, wenn die Vorstunde
+        /// stand, sonst − 0) — nie weniger als die Laufphasen, gleich ihnen ohne Taktstunde.</para>
         /// </summary>
         public int[] Starts_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// LAUFPHASEN je Kessel [1/a]: Laufstunden, denen eine Stillstandsstunde vorausgeht (die erste
+        /// Laufstunde des Jahres zählt mit) — die Übergänge aus → an im Stundenraster, die bis zur
+        /// Etappe E4 als „Starts“ gezählt wurden.
+        /// </summary>
+        public int[] Laufphasen_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// TAKTSTUNDEN je Kessel [h/a]: Laufstunden eines Brennstoffkessels, deren Wärme unter der
+        /// Mindestleistung liegt (<see cref="Kesselkennlinie.Taktet"/>).
+        /// </summary>
+        public int[] Taktstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// ANFAHRVERLUST je Kessel [kWh/a]: Starts mal Anfahrverlust je Start
+        /// (Konzept 4.2) — Brennstoff, aber keine Wärme; Teil von <see cref="Kessel_Verbrauch_MWh_Spk"/>.
+        /// Beim Elektrokessel 0.
+        /// </summary>
+        public double[] Anfahrverlust_KWh_Spk = new double[MAX_SPK];
 
         /// <summary>
         /// BEREITSCHAFTSSTUNDEN je Kessel [h/a]: Stillstandsstunden, in denen der Kessel
@@ -229,8 +258,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Brennstoffeinsatz JE KESSEL [MWh/a] — Nutzwärme über den Wirkungsgrad plus
-        /// die Bereitschaftsverluste der Stillstandsstunden, indexgleich zu
-        /// <see cref="spk_list"/>.
+        /// der Anfahrverlust der Starts (Etappe E4) plus die Bereitschaftsverluste der
+        /// Stillstandsstunden, indexgleich zu <see cref="spk_list"/>.
         ///
         /// <para><b>Öffentlich wie seine drei Nachbarn</b> (<c>s_waerme_Gas_Spk</c>,
         /// <c>s_waerme_Oel_Spk</c>, <c>Kessel_Jahresnutzungsgrad_Spk</c>): Der
@@ -295,8 +324,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// BRENNSTOFF DER LAUFSTUNDEN je Kessel [kWh/a]: Σ Wärme/η(β) — der Brennstoffeinsatz
-        /// ohne Bereitschaftsverlust. <see cref="Kessel_Verbrauch_MWh_Spk"/> ist dieser Wert plus
-        /// <see cref="Bereitschaftsverlust_KWh_Spk"/>.
+        /// nach der Kennlinie, ohne Anfahr- und Bereitschaftsverlust. <see cref="Kessel_Verbrauch_MWh_Spk"/>
+        /// ist dieser Wert plus <see cref="Anfahrverlust_KWh_Spk"/> plus <see cref="Bereitschaftsverlust_KWh_Spk"/>.
         /// </summary>
         public double[] BrennstoffBetrieb_KWh_Spk = new double[MAX_SPK];
 
@@ -376,6 +405,33 @@ namespace WindowsFormsApplication1
         /// gegenüber η₁₀₀.
         /// </summary>
         public double[] BrennwertMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // TAKTEN (Konzept Kesselkennlinie 4.2, Etappe E4)
+        //
+        // Ein Brennstoffkessel, dessen Wärme in einer Laufstunde unter der Mindestleistung liegt,
+        // taktet: Die Stunde zählt so viele Starts, wie Mindestläufe die Wärme braucht, und jeder
+        // Start kostet den Anfahrverlust. Mindestleistung, Anfahrverlust und Mindestlaufzeit sind
+        // gepflegt oder nehmen die Normvorgaben (Konzept 7.1, Entscheid F1); einmal je Lauf in
+        // Kesseldaten_Einlesen gebildet. Der Elektrokessel rechnet ohne Taktmodell.
+        // ------------------------------------------------------------------
+
+        /// <summary>Rechnet der Kessel das Takten (jeder Brennstoffkessel)?</summary>
+        private readonly bool[] _takten = new bool[MAX_SPK];
+
+        /// <summary>Wirksame Mindestleistung je Kessel [kW].</summary>
+        private readonly double[] _mindestleistungKw = new double[MAX_SPK];
+
+        /// <summary>Wirksamer Anfahrverlust je Start und Kessel [kWh].</summary>
+        private readonly double[] _anfahrverlustKwh = new double[MAX_SPK];
+
+        /// <summary>Wirksame Mindestlaufzeit je Kessel [min].</summary>
+        private readonly int[] _mindestlaufzeitMin = new int[MAX_SPK];
+
+        /// <summary>Die drei Taktwerte der Projektkopie, wie sie dort stehen (für die Herkunft „Vorgabe“).</summary>
+        private readonly double?[] _mindestleistungGepflegt = new double?[MAX_SPK];
+        private readonly double?[] _anfahrverlustGepflegt = new double?[MAX_SPK];
+        private readonly int?[] _mindestlaufzeitGepflegt = new int?[MAX_SPK];
 
         // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
         // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
@@ -512,6 +568,9 @@ namespace WindowsFormsApplication1
                             Teillastwirkungsgrad(i).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
                             BauartText(_bauart[i])));
 
+                // Etappe E4 (Konzept 4.2): die Taktwerte - gepflegt oder die Normvorgabe (7.1, F1).
+                TaktwerteBilden(i, heizkesselctrl.items[0]);
+
                 Betriebsbereitschaft_Verluste[i] =
                     BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
 
@@ -534,6 +593,47 @@ namespace WindowsFormsApplication1
 
             return true;
         }
+
+        /// <summary>
+        /// Die TAKTWERTE des Kessels <paramref name="i"/> (Konzept Kesselkennlinie 4.2, Etappe E4):
+        /// Mindestleistung, Anfahrverlust je Start und Mindestlaufzeit aus der Projektkopie, ein leeres
+        /// Feld mit der Normvorgabe (7.1, Entscheid F1). Braucht Nennleistung, Brennstoff und Bauart des
+        /// Kessels, also nach deren Einlesen gerufen. Der Elektrokessel bekommt kein Taktmodell.
+        /// </summary>
+        private void TaktwerteBilden(int i, HeizkesselModel kessel)
+        {
+            _mindestleistungGepflegt[i] = kessel.Mindestleistung;
+            _anfahrverlustGepflegt[i] = kessel.Anfahrverlust_kWh;
+            _mindestlaufzeitGepflegt[i] = kessel.Mindestlaufzeit_min;
+
+            _takten[i] = Kesselkennlinie.RechnetMitTakten(Brennstoff_Art[i]);
+            if (!_takten[i])
+            {
+                _mindestleistungKw[i] = 0;
+                _anfahrverlustKwh[i] = 0;
+                _mindestlaufzeitMin[i] = 0;
+                return;
+            }
+
+            _mindestleistungKw[i] = Kesselkennlinie.MindestleistungWirksam(
+                kessel.Mindestleistung, Kessel_Leistung_Spk[i], _bauart[i], Brennstoff_Art[i]);
+            _anfahrverlustKwh[i] = Kesselkennlinie.AnfahrverlustWirksam(kessel.Anfahrverlust_kWh, Kessel_Leistung_Spk[i]);
+            _mindestlaufzeitMin[i] = Kesselkennlinie.MindestlaufzeitWirksam(kessel.Mindestlaufzeit_min);
+
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "KESSEL_TAKTWERTE_" + spk_list[i],
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_TAKTWERTE,
+                    spk_list[i],
+                    _mindestleistungKw[i].ToString("N2", k), Herkunft(!MindestleistungIstVorgabe(i)),
+                    _mindestlaufzeitMin[i], Herkunft(!MindestlaufzeitIstVorgabe(i)),
+                    _anfahrverlustKwh[i].ToString("N3", k), Herkunft(!AnfahrverlustIstVorgabe(i))));
+        }
+
+        /// <summary>Der Herkunftstext eines Kennlinienwerts im Laufprotokoll: „gepflegt“ oder „Normvorgabe“.</summary>
+        private static string Herkunft(bool gepflegt)
+            => gepflegt ? MyResource.Resource.KESSEL_WERT_GEPFLEGT : MyResource.Resource.KESSEL_WERT_VORGABE;
 
         /// <summary>
         /// Der Energieträger EINES Kessels aus <see cref="spk_carrier"/> (W14a-E-8-B1);
@@ -1612,7 +1712,8 @@ namespace WindowsFormsApplication1
         /// Brennstoffbilanz der Stunde — GENAU EINMAL je Stunde und Kessel (Konzept 6.5).
         ///
         /// Das ist die zentrale Bedingung der zweikanaligen Umstellung: Läuft der Kessel,
-        /// folgt sein Verbrauch dem Wirkungsgrad; steht er und ist er betriebsbereit
+        /// folgt sein Verbrauch dem Wirkungsgrad, dazu je Start der Anfahrverlust (Etappe E4,
+        /// Konzept Kesselkennlinie 4.2); steht er und ist er betriebsbereit
         /// (<see cref="IstBetriebsbereit"/>, #568), wird ihm der
         /// BEREITSCHAFTSVERLUST als Verbrauch aufgeschlagen. Würde diese Entscheidung je
         /// Kanal getroffen, fiele der Stillstandsverlust in einer Stunde zweimal an — der
@@ -1662,17 +1763,38 @@ namespace WindowsFormsApplication1
                     }
 
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
-                    stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
+                    double brennstoffKennlinie = KesselLeistung / wirk;
+
+                    // Etappe E4 (Konzept 4.2): die Starts der Stunde - im Takt unter der Mindestleistung
+                    // so viele, wie Mindestläufe die Wärme braucht, sonst einer nach einer
+                    // Stillstandsstunde -, und je Start der Anfahrverlust. Der Elektrokessel taktet nicht.
+                    int starts;
+                    if (_takten[i] && Kesselkennlinie.Taktet(KesselLeistung, _mindestleistungKw[i]))
+                    {
+                        starts = Kesselkennlinie.StartsImTakt(KesselLeistung, _mindestleistungKw[i], _mindestlaufzeitMin[i]);
+                        Taktstunden_Spk[i]++;
+                    }
+                    else
+                    {
+                        starts = _liefVorstunde[i] ? 0 : 1;
+                    }
+                    double anfahrverlust = _takten[i] ? starts * _anfahrverlustKwh[i] : 0;
+                    Starts_Spk[i] += starts;
+                    if (!_liefVorstunde[i]) Laufphasen_Spk[i]++;
+                    Anfahrverlust_KWh_Spk[i] += anfahrverlust;
+
+                    stuendlicherBrennstoffverbrauchKW = brennstoffKennlinie + anfahrverlust;
 
                     // E2: der Brennstoff der Laufstunde und sein Teillastanteil gegenüber η₁₀₀ - beim
                     // Brennwertkessel mit Kennlinie der trockenen Kurve, der Rest ist Brennwertnutzung (E3).
+                    // Beides ohne den Anfahrverlust (E4), der für sich gezählt wird.
                     _waermeBetriebKwh[i] += KesselLeistung;
-                    BrennstoffBetrieb_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
+                    BrennstoffBetrieb_KWh_Spk[i] += brennstoffKennlinie;
                     if (_brennwertKennlinie[i])
                     {
                         double brennstoffTrocken = KesselLeistung / wirkTrocken;
                         TeillastMehrbrennstoff_KWh_Spk[i] += brennstoffTrocken - KesselLeistung / eta100;
-                        BrennwertMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - brennstoffTrocken;
+                        BrennwertMehrbrennstoff_KWh_Spk[i] += brennstoffKennlinie - brennstoffTrocken;
                         _ruecklaufGewichtet[i] += KesselLeistung * ruecklauf;
                         if (_ruecklaufStunde[i] != null && stunde >= 0 && stunde < 8760)
                             _ruecklaufStunde[i][stunde] = ruecklauf;
@@ -1684,13 +1806,12 @@ namespace WindowsFormsApplication1
                     }
                     else
                     {
-                        TeillastMehrbrennstoff_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW - KesselLeistung / eta100;
+                        TeillastMehrbrennstoff_KWh_Spk[i] += brennstoffKennlinie - KesselLeistung / eta100;
                     }
                     if (_wirkungsgradStunde[i] != null && stunde >= 0 && stunde < 8760)
                         _wirkungsgradStunde[i][stunde] = wirk;
 
                     Laufstunden_Spk[i]++;
-                    if (!_liefVorstunde[i]) Starts_Spk[i]++;
                     _letzteLaufstunde[i] = stunde;
 
                     if (oel)
@@ -1701,7 +1822,9 @@ namespace WindowsFormsApplication1
                     {
                         s_waerme_Gas_Spk[i] += KesselLeistung;
 
-                        double Gasleistung = KesselLeistung / wirk;
+                        // Die Gasspitze aus demselben Wert wie der Brennstoff der Stunde (Konzept 4.1
+                        // Punkt 6), also samt Anfahrverlust.
+                        double Gasleistung = stuendlicherBrennstoffverbrauchKW;
                         if (_gasspitzeKessel[i] < Gasleistung) _gasspitzeKessel[i] = Gasleistung;
                     }
                 }
@@ -1947,6 +2070,49 @@ namespace WindowsFormsApplication1
             return nenn > 0 ? _waermeBetriebKwh[index] / nenn : 0;
         }
 
+        /// <summary>Rechnet der Kessel <paramref name="index"/> das Takten (Etappe E4)? Jeder Brennstoffkessel.</summary>
+        public bool RechnetMitTakten(int index)
+            => index >= 0 && index < MAX_SPK && _takten[index];
+
+        /// <summary>Die wirksame MINDESTLEISTUNG des Kessels <paramref name="index"/> [kW]; 0 ohne Taktmodell.</summary>
+        public double Mindestleistung(int index)
+            => RechnetMitTakten(index) ? _mindestleistungKw[index] : 0;
+
+        /// <summary>Der wirksame ANFAHRVERLUST je Start des Kessels <paramref name="index"/> [kWh]; 0 ohne Taktmodell.</summary>
+        public double AnfahrverlustJeStart(int index)
+            => RechnetMitTakten(index) ? _anfahrverlustKwh[index] : 0;
+
+        /// <summary>Die wirksame MINDESTLAUFZEIT des Kessels <paramref name="index"/> [min]; 0 ohne Taktmodell.</summary>
+        public int Mindestlaufzeit(int index)
+            => RechnetMitTakten(index) ? _mindestlaufzeitMin[index] : 0;
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe der Mindestleistung (Feld leer, Konzept 7.1)?</summary>
+        public bool MindestleistungIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.MindestleistungIstGepflegt(_mindestleistungGepflegt[index]);
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe des Anfahrverlusts (Feld leer, Konzept 7.1)?</summary>
+        public bool AnfahrverlustIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.AnfahrverlustIstGepflegt(_anfahrverlustGepflegt[index]);
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe der Mindestlaufzeit (Feld leer, Konzept 7.1)?</summary>
+        public bool MindestlaufzeitIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.MindestlaufzeitIstGepflegt(_mindestlaufzeitGepflegt[index]);
+
+        /// <summary>
+        /// Laufprotokoll am Jahresende: Starts, Laufphasen, Taktstunden und Anfahrverlust eines Kessels
+        /// mit Taktmodell (Etappe E4).
+        /// </summary>
+        private void TaktenMelden(int i)
+        {
+            if (!_takten[i] || Laufstunden_Spk[i] <= 0) return;
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_TAKTEN_BETRIEB,
+                    spk_list[i], Starts_Spk[i], Laufphasen_Spk[i], Taktstunden_Spk[i],
+                    Anfahrverlust_KWh_Spk[i]));
+        }
+
         /// <summary>Jahressummen, Emissionen und Jahresnutzungsgrad des zweikanaligen Wegs.</summary>
         public void Abschluss_Zweikanalig()
         {
@@ -1954,6 +2120,7 @@ namespace WindowsFormsApplication1
             {
                 BereitschaftDeckeln(i);
                 BrennwertBetriebMelden(i);
+                TaktenMelden(i);
 
                 s_waerme_Gas_Spk[i] /= 1000;
                 s_waerme_Oel_Spk[i] /= 1000;
@@ -2214,6 +2381,18 @@ namespace WindowsFormsApplication1
             Array.Clear(Brennwertstunden_Spk, 0, MAX_SPK);
             Array.Clear(BrennwertWaerme_KWh_Spk, 0, MAX_SPK);
             Array.Clear(BrennwertMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
+
+            // Takten (Etappe E4): Taktwerte und Zähler sind Laufzustand.
+            Array.Clear(_takten, 0, MAX_SPK);
+            Array.Clear(_mindestleistungKw, 0, MAX_SPK);
+            Array.Clear(_anfahrverlustKwh, 0, MAX_SPK);
+            Array.Clear(_mindestlaufzeitMin, 0, MAX_SPK);
+            Array.Clear(_mindestleistungGepflegt, 0, MAX_SPK);
+            Array.Clear(_anfahrverlustGepflegt, 0, MAX_SPK);
+            Array.Clear(_mindestlaufzeitGepflegt, 0, MAX_SPK);
+            Array.Clear(Laufphasen_Spk, 0, MAX_SPK);
+            Array.Clear(Taktstunden_Spk, 0, MAX_SPK);
+            Array.Clear(Anfahrverlust_KWh_Spk, 0, MAX_SPK);
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
