@@ -160,6 +160,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Heizkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe nach einer Teillastkennlinie; ohne gepflegten Wert bei 30 % Last gilt eine Vorgabe nach Bauart. (#625)
 - Heizkessel in bestehenden Projekten übernehmen das Kennzeichen Brennwertkessel aus dem Katalog. (#627)
 - Brennwertkessel mit eingeschalteter Brennwertkennlinie rechnen je Stunde mit dem Rücklauf aus Heizkreis, Speicher oder Temperaturpaar; unter dem Taupunkt steigt ihr Wirkungsgrad. (#627)
+- Heizkessel takten unter ihrer Mindestleistung: Die Simulation zählt die Brennerstarts und rechnet je Start einen Anfahrverlust als Brennstoff; leere Felder nehmen Vorgaben. (#630)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

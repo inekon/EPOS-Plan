@@ -93,6 +93,22 @@ namespace WindowsFormsApplication1
             /// </summary>
             public Strichart Strichart;
 
+            /// <summary>
+            /// Der FARBTON des Eintrags — die <see cref="Farbrolle"/> der Reihe, zu der er
+            /// gehört (<see cref="Reihe.Ton"/>). Farbfeld und Rand nehmen dann DIESE Rolle und
+            /// nicht die Rückwärtssuche über <see cref="Farbe"/>: <see cref="Farbe"/> ist die
+            /// gegen <see cref="Farbpalette.Aktuell"/> aufgelöste Farbe, die Rückwärtssuche
+            /// kennt aber nur die Hausfarben. Trägt eine Rolle beim Anwender den Hausfarbwert
+            /// einer ANDEREN (Summe Wärmebedarf auf #FF0000, der Hausfarbe der Heizwärme), fände
+            /// sie jene — und das Feld stünde in deren Anwenderfarbe statt in der eigenen.
+            ///
+            /// <para><b>Vorgabe <c>null</c></b>: der Weg über <see cref="Farbe"/> und die
+            /// Rückwärtssuche, für einen Eintrag ohne Rolle. Mit der Vorgabe-Palette lösen beide
+            /// Wege auf denselben Wert auf — jedes Bild bleibt byte-gleich, die ChartProben
+            /// vergleichen Bilder.</para>
+            /// </summary>
+            public Farbton Ton;
+
             public Segment(string l, double w, SKColor f) { Label = l; Wert = w; Farbe = f; }
 
             public Segment(string l, double w, SKColor f, Strichart strichart)
@@ -298,7 +314,7 @@ namespace WindowsFormsApplication1
                 float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
                 float von = start;                 // fest fuer die Klammer
                 z.Markiert("reihe:" + (s.Label ?? ""), Anteilwert(s.Label, s.Wert, total),
-                           zs => Kreissegment(zs, rect, von, sweep, Flaeche(s.Farbe)));
+                           zs => Kreissegment(zs, rect, von, sweep, Flaeche(Ton(s))));
                 start += sweep;
             }
             z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
@@ -314,7 +330,7 @@ namespace WindowsFormsApplication1
                     // Legende - derselbe Schluessel wie am Segment.
                     z.Markiert("legende:" + (s.Label ?? ""), ze =>
                     {
-                        ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(s.Farbe));
+                        ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(Ton(s)));
                         ze.Rechteck(ex, ey, 28f, 28f, rahmen);
                         Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", Zahlkultur) + " %",
                              lf, Farbrolle.TEXT, ex + 40f, ey + 1f);
@@ -551,7 +567,7 @@ namespace WindowsFormsApplication1
             string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 520);
-            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            List<Segment> leg = reihen.Select(r => Eintrag(r)).ToList();
             float umbruch = mass.HasValue ? W - 30f : 0f;
             float mehr = mass.HasValue ? (LegendenZeilen(leg, 70f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(190f + mehr + STUFE2_MIN_FLAECHE));
@@ -574,7 +590,7 @@ namespace WindowsFormsApplication1
                     Reihe reihe = r;
                     bild.Markiert("reihe:" + reihe.Name, zr =>
                         ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
-                                     0, max, reihe.Farbe, 3f));
+                                     0, max, Ton(reihe), 3f));
                 }
                 // Y-Beschriftung nur links.
                 if (p == 0)
@@ -673,7 +689,7 @@ namespace WindowsFormsApplication1
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
             // Die Legende bricht bei W − 70 um und hat zwei Zeilen Platz; im Zielmaß räumt die
             // Zeichenfläche jeder weiteren Zeile Platz.
-            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            List<Segment> leg = reihen.Select(r => Eintrag(r)).ToList();
             float mehr = mass.HasValue ? Math.Max(0, LegendenZeilen(leg, 70f, W - 70f) - 2) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(230f + mehr + STUFE2_MIN_FLAECHE));
 
@@ -693,7 +709,7 @@ namespace WindowsFormsApplication1
                     Reihe reihe = r;
                     bild.Markiert("reihe:" + reihe.Name, zr =>
                         ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
-                                     min, max, reihe.Farbe, 3f));
+                                     min, max, Ton(reihe), 3f));
                 }
 
                 if (p == 0)
@@ -767,7 +783,7 @@ namespace WindowsFormsApplication1
                                              Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = stapel.Select(r => Eintrag(r)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             // Stufe 2: Die Legende bricht an der Breite um, die Zeichenfläche räumt ihr den Platz.
             float umbruch = mass.HasValue ? W - 30f : 0f;
@@ -801,12 +817,13 @@ namespace WindowsFormsApplication1
                 Reihe reihe = r;
                 double[] unterkante = unten, oberkante = oben;
                 z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, reihe.Farbe, bezug: stapelbezug));
+                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, Ton(reihe, STAPELFLAECHE_DECKUNG),
+                                   bezug: stapelbezug));
                 unten = oben;
             }
             if (linie != null)
                 z.Markiert("reihe:" + linienName, zr =>
-                    ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF, 3f));
+                    ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF.Ton(), 3f));
 
             Legende(z, leg, 90f, H - 64f - mehr, umbruch);
             return z;
@@ -823,7 +840,7 @@ namespace WindowsFormsApplication1
                                              Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            var leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = reihen.Select(r => Eintrag(r)).ToList();
             float umbruch = mass.HasValue ? W - 30f : 0f;
             float mehr = mass.HasValue ? (LegendenZeilen(leg, 90f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
@@ -839,7 +856,7 @@ namespace WindowsFormsApplication1
             {
                 Reihe reihe = r;
                 z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, reihe.Farbe,
+                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, Ton(reihe),
                                  Traegt(reihe, Farbrolle.BEDARF, C_BEDARF) ? 3.5f : 2.5f));
             }
 
@@ -868,7 +885,7 @@ namespace WindowsFormsApplication1
             float umbruch = 0f, mehr = 0f;
             if (mass.HasValue)
             {
-                var vorab = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+                var vorab = serien.Select(r => Eintrag(r)).ToList();
                 if (linie != null) vorab.Add(new Segment(linienName, 0, C_BEDARF));
                 umbruch = W - 30f;
                 mehr = (LegendenZeilen(vorab, 90f, umbruch) - 1) * LEGENDE_ZEILE;
@@ -919,7 +936,7 @@ namespace WindowsFormsApplication1
                     z.Markiert("reihe:" + (r.Name ?? ""),
                                Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
                                            r.Werte[im], "N0", einheit),
-                               zs => zs.Rechteck(x0, oben, bBreit, hoehe, null, Flaeche(rr.Farbe)));
+                               zs => zs.Rechteck(x0, oben, bBreit, hoehe, null, Flaeche(Ton(rr))));
                     unten -= hoehe;
                 }
                 if (einspeisung != null)
@@ -930,7 +947,7 @@ namespace WindowsFormsApplication1
                                Elementwert(monat + WERT_TRENNER + (e.Name ?? ""),
                                            e.Werte[im], "N0", einheit),
                                zs => zs.Rechteck(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe,
-                                                 bSchmal, hoehe, null, Flaeche(e.Farbe)));
+                                                 bSchmal, hoehe, null, Flaeche(Ton(e))));
                 }
             }
 
@@ -944,7 +961,7 @@ namespace WindowsFormsApplication1
                            zl => Linienzug(zl, punkte, Stift(C_BEDARF, 3f)));
             }
 
-            var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = serien.Select(r => Eintrag(r)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             Legende(z, leg, 90f, H - 56f - mehr, umbruch);
             return z;
@@ -1034,7 +1051,7 @@ namespace WindowsFormsApplication1
             float mehr = 0f;
             if (mass.HasValue && reihen != null)
                 mehr = Math.Max(0, LegendenZeilen(reihen.Where(r => r.Werte != null)
-                                                        .Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+                                                        .Select(r => Eintrag(r, r.Strichart)).ToList(),
                                                   110f, W - 30f) - 2) * LEGENDE_ZEILE;
             mehr += fussMehr;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(220f + mehr + STUFE2_MIN_FLAECHE));
@@ -1079,7 +1096,7 @@ namespace WindowsFormsApplication1
                 Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte,
-                              Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
 
                 // Dieselbe Reihe in DATENWERTEN, ungekuerzt (DG-E2-2) - mit ihrem
                 // EIGENEN Fenster, damit eine kuerzere Reihe im SVG dort endet, wo sie
@@ -1094,7 +1111,7 @@ namespace WindowsFormsApplication1
             // Strichart. Im Wortbericht ist dieses Bild der einzige Ort, an dem die
             // Versionen nebeneinander stehen; ohne Legende wären die Linien
             // ununterscheidbar.
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r, r.Strichart)).ToList(),
                     110f, H - 104f - mehr, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
             if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
@@ -3087,7 +3104,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     110f, 76f, W - 30f);
 
             // Vorzeichenfaehige Skala mit "schoenen" Stufen (5 Rasterlinien) -
@@ -3202,7 +3219,7 @@ namespace WindowsFormsApplication1
                 }
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte.ToArray(),
-                              Stift(r.Farbe, staerke, null, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, null, Strichverbindung.Rund)));
 
                 // DG-E2-2: dieselbe Reihe zusaetzlich in DATENWERTEN, ungekuerzt. Der
                 // Pixelpfad darueber bleibt dem PNG; der SVG-Weg zeichnet aus dieser
@@ -3423,8 +3440,12 @@ namespace WindowsFormsApplication1
                                             temperaturen, yTitel));
             }
 
-            Legende(z, gueltig.Select(r => new Segment(
-                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+            // Das Farbfeld nimmt DIESELBE Serienrolle wie die Linie darüber - über die
+            // Rückwärtssuche fände C_SERIEN[0] die wertgleiche BHKW-Rolle, und eine eigene
+            // Farbe der Serie 1 erreichte die Legende nie.
+            Legende(z, gueltig.Select((r, i) => new Segment(
+                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[i % C_SERIEN.Length])
+                        { Ton = Farbton.Aus(Serienrolle(i)) })
                     .ToList(), 90f, H - 96f, W - 30f);
             return z;
         }
@@ -3938,7 +3959,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r, r.Strichart)).ToList(),
                     100f, legendeY, W - 30f);
 
             int n = gueltig[0].Werte.Length;
@@ -4151,7 +4172,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, eintraege.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(), 100f, legendeY, W - 30f);
+            Legende(z, eintraege.Select(r => Eintrag(r, r.Strichart)).ToList(), 100f, legendeY, W - 30f);
 
             // --- x-Stellen: die übergebenen (aufsteigend, endlich, gleich lang) oder der Index ---
             bool eigeneX = xWerte != null && xWerte.Length == n
@@ -4667,7 +4688,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     100f, 66f, W - 30f);
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
@@ -4746,8 +4767,8 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
-                    if (stapeln) ZeichneHuelle(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke, gesamtN, abN, stapelbezug);
-                    else ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke);
+                    if (stapeln) ZeichneHuelle(zr, rc, prozent, 0, Y_PROZENT_MAX, Ton(r), staerke, gesamtN, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, Ton(r), staerke);
                 });
 
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
@@ -4921,10 +4942,10 @@ namespace WindowsFormsApplication1
             // Legende: Kontur zuerst (sie steht im Bestand als erste Serie), dann der
             // Stapel, dann die Linien, zuletzt die Reihen der zweiten Achse.
             var leg = new List<Segment>();
-            if (mitKontur) leg.Add(new Segment(kontur.Name, 0, kontur.Farbe));
-            leg.AddRange(stapelG.Select(r => new Segment(r.Name, 0, r.Farbe)));
-            leg.AddRange(linienG.Select(r => new Segment(r.Name, 0, r.Farbe)));
-            leg.AddRange(y2G.Select(r => new Segment(r.Name, 0, r.Farbe)));
+            if (mitKontur) leg.Add(Eintrag(kontur));
+            leg.AddRange(stapelG.Select(r => Eintrag(r)));
+            leg.AddRange(linienG.Select(r => Eintrag(r)));
+            leg.AddRange(y2G.Select(r => Eintrag(r)));
 
             // AUFTRAG #240: DIE LEGENDE MACHT SICH SELBST PLATZ - dasselbe Muster
             // wie in Verlaufsbild (W11b-B-28). Ein Waermebild mit zwei Speichern,
@@ -5014,8 +5035,8 @@ namespace WindowsFormsApplication1
                 float konturstaerke = kontur.Breite > 0 ? kontur.Breite : 4f;
                 z.Markiert("reihe:" + (kontur.Name ?? ""), zr =>
                 {
-                    if (mitStapel) ZeichneHuelle(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke, gesamt, abN, stapelbezug);
-                    else ZeichneLinie(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke);
+                    if (mitStapel) ZeichneHuelle(zr, rc, konturwerte, 0, max, Ton(kontur), konturstaerke, gesamt, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, konturwerte, 0, max, Ton(kontur), konturstaerke);
                 });
                 z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
@@ -5032,7 +5053,7 @@ namespace WindowsFormsApplication1
                     double[] werte = AbsteigendKopie(r.Werte);
                     float staerke = r.Breite > 0 ? r.Breite : 4f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                        ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke));
+                        ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke));
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                                 Reihenfenster(fensterLinks, werte.Length)));
                 }
@@ -5085,8 +5106,8 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2.5f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
-                    if (mitStapel) ZeichneHuelle(zr, rc, werte, 0, max, r.Farbe, staerke, gesamt, abN, stapelbezug);
-                    else ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke);
+                    if (mitStapel) ZeichneHuelle(zr, rc, werte, 0, max, Ton(r), staerke, gesamt, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke);
                 });
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                             Reihenfenster(fensterLinks, werte.Length),
@@ -5119,7 +5140,7 @@ namespace WindowsFormsApplication1
                     double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                     float staerke = r.Breite > 0 ? r.Breite : 2f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                        ZeichneLinie(zr, rc, werte, 0, max2, r.Farbe, staerke));
+                        ZeichneLinie(zr, rc, werte, 0, max2, Ton(r), staerke));
                     // DG-E3-12: Die Reihe SAGT, dass sie rechts steht — die Oberfläche
                     // muss es nicht mehr aus ihrer y-Spanne erraten.
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
@@ -5317,7 +5338,7 @@ namespace WindowsFormsApplication1
                 (Reihe r, double[] oben, double[] unterkante) = baender[k];
                 double[] boden = alpha == STAPEL_DECKEND ? achse : unterkante;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneFlaeche(zr, ziel, boden, oben, max, r.Farbe, alpha, gesamt, ab, bezug));
+                    ZeichneFlaeche(zr, ziel, boden, oben, max, Ton(r, alpha), gesamt, ab, bezug));
             }
 
             // Die Kanten einer ueberlagerten Gruppe, von der obersten Schicht abwaerts.
@@ -5326,7 +5347,7 @@ namespace WindowsFormsApplication1
                 (Reihe r, double[] oben, double[] unterkante) = kanten[k];
                 float staerke = r.Breite > 0 ? r.Breite : STAPEL_KANTE;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneHuelle(zr, ziel, oben, 0, max, r.Farbe, staerke, gesamt, ab, bezug));
+                    ZeichneHuelle(zr, ziel, oben, 0, max, Ton(r), staerke, gesamt, ab, bezug));
                 if (modell != null)
                     modell.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, oben,
                                                      gruppenfenster, Reihenart.Linie, unterkante,
@@ -5444,7 +5465,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     100f, 56f, W - 30f);
 
             double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
@@ -5500,8 +5521,9 @@ namespace WindowsFormsApplication1
 
             foreach (Punktreihe r in gueltig)
             {
-                // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
-                Zeichnung.Fuellung punkt = Flaeche(r.Farbe);
+                // Die Rolle der Reihe gilt; nur eine Reihe ohne Rolle geht durch die
+                // Rueckwaertssuche.
+                Zeichnung.Fuellung punkt = Flaeche(Ton(r));
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
                     foreach (var p in r.Punkte)
@@ -5534,6 +5556,14 @@ namespace WindowsFormsApplication1
         {
             return new SKColor(f.Red, f.Green, f.Blue);
         }
+
+        /// <summary>
+        /// Der Legendeneintrag einer Punktreihe: das Farbfeld DECKEND — die Deckung der
+        /// Wolke gehört zum Bildaufbau, nicht zur Farbe. Mit Rolle ist es die Rolle mit
+        /// voller Deckung, ohne Rolle <see cref="Undurchsichtig"/> und die Rückwärtssuche.
+        /// </summary>
+        private static Segment Eintrag(Punktreihe r)
+            => new Segment(r.Name, 0, Undurchsichtig(r.Farbe)) { Ton = r.Ton?.MitDeckung(255) };
 
         // ------------------------------------------------------------------ B5
 
@@ -5728,7 +5758,7 @@ namespace WindowsFormsApplication1
 
             // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
             float legendenbreite = Legendenbreite(gueltig);
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
 
             var summe = new double[12];
@@ -5767,11 +5797,12 @@ namespace WindowsFormsApplication1
                     if (hoehe <= 0) continue;
                     float oben = unten - hoehe;   // fest fuer die Klammer
                     Reihe rr = r;
-                    // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
+                    // Die Rolle der Reihe gilt; nur eine Reihe ohne Rolle geht durch die
+                    // Rueckwaertssuche.
                     z.Markiert("reihe:" + (r.Name ?? ""),
                                Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
                                            rr.Werte[im], format, einheit),
-                               zs => zs.Rechteck(x0, oben, balken, hoehe, null, Flaeche(rr.Farbe)));
+                               zs => zs.Rechteck(x0, oben, balken, hoehe, null, Flaeche(Ton(rr))));
                     unten -= hoehe;
                 }
             }
@@ -6074,8 +6105,8 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            var leg = gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
-            if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
+            var leg = gueltig.Select(r => Eintrag(r)).ToList();
+            if (mitY2) leg.Add(Eintrag(zweiteAchse));
 
             // W11b-B-28: DIE LEGENDE MACHT SICH SELBST PLATZ. Bei vier Eintraegen
             // (Bezug ohne, Bezug mit, Speicherleistung, Ladezustand) bricht sie in
@@ -6156,7 +6187,7 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Strichart, r.Luecken && !sortiert));
+                    VerlaufLinie(zr, rc, werte, min, max, Ton(r), staerke, r.Strichart, r.Luecken && !sortiert));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
@@ -6172,7 +6203,7 @@ namespace WindowsFormsApplication1
                 float staerke2 = zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f;
                 Strichmuster muster2 = Strichfolge(zweiteAchse.Strichart);
                 z.Markiert("reihe:" + (zweiteAchse.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, w2, 0, max2, zweiteAchse.Farbe, staerke2,
+                    VerlaufLinie(zr, rc, w2, 0, max2, Ton(zweiteAchse), staerke2,
                                  zweiteAchse.Strichart));
                 // DG-E3-12: Die Reihe SAGT, dass sie rechts steht.
                 z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", Ton(zweiteAchse),
@@ -6182,14 +6213,14 @@ namespace WindowsFormsApplication1
 
                 z.Markiert("yachse2", zy2 =>
                 {
-                    zy2.Linie(rc.Right, rc.Top, rc.Right, rc.Bottom, Stift(zweiteAchse.Farbe, 2f));
+                    zy2.Linie(rc.Right, rc.Top, rc.Right, rc.Bottom, Stift(Ton(zweiteAchse), 2f));
                     using (var f = Schrift(15f))
                     {
                         for (int i = 0; i <= 4; i++)
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", Zahlkultur), f, zweiteAchse.Farbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, Ton(zweiteAchse),
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
 
@@ -6200,7 +6231,7 @@ namespace WindowsFormsApplication1
                         // Bild - und weil er rechts endet, kommt er dem linken
                         // Achsentitel bei rc.Left nicht in die Quere.
                         string t2 = y2Titel ?? "";
-                        Text(zy2, t2, f, zweiteAchse.Farbe,
+                        Text(zy2, t2, f, Ton(zweiteAchse),
                              W - 20f - f.MeasureText(t2), rc.Top - 24f);
                     }
                 });
@@ -6221,7 +6252,7 @@ namespace WindowsFormsApplication1
         /// zu lassen - beides braucht der Verlauf, und beides braucht der Stapel nicht.
         /// </remarks>
         private static void VerlaufLinie(IZeichenziel z, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe,
+                                         double min, double max, Farbton ton,
                                          float staerke, Strichart strichart, bool luecken = false)
         {
             if (werte == null || werte.Length < 2 || max - min <= 0.0) return;
@@ -6229,7 +6260,7 @@ namespace WindowsFormsApplication1
             int schrittweite = Math.Max(1, werte.Length / (int)rc.Width);
             if (luecken)
             {
-                VerlaufLinieMitLuecken(z, rc, werte, min, max, farbe, staerke, strichart, schrittweite);
+                VerlaufLinieMitLuecken(z, rc, werte, min, max, ton, staerke, strichart, schrittweite);
                 return;
             }
             var punkte = new List<SKPoint>();
@@ -6241,7 +6272,7 @@ namespace WindowsFormsApplication1
             }
 
             Linienzug(z, punkte.ToArray(),
-                      Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund));
+                      Stift(ton, staerke, Strichfolge(strichart), Strichverbindung.Rund));
         }
 
         /// <summary>
@@ -6250,10 +6281,10 @@ namespace WindowsFormsApplication1
         /// einem einzigen Punkt zeichnet nichts — eine Linie braucht zwei.
         /// </summary>
         private static void VerlaufLinieMitLuecken(IZeichenziel z, SKRect rc, double[] werte,
-                                                   double min, double max, SKColor farbe,
+                                                   double min, double max, Farbton ton,
                                                    float staerke, Strichart strichart, int schrittweite)
         {
-            var stift = Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund);
+            var stift = Stift(ton, staerke, Strichfolge(strichart), Strichverbindung.Rund);
             var punkte = new List<SKPoint>();
             for (int i = 0; i < werte.Length; i += schrittweite)
             {
@@ -7386,8 +7417,8 @@ namespace WindowsFormsApplication1
             // Verlaufsbild (W11b-B-28): Jede Zeile über der ersten schiebt die
             // Zeichenfläche um ihre Höhe nach unten.
             var leg = new List<Segment>();
-            if (mitSaeulen) leg.Add(new Segment(netto.Name, 0, netto.Farbe));
-            foreach (Reihe r in linien) leg.Add(new Segment(r.Name, 0, r.Farbe));
+            if (mitSaeulen) leg.Add(Eintrag(netto));
+            foreach (Reihe r in linien) leg.Add(Eintrag(r));
             float legendenhoehe = Legende(z, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
             float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
             if (schub > 0f) rc = SKRect.Create(rc.Left, rc.Top + schub, rc.Width, rc.Height - schub);
@@ -7464,7 +7495,7 @@ namespace WindowsFormsApplication1
             // DIE SÄULEN — je Jahr eine, negative in Rot.
             if (mitSaeulen)
             {
-                var gut = Flaeche(netto.Farbe);
+                var gut = Flaeche(Ton(netto));
                 var schlecht = Flaeche(C_RASTER_SCHLECHT);
                 string saeulenmarke = "reihe:" + (netto.Name ?? "");
                 z.Markiert(saeulenmarke, zr =>
@@ -7509,7 +7540,7 @@ namespace WindowsFormsApplication1
                 // Namen (Regel der Gruppe (c)); die Zeigerzeile liest die Reihe.
                 z.Markiert("reihe:" + (r.Name ?? ""), r.Name ?? "", zr =>
                     Linienzug(zr, punkte,
-                              Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
                 z.FuegeReihe(Jahresreihe(r, jahre, n, staerke));
             }
 
@@ -7837,6 +7868,27 @@ namespace WindowsFormsApplication1
             return r.Ton ?? r.Farbe.Ton();
         }
 
+        /// <summary>
+        /// Der Farbton eines Legendeneintrags — dieselbe Regel wie bei der Reihe: sein
+        /// <see cref="Segment.Ton"/>, sonst die Rückwärtssuche über die Farbe.
+        /// </summary>
+        private static Farbton Ton(Segment s)
+        {
+            if (s == null) return Farbton.Aus(Farbrolle.UNBENANNT);
+            return s.Ton ?? s.Farbe.Ton();
+        }
+
+        /// <summary>
+        /// <b>Der Legendeneintrag einer Reihe</b>: ihr Name, ihre Farbe und ihr
+        /// <see cref="Reihe.Ton"/> — das Farbfeld trägt damit DIESELBE Rolle wie die Linie oder
+        /// Fläche der Reihe, auch wenn der Anwender ihr den Hausfarbwert einer anderen Rolle
+        /// gegeben hat. Eine Reihe ohne Rolle bleibt beim Farbwert und der Rückwärtssuche.
+        /// </summary>
+        /// <param name="strichart">Die Strichart, die das Feld zeigt — nur, wo das Bild sie in
+        /// der Legende nennt; Vorgabe <see cref="Strichart.Durchgezogen"/> (gefülltes Feld).</param>
+        private static Segment Eintrag(Reihe r, Strichart strichart = Strichart.Durchgezogen)
+            => new Segment(r.Name, 0, r.Farbe, strichart) { Ton = r.Ton };
+
         /// <summary>Trägt die Reihe DIESE Rolle? (Ohne Rolle entscheidet der Farbwert.)</summary>
         private static bool Traegt(Reihe r, Farbrolle rolle, SKColor hausfarbe)
             => r != null && (r.Ton != null ? r.Rolle == rolle : r.Farbe == hausfarbe);
@@ -8092,8 +8144,10 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <param name="ton">Der Farbton der Linie — bei einer Reihe <see cref="Ton(Reihe)"/>,
+        /// damit ihre Rolle gilt und nicht die Rückwärtssuche über den aufgelösten Farbwert.</param>
         private static void ZeichneLinie(IZeichenziel z, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe, float staerke)
+                                         double min, double max, Farbton ton, float staerke)
         {
             if (werte == null || werte.Length < 2) return;
             int schritt = Math.Max(1, werte.Length / (int)rc.Width);
@@ -8114,7 +8168,7 @@ namespace WindowsFormsApplication1
             foreach (List<SKPoint> punkte in stuecke)
                 if (punkte.Count >= 2)
                     Linienzug(z, punkte.ToArray(),
-                              Stift(farbe, staerke, null, Strichverbindung.Rund));
+                              Stift(ton, staerke, null, Strichverbindung.Rund));
         }
 
         /// <summary>
@@ -8177,12 +8231,12 @@ namespace WindowsFormsApplication1
         /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
         /// <c>null</c> = die eigenen Werte.</param>
         private static void ZeichneHuelle(IZeichenziel z, SKRect rc, double[] werte,
-                                          double min, double max, SKColor farbe, float staerke,
+                                          double min, double max, Farbton ton, float staerke,
                                           int gesamt = 0, int ab = 0, double[] bezug = null)
         {
             if (werte == null || werte.Length <= Bildpunktspalten(rc))
             {
-                ZeichneLinie(z, rc, werte, min, max, farbe, staerke);
+                ZeichneLinie(z, rc, werte, min, max, ton, staerke);
                 return;
             }
             IReadOnlyList<Stufe> stufen = Stapelstufen(rc, werte.Length, gesamt, ab);
@@ -8191,17 +8245,26 @@ namespace WindowsFormsApplication1
             {
                 List<SKPoint> punkte = Treppenpunkte(rc, stufen, stufenwerte, von, bis, min, max);
                 if (punkte.Count >= 2)
-                    Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
+                    Linienzug(z, punkte.ToArray(), Stift(ton, staerke, null, Strichverbindung.Rund));
             }
         }
+
+        /// <summary>
+        /// Deckung der Schichten im gestapelten Jahresverlauf (<see cref="StapelDiagrammModell"/>) —
+        /// der Wert, den <see cref="ZeichneFlaeche"/> bis dahin als Vorgabe führte.
+        /// </summary>
+        private const byte STAPELFLAECHE_DECKUNG = 210;
 
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
         /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
         /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
         /// <c>null</c> = die Oberkante der Schicht.</param>
+        /// <param name="ton">Der FERTIGE Farbton der Schicht samt Deckung — bei einer Reihe
+        /// <see cref="Ton(Reihe, byte)"/>: Ihre Rolle gilt, und nur eine Reihe ohne Rolle geht
+        /// mit Farbwert und Deckung durch die Rückwärtssuche.</param>
         private static void ZeichneFlaeche(IZeichenziel z, SKRect rc, double[] unten,
-                                           double[] oben, double max, SKColor farbe,
-                                           byte alpha = 210, int gesamt = 0, int ab = 0,
+                                           double[] oben, double max, Farbton ton,
+                                           int gesamt = 0, int ab = 0,
                                            double[] bezug = null)
         {
             int n = oben.Length;
@@ -8227,7 +8290,7 @@ namespace WindowsFormsApplication1
                     boden.Reverse();
                     kante.AddRange(boden);
                     if (kante.Count >= 3)
-                        Vieleck(z, kante.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                        Vieleck(z, kante.ToArray(), Flaeche(ton));
                 }
                 return;
             }
@@ -8254,7 +8317,7 @@ namespace WindowsFormsApplication1
                 for (int k = stueck.Count - 1; k >= 0; k--)
                     pfad.Add(Punkt(rc, stueck[k], n, unten[stueck[k]], max));
                 if (pfad.Count >= 3)
-                    Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                    Vieleck(z, pfad.ToArray(), Flaeche(ton));
             }
         }
 
@@ -8323,10 +8386,12 @@ namespace WindowsFormsApplication1
                         // sonst sagt die Legende über die Strichart nichts, und im
                         // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
                         // ETAPPE E6: dasselbe für die gepunktete Linie, in IHRER Folge.
+                        // Das Feld trägt die ROLLE des Eintrags (Segment.Ton), wo er eine hat -
+                        // dieselbe wie die Linie oder Fläche seiner Reihe.
                         if (s.Strichart != Strichart.Durchgezogen)
-                            ze.Rechteck(ex, ey, 22f, 22f, Stift(s.Farbe, 3f, Strichfolge(s.Strichart)));
+                            ze.Rechteck(ex, ey, 22f, 22f, Stift(Ton(s), 3f, Strichfolge(s.Strichart)));
                         else
-                            ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(s.Farbe));
+                            ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(Ton(s)));
                         ze.Rechteck(ex, ey, 22f, 22f, rahmen);
                         Text(ze, s.Label, f, Farbrolle.TEXT, ex + 28f, ey + 1f);
                     });

@@ -142,6 +142,14 @@
             <Schalter Bezeichnung="@LabelKennlinieBrennwert" Wert="@Daten.Kennlinie_Brennwert"
                       Aktiv="@Daten.Brennwert"
                       WertChanged="w => Daten.Kennlinie_Brennwert = w && Daten.Brennwert" />
+            @* Anwenderentscheid 30.09.2026 („Nur im Kesseldialog"): ein ruhiger Hinweis unter dem
+               Schalter, solange ein Brennwertkessel ohne Brennwertkennlinie rechnet - dann wirkt der
+               Ruecklauf nicht. Keine Warnkarte vor dem Lauf. Als Herleitungszeile spannt er ueber
+               die volle Breite und steht so unter seinem Schalter, nicht neben einem fremden Feld. *@
+            @if (OhneBrennwertkennlinie)
+            {
+                <p class="epos-herleitung epos-hzkk-ohne-kennlinie">@HinweisOhneKennlinie</p>
+            }
             <Zahlenfeld Bezeichnung="@LabelMindestleistung" Einheit="kW"
                         Feldname="@LabelMindestleistungKurz" Platzhalter="@PlatzhalterVorgabe" Min="0"
                         Wert="@Daten.Mindestleistung" WertChanged="w => Daten.Mindestleistung = w"
@@ -286,6 +294,19 @@
     [Parameter] public string PlatzhalterVorgabe { get; set; } = "Vorgabe";
     [Parameter] public string HinweisKennlinie { get; set; } =
         "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel.";
+
+    /// <summary>
+    /// Der ruhige Hinweis unter dem Schalter „Brennwertkennlinie“, solange ein Brennwertkessel ohne
+    /// sie rechnet (Anwenderentscheid 30.09.2026, „Nur im Kesseldialog“).
+    /// </summary>
+    [Parameter] public string HinweisOhneKennlinie { get; set; } =
+        "Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein mit seiner Teillastkennlinie.";
+
+    /// <summary>
+    /// Steht der Hinweis „Brennwertkessel ohne Kennlinie“? Bei <c>Brennwert</c> = 1 und ausgeschalteter
+    /// Brennwertkennlinie (Pruefhilfe fuer Tests).
+    /// </summary>
+    public bool OhneBrennwertkennlinie => Daten.Brennwert && !Daten.Kennlinie_Brennwert;
 
     // HIER STANDEN DIE TEXTE der Gruppen "Kosten" (GruppeKosten, LabelInvest,
     // LabelInvestKurz, LabelWartung, LabelWartungKurz, LabelWartungEinheit,

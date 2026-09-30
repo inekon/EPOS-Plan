@@ -477,6 +477,7 @@ namespace WindowsFormsApplication1
         /// <param name="MitBrennwertkennlinie">der Kessel rechnet mit der Brennwertkennlinie (Etappe E3)</param>
         /// <param name="RuecklaufMittelC">mittlerer Rücklauf der Laufstunden [°C], wärmegewichtet</param>
         /// <param name="BrennwertStundenProzent">Anteil der Laufstunden im Brennwertbetrieb [%]</param>
+        /// <param name="Starts">Starts des Kessels [1/a] nach Konzept 4.2 (Etappe E4); beim Elektrokessel seine Laufphasen</param>
         public sealed record KesselModulZeile(string Name, double GasMwh, double OelMwh,
                                               double JahresnutzungsgradProzent,
                                               bool MitKennlinie = false,
@@ -486,7 +487,8 @@ namespace WindowsFormsApplication1
                                               double LaststufeProzent = 0,
                                               bool MitBrennwertkennlinie = false,
                                               double RuecklaufMittelC = 0,
-                                              double BrennwertStundenProzent = 0);
+                                              double BrennwertStundenProzent = 0,
+                                              int Starts = 0);
 
         public sealed class HeizkesselErgebnis
         {
@@ -520,8 +522,17 @@ namespace WindowsFormsApplication1
             /// <summary>Laufstunden aller Kessel [h/a] (Summe über die Kessel).</summary>
             public int Laufstunden;
 
-            /// <summary>Starts aller Kessel [1/a] (Laufphasen im Stundenraster).</summary>
+            /// <summary>
+            /// Starts aller Kessel [1/a] nach Konzept Kesselkennlinie 4.2 (Etappe E4): je Laufphase einer, in
+            /// einer Taktstunde so viele, wie Mindestläufe die Wärme braucht.
+            /// </summary>
             public int Starts;
+
+            /// <summary>Taktstunden der Brennstoffkessel [h/a]: Laufstunden mit einer Wärme unter der Mindestleistung.</summary>
+            public int Taktstunden;
+
+            /// <summary>Anfahrverlust der Brennstoffkessel [kWh/a] — Starts mal Anfahrverlust je Start; Teil des Brennstoffeinsatzes.</summary>
+            public double AnfahrverlustKwh;
 
             /// <summary>Betriebsbereite Stillstandsstunden aller Kessel [h/a].</summary>
             public int Bereitschaftsstunden;
@@ -698,6 +709,10 @@ namespace WindowsFormsApplication1
                 waermeBetrieb += spk.WaermeBetriebKwh(i);
                 brennstoffBetrieb += spk.BrennstoffBetrieb_KWh_Spk[i];
                 e.TeillastMehrbrennstoffKwh += spk.TeillastMehrbrennstoff_KWh_Spk[i];
+
+                // Etappe E4: das Takten der Brennstoffkessel.
+                e.Taktstunden += spk.Taktstunden_Spk[i];
+                e.AnfahrverlustKwh += spk.Anfahrverlust_KWh_Spk[i];
             }
             e.WirkungsgradBetriebProzent = brennstoffBetrieb > 0 ? waermeBetrieb / brennstoffBetrieb * 100.0 : 0;
 
@@ -737,7 +752,8 @@ namespace WindowsFormsApplication1
                     brennwert,
                     double.IsNaN(ruecklauf) ? 0 : ruecklauf,
                     brennwert && spk.Laufstunden_Spk[i] > 0
-                        ? spk.Brennwertstunden_Spk[i] * 100.0 / spk.Laufstunden_Spk[i] : 0));
+                        ? spk.Brennwertstunden_Spk[i] * 100.0 / spk.Laufstunden_Spk[i] : 0,
+                    i < SimulationSPK.MAX_SPK ? spk.Starts_Spk[i] : 0));
             }
 
             return e;

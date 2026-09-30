@@ -356,6 +356,50 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.True(cut.FindAll("input[type=checkbox]")[1].HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// Anwenderentscheid 30.09.2026 („Nur im Kesseldialog"): Ein Brennwertkessel ohne
+    /// Brennwertkennlinie trägt unter dem Schalter einen RUHIGEN Hinweis — eine Herleitungszeile,
+    /// keine Warnkarte: Ohne Kennlinie wirkt der Rücklauf nicht. Mit Kennlinie oder ohne
+    /// Brennwertkessel steht er nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_Brennwertkessel_ohne_Kennlinie_traegt_den_ruhigen_Hinweis()
+    {
+        var daten = Bestand();   // Brennwertkessel, Brennwertkennlinie aus
+        var cut = Aufbauen(daten);
+
+        var hinweis = cut.FindAll(".epos-hzkk-ohne-kennlinie");
+        Assert.Single(hinweis);
+        Assert.Contains("Rücklauf wirkt nicht", hinweis[0].TextContent);
+        Assert.Contains("epos-herleitung", hinweis[0].GetAttribute("class"));
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.True(cut.Instance.OhneBrennwertkennlinie);
+
+        // Kennlinie an: Der Hinweis fällt.
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Empty(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+
+        // Wieder aus, dann kein Brennwertkessel mehr: Ohne Brennwertkessel steht er nicht.
+        cut.FindAll("input[type=checkbox]")[1].Change(false);
+        Assert.Single(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+        cut.FindAll("input[type=checkbox]")[0].Change(false);
+        Assert.Empty(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+        Assert.False(cut.Instance.OhneBrennwertkennlinie);
+    }
+
+    /// <summary>Der Hinweis kommt als Parameter herein — die Hülle setzt ihn aus den Ressourcen (de/en).</summary>
+    [Fact]
+    public void Der_Hinweis_ohne_Kennlinie_laesst_sich_uebersetzen()
+    {
+        const string EN = "Condensing boiler without condensing curve: the return temperature has no effect.";
+        var cut = Render<HeizkesselKatalogDialog>(p => p
+            .Add(x => x.Daten, Bestand())
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.HinweisOhneKennlinie, EN));
+
+        Assert.Equal(EN, cut.Find(".epos-hzkk-ohne-kennlinie").TextContent);
+    }
+
     [Fact]
     public void Eine_ungueltige_Zahl_meldet_den_Feldnamen_und_schreibt_nicht()
     {

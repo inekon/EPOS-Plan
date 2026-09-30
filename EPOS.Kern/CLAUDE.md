@@ -87,6 +87,12 @@ bringen — ein Loch im Raster bekommt `C_RASTER_LOCH`, nicht die Minimumfarbe. 
 **Schriftregel**: Rückfallkette über `SKFontManager`, Layout metrikgetrieben — **Textbreiten
 dürfen je Plattform abweichen**, verglichen wird über Struktur und Histogramm, nicht Pixel.
 
+**Die Farbe einer Reihe ist ihre Rolle:** Legendeneintrag über `Eintrag(r)`, Linie, Fläche, Säule
+und Achse über `Ton(r)` — nie `r.Farbe` in einen Befehl. `r.Farbe` ist gegen `Farbpalette.Aktuell`
+aufgelöst, die Rückwärtssuche kennt nur die Hausfarben und fände bei einer Anwenderpalette eine
+fremde Rolle; nur eine Reihe ohne Rolle geht durch sie (Wache
+`EPOS.Kern.Tests/ChartRendererRollenTests`).
+
 **Die Berichtsschreiber (Bausteine, Anhang E, Excel-Generator, Formelmappe, Vorlagenfüller) lesen
 nur `BerichtsDaten`** — alles aus der Datenbank sammelt `BerichtsDatenSammler.SammleFuerBericht`
 einmal in `BerichtsDaten.Wirtschaft`; Wache `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests`.

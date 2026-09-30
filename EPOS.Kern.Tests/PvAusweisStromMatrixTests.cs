@@ -244,9 +244,13 @@ namespace EPOS.Kern.Tests
             // Katalogsatzes und rechnet mit der Normvorgabe von η₃₀ (5.403,10 → 5.203,20 MWh Gas,
             // −15.992 €/a Energiekosten, −2.638,68 €/a CO₂-Abgabe); vor E2b −31.142.971,061503537
             // (Erwartet), −31.311.485,338977072 (Best), −31.007.010,798322424 (Worst).
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -30812710.6704642 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -30978281.063290827 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -30679642.905571833 };
+            // Kessel E4 (Takten): Der Kessel taktet unter seiner Mindestleistung (Normvorgabe) und
+            // zahlt je Start den Anfahrverlust (5.203,20 → 5.240,16 MWh Gas, +2.956,80 €/a
+            // Energiekosten, +487,88 €/a CO₂-Abgabe); vor E4 −30.812.710,6704642 (Erwartet),
+            // −30.978.281,063290827 (Best), −30.679.642,905571833 (Worst).
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -30873773.322054066 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -31039888.016914457 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -30740170.756077401 };
         }
 
         /// <summary>KWKG-Zuschlag Jahr 1 von 1030 vor E26 [€] — der KWK-Split trägt ihn.</summary>
