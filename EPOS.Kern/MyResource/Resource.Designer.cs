@@ -62863,6 +62863,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtfenster der Spalte {0} der Zone: {1} als volle Stunde 0 bis 23; beide leer = wie Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_FENSTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison der Spalte {0} der Zone: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember); beide leer = wie Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zelle der Zonenmatrix im Zonendialog: {0}, Zeile „{1}“, in {2}. Leer heißt „wie Gebäude“: Es gilt, was das Gebäude vorgibt – Geräte und Personen im Flächenanteil der Zone. Folgt die Zone einem angelegten Kalender des Gebäudes, wirkt die Zelle erst nach „Vom Gebäude übernehmen und anpassen“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_ZONE_ZELLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_ZONE_ZELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KUEHLEN_GESPERRT {

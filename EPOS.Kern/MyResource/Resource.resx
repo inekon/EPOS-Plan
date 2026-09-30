@@ -40645,5 +40645,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
     <value>Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.</value>
   </data>
+  <data name="KOND_TXT_KI_ZONE_ZELLE" xml:space="preserve">
+    <value>Eine Zelle der Zonenmatrix im Zonendialog: {0}, Zeile „{1}“, in {2}. Leer heißt „wie Gebäude“: Es gilt, was das Gebäude vorgibt – Geräte und Personen im Flächenanteil der Zone. Folgt die Zone einem angelegten Kalender des Gebäudes, wirkt die Zelle erst nach „Vom Gebäude übernehmen und anpassen“.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_FENSTER" xml:space="preserve">
+    <value>Nachtfenster der Spalte {0} der Zone: {1} als volle Stunde 0 bis 23; beide leer = wie Gebäude.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_SAISON" xml:space="preserve">
+    <value>Saison der Spalte {0} der Zone: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember); beide leer = wie Gebäude.</value>
+  </data>
 </root>
 

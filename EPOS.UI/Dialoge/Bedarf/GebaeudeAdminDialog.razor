@@ -668,7 +668,10 @@
                 HuellTexte.RandErdreich, HuellTexte.RandKeller, HuellTexte.RandAussenluft
             }),
             Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : "",
-            Texte = HuellTexte
+            Texte = HuellTexte,
+            // Stufe KP2, Welle U4: die Vorgabe-Matrix des Blatts „Konditionierung" als Feldtafel - über
+            // dieselbe Bearbeitung wie die Zellen des Blatts, am selben Arbeitsstand.
+            Konditionierung = _kond
         });
     }
 

@@ -418,7 +418,8 @@
             BezeichnungSetzen = w => _stand.Bezeichner = w ?? "",
             NutzflaecheLesen = () => _stand.Nutzflaeche,
             NutzflaecheSetzen = w => Setzen(() => _stand.Nutzflaeche = w),
-            // Stufe G6b (W2): die Werte der Zone - Setzen nimmt denselben Weg wie die Tastatur.
+            // Stufe G6b (W2): die Werte der Zone - Setzen nimmt denselben Weg wie die Tastatur; die
+            // Bestandszellen der Matrix (Sollwerte, Lueftung, Gewinne) gehen ueber ihre Zelle (KP2 U4).
             RaumhoeheLesen = () => _stand.Raumhoehe,
             RaumhoeheSetzen = w => Setzen(() => _stand.Raumhoehe = w),
             VolumenLesen = () => _stand.Volumen,
@@ -426,21 +427,21 @@
             BeheiztLesen = () => _stand.IstBeheizt,
             BeheiztSetzen = w => Setzen(() => _stand.IstBeheizt = w),
             SollTagLesen = () => _stand.SollTag,
-            SollTagSetzen = w => Setzen(() => _stand.SollTag = w),
+            SollTagSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Tag, w),
             SollNachtLesen = () => _stand.SollNacht,
-            SollNachtSetzen = w => Setzen(() => _stand.SollNacht = w),
+            SollNachtSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht, w),
             SollWochenendeLesen = () => _stand.SollWochenende,
-            SollWochenendeSetzen = w => Setzen(() => _stand.SollWochenende = w),
+            SollWochenendeSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende, w),
             SollFerienLesen = () => _stand.SollFerien,
-            SollFerienSetzen = w => Setzen(() => _stand.SollFerien = w),
+            SollFerienSetzen = w => Zelle(KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien, w),
             MaxTemperaturLesen = () => _stand.Maximaleraumtemperatur,
             MaxTemperaturSetzen = w => Setzen(() => _stand.Maximaleraumtemperatur = w),
             InfiltrationLesen = () => _stand.LuftwechselInfiltration,
-            InfiltrationSetzen = w => Setzen(() => _stand.LuftwechselInfiltration = w),
+            InfiltrationSetzen = w => Zelle(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert, w),
             NutzerlueftungLesen = () => _stand.LuftwechselNutzer,
-            NutzerlueftungSetzen = w => Setzen(() => _stand.LuftwechselNutzer = w),
+            NutzerlueftungSetzen = w => Zelle(KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag, w),
             GewinneLesen = () => _stand.InterneWaermegewinne,
-            GewinneSetzen = w => Setzen(() => _stand.InterneWaermegewinne = w),
+            GewinneSetzen = w => Zelle(KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert, w),
             BewohnerLesen = () => _stand.Bewohner,
             BewohnerSetzen = w => Setzen(() => _stand.Bewohner = w),
             StrahlungsanteilLesen = () => _stand.HeizungStrahlungsanteil,
@@ -450,8 +451,20 @@
             BauteileLesen = () => _stand.Bauteile,
             ArtText = ArtText,
             RandText = RandText,
-            NachbarText = NachbarText
+            NachbarText = NachbarText,
+            // Stufe KP2, Welle U4: die Zonenmatrix als Feldtafel - über dieselbe Bearbeitung wie die Zellen.
+            Konditionierung = _kond
         };
+    }
+
+    /// <summary>
+    /// Eine Bestandszelle der Zone über die Bearbeitung der Zonenmatrix (Stufe KP2, Welle U4) — derselbe
+    /// Weg wie ihr Feld in der Matrix (Zonenregel, Zellenort); eine Ablehnung trägt den Grund des Reiters.
+    /// </summary>
+    private void Zelle(KonditionierungGroesse g, KonditionierungZeile z, double? wert)
+    {
+        if (!_kond.WertSetzen(g, z, wert)) throw KonditionierungKiTafel.Ablehnung(_kond);
+        VorgabenNachziehen();
     }
 
     /// <summary>

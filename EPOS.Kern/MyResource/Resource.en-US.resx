@@ -40615,7 +40615,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The building has no created calendar “{0}” – zone “{1}” has nothing to copy; “Create calendar” creates its own from the matrix.</value>
   </data>
   <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
-    <value>as building</value>
+    <value>from the building</value>
   </data>
   <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
     <value>The building's ventilation is given as a total “air change rate”. Split it in the “Conditioning” tab of the building; the zone then takes its own ventilation values.</value>
@@ -40627,7 +40627,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Calendars of the zone</value>
   </data>
   <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
-    <value>An empty cell applies as in the building; the placeholder shows the value. An own cell overrides it, an emptied cell inherits again.</value>
+    <value>An empty cell inherits from the building; the placeholder shows the value. A cell of its own overrides it, an emptied cell inherits again.</value>
   </data>
   <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
     <value>Conditioning…</value>
@@ -40637,6 +40637,15 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
     <value>Setpoints, night time, holiday periods, internal heat gains, infiltration, occupant ventilation, summer ventilation, cooling setpoint and maximum indoor temperature are in the group “Conditioning”.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_ZELLE" xml:space="preserve">
+    <value>A cell of the zone matrix in the zone dialog: {0}, row “{1}”, in {2}. Empty means “from the building”: whatever the building specifies applies – appliances and people in the zone’s floor area share. While the zone follows a created calendar of the building, the cell only takes effect after “Copy from building and adjust”.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_FENSTER" xml:space="preserve">
+    <value>Night window of the {0} column of the zone: {1} as a full hour from 0 to 23; both empty = from the building.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_SAISON" xml:space="preserve">
+    <value>Season of the {0} column of the zone: {1} as a day of the common year (1 = 1 January, 365 = 31 December); both empty = from the building.</value>
   </data>
 </root>
 

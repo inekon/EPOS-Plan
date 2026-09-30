@@ -1360,4 +1360,28 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Contains(felder, f => f.StartsWith("Raumhöhe", StringComparison.Ordinal));
         Assert.Contains("stehen in der Gruppe „Konditionierung“", cut.Find(".epos-gebaeude-alledaten").TextContent);
     }
+
+    /// <summary>
+    /// <b>Die Verwaltung führt die Vorgabe-Matrix beim Assistenten</b> (Stufe KP2, Welle U4): dieselbe
+    /// Feldtafel wie der Katalogeditor, über die Bearbeitung des Blatts am selben Arbeitsstand — ein
+    /// gesetztes Feld zählt als Änderung und schreibt mit „Speichern"; ein Auslieferungssatz lehnt ab.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Matrix_der_Verwaltung()
+    {
+        var p = MitKonditionierung();
+        var cut = Aufbauen(p, konditionierung: Katalogweg());
+
+        KiFeldzugang personen = KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_ADMIN, "kond_personen_nennwert");
+        Assert.NotNull(personen);
+        Assert.Null(personen.Lesen());
+        personen.Setzen(900.0);
+        cut.Render();
+
+        Assert.Equal(900.0, personen.Lesen());
+        Assert.True(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.Equal(900.0, d.Konditionierung!.Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+    }
 }

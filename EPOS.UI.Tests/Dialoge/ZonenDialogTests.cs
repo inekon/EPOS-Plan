@@ -692,4 +692,67 @@ public class ZonenDialogTests : EposBunitContext
         Assert.Equal(21.5, cut.Instance.Arbeitsstand.SollTag);
         Assert.False(cut.Instance.Arbeitsstand.IstBeheizt);
     }
+
+    /// <summary>
+    /// <b>Die Zonenmatrix beim Assistenten</b> (Stufe KP2, Welle U4): Die Felder der Zonenkarte lesen leer
+    /// als „wie Gebäude" (<c>null</c>) und setzen über dieselbe Bearbeitung wie die Zellen — eine eigene
+    /// Zelle der Zone, das Gebäude bleibt; eine Bestandszelle geht ebenso über ihre Zelle, die Kühlspalte
+    /// kennt die Zone nicht, und eine Ablehnung nennt den Grund des Reiters.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Zonenmatrix_ueber_die_Bearbeitung()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg);
+
+        KiFeldzugang personen = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_personen_nennwert");
+        Assert.NotNull(personen);
+        Assert.True(personen.Setzbar);
+        Assert.Null(personen.Lesen());
+        personen.Setzen(300.0);
+        cut.Render();
+        Assert.Equal(300.0, personen.Lesen());
+        Assert.Equal(300.0, cut.Instance.Arbeitsstand.Konditionierung!
+                                .Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+        Assert.Equal(1000.0, arbeit.Stand.Konditionierung!
+                                .Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+
+        // Das Nachtfenster der Heizspalte steht an der Zone in der Zelle: erst beide Grenzen gehen an den Weg.
+        KiFeldzugang von = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_von");
+        KiFeldzugang bis = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_bis");
+        Assert.NotNull(von);
+        Assert.NotNull(bis);
+        von.Setzen(21);
+        Assert.Null(cut.Instance.Konditionierungsbearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht).Von);
+        bis.Setzen(5);
+        Assert.Equal(((int?)21, (int?)5), cut.Instance.Konditionierungsbearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht));
+
+        // Eine Bestandszelle: soll_tag geht über die Zelle der Zone - dieselbe wie das Feld der Matrix.
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "soll_tag")!.Setzen(22.0);
+        cut.Render();
+        Assert.Equal(22.0, cut.Instance.Arbeitsstand.SollTag);
+        Assert.Equal("22", Matrixzelle(cut, KonditionierungGroesse.Heizen, KonditionierungZeile.Tag)
+                               .QuerySelector("input")!.GetAttribute("value"));
+
+        // Die Kühlspalte kennt die Zone nicht (Zonenregel bis KU3).
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_kuehlen_nacht_von"));
+    }
+
+    /// <summary>
+    /// Die Gegenprobe der Zonenregel beim Assistenten: In einer unbeheizten Zone lehnt die Heizspalte ab —
+    /// mit dem Grund des Reiters, nichts wird gesetzt.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_nennt_die_Zonenregel_einer_unbeheizten_Zone()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg, zone: new ZoneDaten { Id = 7, Bezeichner = "Lager", Nutzflaeche = 50, IstBeheizt = false });
+
+        KiFeldzugang heizen = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_von")!;
+        heizen.Setzen(22);
+        var fehler = Assert.Throws<InvalidOperationException>(
+            () => KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_bis")!.Setzen(6));
+        Assert.Contains("nicht beheizt", fehler.Message);
+        Assert.Null(cut.Instance.Arbeitsstand.Konditionierung);
+    }
 }

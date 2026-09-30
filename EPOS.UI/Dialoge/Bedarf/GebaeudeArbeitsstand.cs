@@ -1985,9 +1985,9 @@ public sealed class GebaeudeKiWege
     public Func<int, string>? Ferienname { get; init; }
 
     /// <summary>
-    /// Die Bearbeitung des Reiters „Konditionierung" (Stufe KP2, Welle U1) — nur der Katalogeditor
-    /// reicht sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix, und die Bestandszellen
-    /// gehen über denselben Weg wie die Zellen des Reiters.
+    /// Die Bearbeitung der Vorgabe-Matrix (Stufe KP2) — der Katalogeditor (Reiter, Welle U1) und die
+    /// Verwaltung (Blatt, Welle U4) reichen sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix,
+    /// und die Bestandszellen gehen über denselben Weg wie die Zellen des Reiters.
     /// </summary>
     public KonditionierungBearbeitung? Konditionierung { get; init; }
 

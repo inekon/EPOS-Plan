@@ -4818,8 +4818,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Zonendialog des Gebäudeeditors (Gebaeudesimulation G3, Welle D2; Stufe G6b W2) — sechzehn
-        /// Felder (Bezeichnung, Nutzfläche und die Werte der Zone; leer = der Wert des Gebäudes) und das
-        /// Raster der Bauteile aus <c>EPOS.UI.Dialoge.Bedarf.ZonenKiSicht</c>.
+        /// Felder (Bezeichnung, Nutzfläche und die Werte der Zone; leer = der Wert des Gebäudes), die
+        /// Zonenmatrix als Feldtafel (Stufe KP2, Welle U4; <see cref="KiKonditionierungsfelder.ZonenDialogfelder"/>)
+        /// und das Raster der Bauteile aus <c>EPOS.UI.Dialoge.Bedarf.ZonenKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// Die Bauteile sind ein RASTER zum LESEN (<c>Bauteile[]</c>, Kennzeichen die Nummer ab 1):
@@ -4883,7 +4884,14 @@ namespace WindowsFormsApplication1
                                      leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01)
+                }
+                // Stufe KP2, Welle U4 (Teilkonzept 3.4, 7.3): die Zonenmatrix aus dem Profil
+                // KiKonditionierungsfelder (Zonenkarte) - die Sichtklasse beantwortet sie als Feldtafel;
+                // leer = wie Gebaeude. Die Bestandszellen stehen oben unter den Namen der Zone.
+                .Concat(KiKonditionierungsfelder.ZonenDialogfelder())
+                .Concat(new[]
+                {
                     new KiDialogFeld("bauteil_art", bauteil + "Art", KiDialogTexte.ZonBauteilArtName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonBauteilArtErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
@@ -4912,7 +4920,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("bauteil_nachbar", bauteil + "Nachbar", KiDialogTexte.ZonBauteilNachbarName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonBauteilNachbarErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true)
-                },
+                }).ToArray(),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -5807,16 +5815,18 @@ namespace WindowsFormsApplication1
                 };
 
             if (!verwaltung)
-            {
                 felder.Add(new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
                                             KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
                                             KiDialogTexte.GebkBetriebsartErl, nurLesen: true));
 
-                // ---- Die Vorgabe-Matrix des Reiters „Konditionierung" (Stufe KP2, Welle U1): aus DEM
-                //      Profil KiKonditionierungsfelder, die Sichtklasse beantwortet sie als Feldtafel.
-                //      Die Bestandszellen stehen oben unter ihren Namen; die Verwaltung traegt den
-                //      Reiter nicht (ihre Stammblattgruppe kommt mit Welle U4).
-                felder.AddRange(KiKonditionierungsfelder.Dialogfelder());
+            // ---- Die Vorgabe-Matrix (Stufe KP2): aus DEM Profil KiKonditionierungsfelder, die
+            //      Sichtklasse beantwortet sie als Feldtafel. Der Editor traegt sie im Reiter
+            //      „Konditionierung" (Welle U1), die Verwaltung im Blatt „Konditionierung" (Welle U4) -
+            //      dieselben Felder am selben Arbeitsstand. Die Bestandszellen stehen oben unter ihren Namen.
+            felder.AddRange(KiKonditionierungsfelder.Dialogfelder());
+
+            if (!verwaltung)
+            {
 
                 // ---- Zonen eines Gebaeudes im Projekt (Stufe G6a): ein RASTER zum LESEN, Kennzeichen
                 //      die Nummer ab 1. Anlegen, Oeffnen, Duplizieren, Umordnen und Entfernen bleiben
