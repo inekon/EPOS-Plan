@@ -911,14 +911,16 @@ ihr durchrollt; die Probe übergeht Paare, von denen genau eines in einer haften
 2 bis 4 solcher Paare je Breite, alle Fußleiste über Matrixfeldern bzw. Bauteilknöpfen).
 
 **Ergebnis vom 30.09.2026** (Welle U4; Wirt Release auf Port 5299, Chromium headless über das globale
-Playwright, `kultur=de-DE`): **kein Verstoß** in 28 Läufen (7 Fälle × 4 Breiten, Rückgabe 0).
+Playwright, `kultur=de-DE`, zusammen mit den Vorlagen der Welle U2): **kein Verstoß** in 32 Läufen (8 Fälle ×
+4 Breiten, Rückgabe 0). Das Blatt der Verwaltung führt die Vorlagenlisten der fünf Karten (derselbe Weg der
+Hülle) und hat deshalb mehr Ziele als das Zonenblatt.
 
 | Fenster | Zonenblatt | Zonenmatrix | Verwaltungsblatt | Verwaltungsmatrix |
 |---|---|---|---|---|
-| 390 × 844 | 340 px, 35 Ziele | 320 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 358 px, 33 Ziele | 358 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
-| 820 × 1 180 | 753 px, 35 Ziele | 733 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 788 px, 33 Ziele | 788 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
-| 1 180 × 820 | 1 099 px, 56 Ziele | 1 079 px: fünf Spalten, 4 von 4 Karten | 1 148 px, 55 Ziele | 1 148 px: fünf Spalten, 5 von 5 Karten |
-| 1 300 × 900 | 1 214 px, 56 Ziele | 1 194 px: fünf Spalten, 4 von 4 Karten | 1 268 px, 55 Ziele | 1 268 px: fünf Spalten, 5 von 5 Karten |
+| 390 × 844 | 340 px, 35 Ziele | 320 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 358 px, 36 Ziele | 358 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
+| 820 × 1 180 | 753 px, 35 Ziele | 733 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 788 px, 36 Ziele | 788 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
+| 1 180 × 820 | 1 099 px, 56 Ziele | 1 079 px: fünf Spalten, 4 von 4 Karten | 1 148 px, 70 Ziele | 1 148 px: fünf Spalten, 5 von 5 Karten |
+| 1 300 × 900 | 1 214 px, 56 Ziele | 1 194 px: fünf Spalten, 4 von 4 Karten | 1 268 px, 70 Ziele | 1 268 px: fünf Spalten, 5 von 5 Karten |
 
 Querrollen, Bedienziele unter 44 px, Überdeckungen und Herausragen: je 0; Felder der Matrix 25 (ausgeliefert:
 0 Felder, 25 Texte, kein „Kalender anlegen“); „Konditionierung…“ 147 × 44 px. Die Rasterprobe der
