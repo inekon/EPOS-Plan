@@ -1,0 +1,436 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Bunit;
+using EPOS.UI.Bausteine;
+using Xunit;
+
+namespace EPOS.UI.Tests;
+
+/// <summary>
+/// Die Wache zu <b>„Kopf+Fuß fest"</b> (Anwenderentscheid 30.09.2026): In den Dialogen,
+/// die unter Windows als eigenes Fenster laufen, haften Kopfzeile und Schlussleiste am
+/// Fenster, nur der Inhalt dazwischen rollt.
+///
+/// <para><b>Wie es gebaut ist.</b> Die Fensterhülle <c>BlazorDialogForm</c> — und nur sie —
+/// hängt neben dem Dialog in <c>#app</c> den Baustein <see cref="Fenstermarke"/> an das Ende
+/// von <c>&lt;body&gt;</c>. Das Hausblatt lässt dann, und nur dann, das erste Kind der
+/// Dialogwurzel (<c>.epos-dialog-kopf</c>) oben und die Leiste mit dem Primärknopf unten
+/// haften (<c>epos-ui.css</c>, Abschnitt „Dialog im eigenen Fenster"). Die Katalogdialoge
+/// (<c>.epos-katalog-dialog</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
+/// eigenen Regeln.</para>
+///
+/// <para><b>Was hier gehalten wird</b> — bunit misst keine Lage, das tut die Fensterprobe
+/// (<c>Proben/Rasterprobe/fensterprobe.mjs</c>); hier stehen die Voraussetzungen, auf die
+/// die Regel baut:</para>
+/// <list type="number">
+///   <item><description>Die Marke zeichnet nichts als ein verborgenes Element.</description></item>
+///   <item><description>Allein <c>BlazorDialogForm</c> setzt sie; Hauptfenster und
+///     iOS-Hülle nicht (auf iOS stehen die Ansichten der <c>AppWurzel</c> ebenso
+///     unmittelbar unter <c>#app</c> — ohne Marke hafteten sie mit).</description></item>
+///   <item><description>Die Regeln stehen im Hausblatt, an die Marke gebunden, mit
+///     <c>z-index</c> unter den Überlagerungen.</description></item>
+///   <item><description>Jeder Fensterdialog mit Hauswurzel trägt den Kopf als erstes Kind,
+///     und ein Primärknopf steht nur in der Schlussleiste: Leisten mit Primärknopf stehen
+///     auf der Wurzelebene nur als Zweige EINER Stelle unmittelbar hintereinander, und nach
+///     ihnen folgt keine weitere Knopfleiste. Sonst haftete eine Knopfzeile mitten im
+///     Inhalt.</description></item>
+/// </list>
+/// </summary>
+public sealed class FensterrahmenTests : EposBunitContext
+{
+    /// <summary>Der Wurzelanker der Regeln im Hausblatt.</summary>
+    private const string ANKER = "body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog)";
+
+    // =====================================================================
+    //  1 - Die Marke
+    // =====================================================================
+
+    [Fact]
+    public void Die_Fenstermarke_zeichnet_nur_ein_verborgenes_Element()
+    {
+        var cut = Render<Fenstermarke>();
+
+        var elemente = cut.Nodes.OfType<AngleSharp.Dom.IElement>().ToList();
+        Assert.Single(elemente);
+        Assert.Equal("SPAN", elemente[0].TagName);
+        Assert.Equal("epos-fenstermarke", elemente[0].ClassName);
+        Assert.True(elemente[0].HasAttribute("hidden"));
+        Assert.Equal("", elemente[0].TextContent);
+    }
+
+    // =====================================================================
+    //  2 - Wer sie setzt
+    // =====================================================================
+
+    [Fact]
+    public void Allein_die_Fensterhuelle_setzt_die_Marke_hinter_app()
+    {
+        string form = Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorDialogForm.cs"));
+        Assert.Equal(1, Vorkommen(form, "RootComponents.Add<EPOS.UI.Bausteine.Fenstermarke>(\"body::after\")"));
+        // Der Dialog selbst bleibt die Wurzel in #app - darauf bauen die Regeln "#app > ...".
+        Assert.Contains("RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>(\"#app\", parameter)", form);
+
+        Assert.DoesNotContain("Fenstermarke", Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorSeite.cs")));
+        string ios = Path.Combine(Wurzel(), "EPOS.iOS", "HauptSeite.cs");
+        if (File.Exists(ios))
+            Assert.DoesNotContain("Fenstermarke", Code(File.ReadAllText(ios)));
+
+        // Keine Komponente setzt sie selbst - sonst haftete ein Dialog auch als Seite.
+        string[] setzer = Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.UI"), "*.razor", SearchOption.AllDirectories)
+            .Where(p => !p.EndsWith("Fenstermarke.razor", StringComparison.Ordinal))
+            .Where(p => Regex.IsMatch(Markup(File.ReadAllText(p)), @"<Fenstermarke\b"))
+            .ToArray();
+        Assert.Empty(setzer);
+    }
+
+    // =====================================================================
+    //  3 - Die Regeln im Hausblatt
+    // =====================================================================
+
+    [Fact]
+    public void Kopf_und_Schlussleiste_haften_nur_mit_der_Marke()
+    {
+        string kopf = Regelblock(ANKER + " > .epos-dialog-kopf:first-child {");
+        Assert.Contains("position: sticky;", kopf);
+        Assert.Contains("top: 0;", kopf);
+        Assert.Contains("background: var(--epos-karte-flaeche);", kopf);
+        Assert.Contains("border-bottom: 1px solid var(--epos-rahmen-leise);", kopf);
+        Assert.InRange(ZIndex(kopf), 1, 39);
+
+        // Die Schlussleiste: die Leiste mit dem Primaerknopf als eigenem Kind, dazu der
+        // Fussblock mit Warnband (W7-B-2) - beide in EINER Regel.
+        string fuss = Regelblock(ANKER + " > .epos-leiste:has(> .epos-knopf--primaer),\n"
+                                 + ANKER + " > .epos-dialog-fuss {");
+        Assert.Contains("position: sticky;", fuss);
+        Assert.Contains("bottom: 0;", fuss);
+        Assert.Contains("background: var(--epos-karte-flaeche);", fuss);
+        Assert.Contains("border-top: 1px solid var(--epos-rahmen-leise);", fuss);
+        Assert.InRange(ZIndex(fuss), 1, 39);
+
+        // Das angesprungene Feld: scroll-padding am Dokument, nur mit der Marke - und
+        // keins, solange der Fokus in Kopf oder Fuss steht.
+        string polster = Regelblock("html:has(> body > .epos-fenstermarke) {");
+        Assert.Contains("scroll-padding-top: var(--epos-fenster-polster-oben);", polster);
+        Assert.Contains("scroll-padding-bottom: var(--epos-fenster-polster-unten);", polster);
+        Assert.Contains("scroll-padding: 0;", Regelblock(
+            "html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),"));
+
+        // Kein anderer Ort im Blatt laesst den Dialogkopf haften.
+        string css = Hausblatt();
+        foreach (Match m in Regex.Matches(css, @"(?<sel>[^{}]*\.epos-dialog-kopf[^{}]*)\{(?<rumpf>[^}]*)\}"))
+            if (m.Groups["rumpf"].Value.Contains("sticky", StringComparison.Ordinal))
+                Assert.StartsWith(ANKER, m.Groups["sel"].Value.Trim().Split('\n').Last().Trim());
+    }
+
+    // =====================================================================
+    //  4 - Die Fensterdialoge
+    // =====================================================================
+
+    [Fact]
+    public void Jeder_Fensterdialog_traegt_den_Kopf_zuerst_und_den_Primaerknopf_nur_in_der_Schlussleiste()
+    {
+        List<(string Typ, string Datei)> dialoge = Fensterdialoge();
+        var funde = new List<string>();
+        int gedeckt = 0;
+        foreach ((string typ, string datei) in dialoge)
+        {
+            Wurzelbild? bild = Wurzelbild.Lesen(File.ReadAllText(datei));
+            if (bild is null || !bild.Hauswurzel) continue;   // eigene Wurzel oder Katalogdialog
+            gedeckt++;
+            funde.AddRange(Pruefen(bild).Select(f => typ + ": " + f));
+        }
+
+        Assert.True(funde.Count == 0, "Diese Fensterdialoge brechen die Regel \"Kopf+Fuss fest\":\n  "
+                                      + string.Join("\n  ", funde));
+        // 47 Fensterdialoge; 13 Katalogdialoge und 4 eigene Wurzeln (Lizenz, KI-Chat,
+        // KI-Einstellungen, KI-Hinweis) bleiben draussen.
+        Assert.True(gedeckt >= 25, "Nur " + gedeckt + " von " + dialoge.Count + " Fensterdialogen gedeckt.");
+    }
+
+    /// <summary>
+    /// Die Gegenprobe (Lehre W6-B-1: eine Wache, die nie rot werden kann, prueft nichts).
+    /// </summary>
+    [Fact]
+    public void Gegenprobe_die_Pruefung_greift_an_gebauten_Beispielen()
+    {
+        const string gut = """
+            <div class="epos-dialog" tabindex="-1">
+                <div class="epos-dialog-kopf"><h1>T</h1></div>
+                <div class="epos-leiste"><button class="epos-knopf">Kosten</button></div>
+                <p>Inhalt</p>
+                <SpeichernLeiste Ergebnis="X" />
+                <Ueberlagerung Offen="@a"><KindInhalt><div class="epos-leiste"><button class="epos-knopf epos-knopf--primaer">OK</button></div></KindInhalt></Ueberlagerung>
+                <Rueckfrage Offen="@b" />
+            </div>
+            """;
+        Assert.Empty(Pruefen(Wurzelbild.Lesen(gut)!));
+
+        const string mittelleiste = """
+            <div class="epos-dialog">
+                <div class="epos-dialog-kopf"></div>
+                <div class="epos-leiste"><button class="epos-knopf epos-knopf--primaer">Rechnen</button></div>
+                <p>Inhalt</p>
+                <SpeichernLeiste Ergebnis="X" />
+            </div>
+            """;
+        Assert.Single(Pruefen(Wurzelbild.Lesen(mittelleiste)!));
+
+        const string kopfNichtZuerst = """
+            <div class="epos-dialog">
+                <p class="epos-kontextzeile">x</p>
+                <div class="epos-dialog-kopf"></div>
+                <SpeichernLeiste Ergebnis="X" />
+            </div>
+            """;
+        Assert.Single(Pruefen(Wurzelbild.Lesen(kopfNichtZuerst)!));
+
+        const string ohneLeiste = """
+            <div class="epos-dialog"><div class="epos-dialog-kopf"></div><p>x</p></div>
+            """;
+        Assert.Single(Pruefen(Wurzelbild.Lesen(ohneLeiste)!));
+
+        const string leisteNachDemFuss = """
+            <div class="epos-dialog">
+                <div class="epos-dialog-kopf"></div>
+                <SpeichernLeiste Ergebnis="X" />
+                <div class="epos-leiste"><button class="epos-knopf">Mehr</button></div>
+            </div>
+            """;
+        Assert.Single(Pruefen(Wurzelbild.Lesen(leisteNachDemFuss)!));
+
+        // Zweige EINER Stelle und Inhalt nach der Schlussleiste sind erlaubt.
+        const string zweigeUndNachlauf = """
+            <div class="epos-dialog">
+                <div class="epos-dialog-kopf"></div>
+                @if (NurLesen) { <div class="epos-leiste"><button class="epos-knopf epos-knopf--primaer">Schliessen</button></div> }
+                else { <SpeichernLeiste Ergebnis="X" /> }
+                <Textfeld Bezeichnung="Protokoll" />
+                <Rueckfrage Offen="@b" />
+            </div>
+            """;
+        Assert.Empty(Pruefen(Wurzelbild.Lesen(zweigeUndNachlauf)!));
+
+        Assert.False(Wurzelbild.Lesen("""<div class="epos-dialog epos-katalog-dialog"><div class="epos-dialog-kopf"></div></div>""")!.Hauswurzel);
+        Assert.False(Wurzelbild.Lesen("""<div class="epos-lizenz"><header></header></div>""")!.Hauswurzel);
+    }
+
+    // =====================================================================
+    //  Pruefung
+    // =====================================================================
+
+    private static List<string> Pruefen(Wurzelbild bild)
+    {
+        var funde = new List<string>();
+        if (bild.Kinder.Count == 0 || !bild.Kinder[0].Klassen.Contains("epos-dialog-kopf"))
+            funde.Add("das erste Kind der Wurzel ist nicht .epos-dialog-kopf (" +
+                      (bild.Kinder.Count > 0 ? bild.Kinder[0].Name + "." + string.Join(".", bild.Kinder[0].Klassen) : "leer") + ")");
+
+        int erste = bild.Kinder.FindIndex(k => k.TraegtPrimaer);
+        if (erste < 0) { funde.Add("keine Schlussleiste mit Primaerknopf auf der Wurzelebene"); return funde; }
+        int letzte = bild.Kinder.FindLastIndex(k => k.TraegtPrimaer);
+
+        // Mehrere Leisten mit Primaerknopf nur als Zweige EINER Stelle (@if ... else), also
+        // unmittelbar hintereinander - dazwischen Inhalt hiesse: eine haftet mitten im Dialog.
+        for (int i = erste; i <= letzte; i++)
+            if (!bild.Kinder[i].TraegtPrimaer)
+            {
+                funde.Add("zwischen zwei Leisten mit Primaerknopf steht " + Beschrieben(bild.Kinder[i])
+                          + " - die erste haftete mitten im Inhalt");
+                break;
+            }
+
+        // Nach der Schlussleiste keine weitere Knopfleiste: Die Schlussleiste ist die LETZTE
+        // (KnopfleistenWacheTests). Inhalt darf folgen (das Protokoll der Dublettenpruefung) -
+        // der Fuss ragt dann nicht in den Rand, er ueberdeckt nichts.
+        foreach (Kind k in bild.Kinder.Skip(letzte + 1))
+            if (IstLeiste(k))
+            {
+                funde.Add("nach der Schlussleiste steht noch die Leiste " + Beschrieben(k));
+                break;
+            }
+        return funde;
+    }
+
+    private static bool IstLeiste(Kind k)
+        => k.Name == "SpeichernLeiste" || (k.Name == "div" && (k.Klassen.Contains("epos-leiste") || k.Klassen.Contains("epos-dialog-fuss")));
+
+    private static string Beschrieben(Kind k)
+        => k.Name + (k.Klassen.Count > 0 ? "." + string.Join(".", k.Klassen) : "");
+
+    /// <summary>Ein Kind der Dialogwurzel: Name, Klassen, ob es eine Schlussleiste ist.</summary>
+    private sealed record Kind(string Name, IReadOnlyList<string> Klassen, bool TraegtPrimaer);
+
+    /// <summary>
+    /// Die Wurzel einer Razor-Komponente und ihre Kinder, aus dem Markup gelesen (ohne
+    /// Kommentare und ohne @code). Razor-Verzweigungen zeichnen kein Element und stoeren nicht.
+    /// </summary>
+    private sealed class Wurzelbild
+    {
+        private static readonly HashSet<string> LEER = new(StringComparer.OrdinalIgnoreCase)
+        { "input", "br", "img", "hr", "col", "meta", "link", "source", "area", "wbr", "path", "rect",
+          "circle", "line", "polyline", "polygon", "stop", "use" };
+
+        private static readonly Regex TAG = new(
+            @"<(?<zu>/?)(?<name>[A-Za-z][\w.:-]*)(?<attr>(?:[^<>""']|""[^""]*""|'[^']*')*?)(?<leer>/?)>",
+            RegexOptions.Singleline);
+
+        public List<string> WurzelKlassen { get; } = new();
+        public List<Kind> Kinder { get; } = new();
+
+        /// <summary>Hauswurzel: <c>.epos-dialog</c>, kein Katalogdialog.</summary>
+        public bool Hauswurzel => WurzelKlassen.Contains("epos-dialog") && !WurzelKlassen.Contains("epos-katalog-dialog");
+
+        /// <summary>Ein offenes Element beim Lesen.</summary>
+        private sealed class Knoten
+        {
+            public Knoten(string name, List<string> klassen) { Name = name; Klassen = klassen; }
+            public string Name { get; }
+            public List<string> Klassen { get; }
+            /// <summary>Ein Primaerknopf ist unmittelbares Kind.</summary>
+            public bool Unmittelbar { get; set; }
+            /// <summary>Ein Primaerknopf steht tiefer darin (oder eine SpeichernLeiste).</summary>
+            public bool Tiefer { get; set; }
+        }
+
+        public static Wurzelbild? Lesen(string razor)
+        {
+            string t = Markup(razor);
+            var bild = new Wurzelbild();
+            var stapel = new List<Knoten>();
+            bool wurzelGefunden = false;
+            foreach (Match m in TAG.Matches(t))
+            {
+                string name = m.Groups["name"].Value;
+                if (m.Groups["zu"].Value == "/")
+                {
+                    int i = stapel.FindLastIndex(s => s.Name == name);
+                    if (i < 0) continue;
+                    if (i == 1) Abschliessen(bild, stapel[1]);   // ein Kind der Wurzel schliesst
+                    stapel.RemoveRange(i, stapel.Count - i);
+                    if (i == 0) break;                            // die Wurzel schliesst
+                    continue;
+                }
+
+                var knoten = new Knoten(name, Klassen(m.Groups["attr"].Value));
+                bool primaer = knoten.Klassen.Contains("epos-knopf--primaer") || name == "SpeichernLeiste";
+                if (!wurzelGefunden)
+                {
+                    wurzelGefunden = true;
+                    bild.WurzelKlassen.AddRange(knoten.Klassen);
+                }
+                else if (primaer && stapel.Count == 2) stapel[1].Unmittelbar = true;
+                else if (primaer && stapel.Count > 2) stapel[1].Tiefer = true;
+
+                bool offen = m.Groups["leer"].Value != "/" && !LEER.Contains(name);
+                if (stapel.Count == 1 && !offen) Abschliessen(bild, knoten);
+                if (offen) stapel.Add(knoten);
+                else if (stapel.Count == 0) break;   // die Wurzel selbst ist leer
+            }
+            return wurzelGefunden ? bild : null;
+        }
+
+        private static void Abschliessen(Wurzelbild bild, Knoten k)
+        {
+            bool leiste = k.Name == "div" && k.Klassen.Contains("epos-leiste");
+            bool fussblock = k.Name == "div" && k.Klassen.Contains("epos-dialog-fuss");
+            bool schluss = k.Name == "SpeichernLeiste"
+                           || (leiste && k.Unmittelbar)
+                           || (fussblock && (k.Unmittelbar || k.Tiefer));
+            bild.Kinder.Add(new Kind(k.Name, k.Klassen, schluss));
+        }
+
+        private static List<string> Klassen(string attribute)
+        {
+            Match m = Regex.Match(attribute, @"\bclass=""(?<k>[^""]*)""");
+            if (!m.Success) return new List<string>();
+            // Razor-Ausdruecke in der Klasse (@(x ? "a" : "b")) zaehlen mit ihren Literalen.
+            return Regex.Matches(m.Groups["k"].Value, @"[A-Za-z][\w-]*").Select(x => x.Value).ToList();
+        }
+    }
+
+    // =====================================================================
+    //  Hilfen
+    // =====================================================================
+
+    /// <summary>Die Komponenten, die eine Hülle als eigenes Fenster öffnet, mit ihrer Datei.</summary>
+    private static List<(string Typ, string Datei)> Fensterdialoge()
+    {
+        var typen = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (string datei in Directory.GetFiles(Path.Combine(Wurzel(), "WindowsFormsApplication1"), "*.cs", SearchOption.AllDirectories))
+        {
+            if (datei.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar)
+                || datei.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar)) continue;
+            foreach (Match m in Regex.Matches(Code(File.ReadAllText(datei)), @"new\s+BlazorDialogForm<\s*(?<t>[\w.]+)\s*>"))
+                typen.Add(m.Groups["t"].Value.Split('.').Last());
+        }
+        var razor = Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.UI"), "*.razor", SearchOption.AllDirectories)
+            .ToLookup(p => Path.GetFileNameWithoutExtension(p), StringComparer.Ordinal);
+        var liste = typen.Where(t => razor.Contains(t)).Select(t => (t, razor[t].First())).ToList();
+        Assert.True(liste.Count >= 40, "Nur " + liste.Count + " Fensterdialoge gefunden.");
+        return liste;
+    }
+
+    /// <summary>Markup ohne Razor-Kommentare, HTML-Kommentare und den @code-Block.</summary>
+    private static string Markup(string razor)
+    {
+        string t = Regex.Replace(razor, @"@\*.*?\*@", "", RegexOptions.Singleline);
+        t = Regex.Replace(t, @"<!--.*?-->", "", RegexOptions.Singleline);
+        int code = t.LastIndexOf("@code", StringComparison.Ordinal);
+        return code >= 0 ? t[..code] : t;
+    }
+
+    /// <summary>C#-Quelltext ohne Kommentare.</summary>
+    private static string Code(string cs)
+    {
+        string t = Regex.Replace(cs, @"/\*.*?\*/", "", RegexOptions.Singleline);
+        return Regex.Replace(t, @"//[^\n]*", "");
+    }
+
+    private static int Vorkommen(string text, string teil)
+    {
+        int n = 0;
+        for (int i = text.IndexOf(teil, StringComparison.Ordinal); i >= 0; i = text.IndexOf(teil, i + teil.Length, StringComparison.Ordinal))
+            n++;
+        return n;
+    }
+
+    private static int ZIndex(string rumpf)
+    {
+        Match m = Regex.Match(rumpf, @"z-index:\s*(?<z>\d+)");
+        Assert.True(m.Success, "kein z-index im Rumpf");
+        return int.Parse(m.Groups["z"].Value, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string Hausblatt() => File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+    /// <summary>Der Rumpf der Regel, deren Selektor mit <paramref name="selektor"/> beginnt (am Zeilenanfang).</summary>
+    private static string Regelblock(string selektor)
+    {
+        string css = Hausblatt().Replace("\r\n", "\n", StringComparison.Ordinal);
+        int a = css.IndexOf("\n" + selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Regel \"" + selektor + "\" steht nicht im Hausblatt");
+        int auf = css.IndexOf('{', a + selektor.Length - 1);
+        int zu = css.IndexOf('}', auf);
+        return css.Substring(auf + 1, zu - auf - 1);
+    }
+
+    private static string Lies(params string[] teile)
+    {
+        string pfad = Path.Combine(new[] { Wurzel() }.Concat(teile).ToArray());
+        Assert.True(File.Exists(pfad), "Die Datei fehlt: " + pfad);
+        return File.ReadAllText(pfad);
+    }
+
+    /// <summary>Die Wurzel des Arbeitsbaums, vom Testausgabeordner aus gesucht.</summary>
+    private static string Wurzel()
+    {
+        var ordner = new DirectoryInfo(AppContext.BaseDirectory);
+        while (ordner is not null && !Directory.Exists(Path.Combine(ordner.FullName, "WindowsFormsApplication1", "Views")))
+            ordner = ordner.Parent;
+        Assert.True(ordner is not null, "Die Wurzel des Arbeitsbaums ist nicht zu finden.");
+        return ordner!.FullName;
+    }
+}

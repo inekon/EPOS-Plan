@@ -2388,6 +2388,131 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     background: var(--epos-karte-flaeche);
 }
 
+/* ==========================================================================
+   DIALOG IM EIGENEN FENSTER: KOPF UND FUSS STEHEN
+   (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest")
+
+   Ein Dialog, der unter Windows als eigenes Fenster laeuft (BlazorDialogForm),
+   rollt als DOKUMENT: Ein langer Dialog (Heizkessel, BHKW, Waermepumpen,
+   Gebaeude) schob Titel, Hilfeknopf und Kreuz oben aus dem Bild und
+   Abbrechen/OK unten hinaus - der Anwender musste bis ans Ende rollen. Hier
+   haften die Kopfzeile oben und die Schlussleiste unten am Fenster, nur der
+   Inhalt dazwischen rollt. Kein zweiter OK-Knopf, keine Tastenkuerzel.
+
+   WO ES GILT - so eng wie moeglich:
+   - Nur im eigenen Fenster. body traegt die Fenstermarke (Baustein
+     Fenstermarke, gesetzt allein von BlazorDialogForm), und der Dialog ist die
+     Wurzel in #app (Wurzel<T> und Fehlerschranke zeichnen nichts Eigenes).
+     "#app > .epos-dialog" allein reichte nicht: Auf iOS stehen die Ansichten
+     der AppWurzel (Kostenverwaltung, Speichern unter ...) ebenso unmittelbar
+     unter #app, und das Hauptfenster haengt dort .epos-hauptfenster an.
+   - Nicht in den Katalogdialogen (.epos-katalog-dialog): Sie fuellen ihr
+     Fenster mit eigenem Rahmen (Katalograhmen), dort rollt nur die Liste.
+   - Nicht in einer Ueberlagerung und nicht im Blatt: Dort ist der Dialog kein
+     Kind von #app, dort gelten die Regeln oben (#572). Die Ueberlagerung
+     behaelt ihren eigenen Kopf; ein eingebetteter Dialog bekommt keinen
+     zweiten haftenden, der ihn verdeckte.
+   - Der Kopf ist das ERSTE Kind der Wurzel (.epos-dialog-kopf). Die
+     Schlussleiste ist die Leiste mit dem Primaerknopf als eigenem Kind: Die
+     Hausregel gibt jeder Fussleiste GENAU EINEN epos-knopf--primaer (Wache
+     KnopfleistenWacheTests), und keine Knopfzeile mitten im Inhalt traegt
+     einen (Wache FensterrahmenTests) - Kostenknoepfe, Uebernahme- und
+     Mehrfachwahlzeilen haften nicht. :last-child taugt nicht: Ueberlagerungen
+     und Rueckfragen stehen im Markup NACH der Fussleiste. Der Fussblock des
+     Waermepumpen-Anlagendialogs (.epos-dialog-fuss, W7-B-2: das Warnband
+     ueber der Leiste) haftet als Ganzes.
+
+   Kopf und Fuss reichen ueber den Rand der Wurzel bis an deren Kante
+   (negativer Rand, gleich grosse Polsterung): In Ruhe stehen Titel und Knoepfe
+   genau dort, wo sie ohne die Regel stuenden; beim Rollen deckt ihre Flaeche
+   bis an die Kante, und der Fuss sitzt auch am Ende des Rollwegs buendig am
+   unteren Fensterrand. z-index 2 wie die haftenden Fussleisten der
+   Ueberlagerung: ueber dem Inhalt (haftende Spaltenkoepfe 1), unter den
+   Aufklappern (Farbwahl 3, Spaltenfilter 5), weit unter Abdunkelung und
+   Ueberlagerung (40/41). Solange eine Ueberlagerung steht, rollt das
+   Dokument ohnehin nicht (html:has(.epos-ueberlagerung) oben).
+   ========================================================================== */
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: calc(-1 * var(--epos-karte-rand)) calc(-1 * var(--epos-karte-rand)) 0;
+    padding: var(--epos-karte-rand) var(--epos-karte-rand) 8px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer),
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-inline: calc(-1 * var(--epos-karte-rand));
+    padding: 8px var(--epos-karte-rand) var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
+/* In den unteren Rand der Wurzel reicht der Fuss nur, wenn nach ihm nichts mehr im
+   Fluss steht - verborgene Anker und Ueberlagerungen stehen ausserhalb. Die
+   Dublettenpruefung zeigt ihr Protokoll UNTER der Schlussleiste; mit dem negativen
+   Rand laege deren Flaeche 6 px ueber dessen Beschriftung. */
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
+    margin-bottom: calc(-1 * var(--epos-karte-rand));
+}
+
+/* DAS ANGESPRUNGENE FELD BLEIBT SICHTBAR. Ein Feld, das der Tabulator (oder
+   ein Fokus aus dem Code) anspringt, rollt der Browser um die Hoehe von Kopf
+   und Fuss weiter herein: scroll-padding am Rollbehaelter, und der ist hier
+   das Dokument. Die zwei Hoehen stehen als Masse des Hauses da, nicht
+   gemessen: Kopf = Rand oben 16 + Hilfepille 44 + 2 (Rahmen) + 8 unten + 1
+   (Linie) = 71 px; Fuss = 1 (Linie) + 8 oben + Knopf 44 + Rand unten 16 =
+   69 px. Dazu --epos-rand Luft, damit das Feld nicht an der Kante klebt. Im
+   schmalen Fenster bricht eine Leiste mit Aktionsknoepfen zweizeilig um
+   (Gebaeudedialog ab 552 px, 125 px hoch) - dort rechnet das Polster eine
+   Knopfzeile mehr; einzeilige Leisten lassen dann nur etwas mehr Luft.
+   Gemessen: Fensterprobe (Proben/Rasterprobe/LIESMICH.md). */
+html:has(> body > .epos-fenstermarke) {
+    --epos-fenster-kopf: calc(var(--epos-karte-rand) + var(--epos-touchziel) + 11px);
+    --epos-fenster-fuss: calc(var(--epos-touchziel) + var(--epos-karte-rand) + 9px);
+    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var(--epos-rand));
+    --epos-fenster-polster-unten: calc(var(--epos-fenster-fuss) + var(--epos-rand));
+    scroll-padding-top: var(--epos-fenster-polster-oben);
+    scroll-padding-bottom: var(--epos-fenster-polster-unten);
+}
+
+@media (max-width: 760px) {
+    html:has(> body > .epos-fenstermarke) {
+        --epos-fenster-polster-unten: calc(var(--epos-fenster-fuss) + var(--epos-touchziel) + 12px + var(--epos-rand));
+    }
+}
+
+/* WAS IN KOPF ODER FUSS DEN FOKUS BEKOMMT, STEHT SCHON IM BILD - dann gilt
+   kein Polster. Sonst laege ein Knopf der haftenden Leiste im gepolsterten
+   Streifen, und Chromium mittete ihn: Der Inhalt sprang beim Tabulator auf
+   Abbrechen oder aufs Kreuz um bis zu 280 px, obwohl der Knopf selbst stehen
+   bleibt (gemessen im BHKW-Dialog; ein Fangbereich per scroll-margin hilft
+   dagegen nicht). Die Fussleiste ist hier die Leiste, in der ein Geschwister
+   VOR dem Primaerknopf oder er selbst den Fokus traegt - ein :has im :has
+   gibt es nicht. */
+html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),
+html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > :focus ~ .epos-knopf--primaer),
+html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > .epos-knopf--primaer:focus),
+html:has(> body > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss :focus) {
+    scroll-padding: 0;
+}
+
+/* DAS WARNBAND EINES EINGEBETTETEN DIALOGS STEHT UEBER DEM FUSS DES FENSTERS.
+   Die Waermepumpenverwaltung bettet die Detailansicht der Anlage ein
+   (.epos-dialog--eingebettet, W7-B-3); deren Fussblock traegt dann nur noch
+   das Warnband, OK und Abbrechen gehoeren dem Wirt. Mit bottom: 0 haftete das
+   Band HINTER dessen Schlussleiste und waere verdeckt - es haftet deshalb um
+   die Fusshoehe hoeher, und Band und Leiste stehen zusammen im Bild. */
+body:has(> .epos-fenstermarke) > #app > .epos-dialog:not(.epos-katalog-dialog) .epos-dialog--eingebettet > .epos-dialog-fuss {
+    bottom: var(--epos-fenster-fuss);
+}
+
 /* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen
    deshalb NICHT display:none tragen (das nimmt ihnen den Tabulator). */
 .epos-fokusfalle {
