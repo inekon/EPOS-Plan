@@ -91,6 +91,18 @@ werden nicht weitergegeben, und ob die Kopien zulässig sind, klären K8 und ZU1
 [Quellendossier](../../Dokumentation/aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md),
 § 5.
 
+**Das gefüllte A100-Paket (ZU24).** Die gefüllte Kopie der Paketvorlage
+[`Referenzlaeufe/Katalogpaket_Vorlage_A100/`](../Katalogpaket_Vorlage_A100/LIESMICH.md) — die vier
+CSV-Dateien mit den Werten des eigenen Exemplars der DIN EN 12831-3 Beiblatt A100 — kommt zum Prüfen
+nach `Katalogpaket_A100/` hierher und **bleibt lokal**: nie versioniert (die Regel oben schließt den
+Unterordner aus, `EPOS.Kern.Tests/RepositoryOrdnungWacheTests.Normzahlen_stehen_im_gitignore` hält
+es), nie im Setup, nie in der Auslieferungsvorlage (sie verweigert jede Eingabe aus diesem Ordner),
+nie eingebettet (`EPOS.Kern.Tests/KatalogpaketAuslieferungWacheTests`). Liegt der Ordner mit seinen
+vier Dateien vor, spielt `EPOS.Kern.Tests/TwwNormpaketLokalTests` ihn über den Katalogimport in eine
+leere Datenbank ein und prüft, dass nichts abgelehnt ist und die Summenregeln halten; sonst ist der
+Fall mit benanntem Grund übersprungen, so in der CI. Test und Meldungen nennen Kennungen, Ids und
+Zählungen, nie einen Wert oder Namen des Pakets.
+
 ## Nie committen
 
 `git status` zeigt unter `Referenzlaeufe/Normzahlen/` nur diese Datei. Wer dort etwas anderes

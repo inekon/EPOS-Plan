@@ -162,6 +162,22 @@ namespace WindowsFormsApplication1
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["LabelRuecklaufKurz"] = Text_("HZKK_FELD_RUECKLAUF", "Rücklauf"),
 
+                // Gruppe „Kennlinie" (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1).
+                ["GruppeKennlinie"] = Text_("HZKK_GRP_KENNLINIE", "Kennlinie"),
+                ["LabelTeillast30"] = Text_("HZKK_LBL_TEILLAST30", "Wirkungsgrad bei 30 % Last:"),
+                ["LabelTeillast30Kurz"] = Text_("HZKK_FELD_TEILLAST30", "Wirkungsgrad bei 30 % Last"),
+                ["HinweisTeillast30"] = Text_("HZKK_HINT_TEILLAST30", "(z. B. 1,05)"),
+                ["LabelKennlinieBrennwert"] = Text_("HZKK_LBL_KENNLINIE_BRENNWERT", "Brennwertkennlinie"),
+                ["LabelMindestleistung"] = Text_("HZKK_LBL_MINDESTLEISTUNG", "Mindestleistung:"),
+                ["LabelMindestleistungKurz"] = Text_("HZKK_FELD_MINDESTLEISTUNG", "Mindestleistung"),
+                ["LabelAnfahrverlust"] = Text_("HZKK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                ["LabelAnfahrverlustKurz"] = Text_("HZKK_FELD_ANFAHRVERLUST", "Anfahrverlust je Start"),
+                ["LabelMindestlaufzeit"] = Text_("HZKK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                ["LabelMindestlaufzeitKurz"] = Text_("HZKK_FELD_MINDESTLAUFZEIT", "Mindestlaufzeit"),
+                ["PlatzhalterVorgabe"] = Text_("HZKK_PLATZHALTER_VORGABE", "Vorgabe"),
+                ["HinweisKennlinie"] = Text_("HZKK_HINT_KENNLINIE",
+                    "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel."),
+
                 // HIER STANDEN DIE TEXTSCHLÜSSEL der Gruppen „Kosten",
                 // „Emissionen nach BEHG-V" und „Emissionsfaktoren" (GruppeKosten,
                 // LabelInvest…, LabelWartung…, LabelRaumbedarf…, LabelNutzungsdauer…,
@@ -216,6 +232,13 @@ namespace WindowsFormsApplication1
             d.Vorlauf = m.Vorlauf;
             d.Ruecklauf = m.Ruecklauf;
 
+            // Kennlinie (Konzept Kesselkennlinie 3.1): leer bleibt leer - null heisst „Vorgabe".
+            d.Wirkungsgrad_Teillast30 = m.Wirkungsgrad_Teillast30;
+            d.Kennlinie_Brennwert = m.Kennlinie_Brennwert;
+            d.Mindestleistung = m.Mindestleistung;
+            d.Anfahrverlust_kWh = m.Anfahrverlust_kWh;
+            d.Mindestlaufzeit_min = m.Mindestlaufzeit_min;
+
             // Bereichspruefung wie in SetControls (Z. 358-362): Brennstoff ist eine
             // 1-basierte Id, die Liste kann kuerzer sein.
             d.Brennstoff = m.Brennstoff >= 1 ? m.Brennstoff : (int?)null;
@@ -254,6 +277,13 @@ namespace WindowsFormsApplication1
                 Brennwert = d.Brennwert,
                 Vorlauf = d.Vorlauf ?? 0,
                 Ruecklauf = d.Ruecklauf ?? 0,
+
+                // Kennlinie: hier gilt NICHT „leer = 0" - leer ist die Vorgabe (NULL).
+                Wirkungsgrad_Teillast30 = d.Wirkungsgrad_Teillast30,
+                Kennlinie_Brennwert = d.Kennlinie_Brennwert && d.Brennwert,
+                Mindestleistung = d.Mindestleistung,
+                Anfahrverlust_kWh = d.Anfahrverlust_kWh,
+                Mindestlaufzeit_min = d.Mindestlaufzeit_min,
 
                 // Wie InitDatensatzUpdate (Z. 606-610): ohne Wahl gilt die 1.
                 Brennstoff = d.Brennstoff.HasValue && d.Brennstoff.Value >= 1 ? d.Brennstoff.Value : 1

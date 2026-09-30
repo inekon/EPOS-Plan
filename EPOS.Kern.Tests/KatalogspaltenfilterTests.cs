@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -395,8 +396,10 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Heizkessel — der Filterstand des Mockups M1</b>: Brennstoff enthaelt „Gas",
         /// P_th <c>10..60</c>, η <c>&gt;=0,95</c>. Gemessen am 07.09.2026:
-        /// 52 / 54 / 32 einzeln, <b>15 von 63</b> zusammen; laesst man je einen weg,
-        /// bleiben 25 / 22 / 43 (Anhang A des Konzepts).
+        /// 52 / 54 / 32 einzeln, 15 von 63 zusammen (Anhang A des Konzepts). Die
+        /// Nachpflege des Kesselkatalogs aus VDI 3805 Blatt 3 (Konzept Kesselkennlinie,
+        /// Etappe E1: η₁₀₀ aus Satz 710.01) hebt die η-Spalte: 52 / 54 / 53 einzeln,
+        /// <b>35 von 63</b> zusammen; laesst man je einen weg, bleiben 45 / 43 / 43.
         /// </summary>
         [Fact]
         public void Heizkessel_Trefferzahlen_des_Mockups()
@@ -409,17 +412,17 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(52, Treffer(profil, zeilen, (Katalogfilterprofil.SpBrennstoff, "Gas")));
             Assert.Equal(54, Treffer(profil, zeilen, (Katalogfilterprofil.SpPtherm, "10..60")));
-            Assert.Equal(32, Treffer(profil, zeilen, (Katalogfilterprofil.SpEta, ">=0,95")));
+            Assert.Equal(53, Treffer(profil, zeilen, (Katalogfilterprofil.SpEta, ">=0,95")));
 
-            Assert.Equal(15, Treffer(profil, zeilen,
+            Assert.Equal(35, Treffer(profil, zeilen,
                 (Katalogfilterprofil.SpBrennstoff, "Gas"),
                 (Katalogfilterprofil.SpPtherm, "10..60"),
                 (Katalogfilterprofil.SpEta, ">=0,95")));
 
-            Assert.Equal(25, Treffer(profil, zeilen,
+            Assert.Equal(45, Treffer(profil, zeilen,
                 (Katalogfilterprofil.SpPtherm, "10..60"),
                 (Katalogfilterprofil.SpEta, ">=0,95")));
-            Assert.Equal(22, Treffer(profil, zeilen,
+            Assert.Equal(43, Treffer(profil, zeilen,
                 (Katalogfilterprofil.SpBrennstoff, "Gas"),
                 (Katalogfilterprofil.SpEta, ">=0,95")));
             Assert.Equal(43, Treffer(profil, zeilen,
@@ -449,20 +452,29 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Befund D-1 steht als Spalte da.</b> 6 von 63 Saetzen tragen das Kennzeichen
-        /// <c>Brennwert</c>, aber 46 Beschreibungen nennen das Wort — die SUCHE ueber
-        /// alle Spalten findet die 46 nicht, weil die Beschreibung keine Spalte ist;
-        /// genau daran faellt der Datenfehler auf (Frage Q8).
+        /// <b>Befund D-1 ist geschlossen.</b> Die Spalte zeigte ihn: 6 von 63 Saetzen trugen
+        /// das Kennzeichen <c>Brennwert</c>, aber 46 Beschreibungen nannten das Wort (Frage
+        /// Q8). Die Nachpflege des Kesselkatalogs aus VDI 3805 Blatt 3 (Konzept
+        /// Kesselkennlinie, Etappe E1, Entscheid F2) kennzeichnet die Brennwertgeraete nach
+        /// ihrer Bauart — jetzt tragen 46 Saetze das Kennzeichen, genau die 46, deren
+        /// Beschreibung das Wort nennt.
         /// </summary>
         [Fact]
-        public void Heizkessel_Brennwertkennzeichen_traegt_sechs_Saetze()
+        public void Heizkessel_Brennwertkennzeichen_deckt_die_Beschreibungen()
         {
             if (!_db.Vorhanden) return;
 
             var zeilen = new HeizkesselStammCtrl().Katalogfilterzeilen();
-            int ja = zeilen.Count(z => z.Text(Katalogfilterprofil.SpBrennwert) ==
-                                       WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA);
-            Assert.Equal(6, ja);
+            var ja = zeilen.Where(z => z.Text(Katalogfilterprofil.SpBrennwert) ==
+                                       WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA)
+                           .Select(z => z.Id).OrderBy(i => i).ToList();
+            Assert.Equal(46, ja.Count);
+
+            var beschreibung = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Heizkessel_STAMM WHERE Beschreibung LIKE ? ORDER BY ID",
+                    new DbParam("@wort", "%Brennwert%"))
+                .AsEnumerable().Select(r => Convert.ToInt32(r["ID"])).ToList();
+            Assert.Equal(beschreibung, ja);
         }
 
         /// <summary>

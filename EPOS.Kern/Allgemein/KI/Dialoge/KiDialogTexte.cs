@@ -136,6 +136,9 @@
         /// <summary>Einheit einer Betriebsstundenzahl (Welle KI-F4).</summary>
         internal const string EINHEIT_STUNDE = "h";
 
+        /// <summary>Einheit einer Laufzeit in Minuten (Mindestlaufzeit des Heizkessels).</summary>
+        internal const string EINHEIT_MINUTE = "min";
+
         /// <summary>Einheit einer elektrischen Leistung (Welle KI-F4).</summary>
         internal const string EINHEIT_KWP = "kWp";
 
@@ -245,6 +248,18 @@
         internal static string HkTraegerErl => MyResource.Resource.KI_DLG_HK_TRAEGER_ERL;
         internal static string HkBrennwertName => MyResource.Resource.HZKK_LBL_BRENNWERT;
         internal static string HkBrennwertErl => MyResource.Resource.KI_DLG_HK_BRENNWERT_ERL;
+
+        // Die Kennlinie (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1).
+        internal static string HkTeillast30Name => MyResource.Resource.HZKK_FELD_TEILLAST30;
+        internal static string HkTeillast30Erl => MyResource.Resource.KI_DLG_HK_TEILLAST30_ERL;
+        internal static string HkKennlinieBrennwertName => MyResource.Resource.HZKK_LBL_KENNLINIE_BRENNWERT;
+        internal static string HkKennlinieBrennwertErl => MyResource.Resource.KI_DLG_HK_KENNLINIE_BRENNWERT_ERL;
+        internal static string HkMindestleistungName => MyResource.Resource.HZKK_FELD_MINDESTLEISTUNG;
+        internal static string HkMindestleistungErl => MyResource.Resource.KI_DLG_HK_MINDESTLEISTUNG_ERL;
+        internal static string HkAnfahrverlustName => MyResource.Resource.HZKK_FELD_ANFAHRVERLUST;
+        internal static string HkAnfahrverlustErl => MyResource.Resource.KI_DLG_HK_ANFAHRVERLUST_ERL;
+        internal static string HkMindestlaufzeitName => MyResource.Resource.HZKK_FELD_MINDESTLAUFZEIT;
+        internal static string HkMindestlaufzeitErl => MyResource.Resource.KI_DLG_HK_MINDESTLAUFZEIT_ERL;
 
         // ======================================================== Photovoltaik: Felder
 
@@ -2996,6 +3011,11 @@
                         case KatalogBrowserProfil.FeldWirkungsgradGas: return HkWgGasErl;
                         case KatalogBrowserProfil.FeldWirkungsgradOel: return HkWgOelErl;
                         case KatalogBrowserProfil.FeldBBVerlust: return HkBbVerlustErl;
+                        case KatalogBrowserProfil.FeldTeillast30: return HkTeillast30Erl;
+                        case KatalogBrowserProfil.FeldKennlinieBrennwert: return HkKennlinieBrennwertErl;
+                        case KatalogBrowserProfil.FeldMindestleistung: return HkMindestleistungErl;
+                        case KatalogBrowserProfil.FeldAnfahrverlust: return HkAnfahrverlustErl;
+                        case KatalogBrowserProfil.FeldMindestlaufzeit: return HkMindestlaufzeitErl;
                         case KatalogBrowserProfil.FeldWartungskosten:
                             return MyResource.Resource.KI_DLG_KBROW_WARTUNG_ERL;
                         case KatalogBrowserProfil.FeldWartungEinheit:

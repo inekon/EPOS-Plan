@@ -141,6 +141,10 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FELD_STUFEN": return Resource.IMP_KAT_FELD_STUFEN;
                 case "IMP_KAT_FELD_MAXVORLAUF": return Resource.IMP_KAT_FELD_MAXVORLAUF;
                 case "IMP_KAT_FELD_KUEHLLEISTUNG": return Resource.IMP_KAT_FELD_KUEHLLEISTUNG;
+                // Konzept Kesselkennlinie, Etappe E1: eta bei 30 % Last und die kleinste
+                // Leistung aus Satz 710.01 (Heizkessel).
+                case "IMP_KAT_FELD_WIRKUNGSGRAD30": return Resource.IMP_KAT_FELD_WIRKUNGSGRAD30;
+                case "IMP_KAT_FELD_MINDESTLEISTUNG": return Resource.IMP_KAT_FELD_MINDESTLEISTUNG;
 
                 // W13-E-2 (07.09.2026), Stufe S1 — der Stromspeicherimport.
                 case "IMP_KAT_FELD_MODELL": return Resource.IMP_KAT_FELD_MODELL;

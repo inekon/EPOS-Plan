@@ -564,6 +564,29 @@ R25 und R26 hat sich die Testdatenbank nicht geändert.
 > `vergleich` gegen R24 meldet GESAMT PASS. `Tab_TwwProjekt` des Referenzprojekts 1045 bleibt zellgleich — die
 > Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt, und die Speicherauslegung ist nachrichtlich.
 
+> **Nachtrag 29.09.2026 — Schemaschritt 156 (Kennlinienspalten des Heizkessels), Basis unverändert.** Konzept
+> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
+> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
+> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1) —,
+> reines DDL aus `KesselKennlinieSchema` (Nummer als `TwwFuellstandSchema.SCHRITT + 1`). Die Testdatenbank ist
+> aus der Fassung `2b28fb6f…` (Schemastand 155) mit `Werkzeuge/Testdatenbankschema` auf **156** gezogen (zweiter
+> Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung `SchemaVersion` 155 → 156, die neuen Spalten in
+> 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok, `foreign_key_check` leer; Zwischenstand LFS-SHA-256
+> `1aa6f548…`). Kein Rechenweg liest die Spalten.
+>
+> **Danach die Nachpflege des Kesselkatalogs** (Entscheide F2 und F3): `Werkzeuge/Testdatenbankschema
+> Referenzlaeufe/Kenndaten_Test.sqlite --kesselkatalog VDI-3805-Daten/SPK-Daten` (`KesselkatalogNachpflege`
+> im Kern) gleicht die 63 Sätze von `Tab_Heizkessel_STAMM` mit den 14 Kesseldateien (1 650 Sätze) ab: 60
+> zugeordnet und nachgepflegt — η₃₀ in 46, η₁₀₀ aus Satz 710.01 in 27, kleinste Leistung in 60 Sätzen,
+> `Brennwert` 0 → 1 in 40; danach **46 Brennwertgeräte** (vorher 6); ohne Dateisatz bleiben `eloBLOCK VE 10`,
+> `eloBLOCK VE 15` und `Test`. Zellvergleich gegen den Zwischenstand: 173 Zellen, allein in
+> `Tab_Heizkessel_STAMM` (`Wirkungsgrad_Teillast30` 46, `Mindestleistung` 60, `Brennwert` 40,
+> `Wirkungsgrad_Gas` 26, `Wirkungsgrad_Öl` 1); **`Tab_Heizkessel` (die Projektkopien) zellgleich**; ein zweiter
+> Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **71 626 752 Byte, LFS-SHA-256
+> `111be18945ece5aba5e605eeca082993646e0a267428eb7400d29c3fa2b4c39d`**. **Die Basis bleibt:** Die Projekte rechnen
+> aus ihren Projektkopien, der Lauf der fünfzehn Projekte auf dieser Fassung ist gegen R26 byte-gleich. Die
+> Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem Rechenweg der Etappe E2.
+
 ## Was hier liegt
 
 | Pfad | Inhalt |

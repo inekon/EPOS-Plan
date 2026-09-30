@@ -339,5 +339,11 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Der deutsche Wortlaut (Protokoll, Test).</summary>
         public string Klartext => Satz?.Klartext ?? "";
+
+        /// <summary>
+        /// Das Ergebnis des Nachladens des freien Paketteils in DIESER Anfrage (der Hinweis
+        /// „nachgeladen" oder der benannte Fehler); <c>null</c>, wenn nichts nachzuladen war.
+        /// </summary>
+        public ZapfSatz Nachladen { get; init; }
     }
 }

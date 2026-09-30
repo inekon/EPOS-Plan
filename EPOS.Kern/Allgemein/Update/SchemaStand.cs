@@ -705,16 +705,22 @@ namespace WindowsFormsApplication1
         /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
         /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
         /// Danach, mit den VERFAHRENSVOLUMINA ALS BEZUG DER FÜLLSTANDSLINIE (Auftrag F1,
-        /// Anwenderauftrag 29.09.2026; Nachtrag N36 (d)) steht das Ziel auf
+        /// Anwenderauftrag 29.09.2026; Nachtrag N36 (d)) stand das Ziel auf
         /// <see cref="TwwFuellstandSchema.SCHRITT"/>: <c>Tab_TwwProjekt</c> neu gebaut mit der
         /// Prüfklausel des Füllstandsbezugs 1 bis 8 (<see cref="TwwFuellstandSchema"/>).
         /// <b>Ergebnisneutral:</b> kein DML, und die Speicherauslegung ist nachrichtlich. Die
         /// Nummer steht allein bei <see cref="TwwFuellstandSchema.SCHRITT"/>.
+        /// Danach, mit den KENNLINIENSPALTEN DES HEIZKESSELS (Konzept Kesselkennlinie 3.1, Etappe E1,
+        /// #569) steht das Ziel auf <see cref="KesselKennlinieSchema.SCHRITT"/>: fünf Spalten an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> (η bei 30 % Last, Schalter der
+        /// Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit), reines DDL
+        /// (<see cref="KesselKennlinieSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Spalten. Die Nummer steht allein bei <see cref="KesselKennlinieSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = TwwFuellstandSchema.SCHRITT;
+        public const int Zielversion = KesselKennlinieSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

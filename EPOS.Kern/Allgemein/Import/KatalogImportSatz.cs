@@ -114,8 +114,19 @@ namespace WindowsFormsApplication1
             { "THLEISTUNG",   _satz.m_szThLeistung },
             { "BRENNSTOFF",   _satz.m_szBrennstoff },
             { "WIRKUNGSGRAD", _satz.m_szWirkungsgrad },
+            { "WIRKUNGSGRAD30", _satz.m_szWirkungsgrad30 },
+            { "MINDESTLEISTUNG", _satz.m_szMindestleistung },
             { "VERLUSTE",     _satz.m_szVerluste }
         };
+
+        /// <summary>
+        /// Ist der Satz ein Brennwertgeraet? Die Bauart (Satz 700 Spalte 14) nennt es:
+        /// „Brennwert-Kessel", „Brennwert-Kombi-Kessel" (Konzept Kesselkennlinie 3.4, behebt die
+        /// Luecke „6 von 46"). Setzt NUR <c>Brennwert</c>, nie die Brennwertkennlinie.
+        /// </summary>
+        public static bool IstBrennwert(string bauart)
+            => !string.IsNullOrEmpty(bauart) &&
+               bauart.IndexOf("brennwert", StringComparison.OrdinalIgnoreCase) >= 0;
 
         /// <summary>
         /// Das Katalogmodell aus dem Dateisatz — woertlich der Rumpf von
@@ -148,7 +159,11 @@ namespace WindowsFormsApplication1
             if (brennstoffindex > maxBrennstoff) brennstoffindex = maxBrennstoff;
             model.Brennstoff = brennstoffindex;
 
-            double wirkungsgrad = ZahlText.NachDouble(_satz.m_szWirkungsgrad) / 100;
+            // eta100 kommt seit Entscheid F3 (29.09.2026) aus Satz 710.01, ersatzweise aus Satz 700
+            // (HeizkesselImport.Leistungsdaten). Die Prozentregel (> 1,5 -> /100) statt eines festen
+            // „/ 100": Die Dateien fuehren Prozent, eine Datei mit Faktoren bliebe damit richtig.
+            // Gerundet auf sechs Stellen: 97,9 / 100 steht sonst als 0,9790000000000001 im Katalog.
+            double wirkungsgrad = Nennlast(_satz.m_szWirkungsgrad);
             if (brennstoffindex > 0)
             {
                 // Oel = Index 6-9 und 18-22, wie SimulationSPK.Stunde_Abschluss und
@@ -177,7 +192,56 @@ namespace WindowsFormsApplication1
             model.CO2 = ZahlText.NachDouble(_satz.m_szCO2);
             model.CO = ZahlText.NachDouble(_satz.m_szCO);
 
+            // Konzept Kesselkennlinie 3.4 (Etappe E1): die Bauart setzt Brennwert, eta30 und die
+            // Mindestleistung kommen aus Satz 710.01. Leer bleibt leer (null), nie 0. Die
+            // Brennwertkennlinie bleibt aus (erst E3); Anfahrverlust und Mindestlaufzeit fuehrt
+            // die Datei nicht.
+            model.Brennwert = IstBrennwert(_satz.m_szBauart);
+            model.Wirkungsgrad_Teillast30 = Teillast30(_satz.m_szWirkungsgrad30);
+            model.Mindestleistung = Zahl(_satz.m_szMindestleistung);
+            // Dieselbe Plausibilitaet wie im Editor (KesselKennlinieWerte.Verstoss): eine kleinste
+            // Leistung ueber der Nennleistung ist ein Fehler der Datei, kein Kennwert.
+            if (model.Mindestleistung.HasValue && model.Ptherm > 0 && model.Mindestleistung.Value > model.Ptherm)
+                model.Mindestleistung = null;
+            model.Kennlinie_Brennwert = false;
+
             return model;
+        }
+
+        /// <summary>
+        /// eta30 als Faktor (Prozentregel) — oder <c>null</c>, wenn die Datei keinen Wert fuehrt
+        /// oder einen unplausiblen (ausserhalb 0,5 … 1,2, <see cref="KesselKennlinieWerte"/>): Ein
+        /// Tippfehler der Herstellerdatei (gesehen: „9.5" statt 95) soll nicht als Kennlinie in den
+        /// Katalog gehen, die der Editor danach nicht mehr speichern liesse.
+        /// </summary>
+        internal static double? Teillast30(string text)
+        {
+            double? eta = KesselKennlinieWerte.AlsFaktor(Zahl(text));
+            if (eta.HasValue && (eta.Value < KesselKennlinieWerte.ETA30_MIN || eta.Value > KesselKennlinieWerte.ETA30_MAX))
+                return null;
+            return eta.HasValue ? Math.Round(eta.Value, STELLEN) : (double?)null;
+        }
+
+        /// <summary>
+        /// eta100 als Faktor (Prozentregel, auf <see cref="STELLEN"/> gerundet); ein nicht lesbarer
+        /// Text gilt als 0 — der Platzhalter 1 greift danach in <see cref="NachModell"/>. Dieselbe
+        /// Rechnung nimmt die Katalognachpflege (<c>KesselkatalogNachpflege</c>).
+        /// </summary>
+        internal static double Nennlast(string text)
+            => Math.Round(KesselKennlinieWerte.AlsFaktor(ZahlText.NachDouble(text)) ?? 0, STELLEN);
+
+        /// <summary>
+        /// Die Nachkommastellen eines Wirkungsgrads aus der Datei: Die Dateien fuehren Prozent mit
+        /// hoechstens zwei Stellen, als Faktor also vier; sechs lassen Luft und schneiden den
+        /// Rest der Division ab.
+        /// </summary>
+        private const int STELLEN = 6;
+
+        /// <summary>Ein Textfeld als Zahl; leer oder nicht lesbar = <c>null</c>, eine 0 ebenso.</summary>
+        private static double? Zahl(string text)
+        {
+            double wert;
+            return ZahlText.Parsen((text ?? "").Trim(), out wert) && wert > 0 ? wert : (double?)null;
         }
 
         /// <summary>Der Deckel aus der Brennstofftabelle — EINMAL je Vorgang (W13-B17).</summary>
@@ -206,7 +270,10 @@ namespace WindowsFormsApplication1
                 { "NOx", m.NOx },
                 { "CO", m.CO },
                 { "Staub", m.Staub },
-                { "Betriebsbereitschaftverlust", m.Betriebsbereitschaftverlust }
+                { "Betriebsbereitschaftverlust", m.Betriebsbereitschaftverlust },
+                { "Brennwert", m.Brennwert },
+                { KesselKennlinieSchema.SPALTE_TEILLAST30, m.Wirkungsgrad_Teillast30 },
+                { KesselKennlinieSchema.SPALTE_MINDESTLEISTUNG, m.Mindestleistung }
             };
         }
 
@@ -235,6 +302,9 @@ namespace WindowsFormsApplication1
             stamm.CO = m.CO;
             stamm.Staub = m.Staub;
             stamm.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            stamm.Brennwert = m.Brennwert;
+            stamm.Wirkungsgrad_Teillast30 = m.Wirkungsgrad_Teillast30;
+            stamm.Mindestleistung = m.Mindestleistung;
 
             return stamm.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben
