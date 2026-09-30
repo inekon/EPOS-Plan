@@ -886,6 +886,23 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Stufe KP2, Welle U2 — gemessen in der Konditionierungsprobe:</b> In der Karte (ab 900 px rund
+    /// 200 px breit) überdeckte der Knopf „Übernehmen" die Auswahlliste der Vorlagen um 61 bis 84 px — die
+    /// Liste hielt als Flexkind ihren längsten Eintrag als Mindestmaß; jetzt bricht die Zeile um und die
+    /// Liste darf schrumpfen. Und der Kopf eines Blatts brach nicht um: Bei 390 px ragte der Titel der
+    /// Vorlagenverwaltung neben „‹ {Wirtstitel}" 57 px aus dem Blatt, die Überlagerung rollte quer.
+    /// </summary>
+    [Fact]
+    public void KP2_U2_Vorlagenwahl_und_Blattkopf_brechen_um_statt_zu_ueberdecken()
+    {
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-kond-vorlagewahl {"), StringComparison.Ordinal);
+        Assert.Contains("flex: 1 1 10rem", Regelblock(".epos-kond-vorlagewahl > .epos-feld {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0",
+                        Regelblock(".epos-kond-vorlagewahl .epos-feld-zeile > select.epos-eingabe {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-blatt-kopf {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Die Hilfepille hält das Berührungsmaß</b> (Stufe KP2, Welle U1, Nebenbefund aus U0b): Beide
     /// Felder — Fragezeichen und Assistent — und der Ring des KI-Knopfs sind mindestens
     /// <c>--epos-touchziel</c> (44 px) hoch und breit; das Hausmaß 28 px des WinForms-Vorbilds

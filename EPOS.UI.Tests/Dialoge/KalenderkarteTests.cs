@@ -466,6 +466,9 @@ public class KalenderkarteTests : EposBunitContext
         Assert.Equal(17, vorher[23]);
         Assert.NotNull(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorschau svg"));
         Assert.Null(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorschau-vorlage"));
+        // Die Vorschau ist ein Bild ohne Zoom: keine Zoomleiste unter dem Berührungsmaß in der schmalen Karte
+        // (gemessen in der Konditionierungsprobe: 71 × 26 und 43 × 26 px).
+        Assert.Empty(Karte(cut, KonditionierungGroesse.Heizen).QuerySelectorAll(".epos-kond-vorschau .epos-diagramm-knopf"));
 
         // Mit „Büro": Mo–Fr 7–18 Uhr 20 °C, sonst 16 °C; Samstag 16 °C.
         Waehlen(cut, KonditionierungGroesse.Heizen, "Büro");

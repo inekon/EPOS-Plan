@@ -169,6 +169,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
                      cut.Find(".epos-kond-verwaltung-zeile").TextContent.Trim());
         Assert.Equal("true", Zeile(cut, "Büro (Kopie)").GetAttribute("aria-selected"));
         Assert.NotNull(cut.Find(".epos-kond-verwaltung-vorschau svg"));
+        Assert.Empty(cut.FindAll(".epos-kond-verwaltung-vorschau .epos-diagramm-knopf"));   // ein Bild ohne Zoom
         Assert.Null(Zeile(cut, "Büro (Kopie)").QuerySelector(".epos-schloss"));
 
         // Umbenennen am Namensfeld: ein Doppelname steht am Feld und schreibt nichts.

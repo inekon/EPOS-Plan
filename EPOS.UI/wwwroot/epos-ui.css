@@ -2332,8 +2332,12 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     min-width: 0;
 }
 
+/* Der Kopf bricht um, wenn "‹ {Wirtstitel}" und Titel nicht in eine Zeile
+   passen - sonst ragt der Titel aus dem Blatt und die Ueberlagerung rollt
+   quer (Konditionierungsprobe, Welle U2: 57 px bei 390 px). */
 .epos-blatt-kopf {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--epos-rand);
 }
@@ -13599,6 +13603,22 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-kond-vorlagewahl,
 .epos-kond-vorschau {
     margin-top: 6px;
+    min-width: 0;
+}
+
+/* In der schmalen Karte (ab 900 px rund 200 px breit) bricht die Zeile um:
+   "Uebernehmen" geht unter die Liste, statt sie zu ueberdecken, und die
+   Liste haelt ihren laengsten Eintrag nicht als Mindestmass (gemessen in
+   der Konditionierungsprobe: 61 bis 84 px Ueberdeckung). */
+.epos-kond-vorlagewahl {
+    flex-wrap: wrap;
+}
+
+.epos-kond-vorlagewahl > .epos-feld {
+    flex: 1 1 10rem;
+}
+
+.epos-kond-vorlagewahl .epos-feld-zeile > select.epos-eingabe {
     min-width: 0;
 }
 

@@ -149,7 +149,7 @@
             @if (Bearbeitung.Weg.WochenVorschau is not null)
             {
                 <DiagrammSvg Modell="@_modell" Kennung="@("kond-verwaltung-vorschau-" + (int)_groesse)"
-                             Bezeichnung="@Texte.LabelVorschauWoche" Einheit="@Einheit" />
+                             Bezeichnung="@Texte.LabelVorschauWoche" Einheit="@Einheit" OhneZoom="true" />
             }
         </div>
     }

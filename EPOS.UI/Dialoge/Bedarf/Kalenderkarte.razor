@@ -135,8 +135,10 @@
             {
                 <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, g.Name)</p>
             }
+            @* Ein Bild ohne Zoom: eine Woche in der schmalen Karte braucht keinen Zeitbereich, und die
+               Zoomleiste bliebe unter dem Beruehrungsmass (Konditionierungsprobe, Welle U2). *@
             <DiagrammSvg Modell="@_modell" Kennung="@("kond-vorschau-" + (int)Groesse)" Bezeichnung="@Texte.LabelVorschauWoche"
-                         Einheit="@Einheit" />
+                         Einheit="@Einheit" OhneZoom="true" />
         </div>
     }
 </section>
