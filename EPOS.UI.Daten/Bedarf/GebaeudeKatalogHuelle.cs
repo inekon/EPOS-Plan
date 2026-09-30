@@ -46,9 +46,11 @@ namespace WindowsFormsApplication1
         {
             IReadOnlyDictionary<string, object> gaben = Grundgaben(bezeichner, modus);
             if (vorbelegung?.Daten == null) return gaben;
+            GebaeudeKatalogDaten daten = vorbelegung.Daten.Kopie();
+            daten.Konditionierung ??= KonditionierungHuelle.Leer();
             return new Dictionary<string, object>(gaben)
             {
-                ["Daten"] = vorbelegung.Daten.Kopie(),
+                ["Daten"] = daten,
                 ["Vorbelegung"] = vorbelegung.Herleitung ?? ""
             };
         }
@@ -102,8 +104,14 @@ namespace WindowsFormsApplication1
             GebaeudeModel kopie = GebaeudeStammCtrl.LiesProjektkopie(idGebaeude);
             if (idProjekt <= 0 || kopie == null) return null;
 
+            // Stufe KP2: die Konditionierung des PROJEKTGEBÄUDES im Feldsatz und der Weg im Projekt
+            // (mit „aus dem Katalog erneut übernehmen").
+            GebaeudeKatalogDaten daten = AusModell(kopie);
+            daten.Konditionierung = KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
             var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
             {
+                ["Daten"] = daten,
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Gebaeude, idGebaeude),
                 // „Speichern unter" im PROJEKTMODUS: Der neue Katalogbau bekommt die
                 // Konditionierung des PROJEKTGEBÄUDES mit (Stufe KP1b, Konzept 5.5) — nur die
                 // Gebäudeebene; die Zonenzeilen bleiben zurück und stehen im Befund der
@@ -130,8 +138,11 @@ namespace WindowsFormsApplication1
             string name = vorher.Gebaeudename;
             GebaeudeModel modell = NachModell(daten, vorher);
             modell.Gebaeudename = name;
-            if (!GebaeudeStammCtrl.ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
-                return new GebaeudeKatalogErgebnis(false, MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+            // Stufe KP2: Gebaeude samt Konditionierung in EINEM Vorgang (Schritt 1 des OK-Wegs).
+            KonditionierungCtrl.Ergebnis e = GebaeudeStammCtrl.ProjektkopieSchreiben(
+                idGebaeude, idProjekt, modell, KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Gebaeude));
+            if (!e.Ok)
+                return new GebaeudeKatalogErgebnis(false, string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
             return new GebaeudeKatalogErgebnis(true, "");
         }
@@ -155,6 +166,10 @@ namespace WindowsFormsApplication1
             var zonenCtrl = new GebaeudeZonenCtrl();
             var aufbauCtrl = new BauteilaufbauCtrl();
             var gelesen = new Dictionary<int, ZoneModel>();
+            // Stufe KP2: die Ebene des Gebaeudes - die Zonen zeigen „vom Gebaeude", wo es einen Kalender angelegt hat.
+            Konditionierungsstand gebaeudeebene = KonditionierungSchema.Lesbar()
+                ? new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), out _)
+                : null;
             foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude)) gelesen[z.ID] = z;
 
             var projektaufbauten = aufbauCtrl.LesenJeProjekt(idProjekt).Where(a => a != null).ToDictionary(a => a.ID);
@@ -180,6 +195,9 @@ namespace WindowsFormsApplication1
                 Bewohner = z.Bewohner,
                 HeizungStrahlungsanteil = z.Heizung_Strahlungsanteil,
                 HeizleistungMaxKw = z.Heizleistung_Max,
+                Konditionierung = z.ID > 0
+                    ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, z.ID), gebaeudeebene)
+                    : KonditionierungHuelle.Leer(),
                 Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
                 {
                     AufbauWahl a = b.ID_Aufbau is int id ? projektwahl.FirstOrDefault(x => x.Id == id) : null;
@@ -300,16 +318,25 @@ namespace WindowsFormsApplication1
                     ID = l.Id, ID_ZoneA = l.IdZoneA ?? 0, ID_ZoneB = l.IdZoneB ?? 0, Volumenstrom = l.Volumenstrom ?? 0.0
                 }).ToList();
 
-            Func<ZonenstandDaten, string> speichern = stand =>
+            // OK-Weg, Schritt 3 (Stufe KP2, Befund B10): Zonen, Bauteile, Luftstroeme und die
+            // Konditionierung der Zonen in EINEM Vorgang; zurueck kommt die Zuordnung der vorlaeufigen
+            // Ids, die der Dialog in seinen Arbeitsstand uebernimmt.
+            Func<ZonenstandDaten, ZonenSchreibergebnis> speichern = stand =>
             {
                 List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
-                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen, Luft(stand?.Luftstroeme));
-                if (!e.Ok) return e.Meldung ?? "";
+                GebaeudeZonenCtrl.Schreibergebnis e = zonenCtrl.Schreiben(idGebaeude, zeilen, Luft(stand?.Luftstroeme),
+                                                                          Zonenkonditionierung(stand?.Zonen));
+                if (!e.Ok)
+                    return ZonenSchreibergebnis.Fehler(string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
                 MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
-                return "";
+                return new ZonenSchreibergebnis("", e.Zonen, e.Bauteile, e.Luftstroeme);
             };
+
+            // Die Konditionierung der Zonen fuer den Schreibweg (Stufe KP2): nur die mit geaenderter Fassung.
+            static IReadOnlyDictionary<int, Konditionierungsstand> Zonenkonditionierung(IReadOnlyList<ZoneDaten> liste)
+                => KonditionierungHuelle.Zonenstaende(liste);
 
             // Die Pruefregeln des Kerns ueber die ganze Liste samt Kopplung, ohne Datenbank (G6a/G6b).
             Func<ZonenstandDaten, string> pruefen = stand
@@ -373,10 +400,18 @@ namespace WindowsFormsApplication1
         {
             GebaeudePrueftexte p = Prueftexte();
 
+            // Stufe KP2: die Konditionierung des Katalogbaus im Feldsatz (ein neuer Satz beginnt leer) und
+            // der Weg des Reiters; im Projekt ersetzt ProjektGaben beides.
+            GebaeudeKatalogDaten daten = AusModell(geladen);
+            daten.Konditionierung = geladen.ID > 0 && modus != GebaeudeKatalogModus.Neu
+                ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Katalogbau(geladen.ID))
+                : KonditionierungHuelle.Leer();
+
             return new Dictionary<string, object>
             {
-                ["Daten"] = AusModell(geladen),
+                ["Daten"] = daten,
                 ["Modus"] = modus,
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
 
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudetypen()),
@@ -910,17 +945,14 @@ namespace WindowsFormsApplication1
             // Ueberschreiben trifft den URSPRUNGSNAMEN (WHERE Bezeichner = Gebaeudename).
             if (!istNeu) modell.Gebaeudename = bezeichner;
 
-            if (!istNeu)
-            {
-                bool geaendert = ctrl.Overwrite(modell);
-                return new GebaeudeKatalogErgebnis(geaendert,
-                    geaendert ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
-            }
-
-            // „Speichern unter": Kopf und Konditionierung der Quelle in EINER Transaktion
-            // (Kernmethode, Konzept 5.5) - die Razor-Karte bleibt unberuehrt.
-            GebaeudeStammCtrl.SpeichernUnterErgebnis ergebnis =
-                GebaeudeStammCtrl.SpeichernUnter(modell, quelle);
+            // Stufe KP2: EINE Schreibstelle - neu, bearbeiten und „Speichern unter" schreiben Kopf und
+            // Konditionierung in EINEM Vorgang samt Insert (GebaeudeStammCtrl.KatalogSchreiben).
+            // Die Konditionierung kommt aus dem Arbeitsstand (Festlegung 2): bei einem neuen Satz immer
+            // (so traegt „Speichern unter" sie mit), sonst nur bei geaenderter Fassung; ohne Tabellen
+            // (keine Konditionierung im Feldsatz) die Kopie der Quelle wie bisher.
+            Konditionierungsstand stand = KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Katalogbau, immer: istNeu);
+            GebaeudeStammCtrl.Katalogschreibergebnis ergebnis =
+                GebaeudeStammCtrl.KatalogSchreiben(modell, istNeu, bezeichner, stand, istNeu && stand == null ? quelle : null);
             return new GebaeudeKatalogErgebnis(ergebnis.Ok,
                 ergebnis.Ok
                     ? ""

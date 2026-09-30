@@ -61954,6 +61954,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konditionierung lässt sich nicht übernehmen: {0} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ARBEITSSTAND_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ARBEITSSTAND_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
         /// </summary>
         public static string KOND_MSG_DUPLIKAT_ZUSATZ {
@@ -61986,6 +61995,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_KATALOGBAU_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_KATALOGBAU_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gebäude gibt es keinen Katalogsatz, aus dem es erneut übernommen werden kann. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KATALOG_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KATALOG_FEHLT", resourceCulture);
             }
         }
         
@@ -62053,6 +62071,249 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string KOND_MSG_SP_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_SP_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeit ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ACHSE_STUNDE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ACHSE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenstunde (Mo 0 Uhr … So 24 Uhr) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ACHSE_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ACHSE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebspause ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ART_BETRIEBSPAUSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ART_BETRIEBSPAUSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertag ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ART_FEIERTAG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ART_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ART_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ART_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_ART_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_ART_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_AUS {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:00}.{1:00}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_DATUM {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:00}.–{1:00}.{2:00}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_DATUM_MONAT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_DATUM_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_GERAETE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_HEIZEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Kalender vorhanden. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_LEER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lüftung ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_LUEFTUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_LUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_MONATE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_PERSONEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrere Quellen ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_QUELLE_GEMISCHT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_QUELLE_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundangabe ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_QUELLE_GRUNDANGABE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_QUELLE_GRUNDANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_QUELLE_PERIODE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_QUELLE_PERIODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb der Saison ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_QUELLE_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_QUELLE_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_QUELLE_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_QUELLE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}–{1} Uhr ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_STUNDEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Bezugsjahr {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vereinfacht auf {0} Farbstufen, damit das Bild höchstens {1} Elemente trägt. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_VEREINFACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vereinfacht auf {0} Farbstufen und Blöcke zu {2} Tagen, damit das Bild höchstens {1} Elemente trägt. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_VEREINFACHT_BLOECKE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_VEREINFACHT_BLOECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo;Di;Mi;Do;Fr;Sa;So ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage lässt sich nicht als Vorlage speichern — dafür gibt es „Duplizieren…“. ähnelt.
         /// </summary>
         public static string KOND_MSG_VORLAGE_ALS_QUELLE {
@@ -62085,6 +62346,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_VORLAGE_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_MSG_VORLAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage gehört zur Größe {0}, gewählt ist die Größe {1}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_GROESSE", resourceCulture);
             }
         }
         
@@ -62197,6 +62467,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „Zeitstruktur übernehmen“ fehlt ein Kalender der Größe {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_QUELLE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT {
@@ -62229,6 +62508,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_ZEITSTRUKTUR_ZIEL {
             get {
                 return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT {0} K gehört allein zur Nachtzeile der Lüftung und liegt zwischen 0 und 5 K. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZELLE_DELTA_T {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZELLE_DELTA_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeiten {0} … {1} passen nicht zur Zeile {2}: Die Nachtzeile nimmt Stunden 0 bis 23, die Saison Tage 1 bis 365 (beide oder keinen), jede andere Zeile keine Zeiten. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZELLE_ZEITEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZELLE_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ behielte ihre Werte nicht: {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_KALENDER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZONE_UNBEHEIZT", resourceCulture);
             }
         }
         

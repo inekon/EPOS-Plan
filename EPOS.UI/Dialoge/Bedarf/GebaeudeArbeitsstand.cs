@@ -150,6 +150,36 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
+    /// <b>Die endgültigen Ids nach dem Schreiben</b> (Stufe KP2, Befund B10): Jede neue Zone bekommt die
+    /// Id, die der Kern ihr gab, jedes Bauteil die seine (in Listenfolge), die Luftströme ebenso — und
+    /// jeder Bezug darauf (Nachbarzone, Zonen eines Luftstroms, Vorlage eines Duplikats) folgt. Danach
+    /// trägt der Arbeitsstand dieselben Ids wie die Datenbank; ein zweites OK legt nichts noch einmal an.
+    /// Aufgerufen VOR <see cref="ZonenGeschrieben"/>.
+    /// </summary>
+    public void IdsUebernehmen(ZonenSchreibergebnis ergebnis)
+    {
+        if (ergebnis is null || !ergebnis.Ok) return;
+        int Zone(int id) => ergebnis.Zonen.TryGetValue(id, out int neu) ? neu : id;
+        foreach (ZoneDaten z in Zonen)
+        {
+            z.Id = Zone(z.Id);
+            if (z.VorlageId is int vorlage) z.VorlageId = Zone(vorlage);
+            if (ergebnis.Bauteile.TryGetValue(z.Id, out IReadOnlyList<int>? ids) && ids.Count == z.Bauteile.Count)
+                for (int i = 0; i < ids.Count; i++) z.Bauteile[i].Id = ids[i];
+            foreach (BauteilDaten b in z.Bauteile)
+                if (b.IdNachbarzone is int nachbar) b.IdNachbarzone = Zone(nachbar);
+        }
+        bool luft = ergebnis.Luftstroeme is { } l && l.Count == Luftstroeme.Count;
+        for (int i = 0; i < Luftstroeme.Count; i++)
+        {
+            ZonenluftstromDaten s = Luftstroeme[i];
+            if (luft) s.Id = ergebnis.Luftstroeme![i];
+            if (s.IdZoneA is int a) s.IdZoneA = Zone(a);
+            if (s.IdZoneB is int b) s.IdZoneB = Zone(b);
+        }
+    }
+
+    /// <summary>
     /// Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet) — oder die
     /// Luftströme zwischen ihnen (Stufe G6b)?
     /// </summary>

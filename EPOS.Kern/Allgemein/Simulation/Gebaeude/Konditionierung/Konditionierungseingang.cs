@@ -93,16 +93,50 @@ namespace WindowsFormsApplication1
             IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zonenkalender,
             IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudekalender,
             out Fahrplanlesung befund)
+            => ErsteQuelle(groesse, matrix, zonenkalender, gebaeudekalender, false, out befund);
+
+        /// <summary>
+        /// Dieselbe Kette mit der <b>Nachtzeile der Zone</b> (Entwurf KP2, Festlegung 5): Trägt die
+        /// Zone eine eigene Heiz-Nachtzeile mit Zeiten (<see cref="EigeneNachtzeile"/>), ist die
+        /// Heizspalte wirksam — der Bestandszweig kennt nur die Nachtzeit des Gebäudes, die Matrix
+        /// der Zone zeigt ihre eigene; so sehen Matrix und Lauf dieselbe.
+        /// </summary>
+        /// <param name="nachtzeileDerZone">Trägt die Zone eine eigene Heiz-Nachtzeile mit Zeiten?</param>
+        public static Konditionierungskalender ErsteQuelle(
+            Konditionierungsgroesse groesse, Vorgabematrix matrix,
+            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zonenkalender,
+            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudekalender,
+            bool nachtzeileDerZone, out Fahrplanlesung befund)
         {
             befund = null;
             if (zonenkalender != null && zonenkalender.TryGetValue(groesse, out Konditionierungskalender z) && z != null)
                 return z;
             if (gebaeudekalender != null && gebaeudekalender.TryGetValue(groesse, out Konditionierungskalender b) && b != null)
                 return b;
-            if (matrix == null || !Wirksam(matrix, groesse)) return null;
+            bool wirksam = Wirksam(matrix, groesse)
+                           || (nachtzeileDerZone && groesse == Konditionierungsgroesse.Heizsoll);
+            if (matrix == null || !wirksam) return null;
 
             befund = Standardfahrplan.Erzeugen(matrix, groesse, rundlaufPruefen: false);
             return befund.Befund == Fahrplanbefund.Erzeugt ? befund.Kalender : null;
+        }
+
+        /// <summary>
+        /// <b>Trägt eine Zone eine eigene Heiz-Nachtzeile mit Zeiten?</b> (Entwurf KP2,
+        /// Festlegung 5) — die Zeile <c>HEIZSOLL</c>/<c>NACHT</c> mit Beginn oder Ende. Am Gebäude
+        /// und am Katalogbau stehen die Heiz-Nachtzeiten allein in
+        /// <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>; die Zone führt diese Spalten nicht.
+        /// </summary>
+        public static bool EigeneNachtzeile(IEnumerable<Vorgabezeile> zonenvorgaben)
+        {
+            if (zonenvorgaben == null) return false;
+            string heiz = Konditionierungsgroessen.Kennwort(Konditionierungsgroesse.Heizsoll);
+            foreach (Vorgabezeile v in zonenvorgaben)
+                if (v != null && string.Equals(v.Groesse, heiz, StringComparison.Ordinal)
+                    && string.Equals(v.Zeile, DbWerte.KOND_ZEILE_NACHT, StringComparison.Ordinal)
+                    && (v.Von.HasValue || v.Bis.HasValue))
+                    return true;
+            return false;
         }
 
         /// <summary>

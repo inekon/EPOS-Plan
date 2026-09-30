@@ -77,7 +77,7 @@ public class GebaeudeZonenkopplungTests : EposBunitContext
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Luftstroeme = Luftstroeme,
-            Speichern = s => { Geschrieben.Add(s); return ""; },
+            Speichern = s => { Geschrieben.Add(s); return ZonenSchreibergebnis.Gut; },
             Pruefen = s => { Geprueft.Add(s); return ""; },
             Hinweise = _ => Hinweise,
             KopplungSperre = KopplungSperre

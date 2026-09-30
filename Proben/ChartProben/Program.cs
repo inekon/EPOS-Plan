@@ -1302,6 +1302,10 @@ namespace ChartProben
             // Heizbetrieb: Mass-, Gegen- und SVG-Proben in Program.Anlagenkopplung.cs.
             AnlagenkopplungProben(ziel);
 
+            // KP2 WELLE K4 - das Teppichbild eines Kalenders und die Woche mit Luecke fuer
+            // „aus": Mass-, Gegen- und SVG-Proben in Program.Kalenderteppich.cs.
+            KalenderteppichProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

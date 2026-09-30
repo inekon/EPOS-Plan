@@ -24,7 +24,7 @@ Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es h�
 == Der Zuordnungsdialog ==
 {{Anker|zuordnung}}
 
-Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung, Bauteile, Baustoffe und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
+Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung, Bauteile – bei mehreren Zonen Zonen, Grundriss und Flächen je Zone –, Baustoffe und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
 
 === Baualtersklasse zuerst ===
 {{Anker|baualtersklasse}}
@@ -38,7 +38,7 @@ Der Hinweis unter der Klappliste nennt, wie viele der Werte, die eine Klasse vor
 === Quelle ===
 {{Anker|quelle}}
 
-Nach dem Lesen nennt der Abschnitt ''Quelle'' Datei, Format, Schema, Größe und Zonenregel. Die Zonenregel ist „eine Zone je Gebäude": Alle beheizten Räume bilden zusammen das eine Gebäude des Katalogs.
+Nach dem Lesen nennt der Abschnitt ''Quelle'' Datei, Format, Schema, Größe und Zonenregel. Die Zonenregel sagt, wie die Räume zu Zonen zusammengefasst werden: zu einer Zone je Gebäude oder zu mehreren Zonen, etwa je Geschoss (siehe [[#mehrere-zonen|Mehrere Zonen]]). Die Summen der Zuordnung umfassen in jedem Fall alle beheizten Räume des Gebäudes.
 
 {{Anker|schon-importiert}}
 Stammt ein Gebäude des offenen Projekts schon aus derselben Datei, steht unter der Quelle ein leiser Hinweis mit dem Namen dieses Gebäudes und dem Zeitpunkt des Imports. Als dieselbe Datei gilt eine Datei mit gleichem Inhalt, unabhängig von ihrem Namen. Der Import bleibt trotzdem möglich.
@@ -48,7 +48,7 @@ Enthält die Datei mehrere Gebäude, wählen Sie unter ''Gebäude der Datei'' ei
 === Räume ===
 {{Anker|raeume}}
 
-Die Liste ''Räume'' zeigt jeden Raum des Gebäudes mit Fläche, dem Haken ''Beheizt'' und dem ''Grund'' dafür: die Zustandsangabe der Datei, ein Raumname, der auf einen unbeheizten Raum deutet (etwa Keller, Garage oder Dachboden), oder „keine Angabe – als beheizt angenommen". Nur beheizte Räume bilden die Zone. Stellen Sie einen Haken um, ordnet der Dialog neu zu – die Zuordnung und die [[#bauteile|Bauteile]]; der Grund heißt dann „vom Anwender umgestellt".
+Die Liste ''Räume'' zeigt jeden Raum des Gebäudes mit Fläche, dem Haken ''Beheizt'' und dem ''Grund'' dafür: die Zustandsangabe der Datei, ein Raumname, der auf einen unbeheizten Raum deutet (etwa Keller, Garage oder Dachboden), oder „keine Angabe – als beheizt angenommen". Unter einer Zone je Gebäude bilden nur die beheizten Räume die Zone; unter einer Regel mit mehreren Zonen fasst jede Zone nur Räume gleichen Zustands, und unbeheizte Räume bilden eigene, unbeheizte Zonen. Stellen Sie einen Haken um, ordnet der Dialog neu zu – die Zuordnung und die [[#bauteile|Bauteile]]; der Grund heißt dann „vom Anwender umgestellt".
 
 === Zuordnung ===
 {{Anker|zeilen}}
@@ -116,6 +116,27 @@ Der Abschnitt ''Bauteile (echte Hülle)'' zeigt, wie das Gebäude mit seinen eig
 
 Jede Neuzuordnung – eine andere Baualtersklasse, ein umgestellter Raum, ein anderes Gebäude der Datei, ein anderer Baustoff – bildet die Bauteile neu. Ihre Wahl am Schalter bleibt stehen, bis Sie eine andere Datei oder ein anderes Gebäude wählen.
 
+=== Mehrere Zonen ===
+{{Anker|mehrere-zonen}}
+
+Ein Gebäude lässt sich mit '''mehreren Zonen''' übernehmen, etwa mit einer Zone je Geschoss. Welche Räume eine Zone bilden, legt die '''Zonenregel''' fest; das Gebäude rechnet danach Zone für Zone im [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]], mit den Trennflächen zwischen den Zonen.
+
+{{Anker|zonenregel}}
+* '''Zonenregel''' – die Klappliste bietet nur die Regeln, die für das Gebäude der Datei gelten. Für IFC: ''Z1 – eine Zone je Zone der Datei'', ''Z2 – eine Zone je Klassifikation'', ''Z3 – eine Zone je Nutzung'' (Raumname ohne angehängte Nummer), ''Z4 – eine Zone je Geschoss'' und ''Z5 – eine Zone je Gebäude''. Für gbXML: ''X1 – eine Zone je Zone der Datei'' (wenn die Datei weniger Zonen als Räume führt), ''X2 – eine Zone je Geschoss'', ''X3 – eine Zone je Raum'' und ''X4 – eine Zone je Gebäude''. Z1 bis Z3 brauchen die Raumgrenzen der Datei.
+* '''Vorbelegung''' – bei IFC ''Z4'', wenn mehr als ein Geschoss Räume trägt und die Datei Raumgrenzen führt, sonst ''Z5''; bei gbXML ''X1'', sonst ''X2'', sonst ''X4''. Ohne Raumgrenzen lässt sich ''Z4'' trotzdem wählen; eine Warnung sagt dann, dass die Geschosszonen ohne Trennflächen gegeneinander bleiben. Eine Regel mit einer Zone führt auf den Weg mit [[#bauteile|einer Zone]].
+* Die '''Bilanz''' über der Liste nennt die Zahl der Zonen, die beheizte Fläche, das beheizte Volumen, die Summe der Außenflächen und die Summe der Trennflächen; ein Banner darüber zeigt die schwerste Meldung.
+* '''Mindestgröße''' – eine Zone, die kleiner ist als 2 m² oder 2 % der Gebäudefläche (der größere Wert gilt), geht an die Nachbarzone gleichen Zustands mit der größten gemeinsamen Trennfläche; ihr Hinweis lautet dann „zugeschlagen: …“. Ohne solchen Nachbarn bleibt sie stehen und trägt den Hinweis „unter der Mindestgröße“.
+* '''Höchstens 50 Zonen''' – ergibt eine Regel mehr Zonen, warnt der Dialog und bietet den Knopf ''Gröbere Regel übernehmen: …''; mit mehr als 50 Zonen lässt sich das Gebäude nicht als Zonen übernehmen.
+* '''Als Zonen mit Bauteilen übernehmen''' – der Schalter. Mit Haken kommt das Gebäude mit diesen Zonen, ihren Bauteilen und den Trennflächen zwischen ihnen in die Projektliste; ohne Haken trägt es nur die Summen der Zuordnung.
+* Die Liste '''Zonen''' zeigt je Zone Name, Regel, Räume, Fläche, Volumen, den Haken ''beheizt'' und einen Hinweis; aufgeklappt stehen die Räume mit Geschoss, Fläche, Beheizungsregel und Beleg. Der Haken ''beheizt'' stellt alle Räume der Zone um; danach bildet sich die Zonierung neu.
+* Die Liste '''Flächen je Zone''' zeigt jedes Bauteil der Zonen mit Zone, Art, Fläche, Azimut, Neigung, Randbedingung, ''Nachbarzone'', U-Wert, Aufbau, Herkunft und der Spalte ''Befund''. Eine Fläche zwischen zwei Zonen ist eine Trennfläche und nennt die Nachbarzone; ihr Gegenstück findet der Import über die Angabe der Datei oder über die Lage. Eine Fläche ohne Gegenstück rechnet gegen einen unbeheizten Raum. Fenster und Türen gehören zur Zone ihrer Wand. Die Filter ''nur Fehler'', ''nur ohne Gegenstück'' und ''nur ohne U-Wert'' zeigen nur die betroffenen Flächen.
+
+{{Anker|grundriss}}
+'''Grundriss.''' Neben der Liste der Zonen – im schmalen Fenster darunter – zeigt der Grundriss je Geschoss die Räume als Flächen, Nord oben, jede Zone in eigener Farbe, Räume ohne Zone grau; im Raum stehen Name und Fläche. Die Geschosse wählen Sie über ihre Reiter; die Legende ''Zonen im Grundriss'' nennt die Zonen und ob sie ''aus Raumgrenzen'' oder ''von Hand'' gebildet sind. Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis; Form und Lage sind dann nur angenommen, der Rand ist gestrichelt, und das Geschoss trägt den Zusatz ''schematisch''. Ab der elften Zone wiederholen sich die Farben. Die Ansicht ''Körper'' neben ''Grundriss'' ist gesperrt; ihr Tooltip nennt den Grund.
+
+{{Anker|von-hand}}
+'''Räume von Hand zuordnen.''' Wählen Sie unter ''Räume zuordnen zu'' eine Zone oder ''als eigene Zone'' und tippen Sie dann einen Raum im Grundriss an – oder wählen Sie den Raum in der Liste ''Raum'' und drücken ''Umhängen''. Mit der Tastatur erreichen Sie die Räume im Grundriss mit Tab; Enter oder die Leertaste ordnen zu. Umgehängt werden nur Räume gleichen Zustands; ein beheizter Raum kommt nicht in eine unbeheizte Zone, ein Banner nennt dann den Ausweg, den Raum mit dem Haken ''Beheizt'' umzustellen. Wechseln Sie die Zonenregel, nachdem Sie Räume von Hand zugeordnet haben, fragt der Dialog nach, denn die Zuordnungen gelten nur unter der Regel, unter der sie entstanden sind. Übernommen wird alles erst mit ''OK''.
+
 === Baustoffe ===
 {{Anker|baustoffe}}
 
@@ -172,17 +193,17 @@ Hat der Editor den Katalogsatz angelegt, steht das neue Gebäude im Katalog ''Ge
 Ins Projekt geschrieben wird die Zeile mit ''OK'' des Dialogs ''Eingabe der Gebäudedaten'', im Assistenten mit dem Speichern des Projekts – wie jede andere neue Zeile der Liste (siehe [[Programm Dokumentation/Gebäude#uebernahme|Übernahme ins Projekt]]). ''Abbrechen'' verwirft die neue Zeile; der Katalogsatz bleibt im Gebäudekatalog und lässt sich später übernehmen.
 
 {{Anker|zone-im-projekt}}
-War [[#als-zone|Als Zone mit Bauteilen übernehmen]] eingeschaltet, schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt zugleich die Zone mit ihren Bauteilen und die Schichtaufbauten der Datei als Aufbauten des Projekts; ein Aufbauname, den das Projekt schon führt, bekommt eine Nummer angehängt. Das Gebäude rechnet danach mit seinen Bauteilen. Zone und Bauteile lassen sich im Gebäudedialog über ''Hülle und Zonen…'' ansehen und ändern (siehe [[Programm Dokumentation/Gebäude#zonen|Zonen]]), die Aufbauten unter [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]]. Die Katalogsätze bleiben ohne Zone.
+War [[#als-zone|Als Zone mit Bauteilen übernehmen]] bzw. [[#mehrere-zonen|Als Zonen mit Bauteilen übernehmen]] eingeschaltet, schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt zugleich die Zone – bei mehreren Zonen alle Zonen samt den Trennflächen zwischen ihnen – mit ihren Bauteilen und die Schichtaufbauten der Datei als Aufbauten des Projekts; ein Aufbauname, den das Projekt schon führt, bekommt eine Nummer angehängt. Das Gebäude rechnet danach mit seinen Bauteilen. Zone und Bauteile lassen sich im Gebäudedialog über ''Hülle und Zonen…'' ansehen und ändern (siehe [[Programm Dokumentation/Gebäude#zonen|Zonen]]), die Aufbauten unter [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]]. Die Katalogsätze bleiben ohne Zone.
 
 === Herkunft im Projekt ===
 {{Anker|herkunft-projekt}}
 
-Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Kommt das Gebäude als Zone mit Bauteilen, merkt sich EPOS-Plan außerdem, aus welchen Räumen die Zone, aus welcher Fläche oder Öffnung jedes Bauteil, aus welcher Konstruktion jeder Aufbau und aus welchem Material der Datei jeder Baustoff eines Aufbaus stammt. Die [[#baustoffe-projekt|eigenen Zuordnungen der Baustoffe]] werden im selben Schritt für das Projekt gemerkt. Gelingt das nicht oder lassen sich Zone und Bauteile nicht schreiben, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
+Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Kommt das Gebäude als Zone oder mit mehreren Zonen samt Bauteilen, merkt sich EPOS-Plan außerdem die Zonenregel, aus welchen Räumen jede Zone, aus welcher Fläche oder Öffnung jedes Bauteil, aus welcher Konstruktion jeder Aufbau und aus welchem Material der Datei jeder Baustoff eines Aufbaus stammt. Die [[#baustoffe-projekt|eigenen Zuordnungen der Baustoffe]] werden im selben Schritt für das Projekt gemerkt. Gelingt das nicht oder lassen sich Zone und Bauteile nicht schreiben, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
 
 == Grenzen ==
 {{Anker|grenzen}}
 
-* Übernommen wird '''ein Gebäude als eine Zone''': ohne den Schalter ''Als Zone mit Bauteilen übernehmen'' mit den Summen und Mitteln des Gebäudes, mit ihm zusätzlich mit seinen einzelnen Bauteilen. Mehrere Zonen je Gebäude entstehen nicht.
+* Ein Gebäude kommt als '''eine Zone''' oder mit '''mehreren Zonen''' ins Projekt – mehrere Zonen je Gebäude sind ausdrücklich möglich, nach der gewählten [[#zonenregel|Zonenregel]] mit höchstens 50 Zonen. Ohne den Schalter kommt es mit den Summen und Mitteln des Gebäudes, mit ihm zusätzlich mit seinen Zonen und Bauteilen.
 * Die Werte der Datei gelangen nur über den Katalogeditor ins Projekt; ein vorhandener Katalogsatz oder ein Gebäude im Projekt wird durch einen Import nicht überschrieben.
 * Die Kühl-Auslegungstemperatur der Datei und ihre Leistungen für Beleuchtung und Geräte werden nicht als Werte übernommen.
 
@@ -191,6 +212,7 @@ Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus w
 
 * [[Programm Dokumentation/Gebäude]] – Gebäudekatalog, Katalogeditor und die Gebäude des Projekts
 * [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell und seine Eingaben
+* [[Programm Dokumentation/Mehrzonenmodell]] – wie ein Gebäude mit mehreren Zonen rechnet
 * [[Programm Dokumentation/Hilfe-Assistent]] – was der Assistent in den Masken setzt
 
 [[Kategorie:Programm Dokumentation]]

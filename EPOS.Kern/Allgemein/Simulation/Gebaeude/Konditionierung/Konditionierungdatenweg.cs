@@ -71,34 +71,99 @@ namespace WindowsFormsApplication1
                         && (zonenvorgaben == null || zonenvorgaben.Count == 0);
             if (leer) return null;      // wörtlich der Bestandszweig
 
-            // ---- Die Matrix: Gebäude, darüber die Zone je Zelle (F2) ----
-            Vorgabematrix gebaeudematrix = Konditionierungseingang.Matrix(gebaeude, vorgaben, kopplungWirksam,
-                                                                          kuehlungWirksam);
-            Vorgabematrix matrix = gebaeudematrix;
-            if (idZone.HasValue)
-                matrix = Vorgabematrix.Bilden(Konditionierungseingang.Bestand(gebaeude, kopplungWirksam,
-                                                                             kuehlungWirksam), zonenvorgaben,
-                                              Kalendereigentuemer.Zone)
-                                      .Erben(gebaeudematrix);
-
+            Matrixeingang bestand = Konditionierungseingang.Bestand(gebaeude, kopplungWirksam, kuehlungWirksam);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
-                Angelegt(kalenderzeilen, perioden, gebaeude);
+                Angelegt(kalenderzeilen, perioden, gebaeude.Gebaeudename);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt =
-                idZone.HasValue ? Angelegt(zonenkalender, zonenperioden, gebaeude) : null;
+                idZone.HasValue ? Angelegt(zonenkalender, zonenperioden, gebaeude.Gebaeudename) : null;
+            return SatzBilden(gebaeude.Gebaeudename, bestand, vorgaben, gebaeudeangelegt,
+                              idZone.HasValue ? zonenvorgaben : null, zoneangelegt, wochenende, referenzjahr);
+        }
+
+        /// <summary>
+        /// <b>Der Satz aus dem Speicher</b> (Stufe KP2, Welle K2) — dieselbe Kette wie
+        /// <see cref="Satz(ProjektGebaeudeModel, bool[], int, bool, bool, long?)"/>, nur kommen
+        /// Vorgabezeilen und angelegte Kalender aus dem Arbeitsstand statt aus der Datenbank und die
+        /// Bestandsfelder aus seinen Ebenen (an einer Zone die aufgelösten,
+        /// <see cref="Konditionierungsarbeitsstand.AufgeloesterBestand"/>). Für die Vorschau vor dem OK
+        /// und die Zonenübernahme; der Lauf liest weiter die Datenbank.
+        /// </summary>
+        /// <param name="speicher">Der Arbeitsstand.</param>
+        /// <param name="idZone">Die Zone, deren Satz gesucht ist, oder <c>null</c> für das Gebäude.</param>
+        /// <param name="wochenende">Die Wochenendmaske des Ortszeit-Kalenders — sie liefert w₀ (U7).</param>
+        /// <param name="referenzjahr">Das Referenzjahr (F11).</param>
+        /// <param name="kopplungWirksam">Wirkt die Anlagenkopplung (AK1)?</param>
+        /// <param name="kuehlungWirksam">Wirkt die Kühlung (E32)?</param>
+        /// <param name="name">Der Name in einer Fehlermeldung.</param>
+        /// <returns>Der Satz oder <c>null</c> — dann gilt wörtlich der Bestandszweig.</returns>
+        /// <exception cref="GebaeudeModellException">wie der Datenbankweg.</exception>
+        public static Konditionierungssatz Satz(Konditionierungsarbeitsstand speicher, long? idZone, bool[] wochenende,
+                                                int referenzjahr, bool kopplungWirksam, bool kuehlungWirksam,
+                                                string name = null)
+        {
+            if (speicher == null) throw new ArgumentNullException(nameof(speicher));
+            Konditionierungszone zone = null;
+            if (idZone.HasValue)
+            {
+                zone = speicher.Zone(idZone.Value);
+                if (zone == null)
+                    throw new ArgumentException("Die Zone " + idZone.Value.ToString(CultureInfo.InvariantCulture) +
+                                                " steht nicht im Arbeitsstand.", nameof(idZone));
+            }
+
+            Konditionierungsstand gebaeude = speicher.Gebaeude;
+            bool leer = gebaeude.TabellenLeer && (zone == null || zone.Stand.TabellenLeer);
+            if (leer) return null;      // wörtlich der Bestandszweig
+
+            Matrixeingang bestand = zone == null ? gebaeude.Bestand : speicher.AufgeloesterBestand(zone);
+            bestand.KopplungWirksam = kopplungWirksam;
+            bestand.KuehlungWirksam = kuehlungWirksam;
+            return SatzBilden(name, bestand, gebaeude.Vorgabezeilen(), Kalenderliste(gebaeude),
+                              zone?.Stand.Vorgabezeilen(), zone == null ? null : Kalenderliste(zone.Stand),
+                              wochenende, referenzjahr);
+        }
+
+        private static Dictionary<Konditionierungsgroesse, Konditionierungskalender> Kalenderliste(Konditionierungsstand e)
+        {
+            var d = new Dictionary<Konditionierungsgroesse, Konditionierungskalender>();
+            foreach (KeyValuePair<Konditionierungsgroesse, Konditionierungskalender> p in e.Angelegt()) d[p.Key] = p.Value;
+            return d;
+        }
+
+        /// <summary>
+        /// <b>Die gemeinsame Kette</b> beider Wege: die Matrix des Gebäudes, darüber die der Zone je
+        /// Zelle (F2), je Größe die erste Quelle, die Nachtauskühlung und die zwei Matrixwerte.
+        /// <paramref name="zonenvorgaben"/> <c>null</c> heißt: der Satz des Gebäudes selbst.
+        /// </summary>
+        private static Konditionierungssatz SatzBilden(string name, Matrixeingang bestand, List<Vorgabezeile> vorgaben,
+                                                       Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt,
+                                                       List<Vorgabezeile> zonenvorgaben,
+                                                       Dictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt,
+                                                       bool[] wochenende, int referenzjahr)
+        {
+            // ---- Die Matrix: Gebäude, darüber die Zone je Zelle (F2) ----
+            Vorgabematrix gebaeudematrix = Vorgabematrix.Bilden(bestand, vorgaben);
+            Vorgabematrix matrix = gebaeudematrix;
+            if (zonenvorgaben != null)
+                matrix = Vorgabematrix.Bilden(bestand.Kopie(), zonenvorgaben, Kalendereigentuemer.Zone)
+                                      .Erben(gebaeudematrix);
 
             // ---- w₀ aus derselben Maske, nach der der Bestandsfahrplan das Wochenende setzt ----
             int w0 = GebaeudeModellEingang.WochentagDesErstenTags(wochenende);
             if (w0 < 0)
-                throw Fehler(gebaeude, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
+                throw Fehler(name, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
+
+            // Festlegung 5 (Entwurf KP2): eine eigene Heiz-Nachtzeile der Zone macht die Heizspalte wirksam.
+            bool nachtzeileDerZone = Konditionierungseingang.EigeneNachtzeile(zonenvorgaben);
 
             var satz = new Konditionierungssatz(w0, referenzjahr);
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
                 Konditionierungskalender k = Konditionierungseingang.ErsteQuelle(
-                    g, matrix, zoneangelegt, gebaeudeangelegt, out Fahrplanlesung befund);
+                    g, matrix, zoneangelegt, gebaeudeangelegt, nachtzeileDerZone, out Fahrplanlesung befund);
                 if (befund != null && befund.Befund != Fahrplanbefund.Erzeugt &&
                     befund.Befund != Fahrplanbefund.KeineAngabe)
-                    throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                    throw Fehler(name, string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
                         befund.Befund.ToString(), befund.Fundstelle()));
                 satz.Setzen(g, k);
@@ -106,7 +171,7 @@ namespace WindowsFormsApplication1
             if (satz.Hat(Konditionierungsgroesse.Lueftung))
                 satz.NachtauskuehlungSetzen(Nachtauskuehlung(
                     Quelle(Konditionierungsgroesse.Lueftung, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt),
-                    gebaeude));
+                    name));
             Matrixwerte(satz,
                         Quelle(Konditionierungsgroesse.Lueftung, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt),
                         Quelle(Konditionierungsgroesse.Heizsoll, matrix, gebaeudematrix, zoneangelegt, gebaeudeangelegt));
@@ -165,13 +230,13 @@ namespace WindowsFormsApplication1
         /// Anteil, und der Lauf sagt es.
         /// </summary>
         /// <exception cref="GebaeudeModellException">bei ungültigem Nachtfenster oder ΔT außerhalb 0 … 5 K.</exception>
-        private static Nachtauskuehlvorgabe Nachtauskuehlung(Vorgabematrix quelle, ProjektGebaeudeModel gebaeude)
+        private static Nachtauskuehlvorgabe Nachtauskuehlung(Vorgabematrix quelle, string name)
         {
             if (quelle == null) return null;
             quelle.Nachtfenster(Konditionierungsgroesse.Lueftung, out int? von, out int? bis);
             NachtzeitBefund nb = Nachtzeit.Pruefen(von, bis);
             if (nb != NachtzeitBefund.Gueltig)
-                throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                throw Fehler(name, string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
                     Fahrplanbefund.NachtzeitUngueltig.ToString(),
                     Konditionierungsgroessen.Kennwort(Konditionierungsgroesse.Lueftung) + ", " + nb));
@@ -181,7 +246,7 @@ namespace WindowsFormsApplication1
             if (abstand.HasValue && (!double.IsFinite(abstand.Value) ||
                                      abstand.Value < Nachtauskuehlvorgabe.ABSTAND_MIN_K ||
                                      abstand.Value > Nachtauskuehlvorgabe.ABSTAND_MAX_K))
-                throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                throw Fehler(name, string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.SIMENG_KOND_NACHTKUEHL_ABSTAND,
                     abstand.Value.ToString("G6", CultureInfo.InvariantCulture),
                     Nachtauskuehlvorgabe.ABSTAND_MIN_K.ToString("G6", CultureInfo.InvariantCulture),
@@ -220,7 +285,7 @@ namespace WindowsFormsApplication1
                 Konditionierungseingang.Bestand(bestand, kopplungWirksam, kuehlungWirksam),
                 vorgaben, eigner.Art);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> angelegt =
-                Angelegt(kalenderzeilen, perioden, bestand);
+                Angelegt(kalenderzeilen, perioden, bestand.Gebaeudename);
 
             int w0 = GebaeudeModellEingang.WochentagDesErstenTags(wochenende);
             if (w0 < 0) throw Fehler(bestand, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
@@ -238,7 +303,7 @@ namespace WindowsFormsApplication1
                 satz.Setzen(g, k);
             }
             if (satz.Hat(Konditionierungsgroesse.Lueftung))
-                satz.NachtauskuehlungSetzen(Nachtauskuehlung(matrix, bestand));
+                satz.NachtauskuehlungSetzen(Nachtauskuehlung(matrix, bestand.Gebaeudename));
             Matrixwerte(satz, matrix, matrix);
             return satz.Wirksam ? satz : null;
         }
@@ -250,7 +315,7 @@ namespace WindowsFormsApplication1
         /// Konzept 5.1).
         /// </summary>
         private static Dictionary<Konditionierungsgroesse, Konditionierungskalender> Angelegt(
-            List<Kalenderzeile> zeilen, List<Periodenzeile> perioden, ProjektGebaeudeModel gebaeude)
+            List<Kalenderzeile> zeilen, List<Periodenzeile> perioden, string name)
         {
             var ziel = new Dictionary<Konditionierungsgroesse, Konditionierungskalender>();
             if (zeilen == null) return ziel;
@@ -258,11 +323,11 @@ namespace WindowsFormsApplication1
             {
                 Kalenderlesung l = Kalenderleser.Lesen(z, perioden);
                 if (l.Befund != Kalenderbefund.Gelesen)
-                    throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                    throw Fehler(name, string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.SIMENG_KOND_KALENDER_UNGUELTIG,
                         l.Befund.ToString(), l.Fundstelle()));
                 if (ziel.ContainsKey(l.Kalender.Groesse))
-                    throw Fehler(gebaeude, string.Format(CultureInfo.CurrentCulture,
+                    throw Fehler(name, string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.SIMENG_KOND_KALENDER_UNGUELTIG,
                         "zweimal dieselbe Größe", l.Fundstelle()));
                 ziel[l.Kalender.Groesse] = l.Kalender;
@@ -455,14 +520,59 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // -----------------------------------------------------------------
+        //  Das Bezugsjahr einer Vorschau (Teppichbild, Welle K4)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Das Bezugsjahr einer Kalendervorschau</b> (Entwurf KP2, Festlegung 8): im Projekt das
+        /// des Laufs (<see cref="SolardatenCtrl.Referenzjahr"/> — das Jahr der Spotpreisreihe oder die
+        /// Vorgabe), im Katalog dasselbe wie der Lauf ohne Projekt,
+        /// <c>SolardatenCtrl.Referenzjahr(0)</c> = <see cref="DbWerte.SOLAR_REFERENZJAHR_STANDARD"/>.
+        /// Keine Uhr: Ein laufendes Jahr würde die Vorschau am Jahreswechsel verschieben (B13).
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
+        public static int Bezugsjahr(int idProjekt)
+            => SolardatenCtrl.Referenzjahr(idProjekt > 0 ? idProjekt : 0);
+
+        // -----------------------------------------------------------------
+        //  Die angelegten Kalender je Katalogbau (Spalte „Kalender", Welle K4)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Die Zahl der angelegten Kalender je Katalogbau</b> (Entwurf KP2, Festlegung 15) —
+        /// dieselbe Eigentümerspalte <c>ID_Gebaeude_Stamm</c>, über die
+        /// <see cref="KalenderzeilenVon"/> die Kalender eines Katalogbaus liest, in <b>einer</b>
+        /// gruppierten Abfrage für den ganzen Katalog statt einer je Satz. Gezählt werden die
+        /// Größen (0 … 5). Ohne die Tabellen der Konditionierung ist das Verzeichnis leer.
+        /// </summary>
+        public static Dictionary<long, int> KalenderJeKatalogbau()
+        {
+            var zahl = new Dictionary<long, int>();
+            if (!KonditionierungSchema.Lesbar()) return zahl;
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"ID_Gebaeude_Stamm\", COUNT(DISTINCT \"Groesse\") AS \"Anzahl\" FROM \"" +
+                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude_Stamm\" IS NOT NULL " +
+                "GROUP BY \"ID_Gebaeude_Stamm\"");
+            if (t == null) return zahl;
+            foreach (DataRow r in t.Rows)
+            {
+                long? id = L(r, "ID_Gebaeude_Stamm");
+                if (id.HasValue) zahl[id.Value] = (int)(L(r, "Anzahl") ?? 0);
+            }
+            return zahl;
+        }
+
         private static DataTable Lesen(string sql, long idGebaeude, long? idZone)
             => idZone.HasValue
                 ? DataRepository.GetDataTable(sql, new DbParam("@g", idGebaeude), new DbParam("@z", idZone.Value))
                 : DataRepository.GetDataTable(sql, new DbParam("@g", idGebaeude));
 
         private static GebaeudeModellException Fehler(ProjektGebaeudeModel g, string text)
-            => new GebaeudeModellException(GebaeudeModellFehler.KalenderUngueltig,
-                                          (g.Gebaeudename ?? "?") + ": " + text);
+            => Fehler(g?.Gebaeudename, text);
+
+        private static GebaeudeModellException Fehler(string name, string text)
+            => new GebaeudeModellException(GebaeudeModellFehler.KalenderUngueltig, (name ?? "?") + ": " + text);
 
         private static long? L(DataRow r, string spalte)
             => r.Table.Columns.Contains(spalte) && r[spalte] != null && r[spalte] != DBNull.Value

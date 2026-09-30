@@ -191,8 +191,8 @@ public class GebaeudeDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <b>Der Katalog ist die Katalogliste der Gebäudeverwaltung</b> — dieselben fünf Spalten
-    /// (Profil <c>FuerGebaeude</c>), jede mit Trichter und Sortierpfeil, alle Sätze des
+    /// <b>Der Katalog ist die Katalogliste der Gebäudeverwaltung</b> — dieselben sechs Spalten
+    /// (Profil <c>FuerGebaeude</c>, die sechste „Kalender“ seit KP2 K4), jede mit Trichter und Sortierpfeil, alle Sätze des
     /// Katalogs ohne Vorauswahl. Als PROJEKTdialog behält die Liste die Wahlspalte und das
     /// Zeilenmaß 53 px (Hausregel: nur in den Verwaltungen ist die Zeile die Wahl), und einen
     /// Vergleichsknopf bietet sie nicht an.
@@ -204,8 +204,8 @@ public class GebaeudeDialogTests : EposBunitContext
 
         var koepfe = cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text")
                         .Select(e => e.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]" }, koepfe);
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
+        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]", "Kalender" }, koepfe);
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
 
         Assert.Equal(new[] { "Haus 1990", "Haus 2010", "Hotel Sonne" }, Katalognamen(cut));
         Assert.Equal(3, cut.FindAll(".epos-katalogliste tbody button.epos-anlagenwahl").Count);
@@ -304,7 +304,7 @@ public class GebaeudeDialogTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
         Assert.Single(cut.FindAll(".epos-katalogliste"));
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text").Count);
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text").Count);
         Assert.Single(cut.FindAll(".epos-katalog-leer"));
         Assert.Null(cut.Instance.Katalogzeile);
     }

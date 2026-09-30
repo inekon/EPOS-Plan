@@ -231,6 +231,7 @@ public sealed class KonditionierungDatenTests
         Verwerfen = (s, _) => Gut(s),
         MatrixErneut = (s, _) => Gut(s),
         KatalogErneut = s => Gut(s),
+        LuftwechselAufteilen = s => Gut(s),
         Vorlagen = _ => Array.Empty<KonditionierungVorlageDaten>(),
         VorlageUebernehmen = (s, _, _) => Gut(s),
         AlsVorlageSpeichern = (_, _, _) => VORLAGE_GUT,
@@ -241,6 +242,7 @@ public sealed class KonditionierungDatenTests
         Feiertage = (s, _, _) => Gut(s),
         Zeitstruktur = (s, _, _) => Gut(s),
         Rueckfrage = (_, _, _) => null,
+        SpeichernUnterRueckfrage = _ => null,
         WochenVorschau = (_, _) => null,
         Teppichbild = (_, _) => null,
         Lasten = (_, _) => null,
@@ -268,6 +270,7 @@ public sealed class KonditionierungDatenTests
         KonditionierungHandlung.Feiertage => new() { Feiertage = (s, _, _) => Gut(s) },
         KonditionierungHandlung.Zeitstruktur => new() { Zeitstruktur = (s, _, _) => Gut(s) },
         KonditionierungHandlung.KatalogErneut => new() { KatalogErneut = s => Gut(s) },
+        KonditionierungHandlung.LuftwechselAufteilen => new() { LuftwechselAufteilen = s => Gut(s) },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 

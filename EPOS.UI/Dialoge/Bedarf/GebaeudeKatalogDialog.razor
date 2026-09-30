@@ -898,6 +898,14 @@
     /// </summary>
     [Parameter] public GebaeudeZonenweg? Zonen { get; set; }
 
+    /// <summary>
+    /// Der Weg der Konditionierung (Stufe KP2, Welle K2): die Handlungen des Reiters „Konditionierung"
+    /// über die reinen Schritte des Kerns, gefüllt von der Hülle. Der Reiter bindet ihn in Welle U1;
+    /// bis dahin trägt der Dialog ihn nur. Die Konditionierung selbst reist im Feldsatz
+    /// (<see cref="GebaeudeKatalogDaten.Konditionierung"/>) und an den Zonen durch den OK-Weg.
+    /// </summary>
+    [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
     /// <summary>Die Texte der Zonen im Editor (Bündel, Präfix <c>GEBZ_</c>).</summary>
     [Parameter] public GebaeudeZonenTexte ZonenTexte { get; set; } = new();
 
@@ -2000,15 +2008,17 @@
             }
         }
 
-        // Schritt 3: die Zonen.
+        // Schritt 3: die Zonen - samt der Zuordnung ihrer vorlaeufigen Ids (Stufe KP2, Befund B10):
+        // Danach traegt der Arbeitsstand die endgueltigen, und ein zweites OK legt nichts noch einmal an.
         if (_arbeit.ZonenGeaendert && Zonen?.Speichern is not null)
         {
-            string fehler = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? "";
-            if (fehler.Length > 0)
+            ZonenSchreibergebnis erg = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? ZonenSchreibergebnis.Gut;
+            if (!erg.Ok)
             {
-                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, fehler), WarnStufe.Warnung);
+                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, erg.Meldung), WarnStufe.Warnung);
                 return false;
             }
+            _arbeit.IdsUebernehmen(erg);
             _arbeit.ZonenGeschrieben();
             _geschrieben = true;
         }

@@ -1,0 +1,242 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.Kern.Tests
+{
+    /// <summary>
+    /// <b>Die Hülle bindet den Vertrag</b> (Stufe KP2, Welle K2, Teilschritt 5): Die Hülle füllt
+    /// <see cref="KonditionierungDaten"/> beim Lesen, trägt den <see cref="KonditionierungWeg"/> aus den
+    /// reinen Schritten und schreibt im OK-Weg. Die Fälle gehen den Weg des Dialogs — Gaben lesen, eine
+    /// Handlung über den Delegaten, OK über den Schreibdelegaten, erneut lesen: alles da; ohne OK
+    /// (Abbrechen) bleibt alles, wie es war; ohne Änderung schreibt der OK-Weg an der Konditionierung nichts.
+    ///
+    /// <para>Jeder Fall arbeitet auf einer Arbeitskopie der Testdatenbank und schweigt ohne sie.</para>
+    /// </summary>
+    [Collection("Testdatenbank")]
+    public sealed class KonditionierungHuelleTests : IDisposable
+    {
+        private readonly TestDatenbank _db = new TestDatenbank();
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        /// <summary>Stellt Kultur und Arbeitskopie zurück.</summary>
+        public void Dispose()
+        {
+            _kultur.Dispose();
+            _db.Dispose();
+        }
+
+        private bool Bereit() => _db.Vorhanden && KonditionierungSchema.Lesbar();
+
+        private const int PROJEKT = 1007;
+
+        private static int IdZ => Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0].ID_Z;
+
+        private static int Gebaeude => GebaeudeBedarfCtrl.TabGebaeudeId(IdZ);
+
+        private static string FreierKatalogsatz()
+            => Convert.ToString(DataRepository.ExecuteScalar(
+                   "SELECT \"Bezeichner\" FROM \"Tab_Gebaeude_STAMM\" WHERE \"ReadOnly\" = 0 ORDER BY \"ID\" LIMIT 1"),
+                   CultureInfo.InvariantCulture);
+
+        private static (GebaeudeKatalogDaten Daten, KonditionierungWeg Weg) Katalog(string name)
+        {
+            IReadOnlyDictionary<string, object> gaben = GebaeudeKatalogHuelle.Gaben(name, GebaeudeKatalogModus.Bearbeiten);
+            return ((GebaeudeKatalogDaten)gaben["Daten"], (KonditionierungWeg)gaben["Konditionierung"]);
+        }
+
+        private static KonditionierungStand Stand(GebaeudeKatalogDaten d, IReadOnlyList<ZoneDaten> zonen = null)
+            => new KonditionierungStand(d, zonen ?? Array.Empty<ZoneDaten>());
+
+        private static KonditionierungStand Gut(KonditionierungErgebnis e)
+        {
+            Assert.True(e.Ok, e.Meldung);
+            Assert.NotNull(e.Stand);
+            return e.Stand;
+        }
+
+        private static long Hoechste(string tabelle)
+        {
+            object o = DataRepository.ExecuteScalar("SELECT COALESCE(MAX(\"ID\"), 0) FROM \"" + tabelle + "\"");
+            return Convert.ToInt64(o, CultureInfo.InvariantCulture);
+        }
+
+        // =============================================================================
+        //  Katalog: lesen, Zelle über den Delegaten, OK, erneut lesen
+        // =============================================================================
+
+        [Fact]
+        public void Katalog_lesen_Zelle_setzen_OK_erneut_lesen_alles_da()
+        {
+            if (!Bereit()) return;
+            string name = FreierKatalogsatz();
+            (GebaeudeKatalogDaten daten, KonditionierungWeg weg) = Katalog(name);
+            Assert.NotNull(daten.Konditionierung);
+            Assert.Equal(0, daten.Konditionierung.Fassung);
+            Assert.Null(weg.Sperre);
+            Assert.True(weg.Bietet(KonditionierungHandlung.ZelleSetzen));
+            Assert.False(weg.Bietet(KonditionierungHandlung.KatalogErneut));    // nur im Projekt (Festlegung 4)
+
+            // Heizsaison 1.10. bis 30.4. und ein Personenanteil von 50 % (P1: Nennwert und Geräte folgen).
+            KonditionierungStand s = Gut(weg.ZelleSetzen!(Stand(daten), new KonditionierungOrt(KonditionierungGroesse.Heizen),
+                                                          KonditionierungZeile.Saison, new KonditionierungZelle { Von = 274, Bis = 120 }));
+            double? gewinneVorher = s.Gebaeude.Waermegewinne;
+            s = Gut(weg.ZelleSetzen!(s, new KonditionierungOrt(KonditionierungGroesse.Personen),
+                                     KonditionierungZeile.Tag, new KonditionierungZelle { Wert = 50.0 }));
+            Assert.True(s.Gebaeude.Konditionierung.Fassung >= 2);
+            Assert.Equal(50.0, s.Gebaeude.Konditionierung.Spalte(KonditionierungGroesse.Personen).Tag.Wert);
+            Assert.True(s.Gebaeude.Konditionierung.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert > 0.0);
+            Assert.True(s.Gebaeude.Waermegewinne < gewinneVorher);
+
+            // OK — der eine Schreibweg des Editors.
+            GebaeudeKatalogErgebnis ok = GebaeudeKatalogHuelle.Schreiben(s.Gebaeude, false, name);
+            Assert.True(ok.Erfolg, ok.Meldung);
+
+            (GebaeudeKatalogDaten neu, _) = Katalog(name);
+            KonditionierungSpalte heiz = neu.Konditionierung.Spalte(KonditionierungGroesse.Heizen);
+            Assert.Equal(274, heiz.Saison.Von);
+            Assert.Equal(120, heiz.Saison.Bis);
+            KonditionierungSpalte personen = neu.Konditionierung.Spalte(KonditionierungGroesse.Personen);
+            Assert.Equal(50.0, personen.Tag.Wert);
+            Assert.Equal(s.Gebaeude.Konditionierung.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert, personen.Nennwert.Wert);
+            Assert.Equal(s.Gebaeude.Waermegewinne.Value, neu.Waermegewinne.Value, 6);
+        }
+
+        [Fact]
+        public void Abbrechen_und_ein_OK_ohne_Aenderung_lassen_die_Konditionierung_stehen()
+        {
+            if (!Bereit()) return;
+            string name = FreierKatalogsatz();
+            (GebaeudeKatalogDaten daten, KonditionierungWeg weg) = Katalog(name);
+            long vorgaben = Hoechste(KonditionierungSchema.TAB_VORGABE);
+            long kalender = Hoechste(KonditionierungSchema.TAB_KALENDER);
+
+            // Eine Handlung ohne OK — Abbrechen schreibt nichts.
+            Gut(weg.ZelleSetzen!(Stand(daten), new KonditionierungOrt(KonditionierungGroesse.Heizen),
+                                 KonditionierungZeile.Saison, new KonditionierungZelle { Von = 274, Bis = 120 }));
+            (GebaeudeKatalogDaten wieder, _) = Katalog(name);
+            Assert.True(wieder.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Saison.Leer);
+
+            // OK ohne Änderung an der Konditionierung — sie bleibt, wie sie ist (Fassung 0).
+            Assert.True(GebaeudeKatalogHuelle.Schreiben(wieder, false, name).Erfolg);
+            Assert.Equal(vorgaben, Hoechste(KonditionierungSchema.TAB_VORGABE));
+            Assert.Equal(kalender, Hoechste(KonditionierungSchema.TAB_KALENDER));
+        }
+
+        [Fact]
+        public void Die_Gesamtangabe_fragt_nach_dem_Aufteilen_und_die_Summe_bleibt_bis_in_die_Datenbank()
+        {
+            if (!Bereit()) return;
+            string name = FreierKatalogsatz();
+            (GebaeudeKatalogDaten daten, KonditionierungWeg weg) = Katalog(name);
+            daten.LuftwechselInfiltration = null;
+            daten.LuftwechselNutzer = null;
+            daten.Luftwechselrate = 0.7;
+
+            var ort = new KonditionierungOrt(KonditionierungGroesse.Lueftung);
+            var nacht = new KonditionierungZelle { Wert = 1.5, Von = 22, Bis = 6 };
+            KonditionierungErgebnis frage = weg.ZelleSetzen!(Stand(daten), ort, KonditionierungZeile.Nacht, nacht);
+            Assert.False(frage.Ok);
+            Assert.NotNull(frage.Rueckfrage);
+            Assert.Contains(frage.Rueckfrage.Ersetzt, p => p.Art == KonditionierungPostenart.Luftwechsel);
+
+            KonditionierungStand s = Gut(weg.LuftwechselAufteilen!(Stand(daten)));
+            Assert.Equal(0.3, s.Gebaeude.LuftwechselInfiltration.Value, 12);
+            Assert.Equal(0.4, s.Gebaeude.LuftwechselNutzer.Value, 12);
+            s = Gut(weg.ZelleSetzen!(s, ort, KonditionierungZeile.Nacht, nacht));
+            Assert.True(GebaeudeKatalogHuelle.Schreiben(s.Gebaeude, false, name).Erfolg);
+
+            GebaeudeModel m = new GebaeudeStammCtrl().Lies(name);
+            Assert.Equal(0.7, Gebaeudemodellvorgaben.WirksamerLuftwechsel(m.Luftwechselrate, m.Luftwechsel_Infiltration,
+                                                                          m.Luftwechsel_Nutzer), 12);
+            (GebaeudeKatalogDaten neu, _) = Katalog(name);
+            Assert.Equal(1.5, neu.Konditionierung.Spalte(KonditionierungGroesse.Lueftung).Nacht.Wert);
+        }
+
+        // =============================================================================
+        //  Projekt: Gebäude und Zonen über den OK-Weg
+        // =============================================================================
+
+        [Fact]
+        public void Projekt_Anlegen_und_eine_neue_Zone_mit_eigener_Zelle_stehen_nach_dem_OK_richtig()
+        {
+            if (!Bereit()) return;
+            IReadOnlyDictionary<string, object> gaben = GebaeudeKatalogHuelle.ProjektGaben(PROJEKT, IdZ);
+            var daten = (GebaeudeKatalogDaten)gaben["Daten"];
+            var weg = (KonditionierungWeg)gaben["Konditionierung"];
+            var zonenweg = (GebaeudeZonenweg)gaben["Zonen"];
+            Assert.NotNull(daten.Konditionierung);
+            Assert.True(weg.Bietet(KonditionierungHandlung.KatalogErneut));
+
+            var a = new GebaeudeArbeitsstand();
+            a.Laden(daten, false);
+            a.ZonenLaden(zonenweg.Zonen, true);
+            ZoneDaten neu = a.NeueZone("Konditionierungsprobe");
+            neu.Nutzflaeche = 60;
+            neu.Bauteile.Add(new BauteilDaten { Id = -1, Bezeichner = "Wand", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                                Flaeche = 20, Azimut = 180, UWert = 0.3 });
+            a.ZoneAnlegen(neu);
+
+            // Die Zone bekommt eine eigene Heiz-Nachtzeile (Festlegung 5) — über den Delegaten.
+            KonditionierungStand s = Gut(weg.ZelleSetzen!(new KonditionierungStand(a.Stand, a.Zonen),
+                new KonditionierungOrt(KonditionierungGroesse.Heizen, neu.Id), KonditionierungZeile.Nacht,
+                new KonditionierungZelle { Von = 20, Bis = 7 }));
+            ZoneDaten zone = s.Zonen.Single(z => z.Id == neu.Id);
+            Assert.Equal(1, zone.Konditionierung.Fassung);
+            Assert.True(a.ZoneErsetzen(zone));
+
+            // OK, Schritt 1 (Gebäude) und Schritt 3 (Zonen samt Konditionierung und Id-Zuordnung).
+            Assert.True(GebaeudeKatalogHuelle.ProjektSchreiben(PROJEKT, Gebaeude, a.Stand).Erfolg);
+            ZonenSchreibergebnis e = zonenweg.Speichern!(a.Zonenstand(true));
+            Assert.True(e.Ok, e.Meldung);
+            a.IdsUebernehmen(e);
+            a.ZonenGeschrieben();
+            int id = a.Zonen.Single(z => z.Bezeichner == "Konditionierungsprobe").Id;
+            Assert.True(id > 0);
+
+            // Erneut lesen: alles da.
+            IReadOnlyDictionary<string, object> wieder = GebaeudeKatalogHuelle.ProjektGaben(PROJEKT, IdZ);
+            ZoneDaten gelesen = ((GebaeudeZonenweg)wieder["Zonen"]).Zonen.Single(z => z.Id == id);
+            Assert.Equal(20, gelesen.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Nacht.Von);
+            Assert.Equal(7, gelesen.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Nacht.Bis);
+
+            // Ein zweites OK schreibt die Zone nicht noch einmal.
+            long zonen = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"Tab_Zone\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", Gebaeude)), CultureInfo.InvariantCulture);
+            ZoneDaten umbenannt = a.Zonen.Single(z => z.Id == id).Kopie();
+            umbenannt.Bezeichner = "Konditionierungsprobe 2";
+            Assert.True(a.ZoneErsetzen(umbenannt));
+            Assert.True(zonenweg.Speichern!(a.Zonenstand(true)).Ok);
+            Assert.Equal(zonen, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"Tab_Zone\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", Gebaeude)), CultureInfo.InvariantCulture));
+            Assert.Equal(20, new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(Gebaeude, id), out _)
+                                 .Vorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_NACHT).Von);
+        }
+
+        [Fact]
+        public void Der_Rueckfragebefund_und_die_Vorlagenliste_kommen_ueber_den_Weg()
+        {
+            if (!Bereit()) return;
+            (GebaeudeKatalogDaten daten, KonditionierungWeg weg) = Katalog(FreierKatalogsatz());
+            KonditionierungStand s = Stand(daten);
+            Assert.Null(weg.Rueckfrage!(s, new KonditionierungOrt(KonditionierungGroesse.Heizen), KonditionierungHandlung.MatrixErneut));
+            KonditionierungRueckfrage v = weg.Rueckfrage!(s, new KonditionierungOrt(KonditionierungGroesse.Heizen),
+                                                          KonditionierungHandlung.VorlageUebernehmen);
+            Assert.NotNull(v);
+            Assert.Contains(v.Ersetzt, p => p.Art == KonditionierungPostenart.Matrixzellen);
+
+            IReadOnlyList<KonditionierungVorlageDaten> vorlagen = weg.Vorlagen!(KonditionierungGroesse.Heizen);
+            Assert.NotEmpty(vorlagen);                        // die Saat der ausgelieferten Vorlagen
+            KonditionierungStand mit = Gut(weg.VorlageUebernehmen!(s, new KonditionierungOrt(KonditionierungGroesse.Heizen),
+                                                                   vorlagen[0].Id));
+            KonditionierungKalender k = mit.Gebaeude.Konditionierung.Spalte(KonditionierungGroesse.Heizen).Kalender;
+            Assert.Equal(KonditionierungZustand.Angelegt, k.Zustand);
+            Assert.Equal(vorlagen[0].Name, k.Vorlage);
+            Assert.Equal("", weg.Pruefen!(mit));
+        }
+    }
+}
