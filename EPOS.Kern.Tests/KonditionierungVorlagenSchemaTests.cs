@@ -138,7 +138,25 @@ namespace EPOS.Kern.Tests
             Assert.Equal(zahlen, new[] { KAL, PER, VOR, VLG }.Select(t => Zahl("SELECT COUNT(*) FROM \"" + t + "\"")).ToList());
             Assert.True(KonditionierungVorlagenSchema.Vollstaendig());
 
-            // Die Messlatte traegt keine Zeile in den drei Tabellen der Konditionierung.
+            // Die Messlatte traegt in den Tabellen der Konditionierung nur die Saat der ausgelieferten
+            // Vorlagen (Schritt 156, KonditionierungsvorlagenWacheTests) - keine Zeile eines Gebaeudes,
+            // einer Zone oder eines Katalogbaus.
+            Assert.Equal(KonditionierungsvorlagenSaattabelle.VORLAGEN, (int)Zahl("SELECT COUNT(*) FROM \"" + VLG + "\""));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NULL"));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + VOR + "\" WHERE \"ID_Vorlage\" IS NULL"));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + PER + "\" WHERE \"ID_Kalender\" NOT IN " +
+                                 "(SELECT \"ID\" FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NOT NULL)"));
+        }
+
+        /// <summary>
+        /// Leert die Vorlagentabelle der Arbeitskopie — Vorgaben, Kalender und Perioden der Vorlagen gehen
+        /// über die Kaskade mit. Die Regeln dieses Schritts werden an LEEREN Tabellen gemessen; die
+        /// ausgelieferten Vorlagen (Schritt <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>) hält
+        /// <see cref="KonditionierungsvorlagenWacheTests"/>.
+        /// </summary>
+        private static void OhneSaat()
+        {
+            DataRepository.ExecuteNonQuery("DELETE FROM \"" + VLG + "\"");
             foreach (string t in new[] { KAL, PER, VOR, VLG })
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + t + "\""));
         }
@@ -322,6 +340,7 @@ namespace EPOS.Kern.Tests
         public void Loeschen_einer_Vorlage_nimmt_Kalender_Perioden_und_Vorgaben_mit()
         {
             if (!Bereit()) return;
+            OhneSaat();
             long g = EinGebaeude();
             long vl = Einfuegen("INSERT INTO \"" + VLG + "\" (\"Groesse\", \"Bezeichner\", \"Nutzung\", \"ReadOnly\") " +
                                 "VALUES ('HEIZSOLL', 'Buero', 'BUERO', 0)");
@@ -357,6 +376,7 @@ namespace EPOS.Kern.Tests
         public void Ein_zweiter_Kalender_derselben_Groesse_scheitert_je_Eigentuemerart()
         {
             if (!Bereit()) return;
+            OhneSaat();
             long g = EinGebaeude();
             long z1 = EineZone(g);
             long z2 = EineZone(g);
@@ -395,6 +415,7 @@ namespace EPOS.Kern.Tests
         public void Eine_zweite_Vorgabezeile_derselben_Zeile_scheitert_je_Eigentuemerart()
         {
             if (!Bereit()) return;
+            OhneSaat();
             long g = EinGebaeude();
             long z = EineZone(g);
             long s = EinKatalogbau();
@@ -430,6 +451,7 @@ namespace EPOS.Kern.Tests
         public void Die_Namensregel_haelt_je_Groesse_ohne_Gross_und_Kleinschreibung()
         {
             if (!Bereit()) return;
+            OhneSaat();
             const string ein = "INSERT INTO \"Tab_Konditionierungsvorlage_STAMM\" (\"Groesse\", \"Bezeichner\", " +
                                "\"Beschreibung\", \"Nutzung\", \"ReadOnly\") VALUES (?, ?, ?, ?, ?)";
             DbParam[] P(string gr, string bez, string besch = null, string nutz = null, long ro = 0)

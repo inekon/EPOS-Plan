@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -73,17 +74,22 @@ namespace Auslieferungsvorlage.Tests
             Assert.True(e.Code == 0, e.Alles);
 
             // ---- Der Bericht zaehlt je Groesse und je Eigentuemerart ----
+            // Gesperrt sind die Probevorlage UND die ausgelieferten der Saat (Schritt 156): drei in
+            // der Heizliste, 14 in allen fuenf.
+            int saatHeizen = KonditionierungsvorlagenSaattabelle.Alle.Count(s => s.Groesse == Konditionierungsgroesse.Heizsoll);
             Assert.Contains("Konditionierung", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Vorlagen " + DbWerte.KOND_GROESSE_HEIZSOLL.PadRight(10) +
-                            " gesperrt 1, eigen 0", e.Ausgabe, StringComparison.Ordinal);
-            Assert.Contains("Vorlagen gesamt: gesperrt 1, eigen 0", e.Ausgabe, StringComparison.Ordinal);
+                            " gesperrt " + (1 + saatHeizen) + ", eigen 0", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("Vorlagen gesamt: gesperrt " + (1 + KonditionierungsvorlagenSaattabelle.VORLAGEN) + ", eigen 0",
+                            e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Kalender Vorlage", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Kalender Katalogbau", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Kalender Gebaeude ohne Zone", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Kalender Zone", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Vorgaben Vorlage", e.Ausgabe, StringComparison.Ordinal);
 
-            // ---- Die vier Pruefungen stehen auf ok ----
+            // ---- Die fuenf Pruefungen stehen auf ok ----
+            Assert.Contains("ok      ausgelieferte Vorlagen der Saat: 14 von 14 gesperrt", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("ok      Vorlageninhalt in fremder Groesse: 0", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("ok      Vorlagen mit Nennwert oder Saison (E54): 0", e.Ausgabe,
                             StringComparison.Ordinal);
@@ -179,6 +185,40 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("FEHLER  Vorlageninhalt in fremder Groesse: 1", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("FEHLER  Vorlagen mit Nennwert oder Saison (E54): 2", e.Ausgabe,
                             StringComparison.Ordinal);
+            // Die Saat selbst ist vollstaendig - der Befund liegt allein an der Probevorlage.
+            Assert.Contains("ok      ausgelieferte Vorlagen der Saat: 14 von 14 gesperrt", e.Ausgabe, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Fehlt eine ausgelieferte Vorlage der Saat, ist der Prüfbericht rot</b> (KP-S1b, E56): Die Quelle
+        /// verliert „Büro" in der Heizliste; der Lauf endet mit Fehler und nennt, was fehlt.
+        /// </summary>
+        [Fact]
+        public void Fehlt_eine_ausgelieferte_Vorlage_ist_der_Pruefbericht_rot()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Bearbeiten(quelle, () =>
+            {
+                if (!KonditionierungVorlagenSchema.Lesbar())
+                    throw new InvalidOperationException("Schemastand zu alt.");
+                Assert.Equal(1, DataRepository.ExecuteNonQuery(
+                    "DELETE FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE + "\" WHERE \"Groesse\" = ? AND \"Bezeichner\" = ?",
+                    new DbParam("@g", DbWerte.KOND_GROESSE_HEIZSOLL),
+                    new DbParam("@b", KonditionierungsvorlagenSaattabelle.BUERO)));
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly",
+                                                           "--katalogleerung-zulassen");
+
+            Assert.NotEqual(0, e.Code);
+            Assert.Contains("FEHLER  ausgelieferte Vorlagen der Saat: 13 von 14 gesperrt   (es fehlen " +
+                            DbWerte.KOND_GROESSE_HEIZSOLL + "/" + KonditionierungsvorlagenSaattabelle.BUERO + ")",
+                            e.Ausgabe, StringComparison.Ordinal);
         }
 
         // =============================================================================

@@ -125,8 +125,12 @@ namespace Auslieferungsvorlage
         /// dieselben, die die Teilindizes des Schemaschritts führen; sie stehen dort als Bedingung,
         /// statt hier abgeschrieben zu werden.</para>
         ///
-        /// <para><b>Geprüft</b> wird viererlei, jeder Befund mit Zahl:</para>
+        /// <para><b>Geprüft</b> wird fünferlei, jeder Befund mit Zahl:</para>
         /// <list type="number">
+        /// <item><b>Die ausgelieferten Vorlagen der Saat</b> (KP-S1b, E56) — jede der 14 aus
+        /// <see cref="KonditionierungsvorlagenSaattabelle"/> steht unter Größe und Namen gesperrt
+        /// (<c>ReadOnly = 1</c>) in der Vorlage; eine fehlende ist ein Befund, weitere gesperrte
+        /// Vorlagen sind keiner.</item>
         /// <item><b>Vorlageninhalt in fremder Größe</b> — eine Vorlage gehört genau EINER Größe
         /// (P11); der Controller hält das, hier fällt es auf, wenn es jemand umgangen hat.</item>
         /// <item><b>Vorlagen mit Nennwert oder Saison</b> (E54) — Vorgabezeilen <c>NENNWERT</c> und
@@ -182,9 +186,25 @@ namespace Auslieferungsvorlage
                 _bericht.Zeile("        " + was + i.Eigentuemer.PadRight(20) + " " + zeilen + zusatz);
             }
 
-            // ---- Die vier Pruefungen ----------------------------------------------
+            // ---- Die fuenf Pruefungen ---------------------------------------------
             _bericht.Leer();
             bool ok = true;
+
+            // Die ausgelieferten Vorlagen der Saat (KP-S1b, E56): alle 14 gesperrt unter Groesse und Name.
+            int saat = 0;
+            var fehlend = new List<string>();
+            foreach (KonditionierungsvorlagenSaat s in KonditionierungsvorlagenSaattabelle.Alle)
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Konditionierungsvorlage_STAMM\" WHERE \"Groesse\" = ? AND " +
+                    "\"Bezeichner\" = ? AND \"ReadOnly\" = 1",
+                    new DbParam("@g", s.Kennwort), new DbParam("@b", s.Bezeichner));
+                if (n != null && Convert.ToInt64(n, CultureInfo.InvariantCulture) == 1) saat++;
+                else fehlend.Add(s.ToString());
+            }
+            ok &= Befund(saat == KonditionierungsvorlagenSaattabelle.VORLAGEN,
+                         "ausgelieferte Vorlagen der Saat: " + saat + " von " + KonditionierungsvorlagenSaattabelle.VORLAGEN +
+                         " gesperrt" + (fehlend.Count == 0 ? "" : "   (es fehlen " + string.Join(", ", fehlend) + ")"));
 
             long fremd = Vorlagenbau.Zaehle2(SqlFremdeGroesse(KonditionierungSchema.TAB_VORGABE))
                          + Vorlagenbau.Zaehle2(SqlFremdeGroesse(KonditionierungSchema.TAB_KALENDER));
