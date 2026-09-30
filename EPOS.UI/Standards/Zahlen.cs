@@ -23,14 +23,20 @@ public static class Zahlen
 {
     /// <summary>
     /// Parst eine Dezimalzahl mit Komma oder Punkt. Ein Text mit
-    /// Tausendertrennzeichen ("1.234,5") ist ungueltig.
+    /// Tausendertrennzeichen ("1.234,5") ist ungueltig, ebenso alles, was keine
+    /// ENDLICHE Zahl ist: "NaN", "Infinity" und ein Ueberlauf wie "1e400" (Stufe
+    /// KP2, Welle U1). Der Zustand "aus" einer Zelle laeuft allein ueber den
+    /// <c>AusText</c> des Zahlenfelds.
     /// </summary>
     public static bool ZahlParsen(string? szText, out double dWert)
     {
         dWert = 0.0;
         if (string.IsNullOrEmpty(szText)) return false;
         string sz = szText.Trim().Replace(',', '.');
-        return double.TryParse(sz, NumberStyles.Float, CultureInfo.InvariantCulture, out dWert);
+        if (!double.TryParse(sz, NumberStyles.Float, CultureInfo.InvariantCulture, out double d) || !double.IsFinite(d))
+            return false;
+        dWert = d;
+        return true;
     }
 
     /// <summary>

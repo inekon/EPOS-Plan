@@ -175,6 +175,7 @@ namespace WindowsFormsApplication1
                     Text_("GEBB_LBL_MITTLERE_RAUMTEMPERATUR", "mittlere Raumtemperatur (Nutzungszeit):"),
                 ["LabelUeberhitzung"] = Text_("GEBB_LBL_UEBERHITZUNG", "Überhitzungsstunden:"),
                 ["LabelSommerlueftung"] = Text_("GEBB_LBL_SOMMERLUEFTUNG", "Stunden mit Sommerlüftung:"),
+                ["LabelNachtauskuehlung"] = Text_("KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG", "Stunden mit Nachtauskühlung:"),
                 ["EinheitStundenZahl"] = Text_("GEBB_EINHEIT_H", "h"),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),

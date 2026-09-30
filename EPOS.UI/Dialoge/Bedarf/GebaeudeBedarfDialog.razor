@@ -107,6 +107,16 @@
                                 <td>@EinheitStundenZahl</td>
                             </tr>
                         }
+                        @* Stufe KP2, Welle U1 (Konzept Konditionierungsprofile 3.7): die Stunden mit
+                           Nachtauskuehlung - NUR mit Wert, also nur, wenn eine gesetzt ist. *@
+                        @if (Daten.NachtauskuehlstundenH is int nachtauskuehlung)
+                        {
+                            <tr class="gebb-nachtauskuehlung">
+                                <td>@LabelNachtauskuehlung</td>
+                                <td class="epos-zahl">@Ganzzahl(nachtauskuehlung)</td>
+                                <td>@EinheitStundenZahl</td>
+                            </tr>
+                        }
                         @* #573: das Warmwasser des PROJEKTS als Auskunft - es haengt nicht am
                            Gebaeude, sondern an den Brauchwasserprofilen bzw. dem Zapfprofil und
                            laeuft im Kanal Warmwasser; die Zeile darunter sagt das. *@
@@ -161,6 +171,10 @@
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteMaxLast, EinheitKw)</th>
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteRaumtemperatur, "°C")</th>
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteUeberhitzung, EinheitStundenZahl)</th>
+                                @if (ZonenMitNachtauskuehlung)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteNachtauskuehlung, EinheitStundenZahl)</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -174,6 +188,10 @@
                                     <td class="epos-zahl">@Zahl(z.MaxLastKw)</td>
                                     <td class="epos-zahl">@Zahl(z.MittlereRaumtemperaturC)</td>
                                     <td class="epos-zahl">@Ganzzahl(z.UeberhitzungsstundenH)</td>
+                                    @if (ZonenMitNachtauskuehlung)
+                                    {
+                                        <td class="epos-zahl">@Ganzzahl(z.NachtauskuehlstundenH)</td>
+                                    }
                                 </tr>
                             }
                         </tbody>
@@ -582,6 +600,12 @@
     [Parameter] public string LabelMittlereRaumtemperatur { get; set; } = "mittlere Raumtemperatur (Nutzungszeit):";
     [Parameter] public string LabelUeberhitzung { get; set; } = "Überhitzungsstunden:";
     [Parameter] public string LabelSommerlueftung { get; set; } = "Stunden mit Sommerlüftung:";
+
+    /// <summary>Zeile der Stunden mit Nachtauskühlung (<c>KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG</c>, Stufe KP2 U1).</summary>
+    [Parameter] public string LabelNachtauskuehlung { get; set; } = "Stunden mit Nachtauskühlung:";
+
+    /// <summary>Trägt eine Zone Stunden mit Nachtauskühlung? Dann steht die Spalte (nur mit Wert).</summary>
+    private bool ZonenMitNachtauskuehlung => Daten.Zonen.Any(z => z.NachtauskuehlstundenH.HasValue);
     [Parameter] public string EinheitStundenZahl { get; set; } = "h";
 
     // --- Texte der Stufe KU1 (Abschnitt „Kältebedarf", Kühlkonzept 8.4) -----------

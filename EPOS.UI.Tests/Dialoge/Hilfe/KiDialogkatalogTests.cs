@@ -1214,8 +1214,18 @@ public class KiDialogkatalogTests : IDisposable
         // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1); mit E37
         // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse; mit E43
         // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar);
-        // mit E47 der Energiestandard (Wahl nach der Verwendung).
-        Assert.Equal(88, d.Felder.Count);
+        // mit E47 der Energiestandard (Wahl nach der Verwendung); mit KP2 U1 die 36 Felder der
+        // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse).
+        Assert.Equal(88 + 36, d.Felder.Count);
+        Assert.Equal(36, KiKonditionierungsfelder.Alle.Count);
+        foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
+        {
+            KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;
+            Assert.True(feld is not null, f.Schluessel);
+            Assert.Equal("GebaeudeKatalogKiSicht." + f.Schluessel, feld!.Eigenschaftspfad);
+            Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_KATALOG, feld), f.Schluessel);
+            Assert.False(feld.NurLesen, f.Schluessel);
+        }
         Assert.True(d.FindeFeld("energiestandard")!.IstWahl);
         Assert.DoesNotContain(d.Felder, f => f.IstReihe);
         Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
@@ -1265,9 +1275,12 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_ADMIN)!;
 
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBA_TITEL, verwaltung.Anzeigename);
-        // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen)
-        Assert.Equal(editor.Felder.Count - 4, verwaltung.Felder.Count);
+        // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen),
+        // − die Felder der Vorgabe-Matrix (KP2 U1: die Verwaltung trägt den Reiter „Konditionierung" nicht,
+        // ihre Stammblattgruppe kommt mit Welle U4)
+        Assert.Equal(editor.Felder.Count - 4 - KiKonditionierungsfelder.Alle.Count, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
+        Assert.DoesNotContain(verwaltung.Felder, f => KiKonditionierungsfelder.Finde(f.Name) is not null);
 
         KiDialogFeld satz = verwaltung.FindeFeld("satz")!;
         Assert.True(satz.IstWahl);
@@ -1279,7 +1292,8 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)) continue;
+            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
+                || KiKonditionierungsfelder.Finde(e.Name) is not null) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");
             Assert.Equal(e.Eigenschaftspfad, v!.Eigenschaftspfad);

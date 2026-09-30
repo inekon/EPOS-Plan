@@ -111,7 +111,8 @@ namespace WindowsFormsApplication1
             var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
             {
                 ["Daten"] = daten,
-                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Gebaeude, idGebaeude),
+                // Der Bezug des Projekts (Kopplung, Referenzjahr, Kuehlbetrieb) wie im Lauf (KP2 U1, 4 (c)).
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Gebaeude, idGebaeude, idProjekt),
                 // „Speichern unter" im PROJEKTMODUS: Der neue Katalogbau bekommt die
                 // Konditionierung des PROJEKTGEBÄUDES mit (Stufe KP1b, Konzept 5.5) — nur die
                 // Gebäudeebene; die Zonenzeilen bleiben zurück und stehen im Befund der
@@ -412,6 +413,9 @@ namespace WindowsFormsApplication1
                 ["Daten"] = daten,
                 ["Modus"] = modus,
                 ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
+                // Stufe KP2, Welle U1: die Texte des Reiters „Konditionierung" und seiner Rückfragen.
+                ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
+                ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
 
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudetypen()),

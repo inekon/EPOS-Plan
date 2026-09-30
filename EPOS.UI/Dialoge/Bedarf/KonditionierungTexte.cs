@@ -589,4 +589,55 @@ public sealed class KonditionierungTexte
     /// Größen (5)
     /// </summary>
     public string TextKatalogKalender { get; set; } = "{0} von {1}";
+
+    // ------------------------------------------------------------ Reiter und Rückfragen (Welle U1)
+
+    /// <summary>
+    /// <c>KOND_TXT_HINWEIS_ZURUECKNEHMEN</c> — der Kurztext von „Zurücknehmen“: eine Stufe, geschrieben
+    /// wird erst mit OK (Entwurf KP2, Festlegung 1)
+    /// </summary>
+    public string HinweisZuruecknehmen { get; set; }
+        = "„Zurücknehmen“ nimmt den letzten Schritt dieses Reiters zurück; geschrieben wird erst mit OK.";
+
+    /// <summary><c>KOND_TXT_GRUND_NICHTS_ZURUECK</c> — der Grund des weich gesperrten „Zurücknehmen“</summary>
+    public string GrundNichtsZurueck { get; set; } = "Es gibt keinen Schritt, den „Zurücknehmen“ zurücknehmen könnte.";
+
+    /// <summary><c>KOND_TXT_NICHTS</c> — ein leerer Teil einer Rückfrage („es bleibt: nichts“)</summary>
+    public string TextNichts { get; set; } = "nichts";
+
+    /// <summary><c>KOND_TXT_POSTEN_MATRIXZELLEN</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenMatrixzellen { get; set; } = "{0} Zellen der Matrix";
+
+    /// <summary><c>KOND_TXT_POSTEN_KALENDER</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenKalender { get; set; } = "{0} Kalender";
+
+    /// <summary><c>KOND_TXT_POSTEN_STANDARDWOCHE</c> — Posten einer Rückfrage</summary>
+    public string TextPostenStandardwoche { get; set; } = "die Standardwoche";
+
+    /// <summary><c>KOND_TXT_POSTEN_FERIENPERIODEN</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenFerienperioden { get; set; } = "{0} Ferienperioden";
+
+    /// <summary><c>KOND_TXT_POSTEN_SAISON</c> — Posten einer Rückfrage</summary>
+    public string TextPostenSaison { get; set; } = "die Saison";
+
+    /// <summary><c>KOND_TXT_POSTEN_EIGENE_PERIODEN</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenEigenePerioden { get; set; } = "{0} eigene Perioden";
+
+    /// <summary><c>KOND_TXT_POSTEN_FEIERTAGE</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenFeiertage { get; set; } = "{0} Feiertagsregeln";
+
+    /// <summary><c>KOND_TXT_POSTEN_NACHTZEITEN</c> — Posten einer Rückfrage</summary>
+    public string TextPostenNachtzeiten { get; set; } = "das Nachtfenster";
+
+    /// <summary><c>KOND_TXT_POSTEN_FERIENZEITRAEUME</c> — Posten einer Rückfrage</summary>
+    public string TextPostenFerienzeitraeume { get; set; } = "die Ferienzeiträume";
+
+    /// <summary><c>KOND_TXT_POSTEN_LUFTWECHSEL</c> — Posten einer Rückfrage</summary>
+    public string TextPostenLuftwechsel { get; set; } = "die Gesamtangabe des Luftwechsels";
+
+    /// <summary><c>KOND_TXT_POSTEN_ZONENKALENDER</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenZonenkalender { get; set; } = "{0} Kalender und Zellen von Zonen";
+
+    /// <summary><c>KOND_TXT_POSTEN_BAUTEILE</c> — Posten einer Rückfrage; „{0}“ die Zahl</summary>
+    public string TextPostenBauteile { get; set; } = "{0} Bauteile";
 }

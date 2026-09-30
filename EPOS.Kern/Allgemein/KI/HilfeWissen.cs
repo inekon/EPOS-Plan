@@ -447,6 +447,62 @@ namespace WindowsFormsApplication1
                     "Bestandsinstallation eine dieser Adressen noch nicht, rechnet das Programm mit der " +
                     "Werksvorgabe."),
 
+                // ---- Konditionierung im Gebaeude-Katalogeditor (Stufe KP2, Welle U1) ------------
+                // Das Bedienwissen des Reiters "Konditionierung": Matrix, Kalender, Nachtauskuehlung.
+                // Die Titel tragen die deutschen UND die englischen Suchworte (conditioning, defaults
+                // matrix, calendar, night purge) - Suchen() findet so beide Sprachen; der Inhalt steht
+                // wie jeder Abschnitt des eingebauten Wissens auf Deutsch.
+                new WissensAbschnitt("Konditionierung: die Vorgabe-Matrix im Gebäude-Katalogeditor (conditioning, defaults matrix)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Der Reiter 'Konditionierung' des Gebäude-Katalogeditors steht in allen Betriebsarten (Projekt, " +
+                    "Neu, Bearbeiten). Oben steht die Vorgabe-Matrix: fünf Spalten - Heizen in °C, Kühlen in °C, " +
+                    "Lüftung in 1/h, Geräte und Personen in W bzw. % - und die Zeilen Nennwert, Tag, Nacht, " +
+                    "Wochenende, Ferien und Saison. Die Heizspalte sind die Raumtemperaturen des Gebäudes (Soll am " +
+                    "Tag, Nachtabsenkung, Soll am Wochenende, Soll in Ferien); ihr Nachtfenster ist EIN Feld wie " +
+                    "'22–6', leer gilt 22 bis 6 Uhr. Die Lüftungsspalte trägt Infiltration (Nennwert), Nutzerlüftung " +
+                    "(Tag) und die Nachtauskühlung (Nacht), der Nennwert der Geräte sind die inneren Wärmegewinne; " +
+                    "Geräte und Personen tragen in den übrigen Zeilen Anteile in Prozent. In Heizen und Kühlen heißt " +
+                    "'aus', dass in dieser Zeit nicht geheizt bzw. gekühlt wird; die Saison (Start und Ende als Tag " +
+                    "und Monat) begrenzt Heizen und Kühlen, leer heißt ganzjährig. Unter der Matrix stehen " +
+                    "Maximalraumtemperatur, Sommerlüftung und die Ferienzeiträume des Gebäudes. Im breiten Fenster " +
+                    "steht die ganze Matrix als Tabelle, im schmalen je Größe ein Reiter mit ihrer Spalte. Die " +
+                    "Kühlspalte ist erst mit 'Gebäude wird gekühlt' im ersten Reiter bedienbar. Steht die Lüftung " +
+                    "als Gesamtangabe (Luftwechselrate), fragt der Reiter vor der ersten Lüftungsvorgabe, ob er sie " +
+                    "in Infiltration und Nutzerlüftung aufteilen soll; die Summe bleibt. 'Zurücknehmen' nimmt den " +
+                    "letzten Schritt des Reiters zurück. Geschrieben wird erst mit OK; Abbrechen verwirft alles. " +
+                    "Ohne die Tabellen der Konditionierung stehen nur die Felder des Gebäudes da und eine Zeile nennt " +
+                    "den Grund; ein ausgelieferter Satz steht nur zum Lesen da, 'Speichern unter' legt eine eigene " +
+                    "Kopie an. Ein Gebäude auf dem Tagesbilanz-Weg zeigt nur die Felder, die dieser Weg liest."),
+
+                new WissensAbschnitt("Konditionierung: Kalender anlegen, verwerfen und die Matrix erneut anwenden (create calendar, discard, reapply matrix)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Unter der Matrix steht je Größe eine Kalenderkarte; ihre Zeile sagt, woher der Kalender " +
+                    "kommt: 'aus der Matrix', 'aus Vorlage …' oder 'angelegt, n eigene Perioden'. 'Kalender " +
+                    "anlegen' macht aus der Matrix einen eigenen Kalender der Größe - er rechnet zunächst genau " +
+                    "wie die Matrix und lässt sich danach verfeinern. 'Verwerfen' nimmt den angelegten Kalender " +
+                    "samt seinen Perioden weg; danach gilt wieder die Matrix. 'Matrix erneut anwenden…' ersetzt am " +
+                    "angelegten Kalender nur den Teil, der aus der Matrix stammt (Standardwoche, Ferien- und " +
+                    "Saisonperioden); eigene Perioden bleiben. Vor jeder dieser Handlungen, die etwas ersetzt, " +
+                    "fragt der Reiter und nennt, was fällt, was bleibt und welche Zonen es betrifft - vorgewählt " +
+                    "ist 'Nein'. Im Projekt übernimmt 'Aus dem Katalog erneut übernehmen…' im Kopf des Reiters " +
+                    "die Konditionierung des Katalogsatzes noch einmal: Die ganze Gebäudeebene wird ersetzt, die " +
+                    "Zonen bleiben. 'Speichern unter' legt im Projekt einen Katalogsatz nur mit der Gebäudeebene " +
+                    "an; eine Frage nennt, was im Projekt zurückbleibt (Kalender und Zellen der Zonen, Bauteile) " +
+                    "und die Zonen mit Namen. Alles wirkt erst mit OK."),
+
+                new WissensAbschnitt("Konditionierung: Nachtauskühlung über die Lüftung (night purge ventilation, night flush)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Die Nachtauskühlung steht in der Zeile 'Nacht' der Lüftungsspalte: ein erhöhter Luftwechsel " +
+                    "der Nutzerlüftung in 1/h in einem eigenen Nachtfenster (leer = das Nachtfenster der " +
+                    "Heizspalte). Liegt der Nachtwert über dem Tageswert, erscheint das Feld 'ΔT Außenluft' " +
+                    "(Vorgabe 2 K, einstellbar 0 bis 5 K). Die Nachtauskühlung wirkt nur bedingt, wie die " +
+                    "Sommerlüftung: wenn die Raumluft der Vorstunde über der Schwelle liegt (23 °C, mit wirksamer " +
+                    "Kühlung 3 K unter dem Kühlsollwert) und die Außenluft mindestens ΔT kühler ist; sonst gilt der " +
+                    "Tageswert. Einen eigenen Schalter gibt es nicht, und in Winternächten lüftet sie deshalb nicht. " +
+                    "Wirken Sommerlüftung und Nachtauskühlung zugleich, gilt der größere Luftwechsel. Die Stunden " +
+                    "mit Nachtauskühlung zeigt der Bedarfsdialog des Gebäudes, wenn eine gesetzt ist. Sie wirkt im " +
+                    "Rechenweg nach VDI 6007."),
+
                 new WissensAbschnitt("Energiebedarf berechnen", "Energiebedarf",
                     "Der Wärmebedarf setzt sich zusammen aus dem Gebäudebedarf, externen Lastgängen, Prozesswärme, " +
                     "Brauchwasser und den Netzverlusten. Der Strombedarf entsteht aus Stromprofilen und " +

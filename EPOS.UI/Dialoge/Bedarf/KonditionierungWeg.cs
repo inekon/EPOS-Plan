@@ -21,13 +21,16 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Schreibdelegaten gibt es deshalb nicht. Ausgenommen sind die Vorlagen: „Als Vorlage speichern…"
 /// und die Vorlagenverwaltung schreiben sofort mit eigenem OK (Festlegung 13), und eine Zeile unter
 /// dem Knopf sagt es.</para>
-/// <para><b>Wer die Delegaten trägt.</b> Die Hülle füllt das Bündel in Welle K2
-/// (<c>EPOS.UI.Daten/Bedarf/</c>) aus den reinen Funktionen des Kerns, die K2 aus den
-/// Datenbankwegen von KP1 herauszieht (Arbeitsstand <c>Konditionierungsarbeit</c>, Entwurf KP2
-/// Abschnitt 2); je Delegat nennt sein Kommentar den heutigen Kernweg. Die Übersetzung zwischen den
-/// Typen dieser Seite und dem Kern (<c>Vorgabematrix</c>, <c>Matrixzelle</c>,
-/// <c>Konditionierungskalender</c>, <c>Kalenderregel</c>, <c>KonditionierungCtrl.Eigner</c>) steht
-/// allein in der Hülle. Gebunden wird das Bündel vom Reiter in Welle U1.</para>
+/// <para><b>Wer die Delegaten trägt.</b> Die Hülle (<c>KonditionierungHuelle.Weg</c> in
+/// <c>EPOS.UI.Daten/Bedarf/</c>) füllt das Bündel aus den reinen Schritten des Kerns über dem
+/// Arbeitsstand (<c>Konditionierungsarbeit</c>, Entwurf KP2 Abschnitt 2); je Delegat nennt sein
+/// Kommentar den Kernweg, über den sie ihn trägt. Die Übersetzung zwischen den Typen dieser Seite und
+/// dem Kern (<c>Vorgabematrix</c>, <c>Matrixzelle</c>, <c>Konditionierungskalender</c>,
+/// <c>Kalenderregel</c>, <c>KonditionierungCtrl.Eigner</c>) steht allein in der Hülle. Im Projekt
+/// rechnet der Arbeitsstand mit dem Bezug des Projekts wie der Lauf — Stufe der Anlagenkopplung,
+/// Referenzjahr, Kühlbetrieb (<c>KonditionierungHuelle.Projektbezug</c>) —, im Katalog ohne Kopplung
+/// mit dem Bezugsjahr 2025. Gebunden wird das Bündel vom Reiter „Konditionierung" über
+/// <see cref="KonditionierungBearbeitung"/>.</para>
 /// <para><b>Zusammensetzen statt Sonderwege.</b> Die Vorschau einer Vorlage an den
 /// Ferienzeiträumen des Ziels (Teilkonzept 7.4) ist <see cref="WochenVorschau"/> bzw.
 /// <see cref="Teppichbild"/> des Stands, den <see cref="VorlageUebernehmen"/> auf einer Kopie
@@ -60,16 +63,16 @@ public sealed class KonditionierungWeg
     /// <b>„Kalender anlegen"</b> (Teilkonzept 3.3): Der Generator macht aus der wirksamen Matrix den
     /// Kalender der Größe — mit dem Rundlauf, den Kalendern der Zonen mit eigenen Zellen (F2 Regel 2,
     /// Befund B4) und dem Geräte-Nennwert nach Personen (P1, Befund B5).
-    /// <para>Kern heute: <c>KonditionierungCtrl.Anlegen</c> über <c>Standardfahrplan.Erzeugen(matrix,
-    /// größe, rundlaufPruefen: true)</c>, <c>PersonenNennwertVorschlag</c>,
-    /// <c>GeraeteNennwertNachPersonen</c>; K2: „Anlegen" des Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Anlegen</c> (rein) über <c>Standardfahrplan.Erzeugen</c> mit
+    /// Rundlauf, <c>PersonenNennwertVorschlag</c> und <c>GeraeteNennwertNachPersonen</c>; der
+    /// Datenbankweg <c>KonditionierungCtrl.Anlegen</c> ist eine dünne Hülle darüber.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungErgebnis>? Anlegen { get; init; }
 
     /// <summary>
     /// <b>„Verwerfen"</b> (Teilkonzept 3.3): Der angelegte Kalender der Größe fällt samt Perioden, die
     /// Matrix bleibt; danach ist er wieder abgeleitet.
-    /// <para>Kern heute: <c>KonditionierungCtrl.Verwerfen</c>; K2: „Verwerfen" des Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Verwerfen</c> (rein).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungErgebnis>? Verwerfen { get; init; }
 
@@ -77,17 +80,15 @@ public sealed class KonditionierungWeg
     /// <b>„Matrix erneut anwenden…"</b> (P12 (a)): ersetzt am angelegten Kalender nur den Matrixbereich
     /// — Standardwoche, Ferien- und Saisonperioden —; eigene Perioden und Ausnahmetage bleiben. Die
     /// Rückfrage kommt vorher (<see cref="Rueckfrage"/>).
-    /// <para>Kern heute: <c>KonditionierungCtrl.ErneutAnwenden</c> und <c>IstMatrixbereich</c>; K2:
-    /// „Matrix erneut anwenden" des Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.MatrixErneut</c> (rein; <c>IstMatrixbereich</c>).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungErgebnis>? MatrixErneut { get; init; }
 
     /// <summary>
     /// <b>„Aus dem Katalog erneut übernehmen…"</b> (Festlegung 4, nur Projekt): ersetzt die ganze
     /// Gebäudeebene samt Bestandszellen, Nachtzeiten und Ferienzeiträumen; die Zonen bleiben.
-    /// <para>Kern heute: <c>GebaeudeStammCtrl.KonditionierungErneutUebernehmen</c> über
-    /// <c>Konditionierungskopie.Kopieren</c> (Datenbank, Befund B9); K2: „erneut übernehmen" des
-    /// Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.KatalogErneut</c> (rein) mit der Katalogebene aus
+    /// <c>GebaeudeStammCtrl.KatalogebeneDerKopie</c> (ein Leseweg); nur im Projekt belegt.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungErgebnis>? KatalogErneut { get; init; }
 
@@ -106,7 +107,7 @@ public sealed class KonditionierungWeg
     /// <summary>
     /// <b>Die Vorlagen einer Größe</b> für die Auswahlliste der Karte (Teilkonzept 7.4) — die
     /// ausgelieferten zuerst.
-    /// <para>Kern heute: <c>KonditionierungsvorlageCtrl.Liste(größe)</c> (bleibt ein Leseweg).</para>
+    /// <para>Kern: <c>KonditionierungsvorlageCtrl.Liste(größe)</c> (ein Leseweg).</para>
     /// </summary>
     public Func<KonditionierungGroesse, IReadOnlyList<KonditionierungVorlageDaten>>? Vorlagen { get; init; }
 
@@ -115,9 +116,9 @@ public sealed class KonditionierungWeg
     /// (eine leere Zelle lässt die des Ziels), der Kalender der Größe wird angelegt — Generator mit den
     /// Ferienzeiträumen des Ziels, darüber Woche und Perioden der Vorlage —, die Herkunft steht in
     /// <see cref="KonditionierungKalender.Vorlage"/>. Dritter Parameter: die Id der Vorlage.
-    /// <para>Kern heute: <c>KonditionierungsvorlageCtrl.Uebernehmen(idVorlage, ziel, matrix)</c> mit
-    /// dem Zusammenführen Generator + Vorlage + Bestand (Datenbank); K2: „Vorlage übernehmen" des
-    /// Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.VorlageUebernehmen</c> (rein: Generator + Vorlage +
+    /// Bestand) mit der Vorlage aus <c>KonditionierungsvorlageCtrl.Lesen</c> und
+    /// <c>KonditionierungCtrl.StandLesen</c> (Lesewege).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, long, KonditionierungErgebnis>? VorlageUebernehmen { get; init; }
 
@@ -125,27 +126,26 @@ public sealed class KonditionierungWeg
     /// <b>„Als Vorlage speichern…"</b> (E54): legt aus der Spalte und, falls angelegt, dem Kalender
     /// der Größe eine eigene Vorlage an — ohne Nennwert und Saison. Schreibt sofort (Festlegung 13);
     /// ein Doppelname in der Liste ist eine benannte Ablehnung.
-    /// <para>Kern heute: <c>KonditionierungsvorlageCtrl.Speichern(quelle, größe, name, beschreibung,
-    /// nutzung, out id)</c> mit der Datenbank als Quelle und <c>Namenspruefung</c>; K2: der
-    /// Als-Vorlage-Inhalt aus dem Arbeitsstand.</para>
+    /// <para>Kern: der Inhalt aus dem Arbeitsstand (<c>Konditionierungsarbeit.AlsVorlage</c>, rein),
+    /// geschrieben über <c>KonditionierungsvorlageCtrl.SpeichernAus</c> mit <c>Namenspruefung</c>.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungVorlageEingabe, KonditionierungVorlageErgebnis>? AlsVorlageSpeichern { get; init; }
 
     /// <summary>
     /// <b>Eine eigene Vorlage umbenennen</b> (Vorlagenverwaltung, F4): Id und neuer Name; schreibt
-    /// sofort. <para>Kern heute: <c>KonditionierungsvorlageCtrl.Umbenennen</c>.</para>
+    /// sofort. <para>Kern: <c>KonditionierungsvorlageCtrl.Umbenennen</c>.</para>
     /// </summary>
     public Func<long, string, KonditionierungVorlageErgebnis>? VorlageUmbenennen { get; init; }
 
     /// <summary>
     /// <b>Eine eigene Vorlage löschen</b> (Vorlagenverwaltung, F4); kein Gebäude wird berührt.
-    /// <para>Kern heute: <c>KonditionierungsvorlageCtrl.Loeschen</c>.</para>
+    /// <para>Kern: <c>KonditionierungsvorlageCtrl.Loeschen</c>.</para>
     /// </summary>
     public Func<long, KonditionierungVorlageErgebnis>? VorlageLoeschen { get; init; }
 
     /// <summary>
     /// <b>Eine Vorlage duplizieren</b> (Vorlagenverwaltung, F4) — auch eine ausgelieferte; Id und Name
-    /// der Kopie. <para>Kern heute: <c>KonditionierungsvorlageCtrl.Duplizieren(id, name, out neueId)</c>.</para>
+    /// der Kopie. <para>Kern: <c>KonditionierungsvorlageCtrl.Duplizieren(id, name, out neueId)</c>.</para>
     /// </summary>
     public Func<long, string, KonditionierungVorlageErgebnis>? VorlageDuplizieren { get; init; }
 
@@ -155,21 +155,23 @@ public sealed class KonditionierungWeg
     /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5, 7.5): setzt den Wert in die
     /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in
     /// <see cref="KonditionierungKalender.Vermerk"/>.
-    /// <para>Kern: <c>Kalenderwerkzeuge.Zeitfenster(kalender, tage, von, bis, wert)</c> (rein).</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Zeitfenster</c> über
+    /// <c>Kalenderwerkzeuge.Zeitfenster(kalender, tage, von, bis, wert)</c> (rein).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungZeitfenster, KonditionierungErgebnis>? Zeitfenster { get; init; }
 
     /// <summary>
     /// <b>Die Feiertage als Regel</b> (F11): die neun bundeseinheitlichen Feiertage „wie Wochentag X";
     /// dritter Parameter: der Wochentag 1 = Montag … 7 = Sonntag (Vorgabe 7).
-    /// <para>Kern: <c>Kalenderwerkzeuge.Feiertagsregeln(kalender, wieWochentag)</c> (rein).</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Feiertage</c> über
+    /// <c>Kalenderwerkzeuge.Feiertagsregeln(kalender, wieWochentag)</c> (rein).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, int, KonditionierungErgebnis>? Feiertage { get; init; }
 
     /// <summary>
     /// <b>„Zeitstruktur übernehmen"</b> (Festlegung 11): Kühlen, Lüftung oder Geräte „wie Heizung" oder
     /// „wie Anwesenheit"; ersetzt wird nur die Standardwoche.
-    /// <para>Kern: neu mit Welle K1 neben <c>Kalenderwerkzeuge</c> (<c>ZeitstrukturTests</c>).</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Zeitstruktur</c> (rein; <c>ZeitstrukturTests</c>).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungZeitstruktur, KonditionierungErgebnis>? Zeitstruktur { get; init; }
 
@@ -179,8 +181,8 @@ public sealed class KonditionierungWeg
     /// <b>Der Rückfragebefund VOR dem Schreiben</b> (Festlegung 3): was eine Handlung ersetzt, was
     /// bleibt und welche Zonen es betrifft, mit Namen; <c>null</c> = keine Rückfrage nötig. Ohne
     /// Delegat fragt der Dialog ohne Einzelheiten.
-    /// <para>Kern heute: der Befund entsteht erst NACH dem Kopieren (<c>Konditionierungskopie.Befund</c>,
-    /// Befund B9); K2: die Rückfragebefunde des Arbeitsstands.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.Rueckfrage</c> (rein) — der Befund entsteht am Arbeitsstand,
+    /// VOR dem Schreiben.</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungHandlung, KonditionierungRueckfrage?>? Rueckfrage { get; init; }
 
@@ -197,24 +199,25 @@ public sealed class KonditionierungWeg
     /// <b>Die Vorschau der Woche</b> (Teilkonzept 7.5): 168 Werte einer Größe in der Einheit ihrer
     /// Spalte, <see cref="double.NaN"/> = „aus" (als Lücke) → Zeichenmodell für <c>DiagrammSvg</c>;
     /// <c>null</c> = kein Bild. Der Reiter reicht ihn als <c>Vorschau</c> an das Wochenraster.
-    /// <para>Kern: <c>ChartRenderer.StundenprofilModell</c> (die Lücke für „aus" mit Welle K4, Befund
-    /// B12).</para>
+    /// <para>Kern: <c>ChartRenderer.StundenprofilModell</c> mit dem Titel der Größe („Vorschau: Woche ·
+    /// Kühlen") und der Lücke für „aus" (Befund B12).</para>
     /// </summary>
     public Func<KonditionierungGroesse, double[], Zeichenmodell?>? WochenVorschau { get; init; }
 
     /// <summary>
     /// <b>Das Teppichbild</b> (Teilkonzept 7.5, Festlegung 8): Tage × Stunden des Kalenders, „aus" als
     /// eigene Fläche, die Quelle je Tag am Element; <c>null</c> = kein Bild.
-    /// <para>Kern: <c>Konditionierungskalender.Auswerten</c>/<c>Quelle</c> und der Renderer der Welle K4
-    /// (<c>Kalenderteppich</c>).</para>
+    /// <para>Kern: <c>Konditionierungskalender.Auswerten</c>/<c>Quelle</c> und der Renderer
+    /// <c>Kalenderteppich</c> mit dem Bezugsjahr <c>Konditionierungdatenweg.Bezugsjahr</c>; die Hülle
+    /// belegt den Delegaten mit dem Karteninhalt (Welle U3).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, Zeichenmodell?>? Teppichbild { get; init; }
 
     /// <summary>
     /// <b>Die Herleitung der Lasten</b> (P1, Teilkonzept 7.2) für die Nennwertzeile und die Zeile der
     /// Jahresmittel; zweiter Parameter: die Zone (<c>null</c> = Gebäude bzw. Katalogbau).
-    /// <para>Kern: <c>KonditionierungCtrl.PersonenNennwertVorschlag</c>, <c>PersonenJahresmittelW</c>,
-    /// <c>GeraeteNennwertNachPersonen</c>, <c>Matrixeingang.PERSON_W</c>.</para>
+    /// <para>Kern: <c>Konditionierungsarbeit.PersonenNennwertVorschlag</c>, <c>PersonenJahresmittelW</c>,
+    /// <c>Matrixeingang.PERSON_W</c> — gegen Referenzjahr und w₀ des Arbeitsstands.</para>
     /// </summary>
     public Func<KonditionierungStand, int?, KonditionierungLasten?>? Lasten { get; init; }
 
@@ -222,7 +225,7 @@ public sealed class KonditionierungWeg
     /// <b>Die Prüfregeln des Kerns</b> über die Konditionierung des Stands (Grenzen je Größe, Rundlauf
     /// auf vier Nachkommastellen, eindeutiger Rang, höchstens 64 Perioden) — der OK-Weg fragt sie VOR
     /// dem ersten Schritt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
-    /// <para>Kern: <c>KonditionierungCtrl.ZellePruefen</c>, <c>Kalenderwoche.Rundlauf</c>,
+    /// <para>Kern: <c>Konditionierungsarbeit.Zellenpruefung</c>, <c>Kalenderleser.Rundlaeuft</c>,
     /// <c>Kalenderwerkzeuge.Rangpruefung</c>, <c>Kalenderregel.PERIODEN_MAX</c>.</para>
     /// </summary>
     public Func<KonditionierungStand, string>? Pruefen { get; init; }

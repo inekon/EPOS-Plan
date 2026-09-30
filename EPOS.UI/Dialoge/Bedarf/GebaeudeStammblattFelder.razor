@@ -14,6 +14,14 @@
      * ALLE DATEN, aufklappbar: Raumtemperaturen, Ferien, die Modellparameter
        (VDI 6007) samt Rechenweg und die Kuehlung.
 
+   DIE ALTFELDER BLEIBEN HIER (Stufe KP2, Welle U1). Im Katalogeditor stehen Sollwerte,
+   innere Waermegewinne, Infiltration, Nutzerlueftung, Sommerlueftung, Kuehlsollwert und
+   Maximalraumtemperatur nur noch im Reiter "Konditionierung" (E56 F3 (a)). Die Verwaltung hat
+   diesen Reiter nicht; ihre Stammblattgruppe "Konditionierung" mit dem breiten Blatt kommt mit
+   Welle U4 (Entwurf KP2 D2) - bis dahin traegt das Stammblatt die Felder weiter, mit denselben
+   Katalogfeldern und denselben Pruefregeln (die Befunde haengen hier an ihren Gruppen:
+   GebaeudeArbeitsstand.IstKonditionierungsfeld bleibt ungesetzt).
+
    EINE WAHRHEIT. Die Felder schreiben in den ARBEITSSTAND des Wirts
    (GebaeudeArbeitsstand) ueber dieselben Wege wie der Katalogeditor - Bauart und
    Nutzflaeche ziehen die Bauweise nach, die Randbedingung haelt NULL, die
@@ -197,7 +205,8 @@ else
                                         Feldname="@Beschriftungen.LabelNachtAbsenkung" FehlerZustand="FehlerMelden"
                                         Wert="@Arbeit.Stand.NachtAbsenkung"
                                         WertChanged="@(w => Setze(() => Arbeit.Stand.NachtAbsenkung = w))" />
-                            @* Die Nachtzeit (E43) - dieselben Felder wie im Katalogeditor. *@
+                            @* Die Nachtzeit (E43) - dieselben Spalten wie das Nachtfenster der
+                               Matrix im Katalogeditor (dort EIN Feld "22-6"). *@
                             <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelNachtBeginn" Einheit="h"
                                           Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
                                           Platzhalter="@Vorgabe(Nachtzeit.VORGABE_BEGINN)"
