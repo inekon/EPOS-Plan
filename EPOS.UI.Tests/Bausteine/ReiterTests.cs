@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Linq;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components;
@@ -34,6 +35,57 @@ public class ReiterTests : BunitContext
             (RenderFragment)(x => x.AddMarkupContent(0, "<p id=\"i2\">Inhalt zwei</p>")));
         b.CloseComponent();
     };
+
+    /// <summary>Drei Blaetter A, B (nur mit <paramref name="mitB"/>) und Z - B steht im Markup in der Mitte.</summary>
+    private static RenderFragment DreiBlaetter(bool mitB) => b =>
+    {
+        b.OpenComponent<Reiterblatt>(0);
+        b.AddAttribute(1, "Schluessel", "A");
+        b.AddAttribute(2, "Titel", "A");
+        b.CloseComponent();
+        if (mitB)
+        {
+            b.OpenComponent<Reiterblatt>(3);
+            b.AddAttribute(4, "Schluessel", "B");
+            b.AddAttribute(5, "Titel", "B");
+            b.CloseComponent();
+        }
+        b.OpenComponent<Reiterblatt>(6);
+        b.AddAttribute(7, "Schluessel", "Z");
+        b.AddAttribute(8, "Titel", "Z");
+        b.CloseComponent();
+    };
+
+    private static string[] Leiste(IRenderedComponent<Reiter> cut)
+        => cut.FindAll(".epos-reiter-knopf").Select(k => k.TextContent.Trim()).ToArray();
+
+    /// <summary>
+    /// Anwenderbefund 30.09.2026 (Simulation, Reiter „Solarthermie“ hinter „Ergebnis“): Ein Blatt,
+    /// das erst nach dem ersten Zeichnen erscheint, meldet sich zuletzt an. Mit der
+    /// <see cref="Reiter.Reihenfolge"/> steht es trotzdem an seinem Platz.
+    /// </summary>
+    [Fact]
+    public void Ein_nachgereichtes_Blatt_steht_mit_Reihenfolge_an_seinem_Platz()
+    {
+        var folge = new[] { "A", "B", "Z" };
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, DreiBlaetter(false))
+                                       .Add(x => x.Reihenfolge, folge));
+        Assert.Equal(new[] { "A", "Z" }, Leiste(cut));
+
+        cut.Render(p => p.Add(x => x.KindInhalt, DreiBlaetter(true)).Add(x => x.Reihenfolge, folge));
+
+        Assert.Equal(new[] { "A", "B", "Z" }, Leiste(cut));
+    }
+
+    /// <summary>Die Gegenprobe: Ohne Reihenfolge bleibt die Anmeldefolge - das nachgereichte Blatt steht hinten.</summary>
+    [Fact]
+    public void Ohne_Reihenfolge_bleibt_die_Anmeldefolge()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, DreiBlaetter(false)));
+        cut.Render(p => p.Add(x => x.KindInhalt, DreiBlaetter(true)));
+
+        Assert.Equal(new[] { "A", "Z", "B" }, Leiste(cut));
+    }
 
     [Fact]
     public void Die_Blaetter_melden_sich_selbst_an_und_stehen_in_der_Leiste()

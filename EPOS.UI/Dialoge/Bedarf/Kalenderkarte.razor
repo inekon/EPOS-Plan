@@ -1,16 +1,30 @@
-﻿@* DIE KALENDERKARTE (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 7.1, 7.5) - je Groesse
-   eine Karte unter der Matrix, EINGEKLAPPT mit einer Zeile Zustand: "aus der Matrix", "aus Vorlage
-   Buero", "angelegt, 3 eigene Perioden" (an einer Zone "vom Gebaeude").
+﻿@* DIE KALENDERKARTE (Stufe KP2, Wellen U1 und U2; Teilkonzept Konditionierungsprofile 7.1, 7.4, 7.5) - je
+   Groesse eine Karte unter der Matrix, mit einer Zeile Zustand: "aus der Matrix", "aus Vorlage Buero",
+   "angelegt, 3 eigene Perioden" (an einer Zone "vom Gebaeude").
 
-   WAS SIE IN U1 TRAEGT. Nur die Handlungen, die keinen Karteninhalt brauchen: "Kalender anlegen" an
-   einem abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Die
-   Auswahlliste der Vorlagen (U2) und der Inhalt - Grundangabe, Zeitfenster, Wochenraster,
-   Periodenliste, Werkzeuge, Teppichbild (U3) - kommen spaeter in dieselbe Karte.
+   WAS SIE TRAEGT. Die Handlungen, die keinen Karteninhalt brauchen: "Kalender anlegen" an einem
+   abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Seit Welle U2 im
+   Kopf die AUSWAHLLISTE der Vorlagen ihrer Groesse (Teilkonzept 7.4): die ausgelieferten zuerst, dann die
+   eigenen - gleiche Namen stehen so in jeder Liste an derselben Stelle; eine ausgelieferte traegt neben
+   der Liste das Kennzeichen (Schloss), eine eigene nicht. Daneben "Uebernehmen" (P11, P12): die Zellen
+   der Vorlage in die Spalte, der Kalender angelegt mit Herkunft; weich gesperrt ohne Wahl und an der
+   gesperrten Kuehlspalte, der Grund am Knopf; die Rueckfrage vor einem angelegten Kalender stellt der
+   Wirt. Danach ist die Wahl leer - die Karte zeigt den Kalender, der der Matrix folgt (E56 F2 (a)).
+   Darunter die VORSCHAU der Woche: mit gewaehlter
+   Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
+   einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
+   ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
+   letzten (Hausregel "die teure Stufe laeuft entprellt"). Der Inhalt - Grundangabe, Zeitfenster,
+   Wochenraster, Periodenliste, Werkzeuge, Teppichbild (U3) - kommt spaeter in dieselbe Karte.
 
-   KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht. Im Lesemodus
-   (ausgelieferter Satz) steht nur der Zustand. Die Rueckfragen stellt der Wirt (Festlegung 3). *@
+   KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht; die Liste nur mit
+   Vorlagen (der Wirt reicht sie nur, wenn der Weg "Uebernehmen" bietet). Im Lesemodus (ausgelieferter
+   Satz) steht nur der Zustand. Die Rueckfragen stellt der Wirt (Festlegung 3). *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "")" data-groesse="@((int)Groesse)"
          aria-label="@Titel">
@@ -18,6 +32,85 @@
         <h3 class="epos-kond-karte-titel">@Titel</h3>
         <p class="epos-kond-karte-zustand">@Zustand</p>
     </div>
+    @if (!Lesemodus && Vorlagen is not null)
+    {
+        <div class="epos-vorlage-wahl epos-kond-vorlagewahl">
+            <Auswahlfeld Bezeichnung="@Texte.LabelVorlageAuswahl" Kurzname="@(Titel + " · " + Texte.LabelVorlageAuswahl)"
+                         Eintraege="@Eintraege" Auswahl="@Wahl" Platzhalter="@Texte.TextVorlageKeine"
+                         AuswahlChanged="Waehlen" />
+            @if (Gewaehlt is { Ausgeliefert: true })
+            {
+                <span class="epos-vorlage-schlossplatz">
+                    <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
+                </span>
+            }
+            @if (Uebernehmen.HasDelegate)
+            {
+                @* Weich gesperrt, solange nichts gewaehlt ist oder die Spalte gesperrt steht - der Grund
+                   am Knopf, der Versuch meldet ihn (Hausregel). *@
+                string? grund = UebernehmenSperre ?? (Gewaehlt is null ? Texte.GrundKeineVorlage : null);
+                <button type="button" class="epos-knopf epos-kond-uebernehmen"
+                        aria-disabled="@(grund is null ? null : "true")"
+                        title="@(grund ?? Texte.HinweisVorlageUebernehmen)"
+                        @onclick="() => UebernehmenGeklickt(grund)">@Texte.KnopfUebernehmen</button>
+            }
+        </div>
+        @if (Gewaehlt is KonditionierungVorlageDaten v && v.Beschreibung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@v.Beschreibung</p>
+        }
+    }
+    @if (!Lesemodus && (AlsVorlageSpeichern is not null || VorlagenVerwalten.HasDelegate))
+    {
+        <div class="epos-zeilenknoepfe epos-kond-vorlagenknoepfe">
+            @if (AlsVorlageSpeichern is not null)
+            {
+                <button type="button" class="epos-knopf epos-kond-als-vorlage" aria-expanded="@(_speichernOffen ? "true" : "false")"
+                        title="@Texte.HinweisVorlageSpeichern" @onclick="SpeichernUmschalten">@Texte.KnopfAlsVorlage</button>
+            }
+            @if (VorlagenVerwalten.HasDelegate)
+            {
+                @* F4 (a): die Verwaltung als Blatt im Katalogeditor - der Wirt tauscht seinen Inhalt. *@
+                <button type="button" class="epos-knopf epos-kond-verwalten" title="@Texte.LabelVerwaltung"
+                        @onclick="VorlagenVerwalten">@Texte.KnopfVorlagenVerwalten</button>
+            }
+        </div>
+        @if (_speichernOffen)
+        {
+            @* "ALS VORLAGE SPEICHERN…" INLINE (Teilkonzept 7.4, Festlegung 13): Name, Beschreibung,
+               Nutzung; die Groesse ist die der Karte. "Speichern" schreibt SOFORT mit diesem eigenen OK -
+               die leise Zeile darunter sagt es; ein Doppelname wird AM FELD genannt. *@
+            <div class="epos-kond-vorlage-speichern" role="group" aria-label="@Texte.KnopfAlsVorlage">
+                <Formularraster>
+                    <KindInhalt>
+                        <div class="epos-kond-vorlage-name @(_nameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_name" WertChanged="NameGeaendert"
+                                      Hoechstlaenge="80" />
+                            @if (_nameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_nameFehler</p>
+                            }
+                        </div>
+                        <Textfeld Bezeichnung="@Texte.LabelVorlageBeschreibung" Wert="@_beschreibung"
+                                  WertChanged="w => _beschreibung = w" Mehrzeilig="true" Zeilen="2" Hoechstlaenge="400" />
+                        <Auswahlfeld Bezeichnung="@Texte.LabelVorlageNutzung" Eintraege="@Nutzungen" Auswahl="@_nutzung"
+                                     AuswahlChanged="w => _nutzung = w ?? 0" />
+                    </KindInhalt>
+                </Formularraster>
+                <p class="epos-leisezeile epos-kond-vorlage-sofort">@Texte.HinweisVorlageSofort @Texte.HinweisVorlageSpeichern</p>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-knopf--primaer epos-kond-vorlage-schreiben"
+                            @onclick="Speichern">@Texte.KnopfSpeichern</button>
+                    <button type="button" class="epos-knopf epos-kond-vorlage-abbrechen"
+                            @onclick="SpeichernAbbrechen">@Texte.KnopfAbbrechen</button>
+                </div>
+            </div>
+        }
+        @if (_gespeichert is not null)
+        {
+            <p class="epos-leisezeile epos-kond-vorlage-gespeichert" role="status">@_gespeichert</p>
+        }
+    }
     @if (!Lesemodus && (Anlegen.HasDelegate || Verwerfen.HasDelegate || MatrixErneut.HasDelegate))
     {
         <div class="epos-zeilenknoepfe epos-kond-karte-knoepfe">
@@ -33,6 +126,19 @@
             {
                 <button type="button" class="epos-knopf epos-kond-verwerfen" @onclick="Verwerfen">@Texte.KnopfVerwerfen</button>
             }
+        </div>
+    }
+    @if (!Lesemodus && Vorschau is not null)
+    {
+        <div class="epos-kond-vorschau">
+            @if (Gewaehlt is KonditionierungVorlageDaten g)
+            {
+                <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, g.Name)</p>
+            }
+            @* Ein Bild ohne Zoom: eine Woche in der schmalen Karte braucht keinen Zeitbereich, und die
+               Zoomleiste bliebe unter dem Beruehrungsmass (Konditionierungsprobe, Welle U2). *@
+            <DiagrammSvg Modell="@_modell" Kennung="@("kond-vorschau-" + (int)Groesse)" Bezeichnung="@Texte.LabelVorschauWoche"
+                         Einheit="@Einheit" OhneZoom="true" />
         </div>
     }
 </section>
@@ -67,4 +173,210 @@
 
     /// <summary>„Matrix erneut anwenden…"; ohne Rückruf kein Knopf.</summary>
     [Parameter] public EventCallback MatrixErneut { get; set; }
+
+    // ------------------------------------------------------------ Vorlagen (Welle U2)
+
+    /// <summary>
+    /// Die Vorlagen dieser Größe in der Reihenfolge des Kerns (die ausgelieferten zuerst); <c>null</c> =
+    /// keine Auswahlliste („kein Delegat, kein Knopf"), leer = eine Liste nur mit „keine Vorlage gewählt".
+    /// </summary>
+    [Parameter] public IReadOnlyList<KonditionierungVorlageDaten>? Vorlagen { get; set; }
+
+    /// <summary>Die gewählte, noch nicht übernommene Vorlage (ihre Id); <c>null</c> = keine.</summary>
+    [Parameter] public long? GewaehlteVorlage { get; set; }
+
+    /// <summary>Meldet die Wahl der Auswahlliste — <c>null</c> = „keine Vorlage gewählt".</summary>
+    [Parameter] public EventCallback<long?> VorlageGewaehlt { get; set; }
+
+    /// <summary>
+    /// „Übernehmen" der gewählten Vorlage (P11, P12) — der Wirt fragt vorher, wo ein angelegter
+    /// Kalender ersetzt wird; ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback Uebernehmen { get; set; }
+
+    /// <summary>
+    /// Der Grund, warum „Übernehmen" in dieser Karte weich gesperrt steht (etwa die gesperrte
+    /// Kühlspalte); <c>null</c> = frei, sobald eine Vorlage gewählt ist.
+    /// </summary>
+    [Parameter] public string? UebernehmenSperre { get; set; }
+
+    /// <summary>Meldet den Versuch an einer weich gesperrten Handlung — mit ihrem Grund.</summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>
+    /// „Als Vorlage speichern…" (E54, Festlegung 13): schreibt SOFORT und gibt das Ergebnis zurück — eine
+    /// Ablehnung des Namens nennt die Karte am Feld; <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<KonditionierungVorlageEingabe, KonditionierungVorlageErgebnis>? AlsVorlageSpeichern { get; set; }
+
+    /// <summary>Meldet, dass eine Vorlage geschrieben wurde — der Wirt liest die Listen neu.</summary>
+    [Parameter] public EventCallback VorlageGespeichert { get; set; }
+
+    /// <summary>Meldet eine benannte Ablehnung, die kein Feld betrifft — der Wirt zeigt sie im Banner.</summary>
+    [Parameter] public EventCallback<string> Abgelehnt { get; set; }
+
+    /// <summary>
+    /// „Vorlagen verwalten" (E56 F4 (a)): Der Wirt öffnet die Verwaltung als Blatt im Katalogeditor;
+    /// ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback VorlagenVerwalten { get; set; }
+
+    /// <summary>
+    /// Rechnet das Bild der Vorschau (Woche der gewählten Vorlage am Ziel bzw. des geltenden Kalenders);
+    /// <c>null</c> = keine Vorschau. Gerufen wird nur bei neuem <see cref="Vorschauschluessel"/>.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell?>? Vorschau { get; set; }
+
+    /// <summary>Der Schlüssel der Vorschau — ändert er sich, wird sie (entprellt) neu gerechnet.</summary>
+    [Parameter] public string Vorschauschluessel { get; set; } = "";
+
+    /// <summary>Entprellung der Vorschau nach einer Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>Die Einträge der Auswahlliste: Id und Name (ein Datenwert, nicht übersetzt).</summary>
+    private IReadOnlyList<(int Id, string Text)> Eintraege
+        => (Vorlagen ?? Array.Empty<KonditionierungVorlageDaten>())
+           .Where(v => v.Id > 0 && v.Id <= int.MaxValue)
+           .Select(v => ((int)v.Id, v.Name))
+           .ToList();
+
+    /// <summary>Die Wahl als Id der Liste.</summary>
+    private int? Wahl => Gewaehlt is KonditionierungVorlageDaten v ? (int)v.Id : null;
+
+    /// <summary>Die gewählte Vorlage, wenn sie in der Liste steht.</summary>
+    private KonditionierungVorlageDaten? Gewaehlt
+        => GewaehlteVorlage is long id ? Vorlagen?.FirstOrDefault(v => v.Id == id) : null;
+
+    /// <summary>Die Einheit der Spalte für den Wert am Zeiger.</summary>
+    private string Einheit => Groesse switch
+    {
+        KonditionierungGroesse.Lueftung => "1/h",
+        KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+        _ => "°C"
+    };
+
+    private Task Waehlen(int? id) => VorlageGewaehlt.InvokeAsync(id);
+
+    /// <summary>Ein weich gesperrter Knopf meldet den Grund; sonst geht es an den Wirt.</summary>
+    private Task UebernehmenGeklickt(string? grund)
+        => grund is null ? Uebernehmen.InvokeAsync() : Verweigert.InvokeAsync(grund);
+
+    // ------------------------------------------------------------ „Als Vorlage speichern…" (inline)
+
+    private bool _speichernOffen;
+    private string _name = "";
+    private string _beschreibung = "";
+    private int? _nutzung = 0;
+    private string? _nameFehler;
+    private string? _gespeichert;
+
+    /// <summary>Die Nutzungen der Abfrage: „ohne Angabe", Wohnen, Büro, Schule, Sonstige (Anzeigewerte).</summary>
+    private IReadOnlyList<(int Id, string Text)> Nutzungen => new[]
+    {
+        ((int)KonditionierungNutzung.Keine, Texte.NutzungKeine),
+        ((int)KonditionierungNutzung.Wohnen, Texte.NutzungWohnen),
+        ((int)KonditionierungNutzung.Buero, Texte.NutzungBuero),
+        ((int)KonditionierungNutzung.Schule, Texte.NutzungSchule),
+        ((int)KonditionierungNutzung.Sonstige, Texte.NutzungSonstige),
+    };
+
+    private void SpeichernUmschalten()
+    {
+        _speichernOffen = !_speichernOffen;
+        _nameFehler = null;
+        _gespeichert = null;
+    }
+
+    private void NameGeaendert(string w)
+    {
+        _name = w ?? "";
+        _nameFehler = null;
+    }
+
+    private void SpeichernAbbrechen()
+    {
+        _speichernOffen = false;
+        _nameFehler = null;
+        _name = "";
+        _beschreibung = "";
+        _nutzung = 0;
+    }
+
+    /// <summary>
+    /// Das eigene OK der Abfrage: schreibt sofort. Eine Ablehnung des Namens steht am Feld und hält die
+    /// Abfrage offen; jede andere geht an den Wirt (Banner).
+    /// </summary>
+    private async Task Speichern()
+    {
+        if (AlsVorlageSpeichern is null) return;
+        var eingabe = new KonditionierungVorlageEingabe(_name, _beschreibung,
+                                                         (KonditionierungNutzung)(_nutzung ?? 0));
+        KonditionierungVorlageErgebnis e = AlsVorlageSpeichern(eingabe);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _nameFehler = e.Meldung;
+            else await Abgelehnt.InvokeAsync(e.Meldung);
+            return;
+        }
+        string name = e.Vorlage?.Name ?? _name.Trim();
+        SpeichernAbbrechen();
+        _gespeichert = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageGespeichert, name);
+        await VorlageGespeichert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------ Die Vorschau, entprellt
+
+    private Zeichenmodell? _modell;
+    private string? _schluessel;
+    private long? _wahlDavor;
+    private bool _gerechnet;
+    private CancellationTokenSource? _entprellung;
+
+    protected override void OnParametersSet()
+    {
+        if (Vorschau is null || Lesemodus)
+        {
+            _entprellung?.Cancel();
+            _modell = null;
+            _schluessel = null;
+            _gerechnet = false;
+            return;
+        }
+        if (_gerechnet && Vorschauschluessel == _schluessel) return;
+        bool sofort = !_gerechnet || EntprellungMs <= 0 || GewaehlteVorlage != _wahlDavor;
+        _schluessel = Vorschauschluessel;
+        _wahlDavor = GewaehlteVorlage;
+        _gerechnet = true;
+        _entprellung?.Cancel();
+        if (sofort)
+            _modell = Rechnen();
+        else
+            _ = Entprellt(_schluessel);
+    }
+
+    /// <summary>Rechnet die Vorschau nach der Ruhezeit — nur, wenn kein neuerer Schlüssel kam.</summary>
+    private async Task Entprellt(string schluessel)
+    {
+        var cts = _entprellung = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(EntprellungMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (cts.IsCancellationRequested || schluessel != _schluessel) return;
+        _modell = Rechnen();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Zeichenmodell? Rechnen()
+    {
+        try { return Vorschau?.Invoke(); }
+        catch (Exception) { return null; }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _entprellung?.Cancel();
 }
