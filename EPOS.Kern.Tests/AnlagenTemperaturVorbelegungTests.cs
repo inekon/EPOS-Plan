@@ -209,6 +209,77 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // Temperaturbezug „Fest": keine Vorbelegung (Anwenderentscheid 30.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Im Modus „Fest" bleibt ein unvollständiges Paar, wie es ist: Ohne Paar fällt die
+        /// Simulation auf „berechnet" zurück (Speicherpaar, dann 70/50) — ein gespeichertes
+        /// 70/50 machte daraus still eine feste Vorgabe. Die Herleitungszeile bittet um ein Paar.
+        /// </summary>
+        [Theory]
+        [InlineData(0, 0, 85, 65)]
+        [InlineData(0, 0, null, null)]
+        [InlineData(60, 0, null, null)]
+        public void Im_Modus_Fest_wird_nicht_vorbelegt(int? vorlauf, int? ruecklauf, int? kesselVorlauf, int? kesselRuecklauf)
+        {
+            AnlagenTemperaturen.PaarVorbelegung p =
+                AnlagenTemperaturen.KesselPaar(vorlauf, ruecklauf, kesselVorlauf, kesselRuecklauf, festerBezug: true);
+
+            Assert.Equal(AnlagenTemperaturen.PaarHerkunft.Fest, p.Herkunft);
+            Assert.False(p.Vorbelegt);
+            Assert.Equal(vorlauf, p.Vorlauf);
+            Assert.Equal(ruecklauf, p.Ruecklauf);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ANL_TEMP_FEST_OHNE_PAAR, AnlagenTemperaturen.Herleitung(p));
+        }
+
+        /// <summary>Ein vollständiges Paar der Anlage bleibt auch im Modus „Fest" eine Eingabe — ohne Herleitungszeile.</summary>
+        [Fact]
+        public void Im_Modus_Fest_bleibt_ein_vollstaendiges_Paar_ohne_Hinweis()
+        {
+            AnlagenTemperaturen.PaarVorbelegung p = AnlagenTemperaturen.KesselPaar(80, 60, null, null, festerBezug: true);
+
+            Assert.Equal(AnlagenTemperaturen.PaarHerkunft.Anlage, p.Herkunft);
+            Assert.Equal("", AnlagenTemperaturen.Herleitung(p));
+        }
+
+        /// <summary>
+        /// Der Leseweg: Eine gespeicherte Kesselanlage ohne Paar, deren Temperaturbezug in der
+        /// Datenbank auf „Fest" steht, behält im Feldsatz 0/0; auf „Berechnet" zurückgestellt,
+        /// bekommt sie wieder die Vorbelegung. Der Modus wird danach wiederhergestellt.
+        /// </summary>
+        [Fact]
+        public void Eine_gespeicherte_Anlage_im_Modus_Fest_behaelt_ihr_leeres_Paar()
+        {
+            if (!_db.Vorhanden) return;
+
+            int anlage = -1;
+            foreach (DataRow r in Anlagen().Rows)
+                if (Zahl(r["Vorlauf"]) == 0) { anlage = Convert.ToInt32(r["ID"]); break; }
+            Assert.True(anlage > 0, "Keine Kesselanlage ohne Paar in der Testdatenbank.");
+
+            object vorher = WaermequelleClass.WertLesenStill(anlage, SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS);
+            try
+            {
+                ModusSetzen(anlage, DbWerte.WQ_TEMPMODUS_FEST);
+                WErzeugerModel fest = Modell(anlage);
+                AnlagenTemperaturen.PaarVorbelegung p = AnlagenTemperaturen.KesselPaarVorbelegen(fest, false);
+                Assert.Equal(AnlagenTemperaturen.PaarHerkunft.Fest, p.Herkunft);
+                Assert.Equal(0, fest.Vorlauf);
+                Assert.Equal(0, fest.Ruecklauf);
+
+                ModusSetzen(anlage, DbWerte.WQ_TEMPMODUS_BERECHNET);
+                WErzeugerModel berechnet = Modell(anlage);
+                Assert.True(AnlagenTemperaturen.KesselPaarVorbelegen(berechnet, false).Vorbelegt);
+                Assert.True(berechnet.Vorlauf > 0 && berechnet.Ruecklauf > 0);
+            }
+            finally
+            {
+                ModusSetzen(anlage, vorher == null || vorher == DBNull.Value ? null : Convert.ToString(vorher));
+            }
+        }
+
+        // =================================================================================
         // Der Leseweg und der Gleichlauf mit der Simulation
         // =================================================================================
 
@@ -360,6 +431,13 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "UPDATE Tab_Energieanlagen SET Vorlauf = ?, [Rücklauf] = ? WHERE ID = ?",
                 new DbParam("@vl", vorlauf), new DbParam("@rl", ruecklauf), new DbParam("@id", idAnlage)));
+        }
+
+        private static void ModusSetzen(int idAnlage, string? modus)
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET [" + SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS + "] = ? WHERE ID = ?",
+                new DbParam("@m", modus == null ? (object)DBNull.Value : modus), new DbParam("@id", idAnlage)));
         }
 
         private static int Zahl(object v)

@@ -26216,6 +26216,9 @@ Do you want to allow this?</value>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (created from the project demand when saved)</value>
   </data>
+  <data name="ANL_TEMP_FEST_OHNE_PAAR" xml:space="preserve">
+    <value>Temperature reference "fixed": please enter flow and return — without a pair the simulation falls back to "calculated" and reports it.</value>
+  </data>
   <data name="ANL_TEMP_VORGABE_KESSEL" xml:space="preserve">
     <value>Default {0}/{1} °C — the simulation uses this pair when nothing is entered.</value>
   </data>

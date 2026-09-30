@@ -2312,6 +2312,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturbezug „fest vorgegeben“: Bitte Vorlauf und Rücklauf eintragen — ohne Paar fällt die Simulation auf „berechnet“ zurück und meldet es. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_FEST_OHNE_PAAR {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_FEST_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0}/{1} °C — so rechnet die Simulation ohne Eintrag. ähnelt.
         /// </summary>
         public static string ANL_TEMP_VORGABE_KESSEL {

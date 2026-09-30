@@ -228,7 +228,18 @@ namespace WindowsFormsApplication1
             Geraet,
 
             /// <summary>Weder Anlage noch Kessel tragen ein Paar — es gilt die Vorgabe 70/50 °C.</summary>
-            Vorgabe
+            Vorgabe,
+
+            /// <summary>
+            /// Der Temperaturbezug der Anlage steht auf „Fest" (<see cref="DbWerte.WQ_TEMPMODUS_FEST"/>),
+            /// und die Zeile trägt kein vollständiges Paar — es wird NICHT vorbelegt
+            /// (Anwenderentscheid 30.09.2026). Ohne Paar rechnet die Simulation in diesem Modus
+            /// über den Weg „Berechnet" (erst das Paar des Senkenspeichers, dann 70/50 °C) und
+            /// meldet es; ein gespeichertes 70/50 machte daraus still eine feste Vorgabe, die
+            /// niemand gemacht hat, und änderte das Ergebnis. Die Felder bleiben leer, die
+            /// Herleitungszeile bittet um ein Paar.
+            /// </summary>
+            Fest
         }
 
         /// <summary>Das Paar, das der Dialog zeigt, und seine Herkunft.</summary>
@@ -251,7 +262,7 @@ namespace WindowsFormsApplication1
             public PaarHerkunft Herkunft { get; }
 
             /// <summary>Wurde vorbelegt — trägt die Zeile jetzt etwas, das der Anwender nicht eingegeben hat?</summary>
-            public bool Vorbelegt => Herkunft != PaarHerkunft.Anlage;
+            public bool Vorbelegt => Herkunft == PaarHerkunft.Geraet || Herkunft == PaarHerkunft.Vorgabe;
         }
 
         /// <summary>
@@ -270,13 +281,18 @@ namespace WindowsFormsApplication1
         /// (<c>Tab_Heizkessel</c> über <c>ID_Kessel</c>), sonst die Vorgabe
         /// <see cref="KESSEL_VORLAUF_VORGABE"/>/<see cref="KESSEL_RUECKLAUF_VORGABE"/>.
         /// Vollständig ist ein Kesselpaar nach <c>ProjektPuffer.IstTemperaturpaar</c>, wie
-        /// in der Simulation.
+        /// in der Simulation. Steht der Temperaturbezug auf „Fest" (<paramref name="festerBezug"/>),
+        /// bleibt ein unvollständiges Paar, wie es ist (<see cref="PaarHerkunft.Fest"/>).
         /// </summary>
         public static PaarVorbelegung KesselPaar(int? anlageVorlauf, int? anlageRuecklauf,
-                                                 int? kesselVorlauf, int? kesselRuecklauf)
+                                                 int? kesselVorlauf, int? kesselRuecklauf,
+                                                 bool festerBezug = false)
         {
             if (!PaarUnvollstaendig(anlageVorlauf, anlageRuecklauf))
                 return new PaarVorbelegung(anlageVorlauf, anlageRuecklauf, PaarHerkunft.Anlage);
+
+            if (festerBezug)
+                return new PaarVorbelegung(anlageVorlauf, anlageRuecklauf, PaarHerkunft.Fest);
 
             if (ProjektPuffer.IstTemperaturpaar(kesselVorlauf, kesselRuecklauf))
                 return new PaarVorbelegung(kesselVorlauf, kesselRuecklauf, PaarHerkunft.Geraet);
@@ -316,15 +332,31 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            PaarVorbelegung p = KesselPaar(item.Vorlauf, item.Ruecklauf, kv, kr);
+            PaarVorbelegung p = KesselPaar(item.Vorlauf, item.Ruecklauf, kv, kr, FesterBezug(item, stammverweis));
+            if (!p.Vorbelegt) return p;
             item.Vorlauf = p.Vorlauf ?? 0;
             item.Ruecklauf = p.Ruecklauf ?? 0;
             return p;
         }
 
         /// <summary>
+        /// Steht der Temperaturbezug einer GESPEICHERTEN Anlage auf „Fest"? Gelesen wie in der
+        /// Simulation (<c>SimulationControl.KesselKopplungSetzen</c>: Spalte
+        /// <see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS"/>, ausgewertet mit
+        /// <see cref="DbWerte.TemperaturModusOderDefault"/>). Eine frisch aufgenommene Zeile
+        /// hat noch keinen Satz und damit den Vorgabemodus „Berechnet".
+        /// </summary>
+        private static bool FesterBezug(WErzeugerModel item, bool stammverweis)
+        {
+            if (stammverweis || item.ID <= 0 || item.ID >= WizardItemClass.ID_UNGESPEICHERT_START) return false;
+            string modus = DbWerte.TemperaturModusOderDefault(
+                WaermequelleClass.WertLesenStill(item.ID, SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS));
+            return string.Equals(modus, DbWerte.WQ_TEMPMODUS_FEST, System.StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Die HERLEITUNGSZEILE unter dem Paar — fertig formuliert; leer, wenn nichts
-        /// vorbelegt wurde.
+        /// vorbelegt wurde. Im Modus „Fest" ohne Paar bittet sie um ein Paar.
         /// </summary>
         public static string Herleitung(PaarVorbelegung p)
         {
@@ -336,6 +368,8 @@ namespace WindowsFormsApplication1
                 case PaarHerkunft.Vorgabe:
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ANL_TEMP_VORGABE_KESSEL,
                                          p.Vorlauf, p.Ruecklauf);
+                case PaarHerkunft.Fest:
+                    return MyResource.Resource.ANL_TEMP_FEST_OHNE_PAAR;
                 default:
                     return "";
             }

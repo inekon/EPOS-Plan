@@ -26223,6 +26223,9 @@ Möchten Sie das zulassen?</value>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (wird beim Speichern aus dem Bedarf des Projekts angelegt)</value>
   </data>
+  <data name="ANL_TEMP_FEST_OHNE_PAAR" xml:space="preserve">
+    <value>Temperaturbezug „fest vorgegeben“: Bitte Vorlauf und Rücklauf eintragen — ohne Paar fällt die Simulation auf „berechnet“ zurück und meldet es.</value>
+  </data>
   <data name="ANL_TEMP_VORGABE_KESSEL" xml:space="preserve">
     <value>Vorgabe {0}/{1} °C — so rechnet die Simulation ohne Eintrag.</value>
   </data>
