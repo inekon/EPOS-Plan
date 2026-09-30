@@ -165,6 +165,9 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Heizkessel takten unter ihrer Mindestleistung: Die Simulation zählt die Brennerstarts und rechnet je Start einen Anfahrverlust als Brennstoff; leere Felder nehmen Vorgaben. (#630)
 - Der Kesseleditor zeigt in der Gruppe „Kennlinie“ den Wirkungsgrad über der Last als Diagramm, beim Brennwertkessel mit Brennwertkennlinie für 30, 50 und 60 °C Rücklauf. (#635)
 - Berichtsvorlagen können je Variante die Tabelle der Heizkessel mit Jahresnutzungsgrad, Brennwertanteil und Starts zeigen. (#635)
+- Verwaltung Heizkessel: Vorlauf und Rücklauf stehen als Gruppe „Auslegung für Verteilung“ und sind ohne Eintrag mit dem Paar vorbelegt, mit dem die Simulation rechnet. (#636)
+- Wärmepumpe: Die Nutzungsdauer wird im Kostendialog gepflegt; ein fehlender Rücklauf ist aus dem Vorlauf vorbelegt. (#636)
+- Auf der Seite „Kosten“ rechnet „Neu berechnen“ die Wirtschaftlichkeit der Versionen im Vergleich neu. (#637)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
