@@ -13535,6 +13535,16 @@ td.epos-vorlage-katalogbeschreibung {
     display: none;
 }
 
+/* Die Zeile "Vorlage" (Welle U2): eine Anzeige der Herkunft je Spalte -
+   schmal wie die Zellen nur die der gewaehlten Groesse. */
+.epos-kond-herkunft {
+    min-width: 0;
+}
+
+.epos-kond-matrix td.epos-kond-herkunft:not(.epos-kond--aktiv) {
+    display: none;
+}
+
 .epos-kond-karten {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -13601,6 +13611,10 @@ td.epos-vorlage-katalogbeschreibung {
 
     .epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),
     .epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv) {
+        display: table-cell;
+    }
+
+    .epos-kond-matrix td.epos-kond-herkunft:not(.epos-kond--aktiv) {
         display: table-cell;
     }
 

@@ -6,7 +6,11 @@
    abgeleiteten Kalender, "Verwerfen" und "Matrix erneut anwenden…" an einem angelegten. Seit Welle U2 im
    Kopf die AUSWAHLLISTE der Vorlagen ihrer Groesse (Teilkonzept 7.4): die ausgelieferten zuerst, dann die
    eigenen - gleiche Namen stehen so in jeder Liste an derselben Stelle; eine ausgelieferte traegt neben
-   der Liste das Kennzeichen (Schloss), eine eigene nicht. Darunter die VORSCHAU der Woche: mit gewaehlter
+   der Liste das Kennzeichen (Schloss), eine eigene nicht. Daneben "Uebernehmen" (P11, P12): die Zellen
+   der Vorlage in die Spalte, der Kalender angelegt mit Herkunft; weich gesperrt ohne Wahl und an der
+   gesperrten Kuehlspalte, der Grund am Knopf; die Rueckfrage vor einem angelegten Kalender stellt der
+   Wirt. Danach ist die Wahl leer - die Karte zeigt den Kalender, der der Matrix folgt (E56 F2 (a)).
+   Darunter die VORSCHAU der Woche: mit gewaehlter
    Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
    einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
    ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
@@ -39,6 +43,16 @@
                 <span class="epos-vorlage-schlossplatz">
                     <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
                 </span>
+            }
+            @if (Uebernehmen.HasDelegate)
+            {
+                @* Weich gesperrt, solange nichts gewaehlt ist oder die Spalte gesperrt steht - der Grund
+                   am Knopf, der Versuch meldet ihn (Hausregel). *@
+                string? grund = UebernehmenSperre ?? (Gewaehlt is null ? Texte.GrundKeineVorlage : null);
+                <button type="button" class="epos-knopf epos-kond-uebernehmen"
+                        aria-disabled="@(grund is null ? null : "true")"
+                        title="@(grund ?? Texte.HinweisVorlageUebernehmen)"
+                        @onclick="() => UebernehmenGeklickt(grund)">@Texte.KnopfUebernehmen</button>
             }
         </div>
         @if (Gewaehlt is KonditionierungVorlageDaten v && v.Beschreibung.Length > 0)
@@ -122,6 +136,21 @@
     [Parameter] public EventCallback<long?> VorlageGewaehlt { get; set; }
 
     /// <summary>
+    /// „Übernehmen" der gewählten Vorlage (P11, P12) — der Wirt fragt vorher, wo ein angelegter
+    /// Kalender ersetzt wird; ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback Uebernehmen { get; set; }
+
+    /// <summary>
+    /// Der Grund, warum „Übernehmen" in dieser Karte weich gesperrt steht (etwa die gesperrte
+    /// Kühlspalte); <c>null</c> = frei, sobald eine Vorlage gewählt ist.
+    /// </summary>
+    [Parameter] public string? UebernehmenSperre { get; set; }
+
+    /// <summary>Meldet den Versuch an einer weich gesperrten Handlung — mit ihrem Grund.</summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>
     /// Rechnet das Bild der Vorschau (Woche der gewählten Vorlage am Ziel bzw. des geltenden Kalenders);
     /// <c>null</c> = keine Vorschau. Gerufen wird nur bei neuem <see cref="Vorschauschluessel"/>.
     /// </summary>
@@ -156,6 +185,10 @@
     };
 
     private Task Waehlen(int? id) => VorlageGewaehlt.InvokeAsync(id);
+
+    /// <summary>Ein weich gesperrter Knopf meldet den Grund; sonst geht es an den Wirt.</summary>
+    private Task UebernehmenGeklickt(string? grund)
+        => grund is null ? Uebernehmen.InvokeAsync() : Verweigert.InvokeAsync(grund);
 
     // ------------------------------------------------------------ Die Vorschau, entprellt
 

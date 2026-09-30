@@ -101,6 +101,9 @@
                                Vorlagen="@(Bearbeitung.MitVorlagen ? Bearbeitung.Vorlagen(groesse) : null)"
                                GewaehlteVorlage="@Bearbeitung.GewaehlteVorlage(groesse)?.Id"
                                VorlageGewaehlt="@(id => VorlageWaehlen(groesse, id))"
+                               Uebernehmen="@Rueckruf(KonditionierungHandlung.VorlageUebernehmen, () => Bearbeitung.VorlageUebernehmen(groesse))"
+                               UebernehmenSperre="@(groesse == KonditionierungGroesse.Kuehlen ? Kuehlsperre : null)"
+                               Verweigert="Verweigert"
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
                                Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs" />
             }
@@ -351,6 +354,13 @@
     private async Task Zuruecknehmen()
     {
         Bearbeitung.Zuruecknehmen();
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Der Versuch an einer weich gesperrten Handlung einer Karte: der Grund als Hinweis.</summary>
+    private async Task Verweigert(string grund)
+    {
+        Bearbeitung.Melden?.Invoke(grund, WarnStufe.Hinweis);
         await Geaendert.InvokeAsync();
     }
 

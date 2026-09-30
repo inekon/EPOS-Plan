@@ -367,6 +367,13 @@ public sealed class KonditionierungBearbeitung
     public bool Angelegt(KonditionierungGroesse g) => Kalender(g)?.Zustand == KonditionierungZustand.Angelegt;
 
     /// <summary>
+    /// Die Herkunft des angelegten Kalenders — der Name der zuletzt übernommenen Vorlage (Zeile „Vorlage"
+    /// der Matrix, Teilkonzept 7.2); <c>null</c> = keine.
+    /// </summary>
+    public string? Herkunft(KonditionierungGroesse g)
+        => Angelegt(g) && Kalender(g)?.Vorlage is { Length: > 0 } v ? v : null;
+
+    /// <summary>
     /// Die Zustandszeile der eingeklappten Karte (Teilkonzept 7.1): „aus der Matrix", „aus Vorlage
     /// Büro", „angelegt, 3 eigene Perioden" oder — an einer Zone — „vom Gebäude".
     /// </summary>

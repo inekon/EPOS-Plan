@@ -160,6 +160,194 @@ public class KalenderkarteTests : EposBunitContext
     }
 
     // =================================================================================
+    // Übernehmen (P11, P12) und die Zeile „Vorlage"
+    // =================================================================================
+
+    /// <summary>Der Knopf „Übernehmen" der Karte einer Größe.</summary>
+    internal static IElement Uebernehmen(IRenderedComponent<KonditionierungReiter> cut, KonditionierungGroesse g)
+        => Karte(cut, g).QuerySelector("button.epos-kond-uebernehmen")
+           ?? throw new InvalidOperationException("Die Karte " + g + " trägt kein „Übernehmen“.");
+
+    /// <summary>Beantwortet die offene Rückfrage des Reiters: Ja oder Nein.</summary>
+    internal static void Antworten(IRenderedComponent<KonditionierungReiter> cut, bool ja)
+        => cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == (ja ? "Ja" : "Nein")).Click();
+
+    /// <summary>Die Zelle der Zeile „Vorlage" in der Matrix.</summary>
+    private static string Herkunftszelle(IRenderedComponent<KonditionierungReiter> cut, KonditionierungGroesse g)
+        => cut.Find($"tr.epos-kond-herkunftzeile td[data-groesse='{(int)g}']").TextContent.Trim();
+
+    [Fact]
+    public void Uebernehmen_legt_den_Kalender_an_setzt_die_Zellen_und_nennt_die_Herkunft()
+    {
+        var cut = Aufbauen(Weg(Konditionierungsvorlagenablage.AusSaat()));
+        Assert.Equal("—", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Büro");
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+
+        // Der Kalender ist angelegt, die Herkunft steht in Karte und Matrix; die Wahl ist wieder leer.
+        Assert.True(_bearbeitung.Angelegt(KonditionierungGroesse.Heizen));
+        Assert.Equal("aus Vorlage Büro", Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-karte-zustand")!.TextContent.Trim());
+        Assert.Equal("Büro", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+        Assert.Equal("—", Herkunftszelle(cut, KonditionierungGroesse.Kuehlen));
+        Assert.Null(_bearbeitung.GewaehlteVorlage(KonditionierungGroesse.Heizen));
+
+        // Die Zellen der Vorlage stehen in der Spalte: Nacht 16 °C von 18 bis 7 Uhr, Wochenende und Ferien
+        // 16 °C; der Tag (20 °C) gleicht dem Ziel. Die Feiertage „wie Sonntag" stehen als Regeln im Kalender.
+        Assert.Equal(20, _arbeit.Stand.SollTag);
+        Assert.Equal(16, _arbeit.Stand.NachtAbsenkung);
+        Assert.Equal((18, 7), (_arbeit.Stand.NachtBeginn, _arbeit.Stand.NachtEnde));
+        Assert.Equal(16, _arbeit.Stand.WochenendAbsenkung);
+        Assert.Equal(16, _arbeit.Stand.SollFerien);
+        Assert.Equal(9, _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Perioden.Count(p => p.Art == KonditionierungPeriodenart.Feiertag));
+        Assert.Empty(_meldungen);
+    }
+
+    [Fact]
+    public void Eine_leere_Zelle_der_Vorlage_laesst_die_des_Ziels_und_Nennwert_und_Saison_bleiben()
+    {
+        var cut = Aufbauen(Weg(Konditionierungsvorlagenablage.AusSaat()));
+
+        // Die Lüftungsvorlage „Büro" führt keinen Tag: die Nutzerlüftung (0,3 1/h) und die Infiltration bleiben.
+        Waehlen(cut, KonditionierungGroesse.Lueftung, "Büro");
+        Uebernehmen(cut, KonditionierungGroesse.Lueftung).Click();
+        Assert.Equal(0.3, _arbeit.Stand.LuftwechselNutzer);
+        Assert.Equal(0.2, _arbeit.Stand.LuftwechselInfiltration);
+        Assert.Equal(0.1, _bearbeitung.Wert(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nacht));
+
+        // Personen: der Nennwert bleibt dem Objekt; die Saison des Heizens ebenso.
+        _bearbeitung.ZeitenSetzen(KonditionierungGroesse.Heizen, KonditionierungZeile.Saison, 274, 120);
+        cut.Render();
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Schule");
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+        Assert.Equal((274, 120), _bearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Saison));
+        Assert.Equal("Schule", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+    }
+
+    [Fact]
+    public void Ohne_Wahl_und_an_der_gesperrten_Kuehlspalte_ist_Uebernehmen_weich_gesperrt_und_nennt_den_Grund()
+    {
+        var cut = Render<KonditionierungReiter>(p => p
+            .Add(x => x.Bearbeitung, Bearbeitung(Weg(Konditionierungsvorlagenablage.AusSaat())))
+            .Add(x => x.Kuehlsperre, "Kühlung ist aus.")
+            .Add(x => x.EntprellungMs, 0));
+
+        IElement heizen = Uebernehmen(cut, KonditionierungGroesse.Heizen);
+        Assert.Equal("true", heizen.GetAttribute("aria-disabled"));
+        Assert.Equal("Erst eine Vorlage aus der Liste wählen.", heizen.GetAttribute("title"));
+        Assert.False(heizen.HasAttribute("disabled"));
+        heizen.Click();
+        Assert.Equal(new[] { "Erst eine Vorlage aus der Liste wählen." }, _meldungen);
+        Assert.False(_bearbeitung.Angelegt(KonditionierungGroesse.Heizen));
+
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Büro");
+        Assert.Null(Uebernehmen(cut, KonditionierungGroesse.Heizen).GetAttribute("aria-disabled"));
+        Assert.Contains("nur auf diese Größe", Uebernehmen(cut, KonditionierungGroesse.Heizen).GetAttribute("title"));
+
+        Waehlen(cut, KonditionierungGroesse.Kuehlen, "Büro");
+        IElement kuehlen = Uebernehmen(cut, KonditionierungGroesse.Kuehlen);
+        Assert.Equal("true", kuehlen.GetAttribute("aria-disabled"));
+        Assert.Equal("Kühlung ist aus.", kuehlen.GetAttribute("title"));
+        kuehlen.Click();
+        Assert.Equal("Kühlung ist aus.", _meldungen.Last());
+        Assert.False(_bearbeitung.Angelegt(KonditionierungGroesse.Kuehlen));
+    }
+
+    [Fact]
+    public void Auf_einen_angelegten_Kalender_fragt_Uebernehmen_vorher_nennt_was_ersetzt_wird_und_was_bleibt()
+    {
+        var cut = Aufbauen(Weg(Konditionierungsvorlagenablage.AusSaat()));
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Schule");
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+        Assert.Null(_bearbeitung.OffeneFrage);                       // ohne Kalender keine Frage
+        KonditionierungKalender schule = _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Kopie();
+
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Büro");
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+        KonditionierungBearbeitung.Rueckfrage frage = _bearbeitung.OffeneFrage!;
+        Assert.NotNull(frage);
+        Assert.True(frage.VorgabeNein);
+        Assert.Equal("Übernehmen", frage.Titel);
+        Assert.StartsWith("Die Vorlage „Büro“ auf den angelegten Kalender „Heizen“ übernehmen? Ersetzt wird: ", frage.Text);
+        Assert.Contains("die Standardwoche", frage.Text);
+        Assert.Contains("Es bleibt: 9 Feiertagsregeln.", frage.Text);
+
+        // Nein: nichts ändert sich - der Kalender der Schule steht, die Wahl bleibt.
+        Antworten(cut, ja: false);
+        Assert.Equal("Schule", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+        Assert.Equal(schule.Woche, _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Woche);
+        Assert.Equal("Büro", _bearbeitung.GewaehlteVorlage(KonditionierungGroesse.Heizen)!.Name);
+
+        // Ja: der Matrixbereich wird ersetzt, die Feiertagsregeln stehen nur einmal.
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+        Antworten(cut, ja: true);
+        Assert.Equal("Büro", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+        Assert.Equal(9, _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Perioden.Count(p => p.Art == KonditionierungPeriodenart.Feiertag));
+        Assert.Equal(16, schule.Woche![17]);                                                 // Schule: Nacht ab 15 Uhr
+        Assert.Equal(20, _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Woche![17]);   // Büro: Nacht erst ab 18 Uhr
+        Assert.True(_bearbeitung.KannZuruecknehmen);
+    }
+
+    [Fact]
+    public void Nach_dem_Uebernehmen_folgt_der_unveraenderte_Kalender_der_Matrix_Vorschau_und_Kalender_zeigen_21_Grad()
+    {
+        var cut = Aufbauen(Weg(Konditionierungsvorlagenablage.AusSaat()));
+        Waehlen(cut, KonditionierungGroesse.Heizen, "Büro");
+        Uebernehmen(cut, KonditionierungGroesse.Heizen).Click();
+        Assert.Equal(20, _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!.Woche![10]);
+        string bildVorher = Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorschau svg")!.OuterHtml;
+
+        // Heizen · Tag 21 °C: Der Kalender folgt ohne Rückfrage (E56 F2 (a)), die Feiertage bleiben.
+        Eingabe(cut, "Heizen · Tag").Input("21");
+        cut.Render();
+        Assert.Null(_bearbeitung.OffeneFrage);
+        KonditionierungKalender k = _bearbeitung.Kalender(KonditionierungGroesse.Heizen)!;
+        Assert.Equal(KonditionierungZustand.Angelegt, k.Zustand);
+        Assert.Equal(21, k.Woche![10]);
+        Assert.Equal(16, k.Woche![20]);
+        Assert.Equal(9, k.Perioden.Count(p => p.Art == KonditionierungPeriodenart.Feiertag));
+        Assert.Equal("Büro", Herkunftszelle(cut, KonditionierungGroesse.Heizen));
+
+        // Die Vorschau zeigt den Kalender, wie er jetzt gilt.
+        Assert.Equal(21, _bearbeitung.Vorschauwoche(KonditionierungGroesse.Heizen)![10]);
+        Assert.NotEqual(bildVorher, Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vorschau svg")!.OuterHtml);
+    }
+
+    [Fact]
+    public void Eine_Lueftungsvorlage_an_der_Gesamtangabe_fragt_aufteilen_und_uebernimmt_danach_in_einem_Schritt()
+    {
+        GebaeudeKatalogDaten satz = Satz();
+        satz.Luftwechselrate = 0.6;
+        satz.LuftwechselInfiltration = null;
+        satz.LuftwechselNutzer = null;
+        var cut = Aufbauen(Weg(Konditionierungsvorlagenablage.AusSaat()), satz);
+
+        Waehlen(cut, KonditionierungGroesse.Lueftung, "Schule");
+        Uebernehmen(cut, KonditionierungGroesse.Lueftung).Click();
+        Assert.Contains("Aufteilen in Infiltration 0,3 1/h und Nutzerlüftung 0,3 1/h", _bearbeitung.OffeneFrage!.Text);
+        Assert.False(_bearbeitung.Angelegt(KonditionierungGroesse.Lueftung));
+
+        Antworten(cut, ja: true);
+        Assert.True(_bearbeitung.Angelegt(KonditionierungGroesse.Lueftung));
+        Assert.Equal("Schule", Herkunftszelle(cut, KonditionierungGroesse.Lueftung));
+        Assert.Equal(0.3, _arbeit.Stand.LuftwechselNutzer);
+        Assert.Null(_bearbeitung.GewaehlteVorlage(KonditionierungGroesse.Lueftung));
+
+        // Ein Schritt: „Zurücknehmen" nimmt Aufteilung und Vorlage zusammen zurück.
+        Assert.True(_bearbeitung.Zuruecknehmen());
+        Assert.False(_bearbeitung.Angelegt(KonditionierungGroesse.Lueftung));
+        Assert.Null(_arbeit.Stand.LuftwechselNutzer);
+    }
+
+    /// <summary>Eine Bearbeitung über einem frischen Satz — für Fälle, die den Reiter selbst aufbauen.</summary>
+    private KonditionierungBearbeitung Bearbeitung(KonditionierungWeg weg)
+    {
+        _arbeit = new GebaeudeArbeitsstand();
+        _arbeit.Laden(Satz(), neu: false);
+        return _bearbeitung = new KonditionierungBearbeitung(_arbeit, () => weg) { Melden = (m, _) => _meldungen.Add(m) };
+    }
+
+    // =================================================================================
     // Die Vorschau
     // =================================================================================
 
