@@ -10,10 +10,10 @@
 //
 // WOZU. Mit der Etappe E2 rechnet jeder Brennstoffkessel je Stunde mit dem Wirkungsgrad seiner
 // Laststufe. Die uebrigen Referenzkessel tragen kein eigenes eta30 und rechnen mit der
-// Normvorgabe nach Bauart - 1023 als einziger Brennwertkessel mit eta100 + 0,06, alle anderen
-// als Niedertemperaturkessel flach. Ein gepflegtes eta30 ueber Hs/Hi-naher Groesse, der Schalter
-// der Brennwertkennlinie (E3) und die Taktfelder (E4) stuenden sonst ausserhalb des
-// Regressionsnetzes.
+// Normvorgabe nach Bauart - seit dem Nachzug des Brennwertkennzeichens (Schemaschritt 158) jeder
+// Brennstoffkessel als Brennwertkessel mit eta100 + 0,06, keiner mit Brennwertkennlinie. Ein
+// gepflegtes eta30 ueber Hs/Hi-naher Groesse, der Schalter der Brennwertkennlinie (E3) und die
+// Taktfelder (E4) stuenden sonst ausserhalb des Regressionsnetzes.
 //
 // VORLAGE 1023 "Woehler - Test1": zwei Waermepumpen auf einen Puffer, danach ein Gas-Brennwert-
 // kessel (Brennwert = 1, 19,3 kW) direkt am Heizkreis. Der Kessel laeuft rund 5 000 Stunden im
