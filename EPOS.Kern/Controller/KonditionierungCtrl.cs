@@ -588,15 +588,9 @@ namespace WindowsFormsApplication1
             string schloss = Schloss(eigner);
             if (schloss != null) return Ergebnis.Fehler(schloss);
 
-            Fahrplanlesung l = Standardfahrplan.Erzeugen(matrix, groesse, rundlaufPruefen: true);
-            if (l.Befund == Fahrplanbefund.KeineAngabe)
-                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT, l.Befund.ToString(), l.Fundstelle()));
-            if (l.Befund != Fahrplanbefund.Erzeugt)
-                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT, l.Befund.ToString(), l.Fundstelle()));
-
-            return Schreiben(eigner, l.Kalender);
+            // Stufe KP2: eine duenne Huelle ueber den reinen Schritt (Konditionierungsarbeit.KalenderAnlegen).
+            return Schrittweg(eigner, mitBestand: false, streng: false,
+                              vor => Konditionierungsarbeit.KalenderAnlegen(vor, matrix, groesse));
         }
 
         /// <summary>
@@ -724,18 +718,8 @@ namespace WindowsFormsApplication1
             if (!KonditionierungSchema.Lesbar()) return Ergebnis.Gut;
             string schloss = Schloss(eigner);
             if (schloss != null) return Ergebnis.Fehler(schloss);
-            try
-            {
-                DataRepository.ExecuteNonQuery(
-                    "DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " + eigner.Bedingung() +
-                    " AND \"Groesse\" = ?",
-                    Mit(eigner.Parameter(), new DbParam("@gr", Konditionierungsgroessen.Kennwort(groesse))));
-                return Ergebnis.Gut;
-            }
-            catch (Exception ex)
-            {
-                return Ergebnis.Fehler(ex.Message);
-            }
+            return Schrittweg(eigner, mitBestand: false, streng: false,
+                              vor => Ebenenergebnis.Gut(Konditionierungsarbeit.KalenderVerwerfen(vor, groesse)));
         }
 
         /// <summary>
@@ -752,38 +736,15 @@ namespace WindowsFormsApplication1
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (matrix == null) throw new ArgumentNullException(nameof(matrix));
+            if (!KonditionierungSchema.Lesbar())
+                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.ZONE_MSG_OHNE_KOPPLUNG, KonditionierungSchema.SCHRITT));
             string schloss = Schloss(eigner);
             if (schloss != null) return Ergebnis.Fehler(schloss);
 
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden = Kalender(eigner, out string m);
-            if (m != null) return Ergebnis.Fehler(m);
-            if (!vorhanden.TryGetValue(groesse, out Konditionierungskalender alt))
-                return Anlegen(eigner, matrix, groesse);      // nichts angelegt: der gewöhnliche Weg
-
-            Fahrplanlesung l = Standardfahrplan.Erzeugen(matrix, groesse, rundlaufPruefen: true);
-            if (l.Befund != Fahrplanbefund.Erzeugt)
-                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT, l.Befund.ToString(), l.Fundstelle()));
-
-            // Die eigenen Perioden des Bestands behalten, die des Matrixbereichs ersetzen.
-            var perioden = new List<Kalenderregel>();
-            foreach (Kalenderregel r in alt.Perioden)
-                if (!IstMatrixbereich(r)) perioden.Add(r);
-            foreach (Kalenderregel r in l.Kalender.Perioden)
-                perioden.Add(r);
-
-            // Ein Rang darf nicht zweimal vorkommen; die eigenen Perioden behalten ihren, eine
-            // Kollision wird benannt abgelehnt statt still verschoben.
-            var raenge = new HashSet<int>();
-            foreach (Kalenderregel r in perioden)
-                if (!raenge.Add(r.Rang))
-                    return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT,
-                        Fahrplanbefund.RundlaufVerletzt.ToString(),
-                        "Rang " + r.Rang.ToString(CultureInfo.InvariantCulture) + " doppelt"));
-
-            var neu = new Konditionierungskalender(groesse, l.Kalender.Grundangabe, l.Kalender.Nennwert, perioden);
-            return Schreiben(eigner, neu);
+            // Ohne angelegten Kalender ist es „Anlegen" (Konditionierungsarbeit.MatrixbereichErsetzen).
+            return Schrittweg(eigner, mitBestand: false, streng: true,
+                              vor => Konditionierungsarbeit.MatrixbereichErsetzen(vor, matrix, groesse));
         }
 
         /// <summary>
@@ -824,11 +785,50 @@ namespace WindowsFormsApplication1
             string pruefung = ZellePruefen(groesse, zeile, zelle);
             if (pruefung != null) return Ergebnis.Fehler(pruefung);
 
+            // Stufe KP2: der reine Schritt (Weiche, Nachtzeiten B6, Merker B7), dann nur Geaendertes.
+            // Eine unbelegte Zelle laesst die Bestandsspalte hier stehen, auch an der Zone (KP1).
+            return Schrittweg(eigner, mitBestand: true, streng: false, vor =>
+            {
+                Matrixzelle z = zelle;
+                if (!z.Belegt && Matrixzellenort.HatBestandsspalte(vor.Art, groesse, zeile))
+                {
+                    double? w = Konditionierungsarbeit.Bestandswert(vor.Bestand, groesse, zeile);
+                    if (w.HasValue) z = Matrixzelle.AusWert(w.Value, z.Von, z.Bis, z.BedingtK);
+                }
+                return Konditionierungsarbeit.Eintragen(vor, groesse, zeile, z);
+            });
+        }
+
+        /// <summary>
+        /// <b>Der duenne Schreibweg eines Knopfs</b> (Stufe KP2, Welle K2): die Ebene lesen, den reinen
+        /// Schritt der <see cref="Konditionierungsarbeit"/> rechnen und nur das Geaenderte schreiben
+        /// (<see cref="StandSchreiben"/>) — alles in EINEM Vorgang unter der
+        /// <see cref="Vorgangsklammer"/>. <paramref name="streng"/>: eine ungueltige Kalenderzeile
+        /// wird benannt abgelehnt, statt still ueberschrieben. Schloss und Pruefung haelt der Aufrufer.
+        /// </summary>
+        internal Ergebnis Schrittweg(Eigner eigner, bool mitBestand, bool streng,
+                                     Func<Konditionierungsstand, Ebenenergebnis> schritt)
+        {
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            if (schritt == null) throw new ArgumentNullException(nameof(schritt));
             using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
             {
                 try
                 {
-                    Ergebnis e = ZelleSchreiben(v, eigner, groesse, zeile, zelle);
+                    Konditionierungsstand vor = StandLesen(eigner, out string meldung);
+                    if (streng && meldung != null)
+                    {
+                        v.Rollback();
+                        return Ergebnis.Fehler(meldung);
+                    }
+                    Ebenenergebnis r = schritt(vor);
+                    if (!r.Ok)
+                    {
+                        v.Rollback();
+                        return Ergebnis.Fehler(r.Meldung);
+                    }
+                    Ergebnis e = StandSchreiben(v, eigner, r.Stand, mitBestand, out _);
                     if (!e.Ok)
                     {
                         v.Rollback();
@@ -855,59 +855,6 @@ namespace WindowsFormsApplication1
         /// <returns><c>null</c>, wenn die Zelle passt, sonst die benannte Ablehnung.</returns>
         internal static string ZellePruefen(Konditionierungsgroesse groesse, string zeile, Matrixzelle zelle)
             => Konditionierungsarbeit.Zellenpruefung(groesse, zeile, zelle);
-
-        /// <summary>
-        /// <b>Derselbe Zellenschreibweg im laufenden Vorgang</b> — samt der Weiche
-        /// <see cref="Matrixzellenort"/>: Wo es eine Bestandsspalte gibt, gehört der Zahlenwert
-        /// dorthin, und die Vorgabezeile trägt nur „aus", die Zeiten und <c>Bedingt_K</c>
-        /// (Konzept 5.6). Die Klammer und die Prüfungen (<see cref="Schloss"/>,
-        /// <see cref="ZellePruefen"/>) hält der Aufrufer.
-        /// </summary>
-        internal static Ergebnis ZelleSchreiben(DbVorgang v, Eigner eigner, Konditionierungsgroesse groesse,
-                                                string zeile, Matrixzelle zelle)
-        {
-            if (v == null) throw new ArgumentNullException(nameof(v));
-            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
-            if (zelle == null) throw new ArgumentNullException(nameof(zelle));
-
-            string gr = Konditionierungsgroessen.Kennwort(groesse);
-            Matrixzellenort.Ort ort = Matrixzellenort.Fuer(eigner.Art, groesse, zeile);
-            bool inBestandsspalte = ort.IstBestandsspalte;
-            object wert = zelle.Belegt && !zelle.Aus && !inBestandsspalte ? (object)zelle.Wert : null;
-
-            if (inBestandsspalte && zelle.Belegt && !zelle.Aus)
-            {
-                int zeilen = v.Ausfuehren(
-                    "UPDATE \"" + ort.Tabelle + "\" SET \"" + ort.Spalte + "\" = ? WHERE \"ID\" = ?",
-                    new DbParam("@w", zelle.Wert),
-                    new DbParam("@id", eigner.Traegerid));
-                if (zeilen == 0)
-                    return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.KOND_MSG_EIGNER_FEHLT, ort.Tabelle,
-                        eigner.Traegerid.ToString(CultureInfo.InvariantCulture)));
-            }
-
-            v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE " +
-                         eigner.Bedingung() + " AND \"Groesse\" = ? AND \"Zeile\" = ?",
-                         Mit(eigner.Parameter(), new DbParam("@gr", gr), new DbParam("@ze", zeile)));
-
-            bool leer = wert == null && !zelle.Aus && !zelle.Von.HasValue && !zelle.Bis.HasValue
-                        && !zelle.BedingtK.HasValue;
-            if (!leer)
-                v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
-                             "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
-                             "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\", \"Bedingt_K\") " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                             Mit(eigner.Spaltenwerte("@e"),
-                                 new DbParam("@gr", gr),
-                                 new DbParam("@ze", zeile),
-                                 new DbParam("@we", wert),
-                                 new DbParam("@au", zelle.Aus ? 1 : 0),
-                                 new DbParam("@vo", (object)zelle.Von),
-                                 new DbParam("@bi", (object)zelle.Bis),
-                                 new DbParam("@bk", (object)zelle.BedingtK)));
-            return Ergebnis.Gut;
-        }
 
         // =================================================================
         //  Energie bleibt (P1)

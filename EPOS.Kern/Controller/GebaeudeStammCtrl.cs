@@ -1119,6 +1119,133 @@ namespace WindowsFormsApplication1
             return r == null ? (long?)null : Convert.ToInt64(r["ID"], System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Was der OK-Weg eines Katalogbaus ergeben hat (<see cref="KatalogSchreiben"/>): die Id des
+        /// Satzes und ob die Konditionierung Zeilen geschrieben hat.
+        /// </summary>
+        public sealed record Katalogschreibergebnis(bool Ok, int Id, bool KonditionierungGeschrieben, string Meldung)
+        {
+            /// <summary>Der benannte Fehlschlag — nichts ist geschrieben.</summary>
+            public static Katalogschreibergebnis Fehler(string meldung) => new Katalogschreibergebnis(false, 0, false, meldung ?? "");
+        }
+
+        /// <summary>
+        /// <b>Der OK-Weg eines Katalogbaus</b> (Stufe KP2, Welle K2; Entwurf KP2 Abschnitt 2 „eine
+        /// Schreibstelle"): Kopf und Konditionierung in EINEM Vorgang. <paramref name="neu"/> legt den
+        /// Satz an — sein Eigner entsteht im Vorgang —, sonst wird er unter <paramref name="ursprungsname"/>
+        /// überschrieben (der Name steht im Modell). Die Konditionierung kommt aus dem Arbeitsstand
+        /// (<paramref name="stand"/>; nur Geändertes, <see cref="KonditionierungCtrl.StandSchreiben"/>); ohne
+        /// Stand bekommt ein neuer Satz die Kopie der <paramref name="quelle"/> („Speichern unter" wie
+        /// Duplizieren), ohne beides nur den Kopf. Scheitert ein Schritt, fällt alles zurück. Das Schloss und
+        /// den freien Namen prüft der Aufrufer (die Hülle meldet es mit eigenem Text).
+        /// </summary>
+        public static Katalogschreibergebnis KatalogSchreiben(GebaeudeModel modell, bool neu, string ursprungsname,
+                                                              Konditionierungsstand stand,
+                                                              KonditionierungCtrl.Eigner quelle = null)
+        {
+            if (modell == null) throw new ArgumentNullException(nameof(modell));
+            if (!neu) modell.Gebaeudename = ursprungsname;
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    var ctrl = new GebaeudeStammCtrl();
+                    int id;
+                    if (neu)
+                    {
+                        if (!ctrl.Insert(modell, out id) || id <= 0)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                        }
+                    }
+                    else
+                    {
+                        if (!ctrl.Overwrite(modell))
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler("");
+                        }
+                        id = ctrl.Lies(modell.Gebaeudename)?.ID ?? 0;
+                    }
+
+                    bool geschrieben = false;
+                    if (stand != null && id > 0)
+                    {
+                        KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                            vorgang, KonditionierungCtrl.Eigner.Katalogbau(id), stand.AlsArt(Kalendereigentuemer.Katalogbau),
+                            mitBestand: false, out geschrieben);
+                        if (!e.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(e.Meldung);
+                        }
+                    }
+                    else if (neu && quelle != null)
+                    {
+                        Konditionierungskopie.Befund b = Konditionierungskopie.Kopieren(
+                            vorgang, quelle, KonditionierungCtrl.Eigner.Katalogbau(id), Konditionierungskopie.Auswahl.Alles);
+                        if (!b.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(b.Meldung);
+                        }
+                        geschrieben = b.Vorgaben + b.Kalender > 0;
+                    }
+
+                    vorgang.Commit();
+                    return new Katalogschreibergebnis(true, id, geschrieben, "");
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return Katalogschreibergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>OK im Projekt, Schritt 1</b> (Stufe KP2, Welle K2): die Projektkopie
+        /// (<see cref="ProjektkopieUeberschreiben"/>) samt ihrer Konditionierung aus dem Arbeitsstand in
+        /// EINEM Vorgang — nur Geändertes; <paramref name="stand"/> <c>null</c> lässt die Tabellen stehen.
+        /// </summary>
+        public static KonditionierungCtrl.Ergebnis ProjektkopieSchreiben(int idGebaeude, int idProjekt, GebaeudeModel modell,
+                                                                         Konditionierungsstand stand)
+        {
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    if (!ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
+                    {
+                        vorgang.Rollback();
+                        return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+                    }
+                    if (stand != null)
+                    {
+                        KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                            vorgang, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.AlsArt(Kalendereigentuemer.Gebaeude),
+                            mitBestand: false, out _);
+                        if (!e.Ok)
+                        {
+                            vorgang.Rollback();
+                            return e;
+                        }
+                    }
+                    vorgang.Commit();
+                    return KonditionierungCtrl.Ergebnis.Gut;
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
         /// <summary>Was „Speichern unter" ergeben hat: der neue Katalogbau und sein Kopierbefund.</summary>
         public sealed record SpeichernUnterErgebnis(bool Ok, int Id,
                                                     Konditionierungskopie.Befund Befund, string Meldung);

@@ -130,8 +130,10 @@ namespace WindowsFormsApplication1
             string name = vorher.Gebaeudename;
             GebaeudeModel modell = NachModell(daten, vorher);
             modell.Gebaeudename = name;
-            if (!GebaeudeStammCtrl.ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
-                return new GebaeudeKatalogErgebnis(false, MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+            // Stufe KP2: Gebaeude samt Konditionierung in EINEM Vorgang (Schritt 1 des OK-Wegs).
+            KonditionierungCtrl.Ergebnis e = GebaeudeStammCtrl.ProjektkopieSchreiben(idGebaeude, idProjekt, modell, null);
+            if (!e.Ok)
+                return new GebaeudeKatalogErgebnis(false, string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
             return new GebaeudeKatalogErgebnis(true, "");
         }
@@ -300,16 +302,24 @@ namespace WindowsFormsApplication1
                     ID = l.Id, ID_ZoneA = l.IdZoneA ?? 0, ID_ZoneB = l.IdZoneB ?? 0, Volumenstrom = l.Volumenstrom ?? 0.0
                 }).ToList();
 
-            Func<ZonenstandDaten, string> speichern = stand =>
+            // OK-Weg, Schritt 3 (Stufe KP2, Befund B10): Zonen, Bauteile, Luftstroeme und die
+            // Konditionierung der Zonen in EINEM Vorgang; zurueck kommt die Zuordnung der vorlaeufigen
+            // Ids, die der Dialog in seinen Arbeitsstand uebernimmt.
+            Func<ZonenstandDaten, ZonenSchreibergebnis> speichern = stand =>
             {
                 List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
-                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen, Luft(stand?.Luftstroeme));
-                if (!e.Ok) return e.Meldung ?? "";
+                GebaeudeZonenCtrl.Schreibergebnis e = zonenCtrl.Schreiben(idGebaeude, zeilen, Luft(stand?.Luftstroeme),
+                                                                          Zonenkonditionierung(stand?.Zonen));
+                if (!e.Ok)
+                    return ZonenSchreibergebnis.Fehler(string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
                 MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
-                return "";
+                return new ZonenSchreibergebnis("", e.Zonen, e.Bauteile, e.Luftstroeme);
             };
+
+            // Die Konditionierung der Zonen fuer den Schreibweg - Welle K2, Teilschritt 5 bindet sie.
+            static IReadOnlyDictionary<int, Konditionierungsstand> Zonenkonditionierung(IReadOnlyList<ZoneDaten> liste) => null;
 
             // Die Pruefregeln des Kerns ueber die ganze Liste samt Kopplung, ohne Datenbank (G6a/G6b).
             Func<ZonenstandDaten, string> pruefen = stand
@@ -910,17 +920,10 @@ namespace WindowsFormsApplication1
             // Ueberschreiben trifft den URSPRUNGSNAMEN (WHERE Bezeichner = Gebaeudename).
             if (!istNeu) modell.Gebaeudename = bezeichner;
 
-            if (!istNeu)
-            {
-                bool geaendert = ctrl.Overwrite(modell);
-                return new GebaeudeKatalogErgebnis(geaendert,
-                    geaendert ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
-            }
-
-            // „Speichern unter": Kopf und Konditionierung der Quelle in EINER Transaktion
-            // (Kernmethode, Konzept 5.5) - die Razor-Karte bleibt unberuehrt.
-            GebaeudeStammCtrl.SpeichernUnterErgebnis ergebnis =
-                GebaeudeStammCtrl.SpeichernUnter(modell, quelle);
+            // Stufe KP2: EINE Schreibstelle - neu, bearbeiten und „Speichern unter" schreiben Kopf und
+            // Konditionierung in EINEM Vorgang samt Insert (GebaeudeStammCtrl.KatalogSchreiben).
+            GebaeudeStammCtrl.Katalogschreibergebnis ergebnis =
+                GebaeudeStammCtrl.KatalogSchreiben(modell, istNeu, bezeichner, null, istNeu ? quelle : null);
             return new GebaeudeKatalogErgebnis(ergebnis.Ok,
                 ergebnis.Ok
                     ? ""

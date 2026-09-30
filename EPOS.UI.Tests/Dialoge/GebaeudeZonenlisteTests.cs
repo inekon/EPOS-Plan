@@ -64,7 +64,7 @@ public class GebaeudeZonenlisteTests : EposBunitContext
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Uebernehmen = _ => Task.FromResult(new ZonenuebernahmeDaten(true, "", 1.0, Zone(-1, "Übernahme", 150), 150, "Wohnfläche [m²]", 150, false)),
-            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ""; }
+            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ZonenSchreibergebnis.Gut; }
         };
     }
 

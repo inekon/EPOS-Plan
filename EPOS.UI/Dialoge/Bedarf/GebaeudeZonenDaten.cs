@@ -316,6 +316,31 @@ public sealed record ZonenuebernahmeDaten(bool Ok, string Meldung, double Faktor
 public sealed record AufbauUebernahmeErgebnis(bool Ok, string Meldung, AufbauWahl? Wahl);
 
 /// <summary>
+/// <b>Was das Schreiben der Zonen ergab</b> (Stufe KP2, Welle K2; Befund B10) — die Meldung und die
+/// <b>Zuordnung</b> der Ids: Eine neue Zone trägt im Arbeitsstand eine vorläufige Id (≤ 0), der Kern
+/// vergibt die endgültige; ohne Zuordnung legte ein zweites OK sie noch einmal an.
+/// </summary>
+/// <param name="Meldung">Der Grund, wenn nicht geschrieben wurde; leer = gelungen.</param>
+/// <param name="Zonen">Vorläufige Id → endgültige Id jeder neuen Zone.</param>
+/// <param name="Bauteile">Je endgültiger Zonen-Id die Ids ihrer Bauteile in Listenfolge.</param>
+/// <param name="Luftstroeme">Die Ids der Luftströme in Listenfolge; <c>null</c> = ungeändert, nicht geschrieben.</param>
+public sealed record ZonenSchreibergebnis(string Meldung, IReadOnlyDictionary<int, int> Zonen,
+                                          IReadOnlyDictionary<int, IReadOnlyList<int>> Bauteile,
+                                          IReadOnlyList<int>? Luftstroeme)
+{
+    /// <summary>Gelungen?</summary>
+    public bool Ok => string.IsNullOrEmpty(Meldung);
+
+    /// <summary>Gelungen, ohne neue Ids.</summary>
+    public static ZonenSchreibergebnis Gut { get; } =
+        new("", new Dictionary<int, int>(), new Dictionary<int, IReadOnlyList<int>>(), null);
+
+    /// <summary>Der benannte Fehlschlag.</summary>
+    public static ZonenSchreibergebnis Fehler(string meldung) =>
+        new(meldung ?? "", new Dictionary<int, int>(), new Dictionary<int, IReadOnlyList<int>>(), null);
+}
+
+/// <summary>
 /// <b>Der Zonenweg eines Projektgebäudes</b> — alles, was der Gebäudedialog für Zonen und Bauteile
 /// braucht, als EIN Parameter (Stufe G3, Welle D2). Die Hülle baut ihn nur für ein gespeichertes
 /// Projektgebäude; ohne ihn (Katalogsatz, Verwaltung, ohne Gaben) steht der Zonenreiter mit seinem
@@ -345,10 +370,12 @@ public sealed class GebaeudeZonenweg
 
     /// <summary>
     /// OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids) samt ihrer
-    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert);
-    /// leer = gelungen.
+    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert) und
+    /// ihrer Konditionierung (Stufe KP2). Das Ergebnis trägt die Zuordnung der vorläufigen Ids
+    /// (<see cref="ZonenSchreibergebnis"/>, Befund B10); der Dialog übernimmt sie in den Arbeitsstand
+    /// (<see cref="GebaeudeArbeitsstand.IdsUebernehmen"/>), damit ein zweites OK nichts doppelt schreibt.
     /// </summary>
-    public Func<ZonenstandDaten, string>? Speichern { get; init; }
+    public Func<ZonenstandDaten, ZonenSchreibergebnis>? Speichern { get; init; }
 
     /// <summary>
     /// Die Prüfregeln des Kerns über die ganze Zonenliste samt Kopplung (<c>GebaeudeZonenCtrl.Pruefen</c>,

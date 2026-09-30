@@ -325,102 +325,16 @@ namespace WindowsFormsApplication1
             string schloss = KonditionierungCtrl.Schloss(ziel);
             if (schloss != null) return KonditionierungCtrl.Ergebnis.Fehler(schloss);
 
-            Konditionierungsgroesse groesse = vorlage.Groesse;
-            var quelle = KonditionierungCtrl.Eigner.Vorlage(idVorlage);
+            // Stufe KP2: eine duenne Huelle - die Vorlage und das Ziel lesen, den reinen Schritt
+            // (Konditionierungsarbeit.VorlageEintragen: Weiche, Generator mit den Ferien des Ziels,
+            // Zusammenfuehren nach P12, Herkunft) rechnen und nur das Geaenderte schreiben.
             var ctrl = new KonditionierungCtrl();
-
-            // ---- Die Spalte der Vorlage ueber der des Ziels (Konzept 3.5) ----
-            // Eine Vorlage fuehrt keine Bestandsspalten; ihr Eingang ist deshalb leer.
-            Vorgabematrix vorlagenmatrix = Vorgabematrix.Bilden(new Matrixeingang(), ctrl.Vorgaben(quelle),
-                                                                Kalendereigentuemer.Vorlage);
-            Matrixspalte vorlagenspalte = vorlagenmatrix.Spalte(groesse);
-            Matrixspalte neueSpalte = vorlagenspalte.Erben(zielmatrix.Spalte(groesse));
-
-            // ---- Der Kalender der Vorlage (falls sie einen traegt) ----
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorlagenkalender =
-                ctrl.Kalender(quelle, out string m1);
+            Konditionierungsstand inhalt = ctrl.StandLesen(KonditionierungCtrl.Eigner.Vorlage(idVorlage), out string m1);
             if (m1 != null) return KonditionierungCtrl.Ergebnis.Fehler(m1);
-            vorlagenkalender.TryGetValue(groesse, out Konditionierungskalender ausVorlage);
-
-            // ---- Der angelegte Kalender des Ziels (P12) ----
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden =
-                ctrl.Kalender(ziel, out string m2);
-            if (m2 != null) return KonditionierungCtrl.Ergebnis.Fehler(m2);
-            vorhanden.TryGetValue(groesse, out Konditionierungskalender alt);
-
-            // ---- Der Generator ueber der ergaenzten Matrix ----
-            Fahrplanlesung l = Standardfahrplan.Erzeugen(zielmatrix.MitSpalte(groesse, neueSpalte),
-                                                         groesse, rundlaufPruefen: true);
-            if (l.Befund != Fahrplanbefund.Erzeugt)
-                return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT, l.Befund.ToString(), l.Fundstelle()));
-
-            Konditionierungskalender neu = Zusammenfuehren(l.Kalender, ausVorlage, alt, out string fehler);
-            if (fehler != null) return KonditionierungCtrl.Ergebnis.Fehler(fehler);
-
-            string bemerkung = string.Format(CultureInfo.CurrentCulture,
-                MyResource.Resource.KOND_MSG_HERKUNFT_VORLAGE, vorlage.Bezeichner);
-
-            using (DbVorgang v = DataRepository.Vorgang())
-            {
-                try
-                {
-                    // Die Zellen der Vorlage in die Matrixspalte des Ziels - jede ueber die Weiche;
-                    // eine leere Zelle der Vorlage laesst die des Ziels stehen.
-                    foreach (string zeile in DbWerte.KOND_ZEILEN)
-                    {
-                        Matrixzelle zelle = vorlagenspalte.Zeile(zeile);
-                        if (zelle == null || !Traegt(zelle)) continue;
-                        string pruefung = KonditionierungCtrl.ZellePruefen(groesse, zeile, zelle);
-                        if (pruefung != null)
-                        {
-                            v.Rollback();
-                            return KonditionierungCtrl.Ergebnis.Fehler(pruefung);
-                        }
-                        KonditionierungCtrl.Ergebnis e =
-                            KonditionierungCtrl.ZelleSchreiben(v, ziel, groesse, zeile, zelle);
-                        if (!e.Ok)
-                        {
-                            v.Rollback();
-                            return e;
-                        }
-                    }
-
-                    KonditionierungCtrl.Ergebnis k =
-                        KonditionierungCtrl.KalenderSchreiben(v, ziel, neu, bemerkung);
-                    if (!k.Ok)
-                    {
-                        v.Rollback();
-                        return k;
-                    }
-                    v.Commit();
-                }
-                catch (Exception ex)
-                {
-                    v.Rollback();
-                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
-                }
-            }
-            return KonditionierungCtrl.Ergebnis.Gut;
+            var quelle = new Konditionierungsvorlage(idVorlage, vorlage.Bezeichner, vorlage.Groesse, inhalt);
+            return ctrl.Schrittweg(ziel, mitBestand: true, streng: true,
+                                   vor => Konditionierungsarbeit.VorlageEintragen(vor, zielmatrix, quelle));
         }
-
-        /// <summary>
-        /// <b>Generator, Vorlage und Bestand zu einem Kalender</b> (P12, N1.61 Nr. 13):
-        /// <list type="bullet">
-        /// <item>die Grundangabe kommt vom Generator, es sei denn, die Vorlage bringt eine
-        /// <b>Standardwoche</b> mit — sie liegt darüber (Konzept 3.5);</item>
-        /// <item>die Perioden des <b>Matrixbereichs</b> (<c>FERIEN</c>, <c>BETRIEBSPAUSE</c>) kommen
-        /// vom Generator, also mit den Ferienzeiträumen des Ziels;</item>
-        /// <item>die <b>eigenen</b> Perioden eines vorhandenen Kalenders bleiben samt Rang;</item>
-        /// <item>die Perioden der Vorlage kommen im Eigenband dazu — eine <b>Feiertagsregel</b>, die
-        /// schon steht, nur einmal.</item>
-        /// </list>
-        /// </summary>
-        private static Konditionierungskalender Zusammenfuehren(Konditionierungskalender generator,
-                                                                Konditionierungskalender ausVorlage,
-                                                                Konditionierungskalender alt,
-                                                                out string fehler)
-            => Konditionierungsarbeit.Zusammenfuehren(generator, ausVorlage, alt, out fehler);
 
         // =================================================================
         //  Umbenennen, Löschen, Duplizieren (Konzept 5.7)
@@ -585,19 +499,10 @@ namespace WindowsFormsApplication1
             string schloss = KonditionierungCtrl.Schloss(eigner);
             if (schloss != null) return KonditionierungCtrl.Ergebnis.Fehler(schloss);
 
-            var ctrl = new KonditionierungCtrl();
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden =
-                ctrl.Kalender(eigner, out string meldung);
-            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
-            if (!vorhanden.TryGetValue(groesse, out Konditionierungskalender kalender))
-                return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOND_MSG_KEIN_KALENDER,
-                    Konditionierungsgroessen.Kennwort(groesse)));
-
-            Kalenderwerkzeuge.Werkzeugbefund b = werkzeug(kalender);
-            if (!b.Ok) return KonditionierungCtrl.Ergebnis.Fehler(b.Meldung);
-
-            return ctrl.Schreiben(eigner, b.Kalender, b.Vermerk);
+            // Stufe KP2: der reine Schritt (Konditionierungsarbeit.Werkzeug) - ohne angelegten Kalender
+            // benannt abgelehnt, die Herkunft bleibt, der Vermerk kommt dazu (B8).
+            return new KonditionierungCtrl().Schrittweg(eigner, mitBestand: false, streng: true,
+                vor => Konditionierungsarbeit.Werkzeug(vor, groesse, werkzeug));
         }
 
         // =================================================================

@@ -2000,15 +2000,17 @@
             }
         }
 
-        // Schritt 3: die Zonen.
+        // Schritt 3: die Zonen - samt der Zuordnung ihrer vorlaeufigen Ids (Stufe KP2, Befund B10):
+        // Danach traegt der Arbeitsstand die endgueltigen, und ein zweites OK legt nichts noch einmal an.
         if (_arbeit.ZonenGeaendert && Zonen?.Speichern is not null)
         {
-            string fehler = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? "";
-            if (fehler.Length > 0)
+            ZonenSchreibergebnis erg = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? ZonenSchreibergebnis.Gut;
+            if (!erg.Ok)
             {
-                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, fehler), WarnStufe.Warnung);
+                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, erg.Meldung), WarnStufe.Warnung);
                 return false;
             }
+            _arbeit.IdsUebernehmen(erg);
             _arbeit.ZonenGeschrieben();
             _geschrieben = true;
         }

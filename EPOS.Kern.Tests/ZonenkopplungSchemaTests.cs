@@ -406,14 +406,14 @@ namespace EPOS.Kern.Tests
 
             // Unverändert: der Schreibweg bekommt keine Luftströme und lässt sie stehen.
             Assert.Null(a.Zonenstand(true).Luftstroeme);
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             Assert.Equal(strom.Id, Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE)).ID);
 
             // Geändert: abgeglichen unter derselben Id.
             a.LuftstroemeSetzen(new[] { new ZonenluftstromDaten { Id = strom.Id, IdZoneA = og.Id, IdZoneB = eg.Id, Volumenstrom = 120 } });
             Assert.True(a.LuftGeaendert);
             Assert.Equal("", weg.Pruefen!(a.Zonenstand(false)));
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             ZonenluftstromModel gespeichert = Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE));
             Assert.Equal(strom.Id, gespeichert.ID);
             Assert.Equal(120.0, gespeichert.Volumenstrom);
@@ -422,7 +422,7 @@ namespace EPOS.Kern.Tests
             Assert.True(a.ZoneEntfernen(og.Id));
             Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, decke.Randbedingung);
             Assert.Empty(a.Luftstroeme);
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             BauteilModel d = Assert.Single(ctrl.LesenJeGebaeude(GEBAEUDE)).Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
             Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, d.Randbedingung);
             Assert.Null(d.ID_Nachbarzone);
