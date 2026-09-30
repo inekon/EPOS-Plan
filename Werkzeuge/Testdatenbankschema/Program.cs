@@ -2235,6 +2235,29 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt KonditionierungsvorlagenSaatSchema.SCHRITT (KP-S1b, Entscheid E56 F1 (b)): die
+            //      14 ausgelieferten Konditionierungsvorlagen (ReadOnly = 1) samt 46 Vorgabezeilen und bei
+            //      Buero und Schule den neun Feiertagsregeln "wie Sonntag". Reines DML aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KonditionierungsvorlagenSaat bedient
+            //      (KonditionierungsvorlagenSaatSchema), je Vorlage EIN Vorgang; gesaet wird nur, was
+            //      unter Groesse und Name fehlt. NACH den Tabellen der Schritte 151 und 152.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Referenzprojekt traegt eine Vorlage, die Leser des
+            //      Laufs filtern ueber ID_Gebaeude.
+            string nrVorlagensaat = KonditionierungsvorlagenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorlagensaat + " - ausgelieferte Konditionierungsvorlagen: " +
+                              (KonditionierungsvorlagenSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorlagensaat = new List<string>();
+                KonditionierungsvorlagenSaatSchema.Ausfuehren(berichtVorlagensaat);
+                foreach (string zeile in berichtVorlagensaat)
+                    Console.WriteLine("Schritt " + nrVorlagensaat + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorlagensaat + " - vollstaendig: " +
+                                  KonditionierungsvorlagenSaatSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

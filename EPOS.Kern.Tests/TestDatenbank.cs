@@ -798,6 +798,12 @@ namespace EPOS.Kern.Tests
                 // Migration und Werkzeug; wiederholbar, KEIN DML - die Spalten entstehen leer bzw. mit 0.
                 KesselKennlinieSchema.Ausfuehren(null);
 
+                // Schritt KonditionierungsvorlagenSaatSchema.SCHRITT (KP-S1b, E56 F1 (b)): die 14
+                // ausgelieferten Konditionierungsvorlagen samt Vorgabezeilen und Feiertagsregeln. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; NACH den Tabellen der Schritte 151 und
+                // 152; wiederholbar - gesaet wird nur unter fehlender Groesse und fehlendem Namen.
+                KonditionierungsvorlagenSaatSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
