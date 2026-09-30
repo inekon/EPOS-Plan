@@ -151,7 +151,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Je Größe die Vorlage</b> (Welle U2; Entwurf KP2 D9): <c>kond_&lt;größe&gt;_vorlage</c> ist eine
         /// WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen nennt die
-        /// Herkunft. Sie steht in der Zeile „Vorlage" unter der Matrix, nicht an einer Zelle; leer lässt sie
+        /// Herkunft. Sie steht in der Zeile „Vorlage" über dem Nennwert, nicht an einer Zelle; leer lässt sie
         /// sich nicht setzen (zurück zur Matrix führt „Verwerfen").
         /// </summary>
         [Fact]
@@ -168,8 +168,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(-1, f.Zeilenplatz);
                 Assert.Null(f.Zeile);
                 Assert.False(f.Bestandszelle);
-                // In der Reihenfolge der Matrix: die Zeile „Vorlage" schließt die Spalte ab.
-                Assert.Same(f, KiKonditionierungsfelder.Alle.Last(x => x.Groessenplatz == i));
+                // In der Reihenfolge der Matrix: die Zeile „Vorlage" eröffnet die Spalte.
+                Assert.Same(f, KiKonditionierungsfelder.Alle.First(x => x.Groessenplatz == i));
             }
 
             KiDialogFeld heizen = KiKonditionierungsfelder.Dialogfelder().Single(f => f.Name == "kond_heizen_vorlage");

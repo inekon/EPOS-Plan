@@ -17,9 +17,9 @@ namespace WindowsFormsApplication1
     /// <c>tag</c>, <c>nacht</c>, <c>wochenende</c>, <c>ferien</c>, <c>saison</c>), dazu
     /// <c>_aus</c> (Heizen und Kühlen: der Zustand „aus"), <c>_von</c>/<c>_bis</c> (das Nachtfenster
     /// einer Spalte in vollen Stunden, die Saison in Tagen des Gemeinjahrs) und
-    /// <c>kond_lueftung_nacht_dt</c> (ΔT der Nachtauskühlung). Je Größe schließt
-    /// <c>kond_&lt;größe&gt;_vorlage</c> die Spalte ab (Welle U2; Entwurf KP2 D9): die Zeile „Vorlage" unter
-    /// der Matrix als WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen
+    /// <c>kond_lueftung_nacht_dt</c> (ΔT der Nachtauskühlung). Je Größe eröffnet
+    /// <c>kond_&lt;größe&gt;_vorlage</c> die Spalte (Welle U2; Entwurf KP2 D9): die Zeile „Vorlage" über dem
+    /// Nennwert als WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen
     /// nennt die Herkunft des angelegten Kalenders.</para>
     /// <para><b>Bestandszellen behalten ihre Namen</b> (Entwurf KP2, Festlegung 5): Heizen Tag, Nacht,
     /// Wochenende und Ferien, Kühlen Tag, Infiltration, Nutzerlüftung und innere Wärmegewinne stehen
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             /// <summary>ΔT der Nachtauskühlung.</summary>
             DeltaT,
 
-            /// <summary>Die Vorlage der Größe (Zeile „Vorlage" unter der Matrix, keine Zelle).</summary>
+            /// <summary>Die Vorlage der Größe (Zeile „Vorlage" der Matrix, keine Zelle).</summary>
             Vorlage
         }
 
@@ -162,6 +162,10 @@ namespace WindowsFormsApplication1
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
                 string gw = GROESSENWORT[(int)g];
+
+                // Die Zeile „Vorlage" eröffnet die Spalte — keine Zelle, die Aktion des Knopfs „Übernehmen".
+                felder.Add(new Feld("kond_" + gw + "_vorlage", g, -1, Teil.Vorlage, false));
+
                 for (int zi = 0; zi < DbWerte.KOND_ZEILEN.Count; zi++)
                 {
                     string z = DbWerte.KOND_ZEILEN[zi];
@@ -191,9 +195,6 @@ namespace WindowsFormsApplication1
                     if (z == DbWerte.KOND_ZEILE_NACHT && g == Konditionierungsgroesse.Lueftung)
                         felder.Add(new Feld(basis + "_dt", g, zi, Teil.DeltaT, false));
                 }
-
-                // Die Zeile „Vorlage" schließt die Spalte ab — keine Zelle, die Aktion des Knopfs „Übernehmen".
-                felder.Add(new Feld("kond_" + gw + "_vorlage", g, -1, Teil.Vorlage, false));
             }
             return felder;
         }
