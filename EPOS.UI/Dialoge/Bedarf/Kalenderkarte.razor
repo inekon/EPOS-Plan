@@ -42,8 +42,12 @@
     </div>
     @if (!Lesemodus && Vorlagen is not null)
     {
-        <div class="epos-vorlage-wahl epos-kond-vorlagewahl">
-            <Auswahlfeld @ref="_liste" Bezeichnung="@Texte.LabelVorlageAuswahl" Kurzname="@(Titel + " · " + Texte.LabelVorlageAuswahl)"
+        @* Die Zeile „Vorlage" der Matrix holt diese Gruppe nach vorn (ListeZeigen): Der Fokus landet auf
+           der Gruppe, die Liste ist ihr erster Tabulatorhalt. Die Gruppe und nicht das <select> selbst —
+           ein @ref am Baustein Auswahlfeld aenderte das Markup jeder Liste im Bestand. *@
+        <div class="epos-vorlage-wahl epos-kond-vorlagewahl" @ref="_wahl" tabindex="-1" role="group"
+             aria-label="@(Titel + " · " + Texte.LabelVorlageAuswahl)">
+            <Auswahlfeld Bezeichnung="@Texte.LabelVorlageAuswahl" Kurzname="@(Titel + " · " + Texte.LabelVorlageAuswahl)"
                          Eintraege="@Eintraege" Auswahl="@Wahl" Platzhalter="@Texte.TextVorlageKeine"
                          AuswahlChanged="Waehlen" />
             @if (Gewaehlt is { Ausgeliefert: true })
@@ -206,22 +210,22 @@
 
     /// <summary>
     /// Der Anlass, die Auswahlliste zu zeigen (Zeile „Vorlage" der Matrix, Teilkonzept 7.2): Wechselt er,
-    /// bekommt die Liste nach dem Zeichnen den Fokus und rollt ins Bild.
+    /// bekommt die Gruppe der Auswahlliste nach dem Zeichnen den Fokus und rollt ins Bild.
     /// </summary>
     [Parameter] public int ListeZeigen { get; set; }
 
     /// <summary>Der Grund, warum die Vorschau kein Bild hat; <c>null</c> = der allgemeine Text.</summary>
     [Parameter] public string? VorschauLeer { get; set; }
 
-    private Auswahlfeld? _liste;
+    private ElementReference _wahl;
     private int _listeZeigenDavor;
     private bool _fokusFaellig;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_fokusFaellig || _liste is null) return;
+        if (!_fokusFaellig || Lesemodus || Vorlagen is null) return;
         _fokusFaellig = false;
-        await _liste.FokusAsync();
+        await _wahl.FocusAsync(preventScroll: false);
     }
 
     /// <summary>Ist die Karte aufgeklappt? Prüfhilfe für die Tests.</summary>
