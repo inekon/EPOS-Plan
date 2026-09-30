@@ -158,6 +158,8 @@ Die Gruppe '''Kennlinie''' beschreibt das Verhalten in Teillast; ein leeres Feld
 
 Ist ein Kessel als Brennwertkessel gekennzeichnet und die ''Brennwertkennlinie'' aus, steht unter dem Schalter der Hinweis, dass der Rücklauf dann nicht wirkt und der Kessel allein mit seiner Teillastkennlinie rechnet.
 
+Unter den Feldern zeigt ein kleines Diagramm den '''Wirkungsgrad über der Last''' von 10 bis 100 % der Nennleistung, so wie die Simulation ihn rechnet – mit den Eingaben, wie sie gerade im Dialog stehen, auch vor dem Speichern, und mit der Vorgabe für jedes leere Feld. Mit ''Brennwertkennlinie'' stehen drei Linien für 30, 50 und 60 °C Rücklauf, ohne sie eine ''Teillastkennlinie''; ein Elektrokessel zeigt eine flache Linie. Jeder Punkt nennt beim Zeigen Last und Wirkungsgrad, die Legende blendet Linien aus.
+
 == Berechnung ==
 
 Nutzwärme, Wirkungsgrad und Brennstoffeinsatz des Heizkessels stehen unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].

@@ -958,7 +958,7 @@ Heizkessel-Reiter zeigt dieselben Zahlen als Gruppe „Betrieb“ (Summe über d
 nennt die wirksame Heizgrenze; der
 Jahresnutzungsgrad ist die Nutzwärme geteilt durch den gesamten Brennstoffeinsatz (Laufstunden und Bereitschaft).
 
-**Teillastkennlinie** ([Konzept Kesselkennlinie](Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1). Ein
+**Teillastkennlinie** ([Konzept Kesselkennlinie](../ueberholt/Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1). Ein
 laufender Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner Laststufe β = brennstoffbasierte
 Wärme / Nennleistung: zwischen β = 0,3 und 1 linear von η₃₀ (`Wirkungsgrad_Teillast30`) nach η₁₀₀
 (`Wirkungsgrad_Gas`/`_Öl`), darunter η₃₀ (`Kesselkennlinie.Eta`, gerufen in `SimulationSPK.Stunde_Abschluss`).
@@ -972,7 +972,7 @@ CSV-Export führt je Brennstoffkessel die Stundenreihe des Wirkungsgrads, das La
 Herkunft. Das Kennzeichen `Brennwert` der Projektkopie folgt dem Katalogsatz (Schemaschritt 158,
 `KesselBrennwertNachzug`).
 
-**Brennwertkennlinie** ([Konzept Kesselkennlinie](Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1 Punkte 3 bis 5). Ein
+**Brennwertkennlinie** ([Konzept Kesselkennlinie](../ueberholt/Konzept_Kessel_Kennlinie_EPOS-Plan.md) 4.1 Punkte 3 bis 5). Ein
 Brennwertkessel mit `Kennlinie_Brennwert` = 1 rechnet je Laufstunde η_eff = η_tr(β) + Δ₃₀ · g(T_RL): die trockene
 Kurve aus η₃₀ − Δ₃₀, der Kondensationsanteil g = (T_Tau − T_RL)/(T_Tau − 30) auf [0; 1,2], höchstens Hs/Hi
 (`Kesselkennlinie.EtaBrennwert`; Taupunkt und Δ₃₀ je Brennstoffgruppe: Gas 57 °C/0,08, Heizöl 47 °C/0,04, Holz und

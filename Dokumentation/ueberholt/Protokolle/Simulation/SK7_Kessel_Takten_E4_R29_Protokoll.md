@@ -2,7 +2,7 @@
 
 Stand: 30.09.2026 · Zweig `ios_migration_september` · Opus-Agent im Worktree, Zweig `kessel-e4` ab `f0ac5bfa`
 (`kessel-e3` mit E1–E3, Schemastand 158, Basis R28). **Kein Schemaschritt, keine Änderung der Testdatenbank.**
-Konzept [`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../../aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md) (4.2, 4.3, 5,
+Konzept [`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../Konzept_Kessel_Kennlinie_EPOS-Plan.md) (4.2, 4.3, 5,
 6, 7.1); Vorgänger [`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
 
 Commits:

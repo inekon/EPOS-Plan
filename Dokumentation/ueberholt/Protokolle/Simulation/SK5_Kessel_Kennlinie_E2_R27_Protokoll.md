@@ -2,7 +2,7 @@
 
 Stand: 30.09.2026 · Zweig `ios_migration_september` · Opus-Agent im Worktree, Zweig `kessel-e2` ab `66893957`
 (E1 enthalten, Merge `ac5ae487`). Kein Schemaschritt. Konzept
-[`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../../aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md) (4.1, 4.3, 5, 6, 7);
+[`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../Konzept_Kessel_Kennlinie_EPOS-Plan.md) (4.1, 4.3, 5, 6, 7);
 Vorgänger [`SK4_Kessel_Kennlinie_E1_Protokoll.md`](SK4_Kessel_Kennlinie_E1_Protokoll.md).
 
 Commits:

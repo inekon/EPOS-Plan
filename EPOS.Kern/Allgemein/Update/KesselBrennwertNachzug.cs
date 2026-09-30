@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // DAS BRENNWERTKENNZEICHEN DER PROJEKTKESSEL NACHZIEHEN - Etappe E2b des Konzepts
-    // Dokumentation/aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md (Abschnitte 6 und 7;
+    // Dokumentation/ueberholt/Konzept_Kessel_Kennlinie_EPOS-Plan.md (Abschnitte 6 und 7;
     // Anwenderentscheid B-1 vom 30.09.2026: "Auch Projekte nachziehen").
     //
     // WOZU. Die Normvorgabe des Teillastwirkungsgrads (Konzept 7.1, seit E2 wirksam) richtet sich

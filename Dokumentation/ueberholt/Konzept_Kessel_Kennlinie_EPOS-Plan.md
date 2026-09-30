@@ -3,12 +3,14 @@
 **Anwenderentscheid 26.09.2026** („Optional Teillast-/Brennwertkennlinie") · Statusnummer **#569** ·
 Entscheide F1 bis F5 vom 29.09.2026, B-1 und der Hinweis „Nur im Kesseldialog“ vom 30.09.2026 (Abschnitt 7).
 
-**Stand 30.09.2026** · Etappen **E1–E4 umgesetzt** (E1: Schemaschritt **156**, `KesselKennlinieSchema`;
+**Stand 30.09.2026 — vollständig umgesetzt** · Etappen **E1–E5** (E1: Schemaschritt **156**, `KesselKennlinieSchema`;
 E2: Teillastkennlinie `Kesselkennlinie`, Normvorgabe η₃₀, Referenzprojekt **1050**; E2b nach Entscheid **B-1**:
 Schemaschritt **158**, `KesselBrennwertNachzug`; E3: Brennwertkennlinie mit Rücklaufkette; E4: Takten mit Startzählung,
-Anfahrverlust und Normvorgaben, Hinweis „Brennwertkessel ohne Kennlinie“ im Kesseldialog) ·
-`SchemaStand.Zielversion` = 158 · Referenzbasis `2026-09-30_R29_Kesseltakten` (sechzehn Projekte) · offen aus
-Abschnitt 5: die kleine Kurve im Katalogeditor und die Vorlagenfelder des Berichts.
+Anfahrverlust und Normvorgaben, Hinweis „Brennwertkessel ohne Kennlinie“ im Kesseldialog; E5: die beiden Punkte aus
+Abschnitt 5 — die kleine Kurve η(β) im Kesseleditor und die Kesseltafel `stand.tabelle.heizkessel` im
+Vorlagenfeldkatalog, Fassung 11) · `SchemaStand.Zielversion` = 158 · Referenzbasis `2026-09-30_R29_Kesseltakten`
+(sechzehn Projekte, mit E5 byte-gleich). Der gültige Stand steht im Code, in den Wiki-Quellen „Heizkessel“ und
+„Berichtsvorlagen“ und in `Referenzlaeufe/LIESMICH.md`; das Papier ist Geschichte.
 Befund und Optionen (Abschnitte 1 und 2) sind vom 26.09.2026 (Codestand `0a483bd4`, Schemastand 150).
 
 Ziel: Der Heizkessel rechnet heute mit einem festen Wirkungsgrad. Das Papier legt fest, wie eine
@@ -140,7 +142,7 @@ ein Gerät genau einen Brennstoff hat.
 Schritt **156** (`KesselKennlinieSchema`, gebaut in E1; beim Bau gegen `origin` gemessen — 155 trägt die
 Verfahrensvolumina der Füllstandslinie, `TwwFuellstandSchema`). Der Schritt fügt die fünf Spalten per
 `ALTER TABLE … ADD COLUMN` an beide Tabellen, setzt **keine** Werte und ist wiederholbar
-([ADR-001](ADR-001_Schema-Ausrollung.md)); eine Quelle für Migration, Werkzeug `Testdatenbankschema` und
+([ADR-001](../aktuell/ADR-001_Schema-Ausrollung.md)); eine Quelle für Migration, Werkzeug `Testdatenbankschema` und
 Testvorrichtung, `Paketanhebung` Stufe 156 (DDL).
 
 ### 3.3 Keine Neueinfrierung durch den Datenschritt
@@ -236,7 +238,7 @@ kein Taktmodell (7.1); seine Starts sind seine Laufphasen.
 ## 5 Oberfläche
 
 - **Katalogeditor:** Gruppe „Kennlinie“ (3.4) mit einer kleinen Kurve η(β) bei 30, 50 und 60 °C
-  Rücklauf aus derselben Kernfunktion.
+  Rücklauf aus derselben Kernfunktion — umgesetzt in E5 (Abschnitt 7, „Stand E5“).
 - **Ergebnis, Kessel-Reiter** (`EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Anzeige.cs`,
   `EPOS.UI/Seiten/Simulation/ErgebnisReiter.razor`): je Kessel η_eff im Jahresmittel, Anteil
   Brennwertbetrieb (Stunden und Wärme), Verluste je Art in MWh, Starts je Jahr; Zeitreihen η_eff
@@ -247,7 +249,8 @@ kein Taktmodell (7.1); seine Starts sind seine Laufphasen.
   Kennlinie“ (`Brennwert` = 1, `Kennlinie_Brennwert` = 0) steht nach dem Anwenderentscheid vom 30.09.2026 („Nur im
   Kesseldialog“) als ruhige Zeile unter dem Schalter „Brennwertkennlinie“ des Kesseldialogs, **nicht** an der Karte
   vor dem Lauf — dort träfe er nach E2b jeden Brennstoffkessel der Bestandsprojekte (umgesetzt in E4).
-- **Bericht:** η_eff, Brennwertanteil und Starts in den Vorlagenfeldkatalog.
+- **Bericht:** η_eff, Brennwertanteil und Starts in den Vorlagenfeldkatalog — umgesetzt in E5 als Tabelle je Stand
+  `stand.tabelle.heizkessel` (Katalog v11, Abschnitt 7, „Stand E5“).
 
 ---
 
@@ -260,6 +263,7 @@ kein Taktmodell (7.1); seine Starts sind seine Laufphasen.
 | **E2b** Brennwertkennzeichen — **umgesetzt** (Entscheid B-1) | Schemaschritt 158: `Brennwert` der Projektkopien nach dem Katalogsatz (Bezeichner; Schalter oder Bauart), ohne eindeutigen Katalogsatz nach der Beschreibung; nur setzen; Migration, Paketanhebung (Umformung), Werkzeug, Testvorrichtung | 0,5 Tage | Neueinfrierung R28 (elf Referenzprojekte: die Brennstoffkessel rechnen mit der Normvorgabe des Brennwertkessels) |
 | **E3** Brennwert — **umgesetzt** | Rücklaufkette (AK1, Speicher, Paar, Rückfall 50 °C nach F5), Brennstofftafel Taupunkt/Δ₃₀/Hs/Hi (7.2), Kennzahlen, Reiter, Kohärenzzeile im Laufprotokoll | 1,5–2 Tage | Neueinfrierung R28 (von den Referenzprojekten rechnet allein 1050 mit der Brennwertkennlinie) |
 | **E4** Takten — **umgesetzt** | Startzählung, Anfahrverlust, Mindestlaufzeit, Kennzahl Starts, Normvorgaben (F1); Hinweis „Brennwertkessel ohne Kennlinie“ im Kesseldialog | 1 Tag | Neueinfrierung R29 (jeder Brennstoffkessel taktet mit den Normvorgaben, 1050 mit gepflegten Werten) |
+| **E5** Abschluss — **umgesetzt** | die beiden offenen Punkte aus Abschnitt 5: kleine Kurve η(β) im Kesseleditor, Kesseltafel im Vorlagenfeldkatalog (Fassung 11) samt Vorlagen | 0,5 Tage | byte-gleich (R29) |
 
 **Empfehlung:** mit **E1 + E2** beginnen — ein kleiner Eingriff an einer Stelle, die Daten liefert
 VDI 3805 schon, und E1 behebt nebenbei die Brennwertkennzeichnung des Imports. E3 danach, weil es den
@@ -315,7 +319,7 @@ rechnen als Niedertemperaturkessel mit flacher Kurve und bleiben byte-gleich. Da
 Nachpflege F2 hat nur den Katalog gekennzeichnet); ein Nachziehen der Projektkopien wäre eine eigene
 Anwenderentscheidung mit Neueinfrierung. Nicht in E2: Vorlagenfelder des Berichts (Abschnitt 5, letzter Punkt),
 die kleine Kurve im Katalogeditor. Protokoll
-[`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../ueberholt/Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md).
+[`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md).
 
 **Stand E2b (Entscheid B-1).** Schemaschritt **158** (`EPOS.Kern/Allgemein/Update/KesselBrennwertNachzug.cs`, Nummer als
 `KonditionierungsvorlagenSaatSchema.SCHRITT + 1`) setzt `Brennwert` = 1 in jeder Projektkopie `Tab_Heizkessel`, deren
@@ -351,7 +355,7 @@ im Brennwertbetrieb und Brennwertbrennstoff, Kesseltabelle mit Rücklauf und Bre
 Brennwertkennlinie, am Rückfall-Rücklauf (Wirkungsgrad im Betrieb 0,975 → 0,991, Gas 81,96 → 80,66 MWh/a); die Stufen
 Heizkreis, Speicher und Paar halten Fälle in `KesselKennlinieTests`. Nicht in E3: der Kartenhinweis „Brennwertkessel
 ohne Kennlinie“ (Abschnitt 5), Vorlagenfelder des Berichts, die kleine Kurve im Katalogeditor. Protokoll
-[`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](../ueberholt/Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
+[`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
 
 **Stand E4 (Takten, Hinweis im Kesseldialog).** `Kesselkennlinie` trägt die Normvorgaben der Taktwerte (Mindestleistung
 30 % der Nennleistung beim Gas-Brennwertkessel, sonst 60 %; Anfahrverlust 0,002 h × Nennleistung; Mindestlaufzeit
@@ -369,7 +373,26 @@ ist — ohne sie wirkt der Rücklauf nicht; keine Warnkarte vor dem Lauf. Im Reg
 Brennstoffkessel, 1050 mit gepflegter Mindestleistung und gepflegtem Anfahrverlust; Brennstoff +0,12 % (1039) bis
 +10,6 % (1018), Tafel in `Referenzlaeufe/LIESMICH.md`, Basis R29. Nicht in E4: Vorlagenfelder des Berichts und die
 kleine Kurve im Katalogeditor (Abschnitt 5). Protokoll
-[`SK7_Kessel_Takten_E4_R29_Protokoll.md`](../ueberholt/Protokolle/Simulation/SK7_Kessel_Takten_E4_R29_Protokoll.md).
+[`SK7_Kessel_Takten_E4_R29_Protokoll.md`](Protokolle/Simulation/SK7_Kessel_Takten_E4_R29_Protokoll.md).
+
+**Stand E5 (Abschluss, Anwenderauftrag 30.09.2026).** Die beiden offenen Punkte aus Abschnitt 5, ohne Schemaschritt und
+ohne Änderung am Rechenweg (Basis R29 byte-gleich). **Kurve im Kesseleditor:** `Kesselkennlinie.Kurven` rechnet η(β) an
+zehn Stützstellen (10 % … 100 %) aus denselben Funktionen wie der Lauf — Nennwirkungsgrad nach Brennstoff samt
+Prozentregel (`Nennwirkungsgrad`, `WirkungsgradAlsFaktor`, jetzt auch von `SimulationSPK` gerufen), wirksames η₃₀ mit
+Normvorgabe (7.1), `Eta` bzw. `EtaBrennwert`; mit Brennwertkennlinie je Rücklauf 30, 50 und 60 °C eine Kurve, sonst eine,
+der Elektrokessel flach. `ChartRenderer.KesselkennlinieModell` zeichnet sie (720 × 430, Pixelbild ohne Zeichenfläche,
+Datenreihe je Linie, Serienrollen); die Hülle `HeizkesselKennlinienbild` (`EPOS.UI.Daten`) baut das Modell zum
+Arbeitsstand des Dialogs, die Gruppe „Kennlinie“ zeigt es über `DiagrammSvg` und holt es nur neu, wenn sich ein Feld
+ändert, das die Kurve bestimmt. ChartProben um zwei Maß-, zwei Gegen- und zwei SVG-Proben ergänzt, Messlatte 194 Zeilen
+unverändert, sechs Bilder neu. **Bericht:** Katalog v11 bringt die Tabelle je Stand `stand.tabelle.heizkessel` (Word und
+Excel) samt Schalter `hat.tabelle.heizkessel` — je Kessel Jahresnutzungsgrad η_eff, Anteil des Brennwertbetriebs nach
+Stunden und nach Wärme (Strich ohne Brennwertkennlinie), Starts im Jahr. Brennwertstunden, -wärme und Starts stehen nicht
+im gespeicherten Ergebnis: Der Sammler erhebt sie mit dem Zeitreihensatz (`ZeitreihenSatz.Kessel`, Bedarf Zeitreihen)
+über `SimulationErgebnisCtrl.Heizkessel`, die Quelle des Kessel-Reiters; `Berichtstabellen.Heizkessel` liest nur den
+Wertesatz. Die mitgelieferten Vorlagen sind mit `Werkzeuge/Berichtsvorlage alle` auf Fassung 11 neu erzeugt; die
+ausführliche Vorlage zeigt die Tafel im Block je Stand, die Bausteinvorlage den Schlüssel. Die Kesseltafel des
+Kessel-Reiters trägt die Marke. Protokoll
+[`SK8_Kessel_Kennlinie_Abschluss_Protokoll.md`](Protokolle/Simulation/SK8_Kessel_Kennlinie_Abschluss_Protokoll.md).
 
 ### 7.1 Normvorgaben für leere Felder (F1)
 

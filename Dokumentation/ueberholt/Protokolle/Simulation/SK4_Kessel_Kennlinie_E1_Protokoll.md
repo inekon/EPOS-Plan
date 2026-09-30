@@ -13,7 +13,7 @@ Commits:
 - `f88fd158` Merge #615
 
 Merge nach `ios_migration_september` `ac5ae487`. **Schemaschritt 156.** Konzept
-[`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../../aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md); Statuszeile „#616“ in
+[`Konzept_Kessel_Kennlinie_EPOS-Plan.md`](../../Konzept_Kessel_Kennlinie_EPOS-Plan.md); Statuszeile „#616“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Vorgänger
 [`SK3_Kessel_Heizgrenze_R24_Protokoll.md`](SK3_Kessel_Heizgrenze_R24_Protokoll.md).
 

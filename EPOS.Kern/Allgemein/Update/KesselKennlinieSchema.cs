@@ -4,7 +4,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // TEILLAST- UND BRENNWERTKENNLINIE DES HEIZKESSELS - Etappe E1 „Daten + Import" des
-    // Konzepts Dokumentation/aktuell/Konzept_Kessel_Kennlinie_EPOS-Plan.md (Abschnitte 3.1
+    // Konzepts Dokumentation/ueberholt/Konzept_Kessel_Kennlinie_EPOS-Plan.md (Abschnitte 3.1
     // und 3.2, Statusnummer #569; Anwenderentscheide 29.09.2026 F1 bis F4).
     //
     // WOZU. Der Heizkessel rechnet mit einem festen Wirkungsgrad. Die fuenf Spalten tragen,
