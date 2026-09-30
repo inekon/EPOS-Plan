@@ -12358,6 +12358,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Modul</value>
   </data>
+  <data name="HZK_GRP_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung für Verteilung</value>
+  </data>
   <data name="HZK_LBL_NAME" xml:space="preserve">
     <value>Name:</value>
   </data>
@@ -26213,6 +26216,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (wird beim Speichern aus dem Bedarf des Projekts angelegt)</value>
+  </data>
+  <data name="ANL_TEMP_VORGABE_KESSEL" xml:space="preserve">
+    <value>Vorgabe {0}/{1} °C — so rechnet die Simulation ohne Eintrag.</value>
+  </data>
+  <data name="ANL_TEMP_AUS_KESSEL" xml:space="preserve">
+    <value>Aus dem Kesseldatensatz: {0}/{1} °C — so rechnet die Simulation ohne Eintrag.</value>
+  </data>
+  <data name="ANL_TEMP_VORGABE_WP_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf vorbelegt: Vorlauf {1} °C − {2} K = {0} °C (Rückfall-Spreizung).</value>
   </data>
   <data name="ADM_KOPIE_NAME" xml:space="preserve">
     <value>{0} (Kopie)</value>

@@ -2303,6 +2303,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Kesseldatensatz: {0}/{1} °C — so rechnet die Simulation ohne Eintrag. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_AUS_KESSEL {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_AUS_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0}/{1} °C — so rechnet die Simulation ohne Eintrag. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_VORGABE_KESSEL {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_VORGABE_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf vorbelegt: Vorlauf {1} °C − {2} K = {0} °C (Rückfall-Spreizung). ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_VORGABE_WP_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_VORGABE_WP_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzladung [kWh] ähnelt.
         /// </summary>
         public static string ARB_CSV_LADUNG_NETZ {
@@ -33312,6 +33339,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZK_FRAGE_LOESCHEN {
             get {
                 return ResourceManager.GetString("HZK_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung für Verteilung ähnelt.
+        /// </summary>
+        public static string HZK_GRP_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("HZK_GRP_AUSLEGUNG", resourceCulture);
             }
         }
         
