@@ -156,6 +156,8 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Ein Katalogpaket der Brauchwasser-Nutzungsarten darf die Spalte ‚Katalogversion‘ weglassen; seine Zeilen treten dann der Katalogversion des Katalogs bei, in den sie kommen. (#615)
 - Heizkessel führen im Katalog die Gruppe ‚Kennlinie‘ (Wirkungsgrad bei 30 % Last, Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit); der VDI-3805-Import liest Wirkungsgrade und kleinste Leistung und kennzeichnet Brennwertkessel. (#616)
 - Fehlen einer Datenbank die frei verfügbaren Katalogdaten des Brauchwasser-Zapfprofils, lädt EPOS-Plan sie selbsttätig nach; sie liegen zudem im Programmordner unter Vorlage\Katalogpaket_frei. (#617)
+- Gestapelte Jahresganglinien zeigen jede Schicht als deckendes Band und die Summe als schmalen Rand; je Tag steht die Stunde der Tagesspitze, die Zeile unter dem Bild nennt sie. (#624)
+- Heizkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe nach einer Teillastkennlinie; ohne gepflegten Wert bei 30 % Last gilt eine Vorgabe nach Bauart. (#625)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
