@@ -176,11 +176,67 @@ namespace WindowsFormsApplication1
             {
                 if (_kosten == null)
                 {
-                    _kosten = new KostenSeiteGaben { Vergleich = _vergleich };
+                    _kosten = new KostenSeiteGaben
+                    {
+                        Vergleich = _vergleich,
+
+                        // „Neu berechnen" auf dem Kosten-Reiter ist der Lauf der
+                        // Wirtschaftlichkeitsseite derselben Gruppe - aufgeloest erst beim
+                        // Klick, damit er nach einem Stammwechsel die neue Gruppe rechnet.
+                        Berechnen = KostenBerechnen,
+                        Abbrechen = KostenAbbrechen
+                    };
                     _kosten.Geladen += KostenGeladen;
                 }
                 return _kosten;
             }
+        }
+
+        /// <summary>
+        /// Die Hülle der Wirtschaftlichkeitsseite — EINMAL je Vergleichsgruppe, entstanden beim
+        /// ersten Aufruf der Seite ODER beim ersten „Neu berechnen" des Kosten-Reiters. Beide
+        /// teilen damit dieselbe Instanz: denselben Lauf, dieselbe Abbruchmarke, dieselben
+        /// Eingangsdaten des letzten Laufs und denselben Kurzstand der Reiterzeile.
+        /// </summary>
+        private WirtschaftlichkeitSeiteGaben WirtschaftGaben()
+        {
+            GruppenseitenPruefen();
+            if (_wirtschaft == null)
+            {
+                _wirtschaft = new WirtschaftlichkeitSeiteGaben(
+                    _stand.IdStamm, _stand.StammName)
+                {
+                    Vergleich = _vergleich,
+
+                    // BV-E2 (Konzept Berichtsvorlagen 9.5): Die Anhang-E-Ueberlagerung nennt
+                    // die Stellen der Vorlage, die die Berichtsseite derselben Gruppe gewaehlt
+                    // hat - dieselbe Huelle, dieselbe Wahl.
+                    AnhangEStellenLaden = () => BerichtGaben().Vorlagen.AnhangEStellenDerVorlage()
+                };
+                _wirtschaft.Geladen += WirtschaftGeladen;
+            }
+            return _wirtschaft;
+        }
+
+        /// <summary>
+        /// „Neu berechnen" des Kosten-Reiters: der Rechenweg der Wirtschaftlichkeitsseite
+        /// derselben Gruppe (<see cref="WirtschaftlichkeitSeiteGaben.BerechnenMitReferenz"/>).
+        /// Danach meldet deren <c>Geladen</c> den Kurzstand der Reiterzeile neu, und die
+        /// Kostenseite liest ihren Stand selbst.
+        /// </summary>
+        private Task<LaufErgebnis> KostenBerechnen(IReadOnlyList<int> varianten, Action<Laufschritt> melder)
+        {
+            // Ohne Stamm fehlt der Knopf (KostenSeiteGaben.Gaben); kommt der Aufruf trotzdem,
+            // wird er BENANNT abgelehnt.
+            if (_stand.IdStamm <= 0)
+                return Task.FromResult(new LaufErgebnis { Fehler = R.BK_MSG_KEIN_STAMM });
+            return WirtschaftGaben().BerechnenMitReferenz(varianten, melder);
+        }
+
+        /// <summary>Bricht den Lauf ab, den „Neu berechnen" des Kosten-Reiters gestartet hat.</summary>
+        private void KostenAbbrechen()
+        {
+            if (_wirtschaft != null) _wirtschaft.Abbrechen();
         }
 
         private IReadOnlyDictionary<string, object> SeitenGaben(string seite)
@@ -204,22 +260,7 @@ namespace WindowsFormsApplication1
 
                 case BerichteKostenSeite.SEITE_WIRTSCHAFT:
                     if (_stand.IdStamm <= 0) return null;
-                    GruppenseitenPruefen();
-                    if (_wirtschaft == null)
-                    {
-                        _wirtschaft = new WirtschaftlichkeitSeiteGaben(
-                            _stand.IdStamm, _stand.StammName)
-                        {
-                            Vergleich = _vergleich,
-
-                            // BV-E2 (Konzept Berichtsvorlagen 9.5): Die Anhang-E-Ueberlagerung nennt
-                            // die Stellen der Vorlage, die die Berichtsseite derselben Gruppe gewaehlt
-                            // hat - dieselbe Huelle, dieselbe Wahl.
-                            AnhangEStellenLaden = () => BerichtGaben().Vorlagen.AnhangEStellenDerVorlage()
-                        };
-                        _wirtschaft.Geladen += WirtschaftGeladen;
-                    }
-                    return _wirtschaft.Gaben();
+                    return WirtschaftGaben().Gaben();
 
                 case BerichteKostenSeite.SEITE_BERICHT:
                     if (_stand.IdStamm <= 0) return null;
