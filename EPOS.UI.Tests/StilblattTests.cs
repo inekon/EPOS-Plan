@@ -924,6 +924,27 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Stufe KP2, Welle U3 — gemessen in der Konditionierungsprobe:</b> Die Periodenliste der Karte im
+    /// Einzelnen brach bei 390 px (Behälter 314 px) zwanzig Wörter mitten im Wort („Karfrei|tag“,
+    /// „Weihnachts|tag“), weil fünf Spalten neben den Knöpfen standen. Unter 600 px fallen jetzt „Art“ und
+    /// „Von–Bis“ (der Zeitraum steht leise unter dem Namen), Rang und Wert werden schmal.
+    /// </summary>
+    [Fact]
+    public void KP2_U3_Die_Periodenliste_bricht_schmal_nicht_im_Wort()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("table-layout: fixed", Regelblock(".epos-kond-periodentabelle {"), StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-kond-perioden", Regelblock(".epos-kond-perioden {"), StringComparison.Ordinal);
+        Assert.Contains("display: none", Regelblock(".epos-kond-periode-zeitraum-schmal {"), StringComparison.Ordinal);
+
+        string schmal = Abfrageblock(css, "@container epos-kond-perioden (max-width: 599.98px) {");
+        Assert.Contains(".epos-kond-periodentabelle .epos-kond-periode-art,\n    .epos-kond-periodentabelle .epos-kond-periode-zeitraum {\n        display: none;",
+                        schmal, StringComparison.Ordinal);
+        Assert.Contains(".epos-kond-periode-zeitraum-schmal {\n        display: block;", schmal, StringComparison.Ordinal);
+        Assert.Contains("th.epos-kond-periode-wert {\n        width: 4rem;", schmal, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Die Hilfepille hält das Berührungsmaß</b> (Stufe KP2, Welle U1, Nebenbefund aus U0b): Beide
     /// Felder — Fragezeichen und Assistent — und der Ring des KI-Knopfs sind mindestens
     /// <c>--epos-touchziel</c> (44 px) hoch und breit; das Hausmaß 28 px des WinForms-Vorbilds

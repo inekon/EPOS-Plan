@@ -137,6 +137,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
         new("KonditionierungVorlagenverwaltung", "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U3 (Teilkonzept 7.5): der Inhalt der aufgeklappten Kalenderkarte.
+        new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U3 (Festlegung 15): die Periodenliste der aufgeklappten Kalenderkarte.
+        new("Periodenliste",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -319,6 +323,15 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
         new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
             "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
+        // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
+        new("KalenderkarteInhalt", 4, "die Grundangabe und die Standardwoche führt die Feldkarte als " +
+            "kond_<größe>_woche (die Woche als Text; eine Grundangabe ist eine Woche mit 168 gleichen Werten); " +
+            "Von, Bis und Wert des Zeitfensters sind Angaben der Handlung „Zeitfenster eintragen“, kein Einstellwert"),
+        // KP2 U3 (Festlegung 15): Art, Name, Von, Bis, Feiertagsregel, Angabe, Wert und Wochentag des Formulars
+        // „Periode hinzufügen“ / „Periode bearbeiten“.
+        new("Periodenliste", 8, "Art, Name, Tage, Feiertagsregel und Angabe sind Angaben der Handlung „Periode " +
+            "hinzufügen“ bzw. „Periode bearbeiten“ mit eigenem „Übernehmen“ — keine Einstellwerte des Gebäudes"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

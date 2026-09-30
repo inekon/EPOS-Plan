@@ -70,6 +70,7 @@
     <KonditionierungMatrix Bearbeitung="@Bearbeitung" Texte="@Texte" HuelleTexte="@HuelleTexte"
                            Lesemodus="@Lesemodus" Kuehlsperre="@Kuehlsperre" Altweg="@Altweg"
                            AktiveGroesse="@_groesse" PlatzhalterPersonen="@PersonenPlatzhalter"
+                           VorlageZeigen="VorlageZeigen"
                            Geaendert="Geaendert" FehlerZustand="FehlerZustand" />
 
     @if (!string.IsNullOrEmpty(Sollwertzeile))
@@ -111,7 +112,11 @@
                                                     ? EventCallback.Factory.Create(this, () => VorlagenVerwalten.InvokeAsync(groesse))
                                                     : default)"
                                Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
-                               Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs" />
+                               Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs"
+                               Aufgeklappt="@(KartenAufgeklappt || groesse == AufgeklappteGroesse)"
+                               ListeZeigen="@(_listeZeigen.TryGetValue(groesse, out int anlass) ? anlass : 0)"
+                               VorschauLeer="@Bearbeitung.VorschauLeergrund(groesse)"
+                               Einzelheiten="@(MitEinzelheiten ? Einzelheiten(groesse) : null)" />
             }
         </div>
     }
@@ -277,7 +282,32 @@
     /// </summary>
     [Parameter] public KonditionierungGroesse Vorn { get; set; } = KonditionierungGroesse.Heizen;
 
+    /// <summary>Stehen die Kalenderkarten beim Aufbau aufgeklappt (Prüfstand der Karte im Einzelnen)?</summary>
+    [Parameter] public bool KartenAufgeklappt { get; set; }
+
+    /// <summary>
+    /// Die Karte, die beim Aufbau aufgeklappt steht — der Wirt reicht Heizen nach „In den Kalender
+    /// übernehmen" an der Wärmeübergabe; <c>null</c> = keine.
+    /// </summary>
+    [Parameter] public KonditionierungGroesse? AufgeklappteGroesse { get; set; }
+
     protected override void OnInitialized() => _groesse = Vorn;
+
+    /// <summary>
+    /// Bietet der Weg die Karte im Einzelnen (Welle U3)? Mit Grundangabe oder Standardwoche — „kein
+    /// Delegat, kein Knopf".
+    /// </summary>
+    private bool MitEinzelheiten
+        => Bearbeitung.Bietet(KonditionierungHandlung.Grundangabe) || Bearbeitung.Bietet(KonditionierungHandlung.Standardwoche);
+
+    /// <summary>Der Inhalt der aufgeklappten Karte einer Größe.</summary>
+    private RenderFragment Einzelheiten(KonditionierungGroesse g) => @<KalenderkarteInhalt Bearbeitung="@Bearbeitung" Groesse="@g"
+        Texte="@Texte" Rastertexte="@HuelleTexte.Uebergabe.Raster" Lesemodus="@Lesemodus"
+        Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" Verweigert="Verweigert"
+        EntprellungMs="@EntprellungMs" />;
+
+    /// <summary>Eine Handlung der aufgeklappten Karte: der Reiter zeichnet neu (Zustand, Vorschau), dann der Wirt.</summary>
+    private EventCallback InhaltGeaendert => EventCallback.Factory.Create(this, () => Geaendert.InvokeAsync());
 
     /// <summary>Die Größe, deren Spalte und Karte schmal vorn stehen.</summary>
     private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
@@ -392,6 +422,19 @@
     {
         Bearbeitung.Melden?.Invoke(grund, WarnStufe.Hinweis);
         await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Je Größe der Anlass, die Auswahlliste der Karte zu zeigen (ein Zähler je Klick auf die Zeile „Vorlage").</summary>
+    private readonly Dictionary<KonditionierungGroesse, int> _listeZeigen = new();
+
+    /// <summary>
+    /// Die Zeile „Vorlage" der Matrix (Teilkonzept 7.2): Die Größe kommt nach vorn (schmal ihr Reiter), und
+    /// die Karte fokussiert die Gruppe ihrer Auswahlliste und rollt sie ins Bild.
+    /// </summary>
+    private void VorlageZeigen(KonditionierungGroesse g)
+    {
+        _groesse = g;
+        _listeZeigen[g] = (_listeZeigen.TryGetValue(g, out int n) ? n : 0) + 1;
     }
 
     /// <summary>Die Wahl der Auswahlliste einer Karte — sie ändert den Arbeitsstand nicht.</summary>

@@ -40806,5 +40806,131 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_VORLAGE" xml:space="preserve">
     <value>The template of the column {0} on the “Conditioning” tab: the name of a template from the list of this quantity. Setting it applies the template like the “Apply” button – the cells of the template go into the column, the calendar is created, nominal value and season remain; if a calendar is already created, only the matrix range is replaced. Reading gives the template applied last; empty = none.</value>
   </data>
+  <data name="KOND_MSG_WOCHE_LAENGE" xml:space="preserve">
+    <value>A standard week has exactly {1} cells; {0} were passed.</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
+    <value>Calendar details</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
+    <value>Create the calendar first – until then it follows the matrix.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_GRUNDANGABE" xml:space="preserve">
+    <value>The base value applies in every hour without a standard week or period; a standard week takes its place.</value>
+  </data>
+  <data name="KOND_TXT_GRUNDANGABE_WOCHE" xml:space="preserve">
+    <value>The standard week replaces the base value; “Discard standard week” returns to it.</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Create standard week</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_VERWERFEN" xml:space="preserve">
+    <value>Discard standard week</value>
+  </data>
+  <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
+    <value>No standard week yet – the grid shows the base value.</value>
+  </data>
+  <data name="KOND_TXT_VERMERK" xml:space="preserve">
+    <value>Last applied: {0}</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ZEITFENSTER" xml:space="preserve">
+    <value>Sets the value in the selected hours of the standard week; all other hours remain. “To” before “From” spans midnight.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_TAGE" xml:space="preserve">
+    <value>Select at least one day first.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_ZEITEN" xml:space="preserve">
+    <value>Enter “From” and “To” first (full hours, “To” 1 … 24).</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_WERT" xml:space="preserve">
+    <value>Enter a value or “off” first.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_ART" xml:space="preserve">
+    <value>New periods are date ranges or public holidays; “{0}” belongs to the matrix area and follows the matrix.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_NAME" xml:space="preserve">
+    <value>The period needs a name – preview and carpet plot give it as the source.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEIERTAG" xml:space="preserve">
+    <value>“{0}” is not one of the nine nationwide public holiday rules.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_TAG" xml:space="preserve">
+    <value>Start {0} and end {1} must be days 1 … 365 of the common year.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEHLT" xml:space="preserve">
+    <value>The calendar has no period with rank {0}.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_MATRIXBEREICH" xml:space="preserve">
+    <value>The period “{0}” belongs to the matrix area (holidays, season) and is read-only; it follows the matrix.</value>
+  </data>
+  <data name="KOND_MSG_RANG_NICHT_EIGENBAND" xml:space="preserve">
+    <value>The period “{0}” is not in the band of own periods ({1} … {2}); its rank stays.</value>
+  </data>
+  <data name="KOND_MSG_RANG_OBEN" xml:space="preserve">
+    <value>The period “{0}” already has the highest rank of the own periods.</value>
+  </data>
+  <data name="KOND_MSG_RANG_UNTEN" xml:space="preserve">
+    <value>The period “{0}” already has the lowest rank of the own periods.</value>
+  </data>
+  <data name="KOND_LBL_ANGABE" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="KOND_LBL_ANGABE_WOCHENTAG" xml:space="preserve">
+    <value>as weekday</value>
+  </data>
+  <data name="KOND_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Weekday</value>
+  </data>
+  <data name="KOND_TXT_AUS_MATRIX" xml:space="preserve">
+    <value>from the matrix – read-only</value>
+  </data>
+  <data name="KOND_TXT_PERIODEN_LEER" xml:space="preserve">
+    <value>No periods – the standard week or base value applies.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_PERIODE" xml:space="preserve">
+    <value>Enter name, days or public holiday and the setting first.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_OBEN" xml:space="preserve">
+    <value>The period already has the highest rank of the own periods.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_UNTEN" xml:space="preserve">
+    <value>The period already has the lowest rank of the own periods.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_BAND" xml:space="preserve">
+    <value>Only periods in the band of own periods change their rank; public holiday rules stay below the holidays.</value>
+  </data>
+  <data name="KOND_TXT_TEPPICH_LEER" xml:space="preserve">
+    <value>No annual plot – the matrix yields no calendar for this quantity (for example without shares).</value>
+  </data>
+  <data name="KOND_MSG_SOLLWERTPROFIL_FEHLT" xml:space="preserve">
+    <value>The building has no valid setpoint time program ({0}) – there is nothing to apply to the calendar.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Standard week from the setpoint time program of the heat emission</value>
+  </data>
+  <data name="KOND_BTN_IN_DEN_KALENDER" xml:space="preserve">
+    <value>Apply to calendar</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_IN_DEN_KALENDER" xml:space="preserve">
+    <value>The time program becomes the standard week of the heating calendar on the “Conditioning” tab; it is saved with OK, “Undo” reverts it.</value>
+  </data>
+  <data name="KOND_FRAGE_SOLLWERTPROFIL" xml:space="preserve">
+    <value>The setpoint time program replaces the standard week of the created heating calendar; periods and origin remain. Apply?</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ZEILE" xml:space="preserve">
+    <value>Opens the template list of this quantity in its card.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_LEER" xml:space="preserve">
+    <value>No preview – this quantity yields no week.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_OHNE_ANTEILE" xml:space="preserve">
+    <value>No week: the column “{0}” has no share – without a share the nominal value applies in every hour or the load is part of the internal heat gains. A share in day, night, weekend or holidays yields the week.</value>
+  </data>
+  <data name="KOND_TXT_KI_WOCHE" xml:space="preserve">
+    <value>The week of the created calendar {0} in the card “Calendar details”: 168 values in {1} from Monday 00:00 to Sunday 23:00, separated by “;”, “off” for switched off; a single value (or “off”) is the base value. Setting it works like the weekly grid (one step for “Undo”), empty discards the week in favour of the base value. Only for a created calendar; reading gives the week or the base value, empty = not created.</value>
+  </data>
+  <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
+    <value>The week needs 168 values (Monday 00:00 to Sunday 23:00) or one value for the base value, separated by “;” and “off” for switched off – {0} were passed.</value>
+  </data>
 </root>
 

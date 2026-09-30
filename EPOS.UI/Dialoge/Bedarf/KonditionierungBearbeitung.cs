@@ -593,6 +593,121 @@ public sealed class KonditionierungBearbeitung
     }
 
     // =================================================================================
+    // Die Karte im Einzelnen (Stufe KP2, Welle U3; Teilkonzept 3.2, 7.5)
+    // =================================================================================
+
+    /// <summary>
+    /// Warum die Handlungen der aufgeklappten Karte weich gesperrt stehen — ohne angelegten Kalender gibt
+    /// es nichts zu ändern (der Kern lehnt es benannt ab, statt still einen anzulegen); <c>null</c> = frei.
+    /// </summary>
+    public string? Kartensperre(KonditionierungGroesse g) => Angelegt(g) ? null : Texte.GrundNichtAngelegt;
+
+    /// <summary>
+    /// Die 168 Werte, die ohne Standardwoche gelten — die Grundangabe als Raster (Wert oder „aus");
+    /// <c>null</c>, wenn der Kalender eine Woche führt oder nicht angelegt ist. Das Wochenraster zeigt sie
+    /// gesperrt, und „Standardwoche anlegen" macht daraus die Woche.
+    /// </summary>
+    public double[]? Grundangabewoche(KonditionierungGroesse g)
+    {
+        KonditionierungKalender? k = Kalender(g);
+        if (k is null || k.Zustand != KonditionierungZustand.Angelegt || k.Angabe == KonditionierungAngabe.Woche) return null;
+        return Wochenwerte(k);
+    }
+
+    /// <summary>
+    /// <b>Die Grundangabe</b> (Ebene 1) — ein Wert oder <c>null</c> = „aus"; eine Standardwoche fällt
+    /// dabei. Ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool GrundangabeSetzen(KonditionierungGroesse g, double? wert)
+        => Bietet(KonditionierungHandlung.Grundangabe)
+           && Ausfuehren("G|" + g, s => Weg.Grundangabe!(s, new KonditionierungOrt(g), wert));
+
+    /// <summary>
+    /// <b>Die Standardwoche</b> (Ebene 2) aus dem Wochenraster — 168 Werte, NaN = „aus"; <c>null</c>
+    /// verwirft sie zugunsten der Grundangabe. Jede Eingabe ist ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool StandardwocheSetzen(KonditionierungGroesse g, double[]? woche)
+        => Bietet(KonditionierungHandlung.Standardwoche)
+           && Ausfuehren("S|" + g, s => Weg.Standardwoche!(s, new KonditionierungOrt(g), woche));
+
+    /// <summary>
+    /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5): setzt den Wert (oder „aus") in die
+    /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool ZeitfensterAnwenden(KonditionierungGroesse g, KonditionierungZeitfenster fenster)
+        => Bietet(KonditionierungHandlung.Zeitfenster)
+           && Ausfuehren("F|" + g, s => Weg.Zeitfenster!(s, new KonditionierungOrt(g), fenster));
+
+    /// <summary>
+    /// <b>Die Feiertage als Regel</b> (F11): die neun bundeseinheitlichen Feiertage „wie Wochentag"
+    /// (Vorgabe 7 = Sonntag) im Feiertagsband unter den Ferien; eine vorhandene Regel bleibt, wie sie ist.
+    /// Der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool FeiertageAnlegen(KonditionierungGroesse g, int wieWochentag = 7)
+        => Bietet(KonditionierungHandlung.Feiertage)
+           && Ausfuehren("H|" + g, s => Weg.Feiertage!(s, new KonditionierungOrt(g), wieWochentag));
+
+    /// <summary>
+    /// <b>„Zeitstruktur übernehmen"</b> (Festlegung 11): Kühlen, Lüftung oder Geräte „wie Heizung" oder
+    /// „wie Anwesenheit" — ersetzt nur die Standardwoche; der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool ZeitstrukturUebernehmen(KonditionierungGroesse g, KonditionierungZeitstruktur quelle)
+        => Bietet(KonditionierungHandlung.Zeitstruktur)
+           && Ausfuehren("Y|" + g, s => Weg.Zeitstruktur!(s, new KonditionierungOrt(g), quelle));
+
+    /// <summary>
+    /// <b>Das Teppichbild</b> der Größe (Teilkonzept 7.5, Festlegung 8) — Tage × Stunden des Kalenders, wie
+    /// er gilt (angelegt, sonst aus der Matrix), gegen das Bezugsjahr des Wegs; <c>null</c> = keins (ohne
+    /// Delegat, ohne Weg oder ohne Kalender). Die Karte ruft es entprellt (Schlüssel
+    /// <see cref="Vorschauschluessel"/>).
+    /// </summary>
+    public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Teppichbild(KonditionierungGroesse g)
+    {
+        if (!MitWeg || Weg.Teppichbild is null) return null;
+        try { return Weg.Teppichbild(Eingabestand(), new KonditionierungOrt(g)); }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>
+    /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5): das Sollwert-Zeitprogramm
+    /// wird die Standardwoche des Heizkalenders. Vor einem angelegten Heizkalender fragt der Reiter
+    /// (Vorgabe „Nein"); sonst legt der Weg ihn an und setzt die Woche — ein Schritt für „Zurücknehmen".
+    /// <c>false</c> = der Weg bietet es nicht.
+    /// </summary>
+    public bool SollwertprofilUebernehmen()
+    {
+        if (!Bietet(KonditionierungHandlung.SollwertprofilUebernehmen)) return false;
+        Action handlung = () => Ausfuehren("I", s => Weg.SollwertprofilUebernehmen!(s));
+        if (Angelegt(KonditionierungGroesse.Heizen))
+            OffeneFrage = new Rueckfrage(Knopftext(Texte.KnopfInDenKalender), Fragen.Sollwertprofil, VorgabeNein: true, handlung);
+        else
+            handlung();
+        return true;
+    }
+
+    /// <summary>Die neun Feiertagsregeln der Periodenliste (F11); leer ohne Weg.</summary>
+    public IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln
+        => MitWeg ? Weg.Feiertagsregeln ?? Array.Empty<KonditionierungFeiertag>() : Array.Empty<KonditionierungFeiertag>();
+
+    /// <summary>
+    /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Festlegung 15): Zeitraum oder Feiertag;
+    /// <paramref name="rang"/> <c>null</c> = neu im Eigenband. Ein Schritt für „Zurücknehmen".
+    /// </summary>
+    public bool PeriodeSetzen(KonditionierungGroesse g, int? rang, KonditionierungPeriode periode)
+        => Bietet(KonditionierungHandlung.PeriodeSetzen)
+           && Ausfuehren("P|" + g, s => Weg.PeriodeSetzen!(s, new KonditionierungOrt(g), rang, periode));
+
+    /// <summary><b>Rang ▲▼</b> einer eigenen Periode im Eigenband (Festlegung 15).</summary>
+    public bool RangVerschieben(KonditionierungGroesse g, int rang, bool hoeher)
+        => Bietet(KonditionierungHandlung.RangVerschieben)
+           && Ausfuehren("R|" + g, s => Weg.RangVerschieben!(s, new KonditionierungOrt(g), rang, hoeher));
+
+    /// <summary><b>Eine eigene Periode löschen</b> (Festlegung 15) — „Zurücknehmen" holt sie zurück.</summary>
+    public bool PeriodeLoeschen(KonditionierungGroesse g, int rang)
+        => Bietet(KonditionierungHandlung.PeriodeLoeschen)
+           && Ausfuehren("L|" + g, s => Weg.PeriodeLoeschen!(s, new KonditionierungOrt(g), rang));
+
+    // =================================================================================
     // Vorlagen je Größe (Stufe KP2, Welle U2; Teilkonzept 3.5, 7.4)
     // =================================================================================
 
@@ -750,6 +865,17 @@ public sealed class KonditionierungBearbeitung
             return null;
         }
     }
+
+    /// <summary>
+    /// <b>Warum die Vorschau kein Bild hat</b> (Welle U3, offener Punkt aus U2): Geräte und Personen ohne
+    /// einen Anteil in Tag, Nacht, Wochenende oder Ferien ergeben keinen Kalender — der Nennwert gilt in
+    /// jeder Stunde bzw. die Last steckt in den inneren Wärmegewinnen; sonst der allgemeine Grund.
+    /// </summary>
+    public string VorschauLeergrund(KonditionierungGroesse g)
+        => g is KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen && !Angelegt(g)
+           && !Zeilen.Any(z => IstAnteil(g, z) && Wert(g, z).HasValue)
+            ? string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauOhneAnteile, Groessenname(g))
+            : Texte.TextVorschauLeer;
 
     /// <summary>Das Bild der Vorschau (<see cref="KonditionierungWeg.WochenVorschau"/>); <c>null</c> = keines.</summary>
     public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Vorschau(KonditionierungGroesse g)

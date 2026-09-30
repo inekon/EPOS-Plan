@@ -197,7 +197,28 @@ public enum KonditionierungHandlung
     /// „Vom Gebäude übernehmen und anpassen" — nur an einer Zone (Teilkonzept 3.4, 7.3): legt eine eigene
     /// Kopie des angelegten Gebäudekalenders an (Stufe KP2, Welle U4).
     /// </summary>
-    VomGebaeude = 14
+    VomGebaeude = 14,
+
+    /// <summary>Die Grundangabe der Karte setzen — ein Wert oder „aus"; eine Standardwoche fällt (Welle U3).</summary>
+    Grundangabe = 15,
+
+    /// <summary>Die Standardwoche der Karte setzen (Wochenraster) oder verwerfen (Welle U3).</summary>
+    Standardwoche = 16,
+
+    /// <summary>Eine eigene Periode anlegen oder ersetzen — Zeitraum oder Feiertag (Festlegung 15, Welle U3).</summary>
+    PeriodeSetzen = 17,
+
+    /// <summary>Rang ▲▼ einer eigenen Periode im Eigenband (Festlegung 15, Welle U3).</summary>
+    RangVerschieben = 18,
+
+    /// <summary>Eine eigene Periode löschen (Festlegung 15, Welle U3).</summary>
+    PeriodeLoeschen = 19,
+
+    /// <summary>
+    /// „In den Kalender übernehmen" an der Wärmeübergabe (Teilkonzept 5.5, Welle U3): das Sollwert-Zeitprogramm
+    /// wird die Standardwoche des Heizkalenders.
+    /// </summary>
+    SollwertprofilUebernehmen = 20
 }
 
 /// <summary>
@@ -292,6 +313,13 @@ public sealed class KonditionierungPeriode
     /// (Festlegung 15); „Matrix erneut anwenden" ersetzt sie.
     /// </summary>
     public bool Matrixbereich { get; set; }
+
+    /// <summary>
+    /// Steht die Periode im Band der eigenen Perioden (Rang 310 … 899)? Gesetzt von der Hülle nach
+    /// <c>Kalenderwerkzeuge.ImEigenband</c> — nur dort verschiebt ▲▼ den Rang (Festlegung 15); eine
+    /// Feiertagsregel im Band 100 … 108 behält ihn.
+    /// </summary>
+    public bool Eigenband { get; set; }
 
     /// <summary>Eine entkoppelte Kopie samt Woche.</summary>
     public KonditionierungPeriode Kopie()
@@ -574,6 +602,14 @@ public sealed record KonditionierungErgebnis(bool Ok, string Meldung, Konditioni
 public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse Groesse, string Name,
                                                  string Beschreibung, KonditionierungNutzung Nutzung,
                                                  bool Ausgeliefert);
+
+/// <summary>
+/// Eine der neun bundeseinheitlichen Feiertagsregeln für die Periodenliste (F11): der Persistenzwert
+/// (<c>DbWerte.KOND_FEIERTAGE</c>, nie übersetzt) und ihr Anzeigename.
+/// </summary>
+/// <param name="Regel">Der Persistenzwert der Regel.</param>
+/// <param name="Name">Der Anzeigename („Neujahr").</param>
+public sealed record KonditionierungFeiertag(string Regel, string Name);
 
 /// <summary>Was „Als Vorlage speichern…" erfragt (Teilkonzept 7.4): Name, Beschreibung, Nutzung.</summary>
 public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, KonditionierungNutzung Nutzung);

@@ -138,6 +138,7 @@ namespace WindowsFormsApplication1
                 Woche = woche,
                 WieWochentag = tag,
                 Matrixbereich = Konditionierungsarbeit.IstMatrixbereich(r),
+                Eigenband = Kalenderwerkzeuge.ImEigenband(r.Rang),
             };
         }
 
@@ -620,6 +621,17 @@ namespace WindowsFormsApplication1
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
                 },
 
+                Grundangabe = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Grundangabe(
+                    a, Ort(o), w.HasValue ? Skaliert(w.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
+                Standardwoche = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Standardwoche(
+                    a, Ort(o), w == null ? null : w.Select(v => Skaliert(v, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false)).ToArray())),
+                PeriodeSetzen = (s, o, rang, p) => Schritt(s, art, bezug, a => Konditionierungsarbeit.PeriodeSetzen(
+                    a, Ort(o), rang, DbWerte.KOND_ARTEN[(int)p.Art], p.Name, p.Von ?? 0, p.Bis ?? 0, p.Feiertagsregel,
+                    Angabe(p.Angabe, p.Wert, p.Woche, p.WieWochentag, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse))))),
+                RangVerschieben = (s, o, rang, hoeher) => Schritt(s, art, bezug, a => Konditionierungsarbeit.RangVerschieben(a, Ort(o), rang, hoeher)),
+                PeriodeLoeschen = (s, o, rang) => Schritt(s, art, bezug, a => Konditionierungsarbeit.PeriodeLoeschen(a, Ort(o), rang)),
+                Feiertagsregeln = Feiertagsregeln(),
+                SollwertprofilUebernehmen = s => Schritt(s, art, bezug, Konditionierungsarbeit.SollwertprofilUebernehmen),
                 Zeitfenster = (s, o, f) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Zeitfenster(
                     a, Ort(o), f.Tage, f.Von, f.Bis,
                     f.Wert.HasValue ? Skaliert(f.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
@@ -630,9 +642,21 @@ namespace WindowsFormsApplication1
                 Rueckfrage = (s, o, h) => Befund(s, art, bezug, o, h, idGebaeude),
                 SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art, bezug) : null,
                 WochenVorschau = Vorschau,
+                Teppichbild = (s, o) => Teppich(s, art, bezug, o),
+                Bezugsjahr = bezug.Referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
                 Pruefen = s => Pruefen(s, art, bezug),
             };
+        }
+
+        /// <summary>Die neun Feiertagsregeln mit ihren Anzeigenamen in der Sprache der Oberfläche (F11).</summary>
+        private static IReadOnlyList<KonditionierungFeiertag> Feiertagsregeln()
+        {
+            IReadOnlyList<string> namen = Kalenderwerkzeuge.Feiertagsnamen();
+            var liste = new List<KonditionierungFeiertag>();
+            for (int k = 0; k < DbWerte.KOND_FEIERTAGE.Count; k++)
+                liste.Add(new KonditionierungFeiertag(DbWerte.KOND_FEIERTAGE[k], k < namen.Count ? namen[k] : DbWerte.KOND_FEIERTAGE[k]));
+            return liste;
         }
 
         private static KonditionierungVorlageDaten VorlageDaten(KonditionierungsvorlageCtrl.Vorlage v)
@@ -781,6 +805,33 @@ namespace WindowsFormsApplication1
             };
             string titel = MyResource.Resource.KOND_LBL_VORSCHAU_WOCHE + " · " + groesse;
             return ChartRenderer.StundenprofilModell(titel, werte, 24, u.Raster.BildAchseX, einheit);
+        }
+
+        /// <summary>
+        /// <b>Das Teppichbild</b> einer Karte (Teilkonzept 7.5, Entwurf KP2 Festlegung 8; Welle U3): der
+        /// Kalender, den der Dialog für die Größe am Ort zeigt (angelegt, sonst der Generator aus der
+        /// wirksamen Matrix, <see cref="Konditionierungsarbeitsstand.Ansichtskalender"/>), als
+        /// <see cref="Kalenderteppich"/> gegen das Bezugsjahr des Wegs — im Projekt das des Laufs, im
+        /// Katalog 2025 — und über den Renderer aus K4 (<see cref="ChartRenderer.KalenderteppichModell"/>)
+        /// mit den Texten der Oberflächensprache. Das Bezugsjahr steht im Titel, der <c>data-wert</c> jedes
+        /// Felds nennt Zeitraum, Stunden, Wert und Quelle. <c>null</c> = kein Kalender (etwa Personen ohne Anteil).
+        /// </summary>
+        private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Teppich(KonditionierungStand s, Kalendereigentuemer art,
+                                                                                Bezug bezug, KonditionierungOrt o)
+        {
+            if (s?.Gebaeude == null || o == null) return null;
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
+                Konditionierungskalender k = a.Ansichtskalender(Kern(o.Groesse), o.Zone);
+                if (k == null) return null;
+                return ChartRenderer.KalenderteppichModell(Kalenderteppich.Bilden(k, a.Referenzjahr), null,
+                                                           ChartRenderer.KalenderteppichTexte.AusRessourcen());
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
         }
 
         /// <summary>Die Herleitung der Lasten (P1) am Gebäude bzw. an einer Zone.</summary>

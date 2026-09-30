@@ -70,6 +70,8 @@ public sealed class KonditionierungKiTafel
                 return b.DeltaT;
             case KiKonditionierungsfelder.Teil.Vorlage:
                 return b.Herkunft(g);
+            case KiKonditionierungsfelder.Teil.Woche:
+                return Wochentext(b.Kalender(g));
             default:
                 return b.Wert(g, z) is double w && double.IsFinite(w) ? w : null;
         }
@@ -116,6 +118,9 @@ public sealed class KonditionierungKiTafel
             case KiKonditionierungsfelder.Teil.Vorlage:
                 VorlageUebernehmen(b, g, wert as string);
                 return;
+            case KiKonditionierungsfelder.Teil.Woche:
+                ok = WocheSetzen(b, g, wert as string);
+                break;
             default:
                 ok = b.WertSetzen(g, z, wert as double?);
                 break;
@@ -152,4 +157,58 @@ public sealed class KonditionierungKiTafel
     }
 
     private static string Fenster(string schluessel) => schluessel[..schluessel.LastIndexOf('_')];
+
+    // ------------------------------------------------------------------ Die Woche als Text (Welle U3)
+
+    /// <summary>Das Kennwort „aus" in der Woche als Text — invariant, wie in der gespeicherten Woche.</summary>
+    private const string AUS = "aus";
+
+    /// <summary>
+    /// <b>Die Woche des angelegten Kalenders als Text</b> (<c>kond_&lt;größe&gt;_woche</c>): 168 Werte in der
+    /// Einheit der Spalte, durch „;" getrennt, „aus" für abgeschaltet; ohne Woche die Grundangabe als ein Wert;
+    /// <c>null</c> ohne angelegten Kalender.
+    /// </summary>
+    public static string? Wochentext(KonditionierungKalender? k)
+    {
+        if (k is null || k.Zustand != KonditionierungZustand.Angelegt) return null;
+        return k.Angabe switch
+        {
+            KonditionierungAngabe.Woche when k.Woche is { Length: 168 } w => string.Join(";", w.Select(Zahltext)),
+            KonditionierungAngabe.Aus => AUS,
+            KonditionierungAngabe.Wert when k.Wert is double v => Zahltext(v),
+            _ => null
+        };
+    }
+
+    private static string Zahltext(double v)
+        => double.IsNaN(v) ? AUS : v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Setzt die Woche aus Text über die Bearbeitung: 168 Werte → Standardwoche, ein Wert (oder „aus") →
+    /// Grundangabe, leer → die Woche fällt zugunsten der Grundangabe. Jede andere Zahl von Werten und jeder
+    /// unlesbare Wert wird benannt abgelehnt.
+    /// </summary>
+    private static bool WocheSetzen(KonditionierungBearbeitung b, KonditionierungGroesse g, string? text)
+    {
+        string[] teile = (text ?? "").Split(new[] { ';', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (teile.Length == 0)
+            return b.Kalender(g)?.Angabe != KonditionierungAngabe.Woche || b.StandardwocheSetzen(g, null);
+        var werte = new double[teile.Length];
+        for (int i = 0; i < teile.Length; i++)
+        {
+            if (string.Equals(teile[i], AUS, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(teile[i], b.Texte.ZelleAus, StringComparison.OrdinalIgnoreCase))
+                werte[i] = double.NaN;
+            else if (EPOS.UI.Standards.Zahlen.ZahlParsen(teile[i], out double v))
+                werte[i] = v;
+            else
+                throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.KOND_TXT_KI_WOCHE_FORMAT, teile.Length));
+        }
+        if (werte.Length == 1) return b.GrundangabeSetzen(g, double.IsNaN(werte[0]) ? null : werte[0]);
+        if (werte.Length != 168)
+            throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.KOND_TXT_KI_WOCHE_FORMAT, werte.Length));
+        return b.StandardwocheSetzen(g, werte);
+    }
 }

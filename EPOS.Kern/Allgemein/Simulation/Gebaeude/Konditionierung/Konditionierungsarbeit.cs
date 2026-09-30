@@ -444,7 +444,9 @@ namespace WindowsFormsApplication1
         /// <b>Ein Werkzeug der Karte</b> auf den angelegten Kalender einer Größe
         /// (<see cref="Kalenderwerkzeuge"/>): Ohne angelegten Kalender gibt es nichts zu ändern — das
         /// wird benannt abgelehnt, statt still einen anzulegen. Der Vermerk des Werkzeugs geht in die
-        /// Herkunft; die Vorlage darin bleibt (B8: <c>Bemerkung</c> = Herkunft · letzter Vermerk).
+        /// Herkunft; die Vorlage darin bleibt (B8: <c>Bemerkung</c> = Herkunft · letzter Vermerk). Eine
+        /// direkte Eingabe (Grundangabe, Standardwoche, Periodenliste; Welle U3) trägt keinen Vermerk —
+        /// dann bleibt die Herkunft samt dem letzten Werkzeugvermerk, wie sie war.
         /// </summary>
         public static Ebenenergebnis Werkzeug(Konditionierungsstand ebene, Konditionierungsgroesse groesse,
                                              Func<Konditionierungskalender, Kalenderwerkzeuge.Werkzeugbefund> werkzeug)
@@ -457,7 +459,10 @@ namespace WindowsFormsApplication1
                                                            Konditionierungsgroessen.Kennwort(groesse)));
             Kalenderwerkzeuge.Werkzeugbefund b = werkzeug(k);
             if (!b.Ok) return Ebenenergebnis.Fehler(b.Meldung);
-            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, ebene.Herkunft(groesse).MitVermerk(b.Vermerk)));
+            Kalenderherkunft herkunft = string.IsNullOrEmpty(b.Vermerk)
+                ? ebene.Herkunft(groesse)
+                : ebene.Herkunft(groesse).MitVermerk(b.Vermerk);
+            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, b.Kalender, herkunft));
         }
 
         /// <summary>
@@ -927,6 +932,78 @@ namespace WindowsFormsApplication1
                                                           IReadOnlyList<int> tage, int von, int bis, double? wert)
             => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Zeitfenster(k, tage, von, bis, wert),
                                Konditionierungspostenart.Standardwoche);
+
+        /// <summary>
+        /// <b>Die Grundangabe</b> (Ebene 1) des angelegten Kalenders am Ort — ein Wert oder „aus"
+        /// (<paramref name="wert"/> <c>null</c>); eine Standardwoche fällt dabei (Konzept 3.2).
+        /// </summary>
+        public static Konditionierungsschritt Grundangabe(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                          double? wert)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Grundangabe(k, wert),
+                               Konditionierungspostenart.Standardwoche);
+
+        /// <summary>
+        /// <b>Die Standardwoche</b> (Ebene 2) des angelegten Kalenders am Ort — 168 Zellen, NaN = „aus";
+        /// <c>null</c> verwirft sie zugunsten der Grundangabe (<see cref="Kalenderwerkzeuge.Standardwoche"/>).
+        /// </summary>
+        public static Konditionierungsschritt Standardwoche(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                            IReadOnlyList<double> woche)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.Standardwoche(k, woche),
+                               Konditionierungspostenart.Standardwoche);
+
+        /// <summary>
+        /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Festlegung 15) am angelegten Kalender des Orts —
+        /// Zeitraum oder Feiertag; <paramref name="rang"/> <c>null</c> = neu im Eigenband
+        /// (<see cref="Kalenderwerkzeuge.PeriodeSetzen"/>).
+        /// </summary>
+        public static Konditionierungsschritt PeriodeSetzen(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                            int? rang, string art, string bezeichner, int beginn, int ende,
+                                                            string feiertagsregel, Kalenderangabe angabe)
+            => WerkzeugSchritt(stand, ort,
+                               k => Kalenderwerkzeuge.PeriodeSetzen(k, rang, art, bezeichner, beginn, ende, feiertagsregel, angabe),
+                               Konditionierungspostenart.EigenePerioden);
+
+        /// <summary><b>Rang ▲▼ im Eigenband</b> (Festlegung 15; <see cref="Kalenderwerkzeuge.RangVerschieben"/>).</summary>
+        public static Konditionierungsschritt RangVerschieben(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                              int rang, bool hoeher)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.RangVerschieben(k, rang, hoeher),
+                               Konditionierungspostenart.EigenePerioden);
+
+        /// <summary><b>Eine eigene Periode löschen</b> (Festlegung 15; <see cref="Kalenderwerkzeuge.PeriodeLoeschen"/>).</summary>
+        public static Konditionierungsschritt PeriodeLoeschen(Konditionierungsarbeitsstand stand, Konditionierungsort ort, int rang)
+            => WerkzeugSchritt(stand, ort, k => Kalenderwerkzeuge.PeriodeLoeschen(k, rang),
+                               Konditionierungspostenart.EigenePerioden);
+
+        /// <summary>
+        /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5; Welle U3): Das
+        /// Sollwert-Zeitprogramm des Gebäudes (<c>Sollwertprofil</c>, AK1) wird die Standardwoche des
+        /// Heizkalenders. Ist er nicht angelegt, legt der Schritt ihn zuerst an wie „Kalender anlegen"
+        /// (samt F2 Regel 2); Perioden und Herkunft eines angelegten bleiben, der Vermerk nennt die
+        /// Übernahme (B8). Das Zeitprogramm selbst bleibt stehen — für AK1 lesbar. Ohne gültiges
+        /// Zeitprogramm wird benannt abgelehnt; ein Wert außerhalb der Grenzen des Heizsollwerts ebenso.
+        /// </summary>
+        public static Konditionierungsschritt SollwertprofilUebernehmen(Konditionierungsarbeitsstand stand)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(stand.Gebaeude.Bestand.Sollwertprofil);
+            if (p.Befund != AnlagenkopplungSchema.WochenprofilBefund.Gelesen)
+                return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_SOLLWERTPROFIL_FEHLT, p.Befund.ToString()));
+            var ort = new Konditionierungsort(Konditionierungsgroesse.Heizsoll);
+            Konditionierungsarbeitsstand a = stand;
+            if (a.Gebaeude.Kalender(Konditionierungsgroesse.Heizsoll) == null)
+            {
+                Konditionierungsschritt angelegt = Anlegen(a, ort);
+                if (!angelegt.Ok) return angelegt;
+                a = angelegt.Stand;
+            }
+            string vermerk = MyResource.Resource.KOND_MSG_WERKZEUG_SOLLWERTPROFIL;
+            return WerkzeugSchritt(a, ort, k =>
+            {
+                Kalenderwerkzeuge.Werkzeugbefund b = Kalenderwerkzeuge.Standardwoche(k, p.Werte);
+                return b.Ok ? Kalenderwerkzeuge.Werkzeugbefund.Gut(b.Kalender, vermerk) : b;
+            }, Konditionierungspostenart.Standardwoche);
+        }
 
         /// <summary><b>Die Feiertage als Regel</b> (F11) auf den angelegten Kalender des Orts.</summary>
         public static Konditionierungsschritt Feiertage(Konditionierungsarbeitsstand stand, Konditionierungsort ort,

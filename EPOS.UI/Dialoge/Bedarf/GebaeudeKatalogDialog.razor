@@ -466,6 +466,9 @@
                             <GebaeudeWaermeuebergabeFelder Arbeit="@_arbeit" Texte="@Texte"
                                                            Herleitung="@UebergabeHerleitung"
                                                            WochenVorschau="@WochenVorschau"
+                                                           InDenKalender="@(_kond.Bietet(KonditionierungHandlung.SollwertprofilUebernehmen) && !IstGesperrt ? EventCallback.Factory.Create(this, InDenKalenderUebernehmen) : default)"
+                                                           KalenderKnopf="@KonditionierungTexte.KnopfInDenKalender"
+                                                           KalenderHinweis="@KonditionierungTexte.HinweisInDenKalender"
                                                            EntprellungMs="@EntprellungMs" />
                         </KindInhalt>
                     </Gruppenkopf>
@@ -542,6 +545,7 @@
                                            Ferienzeitraeume="@Ferienzeitraeume" LabelTag="@LabelTag" LabelMonat="@LabelMonat"
                                            JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" EntprellungMs="@EntprellungMs"
                                            VorlagenVerwalten="VorlagenVerwaltenOeffnen" Vorn="@_kondVorn"
+                                           AufgeklappteGroesse="@_kondAufgeklappt"
                                            Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
 
                     @if (BrauchwasserGaben is not null)
@@ -2121,6 +2125,23 @@
     private KonditionierungGroesse _kondVorn = KonditionierungGroesse.Heizen;
 
     /// <summary>„Vorlagen verwalten" einer Kalenderkarte: das Blatt mit der Größe der Karte.</summary>
+    /// <summary>Die Karte, die im Reiter „Konditionierung" beim nächsten Aufbau aufgeklappt steht.</summary>
+    private KonditionierungGroesse? _kondAufgeklappt;
+
+    /// <summary>
+    /// „In den Kalender übernehmen" an der Wärmeübergabe (Teilkonzept 5.5; Stufe KP2, Welle U3): das
+    /// Sollwert-Zeitprogramm wird die Standardwoche des Heizkalenders — über die Bearbeitung in den
+    /// Arbeitsstand, geschrieben mit OK. Der Dialog wechselt in den Reiter „Konditionierung" mit der Karte
+    /// Heizen vorn und aufgeklappt; dort steht auch die Rückfrage vor einem angelegten Kalender.
+    /// </summary>
+    private void InDenKalenderUebernehmen()
+    {
+        _kond.SollwertprofilUebernehmen();
+        _kondVorn = KonditionierungGroesse.Heizen;
+        _kondAufgeklappt = KonditionierungGroesse.Heizen;
+        _reiter = REITER_KONDITIONIERUNG;
+    }
+
     private void VorlagenVerwaltenOeffnen(KonditionierungGroesse g)
     {
         _vorlagenBlatt = g;

@@ -174,6 +174,60 @@ public sealed class KonditionierungWeg
     // ------------------------------------------------------------------ Werkzeuge der Karte
 
     /// <summary>
+    /// <b>Die Grundangabe</b> der aufgeklappten Karte (Teilkonzept 3.2 Ebene 1, 7.5; Welle U3): ein Wert
+    /// in der Einheit der Spalte (Anteile in Prozent) oder <c>null</c> = „aus". Eine Standardwoche fällt
+    /// dabei — Grundangabe und Woche stehen nie zugleich. Eine direkte Eingabe: die Herkunft bleibt.
+    /// <para>Kern: <c>Konditionierungsarbeit.Grundangabe</c> über <c>Kalenderwerkzeuge.Grundangabe</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, double?, KonditionierungErgebnis>? Grundangabe { get; init; }
+
+    /// <summary>
+    /// <b>Die Standardwoche</b> aus dem Wochenraster der Karte (Teilkonzept 3.2 Ebene 2, 7.5; Welle U3):
+    /// 168 Werte ab Montag 00:00 in der Einheit der Spalte, <see cref="double.NaN"/> = „aus"; <c>null</c>
+    /// verwirft die Woche, an ihre Stelle tritt die Grundangabe mit dem häufigsten Wert der Woche.
+    /// <para>Kern: <c>Konditionierungsarbeit.Standardwoche</c> über <c>Kalenderwerkzeuge.Standardwoche</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, double[]?, KonditionierungErgebnis>? Standardwoche { get; init; }
+
+    /// <summary>
+    /// <b>Eine eigene Periode anlegen oder ersetzen</b> (Periodenliste, Festlegung 15; Welle U3): Zeitraum
+    /// (Tag 1 … 365 im Gemeinjahr) oder Feiertag (eine der neun Regeln), mit Name und Angabe — Wert, „aus"
+    /// oder „wie Wochentag". Dritter Parameter: der Rang der Periode, die ersetzt wird; <c>null</c> = neu
+    /// über der ranghöchsten eigenen Periode im Eigenband. Der Matrixbereich (Ferien, Saison) ist nur lesbar.
+    /// <para>Kern: <c>Konditionierungsarbeit.PeriodeSetzen</c> über <c>Kalenderwerkzeuge.PeriodeSetzen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int?, KonditionierungPeriode, KonditionierungErgebnis>? PeriodeSetzen { get; init; }
+
+    /// <summary>
+    /// <b>Rang ▲▼</b> einer eigenen Periode im Eigenband (Festlegung 15): tauscht den Rang mit der
+    /// nächsten eigenen Periode darüber (<c>true</c>) bzw. darunter.
+    /// <para>Kern: <c>Konditionierungsarbeit.RangVerschieben</c> über <c>Kalenderwerkzeuge.RangVerschieben</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int, bool, KonditionierungErgebnis>? RangVerschieben { get; init; }
+
+    /// <summary>
+    /// <b>Eine eigene Periode löschen</b> (Festlegung 15) — über ihren Rang; der Matrixbereich wird benannt abgelehnt.
+    /// <para>Kern: <c>Konditionierungsarbeit.PeriodeLoeschen</c> über <c>Kalenderwerkzeuge.PeriodeLoeschen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int, KonditionierungErgebnis>? PeriodeLoeschen { get; init; }
+
+    /// <summary>
+    /// Die neun Feiertagsregeln der Periodenliste (Persistenzwert und Anzeigename, F11) — die Auswahl der
+    /// Art „Feiertag"; <c>null</c> = keine (dann bietet die Liste nur Zeiträume an).
+    /// <para>Kern: <c>DbWerte.KOND_FEIERTAGE</c> und <c>Kalenderwerkzeuge.Feiertagsnamen</c>.</para>
+    /// </summary>
+    public IReadOnlyList<KonditionierungFeiertag>? Feiertagsregeln { get; init; }
+
+    /// <summary>
+    /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5; Welle U3): das
+    /// Sollwert-Zeitprogramm (<c>Sollwertprofil</c>) wird die Standardwoche des Heizkalenders — ist er nicht
+    /// angelegt, wird er zuerst angelegt; Perioden und Herkunft eines angelegten bleiben. Die Rückfrage vor
+    /// einem angelegten Kalender stellt der Reiter.
+    /// <para>Kern: <c>Konditionierungsarbeit.SollwertprofilUebernehmen</c> (rein).</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungErgebnis>? SollwertprofilUebernehmen { get; init; }
+
+    /// <summary>
     /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5, 7.5): setzt den Wert in die
     /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in
     /// <see cref="KonditionierungKalender.Vermerk"/>.
@@ -236,6 +290,14 @@ public sealed class KonditionierungWeg
     public Func<KonditionierungStand, KonditionierungOrt, Zeichenmodell?>? Teppichbild { get; init; }
 
     /// <summary>
+    /// Das Bezugsjahr, gegen das Vorschau und Teppichbild Wochentage und Feiertage auflösen — im Projekt das
+    /// des Laufs, im Katalog das der Vorgabe (Festlegung 8); die Karte nennt es unter dem Teppichbild.
+    /// <c>null</c> = keins.
+    /// <para>Kern: <c>Konditionierungsarbeitsstand.Referenzjahr</c> über den Bezug der Hülle.</para>
+    /// </summary>
+    public int? Bezugsjahr { get; init; }
+
+    /// <summary>
     /// <b>Die Herleitung der Lasten</b> (P1, Teilkonzept 7.2) für die Nennwertzeile und die Zeile der
     /// Jahresmittel; zweiter Parameter: die Zone (<c>null</c> = Gebäude bzw. Katalogbau).
     /// <para>Kern: <c>Konditionierungsarbeit.PersonenNennwertVorschlag</c>, <c>PersonenJahresmittelW</c>,
@@ -284,6 +346,12 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.KatalogErneut => KatalogErneut is not null,
             KonditionierungHandlung.LuftwechselAufteilen => LuftwechselAufteilen is not null,
             KonditionierungHandlung.VomGebaeude => VomGebaeude is not null,
+            KonditionierungHandlung.Grundangabe => Grundangabe is not null,
+            KonditionierungHandlung.Standardwoche => Standardwoche is not null,
+            KonditionierungHandlung.PeriodeSetzen => PeriodeSetzen is not null,
+            KonditionierungHandlung.RangVerschieben => RangVerschieben is not null,
+            KonditionierungHandlung.PeriodeLoeschen => PeriodeLoeschen is not null,
+            KonditionierungHandlung.SollwertprofilUebernehmen => SollwertprofilUebernehmen is not null,
             _ => false
         };
     }

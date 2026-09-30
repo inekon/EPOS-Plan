@@ -798,6 +798,7 @@ Anwendung, geschrieben wird nur in die Ablage der Seite.
 | `…?fall=ohnetabellen` | Bearbeiten ohne die Tabellen der Konditionierung: der Reiter benannt gesperrt, nur die Bestandszellen |
 | `…?fall=vorlagen` | Bearbeiten, der volle Satz: die Vorlagen je Karte und die Vorlagenverwaltung (Welle U2) |
 | `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
+| `…?fall=karte` | Bearbeiten, die Karte im Einzelnen (Welle U3): „Heizen“ über denselben Weg ohne Datenbank angelegt — Sommerferien aus der Matrix, die neun Feiertage als Regel, das Zeitfenster Mo–Fr 6–8 Uhr 22 °C und eine eigene Periode über den Jahreswechsel („aus“) |
 | `…?fall=verwaltung` | die Gebäudeverwaltung (`GebaeudeAdminDialog`, Welle U4) wie in ihrem eigenen Fenster, ohne Überlagerung: drei Katalogbauten (einer ausgeliefert), Stammblatt mit der Gruppe „Konditionierung“ und dem breiten Blatt über demselben Weg ohne Datenbank |
 | `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
 
@@ -927,3 +928,35 @@ Querrollen, Bedienziele unter 44 px, Überdeckungen und Herausragen: je 0; Felde
 Gebäudelisten (`node rasterprobe.mjs --nur GD`) erfüllt GD1 bis GD3 unverändert (Zeilenhöhe 53 / Maß 53,
 Rollbehälter die Hülle, 0 Platzhalter nach dem Rollen, Sichtbarkeitsmelder 3 / 4), die Katalogprobe der
 Verwaltung (`node katalogprobe.mjs --nur N16`) läuft in beiden Fenstern ohne Überlagerung durch.
+
+**Welle U3 — die Karte im Einzelnen.** Der Fall `karte` wählt den Reiter „Konditionierung“ (das zweite Blatt
+der Reiterfolge), klappt an „Heizen“ „Kalender im Einzelnen“ auf und misst die Karte wie ein Reiterblatt
+(Querrollen, Bedienziele ≥ 44 px, Überdeckung, Herausragen), dazu: die Karte über die ganze Zeile; das
+Wochenraster am Behälter (unter 600 px vier Zeilen je Tag, ab 600 px zwei, ab 1 150 px eine) ohne Querrollen;
+die Periodenliste mit elf Zeilen, davon eine des Matrixbereichs, ohne Querrollen und **ohne Wortbruch** (jedes
+Wort einer sichtbaren Zelle steht auf einer Zeile, gemessen über `Range.getClientRects`); sieben Tagesknöpfe
+am Zeitfenster; den Vermerk des letzten Werkzeugs; das Teppichbild mit 1 bis 2 000 Elementen, das Bezugsjahr
+in der Zeile darunter und Zeitraum, Wert und Quelle am Zeiger. Je Breite EIN Foto der aufgeklappten Karte
+(`karte_<breite>_einzelheiten.png`), die Fotos je Reiter entfallen in diesem Fall.
+
+**Ergebnis vom 30.09.2026** (Welle U3 auf dem Stand mit U4 und der vorgebbaren Reiterfolge; Wirt Release auf
+Port 5299, Chromium headless über das globale Playwright, `kultur=de-DE`): **vorher ein Befund, nachher kein
+Verstoß** in 36 Läufen (9 Fälle × 4 Breiten, Rückgabe 0). Der Befund stand im Foto bei 390 px; die Probe misst
+ihn jetzt (Gegenprobe gegen den alten Stand: 20 Wortbrüche, Rückgabe 1).
+
+| Befund | vorher | Ursache | Behebung |
+|---|---|---|---|
+| Periodenliste bricht im Wort | 20 Wörter bei 390 px („Karfrei\|tag“, „Weihnachts\|tag“, Datumsangaben) | fünf Spalten neben den 2 × 2 Knöpfen in 314 px Behälter, `overflow-wrap: anywhere` | unter 600 px fallen „Art“ und „Von–Bis“ (der Zeitraum leise unter dem Namen, wo er anders lautet als der Name), Rang 2,25 rem, Wert 4 rem — Wache `StilblattTests`, bunit `PeriodenlisteTests` |
+
+| Fenster | Karte | Wochenraster | Periodenliste | Ziele im Blatt |
+|---|---|---|---|---|
+| 390 × 844 | 340 px | 314 px → 4 Zeilen je Tag | ohne „Art“ und „Von–Bis“, 0 Wortbrüche | 267 |
+| 820 × 1 180 | 753 px | 727 px → 2 Zeilen je Tag | alle Spalten, 0 Wortbrüche | 267 |
+| 1 180 × 820 | 1 099 px | 1 073 px → 2 Zeilen je Tag | alle Spalten, 0 Wortbrüche | 313 |
+| 1 300 × 900 | 1 214 px | 1 188 px → 1 Zeile je Tag | alle Spalten, 0 Wortbrüche | 313 |
+
+Querrollen, Bedienziele unter 44 px, Überdeckungen und Herausragen: je 0. Das Teppichbild zählt in jeder
+Breite 405 Elemente, 354 davon mit Wert; am ersten Feld steht „Mi 01.01., 0–24 Uhr: aus · Betriebsruhe
+zwischen den Jahren (Zeitraum)“. Die übrigen acht Fälle messen wie im Ergebnis der Welle U4; der Reiter
+„Konditionierung“ steht in der neuen Reiterfolge an zweiter Stelle, Matrix und Karten wie dort. Die Fotos
+liegen außerhalb des Repositorys.

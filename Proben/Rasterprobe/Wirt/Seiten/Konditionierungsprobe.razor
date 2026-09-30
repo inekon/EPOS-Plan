@@ -4,7 +4,7 @@
 @using EPOS.UI.Dialoge.Bedarf
 @inject NavigationManager Navigation
 
-@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
     Pruefstand, nicht Auslieferung.
 
     Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
@@ -38,6 +38,11 @@
       ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
                        Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
                        Gemeinjahrdatum (Saison von/bis)
+      ?fall=karte      Betriebsart Bearbeiten, die KARTE IM EINZELNEN (Welle U3): Heizen angelegt ueber den
+                       Weg ohne Datenbank - Sommerferien aus der Matrix, die neun Feiertage als Regel,
+                       das Zeitfenster Mo-Fr 6-8 Uhr 22 °C und eine eigene Periode ueber den
+                       Jahreswechsel ("aus"); die Probe klappt die Karte auf und misst Wochenraster,
+                       Periodenliste und Teppichbild
       ?fall=verwaltung die GEBAEUDEVERWALTUNG (Welle U4) wie in ihrem eigenen Fenster, ohne
                        Ueberlagerung: drei Katalogbauten (einer ausgeliefert), das Stammblatt mit
                        der Gruppe "Konditionierung" und dem breiten Blatt "Konditionierung..." ueber
@@ -138,9 +143,9 @@
     // ------------------------------------------------------------- Adresse
     private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
                          OHNE_TABELLEN = "ohnetabellen", VORLAGEN = "vorlagen", BAUSTEINE = "bausteine",
-                         VERWALTUNG = "verwaltung";
+                         VERWALTUNG = "verwaltung", KARTE = "karte";
     private static readonly string[] FAELLE =
-        { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE, VERWALTUNG };
+        { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE, VERWALTUNG, KARTE };
     private const string KulturDe = "de-DE", KulturEn = "en-US";
 
     private string _fall = NEU;
@@ -274,6 +279,11 @@
                 gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
                 break;
 
+            case KARTE:
+                gaben["Daten"] = Kartensatz((KonditionierungWeg)gaben["Konditionierung"]);
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
             case GESPERRT:
                 gaben["Daten"] = Satz("Probehaus ausgeliefert");
                 gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
@@ -393,6 +403,39 @@
         LuftwechselInfiltration = 0.2,
         LuftwechselNutzer = 0.3
     };
+
+    /// <summary>
+    /// Fall „karte" (Welle U3): ein Satz mit Sommerferien, dessen Heizkalender über DENSELBEN Weg ohne
+    /// Datenbank angelegt und im Einzelnen bearbeitet ist — die neun Feiertage als Regel, das Zeitfenster
+    /// Mo–Fr 6–8 Uhr 22 °C und eine eigene Periode über den Jahreswechsel („aus"). So steht die Karte
+    /// mit Woche, Vermerk, Matrixbereich, Feiertagsband und Eigenband da, wie sie nach diesen Handlungen
+    /// in der Anwendung stünde.
+    /// </summary>
+    private static GebaeudeKatalogDaten Kartensatz(KonditionierungWeg weg)
+    {
+        GebaeudeKatalogDaten satz = Satz("Probehaus Karte");
+        satz.Ferienbeginn = new[] { 0, 0, 205, 0 };
+        satz.Ferienende = new[] { 0, 0, 246, 0 };
+        satz.SollFerien = 16;
+        satz.Ferien = 1;
+        var ort = new KonditionierungOrt(KonditionierungGroesse.Heizen);
+        var s = new KonditionierungStand(satz, Array.Empty<ZoneDaten>());
+        s = Schritt(s, weg.Anlegen!(s, ort));
+        s = Schritt(s, weg.Feiertage!(s, ort, 7));
+        s = Schritt(s, weg.Zeitfenster!(s, ort, new KonditionierungZeitfenster(new[] { 0, 1, 2, 3, 4 }, 6, 8, 22)));
+        s = Schritt(s, weg.PeriodeSetzen!(s, ort, null, new KonditionierungPeriode
+        {
+            Art = KonditionierungPeriodenart.Zeitraum, Name = "Betriebsruhe zwischen den Jahren", Von = 358, Bis = 1,
+            Angabe = KonditionierungAngabe.Aus
+        }));
+        return s.Gebaeude;
+    }
+
+    /// <summary>Ein Schritt des Kartensatzes — ein Fehlschlag ist ein Aufbaufehler der Probe.</summary>
+    private static KonditionierungStand Schritt(KonditionierungStand vor, KonditionierungErgebnis e)
+        => e is { Ok: true, Stand: KonditionierungStand neu }
+            ? neu
+            : throw new InvalidOperationException("Kartensatz: " + e.Meldung);
 
     /// <summary>Der Zonenweg der Seite: zwei Zonen mit Bauteilen; „Speichern" meldet Erfolg und schreibt nichts.</summary>
     private static GebaeudeZonenweg Zonenweg() => new()

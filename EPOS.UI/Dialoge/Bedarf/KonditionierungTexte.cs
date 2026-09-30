@@ -718,4 +718,97 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_LBL_SPALTE_AKTIONEN</c> — die Aktionsspalte der Vorlagenverwaltung</summary>
     public string SpalteAktionen { get; set; } = "Aktionen";
+
+    // ------------------------------------------------------------ Die Karte im Einzelnen (Welle U3)
+
+    /// <summary><c>KOND_BTN_EINZELHEITEN</c> — klappt die Karte auf: Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild</summary>
+    public string KnopfEinzelheiten { get; set; } = "Kalender im Einzelnen";
+
+    /// <summary><c>KOND_TXT_GRUND_NICHT_ANGELEGT</c> — der Grund der weich gesperrten Handlungen der aufgeklappten Karte</summary>
+    public string GrundNichtAngelegt { get; set; } = "Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.";
+
+    /// <summary><c>KOND_TXT_HINWEIS_GRUNDANGABE</c> — unter der Grundangabe</summary>
+    public string HinweisGrundangabe { get; set; }
+        = "Die Grundangabe gilt in jeder Stunde ohne Standardwoche und ohne Periode; eine Standardwoche tritt an ihre Stelle.";
+
+    /// <summary><c>KOND_TXT_GRUNDANGABE_WOCHE</c> — an Stelle der Grundangabe, solange eine Standardwoche gilt</summary>
+    public string TextGrundangabeWoche { get; set; }
+        = "Die Standardwoche tritt an die Stelle der Grundangabe; „Standardwoche verwerfen“ kehrt zu ihr zurück.";
+
+    /// <summary><c>KOND_BTN_WOCHE_ANLEGEN</c> — macht aus der Grundangabe eine Standardwoche</summary>
+    public string KnopfWocheAnlegen { get; set; } = "Standardwoche anlegen";
+
+    /// <summary><c>KOND_BTN_WOCHE_VERWERFEN</c> — zurück zur Grundangabe (häufigster Wert der Woche)</summary>
+    public string KnopfWocheVerwerfen { get; set; } = "Standardwoche verwerfen";
+
+    /// <summary><c>KOND_TXT_WOCHE_VORGABE</c> — über dem Wochenraster ohne Standardwoche</summary>
+    public string TextWocheVorgabe { get; set; } = "Noch keine Standardwoche – das Raster zeigt die Grundangabe.";
+
+    /// <summary><c>KOND_TXT_VERMERK</c> — der letzte Werkzeugvermerk in der aufgeklappten Karte; „{0}“ der Vermerk</summary>
+    public string TextVermerk { get; set; } = "Zuletzt angewandt: {0}";
+
+    /// <summary><c>KOND_TXT_HINWEIS_ZEITFENSTER</c> — unter dem Werkzeug Zeitfenster</summary>
+    public string HinweisZeitfenster { get; set; }
+        = "Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht.";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_TAGE</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterTage { get; set; } = "Erst mindestens einen Tag wählen.";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_ZEITEN</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterZeiten { get; set; } = "Erst „Von“ und „Bis“ angeben (volle Stunden, „Bis“ 1 … 24).";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_WERT</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterWert { get; set; } = "Erst einen Wert oder „aus“ angeben.";
+
+    /// <summary><c>KOND_LBL_ANGABE</c> — die Angabe einer Periode im Formular der Periodenliste</summary>
+    public string LabelAngabe { get; set; } = "Angabe";
+
+    /// <summary><c>KOND_LBL_ANGABE_WOCHENTAG</c> — die Angabe „wie Wochentag“ einer Periode</summary>
+    public string LabelAngabeWochentag { get; set; } = "wie Wochentag";
+
+    /// <summary><c>KOND_LBL_WOCHENTAG</c> — der Wochentag der Angabe „wie Wochentag“</summary>
+    public string LabelWochentag { get; set; } = "Wochentag";
+
+    /// <summary><c>KOND_TXT_AUS_MATRIX</c> — die Aktionsspalte einer Periode des Matrixbereichs</summary>
+    public string TextAusMatrix { get; set; } = "aus der Matrix – nur lesbar";
+
+    /// <summary><c>KOND_TXT_PERIODEN_LEER</c> — die leere Periodenliste</summary>
+    public string TextPeriodenLeer { get; set; } = "Keine Perioden – es gelten Standardwoche bzw. Grundangabe.";
+
+    /// <summary><c>KOND_TXT_GRUND_PERIODE</c> — der Grund des weich gesperrten „Übernehmen“ im Formular</summary>
+    public string GrundPeriodeUnvollstaendig { get; set; } = "Erst Name, Tage bzw. Feiertag und die Angabe angeben.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_OBEN</c> — der Grund des weich gesperrten ▲</summary>
+    public string GrundRangOben { get; set; } = "Die Periode hat schon den höchsten Rang der eigenen Perioden.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_UNTEN</c> — der Grund des weich gesperrten ▼</summary>
+    public string GrundRangUnten { get; set; } = "Die Periode hat schon den niedrigsten Rang der eigenen Perioden.";
+
+    /// <summary><c>KOND_TXT_GRUND_RANG_BAND</c> — der Grund der weich gesperrten ▲▼ außerhalb des Eigenbands</summary>
+    public string GrundRangBand { get; set; }
+        = "Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.";
+
+    /// <summary><c>KOND_TXT_TEPPICH_LEER</c> — an Stelle des Teppichbilds, wenn die Größe keinen Kalender ergibt</summary>
+    public string TextTeppichLeer { get; set; }
+        = "Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile).";
+
+    /// <summary><c>KOND_BTN_IN_DEN_KALENDER</c> — an der Wärmeübergabe: das Zeitprogramm wird die Standardwoche des Heizkalenders</summary>
+    public string KnopfInDenKalender { get; set; } = "In den Kalender übernehmen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_IN_DEN_KALENDER</c> — die leise Zeile unter „In den Kalender übernehmen“</summary>
+    public string HinweisInDenKalender { get; set; }
+        = "Das Zeitprogramm wird die Standardwoche des Heizkalenders im Reiter „Konditionierung“; geschrieben wird mit OK, „Zurücknehmen“ nimmt es zurück.";
+
+    /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ZEILE</c> — Titel der Zeile „Vorlage“: ein Klick öffnet die Auswahlliste der Karte</summary>
+    public string HinweisVorlageZeile { get; set; } = "Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte.";
+
+    /// <summary><c>KOND_TXT_VORSCHAU_LEER</c> — an Stelle der Vorschau, wenn sich keine Woche ergibt</summary>
+    public string TextVorschauLeer { get; set; } = "Keine Vorschau – für diese Größe ergibt sich keine Woche.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VORSCHAU_OHNE_ANTEILE</c> — an Stelle der Vorschau bei Geräten und Personen ohne Anteil; „{0}“
+    /// die Größe
+    /// </summary>
+    public string TextVorschauOhneAnteile { get; set; }
+        = "Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.";
 }
