@@ -106,6 +106,24 @@ public class PeriodenlisteTests : EposBunitContext
         Assert.Empty(cut.FindAll("button.epos-kond-periode-neu"));
     }
 
+    /// <summary>
+    /// Schmal (unter 600 px, Stilblatt) fällt die Spalte „Von–Bis“: Der Zeitraum steht dann als leise zweite
+    /// Zeile unter dem Namen — nur, wo er etwas anderes sagt; die Feiertagsregel heißt wie ihr Tag.
+    /// </summary>
+    [Fact]
+    public void Der_Zeitraum_steht_schmal_unter_dem_Namen_nur_wo_er_etwas_anderes_sagt()
+    {
+        IRenderedComponent<Periodenliste> cut = Liste();
+        IElement messe = Zeile(cut, 310);
+        string zeitraum = messe.QuerySelector("td.epos-kond-periode-zeitraum")!.TextContent.Trim();
+        Assert.Contains("–", zeitraum);
+        Assert.Equal(zeitraum, messe.QuerySelector("td.epos-kond-periode-name .epos-kond-periode-zeitraum-schmal")!.TextContent.Trim());
+
+        IElement neujahr = Zeile(cut, 100);
+        Assert.Equal("Neujahr", neujahr.QuerySelector("td.epos-kond-periode-zeitraum")!.TextContent.Trim());
+        Assert.Null(neujahr.QuerySelector(".epos-kond-periode-zeitraum-schmal"));
+    }
+
     [Fact]
     public void Ohne_Perioden_nennt_die_Liste_ihren_Leerzustand()
     {

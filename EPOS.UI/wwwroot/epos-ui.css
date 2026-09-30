@@ -13736,9 +13736,11 @@ td.epos-vorlage-katalogbeschreibung {
 /* Die Periodenliste (Festlegung 15): eine schlichte Tabelle ohne
    Virtualisierung, feste Spaltenanteile, der Text bricht um, statt quer zu
    rollen. Die Knoepfe einer eigenen Zeile stehen immer (Hausregel), der
-   Flexkasten IN der Zelle; unter 600 px Behaelterbreite faellt die Spalte
-   "Art" (der Name sagt sie), die Knoepfe stehen zwei mal zwei. Der
-   Matrixbereich ist nur lesbar und leise. */
+   Flexkasten IN der Zelle; unter 600 px Behaelterbreite fallen die Spalten
+   "Art" (der Name sagt sie) und "Von-Bis" (der Zeitraum steht leise unter
+   dem Namen), die Wertspalte wird schmal und die Knoepfe stehen zwei mal
+   zwei - so bricht bei 390 px kein Name im Wort. Der Matrixbereich ist nur
+   lesbar und leise. */
 .epos-kond-perioden {
     container-type: inline-size;
     container-name: epos-kond-perioden;
@@ -13776,6 +13778,12 @@ td.epos-vorlage-katalogbeschreibung {
     color: var(--epos-text-leise);
 }
 
+.epos-kond-periode-zeitraum-schmal {
+    display: none;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
 .epos-kond-periode-knoepfe {
     display: flex;
     flex-wrap: wrap;
@@ -13795,16 +13803,30 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 @container epos-kond-perioden (max-width: 599.98px) {
-    .epos-kond-periodentabelle .epos-kond-periode-art {
+    .epos-kond-periodentabelle .epos-kond-periode-art,
+    .epos-kond-periodentabelle .epos-kond-periode-zeitraum {
         display: none;
     }
 
+    .epos-kond-periode-zeitraum-schmal {
+        display: block;
+    }
+
+    .epos-kond-periodentabelle th,
+    .epos-kond-periodentabelle td {
+        padding: 4px;
+    }
+
     .epos-kond-periodentabelle th.epos-kond-periode-rang {
-        width: 2.75rem;
+        width: 2.25rem;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-wert {
+        width: 4rem;
     }
 
     .epos-kond-periodentabelle th.epos-kond-periode-aktionen {
-        width: 104px;
+        width: 100px;
     }
 }
 

@@ -12,6 +12,10 @@
    Handlung nicht greift - die oberste Periode kann nicht hoeher, eine Feiertagsregel im Band 100 ... 108
    wechselt ihren Rang nicht -, ist der Knopf weich gesperrt und nennt den Grund.
 
+   SCHMAL OHNE WORTBRUCH. Unter 600 px Behaelterbreite fallen die Spalten "Art" und "Von-Bis"; der
+   Zeitraum steht dann als leise zweite Zeile unter dem Namen (nur, wo er etwas anderes sagt als der
+   Name - eine Feiertagsregel heisst meist wie ihr Tag), damit kein Name im Wort bricht.
+
    KEIN DELEGAT, KEIN KNOPF. Die Liste rechnet nichts: Anlegen, Ersetzen, Verschieben und Loeschen gehen
    ueber die Rueckrufe des Wirts (KonditionierungBearbeitung -> Weg -> Kern), und nur, wo er sie reicht. *@
 
@@ -31,9 +35,9 @@
                 <tr>
                     <th scope="col" class="epos-kond-periode-rang">@Texte.SpalteRang</th>
                     <th scope="col" class="epos-kond-periode-art">@Texte.SpalteArt</th>
-                    <th scope="col">@Texte.SpalteName</th>
-                    <th scope="col">@(Texte.SpalteVon + "–" + Texte.SpalteBis)</th>
-                    <th scope="col">@Texte.SpalteWert</th>
+                    <th scope="col" class="epos-kond-periode-name">@Texte.SpalteName</th>
+                    <th scope="col" class="epos-kond-periode-zeitraum">@(Texte.SpalteVon + "–" + Texte.SpalteBis)</th>
+                    <th scope="col" class="epos-kond-periode-wert">@Texte.SpalteWert</th>
                     <th scope="col" class="epos-kond-periode-aktionen">@Texte.SpalteAktionen</th>
                 </tr>
             </thead>
@@ -41,13 +45,20 @@
                 @foreach (KonditionierungPeriode p in Perioden)
                 {
                     KonditionierungPeriode periode = p;
+                    string zeitraum = Zeitraum(periode);
                     <tr @key="periode.Rang" data-rang="@periode.Rang"
                         class="@(periode.Matrixbereich ? "epos-kond-periode--matrix" : "")">
                         <td class="epos-kond-periode-rang">@periode.Rang.ToString(CultureInfo.InvariantCulture)</td>
                         <td class="epos-kond-periode-art">@Artname(periode.Art)</td>
-                        <td>@periode.Name</td>
-                        <td>@Zeitraum(periode)</td>
-                        <td>@Angabetext(periode)</td>
+                        <td class="epos-kond-periode-name">
+                            @periode.Name
+                            @if (zeitraum != periode.Name)
+                            {
+                                <span class="epos-kond-periode-zeitraum-schmal">@zeitraum</span>
+                            }
+                        </td>
+                        <td class="epos-kond-periode-zeitraum">@zeitraum</td>
+                        <td class="epos-kond-periode-wert">@Angabetext(periode)</td>
                         <td class="epos-kond-periode-aktionen">
                             @if (periode.Matrixbereich)
                             {

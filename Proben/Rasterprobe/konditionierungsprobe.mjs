@@ -1,7 +1,7 @@
 // =====================================================================
-//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2 und U4) — der Gebäude-Katalogeditor
-//  in der BREITEN Überlagerung, die Vorlagen je Karte, der Zonendialog als Blatt und die
-//  Gebäudeverwaltung mit dem Blatt „Konditionierung“, im echten Browser
+//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3 und U4) — der Gebäude-Katalogeditor
+//  in der BREITEN Überlagerung, die Vorlagen je Karte, die Karte im Einzelnen, der Zonendialog
+//  als Blatt und die Gebäudeverwaltung mit dem Blatt „Konditionierung“, im echten Browser
 // =====================================================================
 //
 //  WOZU. Der Editor steht in jeder Betriebsart in der breiten Überlagerung
@@ -57,6 +57,15 @@
 //      Vorlage zuletzt in der Liste) und die Verwaltung als BLATT: Liste der
 //      Größe samt der eigenen, Vorschau per Klick, Umschalter, Bedienziele,
 //      Überdeckung und Querrollen im Blatt; Esc führt zurück in den Editor.
+//    - die KARTE IM EINZELNEN (Welle U3, Fall karte): „Kalender im Einzelnen“ an
+//      der Karte „Heizen“ (angelegt, Sommerferien, neun Feiertage, Zeitfenster,
+//      eine eigene Periode) — gemessen wie ein Reiterblatt (kein Querrollen,
+//      Ziele ≥ 44 px, keine Überdeckung, nichts ragt heraus), dazu die Anordnung
+//      des Wochenrasters je Behälterbreite, die Periodenliste ohne Querrollen
+//      (unter 600 px ohne die Spalten „Art“ und „Von–Bis“, kein Wort bricht in
+//      einer Zelle), sieben Tagesknöpfe, der Vermerk, das
+//      Teppichbild mit höchstens 2 000 Elementen und der Wert samt Quelle am
+//      Zeiger. Je Breite EIN Foto der aufgeklappten Karte.
 //
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
 //    node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--nur <fall>] [--kultur de-DE]
@@ -84,7 +93,7 @@ const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
 const KULTUR = arg('kultur', 'de-DE');
 
-const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'vorlagen', 'bausteine', 'verwaltung'];
+const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'vorlagen', 'bausteine', 'verwaltung', 'karte'];
 const FENSTER = [
   { breite: 390, hoehe: 844 },     // Telefon hochkant
   { breite: 820, hoehe: 1180 },    // Tablet hochkant
@@ -540,7 +549,8 @@ async function fall(browser, name, f) {
     for (const h of m.heraus) melde(marke, `Reiter ${i + 1}: Bedienziel ragt aus dem Blatt: ${h}`);
     const k = await seite.evaluate(KOND);
     if (k) kondPruefen(marke, k, 'Konditionierung');
-    if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_${reiter ? 'reiter' + (i + 1) : 'blatt'}.png` });
+    // Fall „karte“ (Welle U3): je Breite EIN Foto — das der aufgeklappten Karte (unten).
+    if (FOTOS && name !== 'karte') await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_${reiter ? 'reiter' + (i + 1) : 'blatt'}.png` });
   }
   if (reiter) { await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300); }
 
@@ -683,6 +693,7 @@ async function fall(browser, name, f) {
     await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
   }
   if (name === 'vorlagen') await vorlagen(seite, marke, f);
+  if (name === 'karte') await karte(seite, marke, f);
   const anordnung = b => b.behaelter >= 1150 ? [1, 24, '7 × 24'] : b.behaelter >= 600 ? [2, 12, '2 × 12'] : [4, 6, '4 × 6'];
   if (name === 'bausteine' && f.breite >= 1300) {
     // An den Schwellen selbst (nur im breitesten Fenster ist Platz für 1 150 px).
@@ -858,6 +869,102 @@ async function vorlagen(seite, marke, f) {
   console.log(`  Esc im Blatt: Überlagerung ${zurueck.ueb ? 'steht' : 'zu'}, Blatt ${zurueck.blatt ? 'offen' : 'zu'}, ` +
               `Reiter „Konditionierung“ ${zurueck.kond ? 'wieder da' : 'fehlt'}`);
   if (!zurueck.ueb || zurueck.blatt || !zurueck.kond) melde(marke, 'Esc im Blatt führt nicht zurück in den Editor');
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+}
+
+// ------------------------------------------------------------ Welle U3: die Karte im Einzelnen
+// Die Karte „Heizen“ aufgeklappt: Grundangabe, Zeitfenster, Wochenraster, Periodenliste, Werkzeuge,
+// Teppichbild — ihre Kästen, die Anordnung des Rasters am Behälter und das Teppichbild.
+const EINZELN = () => {
+  const k = document.querySelector('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
+  if (!k) return null;
+  const raster = k.querySelector('.epos-wochenraster--umbrechend');
+  const montag = raster ? raster.querySelector('tbody tr') : null;
+  const oben = montag ? new Set([...montag.querySelectorAll('td')].map(td => Math.round(td.getBoundingClientRect().top))) : new Set();
+  const tab = k.querySelector('table.epos-kond-periodentabelle');
+  const art = tab ? tab.querySelector('th.epos-kond-periode-art') : null;
+  const svg = k.querySelector('.epos-kond-teppich svg');
+  const text = sel => ((k.querySelector(sel) || {}).innerText || '').trim();
+  // Wortbrüche: ein Wort einer sichtbaren Zelle (ohne die Knopfspalte), dessen Rechtecke auf mehr als
+  // einer Zeile stehen — die Tabelle bricht sonst still im Wort („Karfrei|tag“), statt quer zu rollen.
+  const brueche = [];
+  for (const td of tab ? tab.querySelectorAll('tbody td:not(.epos-kond-periode-aktionen)') : []) {
+    const gang = document.createTreeWalker(td, NodeFilter.SHOW_TEXT);
+    for (let t = gang.nextNode(); t; t = gang.nextNode()) {
+      if (!t.parentElement || t.parentElement.offsetParent === null) continue;
+      for (const m of t.data.matchAll(/\S+/g)) {
+        const r = document.createRange();
+        r.setStart(t, m.index); r.setEnd(t, m.index + m[0].length);
+        if (new Set([...r.getClientRects()].map(q => Math.round(q.top))).size > 1) brueche.push(m[0]);
+      }
+    }
+  }
+  const zeitraum = tab ? tab.querySelector('th.epos-kond-periode-zeitraum') : null;
+  return {
+    offen: !!k.querySelector('.epos-kond-inhalt'),
+    klasse: k.classList.contains('epos-kond-karte--offen'),
+    karte: Math.round(k.getBoundingClientRect().width),
+    raster: raster ? raster.clientWidth : 0,
+    rasterQuer: raster ? raster.scrollWidth - raster.clientWidth : null,
+    zeilenJeTag: oben.size,
+    perioden: tab ? tab.querySelectorAll('tbody tr').length : 0,
+    matrixbereich: tab ? tab.querySelectorAll('tbody tr.epos-kond-periode--matrix').length : 0,
+    periodenQuer: tab ? tab.scrollWidth - tab.clientWidth : null,
+    art: art ? getComputedStyle(art).display !== 'none' : null,
+    zeitraum: zeitraum ? getComputedStyle(zeitraum).display !== 'none' : null,
+    brueche,
+    tage: k.querySelectorAll('button.epos-kond-tag').length,
+    vermerk: text('.epos-kond-vermerk'),
+    teppichElemente: svg ? svg.querySelectorAll('*').length : 0,
+    teppichWerte: svg ? svg.querySelectorAll('[data-wert]').length : 0,
+    teppichZeile: text('.epos-kond-teppich-zeile')
+  };
+};
+
+async function karte(seite, marke, f) {
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(500);
+  const karteLoc = seite.locator('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
+  await karteLoc.locator('button.epos-kond-einzelheiten').click(); await schlaf(900);
+
+  const m = await seite.evaluate(MESSEN, [ZIEL, TOL]);
+  if (m.fehler) { melde(marke, m.fehler); return; }
+  console.log(`  Karte im Einzelnen: Blatt ${m.blatt ? m.blatt.b + ' px (quer ' + m.blatt.quer + ')' : '—'}, ` +
+              `Seite quer ${m.seiteQuer}, Überlagerung quer ${m.ueb.quer}, Ziele im Blatt ${m.zieleBlatt}, ` +
+              `unter 44: ${m.klein.length}, überdeckt: ${m.ueberdeckt.length}, heraus: ${m.heraus.length}`);
+  if (m.seiteQuer > 0 || m.ueb.quer > 0 || (m.blatt && m.blatt.quer > 0)) melde(marke, 'Karte im Einzelnen: Querrollen');
+  for (const k of m.klein) melde(marke, `Karte im Einzelnen: Bedienziel unter 44 px: ${k}`);
+  for (const u of m.ueberdeckt) melde(marke, `Karte im Einzelnen: Bedienziele überdecken sich: ${u}`);
+  for (const h of m.heraus) melde(marke, `Karte im Einzelnen: Bedienziel ragt aus dem Blatt: ${h}`);
+
+  const e = await seite.evaluate(EINZELN);
+  const soll = e.raster >= 1150 ? 1 : e.raster >= 600 ? 2 : 4;
+  console.log(`  Karte ${e.karte} px${e.klasse ? ' (ganze Zeile)' : ''}: Raster ${e.raster} px → ${e.zeilenJeTag} Zeile(n) je Tag ` +
+              `(soll ${soll}), quer ${e.rasterQuer}; Perioden ${e.perioden} (Matrixbereich ${e.matrixbereich}), ` +
+              `Spalten „Art“ ${e.art ? 'sichtbar' : 'aus'}, „Von–Bis“ ${e.zeitraum ? 'sichtbar' : 'aus'}, ` +
+              `quer ${e.periodenQuer}, Wortbrüche ${e.brueche.length}; Tagesknöpfe ${e.tage}; ` +
+              `Vermerk „${e.vermerk.slice(0, 60)}“; Teppich ${e.teppichElemente} Elemente, ${e.teppichWerte} mit Wert; „${e.teppichZeile}“`);
+  if (!e.offen || !e.klasse) melde(marke, '„Kalender im Einzelnen“ klappt die Karte nicht über die ganze Zeile auf');
+  if (e.zeilenJeTag !== soll) melde(marke, `das Wochenraster steht in ${e.zeilenJeTag} Zeilen je Tag (soll ${soll} bei ${e.raster} px)`);
+  if (e.rasterQuer > 0) melde(marke, `das Wochenraster rollt quer (${e.rasterQuer} px)`);
+  if (e.perioden !== 11 || e.matrixbereich !== 1) melde(marke, `Periodenliste: ${e.perioden} Zeilen, ${e.matrixbereich} des Matrixbereichs (soll 11, 1)`);
+  if (e.periodenQuer > 0) melde(marke, `die Periodenliste rollt quer (${e.periodenQuer} px)`);
+  if (e.brueche.length) melde(marke, `die Periodenliste bricht im Wort: ${e.brueche.slice(0, 5).join(', ')}`);
+  if (e.tage !== 7) melde(marke, `${e.tage} statt 7 Tagesknöpfe am Zeitfenster`);
+  if (!e.vermerk) melde(marke, 'kein Vermerk des letzten Werkzeugs');
+  if (e.teppichElemente === 0 || e.teppichElemente > 2000) melde(marke, `Teppichbild mit ${e.teppichElemente} Elementen (soll 1 … 2 000)`);
+  if (!e.teppichZeile.includes('2025')) melde(marke, 'die Zeile unter dem Teppichbild nennt das Bezugsjahr nicht');
+
+  // Der Wert am Element: Zeigen auf ein Feld nennt Zeitraum, Wert und Quelle.
+  const feld = karteLoc.locator('.epos-kond-teppich svg [data-wert]').first();
+  await feld.scrollIntoViewIfNeeded(); await feld.hover({ force: true }); await schlaf(400);
+  const zeiger = ((await karteLoc.locator('.epos-kond-teppich .epos-diagramm-zeigerzeile').allInnerTexts())[0] || '').trim();
+  console.log(`  Teppich am Zeiger: „${zeiger}“`);
+  if (!zeiger.includes('·')) melde(marke, 'das Teppichbild nennt am Zeiger keine Quelle');
+
+  if (FOTOS) {
+    await karteLoc.locator('.epos-kond-inhalt').scrollIntoViewIfNeeded();
+    await seite.screenshot({ path: `${FOTOS}/karte_${f.breite}_einzelheiten.png` });
+  }
   await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
 }
 
