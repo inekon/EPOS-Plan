@@ -281,12 +281,23 @@ namespace WindowsFormsApplication1
             return g < KONDENSATIONSANTEIL_MAX ? g : KONDENSATIONSANTEIL_MAX;
         }
 
+        /// <summary>Stellen, auf die <see cref="Eta30Trocken"/> die Differenz rundet.</summary>
+        public const int ETA30_TROCKEN_STELLEN = 12;
+
         /// <summary>
         /// Das TROCKENE η₃₀ des Brennwertkessels: η₃₀ − Δ₃₀ — der Kondensationsanteil, den der bei
         /// 30 °C Rücklauf gemessene Wert enthält, wird herausgenommen (Konzept 4.1 Punkt 3).
         /// </summary>
+        /// <remarks>
+        /// Die Differenz zweier Dezimalwerte (Katalogwerte tragen höchstens sechs Nachkommastellen)
+        /// wird auf <see cref="ETA30_TROCKEN_STELLEN"/> Stellen gerundet: 1,05 − 0,08 ist binär
+        /// 0,97000000000000008, gerundet dieselbe Zahl wie der Katalogwert 0,97. Ist η₃₀,tr dezimal
+        /// gleich η₁₀₀, ist die trockene Kurve damit flach und bitgleich η₁₀₀ — wie beim
+        /// Niedertemperaturkessel in E2 —, und der Teillastbrennstoff ist genau 0 statt eines Rests am
+        /// letzten Bit, der mit jeder Stundenwärme anders ausfiele.
+        /// </remarks>
         public static double Eta30Trocken(double eta30, int brennstoffArt)
-            => eta30 - Kondensationsgewinn30(brennstoffArt);
+            => Math.Round(eta30 - Kondensationsgewinn30(brennstoffArt), ETA30_TROCKEN_STELLEN, MidpointRounding.ToEven);
 
         /// <summary>
         /// Der WIRKUNGSGRAD DER BRENNWERTKENNLINIE (Konzept 4.1 Punkte 3 bis 5):

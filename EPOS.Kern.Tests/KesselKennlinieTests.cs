@@ -209,12 +209,17 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Das_trockene_eta30_nimmt_den_Kondensationsgewinn_heraus()
         {
-            Assert.Equal(1.05 - 0.08, Kesselkennlinie.Eta30Trocken(1.05, BRENNSTOFF_ERDGAS));
-            Assert.Equal(0.98 - 0.04, Kesselkennlinie.Eta30Trocken(0.98, BRENNSTOFF_HEIZOEL));
+            // Gerundet auf zwölf Stellen: dezimal 0,97 ist dann auch binär der Katalogwert 0,97.
+            Assert.NotEqual(0.97, 1.05 - 0.08);
+            Assert.Equal(0.97, Kesselkennlinie.Eta30Trocken(1.05, BRENNSTOFF_ERDGAS));
+            Assert.Equal(0.94, Kesselkennlinie.Eta30Trocken(0.98, BRENNSTOFF_HEIZOEL));
             Assert.Equal(0.9, Kesselkennlinie.Eta30Trocken(0.9, BRENNSTOFF_KOHLE));
 
-            // Über dem Taupunkt rechnet die trockene Kurve: bei β = 0,3 also η₃₀ − Δ₃₀.
-            Assert.Equal(1.05 - 0.08, Kesselkennlinie.EtaBrennwert(0.3, 0.97, 1.05, 70.0, BRENNSTOFF_ERDGAS, out _), 12);
+            // Über dem Taupunkt rechnet die trockene Kurve: bei β = 0,3 also η₃₀ − Δ₃₀, und mit
+            // η₃₀,tr = η₁₀₀ ist sie für jede Laststufe bitgleich η₁₀₀.
+            Assert.Equal(0.97, Kesselkennlinie.EtaBrennwert(0.3, 0.97, 1.05, 70.0, BRENNSTOFF_ERDGAS, out _));
+            Assert.Equal(0.97, Kesselkennlinie.EtaBrennwert(0.65, 0.97, 1.05, 70.0, BRENNSTOFF_ERDGAS, out double tr));
+            Assert.Equal(0.97, tr);
         }
 
         [Fact]
@@ -542,7 +547,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(spk.WaermeBetriebKwh(0), spk.BrennwertWaerme_KWh_Spk[0], 9);
             Assert.Equal(brennwert, spk.BrennwertMehrbrennstoff_KWh_Spk[0], 6);
             Assert.True(spk.BrennwertMehrbrennstoff_KWh_Spk[0] < -1000, "Die Kondensation spart Brennstoff.");
-            Assert.InRange(spk.TeillastMehrbrennstoff_KWh_Spk[0], -1e-6, 1e-6);
+            Assert.Equal(0.0, spk.TeillastMehrbrennstoff_KWh_Spk[0]);
             Assert.Equal(50.0, spk.RuecklaufMittel(0), 9);
             Assert.Equal(erwartet, spk.WirkungsgradBetrieb(0), 9);
             Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 80.6, 80.7);
