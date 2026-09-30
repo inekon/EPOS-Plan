@@ -236,17 +236,25 @@
     /// Kühlspalte trägt die Plausibilitätsgrenzen des Kühlsollwerts (15 … 35 °C), wie das Feld, das
     /// sie ablöst.
     /// </summary>
-    private static double? Minimum(KonditionierungGroesse g, KonditionierungZeile z) => g switch
+    private static double? Minimum(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
     {
-        KonditionierungGroesse.Heizen => null,
-        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN,
+        (KonditionierungGroesse.Heizen, _) => null,
+        (KonditionierungGroesse.Kuehlen, _) => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN,
+        // Die Infiltration ist nie null (Stufe G2) - wie das Feld, das die Zelle abloest.
+        (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => 0.01,
         _ => 0
     };
 
-    /// <summary>Die Obergrenze: Anteile höchstens 100 %, der Kühlsollwert höchstens 35 °C.</summary>
-    private static double? Maximum(KonditionierungGroesse g, KonditionierungZeile z)
-        => g == KonditionierungGroesse.Kuehlen ? Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX
-         : KonditionierungBearbeitung.IstAnteil(g, z) ? 100 : null;
+    /// <summary>
+    /// Die Obergrenze: Anteile höchstens 100 %, der Kühlsollwert höchstens 35 °C, der Luftwechsel
+    /// höchstens 10 1/h (Stufe G2).
+    /// </summary>
+    private static double? Maximum(KonditionierungGroesse g, KonditionierungZeile z) => g switch
+    {
+        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX,
+        KonditionierungGroesse.Lueftung => 10,
+        _ => KonditionierungBearbeitung.IstAnteil(g, z) ? 100 : null
+    };
 
     /// <summary>Der Platzhalter einer leeren Zelle: was gilt, solange nichts eingetragen ist.</summary>
     private string Platzhalter(KonditionierungGroesse g, KonditionierungZeile z)

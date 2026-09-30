@@ -270,7 +270,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U1: Der zweite Reiter ist „Konditionierung" - Raumtemperaturen, Nachtzeit,
         // Maximalraumtemperatur und Ferien wandern in die Bausteine KonditionierungReiter und
         // KonditionierungMatrix (dieselben Katalogfelder): 48 → 37.
-        new("GebaeudeKatalogDialog", 37),
+        // KP2 U1, E56 F3 (a): Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und
+        // Kühlsollwert stehen nur noch im Reiter „Konditionierung" (Katalogfelder unverändert): 37 → 32.
+        new("GebaeudeKatalogDialog", 32),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
@@ -291,9 +293,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KonditionierungMatrix", 5, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
             "nachtabsenkung, nacht_beginn/nacht_ende, wochenendabsenkung, soll_ferien, kuehl_sollwert, " +
             "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne)"),
-        // KP2 U1: Maximalraumtemperatur und die vier Ferienzeiträume (Katalogfelder max_temperatur,
-        // ferien_*) - aus dem Katalogeditor hierher gewandert.
-        new("KonditionierungReiter", 5),
+        // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
+        // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
+        new("KonditionierungReiter", 6),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

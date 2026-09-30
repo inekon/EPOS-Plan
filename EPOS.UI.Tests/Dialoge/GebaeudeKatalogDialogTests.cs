@@ -442,17 +442,58 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
               .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
               .QuerySelector("input")!;
 
+    /// <summary>
+    /// <b>Die Altfelder stehen nur noch im Reiter „Konditionierung"</b> (Stufe KP2, Welle U1; E56 F3 (a)):
+    /// Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur.
+    /// Der erste Reiter behält Luftwechselrate, „Gebäude wird gekühlt", Kühlleistungsgrenze und
+    /// Kühlübergabe und sagt in einer Herleitungszeile, wo die übrigen stehen.
+    /// </summary>
     [Fact]
-    public void Die_Lueftungsfelder_stehen_bei_den_Modellparametern()
+    public void Die_Altfelder_stehen_nur_im_Reiter_Konditionierung()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 26;
+        var cut = Aufbauen(daten);
+
+        List<string> reiter1 = cut.FindAll("label.epos-feld .epos-feld-text, label.epos-schalter .epos-feld-text")
+                                  .Select(t => t.TextContent.Trim()).ToList();
+        foreach (string alt in new[] { "Interne Wärmegewinne :", "Infiltration :", "Nutzerlüftung :", "Kühlsollwert :",
+                                       "Maximalraumtemperatur :", "Sommerlüftung" })
+            Assert.DoesNotContain(alt, reiter1);
+        Assert.NotNull(Eingabe(cut, "Luftwechselrate :"));
+        Assert.NotNull(Kaestchen(cut, "Gebäude wird gekühlt"));
+        Assert.NotNull(Eingabe(cut, "Kühlleistungsgrenze :"));
+        Assert.Contains("Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur " +
+                        "stehen im Reiter „Konditionierung“.", cut.Markup);
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("400", Eingabe(cut, "Geräte · Nennwert").GetAttribute("value"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Infiltration"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Nutzerlüftung"));
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
+        Assert.NotNull(Eingabe(cut, "Maximalraumtemperatur :"));
+        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
+    }
+
+    /// <summary>
+    /// Infiltration und Nutzerlüftung stehen in der Spalte „Lüftung" der Matrix, die Sommerlüftung
+    /// in den Zusatzzeilen (E56 F3 (a)); die Herleitung des Luftwechsels bleibt im ersten Reiter
+    /// unter der Luftwechselrate.
+    /// </summary>
+    [Fact]
+    public void Die_Lueftungsfelder_stehen_in_der_Spalte_Lueftung()
     {
         var cut = Aufbauen();
 
-        Assert.NotNull(Eingabe(cut, "Infiltration :"));
-        Assert.NotNull(Eingabe(cut, "Nutzerlüftung :"));
-        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
         // Beide leer: der VDI-Weg rechnet mit der Luftwechselrate - sie steht in der Herleitung.
         Assert.Contains("VDI 6007 rechnet mit 0,50 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
-        Assert.Equal("", Eingabe(cut, "Infiltration :").GetAttribute("placeholder") ?? "");
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.NotNull(Eingabe(cut, "Lüftung · Infiltration"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Nutzerlüftung"));
+        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
+        Assert.Equal("", Eingabe(cut, "Lüftung · Infiltration").GetAttribute("placeholder") ?? "");
     }
 
     [Fact]
@@ -461,10 +502,12 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         GebaeudeKatalogDaten daten = Satz();
         daten.Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
         var cut = Aufbauen(daten);
+        ReiterWaehlen(cut, REITER2);
 
-        Eingabe(cut, "Infiltration :").Input("0,2");
+        Eingabe(cut, "Lüftung · Infiltration").Input("0,2");
 
-        Assert.Equal("Vorgabe 0,4", Eingabe(cut, "Nutzerlüftung :").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0,4", Eingabe(cut, "Lüftung · Nutzerlüftung").GetAttribute("placeholder"));
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Assert.Contains("VDI 6007 rechnet mit 0,60 1/h (Infiltration + Nutzerlüftung).", cut.Markup);
         // H_ve folgt auf dem VDI-Weg dem wirksamen Luftwechsel.
         Assert.Equal(Wk(0.6 * 150 * 2.5 * 0.34), Eingabe(cut, "H_ve Lüftung :").GetAttribute("value"));
@@ -481,7 +524,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.False(geschrieben.Sommerlueftung);
 
         var cut2 = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
-        Eingabe(cut2, "Nutzerlüftung :").Input("0,8");
+        ReiterWaehlen(cut2, REITER2);
+        Eingabe(cut2, "Lüftung · Nutzerlüftung").Input("0,8");
         Kaestchen(cut2, "Sommerlüftung").Change(true);
         Assert.Contains("steigt der Luftwechsel auf 2,0 1/h", cut2.Markup);
         Ok(cut2);
@@ -494,9 +538,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     public void Eine_Infiltration_von_0_faerbt_das_Feld()
     {
         var cut = Aufbauen();
-        Eingabe(cut, "Infiltration :").Input("0");
+        ReiterWaehlen(cut, REITER2);
+        Eingabe(cut, "Lüftung · Infiltration").Input("0");
 
-        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Infiltration :").ClassName ?? "");
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Lüftung · Infiltration").ClassName ?? "");
     }
 
     [Fact]
@@ -1610,9 +1655,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Mit Haken: Kühlsollwert und Kühlleistungsgrenze mit ihrer Vorgabe als Platzhalter
-    /// („Kühlung aus", „unbegrenzt") — und die Herleitungszeile nennt die Prüfregel mit dem
-    /// höchsten Heizsollwert des Satzes (Tag 20 °C, Nacht 17 °C).
+    /// Mit Haken: die Kühlleistungsgrenze mit ihrer Vorgabe als Platzhalter („unbegrenzt") und der
+    /// Kühlsollwert in der Spalte „Kühlen" der Matrix („Kühlung aus", E56 F3 (a)) — die
+    /// Herleitungszeile nennt die Prüfregel mit dem höchsten Heizsollwert des Satzes (Tag 20 °C,
+    /// Nacht 17 °C).
     /// </summary>
     [Fact]
     public void Mit_Haken_stehen_Sollwert_und_Grenze_mit_ihrer_Vorgabe()
@@ -1621,11 +1667,13 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
 
-        Assert.Equal("Vorgabe: Kühlung aus", Eingabe(cut, "Kühlsollwert :").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: unbegrenzt", Eingabe(cut, "Kühlleistungsgrenze :").GetAttribute("placeholder"));
-        Assert.Equal("", Eingabe(cut, "Kühlsollwert :").GetAttribute("value") ?? "");
         Assert.Contains("mindestens 1 K über dem höchsten Heizsollwert liegen (20,0 °C)", Kuehlgruppe(cut));
         Assert.Contains("Maximalraumtemperatur (24,0 °C)", Kuehlgruppe(cut));
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("Vorgabe: Kühlung aus", Eingabe(cut, "Kühlen · Tag").GetAttribute("placeholder"));
+        Assert.Equal("", Eingabe(cut, "Kühlen · Tag").GetAttribute("value") ?? "");
     }
 
     /// <summary>
@@ -1657,8 +1705,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
 
         Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
-        Eingabe(cut, "Kühlsollwert :").Input("26");
         Eingabe(cut, "Kühlleistungsgrenze :").Input("12,5");
+        ReiterWaehlen(cut, REITER2);
+        Eingabe(cut, "Kühlen · Tag").Input("26");
         Ok(cut);
 
         Assert.True(geschrieben.KuehlungAktiv);
@@ -1742,7 +1791,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     /// <b>Bestandsweg-Gebäude (E20; 8.6, erster Zusatzfall)</b> — der Wächter gegen einen
     /// Rückfall auf U2: Die Gruppe ist SICHTBAR und BEARBEITBAR, trägt die Herleitungszeile
     /// „Tagesbilanz (Bestandsweg) liefert keine Kühllast", und KEIN Feld ist gesperrt. Auf
-    /// VDI 6007 fehlt die Zeile. Der Fall steht in der Löschliste der Stufe GA.
+    /// VDI 6007 fehlt die Zeile. Der Kühlsollwert steht in der Matrix, und die zeigt auf dem
+    /// Tagesbilanz-Weg nur die Felder, die er liest (Teilkonzept Konditionierungsprofile 2.2) —
+    /// mit VDI 6007 ist die Zelle da. Der Fall steht in der Löschliste der Stufe GA.
     /// </summary>
     [Fact]
     public void Ein_Bestandsweg_Gebaeude_zeigt_die_Gruppe_bearbeitbar_mit_Hinweis()
@@ -1756,13 +1807,16 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         const string HINWEIS = "Tagesbilanz (Bestandsweg) liefert keine Kühllast";
         Assert.Contains(HINWEIS, Kuehlgruppe(cut));
         Assert.False(Kaestchen(cut, "Gebäude wird gekühlt").HasAttribute("disabled"));
-        Assert.False(Eingabe(cut, "Kühlsollwert :").HasAttribute("disabled"));
         Assert.False(Eingabe(cut, "Kühlleistungsgrenze :").HasAttribute("disabled"));
-        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("—", cut.Find("td.epos-kond-zelle[data-groesse='1'][data-zeile='1']").TextContent.Trim());
 
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Klappliste(cut, "Rechenweg :").Change("0");       // VDI 6007
         Assert.DoesNotContain(HINWEIS, Kuehlgruppe(cut));
-        Assert.NotNull(Eingabe(cut, "Kühlsollwert :"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.False(Eingabe(cut, "Kühlen · Tag").HasAttribute("disabled"));
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
     }
 
     /// <summary>Der Assistent liest und setzt die drei Kühlfelder über den Arbeitsstand.</summary>
@@ -1791,7 +1845,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.True(cut.Instance.Arbeitsstand.KuehlungAktiv);
         Assert.Equal(26.0, cut.Instance.Arbeitsstand.KuehlSollwert);
         Assert.Equal(8.0, cut.Instance.Arbeitsstand.KuehlleistungMax);
-        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
     }
 
     // =================================================================================

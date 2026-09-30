@@ -111,15 +111,25 @@
                 {
                     <Textfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C" NurLesen="true"
                               Wert="@Zahlen.Anzeigetext(Arbeit.Stand.MaxTemperatur)" />
+                    <Textfeld Bezeichnung="@HuelleTexte.LabelSommerlueftung" NurLesen="true"
+                              Wert="@(Arbeit.Stand.Sommerlueftung ? JaText : NeinText)" />
                 }
                 else
                 {
                     <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
                                 Feldname="@Feldname(LabelMaxTemperatur)" FehlerZustand="FehlerZustand"
                                 Wert="@Arbeit.Stand.MaxTemperatur" WertChanged="MaxTemperaturSetzen" />
+                    @* Die Sommerlueftung des Stundenmodells (Stufe G2) - ein Modellparameter, deshalb
+                       auch auf dem Tagesbilanz-Weg da (E20). *@
+                    <Schalter Bezeichnung="@HuelleTexte.LabelSommerlueftung"
+                              Wert="@Arbeit.Stand.Sommerlueftung" WertChanged="SommerlueftungSetzen" />
                 }
             </KindInhalt>
         </Formularraster>
+        @if (Arbeit.Stand.Sommerlueftung)
+        {
+            <Herleitungszeile Text="@GebaeudeArbeitsstand.Sommerlueftungszeile(HuelleTexte)" />
+        }
     </div>
 
     @if (Lesemodus)
@@ -309,6 +319,12 @@
     private async Task MaxTemperaturSetzen(double? w)
     {
         Arbeit.Stand.MaxTemperatur = w;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task SommerlueftungSetzen(bool an)
+    {
+        Arbeit.Stand.Sommerlueftung = an;
         await Geaendert.InvokeAsync();
     }
 

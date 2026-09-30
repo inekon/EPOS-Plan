@@ -166,10 +166,6 @@
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.FlaecheNutzer"
                                         WertChanged="w => _stand.FlaecheNutzer = w" />
-                            <Zahlenfeld Bezeichnung="@LabelWaermegewinne" Einheit="W" Min="0"
-                                        Feldname="@FeldWaermegewinne" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Waermegewinne"
-                                        WertChanged="w => _stand.Waermegewinne = w" />
                             <Zahlenfeld Bezeichnung="@LabelFensterdurchlassgrad" Min="0" Max="1"
                                         Feldname="@FeldFensterdurchlassgrad" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.Fensterdurchlassgrad"
@@ -184,6 +180,11 @@
                                         WertChanged="w => _stand.Luftwechselrate = w" />
                                 </KindInhalt>
                             </Formularraster>
+                            <Herleitungszeile Text="@Luftwechselzeile" />
+                            @* E56 F3 (a): Sollwerte, innere Waermegewinne, Infiltration, Nutzerlueftung,
+                               Sommerlueftung und Maximalraumtemperatur stehen nur im Reiter
+                               "Konditionierung" - die Zeile sagt, wo. *@
+                            <Herleitungszeile Text="@KonditionierungTexte.HinweisAltfelder" />
                         </KindInhalt>
                     </Gruppenkopf>
 
@@ -406,28 +407,10 @@
                             <Schalter Bezeichnung="@Texte.LabelAussenStrahlung"
                                       Wert="@_stand.AussenbauteileStrahlung"
                                       WertChanged="w => _stand.AussenbauteileStrahlung = w" />
-                            @* Stufe G2: Lueftung des Stundenmodells - leer rechnet die Luftwechselrate
-                               des Gebaeudes, ist eines gesetzt, das andere mit seiner Vorgabe. *@
-                            <Zahlenfeld Bezeichnung="@Texte.LabelInfiltration" Einheit="1/h" Min="0.01" Max="10"
-                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration)"
-                                        Feldname="@Feld(Texte.LabelInfiltration)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.LuftwechselInfiltration"
-                                        WertChanged="w => _stand.LuftwechselInfiltration = w" />
-                            <Zahlenfeld Bezeichnung="@Texte.LabelNutzerlueftung" Einheit="1/h" Min="0" Max="10"
-                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer)"
-                                        Feldname="@Feld(Texte.LabelNutzerlueftung)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.LuftwechselNutzer"
-                                        WertChanged="w => _stand.LuftwechselNutzer = w" />
-                            <Schalter Bezeichnung="@Texte.LabelSommerlueftung"
-                                      Wert="@_stand.Sommerlueftung"
-                                      WertChanged="w => _stand.Sommerlueftung = w" />
+                            @* Die Lueftung des Stundenmodells (Infiltration, Nutzerlueftung, Sommerlueftung)
+                               steht in der Spalte "Lueftung" des Reiters "Konditionierung" (E56 F3 (a)). *@
                                 </KindInhalt>
                             </Formularraster>
-                            <Herleitungszeile Text="@Luftwechselzeile" />
-                            @if (_stand.Sommerlueftung)
-                            {
-                                <Herleitungszeile Text="@Sommerlueftungszeile" />
-                            }
                             <Herleitungszeile Text="@Texte.HinweisModellparameter" />
                         </KindInhalt>
                     </Gruppenkopf>
@@ -486,9 +469,10 @@
                        Teil der VDI-Struktur, deshalb IMMER sichtbar und bearbeitbar - auch auf
                        dem Tagesbilanz-Weg; dort sagt eine Herleitungszeile, dass die Eingaben
                        erst mit VDI 6007 gelten (F-K18, bis Stufe GA). Kein gesperrtes Feld, keine
-                       stille Null, kein verstecktes Eingabefeld. Kuehlsollwert und
-                       Kuehlleistungsgrenze stehen mit dem Haken (Tabelle 8.1); leer schreibt
-                       NULL. Der Nachtwert (KU3) steht nicht da und reist unveraendert mit, und
+                       stille Null, kein verstecktes Eingabefeld. Die Kuehlleistungsgrenze steht
+                       mit dem Haken (Tabelle 8.1); leer schreibt NULL. Der Kuehlsollwert (Tag und
+                       Nacht) steht in der Spalte "Kuehlen" des Reiters "Konditionierung" (E56 F3 (a)),
+                       die Herleitungszeile nennt ihn weiter. Und
                        der Rang der Kuehlung in der Knappheitsreihenfolge hat kein Bedienelement
                        (K4). Die Projekteinstellung „Kuehlung rechnen" steht nicht hier - sie
                        betrifft das ganze Projekt (8.3). *@
@@ -512,13 +496,8 @@
                                       WertChanged="KuehlungGesetzt" />
                             @if (_stand.KuehlungAktiv)
                             {
-                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlSollwert" Einheit="°C"
-                                            Min="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"
-                                            Max="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"
-                                            Platzhalter="@Texte.VorgabeKuehlungAus"
-                                            Feldname="@Feld(Texte.LabelKuehlSollwert)" FehlerZustand="FehlerMelden"
-                                            Wert="@_stand.KuehlSollwert"
-                                            WertChanged="w => _stand.KuehlSollwert = w" />
+                                @* Der Kuehlsollwert steht in der Spalte "Kuehlen" des Reiters
+                                   "Konditionierung" (E56 F3 (a)). *@
                                 <Zahlenfeld Bezeichnung="@Texte.LabelKuehlleistungMax" Einheit="kW" Min="0.01"
                                             Platzhalter="@Texte.VorgabeUnbegrenzt"
                                             Feldname="@Feld(Texte.LabelKuehlleistungMax)" FehlerZustand="FehlerMelden"
@@ -1533,7 +1512,10 @@
             MeldungFerienHerbst = MeldungFerienHerbst,
             FeldWohnflaeche = FeldWohnflaeche,
             FeldFlaecheNutzer = FeldFlaecheNutzer,
-            FeldWaermegewinne = FeldWaermegewinne,
+            // Die inneren Waermegewinne stehen als Nennwert der Geraete in der Matrix (E56 F3 (a)) -
+            // die Pflichtmeldung nennt das Feld mit dem Namen, den der Reiter traegt.
+            FeldWaermegewinne = KonditionierungBearbeitung.Feldname(KonditionierungTexte, KonditionierungGroesse.Geraete,
+                                                                    KonditionierungZeile.Nennwert),
             FeldFensterdurchlassgrad = FeldFensterdurchlassgrad,
             FeldRaumhoehe = FeldRaumhoehe,
             FeldLuftwechsel = Feld(LabelLuftwechsel),
@@ -1791,17 +1773,8 @@
     /// </summary>
     private double HVe => _arbeit.HVe;
 
-    /// <summary>
-    /// Platzhalter der beiden Lüftungsfelder: Sind beide leer, rechnet der VDI-Weg mit der
-    /// Luftwechselrate — dann steht sie da; sonst die Vorgabe des leeren Glieds.
-    /// </summary>
-    private string LuftwechselPlatzhalter(double vorgabe) => _arbeit.LuftwechselPlatzhalter(vorgabe, Texte);
-
     /// <summary>Die Herleitungszeile des Luftwechsels: Wert und Herkunft.</summary>
     private string Luftwechselzeile => _arbeit.Luftwechselzeile(Texte);
-
-    /// <summary>Die Herleitungszeile der Sommerlüftungsregel.</summary>
-    private string Sommerlueftungszeile => GebaeudeArbeitsstand.Sommerlueftungszeile(Texte);
 
     private string OstWestPlatzhalter => _arbeit.OstWestPlatzhalter(Texte);
 
