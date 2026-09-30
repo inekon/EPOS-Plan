@@ -60617,6 +60617,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_RUECKFALL_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_RUECKFALL_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer ist abgeschaltet ähnelt.
         /// </summary>
         public static string KOH_GRUND_STROM_INAKTIV {

@@ -10882,6 +10882,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
   </data>
+  <data name="KOH_GRUND_RUECKFALL_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt</value>
+  </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>die Komponente Stromsteuer ist abgeschaltet</value>
   </data>

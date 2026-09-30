@@ -10875,6 +10875,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>no electricity energy carrier is assigned to the project</value>
   </data>
+  <data name="KOH_GRUND_RUECKFALL_STROMSTEUER" xml:space="preserve">
+    <value>electricity tax component of the default carrier “{0}” not maintained</value>
+  </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>the electricity tax component is switched off</value>
   </data>

@@ -763,6 +763,40 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // Die Stromsteuer-Kohärenz am Rückfallträger (Anwenderentscheid 30.09.2026, EZ‑18)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Vergleich prüft die § 9b-Entlastung des Stamms gegen den Rückfallträger.</b> Für ein
+        /// produzierendes Gewerbe bucht die Kopie der Gruppenregel § 9b auf den bepreisten Netzbezug
+        /// von 16,12 MWh/a; den Netzbezug bepreist ohne Zuordnung „Elektrische Energie", an dem kein
+        /// Stromsteueranteil gepflegt ist. Die Kohärenzzeile nennt ihn als WARNUNG mit dem gebuchten
+        /// Betrag. Die Einzelbetrachtung des Stamms bucht keine Entlastung und prüft nichts.
+        /// </summary>
+        [Fact]
+        public void Im_Vergleich_prueft_die_Kohaerenz_den_Rueckfalltraeger_des_Stamms()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(STAMM);
+            p.Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE;
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, p), STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.True(s.StromsteuerEntlastungJahr1 > 0, "§ 9b = " + s.StromsteuerEntlastungJahr1);
+            KohaerenzHinweis h = Assert.Single(s.KohaerenzHinweise, x => x.Text.Contains("§ 9b", StringComparison.Ordinal));
+            Assert.Equal(KohaerenzSchwere.WARNUNG, h.Schwere);
+            Assert.Equal(s.StromsteuerEntlastungJahr1, h.Betrag.Value, 6);
+            Assert.Contains("Stromsteueranteil des Auslieferungsträgers „Elektrische Energie“ nicht gepflegt", h.Text);
+
+            // Die Einzelbetrachtung: Netzbezug ohne Verwendung, keine Entlastung, keine Zeile.
+            Assert.Equal(0.0, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(stamm, null), 6);
+        }
+
+        // =================================================================
         // Der Rollentarif unter EZ‑17 (Anwenderentscheid 30.09.2026, EZ‑18)
         // =================================================================
 

@@ -681,9 +681,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// DIESELBE REGEL IN DER KOHÄRENZPRÜFUNG. Führt das Projekt keinen Erzeuger, der
-        /// Strom verwendet, dann FEHLT der Stromträger nicht — er wird nicht gebraucht;
-        /// die Zeile „dem Projekt ist kein Strom-Energieträger zugeordnet“ wäre eine
-        /// Aufgabe ohne Gegenstand. MIT Wärmepumpe bleibt sie stehen.
+        /// Strom verwendet, dann FEHLT der Stromträger nicht — er wird nicht gebraucht, und die
+        /// Stromseite schweigt in der Einzelbetrachtung. MIT Wärmepumpe steht die Zeile: Den
+        /// Netzbezug bepreist ohne Zuordnung der Auslieferungsträger, und gegen ihn prüft die
+        /// Stromseite (Register EZ‑18) — die gebuchte Entlastung nennt den fehlenden
+        /// Stromsteueranteil dieses Trägers, nicht mehr einen fehlenden Träger.
         /// </summary>
         [Fact]
         public void Die_Kohaerenzpruefung_schweigt_ohne_Verwendung()
@@ -691,16 +693,58 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            const string zeile = "kein Strom-Energieträger zugeordnet";
+            const string zeile = "Stromsteueranteil des Auslieferungsträgers „Elektrische Energie“ nicht gepflegt";
 
-            // MIT Wärmepumpe: Der Befund steht.
+            // MIT Wärmepumpe: Der Befund steht, mit dem Rückfallträger beim Namen.
             Assert.Contains(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
                             h => h.Text.Contains(zeile, StringComparison.Ordinal));
+            Assert.DoesNotContain(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
+                                  h => h.Text.Contains("kein Strom-Energieträger zugeordnet", StringComparison.Ordinal));
 
             // OHNE: Er fällt weg.
             Kesselprojekt();
             Assert.DoesNotContain(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
-                                  h => h.Text.Contains(zeile, StringComparison.Ordinal));
+                                  h => h.Text.Contains("§ 9b", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Die Gruppenregel prüft gegen den Rückfallträger</b> (Anwenderentscheid 30.09.2026,
+        /// Register EZ‑18; Konzept § 6.3 Nr. 39). Ein Stand ohne eigene Stromverwendung und ohne
+        /// zugeordneten Stromträger, dessen Netzbezug der Vergleich bepreist, bucht § 9b auf diesen
+        /// Netzbezug; die Stromseite prüft die gebuchte Entlastung gegen den Auslieferungsträger, mit
+        /// dem er bepreist ist, und nennt den fehlenden Stromsteueranteil als WARNUNG mit Betrag —
+        /// zuvor schwieg sie. Ohne Gruppenregel bleibt sie still.
+        /// </summary>
+        [Fact]
+        public void Die_Kohaerenzpruefung_prueft_die_Gruppenregel_gegen_den_Rueckfalltraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Kesselprojekt();
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT_KESSEL));
+            Assert.Equal(0, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_KESSEL));
+
+            KohaerenzLauf lauf = StromsteuerLauf();
+            lauf.StromImVergleichBepreist = true;
+            KohaerenzHinweis h = Assert.Single(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, lauf),
+                x => x.Text.Contains("§ 9b", StringComparison.Ordinal));
+            Assert.Equal(KohaerenzSchwere.WARNUNG, h.Schwere);
+            Assert.Equal(1000.0, h.Betrag.Value, 6);
+            Assert.Contains("(Stromsteueranteil des Auslieferungsträgers „Elektrische Energie“ nicht gepflegt)",
+                            h.Text);
+
+            // Ohne Gruppenregel: kein bepreister Netzbezug, keine Zeile.
+            Assert.DoesNotContain(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
+                                  x => x.Text.Contains("§ 9b", StringComparison.Ordinal));
+
+            // Der Grund kommt aus der Ressource, in beiden Sprachen.
+            string de = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                "KOH_GRUND_RUECKFALL_STROMSTEUER", new CultureInfo("de-DE"));
+            string en = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                "KOH_GRUND_RUECKFALL_STROMSTEUER", new CultureInfo("en-US"));
+            Assert.Equal("Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt", de);
+            Assert.False(string.IsNullOrEmpty(en));
+            Assert.NotEqual(de, en);
         }
 
         // =================================================================

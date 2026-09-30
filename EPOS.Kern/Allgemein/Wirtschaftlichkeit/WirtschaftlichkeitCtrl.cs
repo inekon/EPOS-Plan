@@ -6725,6 +6725,9 @@ namespace WindowsFormsApplication1
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
                     StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1,
+                    // EZ‑18: Bepreist die Gruppenregel den Netzbezug dieses Standes, prüft die
+                    // Stromseite ohne zugeordneten Träger gegen den Rückfallträger.
+                    StromImVergleichBepreist = v.StromImVergleichBepreisen,
                     // ETAPPE E2 (R5): die gebuchte CO₂-Abgabe des Jahres 1 — sie ist der
                     // Betrag, der bei aktivem CO₂-Bestandteil im Arbeitspreis ZWEIMAL
                     // in den Energiekosten steht.
