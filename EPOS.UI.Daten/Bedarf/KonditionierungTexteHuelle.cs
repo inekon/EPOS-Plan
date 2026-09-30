@@ -192,6 +192,16 @@ namespace WindowsFormsApplication1
             t.TextPostenLuftwechsel = Text_("KOND_TXT_POSTEN_LUFTWECHSEL", t.TextPostenLuftwechsel);
             t.TextPostenZonenkalender = Text_("KOND_TXT_POSTEN_ZONENKALENDER", t.TextPostenZonenkalender);
             t.TextPostenBauteile = Text_("KOND_TXT_POSTEN_BAUTEILE", t.TextPostenBauteile);
+
+            // Vorlagen je Karte (Welle U2)
+            t.TextVorschauVorlage = Text_("KOND_TXT_VORSCHAU_VORLAGE", t.TextVorschauVorlage);
+            t.GrundKeineVorlage = Text_("KOND_TXT_GRUND_KEINE_VORLAGE", t.GrundKeineVorlage);
+            t.TextVorlageGespeichert = Text_("KOND_TXT_VORLAGE_GESPEICHERT", t.TextVorlageGespeichert);
+            t.TextVorlageUmbenannt = Text_("KOND_TXT_VORLAGE_UMBENANNT", t.TextVorlageUmbenannt);
+            t.TextVorlageGeloescht = Text_("KOND_TXT_VORLAGE_GELOESCHT", t.TextVorlageGeloescht);
+            t.TextVorlageDupliziert = Text_("KOND_TXT_VORLAGE_DUPLIZIERT", t.TextVorlageDupliziert);
+            t.TextVorlagenLeer = Text_("KOND_TXT_VORLAGEN_LEER", t.TextVorlagenLeer);
+            t.SpalteAktionen = Text_("KOND_LBL_SPALTE_AKTIONEN", t.SpalteAktionen);
             return t;
         }
 
@@ -209,6 +219,8 @@ namespace WindowsFormsApplication1
             f.SpeichernUnter = Text_("KOND_FRAGE_SPEICHERN_UNTER", f.SpeichernUnter);
             f.Zonen = Text_("KOND_FRAGE_ZONEN", f.Zonen);
             f.OhneEinzelheiten = Text_("KOND_FRAGE_OHNE_EINZELHEITEN", f.OhneEinzelheiten);
+            f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
+            f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
             return f;
         }
 

@@ -1,0 +1,352 @@
+﻿@* DIE VORLAGENVERWALTUNG DER KONDITIONIERUNG (Stufe KP2, Welle U2; Teilkonzept Konditionierungsprofile
+   3.5, 7.4; Entwurf KP2 Festlegung 13; E56 F4 (a)) - aus jeder Kalenderkarte ("Vorlagen verwalten") als
+   BLATT im Gebaeude-Katalogeditor, auf beiden Plattformen, kein Menuepunkt.
+
+   AUFBAU. Oben die leise Zeile "sofort gespeichert", darunter der Umschalter der Groesse (fuenf Knoepfe,
+   role=tab; die Groesse der Karte, aus der das Blatt kam, steht vorn), dann die LISTE der Vorlagen dieser
+   Groesse in der Reihenfolge des Kerns - die ausgelieferten zuerst mit Kennzeichen (Schloss), die
+   eigenen ohne - mit Nutzung und den Zeilenhandlungen, die IMMER sichtbar sind: Umbenennen, Duplizieren,
+   Loeschen. Ein Klick auf den Namen waehlt die Zeile; unter der Liste stehen ihre Beschreibung und die
+   VORSCHAU der Woche am Ziel (dieselbe Rechnung wie in der Karte, die Wahl der Karte bleibt).
+
+   DAS SCHLOSS. Eine ausgelieferte Vorlage laesst sich nur duplizieren: Umbenennen und Loeschen stehen
+   WEICH gesperrt da (aria-disabled, der Grund als Kurztext, der Versuch meldet ihn).
+
+   SOFORT MIT EIGENEM OK (Festlegung 13). Jede Handlung schreibt, sobald sie bestaetigt ist - nicht erst
+   mit dem OK des Editors: Umbenennen mit "Speichern" am Namensfeld (ein Doppelname wird AM FELD
+   genannt), Duplizieren mit dem Klick (die Kopie heisst "Name (Kopie)"), Loeschen nach der Rueckfrage
+   (Vorgabe "Nein"; sie nennt, dass kein Gebaeude beruehrt wird). Eine leise Zeile sagt, was geschah.
+   Kein Delegat, kein Knopf; Esc und "< Wirt" fuehren zurueck (der Blattwechsel), ein offenes
+   Umbenennen verfaellt dabei wie Abbrechen. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+<div class="epos-kond-verwaltung">
+    @* Das Banner des Blattes: Der Kopf des Editors steht nicht, solange das Blatt offen ist - ein Grund
+       oder eine Ablehnung erscheint deshalb hier, erst nach dem Versuch und mit Verfall. *@
+    @if (_meldung is not null)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" Verfaellt="@MELDUNGSDAUER" Verfallen="() => _meldung = null" />
+    }
+    <p class="epos-leisezeile epos-kond-verwaltung-sofort">@Texte.HinweisVorlageSofort</p>
+
+    <div class="epos-kond-verwaltung-groessen" role="tablist" aria-label="@Texte.LabelGroesse">
+        @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            KonditionierungGroesse groesse = g;
+            bool aktiv = groesse == _groesse;
+            <button type="button" role="tab" class="epos-knopf epos-kond-verwaltung-groesse @(aktiv ? "epos-knopf--gewaehlt" : "")"
+                    aria-selected="@(aktiv ? "true" : "false")" tabindex="@(aktiv ? 0 : -1)"
+                    data-groesse="@((int)groesse)" @onclick="() => GroesseWaehlen(groesse)">@Bearbeitung.Groessenname(groesse)</button>
+        }
+    </div>
+
+    @if (Liste.Count == 0)
+    {
+        <p class="epos-leisezeile epos-kond-verwaltung-leer">@Texte.TextVorlagenLeer</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle epos-raster-huelle--frei epos-kond-verwaltung-liste">
+            <table class="epos-raster epos-kond-vorlagenliste" data-groesse="@((int)_groesse)">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteName</th>
+                        <th>@Texte.LabelVorlageNutzung</th>
+                        <th class="epos-zellenaktionen">@Texte.SpalteAktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (KonditionierungVorlageDaten v in Liste)
+                    {
+                        KonditionierungVorlageDaten vorlage = v;
+                        bool gewaehlt = vorlage.Id == _gewaehlt;
+                        bool umbenennen = vorlage.Id == _umbenennen;
+                        string? schloss = vorlage.Ausgeliefert ? Texte.GrundVorlageGesperrt : null;
+                        <tr @key="vorlage.Id" data-vorlage="@vorlage.Id" class="@(gewaehlt ? "epos-kond-vorlage--gewaehlt" : "")"
+                            aria-selected="@(gewaehlt ? "true" : "false")">
+                            <td class="epos-kond-vorlage-namenszelle">
+                                @if (umbenennen)
+                                {
+                                    <div class="epos-kond-vorlage-name @(_nameFehler is null ? "" : "epos-kond-feldfehler")">
+                                        <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_neuerName"
+                                                  WertChanged="NameGeaendert" Hoechstlaenge="80" />
+                                        @if (_nameFehler is not null)
+                                        {
+                                            <p class="epos-kond-feldmeldung" role="alert">@_nameFehler</p>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button type="button" class="epos-textknopf epos-kond-vorlage-zeigen"
+                                            aria-pressed="@(gewaehlt ? "true" : "false")"
+                                            @onclick="() => Zeigen(vorlage.Id)">@vorlage.Name</button>
+                                    @if (vorlage.Ausgeliefert)
+                                    {
+                                        <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
+                                    }
+                                }
+                            </td>
+                            <td>@Nutzungstext(vorlage.Nutzung)</td>
+                            <td class="epos-zellenaktionen">
+                                <span class="epos-zellenaktionen-inhalt">
+                                    @if (umbenennen)
+                                    {
+                                        <button type="button" class="epos-knopf epos-knopf--primaer epos-kond-umbenennen-schreiben"
+                                                @onclick="UmbenennenSchreiben">@Texte.KnopfSpeichern</button>
+                                        <button type="button" class="epos-knopf epos-kond-umbenennen-abbrechen"
+                                                @onclick="UmbenennenAbbrechen">@Texte.KnopfAbbrechen</button>
+                                    }
+                                    else
+                                    {
+                                        @if (Bearbeitung.Weg.VorlageUmbenennen is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-umbenennen"
+                                                    aria-disabled="@(schloss is null ? null : "true")"
+                                                    title="@(schloss ?? Texte.KnopfUmbenennen)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfUmbenennen)"
+                                                    @onclick="() => Umbenennen(vorlage, schloss)">@Texte.KnopfUmbenennen</button>
+                                        }
+                                        @if (Bearbeitung.Weg.VorlageDuplizieren is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-duplizieren"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfDuplizieren)"
+                                                    @onclick="() => Duplizieren(vorlage)">@Texte.KnopfDuplizieren</button>
+                                        }
+                                        @if (Bearbeitung.Weg.VorlageLoeschen is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-loeschen"
+                                                    aria-disabled="@(schloss is null ? null : "true")"
+                                                    title="@(schloss ?? Texte.KnopfLoeschen)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfLoeschen)"
+                                                    @onclick="() => Loeschen(vorlage, schloss)">@Texte.KnopfLoeschen</button>
+                                        }
+                                    }
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (_zeile is not null)
+    {
+        <p class="epos-leisezeile epos-kond-verwaltung-zeile" role="status">@_zeile</p>
+    }
+
+    @if (Gewaehlt is KonditionierungVorlageDaten auswahl)
+    {
+        <div class="epos-kond-verwaltung-vorschau">
+            @if (auswahl.Beschreibung.Length > 0)
+            {
+                <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@auswahl.Beschreibung</p>
+            }
+            <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, auswahl.Name)</p>
+            @if (Bearbeitung.Weg.WochenVorschau is not null)
+            {
+                <DiagrammSvg Modell="@_modell" Kennung="@("kond-verwaltung-vorschau-" + (int)_groesse)"
+                             Bezeichnung="@Texte.LabelVorschauWoche" Einheit="@Einheit" OhneZoom="true" />
+            }
+        </div>
+    }
+
+    <Rueckfrage Offen="@(_loeschen is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@Loeschfrage" VorgabeNein="true"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Die Bearbeitung des Editors — sie trägt den Weg (Liste, Handlungen, Vorschau).</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Größe, deren Liste beim Öffnen vorn steht (die der Karte, aus der das Blatt kam).</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Rückfragen der Konditionierung (Löschen).</summary>
+    [Parameter] public KonditionierungFragetexte Fragen { get; set; } = new();
+
+    /// <summary>„Ja" der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede geschriebene Handlung — der Wirt zeichnet die Karten mit den neuen Listen.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private KonditionierungGroesse _groesse;
+    private bool _gesetzt;
+    private long? _gewaehlt;
+    private long? _umbenennen;
+    private string _neuerName = "";
+    private string? _nameFehler;
+    private KonditionierungVorlageDaten? _loeschen;
+    private string? _zeile;
+    private WindowsFormsApplication1.Zeichnung.Zeichenmodell? _modell;
+
+    /// <summary>Die gewählte Größe des Umschalters. Prüfhilfe für die Tests.</summary>
+    public KonditionierungGroesse AktiveGroesse => _groesse;
+
+    protected override void OnParametersSet()
+    {
+        if (_gesetzt) return;
+        _gesetzt = true;
+        _groesse = Groesse;
+        // Vorn steht, was die Karte gewählt hat; sonst nichts.
+        _gewaehlt = Bearbeitung.GewaehlteVorlage(_groesse)?.Id;
+        _modell = _gewaehlt is long id ? Bearbeitung.Vorschau(_groesse, id) : null;
+    }
+
+    private IReadOnlyList<KonditionierungVorlageDaten> Liste => Bearbeitung.Vorlagen(_groesse);
+
+    private KonditionierungVorlageDaten? Gewaehlt => _gewaehlt is long id ? Liste.FirstOrDefault(v => v.Id == id) : null;
+
+    private string Einheit => _groesse switch
+    {
+        KonditionierungGroesse.Lueftung => "1/h",
+        KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+        _ => "°C"
+    };
+
+    private string Nutzungstext(KonditionierungNutzung n) => n switch
+    {
+        KonditionierungNutzung.Wohnen => Texte.NutzungWohnen,
+        KonditionierungNutzung.Buero => Texte.NutzungBuero,
+        KonditionierungNutzung.Schule => Texte.NutzungSchule,
+        KonditionierungNutzung.Sonstige => Texte.NutzungSonstige,
+        _ => Texte.NutzungKeine
+    };
+
+    private string Loeschfrage
+        => _loeschen is null
+            ? ""
+            : string.Format(CultureInfo.CurrentCulture, Fragen.VorlageLoeschen, _loeschen.Name) + " "
+              + string.Format(CultureInfo.CurrentCulture, Texte.HinweisVorlageLoeschen, _loeschen.Name);
+
+    private void GroesseWaehlen(KonditionierungGroesse g)
+    {
+        if (g == _groesse) return;
+        _groesse = g;
+        _gewaehlt = null;
+        _modell = null;
+        UmbenennenAbbrechen();
+    }
+
+    private void Zeigen(long id)
+    {
+        _gewaehlt = id;
+        _modell = Bearbeitung.Vorschau(_groesse, id);
+    }
+
+    // ------------------------------------------------------------ Umbenennen (am Namensfeld)
+
+    private async Task Umbenennen(KonditionierungVorlageDaten v, string? schloss)
+    {
+        if (schloss is not null)
+        {
+            await Melden(schloss, WarnStufe.Hinweis);
+            return;
+        }
+        _umbenennen = v.Id;
+        _neuerName = v.Name;
+        _nameFehler = null;
+    }
+
+    private void NameGeaendert(string w)
+    {
+        _neuerName = w ?? "";
+        _nameFehler = null;
+    }
+
+    private void UmbenennenAbbrechen()
+    {
+        _umbenennen = null;
+        _neuerName = "";
+        _nameFehler = null;
+    }
+
+    private async Task UmbenennenSchreiben()
+    {
+        if (_umbenennen is not long id) return;
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageUmbenennen(id, _neuerName);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _nameFehler = e.Meldung;
+            else await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        UmbenennenAbbrechen();
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageUmbenannt, e.Vorlage?.Name ?? "");
+        await Geaendert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------ Duplizieren und Löschen
+
+    private async Task Duplizieren(KonditionierungVorlageDaten v)
+    {
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageDuplizieren(v.Id);
+        if (!e.Ok)
+        {
+            await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageDupliziert, e.Vorlage?.Name ?? "", v.Name);
+        if (e.Vorlage is not null) Zeigen(e.Vorlage.Id);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Loeschen(KonditionierungVorlageDaten v, string? schloss)
+    {
+        if (schloss is not null)
+        {
+            await Melden(schloss, WarnStufe.Hinweis);
+            return;
+        }
+        _loeschen = v;
+    }
+
+    private async Task LoeschenBeantwortet(bool? antwort)
+    {
+        KonditionierungVorlageDaten? v = _loeschen;
+        _loeschen = null;
+        if (antwort != true || v is null) return;
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageLoeschen(v.Id);
+        if (!e.Ok)
+        {
+            await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        if (_gewaehlt == v.Id)
+        {
+            _gewaehlt = null;
+            _modell = null;
+        }
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageGeloescht, v.Name);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Wie lange ein Hinweis des Blattes steht.</summary>
+    private static readonly TimeSpan MELDUNGSDAUER = TimeSpan.FromSeconds(8);
+
+    private string? _meldung;
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Der Grund bzw. die Ablehnung im Banner des Blattes. Prüfhilfe: der letzte Text.</summary>
+    public string? Meldung => _meldung;
+
+    private Task Melden(string text, WarnStufe stufe)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            _meldung = text;
+            _meldungStufe = stufe;
+        }
+        return Task.CompletedTask;
+    }
+}

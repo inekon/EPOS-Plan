@@ -579,7 +579,14 @@ public sealed record KonditionierungVorlageEingabe(string Name, string Beschreib
 /// <param name="Ok">Wurde geschrieben?</param>
 /// <param name="Meldung">Die benannte Ablehnung (etwa ein Doppelname in der Liste); leer im guten Fall.</param>
 /// <param name="Vorlage">Die neue bzw. geänderte Vorlage; <c>null</c> nach dem Löschen und im Fehlerfall.</param>
-public sealed record KonditionierungVorlageErgebnis(bool Ok, string Meldung, KonditionierungVorlageDaten? Vorlage);
+public sealed record KonditionierungVorlageErgebnis(bool Ok, string Meldung, KonditionierungVorlageDaten? Vorlage)
+{
+    /// <summary>
+    /// Betrifft die Ablehnung den NAMEN (leer, zu lang, Doppelname in der Liste)? Dann nennt der Dialog
+    /// sie am Namensfeld, nicht im Banner (Teilkonzept 7.4; Stufe KP2, Welle U2).
+    /// </summary>
+    public bool AmNamen { get; init; }
+}
 
 /// <summary>Die Angaben des Werkzeugs „Zeitfenster eintragen" (Teilkonzept 3.5, 7.5).</summary>
 /// <param name="Tage">Die Tage 0 = Montag … 6 = Sonntag; leer = alle sieben.</param>

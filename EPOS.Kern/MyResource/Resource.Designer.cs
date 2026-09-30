@@ -61270,6 +61270,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ auf den angelegten Kalender „{1}“ übernehmen? Ersetzt wird: {2}. Es bleibt: {3}. ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betroffene Zonen: {0}. ähnelt.
         /// </summary>
         public static string KOND_FRAGE_ZONEN {
@@ -61599,6 +61617,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_SOMMERLUEFTUNG {
             get {
                 return ResourceManager.GetString("KOND_LBL_SOMMERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SPALTE_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SPALTE_AKTIONEN", resourceCulture);
             }
         }
         
@@ -62611,6 +62638,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst eine Vorlage aus der Liste wählen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_KEINE_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_KEINE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keinen Schritt, den „Zurücknehmen“ zurücknehmen könnte. ähnelt.
         /// </summary>
         public static string KOND_TXT_GRUND_NICHTS_ZURUECK {
@@ -62827,6 +62863,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage der Spalte {0} im Reiter „Konditionierung“: der Name einer Vorlage aus der Liste dieser Größe. Setzen übernimmt sie wie der Knopf „Übernehmen“ – die Zellen der Vorlage gehen in die Spalte, der Kalender wird angelegt, Nennwert und Saison bleiben; steht schon ein angelegter Kalender, wird nur der Matrixbereich ersetzt. Lesen nennt die zuletzt übernommene Vorlage; leer = keine. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zelle der Vorgabe-Matrix im Reiter „Konditionierung“: {0}, Zeile „{1}“, in {2}. Leer heißt: keine eigene Angabe – es gilt, was die Matrix sonst vorgibt. ähnelt.
         /// </summary>
         public static string KOND_TXT_KI_ZELLE {
@@ -63007,6 +63052,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Größe hat noch keine Vorlage. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGEN_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ als Kopie von „{1}“ angelegt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_DUPLIZIERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_DUPLIZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_GELOESCHT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ gespeichert – sie steht jetzt in der Liste dieser Größe. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferte Vorlage — nur lesbar; Duplizieren legt eine bearbeitbare Kopie an. ähnelt.
         /// </summary>
         public static string KOND_TXT_VORLAGE_GESPERRT {
@@ -63057,6 +63138,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_VORLAGE_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("KOND_TXT_VORLAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage umbenannt in „{0}“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_UMBENANNT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau mit der Vorlage „{0}“ – übernommen wird erst mit „Übernehmen“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORSCHAU_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORSCHAU_VORLAGE", resourceCulture);
             }
         }
         

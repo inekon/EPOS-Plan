@@ -59,4 +59,17 @@ public sealed class KonditionierungFragetexte
     /// Handlung
     /// </summary>
     public string OhneEinzelheiten { get; set; } = "„{0}“ ersetzt Angaben dieses Reiters. Fortfahren?";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_VORLAGE_UEBERNEHMEN</c> — „{0}“ der Name der Vorlage, „{1}“ die Größe, „{2}“ was
+    /// ersetzt wird, „{3}“ was bleibt (P12; Stufe KP2, Welle U2)
+    /// </summary>
+    public string VorlageUebernehmen { get; set; }
+        = "Die Vorlage „{0}“ auf den angelegten Kalender „{1}“ übernehmen? Ersetzt wird: {2}. Es bleibt: {3}.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_VORLAGE_LOESCHEN</c> — „{0}“ der Name der Vorlage; dahinter steht
+    /// <c>KOND_TXT_VORLAGE_LOESCHEN</c> (kein Gebäude wird berührt)
+    /// </summary>
+    public string VorlageLoeschen { get; set; } = "Die Vorlage „{0}“ löschen?";
 }

@@ -13,11 +13,12 @@ namespace EPOS.Kern.Tests
     /// <b>Die Feldkarte der Vorgabe-Matrix</b> (<see cref="KiKonditionierungsfelder"/>; Stufe KP2, Welle
     /// U1): EIN Profil für den Dialogkatalog und die Feldtafel der Sichtklasse.
     ///
-    /// <para><b>Was geprüft wird:</b> die 36 Schlüssel nach ihrem Muster, eindeutig und gültig; die
+    /// <para><b>Was geprüft wird:</b> die 41 Schlüssel nach ihrem Muster, eindeutig und gültig; die
     /// Bestandszellen genau die des Kerns (<see cref="Matrixzellenort"/>) unter ihren Katalognamen, und
     /// nur der Kühlsollwert der Nacht kommt neu dazu; die Zellen, die es gibt, dieselben wie im Reiter
     /// (<see cref="KonditionierungBearbeitung.Gibt"/>); Spalte und Zeile auf den Plätzen der Oberfläche;
-    /// Typ, Einheit und Grenzen der Katalogfelder.</para>
+    /// Typ, Einheit und Grenzen der Katalogfelder; je Größe die Vorlage als Wahl (Welle U2) und das
+    /// Aktionswissen der Vorlagen.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class KiKonditionierungsfelderTests : IDisposable
@@ -27,13 +28,13 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _kultur.Dispose();
 
         private static readonly Regex MUSTER = new(
-            "^kond_(heizen|kuehlen|lueftung|geraete|personen)_(nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?$");
+            "^kond_(heizen|kuehlen|lueftung|geraete|personen)_((nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?|vorlage)$");
 
         [Fact]
-        public void Die_Karte_fuehrt_36_Felder_nach_ihrem_Muster()
+        public void Die_Karte_fuehrt_41_Felder_nach_ihrem_Muster()
         {
             IReadOnlyList<KiKonditionierungsfelder.Feld> alle = KiKonditionierungsfelder.Alle;
-            Assert.Equal(36, alle.Count);
+            Assert.Equal(41, alle.Count);
             Assert.Equal(alle.Count, alle.Select(f => f.Schluessel).Distinct(StringComparer.Ordinal).Count());
 
             foreach (KiKonditionierungsfelder.Feld f in alle)
@@ -83,6 +84,7 @@ namespace EPOS.Kern.Tests
         {
             foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
             {
+                if (f.Teil == KiKonditionierungsfelder.Teil.Vorlage) continue;   // eine Zeile der Karte, keine Zelle
                 var g = (KonditionierungGroesse)f.Groessenplatz;
                 var z = (KonditionierungZeile)f.Zeilenplatz;
                 Assert.True(KonditionierungBearbeitung.Gibt(g, z), f.Schluessel);
@@ -112,7 +114,7 @@ namespace EPOS.Kern.Tests
         {
             Dictionary<string, KiDialogFeld> felder = KiKonditionierungsfelder.Dialogfelder()
                 .ToDictionary(f => f.Name, StringComparer.Ordinal);
-            Assert.Equal(36, felder.Count);
+            Assert.Equal(41, felder.Count);
 
             KiDialogFeld geraete = felder["kond_geraete_tag"];
             Assert.Equal(KiParameterTyp.Zahl, geraete.Typ);
@@ -144,6 +146,65 @@ namespace EPOS.Kern.Tests
             Assert.Equal(35.0, felder["kuehl_sollwert_nacht"].Max);
             Assert.All(felder.Values, f => Assert.False(f.NurLesen));
             Assert.All(felder.Values, f => Assert.False(string.IsNullOrWhiteSpace(f.Erlaeuterung)));
+        }
+
+        /// <summary>
+        /// <b>Je Größe die Vorlage</b> (Welle U2; Entwurf KP2 D9): <c>kond_&lt;größe&gt;_vorlage</c> ist eine
+        /// WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen nennt die
+        /// Herkunft. Sie steht in der Zeile „Vorlage" über dem Nennwert, nicht an einer Zelle; leer lässt sie
+        /// sich nicht setzen (zurück zur Matrix führt „Verwerfen").
+        /// </summary>
+        [Fact]
+        public void Je_Groesse_ist_die_Vorlage_eine_Wahl_mit_der_Aktion_des_Knopfs()
+        {
+            string[] wort = { "heizen", "kuehlen", "lueftung", "geraete", "personen" };
+            var vorlagen = KiKonditionierungsfelder.Alle.Where(f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage).ToList();
+            Assert.Equal(5, vorlagen.Count);
+            for (int i = 0; i < wort.Length; i++)
+            {
+                KiKonditionierungsfelder.Feld f = KiKonditionierungsfelder.Finde("kond_" + wort[i] + "_vorlage");
+                Assert.NotNull(f);
+                Assert.Equal(i, f.Groessenplatz);
+                Assert.Equal(-1, f.Zeilenplatz);
+                Assert.Null(f.Zeile);
+                Assert.False(f.Bestandszelle);
+                // In der Reihenfolge der Matrix: die Zeile „Vorlage" eröffnet die Spalte.
+                Assert.Same(f, KiKonditionierungsfelder.Alle.First(x => x.Groessenplatz == i));
+            }
+
+            KiDialogFeld heizen = KiKonditionierungsfelder.Dialogfelder().Single(f => f.Name == "kond_heizen_vorlage");
+            Assert.Equal(KiParameterTyp.Wahl, heizen.Typ);
+            Assert.True(heizen.IstWahl);
+            Assert.False(heizen.LeerErlaubt);
+            Assert.False(heizen.NurLesen);
+            Assert.Equal("Heizen · Vorlage", heizen.Anzeigename);
+            Assert.Equal("GebaeudeKatalogKiSicht.kond_heizen_vorlage", heizen.Eigenschaftspfad);
+            Assert.Contains("„Übernehmen“", heizen.Erlaeuterung);
+            Assert.Contains("Heizen", heizen.Erlaeuterung);
+        }
+
+        /// <summary>
+        /// <b>Das Aktionswissen der Vorlagen</b> (Welle U2, Muster U1): „Vorlage übernehmen", „Als Vorlage
+        /// speichern" und „Vorlagen verwalten" stehen im eingebauten Wissen des Bereichs Gebäude, mit
+        /// deutschen und englischen Suchworten im Titel — die Suche findet sie in beiden Sprachen.
+        /// </summary>
+        [Fact]
+        public void Das_Aktionswissen_kennt_die_drei_Handlungen_der_Vorlagen()
+        {
+            (string Frage, string Titel)[] faelle =
+            {
+                ("Vorlage übernehmen", "Konditionierung: Vorlage übernehmen (apply template)"),
+                ("Als Vorlage speichern", "Konditionierung: Als Vorlage speichern (save as template)"),
+                ("Vorlagen verwalten", "Konditionierung: Vorlagen verwalten (manage templates)"),
+                ("apply template", "Konditionierung: Vorlage übernehmen (apply template)"),
+                ("manage templates", "Konditionierung: Vorlagen verwalten (manage templates)"),
+            };
+            foreach ((string frage, string titel) in faelle)
+            {
+                WissensAbschnitt a = Assert.Single(HilfeWissen.Abschnitte, x => x.Titel == titel);
+                Assert.Equal(KiChatKontext.B_GEBAEUDE, a.Bereich);
+                Assert.Contains(HilfeWissen.Suchen(frage, KiChatKontext.B_GEBAEUDE, 4, ""), x => x.Titel == titel);
+            }
         }
     }
 }
