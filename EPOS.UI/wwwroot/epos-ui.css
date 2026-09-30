@@ -13698,9 +13698,23 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 .epos-kond-inhalt-grund,
-.epos-kond-grundangabe-woche {
+.epos-kond-grundangabe-woche,
+.epos-kond-vermerk {
     margin: 0;
     overflow-wrap: anywhere;
+}
+
+/* Das Zeitfenster: sieben Tagesknoepfe (aria-pressed), je mindestens 44 px,
+   die Zeile bricht zwischen den Knoepfen um. */
+.epos-kond-tage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.epos-kond-tag {
+    min-width: var(--epos-touchziel);
 }
 
 /* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:

@@ -313,10 +313,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
         new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
             "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
-        // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte; die Standardwoche steht im
-        // Baustein Wochenraster.
-        new("KalenderkarteInhalt", 1, "die Grundangabe und die Standardwoche führt die Feldkarte als " +
-            "kond_<größe>_woche (die Woche als Text; eine Grundangabe ist eine Woche mit 168 gleichen Werten)"),
+        // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
+        // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
+        new("KalenderkarteInhalt", 4, "die Grundangabe und die Standardwoche führt die Feldkarte als " +
+            "kond_<größe>_woche (die Woche als Text; eine Grundangabe ist eine Woche mit 168 gleichen Werten); " +
+            "Von, Bis und Wert des Zeitfensters sind Angaben der Handlung „Zeitfenster eintragen“, kein Einstellwert"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

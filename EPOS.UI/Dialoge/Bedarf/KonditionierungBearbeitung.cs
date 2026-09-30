@@ -459,6 +459,14 @@ public sealed class KonditionierungBearbeitung
         => Bietet(KonditionierungHandlung.Standardwoche)
            && Ausfuehren("S|" + g, s => Weg.Standardwoche!(s, new KonditionierungOrt(g), woche));
 
+    /// <summary>
+    /// <b>Das Zeitfenster „Tage, von, bis, Wert"</b> (Teilkonzept 3.5): setzt den Wert (oder „aus") in die
+    /// Stunden der Standardwoche und lässt alles andere stehen; der Vermerk kommt in die Herkunft (B8).
+    /// </summary>
+    public bool ZeitfensterAnwenden(KonditionierungGroesse g, KonditionierungZeitfenster fenster)
+        => Bietet(KonditionierungHandlung.Zeitfenster)
+           && Ausfuehren("F|" + g, s => Weg.Zeitfenster!(s, new KonditionierungOrt(g), fenster));
+
     // =================================================================================
     // Vorlagen je Größe (Stufe KP2, Welle U2; Teilkonzept 3.5, 7.4)
     // =================================================================================

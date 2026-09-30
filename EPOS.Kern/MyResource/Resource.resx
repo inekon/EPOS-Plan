@@ -40723,5 +40723,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
     <value>Noch keine Standardwoche – das Raster zeigt die Grundangabe.</value>
   </data>
+  <data name="KOND_TXT_VERMERK" xml:space="preserve">
+    <value>Zuletzt angewandt: {0}</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ZEITFENSTER" xml:space="preserve">
+    <value>Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_TAGE" xml:space="preserve">
+    <value>Erst mindestens einen Tag wählen.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_ZEITEN" xml:space="preserve">
+    <value>Erst „Von“ und „Bis“ angeben (volle Stunden, „Bis“ 1 … 24).</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_WERT" xml:space="preserve">
+    <value>Erst einen Wert oder „aus“ angeben.</value>
+  </data>
 </root>
 

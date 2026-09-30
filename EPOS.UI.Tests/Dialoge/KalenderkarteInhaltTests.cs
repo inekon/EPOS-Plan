@@ -160,6 +160,90 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.All(Heizkalender.Woche!, v => Assert.True(double.IsNaN(v)));
     }
 
+    // =================================================================================
+    // Teilschritt 2: das Zeitfenster
+    // =================================================================================
+
+    private static IElement Fensterfeld(IElement inhalt, string beschriftung)
+        => inhalt.QuerySelectorAll(".epos-kond-zeitfenster label.epos-feld")
+                 .Single(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+                 .QuerySelector("input")!;
+
+    [Fact]
+    public void Das_Zeitfenster_Mo_bis_Fr_6_bis_8_Uhr_22_Grad_ersetzt_nur_seine_Stunden_und_vermerkt_es()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
+        double[] vor = (double[])Heizkalender.Woche!.Clone();
+        IElement inhalt = Inhalt(cut, KonditionierungGroesse.Heizen);
+
+        // Vorgabe Mo–Fr; die Tagesknöpfe melden ihren Zustand über aria-pressed.
+        IElement[] tage = inhalt.QuerySelectorAll("button.epos-kond-tag").ToArray();
+        Assert.Equal(7, tage.Length);
+        Assert.Equal(new[] { "true", "true", "true", "true", "true", "false", "false" },
+                     tage.Select(t => t.GetAttribute("aria-pressed")).ToArray());
+
+        Fensterfeld(inhalt, "Von").Input("6");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Bis").Input("8");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Wert").Input("22");
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen").Click();
+
+        double[] nach = Heizkalender.Woche!;
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+            {
+                int i = t * 24 + h;
+                if (t < 5 && h is 6 or 7) Assert.Equal(22.0, nach[i]);
+                else Assert.Equal(vor[i], nach[i]);
+            }
+        Assert.False(string.IsNullOrEmpty(Heizkalender.Vermerk));
+        Assert.Contains("Zuletzt angewandt:", Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-vermerk")!.TextContent);
+
+        // Ein Schritt für „Zurücknehmen".
+        cut.Find("button.epos-kond-zuruecknehmen").Click();
+        Assert.Equal(vor, Heizkalender.Woche!);
+    }
+
+    [Fact]
+    public void Das_Zeitfenster_ist_weich_gesperrt_bis_Tage_Zeiten_und_Wert_stehen_und_nennt_den_Grund()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
+        IElement knopf = Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Null(knopf.GetAttribute("disabled"));
+        knopf.Click();
+        Assert.Contains("„Von“ und „Bis“", _meldungen.Last());
+
+        // Alle Tage abgewählt: der Grund nennt die Tage.
+        for (int t = 0; t < 5; t++)
+            Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector($"button.epos-kond-tag[data-tag='{t}']")!.Click();
+        Assert.Contains("Tag", Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen").GetAttribute("title"));
+        double[] vor = (double[])Heizkalender.Woche!.Clone();
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen").Click();
+        Assert.Equal(vor, Heizkalender.Woche!);
+    }
+
+    [Fact]
+    public void Das_Zeitfenster_setzt_aus_ueber_Mitternacht_am_Wochenende()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
+        IElement inhalt = Inhalt(cut, KonditionierungGroesse.Heizen);
+        // Mo–Fr ab, Sa und So an.
+        for (int t = 0; t < 7; t++)
+            Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector($"button.epos-kond-tag[data-tag='{t}']")!.Click();
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Von").Input("22");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Bis").Input("6");
+        Fensterfeld(Inhalt(cut, KonditionierungGroesse.Heizen), "Wert").Input("aus");
+        Knopf(Inhalt(cut, KonditionierungGroesse.Heizen), "epos-kond-zeitfenster-eintragen").Click();
+
+        double[] w = Heizkalender.Woche!;
+        Assert.True(double.IsNaN(w[5 * 24 + 23]));   // Sa 23 Uhr
+        Assert.True(double.IsNaN(w[6 * 24 + 2]));    // So 2 Uhr
+        Assert.False(double.IsNaN(w[4 * 24 + 23]));  // Fr 23 Uhr bleibt
+    }
+
     [Fact]
     public void Eine_Grundangabe_ohne_Rundlauf_meldet_den_Kern_und_aendert_nichts()
     {

@@ -211,6 +211,11 @@ namespace WindowsFormsApplication1
             t.KnopfWocheAnlegen = Text_("KOND_BTN_WOCHE_ANLEGEN", t.KnopfWocheAnlegen);
             t.KnopfWocheVerwerfen = Text_("KOND_BTN_WOCHE_VERWERFEN", t.KnopfWocheVerwerfen);
             t.TextWocheVorgabe = Text_("KOND_TXT_WOCHE_VORGABE", t.TextWocheVorgabe);
+            t.TextVermerk = Text_("KOND_TXT_VERMERK", t.TextVermerk);
+            t.HinweisZeitfenster = Text_("KOND_TXT_HINWEIS_ZEITFENSTER", t.HinweisZeitfenster);
+            t.GrundZeitfensterTage = Text_("KOND_TXT_GRUND_ZEITFENSTER_TAGE", t.GrundZeitfensterTage);
+            t.GrundZeitfensterZeiten = Text_("KOND_TXT_GRUND_ZEITFENSTER_ZEITEN", t.GrundZeitfensterZeiten);
+            t.GrundZeitfensterWert = Text_("KOND_TXT_GRUND_ZEITFENSTER_WERT", t.GrundZeitfensterWert);
             return t;
         }
 

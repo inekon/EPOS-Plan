@@ -62791,6 +62791,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst mindestens einen Tag wählen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_ZEITFENSTER_TAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_ZEITFENSTER_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst einen Wert oder „aus“ angeben. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_ZEITFENSTER_WERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_ZEITFENSTER_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst „Von“ und „Bis“ angeben (volle Stunden, „Bis“ 1 … 24). ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_ZEITFENSTER_ZEITEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_ZEITFENSTER_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geräte: {0} W = Interne Wärmegewinne {1} W − Jahresmittel der Personenwärme {2} W ähnelt.
         /// </summary>
         public static string KOND_TXT_HERLEITUNG_GERAETE {
@@ -62913,6 +62940,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_VDI6007 {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_ZEITFENSTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_ZEITFENSTER", resourceCulture);
             }
         }
         
@@ -63165,6 +63201,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_TEPPICHBILD {
             get {
                 return ResourceManager.GetString("KOND_TXT_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuletzt angewandt: {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VERMERK {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VERMERK", resourceCulture);
             }
         }
         

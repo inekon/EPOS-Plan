@@ -699,4 +699,20 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_TXT_WOCHE_VORGABE</c> — über dem Wochenraster ohne Standardwoche</summary>
     public string TextWocheVorgabe { get; set; } = "Noch keine Standardwoche – das Raster zeigt die Grundangabe.";
+
+    /// <summary><c>KOND_TXT_VERMERK</c> — der letzte Werkzeugvermerk in der aufgeklappten Karte; „{0}“ der Vermerk</summary>
+    public string TextVermerk { get; set; } = "Zuletzt angewandt: {0}";
+
+    /// <summary><c>KOND_TXT_HINWEIS_ZEITFENSTER</c> — unter dem Werkzeug Zeitfenster</summary>
+    public string HinweisZeitfenster { get; set; }
+        = "Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht.";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_TAGE</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterTage { get; set; } = "Erst mindestens einen Tag wählen.";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_ZEITEN</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterZeiten { get; set; } = "Erst „Von“ und „Bis“ angeben (volle Stunden, „Bis“ 1 … 24).";
+
+    /// <summary><c>KOND_TXT_GRUND_ZEITFENSTER_WERT</c> — der Grund des weich gesperrten „Zeitfenster eintragen“</summary>
+    public string GrundZeitfensterWert { get; set; } = "Erst einen Wert oder „aus“ angeben.";
 }

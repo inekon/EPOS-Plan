@@ -294,7 +294,7 @@
     /// <summary>Der Inhalt der aufgeklappten Karte einer Größe.</summary>
     private RenderFragment Einzelheiten(KonditionierungGroesse g) => @<KalenderkarteInhalt Bearbeitung="@Bearbeitung" Groesse="@g"
         Texte="@Texte" Rastertexte="@HuelleTexte.Uebergabe.Raster" Lesemodus="@Lesemodus"
-        Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" />;
+        Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" Verweigert="Verweigert" />;
 
     /// <summary>Eine Handlung der aufgeklappten Karte: der Reiter zeichnet neu (Zustand, Vorschau), dann der Wirt.</summary>
     private EventCallback InhaltGeaendert => EventCallback.Factory.Create(this, () => Geaendert.InvokeAsync());

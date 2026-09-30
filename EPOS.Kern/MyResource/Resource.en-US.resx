@@ -40716,5 +40716,20 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
     <value>No standard week yet – the grid shows the base value.</value>
   </data>
+  <data name="KOND_TXT_VERMERK" xml:space="preserve">
+    <value>Last applied: {0}</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ZEITFENSTER" xml:space="preserve">
+    <value>Sets the value in the selected hours of the standard week; all other hours remain. “To” before “From” spans midnight.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_TAGE" xml:space="preserve">
+    <value>Select at least one day first.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_ZEITEN" xml:space="preserve">
+    <value>Enter “From” and “To” first (full hours, “To” 1 … 24).</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_WERT" xml:space="preserve">
+    <value>Enter a value or “off” first.</value>
+  </data>
 </root>
 

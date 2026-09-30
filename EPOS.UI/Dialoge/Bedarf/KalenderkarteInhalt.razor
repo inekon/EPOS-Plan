@@ -23,6 +23,12 @@
     }
     else
     {
+        @if (Kalender?.Vermerk is { Length: > 0 } vermerk)
+        {
+            @* Der letzte Werkzeugvermerk (B8: Bemerkung = Herkunft · Vermerk) - was zuletzt gewirkt hat. *@
+            <p class="epos-leisezeile epos-kond-vermerk">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.TextVermerk, vermerk)</p>
+        }
+
         @* ---- Grundangabe (Ebene 1) ---- *@
         <section class="epos-kond-abschnitt epos-kond-grundangabe" aria-label="@Texte.LabelGrundangabe">
             <h4 class="epos-kond-abschnitt-titel">@Texte.LabelGrundangabe</h4>
@@ -42,6 +48,44 @@
                 <p class="epos-leisezeile">@Texte.HinweisGrundangabe</p>
             }
         </section>
+
+        @* ---- Zeitfenster "Tage, von, bis, Wert" (Teilkonzept 3.5, 7.5): der Weg zur Standardwoche ohne
+           Zellenarbeit - sieben Tagesknoepfe, von, bis, Wert oder "aus". Es ersetzt nur seine Stunden;
+           der Vermerk kommt in die Herkunft (B8). Weich gesperrt, solange etwas fehlt - der Grund am Knopf. *@
+        @if (Bearbeitung.Bietet(KonditionierungHandlung.Zeitfenster))
+        {
+            string? fenstergrund = Fenstergrund;
+            <section class="epos-kond-abschnitt epos-kond-zeitfenster" aria-label="@Texte.LabelZeitfenster">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.LabelZeitfenster</h4>
+                <div class="epos-kond-tage" role="group" aria-label="@Texte.LabelZeitfensterTage">
+                    @for (int t = 0; t < 7; t++)
+                    {
+                        int tag = t;
+                        bool an = _tage.Contains(tag);
+                        <button type="button" class="epos-knopf epos-kond-tag @(an ? "epos-knopf--gewaehlt" : "")"
+                                aria-pressed="@(an ? "true" : "false")" data-tag="@tag"
+                                @onclick="() => TagUmschalten(tag)">@Raster.Tagesnamen[tag]</button>
+                    }
+                </div>
+                <Formularraster>
+                    <KindInhalt>
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitfensterVon" Min="0" Max="23" Wert="@_von"
+                                      WertChanged="w => _von = w" />
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitfensterBis" Min="1" Max="24" Wert="@_bis"
+                                      WertChanged="w => _bis = w" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelZeitfensterWert" Einheit="@Einheit" Min="@Minimum" Max="@Maximum"
+                                    AusText="@Texte.ZelleAus" Wert="@_fensterwert" WertChanged="w => _fensterwert = w" />
+                    </KindInhalt>
+                </Formularraster>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-zeitfenster-eintragen"
+                            aria-disabled="@(fenstergrund is null ? null : "true")"
+                            title="@(fenstergrund ?? Texte.HinweisZeitfenster)"
+                            @onclick="() => ZeitfensterEintragen(fenstergrund)">@Texte.KnopfZeitfenster</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisZeitfenster</p>
+            </section>
+        }
 
         @* ---- Standardwoche (Ebene 2) im Wochenraster: "aus" als Zellzustand, umbrechend ---- *@
         <section class="epos-kond-abschnitt epos-kond-woche" aria-label="@Texte.LabelStandardwoche">
@@ -75,6 +119,9 @@
 
     /// <summary>Meldet den Fehlerzustand einer Zelle des Wochenrasters an den Arbeitsstand.</summary>
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Meldet den Versuch an einer weich gesperrten Handlung — mit ihrem Grund.</summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
 
     /// <summary>Der Kalender der Größe im Arbeitsstand.</summary>
     private KonditionierungKalender? Kalender => Bearbeitung.Kalender(Groesse);
@@ -157,6 +204,46 @@
             }
             return _raster;
         }
+    }
+
+    // ------------------------------------------------------------ Das Zeitfenster
+
+    /// <summary>Die gewählten Tage des Zeitfensters (0 = Montag … 6 = Sonntag); Vorgabe Mo–Fr.</summary>
+    private readonly SortedSet<int> _tage = new() { 0, 1, 2, 3, 4 };
+    private int? _von;
+    private int? _bis;
+    private double? _fensterwert;
+
+    /// <summary>Die gewählten Tage des Zeitfensters. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyCollection<int> Fenstertage => _tage;
+
+    /// <summary>Warum „Zeitfenster eintragen" weich gesperrt steht; <c>null</c> = frei.</summary>
+    private string? Fenstergrund
+        => _tage.Count == 0 ? Texte.GrundZeitfensterTage
+           : _von is null || _bis is null ? Texte.GrundZeitfensterZeiten
+           : _fensterwert is null ? Texte.GrundZeitfensterWert
+           : null;
+
+    private void TagUmschalten(int tag)
+    {
+        if (!_tage.Remove(tag)) _tage.Add(tag);
+    }
+
+    /// <summary>
+    /// „Zeitfenster eintragen": über den Weg in die Standardwoche — der Kern ersetzt nur die Stunden des
+    /// Fensters und vermerkt es in der Herkunft; ein weich gesperrter Knopf meldet seinen Grund.
+    /// </summary>
+    private async Task ZeitfensterEintragen(string? grund)
+    {
+        if (grund is not null)
+        {
+            await Verweigert.InvokeAsync(grund);
+            return;
+        }
+        double w = _fensterwert!.Value;
+        var fenster = new KonditionierungZeitfenster(_tage.ToList(), _von!.Value, _bis!.Value, double.IsNaN(w) ? null : w);
+        Bearbeitung.ZeitfensterAnwenden(Groesse, fenster);
+        await Geaendert.InvokeAsync();
     }
 
     /// <summary>Die Grundangabe: eine Zahl oder „aus" (NaN); ein geleertes Feld ändert nichts.</summary>
