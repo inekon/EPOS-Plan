@@ -4726,6 +4726,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_KENNLINIE = KesselKennlinieSchema.SCHRITT;
 
+        // ---- KP-S1b (Konzept Konditionierungsprofile 3.5, 5.7; Entscheid E56 F1 (b)): die Saat
+        //      der 14 ausgelieferten Konditionierungsvorlagen ---------------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/> — <b>die 14 ausgelieferten
+        /// Konditionierungsvorlagen</b> (KP-S1b, Entscheid E56 F1 (b)). Er folgt auf
+        /// <see cref="SCHRITT_KESSEL_KENNLINIE"/> und braucht die Tabellen der Schritte
+        /// <see cref="KonditionierungSchema.SCHRITT"/> und <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        ///
+        /// <para><b>Reines DML:</b> 14 Vorlagen mit <c>ReadOnly = 1</c>, 46 Vorgabezeilen und bei Büro
+        /// und Schule je ein Kalender mit den neun Feiertagsregeln „wie Sonntag"; Schlüssel ist Größe
+        /// und Name ohne Unterschied von Groß- und Kleinschreibung. Gesät wird nur, was fehlt, je
+        /// Vorlage in einem Vorgang, nie überschreibend — eine gleichnamige eigene Vorlage steht im
+        /// Protokoll. Quelle <see cref="KonditionierungsvorlagenSaatSchema"/>; die Nummer steht allein
+        /// dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Referenzprojekt trägt eine Vorlage), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNGSVORLAGEN_SAAT = KonditionierungsvorlagenSaatSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6794,6 +6814,17 @@ namespace WindowsFormsApplication1
                         "koennte sie nicht ablegen. KEIN Rechenergebnis aendert sich - kein Rechenweg liest " +
                         "die Spalten, sie entstehen leer bzw. mit 0.",
                         Schritt_KesselKennlinie),
+            // KP-S1b (Konzept Konditionierungsprofile 3.5, 5.7; E56 F1 (b)) - die 14 ausgelieferten
+            // Konditionierungsvorlagen: gesaet nur unter fehlender Groesse und fehlendem Namen, je
+            // Vorlage ein Vorgang. Reines DML; die Quelle ist KonditionierungsvorlagenSaatSchema, die
+            // Nummer steht allein dort. Er steht NACH 151 und 152, deren Tabellen er braucht.
+            new Schritt(SCHRITT_KONDITIONIERUNGSVORLAGEN_SAAT,
+                        "Konditionierung: die 14 ausgelieferten Vorlagen (Wohnen, Buero, Schule je Groesse), " +
+                        "gesaet mit ReadOnly",
+                        "Die Auswahllisten der Kalenderkarten blieben leer: Der Anwender faende keine " +
+                        "ausgelieferte Vorlage fuer Heizen, Kuehlen, Lueftung, Geraete und Personen. KEIN " +
+                        "Rechenergebnis aendert sich - kein Referenzprojekt traegt eine Vorlage.",
+                        Schritt_KonditionierungsvorlagenSaat),
         };
 
         /// <summary>
@@ -11861,6 +11892,70 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Kennlinienspalten des Heizkessels - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. 0).") +
                     " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt der ausgelieferten Konditionierungsvorlagen — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_KONDITIONIERUNGSVORLAGEN_SAAT"/>, die Vorlagen und die Anweisungen bei
+        /// <see cref="KonditionierungsvorlagenSaatSchema"/>: die Saat über den KERN mit <c>?</c>-Parametern
+        /// in einem <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Protokollzeile des Kerns (gleichnamige eigene Vorlagen) geht ins Migrationsprotokoll.
+        /// <b>Wiederholbar</b>; die Nachprobe fragt <see cref="KonditionierungsvorlagenSaatSchema.Vollstaendig"/>.
+        /// Fehlt eine Tabelle der Schritte 151 und 152, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KonditionierungsvorlagenSaat(Lauf l)
+        {
+            string nr = KonditionierungsvorlagenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { KonditionierungVorlagenSchema.TAB_VORLAGE, KonditionierungSchema.TAB_VORGABE,
+                                         KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.TAB_PERIODE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KonditionierungsvorlagenSaatSchema.Ausfuehren(zeilen);
+                    vollstaendig = KonditionierungsvorlagenSaatSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die gesaeten Vorlagen bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Der Vorlagenkatalog " + KonditionierungsvorlagenSaatSchema.TABELLE + " traegt nach dem Schritt " +
+                      "nicht alle ausgelieferten Konditionierungsvorlagen.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": ausgelieferte Konditionierungsvorlagen - KEIN Rechenergebnis aendert sich, der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

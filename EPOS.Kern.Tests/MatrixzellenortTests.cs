@@ -76,15 +76,20 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden || !KonditionierungSchema.Lesbar()) return;
 
             // Die Weiche ändert den Leser nur dort, wo eine Vorgabezeile steht. Solange die drei
-            // Tabellen leer sind, rechnet jeder Referenzlauf wörtlich den Bestandszweig — der
-            // Nachweis der Byte-Gleichheit steht damit in der Datenbank, nicht in einer Meinung.
-            foreach (string t in new[]
+            // Tabellen keine Zeile eines Gebäudes, einer Zone oder eines Katalogbaus tragen, rechnet
+            // jeder Referenzlauf wörtlich den Bestandszweig — der Nachweis der Byte-Gleichheit steht
+            // damit in der Datenbank, nicht in einer Meinung. Die Saat der ausgelieferten Vorlagen
+            // (Schritt 157) zählt nicht: Vorlagenzeilen tragen kein ID_Gebaeude, und der Lauf liest
+            // allein über ID_Gebaeude.
+            foreach (string sql in new[]
                      {
-                         KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.TAB_PERIODE,
-                         KonditionierungSchema.TAB_VORGABE
+                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NULL",
+                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Vorlage\" IS NULL",
+                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" NOT IN " +
+                         "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL)",
                      })
             {
-                object o = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + t + "\"");
+                object o = DataRepository.ExecuteScalar(sql);
                 Assert.Equal(0L, Convert.ToInt64(o, CultureInfo.InvariantCulture));
             }
         }

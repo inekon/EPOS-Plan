@@ -4,7 +4,7 @@
 **Stufe** KP2 der [Konditionierungsprofile](../../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) ·
 **Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../../aktuell/Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) ·
 **Entscheid** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) · **Festlegungen der
-Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b)
+Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
 Vorlagen, Nachtauskühlung). Das Protokoll wächst mit jeder Welle; jede Welle bekommt einen Abschnitt unter 2 und eine
@@ -63,9 +63,24 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
   drei Befunde, die bunit nicht sieht, alle behoben: Querrollen des Reiters 1 bei 390 px (Klappliste als Flexkind),
   Überlagerung beim Öffnen gerollt (Fokus ohne `preventScroll`), Zellmaß an der Umbruchschwelle (Tagesspalte 46 px).
 
+### K3 — Saat der 14 ausgelieferten Vorlagen
+
+- **Saattabelle** `KonditionierungsvorlagenSaat` als eine Quelle für Schritt, Testdatenbank und Wache: 14 Vorlagen in
+  fünf Listen, 46 Vorgabezeilen nach Abschnitt 4 des Entwurfs; Büro und Schule tragen je einen Kalender ohne Woche mit
+  den neun bundeseinheitlichen Feiertagen „wie Sonntag" (neun FEIERTAG-Perioden, Wochentag Sonntag; E56 F1 b).
+- **Schritt** `KonditionierungsvorlagenSaatSchema`: ein Vorgang je Vorlage, Schlüssel (Größe, Name) ohne
+  Groß-/Kleinschreibung; angelegt wird nur, was fehlt; eine eigene gleichnamige Vorlage bleibt und steht im Bericht.
+- **Wache** `KonditionierungsvorlagenWacheTests`: Saat gleich Tabelle, gesperrt, eindeutig, ohne Produktnamen, Grenzen,
+  E54-Filter, Nachtfenster, Wiederholbarkeit, Stand davor, Verdrahtung; jede Vorlage auf ein Probegebäude übernommen
+  ergibt einen gültigen Kalender über 8 760 Stunden (am 1. Mai gilt bei Büro und Schule der Sonntagswert). Vor dem
+  Schritt fünf von zwölf Fällen rot.
+- **Nachgezogen:** zehn Tests, die die Saat rot machte (nicht drei, wie der Entwurf zählte) — ihr Sinn bleibt; der
+  Prüfbericht der Auslieferungsvorlage verlangt 14 gesperrte Vorlagen der Saat.
+- **Testdatenbank** auf 157 (71 634 944 Byte, LFS `005f3660…`); neu allein die Vorlagenzeilen, Basis unverändert.
+
 ## 3. Schemaschritte
 
-K1, U0a und U0b tragen keinen. Die Saat der 14 Vorlagen folgt mit K3 als Schemaschritt 157 — 156 hat die Kessel-Kennlinie (#616) belegt.
+**157** (K3, `KonditionierungsvorlagenSaatSchema`): reines DML, die 14 Vorlagen samt Feiertagskalendern; Nummer als `KesselKennlinieSchema.SCHRITT + 1` — 156 hat die Kessel-Kennlinie (#616) belegt.
 
 ## 4. Befunde der Umsetzung
 
@@ -79,6 +94,9 @@ K1, U0a und U0b tragen keinen. Die Saat der 14 Vorlagen folgt mit K3 als Schemas
   grün, erst das Gate nach dem Merge zeigte den roten Test: An der eigenen Kopie eines ausgelieferten Satzes wäre OK weich
   gesperrt geblieben, auch für den Assistenten. Behoben mit einer Zeile im Katalogzweig von `SpeichernUnterSchreiben`;
   die U0b-Probe erwartet jetzt den Ursprungssatz als Quelle und hält fest, dass das nächste OK die Kopie trifft.
+- **Rangband der Feiertagsregeln (K3):** `KonditionierungsvorlageCtrl.Uebernehmen` legt die Feiertagsregeln einer
+  Vorlage ins Eigenband (Rang 310 und mehr), über die Ferien; das Teilkonzept stellt sie darunter. Bei der Saat ohne
+  Wirkung (Ferienwert gleich Sonntagswert); an K2 übergeben, das die Übernahme als reinen Schritt neu fasst.
 - **Nebenbefunde für U1:** Hilfepille 28 × 26 px (unter 44 px); Deckel der `.epos-dialog` bei 1 160 px, Vorbild
   `.epos-wp-anlage`; `Zahlen.ZahlParsen` nimmt „NaN" und „Infinity" an (neun Aufrufer).
 
@@ -92,11 +110,13 @@ K1, U0a und U0b tragen keinen. Die Saat der 14 Vorlagen folgt mit K3 als Schemas
 | Gate KP2a auf dem Merge mit `origin` (#611–#615) und U0b | Kern 9 210, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; **UI 7 015 von 7 016 — rot der Befund K1 × U0b** (Abschnitt 4); Wachen 35/35; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; ChartProben gleich der Messlatte. Nach der Behebung: UI 7 016/7 016, Windows-Schale 0 Fehler, SqlDialektPruefer 0 Fundstellen, Auslieferungsvorlage 41/41 |
 | Gate KP2b auf dem Merge mit `origin` (#616, #617: Kessel-Kennlinie mit Schemaschritt 156, neue Testdatenbank) | Kern 9 269, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün, zusammen 2 übersprungen; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 CSV byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0 Fehler; SqlDialektPruefer 0 Fundstellen (2 135 Texte); Auslieferungsvorlage 43/43 |
 | Kern-Lauf des Arbeitszweigs auf dem U0b-Merge | rot (36647131587), derselbe Test wie im Gate KP2a |
-| Kern-Lauf des Schlussstands | in der Statuszeile #618 |
+| Kern-Lauf auf `94f91fed` (#618) | grün (36654571061) |
+| Abnahme K3 im Worktree (`b65040a9`) | Kern 9 281, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Auslieferungsvorlage 44/44; Windows-Schale 0; SqlDialektPruefer 0 |
+| Nach dem Merge K3 (`a221dd41`) | Kern-Filter 0 Fehler; 328 gezielte Tests (Konditionierung, Schema, Wachen) grün; Referenzlauf 15/15 PASS, 460/460 byte-gleich gegen R26 |
 
 ## 6. Offen
 
-- **Wellen K2** (Arbeitsstand), **K3** (Saat, Schemaschritt 157), **U1** (Reiter und Matrix), **U2** (Vorlagen je Karte, danach SA1),
+- **Wellen K2** (Arbeitsstand), **U1** (Reiter und Matrix), **U2** (Vorlagen je Karte, danach SA1),
   **K4** (Teppichbild, Auskünfte), **U3** (Karte), **U4** (Zonen, Katalog, Verwaltung), **U5** (Abschluss, SA2).
 - **Windows-Sichtprobe** der schon sichtbaren Änderungen, mit SA1: „Speichern unter" bleibt offen (Katalog und Projekt),
   breite Überlagerung des Katalogeditors, Grundzeile und weich gesperrtes OK an einem ausgelieferten Satz.

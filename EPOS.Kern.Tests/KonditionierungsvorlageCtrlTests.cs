@@ -281,12 +281,19 @@ namespace EPOS.Kern.Tests
             Assert.False(string.IsNullOrEmpty(e.Meldung));
             Assert.Equal(0, zweite);
 
-            // Umlaut: NOCASE faltet ihn NICHT - hier traegt allein OrdinalIgnoreCase.
-            Assert.True(_ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "Büro", null, null,
+            // Umlaut: NOCASE faltet ihn NICHT - hier traegt allein OrdinalIgnoreCase. (Nicht "Büro":
+            // den Namen belegt in jeder Liste schon die ausgelieferte Vorlage, Schritt 156.)
+            Assert.True(_ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "Bürotrakt", null, null,
                                         out long dritte).Ok);
-            e = _ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "BÜRO", null, null, out long vierte);
+            e = _ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "BÜROTRAKT", null, null, out long vierte);
             Assert.False(e.Ok);
             Assert.Equal(0, vierte);
+
+            // Dieselbe Regel gegen eine AUSGELIEFERTE Vorlage: "BÜRO" trifft die gesaete "Büro".
+            Assert.Contains(_ctrl.Liste(Konditionierungsgroesse.Heizsoll), v => v.Ausgeliefert && v.Bezeichner == "Büro");
+            e = _ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "BÜRO", null, null, out long gegenGesperrt);
+            Assert.False(e.Ok);
+            Assert.Equal(0, gegenGesperrt);
 
             // Derselbe Name in einer anderen Liste ist erlaubt (P11).
             Assert.True(_ctrl.Speichern(eigner, Konditionierungsgroesse.Kuehlsoll, "Buero", null, null,

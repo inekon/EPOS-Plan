@@ -580,6 +580,23 @@ die Nachträge der Schemaschritte 155 und 156 unter
 und R27 hat sich die Testdatenbank allein um das Referenzprojekt 1050 geändert (`111be189…` → `5bca909d…`): Der
 Kopierweg legt nur Zeilen des neuen Projekts an, die Vorlage 1023 ist nach dem Abdruck des Skripts zellgleich.
 
+> **Nachtrag 30.09.2026 — Schemaschritt 157 (die 14 ausgelieferten Konditionierungsvorlagen), Basis
+> unverändert.** KP-S1b nach Entscheid E56 F1 (b) (Teilkonzept Konditionierungsprofile 3.5, Entwurf KP2
+> Abschnitt 4): reines DML aus `KonditionierungsvorlagenSaatSchema` (Nummer als `KesselKennlinieSchema.SCHRITT + 1`,
+> Saat in `KonditionierungsvorlagenSaattabelle`) — 14 Vorlagen mit `ReadOnly = 1` in
+> `Tab_Konditionierungsvorlage_STAMM` (Wohnen, Büro, Schule je Größe, die Lüftung ohne Wohnen), 46 Vorgabezeilen und
+> bei Büro und Schule je ein Kalender ohne Woche mit den neun Feiertagsregeln „wie Sonntag“ (10 Kalender,
+> 90 Perioden). Die Testdatenbank ist aus der Fassung `111be189…` (Schemastand 156) mit
+> `Werkzeuge/Testdatenbankschema` auf **157** gezogen; ein zweiter Lauf legt nichts an (Zeilen gleich).
+> Zeilenvergleich über alle Tabellen: neu allein die 14 + 46 + 10 + 90 Zeilen der vier Konditionierungstabellen,
+> dazu `SchemaVersion` 156 → 157 und vier Zählerzeilen in `sqlite_sequence`; alle übrigen Tabellen zeilengleich,
+> Schema unverändert (153 STRICT-Tabellen); `integrity_check` ok, `foreign_key_check` leer. Neue Fassung
+> **71 634 944 Byte, LFS-SHA-256 `005f36609d7e4adb1d2eefaf16a7697439d2209b52552c4c94e4ddf56e917da5`**. **Die Basis
+> bleibt:** Kein Referenzprojekt trägt eine Vorlage, und die Leser des Laufs filtern über `ID_Gebaeude`; die
+> fünfzehn Projekte rechnen auf dieser Fassung gegen R26 GESAMT PASS mit 460/460 CSV byte-gleich, der gestörte
+> Lauf PASS. Keine Einfrierregel ist berührt; erst ein Referenzprojekt, das eine Vorlage benutzt (KP3), friert
+> ihre Werte ein.
+
 ## Was hier liegt
 
 | Pfad | Inhalt |
