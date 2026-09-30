@@ -455,6 +455,21 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // -----------------------------------------------------------------
+        //  Das Bezugsjahr einer Vorschau (Teppichbild, Welle K4)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Das Bezugsjahr einer Kalendervorschau</b> (Entwurf KP2, Festlegung 8): im Projekt das
+        /// des Laufs (<see cref="SolardatenCtrl.Referenzjahr"/> — das Jahr der Spotpreisreihe oder die
+        /// Vorgabe), im Katalog dasselbe wie der Lauf ohne Projekt,
+        /// <c>SolardatenCtrl.Referenzjahr(0)</c> = <see cref="DbWerte.SOLAR_REFERENZJAHR_STANDARD"/>.
+        /// Keine Uhr: Ein laufendes Jahr würde die Vorschau am Jahreswechsel verschieben (B13).
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
+        public static int Bezugsjahr(int idProjekt)
+            => SolardatenCtrl.Referenzjahr(idProjekt > 0 ? idProjekt : 0);
+
         private static DataTable Lesen(string sql, long idGebaeude, long? idZone)
             => idZone.HasValue
                 ? DataRepository.GetDataTable(sql, new DbParam("@g", idGebaeude), new DbParam("@z", idZone.Value))
