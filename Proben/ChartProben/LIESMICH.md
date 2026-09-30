@@ -13,7 +13,7 @@ Neben den Maßproben stehen **Gegenproben**: zwei Zeichenwege, die sich untersch
 Renderer stillschweigend überginge, bestünde jede Maß- und Farbprüfung und täte trotzdem
 nichts. Dazu kommt die Versatzprobe der Legendenzeilen (`… (Versatz … px)`).
 
-Die Probe läuft in `kern.yml` bei jedem Push.
+Die Probe läuft in `kern.yml` bei jedem Push, auf ubuntu samt Vergleich mit der Hash-Messlatte.
 
 ---
 
@@ -86,6 +86,14 @@ gegen diese Datei.
   Plattform; auf Windows weichen deshalb **alle Hashes** ab, obwohl die Probe dort dieselben
   Bilder mit 0 Verstößen meldet. Der Text-Diff gegen die Messlatte gilt
   auf dem Linux-Läufer; auf Windows zählt das strukturelle Ergebnis der Probe.
+- **Die CI hält sie.** Auf ubuntu läuft die Probe in `kern.yml` mit `--hashes`; der Schritt
+  „ChartProben-Messlatte (nur ubuntu)“ prüft, dass **jede** Zeile der jüngsten
+  `Messlatte_*.sha256` unverändert in der Hashliste des Laufs steht, und nennt die Zahl der
+  unveränderten Zeilen. Eine geänderte oder fehlende Zeile macht ihn rot und nennt die Bilder;
+  zusätzliche Zeilen sind neue Proben, er zählt sie und bleibt grün. Die Hashliste liegt auch
+  bei Rot als Artefakt `chartproben-hashliste-ubuntu-latest` bei — von dort übernimmt sie ein
+  bewusstes Neueinfrieren oder Nachziehen. Ein Schriftwechsel im Läuferabbild macht den Schritt
+  ebenfalls rot; er nennt das Abbild im Protokoll. Auf macOS wird nicht verglichen.
 - **Bildgleichheit auf Windows nachweisen.** Wer dort prüfen will, ob ein Umbau ein Bild verändert
   hat, baut den Vergleichsstand in einem Worktree (`git worktree add --detach <ordner> <basis>`),
   lässt die Probe dort und am HEAD mit `--ablage` und `--hashes` laufen und vergleicht die beiden

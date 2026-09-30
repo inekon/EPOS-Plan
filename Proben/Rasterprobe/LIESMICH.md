@@ -798,6 +798,8 @@ Anwendung, geschrieben wird nur in die Ablage der Seite.
 | `…?fall=ohnetabellen` | Bearbeiten ohne die Tabellen der Konditionierung: der Reiter benannt gesperrt, nur die Bestandszellen |
 | `…?fall=vorlagen` | Bearbeiten, der volle Satz: die Vorlagen je Karte und die Vorlagenverwaltung (Welle U2) |
 | `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
+| `…?fall=karte` | Bearbeiten, die Karte im Einzelnen (Welle U3): „Heizen“ über denselben Weg ohne Datenbank angelegt — Sommerferien aus der Matrix, die neun Feiertage als Regel, das Zeitfenster Mo–Fr 6–8 Uhr 22 °C und eine eigene Periode über den Jahreswechsel („aus“) |
+| `…?fall=verwaltung` | die Gebäudeverwaltung (`GebaeudeAdminDialog`, Welle U4) wie in ihrem eigenen Fenster, ohne Überlagerung: drei Katalogbauten (einer ausgeliefert), Stammblatt mit der Gruppe „Konditionierung“ und dem breiten Blatt über demselben Weg ohne Datenbank |
 | `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
 
 ```bash
@@ -891,3 +893,70 @@ Die fünf Listen führen 3/3/2/3/3 Vorlagen, zusammen die 14 der Ablage, „Bür
 Rückfrage P12 nennt die Vorlage und was ersetzt wird. Bedienziele unter 44 px, Überdeckungen, Querrollen und herausragende Ziele: je 0 — auch mit dem offenen
 Formular „Als Vorlage speichern…“ und im Blatt der Verwaltung (22 Ziele); die Fotos liegen außerhalb des
 Repositorys.
+
+**Welle U4 — Zonendialog als Blatt und Blatt „Konditionierung“ der Verwaltung.** Der Fall `projekt` öffnet
+nach „Kalender anlegen“ an „Heizen“ die Zone „Wohnen EG“ („Öffnen…“ im Reiter „Zonen“) als breites Blatt
+über dem Editor und misst es wie ein Reiterblatt (Querrollen, Bedienziele ≥ 44 px, Überdeckung, Herausragen),
+dazu die Zonenmatrix am Behälter (vier Karten — die Kühlspalte der Zone trägt keine): Die Zone ERBT
+(„Heizen · Tag“ leer, Platzhalter „Vorgabe 20“), folgt dem Gebäude (Zustandszeile „vom Gebäude“, die
+Heizspalte `epos-kond--ohnewirkung`, Knopf „Vom Gebäude übernehmen und anpassen“), ÜBERSCHREIBT
+(„Geräte · Nennwert“: Platzhalter „Vorgabe 240“ — 400 W × 90/150 m² —, dann eigene 300) und hat nach
+„übernehmen“ einen eigenen Kalender ohne Spalte ohne Wirkung; Esc führt zurück zum Editor, die Überlagerung
+bleibt. Der Fall `verwaltung` misst die Gruppe „Konditionierung“ (fünf Zustandszeilen, Knopf ≥ 44 px, im
+schmalen Fenster nach „Stammblatt ›“), das Blatt nach „Konditionierung…“ (breit, Liste und Stammblatt
+ausgeblendet, gemessen wie oben, Matrix am Behälter, Felder und „Kalender anlegen“), eine Zelle zählt im Fuß
+als Änderung und „Speichern“ wird frei, Esc führt zurück; nach „Verwerfen“ steht der ausgelieferte Satz im
+Blatt nur als Text. **Die haftende Fußleiste zählt nicht als Überdeckung:** Die `SpeichernLeiste` des
+Zonendialogs haftet im Blatt am unteren Rand (#572-Nachtrag) und liegt mit Absicht über dem Inhalt, der unter
+ihr durchrollt; die Probe übergeht Paare, von denen genau eines in einer haftenden Ebene steht (erster Lauf:
+2 bis 4 solcher Paare je Breite, alle Fußleiste über Matrixfeldern bzw. Bauteilknöpfen).
+
+**Ergebnis vom 30.09.2026** (Welle U4; Wirt Release auf Port 5299, Chromium headless über das globale
+Playwright, `kultur=de-DE`, zusammen mit den Vorlagen der Welle U2): **kein Verstoß** in 32 Läufen (8 Fälle ×
+4 Breiten, Rückgabe 0). Das Blatt der Verwaltung führt die Vorlagenlisten der fünf Karten (derselbe Weg der
+Hülle) und hat deshalb mehr Ziele als das Zonenblatt.
+
+| Fenster | Zonenblatt | Zonenmatrix | Verwaltungsblatt | Verwaltungsmatrix |
+|---|---|---|---|---|
+| 390 × 844 | 340 px, 35 Ziele | 320 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 358 px, 36 Ziele | 358 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
+| 820 × 1 180 | 753 px, 35 Ziele | 733 px: eine Spalte, fünf Reiter, 1 von 4 Karten | 788 px, 36 Ziele | 788 px: eine Spalte, fünf Reiter, 1 von 5 Karten |
+| 1 180 × 820 | 1 099 px, 56 Ziele | 1 079 px: fünf Spalten, 4 von 4 Karten | 1 148 px, 70 Ziele | 1 148 px: fünf Spalten, 5 von 5 Karten |
+| 1 300 × 900 | 1 214 px, 56 Ziele | 1 194 px: fünf Spalten, 4 von 4 Karten | 1 268 px, 70 Ziele | 1 268 px: fünf Spalten, 5 von 5 Karten |
+
+Querrollen, Bedienziele unter 44 px, Überdeckungen und Herausragen: je 0; Felder der Matrix 25 (ausgeliefert:
+0 Felder, 25 Texte, kein „Kalender anlegen“); „Konditionierung…“ 147 × 44 px. Die Rasterprobe der
+Gebäudelisten (`node rasterprobe.mjs --nur GD`) erfüllt GD1 bis GD3 unverändert (Zeilenhöhe 53 / Maß 53,
+Rollbehälter die Hülle, 0 Platzhalter nach dem Rollen, Sichtbarkeitsmelder 3 / 4), die Katalogprobe der
+Verwaltung (`node katalogprobe.mjs --nur N16`) läuft in beiden Fenstern ohne Überlagerung durch.
+
+**Welle U3 — die Karte im Einzelnen.** Der Fall `karte` wählt den Reiter „Konditionierung“ (das zweite Blatt
+der Reiterfolge), klappt an „Heizen“ „Kalender im Einzelnen“ auf und misst die Karte wie ein Reiterblatt
+(Querrollen, Bedienziele ≥ 44 px, Überdeckung, Herausragen), dazu: die Karte über die ganze Zeile; das
+Wochenraster am Behälter (unter 600 px vier Zeilen je Tag, ab 600 px zwei, ab 1 150 px eine) ohne Querrollen;
+die Periodenliste mit elf Zeilen, davon eine des Matrixbereichs, ohne Querrollen und **ohne Wortbruch** (jedes
+Wort einer sichtbaren Zelle steht auf einer Zeile, gemessen über `Range.getClientRects`); sieben Tagesknöpfe
+am Zeitfenster; den Vermerk des letzten Werkzeugs; das Teppichbild mit 1 bis 2 000 Elementen, das Bezugsjahr
+in der Zeile darunter und Zeitraum, Wert und Quelle am Zeiger. Je Breite EIN Foto der aufgeklappten Karte
+(`karte_<breite>_einzelheiten.png`), die Fotos je Reiter entfallen in diesem Fall.
+
+**Ergebnis vom 30.09.2026** (Welle U3 auf dem Stand mit U4 und der vorgebbaren Reiterfolge; Wirt Release auf
+Port 5299, Chromium headless über das globale Playwright, `kultur=de-DE`): **vorher ein Befund, nachher kein
+Verstoß** in 36 Läufen (9 Fälle × 4 Breiten, Rückgabe 0). Der Befund stand im Foto bei 390 px; die Probe misst
+ihn jetzt (Gegenprobe gegen den alten Stand: 20 Wortbrüche, Rückgabe 1).
+
+| Befund | vorher | Ursache | Behebung |
+|---|---|---|---|
+| Periodenliste bricht im Wort | 20 Wörter bei 390 px („Karfrei\|tag“, „Weihnachts\|tag“, Datumsangaben) | fünf Spalten neben den 2 × 2 Knöpfen in 314 px Behälter, `overflow-wrap: anywhere` | unter 600 px fallen „Art“ und „Von–Bis“ (der Zeitraum leise unter dem Namen, wo er anders lautet als der Name), Rang 2,25 rem, Wert 4 rem — Wache `StilblattTests`, bunit `PeriodenlisteTests` |
+
+| Fenster | Karte | Wochenraster | Periodenliste | Ziele im Blatt |
+|---|---|---|---|---|
+| 390 × 844 | 340 px | 314 px → 4 Zeilen je Tag | ohne „Art“ und „Von–Bis“, 0 Wortbrüche | 267 |
+| 820 × 1 180 | 753 px | 727 px → 2 Zeilen je Tag | alle Spalten, 0 Wortbrüche | 267 |
+| 1 180 × 820 | 1 099 px | 1 073 px → 2 Zeilen je Tag | alle Spalten, 0 Wortbrüche | 313 |
+| 1 300 × 900 | 1 214 px | 1 188 px → 1 Zeile je Tag | alle Spalten, 0 Wortbrüche | 313 |
+
+Querrollen, Bedienziele unter 44 px, Überdeckungen und Herausragen: je 0. Das Teppichbild zählt in jeder
+Breite 405 Elemente, 354 davon mit Wert; am ersten Feld steht „Mi 01.01., 0–24 Uhr: aus · Betriebsruhe
+zwischen den Jahren (Zeitraum)“. Die übrigen acht Fälle messen wie im Ergebnis der Welle U4; der Reiter
+„Konditionierung“ steht in der neuen Reiterfolge an zweiter Stelle, Matrix und Karten wie dort. Die Fotos
+liegen außerhalb des Repositorys.

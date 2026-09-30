@@ -490,6 +490,36 @@ namespace WindowsFormsApplication1
                     "an; eine Frage nennt, was im Projekt zurückbleibt (Kalender und Zellen der Zonen, Bauteile) " +
                     "und die Zonen mit Namen. Alles wirkt erst mit OK."),
 
+                // ---- Zonenmatrix, Zonenkalender und die Verwaltung (Stufe KP2, Welle U4) ---------------
+                new WissensAbschnitt("Konditionierung: Zonenmatrix, Zonenkalender und 'Vom Gebäude übernehmen und anpassen' (zone matrix, zone calendar, copy from building and adjust)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Der Zonendialog steht als Blatt über dem Gebäude-Katalogeditor und trägt dieselbe Vorgabe-Matrix " +
+                    "wie der Reiter 'Konditionierung' - ohne die Kühlspalte, die an einer Zone gesperrt bleibt. Eine " +
+                    "leere Zelle der Zone erbt vom Gebäude: Der Platzhalter nennt den geerbten Wert ('Vorgabe 20') " +
+                    "oder 'wie Gebäude'; Geräte und Personen erbt die Zone im Flächenanteil ihrer Nutzfläche. Eine " +
+                    "eigene Zelle überschreibt den Gebäudewert, eine geleerte Zelle erbt wieder. Welcher Kalender " +
+                    "für eine Größe der Zone gilt, folgt einer Kette: ein eigener Zonenkalender, sonst ein angelegter " +
+                    "Kalender des Gebäudes, sonst der aus der Matrix der Zone abgeleitete. Hat das Gebäude den " +
+                    "Kalender einer Größe angelegt und die Zone keinen eigenen, folgt die Zone ihm - die Zustandszeile " +
+                    "sagt 'vom Gebäude', und die Zellen der Zone bleiben in dieser Größe ohne Wirkung. 'Vom Gebäude " +
+                    "übernehmen und anpassen' legt der Zone dann eine eigene Kopie des Gebäudekalenders an (bei " +
+                    "Geräten und Personen mit dem Nennwert der Zone); danach wirken ihre Zellen und Karten, der " +
+                    "Kalender des Gebäudes bleibt, wie er ist. 'Kalender anlegen' an der Zone macht aus der Matrix " +
+                    "der Zone einen eigenen Zonenkalender. Das OK des Zonendialogs übernimmt die Zone in den " +
+                    "Arbeitsstand; geschrieben wird mit dem OK des Gebäudeeditors."),
+
+                new WissensAbschnitt("Konditionierung in der Gebäudeverwaltung (conditioning in the building administration)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Im Stammblatt der Gebäudeverwaltung zeigt die Gruppe 'Konditionierung' fünf Zustandszeilen - " +
+                    "Heizen, Kühlen, Lüftung, Geräte, Personen, je 'aus der Matrix', 'aus Vorlage …' oder 'angelegt, " +
+                    "n eigene Perioden'. 'Konditionierung…' im Kopf der Gruppe öffnet ein breites Blatt mit " +
+                    "derselben Matrix, denselben Kalenderkarten und den Zusatzzeilen wie der Reiter des " +
+                    "Katalogeditors; Sollwerte, Nachtzeit, Ferien, innere Wärmegewinne, Infiltration, " +
+                    "Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen nur dort. Die " +
+                    "Änderungen gehören zum gewählten Satz: 'Speichern' der Verwaltung schreibt sie mit, " +
+                    "'Verwerfen' nimmt sie zurück, '‹ Verwaltung Gebäude' oder Esc führen zurück zum Stammblatt, " +
+                    "ohne etwas zu verwerfen. Ein ausgelieferter Satz steht im Blatt nur zum Lesen."),
+
                 new WissensAbschnitt("Konditionierung: Nachtauskühlung über die Lüftung (night purge ventilation, night flush)",
                     KiChatKontext.B_GEBAEUDE,
                     "Die Nachtauskühlung steht in der Zeile 'Nacht' der Lüftungsspalte: ein erhöhter Luftwechsel " +
@@ -543,6 +573,58 @@ namespace WindowsFormsApplication1
                     "SOFORT auf die Vorlagen, nicht erst mit dem OK des Editors, und ändert kein Gebäude: Ein " +
                     "Kalender, der aus einer gelöschten Vorlage stammt, behält seine Werte und nennt weiter ihren " +
                     "Namen. Danach sind die Auswahllisten der Karten neu gelesen."),
+
+                // ---- Die Karte im Einzelnen (Stufe KP2, Welle U3) ------------------------------------------
+                new WissensAbschnitt("Konditionierung: Kalender im Einzelnen, Grundangabe, Standardwoche und Zeitfenster (calendar details, base value, standard week, time window)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "'Kalender im Einzelnen' klappt eine Kalenderkarte auf. Bearbeiten lässt sich nur ein angelegter " +
+                    "Kalender; sonst nennt die Karte den Grund, und 'Kalender anlegen' steht im Kopf der Karte. Die " +
+                    "Grundangabe ist ein Wert oder 'aus' für jede Stunde. Die Standardwoche tritt an ihre Stelle: " +
+                    "das Wochenraster mit 7 × 24 Zellen (im schmalen Fenster 2 × 12 oder 4 × 6 je Tag), jede Zelle " +
+                    "eine Zahl oder 'aus'; 'Standardwoche anlegen' macht aus der Grundangabe eine Woche, " +
+                    "'Standardwoche verwerfen' kehrt zur Grundangabe mit dem häufigsten Wert der Woche zurück. Das " +
+                    "Werkzeug 'Zeitfenster' setzt ohne Zellenarbeit einen Wert oder 'aus' in die gewählten Tage " +
+                    "(sieben Tagesknöpfe) von einer vollen Stunde bis vor eine andere - 'Bis' vor 'Von' geht über " +
+                    "Mitternacht - und lässt alle übrigen Stunden stehen. 'In den Kalender übernehmen' unter dem " +
+                    "Sollwert-Zeitprogramm der Wärmeübergabe macht das Zeitprogramm zur Standardwoche des " +
+                    "Heizkalenders. Jede Handlung ist ein Schritt für 'Zurücknehmen'; geschrieben wird mit OK. Die " +
+                    "Woche einer Größe ist für den Assistenten das Feld kond_<größe>_woche: 168 Werte durch ';' " +
+                    "getrennt, 'aus' für abgeschaltet, ein einzelner Wert ist die Grundangabe."),
+
+                new WissensAbschnitt("Konditionierung: Periodenliste und Rang (period list, rank, date range, public holiday)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Die Periodenliste der aufgeklappten Karte zeigt die Perioden des Kalenders, die mit dem höchsten " +
+                    "Rang zuerst; an einem Tag gilt die ranghöchste Periode, die ihn enthält, sonst die Standardwoche " +
+                    "bzw. die Grundangabe. Ferien- und Saisonperioden erzeugt die Matrix: Ihre Zeilen sagen 'aus der " +
+                    "Matrix' und sind nur lesbar - 'Matrix erneut anwenden…' ersetzt sie. 'Periode hinzufügen' legt " +
+                    "einen Zeitraum (Tage im Jahr ohne 29.02., auch über den Jahreswechsel) oder einen Feiertag (eine " +
+                    "der neun bundeseinheitlichen Regeln) an, mit Name und Angabe: ein Wert, 'aus' oder 'wie " +
+                    "Wochentag' (etwa 'wie Sonntag'). Die neue Periode bekommt den höchsten Rang der eigenen " +
+                    "Perioden. ▲ und ▼ tauschen den Rang mit der nächsten eigenen Periode; Feiertagsregeln stehen " +
+                    "unter den Ferien und wechseln ihren Rang nicht. ✎ bearbeitet, − löscht eine eigene Periode. " +
+                    "Länderfeiertage legt man als Zeitraum über einen Tag an."),
+
+                new WissensAbschnitt("Konditionierung: Feiertage als Regel und Zeitstruktur übernehmen (public holidays, apply time structure)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "'Feiertage als Regel anlegen' in der aufgeklappten Karte legt die neun bundeseinheitlichen " +
+                    "Feiertage als Regeln 'wie Sonntag' an; das Datum löst der Lauf gegen das Bezugsjahr auf (Ostern " +
+                    "als Rechenvorschrift). Eine vorhandene Regel wird nicht doppelt angelegt; ein Feiertag in den " +
+                    "Ferien behält den Ferienwert. 'Zeitstruktur übernehmen' gibt es bei Kühlen, Lüftung und Geräten: " +
+                    "'wie Heizung' nimmt die Stunden, in denen mit dem Tagwert oder höher geheizt wird, 'wie " +
+                    "Anwesenheit' die Stunden mit Anwesenheit; diese Stunden bekommen den Tagwert der Größe, alle " +
+                    "übrigen ihren Nachtwert. Ersetzt wird nur die Standardwoche. Beide Werkzeuge vermerken, was sie " +
+                    "getan haben; die Karte zeigt den Vermerk ('Zuletzt angewandt: …')."),
+
+                new WissensAbschnitt("Konditionierung: Teppichbild des Kalenders (carpet plot, annual view)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Das Teppichbild der aufgeklappten Karte zeigt den Kalender, wie er gilt - angelegt oder aus der " +
+                    "Matrix -, über das ganze Jahr: nach rechts die 365 Tage, nach unten die 24 Stunden, die Farbe ist " +
+                    "der Wert; 'aus' ist eine eigene schraffierte Fläche. Der Titel und die Zeile darunter nennen das " +
+                    "Bezugsjahr, gegen das Wochentage und Feiertage aufgelöst sind (im Projekt das der Rechnung, im " +
+                    "Katalog 2025). Antippen oder Zeigen auf eine Fläche nennt Zeitraum, Stunden, Wert und Quelle - " +
+                    "Standardwoche, Grundangabe oder die Periode, die dort gilt. Bei sehr vielen Wechseln zeichnet " +
+                    "das Bild gröber und sagt es. Ergibt die Matrix für eine Größe keinen Kalender (Geräte oder " +
+                    "Personen ohne Anteil), nennt die Karte den Grund statt eines Bilds."),
 
                 new WissensAbschnitt("Energiebedarf berechnen", "Energiebedarf",
                     "Der Wärmebedarf setzt sich zusammen aus dem Gebäudebedarf, externen Lastgängen, Prozesswärme, " +

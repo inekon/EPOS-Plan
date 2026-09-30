@@ -1675,7 +1675,11 @@ public sealed class GebaeudeArbeitsstand
         Z(a.LuftwechselInfiltration, g.LuftwechselInfiltration); Z(a.LuftwechselNutzer, g.LuftwechselNutzer);
         B(a.Sommerlueftung, g.Sommerlueftung);
         B(a.KuehlungAktiv, g.KuehlungAktiv); Z(a.KuehlSollwert, g.KuehlSollwert);
-        Z(a.KuehlleistungMax, g.KuehlleistungMax);
+        Z(a.KuehlSollwertNacht, g.KuehlSollwertNacht); Z(a.KuehlleistungMax, g.KuehlleistungMax);
+
+        // Stufe KP2, Welle U4: die Konditionierung zählt als EIN Feld, sobald ein Schritt ihre Fassung
+        // weitergezählt hat — „Speichern" der Verwaltung schreibt sie dann mit.
+        I(a.Konditionierung?.Fassung ?? 0, g.Konditionierung?.Fassung ?? 0);
 
         // Stufe AK1: die dreizehn Felder der Wärmeübergabe (das Zeitprogramm als EIN Feld).
         B(a.HeizkreisAktiv, g.HeizkreisAktiv); T(a.UebergabeArt, g.UebergabeArt);
@@ -1981,9 +1985,9 @@ public sealed class GebaeudeKiWege
     public Func<int, string>? Ferienname { get; init; }
 
     /// <summary>
-    /// Die Bearbeitung des Reiters „Konditionierung" (Stufe KP2, Welle U1) — nur der Katalogeditor
-    /// reicht sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix, und die Bestandszellen
-    /// gehen über denselben Weg wie die Zellen des Reiters.
+    /// Die Bearbeitung der Vorgabe-Matrix (Stufe KP2) — der Katalogeditor (Reiter, Welle U1) und die
+    /// Verwaltung (Blatt, Welle U4) reichen sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix,
+    /// und die Bestandszellen gehen über denselben Weg wie die Zellen des Reiters.
     /// </summary>
     public KonditionierungBearbeitung? Konditionierung { get; init; }
 
@@ -2127,4 +2131,11 @@ public sealed class GebaeudePrueftexte
         Huellbauteil.Sonstiges => FeldSonstigeFlaechen,
         _ => t.Zeile(b) + " L"
     };
+
+    /// <summary>
+    /// Eine flache Kopie — für einen Wirt, der einen Feldnamen anders nennt als die Hülle (die
+    /// Gebäudeverwaltung nennt die inneren Wärmegewinne mit dem Namen der Matrixzelle, Stufe KP2,
+    /// Welle U4), ohne das hereingereichte Bündel zu ändern.
+    /// </summary>
+    public GebaeudePrueftexte Kopie() => (GebaeudePrueftexte)MemberwiseClone();
 }

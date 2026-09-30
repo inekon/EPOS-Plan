@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using EPOS.UI.Dienste;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -9,8 +11,13 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// (Sammlungsform <c>Bauteile[]</c>, Kennzeichen die Nummer) — anlegen, öffnen und entfernen bleiben
 /// Klicks des Anwenders, die Werte eines Bauteils setzt der Assistent im Bauteildialog. Sie hält
 /// keinen Zustand: Jede Eigenschaft ruft bei jedem Zugriff ihren Delegaten.
+/// <para><b>Die Zonenmatrix ist eine FELDTAFEL</b> (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3): Ihre
+/// Felder erzeugt der Kern aus dem Profil <c>KiKonditionierungsfelder</c> (Zonenkarte); diese Klasse
+/// beantwortet sie über den Schlüssel und die <see cref="Konditionierung"/> des Dialogs — derselbe Weg
+/// wie die Zellen der Matrix. Leer heißt „wie Gebäude". Die Bestandszellen (Sollwerte, Lüftung,
+/// Gewinne) stehen unter den Feldern der Zone und gehen im Dialog ebenfalls über die Bearbeitung.</para>
 /// </summary>
-public sealed class ZonenKiSicht
+public sealed class ZonenKiSicht : IKiFeldtafel
 {
     public Func<string>? BezeichnungLesen { get; init; }
     public Action<string>? BezeichnungSetzen { get; init; }
@@ -106,6 +113,21 @@ public sealed class ZonenKiSicht
 
     /// <summary>Leistungsgrenze der Heizung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMax { get => HeizleistungMaxLesen?.Invoke(); set => HeizleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>
+    /// Die Bearbeitung der Zonenmatrix (<see cref="KonditionierungBearbeitung"/> im Zonenmodus); ohne sie
+    /// stehen die Felder der Matrix nicht zur Verfügung.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>Die Feldtafel der Zonenkarte — derselbe Weg wie am Gebäude (<see cref="KonditionierungKiTafel"/>).</summary>
+    private readonly KonditionierungKiTafel _tafel = new(KiKonditionierungsfelder.FindeZone);
+
+    /// <inheritdoc />
+    public object? Lesen(string schluessel) => _tafel.Lesen(Konditionierung, schluessel);
+
+    /// <inheritdoc />
+    public void Setzen(string schluessel, object? wert) => _tafel.Setzen(Konditionierung, schluessel, wert);
 
     /// <summary>Die Bauteile — je Zugriff neu über dem Arbeitsstand, nur lesbar.</summary>
     public IReadOnlyList<ZonenBauteilKiZeile> Bauteile

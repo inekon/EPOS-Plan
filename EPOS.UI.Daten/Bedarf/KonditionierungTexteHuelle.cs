@@ -193,6 +193,18 @@ namespace WindowsFormsApplication1
             t.TextPostenZonenkalender = Text_("KOND_TXT_POSTEN_ZONENKALENDER", t.TextPostenZonenkalender);
             t.TextPostenBauteile = Text_("KOND_TXT_POSTEN_BAUTEILE", t.TextPostenBauteile);
 
+            // Zonenmatrix (Welle U4)
+            t.PlatzhalterWieGebaeude = Text_("KOND_TXT_PLATZHALTER_WIE_GEBAEUDE", t.PlatzhalterWieGebaeude);
+            t.HinweisZoneAufteilen = Text_("KOND_TXT_ZONE_AUFTEILEN", t.HinweisZoneAufteilen);
+            t.HinweisZoneOhneWirkung = Text_("KOND_TXT_ZONE_OHNE_WIRKUNG", t.HinweisZoneOhneWirkung);
+            t.LabelZoneKalender = Text_("KOND_LBL_ZONE_KALENDER", t.LabelZoneKalender);
+            t.HinweisZoneMatrix = Text_("KOND_TXT_ZONE_MATRIX", t.HinweisZoneMatrix);
+
+            // Gebäudeverwaltung (Welle U4)
+            t.KnopfKonditionierung = Text_("KOND_BTN_KONDITIONIERUNG", t.KnopfKonditionierung);
+            t.HinweisVerwaltungSpeichern = Text_("KOND_TXT_VERWALTUNG_SPEICHERN", t.HinweisVerwaltungSpeichern);
+            t.HinweisVerwaltungAltfelder = Text_("KOND_TXT_VERWALTUNG_ALTFELDER", t.HinweisVerwaltungAltfelder);
+
             // Vorlagen je Karte (Welle U2)
             t.TextVorschauVorlage = Text_("KOND_TXT_VORSCHAU_VORLAGE", t.TextVorschauVorlage);
             t.GrundKeineVorlage = Text_("KOND_TXT_GRUND_KEINE_VORLAGE", t.GrundKeineVorlage);
@@ -202,6 +214,35 @@ namespace WindowsFormsApplication1
             t.TextVorlageDupliziert = Text_("KOND_TXT_VORLAGE_DUPLIZIERT", t.TextVorlageDupliziert);
             t.TextVorlagenLeer = Text_("KOND_TXT_VORLAGEN_LEER", t.TextVorlagenLeer);
             t.SpalteAktionen = Text_("KOND_LBL_SPALTE_AKTIONEN", t.SpalteAktionen);
+
+            // Die Karte im Einzelnen (Welle U3)
+            t.KnopfEinzelheiten = Text_("KOND_BTN_EINZELHEITEN", t.KnopfEinzelheiten);
+            t.GrundNichtAngelegt = Text_("KOND_TXT_GRUND_NICHT_ANGELEGT", t.GrundNichtAngelegt);
+            t.HinweisGrundangabe = Text_("KOND_TXT_HINWEIS_GRUNDANGABE", t.HinweisGrundangabe);
+            t.TextGrundangabeWoche = Text_("KOND_TXT_GRUNDANGABE_WOCHE", t.TextGrundangabeWoche);
+            t.KnopfWocheAnlegen = Text_("KOND_BTN_WOCHE_ANLEGEN", t.KnopfWocheAnlegen);
+            t.KnopfWocheVerwerfen = Text_("KOND_BTN_WOCHE_VERWERFEN", t.KnopfWocheVerwerfen);
+            t.TextWocheVorgabe = Text_("KOND_TXT_WOCHE_VORGABE", t.TextWocheVorgabe);
+            t.TextVermerk = Text_("KOND_TXT_VERMERK", t.TextVermerk);
+            t.HinweisZeitfenster = Text_("KOND_TXT_HINWEIS_ZEITFENSTER", t.HinweisZeitfenster);
+            t.GrundZeitfensterTage = Text_("KOND_TXT_GRUND_ZEITFENSTER_TAGE", t.GrundZeitfensterTage);
+            t.GrundZeitfensterZeiten = Text_("KOND_TXT_GRUND_ZEITFENSTER_ZEITEN", t.GrundZeitfensterZeiten);
+            t.GrundZeitfensterWert = Text_("KOND_TXT_GRUND_ZEITFENSTER_WERT", t.GrundZeitfensterWert);
+            t.LabelAngabe = Text_("KOND_LBL_ANGABE", t.LabelAngabe);
+            t.LabelAngabeWochentag = Text_("KOND_LBL_ANGABE_WOCHENTAG", t.LabelAngabeWochentag);
+            t.LabelWochentag = Text_("KOND_LBL_WOCHENTAG", t.LabelWochentag);
+            t.TextAusMatrix = Text_("KOND_TXT_AUS_MATRIX", t.TextAusMatrix);
+            t.TextPeriodenLeer = Text_("KOND_TXT_PERIODEN_LEER", t.TextPeriodenLeer);
+            t.GrundPeriodeUnvollstaendig = Text_("KOND_TXT_GRUND_PERIODE", t.GrundPeriodeUnvollstaendig);
+            t.GrundRangOben = Text_("KOND_TXT_GRUND_RANG_OBEN", t.GrundRangOben);
+            t.GrundRangUnten = Text_("KOND_TXT_GRUND_RANG_UNTEN", t.GrundRangUnten);
+            t.GrundRangBand = Text_("KOND_TXT_GRUND_RANG_BAND", t.GrundRangBand);
+            t.TextTeppichLeer = Text_("KOND_TXT_TEPPICH_LEER", t.TextTeppichLeer);
+            t.KnopfInDenKalender = Text_("KOND_BTN_IN_DEN_KALENDER", t.KnopfInDenKalender);
+            t.HinweisInDenKalender = Text_("KOND_TXT_HINWEIS_IN_DEN_KALENDER", t.HinweisInDenKalender);
+            t.HinweisVorlageZeile = Text_("KOND_TXT_HINWEIS_VORLAGE_ZEILE", t.HinweisVorlageZeile);
+            t.TextVorschauLeer = Text_("KOND_TXT_VORSCHAU_LEER", t.TextVorschauLeer);
+            t.TextVorschauOhneAnteile = Text_("KOND_TXT_VORSCHAU_OHNE_ANTEILE", t.TextVorschauOhneAnteile);
             return t;
         }
 
@@ -221,6 +262,7 @@ namespace WindowsFormsApplication1
             f.OhneEinzelheiten = Text_("KOND_FRAGE_OHNE_EINZELHEITEN", f.OhneEinzelheiten);
             f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
             f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
+            f.Sollwertprofil = Text_("KOND_FRAGE_SOLLWERTPROFIL", f.Sollwertprofil);
             return f;
         }
 

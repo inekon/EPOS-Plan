@@ -28,13 +28,29 @@ namespace WindowsFormsApplication1
     /// <c>luftwechsel_infiltration</c>, <c>luftwechsel_nutzer</c>, <c>waermegewinne</c>); das
     /// Nachtfenster der Heizspalte ist <c>nacht_beginn</c>/<c>nacht_ende</c>. Nur der Kühlsollwert der
     /// Nacht hatte noch keines — er heißt nach seiner Spalte <c>kuehl_sollwert_nacht</c>.</para>
-    /// <para><b>Nur im Katalogeditor.</b> Die Gebäudeverwaltung trägt den Reiter nicht; ihre
-    /// Stammblattgruppe „Konditionierung" kommt mit Welle U4.</para>
+    /// <para><b>Die Karte im Einzelnen</b> (Welle U3): <c>kond_&lt;größe&gt;_woche</c> schließt die Spalte
+    /// ab — die Woche des angelegten Kalenders als Text (168 Werte durch „;" getrennt, „aus" für
+    /// abgeschaltet; ein einzelner Wert ist die Grundangabe). Die Werkzeuge der Karte (Zeitfenster,
+    /// Feiertage, Zeitstruktur, Periodenliste) sind Handlungen mit eigener Eingabe, keine Felder: Der
+    /// Assistent setzt ihr Ergebnis über die Woche oder erklärt sie aus dem Aktionswissen.</para>
+    /// <para><b>Drei Masken.</b> Der Katalogeditor (Reiter „Konditionierung") und die Gebäudeverwaltung
+    /// (Blatt „Konditionierung", Stufe KP2, Welle U4) führen dieselben Felder an derselben Sichtklasse
+    /// (<see cref="SICHT"/>). Der Zonendialog führt die ZONENKARTE (<see cref="Zonenfelder"/>) an seiner
+    /// Sichtklasse (<see cref="ZONENSICHT"/>): ohne die Kühlspalte (an der Zone gesperrt bis KU3), mit dem
+    /// Nachtfenster der Heizspalte als eigenen Feldern (<c>kond_heizen_nacht_von</c>/<c>_bis</c> — an einer
+    /// Zone steht es in der Zelle, nicht in Bestandsspalten); ihre Bestandszellen stehen schon unter den
+    /// Feldern der Zone (<c>soll_tag</c>, <c>soll_nacht</c>, <c>soll_wochenende</c>, <c>soll_ferien</c>,
+    /// <c>infiltration</c>, <c>nutzerlueftung</c>, <c>gewinne</c>). Leer heißt an der Zone „wie
+    /// Gebäude". Die Vorlage einer Größe führt die Zonenkarte nicht — die Karten der Zone bieten keine
+    /// Vorlagen.</para>
     /// </remarks>
     public static class KiKonditionierungsfelder
     {
         /// <summary>Der Typname der Sichtklasse, die die Felder als Feldtafel beantwortet.</summary>
         public const string SICHT = "GebaeudeKatalogKiSicht";
+
+        /// <summary>Der Typname der Sichtklasse des Zonendialogs, die die Zonenkarte als Feldtafel beantwortet.</summary>
+        public const string ZONENSICHT = "ZonenKiSicht";
 
         /// <summary>Was ein Feld an seiner Zelle trägt.</summary>
         public enum Teil
@@ -55,7 +71,13 @@ namespace WindowsFormsApplication1
             DeltaT,
 
             /// <summary>Die Vorlage der Größe (Zeile „Vorlage" der Matrix, keine Zelle).</summary>
-            Vorlage
+            Vorlage,
+
+            /// <summary>
+            /// Die Woche des angelegten Kalenders der Größe als Text (Karte im Einzelnen, Welle U3; keine
+            /// Zelle): 168 Werte oder ein Wert der Grundangabe.
+            /// </summary>
+            Woche
         }
 
         /// <summary>Ein Feld der Karte: Schlüssel, Zelle (Größe, Zeile) und Teil.</summary>
@@ -126,13 +148,25 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>Alle Felder der Karte in der Reihenfolge der Matrix (Spalte für Spalte, Zeile für Zeile).</summary>
-        public static IReadOnlyList<Feld> Alle { get; } = Bauen();
+        public static IReadOnlyList<Feld> Alle { get; } = Bauen(zone: false);
 
-        private static readonly Dictionary<string, Feld> NACH_SCHLUESSEL = Verzeichnis();
+        /// <summary>
+        /// Die Felder der ZONENKARTE (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3): ohne die Kühlspalte, mit
+        /// dem Nachtfenster der Heizspalte, ohne die Bestandszellen (die Zone führt sie unter eigenen Namen).
+        /// </summary>
+        public static IReadOnlyList<Feld> Zonenfelder { get; } = Bauen(zone: true);
+
+        private static readonly Dictionary<string, Feld> NACH_SCHLUESSEL = Verzeichnis(Alle);
+
+        private static readonly Dictionary<string, Feld> ZONE_NACH_SCHLUESSEL = Verzeichnis(Zonenfelder);
 
         /// <summary>Das Feld zu einem Schlüssel; <c>null</c> = kein Feld der Karte.</summary>
         public static Feld Finde(string schluessel)
             => schluessel != null && NACH_SCHLUESSEL.TryGetValue(schluessel, out Feld f) ? f : null;
+
+        /// <summary>Das Feld der Zonenkarte zu einem Schlüssel; <c>null</c> = kein Feld der Zonenkarte.</summary>
+        public static Feld FindeZone(string schluessel)
+            => schluessel != null && ZONE_NACH_SCHLUESSEL.TryGetValue(schluessel, out Feld f) ? f : null;
 
         /// <summary>
         /// Der Name der Bestandszelle (Größe, Zeile), unter dem der Katalog sie führt; <c>null</c> = die
@@ -156,15 +190,19 @@ namespace WindowsFormsApplication1
             => (g == Konditionierungsgroesse.Heizsoll || g == Konditionierungsgroesse.Kuehlsoll)
                && zeile != DbWerte.KOND_ZEILE_NENNWERT && zeile != DbWerte.KOND_ZEILE_SAISON;
 
-        private static List<Feld> Bauen()
+        private static List<Feld> Bauen(bool zone)
         {
             var felder = new List<Feld>();
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
+                // An der Zone ist die Kuehlspalte gesperrt (Zonenregel, bis KU3).
+                if (zone && g == Konditionierungsgroesse.Kuehlsoll) continue;
                 string gw = GROESSENWORT[(int)g];
 
                 // Die Zeile „Vorlage" eröffnet die Spalte — keine Zelle, die Aktion des Knopfs „Übernehmen".
-                felder.Add(new Feld("kond_" + gw + "_vorlage", g, -1, Teil.Vorlage, false));
+                // An der Zone bietet die Karte keine Vorlagen (Welle U2 am Gebäude und Katalogbau): kein
+                // Knopf, also kein Feld.
+                if (!zone) felder.Add(new Feld("kond_" + gw + "_vorlage", g, -1, Teil.Vorlage, false));
 
                 for (int zi = 0; zi < DbWerte.KOND_ZEILEN.Count; zi++)
                 {
@@ -180,14 +218,16 @@ namespace WindowsFormsApplication1
                         continue;
                     }
 
-                    // Der Wert: eine Bestandszelle unter ihrem Katalogfeld - steht es schon im Editor, nicht noch einmal.
+                    // Der Wert: eine Bestandszelle unter ihrem Katalogfeld - steht es schon im Editor, nicht noch
+                    // einmal; an der Zone stehen alle Bestandszellen schon unter den Feldern der Zone.
                     if (bestand == null) felder.Add(new Feld(basis, g, zi, Teil.Wert, false));
-                    else if (!BESTEHEND.Contains(bestand)) felder.Add(new Feld(bestand, g, zi, Teil.Wert, true));
+                    else if (!zone && !BESTEHEND.Contains(bestand)) felder.Add(new Feld(bestand, g, zi, Teil.Wert, true));
 
                     if (MitAus(g, z)) felder.Add(new Feld(basis + "_aus", g, zi, Teil.Aus, bestand != null));
 
-                    // Das Nachtfenster einer Spalte; das der Heizspalte ist nacht_beginn/nacht_ende.
-                    if (z == DbWerte.KOND_ZEILE_NACHT && g != Konditionierungsgroesse.Heizsoll)
+                    // Das Nachtfenster einer Spalte; das der Heizspalte ist am Gebaeude nacht_beginn/nacht_ende,
+                    // an der Zone steht es in der Zelle.
+                    if (z == DbWerte.KOND_ZEILE_NACHT && (zone || g != Konditionierungsgroesse.Heizsoll))
                     {
                         felder.Add(new Feld(basis + "_von", g, zi, Teil.Von, false));
                         felder.Add(new Feld(basis + "_bis", g, zi, Teil.Bis, false));
@@ -195,14 +235,18 @@ namespace WindowsFormsApplication1
                     if (z == DbWerte.KOND_ZEILE_NACHT && g == Konditionierungsgroesse.Lueftung)
                         felder.Add(new Feld(basis + "_dt", g, zi, Teil.DeltaT, false));
                 }
+
+                // Die Woche des angelegten Kalenders schließt die Spalte ab (Karte im Einzelnen, Welle U3);
+                // an der Zone trägt die Karte keinen Inhalt im Einzelnen - kein Knopf, also kein Feld.
+                if (!zone) felder.Add(new Feld("kond_" + gw + "_woche", g, -1, Teil.Woche, false));
             }
             return felder;
         }
 
-        private static Dictionary<string, Feld> Verzeichnis()
+        private static Dictionary<string, Feld> Verzeichnis(IReadOnlyList<Feld> felder)
         {
             var d = new Dictionary<string, Feld>(StringComparer.Ordinal);
-            foreach (Feld f in Alle) d.Add(f.Schluessel, f);
+            foreach (Feld f in felder) d.Add(f.Schluessel, f);
             return d;
         }
 
@@ -218,17 +262,32 @@ namespace WindowsFormsApplication1
         public static IEnumerable<KiDialogFeld> Dialogfelder()
         {
             foreach (Feld f in Alle)
-                yield return Dialogfeld(f);
+                yield return Dialogfeld(f, zone: false);
         }
 
-        private static KiDialogFeld Dialogfeld(Feld f)
+        /// <summary>
+        /// <b>Die Felder der Zonenkarte</b> (Stufe KP2, Welle U4) — wie <see cref="Dialogfelder"/>, an der
+        /// Sichtklasse des Zonendialogs; die Erläuterung sagt „leer = wie Gebäude".
+        /// </summary>
+        public static IEnumerable<KiDialogFeld> ZonenDialogfelder()
+        {
+            foreach (Feld f in Zonenfelder)
+                yield return Dialogfeld(f, zone: true);
+        }
+
+        private static KiDialogFeld Dialogfeld(Feld f, bool zone)
         {
             string groesse = Groessenname(f.Groesse);
-            string pfad = SICHT + "." + f.Schluessel;
+            string pfad = (zone ? ZONENSICHT : SICHT) + "." + f.Schluessel;
             CultureInfo c = CultureInfo.CurrentCulture;
             if (f.Teil == Teil.Vorlage)
                 return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_ZEILE_VORLAGE,
                                         KiParameterTyp.Wahl, string.Format(c, MyResource.Resource.KOND_TXT_KI_VORLAGE, groesse));
+            if (f.Teil == Teil.Woche)
+                return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_STANDARDWOCHE,
+                                        KiParameterTyp.Text,
+                                        string.Format(c, MyResource.Resource.KOND_TXT_KI_WOCHE, groesse, Bereich(f).Einheit),
+                                        leerErlaubt: true);
             string zeile = Zeilenname(f);
 
             switch (f.Teil)
@@ -245,10 +304,12 @@ namespace WindowsFormsApplication1
                         : (f.Teil == Teil.Von ? MyResource.Resource.KOND_LBL_NACHTFENSTER_VON : MyResource.Resource.KOND_LBL_NACHTFENSTER_BIS);
                     return saison
                         ? new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + teil, KiParameterTyp.Ganzzahl,
-                                           string.Format(c, MyResource.Resource.KOND_TXT_KI_SAISON, groesse, teil),
+                                           string.Format(c, zone ? MyResource.Resource.KOND_TXT_KI_ZONE_SAISON
+                                                                 : MyResource.Resource.KOND_TXT_KI_SAISON, groesse, teil),
                                            leerErlaubt: true, min: 1, max: 365)
                         : new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + teil, KiParameterTyp.Ganzzahl,
-                                           string.Format(c, MyResource.Resource.KOND_TXT_KI_FENSTER, groesse, teil),
+                                           string.Format(c, zone ? MyResource.Resource.KOND_TXT_KI_ZONE_FENSTER
+                                                                 : MyResource.Resource.KOND_TXT_KI_FENSTER, groesse, teil),
                                            einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true,
                                            min: Nachtzeit.STUNDE_MIN, max: Nachtzeit.STUNDE_MAX);
                 case Teil.DeltaT:
@@ -258,7 +319,8 @@ namespace WindowsFormsApplication1
                 default:
                     (string einheit, double? min, double? max) = Bereich(f);
                     return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + zeile, KiParameterTyp.Zahl,
-                                            string.Format(c, MyResource.Resource.KOND_TXT_KI_ZELLE, groesse, zeile, einheit),
+                                            string.Format(c, zone ? MyResource.Resource.KOND_TXT_KI_ZONE_ZELLE
+                                                                  : MyResource.Resource.KOND_TXT_KI_ZELLE, groesse, zeile, einheit),
                                             einheit: einheit, leerErlaubt: true, min: min, max: max);
             }
         }

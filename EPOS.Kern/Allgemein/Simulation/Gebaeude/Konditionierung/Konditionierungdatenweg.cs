@@ -65,6 +65,32 @@ namespace WindowsFormsApplication1
             List<Kalenderzeile> zonenkalender = idZone.HasValue ? Kalenderzeilen(idGebaeude, idZone) : null;
             List<Periodenzeile> zonenperioden = idZone.HasValue ? Periodenzeilen(idGebaeude, idZone) : null;
             List<Vorgabezeile> zonenvorgaben = idZone.HasValue ? Vorgabezeilen(idGebaeude, idZone) : null;
+            return Satz(gebaeude, kalenderzeilen, perioden, vorgaben, zonenkalender, zonenperioden, zonenvorgaben,
+                        idZone, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam);
+        }
+
+        /// <summary>
+        /// <b>Der Satz aus den gelesenen Zeilen</b> — der Datenbankweg ohne die Datenbank (Stufe KP2, Welle
+        /// U4): dieselbe Kette über den Zeilen, die <see cref="Satz(ProjektGebaeudeModel, bool[], int, bool, bool, long?)"/>
+        /// gelesen hat. Die Probe hält hier den Datenbankweg gegen den Speicherweg.
+        /// </summary>
+        internal static Konditionierungssatz Satz(ProjektGebaeudeModel gebaeude,
+                                                  List<Kalenderzeile> kalenderzeilen, List<Periodenzeile> perioden,
+                                                  List<Vorgabezeile> vorgaben, List<Kalenderzeile> zonenkalender,
+                                                  List<Periodenzeile> zonenperioden, List<Vorgabezeile> zonenvorgaben,
+                                                  long? idZone, bool[] wochenende, int referenzjahr,
+                                                  bool kopplungWirksam, bool kuehlungWirksam)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            kalenderzeilen ??= new List<Kalenderzeile>();
+            perioden ??= new List<Periodenzeile>();
+            vorgaben ??= new List<Vorgabezeile>();
+            if (idZone.HasValue)
+            {
+                zonenkalender ??= new List<Kalenderzeile>();
+                zonenperioden ??= new List<Periodenzeile>();
+                zonenvorgaben ??= new List<Vorgabezeile>();
+            }
 
             bool leer = kalenderzeilen.Count == 0 && vorgaben.Count == 0
                         && (zonenkalender == null || zonenkalender.Count == 0)
@@ -72,12 +98,41 @@ namespace WindowsFormsApplication1
             if (leer) return null;      // wörtlich der Bestandszweig
 
             Matrixeingang bestand = Konditionierungseingang.Bestand(gebaeude, kopplungWirksam, kuehlungWirksam);
+            Zonennennwerte nennwerte = null;
+            if (idZone.HasValue) bestand = Zonenbestand(gebaeude, idZone.Value, bestand, zonenvorgaben, out nennwerte);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
                 Angelegt(kalenderzeilen, perioden, gebaeude.Gebaeudename);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt =
                 idZone.HasValue ? Angelegt(zonenkalender, zonenperioden, gebaeude.Gebaeudename) : null;
             return SatzBilden(gebaeude.Gebaeudename, bestand, vorgaben, gebaeudeangelegt,
-                              idZone.HasValue ? zonenvorgaben : null, zoneangelegt, wochenende, referenzjahr);
+                              idZone.HasValue ? zonenvorgaben : null, zoneangelegt, wochenende, referenzjahr,
+                              nennwerte);
+        }
+
+        /// <summary>
+        /// <b>Der Bestand und die Nennwerte einer Zone im Lauf</b> (Teilkonzept 3.4; Stufe KP2, Welle U4):
+        /// die Bestandsfelder aufgelöst wie im Arbeitsstand (<see cref="Konditionierungseingang.ZonenBestand"/>
+        /// — eigene Sollwerte, Lüftung und Bewohner der Zone, die inneren Gewinne im Flächenanteil), der
+        /// Flächenanteil aus derselben Vorgabenkaskade, die eigenen inneren Gewinne der Zone und ihr eigener
+        /// Personen-Nennwert. Führt die Gebäudezeile die Zone nicht, bleibt der Bestand des Gebäudes und
+        /// der Anteil 1 — wie ohne eigene Nutzfläche.
+        /// </summary>
+        private static Matrixeingang Zonenbestand(ProjektGebaeudeModel gebaeude, long idZone, Matrixeingang bestand,
+                                                  List<Vorgabezeile> zonenvorgaben, out Zonennennwerte nennwerte)
+        {
+            GebaeudeZonensatz zone = null;
+            foreach (GebaeudeZonensatz z in gebaeude.Zonen ?? new List<GebaeudeZonensatz>())
+                if (z != null && z.ZonenId == idZone) { zone = z; break; }
+            if (zone == null)
+            {
+                nennwerte = Zonennennwerte.Aus(1.0, null, zonenvorgaben);
+                return bestand;
+            }
+            Zoneneingaben e = zone.EingabenOderNutzflaeche();
+            Zonenvorgaben v = Zonenvorgaben.Bilden(e, Gebaeudevorgaben.Aus(gebaeude), Math.Max(1, gebaeude.Zonen.Count));
+            nennwerte = Zonennennwerte.Aus(v.Flaechenanteil, new Matrixeingang { InterneWaermegewinne = e.InterneWaermegewinne },
+                                           zonenvorgaben);
+            return Konditionierungseingang.ZonenBestand(bestand, e, v);
         }
 
         /// <summary>
@@ -120,7 +175,7 @@ namespace WindowsFormsApplication1
             bestand.KuehlungWirksam = kuehlungWirksam;
             return SatzBilden(name, bestand, gebaeude.Vorgabezeilen(), Kalenderliste(gebaeude),
                               zone?.Stand.Vorgabezeilen(), zone == null ? null : Kalenderliste(zone.Stand),
-                              wochenende, referenzjahr);
+                              wochenende, referenzjahr, zone == null ? null : speicher.Nennwerte(zone));
         }
 
         private static Dictionary<Konditionierungsgroesse, Konditionierungskalender> Kalenderliste(Konditionierungsstand e)
@@ -133,20 +188,22 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die gemeinsame Kette</b> beider Wege: die Matrix des Gebäudes, darüber die der Zone je
         /// Zelle (F2), je Größe die erste Quelle, die Nachtauskühlung und die zwei Matrixwerte.
-        /// <paramref name="zonenvorgaben"/> <c>null</c> heißt: der Satz des Gebäudes selbst.
+        /// <paramref name="zonenvorgaben"/> <c>null</c> heißt: der Satz des Gebäudes selbst. An einer Zone
+        /// rechnen die Anteilskalender mit ihren <paramref name="nennwerte"/> (Konzept 3.4, Stufe KP2
+        /// Welle U4) — eigener Wert oder Flächenanteil, auch unter dem angelegten Kalender des Gebäudes.
         /// </summary>
         private static Konditionierungssatz SatzBilden(string name, Matrixeingang bestand, List<Vorgabezeile> vorgaben,
                                                        Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt,
                                                        List<Vorgabezeile> zonenvorgaben,
                                                        Dictionary<Konditionierungsgroesse, Konditionierungskalender> zoneangelegt,
-                                                       bool[] wochenende, int referenzjahr)
+                                                       bool[] wochenende, int referenzjahr, Zonennennwerte nennwerte = null)
         {
             // ---- Die Matrix: Gebäude, darüber die Zone je Zelle (F2) ----
             Vorgabematrix gebaeudematrix = Vorgabematrix.Bilden(bestand, vorgaben);
             Vorgabematrix matrix = gebaeudematrix;
             if (zonenvorgaben != null)
-                matrix = Vorgabematrix.Bilden(bestand.Kopie(), zonenvorgaben, Kalendereigentuemer.Zone)
-                                      .Erben(gebaeudematrix);
+                matrix = Konditionierungseingang.Zonenmatrix(bestand, zonenvorgaben, gebaeudematrix,
+                                                             nennwerte?.Flaechenanteil ?? 1.0);
 
             // ---- w₀ aus derselben Maske, nach der der Bestandsfahrplan das Wochenende setzt ----
             int w0 = GebaeudeModellEingang.WochentagDesErstenTags(wochenende);
@@ -159,8 +216,12 @@ namespace WindowsFormsApplication1
             var satz = new Konditionierungssatz(w0, referenzjahr);
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
-                Konditionierungskalender k = Konditionierungseingang.ErsteQuelle(
-                    g, matrix, zoneangelegt, gebaeudeangelegt, nachtzeileDerZone, out Fahrplanlesung befund);
+                Fahrplanlesung befund;
+                Konditionierungskalender k = zonenvorgaben != null
+                    ? Konditionierungseingang.ErsteQuelleDerZone(g, matrix, zoneangelegt, gebaeudeangelegt, nachtzeileDerZone,
+                                                                 nennwerte, out befund)
+                    : Konditionierungseingang.ErsteQuelle(g, matrix, zoneangelegt, gebaeudeangelegt, nachtzeileDerZone,
+                                                          out befund);
                 if (befund != null && befund.Befund != Fahrplanbefund.Erzeugt &&
                     befund.Befund != Fahrplanbefund.KeineAngabe)
                     throw Fehler(name, string.Format(CultureInfo.CurrentCulture,

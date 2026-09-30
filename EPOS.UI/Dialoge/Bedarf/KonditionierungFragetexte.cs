@@ -72,4 +72,11 @@ public sealed class KonditionierungFragetexte
     /// <c>KOND_TXT_VORLAGE_LOESCHEN</c> (kein Gebäude wird berührt)
     /// </summary>
     public string VorlageLoeschen { get; set; } = "Die Vorlage „{0}“ löschen?";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_SOLLWERTPROFIL</c> — „In den Kalender übernehmen“ auf einen angelegten Heizkalender
+    /// (Teilkonzept 5.5; Stufe KP2, Welle U3)
+    /// </summary>
+    public string Sollwertprofil { get; set; }
+        = "Das Sollwert-Zeitprogramm ersetzt die Standardwoche des angelegten Heizkalenders; Perioden und Herkunft bleiben. Übernehmen?";
 }

@@ -14,8 +14,9 @@
    Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
    einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
    ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
-   letzten (Hausregel "die teure Stufe laeuft entprellt"). Der Inhalt - Grundangabe, Zeitfenster,
-   Wochenraster, Periodenliste, Werkzeuge, Teppichbild (U3) - kommt spaeter in dieselbe Karte.
+   letzten (Hausregel "die teure Stufe laeuft entprellt"). Seit Welle U3 klappt "Kalender im
+   Einzelnen" den Inhalt auf, den der Wirt als Einzelheiten reicht (KalenderkarteInhalt): Grundangabe,
+   Wochenraster, Zeitfenster, Periodenliste, Werkzeuge, Teppichbild.
 
    KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht; die Liste nur mit
    Vorlagen (der Wirt reicht sie nur, wenn der Weg "Uebernehmen" bietet). Im Lesemodus (ausgelieferter
@@ -26,15 +27,26 @@
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
-<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "")" data-groesse="@((int)Groesse)"
+<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "") @(_offen && Einzelheiten is not null && !Lesemodus ? "epos-kond-karte--offen" : "")"
+         data-groesse="@((int)Groesse)"
          aria-label="@Titel">
     <div class="epos-kond-karte-kopf">
         <h3 class="epos-kond-karte-titel">@Titel</h3>
         <p class="epos-kond-karte-zustand">@Zustand</p>
+        @if (!Lesemodus && Einzelheiten is not null)
+        {
+            @* Klappt die Karte auf (Teilkonzept 7.5): Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild. *@
+            <button type="button" class="epos-knopf epos-kond-einzelheiten" aria-expanded="@(_offen ? "true" : "false")"
+                    @onclick="() => _offen = !_offen">@Texte.KnopfEinzelheiten</button>
+        }
     </div>
     @if (!Lesemodus && Vorlagen is not null)
     {
-        <div class="epos-vorlage-wahl epos-kond-vorlagewahl">
+        @* Die Zeile „Vorlage" der Matrix holt diese Gruppe nach vorn (ListeZeigen): Der Fokus landet auf
+           der Gruppe, die Liste ist ihr erster Tabulatorhalt. Die Gruppe und nicht das <select> selbst —
+           ein @ref am Baustein Auswahlfeld aenderte das Markup jeder Liste im Bestand. *@
+        <div class="epos-vorlage-wahl epos-kond-vorlagewahl" @ref="_wahl" tabindex="-1" role="group"
+             aria-label="@(Titel + " · " + Texte.LabelVorlageAuswahl)">
             <Auswahlfeld Bezeichnung="@Texte.LabelVorlageAuswahl" Kurzname="@(Titel + " · " + Texte.LabelVorlageAuswahl)"
                          Eintraege="@Eintraege" Auswahl="@Wahl" Platzhalter="@Texte.TextVorlageKeine"
                          AuswahlChanged="Waehlen" />
@@ -128,6 +140,10 @@
             }
         </div>
     }
+    @if (!Lesemodus && _offen && Einzelheiten is not null)
+    {
+        @Einzelheiten
+    }
     @if (!Lesemodus && Vorschau is not null)
     {
         <div class="epos-kond-vorschau">
@@ -135,10 +151,19 @@
             {
                 <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, g.Name)</p>
             }
-            @* Ein Bild ohne Zoom: eine Woche in der schmalen Karte braucht keinen Zeitbereich, und die
-               Zoomleiste bliebe unter dem Beruehrungsmass (Konditionierungsprobe, Welle U2). *@
-            <DiagrammSvg Modell="@_modell" Kennung="@("kond-vorschau-" + (int)Groesse)" Bezeichnung="@Texte.LabelVorschauWoche"
-                         Einheit="@Einheit" OhneZoom="true" />
+            @if (_modell is null)
+            {
+                @* Kein Bild - dann ein benannter Leerzustand mit Grund statt "Kein Diagramm vorhanden"
+                   (Welle U3; etwa Geraete und Personen ohne Anteile). *@
+                <p class="epos-leisezeile epos-kond-vorschau-leer">@(VorschauLeer ?? Texte.TextVorschauLeer)</p>
+            }
+            else
+            {
+                @* Ein Bild ohne Zoom: eine Woche in der schmalen Karte braucht keinen Zeitbereich, und die
+                   Zoomleiste bliebe unter dem Beruehrungsmass (Konditionierungsprobe, Welle U2). *@
+                <DiagrammSvg Modell="@_modell" Kennung="@("kond-vorschau-" + (int)Groesse)" Bezeichnung="@Texte.LabelVorschauWoche"
+                             Einheit="@Einheit" OhneZoom="true" />
+            }
         </div>
     }
 </section>
@@ -173,6 +198,42 @@
 
     /// <summary>„Matrix erneut anwenden…"; ohne Rückruf kein Knopf.</summary>
     [Parameter] public EventCallback MatrixErneut { get; set; }
+
+    /// <summary>
+    /// Der Inhalt der aufgeklappten Karte (Welle U3; Teilkonzept 7.5) — Grundangabe, Woche, Perioden,
+    /// Werkzeuge, Teppichbild; <c>null</c> = kein Knopf „Kalender im Einzelnen".
+    /// </summary>
+    [Parameter] public RenderFragment? Einzelheiten { get; set; }
+
+    /// <summary>Steht die Karte aufgeklappt beim ersten Zeichnen (Prüfstand, Rückweg)?</summary>
+    [Parameter] public bool Aufgeklappt { get; set; }
+
+    /// <summary>
+    /// Der Anlass, die Auswahlliste zu zeigen (Zeile „Vorlage" der Matrix, Teilkonzept 7.2): Wechselt er,
+    /// bekommt die Gruppe der Auswahlliste nach dem Zeichnen den Fokus und rollt ins Bild.
+    /// </summary>
+    [Parameter] public int ListeZeigen { get; set; }
+
+    /// <summary>Der Grund, warum die Vorschau kein Bild hat; <c>null</c> = der allgemeine Text.</summary>
+    [Parameter] public string? VorschauLeer { get; set; }
+
+    private ElementReference _wahl;
+    private int _listeZeigenDavor;
+    private bool _fokusFaellig;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_fokusFaellig || Lesemodus || Vorlagen is null) return;
+        _fokusFaellig = false;
+        await _wahl.FocusAsync(preventScroll: false);
+    }
+
+    /// <summary>Ist die Karte aufgeklappt? Prüfhilfe für die Tests.</summary>
+    public bool Offen => _offen;
+
+    private bool _offen;
+
+    protected override void OnInitialized() => _offen = Aufgeklappt;
 
     // ------------------------------------------------------------ Vorlagen (Welle U2)
 
@@ -334,6 +395,11 @@
 
     protected override void OnParametersSet()
     {
+        if (ListeZeigen != _listeZeigenDavor)
+        {
+            _fokusFaellig = ListeZeigen > 0;
+            _listeZeigenDavor = ListeZeigen;
+        }
         if (Vorschau is null || Lesemodus)
         {
             _entprellung?.Cancel();

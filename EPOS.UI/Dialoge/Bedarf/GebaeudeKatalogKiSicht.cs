@@ -939,14 +939,14 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     // =====================================================================
 
     /// <summary>
-    /// Die Bearbeitung des Reiters „Konditionierung" — nur der Katalogeditor reicht sie; ohne sie (die
-    /// Verwaltung) stehen die Felder der Matrix nicht zur Verfügung, und die Bestandszellen gehen
-    /// unmittelbar in den Satz.
+    /// Die Bearbeitung der Vorgabe-Matrix — der Katalogeditor (Reiter „Konditionierung") und die
+    /// Verwaltung (Blatt „Konditionierung", Stufe KP2, Welle U4) reichen sie; ohne sie stehen die Felder
+    /// der Matrix nicht zur Verfügung, und die Bestandszellen gehen unmittelbar in den Satz.
     /// </summary>
     public KonditionierungBearbeitung? Konditionierung { get; init; }
 
-    /// <summary>Die halbe Angabe eines Zeitfensters (Nachtfenster, Saison), bis beide Grenzen stehen.</summary>
-    private readonly Dictionary<string, (int? Von, int? Bis)> _halb = new(StringComparer.Ordinal);
+    /// <summary>Die Feldtafel der Matrix — derselbe Weg wie im Zonendialog (<see cref="KonditionierungKiTafel"/>).</summary>
+    private readonly KonditionierungKiTafel _tafel = new(KiKonditionierungsfelder.Finde);
 
     /// <summary>
     /// Setzt eine Bestandszelle über die Bearbeitung des Reiters — derselbe Weg wie die Zelle der
@@ -955,116 +955,19 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     private bool UeberMatrix(KonditionierungGroesse g, KonditionierungZeile z, double? wert)
     {
         if (Konditionierung is not KonditionierungBearbeitung b) return false;
-        if (!b.WertSetzen(g, z, wert)) throw Ablehnung(b);
+        if (!b.WertSetzen(g, z, wert)) throw KonditionierungKiTafel.Ablehnung(b);
         return true;
     }
 
-    /// <summary>Die Ablehnung einer Handlung — mit dem Grund, den der Reiter nennt.</summary>
-    private static InvalidOperationException Ablehnung(KonditionierungBearbeitung b)
-        => new(b.OffeneFrage?.Text is { Length: > 0 } frage ? frage
-               : b.LetzteMeldung is { Length: > 0 } m ? m
-               : b.Sperrgrund ?? b.Texte.GrundOhneTabellen);
-
     /// <inheritdoc />
-    public object? Lesen(string schluessel)
-    {
-        if (Konditionierung is not KonditionierungBearbeitung b
-            || KiKonditionierungsfelder.Finde(schluessel) is not KiKonditionierungsfelder.Feld f) return null;
-        var g = (KonditionierungGroesse)f.Groessenplatz;
-        var z = (KonditionierungZeile)f.Zeilenplatz;
-        switch (f.Teil)
-        {
-            case KiKonditionierungsfelder.Teil.Aus:
-                return b.Wert(g, z) is double a && double.IsNaN(a);
-            case KiKonditionierungsfelder.Teil.Von:
-                return _halb.TryGetValue(schluessel[..schluessel.LastIndexOf('_')], out var hv) ? hv.Von : b.Zeiten(g, z).Von;
-            case KiKonditionierungsfelder.Teil.Bis:
-                return _halb.TryGetValue(schluessel[..schluessel.LastIndexOf('_')], out var hb) ? hb.Bis : b.Zeiten(g, z).Bis;
-            case KiKonditionierungsfelder.Teil.DeltaT:
-                return b.DeltaT;
-            case KiKonditionierungsfelder.Teil.Vorlage:
-                return b.Herkunft(g);
-            default:
-                return b.Wert(g, z) is double w && double.IsFinite(w) ? w : null;
-        }
-    }
+    public object? Lesen(string schluessel) => _tafel.Lesen(Konditionierung, schluessel);
 
     /// <summary>
     /// <inheritdoc />
     /// Ein Zeitfenster hat nur beide Grenzen zusammen (E53, E43): Die erste gesetzte Grenze wartet auf
     /// die zweite — erst beide oder keine gehen an den Weg, wie im Reiter.
     /// </summary>
-    public void Setzen(string schluessel, object? wert)
-    {
-        if (KiKonditionierungsfelder.Finde(schluessel) is not KiKonditionierungsfelder.Feld f)
-            throw new InvalidOperationException(schluessel);
-        if (Konditionierung is not KonditionierungBearbeitung b)
-            throw new InvalidOperationException(new KonditionierungTexte().GrundOhneTabellen);
-        var g = (KonditionierungGroesse)f.Groessenplatz;
-        var z = (KonditionierungZeile)f.Zeilenplatz;
-        bool ok;
-        switch (f.Teil)
-        {
-            case KiKonditionierungsfelder.Teil.Aus:
-                bool aus = wert is bool an && an;
-                bool istAus = b.Wert(g, z) is double a && double.IsNaN(a);
-                if (aus == istAus) return;
-                ok = b.WertSetzen(g, z, aus ? double.NaN : null);
-                break;
-            case KiKonditionierungsfelder.Teil.Von:
-            case KiKonditionierungsfelder.Teil.Bis:
-                string fenster = schluessel[..schluessel.LastIndexOf('_')];
-                (int? von, int? bis) = _halb.TryGetValue(fenster, out var halb) ? halb : b.Zeiten(g, z);
-                int? neu = wert is int n ? n : null;
-                if (f.Teil == KiKonditionierungsfelder.Teil.Von) von = neu; else bis = neu;
-                if (von.HasValue != bis.HasValue)
-                {
-                    _halb[fenster] = (von, bis);
-                    return;
-                }
-                _halb.Remove(fenster);
-                ok = b.ZeitenSetzen(g, z, von, bis);
-                break;
-            case KiKonditionierungsfelder.Teil.DeltaT:
-                ok = b.DeltaTSetzen(wert as double?);
-                break;
-            case KiKonditionierungsfelder.Teil.Vorlage:
-                VorlageUebernehmen(b, g, wert as string);
-                return;
-            default:
-                ok = b.WertSetzen(g, z, wert as double?);
-                break;
-        }
-        if (!ok) throw Ablehnung(b);
-    }
-
-    /// <summary>
-    /// <b>Die Vorlage einer Größe</b> (Welle U2; Entwurf KP2 D9) — mit der Aktion des Knopfs
-    /// „Übernehmen": wählen und übernehmen, in den Arbeitsstand; geschrieben wird mit dem OK des Editors.
-    /// Ein Name, den die Liste der Karte nicht führt, wird benannt abgelehnt. Eine Rückfrage (P12 am
-    /// angelegten Kalender, „aufteilen" an der Gesamtangabe der Lüftung) beantwortet der Assistent nicht
-    /// selbst: Sie steht danach im Reiter, und die Ablehnung nennt sie.
-    /// </summary>
-    private static void VorlageUebernehmen(KonditionierungBearbeitung b, KonditionierungGroesse g, string? name)
-    {
-        System.Globalization.CultureInfo c = System.Globalization.CultureInfo.CurrentCulture;
-        string feld = KonditionierungBearbeitung.Groessenname(b.Texte, g) + " · "
-                      + WindowsFormsApplication1.MyResource.Resource.KOND_LBL_ZEILE_VORLAGE;
-        IReadOnlyList<KonditionierungVorlageDaten> liste = b.Vorlagen(g);
-        if (!b.MitVorlagen || liste.Count == 0)
-            throw new InvalidOperationException(
-                b.Sperrgrund ?? string.Format(c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_LEER, feld));
-        string gesucht = (name ?? "").Trim();
-        KonditionierungVorlageDaten? v = liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.Ordinal))
-                                         ?? liste.FirstOrDefault(x => string.Equals(x.Name, gesucht, StringComparison.OrdinalIgnoreCase));
-        if (v is null)
-            throw new InvalidOperationException(string.Format(
-                c, WindowsFormsApplication1.MyResource.Resource.KI_FELD_WAHL_UNBEKANNT, feld, gesucht,
-                string.Join(", ", liste.Select(x => x.Name))));
-        if (!b.VorlageWaehlen(g, v.Id) || !b.VorlageUebernehmen(g) || b.OffeneFrage is not null
-            || !string.Equals(b.Herkunft(g), v.Name, StringComparison.Ordinal))
-            throw Ablehnung(b);
-    }
+    public void Setzen(string schluessel, object? wert) => _tafel.Setzen(Konditionierung, schluessel, wert);
 }
 
 /// <summary>

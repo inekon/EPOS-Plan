@@ -10882,6 +10882,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
   </data>
+  <data name="KOH_GRUND_RUECKFALL_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt</value>
+  </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>die Komponente Stromsteuer ist abgeschaltet</value>
   </data>
@@ -10969,6 +10972,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
     <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
   </data>
+  <data name="WIRT_BAND_GRUPPENREGEL_VERALTET" xml:space="preserve">
+    <value>Die Auswahl der Versionen ändert die Gruppenregel — Ergebnisse bis zum nächsten Berechnen veraltet.</value>
+  </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>
@@ -10977,6 +10983,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
     <value>Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
+  </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
   </data>
   <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
     <value>{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)</value>
@@ -34300,7 +34309,7 @@ Möchten Sie das zulassen?</value>
     <value>Vorgabe: {0} (Fläche × Raumhöhe)</value>
   </data>
   <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
-    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.</value>
+    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone.</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
@@ -40735,6 +40744,42 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Nachtauskühlung</value>
   </data>
+  <data name="KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER" xml:space="preserve">
+    <value>Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
+    <value>Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des Gebäudes auf; danach trägt die Zone eigene Lüftungswerte.</value>
+  </data>
+  <data name="KOND_TXT_ZONE_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt.</value>
+  </data>
+  <data name="KOND_LBL_ZONE_KALENDER" xml:space="preserve">
+    <value>Kalender der Zone</value>
+  </data>
+  <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
+    <value>Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder.</value>
+  </data>
+  <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
+    <value>Konditionierung…</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_SPEICHERN" xml:space="preserve">
+    <value>Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück.</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
+    <value>Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_ZELLE" xml:space="preserve">
+    <value>Eine Zelle der Zonenmatrix im Zonendialog: {0}, Zeile „{1}“, in {2}. Leer heißt „wie Gebäude“: Es gilt, was das Gebäude vorgibt – Geräte und Personen im Flächenanteil der Zone. Folgt die Zone einem angelegten Kalender des Gebäudes, wirkt die Zelle erst nach „Vom Gebäude übernehmen und anpassen“.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_FENSTER" xml:space="preserve">
+    <value>Nachtfenster der Spalte {0} der Zone: {1} als volle Stunde 0 bis 23; beide leer = wie Gebäude.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_SAISON" xml:space="preserve">
+    <value>Saison der Spalte {0} der Zone: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember); beide leer = wie Gebäude.</value>
+  </data>
   <data name="KOND_TXT_VORSCHAU_VORLAGE" xml:space="preserve">
     <value>Vorschau mit der Vorlage „{0}“ – übernommen wird erst mit „Übernehmen“.</value>
   </data>
@@ -40791,6 +40836,132 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="VF_ORT_KESSELTAFEL" xml:space="preserve">
     <value>im Bericht je Stand im Block „je stand“: je Kessel Jahresnutzungsgrad, Brennwertanteil nach Stunden und Wärme, Starts</value>
+  </data>
+  <data name="KOND_MSG_WOCHE_LAENGE" xml:space="preserve">
+    <value>Eine Standardwoche hat genau {1} Zellen, übergeben sind {0}.</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
+    <value>Kalender im Einzelnen</value>
+  </data>
+  <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
+    <value>Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_GRUNDANGABE" xml:space="preserve">
+    <value>Die Grundangabe gilt in jeder Stunde ohne Standardwoche und ohne Periode; eine Standardwoche tritt an ihre Stelle.</value>
+  </data>
+  <data name="KOND_TXT_GRUNDANGABE_WOCHE" xml:space="preserve">
+    <value>Die Standardwoche tritt an die Stelle der Grundangabe; „Standardwoche verwerfen“ kehrt zu ihr zurück.</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Standardwoche anlegen</value>
+  </data>
+  <data name="KOND_BTN_WOCHE_VERWERFEN" xml:space="preserve">
+    <value>Standardwoche verwerfen</value>
+  </data>
+  <data name="KOND_TXT_WOCHE_VORGABE" xml:space="preserve">
+    <value>Noch keine Standardwoche – das Raster zeigt die Grundangabe.</value>
+  </data>
+  <data name="KOND_TXT_VERMERK" xml:space="preserve">
+    <value>Zuletzt angewandt: {0}</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ZEITFENSTER" xml:space="preserve">
+    <value>Setzt den Wert in die gewählten Stunden der Standardwoche; alle übrigen Stunden bleiben. „Bis“ vor „Von“ geht über Mitternacht.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_TAGE" xml:space="preserve">
+    <value>Erst mindestens einen Tag wählen.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_ZEITEN" xml:space="preserve">
+    <value>Erst „Von“ und „Bis“ angeben (volle Stunden, „Bis“ 1 … 24).</value>
+  </data>
+  <data name="KOND_TXT_GRUND_ZEITFENSTER_WERT" xml:space="preserve">
+    <value>Erst einen Wert oder „aus“ angeben.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_ART" xml:space="preserve">
+    <value>Neue Perioden sind Zeiträume oder Feiertage; „{0}“ gehört zum Matrixbereich und folgt der Matrix.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_NAME" xml:space="preserve">
+    <value>Die Periode braucht einen Namen – ihn nennen Vorschau und Teppichbild als Quelle.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEIERTAG" xml:space="preserve">
+    <value>„{0}“ ist keine der neun bundeseinheitlichen Feiertagsregeln.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_TAG" xml:space="preserve">
+    <value>Beginn {0} und Ende {1} müssen Tage 1 … 365 im Gemeinjahr sein.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_FEHLT" xml:space="preserve">
+    <value>Im Kalender steht keine Periode mit dem Rang {0}.</value>
+  </data>
+  <data name="KOND_MSG_PERIODE_MATRIXBEREICH" xml:space="preserve">
+    <value>Die Periode „{0}“ gehört zum Matrixbereich (Ferien, Saison) und ist nur lesbar; sie folgt der Matrix.</value>
+  </data>
+  <data name="KOND_MSG_RANG_NICHT_EIGENBAND" xml:space="preserve">
+    <value>Die Periode „{0}“ steht nicht im Band der eigenen Perioden ({1} … {2}); ihr Rang bleibt.</value>
+  </data>
+  <data name="KOND_MSG_RANG_OBEN" xml:space="preserve">
+    <value>Die Periode „{0}“ hat schon den höchsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_MSG_RANG_UNTEN" xml:space="preserve">
+    <value>Die Periode „{0}“ hat schon den niedrigsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_LBL_ANGABE" xml:space="preserve">
+    <value>Angabe</value>
+  </data>
+  <data name="KOND_LBL_ANGABE_WOCHENTAG" xml:space="preserve">
+    <value>wie Wochentag</value>
+  </data>
+  <data name="KOND_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Wochentag</value>
+  </data>
+  <data name="KOND_TXT_AUS_MATRIX" xml:space="preserve">
+    <value>aus der Matrix – nur lesbar</value>
+  </data>
+  <data name="KOND_TXT_PERIODEN_LEER" xml:space="preserve">
+    <value>Keine Perioden – es gelten Standardwoche bzw. Grundangabe.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_PERIODE" xml:space="preserve">
+    <value>Erst Name, Tage bzw. Feiertag und die Angabe angeben.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_OBEN" xml:space="preserve">
+    <value>Die Periode hat schon den höchsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_UNTEN" xml:space="preserve">
+    <value>Die Periode hat schon den niedrigsten Rang der eigenen Perioden.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_RANG_BAND" xml:space="preserve">
+    <value>Nur Perioden im Band der eigenen Perioden wechseln ihren Rang; Feiertagsregeln stehen unter den Ferien.</value>
+  </data>
+  <data name="KOND_TXT_TEPPICH_LEER" xml:space="preserve">
+    <value>Kein Jahresbild – die Matrix ergibt für diese Größe keinen Kalender (etwa ohne Anteile).</value>
+  </data>
+  <data name="KOND_MSG_SOLLWERTPROFIL_FEHLT" xml:space="preserve">
+    <value>Das Gebäude trägt kein gültiges Sollwert-Zeitprogramm ({0}) – es gibt nichts in den Kalender zu übernehmen.</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Standardwoche aus dem Sollwert-Zeitprogramm der Wärmeübergabe</value>
+  </data>
+  <data name="KOND_BTN_IN_DEN_KALENDER" xml:space="preserve">
+    <value>In den Kalender übernehmen</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_IN_DEN_KALENDER" xml:space="preserve">
+    <value>Das Zeitprogramm wird die Standardwoche des Heizkalenders im Reiter „Konditionierung“; geschrieben wird mit OK, „Zurücknehmen“ nimmt es zurück.</value>
+  </data>
+  <data name="KOND_FRAGE_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Das Sollwert-Zeitprogramm ersetzt die Standardwoche des angelegten Heizkalenders; Perioden und Herkunft bleiben. Übernehmen?</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ZEILE" xml:space="preserve">
+    <value>Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_LEER" xml:space="preserve">
+    <value>Keine Vorschau – für diese Größe ergibt sich keine Woche.</value>
+  </data>
+  <data name="KOND_TXT_VORSCHAU_OHNE_ANTEILE" xml:space="preserve">
+    <value>Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.</value>
+  </data>
+  <data name="KOND_TXT_KI_WOCHE" xml:space="preserve">
+    <value>Die Woche des angelegten Kalenders {0} in der Karte „Kalender im Einzelnen“: 168 Werte in {1} von Montag 00:00 bis Sonntag 23:00, durch „;“ getrennt, „aus“ für abgeschaltet; ein einzelner Wert (oder „aus“) ist die Grundangabe. Setzen wirkt wie das Wochenraster (ein Schritt für „Zurücknehmen“), leer verwirft die Woche zugunsten der Grundangabe. Nur an einem angelegten Kalender; Lesen nennt die Woche oder die Grundangabe, leer = nicht angelegt.</value>
+  </data>
+  <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
+    <value>Die Woche braucht 168 Werte (Montag 00:00 bis Sonntag 23:00) oder einen Wert für die Grundangabe, durch „;“ getrennt und „aus“ für abgeschaltet – übergeben sind {0}.</value>
   </data>
 </root>
 

@@ -219,6 +219,26 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Das Aktionswissen der Zonenmatrix und der Verwaltung</b> (Stufe KP2, Welle U4): Die Frage
+        /// nach dem Zonenkalender, nach „Vom Gebäude übernehmen und anpassen" und nach der Konditionierung
+        /// in der Gebäudeverwaltung führt auf ihren Abschnitt — auf Deutsch wie auf Englisch.
+        /// </summary>
+        [Theory]
+        [InlineData("Wie bekommt eine Zone einen eigenen Zonenkalender?", "Zonenkalender")]
+        [InlineData("Vom Gebäude übernehmen und anpassen", "Vom Gebäude übernehmen und anpassen")]
+        [InlineData("zone calendar copy from building", "zone calendar")]
+        [InlineData("Konditionierung in der Gebäudeverwaltung bearbeiten", "Gebäudeverwaltung")]
+        public void Die_Suche_fuehrt_auf_das_Wissen_der_Zonenmatrix(string frage, string titelteil)
+        {
+            List<WissensAbschnitt> treffer =
+                HilfeWissen.Suchen(frage, KiChatKontext.BEREICH_UNBEKANNT, 4, "");
+
+            Assert.NotEmpty(treffer);
+            Assert.Equal(KiChatKontext.B_GEBAEUDE, treffer[0].Bereich);
+            Assert.Contains(titelteil, treffer[0].Titel, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// <b>Gegenprobe:</b> Das neue Wissen drängt sich nicht vor — eine Frage aus
         /// einem anderen Gewerk findet weiterhin ihren eigenen Abschnitt.
         /// </summary>

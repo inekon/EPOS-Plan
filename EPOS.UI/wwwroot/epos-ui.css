@@ -13558,6 +13558,22 @@ td.epos-vorlage-katalogbeschreibung {
     display: none;
 }
 
+/* Ein Klick auf die Zeile "Vorlage" oeffnet die Auswahlliste der Karte
+   (Teilkonzept 7.2, Welle U3): ein Knopf ueber die Breite der Zelle, der
+   Name bricht um, statt die Spalte zu weiten. */
+.epos-kond-herkunft-knopf {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-vorschau-leer {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
 .epos-kond-karten {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -13664,6 +13680,156 @@ td.epos-vorlage-katalogbeschreibung {
     overflow-wrap: anywhere;
 }
 
+/* DIE KARTE IM EINZELNEN (Stufe KP2, Welle U3; Teilkonzept 7.5): "Kalender
+   im Einzelnen" klappt den Inhalt auf - Grundangabe, Wochenraster,
+   Zeitfenster, Periodenliste, Werkzeuge, Teppichbild. Die aufgeklappte Karte
+   nimmt im breiten Raster die ganze Zeile, sonst drueckte das Wochenraster
+   sie quer (eine Spalte ist rund 200 px breit). */
+.epos-kond-karte--offen {
+    grid-column: 1 / -1;
+}
+
+.epos-kond-einzelheiten {
+    margin-left: auto;
+}
+
+.epos-kond-inhalt {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kond-abschnitt {
+    min-width: 0;
+}
+
+.epos-kond-abschnitt-titel {
+    margin: 0 0 4px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.epos-kond-inhalt-grund,
+.epos-kond-grundangabe-woche,
+.epos-kond-vermerk {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Das Zeitfenster: sieben Tagesknoepfe (aria-pressed), je mindestens 44 px,
+   die Zeile bricht zwischen den Knoepfen um. */
+.epos-kond-tage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.epos-kond-tag {
+    min-width: var(--epos-touchziel);
+}
+
+/* Die Periodenliste (Festlegung 15): eine schlichte Tabelle ohne
+   Virtualisierung, feste Spaltenanteile, der Text bricht um, statt quer zu
+   rollen. Die Knoepfe einer eigenen Zeile stehen immer (Hausregel), der
+   Flexkasten IN der Zelle; unter 600 px Behaelterbreite fallen die Spalten
+   "Art" (der Name sagt sie) und "Von-Bis" (der Zeitraum steht leise unter
+   dem Namen), die Wertspalte wird schmal und die Knoepfe stehen zwei mal
+   zwei - so bricht bei 390 px kein Name im Wort. Der Matrixbereich ist nur
+   lesbar und leise. */
+.epos-kond-perioden {
+    container-type: inline-size;
+    container-name: epos-kond-perioden;
+    min-width: 0;
+}
+
+.epos-kond-periodentabelle {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.epos-kond-periodentabelle th,
+.epos-kond-periodentabelle td {
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-rang {
+    width: 3.5rem;
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-art {
+    width: 7rem;
+}
+
+.epos-kond-periodentabelle th.epos-kond-periode-aktionen {
+    width: 204px;
+}
+
+.epos-kond-periode--matrix td {
+    color: var(--epos-text-leise);
+}
+
+.epos-kond-periode-zeitraum-schmal {
+    display: none;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-kond-periode-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-kond-periode-knoepfe > .epos-knopf {
+    min-width: var(--epos-touchziel);
+    justify-content: center;
+}
+
+.epos-kond-periode-form {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    min-width: 0;
+}
+
+@container epos-kond-perioden (max-width: 599.98px) {
+    .epos-kond-periodentabelle .epos-kond-periode-art,
+    .epos-kond-periodentabelle .epos-kond-periode-zeitraum {
+        display: none;
+    }
+
+    .epos-kond-periode-zeitraum-schmal {
+        display: block;
+    }
+
+    .epos-kond-periodentabelle th,
+    .epos-kond-periodentabelle td {
+        padding: 4px;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-rang {
+        width: 2.25rem;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-wert {
+        width: 4rem;
+    }
+
+    .epos-kond-periodentabelle th.epos-kond-periode-aktionen {
+        width: 100px;
+    }
+}
+
 /* DIE VORLAGENVERWALTUNG (Welle U2, E56 F4 (a)) - ein Blatt im Katalogeditor:
    Umschalter der Groesse, die Liste im Rahmen (Hausregel Liste), die
    gewaehlte Zeile wie die Fokuszeile der Verwaltungen (Flaeche und Balken),
@@ -13748,6 +13914,72 @@ td.epos-vorlage-katalogbeschreibung {
    SEINER Breite um. Zwei Klassen (0,2,0) schlagen die Grundregel. */
 .epos-dialog.epos-gebk-editor {
     max-width: none;
+}
+
+/* ==========================================================================
+   DIE ZONENMATRIX (Stufe KP2, Welle U4; Teilkonzept Konditionierungsprofile
+   3.4, 7.3) — dieselbe Matrix und dieselben Karten wie am Gebaeude, dazu je
+   Groesse eine Zustandszeile ("vom Gebaeude", "eigener Kalender", "aus der
+   Matrix") mit "Vom Gebaeude uebernehmen und anpassen". Schmal steht nur die
+   Zeile der gewaehlten Groesse, wie ihre Spalte und Karte.
+
+   OHNE WIRKUNG: Folgt die Zone in einer Groesse dem Kalender des Gebaeudes,
+   steht ihre Spalte leiser da; der Grund steht am Element (title) und in der
+   Zustandszeile. Die Eingabe bleibt bedienbar - sie wirkt nach "uebernehmen
+   und anpassen".
+   ========================================================================== */
+
+.epos-dialog.epos-zonendialog {
+    max-width: none;
+}
+
+.epos-kond-matrix td.epos-kond--ohnewirkung {
+    background: var(--epos-flaeche);
+}
+
+.epos-kond-zonenzustand {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-kond-zonenzustand-titel {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-kond-zonenzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    min-width: 0;
+}
+
+.epos-kond-zonenzeile-name {
+    font-weight: 600;
+    min-width: 6em;
+}
+
+.epos-kond-zonenzeile-zustand {
+    color: var(--epos-text-leise);
+}
+
+.epos-kond-zonenzeile-grund {
+    flex-basis: 100%;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-zonenzeile:not(.epos-kond--aktiv) {
+    display: none;
+}
+
+@container epos-kond (min-width: 900px) {
+    .epos-kond-zonenzeile:not(.epos-kond--aktiv) {
+        display: flex;
+    }
 }
 
 /* ==================================================================== */

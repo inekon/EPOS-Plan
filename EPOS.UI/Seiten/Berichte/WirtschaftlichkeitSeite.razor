@@ -102,12 +102,21 @@
        Gerechnet wird weiterhin NUR auf Zuruf (Vorbild UcWirtschaftlichkeit:
        btn_Berechnen); eine Rechnung beim Oeffnen wuerde jeden Seitenwechsel zu
        einem Simulationslauf machen. *@
-    @if (_warnungen.Count > 0 || _nachrechnen || _simVeraltet)
+    @if (_warnungen.Count > 0 || _nachrechnen || _simVeraltet || GruppenregelVeraltet)
     {
         <div class="epos-wirt-warnband">
             @if (_nachrechnen)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+            }
+            @* Anwenderentscheid 30.09.2026 (Register EZ-18): Ein Haken oder die Referenzwahl
+               hat die Staende mit Stromverwendung des Laufs geaendert und damit die
+               Gruppenregel; die gespeicherten Ergebnisse gelten bis zum naechsten
+               "Berechnen" weiter und sind veraltet. Gerechnet wird nur auf Zuruf - der Knopf
+               steht darunter im selben Band. *@
+            @if (GruppenregelVeraltet)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@GruppenregelVeraltetText" />
             }
             @* Anwenderbefund 22.09.2026: Das SIMULATIONSergebnis ist aelter als die
                letzte Projektaenderung. Das stand bis hierher nur als Farbe in der
@@ -945,6 +954,10 @@
     /// Version älter ist als die letzte Änderung ihres Projekts.</summary>
     [Parameter] public string SimulationVeraltetText { get; set; } = Resource.WIRT_BAND_SIMULATION_VERALTET;
 
+    /// <summary>Der Satz des Warnbandes, wenn die Wahl der Versionen die Gruppenregel geändert
+    /// hat (<see cref="ErgebnisAnsicht.GruppenregelVeraltet"/>, Register EZ‑18).</summary>
+    [Parameter] public string GruppenregelVeraltetText { get; set; } = Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
+
     // ---- Bewertung nach DIN EN 17463 (AUFTRAG #325) ----------------------
     //
     // DIE VIER SCHLUESSEL ZIEHEN UNVERAENDERT MIT aus dem Parameterdialog:
@@ -1067,6 +1080,14 @@
 
     /// <summary>Steht das Band „Simulationsergebnis veraltet“? (Prüfhilfe)</summary>
     public bool SimulationVeraltet => _simVeraltet;
+
+    /// <summary>
+    /// Steht das Band „Gruppenregel geändert“? Es folgt der Ansicht, die ein Haken, eine
+    /// Referenzwahl oder ein Laden bringt — die Hülle hat die Gruppenregel des Laufs mit der
+    /// der gespeicherten Ergebnisse verglichen (Register EZ‑18). Der Szenariowechsel übernimmt
+    /// nur die szenarioabhängigen Teile und lässt die Fahne stehen. (Auch Prüfhilfe.)
+    /// </summary>
+    public bool GruppenregelVeraltet => _stand.Ansicht?.GruppenregelVeraltet == true;
 
     /// <summary>Läuft gerade eine Berechnung? (Prüfhilfe; der Wirt darf dann nicht schließen.)</summary>
     public bool Beschaeftigt => _laeuft;

@@ -440,6 +440,16 @@ public sealed class ErgebnisAnsicht
     public string Szenarioabdeckung { get; set; } = "";
 
     /// <summary>
+    /// Anwenderentscheid 30.09.2026 (Register EZ‑18): Die Stände mit Stromverwendung des
+    /// gewählten Laufs — Stamm, angehakte Varianten, Referenz — weichen von denen des Laufs ab,
+    /// dem die gespeicherten Ergebnisse gehören; damit gilt eine andere Gruppenregel, und die
+    /// gezeigten Ergebnisse sind bis zum nächsten „Berechnen" veraltet. Die Seite zeigt dann ein
+    /// eigenes Band im Warnband. Wie der Ausweis hängt die Fahne an der Vergleichswahl und steht
+    /// deshalb an der Ansicht; ein Haken ohne Wirkung auf die Gruppenregel setzt sie nicht.
+    /// </summary>
+    public bool GruppenregelVeraltet { get; set; }
+
+    /// <summary>
     /// ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien
     /// gerechnet sind und woher ihre Annahmen kommen („Drei Szenarien gerechnet · Annahmen aus
     /// Vorgaben, nichts gepflegt"). Leer = keine Zeile.

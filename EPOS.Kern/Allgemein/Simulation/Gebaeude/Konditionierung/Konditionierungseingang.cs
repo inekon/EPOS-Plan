@@ -127,6 +127,108 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der aufgelöste Bestand einer Zone</b> (Teilkonzept 3.4; Stufe KP2, Welle U4) — die EINE
+        /// Stelle für den Lauf (<see cref="Konditionierungdatenweg"/>) und den Arbeitsstand
+        /// (<see cref="Konditionierungsarbeitsstand.AufgeloesterBestand"/>): Sollwerte,
+        /// Maximalraumtemperatur und Lüftung „Zone, sonst Gebäude", innere Gewinne und Bewohner aus der
+        /// Vorgabenkaskade (eigener Wert, sonst Gebäude × Flächenanteil) — nur, wenn Zone oder Gebäude
+        /// einen Wert führen; Nachtzeit, Ferienzeiträume, Merker und Kühlung kommen vom Gebäude, die
+        /// Gesamtangabe der Lüftung folgt den aufgelösten Feldern. Ohne eigene Werte und mit dem Anteil 1
+        /// ist jedes Feld das des Gebäudes.
+        /// </summary>
+        /// <param name="gebaeude">Die Bestandsfelder des Gebäudes.</param>
+        /// <param name="zone">Die eigenen Angaben der Zone.</param>
+        /// <param name="vorgaben">Die Vorgabenkaskade der Zone (<see cref="Zonenvorgaben.Bilden"/>).</param>
+        public static Matrixeingang ZonenBestand(Matrixeingang gebaeude, Zoneneingaben zone, Zonenvorgaben vorgaben)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
+            if (vorgaben == null) throw new ArgumentNullException(nameof(vorgaben));
+            Matrixeingang e = gebaeude.Kopie();
+            e.SollTag = zone.SollTag ?? gebaeude.SollTag;
+            e.SollNacht = zone.SollNacht ?? gebaeude.SollNacht;
+            e.SollWochenende = zone.SollWochenende ?? gebaeude.SollWochenende;
+            e.SollFerien = zone.SollFerien ?? gebaeude.SollFerien;
+            e.Maximaleraumtemperatur = zone.Maximaleraumtemperatur ?? gebaeude.Maximaleraumtemperatur;
+            e.LuftwechselInfiltration = zone.LuftwechselInfiltration ?? gebaeude.LuftwechselInfiltration;
+            e.LuftwechselNutzer = zone.LuftwechselNutzer ?? gebaeude.LuftwechselNutzer;
+            e.InterneWaermegewinne = zone.InterneWaermegewinne.HasValue || gebaeude.InterneWaermegewinne.HasValue
+                ? vorgaben.InterneWaermegewinne.Wert : null;
+            e.Bewohner = zone.Bewohner.HasValue || gebaeude.Bewohner.HasValue ? vorgaben.Bewohner.Wert : null;
+            Gebaeudemodellvorgaben.WirksamerLuftwechsel(e.Luftwechselrate, e.LuftwechselInfiltration,
+                                                        e.LuftwechselNutzer, out Luftwechselherkunft herkunft);
+            e.LuftwechselAusGesamtangabe = herkunft == Luftwechselherkunft.Luftwechselrate;
+            return e;
+        }
+
+        /// <summary>
+        /// <b>Die wirksame Matrix einer Zone</b> (Konzept 3.4; Stufe KP2, Welle U4) — die EINE Stelle für
+        /// den Lauf (<see cref="Konditionierungdatenweg"/>) und den Arbeitsstand
+        /// (<see cref="Konditionierungsarbeitsstand.Matrix"/>): die Zeilen der Zone je Zelle über der
+        /// Matrix des Gebäudes (F2).
+        /// <para><b>Der Nennwert der Personen ist einer der Zone</b> — „Anteilskalender multiplizieren den
+        /// Nennwert der Zone (eigener Wert oder Flächenanteil)": ihr eigener Wert, sonst der des Gebäudes ×
+        /// <paramref name="flaechenanteil"/>, auf vier Nachkommastellen (Rundlauf). Wörtlich geerbt trüge
+        /// jede Zone die Personen des ganzen Gebäudes. Den Nennwert der Geräte (die Bestandszelle
+        /// <c>Interne_Waermegewinne</c>) schlüsselt schon der Bestand der Zone
+        /// (<see cref="Zonenvorgaben"/>). Beim Anteil 1 bleibt jede Zelle bitgleich.</para>
+        /// </summary>
+        /// <param name="bestand">Die Bestandsfelder, über denen die Matrix der Zone gebildet wird.</param>
+        /// <param name="zonenvorgaben">Die Vorgabezeilen der Zone.</param>
+        /// <param name="gebaeudematrix">Die Matrix des Gebäudes über demselben Bestand.</param>
+        /// <param name="flaechenanteil">A_Zone / A_Gebäude (<see cref="Zonenvorgaben.Flaechenanteil"/>).</param>
+        public static Vorgabematrix Zonenmatrix(Matrixeingang bestand, IEnumerable<Vorgabezeile> zonenvorgaben,
+                                                Vorgabematrix gebaeudematrix, double flaechenanteil)
+        {
+            if (bestand == null) throw new ArgumentNullException(nameof(bestand));
+            Vorgabematrix zone = Vorgabematrix.Bilden(bestand.Kopie(), zonenvorgaben, Kalendereigentuemer.Zone);
+            Vorgabematrix m = zone.Erben(gebaeudematrix);
+            if (gebaeudematrix == null || flaechenanteil == 1.0) return m;
+
+            Matrixzelle eigen = zone.Personen.Nennwert;
+            Matrixzelle geerbt = gebaeudematrix.Personen.Nennwert;
+            if (eigen.Belegt || !geerbt.Belegt || geerbt.Aus) return m;
+            Matrixspalte s = m.Personen;
+            Matrixzelle nennwert = Matrixzelle.AusWert(Anteilig(geerbt.Wert, flaechenanteil),
+                                                       s.Nennwert.Von, s.Nennwert.Bis, s.Nennwert.BedingtK);
+            return m.MitSpalte(Konditionierungsgroesse.Personen,
+                               new Matrixspalte(s.Groesse, nennwert, s.Tag, s.Nacht, s.Wochenende, s.Ferien, s.Saison));
+        }
+
+        /// <summary>Ein Nennwert des Gebäudes × Flächenanteil, auf vier Nachkommastellen (Rundlauf).</summary>
+        private static double Anteilig(double wert, double anteil)
+            => Math.Round(wert * anteil, 4, MidpointRounding.AwayFromZero);
+
+        /// <summary>
+        /// <b>Die erste Quelle an einer Zone</b> (Konzept 3.4; Stufe KP2, Welle U4) — die Kette von
+        /// <see cref="ErsteQuelle(Konditionierungsgroesse, Vorgabematrix, IReadOnlyDictionary{Konditionierungsgroesse, Konditionierungskalender}, IReadOnlyDictionary{Konditionierungsgroesse, Konditionierungskalender}, bool, out Fahrplanlesung)"/>,
+        /// und gilt der angelegte Kalender des Gebäudes, trägt er an der Zone ihren Nennwert: Die Zone
+        /// erbt den GANZEN Kalender, ein Anteilskalender multipliziert aber den Nennwert der Zone —
+        /// ihren eigenen, sonst den des Gebäudekalenders × Flächenanteil
+        /// (<see cref="Zonennennwerte"/>). Ohne Nennwert des Gebäudekalenders nimmt die Zone ihren
+        /// eigenen oder bleibt ohne (Geräte: dann gilt der Rückfall <c>Interne_Waermegewinne</c> der Zone;
+        /// Personen: 0 W, wie am Gebäude).
+        /// </summary>
+        public static Konditionierungskalender ErsteQuelleDerZone(
+            Konditionierungsgroesse groesse, Vorgabematrix matrix,
+            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> zonenkalender,
+            IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudekalender,
+            bool nachtzeileDerZone, Zonennennwerte nennwerte, out Fahrplanlesung befund)
+        {
+            Konditionierungskalender k = ErsteQuelle(groesse, matrix, zonenkalender, gebaeudekalender,
+                                                     nachtzeileDerZone, out befund);
+            if (k == null || nennwerte == null || !Konditionierungsgroessen.HatNennwert(groesse)) return k;
+            bool eigener = zonenkalender != null && zonenkalender.TryGetValue(groesse, out Konditionierungskalender z) && z != null;
+            bool vomGebaeude = !eigener && gebaeudekalender != null
+                               && gebaeudekalender.TryGetValue(groesse, out Konditionierungskalender b) && ReferenceEquals(b, k);
+            if (!vomGebaeude) return k;
+            double? nennwert = nennwerte.Eigen(groesse)
+                               ?? (k.Nennwert.HasValue ? Anteilig(k.Nennwert.Value, nennwerte.Flaechenanteil) : (double?)null);
+            if (Kalendervergleich.Gleich(nennwert, k.Nennwert)) return k;
+            return new Konditionierungskalender(k.Groesse, k.Grundangabe, nennwert, k.Perioden);
+        }
+
+        /// <summary>
         /// <b>Trägt eine Zone eine eigene Heiz-Nachtzeile mit Zeiten?</b> (Entwurf KP2,
         /// Festlegung 5) — die Zeile <c>HEIZSOLL</c>/<c>NACHT</c> mit Beginn oder Ende. Am Gebäude
         /// und am Katalogbau stehen die Heiz-Nachtzeiten allein in
@@ -189,5 +291,39 @@ namespace WindowsFormsApplication1
 
         private static double? Endlich(double? wert)
             => wert.HasValue && double.IsFinite(wert.Value) ? wert : null;
+    }
+
+    /// <summary>
+    /// <b>Die Nennwerte einer Zone</b> (Konzept 3.4; Stufe KP2, Welle U4) — was ein Anteilskalender an
+    /// der Zone multipliziert: ihr EIGENER Wert, sonst der des Gebäudes × <see cref="Flaechenanteil"/>.
+    /// </summary>
+    /// <param name="Flaechenanteil">A_Zone / A_Gebäude (<see cref="Zonenvorgaben.Flaechenanteil"/>); 1 ohne eigene Fläche.</param>
+    /// <param name="Geraete">Der eigene Geräte-Nennwert der Zone (<c>Interne_Waermegewinne</c> der Zone) [W]; <c>null</c> = keiner.</param>
+    /// <param name="Personen">Der eigene Personen-Nennwert der Zone (Vorgabezelle) [W]; <c>null</c> = keiner.</param>
+    public sealed record Zonennennwerte(double Flaechenanteil, double? Geraete, double? Personen)
+    {
+        /// <summary>Der eigene Nennwert der Größe; <c>null</c> = keiner (dann gilt der Flächenanteil).</summary>
+        public double? Eigen(Konditionierungsgroesse g) => g switch
+        {
+            Konditionierungsgroesse.Geraete => Geraete,
+            Konditionierungsgroesse.Personen => Personen,
+            _ => null
+        };
+
+        /// <summary>Die Nennwerte einer Zone aus ihrem eigenen Bestand und ihren Vorgabezeilen.</summary>
+        public static Zonennennwerte Aus(double flaechenanteil, Matrixeingang eigenerBestand, IEnumerable<Vorgabezeile> zonenvorgaben)
+        {
+            double? personen = null;
+            string kennwort = Konditionierungsgroessen.Kennwort(Konditionierungsgroesse.Personen);
+            foreach (Vorgabezeile v in zonenvorgaben ?? Array.Empty<Vorgabezeile>())
+                if (v != null && !v.Aus && v.Wert.HasValue && double.IsFinite(v.Wert.Value)
+                    && string.Equals(v.Groesse, kennwort, StringComparison.Ordinal)
+                    && string.Equals(v.Zeile, DbWerte.KOND_ZEILE_NENNWERT, StringComparison.Ordinal))
+                {
+                    personen = v.Wert;
+                    break;
+                }
+            return new Zonennennwerte(flaechenanteil, eigenerBestand?.InterneWaermegewinne, personen);
+        }
     }
 }

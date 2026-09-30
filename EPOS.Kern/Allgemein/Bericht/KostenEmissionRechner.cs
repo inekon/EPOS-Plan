@@ -484,13 +484,9 @@ namespace WindowsFormsApplication1
             bool stromAusRueckfall = false;
             if (stromCarrierKosten <= 0)
             {
-                int rueckfall = StandardStromTraeger(v.IdProjekt);
-                // GRUPPENREGEL „Strombedarf ohne Verwendung": Ein Stand ohne eigene
-                // Stromverwendung, dessen Netzbezug im Vergleich bepreist wird, bekommt
-                // denselben Auslieferungsträger — ohne die Vorbedingung der elektrischen
-                // Welt, die ihn sonst ausschließt. Der Rückfall wird vermerkt wie jeder.
-                if (rueckfall <= 0 && v.StromImVergleichBepreisen)
-                    rueckfall = ProjektEnergietraegerCtrl.StromTraegerImVergleich(v.IdProjekt);
+                // Die Wahl steht EINMAL in StromTraegerRueckfall — die Kohärenzprüfung der
+                // Stromsteuer fragt dieselbe (Register EZ‑18).
+                int rueckfall = StromTraegerRueckfall(v.IdProjekt, v.StromImVergleichBepreisen);
                 if (rueckfall > 0) { stromCarrierKosten = rueckfall; stromAusRueckfall = true; }
             }
 
@@ -1482,6 +1478,29 @@ namespace WindowsFormsApplication1
         private static int StandardStromTraeger(int idProjekt)
         {
             return Emissionsquelle.KatalogStromTraeger(idProjekt);
+        }
+
+        /// <summary>
+        /// <b>Der Rückfallträger, mit dem der Netzbezug eines Standes ohne zugeordneten
+        /// Stromträger bepreist wird</b> — die EINE Wahl für Kostenrechnung und
+        /// Kohärenzprüfung der Stromsteuer (<c>KohaerenzPruefung</c>, Register EZ‑18): der
+        /// Auslieferungsträger des Katalogs (<see cref="StandardStromTraeger"/>, nur mit
+        /// elektrischer Welt); für einen Stand ohne eigene Stromverwendung, dessen Netzbezug
+        /// die Gruppenregel im Vergleich bepreist (<paramref name="imVergleich"/> =
+        /// <see cref="VariantenDaten.StromImVergleichBepreisen"/>), derselbe Träger ohne diese
+        /// Vorbedingung (<see cref="ProjektEnergietraegerCtrl.StromTraegerImVergleich"/>).
+        /// 0 = keiner. Ob dem Projekt ein Träger zugeordnet ist, fragt der Aufrufer vorher.
+        /// </summary>
+        internal static int StromTraegerRueckfall(int idProjekt, bool imVergleich)
+        {
+            int rueckfall = StandardStromTraeger(idProjekt);
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": Ein Stand ohne eigene
+            // Stromverwendung, dessen Netzbezug im Vergleich bepreist wird, bekommt
+            // denselben Auslieferungsträger — ohne die Vorbedingung der elektrischen
+            // Welt, die ihn sonst ausschließt. Der Rückfall wird vermerkt wie jeder.
+            if (rueckfall <= 0 && imVergleich)
+                rueckfall = ProjektEnergietraegerCtrl.StromTraegerImVergleich(idProjekt);
+            return rueckfall;
         }
 
         /// <summary>

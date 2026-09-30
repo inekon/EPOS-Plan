@@ -472,6 +472,8 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
 | erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |
 | Vom Gebäude übernehmen und anpassen | copy from building and adjust | Zone: legt eine eigene Kopie des Gebäudekalenders an |
+| Kalender im Einzelnen | calendar details | Knopf der Kalenderkarte: klappt Grundangabe, Wochenraster, Zeitfenster, Periodenliste, Werkzeuge und Teppichbild auf |
+| In den Kalender übernehmen | apply to calendar | Knopf der Gruppe „Wärmeübergabe": das Sollwert-Zeitprogramm wird die Standardwoche des Heizkalenders (Übernehmen → Apply, § 8) |
 
 Abweichende Bestandstexte: Die Kernmeldungen `SIMENG_KOND_*` (Stufe KP1) schreiben an einigen Stellen „heating season",
 „night cooling", „input matrix" und „set point", der Gebäudedialog (`GEBK_*`) „set point" und „Maximum room temperature".
