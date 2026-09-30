@@ -626,6 +626,102 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
     }
 
+    // =================================================================================
+    // Stufe KP2, Welle U4: der Zonendialog als Blatt mit Zonenmatrix
+    // =================================================================================
+
+    /// <summary>
+    /// Hausregel „ein Unterdialog mit eigenen Spalten ist ein Blatt": Der Zonendialog tauscht den Inhalt
+    /// des Editors (Blattwechsel), trägt keinen eigenen Titel, und der Rückknopf verwirft wie Abbrechen.
+    /// </summary>
+    [Fact]
+    public void Der_Zonendialog_steht_als_Blatt_und_der_Rueckweg_verwirft()
+    {
+        var cut = Aufbauen(new Weg(), zonen: new[] { Vorschlagszone() });
+        ReiterWaehlen(cut, "Zonen");
+
+        Knoepfe(cut, "Öffnen…")[0].Click();
+
+        Assert.True(cut.Instance.ZonendialogOffen);
+        IElement blatt = cut.Find(".epos-blatt");
+        Assert.Contains("epos-blatt--breit", blatt.ClassName);
+        Assert.Equal("Zone", blatt.QuerySelector(".epos-blatt-titel")!.TextContent.Trim());
+        Assert.NotNull(blatt.QuerySelector(".epos-zonendialog"));
+        Assert.Empty(cut.FindAll(".epos-zonendialog .epos-dialog-titel"));
+        // Der Haupt-Inhalt des Editors steht nicht, solange das Blatt steht.
+        Assert.Empty(cut.FindAll(".epos-gebk-editor > .epos-dialog-kopf"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung .epos-zonendialog"));
+
+        cut.Find(".epos-zonendialog input").Input("Umbenannt");
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.False(cut.Instance.ZonendialogOffen);
+        Assert.Empty(cut.FindAll(".epos-blatt"));
+        Assert.Equal("Haus A", cut.Instance.ZonenImArbeitsstand[0].Bezeichner);
+    }
+
+    /// <summary>
+    /// <b>Eine neue Zone mit eigener Zelle steht nach OK richtig</b> (Entwurf KP2 Abschnitt 7, SA2;
+    /// Id-Zuordnung aus K2): Das OK des Editors schreibt sie samt Konditionierung, übernimmt die Id des
+    /// Kerns — und ein zweites OK schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Eine_neue_Zone_mit_eigener_Zelle_steht_nach_OK_richtig_und_ein_zweites_OK_schreibt_nichts()
+    {
+        var weg = new Weg();
+        var geschrieben = new List<IReadOnlyList<ZoneDaten>>();
+        var zonenweg = new GebaeudeZonenweg
+        {
+            Zonen = new[] { Vorschlagszone() },
+            Speichern = s =>
+            {
+                geschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList());
+                var neu = s.Zonen.Where(z => z.Id <= 0).ToDictionary(z => z.Id, z => 40 - z.Id);
+                return new ZonenSchreibergebnis("", neu, new Dictionary<int, IReadOnlyList<int>>(), null);
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, weg.Speichern)
+            .Add(x => x.Zonen, zonenweg)
+            .Add(x => x.Konditionierung, KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true)));
+        ReiterWaehlen(cut, "Zonen");
+
+        // Die zweite Zone: erst die Rückfrage, dann das Blatt mit der leeren Zone.
+        Knoepfe(cut, "+ Neue Zone …")[0].Click();
+        Antwort(cut, "Ja").Click();
+        IElement zone = cut.Find(".epos-zonendialog");
+        Feld(zone, "Nutzfläche").Input("50");
+        Feld(cut.Find(".epos-zonendialog"), "Personen · Nennwert").Input("300");
+        Assert.Equal("", cut.FindComponent<ZonenDialog>().Instance.Meldung);
+        cut.Find(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Click();
+        Assert.False(cut.Instance.ZonendialogOffen);
+
+        Ok(cut);
+        IReadOnlyList<ZoneDaten> erste = Assert.Single(geschrieben);
+        ZoneDaten neue = erste.Single(z => z.Nutzflaeche == 50);
+        Assert.True(neue.Id <= 0);
+        Assert.True(neue.Konditionierung!.Fassung > 0);
+        Assert.Equal(300.0, neue.Konditionierung.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert);
+        // Die Id des Kerns steht im Arbeitsstand, die Konditionierung an ihr.
+        ZoneDaten danach = cut.Instance.ZonenImArbeitsstand.Single(z => z.Id == 40 - neue.Id);
+        Assert.Equal(300.0, danach.Konditionierung!.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert);
+
+        Ok(cut);
+        Assert.Single(geschrieben);
+    }
+
+    private static IElement Feld(IElement bereich, string beschriftung)
+        => bereich.QuerySelectorAll("label.epos-feld")
+                  .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+                  .QuerySelector("input, select")!;
+
     [Fact]
     public void Ohne_Delegat_gibt_es_keinen_Knopf_Huelle_und_Zonen()
     {

@@ -34284,7 +34284,7 @@ Do you want to allow this?</value>
     <value>Default: {0} (area × room height)</value>
   </data>
   <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
-    <value>An empty field takes the value of the building – internal gains, occupants and, from two zones on, the heating power limit by the zone’s share of the floor area. Night hours, holidays and cooling always come from the building.</value>
+    <value>An empty field takes the value of the building – internal gains, occupants and, from two zones on, the heating power limit by the zone’s share of the floor area. Holidays and cooling always come from the building; setpoints, night hours and ventilation are in the zone’s defaults matrix.</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>An unheated zone floats freely: no heating, no cooling, no set points.</value>
@@ -40658,6 +40658,42 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Night purge ventilation</value>
+  </data>
+  <data name="KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER" xml:space="preserve">
+    <value>The building has no created calendar “{0}” – zone “{1}” has nothing to copy; “Create calendar” creates its own from the matrix.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
+    <value>from the building</value>
+  </data>
+  <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
+    <value>The building's ventilation is given as a total “air change rate”. Split it in the “Conditioning” tab of the building; the zone then takes its own ventilation values.</value>
+  </data>
+  <data name="KOND_TXT_ZONE_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Without effect while the zone follows the calendar of the building.</value>
+  </data>
+  <data name="KOND_LBL_ZONE_KALENDER" xml:space="preserve">
+    <value>Calendars of the zone</value>
+  </data>
+  <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
+    <value>An empty cell inherits from the building; the placeholder shows the value. A cell of its own overrides it, an emptied cell inherits again.</value>
+  </data>
+  <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
+    <value>Conditioning…</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_SPEICHERN" xml:space="preserve">
+    <value>The changes belong to the selected record: “Save” in the administration writes them, “Discard” reverts them.</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
+    <value>Setpoints, night time, holiday periods, internal heat gains, infiltration, occupant ventilation, summer ventilation, cooling setpoint and maximum indoor temperature are in the group “Conditioning”.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_ZELLE" xml:space="preserve">
+    <value>A cell of the zone matrix in the zone dialog: {0}, row “{1}”, in {2}. Empty means “from the building”: whatever the building specifies applies – appliances and people in the zone’s floor area share. While the zone follows a created calendar of the building, the cell only takes effect after “Copy from building and adjust”.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_FENSTER" xml:space="preserve">
+    <value>Night window of the {0} column of the zone: {1} as a full hour from 0 to 23; both empty = from the building.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_SAISON" xml:space="preserve">
+    <value>Season of the {0} column of the zone: {1} as a day of the common year (1 = 1 January, 365 = 31 December); both empty = from the building.</value>
   </data>
   <data name="KOND_TXT_VORSCHAU_VORLAGE" xml:space="preserve">
     <value>Preview with the template “{0}” – nothing is applied until “Apply”.</value>

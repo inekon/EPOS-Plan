@@ -168,17 +168,19 @@ public class ZonenDialogTests : EposBunitContext
 
         Assert.Equal("Vorgabe: 2,5", Feld(w, "Raumhöhe").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: 375 (Fläche × Raumhöhe)", Feld(w, "Luftvolumen").GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe: 20", Feld(w, "Soll am Tag").GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe: 16", Feld(w, "Nachtabsenkung auf").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: 26", Feld(w, "Maximalraumtemperatur").GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe: 3000 (75 % des Gebäudes)", Feld(w, "Interne Wärmegewinne").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: 7,5 (75 % des Gebäudes)", Feld(w, "Heizleistungsgrenze").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: " + Gebaeudemodellvorgaben.HeizungStrahlungsanteil.ToString("0.##", CultureInfo.CurrentCulture),
                      Feld(w, "Strahlungsanteil Heizung").GetAttribute("placeholder"));
-        // Infiltration und Nutzerlüftung leer, das Gebäude trägt eine Luftwechselrate: sie gilt.
-        Assert.Equal("", Feld(w, "Infiltration").GetAttribute("placeholder") ?? "");
+        // Stufe KP2, Welle U4: Sollwerte, Lüftung und Gewinne stehen in der Zonenmatrix; ohne Weg der
+        // Konditionierung nennt ihr Platzhalter die Vorgabenkaskade („Vorgabe 20"), anteilig nach der Fläche.
+        Assert.Equal("Vorgabe 20", Feld(w, "Heizen · Tag").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 16", Feld(w, "Heizen · Nacht").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 3000", Feld(w, "Geräte · Nennwert").GetAttribute("placeholder"));
+        // Infiltration und Nutzerlüftung leer, das Gebäude trägt nur eine Luftwechselrate: „wie Gebäude".
+        Assert.Equal("wie Gebäude", Feld(w, "Lüftung · Infiltration").GetAttribute("placeholder"));
         Assert.Contains("Luftwechsel der Zone: 0,5 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
-        Assert.Contains("Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude", cut.Markup);
+        Assert.Contains("Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone", cut.Markup);
     }
 
     /// <summary>Bei einer einzigen Zone bleibt die Leistungsgrenze die des Gebäudes (Festlegung 5).</summary>
@@ -197,8 +199,8 @@ public class ZonenDialogTests : EposBunitContext
 
         Feld(cut.Find(".epos-zonendialog"), "Nutzfläche").Input("100");
 
-        Assert.Equal("Vorgabe: 2000 (50 % des Gebäudes)",
-                     Feld(cut.Find(".epos-zonendialog"), "Interne Wärmegewinne").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 2000",
+                     Feld(cut.Find(".epos-zonendialog"), "Geräte · Nennwert").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: 250 (Fläche × Raumhöhe)",
                      Feld(cut.Find(".epos-zonendialog"), "Luftvolumen").GetAttribute("placeholder"));
     }
@@ -210,15 +212,19 @@ public class ZonenDialogTests : EposBunitContext
         ZoneDaten? zurueck = null;
         var cut = Aufbauen(geschlossen: z => zurueck = z, gebaeude: Gebaeude());
         IElement w = cut.Find(".epos-zonendialog");
-        Assert.NotNull(FeldOderNichts(w, "Soll am Tag"));
+        Assert.NotNull(FeldOderNichts(w, "Heizen · Tag"));
 
         cut.Find(".epos-zonendialog input.epos-schalter-kasten").Change(false);
 
+        // Stufe KP2, Welle U4: Die Heizspalte der Zonenmatrix steht weich gesperrt mit Grund da.
         w = cut.Find(".epos-zonendialog");
-        foreach (string feld in new[] { "Soll am Tag", "Nachtabsenkung auf", "Soll am Wochenende", "Soll in Ferien",
-                                        "Maximalraumtemperatur", "Strahlungsanteil Heizung", "Heizleistungsgrenze" })
+        foreach (string feld in new[] { "Heizen · Tag", "Heizen · Nacht", "Soll am Wochenende (ganztägig)",
+                                        "Soll in Ferien (ganztägig)", "Maximalraumtemperatur", "Strahlungsanteil Heizung",
+                                        "Heizleistungsgrenze" })
             Assert.Null(FeldOderNichts(w, feld));
-        Assert.NotNull(FeldOderNichts(w, "Interne Wärmegewinne"));
+        Assert.Contains(cut.FindAll(".epos-kond-gesperrt"),
+                        k => k.GetAttribute("title")!.StartsWith("Eine unbeheizte Zone hat weder Heiz- noch Kühlwerte", StringComparison.Ordinal));
+        Assert.NotNull(FeldOderNichts(w, "Geräte · Nennwert"));
         Assert.Contains("schwingt frei", cut.Markup);
 
         Ok(cut);
@@ -234,7 +240,7 @@ public class ZonenDialogTests : EposBunitContext
         IElement w = cut.Find(".epos-zonendialog");
 
         Feld(w, "Raumhöhe").Input("3");
-        Feld(w, "Soll am Tag").Input("22");
+        Feld(w, "Heizen · Tag").Input("22");
         Feld(w, "Bewohner").Input("4");
         Feld(w, "Heizleistungsgrenze").Input("6");
         Ok(cut);
@@ -452,6 +458,192 @@ public class ZonenDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Die Zonenmatrix (Stufe KP2, Welle U4; Teilkonzept Konditionierungsprofile 3.4, 7.3)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Gebäude für die Zonenmatrix: 200 m², Sollwerte 20/16 °C, getrennte Lüftung 0,3/0,4 1/h,
+    /// 4 000 W innere Gewinne, Personen-Nennwert 1 000 W mit 50 % am Tag — der Arbeitsstand des
+    /// Editors, gebaut über die Bearbeitung des Gebäudes und den reinen Weg des Kerns.
+    /// </summary>
+    private static (GebaeudeArbeitsstand Arbeit, KonditionierungWeg Weg) Matrixgebaeude(bool heizkalender = false,
+                                                                                         bool gesamtangabe = false)
+    {
+        var d = new GebaeudeKatalogDaten
+        {
+            Name = "Haus", WohnflaecheGesamt = 200, SollTag = 20, NachtAbsenkung = 16,
+            LuftwechselInfiltration = gesamtangabe ? null : 0.3, LuftwechselNutzer = gesamtangabe ? null : 0.4,
+            Luftwechselrate = 0.7, Waermegewinne = 4000, KuehlungAktiv = true, KuehlSollwert = 26,
+            Konditionierung = new KonditionierungDaten()
+        };
+        var arbeit = new GebaeudeArbeitsstand();
+        arbeit.Laden(d, neu: false);
+        KonditionierungWeg weg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true);
+        var gebaeude = new KonditionierungBearbeitung(arbeit, () => weg);
+        Assert.True(gebaeude.WertSetzen(KonditionierungGroesse.Personen, KonditionierungZeile.Nennwert, 1000));
+        Assert.True(gebaeude.WertSetzen(KonditionierungGroesse.Personen, KonditionierungZeile.Tag, 50));
+        if (heizkalender) Assert.True(gebaeude.Anlegen(KonditionierungGroesse.Heizen));
+        return (arbeit, weg);
+    }
+
+    private IRenderedComponent<ZonenDialog> MitMatrix(GebaeudeArbeitsstand arbeit, KonditionierungWeg weg,
+                                                      Action<ZoneDaten?>? geschlossen = null, ZoneDaten? zone = null)
+        => Render<ZonenDialog>(p => p
+            .Add(x => x.Zone, zone ?? new ZoneDaten { Id = 7, Bezeichner = "Wohnen", Nutzflaeche = 150 })
+            .Add(x => x.NutzflaecheGebaeude, 200.0)
+            .Add(x => x.Gebaeudestand, arbeit)
+            .Add(x => x.Konditionierung, weg)
+            .Add(x => x.Geschlossen, z => geschlossen?.Invoke(z)));
+
+    private static IElement Zustandszeile(IRenderedComponent<ZonenDialog> cut, KonditionierungGroesse g)
+        => cut.Find(".epos-kond-zonenzeile[data-groesse=\"" + (int)g + "\"]");
+
+    private static IElement Matrixzelle(IRenderedComponent<ZonenDialog> cut, KonditionierungGroesse g, KonditionierungZeile z)
+        => cut.Find("td.epos-kond-zelle[data-groesse=\"" + (int)g + "\"][data-zeile=\"" + (int)z + "\"]");
+
+    [Fact]
+    public void Die_Zonenmatrix_nennt_die_geerbten_Werte_als_Platzhalter()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg);
+        IElement w = cut.Find(".epos-zonendialog");
+
+        Assert.Equal("Vorgabe 20", Feld(w, "Heizen · Tag").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 16", Feld(w, "Heizen · Nacht").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0,3", Feld(w, "Lüftung · Infiltration").GetAttribute("placeholder"));
+        // Die inneren Gewinne und der Personen-Nennwert im Flächenanteil (150 / 200 = 75 %, Konzept 3.4);
+        // die Gewinne des Gebäudes nach P1: 4 000 W − 500 W Personenmittel = 3 500 W, davon 75 %.
+        Assert.Equal("Vorgabe 2625", Feld(w, "Geräte · Nennwert").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 750", Feld(w, "Personen · Nennwert").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 50 %", Feld(w, "Personen · Tag").GetAttribute("placeholder"));
+        // Ohne Wert am Gebäude: „wie Gebäude".
+        Assert.Equal("wie Gebäude", Feld(w, "Lüftung · Wochenende").GetAttribute("placeholder"));
+        Assert.Contains("Eine leere Zelle gilt wie im Gebäude", cut.Markup);
+
+        // Eine andere Nutzfläche schlüsselt neu.
+        Feld(w, "Nutzfläche").Input("100");
+        Assert.Equal("Vorgabe 500", Feld(cut.Find(".epos-zonendialog"), "Personen · Nennwert").GetAttribute("placeholder"));
+    }
+
+    [Fact]
+    public void Eine_eigene_Zelle_ueberschreibt_und_OK_traegt_sie_samt_Konditionierung_zurueck()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        ZoneDaten? zurueck = null;
+        var cut = MitMatrix(arbeit, weg, z => zurueck = z);
+
+        Feld(cut.Find(".epos-zonendialog"), "Heizen · Tag").Input("22");
+        Feld(cut.Find(".epos-zonendialog"), "Personen · Nennwert").Input("300");
+        Feld(cut.Find(".epos-zonendialog"), "Lüftung · Nachtauskühlung").Input("1");
+        Assert.Equal("", cut.Instance.Meldung);
+        Ok(cut);
+
+        Assert.NotNull(zurueck);
+        Assert.Equal(22.0, zurueck!.SollTag);
+        Assert.NotNull(zurueck.Konditionierung);
+        Assert.True(zurueck.Konditionierung!.Fassung > 0);
+        Assert.Equal(300.0, zurueck.Konditionierung.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert);
+        Assert.Equal(1.0, zurueck.Konditionierung.Spalte(KonditionierungGroesse.Lueftung).Nacht.Wert);
+        // Das Gebäude liest der Zonendialog nur.
+        Assert.Equal(20.0, arbeit.Stand.SollTag);
+        Assert.Null(arbeit.Stand.Konditionierung!.Spalte(KonditionierungGroesse.Lueftung).Nacht.Wert);
+    }
+
+    [Fact]
+    public void Eine_geleerte_Zelle_erbt_wieder()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        ZoneDaten? zurueck = null;
+        var cut = MitMatrix(arbeit, weg, z => zurueck = z,
+                            new ZoneDaten { Id = 7, Bezeichner = "Wohnen", Nutzflaeche = 150, SollTag = 22 });
+
+        IElement tag = Feld(cut.Find(".epos-zonendialog"), "Heizen · Tag");
+        Assert.Equal("22", tag.GetAttribute("value"));
+        tag.Input("");
+        Assert.Equal("Vorgabe 20", Feld(cut.Find(".epos-zonendialog"), "Heizen · Tag").GetAttribute("placeholder"));
+        Ok(cut);
+        Assert.Null(zurueck!.SollTag);
+    }
+
+    [Fact]
+    public void Vom_Gebaeude_steht_mit_Grund_und_uebernehmen_legt_eine_eigene_Kopie_an()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude(heizkalender: true);
+        ZoneDaten? zurueck = null;
+        var cut = MitMatrix(arbeit, weg, z => zurueck = z);
+
+        IElement zeile = Zustandszeile(cut, KonditionierungGroesse.Heizen);
+        Assert.Contains("vom Gebäude", zeile.TextContent);
+        Assert.Contains("Die Zone folgt dem Kalender des Gebäudes", zeile.TextContent);
+        // Die Zellen der Größe sind ohne Wirkung - leise, der Grund am Element.
+        IElement zelle = Matrixzelle(cut, KonditionierungGroesse.Heizen, KonditionierungZeile.Tag);
+        Assert.Contains("epos-kond--ohnewirkung", zelle.ClassName);
+        Assert.Equal("Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt.", zelle.GetAttribute("title"));
+        // Die übrigen Größen folgen der Matrix.
+        Assert.Contains("aus der Matrix", Zustandszeile(cut, KonditionierungGroesse.Lueftung).TextContent);
+
+        zeile.QuerySelectorAll("button").Single(b => b.TextContent.Trim() == "Vom Gebäude übernehmen und anpassen").Click();
+
+        zeile = Zustandszeile(cut, KonditionierungGroesse.Heizen);
+        Assert.Contains("eigener Kalender", zeile.TextContent);
+        Assert.Empty(zeile.QuerySelectorAll("button"));
+        Assert.DoesNotContain("epos-kond--ohnewirkung",
+                              Matrixzelle(cut, KonditionierungGroesse.Heizen, KonditionierungZeile.Tag).ClassName);
+
+        Ok(cut);
+        KonditionierungKalender k = zurueck!.Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender;
+        Assert.Equal(KonditionierungZustand.Angelegt, k.Zustand);
+        Assert.Equal(arbeit.Stand.Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender.Woche, k.Woche);
+    }
+
+    [Fact]
+    public void Die_Kuehlspalte_der_Zone_ist_weich_gesperrt_und_nennt_den_Grund()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg);
+
+        IElement kuehlen = Matrixzelle(cut, KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag)
+                               .QuerySelector(".epos-kond-gesperrt")!;
+        Assert.Equal("true", kuehlen.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Die Kühlwerte gelten für das ganze Gebäude", kuehlen.GetAttribute("title"));
+        Assert.Contains("Vorgabe 26", kuehlen.TextContent);
+        kuehlen.Click();
+        Assert.StartsWith("Die Kühlwerte gelten für das ganze Gebäude", cut.Instance.Meldung);
+        // Kühlen trägt an der Zone weder Zustandszeile noch Karte (bis KU3).
+        Assert.Empty(cut.FindAll(".epos-kond-zonenzeile[data-groesse=\"1\"]"));
+        Assert.Empty(cut.FindAll(".epos-kond-karte[data-groesse=\"1\"]"));
+    }
+
+    [Fact]
+    public void Die_Aufteilung_der_Gesamtangabe_bleibt_am_Gebaeude()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude(gesamtangabe: true);
+        var cut = MitMatrix(arbeit, weg);
+
+        Feld(cut.Find(".epos-zonendialog"), "Lüftung · Nachtauskühlung").Input("1");
+
+        Assert.StartsWith("Die Lüftung des Gebäudes steht als Gesamtangabe", cut.Instance.Meldung);
+        Assert.Null(arbeit.Stand.LuftwechselInfiltration);
+        Assert.Equal(0.7, arbeit.Stand.Luftwechselrate);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    [Fact]
+    public void Ohne_Weg_bleiben_die_Bestandszellen_der_Zone_bedienbar()
+    {
+        ZoneDaten? zurueck = null;
+        var cut = Aufbauen(geschlossen: z => zurueck = z, gebaeude: Gebaeude());
+
+        // Ohne Konditionierungstabellen nennt die Matrix ihren Grund; die neuen Zellen zeigen „—".
+        Assert.Contains("Konditionierung", cut.Find(".epos-kond-zone .epos-kond-sperrzeile").TextContent);
+        Assert.Null(FeldOderNichts(cut.Find(".epos-zonendialog"), "Personen · Nennwert"));
+        Feld(cut.Find(".epos-zonendialog"), "Lüftung · Nutzerlüftung").Input("0,5");
+        Ok(cut);
+        Assert.Equal(0.5, zurueck!.LuftwechselNutzer);
+        Assert.Null(zurueck.Konditionierung);
+    }
+
+    // =================================================================================
     // Ohne Gaben und der Hilfe-Assistent
     // =================================================================================
 
@@ -499,5 +691,68 @@ public class ZonenDialogTests : EposBunitContext
         cut.Render();
         Assert.Equal(21.5, cut.Instance.Arbeitsstand.SollTag);
         Assert.False(cut.Instance.Arbeitsstand.IstBeheizt);
+    }
+
+    /// <summary>
+    /// <b>Die Zonenmatrix beim Assistenten</b> (Stufe KP2, Welle U4): Die Felder der Zonenkarte lesen leer
+    /// als „wie Gebäude" (<c>null</c>) und setzen über dieselbe Bearbeitung wie die Zellen — eine eigene
+    /// Zelle der Zone, das Gebäude bleibt; eine Bestandszelle geht ebenso über ihre Zelle, die Kühlspalte
+    /// kennt die Zone nicht, und eine Ablehnung nennt den Grund des Reiters.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Zonenmatrix_ueber_die_Bearbeitung()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg);
+
+        KiFeldzugang personen = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_personen_nennwert");
+        Assert.NotNull(personen);
+        Assert.True(personen.Setzbar);
+        Assert.Null(personen.Lesen());
+        personen.Setzen(300.0);
+        cut.Render();
+        Assert.Equal(300.0, personen.Lesen());
+        Assert.Equal(300.0, cut.Instance.Arbeitsstand.Konditionierung!
+                                .Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+        Assert.Equal(1000.0, arbeit.Stand.Konditionierung!
+                                .Spalte(KonditionierungGroesse.Personen).Zelle(KonditionierungZeile.Nennwert).Wert);
+
+        // Das Nachtfenster der Heizspalte steht an der Zone in der Zelle: erst beide Grenzen gehen an den Weg.
+        KiFeldzugang von = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_von");
+        KiFeldzugang bis = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_bis");
+        Assert.NotNull(von);
+        Assert.NotNull(bis);
+        von.Setzen(21);
+        Assert.Null(cut.Instance.Konditionierungsbearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht).Von);
+        bis.Setzen(5);
+        Assert.Equal(((int?)21, (int?)5), cut.Instance.Konditionierungsbearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht));
+
+        // Eine Bestandszelle: soll_tag geht über die Zelle der Zone - dieselbe wie das Feld der Matrix.
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "soll_tag")!.Setzen(22.0);
+        cut.Render();
+        Assert.Equal(22.0, cut.Instance.Arbeitsstand.SollTag);
+        Assert.Equal("22", Matrixzelle(cut, KonditionierungGroesse.Heizen, KonditionierungZeile.Tag)
+                               .QuerySelector("input")!.GetAttribute("value"));
+
+        // Die Kühlspalte kennt die Zone nicht (Zonenregel bis KU3).
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_kuehlen_nacht_von"));
+    }
+
+    /// <summary>
+    /// Die Gegenprobe der Zonenregel beim Assistenten: In einer unbeheizten Zone lehnt die Heizspalte ab —
+    /// mit dem Grund des Reiters, nichts wird gesetzt.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_nennt_die_Zonenregel_einer_unbeheizten_Zone()
+    {
+        (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
+        var cut = MitMatrix(arbeit, weg, zone: new ZoneDaten { Id = 7, Bezeichner = "Lager", Nutzflaeche = 50, IstBeheizt = false });
+
+        KiFeldzugang heizen = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_von")!;
+        heizen.Setzen(22);
+        var fehler = Assert.Throws<InvalidOperationException>(
+            () => KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "kond_heizen_nacht_bis")!.Setzen(6));
+        Assert.Contains("nicht beheizt", fehler.Message);
+        Assert.Null(cut.Instance.Arbeitsstand.Konditionierung);
     }
 }

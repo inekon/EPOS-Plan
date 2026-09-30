@@ -149,6 +149,46 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Zonenkarte</b> (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3): dieselben Zellen ohne die
+        /// Kühlspalte (an der Zone gesperrt bis KU3), dazu das Nachtfenster der Heizspalte (an der Zone steht
+        /// es in der Zelle), ohne Bestandszelle (die Zone führt sie unter eigenen Namen); die Felder zeigen
+        /// auf die Sichtklasse des Zonendialogs und sagen „wie Gebäude".
+        /// </summary>
+        [Fact]
+        public void Die_Zonenkarte_fuehrt_die_Matrix_ohne_Kuehlspalte_mit_dem_Heiz_Nachtfenster()
+        {
+            IReadOnlyList<KiKonditionierungsfelder.Feld> zone = KiKonditionierungsfelder.Zonenfelder;
+            // Ohne Kühlspalte und ohne die Vorlagen (die Karten der Zone bieten keine), dazu das Heiz-Nachtfenster.
+            int ohneKuehlen = KiKonditionierungsfelder.Alle.Count(f => f.Groesse != Konditionierungsgroesse.Kuehlsoll
+                                                                        && f.Teil != KiKonditionierungsfelder.Teil.Vorlage);
+            Assert.Equal(ohneKuehlen + 2, zone.Count);
+            Assert.Equal(27, zone.Count);
+            Assert.DoesNotContain(zone, f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage);
+            Assert.Null(KiKonditionierungsfelder.FindeZone("kond_heizen_vorlage"));
+            Assert.DoesNotContain(zone, f => f.Groesse == Konditionierungsgroesse.Kuehlsoll);
+            Assert.DoesNotContain(zone, f => f.Bestandszelle && f.Teil == KiKonditionierungsfelder.Teil.Wert);
+
+            foreach (KiKonditionierungsfelder.Feld f in zone)
+            {
+                Assert.Same(f, KiKonditionierungsfelder.FindeZone(f.Schluessel));
+                Assert.Matches(MUSTER, f.Schluessel);
+            }
+            Assert.NotNull(KiKonditionierungsfelder.FindeZone("kond_heizen_nacht_von"));
+            Assert.NotNull(KiKonditionierungsfelder.FindeZone("kond_heizen_nacht_bis"));
+            Assert.Null(KiKonditionierungsfelder.Finde("kond_heizen_nacht_von"));
+            Assert.Null(KiKonditionierungsfelder.FindeZone("kuehl_sollwert_nacht"));
+            Assert.Null(KiKonditionierungsfelder.FindeZone("kond_kuehlen_tag_aus"));
+
+            var felder = KiKonditionierungsfelder.ZonenDialogfelder().ToDictionary(f => f.Name, StringComparer.Ordinal);
+            Assert.Equal(zone.Count, felder.Count);
+            Assert.All(felder.Values, f => Assert.StartsWith("ZonenKiSicht.", f.Eigenschaftspfad, StringComparison.Ordinal));
+            Assert.Contains("wie Gebäude", felder["kond_personen_nennwert"].Erlaeuterung, StringComparison.Ordinal);
+            Assert.Contains("wie Gebäude", felder["kond_heizen_nacht_von"].Erlaeuterung, StringComparison.Ordinal);
+            Assert.Contains("wie Gebäude", felder["kond_heizen_saison_bis"].Erlaeuterung, StringComparison.Ordinal);
+            Assert.Equal("Heizen · Nachtfenster von", felder["kond_heizen_nacht_von"].Anzeigename);
+        }
+
+        /// <summary>
         /// <b>Je Größe die Vorlage</b> (Welle U2; Entwurf KP2 D9): <c>kond_&lt;größe&gt;_vorlage</c> ist eine
         /// WAHL aus der Liste der Karte — Setzen trägt die Aktion des Knopfs „Übernehmen", Lesen nennt die
         /// Herkunft. Sie steht in der Zeile „Vorlage" über dem Nennwert, nicht an einer Zelle; leer lässt sie

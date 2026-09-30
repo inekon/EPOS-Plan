@@ -34291,7 +34291,7 @@ Möchten Sie das zulassen?</value>
     <value>Vorgabe: {0} (Fläche × Raumhöhe)</value>
   </data>
   <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
-    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.</value>
+    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone.</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
@@ -40665,6 +40665,42 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
     <value>Nachtauskühlung</value>
+  </data>
+  <data name="KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER" xml:space="preserve">
+    <value>Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_WIE_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="KOND_TXT_ZONE_AUFTEILEN" xml:space="preserve">
+    <value>Die Lüftung des Gebäudes steht als Gesamtangabe „Luftwechselrate“. Teilen Sie sie im Reiter „Konditionierung“ des Gebäudes auf; danach trägt die Zone eigene Lüftungswerte.</value>
+  </data>
+  <data name="KOND_TXT_ZONE_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Ohne Wirkung, solange die Zone dem Kalender des Gebäudes folgt.</value>
+  </data>
+  <data name="KOND_LBL_ZONE_KALENDER" xml:space="preserve">
+    <value>Kalender der Zone</value>
+  </data>
+  <data name="KOND_TXT_ZONE_MATRIX" xml:space="preserve">
+    <value>Eine leere Zelle gilt wie im Gebäude; der Platzhalter nennt den Wert. Eine eigene Zelle überschreibt ihn, eine geleerte erbt wieder.</value>
+  </data>
+  <data name="KOND_BTN_KONDITIONIERUNG" xml:space="preserve">
+    <value>Konditionierung…</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_SPEICHERN" xml:space="preserve">
+    <value>Die Änderungen gehören zum gewählten Satz: „Speichern“ der Verwaltung schreibt sie, „Verwerfen“ nimmt sie zurück.</value>
+  </data>
+  <data name="KOND_TXT_VERWALTUNG_ALTFELDER" xml:space="preserve">
+    <value>Sollwerte, Nachtzeit, Ferienzeiträume, innere Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen in der Gruppe „Konditionierung“.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_ZELLE" xml:space="preserve">
+    <value>Eine Zelle der Zonenmatrix im Zonendialog: {0}, Zeile „{1}“, in {2}. Leer heißt „wie Gebäude“: Es gilt, was das Gebäude vorgibt – Geräte und Personen im Flächenanteil der Zone. Folgt die Zone einem angelegten Kalender des Gebäudes, wirkt die Zelle erst nach „Vom Gebäude übernehmen und anpassen“.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_FENSTER" xml:space="preserve">
+    <value>Nachtfenster der Spalte {0} der Zone: {1} als volle Stunde 0 bis 23; beide leer = wie Gebäude.</value>
+  </data>
+  <data name="KOND_TXT_KI_ZONE_SAISON" xml:space="preserve">
+    <value>Saison der Spalte {0} der Zone: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember); beide leer = wie Gebäude.</value>
   </data>
   <data name="KOND_TXT_VORSCHAU_VORLAGE" xml:space="preserve">
     <value>Vorschau mit der Vorlage „{0}“ – übernommen wird erst mit „Übernehmen“.</value>

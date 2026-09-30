@@ -67,7 +67,8 @@
                 @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
                 {
                     KonditionierungGroesse groesse = g;
-                    <td @key="groesse" class="epos-kond-zelle @Spaltenklasse(groesse)"
+                    <td @key="groesse" class="epos-kond-zelle @Spaltenklasse(groesse) @Wirkungsklasse(groesse)"
+                        title="@Wirkungsgrund(groesse)"
                         data-groesse="@((int)groesse)" data-zeile="@((int)zeile)">
                         @Zelle(groesse, zeile)
                     </td>
@@ -92,6 +93,12 @@
 
     /// <summary>Der Grund der weich gesperrten Kühlspalte; <c>null</c> = sie ist bedienbar.</summary>
     [Parameter] public string? Kuehlsperre { get; set; }
+
+    /// <summary>
+    /// Der Grund der weich gesperrten Heizspalte — an einer unbeheizten Zone (Stufe KP2, Welle U4:
+    /// „weder Heiz- noch Kühlwerte"); <c>null</c> = sie ist bedienbar.
+    /// </summary>
+    [Parameter] public string? Heizsperre { get; set; }
 
     /// <summary>Rechnet das Gebäude auf dem Tagesbilanz-Weg? Dann nur die Felder des Altwegs (Teilkonzept 2.2).</summary>
     [Parameter] public bool Altweg { get; set; }
@@ -155,12 +162,12 @@
             <span class="epos-kond-text" data-feld="@Feldname(Texte, g, z)">@Lesetext(g, z)</span>
             return;
         }
-        if (g == KonditionierungGroesse.Kuehlen && Kuehlsperre is not null)
+        if (Spaltensperre(g) is string sperre)
         {
             @* Weich gesperrt: der Wert als Knopf, der den Grund meldet - kein disabled (Hausregel). *@
             <button type="button" class="epos-knopf epos-kond-gesperrt" aria-disabled="true"
-                    title="@Kuehlsperre" aria-label="@(Feldname(Texte, g, z) + ": " + Lesetext(g, z))"
-                    @onclick="MeldeKuehlsperre">@Lesetext(g, z)</button>
+                    title="@sperre" aria-label="@(Feldname(Texte, g, z) + ": " + Lesetext(g, z))"
+                    @onclick="() => MeldeSperre(sperre)">@Lesetext(g, z)</button>
             return;
         }
 
@@ -187,7 +194,7 @@
                     Min="@Minimum(g, z)" Max="@Maximum(g, z)" Platzhalter="@Platzhalter(g, z)"
                     Wert="@Bearbeitung.Wert(g, z)" WertChanged="w => WertSetzen(g, z, w)" />
         if (z == KonditionierungZeile.Nacht && !Altweg && Bearbeitung.Bearbeitbar(g, z)
-            && (Bearbeitung.MitWeg || g == KonditionierungGroesse.Heizen))
+            && (Bearbeitung.MitWeg || (g == KonditionierungGroesse.Heizen && !Bearbeitung.IstZone)))
         {
             (int? von, int? bis) = Bearbeitung.Zeiten(g, z);
             string fensterfeld = Fensterfeldname(Texte, g);
@@ -243,11 +250,30 @@
         await Geaendert.InvokeAsync();
     }
 
-    private async Task MeldeKuehlsperre()
+    private async Task MeldeSperre(string grund)
     {
-        Bearbeitung.Melden?.Invoke(Kuehlsperre ?? "", WarnStufe.Hinweis);
+        Bearbeitung.Melden?.Invoke(grund ?? "", WarnStufe.Hinweis);
         await Geaendert.InvokeAsync();
     }
+
+    /// <summary>
+    /// Der Grund einer weich gesperrten Spalte: Kühlen (ohne Kühlung, an einer Zone bis KU3) und — an
+    /// einer unbeheizten Zone — Heizen (Stufe KP2, Welle U4); <c>null</c> = die Spalte ist bedienbar.
+    /// </summary>
+    private string? Spaltensperre(KonditionierungGroesse g) => g switch
+    {
+        KonditionierungGroesse.Kuehlen => Kuehlsperre,
+        KonditionierungGroesse.Heizen => Heizsperre,
+        _ => null
+    };
+
+    /// <summary>
+    /// Folgt die Zone in dieser Größe dem Kalender des Gebäudes, sind ihre Zellen ohne Wirkung — die
+    /// Spalte steht leiser da, der Grund am Element und in der Zustandszeile darunter (Stufe KP2, Welle U4).
+    /// </summary>
+    private string Wirkungsklasse(KonditionierungGroesse g) => Bearbeitung.VomGebaeude(g) ? "epos-kond--ohnewirkung" : "";
+
+    private string? Wirkungsgrund(KonditionierungGroesse g) => Bearbeitung.VomGebaeude(g) ? Texte.HinweisZoneOhneWirkung : null;
 
     /// <summary>
     /// Die Untergrenze einer Zelle — der Kern prüft die Grenzen der Größe genau (Zellenprüfung); die
@@ -277,6 +303,8 @@
     /// <summary>Der Platzhalter einer leeren Zelle: was gilt, solange nichts eingetragen ist.</summary>
     private string Platzhalter(KonditionierungGroesse g, KonditionierungZeile z)
     {
+        // An einer Zone nennt der Platzhalter, was die leere Zelle vom Gebäude erbt (Teilkonzept 7.3).
+        if (Bearbeitung.Erbplatzhalter(g, z) is string geerbt) return geerbt;
         switch (g, z)
         {
             case (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende):
@@ -301,6 +329,14 @@
     /// </summary>
     private string Fensterplatzhalter(KonditionierungGroesse g)
     {
+        if (Bearbeitung.IstZone)
+        {
+            // An einer Zone: das geerbte Fenster (Spalte, sonst Heizspalte des Gebäudes), sonst 22–6 Uhr.
+            (int? ev, int? eb) = Bearbeitung.Erbfenster(g);
+            return ev.HasValue && eb.HasValue
+                ? Stundenfenster.Anzeigetext(ev, eb)
+                : Stundenfenster.Anzeigetext(Nachtzeit.VORGABE_BEGINN, Nachtzeit.VORGABE_ENDE);
+        }
         (int? von, int? bis) = Bearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht);
         if (g == KonditionierungGroesse.Heizen || !von.HasValue || !bis.HasValue)
             return Stundenfenster.Anzeigetext(Nachtzeit.VORGABE_BEGINN, Nachtzeit.VORGABE_ENDE);

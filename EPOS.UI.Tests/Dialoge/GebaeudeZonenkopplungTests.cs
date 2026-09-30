@@ -131,9 +131,10 @@ public class GebaeudeZonenkopplungTests : EposBunitContext
         Knoepfe(cut, "Öffnen…")[0].Click();
         IElement zone = cut.Find(".epos-zonendialog");
 
-        Assert.Equal("Vorgabe: 20", Feld(zone, "Soll am Tag")!.GetAttribute("placeholder"));
+        // Stufe KP2, Welle U4: Sollwerte und Gewinne stehen in der Zonenmatrix („Vorgabe …").
+        Assert.Equal("Vorgabe 20", Feld(zone, "Heizen · Tag")!.GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: 4 (40 % des Gebäudes)", Feld(zone, "Heizleistungsgrenze")!.GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe: 160 (40 % des Gebäudes)", Feld(zone, "Interne Wärmegewinne")!.GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 160", Feld(zone, "Geräte · Nennwert")!.GetAttribute("placeholder"));
     }
 
     /// <summary>

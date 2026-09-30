@@ -490,6 +490,36 @@ namespace WindowsFormsApplication1
                     "an; eine Frage nennt, was im Projekt zurückbleibt (Kalender und Zellen der Zonen, Bauteile) " +
                     "und die Zonen mit Namen. Alles wirkt erst mit OK."),
 
+                // ---- Zonenmatrix, Zonenkalender und die Verwaltung (Stufe KP2, Welle U4) ---------------
+                new WissensAbschnitt("Konditionierung: Zonenmatrix, Zonenkalender und 'Vom Gebäude übernehmen und anpassen' (zone matrix, zone calendar, copy from building and adjust)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Der Zonendialog steht als Blatt über dem Gebäude-Katalogeditor und trägt dieselbe Vorgabe-Matrix " +
+                    "wie der Reiter 'Konditionierung' - ohne die Kühlspalte, die an einer Zone gesperrt bleibt. Eine " +
+                    "leere Zelle der Zone erbt vom Gebäude: Der Platzhalter nennt den geerbten Wert ('Vorgabe 20') " +
+                    "oder 'wie Gebäude'; Geräte und Personen erbt die Zone im Flächenanteil ihrer Nutzfläche. Eine " +
+                    "eigene Zelle überschreibt den Gebäudewert, eine geleerte Zelle erbt wieder. Welcher Kalender " +
+                    "für eine Größe der Zone gilt, folgt einer Kette: ein eigener Zonenkalender, sonst ein angelegter " +
+                    "Kalender des Gebäudes, sonst der aus der Matrix der Zone abgeleitete. Hat das Gebäude den " +
+                    "Kalender einer Größe angelegt und die Zone keinen eigenen, folgt die Zone ihm - die Zustandszeile " +
+                    "sagt 'vom Gebäude', und die Zellen der Zone bleiben in dieser Größe ohne Wirkung. 'Vom Gebäude " +
+                    "übernehmen und anpassen' legt der Zone dann eine eigene Kopie des Gebäudekalenders an (bei " +
+                    "Geräten und Personen mit dem Nennwert der Zone); danach wirken ihre Zellen und Karten, der " +
+                    "Kalender des Gebäudes bleibt, wie er ist. 'Kalender anlegen' an der Zone macht aus der Matrix " +
+                    "der Zone einen eigenen Zonenkalender. Das OK des Zonendialogs übernimmt die Zone in den " +
+                    "Arbeitsstand; geschrieben wird mit dem OK des Gebäudeeditors."),
+
+                new WissensAbschnitt("Konditionierung in der Gebäudeverwaltung (conditioning in the building administration)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Im Stammblatt der Gebäudeverwaltung zeigt die Gruppe 'Konditionierung' fünf Zustandszeilen - " +
+                    "Heizen, Kühlen, Lüftung, Geräte, Personen, je 'aus der Matrix', 'aus Vorlage …' oder 'angelegt, " +
+                    "n eigene Perioden'. 'Konditionierung…' im Kopf der Gruppe öffnet ein breites Blatt mit " +
+                    "derselben Matrix, denselben Kalenderkarten und den Zusatzzeilen wie der Reiter des " +
+                    "Katalogeditors; Sollwerte, Nachtzeit, Ferien, innere Wärmegewinne, Infiltration, " +
+                    "Nutzerlüftung, Sommerlüftung, Kühlsollwert und Maximalraumtemperatur stehen nur dort. Die " +
+                    "Änderungen gehören zum gewählten Satz: 'Speichern' der Verwaltung schreibt sie mit, " +
+                    "'Verwerfen' nimmt sie zurück, '‹ Verwaltung Gebäude' oder Esc führen zurück zum Stammblatt, " +
+                    "ohne etwas zu verwerfen. Ein ausgelieferter Satz steht im Blatt nur zum Lesen."),
+
                 new WissensAbschnitt("Konditionierung: Nachtauskühlung über die Lüftung (night purge ventilation, night flush)",
                     KiChatKontext.B_GEBAEUDE,
                     "Die Nachtauskühlung steht in der Zeile 'Nacht' der Lüftungsspalte: ein erhöhter Luftwechsel " +
