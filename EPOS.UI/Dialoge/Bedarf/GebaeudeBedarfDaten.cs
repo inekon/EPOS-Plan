@@ -79,6 +79,13 @@ public sealed class GebaeudeBedarfDaten
     public int? SommerlueftungsstundenH { get; init; }
 
     /// <summary>
+    /// Stunden mit wirksamer Nachtauskühlung [h] — nur auf dem VDI-Weg mit gesetzter
+    /// Nachtauskühlung, sonst <c>null</c> (Konzept Konditionierungsprofile 3.7). Die Zeile „nur mit
+    /// Wert" im Dialog kommt mit U1; hier steht die Zahl des Laufs.
+    /// </summary>
+    public int? NachtauskuehlstundenH { get; init; }
+
+    /// <summary>
     /// Der jeweils ANDERE Rechenweg desselben Gebäudes — die zweite Spalte des Vergleichs
     /// alt/neu (Konzept 8.2, Umsetzungskonzept 2.7). <c>null</c> = kein Vergleich (der andere
     /// Weg lieferte nichts). Er lebt, solange es zwei Rechenwege gibt (bis Stufe GA,
@@ -190,4 +197,7 @@ public sealed class GebaeudeBedarfZoneDaten
 
     /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur der Zone [h].</summary>
     public int? UeberhitzungsstundenH { get; init; }
+
+    /// <summary>Stunden mit wirksamer Nachtauskühlung der Zone [h]; <c>null</c> ohne Nachtauskühlung.</summary>
+    public int? NachtauskuehlstundenH { get; init; }
 }

@@ -4,7 +4,7 @@
 **Stufe** KP2 der [Konditionierungsprofile](../../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) ·
 **Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../../aktuell/Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) ·
 **Entscheid** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) · **Festlegungen der
-Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3)
+Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
 Vorlagen, Nachtauskühlung). Das Protokoll wächst mit jeder Welle; jede Welle bekommt einen Abschnitt unter 2 und eine
@@ -78,6 +78,41 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
   Prüfbericht der Auslieferungsvorlage verlangt 14 gesperrte Vorlagen der Saat.
 - **Testdatenbank** auf 157 (71 634 944 Byte, LFS `005f3660…`); neu allein die Vorlagenzeilen, Basis unverändert.
 
+### K2 — Arbeitsstand, eine Schreibstelle, Hülle
+
+- **Reiner Arbeitsstand** `Konditionierungsstand` und `Konditionierungsarbeit` ohne Datenbank: Zelle setzen (Zellenort
+  samt Heiz-Nachtzeit und Merker), Anlegen, Verwerfen, Matrix erneut anwenden (P12), Vorlage übernehmen,
+  Als-Vorlage-Inhalt (E54), die drei Werkzeuge; jeder Schritt liefert einen neuen Stand und einen benannten Befund —
+  „Zurücknehmen" ist der vorige Stand. Die Controller aus KP1 rufen nur noch den Kern.
+- **Befunde B4–B8:** Anlegen am Gebäude legt die Kalender der Zonen mit eigenen Zellen mit an; Personen-Nennwert und
+  Geräte-Nennwert nach P1 beim Übergang der Personenspalte; die Heiz-Nachtzeit steht an einer Stelle, eine eigene
+  Nachtzeile der Zone macht die Spalte wirksam; Merker folgen jedem Schreibweg; `Bemerkung` = Herkunft · letzter
+  Werkzeugvermerk. **E56:** ein unveränderter angelegter Kalender folgt der Matrix (F2 a); die Gesamtangabe
+  `Luftwechselrate` wird aufgeteilt, Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = Rest (F5 a).
+- **Rückfragen vor dem Schreiben** aus dem Arbeitsstand, Zonen mit Namen; „aus dem Katalog erneut übernehmen" ersetzt die
+  ganze Gebäudeebene samt Bestandszellen, Nachtzeiten und Ferienzeiträumen (B9).
+- **Eine Schreibstelle im OK-Weg:** Katalog neu, bearbeiten und „Speichern unter" in einem Vorgang; im Projekt Schritt 1
+  Gebäude, Schritt 3 Zonen mit Id-Zuordnung — neue Zonen behalten ihre Ids, ein zweites OK schreibt nichts doppelt (B10);
+  verschachtelte Vorgänge als Sicherungspunkt der Vorgangsklammer.
+- **Feiertagsregeln einer Vorlage** stehen beim Übernehmen im Feiertagsband (100–108) unter den Ferien; ein belegter Rang
+  wird benannt.
+- **Hülle:** `KonditionierungHuelle` füllt den Vertrag und trägt die Delegaten (Prozent ↔ Anteil, Fassung je Ebene);
+  Katalog- und Verwaltungshülle reichen den Weg an den Dialog. Vertragsänderungen: `GebaeudeZonenweg.Speichern` liefert
+  ein `ZonenSchreibergebnis` mit der Id-Zuordnung, neue Handlungen `LuftwechselAufteilen` und `SpeichernUnterRueckfrage`.
+
+### K4 — Bilder und Auskünfte
+
+- **`Kalenderteppich`:** Rohreihe über 8 760 Stunden mit NaN für „aus" bei jeder Größe und die Quelle je Tag (Grundangabe,
+  Standardwoche, Zeitraum, Ferien, Feiertag, Betriebspause, Saison); er ruft dieselbe Entscheidung wie der Lauf,
+  `Auswerten` bleibt unberührt, der Rundlauf ohne „aus" ist bitgleich. Bezugsjahr im Projekt das des Laufs, im Katalog 2025.
+- **Renderer:** `KalenderteppichModell` fasst Läufe und Folgetage zu Rechtecken, höchstens 2 000 Elemente (sonst benannt
+  gröber: weniger Farbstufen, zuletzt Blöcke zu 14 Tagen); „aus" als eigene Rolle mit Schraffur; `data-wert` nennt
+  Zeitraum, Stunden, Wert und Quelle. Das Stundenprofil der Woche bricht bei NaN die Fläche, ohne NaN derselbe Rumpf.
+- **ChartProben:** drei neue Bilder (Teppich Heizen Büro 169 Elemente, Teppich Lüftung mit „aus" 521, Grenzbild
+  vergröbert 121) samt Gegenproben; neue `Messlatte_2026-09-30.sha256` mit 194 Zeilen, die 185 alten unverändert.
+- **Spalte „Kalender"** der Gebäude-Katalogauswahl und der Verwaltung: Zahl der angelegten Kalender je Katalogbau.
+- **`NachtauskuehlstundenH`** in Bedarfsauskunft, Hülle und DTO (Gebäude und Zone), noch ohne sichtbare Zeile.
+
 ## 3. Schemaschritte
 
 **157** (K3, `KonditionierungsvorlagenSaatSchema`): reines DML, die 14 Vorlagen samt Feiertagskalendern; Nummer als `KesselKennlinieSchema.SCHRITT + 1` — 156 hat die Kessel-Kennlinie (#616) belegt.
@@ -97,6 +132,11 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Rangband der Feiertagsregeln (K3):** `KonditionierungsvorlageCtrl.Uebernehmen` legt die Feiertagsregeln einer
   Vorlage ins Eigenband (Rang 310 und mehr), über die Ferien; das Teilkonzept stellt sie darunter. Bei der Saat ohne
   Wirkung (Ferienwert gleich Sonntagswert); an K2 übergeben, das die Übernahme als reinen Schritt neu fasst.
+- **Offene Punkte aus K2 für U1:** Eine Zelle an einer Zone, die den angelegten Kalender des Gebäudes erbt, wirkt erst
+  mit eigenem Zonenkalender; eine eigene Heiz-Nachtzeile der Zone wird übergangen, wenn das Gebäude einen angelegten
+  Heizkalender hat; die Hülle nimmt die Anlagenkopplung als unwirksam und das Referenzjahr fest mit 2025.
+- **Verwaltung ohne Spalte:** Das gemeinsame Profil der Gebäudeauswahl trägt seit K4 die Spalte „Kalender"; die
+  Verwaltung las ihre Zeilen noch ohne sie (K4 durfte ihre Hülle neben K2 nicht anfassen) — nachgezogen beim Merge.
 - **Nebenbefunde für U1:** Hilfepille 28 × 26 px (unter 44 px); Deckel der `.epos-dialog` bei 1 160 px, Vorbild
   `.epos-wp-anlage`; `Zahlen.ZahlParsen` nimmt „NaN" und „Infinity" an (neun Aufrufer).
 
@@ -112,12 +152,16 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 | Kern-Lauf des Arbeitszweigs auf dem U0b-Merge | rot (36647131587), derselbe Test wie im Gate KP2a |
 | Kern-Lauf auf `94f91fed` (#618) | grün (36654571061) |
 | Abnahme K3 im Worktree (`b65040a9`) | Kern 9 281, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Auslieferungsvorlage 44/44; Windows-Schale 0; SqlDialektPruefer 0 |
+| Abnahme K2 im Worktree (`9bd0d01b`) | Kern 9 339, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
+| Abnahme K4 im Worktree (`60c213d1`) | Kern 9 307, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben 231 Bilder gleich der neuen Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; SqlDialektPruefer 0 |
+| Gate KP2c auf K2 und K4 zusammen (`77a3e06f`) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte `Messlatte_2026-09-30` (194), Tests Kern 9 365, UI 7 019, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 15/15 **PASS, 460/460 CSV byte-gleich gegen R26**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 142 Texte); Windows-Schale 0 Fehler; Auslieferungsvorlage 44/44. |
+| Kern-Lauf auf `2a767569` (#619) | grün (36657553771) |
 | Nach dem Merge K3 (`a221dd41`) | Kern-Filter 0 Fehler; 328 gezielte Tests (Konditionierung, Schema, Wachen) grün; Referenzlauf 15/15 PASS, 460/460 byte-gleich gegen R26 |
 
 ## 6. Offen
 
-- **Wellen K2** (Arbeitsstand), **U1** (Reiter und Matrix), **U2** (Vorlagen je Karte, danach SA1),
-  **K4** (Teppichbild, Auskünfte), **U3** (Karte), **U4** (Zonen, Katalog, Verwaltung), **U5** (Abschluss, SA2).
+- **Wellen** **U1** (Reiter und Matrix, läuft), **U2** (Vorlagen je Karte, danach SA1),
+  **U3** (Karte), **U4** (Zonen, Katalog, Verwaltung), **U5** (Abschluss, SA2).
 - **Windows-Sichtprobe** der schon sichtbaren Änderungen, mit SA1: „Speichern unter" bleibt offen (Katalog und Projekt),
   breite Überlagerung des Katalogeditors, Grundzeile und weich gesperrtes OK an einem ausgelieferten Satz.
 - **Wiki:** Quelle „Gebäude" nachgezogen („Speichern unter"); Upload mit dem nächsten Sammel-Upload, Logbuch-Satz in der

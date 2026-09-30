@@ -38,8 +38,11 @@ namespace WindowsFormsApplication1
     ///
     /// Feste Farbzuordnung je Erzeuger über alle Diagramme (Konzept Kap. 6):
     /// WP blau, BHKW orange, Kessel grau, Solar gelb, PV grün, Netz/Rest neutral.
+    ///
+    /// <para>Das Teppichbild der Kalenderkarte steht in der zweiten Hälfte
+    /// <c>ChartRenderer.Kalenderteppich.cs</c> (Welle K4).</para>
     /// </summary>
-    public static class ChartRenderer
+    public static partial class ChartRenderer
     {
         // Palette (identisch zum Bestandsbericht).
         public static readonly SKColor C_WP = new SKColor(0x41, 0x72, 0xC4);
@@ -3699,9 +3702,20 @@ namespace WindowsFormsApplication1
         /// <para><b>Eine Reihe, eine Fläche mit Randlinie</b> (DG-E3-2): Füllung in
         /// <c>C_PROFILFLAECHE</c>, Rand in <c>C_PROFILLINIE</c> mit Stärke 2 — dieselben
         /// zwei Farben, die das PNG zieht.</para>
+        ///
+        /// <para><b>Ein nicht endlicher Wert ist eine LÜCKE</b> (Welle K4, Befund B12): „aus" einer
+        /// Kalenderwoche kommt als NaN. Die Fläche und ihre Randlinie brechen dort ab — je
+        /// zusammenhängendem Stück eine Fläche (ab dem linken Rand seines ersten Fachs) und eine
+        /// Linie; die Datenreihe trägt die NaN weiter, der SVG-Weg zeichnet je Stück einen
+        /// geschlossenen Teilpfad. Früher setzte <c>Math.Max(0, NaN)</c> einen NaN-Bildpunkt ab.
+        /// <b>Ohne Lücke bleibt das Bild bitgleich</b> — derselbe Rumpf wie zuvor.</para>
         /// </summary>
+        /// <param name="einheit">Die Einheit der Werte für die Zeigerzeile
+        /// (<see cref="Datenreihe.Einheit"/>), etwa „°C", „1/h" oder „%" je Größe der Kalenderkarte;
+        /// <c>null</c> = keine (der Bestand, das PNG ist ohnehin gleich).</param>
         public static Zeichenmodell StundenprofilModell(string titel, double[] werte, int intervall,
-                                                        string xTitel, string yTitel)
+                                                        string xTitel, string yTitel,
+                                                        string einheit = null)
         {
             int W = 1244, H = 464;
             var z = Modell(W, H);
@@ -3717,8 +3731,9 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
+            // Eine Luecke (K4) zaehlt nicht mit: +unendlich machte die Achse unbrauchbar.
             double maxWert = 0;
-            foreach (double w in werte) if (w > maxWert) maxWert = w;
+            foreach (double w in werte) if (Endlich(w) && w > maxWert) maxWert = w;
             double max = (maxWert > 0 ? maxWert : 1) * 1.1;
 
             // y-Raster in fünf Stufen; die Zahlen tragen so viele Stellen, wie der
@@ -3769,37 +3784,83 @@ namespace WindowsFormsApplication1
                                            new Datenfenster(0, werte.Length, 0, max),
                                            Achsenart.Index);
 
-            // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
-            // steht für das Intervall (n-1, n], wie im Vorläufer.
-            var punkte = new SKPoint[werte.Length];
-            for (int i = 0; i < werte.Length; i++)
-            {
-                float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
-                float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
-                punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
-            }
-
-            var flaechenzug = new SKPoint[punkte.Length + 3];
-            flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
-            flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
-            Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
-            flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
-
             // Das Bild nennt die Reihe nicht (es fuehrt keine Legende); ihr Name ist
             // deshalb die Beschriftung der y-Achse - sie benennt die Groesse.
             string name = string.IsNullOrEmpty(yTitel) ? (titel ?? "") : yTitel;
-            z.Markiert("reihe:" + name, zr =>
+
+            if (werte.All(Endlich))
             {
-                Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
-                Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
-            });
+                // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
+                // steht für das Intervall (n-1, n], wie im Vorläufer.
+                var punkte = new SKPoint[werte.Length];
+                for (int i = 0; i < werte.Length; i++)
+                {
+                    float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
+                    punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+
+                var flaechenzug = new SKPoint[punkte.Length + 3];
+                flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
+                flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
+                Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                    Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                });
+            }
+            else
+            {
+                // WELLE K4 (B12): Je zusammenhaengendem Stueck endlicher Werte eine Flaeche
+                // und eine Linie - dieselben Formeln wie oben; die Flaeche beginnt am LINKEN
+                // Rand des ersten Fachs des Stuecks (fuer das erste Stueck ab Stunde 0 ist
+                // das rc.Left, wie oben).
+                var stuecke = new List<(SKPoint[] Flaechenzug, SKPoint[] Punkte)>();
+                int n = werte.Length;
+                int i = 0;
+                while (i < n)
+                {
+                    while (i < n && !Endlich(werte[i])) i++;
+                    if (i >= n) break;
+                    int anfang = i;
+                    while (i < n && Endlich(werte[i])) i++;
+
+                    var punkte = new SKPoint[i - anfang];
+                    for (int k = anfang; k < i; k++)
+                    {
+                        float x = rc.Left + (float)(k + 1) / n * rc.Width;
+                        float y = (float)(rc.Bottom - Math.Max(0, werte[k]) / max * rc.Height);
+                        punkte[k - anfang] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                    }
+                    float links = rc.Left + (float)anfang / n * rc.Width;
+                    var flaechenzug = new SKPoint[punkte.Length + 3];
+                    flaechenzug[0] = new SKPoint(links, rc.Bottom);
+                    flaechenzug[1] = new SKPoint(links, punkte[0].Y);
+                    Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                    flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+                    stuecke.Add((flaechenzug, punkte));
+                }
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    foreach ((SKPoint[] flaechenzug, SKPoint[] punkte) in stuecke)
+                    {
+                        Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                        Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                    }
+                });
+            }
 
             // EINE Datenreihe fuer beides (DG-E3-2): Fuellung, Randfarbe, Randstaerke.
             // Ihr Fenster beginnt bei 1 - der erste Wert steht am rechten Rand des
-            // ersten Fachs.
+            // ersten Fachs. Eine Luecke traegt sie als NaN weiter; der SVG-Weg bricht
+            // die Flaeche dort (SvgSchreiber.Flaechenzug).
             z.FuegeReihe(new Datenreihe(name, C_PROFILFLAECHE.Ton(), 2f, null, werte,
                                         new Datenfenster(1, werte.Length, 0, max),
-                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton()));
+                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton(), null, einheit));
 
             return z;
         }
@@ -5112,10 +5173,17 @@ namespace WindowsFormsApplication1
             foreach (Reihe r in stapel)
             {
                 if (r.Stapelgruppe != gruppe) continue;
-                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Math.Max(r.Werte[i], 0);
+                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Stapelbeitrag(r.Werte[i]);
             }
             return n > 0 ? summe.Max() : 0;
         }
+
+        /// <summary>
+        /// <b>Der Beitrag eines Werts zur Lage des Stapels</b>: nicht negativ, und eine LÜCKE
+        /// (nicht endlich) trägt nichts bei — die Schichten darüber liegen dort, als fehlte die
+        /// Schicht mit der Lücke; sie selbst zeigt die Lücke als Lücke (<see cref="StapelZeichnen"/>).
+        /// </summary>
+        private static double Stapelbeitrag(double wert) => Endlich(wert) ? Math.Max(wert, 0) : 0.0;
 
         /// <summary>
         /// Die Deckung einer Stapelschicht: voll. Eine Schicht ist ein geschlossenes Band;
@@ -5201,13 +5269,26 @@ namespace WindowsFormsApplication1
             {
                 var oben = new double[n];
                 for (int i = 0; i < n; i++)
-                    oben[i] = unten[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                    oben[i] = unten[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
+
+                // EINE LUECKE (Reihe.Luecken, ein nicht endlicher Wert) bleibt Luecke: Die
+                // Oberkante der Schicht ist dort NaN - SVG- und PNG-Weg lassen die Stelle aus,
+                // die Stufenregel die Stufe (Kopf der Stufenregel in Pfadregel) -, die Schichten
+                // darueber liegen auf der Summe ohne sie (Stapelbeitrag). Ohne Luecke ist die
+                // Lage fuer die naechste Schicht genau die Oberkante.
+                double[] lage = oben;
+                for (int i = 0; i < n && i < r.Werte.Length; i++)
+                {
+                    if (Endlich(r.Werte[i])) continue;
+                    if (ReferenceEquals(lage, oben)) oben = (double[])oben.Clone();
+                    oben[i] = double.NaN;
+                }
 
                 double[] unterkante = unten;
                 if (alsKanten)
                 {
                     kanten.Add((r, oben, unterkante));
-                    unten = oben;
+                    unten = lage;
                     continue;
                 }
                 baender.Add((r, oben, unterkante));
@@ -5221,7 +5302,7 @@ namespace WindowsFormsApplication1
                                                      alpha == STAPEL_DECKEND ? Ton(r) : Ton(r, alpha),
                                                      0f, null, oben, gruppenfenster,
                                                      Reihenart.Flaeche, unterkante, Bezug: bezug));
-                unten = oben;
+                unten = lage;
             }
 
             // DAS BILD (PNG, Druck): Eine DECKENDE Schicht malt von der Achse bis zu ihrer
@@ -5266,7 +5347,7 @@ namespace WindowsFormsApplication1
             {
                 if (r.Stapelgruppe != gruppe) continue;
                 for (int i = 0; i < n; i++)
-                    oben[i] = oben[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                    oben[i] = oben[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
             }
             return oben;
         }
@@ -8016,16 +8097,24 @@ namespace WindowsFormsApplication1
         {
             if (werte == null || werte.Length < 2) return;
             int schritt = Math.Max(1, werte.Length / (int)rc.Width);
-            var punkte = new List<SKPoint>();
+            // Ein nicht endlicher Wert ist eine LUECKE: Die Linie bricht dort ab und setzt beim
+            // naechsten endlichen Wert neu an - wie der SVG-Weg. Ohne Luecke ein einziger Zug.
+            var stuecke = new List<List<SKPoint>> { new List<SKPoint>() };
             for (int i = 0; i < werte.Length; i += schritt)
             {
+                if (!Endlich(werte[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<SKPoint>());
+                    continue;
+                }
                 float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
                 float y = rc.Bottom - (float)((werte[i] - min) / (max - min) * rc.Height);
-                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                stuecke[stuecke.Count - 1].Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
             }
-            if (punkte.Count >= 2)
-                Linienzug(z, punkte.ToArray(),
-                          Stift(farbe, staerke, null, Strichverbindung.Rund));
+            foreach (List<SKPoint> punkte in stuecke)
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(),
+                              Stift(farbe, staerke, null, Strichverbindung.Rund));
         }
 
         /// <summary>
@@ -8048,13 +8137,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Treppe der Stufenwerte in Bildpunkten</b> (Stufenregel des Stapels, siehe
         /// <see cref="Pfadregel"/>): je Stufe eine waagrechte Kante auf dem Wert der Reihe in
-        /// der Spitzenstunde der Stufe, von links nach rechts.
+        /// der Spitzenstunde der Stufe, von links nach rechts — für die Stufen
+        /// <paramref name="von"/> … <paramref name="bis"/>, ein Stück ohne Lücke
+        /// (<see cref="Pfadregel.Stufenstuecke"/>).
         /// </summary>
-        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, int[] stunden,
-                                                   double[] werte, double min, double max)
+        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, double[] stufenwerte,
+                                                   int von, int bis, double min, double max)
         {
             var punkte = new List<SKPoint>();
-            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(werte, stunden)))
+            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, stufenwerte, von, bis))
             {
                 float x = rc.Left + (float)(rc.Width * anteil);
                 float y = rc.Bottom - (float)((wert - min) / (max - min) * rc.Height);
@@ -8077,7 +8168,9 @@ namespace WindowsFormsApplication1
         /// über den Erzeugern): Führt sie mehr Werte, als das Rechteck Bildpunktspalten
         /// hat, zeichnet sie die Treppe ihrer Werte in den Spitzenstunden — dieselbe Stunde
         /// je Stufe wie die Schichten des Stapels —, statt je Spalte die ganze Spanne ihres
-        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>.
+        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>. Eine Stufe, in deren
+        /// Spitzenstunde sie nicht endlich ist, bleibt eine Lücke: je Stück ohne Lücke ein
+        /// eigener Linienzug, wie der SVG-Weg.
         /// </summary>
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
         /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
@@ -8093,9 +8186,13 @@ namespace WindowsFormsApplication1
                 return;
             }
             IReadOnlyList<Stufe> stufen = Stapelstufen(rc, werte.Length, gesamt, ab);
-            List<SKPoint> punkte = Treppenpunkte(rc, stufen, Spitzenstunden(stufen, bezug, werte), werte, min, max);
-            if (punkte.Count >= 2)
-                Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
+            double[] stufenwerte = Pfadregel.Stundenwerte(werte, Spitzenstunden(stufen, bezug, werte));
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(stufenwerte))
+            {
+                List<SKPoint> punkte = Treppenpunkte(rc, stufen, stufenwerte, von, bis, min, max);
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
+            }
         }
 
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
@@ -8114,28 +8211,51 @@ namespace WindowsFormsApplication1
             // (die Oberkante der Schicht darunter, dieselben Zahlen in derselben Stunde)
             // rueckwaerts. Jede Stufe ist damit bis zur Kante gedeckt, und die Dicke der
             // Schicht ist ihr Wert in der Spitzenstunde; bis hierher stand jeder siebte
-            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt.
+            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt. Eine Stufe, in
+            // deren Spitzenstunde eine Kante nicht endlich ist, bleibt eine LUECKE: je Stueck
+            // ohne Luecke ein eigenes Vieleck, wie der SVG-Weg (Kopf der Stufenregel).
             if (n > Bildpunktspalten(rc))
             {
                 IReadOnlyList<Stufe> stufen = Stapelstufen(rc, n, gesamt, ab);
                 int[] stunden = Spitzenstunden(stufen, bezug, oben);
-                List<SKPoint> kante = Treppenpunkte(rc, stufen, stunden, oben, 0, max);
-                List<SKPoint> boden = Treppenpunkte(rc, stufen, stunden, unten, 0, max);
-                boden.Reverse();
-                kante.AddRange(boden);
-                if (kante.Count >= 3)
-                    Vieleck(z, kante.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                double[] kantenwerte = Pfadregel.Stundenwerte(oben, stunden);
+                double[] bodenwerte = Pfadregel.Stundenwerte(unten, stunden);
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(kantenwerte, bodenwerte))
+                {
+                    List<SKPoint> kante = Treppenpunkte(rc, stufen, kantenwerte, von, bis, 0, max);
+                    List<SKPoint> boden = Treppenpunkte(rc, stufen, bodenwerte, von, bis, 0, max);
+                    boden.Reverse();
+                    kante.AddRange(boden);
+                    if (kante.Count >= 3)
+                        Vieleck(z, kante.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+                }
                 return;
             }
 
+            // Je Stueck, in dem Ober- und Unterkante endlich sind, ein Vieleck: die Oberkante
+            // vorwaerts, die Unterkante rueckwaerts. Eine LUECKE (nicht endlich) bricht die
+            // Flaeche wie im SVG-Weg; ohne Luecke ist es ein einziges Vieleck.
             int schritt = Math.Max(1, n / (int)rc.Width);
-            var pfad = new List<SKPoint>();
+            var stuecke = new List<List<int>> { new List<int>() };
             for (int i = 0; i < n; i += schritt)
-                pfad.Add(Punkt(rc, i, n, oben[i], max));
-            for (int i = ((n - 1) / schritt) * schritt; i >= 0; i -= schritt)
-                pfad.Add(Punkt(rc, i, n, unten[i], max));
-            if (pfad.Count >= 3)
-                Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+            {
+                if (!Endlich(oben[i]) || !Endlich(unten[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<int>());
+                    continue;
+                }
+                stuecke[stuecke.Count - 1].Add(i);
+            }
+            foreach (List<int> stueck in stuecke)
+            {
+                var pfad = new List<SKPoint>();
+                foreach (int i in stueck)
+                    pfad.Add(Punkt(rc, i, n, oben[i], max));
+                for (int k = stueck.Count - 1; k >= 0; k--)
+                    pfad.Add(Punkt(rc, stueck[k], n, unten[stueck[k]], max));
+                if (pfad.Count >= 3)
+                    Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+            }
         }
 
         private static SKPoint Punkt(SKRect rc, int i, int n, double wert, double max)

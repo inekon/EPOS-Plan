@@ -812,6 +812,12 @@ namespace WindowsFormsApplication1.Zeichnung
         /// Unterkante rückwärts, dann <c>Z</c>. Fehlt <c>Unten</c>, ist die Unterkante
         /// die ACHSENNULL, in das Fenster der Reihe geklemmt — eine Fläche, deren
         /// Achse gar nicht bis null reicht, liefe sonst aus dem Bild.
+        ///
+        /// <para><b>Eine Fläche mit Lücke</b> (Welle K4, Befund B12 — „aus" einer Kalenderwoche als
+        /// NaN): Je zusammenhängendem Stück, in dem Ober- und Unterkante endlich sind, ein eigener
+        /// geschlossener Teilpfad (<c>M … Z</c>); gebündelt wird mit den Bildpunktspalten im
+        /// Verhältnis der Stücklänge. Ein „NaN" im Pfad machte ihn ganz ungültig. Eine Fläche
+        /// ohne Lücke nimmt den Weg darunter, wörtlich wie bisher.</para>
         /// </summary>
         private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf,
                                         int ab, int laenge, bool roh, int spalten,
@@ -825,6 +831,12 @@ namespace WindowsFormsApplication1.Zeichnung
             double[] unten = r.Unten == null
                 ? Gleichwert(laenge, null0)
                 : Teil(r.Unten, ab, laenge);
+
+            if (HatLuecke(oben, 0, laenge - 1) || HatLuecke(unten, 0, laenge - 1))
+            {
+                Flaechenzug(sb, r, rf, schritt, ab, oben, unten, roh, spalten, hoehe, spanne);
+                return;
+            }
 
             IReadOnlyList<Punkt> kanteOben = roh
                 ? Rohkante(oben)
@@ -852,6 +864,13 @@ namespace WindowsFormsApplication1.Zeichnung
         /// teilen. Eine Schicht schließt mit der Treppe ihrer Unterkante rückwärts und
         /// <c>Z</c> — dieselbe Regel auf dieselben Zahlen wie die Oberkante der Schicht
         /// darunter, also genau deren Kante. Eine Linie bleibt offen.
+        ///
+        /// <para><b>Eine Lücke bleibt Lücke</b> (Kopf der Stufenregel): Steht die Reihe in der
+        /// Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder Unterkante —,
+        /// lässt die Treppe die Stufe aus. Je Stück ohne Lücke ein eigener Teilpfad
+        /// (<see cref="Pfadregel.Stufenstuecke"/>), eine Schicht je Stück mit <c>Z</c> geschlossen,
+        /// Stücke durch ein Leerzeichen getrennt — wie der Flächenzug mit Lücke. Ohne Lücke ist es
+        /// ein einziges Stück, wörtlich die Treppe über alle Stufen.</para>
         /// </summary>
         private static void Stufentreppe(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
                                          int ab, int biss, int laenge, int spalten,
@@ -861,21 +880,45 @@ namespace WindowsFormsApplication1.Zeichnung
             double breite = XStelle(r, rf, schritt, biss) - x0;
             IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(r.Werte.Length, ab, laenge, spalten);
             int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(r), ab, laenge), stufen);
+            double[] oben = Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden);
 
-            IReadOnlyList<(double Anteil, double Wert)> oben =
-                Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden));
-            for (int i = 0; i < oben.Count; i++)
-                Punkt(sb, i == 0, x0 + breite * oben[i].Anteil, Bildpunkt(oben[i].Wert, rf, hoehe, spanne));
-
-            if (r.Art != Reihenart.Flaeche) return;
+            if (r.Art != Reihenart.Flaeche)
+            {
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben))
+                {
+                    if (sb.Length > 0) sb.Append(' ');
+                    Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                }
+                return;
+            }
 
             double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
             double[] unterkante = r.Unten == null ? Gleichwert(laenge, null0) : Teil(r.Unten, ab, laenge);
-            IReadOnlyList<(double Anteil, double Wert)> unten =
-                Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(unterkante, stunden));
-            for (int i = unten.Count - 1; i >= 0; i--)
-                Punkt(sb, false, x0 + breite * unten[i].Anteil, Bildpunkt(unten[i].Wert, rf, hoehe, spanne));
-            sb.Append(" Z");
+            double[] unten = Pfadregel.Stundenwerte(unterkante, stunden);
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben, unten))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                Treppenzug(sb, Pfadregel.Treppe(stufen, unten, von, bis), false, x0, breite, rf, hoehe, spanne);
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>
+        /// Die Punkte einer Treppe in den Pfad — <paramref name="vorwaerts"/> von links nach
+        /// rechts, mit <c>M</c> am ersten Punkt; sonst rückwärts als Fortsetzung (die
+        /// Unterkante einer Schicht).
+        /// </summary>
+        private static void Treppenzug(StringBuilder sb, IReadOnlyList<(double Anteil, double Wert)> treppe,
+                                       bool vorwaerts, double x0, double breite, Datenfenster rf,
+                                       double hoehe, double spanne)
+        {
+            if (vorwaerts)
+                for (int i = 0; i < treppe.Count; i++)
+                    Punkt(sb, i == 0, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+            else
+                for (int i = treppe.Count - 1; i >= 0; i--)
+                    Punkt(sb, false, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
         }
 
         /// <summary>
@@ -981,6 +1024,42 @@ namespace WindowsFormsApplication1.Zeichnung
             laenge = biss - ab + 1;
             spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
             return Pfadregel.Spaltenweise(reihe, laenge, spalten);
+        }
+
+        /// <summary>
+        /// Die Fläche MIT Lücke (Welle K4): je Stück endlicher Kanten ein geschlossener Teilpfad —
+        /// Oberkante vorwärts, Unterkante rückwärts, <c>Z</c>; Stücke durch ein Leerzeichen getrennt.
+        /// </summary>
+        private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                        int ab, double[] oben, double[] unten, bool roh, int spalten,
+                                        double hoehe, double spanne)
+        {
+            int laenge = oben.Length;
+            int i = 0;
+            while (i < laenge)
+            {
+                while (i < laenge && !(Endlich(oben[i]) && Endlich(unten[i]))) i++;
+                if (i >= laenge) break;
+                int start = i;
+                while (i < laenge && Endlich(oben[i]) && Endlich(unten[i])) i++;
+                int stueck = i - start;
+
+                double[] o = Teil(oben, start, stueck);
+                double[] u = Teil(unten, start, stueck);
+                int teilspalten = (int)Math.Max(1.0, Math.Round((double)spalten * stueck / Math.Max(1, laenge)));
+                IReadOnlyList<Punkt> kanteOben = roh ? Rohkante(o) : Pfadregel.GebuendelteKante(o, teilspalten, true);
+                IReadOnlyList<Punkt> kanteUnten = roh ? Rohkante(u) : Pfadregel.GebuendelteKante(u, teilspalten, false);
+                if (kanteOben.Count == 0 || kanteUnten.Count == 0) continue;
+
+                if (sb.Length > 0) sb.Append(' ');
+                for (int k = 0; k < kanteOben.Count; k++)
+                    Punkt(sb, k == 0, XStelle(r, rf, schritt, ab + start + kanteOben[k].X),
+                          Bildpunkt(kanteOben[k].Y, rf, hoehe, spanne));
+                for (int k = kanteUnten.Count - 1; k >= 0; k--)
+                    Punkt(sb, false, XStelle(r, rf, schritt, ab + start + kanteUnten[k].X),
+                          Bildpunkt(kanteUnten[k].Y, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
         }
 
         private static IReadOnlyList<Punkt> Rohkante(double[] werte)

@@ -247,7 +247,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         var koepfe = cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text")
                         .Select(e => e.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]" }, koepfe);
+        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]", "Kalender" }, koepfe);
         Assert.Equal(4, cut.FindAll(".epos-katalogliste tbody tr").Count);
 
         Assert.Equal(new[] { "Kenndaten", "Hülle", "Fenster nach Orientierung", "Kenngrößen", "Alle Daten" },
@@ -304,7 +304,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         stand.Setzen(Katalogfilterprofil.SpVerwendung, "Gewerbe");
         var cut = Aufbauen(filterstand: stand);
 
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
         Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
     }
 

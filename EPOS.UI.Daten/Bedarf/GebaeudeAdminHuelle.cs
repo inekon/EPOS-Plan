@@ -36,8 +36,10 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, object>
             {
+                // Festlegung 15 (KP2): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau,
+                // dasselbe Profil wie die Katalogauswahl des Projekts.
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                    () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(Uebersetzen),
                 ["Satz"] = new Func<string, GebaeudeStammblattDaten>(Satz),
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => TagVCtrl.Typen()),
@@ -128,8 +130,22 @@ namespace WindowsFormsApplication1
                 Huelle = Huelle(m),
                 AlleDaten = AlleDaten(m),
                 // #465: der Feldsatz des Katalogeditors - der Arbeitsstand des Stammblatts.
-                Feldsatz = GebaeudeKatalogHuelle.AusModell(m)
+                Feldsatz = MitKonditionierung(GebaeudeKatalogHuelle.AusModell(m), m.ID)
             };
+        }
+
+        /// <summary>
+        /// Der Feldsatz samt der Konditionierung des Katalogbaus (Stufe KP2, Welle K2): Das Stammblatt teilt
+        /// den Arbeitsstand des Editors, und „Speichern" schreibt sie über denselben Weg
+        /// (<see cref="GebaeudeKatalogHuelle.Schreiben(GebaeudeKatalogDaten, bool, string)"/>) — nur bei
+        /// geänderter Fassung.
+        /// </summary>
+        private static GebaeudeKatalogDaten MitKonditionierung(GebaeudeKatalogDaten d, int id)
+        {
+            d.Konditionierung = id > 0
+                ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Katalogbau(id))
+                : KonditionierungHuelle.Leer();
+            return d;
         }
 
         /// <summary>Die Gruppe „Hülle": Fläche und U-Wert je Bauteil (Außenwand, Fenster, Dach, Grundfläche).</summary>

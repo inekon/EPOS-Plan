@@ -259,7 +259,7 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Die Zeilen der ZONEN eines Gebäudes — Kalender und Vorgabezeilen zusammen.</summary>
-        private static int Zonenzeilen(DbVorgang v, long idGebaeude)
+        internal static int Zonenzeilen(DbVorgang v, long idGebaeude)
         {
             object k = v.Skalar("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER +
                                 "\" WHERE \"" + KonditionierungSchema.SPALTE_ID_GEBAEUDE +

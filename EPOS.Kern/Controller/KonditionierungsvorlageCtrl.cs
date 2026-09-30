@@ -183,6 +183,55 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Als Vorlage speichern…" aus dem Arbeitsstand</b> (Stufe KP2, Welle K2; Festlegung 13): Der
+        /// Inhalt kommt schon gefiltert aus <see cref="Konditionierungsarbeit.AlsVorlage"/> (E54: ohne
+        /// Nennwert und Saison, Bestandszellen als Vorgabezellen) — hier entstehen Kopf und Zeilen in EINEM
+        /// Vorgang, mit derselben Namens- und Nutzungsregel wie <see cref="Speichern"/>. Schreibt sofort.
+        /// </summary>
+        public KonditionierungCtrl.Ergebnis SpeichernAus(Konditionierungsstand inhalt, Konditionierungsgroesse groesse,
+                                                         string bezeichner, string beschreibung, string nutzung, out long id)
+        {
+            id = 0;
+            if (inhalt == null) throw new ArgumentNullException(nameof(inhalt));
+            string bereit = Bereit();
+            if (bereit != null) return KonditionierungCtrl.Ergebnis.Fehler(bereit);
+            string name = Namenspruefung(groesse, bezeichner, 0, out string meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            string nutzungswert = Nutzungspruefung(nutzung, out meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                try
+                {
+                    long neu = KopfAnlegen(v, groesse, name, beschreibung, nutzungswert);
+                    if (neu <= 0)
+                    {
+                        v.Rollback();
+                        return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                    }
+                    KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                        v, KonditionierungCtrl.Eigner.Vorlage(neu), inhalt.AlsArt(Kalendereigentuemer.Vorlage),
+                        mitBestand: false, out _);
+                    if (!e.Ok)
+                    {
+                        v.Rollback();
+                        return e;
+                    }
+                    v.Commit();
+                    id = neu;
+                    return KonditionierungCtrl.Ergebnis.Gut;
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
         /// Trägt die Zahlenwerte der <b>Bestandsspalten</b> der Quelle in die Vorgabezeilen der
         /// Vorlage nach — und die Nachtzeiten, wo die Quelle sie in
         /// <c>Nachtabsenkung_Beginn/_Ende</c> führt statt in einer Vorgabezeile (E54: Nacht
@@ -325,164 +374,15 @@ namespace WindowsFormsApplication1
             string schloss = KonditionierungCtrl.Schloss(ziel);
             if (schloss != null) return KonditionierungCtrl.Ergebnis.Fehler(schloss);
 
-            Konditionierungsgroesse groesse = vorlage.Groesse;
-            var quelle = KonditionierungCtrl.Eigner.Vorlage(idVorlage);
+            // Stufe KP2: eine duenne Huelle - die Vorlage und das Ziel lesen, den reinen Schritt
+            // (Konditionierungsarbeit.VorlageEintragen: Weiche, Generator mit den Ferien des Ziels,
+            // Zusammenfuehren nach P12, Herkunft) rechnen und nur das Geaenderte schreiben.
             var ctrl = new KonditionierungCtrl();
-
-            // ---- Die Spalte der Vorlage ueber der des Ziels (Konzept 3.5) ----
-            // Eine Vorlage fuehrt keine Bestandsspalten; ihr Eingang ist deshalb leer.
-            Vorgabematrix vorlagenmatrix = Vorgabematrix.Bilden(new Matrixeingang(), ctrl.Vorgaben(quelle),
-                                                                Kalendereigentuemer.Vorlage);
-            Matrixspalte vorlagenspalte = vorlagenmatrix.Spalte(groesse);
-            Matrixspalte neueSpalte = vorlagenspalte.Erben(zielmatrix.Spalte(groesse));
-
-            // ---- Der Kalender der Vorlage (falls sie einen traegt) ----
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorlagenkalender =
-                ctrl.Kalender(quelle, out string m1);
+            Konditionierungsstand inhalt = ctrl.StandLesen(KonditionierungCtrl.Eigner.Vorlage(idVorlage), out string m1);
             if (m1 != null) return KonditionierungCtrl.Ergebnis.Fehler(m1);
-            vorlagenkalender.TryGetValue(groesse, out Konditionierungskalender ausVorlage);
-
-            // ---- Der angelegte Kalender des Ziels (P12) ----
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden =
-                ctrl.Kalender(ziel, out string m2);
-            if (m2 != null) return KonditionierungCtrl.Ergebnis.Fehler(m2);
-            vorhanden.TryGetValue(groesse, out Konditionierungskalender alt);
-
-            // ---- Der Generator ueber der ergaenzten Matrix ----
-            Fahrplanlesung l = Standardfahrplan.Erzeugen(zielmatrix.MitSpalte(groesse, neueSpalte),
-                                                         groesse, rundlaufPruefen: true);
-            if (l.Befund != Fahrplanbefund.Erzeugt)
-                return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KOND_FAHRPLAN_ABGELEHNT, l.Befund.ToString(), l.Fundstelle()));
-
-            Konditionierungskalender neu = Zusammenfuehren(l.Kalender, ausVorlage, alt, out string fehler);
-            if (fehler != null) return KonditionierungCtrl.Ergebnis.Fehler(fehler);
-
-            string bemerkung = string.Format(CultureInfo.CurrentCulture,
-                MyResource.Resource.KOND_MSG_HERKUNFT_VORLAGE, vorlage.Bezeichner);
-
-            using (DbVorgang v = DataRepository.Vorgang())
-            {
-                try
-                {
-                    // Die Zellen der Vorlage in die Matrixspalte des Ziels - jede ueber die Weiche;
-                    // eine leere Zelle der Vorlage laesst die des Ziels stehen.
-                    foreach (string zeile in DbWerte.KOND_ZEILEN)
-                    {
-                        Matrixzelle zelle = vorlagenspalte.Zeile(zeile);
-                        if (zelle == null || !Traegt(zelle)) continue;
-                        string pruefung = KonditionierungCtrl.ZellePruefen(groesse, zeile, zelle);
-                        if (pruefung != null)
-                        {
-                            v.Rollback();
-                            return KonditionierungCtrl.Ergebnis.Fehler(pruefung);
-                        }
-                        KonditionierungCtrl.Ergebnis e =
-                            KonditionierungCtrl.ZelleSchreiben(v, ziel, groesse, zeile, zelle);
-                        if (!e.Ok)
-                        {
-                            v.Rollback();
-                            return e;
-                        }
-                    }
-
-                    KonditionierungCtrl.Ergebnis k =
-                        KonditionierungCtrl.KalenderSchreiben(v, ziel, neu, bemerkung);
-                    if (!k.Ok)
-                    {
-                        v.Rollback();
-                        return k;
-                    }
-                    v.Commit();
-                }
-                catch (Exception ex)
-                {
-                    v.Rollback();
-                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
-                }
-            }
-            return KonditionierungCtrl.Ergebnis.Gut;
-        }
-
-        /// <summary>
-        /// <b>Generator, Vorlage und Bestand zu einem Kalender</b> (P12, N1.61 Nr. 13):
-        /// <list type="bullet">
-        /// <item>die Grundangabe kommt vom Generator, es sei denn, die Vorlage bringt eine
-        /// <b>Standardwoche</b> mit — sie liegt darüber (Konzept 3.5);</item>
-        /// <item>die Perioden des <b>Matrixbereichs</b> (<c>FERIEN</c>, <c>BETRIEBSPAUSE</c>) kommen
-        /// vom Generator, also mit den Ferienzeiträumen des Ziels;</item>
-        /// <item>die <b>eigenen</b> Perioden eines vorhandenen Kalenders bleiben samt Rang;</item>
-        /// <item>die Perioden der Vorlage kommen im Eigenband dazu — eine <b>Feiertagsregel</b>, die
-        /// schon steht, nur einmal.</item>
-        /// </list>
-        /// </summary>
-        private static Konditionierungskalender Zusammenfuehren(Konditionierungskalender generator,
-                                                                Konditionierungskalender ausVorlage,
-                                                                Konditionierungskalender alt,
-                                                                out string fehler)
-        {
-            fehler = null;
-            var perioden = new List<Kalenderregel>();
-            var belegt = new HashSet<int>();
-            var feiertagsregeln = new HashSet<string>(StringComparer.Ordinal);
-
-            // (1) Die eigenen Perioden des Bestands - sie behalten ihren Rang (P12).
-            if (alt != null)
-                foreach (Kalenderregel r in alt.Perioden)
-                {
-                    if (KonditionierungCtrl.IstMatrixbereich(r)) continue;
-                    perioden.Add(r);
-                    belegt.Add(r.Rang);
-                    if (r.IstFeiertag) feiertagsregeln.Add(r.Feiertagsregel);
-                }
-
-            // (2) Der Matrixbereich aus dem Generator (Ferien des ZIELS, Saison des Ziels).
-            foreach (Kalenderregel r in generator.Perioden)
-            {
-                perioden.Add(r);
-                belegt.Add(r.Rang);
-            }
-
-            // (3) Die Perioden der Vorlage - eine Feiertagsregel nur einmal.
-            var ausDerVorlage = new List<Kalenderregel>();
-            if (ausVorlage != null)
-                foreach (Kalenderregel r in ausVorlage.Perioden)
-                {
-                    if (r.IstFeiertag && !feiertagsregeln.Add(r.Feiertagsregel)) continue;
-                    ausDerVorlage.Add(r);
-                }
-
-            fehler = Kalenderwerkzeuge.ImEigenband(ausDerVorlage, belegt, out List<Kalenderregel> vergeben);
-            if (fehler != null) return null;
-            perioden.AddRange(vergeben);
-
-            fehler = Kalenderwerkzeuge.Rangpruefung(perioden);
-            if (fehler != null) return null;
-
-            if (perioden.Count > Kalenderregel.PERIODEN_MAX)
-            {
-                fehler = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
-                    perioden.Count.ToString(CultureInfo.InvariantCulture),
-                    Kalenderregel.PERIODEN_MAX.ToString(CultureInfo.InvariantCulture));
-                return null;
-            }
-
-            // Die Standardwoche der Vorlage liegt ueber der Grundangabe des Generators; der
-            // NENNWERT bleibt der des Generators - eine Vorlage traegt keinen (E54).
-            Kalenderangabe grund = ausVorlage != null && ausVorlage.Grundangabe.Art == Angabeart.Woche
-                ? ausVorlage.Grundangabe
-                : generator.Grundangabe;
-
-            try
-            {
-                return new Konditionierungskalender(generator.Groesse, grund, generator.Nennwert, perioden);
-            }
-            catch (ArgumentException ex)
-            {
-                fehler = ex.Message;
-                return null;
-            }
+            var quelle = new Konditionierungsvorlage(idVorlage, vorlage.Bezeichner, vorlage.Groesse, inhalt);
+            return ctrl.Schrittweg(ziel, mitBestand: true, streng: true,
+                                   vor => Konditionierungsarbeit.VorlageEintragen(vor, zielmatrix, quelle));
         }
 
         // =================================================================
@@ -648,19 +548,10 @@ namespace WindowsFormsApplication1
             string schloss = KonditionierungCtrl.Schloss(eigner);
             if (schloss != null) return KonditionierungCtrl.Ergebnis.Fehler(schloss);
 
-            var ctrl = new KonditionierungCtrl();
-            Dictionary<Konditionierungsgroesse, Konditionierungskalender> vorhanden =
-                ctrl.Kalender(eigner, out string meldung);
-            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
-            if (!vorhanden.TryGetValue(groesse, out Konditionierungskalender kalender))
-                return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOND_MSG_KEIN_KALENDER,
-                    Konditionierungsgroessen.Kennwort(groesse)));
-
-            Kalenderwerkzeuge.Werkzeugbefund b = werkzeug(kalender);
-            if (!b.Ok) return KonditionierungCtrl.Ergebnis.Fehler(b.Meldung);
-
-            return ctrl.Schreiben(eigner, b.Kalender, b.Vermerk);
+            // Stufe KP2: der reine Schritt (Konditionierungsarbeit.Werkzeug) - ohne angelegten Kalender
+            // benannt abgelehnt, die Herkunft bleibt, der Vermerk kommt dazu (B8).
+            return new KonditionierungCtrl().Schrittweg(eigner, mitBestand: false, streng: true,
+                vor => Konditionierungsarbeit.Werkzeug(vor, groesse, werkzeug));
         }
 
         // =================================================================

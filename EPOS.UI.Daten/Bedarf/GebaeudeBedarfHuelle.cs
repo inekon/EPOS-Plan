@@ -254,6 +254,9 @@ namespace WindowsFormsApplication1
                 MittlereRaumtemperaturC = ergebnis.MittlereRaumtemperaturC,
                 UeberhitzungsstundenH = ergebnis.UeberhitzungsstundenH,
                 SommerlueftungsstundenH = ergebnis.SommerlueftungsstundenH,
+                // KP2 K4: die Nachtauskuehlstunden des Laufs (null ohne Nachtauskuehlung) - die
+                // sichtbare Zeile „nur mit Wert" baut U1.
+                NachtauskuehlstundenH = ergebnis.NachtauskuehlstundenH,
                 Vergleich = vergleich,
 
                 // Stufe KU1 (Kuehlkonzept 8.4): der Abschnitt „Kaeltebedarf" - fuer jedes Gebaeude
@@ -276,7 +279,8 @@ namespace WindowsFormsApplication1
                     HeizwaermeMwh = z.HeizwaermeMwh,
                     MaxLastKw = z.MaxLastKw,
                     MittlereRaumtemperaturC = z.MittlereRaumtemperaturC,
-                    UeberhitzungsstundenH = z.UeberhitzungsstundenH
+                    UeberhitzungsstundenH = z.UeberhitzungsstundenH,
+                    NachtauskuehlstundenH = z.NachtauskuehlstundenH
                 })
             };
         }

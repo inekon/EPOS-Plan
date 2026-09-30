@@ -102,6 +102,30 @@ namespace WindowsFormsApplication1
         public NachtzeitBefund Nachtzeitbefund() => WindowsFormsApplication1.Nachtzeit.Pruefen(NachtBeginn, NachtEnde);
 
         /// <summary>
+        /// <b>Eine entkoppelte Kopie</b> samt Ferienzeiträumen (Stufe KP2, Arbeitsstand der
+        /// Konditionierung): Der Arbeitsstand ändert nie einen Eingang, den er bekommen hat — jeder
+        /// Schritt arbeitet auf einer Kopie (<see cref="Konditionierungsstand"/>).
+        /// </summary>
+        public Matrixeingang Kopie()
+        {
+            // Die zwei Ferienfelder sind nur lesbar: Die Kopie bekommt eigene über den Konstruktor.
+            var k = new Matrixeingang
+            {
+                SollTag = SollTag, SollNacht = SollNacht, SollWochenende = SollWochenende, SollFerien = SollFerien,
+                NachtBeginn = NachtBeginn, NachtEnde = NachtEnde, Ferienmerker = Ferienmerker,
+                Wochenendmerker = Wochenendmerker, Sollwertprofil = Sollwertprofil, KopplungWirksam = KopplungWirksam,
+                KuehlSollwert = KuehlSollwert, KuehlSollwertNacht = KuehlSollwertNacht, KuehlungWirksam = KuehlungWirksam,
+                LuftwechselInfiltration = LuftwechselInfiltration, LuftwechselNutzer = LuftwechselNutzer,
+                Luftwechselrate = Luftwechselrate, LuftwechselAusGesamtangabe = LuftwechselAusGesamtangabe,
+                InterneWaermegewinne = InterneWaermegewinne, Bewohner = Bewohner,
+                Maximaleraumtemperatur = Maximaleraumtemperatur,
+            };
+            Array.Copy(Ferienbeginn, k.Ferienbeginn, FERIENZEITRAEUME);
+            Array.Copy(Ferienende, k.Ferienende, FERIENZEITRAEUME);
+            return k;
+        }
+
+        /// <summary>
         /// <b>Die Kaskade der Einzelangaben</b>: Was dieser Eingang (der der Zone) nicht führt, kommt
         /// vom Gebäude. Die <b>Ferienzeiträume und die Merker kommen immer vom Gebäude</b> — sie
         /// gelten für alle Spalten (Konzept 3.4), und <c>Tab_Zone</c> führt sie nicht.

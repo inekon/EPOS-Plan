@@ -1151,11 +1151,17 @@ namespace EPOS.Kern.Tests
         private static Zeichenmodell TaktenderKesselModell()
         {
             (double[] kessel, double[] puffer, double[] bedarf) = TaktenderKessel();
+            return TaktenderKesselModell(kessel, puffer, bedarf);
+        }
+
+        private static Zeichenmodell TaktenderKesselModell(double[] kessel, double[] puffer, double[] bedarf,
+                                                           bool luecken = false)
+        {
             return ChartRenderer.ErzeugerStapelModell("Kessel",
                 new List<ChartRenderer.Reihe>
                 {
-                    new ChartRenderer.Reihe("Kessel", kessel, new SKColor(255, 0, 0), ChartRenderer.Stapelart.Flaeche),
-                    new ChartRenderer.Reihe("Puffer", puffer, new SKColor(0, 0, 255), ChartRenderer.Stapelart.Flaeche)
+                    new ChartRenderer.Reihe("Kessel", kessel, new SKColor(255, 0, 0), ChartRenderer.Stapelart.Flaeche) { Luecken = luecken },
+                    new ChartRenderer.Reihe("Puffer", puffer, new SKColor(0, 0, 255), ChartRenderer.Stapelart.Flaeche) { Luecken = luecken }
                 },
                 new List<ChartRenderer.Reihe>
                 {
@@ -1228,6 +1234,51 @@ namespace EPOS.Kern.Tests
                         break;
                     }
             Assert.True(rotSpalten > 1000, "der Kessel steht im Bild: " + rotSpalten);
+        }
+
+        /// <summary>
+        /// <b>Eine Lücke bleibt auch im gemalten Bild eine Lücke</b> (Kopf der Stufenregel): Der
+        /// Kessel, die unterste Schicht, ist eine Woche „aus" (NaN, Tag 70 bis 76), der Puffer
+        /// läuft durch. In den Bildpunktspalten der Woche steht kein Rot — der Kessel liegt dort
+        /// nicht auf null, und keine Nachbarstufe reicht hinein —, der Puffer aber steht weiter,
+        /// auf der Summe ohne den Kessel (<c>Stapelbeitrag</c>); davor und danach steht der
+        /// Kessel. Dieselben Stücke wie der SVG-Weg (<see cref="Pfadregel.Stufenstuecke"/>), und
+        /// im Modell trägt die Schicht die Lücke als NaN, der Puffer darüber nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke()
+        {
+            (double[] kessel, double[] puffer, double[] bedarf) = TaktenderKessel();
+            for (int t = 70 * 24; t < 77 * 24; t++) kessel[t] = double.NaN;
+            // Eine Reihe mit NaN nennt ihre Lücken (Reihe.Luecken) - ohne den Schalter ist sie unbrauchbar.
+            Zeichenmodell m = TaktenderKesselModell(kessel, puffer, bedarf, luecken: true);
+            Datenreihe k = m.Reihen.Single(r => r.Name == "Kessel");
+            Datenreihe p = m.Reihen.Single(r => r.Name == "Puffer");
+            int mitten = 73 * 24 + 18;
+            Assert.True(double.IsNaN(k.Werte[mitten]));
+            Assert.Equal(0.0, p.Unten[mitten]);                       // der Puffer liegt auf der Achse
+            Assert.Equal(puffer[mitten], p.Werte[mitten], 12);
+
+            Rahmen rc = m.Flaeche.Bild;
+            int Spalte(int tag) => (int)(rc.X + tag * 24.0 / 8759.0 * rc.Breite);
+            using (SKBitmap bild = SKBitmap.Decode(SkiaMaler.Png(m)))
+            {
+                int Zaehle(int x0, int x1, Func<SKColor, bool> farbe)
+                {
+                    int n = 0;
+                    for (int x = x0; x < x1; x++)
+                        for (int y = (int)rc.Y + 1; y < (int)rc.Unten - 1; y++)
+                            if (farbe(bild.GetPixel(x, y))) n++;
+                    return n;
+                }
+                bool Blau(SKColor c) => c.Blue > 200 && c.Red < 60 && c.Green < 60;
+                bool Rot(SKColor c) => c.Red > 200 && c.Blue < 60 && c.Green < 60;
+
+                Assert.Equal(0, Zaehle(Spalte(70) + 2, Spalte(77) - 1, Rot));
+                Assert.True(Zaehle(Spalte(70) + 2, Spalte(77) - 1, Blau) > 100, "der Puffer laeuft durch");
+                Assert.True(Zaehle(Spalte(60), Spalte(69), Rot) > 100, "der Kessel steht vor der Luecke");
+                Assert.True(Zaehle(Spalte(78), Spalte(87), Rot) > 100, "der Kessel steht nach der Luecke");
+            }
         }
 
         /// <summary>Die Punkte eines Pfads als „x,y"-Paare, in Pfadreihenfolge.</summary>

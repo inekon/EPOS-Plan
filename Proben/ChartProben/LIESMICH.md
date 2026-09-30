@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-29.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-09-30.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-29.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-09-30.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **221 Bilder**; **185** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **231 Bilder**; **194** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-29.sha256` nennt alle 185 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-30.sha256` nennt alle 194 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -437,7 +437,8 @@ keine Flächenreihe.
 
 Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
 Stapels** (`Pfadregel.Stufen`, `Pfadregel.Spitzenstunden`, `Pfadregel.Stundenwerte`,
-`Pfadregel.Treppe` in `EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
+`Pfadregel.Stufenstuecke`, `Pfadregel.Treppe` in
+`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
 Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur,
 Kanten), zeichnet je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange ein Tag
 schmaler als vier Bildpunktspalten ist, sonst je Spalte —, und zwar ALLE mit den Werten
@@ -452,6 +453,20 @@ auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspi
 über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
 Dauerlinie stapelt nicht.
 
+**Eine Lücke bleibt Lücke.** Ein nicht endlicher Wert (NaN — etwa „aus“ einer Kalenderwoche)
+wählt keine Spitzenstunde; eine Stufe ohne endlichen Bezugswert nimmt ihre erste Stunde. Steht
+eine Reihe in der Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder
+Unterkante —, ist die Stufe für sie eine Lücke: Die Treppe bricht dort ab und setzt danach mit
+eigenem Teilpfad neu an (`Pfadregel.Stufenstuecke`; im SVG je Stück ein Teilpfad, eine Schicht
+mit `Z` geschlossen, im PNG je Stück ein Vieleck oder Linienzug). Die Lücke steht nie als Null
+da, keine Nachbarstufe reicht in sie hinein, und die Zeigerzeile nennt die Schicht in dieser
+Stufe nicht. Ein Vormittag „aus“ an einem Tag mit der Spitze am Abend ist deshalb keine Lücke,
+ein Tag, dem allein die Spitzenstunde fehlt, schon. Die Proben stehen in `PfadregelTests.cs`
+(`EineLueckeBleibtLuecke`), `SvgSchreiberTests.cs`
+(`EineStapelschichtMitLueckeZeigtDieLueckeAlsLuecke`) und `ChartRendererTests.cs`
+(`Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke`); kein Probebild trägt eine Stapelschicht mit
+Lücke, die Messlatte berührt das nicht.
+
 Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
 `erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
 `erzeugerstapel_neun_reihen` samt `…_wenige` und `…_viele`, `erzeugerstapel_fenster` samt
@@ -464,3 +479,32 @@ Stapelschicht (`erzeugerstapel_solar_zwei_linien`) und der Berichtsstapel `jahre
 Stufe zur Oberkante“, „kein taktender Erzeuger als Nennleistungsband“, „keine Löcher“ und „Summe
 scheint nicht durch“ stehen in `EPOS.Kern.Tests/ChartRendererTests.cs` und
 `PfadregelTests.cs`, die Treppen in `SvgSchreiberTests.cs`.
+
+## Konditionierungsprofile (KP2, Welle K4): Teppichbild und Woche mit Lücke
+
+`ChartRenderer.KalenderteppichModell` (Datei `ChartRenderer.Kalenderteppich.cs`) zeichnet das Teppichbild eines
+Kalenders aus `Kalenderteppich` (Kern): x die 365 Tage des Bezugsjahres, y die 24 Stunden, Farbe der Wert. Stunden
+gleicher Farbstufe und Folgetage mit denselben Läufen und derselben Quelle werden zu Rechtecken; „aus" ist die eigene
+Rolle `RASTER_LOCH` mit einer Schraffur als EIN Streckenzug je Fläche; über 2 000 Elementen zeichnet das Bild benannt
+gröber. `KalenderwocheModell` ist die Woche einer Größe mit Einheit; NaN („aus") bricht die Fläche des Stundenprofils
+(ohne NaN ist das Stundenprofil bitgleich). Die Proben stehen in `Program.Kalenderteppich.cs`, Bezugsjahr 2025:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kalenderteppich_heizen_buero` | Heizen „Büro" mit Neujahr, Herbstferien und Heizperiode; 1244 × 464, `HEIZWAERME` und `RASTER_LOCH` |
+| Maßprobe | `kalenderteppich_lueftung_aus` | Lüftung, nachts und am Wochenende „aus"; `SERIE_6` und `RASTER_LOCH` |
+| Maßprobe | `kalenderwoche_aus` | die Lüftungswoche mit „aus" als Lücke; `PROFILLINIE` und die Profilfläche |
+| Gegenprobe | `kalenderteppich_aus_wirkt` | dieselbe Woche mit 0 statt „aus" zeichnet anders |
+| Gegenprobe | `kalenderteppich_ferien_wirkt` | Heizen mit und ohne Herbstferien |
+| Gegenprobe | `kalenderwoche_luecke_wirkt` | die Woche mit und ohne Lücke |
+| SVG-Probe | `svg_c_kalenderteppich_heizen_buero`, `svg_c_kalenderteppich_lueftung_aus` | Pixelbildprobe der Gruppe (c): jedes Feld mit `data-wert`, Titel, Legende schaltet vorhandene Elemente |
+| SVG-Probe | `svg_kalenderteppich_grenze_und_aus` | jedes Teppichbild höchstens 2 000 Elemente (Büro 169, Lüftung 521, Grenzbild 121), das Grenzbild nennt seine Vergröberung; jedes „aus"-Feld `RASTER_LOCH` mit genau einer Schraffur in `RAHMEN`; die Werte am Feld wörtlich |
+| SVG-Probe | `svg_kalenderwoche_luecke` | die Fläche der Woche zerfällt in fünf Teilpfade (roh und gebündelt), kein „NaN", die Einheit steht an der Reihe; ohne Lücke ein Zug |
+
+Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Die
+Teppichbilder ändern kein Bild von vorher. Die Woche ist ein Stundenprofil ohne Stapelschicht
+und geht deshalb nicht über die Stufenregel des Stapels; ihre Lücke ist die des Flächenzugs
+(`SvgSchreiber.Flaechenzug`). `Messlatte_2026-09-30.sha256` trägt beide Stände — die neun
+Teppichbilder und die zwölf Bilder der Stufenregel (Abschnitt oben). Die Windows-Messliste des
+Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: diese zwölf Zeilen geändert,
+neun neu, alle übrigen gleich.
