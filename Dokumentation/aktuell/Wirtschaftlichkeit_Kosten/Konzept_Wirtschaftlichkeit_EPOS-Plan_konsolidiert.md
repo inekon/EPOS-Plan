@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 29.09.2026** · Codestand `6cf8e266` · `SchemaStand.Zielversion` = 154 · Schemaschritte 90–154 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); 145–154 den Nachbarsitzungen Zapfprofil, Gebäudesimulation und Dialoge, darunter 147 das Mehrzonenmodell, 149 die Katalogsätze E51, 150 die Solarthermie, 151 und 152 die Konditionierung, 153 die Bezugsart Zimmer, 154 die Heizgrenze der Kesselbereitschaft; E19 bis E31, P555 und P556 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-29_R25_Plattformrand` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 30.09.2026** · Codestand `562dd61e9` · `SchemaStand.Zielversion` = 158 · Schemaschritte 90–158 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); 145–154 den Nachbarsitzungen Zapfprofil, Gebäudesimulation und Dialoge, darunter 147 das Mehrzonenmodell, 149 die Katalogsätze E51, 150 die Solarthermie, 151 und 152 die Konditionierung, 153 die Bezugsart Zimmer, 154 die Heizgrenze der Kesselbereitschaft; 155–158 den Nachbarsitzungen Zapfprofil, Konditionierung und Kessel — 155 der Füllstand des Zapfprofils, 156 die Kesselkennlinie, 157 die Konditionierungsvorlagen, 158 das Kennzeichen Brennwert der Projektkessel; E19 bis E31, P555, P556 und P630 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-30_R28_Kesselbrennwert` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -957,7 +957,9 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   **Zählregel** (`SzenarioAbdeckung`): m = die sieben Größen des W5‑B‑9-Satzes, Betrachtungszeitraum,
   Mengenänderung, Einspeisevergütung PV und KWK, je Vergütungszeile eines Standes mit PV-Anlage DV-Entgelt
   und PPA-Preis, je Träger mit Verbrauch und Stand Arbeits- und Grundpreis, der Leistungspreis beim
-  Stromträger eines Standes mit stromverwendendem Erzeuger immer, sonst nur, wo einer gepflegt ist — beim
+  Stromträger eines Standes mit stromverwendendem Erzeuger immer — ohne zugeordneten Stromträger ist das der
+  Rückfallträger, mit dem die Kostenrechnung den Netzbezug bepreist (der Auslieferungsträger,
+  `Emissionsquelle.KatalogStromTraeger`; → Register R‑EZ, EZ‑18) —, sonst nur, wo einer gepflegt ist — beim
   Stromträger eines Standes ohne stromverwendenden Erzeuger nie, er setzt ihn nicht an (→ Register R‑EZ, EZ‑17);
   n = die Parameter, deren Best- oder Worst-Wert um
   mehr als 1e−9 vom Erwartet-Wert abweicht — bei den sieben Größen zählt nur ein eingetragenes Feld, die
@@ -1546,7 +1548,17 @@ sie nicht um.
 Verwendung" des § 3.5 bestimmt jeder Lauf einmal über alle seine Stände — Stamm, angehakte Varianten
 und Referenz —, unabhängig von Referenzwahl und Sicht; Sicht 2 rechnet A und B mit derselben Regel wie
 Sicht 1. Ein Haken ändert damit die Menge des nächsten Laufs: Ist die einzige Variante mit
-Stromverwendung abgehakt, rechnet er jeden Stand je Stand.
+Stromverwendung abgehakt, rechnet er jeden Stand je Stand. **Bis zum nächsten „Berechnen" bleiben die
+gespeicherten Ergebnisse stehen** (→ Register R‑EZ, EZ‑18): Ändert ein Haken oder die Referenzwahl die
+Stände mit Stromverwendung des Laufs gegenüber dem Lauf, dem die gezeigten Ergebnisse gehören, gilt eine
+andere Gruppenregel, und das Warnband der Seite meldet die Ergebnisse über dem Knopf „Neu berechnen" als
+veraltet (`WIRT_BAND_GRUPPENREGEL_VERALTET`). Die Regel steht im Kern
+(`WirtschaftlichkeitCtrl.StromGruppenregelGeaendert`): Die Menge der Stromverwender weicht ab — ein Lauf mit
+einem Stand hat keine — und ein Stand ohne Stromverwendung aus dem gerechneten Lauf ist noch gewählt; nur
+seine Zahlen hängen an der Regel. Ein Haken ohne Wirkung auf die Regel meldet nichts, gerechnet wird nur auf
+Zuruf. Der gerechnete Lauf ist der des letzten „Berechnen"; ohne ein solches nimmt die Seite beim ersten Laden
+die Stände der Wahl, weil die gespeicherten Ergebnisse ihren Lauf nicht tragen
+(`WirtschaftlichkeitSeiteGaben`, `ErgebnisAnsicht.GruppenregelVeraltet`).
 
 **Bedienung:** Über den Vergleichstafeln steht eine Optionsgruppe „Alle Varianten gegen die
 Referenz | Zwei Stände" mit zwei Klapplisten A und B. Die Listen führen die angehakten Stände der
@@ -2091,7 +2103,7 @@ Jahres wie jeder Leistungspreis des Stromträgers (E7b‑Q2). Probe an 1030 mit 
 2.011 kW Spitze: 1.500 × 60 + 511 × 90 = 135.990 €/a. Die Speicherauslegung bewertet eine Kappung mit dem Preis
 der Stufe, in der die Spitze liegt.
 
-**Netzbezug ohne Stromverwendung — die Gruppenregel** (→ Register R‑EZ, EZ‑13 bis EZ‑17). Führt ein Stand
+**Netzbezug ohne Stromverwendung — die Gruppenregel** (→ Register R‑EZ, EZ‑13 bis EZ‑18). Führt ein Stand
 Netzbezug, aber keinen Erzeuger, der Strom verwendet (`ProjektEnergietraegerCtrl.BrauchtStromTraeger`:
 Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW oder eine Anlage mit Hilfsenergieanteil),
 gehen Kosten und Emissionen dieses Netzbezugs in der Einzelbetrachtung mit 0 ein; ein Hinweis „Strombedarf ohne
@@ -2103,8 +2115,14 @@ der Lastoptimierung und wird benannt (→ Register R‑EZ, EZ‑17): Führt der 
 Auslieferungsträger — einen Leistungspreis (Staffel, Saisonreihe oder Satz), setzt der Vergleich ihn nicht an, auch
 bei bekannter Bezugsspitze, und der Hinweis `WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT` nennt Satz und Träger
 (`VariantenDaten.LeistungspreisNichtAngesetzt`; in den Hinweisen des Standes auf der Ergebnisseite, im Wort- und im
-Tabellenbericht und in der Hinweisliste des Berichtslaufs). Die Speicherauslegung liest ihn weiter. Rollentarif
-und § 9b-Menge gelten wie bei jedem Stand mit Stromverwendung. Der Lauf sind Stamm, angehakte Varianten und Referenz; ein Stand
+Tabellenbericht und in der Hinweisliste des Berichtslaufs). Die Speicherauslegung liest ihn weiter. **Im
+Rollentarif gilt dasselbe** (→ Register R‑EZ, EZ‑18): Der Reststromtarif bepreist den Netzbezug eines solchen
+Standes mit Arbeits- und Grundpreis, den Leistungspreis seines Modells setzt er nicht an; die Differenzmethode
+rechnet dann auch die Bezugsrolle ohne Leistungsanteil (`StromTarifRechner.OhneLeistungspreis`), die vermiedenen
+Kosten tragen keinen. Führt der Reststromtarif einen Leistungspreis, nennt ihn
+`WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT` mit dem Klartext seines Modells (`TARIF_LM_*`) an der Stelle
+des Hinweises zum Träger, dessen Preise der Tarif ersetzt. Die § 9b-Menge gilt wie bei jedem Stand mit
+Stromverwendung. Der Lauf sind Stamm, angehakte Varianten und Referenz; ein Stand
 allein ist kein Vergleich, und verwendet kein Stand des Laufs Strom, bleibt es bei der Regel je Stand. Die
 Wirtschaftlichkeit bestimmt die Regel einmal je Lauf (`WirtschaftlichkeitCtrl.StromGruppenregel`) und rechnet sie
 auf einer Kopie des Standes — in allen drei Szenarien, in Sensitivität, Bandbreite, Verlauf und gespeicherter
@@ -2120,7 +2138,8 @@ Vergleichstabelle der Ergebnisseite und in den Hinweisen der Wirtschaftlichkeit.
 nicht: Den Netzbezug bepreist der Stromträger. Die Strommatrix (`StromMatrix`) führt nur Mengen und Lasten —
 je Projekt eine Jahreszeile in `Tab_ErgebnisStromMatrix` (Spalte `Zone` = „Jahr"). Im **Rollentarif**
 (Tarifmodus `ROLLEN`, die Differenzmethode § 3.6) ersetzt der Reststrombetrag den **ganzen** Flat-Anteil samt
-Leistungsanteil — auch eine Staffel des Trägers; das Rollenmodell bleibt (E7b‑Q1). Ein Tarifsatz, der nicht im
+Leistungsanteil — auch eine Staffel des Trägers; an einem Stand ohne stromverwendenden Erzeuger trägt er selbst
+keinen Leistungsanteil (oben, EZ‑18); das Rollenmodell bleibt (E7b‑Q1). Ein Tarifsatz, der nicht im
 Rollenmodell steht, rechnet nicht: Schemaschritt 104 löscht ihn samt der mit ihm gespeicherten Läufe (E7b‑Q4),
 und steht er noch in einer Datenbank vor dem Schritt, nennt ein Hinweis am Ergebnis den Wegfall
 (`WIRT_HINWEIS_ZEITZONENTARIF`).
@@ -2452,7 +2471,8 @@ Schlüssel = Eigenverbrauch je Anlage, brutto aus der Strommatrix
             Menge, Arbeit und § 9b-Korrektur anteilig; der Leistungsanteil bleibt projektweit
 ```
 
-Der **Leistungsanteil ist regelmäßig negativ** — das ist die Kernaussage, kein Fehler. In den
+Der **Leistungsanteil ist regelmäßig negativ** — das ist die Kernaussage, kein Fehler; an einem Stand ohne
+stromverwendenden Erzeuger ist er 0, beide Rollen rechnen dort ohne Leistungspreis (§ 3.5, EZ‑18). In den
 Kapitalwert geht der **Reststrom**betrag; die Differenz zusätzlich zu buchen wäre Doppelzählung
 (E5, fünffach belegt).
 
@@ -2658,6 +2678,15 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | **Anlagenart fehlt** | weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 leitet kein Kontingent ab, der Zuschlag der Anlage ist 0 (§ 3.6, § 6.3 Nr. 30); ein gepflegtes Kontingent löst die Zeile nicht aus | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_ANLAGENART_FEHLT`, umgesetzt #440; Schwere: entschieden E7c1‑Q5, nach Empfehlung) |
 | **Prüfung nicht ausführbar** | eine Teilprüfung dieser Tafel scheitert an einem Lesefehler (etwa einer nicht lesbaren Tabelle) | **Warnung** an ihrer Stelle: „Prüfung „X" nicht ausführbar: ‹Grund›" (`KOH_PRUEFUNG_NICHT_AUSFUEHRBAR` mit zehn Prüfungsnamen `KOH_TP_*`; umgesetzt #452, B‑6) |
 | **Rechenstufe nicht ausführbar** | eine Rechenstufe der Wirtschaftlichkeit scheitert — Parameter, Tarif, Anlagen, elektrische Leistung, Energieträger, Heizölprüfung, Betriebskosten, Gesetzeskatalog, Kohärenzprüfung, KWKG-Satzherleitung, Speichern oder Laden der Ergebnisse; die Stufe rechnet mit ihrem benannten Rückfall weiter | **Warnung** an jeder Ergebniszeile des Projekts, je Grund einmal: „Rechenstufe „X" nicht ausführbar: ‹Grund›" (`WIRT_STUFE_NICHT_AUSFUEHRBAR` mit zwölf Stufennamen; umgesetzt #452, B‑6); scheitert das Speichern, gilt der Kapitalwert, gespeichert ist er nicht |
+
+**Die Stromseite prüft den Träger, der den Netzbezug bepreist** (→ Register R‑EZ, EZ‑18; § 6.3 Nr. 39): den
+zugeordneten Stromträger, ohne Zuordnung den Rückfallträger der Kostenrechnung
+(`KostenEmissionRechner.StromTraegerRueckfall`, dieselbe Wahl) — an einem Stand mit Stromverwendung den
+Auslieferungsträger, an einem Stand ohne, sobald die Gruppenregel seinen Netzbezug im Vergleich bepreist
+(`KohaerenzLauf.StromImVergleichBepreist`), denselben. Einen Stromsteueranteil führt nur ein zugeordneter Träger
+(„Strompreis Details", § 2.5); eine gebuchte Entlastung nach § 9b steht am Rückfallträger deshalb als Fall 2 mit
+Betrag und dem Grund „Stromsteueranteil des Auslieferungsträgers „…" nicht gepflegt"
+(`KOH_GRUND_RUECKFALL_STROMSTEUER`). Ohne Stromverwendung und ohne Gruppenregel schweigt die Stromseite.
 
 **Der Grund statt der stillen Null** (Befund B‑6, § 4; umgesetzt #452 für `KohaerenzPruefung`,
 `EmissionsBilanzRechner`, `Emissionsquelle`, `GesetzKatalog` und `WirtschaftlichkeitCtrl`). `DataRepository` wirft
@@ -2955,7 +2984,8 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E30 Hilfsenergiekosten, BHKW-Stromdeckung, Datenpflege 1030/1026, Anker 1030** (§ 3.4, § 3.6; § 6.2; § 6.3 Nr. 21, 36; Befunde B3, B4, B5, B8 der Sichtprüfung P1030, N10 aus E29) | Trägt eine BHKW- oder Brennstoffkessel-Anlage einen Hilfsenergieanteil, rechnet ihre Pflichtzeile „Hilfsenergiekosten“ ohne eigenen Satz nach Weg B mit dem Anteil als Satz, sonst eine abgeleitete Zeile; eine gepflegte Position hat Vorrang (§ 3.4, `HilfsenergieAusAnteil`); die Stromdeckung des BHKW ist sein Eigenverbrauch am Strombedarf aller Verbraucher an allen fünf Stellen (N10); die Wartung von 1030 steht als fester Jahresbetrag in den Pflichtzeilen, fünf Hilfsenergiezeilen 1030/1026 auf „% des Endenergiebedarfs“ (Skript `datenpflege_1030_1026_betriebskosten.cs`, ergebnisneutral); der Kernanker 1030 heißt „gespeicherter Altlauf 212“, die Differenz −9.247.593,78 € zum Berichtsweg ist zerlegt — kein Kapitalwert-Anker bewegt, Messlatten Word/Excel 1030 begründet neu (zwei Positionen weniger), neue Basis `2026-09-26_R21_BhkwDeckung` (A/B gegen R20 429/432 byte-gleich, allein `BHKW.Strombedarfsdeckung` in 1017, 1024, 1047), Testdatenbank `40df1bf2`; kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (B3, B4, B5, B8, N10) (→ Register R‑E30). | #548 |
 | **E31 Der Bericht folgt dem gewählten Szenario** (§ 2.13 (5); Nach #582) | Szenarioschlüssel als Feld der Berichtskonfiguration (JSON, kein Schemaschritt), Wahl am Baustein Wirtschaftlichkeit der Berichtsseite, vorbelegt aus „Zum Bericht ›“; Kennzahltafel, Mehrjahresübersicht, Brücke, Bild „Kumulierte Barwerte je Version“ und Bezugsergebnisse folgen dem Szenario; Szenarienübersicht mit Spannenbild, Dreierbild, Punkt 9 der Anhang-E-Checkliste und Sensitivitätsanalyse (Erwartet) bleiben; Rückfall auf Erwartet mit Hinweiszeile; Messlatten 1030/Gruppe byte-gleich (→ Register R‑E31). | umgesetzt **#591** (Cloud-Sitzung Berichterstellung, Commits `41c30e3e` Gruppenregel, `5ce61c9c` E31, Merge `9af84261`; Gate Linux grün, sechs Bericht-Messlatten byte-gleich; Fachvorgabe [`E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md`](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md); Abnahme der Wirtschaftlichkeit 29.09.2026 mit `BerichtSzenarioTests`, `BerichtsKonfigurationJsonTests` und `BerichtVorlagenMesslatteTests` lokal grün) |
 | **P555 Konzeptnachlese Gruppenregel, Szenarioabdeckung je Lauf** (§ 2.11.5, § 2.15, § 3.5, § 3.8, § 6.2, § 6.3 Nr. 37–39, § 6.5; Nach #555) | Die Gruppenregel „Strombedarf ohne Verwendung“ steht in § 3.5 und gilt je Lauf — Stamm, angehakte Varianten, Referenz; die Szenarioabdeckung der Ergebnisseite zählt dieselbe Menge, steht an der Ansicht und folgt dem Haken, der Auslieferungsträger der Gruppenregel zählt als Stromträger; im Bericht zeigt das Kostenkapitel die Einzelzahl mit einer Fußzeile der Gruppenregel (EZ‑16, gebaut in der Berichterstellung nach der Fachvorgabe P555‑B), das Kapitel Wirtschaftlichkeit die Gruppenzahl — reiner Ausweis, kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, kein Schemaschritt (→ Register R‑EZ, EZ‑13 bis EZ‑16). | #603; P555‑B umgesetzt #609 (Berichterstellung) |
-| **P556 Leistungspreis nur bei stromverwendendem Erzeuger** (§ 2.11.5, § 3.5, § 6.2, § 6.3 Nr. 38; Nach #603 (d)) | Die Gruppenregel bepreist den Netzbezug eines Standes ohne stromverwendenden Erzeuger mit Arbeits- und Grundpreis; den Leistungspreis des Trägers — zugeordnet oder Auslieferungsträger; Staffel, Saisonreihe oder Satz — setzt sie nicht an, auch bei bekannter Bezugsspitze, und ein Hinweis nennt Satz und Träger (Hinweise des Standes auf der Ergebnisseite, Wort- und Tabellenbericht, Hinweisliste des Berichtslaufs); Stände mit Stromverwendung und die Speicherauslegung unverändert; die Szenarioabdeckung zählt am Stromträger eines solchen Standes Arbeits- und Grundpreis, keinen Leistungspreis (der Nebenbefund aus P555 ist zurückgenommen) — kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, kein Schemaschritt (→ Register R‑EZ, EZ‑17). | Statuszeile folgt (#612 vorläufig) |
+| **P556 Leistungspreis nur bei stromverwendendem Erzeuger** (§ 2.11.5, § 3.5, § 6.2, § 6.3 Nr. 38; Nach #603 (d)) | Die Gruppenregel bepreist den Netzbezug eines Standes ohne stromverwendenden Erzeuger mit Arbeits- und Grundpreis; den Leistungspreis des Trägers — zugeordnet oder Auslieferungsträger; Staffel, Saisonreihe oder Satz — setzt sie nicht an, auch bei bekannter Bezugsspitze, und ein Hinweis nennt Satz und Träger (Hinweise des Standes auf der Ergebnisseite, Wort- und Tabellenbericht, Hinweisliste des Berichtslaufs); Stände mit Stromverwendung und die Speicherauslegung unverändert; die Szenarioabdeckung zählt am Stromträger eines solchen Standes Arbeits- und Grundpreis, keinen Leistungspreis (der Nebenbefund aus P555 ist zurückgenommen) — kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, kein Schemaschritt (→ Register R‑EZ, EZ‑17). | #612 |
+| **P630 Rollentarif unter EZ‑17, Rückfallträger im Ausweis, Stromsteuer-Kohärenz, Veraltet-Hinweis am Haken** (§ 2.11.5, § 2.15, § 3.5, § 3.6, § 3.9, § 6.2, § 6.3 Nr. 39; Nach #612 (a), Nach #603 (b) und (c)) | Der Rollentarif setzt an einem Stand ohne stromverwendenden Erzeuger keinen Leistungsanteil an, auch nicht auf der Bezugsseite der vermiedenen Kosten, und nennt den Leistungspreis mit dem Modell des Reststromtarifs; der Rückfallträger eines Standes mit Stromverwendung ohne Zuordnung zählt im Ausweis als Stromträger mit Leistungspreis (in der Testdatenbank alle Stände mit Stromverwendung ohne Stromträger, etwa 1018 13 → 16 Parameter); die Stromseite der Kohärenzprüfung prüft gegen den Träger, der den Netzbezug bepreist, auch unter der Gruppenregel, und nennt den fehlenden Stromsteueranteil des Auslieferungsträgers; ändert ein Haken oder die Referenzwahl die Stromverwender des Laufs, meldet das Warnband die Ergebnisse bis zum nächsten „Berechnen“ als veraltet — kein Rechenweg der Simulation, kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, kein Schemaschritt (→ Register R‑EZ, EZ‑18). | Statuszeile folgt (#630 vorläufig) |
 
 ## 6.2 Regressionsanker
 
@@ -3008,11 +3038,15 @@ Periode), dazu fünf Dialogproben in `VorlagenPositionDialogTests`; E16 bewegt k
 Kern Zeichen für Zeichen den Weg von vorher.
 Die Gruppenregel „Strombedarf ohne Verwendung" (§ 3.5) bewegt keinen Anker: Jeder Kapitalwert-Anker rechnet einen
 Stand allein, und in der Testdatenbank verwendet jeder Stand jeder Vergleichsgruppe Strom. Ihre Wache ist
-`StromGruppenregelTests` (20, an Prüfständen der Gruppe 1026, deren Stände ohne Stromverwender gemacht werden: der
+`StromGruppenregelTests` (27, an Prüfständen der Gruppe 1026, deren Stände ohne Stromverwender gemacht werden: der
 Vergleich in allen Szenarien und im Verlauf, die Gegenproben ohne Stromverwender und mit einem Stand, der Bericht nach
 der Gruppenregel, die Szenarioabdeckung je Lauf im Kern und auf der Seite, der Leistungspreis, den ein Stand ohne
 Stromverwender nicht ansetzt — Satz, Staffel am zugeordneten Träger, Satz je Monat, der Hinweis in Ergebnis und
-Hinweisliste —, EZ‑17).
+Hinweisliste —, EZ‑17; der Rollentarif ohne Leistungsanteil samt Hinweis mit dem Modell, die Kohärenz der § 9b-Entlastung
+am Rückfallträger und das Veraltet-Band nach einem Haken samt Referenzwahl und „Berechnen", EZ‑18), dazu
+`SzenarioAbdeckungTests` (56, der Rückfallträger von 1018 zählt wie ein zugeordneter Stromträger),
+`EnergiekostenGrundTests` (die Stromseite der Kohärenz am Rückfallträger, auch unter der Gruppenregel) und bUnit
+`WirtschaftlichkeitErgebnisansichtTests` (das Band am Haken der einzigen Stromvariante, „Neu berechnen" räumt es).
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -3210,10 +3244,11 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     nicht; führt der Träger einen, nennt ihn ein Hinweis (§ 3.5, → Register R‑EZ). Die Frage nach der Bezugsspitze
     entfällt damit — ein solcher Stand braucht sie für seine Kosten nicht; die Szenarioabdeckung zählt an seinem
     Stromträger Arbeits- und Grundpreis (§ 2.11.5), siehe Protokoll.
-39. **Stromsteuer-Kohärenz an Ständen der Gruppenregel** (Statusdatei Nach #555 (d)) — an einem Stand ohne eigene
-    Stromverwendung und ohne zugeordneten Stromträger schweigt die Prüfung der Stromseite
-    (`KohaerenzPruefung.Stromseite`, § 3.9), obwohl der Vergleich nach der Gruppenregel § 9b auf seinen Netzbezug
-    buchen kann (§ 3.8). Nachziehen.
+39. ~~**Stromsteuer-Kohärenz an Ständen der Gruppenregel** (Statusdatei Nach #555 (d))~~ — entschieden 30.09.2026
+    (EZ‑18), umgesetzt #630 (P630): Ohne zugeordneten Stromträger prüft die Stromseite
+    (`KohaerenzPruefung.Stromseite`) gegen den Rückfallträger, mit dem der Stand bepreist wird — auch an einem Stand
+    ohne eigene Stromverwendung, dessen Netzbezug die Gruppenregel bepreist; ohne Stromsteueranteil an ihm nennt die
+    Zeile den Grund (§ 3.9, → Register R‑EZ), siehe Protokoll.
 
 **Nachweis und Betrieb**
 
