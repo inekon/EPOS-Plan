@@ -1029,44 +1029,60 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// <b>„Konditionierung erneut übernehmen"</b> (Konzept 5.5): Matrix, Kalender und
-        /// Perioden des Katalogbaus ersetzen die des Projektgebäudes. Die Zeilen der ZONEN
-        /// bleiben — sie sind eine andere Ebene; der Befund zählt sie für die Rückfrage, die mit
-        /// KP2 kommt. Der Katalogbau wird über den Verweis der Kopie gesucht
-        /// (<c>ID_Gebaeude_Stamm</c>), der Name ist der Rückfall — dieselbe Regel wie
-        /// <see cref="Katalogzeile"/>.
+        /// <b>„Konditionierung erneut übernehmen"</b> (Konzept 5.5; Entwurf KP2, Festlegung 4, Befund
+        /// B9): Die <b>ganze Gebäudeebene</b> wird die des Katalogbaus — Vorgabezeilen, Kalender samt
+        /// Perioden, die neun Bestandszellen, Nachtzeiten, Merker, Ferienzeiträume und
+        /// <c>Luftwechselrate</c> (<see cref="Konditionierungsarbeit.KatalogErneut"/>). Die Zeilen der
+        /// ZONEN bleiben — sie sind eine andere Ebene; der Befund zählt sie. Eine dünne Hülle: Lesen →
+        /// reiner Schritt → Schreiben, alles in EINEM Vorgang. Die Rückfrage entsteht vorher
+        /// (<see cref="KonditionierungErneutUebernehmenRueckfrage"/>). Der Katalogbau wird über den
+        /// Verweis der Kopie gesucht (<c>ID_Gebaeude_Stamm</c>), der Name ist der Rückfall — dieselbe
+        /// Regel wie <see cref="Katalogzeile"/>.
         /// </summary>
         public static Konditionierungskopie.Befund KonditionierungErneutUebernehmen(int idGebaeude)
         {
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT [ID_Gebaeude_Stamm], [Gebaeudename] FROM [" + TABLE_PROJ + "] WHERE ID = ?",
-                new DbParam("@g", idGebaeude));
-            if (dt == null || dt.Rows.Count == 0)
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue)
                 return Konditionierungskopie.Befund.Fehler(MyResource.Resource.ADM_MSG_KOPIE_FEHLT);
-
-            int? idStamm = Ganzzahl(dt.Rows[0], "ID_Gebaeude_Stamm");
-            string name = Text(dt.Rows[0], "Gebaeudename");
-            DataRow r = Katalogzeile(idStamm, name);
-            if (r == null)
-                return Konditionierungskopie.Befund.Fehler(MyResource.Resource.ADM_MSG_KOPIE_FEHLT);
+            if (!KonditionierungSchema.Lesbar()) return Konditionierungskopie.Befund.Nichts;
 
             using (DbVorgang vorgang = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
             {
                 try
                 {
-                    Konditionierungskopie.Befund befund = Konditionierungskopie.Kopieren(
-                        vorgang,
-                        KonditionierungCtrl.Eigner.Katalogbau(Convert.ToInt64(r["ID"])),
-                        KonditionierungCtrl.Eigner.Gebaeude(idGebaeude),
-                        Konditionierungskopie.Auswahl.Ersetzend);
-                    if (!befund.Ok)
+                    var ctrl = new KonditionierungCtrl();
+                    KonditionierungCtrl.Eigner gebaeude = KonditionierungCtrl.Eigner.Gebaeude(idGebaeude);
+                    Konditionierungsstand projekt = ctrl.StandLesen(gebaeude, out _);
+                    Konditionierungsstand katalog = ctrl.StandLesen(
+                        KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out string meldung);
+                    if (meldung != null)
                     {
                         vorgang.Rollback();
-                        return befund;
+                        return Konditionierungskopie.Befund.Fehler(meldung);
                     }
+
+                    Konditionierungsschritt s = Konditionierungsarbeit.KatalogErneut(
+                        new Konditionierungsarbeitsstand(projekt, null), katalog);
+                    if (!s.Ok)
+                    {
+                        vorgang.Rollback();
+                        return Konditionierungskopie.Befund.Fehler(s.Meldung);
+                    }
+                    KonditionierungCtrl.Ergebnis e = ctrl.StandSchreiben(vorgang, gebaeude, s.Stand.Gebaeude,
+                                                                          mitBestand: true, out _);
+                    if (!e.Ok)
+                    {
+                        vorgang.Rollback();
+                        return Konditionierungskopie.Befund.Fehler(e.Meldung);
+                    }
+
+                    int perioden = 0;
+                    foreach (Konditionierungskalender k in katalog.Angelegt().Values) perioden += k.Perioden.Count;
+                    int zonen = Konditionierungskopie.Zonenzeilen(vorgang, idGebaeude);
                     vorgang.Commit();
-                    return befund;
+                    return new Konditionierungskopie.Befund(true, katalog.VorgabenAnzahl, katalog.KalenderAnzahl,
+                                                            perioden, zonen, "");
                 }
                 catch (Exception ex)
                 {
@@ -1074,6 +1090,33 @@ namespace WindowsFormsApplication1
                     return Konditionierungskopie.Befund.Fehler(ex.Message);
                 }
             }
+        }
+
+        /// <summary>
+        /// <b>Die Rückfrage VOR „erneut übernehmen"</b> (Festlegung 3, 4; Befund B9): was die erneute
+        /// Übernahme am Gebäude ersetzt, was bleibt und welche Zonen ihre eigenen Werte behalten, mit
+        /// Namen — gelesen, nicht geschrieben (<see cref="Konditionierungsarbeit.Rueckfrage"/>).
+        /// <c>null</c>, wenn es keinen Katalogbau oder keine Konditionierungstabellen gibt.
+        /// </summary>
+        public static Konditionierungsbilanz KonditionierungErneutUebernehmenRueckfrage(int idGebaeude)
+        {
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue || !KonditionierungSchema.Lesbar()) return null;
+            var ctrl = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand projekt = ctrl.ArbeitsstandLesen(idGebaeude, null, out _);
+            Konditionierungsstand katalog = ctrl.StandLesen(KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out _);
+            return Konditionierungsarbeit.Rueckfrage(projekt, null, Konditionierungshandlung.KatalogErneut, katalog);
+        }
+
+        /// <summary>Der Katalogbau einer Projektkopie — über <c>ID_Gebaeude_Stamm</c>, sonst über den Namen; <c>null</c> = keiner.</summary>
+        private static long? KatalogbauDerKopie(int idGebaeude)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [ID_Gebaeude_Stamm], [Gebaeudename] FROM [" + TABLE_PROJ + "] WHERE ID = ?",
+                new DbParam("@g", idGebaeude));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = Katalogzeile(Ganzzahl(dt.Rows[0], "ID_Gebaeude_Stamm"), Text(dt.Rows[0], "Gebaeudename"));
+            return r == null ? (long?)null : Convert.ToInt64(r["ID"], System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>Was „Speichern unter" ergeben hat: der neue Katalogbau und sein Kopierbefund.</summary>

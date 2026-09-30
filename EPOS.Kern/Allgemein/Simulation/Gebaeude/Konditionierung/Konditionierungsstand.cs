@@ -669,6 +669,27 @@ namespace WindowsFormsApplication1
     public sealed record Konditionierungsposten(Konditionierungspostenart Art, int Anzahl);
 
     /// <summary>
+    /// <b>Die Handlungen mit Rückfrage</b> (Entwurf KP2, Festlegung 3): Sie ersetzen etwas, das der
+    /// Anwender von Hand angelegt haben kann; der Befund entsteht VOR dem Schreiben
+    /// (<see cref="Konditionierungsarbeit.Rueckfrage"/>). „Speichern unter" im Projekt fragt über
+    /// <see cref="Konditionierungsarbeit.RueckfrageSpeichernUnter"/>.
+    /// </summary>
+    public enum Konditionierungshandlung
+    {
+        /// <summary>„Matrix erneut anwenden…" (P12).</summary>
+        MatrixErneut = 0,
+
+        /// <summary>„Übernehmen" einer Vorlage (P11, P12).</summary>
+        VorlageUebernehmen = 1,
+
+        /// <summary>„Verwerfen" — zurück zur Matrix.</summary>
+        Verwerfen = 2,
+
+        /// <summary>„Aus dem Katalog erneut übernehmen…" (Festlegung 4).</summary>
+        KatalogErneut = 3,
+    }
+
+    /// <summary>
     /// <b>Was ein Schritt ersetzt und was bleibt</b> (Entwurf KP2, Festlegung 3) — die Zahlen je
     /// Postenart und die Namen der betroffenen Zonen. Dieselbe Bilanz dient als Rückfragebefund VOR
     /// dem Schreiben und als Befund NACH dem Schritt.

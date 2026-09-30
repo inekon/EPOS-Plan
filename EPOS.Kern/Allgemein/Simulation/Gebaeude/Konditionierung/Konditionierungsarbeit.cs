@@ -921,6 +921,235 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  „Aus dem Katalog erneut übernehmen" und die Rückfragen (Festlegung 3, 4; B9)
+        // =================================================================
+
+        /// <summary>
+        /// <b>„Aus dem Katalog erneut übernehmen…"</b> (Entwurf KP2, Festlegung 4; Befund B9): Die
+        /// <b>ganze Gebäudeebene</b> wird die des Katalogbaus — Vorgabezellen, Kalender samt Perioden und
+        /// Herkunft, die neun Bestandszellen, Nachtzeiten, Ferienzeiträume samt Merkern und die
+        /// Gesamtangabe des Luftwechsels (<see cref="Katalogebene"/>). <b>Die Zonen bleiben</b>, wie sie
+        /// sind. Die Bilanz ist dieselbe, die <see cref="Rueckfrage"/> vorher nennt.
+        /// </summary>
+        /// <param name="stand">Der Arbeitsstand des Projektgebäudes.</param>
+        /// <param name="katalog">Die Ebene des Katalogbaus; <c>null</c> = es gibt keinen — benannt abgelehnt.</param>
+        public static Konditionierungsschritt KatalogErneut(Konditionierungsarbeitsstand stand, Konditionierungsstand katalog)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            if (katalog == null) return Konditionierungsschritt.Fehler(MyResource.Resource.KOND_MSG_KATALOG_FEHLT);
+            Konditionierungsstand neu = Katalogebene(stand.Gebaeude, katalog);
+            return Konditionierungsschritt.Gut(stand.MitGebaeude(neu), KatalogBilanz(stand, neu));
+        }
+
+        /// <summary>
+        /// <b>Die Gebäudeebene aus dem Katalogbau</b>: Tabellen und Herkunft des Katalogbaus; aus seinem
+        /// Bestand die neun Bestandszellen (<see cref="Matrixzellenort"/>), Nachtbeginn und -ende,
+        /// Merker, Ferienzeiträume und <c>Luftwechselrate</c>. Alles Übrige des Gebäudebestands
+        /// (Bewohner, Maximaltemperatur, Sollwertprofil, Schalter) bleibt.
+        /// </summary>
+        public static Konditionierungsstand Katalogebene(Konditionierungsstand gebaeude, Konditionierungsstand katalog)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            if (katalog == null) throw new ArgumentNullException(nameof(katalog));
+            Matrixeingang k = katalog.Bestand;
+            Matrixeingang b = gebaeude.Bestand;
+            b.SollTag = k.SollTag;
+            b.SollNacht = k.SollNacht;
+            b.SollWochenende = k.SollWochenende;
+            b.SollFerien = k.SollFerien;
+            b.KuehlSollwert = k.KuehlSollwert;
+            b.KuehlSollwertNacht = k.KuehlSollwertNacht;
+            b.LuftwechselInfiltration = k.LuftwechselInfiltration;
+            b.LuftwechselNutzer = k.LuftwechselNutzer;
+            b.InterneWaermegewinne = k.InterneWaermegewinne;
+            b.NachtBeginn = k.NachtBeginn;
+            b.NachtEnde = k.NachtEnde;
+            b.Ferienmerker = k.Ferienmerker;
+            b.Wochenendmerker = k.Wochenendmerker;
+            b.Luftwechselrate = k.Luftwechselrate;
+            for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME; i++)
+            {
+                b.Ferienbeginn[i] = k.Ferienbeginn[i];
+                b.Ferienende[i] = k.Ferienende[i];
+            }
+            HerkunftDesLuftwechsels(b);
+            return katalog.AlsArt(gebaeude.Art).MitBestand(b);
+        }
+
+        /// <summary>
+        /// <b>Der Rückfragebefund VOR dem Schreiben</b> (Entwurf KP2, Festlegung 3; Befund B9): was die
+        /// Handlung ersetzt, was bleibt und welche Zonen sie betrifft, mit Namen — aus dem Arbeitsstand,
+        /// ohne Datenbank. <c>null</c> = keine Rückfrage nötig (nichts, was verloren ginge).
+        /// <list type="bullet">
+        /// <item><b>Matrix erneut anwenden</b>, <b>Verwerfen</b>: nur mit angelegtem Kalender; die Zonen
+        /// sind die, deren geltender Kalender sich mit ändert (sie folgen dem Gebäude).</item>
+        /// <item><b>Vorlage übernehmen</b>: mit angelegtem Kalender der Matrixbereich (P12), sonst die
+        /// Zellen der Spalte; die Zonen sind die, die ihren Kalender mit angelegt bekommen (B4).</item>
+        /// <item><b>Aus dem Katalog erneut übernehmen</b> (<paramref name="katalog"/>): die geänderten
+        /// Zellen, die Kalender samt eigenen Perioden, Nachtzeiten und Ferienzeiträume; die Zonen mit
+        /// eigenen Werten bleiben und stehen mit Namen da. Immer eine Rückfrage.</item>
+        /// </list>
+        /// </summary>
+        public static Konditionierungsbilanz Rueckfrage(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
+                                                        Konditionierungshandlung handlung,
+                                                        Konditionierungsstand katalog = null)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            if (handlung == Konditionierungshandlung.KatalogErneut)
+                return katalog == null ? null : KatalogBilanz(stand, Katalogebene(stand.Gebaeude, katalog));
+            if (ort == null) throw new ArgumentNullException(nameof(ort));
+            Konditionierungsstand ebene = stand.Ebene(ort.Zone);
+            if (ebene == null) return null;
+            Konditionierungskalender alt = ebene.Kalender(ort.Groesse);
+
+            switch (handlung)
+            {
+                case Konditionierungshandlung.MatrixErneut:
+                {
+                    if (alt == null) return null;
+                    Konditionierungsschritt s = MatrixErneut(stand, ort);
+                    return MitZonen(MatrixbereichBilanz(alt), s.Ok ? BetroffeneZonen(stand, s.Stand, ort) : null);
+                }
+                case Konditionierungshandlung.Verwerfen:
+                {
+                    if (alt == null) return null;
+                    Konditionierungsschritt s = Verwerfen(stand, ort);
+                    return MitZonen(Bilanz(Kalenderposten(alt, mitKalender: true)),
+                                    s.Ok ? BetroffeneZonen(stand, s.Stand, ort) : null);
+                }
+                case Konditionierungshandlung.VorlageUebernehmen:
+                {
+                    int zellen = 0;
+                    Matrixspalte spalte = ebene.Matrix().Spalte(ort.Groesse);
+                    foreach (string zeile in DbWerte.KOND_ZEILEN)
+                        if (Konditionierungsstand.Traegt(spalte.Zeile(zeile))
+                            && (Konditionierungsstand.Traegt(ebene.Vorgabe(ort.Groesse, zeile))
+                                || Matrixzellenort.HatBestandsspalte(ebene.Art, ort.Groesse, zeile)))
+                            zellen++;
+                    if (alt == null && zellen == 0) return null;
+                    Konditionierungsbilanz b = alt != null
+                        ? MatrixbereichBilanz(alt, zellen)
+                        : Bilanz(Ersetzt(Konditionierungspostenart.Matrixzellen, zellen));
+                    var zonen = new List<string>();
+                    if (!ort.Zone.HasValue)
+                    {
+                        Konditionierungsarbeitsstand probe = stand;
+                        Zonenkalender(ref probe, ort.Groesse, zonen);
+                    }
+                    return MitZonen(b, zonen);
+                }
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Rückfrage von „Speichern unter" im Projekt</b> (Festlegung 3): Der neue Katalogbau
+        /// nimmt nur die Gebäudeebene mit; Zonen, ihre Bauteile und ihre Konditionierung bleiben im
+        /// Projekt zurück — die Frage nennt alles zusammen. <see cref="Konditionierungsbilanz.Bleibt"/>
+        /// zählt die Kalender und Zellen der Zonen (<see cref="Konditionierungspostenart.Zonenkalender"/>)
+        /// und die <paramref name="bauteile"/>; <see cref="Konditionierungsbilanz.Zonen"/> nennt jede Zone.
+        /// <c>null</c> = ohne Zonen und Bauteile keine Rückfrage.
+        /// </summary>
+        public static Konditionierungsbilanz RueckfrageSpeichernUnter(Konditionierungsarbeitsstand stand, int bauteile)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            if (stand.Zonen.Count == 0 && bauteile <= 0) return null;
+            int konditionierung = 0;
+            var namen = new List<string>();
+            foreach (Konditionierungszone z in stand.Zonen)
+            {
+                konditionierung += z.Stand.KalenderAnzahl + z.Stand.VorgabenAnzahl;
+                namen.Add(z.Name);
+            }
+            return new Konditionierungsbilanz(null,
+                new[]
+                {
+                    Ersetzt(Konditionierungspostenart.Zonenkalender, konditionierung),
+                    Ersetzt(Konditionierungspostenart.Bauteile, bauteile),
+                },
+                namen);
+        }
+
+        /// <summary>Die Bilanz von „erneut übernehmen": ersetzt am Gebäude, was sich ändert; die Zonen mit eigenen Werten bleiben.</summary>
+        private static Konditionierungsbilanz KatalogBilanz(Konditionierungsarbeitsstand stand, Konditionierungsstand neu)
+        {
+            Konditionierungsstand alt = stand.Gebaeude;
+            Vorgabematrix ma = alt.Matrix(), mn = neu.Matrix();
+            int zellen = 0;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                foreach (string zeile in DbWerte.KOND_ZEILEN)
+                    if (!Kalendervergleich.ZelleGleich(ma.Spalte(g).Zeile(zeile), mn.Spalte(g).Zeile(zeile))) zellen++;
+
+            int eigene = 0, feiertage = 0;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                Konditionierungskalender k = alt.Kalender(g);
+                if (k == null) continue;
+                foreach (Konditionierungsposten p in Kalenderposten(k, mitKalender: false))
+                    if (p.Art == Konditionierungspostenart.EigenePerioden) eigene += p.Anzahl;
+                    else if (p.Art == Konditionierungspostenart.Feiertage) feiertage += p.Anzahl;
+            }
+
+            Matrixeingang ba = alt.Bestand, bn = neu.Bestand;
+            int nacht = ba.NachtBeginn != bn.NachtBeginn || ba.NachtEnde != bn.NachtEnde ? 1 : 0;
+            int ferien = 0;
+            for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME; i++)
+                if (!Kalendervergleich.Gleich(ba.Ferienbeginn[i], bn.Ferienbeginn[i])
+                    || !Kalendervergleich.Gleich(ba.Ferienende[i], bn.Ferienende[i]))
+                    ferien++;
+
+            int zonenkalender = 0;
+            var namen = new List<string>();
+            foreach (Konditionierungszone z in stand.Zonen)
+            {
+                zonenkalender += z.Stand.KalenderAnzahl;
+                if (EigeneWerte(z)) namen.Add(z.Name);
+            }
+
+            return new Konditionierungsbilanz(
+                new[]
+                {
+                    Ersetzt(Konditionierungspostenart.Matrixzellen, zellen),
+                    Ersetzt(Konditionierungspostenart.Kalender, alt.KalenderAnzahl),
+                    Ersetzt(Konditionierungspostenart.EigenePerioden, eigene),
+                    Ersetzt(Konditionierungspostenart.Feiertage, feiertage),
+                    Ersetzt(Konditionierungspostenart.Nachtzeiten, nacht),
+                    Ersetzt(Konditionierungspostenart.Ferienzeitraeume, ferien),
+                },
+                new[] { Ersetzt(Konditionierungspostenart.Zonenkalender, zonenkalender) },
+                namen);
+        }
+
+        /// <summary>Trägt die Zone eigene Werte — eine Vorgabezelle, einen Kalender oder eine eigene Bestandszelle?</summary>
+        private static bool EigeneWerte(Konditionierungszone z)
+        {
+            if (!z.Stand.TabellenLeer) return true;
+            Matrixeingang b = z.Stand.Bestand;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                foreach (string zeile in DbWerte.KOND_ZEILEN)
+                    if (Matrixzellenort.HatBestandsspalte(Kalendereigentuemer.Zone, g, zeile) && Bestandswert(b, g, zeile).HasValue)
+                        return true;
+            return false;
+        }
+
+        /// <summary>Die Zonen, deren geltender Kalender der Größe sich zwischen zwei Ständen ändert — nur für eine Handlung am Gebäude.</summary>
+        private static List<string> BetroffeneZonen(Konditionierungsarbeitsstand vor, Konditionierungsarbeitsstand nach,
+                                                    Konditionierungsort ort)
+        {
+            var namen = new List<string>();
+            if (ort.Zone.HasValue) return namen;
+            foreach (Konditionierungszone z in vor.Zonen)
+                if (!Kalendervergleich.KalenderGleich(vor.GeltenderKalender(ort.Groesse, z.Id),
+                                                      nach.GeltenderKalender(ort.Groesse, z.Id)))
+                    namen.Add(z.Name);
+            return namen;
+        }
+
+        private static Konditionierungsbilanz MitZonen(Konditionierungsbilanz b, IEnumerable<string> zonen)
+            => new Konditionierungsbilanz(b.Ersetzt, b.Bleibt, zonen);
+
+        // =================================================================
         //  Der Abdruck
         // =================================================================
 
