@@ -36,6 +36,9 @@ public sealed class GebaeudeBedarfZonenTexte
     /// <summary><c>GEBB_SP_ZONE_UEBERHITZUNG</c></summary>
     public string SpalteUeberhitzung { get; set; } = Resource.GEBB_SP_ZONE_UEBERHITZUNG;
 
+    /// <summary><c>KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG</c> — nur, wenn eine Zone Nachtauskühlung trägt (KP2 U1).</summary>
+    public string SpalteNachtauskuehlung { get; set; } = Resource.KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG;
+
     /// <summary><c>GEBB_HRL_ZONEN</c> — wie die Gebäudezahlen aus den Zonen entstehen (Festlegung 10).</summary>
     public string Herleitung { get; set; } = Resource.GEBB_HRL_ZONEN;
 

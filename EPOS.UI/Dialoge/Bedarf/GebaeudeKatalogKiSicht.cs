@@ -1,4 +1,6 @@
-﻿using KiKern;
+﻿using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -21,9 +23,17 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Klappliste.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
-/// Delegaten bzw. liest den lebenden Satz.</para>
+/// Delegaten bzw. liest den lebenden Satz — bis auf die halbe Angabe eines Zeitfensters (siehe
+/// <see cref="Setzen"/>).</para>
+///
+/// <para><b>Die Vorgabe-Matrix ist eine FELDTAFEL</b> (Stufe KP2, Welle U1): Ihre Felder erzeugt der
+/// Kern aus dem Profil <c>KiKonditionierungsfelder</c>; diese Klasse beantwortet sie über den
+/// Schlüssel (<see cref="IKiFeldtafel"/>) und geht dabei denselben Weg wie die Zellen des Reiters
+/// (<see cref="Konditionierung"/>, die <see cref="KonditionierungBearbeitung"/> des Editors) — mit
+/// Zellenort, Folgeregel und der Rückfrage „aufteilen". Die Bestandszellen behalten ihre Namen und
+/// gehen, wo der Editor die Bearbeitung reicht, ebenfalls über sie.</para>
 /// </summary>
-public sealed class GebaeudeKatalogKiSicht
+public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
 {
     // =====================================================================
     //  Der Satz des ERSTEN Reiterblatts
@@ -303,7 +313,11 @@ public sealed class GebaeudeKatalogKiSicht
     public double? Waermegewinne
     {
         get => Daten?.Waermegewinne;
-        set { if (Daten is GebaeudeKatalogDaten d) d.Waermegewinne = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.Waermegewinne = value;
+        }
     }
 
     /// <summary>Der Gesamtenergiedurchlassgrad der Fenster als Anteil (z. B. 0,4).</summary>
@@ -420,14 +434,14 @@ public sealed class GebaeudeKatalogKiSicht
     public double? SollTag
     {
         get => SollTagLesen?.Invoke();
-        set => SollTagSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Tag, value)) SollTagSetzen?.Invoke(value); }
     }
 
     /// <summary>Die Nachtabsenkung [°C].</summary>
     public double? Nachtabsenkung
     {
         get => NachtabsenkungLesen?.Invoke();
-        set => NachtabsenkungSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht, value)) NachtabsenkungSetzen?.Invoke(value); }
     }
 
     /// <summary>Beginn der Nachtabsenkung [Stunde 0 … 23]; mit dem Ende leer = Vorgabe 22 Uhr (E43).</summary>
@@ -455,14 +469,14 @@ public sealed class GebaeudeKatalogKiSicht
     public double? Wochenendabsenkung
     {
         get => WochenendabsenkungLesen?.Invoke();
-        set => WochenendabsenkungSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende, value)) WochenendabsenkungSetzen?.Invoke(value); }
     }
 
     /// <summary>Die Solltemperatur in den Ferien [°C]; über 0 schaltet sie den Betrieb ein.</summary>
     public double? SollFerien
     {
         get => SollFerienLesen?.Invoke();
-        set => SollFerienSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien, value)) SollFerienSetzen?.Invoke(value); }
     }
 
     // =====================================================================
@@ -575,14 +589,22 @@ public sealed class GebaeudeKatalogKiSicht
     public double? LuftwechselInfiltration
     {
         get => Daten?.LuftwechselInfiltration;
-        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value;
+        }
     }
 
     /// <summary>Luftwechsel durch Fensterlüftung der Nutzer (VDI 6007); zusammen mit der Infiltration der Luftwechsel des Stundenmodells.</summary>
     public double? LuftwechselNutzer
     {
         get => Daten?.LuftwechselNutzer;
-        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value;
+        }
     }
 
     /// <summary>Erhöhter Luftwechsel an warmen Tagen, wenn die Außenluft kühler ist (VDI 6007).</summary>
@@ -627,7 +649,11 @@ public sealed class GebaeudeKatalogKiSicht
     public double? KuehlSollwert
     {
         get => Daten?.KuehlSollwert;
-        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlSollwert = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.KuehlSollwert = value;
+        }
     }
 
     /// <summary>Größte Kühlleistung in kW; leer = unbegrenzt.</summary>
@@ -907,6 +933,105 @@ public sealed class GebaeudeKatalogKiSicht
     /// </summary>
     public IReadOnlyList<GebaeudeZoneKiZeile> Zonen
         => ZonenLesen?.Invoke() ?? Array.Empty<GebaeudeZoneKiZeile>();
+
+    // =====================================================================
+    //  Die Vorgabe-Matrix als FELDTAFEL (Stufe KP2, Welle U1)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Bearbeitung des Reiters „Konditionierung" — nur der Katalogeditor reicht sie; ohne sie (die
+    /// Verwaltung) stehen die Felder der Matrix nicht zur Verfügung, und die Bestandszellen gehen
+    /// unmittelbar in den Satz.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>Die halbe Angabe eines Zeitfensters (Nachtfenster, Saison), bis beide Grenzen stehen.</summary>
+    private readonly Dictionary<string, (int? Von, int? Bis)> _halb = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Setzt eine Bestandszelle über die Bearbeitung des Reiters — derselbe Weg wie die Zelle der
+    /// Matrix; <c>false</c> = es gibt keine, der Aufrufer schreibt wie bisher.
+    /// </summary>
+    private bool UeberMatrix(KonditionierungGroesse g, KonditionierungZeile z, double? wert)
+    {
+        if (Konditionierung is not KonditionierungBearbeitung b) return false;
+        if (!b.WertSetzen(g, z, wert)) throw Ablehnung(b);
+        return true;
+    }
+
+    /// <summary>Die Ablehnung einer Handlung — mit dem Grund, den der Reiter nennt.</summary>
+    private static InvalidOperationException Ablehnung(KonditionierungBearbeitung b)
+        => new(b.OffeneFrage?.Text is { Length: > 0 } frage ? frage
+               : b.LetzteMeldung is { Length: > 0 } m ? m
+               : b.Sperrgrund ?? b.Texte.GrundOhneTabellen);
+
+    /// <inheritdoc />
+    public object? Lesen(string schluessel)
+    {
+        if (Konditionierung is not KonditionierungBearbeitung b
+            || KiKonditionierungsfelder.Finde(schluessel) is not KiKonditionierungsfelder.Feld f) return null;
+        var g = (KonditionierungGroesse)f.Groessenplatz;
+        var z = (KonditionierungZeile)f.Zeilenplatz;
+        switch (f.Teil)
+        {
+            case KiKonditionierungsfelder.Teil.Aus:
+                return b.Wert(g, z) is double a && double.IsNaN(a);
+            case KiKonditionierungsfelder.Teil.Von:
+                return _halb.TryGetValue(schluessel[..schluessel.LastIndexOf('_')], out var hv) ? hv.Von : b.Zeiten(g, z).Von;
+            case KiKonditionierungsfelder.Teil.Bis:
+                return _halb.TryGetValue(schluessel[..schluessel.LastIndexOf('_')], out var hb) ? hb.Bis : b.Zeiten(g, z).Bis;
+            case KiKonditionierungsfelder.Teil.DeltaT:
+                return b.DeltaT;
+            default:
+                return b.Wert(g, z) is double w && double.IsFinite(w) ? w : null;
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc />
+    /// Ein Zeitfenster hat nur beide Grenzen zusammen (E53, E43): Die erste gesetzte Grenze wartet auf
+    /// die zweite — erst beide oder keine gehen an den Weg, wie im Reiter.
+    /// </summary>
+    public void Setzen(string schluessel, object? wert)
+    {
+        if (KiKonditionierungsfelder.Finde(schluessel) is not KiKonditionierungsfelder.Feld f)
+            throw new InvalidOperationException(schluessel);
+        if (Konditionierung is not KonditionierungBearbeitung b)
+            throw new InvalidOperationException(new KonditionierungTexte().GrundOhneTabellen);
+        var g = (KonditionierungGroesse)f.Groessenplatz;
+        var z = (KonditionierungZeile)f.Zeilenplatz;
+        bool ok;
+        switch (f.Teil)
+        {
+            case KiKonditionierungsfelder.Teil.Aus:
+                bool aus = wert is bool an && an;
+                bool istAus = b.Wert(g, z) is double a && double.IsNaN(a);
+                if (aus == istAus) return;
+                ok = b.WertSetzen(g, z, aus ? double.NaN : null);
+                break;
+            case KiKonditionierungsfelder.Teil.Von:
+            case KiKonditionierungsfelder.Teil.Bis:
+                string fenster = schluessel[..schluessel.LastIndexOf('_')];
+                (int? von, int? bis) = _halb.TryGetValue(fenster, out var halb) ? halb : b.Zeiten(g, z);
+                int? neu = wert is int n ? n : null;
+                if (f.Teil == KiKonditionierungsfelder.Teil.Von) von = neu; else bis = neu;
+                if (von.HasValue != bis.HasValue)
+                {
+                    _halb[fenster] = (von, bis);
+                    return;
+                }
+                _halb.Remove(fenster);
+                ok = b.ZeitenSetzen(g, z, von, bis);
+                break;
+            case KiKonditionierungsfelder.Teil.DeltaT:
+                ok = b.DeltaTSetzen(wert as double?);
+                break;
+            default:
+                ok = b.WertSetzen(g, z, wert as double?);
+                break;
+        }
+        if (!ok) throw Ablehnung(b);
+    }
 }
 
 /// <summary>

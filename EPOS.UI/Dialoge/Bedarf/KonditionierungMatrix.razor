@@ -1,0 +1,313 @@
+﻿@* DIE VORGABE-MATRIX (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 3.3, 7.2; Entwurf
+   KP2 Festlegungen 5 und 7) - fuenf Spalten (Heizen, Kuehlen, Lueftung, Geraete, Personen) und die
+   Zeilen Nennwert, Tag, Nacht, Wochenende, Ferien, Saison als EINE Tabelle.
+
+   EINE WAHRHEIT. Die Heizspalte sind die Bestandsfelder des Gebaeudes (Soll am Tag, Nachtabsenkung
+   samt Nachtfenster, Soll am Wochenende, Soll in Ferien), dazu Kuehlen Tag und Nacht, die
+   Infiltration und die Nutzerlueftung und die inneren Waermegewinne: Sie stehen in ihren Feldern von
+   GebaeudeKatalogDaten; die neuen Zellen in der Konditionierung. Welche Zelle wo steht, sieht der
+   Anwender nicht (P10). Jede Eingabe geht ueber die KonditionierungBearbeitung (mit Weg: "Zelle
+   setzen" des Kerns - Zellenort, Merker, Folgeregel F2, Rueckfrage "aufteilen" F5).
+
+   DIE ZELLEN. Ein Zahlenfeld je Zelle, dessen Beschriftung ("Heizen · Tag") nur vorgelesen wird -
+   sichtbar steht sie in Zeilen- und Spaltenkopf. "aus" (NaN) kennen Heizen und Kuehlen
+   (Zahlenfeld.AusText); die Nachtzeile traegt das Nachtfenster als EIN Feld "22-6" (Stundenfenster),
+   leer = das der Heizspalte (F19) bzw. dort die Vorgabe 22-6 Uhr; die Lueftung zeigt dort DT der
+   Nachtauskuehlung erst, wenn die Zeile es braucht (Nachtwert ueber dem Tagwert). Die Saison traegt
+   Start und Ende als Datum im Gemeinjahr, leer = ganzjaehrig. Wochenende und Ferien der Heizspalte
+   zeigen leer "keine" wie bisher.
+
+   DREI ARTEN, NICHT ZU BEARBEITEN - je mit Grund: der Lesemodus eines ausgelieferten Satzes (Werte als
+   Text, der Grund steht im Kopf des Dialogs), die Kuehlspalte ohne "Gebaeude wird gekuehlt" (weich
+   gesperrt: der Wert als Knopf mit aria-disabled, der Versuch meldet den Grund) und der
+   Tagesbilanz-Weg (nur die Felder, die der Altweg liest; Teilkonzept 2.2). Ohne Weg (ohne Gaben, ohne
+   Konditionierungstabellen) sind nur die Bestandszellen bedienbar; die neuen zeigen "-".
+
+   ANORDNUNG. Breit (Container ab 900 px, epos-kond) steht die ganze Tabelle; schmal nur die Spalte
+   der gewaehlten Groesse (AktiveGroesse; die fuenf Reiter zeichnet der Wirt) - die Zellen der
+   anderen Spalten traegt dasselbe Markup, das Stilblatt blendet sie aus. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<table class="epos-kond-matrix" data-aktiv="@((int)AktiveGroesse)">
+    <caption class="epos-kond-matrix-titel">@Texte.Matrix</caption>
+    <thead>
+        <tr>
+            <td class="epos-kond-ecke"></td>
+            @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                <th scope="col" class="@Spaltenklasse(g)" data-groesse="@((int)g)">@Spaltenkopf(g)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (KonditionierungZeile z in KonditionierungBearbeitung.Zeilen)
+        {
+            KonditionierungZeile zeile = z;
+            <tr @key="zeile" data-zeile="@((int)zeile)">
+                <th scope="row">@Zeilenname(zeile)</th>
+                @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+                {
+                    KonditionierungGroesse groesse = g;
+                    <td @key="groesse" class="epos-kond-zelle @Spaltenklasse(groesse)"
+                        data-groesse="@((int)groesse)" data-zeile="@((int)zeile)">
+                        @Zelle(groesse, zeile)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    /// <summary>Die Bearbeitung des Arbeitsstands (Zellen lesen und setzen).</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur — für die Platzhalter der Lüftung und der Kühlung.</summary>
+    [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>Lesemodus eines ausgelieferten Satzes: Werte als Text; der Grund steht im Kopf des Dialogs.</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Der Grund der weich gesperrten Kühlspalte; <c>null</c> = sie ist bedienbar.</summary>
+    [Parameter] public string? Kuehlsperre { get; set; }
+
+    /// <summary>Rechnet das Gebäude auf dem Tagesbilanz-Weg? Dann nur die Felder des Altwegs (Teilkonzept 2.2).</summary>
+    [Parameter] public bool Altweg { get; set; }
+
+    /// <summary>Die Größe, deren Spalte schmal (Container unter 900 px) steht.</summary>
+    [Parameter] public KonditionierungGroesse AktiveGroesse { get; set; }
+
+    /// <summary>Der Platzhalter des leeren Personen-Nennwerts (der Vorschlag nach P1); leer = „—".</summary>
+    [Parameter] public string PlatzhalterPersonen { get; set; } = "";
+
+    /// <summary>Meldet jede Eingabe — der Wirt zeichnet Herleitungen und Karten neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Meldet den Fehlerzustand eines Felds an den Arbeitsstand (Sammelmeldung beim OK).</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    private string Spaltenklasse(KonditionierungGroesse g) => g == AktiveGroesse ? "epos-kond--aktiv" : "";
+
+    private string Spaltenkopf(KonditionierungGroesse g) => g switch
+    {
+        KonditionierungGroesse.Heizen => Texte.SpalteHeizen,
+        KonditionierungGroesse.Kuehlen => Texte.SpalteKuehlen,
+        KonditionierungGroesse.Lueftung => Texte.SpalteLueftung,
+        KonditionierungGroesse.Geraete => Texte.SpalteGeraete,
+        _ => Texte.SpaltePersonen
+    };
+
+    private string Zeilenname(KonditionierungZeile z) => z switch
+    {
+        KonditionierungZeile.Nennwert => Texte.ZeileNennwert,
+        KonditionierungZeile.Tag => Texte.ZeileTag,
+        KonditionierungZeile.Nacht => Texte.ZeileNacht,
+        KonditionierungZeile.Wochenende => Texte.ZeileWochenende,
+        KonditionierungZeile.Ferien => Texte.ZeileFerien,
+        _ => Texte.ZeileSaison
+    };
+
+    private static string Feldname(KonditionierungTexte t, KonditionierungGroesse g, KonditionierungZeile z)
+        => KonditionierungBearbeitung.Feldname(t, g, z);
+
+    private static string Fensterfeldname(KonditionierungTexte t, KonditionierungGroesse g)
+        => KonditionierungBearbeitung.Fensterfeldname(t, g);
+
+    /// <summary>Zeigt die Zelle etwas — oder steht dort „—" (keine Zelle, Altweg, ohne Weg)?</summary>
+    private bool Sichtbar(KonditionierungGroesse g, KonditionierungZeile z)
+    {
+        if (!KonditionierungBearbeitung.Gibt(g, z)) return false;
+        if (Altweg && !KonditionierungBearbeitung.LiestAltweg(g, z)) return false;
+        return Lesemodus || Bearbeitung.Bearbeitbar(g, z) || KonditionierungDaten.IstBestandszelle(g, z);
+    }
+
+    private RenderFragment Zelle(KonditionierungGroesse g, KonditionierungZeile z) => __builder =>
+    {
+        if (!Sichtbar(g, z))
+        {
+            <span class="epos-kond-leer" aria-hidden="true">—</span>
+            return;
+        }
+        if (Lesemodus)
+        {
+            <span class="epos-kond-text" data-feld="@Feldname(Texte, g, z)">@Lesetext(g, z)</span>
+            return;
+        }
+        if (g == KonditionierungGroesse.Kuehlen && Kuehlsperre is not null)
+        {
+            @* Weich gesperrt: der Wert als Knopf, der den Grund meldet - kein disabled (Hausregel). *@
+            <button type="button" class="epos-knopf epos-kond-gesperrt" aria-disabled="true"
+                    title="@Kuehlsperre" aria-label="@(Feldname(Texte, g, z) + ": " + Lesetext(g, z))"
+                    @onclick="MeldeKuehlsperre">@Lesetext(g, z)</button>
+            return;
+        }
+
+        string feld = Feldname(Texte, g, z);
+        if (z == KonditionierungZeile.Saison)
+        {
+            (int? start, int? ende) = Bearbeitung.Zeiten(g, z);
+            string startfeld = feld + " · " + Texte.LabelSaisonStart;
+            string endefeld = feld + " · " + Texte.LabelSaisonEnde;
+            @* Die Beschriftung der Zelle wird nur vorgelesen - der Platzhalter sagt, welches Feld Start
+               und welches Ende ist; "leer heisst ganzjaehrig" steht im Vermerk (Titel). *@
+            <Gemeinjahrdatum Bezeichnung="@startfeld" Feldname="@startfeld" FehlerZustand="FehlerZustand"
+                             Titel="@Texte.HinweisSaison" Meldung="@Texte.MeldungGemeinjahr"
+                             Platzhalter="@Texte.LabelSaisonStart" Wert="@start"
+                             WertChanged="w => SaisonSetzen(g, w, true)" />
+            <Gemeinjahrdatum Bezeichnung="@endefeld" Feldname="@endefeld" FehlerZustand="FehlerZustand"
+                             Titel="@Texte.HinweisSaison" Meldung="@Texte.MeldungGemeinjahr"
+                             Platzhalter="@Texte.LabelSaisonEnde" Wert="@ende"
+                             WertChanged="w => SaisonSetzen(g, w, false)" />
+            return;
+        }
+        <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" FehlerZustand="FehlerZustand"
+                    AusText="@(KonditionierungBearbeitung.MitAus(g, z) ? Texte.ZelleAus : "")"
+                    Min="@Minimum(g, z)" Max="@Maximum(g, z)" Platzhalter="@Platzhalter(g, z)"
+                    Wert="@Bearbeitung.Wert(g, z)" WertChanged="w => WertSetzen(g, z, w)" />
+        if (z == KonditionierungZeile.Nacht && !Altweg && Bearbeitung.Bearbeitbar(g, z)
+            && (Bearbeitung.MitWeg || g == KonditionierungGroesse.Heizen))
+        {
+            (int? von, int? bis) = Bearbeitung.Zeiten(g, z);
+            string fensterfeld = Fensterfeldname(Texte, g);
+            <Stundenfenster Bezeichnung="@fensterfeld" Feldname="@fensterfeld" FehlerZustand="FehlerZustand"
+                            Titel="@(g == KonditionierungGroesse.Heizen ? "" : Texte.HinweisNachtfensterLeer)"
+                            Platzhalter="@Fensterplatzhalter(g)" Von="@von" Bis="@bis"
+                            FensterChanged="f => ZeitenSetzen(g, z, f.Von, f.Bis)" />
+            if (g == KonditionierungGroesse.Lueftung && Bearbeitung.Nachtauskuehlung)
+            {
+                string dt = Texte.GroesseLueftung + " · " + Texte.LabelAussenabstand;
+                <Zahlenfeld Bezeichnung="@dt" Feldname="@dt" FehlerZustand="FehlerZustand" Einheit="K"
+                            Min="0" Max="5" Platzhalter="2" Titel="@Texte.HinweisNachtauskuehlung"
+                            Wert="@Bearbeitung.DeltaT" WertChanged="DeltaTSetzen" />
+            }
+        }
+    };
+
+    /// <summary>
+    /// Die Saison hat nur Start und Ende zusammen (E53): Das Feld, das zuerst gefüllt wird, wartet auf
+    /// das andere — erst beide oder keines gehen an den Weg.
+    /// </summary>
+    private readonly Dictionary<KonditionierungGroesse, (int? Start, int? Ende)> _saison = new();
+
+    private async Task SaisonSetzen(KonditionierungGroesse g, int? tag, bool start)
+    {
+        (int? s, int? e) = _saison.TryGetValue(g, out var halb) ? halb : Bearbeitung.Zeiten(g, KonditionierungZeile.Saison);
+        if (start) s = tag; else e = tag;
+        if (s.HasValue != e.HasValue)
+        {
+            _saison[g] = (s, e);
+            return;
+        }
+        _saison.Remove(g);
+        Bearbeitung.ZeitenSetzen(g, KonditionierungZeile.Saison, s, e);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task WertSetzen(KonditionierungGroesse g, KonditionierungZeile z, double? w)
+    {
+        Bearbeitung.WertSetzen(g, z, w);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task ZeitenSetzen(KonditionierungGroesse g, KonditionierungZeile z, int? von, int? bis)
+    {
+        Bearbeitung.ZeitenSetzen(g, z, von, bis);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task DeltaTSetzen(double? k)
+    {
+        Bearbeitung.DeltaTSetzen(k);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task MeldeKuehlsperre()
+    {
+        Bearbeitung.Melden?.Invoke(Kuehlsperre ?? "", WarnStufe.Hinweis);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Die Untergrenze einer Zelle — der Kern prüft die Grenzen der Größe genau (Zellenprüfung); die
+    /// Kühlspalte trägt die Plausibilitätsgrenzen des Kühlsollwerts (15 … 35 °C), wie das Feld, das
+    /// sie ablöst.
+    /// </summary>
+    private static double? Minimum(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
+    {
+        (KonditionierungGroesse.Heizen, _) => null,
+        (KonditionierungGroesse.Kuehlen, _) => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN,
+        // Die Infiltration ist nie null (Stufe G2) - wie das Feld, das die Zelle abloest.
+        (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => 0.01,
+        _ => 0
+    };
+
+    /// <summary>
+    /// Die Obergrenze: Anteile höchstens 100 %, der Kühlsollwert höchstens 35 °C, der Luftwechsel
+    /// höchstens 10 1/h (Stufe G2).
+    /// </summary>
+    private static double? Maximum(KonditionierungGroesse g, KonditionierungZeile z) => g switch
+    {
+        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX,
+        KonditionierungGroesse.Lueftung => 10,
+        _ => KonditionierungBearbeitung.IstAnteil(g, z) ? 100 : null
+    };
+
+    /// <summary>Der Platzhalter einer leeren Zelle: was gilt, solange nichts eingetragen ist.</summary>
+    private string Platzhalter(KonditionierungGroesse g, KonditionierungZeile z)
+    {
+        switch (g, z)
+        {
+            case (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende):
+            case (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien):
+                return Texte.PlatzhalterKeine;
+            case (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag):
+                return HuelleTexte.VorgabeKuehlungAus;
+            case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert):
+                return Bearbeitung.Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration, HuelleTexte);
+            case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag):
+                return Bearbeitung.Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer, HuelleTexte);
+            case (KonditionierungGroesse.Personen, KonditionierungZeile.Nennwert):
+                return PlatzhalterPersonen.Length > 0 ? PlatzhalterPersonen : Texte.PlatzhalterLeer;
+            default:
+                return Texte.PlatzhalterLeer;
+        }
+    }
+
+    /// <summary>
+    /// Der Platzhalter des leeren Nachtfensters: an der Heizspalte die Vorgabe 22–6 Uhr, sonst das
+    /// Fenster, das die Heizspalte gerade hat (F19).
+    /// </summary>
+    private string Fensterplatzhalter(KonditionierungGroesse g)
+    {
+        (int? von, int? bis) = Bearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht);
+        if (g == KonditionierungGroesse.Heizen || !von.HasValue || !bis.HasValue)
+            return Stundenfenster.Anzeigetext(Nachtzeit.VORGABE_BEGINN, Nachtzeit.VORGABE_ENDE);
+        return Stundenfenster.Anzeigetext(von, bis);
+    }
+
+    /// <summary>Der Wert einer Zelle als Text (Lesemodus, gesperrte Kühlspalte): Zahl, „aus", „keine" oder „—", mit Zeiten.</summary>
+    private string Lesetext(KonditionierungGroesse g, KonditionierungZeile z)
+    {
+        double? w = Bearbeitung.Wert(g, z);
+        string text = w switch
+        {
+            double n when double.IsNaN(n) => Texte.ZelleAus,
+            double n => Zahlen.Anzeigetext(n) + (KonditionierungBearbeitung.IstAnteil(g, z) ? " %" : ""),
+            _ => Platzhalter(g, z)
+        };
+        (int? von, int? bis) = Bearbeitung.Zeiten(g, z);
+        if (z == KonditionierungZeile.Nacht && von.HasValue && bis.HasValue)
+            text += " (" + Stundenfenster.Anzeigetext(von, bis) + ")";
+        if (z == KonditionierungZeile.Saison && von.HasValue && bis.HasValue)
+            text = Gemeinjahrdatum.Anzeigetext(von) + "–" + Gemeinjahrdatum.Anzeigetext(bis);
+        else if (z == KonditionierungZeile.Saison && !w.HasValue)
+            text = Texte.PlatzhalterGanzjaehrig;
+        return text;
+    }
+}

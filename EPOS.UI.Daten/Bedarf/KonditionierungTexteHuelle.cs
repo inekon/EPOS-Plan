@@ -175,7 +175,41 @@ namespace WindowsFormsApplication1
             // Katalogauswahl
             t.SpalteKatalogKalender = Text_("KOND_LBL_KATALOG_KALENDER", t.SpalteKatalogKalender);
             t.TextKatalogKalender = Text_("KOND_TXT_KATALOG_KALENDER", t.TextKatalogKalender);
+
+            // Reiter und Rückfragen (Welle U1)
+            t.HinweisZuruecknehmen = Text_("KOND_TXT_HINWEIS_ZURUECKNEHMEN", t.HinweisZuruecknehmen);
+            t.GrundNichtsZurueck = Text_("KOND_TXT_GRUND_NICHTS_ZURUECK", t.GrundNichtsZurueck);
+            t.TextNichts = Text_("KOND_TXT_NICHTS", t.TextNichts);
+            t.TextPostenMatrixzellen = Text_("KOND_TXT_POSTEN_MATRIXZELLEN", t.TextPostenMatrixzellen);
+            t.TextPostenKalender = Text_("KOND_TXT_POSTEN_KALENDER", t.TextPostenKalender);
+            t.TextPostenStandardwoche = Text_("KOND_TXT_POSTEN_STANDARDWOCHE", t.TextPostenStandardwoche);
+            t.TextPostenFerienperioden = Text_("KOND_TXT_POSTEN_FERIENPERIODEN", t.TextPostenFerienperioden);
+            t.TextPostenSaison = Text_("KOND_TXT_POSTEN_SAISON", t.TextPostenSaison);
+            t.TextPostenEigenePerioden = Text_("KOND_TXT_POSTEN_EIGENE_PERIODEN", t.TextPostenEigenePerioden);
+            t.TextPostenFeiertage = Text_("KOND_TXT_POSTEN_FEIERTAGE", t.TextPostenFeiertage);
+            t.TextPostenNachtzeiten = Text_("KOND_TXT_POSTEN_NACHTZEITEN", t.TextPostenNachtzeiten);
+            t.TextPostenFerienzeitraeume = Text_("KOND_TXT_POSTEN_FERIENZEITRAEUME", t.TextPostenFerienzeitraeume);
+            t.TextPostenLuftwechsel = Text_("KOND_TXT_POSTEN_LUFTWECHSEL", t.TextPostenLuftwechsel);
+            t.TextPostenZonenkalender = Text_("KOND_TXT_POSTEN_ZONENKALENDER", t.TextPostenZonenkalender);
+            t.TextPostenBauteile = Text_("KOND_TXT_POSTEN_BAUTEILE", t.TextPostenBauteile);
             return t;
+        }
+
+        /// <summary>
+        /// Das Bündel der Rückfragen der Konditionierung (<see cref="KonditionierungFragetexte"/>,
+        /// <c>KOND_FRAGE_*</c>) — der Rückfall ist der Vorgabewert des Bündels.
+        /// </summary>
+        internal static KonditionierungFragetexte Fragen()
+        {
+            var f = new KonditionierungFragetexte();
+            f.Verwerfen = Text_("KOND_FRAGE_VERWERFEN", f.Verwerfen);
+            f.MatrixErneut = Text_("KOND_FRAGE_MATRIX_ERNEUT", f.MatrixErneut);
+            f.KatalogErneut = Text_("KOND_FRAGE_KATALOG_ERNEUT", f.KatalogErneut);
+            f.Aufteilen = Text_("KOND_FRAGE_AUFTEILEN", f.Aufteilen);
+            f.SpeichernUnter = Text_("KOND_FRAGE_SPEICHERN_UNTER", f.SpeichernUnter);
+            f.Zonen = Text_("KOND_FRAGE_ZONEN", f.Zonen);
+            f.OhneEinzelheiten = Text_("KOND_FRAGE_OHNE_EINZELHEITEN", f.OhneEinzelheiten);
+            return f;
         }
 
         private static string Text_(string schluessel, string rueckfall)

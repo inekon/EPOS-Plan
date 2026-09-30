@@ -126,6 +126,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // E37 (Anlagenkopplung 8.1): der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung" -
         // derselbe Baustein in beiden Wirten, dieselben acht Felder über GebaeudeKatalogKiSicht.
         new("GebaeudeKuehluebergabeFelder",   "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U1 (Teilkonzept Konditionierungsprofile 7.1): der Reiter „Konditionierung" des
+        // Katalogeditors - Maximalraumtemperatur und Ferien im Reiter, die Vorgabe-Matrix darin. Der
+        // Editor meldet sie als Form_Gebaeude1 an; die Stammblatt-Verwaltung trägt den Reiter nicht.
+        new("KonditionierungReiter",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -262,7 +267,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
         // KP2 U0b: Die Betriebsart „Admin" fällt und mit ihr die Klappliste des Namens; der Name
         // ist allein das Textfeld (Katalogfeld name): 49 → 48.
-        new("GebaeudeKatalogDialog", 48),
+        // KP2 U1: Der zweite Reiter ist „Konditionierung" - Raumtemperaturen, Nachtzeit,
+        // Maximalraumtemperatur und Ferien wandern in die Bausteine KonditionierungReiter und
+        // KonditionierungMatrix (dieselben Katalogfelder): 48 → 37.
+        // KP2 U1, E56 F3 (a): Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und
+        // Kühlsollwert stehen nur noch im Reiter „Konditionierung" (Katalogfelder unverändert): 37 → 32.
+        new("GebaeudeKatalogDialog", 32),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
@@ -278,6 +288,15 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
+        // KP2 U1: die Vorgabe-Matrix - ein Zahlenfeld je Zelle (in der Schleife EIN Tag), das
+        // Nachtfenster je Spalte, ΔT der Nachtauskühlung und Start/Ende der Saison.
+        new("KonditionierungMatrix", 5, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
+            "nachtabsenkung, nacht_beginn/nacht_ende, wochenendabsenkung, soll_ferien, kuehl_sollwert, " +
+            "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne); die übrigen Zellen, „aus“, " +
+            "Nachtfenster, ΔT und Saison die Felder kond_* aus dem Profil KiKonditionierungsfelder (Feldtafel)"),
+        // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
+        // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
+        new("KonditionierungReiter", 6),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
@@ -842,6 +861,8 @@ public sealed class KiMaskenabdeckungWacheTests
         "Vorlagenfeldumschalter",
         // KP2, Welle U0b: das Datum im Gemeinjahr (Saison, Perioden der Konditionierung).
         "Gemeinjahrdatum",
+        // KP2, Welle U1: das Nachtfenster als EIN Feld „22–6“.
+        "Stundenfenster",
         "input", "select", "textarea"
     };
 

@@ -106,6 +106,13 @@ public sealed class GebaeudeArbeitsstand
     // JEDE Änderung trifft ihre Zone über die Id — nie über „die erste" (G6a, Risiko 2: ein Ersetzen
     // der ganzen Liste löschte beim OK still alle übrigen Zonen).
 
+    /// <summary>
+    /// <b>Steht ein Feld im Reiter „Konditionierung"?</b> (Stufe KP2, Welle U1) — der Katalogeditor setzt
+    /// es; dann hängen eine Fehleingabe dort, die inneren Wärmegewinne und der Kühlsollwert an diesem
+    /// Reiter (E56 F3 (a)). <c>null</c> (das Stammblatt der Verwaltung) = die Gruppen wie bisher.
+    /// </summary>
+    public Func<string, bool>? IstKonditionierungsfeld { get; set; }
+
     /// <summary>Die Zonen im Arbeitsstand in Listenfolge (= Rang); leer = keine Zone (Klassenweg).</summary>
     public List<ZoneDaten> Zonen { get; private set; } = new();
 
@@ -437,6 +444,19 @@ public sealed class GebaeudeArbeitsstand
     public IReadOnlyList<string> ZonenHinweise
         => GebaeudeZonenCtrl.Hinweise(Zonen.Select(z => new GebaeudeZonenCtrl.Zonenangabe(z.Bezeichner, z.Nutzflaeche,
                z.Bauteile.Select(b => (b.Bauteilart, b.Randbedingung!)).ToList())), Stand.WohnflaecheGesamt);
+
+    /// <summary>
+    /// Übernimmt Ferienzeiträume, die ein Schritt der Konditionierung gesetzt hat („aus dem Katalog
+    /// erneut übernehmen", „Zurücknehmen"; Stufe KP2, Welle U1), als Jahrestage in den Feldsatz und
+    /// in Tag und Monat der Felder.
+    /// </summary>
+    public void FerienUebernehmen(int[]? beginn, int[]? ende)
+    {
+        if (beginn is null || ende is null || beginn.Length < 4 || ende.Length < 4) return;
+        Stand.Ferienbeginn = (int[])beginn.Clone();
+        Stand.Ferienende = (int[])ende.Clone();
+        FerienZerlegen();
+    }
 
     private void FerienZerlegen()
     {
@@ -1315,7 +1335,9 @@ public sealed class GebaeudeArbeitsstand
             return Huelle(p.MeldungNameFehlt);
 
         foreach (string feld in Fehlerfelder)
-            return Huelle(t.MeldungUngueltig.Replace("{0}", feld));
+            return IstKonditionierungsfeld?.Invoke(feld) == true
+                ? Konditionierung(t.MeldungUngueltig.Replace("{0}", feld))
+                : Huelle(t.MeldungUngueltig.Replace("{0}", feld));
 
         // Das Baujahr (G4a): leer ist erlaubt (unbekannt), sonst gilt der Bereich der Spalte -
         // dieselbe Grenze, an der die Datenbank mit ihrem CHECK abweist.
@@ -1365,7 +1387,10 @@ public sealed class GebaeudeArbeitsstand
             (Stand.FensterflaecheSued, p.FeldFFSued)
         };
         foreach ((double? wert, string name) in pflicht)
-            if (wert is null) return Huelle(string.Format(p.MeldungZahlFehlt, name));
+            if (wert is null)
+                return name == p.FeldWaermegewinne && IstKonditionierungsfeld is not null
+                    ? Konditionierung(string.Format(p.MeldungZahlFehlt, name))
+                    : Huelle(string.Format(p.MeldungZahlFehlt, name));
 
         if (!(Stand.WohnflaecheGesamt > 0)) return Huelle(t.MeldungNutzflaeche);
         if (!(Stand.FlaecheNutzer > 0)) return Huelle(t.MeldungFlaecheNutzer);
@@ -1406,12 +1431,12 @@ public sealed class GebaeudeArbeitsstand
             if (Stand.KuehlSollwert is double soll)
             {
                 if (soll < Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN || soll > Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX)
-                    return Kuehlung(string.Format(t.MeldungKuehlsollwertBereich,
+                    return Kuehlsoll(string.Format(t.MeldungKuehlsollwertBereich,
                                                 Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, 0),
                                                 Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX, 0)));
                 double heizMax = HoechsterHeizsollwert;
                 if (soll < heizMax + Gebaeudemodellvorgaben.KuehlsollwertAbstand)
-                    return Kuehlung(string.Format(t.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
+                    return Kuehlsoll(string.Format(t.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
                                                 Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0)));
             }
             if (Stand.KuehlleistungMax is double grenze && !(grenze > 0))
@@ -1438,6 +1463,12 @@ public sealed class GebaeudeArbeitsstand
     private static GebaeudePruefbefund Huelle(string meldung) => new(meldung, GebaeudePruefbereich.Huelle);
 
     private static GebaeudePruefbefund Kuehlung(string meldung) => new(meldung, GebaeudePruefbereich.Kuehlung);
+
+    /// <summary>Eine Regel am Kühlsollwert: im Editor die Matrix (E56 F3 (a)), im Stammblatt die Gruppe „Kühlung".</summary>
+    private GebaeudePruefbefund Kuehlsoll(string meldung)
+        => IstKonditionierungsfeld is not null ? Konditionierung(meldung) : Kuehlung(meldung);
+
+    private static GebaeudePruefbefund Konditionierung(string meldung) => new(meldung, GebaeudePruefbereich.Konditionierung);
 
     /// <summary>Eine Regel des zweiten Reiters (Raumtemperaturen, Nachtzeit, Ferien).</summary>
     private static GebaeudePruefbefund Temperaturen(string meldung) => new(meldung, GebaeudePruefbereich.Ferien);
@@ -1693,6 +1724,7 @@ public sealed class GebaeudeArbeitsstand
         return new GebaeudeKatalogKiSicht
         {
             StandLesen = () => Stand,
+            Konditionierung = wege.Konditionierung,
 
             NameLesen = wege.NameLesen,
             NameSetzen = wege.NameSetzen,
@@ -1870,8 +1902,11 @@ public sealed class GebaeudeArbeitsstand
 /// <param name="Bereich">Wo das Feld der Regel steht — der Dialog zeigt es dort.</param>
 public sealed record GebaeudePruefbefund(string Meldung, GebaeudePruefbereich Bereich)
 {
-    /// <summary>Hängt die Regel am zweiten Reiter des Editors (Temperaturen und Ferien)?</summary>
-    public bool Temperaturen => Bereich == GebaeudePruefbereich.Ferien;
+    /// <summary>
+    /// Hängt die Regel am zweiten Reiter des Editors („Konditionierung": Matrix, Nachtfenster, Ferien,
+    /// Maximalraumtemperatur)?
+    /// </summary>
+    public bool Temperaturen => Bereich is GebaeudePruefbereich.Ferien or GebaeudePruefbereich.Konditionierung;
 }
 
 /// <summary>
@@ -1890,7 +1925,14 @@ public enum GebaeudePruefbereich
     Waermeuebergabe,
 
     /// <summary>Raumtemperaturen, Nachtzeit und Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
-    Ferien
+    Ferien,
+
+    /// <summary>
+    /// Ein Feld der Vorgabe-Matrix, das nach E56 F3 (a) allein im Reiter „Konditionierung" steht
+    /// (innere Wärmegewinne, Kühlsollwert, eine Fehleingabe in der Matrix; Stufe KP2, Welle U1) — im
+    /// Stammblatt der Verwaltung stehen sie weiter bei ihren Gruppen.
+    /// </summary>
+    Konditionierung
 }
 
 /// <summary>
@@ -1937,6 +1979,13 @@ public sealed class GebaeudeKiWege
 
     /// <summary>Der Name des Ferienzeitraums je Zeile (Winter, Ostern, Sommer, Herbst).</summary>
     public Func<int, string>? Ferienname { get; init; }
+
+    /// <summary>
+    /// Die Bearbeitung des Reiters „Konditionierung" (Stufe KP2, Welle U1) — nur der Katalogeditor
+    /// reicht sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix, und die Bestandszellen
+    /// gehen über denselben Weg wie die Zellen des Reiters.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
 
     /// <summary>Die Texte der VDI-Struktur — für die Namen der Übergabearten und die Ablehnungen der Wärmeübergabe.</summary>
     public GebaeudeHuelleTexte? Texte { get; init; }

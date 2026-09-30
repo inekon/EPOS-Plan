@@ -1,13 +1,17 @@
-﻿@* Gebaeude-KATALOGEDITOR - EIN Katalogsatz auf ZWEI Reitern, in VDI-6007-Struktur
+﻿@* Gebaeude-KATALOGEDITOR - EIN Katalogsatz auf DREI Reitern, in VDI-6007-Struktur
    (Stufe G1 der Gebaeudesimulation; Umsetzungskonzept Gebaeudesimulation Kapitel 2,
-   Entscheide E2, E13, E19, E20, E23, E26, E27/U1, U3).
+   Entscheide E2, E13, E19, E20, E23, E26, E27/U1, U3; Stufe KP2, Welle U1).
 
    VORBILD. Form_Gebaeude1 und Form_Gebaeude2 (iU9-W9.1) - zwei Masken auf einem Satz,
-   hier zwei Reiter. Seit G1 folgt der erste Reiter allein der Struktur des
+   hier Reiter. Der erste Reiter folgt allein der Struktur des
    Stundenmodells: Kenngroessen (mit der Luftwechselrate), die Huelle als U*A-Tabelle
    der acht Bauteile, die Waermeleitwerte H_T/H_ve/H_ges, die Fenster nach vier
-   Orientierungen, die Modellparameter und der Schalter "Rechenweg". Der zweite Reiter
-   traegt Raumtemperaturen, Ferien und die Brauchwasserprofile.
+   Orientierungen, die Modellparameter und der Schalter "Rechenweg". Der zweite Reiter ist
+   "Konditionierung" (Teilkonzept Konditionierungsprofile 7.1): die Vorgabe-Matrix mit den
+   Bestandszellen (Raumtemperaturen, Nachtfenster, Kuehlsollwert, Infiltration,
+   Nutzerlueftung, innere Waermegewinne), die Kalenderkarten, Maximalraumtemperatur und
+   Ferien (Baustein KonditionierungReiter), dazu die Brauchwasserprofile. Der dritte traegt
+   die Zonen.
 
    EIN SCHREIBWEG (E27/U1, Befunde M-1 und M-2). Der Dialog fuehrt einen ARBEITSSTAND
    (eine tiefe Kopie des hereingereichten Satzes) und schreibt allein im OK-Weg der
@@ -67,7 +71,7 @@
 @using WindowsFormsApplication1
 @implements IDisposable
 
-<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
@@ -162,10 +166,6 @@
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.FlaecheNutzer"
                                         WertChanged="w => _stand.FlaecheNutzer = w" />
-                            <Zahlenfeld Bezeichnung="@LabelWaermegewinne" Einheit="W" Min="0"
-                                        Feldname="@FeldWaermegewinne" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Waermegewinne"
-                                        WertChanged="w => _stand.Waermegewinne = w" />
                             <Zahlenfeld Bezeichnung="@LabelFensterdurchlassgrad" Min="0" Max="1"
                                         Feldname="@FeldFensterdurchlassgrad" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.Fensterdurchlassgrad"
@@ -180,6 +180,11 @@
                                         WertChanged="w => _stand.Luftwechselrate = w" />
                                 </KindInhalt>
                             </Formularraster>
+                            <Herleitungszeile Text="@Luftwechselzeile" />
+                            @* E56 F3 (a): Sollwerte, innere Waermegewinne, Infiltration, Nutzerlueftung,
+                               Sommerlueftung und Maximalraumtemperatur stehen nur im Reiter
+                               "Konditionierung" - die Zeile sagt, wo. *@
+                            <Herleitungszeile Text="@KonditionierungTexte.HinweisAltfelder" />
                         </KindInhalt>
                     </Gruppenkopf>
 
@@ -402,28 +407,10 @@
                             <Schalter Bezeichnung="@Texte.LabelAussenStrahlung"
                                       Wert="@_stand.AussenbauteileStrahlung"
                                       WertChanged="w => _stand.AussenbauteileStrahlung = w" />
-                            @* Stufe G2: Lueftung des Stundenmodells - leer rechnet die Luftwechselrate
-                               des Gebaeudes, ist eines gesetzt, das andere mit seiner Vorgabe. *@
-                            <Zahlenfeld Bezeichnung="@Texte.LabelInfiltration" Einheit="1/h" Min="0.01" Max="10"
-                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration)"
-                                        Feldname="@Feld(Texte.LabelInfiltration)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.LuftwechselInfiltration"
-                                        WertChanged="w => _stand.LuftwechselInfiltration = w" />
-                            <Zahlenfeld Bezeichnung="@Texte.LabelNutzerlueftung" Einheit="1/h" Min="0" Max="10"
-                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer)"
-                                        Feldname="@Feld(Texte.LabelNutzerlueftung)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.LuftwechselNutzer"
-                                        WertChanged="w => _stand.LuftwechselNutzer = w" />
-                            <Schalter Bezeichnung="@Texte.LabelSommerlueftung"
-                                      Wert="@_stand.Sommerlueftung"
-                                      WertChanged="w => _stand.Sommerlueftung = w" />
+                            @* Die Lueftung des Stundenmodells (Infiltration, Nutzerlueftung, Sommerlueftung)
+                               steht in der Spalte "Lueftung" des Reiters "Konditionierung" (E56 F3 (a)). *@
                                 </KindInhalt>
                             </Formularraster>
-                            <Herleitungszeile Text="@Luftwechselzeile" />
-                            @if (_stand.Sommerlueftung)
-                            {
-                                <Herleitungszeile Text="@Sommerlueftungszeile" />
-                            }
                             <Herleitungszeile Text="@Texte.HinweisModellparameter" />
                         </KindInhalt>
                     </Gruppenkopf>
@@ -482,9 +469,10 @@
                        Teil der VDI-Struktur, deshalb IMMER sichtbar und bearbeitbar - auch auf
                        dem Tagesbilanz-Weg; dort sagt eine Herleitungszeile, dass die Eingaben
                        erst mit VDI 6007 gelten (F-K18, bis Stufe GA). Kein gesperrtes Feld, keine
-                       stille Null, kein verstecktes Eingabefeld. Kuehlsollwert und
-                       Kuehlleistungsgrenze stehen mit dem Haken (Tabelle 8.1); leer schreibt
-                       NULL. Der Nachtwert (KU3) steht nicht da und reist unveraendert mit, und
+                       stille Null, kein verstecktes Eingabefeld. Die Kuehlleistungsgrenze steht
+                       mit dem Haken (Tabelle 8.1); leer schreibt NULL. Der Kuehlsollwert (Tag und
+                       Nacht) steht in der Spalte "Kuehlen" des Reiters "Konditionierung" (E56 F3 (a)),
+                       die Herleitungszeile nennt ihn weiter. Und
                        der Rang der Kuehlung in der Knappheitsreihenfolge hat kein Bedienelement
                        (K4). Die Projekteinstellung „Kuehlung rechnen" steht nicht hier - sie
                        betrifft das ganze Projekt (8.3). *@
@@ -508,13 +496,8 @@
                                       WertChanged="KuehlungGesetzt" />
                             @if (_stand.KuehlungAktiv)
                             {
-                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlSollwert" Einheit="°C"
-                                            Min="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"
-                                            Max="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"
-                                            Platzhalter="@Texte.VorgabeKuehlungAus"
-                                            Feldname="@Feld(Texte.LabelKuehlSollwert)" FehlerZustand="FehlerMelden"
-                                            Wert="@_stand.KuehlSollwert"
-                                            WertChanged="w => _stand.KuehlSollwert = w" />
+                                @* Der Kuehlsollwert steht in der Spalte "Kuehlen" des Reiters
+                                   "Konditionierung" (E56 F3 (a)). *@
                                 <Zahlenfeld Bezeichnung="@Texte.LabelKuehlleistungMax" Einheit="kW" Min="0.01"
                                             Platzhalter="@Texte.VorgabeUnbegrenzt"
                                             Feldname="@Feld(Texte.LabelKuehlleistungMax)" FehlerZustand="FehlerMelden"
@@ -538,90 +521,22 @@
                 </KindInhalt>
             </Reiterblatt>
 
-            @* ================================================== Reiter 2 *@
-            <Reiterblatt Schluessel="@REITER_TEMPERATUREN" Titel="@Texte.ReiterTemperaturen">
+            @* ================================================== Reiter 2: Konditionierung (KP2 U1) *@
+            @* Die Vorgabe-Matrix, die Kalenderkarten und die Zusatzzeilen (Teilkonzept 7.1, 7.2): der
+               Baustein KonditionierungReiter ueber der Bearbeitung des Arbeitsstands - in jeder
+               Betriebsart; ohne Konditionierungstabellen nennt er seinen Grund, ein ausgelieferter
+               Satz steht im Lesemodus. *@
+            <Reiterblatt Schluessel="@REITER_KONDITIONIERUNG" Titel="@KonditionierungTexte.Reiter">
                 <KindInhalt>
-
-                    <Gruppenkopf Titel="@GruppeRaumtemperaturen">
-                        <KindInhalt>
-                            <Formularraster>
-                                <KindInhalt>
-                            <Zahlenfeld Bezeichnung="@LabelSollTag" Einheit="°C"
-                                        Feldname="@Feld(LabelSollTag)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.SollTag" WertChanged="w => _stand.SollTag = w" />
-                            <Zahlenfeld Bezeichnung="@LabelNachtAbsenkung" Einheit="°C"
-                                        Feldname="@Feld(LabelNachtAbsenkung)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.NachtAbsenkung" WertChanged="w => _stand.NachtAbsenkung = w" />
-                            @* Die Nachtzeit (E43): volle Stunden 0 bis 23, beide leer = die Vorgabe
-                               22 bis 6 Uhr (Platzhalter); nur eines oder beide gleich haelt der
-                               Arbeitsstand beim OK an (Nachtzeit.Pruefen). *@
-                            <Ganzzahlfeld Bezeichnung="@LabelNachtBeginn" Einheit="h"
-                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
-                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_BEGINN)"
-                                          Feldname="@Feld(LabelNachtBeginn)" FehlerZustand="FehlerMelden"
-                                          Wert="@_stand.NachtBeginn" WertChanged="w => _stand.NachtBeginn = w" />
-                            <Ganzzahlfeld Bezeichnung="@LabelNachtEnde" Einheit="h"
-                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
-                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_ENDE)"
-                                          Feldname="@Feld(LabelNachtEnde)" FehlerZustand="FehlerMelden"
-                                          Wert="@_stand.NachtEnde" WertChanged="w => _stand.NachtEnde = w" />
-                            <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
-                                        Feldname="@Feld(LabelMaxTemperatur)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.MaxTemperatur" WertChanged="w => _stand.MaxTemperatur = w" />
-                            @* Wochenend- und Ferienwert sind absolute Sollwerte und gelten ganztaegig;
-                               0 oder leer heisst "keine Absenkung" (Gebaeudemodellvorgaben). *@
-                            <Zahlenfeld Bezeichnung="@LabelWEAbsenkung" Einheit="°C"
-                                        Platzhalter="@Texte.PlatzhalterKeine"
-                                        Feldname="@Feld(LabelWEAbsenkung)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.WochenendAbsenkung"
-                                        WertChanged="w => _stand.WochenendAbsenkung = w" />
-                            <Zahlenfeld Bezeichnung="@LabelSollFerien" Einheit="°C"
-                                        Platzhalter="@Texte.PlatzhalterKeine"
-                                        Feldname="@Feld(LabelSollFerien)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.SollFerien" WertChanged="w => _stand.SollFerien = w" />
-                                </KindInhalt>
-                            </Formularraster>
-                            <Herleitungszeile Text="@Sollwertzeile" />
-                        </KindInhalt>
-                    </Gruppenkopf>
-
-                    <Gruppenkopf Titel="@GruppeFerienAnfang">
-                        <KindInhalt>
-                            <Formularraster>
-                                <KindInhalt>
-                            @for (int i = 0; i < 4; i++)
-                            {
-                                int n = i;
-                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
-                                              Min="1" Max="31" Wert="@_beginnTag[n]"
-                                              WertChanged="w => _beginnTag[n] = w" />
-                                <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
-                                              Wert="@_beginnMonat[n]"
-                                              WertChanged="w => _beginnMonat[n] = w" />
-                            }
-                                </KindInhalt>
-                            </Formularraster>
-                        </KindInhalt>
-                    </Gruppenkopf>
-
-                    <Gruppenkopf Titel="@GruppeFerienEnde">
-                        <KindInhalt>
-                            <Formularraster>
-                                <KindInhalt>
-                            @for (int i = 0; i < 4; i++)
-                            {
-                                int n = i;
-                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
-                                              Min="1" Max="31" Wert="@_endeTag[n]"
-                                              WertChanged="w => _endeTag[n] = w" />
-                                <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
-                                              Wert="@_endeMonat[n]"
-                                              WertChanged="w => _endeMonat[n] = w" />
-                            }
-                                </KindInhalt>
-                            </Formularraster>
-                        </KindInhalt>
-                    </Gruppenkopf>
+                    <KonditionierungReiter Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@Texte"
+                                           Projekt="@(Modus == GebaeudeKatalogModus.Projekt)"
+                                           Lesemodus="@IstGesperrt" Altweg="@(!IstVdi6007)"
+                                           Kuehlsperre="@Kuehlsperre" Sollwertzeile="@Sollwertzeile"
+                                           LabelMaxTemperatur="@LabelMaxTemperatur"
+                                           GruppeFerienAnfang="@GruppeFerienAnfang" GruppeFerienEnde="@GruppeFerienEnde"
+                                           Ferienzeitraeume="@Ferienzeitraeume" LabelTag="@LabelTag" LabelMonat="@LabelMonat"
+                                           JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein"
+                                           Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
 
                     @if (BrauchwasserGaben is not null)
                     {
@@ -780,7 +695,7 @@
                 Beantwortet="EntfernenBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
     <Rueckfrage Offen="@(_nachFrage is not null)" TitelText="@_frageTitel" Frage="@_frageText" VorgabeNein="true"
                 Beantwortet="NachfrageBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
-    <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@SpeichernUnterFrage"
+    <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@(_speichernUnterText ?? SpeichernUnterFrage)"
                 VorgabeNein="true" Beantwortet="SpeichernUnterBeantwortet"
                 JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
 
@@ -806,9 +721,9 @@
 </div>
 
 @code {
-    /// <summary>Die Schlüssel der beiden Reiterblätter.</summary>
+    /// <summary>Die Schlüssel der Reiterblätter.</summary>
     private const string REITER_HUELLE = "HUELLE";
-    private const string REITER_TEMPERATUREN = "TEMPERATUREN";
+    private const string REITER_KONDITIONIERUNG = "KONDITIONIERUNG";
     private const string REITER_ZONEN = "ZONEN";
 
     /// <summary>
@@ -905,6 +820,12 @@
     /// (<see cref="GebaeudeKatalogDaten.Konditionierung"/>) und an den Zonen durch den OK-Weg.
     /// </summary>
     [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
+    /// <summary>Die Texte des Reiters „Konditionierung" (Bündel, Präfixe <c>KOND_LBL_</c>, <c>KOND_BTN_</c>, <c>KOND_TXT_</c>).</summary>
+    [Parameter] public KonditionierungTexte KonditionierungTexte { get; set; } = new();
+
+    /// <summary>Die Rückfragen des Reiters „Konditionierung" (Bündel, Präfix <c>KOND_FRAGE_</c>).</summary>
+    [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
 
     /// <summary>Die Texte der Zonen im Editor (Bündel, Präfix <c>GEBZ_</c>).</summary>
     [Parameter] public GebaeudeZonenTexte ZonenTexte { get; set; } = new();
@@ -1073,6 +994,12 @@
     /// <summary>Der Feldsatz des Arbeitsstands — die Felder binden hierauf.</summary>
     private GebaeudeKatalogDaten _stand => _arbeit.Stand;
 
+    /// <summary>
+    /// Die Bearbeitung der Konditionierung (Stufe KP2, Welle U1) über demselben Arbeitsstand — der
+    /// Reiter „Konditionierung" und der Assistent gehen beide über sie; ihre Meldungen stehen im Banner.
+    /// </summary>
+    private KonditionierungBearbeitung _kond = default!;
+
     /// <summary>Feldnamen und Meldungen der Prüfung — aus den Parametern dieses Dialogs.</summary>
     private GebaeudePrueftexte _prueftexte = new();
 
@@ -1106,6 +1033,12 @@
     private string _frageTitel = "";
     private string _frageText = "";
     private bool _speichernUnterFrage;
+
+    /// <summary>
+    /// Der Text der Frage von „Speichern unter" aus dem Befund der Konditionierung (Festlegung 3);
+    /// <c>null</c> = die Frage der Zonen.
+    /// </summary>
+    private string? _speichernUnterText;
 
     /// <summary>Die Aufbauten des Projekts — nach dem Übernehmen eines Katalogaufbaus im OK-Weg ergänzt.</summary>
     private List<AufbauWahl> _projektaufbauten = new();
@@ -1178,6 +1111,22 @@
 
     /// <summary>Steht der Zonendialog? Prüfhilfe für die Tests.</summary>
     public bool ZonendialogOffen => _zoneOffen is not null;
+
+    /// <summary>Die Bearbeitung der Konditionierung. Prüfhilfe für die Tests.</summary>
+    public KonditionierungBearbeitung Konditionierungsbearbeitung => _kond;
+
+    /// <summary>
+    /// Der Grund der weich gesperrten Kühlspalte (Teilkonzept 7.2, E32): ohne „Gebäude wird gekühlt"
+    /// wirkt sie nicht; <c>null</c> = bedienbar.
+    /// </summary>
+    private string? Kuehlsperre => _stand.KuehlungAktiv ? null : KonditionierungTexte.GrundKuehlenGesperrt;
+
+    /// <summary>
+    /// Eine Handlung des Reiters „Konditionierung" hat den Arbeitsstand geändert: Der Dialog zeichnet
+    /// neu (Banner, Herleitungen des ersten Reiters). Eine Meldung von früher bleibt, bis die nächste
+    /// sie ersetzt.
+    /// </summary>
+    private void KonditionierungGeaendert() { }
 
     /// <summary>Steht der Dialog „Luftaustausch"? Prüfhilfe für die Tests.</summary>
     public bool LuftaustauschOffen => _luftOffen;
@@ -1569,7 +1518,10 @@
             MeldungFerienHerbst = MeldungFerienHerbst,
             FeldWohnflaeche = FeldWohnflaeche,
             FeldFlaecheNutzer = FeldFlaecheNutzer,
-            FeldWaermegewinne = FeldWaermegewinne,
+            // Die inneren Waermegewinne stehen als Nennwert der Geraete in der Matrix (E56 F3 (a)) -
+            // die Pflichtmeldung nennt das Feld mit dem Namen, den der Reiter traegt.
+            FeldWaermegewinne = KonditionierungBearbeitung.Feldname(KonditionierungTexte, KonditionierungGroesse.Geraete,
+                                                                    KonditionierungZeile.Nennwert),
             FeldFensterdurchlassgrad = FeldFensterdurchlassgrad,
             FeldRaumhoehe = FeldRaumhoehe,
             FeldLuftwechsel = Feld(LabelLuftwechsel),
@@ -1589,6 +1541,14 @@
 
     protected override void OnInitialized()
     {
+        _kond = new KonditionierungBearbeitung(_arbeit, () => Konditionierung, () => KonditionierungTexte,
+                                               () => KonditionierungFragen)
+        {
+            Melden = Melden
+        };
+        // Eine Fehleingabe in der Matrix, die inneren Waermegewinne und der Kuehlsollwert haengen am
+        // Reiter „Konditionierung" (E56 F3 (a)) - die Pruefung springt dorthin.
+        _arbeit.IstKonditionierungsfeld = feld => _kond.IstMatrixfeld(feld) || feld == Feld(LabelMaxTemperatur);
         _typen = Gebaeudetypen?.Invoke() ?? Array.Empty<string>();
         _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
 
@@ -1645,7 +1605,9 @@
             RandbedingungEintraege = () => KiMaskenanmeldung.Eintraege(
                 Randeintraege, e => e.Id, e => e.Text),
             Ferienname = Ferienname,
-            Texte = Texte
+            Texte = Texte,
+            // Stufe KP2, Welle U1: die Vorgabe-Matrix über die Bearbeitung des Reiters.
+            Konditionierung = _kond
         });
     }
 
@@ -1819,17 +1781,8 @@
     /// </summary>
     private double HVe => _arbeit.HVe;
 
-    /// <summary>
-    /// Platzhalter der beiden Lüftungsfelder: Sind beide leer, rechnet der VDI-Weg mit der
-    /// Luftwechselrate — dann steht sie da; sonst die Vorgabe des leeren Glieds.
-    /// </summary>
-    private string LuftwechselPlatzhalter(double vorgabe) => _arbeit.LuftwechselPlatzhalter(vorgabe, Texte);
-
     /// <summary>Die Herleitungszeile des Luftwechsels: Wert und Herkunft.</summary>
     private string Luftwechselzeile => _arbeit.Luftwechselzeile(Texte);
-
-    /// <summary>Die Herleitungszeile der Sommerlüftungsregel.</summary>
-    private string Sommerlueftungszeile => GebaeudeArbeitsstand.Sommerlueftungszeile(Texte);
 
     private string OstWestPlatzhalter => _arbeit.OstWestPlatzhalter(Texte);
 
@@ -1869,7 +1822,7 @@
     {
         GebaeudePruefbefund? befund = _arbeit.Pruefen(mitName, _prueftexte, Texte);
         if (befund is null) return true;
-        return Verletzt(befund.Meldung, befund.Temperaturen ? REITER_TEMPERATUREN : REITER_HUELLE);
+        return Verletzt(befund.Meldung, befund.Temperaturen ? REITER_KONDITIONIERUNG : REITER_HUELLE);
     }
 
     private bool Verletzt(string meldung, string reiter)
@@ -2029,11 +1982,16 @@
     /// <summary>
     /// „Speichern unter" — dieselben Prüfregeln, angelegt unter dem eingegebenen Namen als
     /// Katalogsatz. Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben
-    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen.
+    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen. Im Projekt nennt die Frage aus dem
+    /// Befund des Wegs Zonen, Bauteile und die Konditionierung der Zonen zusammen (Entwurf KP2
+    /// Festlegung 3); ohne diesen Befund bleibt die Frage der Zonen.
     /// </summary>
     private void BeiSpeichernUnter()
     {
-        if (_arbeit.Zonen.Count > 0)
+        // Im Projekt fragt der Weg der Konditionierung: EINE Frage nennt Zonen, Bauteile und die
+        // Konditionierung der Zonen, die zurueckbleiben (Entwurf KP2 Festlegung 3).
+        _speichernUnterText = Modus == GebaeudeKatalogModus.Projekt ? _kond.SpeichernUnterFrage() : null;
+        if (_speichernUnterText is not null || _arbeit.Zonen.Count > 0)
         {
             _speichernUnterFrage = true;
             return;
@@ -2045,6 +2003,7 @@
     private void SpeichernUnterBeantwortet(bool? antwort)
     {
         _speichernUnterFrage = false;
+        _speichernUnterText = null;
         if (antwort == true) SpeichernUnterSchreiben();
     }
 
@@ -2099,7 +2058,8 @@
     {
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
-            || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen) return Task.CompletedTask;
+            || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
+            || _kond.OffeneFrage is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 

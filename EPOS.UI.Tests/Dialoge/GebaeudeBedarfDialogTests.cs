@@ -456,8 +456,9 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         { 0, 0, 0, 0, 0.05, 0.2, 0.4, 0.4, 0.2, 0, 0, 0 };
 
     /// <summary>Ein Satz auf dem VDI-Weg mit dem Tagesbilanz-Weg als Vergleich.</summary>
-    private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true) => new()
+    private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true, int? nachtauskuehlung = null) => new()
     {
+        NachtauskuehlstundenH = nachtauskuehlung,
         Name = "EFH", HeizwaermeMwh = 60.0, MaxLastKw = 40.0, VollbenutzungsstundenH = 1500.0,
         MonatswerteMwh = new double[12], Modelltext = "VDI 6007", IstVdi6007 = true,
         SpitzeTagesmittelKw = 25.0, SpitzeQuantil95Kw = 20.0,
@@ -492,6 +493,40 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains("Stunden mit Sommerlüftung:", cut.Markup);
         Assert.Equal(2, cut.FindAll("tr.gebb-vdi").Count);
         Assert.Equal(6, cut.FindAll("tr.gebb-kaelte").Count);
+    }
+
+    /// <summary>
+    /// <b>Die Stunden mit Nachtauskühlung stehen nur mit Wert</b> (Stufe KP2, Welle U1; Konzept
+    /// Konditionierungsprofile 3.7): Ist eine Nachtauskühlung gesetzt, trägt der Lauf ihre Stunden
+    /// (<c>NachtauskuehlstundenH</c>) — dann steht die Zeile unter der Sommerlüftung, sonst nicht; in der
+    /// Zonentabelle eine Spalte, sobald eine Zone einen Wert trägt.
+    /// </summary>
+    [Fact]
+    public void Die_Stunden_mit_Nachtauskuehlung_stehen_nur_mit_Wert()
+    {
+        var ohne = Aufbauen(VdiSatz());
+        Assert.DoesNotContain("Stunden mit Nachtauskühlung:", ohne.Markup);
+        Assert.Empty(ohne.FindAll("tr.gebb-nachtauskuehlung"));
+
+        var mit = Aufbauen(VdiSatz(nachtauskuehlung: 233));
+        IElement zeile = mit.Find("tr.gebb-nachtauskuehlung");
+        Assert.Equal(new[] { "Stunden mit Nachtauskühlung:", "233", "h" },
+                     zeile.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Auch eine Null ist ein Wert: Die Nachtauskühlung war gesetzt, die Bedingung nie erfüllt.
+        var null_ = Aufbauen(VdiSatz(nachtauskuehlung: 0));
+        Assert.Equal("0", null_.Find("tr.gebb-nachtauskuehlung td.epos-zahl").TextContent.Trim());
+
+        // Die Zonen: eine Spalte, sobald eine Zone einen Wert trägt; „—" für die übrigen.
+        var ohneSpalte = Aufbauen(MitZonen());
+        Assert.Equal(6, ohneSpalte.FindAll("table.gebb-zonen thead th").Count);
+
+        var mitSpalte = Aufbauen(MitZonen(nachtauskuehlungWohnen: 180));
+        Assert.Equal(7, mitSpalte.FindAll("table.gebb-zonen thead th").Count);
+        Assert.Contains("Nachtauskühlung", mitSpalte.FindAll("table.gebb-zonen thead th")[6].TextContent);
+        IReadOnlyList<IElement> zz = mitSpalte.FindAll("table.gebb-zonen tbody tr");
+        Assert.Equal("180", zz[0].QuerySelectorAll("td")[6].TextContent.Trim());
+        Assert.Equal("—", zz[1].QuerySelectorAll("td")[6].TextContent.Trim());
     }
 
     [Fact]
@@ -823,7 +858,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Ein Satz mit zwei Zonen — Wohnen beheizt, Keller unbeheizt (A2).</summary>
-    private static GebaeudeBedarfDaten MitZonen() => new()
+    private static GebaeudeBedarfDaten MitZonen(int? nachtauskuehlungWohnen = null) => new()
     {
         Name = "Haus mit Keller",
         HeizwaermeMwh = 12.5,
@@ -833,7 +868,8 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Zonen = new[]
         {
             new GebaeudeBedarfZoneDaten { Name = "Wohnen", IstBeheizt = true, HeizwaermeMwh = 12.5, MaxLastKw = 8.0,
-                                          MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12 },
+                                          MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12,
+                                          NachtauskuehlstundenH = nachtauskuehlungWohnen },
             new GebaeudeBedarfZoneDaten { Name = "Keller", IstBeheizt = false,
                                           MittlereRaumtemperaturC = 11.25, UeberhitzungsstundenH = 0 },
         }

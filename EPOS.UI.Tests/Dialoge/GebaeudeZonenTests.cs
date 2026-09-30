@@ -450,6 +450,54 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.True(zu);
     }
 
+    /// <summary>
+    /// <b>„Speichern unter" im Projekt mit Konditionierung</b> (Stufe KP2, Welle U1; Entwurf KP2
+    /// Festlegung 3): EINE Frage nennt, was im Projekt zurückbleibt — Kalender und Zellen der Zonen,
+    /// Bauteile — und die Zonen mit Namen, aus dem Befund des Wegs VOR dem Schreiben; Vorgabe „Nein".
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_im_Projekt_nennt_Zonen_Bauteile_und_Konditionierung_in_einer_Frage()
+    {
+        var weg = new Weg();
+        int befragt = 0;
+        var kond = new KonditionierungWeg
+        {
+            ZelleSetzen = (s, _, _, _) => KonditionierungErgebnis.Gut(s),
+            SpeichernUnterRueckfrage = _ =>
+            {
+                befragt++;
+                return new KonditionierungRueckfrage(
+                    Array.Empty<KonditionierungPosten>(),
+                    new[] { new KonditionierungPosten(KonditionierungPostenart.Zonenkalender, 2),
+                            new KonditionierungPosten(KonditionierungPostenart.Bauteile, 3) },
+                    new[] { "Haus A" });
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, weg.Speichern)
+            .Add(x => x.Zonen, weg.Zonenweg(new[] { Vorschlagszone() }))
+            .Add(x => x.Konditionierung, kond));
+
+        Knoepfe(cut, "Speichern unter")[0].Click();
+
+        Assert.Equal(1, befragt);
+        Assert.Empty(weg.Gespeichert);
+        Assert.Equal("„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: " +
+                     "2 Kalender und Zellen von Zonen, 3 Bauteile. Trotzdem anlegen? Betroffene Zonen: Haus A.",
+                     cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Contains("epos-knopf--primaer", Antwort(cut, "Nein").ClassName);
+
+        Antwort(cut, "Ja").Click();
+        Assert.True(Assert.Single(weg.Gespeichert).IstNeu);
+    }
+
     [Fact]
     public void Speichern_unter_ohne_Zone_fragt_nicht()
     {

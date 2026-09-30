@@ -80,8 +80,8 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>
     /// Stunden mit wirksamer Nachtauskühlung [h] — nur auf dem VDI-Weg mit gesetzter
-    /// Nachtauskühlung, sonst <c>null</c> (Konzept Konditionierungsprofile 3.7). Die Zeile „nur mit
-    /// Wert" im Dialog kommt mit U1; hier steht die Zahl des Laufs.
+    /// Nachtauskühlung, sonst <c>null</c> (Konzept Konditionierungsprofile 3.7). Der Dialog zeigt die
+    /// Zeile nur mit Wert.
     /// </summary>
     public int? NachtauskuehlstundenH { get; init; }
 

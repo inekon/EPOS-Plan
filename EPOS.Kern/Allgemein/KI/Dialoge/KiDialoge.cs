@@ -5812,6 +5812,12 @@ namespace WindowsFormsApplication1
                                             KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
                                             KiDialogTexte.GebkBetriebsartErl, nurLesen: true));
 
+                // ---- Die Vorgabe-Matrix des Reiters „Konditionierung" (Stufe KP2, Welle U1): aus DEM
+                //      Profil KiKonditionierungsfelder, die Sichtklasse beantwortet sie als Feldtafel.
+                //      Die Bestandszellen stehen oben unter ihren Namen; die Verwaltung traegt den
+                //      Reiter nicht (ihre Stammblattgruppe kommt mit Welle U4).
+                felder.AddRange(KiKonditionierungsfelder.Dialogfelder());
+
                 // ---- Zonen eines Gebaeudes im Projekt (Stufe G6a): ein RASTER zum LESEN, Kennzeichen
                 //      die Nummer ab 1. Anlegen, Oeffnen, Duplizieren, Umordnen und Entfernen bleiben
                 //      Klicks des Anwenders; die Werte einer Zone setzt der Assistent im Zonendialog.

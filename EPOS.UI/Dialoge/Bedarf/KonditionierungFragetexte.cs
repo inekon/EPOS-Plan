@@ -1,0 +1,62 @@
+﻿namespace EPOS.UI.Dialoge.Bedarf;
+
+/// <summary>
+/// <b>Die Rückfragen des Reiters „Konditionierung“</b> (Stufe KP2, Welle U1; Entwurf KP2
+/// Festlegungen 1, 3, 4; E56 F5 (a)) — ein eigenes Bündel neben <see cref="KonditionierungTexte"/>,
+/// denn die Rückfragen tragen das eigene Präfix <c>KOND_FRAGE_*</c>.
+/// </summary>
+/// <remarks>
+/// <para><b>Aus dem Befund, vor dem Schreiben.</b> Jede Frage setzt der Reiter aus dem Befund
+/// zusammen, den der Weg VOR der Handlung liefert (<see cref="KonditionierungWeg.Rueckfrage"/>): was
+/// ersetzt wird, was bleibt, welche Zonen es betrifft — mit Namen. Die Posten nennt
+/// <see cref="KonditionierungTexte"/> (<c>KOND_TXT_POSTEN_*</c>).</para>
+/// <para>Gefüllt von <c>KonditionierungTexteHuelle.Fragen()</c>; der Vorgabewert ist der deutsche
+/// Rückfall.</para>
+/// </remarks>
+public sealed class KonditionierungFragetexte
+{
+    /// <summary>
+    /// <c>KOND_FRAGE_VERWERFEN</c> — „{0}“ die Größe, „{1}“ was fällt (Posten), „{2}“ was bleibt
+    /// </summary>
+    public string Verwerfen { get; set; }
+        = "Den angelegten Kalender „{0}“ verwerfen? Es fällt: {1}. Es bleibt: {2}. Danach gilt wieder die Matrix.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_MATRIX_ERNEUT</c> — „{0}“ die Größe, „{1}“ was ersetzt wird, „{2}“ was bleibt
+    /// </summary>
+    public string MatrixErneut { get; set; }
+        = "Die Matrix erneut auf den Kalender „{0}“ anwenden? Ersetzt wird: {1}. Es bleibt: {2}.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_KATALOG_ERNEUT</c> — „{0}“ was ersetzt wird, „{1}“ was bleibt (Festlegung 4)
+    /// </summary>
+    public string KatalogErneut { get; set; }
+        = "Die Konditionierung des Gebäudes erneut aus dem Katalogsatz übernehmen? Ersetzt wird die ganze "
+        + "Gebäudeebene: {0}. Es bleibt: {1}.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_AUFTEILEN</c> — „{0}“ die Luftwechselrate, „{1}“ die Infiltration, „{2}“ die
+    /// Nutzerlüftung nach der Aufteilung [1/h] (E56 F5 (a))
+    /// </summary>
+    public string Aufteilen { get; set; }
+        = "Die Lüftung dieses Gebäudes steht als Gesamtangabe: Luftwechselrate {0} 1/h. Eine Vorgabe der "
+        + "Lüftung braucht Infiltration und Nutzerlüftung getrennt. Aufteilen in Infiltration {1} 1/h und "
+        + "Nutzerlüftung {2} 1/h? Die Summe bleibt.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_SPEICHERN_UNTER</c> — „{0}“ was im Projekt zurückbleibt (Zonen, Bauteile,
+    /// Konditionierung der Zonen; Festlegung 3)
+    /// </summary>
+    public string SpeichernUnter { get; set; }
+        = "„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: "
+        + "{0}. Trotzdem anlegen?";
+
+    /// <summary><c>KOND_FRAGE_ZONEN</c> — der Zusatz mit den Namen der betroffenen Zonen; „{0}“ die Namen</summary>
+    public string Zonen { get; set; } = "Betroffene Zonen: {0}.";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_OHNE_EINZELHEITEN</c> — die Frage, wenn der Weg keinen Befund liefert; „{0}“ die
+    /// Handlung
+    /// </summary>
+    public string OhneEinzelheiten { get; set; } = "„{0}“ ersetzt Angaben dieses Reiters. Fortfahren?";
+}
