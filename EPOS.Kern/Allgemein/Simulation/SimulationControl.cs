@@ -4137,24 +4137,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// PAKET B2 — das GEPFLEGTE Temperaturpaar eines Kessels: erst die ANLAGE
-        /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c> — die Spalte trägt dort
-        /// den Umlaut, siehe <c>ProjektPuffer.SQL_SYSTEM_RUECKLAUF</c>), dann der
-        /// Heizkessel-Katalog über <c>ID_Kessel</c>.
-        ///
-        /// <para>Das ist genau die W3-Kette aus Paket B1
-        /// (<c>Warnkriterien.Projektbild.AnlagenVorlauf</c>) und genau die Kette, in die
-        /// der Kessel-Quellendialog im Modus „Fest" schreibt. Der SENKENPUFFER gehört
-        /// bewusst NICHT dazu: Er ist keine Anwendervorgabe, sondern ein abgeleiteter
-        /// Wert — im Modus „Berechnet" ist er die erste Stufe, im Modus „Fest" wäre er
-        /// eine feste Vorgabe, die niemand gemacht hat.</para>
-        ///
-        /// <para>Still gelesen (Konzept 13.4): Auf einem alten Schema kann eine Spalte
-        /// fehlen — dann greift die nächste Stufe, statt dass ein Dialog den Lauf
-        /// anhält. Nur ein VOLLSTÄNDIGES Paar zählt
-        /// (<c>ProjektPuffer.IstTemperaturpaar</c>).</para>
-        /// </summary>
-        /// <summary>
         /// KESSELKENNLINIE E3 — die Eingänge der Rücklaufkette vor dem Aufbau der Kessel: (a) der
         /// gerechnete Rücklauf des Heizkreises (Anlagenkopplung AK1; <c>null</c> ohne gekoppeltes
         /// Gebäude, wie der Vorlauf der Wärmepumpe) und (c) der Leseweg des gepflegten Paars. Beide
@@ -4213,6 +4195,24 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// PAKET B2 — das GEPFLEGTE Temperaturpaar eines Kessels: erst die ANLAGE
+        /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c> — die Spalte trägt dort
+        /// den Umlaut, siehe <c>ProjektPuffer.SQL_SYSTEM_RUECKLAUF</c>), dann der
+        /// Heizkessel-Katalog über <c>ID_Kessel</c>.
+        ///
+        /// <para>Das ist genau die W3-Kette aus Paket B1
+        /// (<c>Warnkriterien.Projektbild.AnlagenVorlauf</c>) und genau die Kette, in die
+        /// der Kessel-Quellendialog im Modus „Fest" schreibt. Der SENKENPUFFER gehört
+        /// bewusst NICHT dazu: Er ist keine Anwendervorgabe, sondern ein abgeleiteter
+        /// Wert — im Modus „Berechnet" ist er die erste Stufe, im Modus „Fest" wäre er
+        /// eine feste Vorgabe, die niemand gemacht hat.</para>
+        ///
+        /// <para>Still gelesen (Konzept 13.4): Auf einem alten Schema kann eine Spalte
+        /// fehlen — dann greift die nächste Stufe, statt dass ein Dialog den Lauf
+        /// anhält. Nur ein VOLLSTÄNDIGES Paar zählt
+        /// (<c>ProjektPuffer.IstTemperaturpaar</c>).</para>
+        /// </summary>
         private static bool KesselTemperaturpaarGepflegt(int idAnlage,
                                                          out double vorlauf, out double ruecklauf)
         {

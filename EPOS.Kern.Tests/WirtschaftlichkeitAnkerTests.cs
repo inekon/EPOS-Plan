@@ -315,7 +315,7 @@ namespace EPOS.Kern.Tests
         /// <c>KesselVerbrauchFehlt</c>) und vor dem BHKW-Wirkungsgrad der Basis R10 (1.048,27
         /// statt 1.241,55 MWh Brennstoff). Er bleibt als Vorrichtung stehen, weil weitere Tests
         /// seine Zahlen tragen (keine Neubuchung). Der fachliche Anker des Projekts ist der
-        /// frisch gerechnete Berichtsweg, −31.142.971,06 €
+        /// frisch gerechnete Berichtsweg, −30.812.710,67 €
         /// (<c>PvAusweisStromMatrixTests.Der_Kapitalwert_bleibt_unveraendert</c>); die
         /// Differenz zerlegt <see cref="KapitalwertAnkerZerlegungTests"/>.</para>
         /// </summary>
