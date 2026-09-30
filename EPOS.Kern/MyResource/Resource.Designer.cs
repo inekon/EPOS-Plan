@@ -104730,7 +104730,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone. ähnelt.
         /// </summary>
         public static string ZONDLG_ZEILE_VORGABEN {
             get {

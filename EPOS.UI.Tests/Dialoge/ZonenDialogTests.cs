@@ -180,7 +180,7 @@ public class ZonenDialogTests : EposBunitContext
         // Infiltration und Nutzerlüftung leer, das Gebäude trägt nur eine Luftwechselrate: „wie Gebäude".
         Assert.Equal("wie Gebäude", Feld(w, "Lüftung · Infiltration").GetAttribute("placeholder"));
         Assert.Contains("Luftwechsel der Zone: 0,5 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
-        Assert.Contains("Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude", cut.Markup);
+        Assert.Contains("Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone", cut.Markup);
     }
 
     /// <summary>Bei einer einzigen Zone bleibt die Leistungsgrenze die des Gebäudes (Festlegung 5).</summary>

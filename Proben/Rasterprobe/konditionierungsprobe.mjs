@@ -1,6 +1,7 @@
 // =====================================================================
-//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b und U1) — der Gebäude-Katalogeditor
-//  in der BREITEN Überlagerung, im echten Browser
+//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1 und U4) — der Gebäude-Katalogeditor
+//  in der BREITEN Überlagerung, der Zonendialog als Blatt und die Gebäudeverwaltung
+//  mit dem Blatt „Konditionierung“, im echten Browser
 // =====================================================================
 //
 //  WOZU. Der Editor steht in jeder Betriebsart in der breiten Überlagerung
@@ -33,6 +34,20 @@
 //      „aufteilen“ an der Gesamtangabe samt Ergebnis (gesamt), die Werte als
 //      Text ohne Handlung (gesperrt), Karten mit „Kalender anlegen“ (neu), der
 //      benannt gesperrte Reiter ohne Karten (ohnetabellen).
+//    - der Zonendialog als BLATT (Welle U4, Fall projekt): nach „Kalender
+//      anlegen“ am Gebäude öffnet „Öffnen“ die Zone „Wohnen EG“ als breites
+//      Blatt über dem Editor; gemessen wie ein Reiterblatt (kein Querrollen,
+//      Ziele ≥ 44 px, keine Überdeckung), dazu die Zonenmatrix am Behälter;
+//      die Zone ERBT („Heizen · Tag“ leer, Platzhalter „Vorgabe 20“), folgt dem
+//      Gebäude („vom Gebäude“, die Heizspalte ohne Wirkung, „Vom Gebäude
+//      übernehmen und anpassen“), ÜBERSCHREIBT (eigene Gewinne) und hat nach
+//      „übernehmen“ einen eigenen Kalender; Esc führt zurück zum Editor.
+//    - die GEBÄUDEVERWALTUNG (Welle U4, Fall verwaltung) wie im eigenen Fenster:
+//      die Gruppe „Konditionierung“ mit fünf Zustandszeilen, „Konditionierung…“
+//      öffnet das breite Blatt mit derselben Komponente (Matrix, Karten); das
+//      Blatt gemessen wie oben, die Matrix am Behälter, eine Zelle zählt als
+//      Änderung im Fuß, Esc führt zurück; der ausgelieferte Satz steht im Blatt
+//      als Text.
 //
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
 //    node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--nur <fall>] [--kultur de-DE]
@@ -60,7 +75,7 @@ const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
 const KULTUR = arg('kultur', 'de-DE');
 
-const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'bausteine'];
+const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'bausteine', 'verwaltung'];
 const FENSTER = [
   { breite: 390, hoehe: 844 },     // Telefon hochkant
   { breite: 820, hoehe: 1180 },    // Tablet hochkant
@@ -77,14 +92,14 @@ const schlaf = ms => new Promise(r => setTimeout(r, ms));
 // --------------------------------------------------- Messung im Browser
 // Gemessen wird in der Überlagerung; das Reiterblatt ist das sichtbare
 // .epos-reiter-blatt (nur das aktive steht im Baum).
-const MESSEN = ([ziel, tol]) => {
+const MESSEN = ([ziel, tol, wurzelSel = '.epos-ueberlagerung', blattSel = '.epos-reiter-blatt']) => {
   const r = el => { const b = el.getBoundingClientRect();
     return { l: +b.left.toFixed(1), o: +b.top.toFixed(1), r: +b.right.toFixed(1), u: +b.bottom.toFixed(1),
              b: +b.width.toFixed(1), h: +b.height.toFixed(1) }; };
   const quer = el => el ? el.scrollWidth - el.clientWidth : null;
-  const ueb = document.querySelector('.epos-ueberlagerung');
-  if (!ueb) return { fehler: 'keine .epos-ueberlagerung im Baum' };
-  const blatt = ueb.querySelector('.epos-reiter-blatt');
+  const ueb = document.querySelector(wurzelSel);
+  if (!ueb) return { fehler: 'kein ' + wurzelSel + ' im Baum' };
+  const blatt = ueb.querySelector(blattSel);
   const dialog = ueb.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog');
 
   // Die Bedienziele: sichtbar, mit Fläche; ein Kästchen oder Knopf der Wahl
@@ -113,11 +128,16 @@ const MESSEN = ([ziel, tol]) => {
   // ragen. Ein Ziel in einem eigenen Rollbehälter (Wochenraster des Bestands,
   // Rasterhülle) zählt beim Herausragen nicht - dort rollt der Behälter.
   const imBlatt = blatt ? ziele.filter(z => blatt.contains(z.el)) : [];
+  const haftet = el => { for (let v = el; v && v !== blatt; v = v.parentElement)
+                           if (getComputedStyle(v).position === 'sticky') return true; return false; };
   const ueberdeckt = [];
   for (let i = 0; i < imBlatt.length; i++)
     for (let j = i + 1; j < imBlatt.length; j++) {
       const a = imBlatt[i], b = imBlatt[j];
       if (a.traeger.contains(b.traeger) || b.traeger.contains(a.traeger)) continue;
+      // Eine HAFTENDE Ebene (die Fußleiste des Dialogs im Blatt, #572-Nachtrag) liegt mit Absicht über
+      // dem Inhalt, der unter ihr durchrollt - das ist keine Überdeckung zweier Bedienziele.
+      if (haftet(a.traeger) !== haftet(b.traeger)) continue;
       const w = Math.min(a.m.r, b.m.r) - Math.max(a.m.l, b.m.l);
       const h = Math.min(a.m.u, b.m.u) - Math.max(a.m.o, b.m.o);
       if (w > 1 && h > 1) ueberdeckt.push(`${name(a)} / ${name(b)} (${w.toFixed(0)}×${h.toFixed(0)})`);
@@ -143,8 +163,8 @@ const MESSEN = ([ziel, tol]) => {
 
 // Der Reiter „Konditionierung“ (Welle U1): der Behälter .epos-kond, die
 // sichtbaren Spalten der Matrix, die sichtbaren Reiter je Größe und Karten.
-const KOND = () => {
-  const k = document.querySelector('.epos-ueberlagerung .epos-kond');
+const KOND = (wurzelSel = '.epos-ueberlagerung') => {
+  const k = document.querySelector(wurzelSel + ' .epos-kond');
   if (!k) return null;
   const sichtbar = el => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
   const tab = k.querySelector('table.epos-kond-matrix');
@@ -160,8 +180,43 @@ const KOND = () => {
     tabQuer: tab ? tab.scrollWidth - tab.clientWidth : 0,
     sperre: ((k.querySelector('.epos-kond-sperrzeile') || {}).innerText || '').trim(),
     kopf: alle('.epos-kond-kopf button').map(b => b.innerText.trim()),
-    anlegen: alle('.epos-kond-karte button.epos-kond-anlegen').filter(sichtbar).length
+    anlegen: alle('.epos-kond-karte button.epos-kond-anlegen').filter(sichtbar).length,
+    // Welle U4, Zone: die Zustandszeilen je Größe und die Spalten ohne Wirkung.
+    zonenzeilen: alle('.epos-kond-zonenzeile').filter(sichtbar).map(z => ({
+      groesse: z.dataset.groesse,
+      zustand: ((z.querySelector('.epos-kond-zonenzeile-zustand') || {}).innerText || '').trim(),
+      uebernehmen: !!z.querySelector('button.epos-kond-uebernehmen')
+    })),
+    ohneWirkung: [...new Set(alle('td.epos-kond--ohnewirkung').map(td => td.dataset.groesse))]
   };
+};
+
+// Die Prüfung der Matrix am Behälter - dieselbe Regel für Reiter, Zonenblatt und Verwaltungsblatt.
+const kondPruefen = (marke, k, wo) => {
+  const breit = k.breite >= 900;
+  console.log(`  ${wo}: Behälter ${k.breite} px → ${k.spalten} Spalte(n), ${k.reiter} Reiter je Größe, ` +
+              `${k.karten}/${k.alleKarten} Karten sichtbar, Felder ${k.felder}, Texte ${k.texte}, quer ${k.tabQuer}` +
+              (k.sperre ? `; Grund „${k.sperre.slice(0, 50)}…“` : '') + (k.kopf.length ? `; Kopf: ${k.kopf.join(' | ')}` : ''));
+  if (breit && (k.spalten !== 5 || k.reiter !== 0 || k.karten !== k.alleKarten))
+    melde(marke, `${wo} breit (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
+  if (!breit && (k.spalten !== 1 || k.reiter !== 5 || k.karten !== Math.min(1, k.alleKarten)))
+    melde(marke, `${wo} schmal (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
+  if (k.tabQuer > 0) melde(marke, `${wo}: die Matrix rollt quer (${k.tabQuer} px)`);
+};
+
+// Die Messung eines BLATTS (Zonendialog, Verwaltung): kein Querrollen, Ziele ≥ 44 px,
+// keine Überdeckung, nichts ragt heraus.
+const blattPruefen = (marke, m, wo) => {
+  console.log(`  ${wo}: Blatt ${m.blatt ? m.blatt.b + ' px (quer ' + m.blatt.quer + ')' : '—'}, Seite quer ${m.seiteQuer}, ` +
+              `Wurzel quer ${m.ueb.quer}, Ziele im Blatt ${m.zieleBlatt}, unter 44: ${m.klein.length}, ` +
+              `überdeckt: ${m.ueberdeckt.length}, heraus: ${m.heraus.length}`);
+  if (!m.blatt) { melde(marke, `${wo}: kein Blatt`); return; }
+  if (m.seiteQuer > 0) melde(marke, `${wo}: die Seite rollt quer (${m.seiteQuer} px)`);
+  if (m.ueb.quer > 0) melde(marke, `${wo}: die Wurzel rollt quer (${m.ueb.quer} px)`);
+  if (m.blatt.quer > 0) melde(marke, `${wo}: das Blatt rollt quer (${m.blatt.quer} px)`);
+  for (const k of m.klein) melde(marke, `${wo}: Bedienziel unter 44 px: ${k}`);
+  for (const u of m.ueberdeckt) melde(marke, `${wo}: Bedienziele überdecken sich: ${u}`);
+  for (const h of m.heraus) melde(marke, `${wo}: Bedienziel ragt aus dem Blatt: ${h}`);
 };
 
 // Ein Feld der Matrix nach seiner (vorgelesenen) Beschriftung.
@@ -201,6 +256,171 @@ const BAUSTEINE = ([ziel, tol, breite]) => {
     saison: (document.querySelector('#probe-saison') || {}).innerText || ''
   };
 };
+
+// ------------------------------------------------------------ Die Zone als Blatt (Welle U4)
+// Das Gebäude hat eben „Heizen“ angelegt. Die Zone „Wohnen EG“ trägt keine eigenen Werte.
+async function zoneProbe(seite, marke, name, f) {
+  // Der Reiter „Zonen“ des Editors - nicht der letzte Reiter je Größe der schmalen Matrix.
+  await seite.locator('.epos-ueberlagerung .epos-reiter-leiste [role=tab]', { hasText: /^Zonen$/ }).click(); await schlaf(400);
+  const zeile = seite.locator('.epos-ueberlagerung .epos-zonenliste tbody tr', { hasText: 'Wohnen EG' });
+  await zeile.locator('button', { hasText: /^Öffnen/ }).click(); await schlaf(700);
+  const blatt = await seite.evaluate(() => {
+    const b = document.querySelector('.epos-ueberlagerung section.epos-blatt');
+    return b ? { breit: b.classList.contains('epos-blatt--breit'),
+                 titel: ((b.querySelector('.epos-blatt-titel') || {}).innerText || '').trim(),
+                 reiterDa: !!document.querySelector('.epos-ueberlagerung .epos-reiter-blatt') } : null;
+  });
+  if (!blatt) { melde(marke, 'Zone: „Öffnen“ zeigt kein Blatt'); return; }
+  console.log(`  Zone: Blatt „${blatt.titel}“${blatt.breit ? ' (breit)' : ''}, Editor dahinter ${blatt.reiterDa ? 'noch gezeichnet' : 'ausgeblendet'}`);
+  if (!blatt.breit) melde(marke, 'Zone: das Blatt ist nicht breit');
+  if (blatt.reiterDa) melde(marke, 'Zone: der Editor zeichnet seinen Inhalt unter dem Blatt');
+  blattPruefen(marke, await seite.evaluate(MESSEN, [ZIEL, TOL, '.epos-ueberlagerung', 'section.epos-blatt']), 'Zonenblatt');
+  const k = await seite.evaluate(KOND);
+  if (!k) { melde(marke, 'Zone: keine Zonenmatrix'); return; }
+  kondPruefen(marke, k, 'Zonenmatrix');
+
+  // erbt: leere Zelle mit dem Wert des Gebäudes als Platzhalter
+  const tag = await seite.evaluate(([feld]) => eval(feld)('Heizen · Tag'), [FELD.toString()]);
+  const heizen = k.zonenzeilen.find(z => z.groesse === '0');
+  console.log(`  Zone erbt: „Heizen · Tag“ „${tag?.wert}“ (Platzhalter „${tag?.platzhalter}“); ` +
+              `Heizen „${heizen?.zustand}“${heizen?.uebernehmen ? ' mit „Vom Gebäude übernehmen und anpassen“' : ''}; ` +
+              `ohne Wirkung: ${k.ohneWirkung.join(',') || '—'}`);
+  if (!tag || tag.wert !== '' || tag.platzhalter !== 'Vorgabe 20') melde(marke, 'Zone: „Heizen · Tag“ erbt nicht „Vorgabe 20“');
+  if (!heizen || heizen.zustand !== 'vom Gebäude' || !heizen.uebernehmen) melde(marke, 'Zone: Heizen steht nicht „vom Gebäude“ mit „übernehmen“');
+  if (!k.ohneWirkung.includes('0')) melde(marke, 'Zone: die Heizspalte steht nicht „ohne Wirkung“');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_zone-vom-gebaeude.png` });
+
+  // überschreibt: eigene Gewinne der Zone (Nennwert der Geräte) - in der schmalen Anordnung erst die Größe wählen
+  const geraete = seite.locator('.epos-ueberlagerung .epos-kond-groessen [role=tab]').nth(3);
+  if (await geraete.isVisible()) { await geraete.click(); await schlaf(300); }
+  const feld = seite.locator('.epos-ueberlagerung label.epos-feld', { hasText: 'Geräte · Nennwert' }).locator('input');
+  const vorher = await feld.getAttribute('placeholder');
+  await feld.fill('300'); await schlaf(500);
+  const eigen = await seite.evaluate(([f]) => eval(f)('Geräte · Nennwert'), [FELD.toString()]);
+  console.log(`  Zone überschreibt: „Geräte · Nennwert“ Platzhalter „${vorher}“ → „${eigen?.wert}“`);
+  if (!vorher || !vorher.startsWith('Vorgabe')) melde(marke, 'Zone: „Geräte · Nennwert“ nennt keinen geerbten Wert');
+  if (eigen?.wert !== '300') melde(marke, 'Zone: die eigene Zelle steht nicht');
+
+  // „Vom Gebäude übernehmen und anpassen“: die Heizspalte der Zone bekommt einen eigenen Kalender
+  const heiz = seite.locator('.epos-ueberlagerung .epos-kond-groessen [role=tab]').nth(0);
+  if (await heiz.isVisible()) { await heiz.click(); await schlaf(300); }
+  await seite.locator('.epos-ueberlagerung .epos-kond-zonenzeile[data-groesse="0"] button.epos-kond-uebernehmen').click();
+  await schlaf(500);
+  const n = await seite.evaluate(KOND);
+  const h2 = n.zonenzeilen.find(z => z.groesse === '0');
+  console.log(`  Zone nach „übernehmen“: Heizen „${h2?.zustand}“, ohne Wirkung: ${n.ohneWirkung.join(',') || '—'}`);
+  if (!h2 || h2.zustand === 'vom Gebäude' || h2.uebernehmen) melde(marke, 'Zone: „übernehmen“ legt keinen eigenen Kalender an');
+  if (n.ohneWirkung.includes('0')) melde(marke, 'Zone: die Heizspalte bleibt nach „übernehmen“ ohne Wirkung');
+  blattPruefen(marke, await seite.evaluate(MESSEN, [ZIEL, TOL, '.epos-ueberlagerung', 'section.epos-blatt']), 'Zonenblatt danach');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_zone-eigen.png` });
+
+  // Esc führt zurück zum Editor - die Überlagerung bleibt.
+  await seite.locator('.epos-ueberlagerung section.epos-blatt .epos-blatt-kopf').focus();
+  await seite.keyboard.press('Escape'); await schlaf(500);
+  const z = await seite.evaluate(() => ({
+    blatt: !!document.querySelector('.epos-ueberlagerung section.epos-blatt'),
+    ueb: !!document.querySelector('.epos-ueberlagerung'),
+    reiter: !!document.querySelector('.epos-ueberlagerung .epos-reiter-blatt')
+  }));
+  console.log(`  Zone Esc: Blatt ${z.blatt ? 'steht' : 'zu'}, Editor ${z.reiter ? 'wieder da' : 'fehlt'}, Überlagerung ${z.ueb ? 'steht' : 'zu'}`);
+  if (z.blatt || !z.ueb || !z.reiter) melde(marke, 'Zone: Esc führt nicht zurück zum Editor');
+}
+
+// ------------------------------------------------------------ Die Verwaltung (Welle U4)
+async function verwaltung(browser, f) {
+  const name = 'verwaltung';
+  const marke = `${name} ${f.breite}×${f.hoehe}`;
+  console.log(`\n${marke}`);
+  const kontext = await browser.newContext({ viewport: { width: f.breite, height: f.hoehe }, deviceScaleFactor: 1 });
+  const seite = await kontext.newPage();
+  const fehler = [];
+  seite.on('pageerror', e => fehler.push(e.message));
+  seite.on('console', m => { if (m.type() === 'error') fehler.push(m.text()); });
+  await seite.goto(`${WURZEL}/konditionierungsprobe?fall=${name}&kultur=${KULTUR}`, { waitUntil: 'domcontentloaded' });
+  await seite.waitForSelector('.epos-gebaeude-admin', { timeout: 30000 });
+  await schlaf(800);
+
+  // schmal: erst „Stammblatt ›“
+  const zumBlatt = seite.locator('.epos-auswahlleiste button.epos-nur-schmal');
+  if (await zumBlatt.count() && await zumBlatt.first().isVisible()) { await zumBlatt.first().click(); await schlaf(400); }
+
+  const gruppe = await seite.evaluate(() => {
+    const g = [...document.querySelectorAll('.epos-stammblatt section.epos-stammblattgruppe')]
+      .find(s => ((s.querySelector('.epos-stammblattgruppe-titel') || {}).innerText || '').trim() === 'Konditionierung');
+    if (!g) return null;
+    const knopf = g.querySelector('button.epos-gebaeude-kondknopf');
+    const kb = knopf ? knopf.getBoundingClientRect() : null;
+    return {
+      zeilen: [...g.querySelectorAll('.epos-stammblattwert')].map(w => w.innerText.replace(/\s+/g, ' ').trim()),
+      knopf: knopf ? knopf.innerText.trim() : '', knopfMass: kb ? `${kb.width.toFixed(1)}×${kb.height.toFixed(1)}` : '',
+      knopfKlein: kb ? kb.width < 43.5 || kb.height < 43.5 : true,
+      quer: g.scrollWidth - g.clientWidth
+    };
+  });
+  if (!gruppe) { melde(marke, 'keine Gruppe „Konditionierung“ im Stammblatt'); await kontext.close(); return; }
+  console.log(`  Gruppe: ${gruppe.zeilen.length} Zustandszeilen (${gruppe.zeilen.join(' | ')}); Knopf „${gruppe.knopf}“ ${gruppe.knopfMass}; quer ${gruppe.quer}`);
+  if (gruppe.zeilen.length !== 5) melde(marke, `${gruppe.zeilen.length} statt 5 Zustandszeilen`);
+  if (gruppe.knopfKlein) melde(marke, `„Konditionierung…“ unter 44 px (${gruppe.knopfMass})`);
+  if (gruppe.quer > 0) melde(marke, `die Gruppe rollt quer (${gruppe.quer} px)`);
+  if (FOTOS) {
+    await seite.locator('.epos-stammblatt button.epos-gebaeude-kondknopf').scrollIntoViewIfNeeded();
+    await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_stammblatt.png` });
+  }
+
+  await seite.locator('.epos-stammblatt button.epos-gebaeude-kondknopf').click(); await schlaf(700);
+  const b = await seite.evaluate(() => {
+    const s = document.querySelector('.epos-gebaeude-admin section.epos-blatt');
+    return s ? { breit: s.classList.contains('epos-blatt--breit'), liste: !!document.querySelector('.epos-katalograhmen'),
+                 hinweis: ((document.querySelector('.epos-gebaeude-kondblatt-hinweis') || {}).innerText || '').trim() } : null;
+  });
+  if (!b) { melde(marke, '„Konditionierung…“ zeigt kein Blatt'); await kontext.close(); return; }
+  console.log(`  Blatt${b.breit ? ' (breit)' : ''}: Liste ${b.liste ? 'noch gezeichnet' : 'ausgeblendet'}; „${b.hinweis.slice(0, 60)}…“`);
+  if (!b.breit) melde(marke, 'das Blatt „Konditionierung“ ist nicht breit');
+  if (b.liste) melde(marke, 'die Verwaltung zeichnet Liste und Stammblatt unter dem Blatt');
+  blattPruefen(marke, await seite.evaluate(MESSEN, [ZIEL, TOL, '.epos-gebaeude-admin', 'section.epos-blatt']), 'Verwaltungsblatt');
+  const k = await seite.evaluate(KOND, '.epos-gebaeude-admin');
+  if (!k) melde(marke, 'keine Matrix im Blatt');
+  else {
+    kondPruefen(marke, k, 'Verwaltungsmatrix');
+    if (k.felder === 0 || k.anlegen === 0 || k.sperre) melde(marke, `Blatt: ${k.felder} Felder, ${k.anlegen} „Kalender anlegen“, Grund „${k.sperre}“`);
+  }
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_blatt.png` });
+
+  // Eine Zelle zählt als Änderung; Esc führt zurück, nichts ist verworfen.
+  const personen = seite.locator('.epos-kond-groessen [role=tab]').nth(4);
+  if (await personen.isVisible()) { await personen.click(); await schlaf(300); }
+  await seite.locator('section.epos-blatt label.epos-feld', { hasText: 'Personen · Nennwert' }).locator('input').fill('800');
+  await schlaf(400);
+  await seite.locator('section.epos-blatt .epos-blatt-kopf').focus();
+  await seite.keyboard.press('Escape'); await schlaf(500);
+  if (await zumBlatt.count() && await zumBlatt.first().isVisible()) { await zumBlatt.first().click(); await schlaf(400); }
+  const z = await seite.evaluate(() => ({
+    blatt: !!document.querySelector('.epos-gebaeude-admin section.epos-blatt'),
+    fuss: ((document.querySelector('.epos-stammblatt-hinweis') || {}).innerText || '').trim(),
+    speichern: [...document.querySelectorAll('.epos-leiste button')].find(x => x.innerText.trim() === 'Speichern')?.disabled
+  }));
+  console.log(`  Esc: Blatt ${z.blatt ? 'steht' : 'zu'}; Fuß „${z.fuss}“; Speichern ${z.speichern ? 'gesperrt' : 'frei'}`);
+  if (z.blatt) melde(marke, 'Esc führt nicht zurück');
+  if (!z.fuss.includes('geändert') || z.speichern) melde(marke, 'die Zelle zählt nicht als Änderung');
+
+  // Der ausgelieferte Satz: im Blatt nur Text (erst „Verwerfen“, sonst hält die Liste den Wechsel an).
+  await seite.locator('.epos-leiste button', { hasText: /^Verwerfen$/ }).click(); await schlaf(400);
+  // schmal: „‹ Liste“ zurück zur Liste
+  const zurueck = seite.locator('.epos-stammblatt button', { hasText: /Liste/ });
+  if (await zurueck.count() && await zurueck.first().isVisible()) { await zurueck.first().click(); await schlaf(400); }
+  await seite.locator('.epos-katalogliste tbody tr', { hasText: 'Probehaus ausgeliefert' }).locator('td', { hasText: 'Probehaus ausgeliefert' }).first().click();
+  await schlaf(500);
+  if (await zumBlatt.count() && await zumBlatt.first().isVisible()) { await zumBlatt.first().click(); await schlaf(400); }
+  await seite.locator('.epos-stammblatt button.epos-gebaeude-kondknopf').click(); await schlaf(600);
+  const l = await seite.evaluate(KOND, '.epos-gebaeude-admin');
+  console.log(`  Ausgeliefert: ${l ? l.felder + ' Felder, ' + l.texte + ' Texte, ' + l.anlegen + ' „Kalender anlegen“' : 'keine Matrix'}`);
+  if (!l || l.felder !== 0 || l.texte === 0 || l.anlegen !== 0) melde(marke, 'der ausgelieferte Satz steht im Blatt nicht als Text');
+  blattPruefen(marke, await seite.evaluate(MESSEN, [ZIEL, TOL, '.epos-gebaeude-admin', 'section.epos-blatt']), 'Blatt ausgeliefert');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_ausgeliefert.png` });
+
+  if (fehler.length) melde(marke, 'Fehler im Browser: ' + fehler.slice(0, 3).join(' | '));
+  await kontext.close();
+}
 
 // ------------------------------------------------------------ Ein Fall
 async function fall(browser, name, f) {
@@ -256,17 +476,7 @@ async function fall(browser, name, f) {
     for (const u of m.ueberdeckt) melde(marke, `Reiter ${i + 1}: Bedienziele überdecken sich: ${u}`);
     for (const h of m.heraus) melde(marke, `Reiter ${i + 1}: Bedienziel ragt aus dem Blatt: ${h}`);
     const k = await seite.evaluate(KOND);
-    if (k) {
-      const breit = k.breite >= 900;
-      console.log(`  Konditionierung: Behälter ${k.breite} px → ${k.spalten} Spalte(n), ${k.reiter} Reiter je Größe, ` +
-                  `${k.karten}/${k.alleKarten} Karten sichtbar, Felder ${k.felder}, Texte ${k.texte}, quer ${k.tabQuer}` +
-                  (k.sperre ? `; Grund „${k.sperre.slice(0, 50)}…“` : '') + (k.kopf.length ? `; Kopf: ${k.kopf.join(' | ')}` : ''));
-      if (breit && (k.spalten !== 5 || k.reiter !== 0 || k.karten !== k.alleKarten))
-        melde(marke, `Konditionierung breit (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
-      if (!breit && (k.spalten !== 1 || k.reiter !== 5 || k.karten !== Math.min(1, k.alleKarten)))
-        melde(marke, `Konditionierung schmal (${k.breite} px): ${k.spalten} Spalten, ${k.reiter} Reiter, ${k.karten}/${k.alleKarten} Karten`);
-      if (k.tabQuer > 0) melde(marke, `die Matrix rollt quer (${k.tabQuer} px)`);
-    }
+    if (k) kondPruefen(marke, k, 'Konditionierung');
     if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_${reiter ? 'reiter' + (i + 1) : 'blatt'}.png` });
   }
   if (reiter) { await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300); }
@@ -339,6 +549,7 @@ async function fall(browser, name, f) {
     if (!p.zustand.startsWith('angelegt')) melde(marke, '„Kalender anlegen“ legt nicht an');
     if (p.zurueck !== null) melde(marke, '„Zurücknehmen“ ist nach dem Anlegen noch gesperrt');
     if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_angelegt.png` });
+    await zoneProbe(seite, marke, name, f);
     await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
   }
   if (name === 'gesperrt' || name === 'neu' || name === 'ohnetabellen') {
@@ -466,7 +677,10 @@ try {
   browser = await chromium.launch({ headless: true });
   for (const name of FAELLE) {
     if (NUR && name !== NUR) continue;
-    for (const f of FENSTER) await fall(browser, name, f);
+    for (const f of FENSTER) {
+      if (name === 'verwaltung') await verwaltung(browser, f);
+      else await fall(browser, name, f);
+    }
   }
 } catch (e) {
   console.error('AUFBAUFEHLER: ' + (e && e.message ? e.message : e));

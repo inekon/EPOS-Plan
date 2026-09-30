@@ -34284,7 +34284,7 @@ Do you want to allow this?</value>
     <value>Default: {0} (area × room height)</value>
   </data>
   <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
-    <value>An empty field takes the value of the building – internal gains, occupants and, from two zones on, the heating power limit by the zone’s share of the floor area. Night hours, holidays and cooling always come from the building.</value>
+    <value>An empty field takes the value of the building – internal gains, occupants and, from two zones on, the heating power limit by the zone’s share of the floor area. Holidays and cooling always come from the building; setpoints, night hours and ventilation are in the zone’s defaults matrix.</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>An unheated zone floats freely: no heating, no cooling, no set points.</value>

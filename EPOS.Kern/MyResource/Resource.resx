@@ -34291,7 +34291,7 @@ Möchten Sie das zulassen?</value>
     <value>Vorgabe: {0} (Fläche × Raumhöhe)</value>
   </data>
   <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
-    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.</value>
+    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Ferien und Kühlung kommen immer vom Gebäude; Sollwerte, Nachtzeit und Lüftung stehen in der Vorgabe-Matrix der Zone.</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
