@@ -40605,5 +40605,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_SAISON" xml:space="preserve">
     <value>Season of the {0} column: {1} as a day of a common year (1 = 1 January, 365 = 31 December). Heating or cooling runs within the season; both empty = all year.</value>
   </data>
+  <data name="KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Hours with night purge ventilation:</value>
+  </data>
+  <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Night purge ventilation</value>
+  </data>
 </root>
 

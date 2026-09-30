@@ -40612,5 +40612,11 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_SAISON" xml:space="preserve">
     <value>Saison der Spalte {0}: {1} als Tag im Gemeinjahr (1 = 1. Januar, 365 = 31. Dezember). Innerhalb der Saison wird geheizt bzw. gekühlt; beide leer = ganzjährig.</value>
   </data>
+  <data name="KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Stunden mit Nachtauskühlung:</value>
+  </data>
+  <data name="KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG" xml:space="preserve">
+    <value>Nachtauskühlung</value>
+  </data>
 </root>
 

@@ -61702,11 +61702,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtauskühlung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_SP_ZONE_NACHTAUSKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche ähnelt.
         /// </summary>
         public static string KOND_LBL_STANDARDWOCHE {
             get {
                 return ResourceManager.GetString("KOND_LBL_STANDARDWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Nachtauskühlung: ähnelt.
+        /// </summary>
+        public static string KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG", resourceCulture);
             }
         }
         
