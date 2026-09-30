@@ -144,12 +144,16 @@
                         @if (KuehlSperrgrund is string grund && !Daten.Kuehlbetrieb)
                         {
                             <label class="epos-schalter epos-wp-kuehlbetrieb" title="@grund">
-                                <input class="epos-schalter-kasten" type="checkbox" checked="false"
+                                <input class="epos-schalter-kasten" type="checkbox" checked="@false"
                                        aria-disabled="true" @onclick:preventDefault
                                        @onclick="KuehlbetriebGesperrt" />
                                 <span class="epos-feld-text">@Texte.LabelKuehlbetrieb</span>
                             </label>
-                            <Herleitungszeile Text="@grund" />
+                            @* Der Grund steht EINMAL: nach dem Klick als Hinweis darunter, sonst als Zeile. *@
+                            @if (_kuehlMeldung.Length == 0)
+                            {
+                                <Herleitungszeile Text="@grund" />
+                            }
                             @if (NennkuehlleistungOhneKennlinie)
                             {
                                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@Texte.WarnungNennkuehlleistungOhneKennlinie" />

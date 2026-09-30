@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Waermepumpe;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -47,6 +48,43 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
             .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
             .Add(x => x.Aktiv, aktiv)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
+
+    /// <summary>
+    /// Anwenderbefund 30.09.2026: Ohne Kühlkennlinie stand der gesperrte Schalter „Maschine auch
+    /// zum Kühlen benutzen" ANGEHAKT da, obwohl der Kühlbetrieb aus ist — das Markup schrieb
+    /// <c>checked="false"</c>, und in HTML heißt schon das Attribut „angehakt". Er steht jetzt
+    /// ohne Haken, und der Grund erscheint nach dem Klick EINMAL.
+    /// </summary>
+    [Fact]
+    public void Der_gesperrte_Kuehlschalter_steht_ohne_Haken_und_nennt_den_Grund_einmal()
+    {
+        const string grund = "Zu diesem Gerät liegen keine Kühlkenndaten vor.";
+        Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
+        WaermepumpeAnlageDaten daten = Voll();
+        daten.Kuehlbetrieb = false;
+        var cut = Render<WaermepumpeKonfiguration>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Traegerkatalog, Array.Empty<EnergietraegerWahl.Eintrag>())
+            .Add(x => x.Kuehlung, new WaermepumpeKuehlGaben { Sperrgrund = _ => grund }));
+
+        IElement kasten = cut.Find(".epos-wp-kuehlbetrieb input[type=checkbox]");
+        Assert.False(kasten.HasAttribute("checked"));
+        Assert.Equal("true", kasten.GetAttribute("aria-disabled"));
+        Assert.Equal(1, Vorkommen(cut.Markup, grund) - Vorkommen(cut.Find(".epos-wp-kuehlbetrieb").OuterHtml, grund));
+
+        kasten.Click();
+
+        Assert.False(cut.Find(".epos-wp-kuehlbetrieb input[type=checkbox]").HasAttribute("checked"));
+        Assert.False(daten.Kuehlbetrieb);
+        Assert.Equal(1, Vorkommen(cut.Markup, grund) - Vorkommen(cut.Find(".epos-wp-kuehlbetrieb").OuterHtml, grund));
+    }
+
+    private static int Vorkommen(string text, string teil)
+    {
+        int n = 0;
+        for (int i = text.IndexOf(teil, StringComparison.Ordinal); i >= 0; i = text.IndexOf(teil, i + teil.Length, StringComparison.Ordinal)) n++;
+        return n;
+    }
 
     // =================================================================================
     // Feldbestand
