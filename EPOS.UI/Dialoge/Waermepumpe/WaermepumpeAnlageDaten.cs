@@ -45,6 +45,14 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Rücklauftemperatur [°C] — frei eingebbar, die Liste ist ein Vorschlag.</summary>
     public int? Ruecklauf { get; set; }
 
+    /// <summary>
+    /// Die Herkunft eines VORBELEGTEN Rücklaufs (Anwenderauftrag 30.09.2026) — fertig
+    /// formuliert von der Hülle (Kern: <c>AnlagenTemperaturen.WaermepumpeRuecklaufHerleitung</c>),
+    /// etwa „Rücklauf vorbelegt: Vorlauf 55 °C − 10 K = 45 °C (Rückfall-Spreizung).". Leer =
+    /// der Rücklauf ist der der Anlage; eine Eingabe leert es.
+    /// </summary>
+    public string RuecklaufHerleitung { get; set; } = "";
+
     // --- Spitzenlast und Betrieb -----------------------------------------------
 
     /// <summary>Wärmeerzeuger Spitzenlast (Heizstab) vorhanden?</summary>
@@ -61,9 +69,6 @@ public sealed class WaermepumpeAnlageDaten
 
     /// <summary>Sperrzeit bis [h] — Pflichtangabe.</summary>
     public int? SperrzeitBis { get; set; }
-
-    /// <summary>Nutzungsdauer [h/Tag] — Pflichtangabe.</summary>
-    public int? Nutzungszeit { get; set; }
 
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
@@ -169,12 +174,12 @@ public sealed class WaermepumpeAnlageDaten
         IdWp = IdWp,
         Vorlauf = Vorlauf,
         Ruecklauf = Ruecklauf,
+        RuecklaufHerleitung = RuecklaufHerleitung,
         Heizstab = Heizstab,
         HeizstabLeistung = HeizstabLeistung,
         Sperrung = Sperrung,
         SperrzeitVon = SperrzeitVon,
         SperrzeitBis = SperrzeitBis,
-        Nutzungszeit = Nutzungszeit,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,

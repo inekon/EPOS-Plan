@@ -37,14 +37,14 @@ public sealed class ErzeugerProjektKiSicht : IKiFeldtafel
     public int? Vorlauf
     {
         get => Zeile?.Vorlauf;
-        set { if (Zeile is ErzeugerZeile z) z.Vorlauf = value; }
+        set { if (Zeile is ErzeugerZeile z) { z.Vorlauf = value; z.TemperaturHerleitung = ""; } }
     }
 
     /// <summary>Rücklauftemperatur der Anlage [°C].</summary>
     public int? Ruecklauf
     {
         get => Zeile?.Ruecklauf;
-        set { if (Zeile is ErzeugerZeile z) z.Ruecklauf = value; }
+        set { if (Zeile is ErzeugerZeile z) { z.Ruecklauf = value; z.TemperaturHerleitung = ""; } }
     }
 
     /// <summary>Die zugeordnete Energieträgervariante (Wahlfeld).</summary>

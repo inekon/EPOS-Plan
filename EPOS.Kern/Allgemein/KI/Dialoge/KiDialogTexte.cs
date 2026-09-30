@@ -423,8 +423,6 @@
         internal static string WpaVorlaufErl => MyResource.Resource.KI_DLG_WPA_VORLAUF_ERL;
         internal static string WpaRuecklaufName => MyResource.Resource.WPA_LBL_RUECKLAUF;
         internal static string WpaRuecklaufErl => MyResource.Resource.KI_DLG_WPA_RUECKLAUF_ERL;
-        internal static string WpaNutzungsdauerName => MyResource.Resource.WPA_LBL_NUTZUNGSZEIT;
-        internal static string WpaNutzungsdauerErl => MyResource.Resource.KI_DLG_WPA_NUTZUNGSDAUER_ERL;
 
         internal static string WpaHeizstabName => MyResource.Resource.WPA_CHK_HEIZSTAB;
         internal static string WpaHeizstabErl => MyResource.Resource.KI_DLG_WPA_HEIZSTAB_ERL;

@@ -74,7 +74,6 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Sperrung = false,
         SperrzeitVon = 0,
         SperrzeitBis = 0,
-        Nutzungszeit = 24,
         BivalenterBetrieb = false,
         Betriebsart = "",
         Abschaltpunkt = -5,
@@ -584,9 +583,14 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                  {
                      "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
                      "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
-                     "Vorlauf", "Rücklauf", "Nutzungsdauer"
+                     "Vorlauf", "Rücklauf"
                  })
             Assert.Contains(soll, texte);
+
+        // Die NUTZUNGSDAUER steht nicht mehr hier (Anwenderauftrag 30.09.2026: „Nutzungsdauer
+        // soll in Kostendialog und nicht in diesem sein.") — sie wird an den
+        // Investitionspositionen des Kostendialogs gepflegt.
+        Assert.DoesNotContain("Nutzungsdauer", texte);
 
         // EIN Heizstabfeld, nicht zwei (16.09.2026): Das eigene Feld der Anlage
         // („Leistung Heizstab") ist mit dem des Bausteins VERSCHMOLZEN — beide schreiben
@@ -619,10 +623,10 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             .Add(x => x.TitelText, "Detail view")
             .Add(x => x.GruppeKonfiguration, "Configuration")
             .Add(x => x.BtnKonfigurationText, "Configuration…")
-            .Add(x => x.LabelNutzungszeit, "Duration of use"));
+            .Add(x => x.LabelRuecklauf, "Return"));
 
         Assert.Equal("Detail view", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Contains("Duration of use", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
+        Assert.Contains("Return", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
 
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Configuration…").Click();
         Assert.Equal("Configuration", cut.Find(".epos-ueberlagerung-titel").TextContent);
@@ -932,14 +936,18 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Contains("über der Rücklauftemperatur", cut.Find(".epos-warnbanner").TextContent);
     }
 
+    /// <summary>
+    /// Die Pflicht-Ganzzahlen des OK-Knopfs. Es waren vier; die Nutzungsdauer ist mit dem
+    /// Feld aus dem Dialog gegangen (Anwenderauftrag 30.09.2026) — sie gehört in den
+    /// Kostendialog und ist dort keine Pflichtangabe dieses Dialogs.
+    /// </summary>
     [Fact]
-    public void Jede_der_vier_Pflicht_Ganzzahlen_wird_beim_Namen_genannt()
+    public void Jede_der_drei_Pflicht_Ganzzahlen_wird_beim_Namen_genannt()
     {
         (string Feld, Action<WaermepumpeAnlageDaten> Leeren)[] faelle =
         {
             ("Sperrzeit von",     d => d.SperrzeitVon = null),
             ("Sperrzeit bis",     d => d.SperrzeitBis = null),
-            ("Nutzungsdauer",     d => d.Nutzungszeit = null),
             ("Leistung Heizstab", d => d.HeizstabLeistung = null)
         };
 
@@ -1278,10 +1286,10 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
     /// <summary>
     /// EINE BESTANDSZEILE, wie sie „Ändern.." aus <c>Tab_Energieanlagen</c> holt:
-    /// Kenndaten gefüllt, aber <c>Rücklauf</c> nie gepflegt (0). Der Weg „Neu.."
-    /// setzt wenigstens den Vorlauf aus den Kennlinien
-    /// (<c>AnlagenTemperaturen.VorlaufAusKennlinien</c>) — für den Rücklauf gibt es
-    /// keine solche Regel, und eine Altzeile trägt dort schlicht die 0.
+    /// Kenndaten gefüllt, aber <c>Rücklauf</c> nie gepflegt (0). So kommt sie OHNE die
+    /// Hülle in den Dialog — die Hülle belegt den Rücklauf seit dem 30.09.2026 vor
+    /// (<c>TemperaturVorbelegung.Waermepumpe</c>, Fälle „Vorbelegung" unten); die Fälle
+    /// hier halten fest, dass der Dialog selbst einen Rücklauf 0 weiter meldet.
     /// </summary>
     private static WaermepumpeAnlageDaten Bestandszeile()
     {
@@ -1328,6 +1336,108 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         Assert.True(ergebnis);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    // =====================================================================
+    //  Vorbelegung des Rücklaufs (Anwenderauftrag 30.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Bestandszeile, wie die Hülle sie in den Dialog reicht: Rücklauf vorbelegt.</summary>
+    private static WaermepumpeAnlageDaten Vorbelegt()
+    {
+        var d = Bestandszeile();
+        Assert.True(TemperaturVorbelegung.Waermepumpe(d));
+        return d;
+    }
+
+    private IRenderedComponent<WaermepumpeAnlageDialog> MitVorbelegung(
+        WaermepumpeAnlageDaten daten, Action<bool>? geschlossen = null)
+        => Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Vorlaeufe, _ => new[] { 35, 45, 55 })
+            .Add(x => x.TemperaturenPruefen, WieDerKern)
+            .Add(x => x.RuecklaufVorbelegen, d => TemperaturVorbelegung.Waermepumpe(d))
+            .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
+
+    private static AngleSharp.Dom.IElement Auslegung(IRenderedComponent<WaermepumpeAnlageDialog> cut)
+        => cut.Find(".epos-wp-spalte--mitte");
+
+    /// <summary>
+    /// <b>Die Bestandszeile mit Rücklauf 0</b> kommt vorbelegt: Vorlauf 35 °C − 10 K = 25 °C,
+    /// die Zeile darunter nennt die Herkunft, und OK geht durch — die Warnung „Die
+    /// Rücklauftemperatur muss größer als 0 °C sein" gibt es für sie nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Eine_Bestandszeile_mit_Ruecklauf_0_kommt_vorbelegt_und_geht_durch()
+    {
+        bool? ergebnis = null;
+        var cut = MitVorbelegung(Vorbelegt(), b => ergebnis = b);
+
+        var block = Auslegung(cut);
+        Assert.Equal("25", block.QuerySelector("input[inputmode=numeric]")!.GetAttribute("value"));
+        Assert.Contains("Rücklauf vorbelegt: Vorlauf 35 °C − 10 K = 25 °C (Rückfall-Spreizung).",
+                        block.QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+
+        Knopf(cut, "OK").Click();
+
+        Assert.True(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// Ein anderer Vorlauf zieht den UNBERÜHRTEN Vorschlag nach — sonst ergäbe ein tieferer
+    /// Vorlauf ein vertauschtes Paar, das niemand eingegeben hat.
+    /// </summary>
+    [Fact]
+    public void Ein_anderer_Vorlauf_zieht_den_unberuehrten_Vorschlag_nach()
+    {
+        var daten = Vorbelegt();
+        var cut = MitVorbelegung(daten);
+
+        Auslegung(cut).QuerySelector("select")!.Change("55");
+
+        Assert.Equal(55, daten.Vorlauf);
+        Assert.Equal(45, daten.Ruecklauf);
+        Assert.Contains("Rücklauf vorbelegt: Vorlauf 55 °C − 10 K = 45 °C (Rückfall-Spreizung).",
+                        Auslegung(cut).QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// Eine Eingabe macht den Rücklauf zu dem des Anwenders: Die Vorschlagszeile geht, und
+    /// ein anderer Vorlauf lässt ihn stehen.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_im_Ruecklauf_nimmt_den_Vorschlag_weg()
+    {
+        var daten = Vorbelegt();
+        var cut = MitVorbelegung(daten);
+
+        Auslegung(cut).QuerySelector("input[inputmode=numeric]")!.Input("30");
+        Auslegung(cut).QuerySelector("select")!.Change("45");
+
+        Assert.Equal("", daten.RuecklaufHerleitung);
+        Assert.Equal(30, daten.Ruecklauf);
+        Assert.DoesNotContain(Auslegung(cut).QuerySelectorAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Rücklauf vorbelegt", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Die Vorbelegung greift nur bei Rücklauf 0/leer und mit Vorlauf — ein eingetragener
+    /// Rücklauf bleibt, ohne Vorlauf gibt es nichts, woraus er folgen könnte.
+    /// </summary>
+    [Fact]
+    public void Die_Vorbelegung_laesst_einen_eingetragenen_Ruecklauf_und_eine_Zeile_ohne_Vorlauf_stehen()
+    {
+        var gepflegt = Voll();                          // 35/28
+        Assert.False(TemperaturVorbelegung.Waermepumpe(gepflegt));
+        Assert.Equal(28, gepflegt.Ruecklauf);
+        Assert.Equal("", gepflegt.RuecklaufHerleitung);
+
+        var ohneVorlauf = Bestandszeile();
+        ohneVorlauf.Vorlauf = null;
+        Assert.False(TemperaturVorbelegung.Waermepumpe(ohneVorlauf));
+        Assert.Equal(0, ohneVorlauf.Ruecklauf);
     }
 
     /// <summary>
@@ -1401,22 +1511,24 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     /// selbst trägt die Mängelklasse — ein Band allein hilft in einem Dialog mit
     /// dreißig Feldern nicht weiter.
     ///
-    /// <para>Geprüft an der Nutzungsdauer: Sie steht im Dialogkörper. Ein Mangel an
-    /// einem Feld der KONFIGURATION öffnet seit dem 16.09.2026 stattdessen deren
-    /// Überlagerung (<c>OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt</c>).</para>
+    /// <para>Geprüft an der Auslegung: Sie steht im Dialogkörper. Bis zum 30.09.2026 war
+    /// es die Nutzungsdauer, die seither im Kostendialog steht; ein eingetragenes, aber
+    /// vertauschtes Paar belegt niemand vor, es bleibt ein Mangel. Ein Mangel an einem
+    /// Feld der KONFIGURATION öffnet seit dem 16.09.2026 stattdessen deren Überlagerung
+    /// (<c>OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt</c>).</para>
     /// </summary>
     [Fact]
     public void W7_B_2_Das_bemaengelte_Feld_ist_markiert()
     {
         var daten = Voll();
-        daten.Nutzungszeit = null;
+        daten.Ruecklauf = 40;           // über dem Vorlauf 35
         var cut = Aufbauen(daten);
 
         Knopf(cut, "OK").Click();
 
-        Assert.Contains("Nutzungsdauer", cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
-        var mangel = cut.Find(".epos-feldhuelle--mangel .epos-feld");
-        Assert.Contains("Nutzungsdauer", mangel.TextContent);
+        Assert.Contains("über der Rücklauftemperatur", cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
+        Assert.Contains(cut.FindAll(".epos-feldhuelle--mangel .epos-feld"),
+                        e => e.TextContent.Contains("Rücklauf", StringComparison.Ordinal));
     }
 
     // =====================================================================

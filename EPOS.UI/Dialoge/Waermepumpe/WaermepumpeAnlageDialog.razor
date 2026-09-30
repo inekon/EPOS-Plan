@@ -12,8 +12,9 @@
 
      LINKS  (x 16..560)  Auswahl (label_WP 16/13, listBox_WP 21/40,
                          btn_Katalog 286/10).
-     MITTE  (x 537..748) groupBox3 "Auslegung fuer Verteilung" (32, 211x111) und
-                         darunter "Nutzungsdauer 20 a" (label31 532/158).
+     MITTE  (x 537..748) groupBox3 "Auslegung fuer Verteilung" (32, 211x111); die
+                         "Nutzungsdauer 20 a" darunter (label31 532/158) gehoert
+                         seit dem 30.09.2026 in den Kostendialog.
      RECHTS (x 693..1122) groupBox2 "Waermepumpen Kenndaten" (32, 348x320) -
                          darunter "Kenndaten Kennlinien:" (label24 693/355) und
                          tabControl1 (693/381, 429x260).
@@ -52,10 +53,11 @@
    meldete einen Fehler; nur stand das Band ganz oben und der Knopf ganz unten
    in einer rollenden Ueberlagerung. Seither sitzen Band und Leiste in DERSELBEN
    Fussleiste (.epos-dialog-fuss), und das bemaengelte Feld traegt die
-   Mangelklasse. Der haeufigste Grund bei einer Bestandszeile: Ruecklauf 0 -
-   ProjektPuffer.TemperaturenPruefen verwirft ihn ("groesser als 0 grad C"),
-   und "Neu.." faellt nicht darauf herein, weil AnlagenTemperaturen wenigstens
-   den Vorlauf setzt.
+   Mangelklasse. Der haeufigste Grund bei einer Bestandszeile war Ruecklauf 0 -
+   ProjektPuffer.TemperaturenPruefen verwirft ihn ("groesser als 0 grad C").
+   Seit dem 30.09.2026 belegt die Huelle einen Ruecklauf 0/leer aus dem Vorlauf
+   vor (Kern: AnlagenTemperaturen.WaermepumpeRuecklaufVorgabe, Vorlauf - 10 K),
+   und die Zeile darunter nennt die Herkunft.
 
    DIE BETRIEBSART WIRD TOLERANT GELESEN (zweiter Teil von W7-B-2). Der
    Vorlaeufer hatte eine FREI BESCHREIBBARE ComboBox und schrieb ihren Text
@@ -209,24 +211,32 @@
                         <KindInhalt>
                             <span class="@Huelle(MANGEL_TEMPERATUR)">
                                 <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
-                                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
+                                             Auswahl="@Daten.Vorlauf" AuswahlChanged="BeiVorlauf"
                                              Aktiv="@(!NurLesen)" />
                             </span>
                             <span class="@Huelle(MANGEL_TEMPERATUR)">
                                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
                                               Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                                              WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
+                                              WertChanged="BeiRuecklauf" Aktiv="@(!NurLesen)" />
                             </span>
+
+                            @* DIE VORBELEGUNG DES RUECKLAUFS (Anwenderauftrag 30.09.2026): Stand
+                               er auf 0 oder leer, hat die Huelle ihn aus dem Vorlauf vorbelegt
+                               (Kern: AnlagenTemperaturen.WaermepumpeRuecklaufVorgabe), und die
+                               Zeile sagt wie. Eine Eingabe nimmt sie weg; ein anderer Vorlauf
+                               zieht den noch unberuehrten Vorschlag nach. *@
+                            @if (!string.IsNullOrEmpty(Daten.RuecklaufHerleitung))
+                            {
+                                <Herleitungszeile Text="@Daten.RuecklaufHerleitung" />
+                            }
                             <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
 
-                            @* Im Vorbild steht die Nutzungsdauer UNTER der Auslegung
-                               (label31 532/158) und traegt "a" - Jahre; "h/Tag" gehoert
-                               zur Sperrzeit (label35 492/232). *@
-                            <span class="@Huelle(MANGEL_NUTZUNG)">
-                                <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitJahr"
-                                              Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
-                                              WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
-                            </span>
+                            @* HIER STAND DIE NUTZUNGSDAUER (Anwenderauftrag 30.09.2026:
+                               „Nutzungsdauer soll in Kostendialog und nicht in diesem sein.").
+                               Das Feld schrieb Tab_Energieanlagen.Nutzungszeit, die keine
+                               Rechnung liest; die Wirtschaftlichkeit nimmt die Nutzungsdauer
+                               der Kostenpositionen (Tab_ProjektWerte.Nutzungsdauer), gepflegt
+                               ueber „Investitionskosten…" in der Knopfzeile der Kenndaten. *@
 
                             @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): die Zeile
                                „Senken: …", FERTIG FORMULIERT von der Huelle (Kern:
@@ -626,6 +636,15 @@
     /// </summary>
     [Parameter] public Func<int?, int?, string?>? TemperaturenPruefen { get; set; }
 
+    /// <summary>
+    /// Belegt einen Rücklauf 0/leer aus dem Vorlauf vor und setzt
+    /// <c>RuecklaufHerleitung</c> (Kern: <c>AnlagenTemperaturen.WaermepumpeRuecklaufVorgabe</c>,
+    /// Anwenderauftrag 30.09.2026). Die Hülle hat das beim Aufbau schon getan; der Dialog
+    /// ruft den Weg noch einmal, wenn ein anderer Vorlauf gewählt wird und der Vorschlag
+    /// unberührt ist. Ohne Delegat bleibt der Rücklauf, wie er steht.
+    /// </summary>
+    [Parameter] public Action<WaermepumpeAnlageDaten>? RuecklaufVorbelegen { get; set; }
+
     /// <summary>Steht eine gespeicherte Anlagenzeile? Entscheidet über die Kostenleiste.</summary>
     [Parameter] public Func<bool>? KostenBereit { get; set; }
 
@@ -804,7 +823,6 @@
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
 
-    [Parameter] public string LabelNutzungszeit { get; set; } = "Nutzungsdauer";
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
 
     /// <summary>Beschriftung des Extrapolationsschalters (<c>SIM_EXTRAPOLATION_SCHALTER</c>).</summary>
@@ -846,9 +864,6 @@
         "Es gibt keinen Katalogsatz gleichen Namens — die Kennlinien lassen sich nicht übernehmen.";
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
-
-    /// <summary>Einheit der Nutzungsdauer — <c>label34</c> des Vorbilds, Jahre.</summary>
-    [Parameter] public string EinheitJahr { get; set; } = "a";
 
     [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
 
@@ -1031,7 +1046,6 @@
     private const string MANGEL_VON = "VON";
     private const string MANGEL_BIS = "BIS";
     private const string MANGEL_KUEHLUNG = "KUEHLUNG";
-    private const string MANGEL_NUTZUNG = "NUTZUNG";
     private const string MANGEL_HEIZSTAB = "HEIZSTAB";
 
     private string _mangel = "";
@@ -1291,6 +1305,29 @@
 
     /// <summary>Das Band ist verfallen — der Dialog vergisst seine Meldung.</summary>
     private void MeldungVergessen() => _kennlinienMeldung = "";
+
+    /// <summary>
+    /// Ein anderer Vorlauf. Steht im Rücklauf noch der unberührte VORSCHLAG (die Zeile
+    /// „Rücklauf vorbelegt …" ist da), zieht er mit — sonst ergäbe ein tieferer Vorlauf
+    /// ein vertauschtes Paar, das der OK-Knopf meldet, obwohl niemand es eingegeben hat.
+    /// Ein vom Anwender eingetragener Rücklauf bleibt stehen.
+    /// </summary>
+    private void BeiVorlauf(int? wert)
+    {
+        Daten.Vorlauf = wert;
+        if (RuecklaufVorbelegen is null || string.IsNullOrEmpty(Daten.RuecklaufHerleitung)) return;
+
+        Daten.Ruecklauf = null;
+        Daten.RuecklaufHerleitung = "";
+        RuecklaufVorbelegen(Daten);
+    }
+
+    /// <summary>Eine Eingabe macht den Rücklauf zu dem des Anwenders — die Vorschlagszeile geht.</summary>
+    private void BeiRuecklauf(int? wert)
+    {
+        Daten.Ruecklauf = wert;
+        Daten.RuecklaufHerleitung = "";
+    }
 
     /// <summary>
     /// Eine ECHTE Nutzerwahl: Sie wechselt die Geräte-Id auf die Stammkatalog-Id UND
@@ -1651,7 +1688,8 @@
 
         if (konfig is not null) return (konfig, konfigFeld);
 
-        if (Daten.Nutzungszeit is null) return (string.Format(WarnungFeldFormat, LabelNutzungszeit), MANGEL_NUTZUNG);
+        // Die Nutzungsdauer ist KEINE Pflichtangabe dieses Dialogs mehr (Anwenderauftrag
+        // 30.09.2026) - sie steht im Kostendialog, an den Investitionspositionen.
         if (Daten.HeizstabLeistung is null) return (string.Format(WarnungFeldFormat, LabelPHeizstabKurz), MANGEL_HEIZSTAB);
 
         // Die Bivalenztemperatur ist je nach Betriebsart ausgeblendet - ein leeres

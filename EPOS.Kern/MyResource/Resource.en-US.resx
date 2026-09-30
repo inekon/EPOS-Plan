@@ -12360,6 +12360,9 @@ Overwrite it anyway?</value>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Module</value>
   </data>
+  <data name="HZK_GRP_AUSLEGUNG" xml:space="preserve">
+    <value>Design for distribution</value>
+  </data>
   <data name="HZK_LBL_NAME" xml:space="preserve">
     <value>Name:</value>
   </data>
@@ -12980,9 +12983,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="WPA_LBL_BIS" xml:space="preserve">
     <value>Blackout period until</value>
-  </data>
-  <data name="WPA_LBL_NUTZUNGSZEIT" xml:space="preserve">
-    <value>Duration of use</value>
   </data>
   <data name="WPA_LBL_BIVALENT" xml:space="preserve">
     <value>Bivalent operation</value>
@@ -22613,9 +22613,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_RUECKLAUF_ERL" xml:space="preserve">
     <value>Return temperature of the system in °C, whole number and freely editable; the values shown are a suggestion.</value>
   </data>
-  <data name="KI_DLG_WPA_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>Service life of this system in years; it is mandatory — without it the OK button reports.</value>
-  </data>
   <data name="KI_DLG_WPA_HEIZSTAB_ERL" xml:space="preserve">
     <value>Should the immersion heater of this heat pump be included in the run? Yes requires a stored heater output.</value>
   </data>
@@ -26215,6 +26212,15 @@ Do you want to allow this?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (created from the project demand when saved)</value>
+  </data>
+  <data name="ANL_TEMP_VORGABE_KESSEL" xml:space="preserve">
+    <value>Default {0}/{1} °C — the simulation uses this pair when nothing is entered.</value>
+  </data>
+  <data name="ANL_TEMP_AUS_KESSEL" xml:space="preserve">
+    <value>From the boiler data record: {0}/{1} °C — the simulation uses this pair when nothing is entered.</value>
+  </data>
+  <data name="ANL_TEMP_VORGABE_WP_RUECKLAUF" xml:space="preserve">
+    <value>Return pre-filled: flow {1} °C − {2} K = {0} °C (fallback spread).</value>
   </data>
   <data name="ADM_KOPIE_NAME" xml:space="preserve">
     <value>{0} (copy)</value>

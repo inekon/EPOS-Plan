@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -175,6 +176,189 @@ namespace WindowsFormsApplication1
             item.Vorlauf = stufe;
             return true;
         }
+
+        // =================================================================================
+        // Die Vorbelegung im Projektdialog (Anwenderauftrag 30.09.2026)
+        // =================================================================================
+        //
+        // „Dialogfelder Vorlauf und Rücklauftemperatur übersichtlicher und Vorbelegung,
+        // falls 0, mit sinnvollen Vorgaben." Der Dialog zeigt bei einem unvollständigen
+        // Paar das Paar, mit dem die Simulation OHNE Eintrag rechnet, und die Hülle legt es
+        // in den Feldsatz — mit OK wird es gespeichert. Die Regel steht hier EINMAL; die
+        // Zahlen sind die der Simulation und werden referenziert, nicht abgeschrieben.
+
+        /// <summary>
+        /// Vorlauf der Vorgabe eines Heizkessels [°C] — der Rückfall der Simulation
+        /// (<see cref="SimulationControl.KESSEL_VORLAUF_RUECKFALL"/>, 70 °C).
+        /// </summary>
+        public const int KESSEL_VORLAUF_VORGABE = (int)SimulationControl.KESSEL_VORLAUF_RUECKFALL;
+
+        /// <summary>
+        /// Rücklauf der Vorgabe eines Heizkessels [°C] — der Rückfall der Simulation
+        /// (<see cref="SimulationControl.KESSEL_RUECKLAUF_RUECKFALL"/>, 50 °C), zugleich der
+        /// Rückfall der Brennwertkennlinie (<see cref="Kesselkennlinie.RUECKLAUF_RUECKFALL_C"/>).
+        /// </summary>
+        public const int KESSEL_RUECKLAUF_VORGABE = (int)SimulationControl.KESSEL_RUECKLAUF_RUECKFALL;
+
+        /// <summary>
+        /// Spreizung [K], mit der ein fehlender Rücklauf der WÄRMEPUMPE aus ihrem Vorlauf
+        /// vorbelegt wird — die generische Rückfall-Spreizung des Laufs für einen Speicher
+        /// ohne gepflegtes Paar (<see cref="Warnkriterien.RUECKFALL_DELTA_T"/>, dieselben
+        /// 10 K wie in <c>SimulationPufferspeicher.Init</c>).
+        ///
+        /// <para><b>Warum diese Zahl.</b> Für den Rücklauf der Wärmepumpe gibt es im Kern
+        /// keinen Rechenweg (die Kennlinienwahl liest nur den Vorlauf) und damit auch keine
+        /// Rückfallregel. Das Haus kennt genau eine Spreizung für „kein Paar gepflegt" —
+        /// diese. Ein Puffer, der sein Paar später aus der Systemvorgabe des Projekts erbt
+        /// (<c>PufferSpCtrl.SystemRuecklauf</c>), bekommt damit dieselbe nutzbare
+        /// Kapazität, mit der der Lauf ihn ohne Paar ohnehin rechnen würde.</para>
+        /// </summary>
+        public const int WAERMEPUMPE_SPREIZUNG_VORGABE_K = (int)Warnkriterien.RUECKFALL_DELTA_T;
+
+        /// <summary>Woher das Temperaturpaar einer Kesselzeile im Dialog stammt.</summary>
+        public enum PaarHerkunft
+        {
+            /// <summary>
+            /// Die Anlagenzeile trägt beide Werte (&gt; 0) — nichts wird vorbelegt, auch
+            /// nicht bei einem vertauschten Paar: Das ist eine Eingabe des Anwenders.
+            /// </summary>
+            Anlage,
+
+            /// <summary>Der Kesseldatensatz (Projektkopie bzw. Katalogsatz) trägt ein vollständiges Paar.</summary>
+            Geraet,
+
+            /// <summary>Weder Anlage noch Kessel tragen ein Paar — es gilt die Vorgabe 70/50 °C.</summary>
+            Vorgabe
+        }
+
+        /// <summary>Das Paar, das der Dialog zeigt, und seine Herkunft.</summary>
+        public readonly struct PaarVorbelegung
+        {
+            public PaarVorbelegung(int? vorlauf, int? ruecklauf, PaarHerkunft herkunft)
+            {
+                Vorlauf = vorlauf;
+                Ruecklauf = ruecklauf;
+                Herkunft = herkunft;
+            }
+
+            /// <summary>Vorlauf [°C]; bei <see cref="PaarHerkunft.Anlage"/> der Wert der Zeile.</summary>
+            public int? Vorlauf { get; }
+
+            /// <summary>Rücklauf [°C]; bei <see cref="PaarHerkunft.Anlage"/> der Wert der Zeile.</summary>
+            public int? Ruecklauf { get; }
+
+            /// <summary>Woher das Paar stammt.</summary>
+            public PaarHerkunft Herkunft { get; }
+
+            /// <summary>Wurde vorbelegt — trägt die Zeile jetzt etwas, das der Anwender nicht eingegeben hat?</summary>
+            public bool Vorbelegt => Herkunft != PaarHerkunft.Anlage;
+        }
+
+        /// <summary>
+        /// <b>Ist das Paar einer Anlagenzeile unvollständig</b> — steht in einem der beiden
+        /// Felder 0 oder nichts? Nur dann wird vorbelegt. Ein vollständig eingetragenes,
+        /// aber vertauschtes Paar (50/70) ist KEIN Fall der Vorbelegung: Es ist eine Eingabe,
+        /// und die überschreibt niemand still.
+        /// </summary>
+        public static bool PaarUnvollstaendig(int? vorlauf, int? ruecklauf)
+            => !(vorlauf > 0) || !(ruecklauf > 0);
+
+        /// <summary>
+        /// <b>Die Vorbelegung eines Heizkessels</b> — rein, ohne Datenbank. Die Kette ist die
+        /// der Simulation ohne Eintrag (<c>SimulationControl.KesselTemperaturpaarGepflegt</c>
+        /// und ihr Rückfall): erst das Paar der ANLAGE, dann das des KESSELS
+        /// (<c>Tab_Heizkessel</c> über <c>ID_Kessel</c>), sonst die Vorgabe
+        /// <see cref="KESSEL_VORLAUF_VORGABE"/>/<see cref="KESSEL_RUECKLAUF_VORGABE"/>.
+        /// Vollständig ist ein Kesselpaar nach <c>ProjektPuffer.IstTemperaturpaar</c>, wie
+        /// in der Simulation.
+        /// </summary>
+        public static PaarVorbelegung KesselPaar(int? anlageVorlauf, int? anlageRuecklauf,
+                                                 int? kesselVorlauf, int? kesselRuecklauf)
+        {
+            if (!PaarUnvollstaendig(anlageVorlauf, anlageRuecklauf))
+                return new PaarVorbelegung(anlageVorlauf, anlageRuecklauf, PaarHerkunft.Anlage);
+
+            if (ProjektPuffer.IstTemperaturpaar(kesselVorlauf, kesselRuecklauf))
+                return new PaarVorbelegung(kesselVorlauf, kesselRuecklauf, PaarHerkunft.Geraet);
+
+            return new PaarVorbelegung(KESSEL_VORLAUF_VORGABE, KESSEL_RUECKLAUF_VORGABE, PaarHerkunft.Vorgabe);
+        }
+
+        /// <summary>
+        /// <b>Belegt das Paar einer Kesselzeile vor</b> (<see cref="KesselPaar"/>) und legt
+        /// es in den Feldsatz. Der Kessel wird über <c>ID_Kessel</c> gelesen — still, wie die
+        /// übrigen Wege dieser Klasse.
+        /// </summary>
+        /// <param name="item">Die Anlagenzeile; nur Heizkessel (auch als Referenzanlage).</param>
+        /// <param name="stammverweis">
+        /// <c>true</c>, wenn <c>ID_Kessel</c> noch auf den KATALOGSATZ zeigt — im Assistenten
+        /// bei einer frisch aufgenommenen Zeile, deren Projektkopie erst beim Speichern
+        /// entsteht. Sonst zeigt er auf die Projektkopie in <c>Tab_Heizkessel</c>.
+        /// </param>
+        public static PaarVorbelegung KesselPaarVorbelegen(WErzeugerModel item, bool stammverweis)
+        {
+            if (item == null ||
+                !AnlagenSql.CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP))
+                return new PaarVorbelegung(item?.Vorlauf, item?.Ruecklauf, PaarHerkunft.Anlage);
+
+            if (!PaarUnvollstaendig(item.Vorlauf, item.Ruecklauf))
+                return new PaarVorbelegung(item.Vorlauf, item.Ruecklauf, PaarHerkunft.Anlage);
+
+            int? kv = null, kr = null;
+            if (item.ID_Kessel > 0)
+            {
+                DataTable dt = StilleDb.Tabelle(stammverweis ? SQL_STAMM_KESSEL : SQL_KOPIE_KESSEL,
+                                                StilleDb.Par("@id", DbParamTyp.Integer, item.ID_Kessel));
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    kv = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "Vorlauf"));
+                    kr = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "Ruecklauf"));
+                }
+            }
+
+            PaarVorbelegung p = KesselPaar(item.Vorlauf, item.Ruecklauf, kv, kr);
+            item.Vorlauf = p.Vorlauf ?? 0;
+            item.Ruecklauf = p.Ruecklauf ?? 0;
+            return p;
+        }
+
+        /// <summary>
+        /// Die HERLEITUNGSZEILE unter dem Paar — fertig formuliert; leer, wenn nichts
+        /// vorbelegt wurde.
+        /// </summary>
+        public static string Herleitung(PaarVorbelegung p)
+        {
+            switch (p.Herkunft)
+            {
+                case PaarHerkunft.Geraet:
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ANL_TEMP_AUS_KESSEL,
+                                         p.Vorlauf, p.Ruecklauf);
+                case PaarHerkunft.Vorgabe:
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ANL_TEMP_VORGABE_KESSEL,
+                                         p.Vorlauf, p.Ruecklauf);
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// <b>Der vorbelegte Rücklauf einer Wärmepumpe</b> — rein, ohne Datenbank:
+        /// Vorlauf − <see cref="WAERMEPUMPE_SPREIZUNG_VORGABE_K"/>, wenn der Rücklauf 0 oder
+        /// leer ist. <c>null</c> heißt „nichts vorbelegen": Der Rücklauf ist eingetragen
+        /// (auch ein unpassender — die Prüfung des Dialogs meldet ihn), oder es gibt keinen
+        /// Vorlauf, aus dem er folgen könnte.
+        /// </summary>
+        public static int? WaermepumpeRuecklaufVorgabe(int? vorlauf, int? ruecklauf)
+        {
+            if (ruecklauf > 0) return null;
+            if (!(vorlauf > WAERMEPUMPE_SPREIZUNG_VORGABE_K)) return null;
+            return vorlauf.Value - WAERMEPUMPE_SPREIZUNG_VORGABE_K;
+        }
+
+        /// <summary>Die Herleitungszeile zum vorbelegten Rücklauf einer Wärmepumpe — fertig formuliert.</summary>
+        public static string WaermepumpeRuecklaufHerleitung(int vorlauf, int ruecklauf)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ANL_TEMP_VORGABE_WP_RUECKLAUF,
+                             ruecklauf, vorlauf, WAERMEPUMPE_SPREIZUNG_VORGABE_K);
 
         // =================================================================================
         // Hilfsmittel
