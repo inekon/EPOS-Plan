@@ -281,6 +281,47 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains(Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS, text);
     }
 
+    /// <summary>
+    /// Konzept Kesselkennlinie 5 (Etappe E2): Mit einem Brennstoffkessel nennt die Gruppe
+    /// „Betrieb" den mittleren Wirkungsgrad und den Teillastbrennstoff, die Kesseltabelle η₃₀
+    /// (mit „(Vorgabe)", wenn die Normvorgabe gilt), den Wirkungsgrad im Betrieb und die
+    /// Laststufe; die Zeile des Elektrokessels trägt dort Striche. Ohne Brennstoffkessel fehlen
+    /// Zeilen und Spalten.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Teillastgroessen_nur_mit_Brennstoffkessel()
+    {
+        var erg = Kessel();
+        erg.MitKennlinie = true;
+        erg.WirkungsgradBetriebProzent = 91.23;
+        erg.TeillastMehrbrennstoffKwh = -1234.5;
+        erg.Module.Clear();
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 88.1,
+                                                                     true, 93.4, true, 89.5, 62.0));
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 2", 10.0, 0.0, 99.5));
+
+        var seite = KesselZeichnen(erg);
+        string[] betrieb = seite.FindAll("dl.epos-simerg-werte")
+                                .Select(l => l.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray())
+                                .First(z => z.Contains(Resource.SIMERG_LBL_BETRIEBSSTUNDEN));
+        Assert.Contains(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF, betrieb);
+        Assert.Contains("91,23", seite.Markup);
+        Assert.Contains("-1.234,50", seite.Markup);
+
+        Assert.Equal(8, seite.FindAll("table.epos-raster thead th").Count);
+        var zellen = seite.FindAll("table.epos-raster tbody tr")
+                          .Select(r => r.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray())
+                          .ToArray();
+        Assert.Equal(new[] { string.Format(Resource.SIMERG_ETA30_VORGABE, "93,4"), "89,5", "62" },
+                     zellen[0].Skip(5).ToArray());
+        Assert.Equal(new[] { "–", "–", "–" }, zellen[1].Skip(5).ToArray());
+
+        var ohne = KesselZeichnen(Kessel());
+        Assert.Equal(5, ohne.FindAll("table.epos-raster thead th").Count);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, ohne.Markup);
+    }
+
     /// <summary>Ohne Platzhalter steht keine Kohärenzzeile.</summary>
     [Fact]
     public void Kessel_ohne_Platzhalter_zeigt_keine_Nutzungsgradzeile()

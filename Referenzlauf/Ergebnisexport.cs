@@ -416,6 +416,18 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(p + "Starts", Zahl(spk.Starts_Spk[i])));
                     skalare.Add(Neu(p + "Bereitschaftsstunden", Zahl(spk.Bereitschaftsstunden_Spk[i])));
                     skalare.Add(Neu(p + "BereitschaftKwh", Zahl(spk.Bereitschaftsverlust_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.1/5 (Etappe E2): die Stuetzwerte der
+                    // Teillastkennlinie, mit denen der Kessel rechnet (eta30 gepflegt oder
+                    // Normvorgabe nach Bauart), und was sie im Jahr bewirken - mittlerer
+                    // Wirkungsgrad und mittlere Laststufe der Laufstunden, Mehrbrennstoff aus
+                    // Teillast gegenueber eta100. Beim Elektrokessel ohne Kennlinie 0.
+                    bool kennlinie = !spk.IstStromkessel(i);
+                    skalare.Add(Neu(p + "Eta100", Zahl(spk.Nennwirkungsgrad(i))));
+                    skalare.Add(Neu(p + "Eta30", Zahl(kennlinie ? spk.Teillastwirkungsgrad(i) : 0)));
+                    skalare.Add(Neu(p + "EtaBetrieb", Zahl(kennlinie ? spk.WirkungsgradBetrieb(i) : 0)));
+                    skalare.Add(Neu(p + "LaststufeMittel", Zahl(kennlinie ? spk.LaststufeMittel(i) : 0)));
+                    skalare.Add(Neu(p + "TeillastKwh", Zahl(spk.TeillastMehrbrennstoff_KWh_Spk[i])));
                 }
             }
 

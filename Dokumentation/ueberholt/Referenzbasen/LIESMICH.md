@@ -1,9 +1,9 @@
-# Die Protokolle der 43 entfernten Referenzbasen
+# Die Protokolle der 44 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **43 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **44 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026. **44 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26 am 30.09.2026. **45 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-29_R26_Kesselrest`](../../../Referenzlaeufe/2026-09-29_R26_Kesselrest/);
+> [`Referenzlaeufe/2026-09-30_R27_Kesselteillast`](../../../Referenzlaeufe/2026-09-30_R27_Kesselteillast/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -71,6 +71,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-26_R23_KesselBereitschaft` | 26.09.2026 | CI-Basis nach #568 (Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden — Heiztag mit Raumwärmebedarf oder 24 h Nachlauf, Deckel durch die Vorgabe; Elektrokessel ohne Kesselemission), auf Windows eingefroren; getragen bis zur Testdatenbank `6f0d5458…` (Schemastand 152); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R24 am 29.09.2026 | [`2026-09-26_R23_KesselBereitschaft/protokoll.txt`](2026-09-26_R23_KesselBereitschaft/protokoll.txt) |
 | `2026-09-27_R24_Heizgrenze` | 29.09.2026 | CI-Basis nach #595 (Heiztag der Kesselbereitschaft = Tagesmittel der Außentemperatur unter der Heizgrenze des Projekts, Schemaschritt 154), auf Linux eingefroren; getragen bis zur Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R25 am 29.09.2026 | [`2026-09-27_R24_Heizgrenze/protokoll.txt`](2026-09-27_R24_Heizgrenze/protokoll.txt) |
 | `2026-09-29_R25_Plattformrand` | 29.09.2026 | CI-Basis nach #599 (Zahlenrand an der Abschaltprüfung der Phase G und am Quellspeicher der Wärmepumpe, Plattformbefund PB-1), auf Windows eingefroren; Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R26 am 29.09.2026 | [`2026-09-29_R25_Plattformrand/protokoll.txt`](2026-09-29_R25_Plattformrand/protokoll.txt) |
+| `2026-09-29_R26_Kesselrest` | 29.09.2026 | CI-Basis nach #605 (Kessellauf mit Zahlenrand, Störmodus-Wache), auf Linux eingefroren; getragen bis zur Testdatenbank `111be189…` (Schemastand 156, E1 der Kesselkennlinie samt Nachpflege des Katalogs); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R27 am 30.09.2026 | [`2026-09-29_R26_Kesselrest/protokoll.txt`](2026-09-29_R26_Kesselrest/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -3317,5 +3318,126 @@ Sie ist die **einzige** Basis im Arbeitsbaum.
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R26 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 29. bis zum 30.09.2026 die Basis R26 beschrieben — die zwei Anlässe
+(Kessellauf mit Zahlenrand, Einfrieren auf Linux) und die A/B-Tafel gegen R25 —, darunter den Abschnitt zur
+Vorgängerbasis R25 mit den Nachträgen der Schemaschritte 155 und 156, die R26 byte-gleich überstanden hat. Beides
+steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt.
+
+**`2026-09-29_R26_Kesselrest/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040,
+1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, auf Linux eingefroren; getragen bis zur Testdatenbank
+`111be189…` (Schemastand 156).
+
+**Abgelöst wurde R26 durch `2026-09-30_R27_Kesselteillast`** (Konzept Kesselkennlinie, Etappe E2, Entscheide F1
+und F4): Ein Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner Laststufe, ein leeres η₃₀ nimmt die
+Normvorgabe nach Bauart, und das Referenzprojekt 1050 „Kesselkennlinie“ (Kopie von 1023 mit gepflegter Kennlinie)
+ist das sechzehnte Projekt. A/B gegen R26: 14/15 PASS, 459/460 CSV byte-gleich ohne die fünf neuen
+Kennlinienschlüssel — der Rechenweg ändert allein `aggregate.csv` von 1023 (Gasverbrauch 91,42 → 91,02 MWh/a,
+Jahresnutzungsgrad 87,29 → 87,67 %). Die Tafel steht in `Referenzlaeufe/LIESMICH.md`, die Tafel je Kesselprojekt
+im Protokoll
+[`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-29_R26_Kesselrest/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, unverändert seit R24). Gegen diese Basis
+hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben
+Projekte ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 und
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass 1: Der Kessellauf trägt den Zahlenrand** (Nachzug zum Plattformbefund PB-1, Anwenderentscheid
+> 29.09.2026). Ein Kessel, der nur den Rest einer Vorstufe deckte (10⁻¹⁶ kWh), zählte eine Laufstunde und
+> einen Start — je Plattform an anderen Stunden, weil der Rest am letzten Bit der C-Bibliothek hängt. Jetzt
+> läuft er erst ab `Rechenrand.ABSOLUT` (10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`), derselbe Rand wie am
+> Quellspeicher. Solche Stunden hat nur Projekt 1024: Kessel-Laufstunden 4 921 → 4 895, Starts 228 → 233,
+> Bereitschaftsstunden 2 582 → 2 608 (Bereitschaftsleistung 0 kW, keine Energie).
+>
+> **Anlass 2: Die Basis steht auf Linux, dem Läufer der CI.** R25 ist auf Windows eingefroren, die CI rechnet
+> auf ubuntu. Der Plattformwechsel zeigt sich in fünf Dateien nur als Rechenrest im Band (höchstens
+> 8,9·10⁻¹⁶): `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024
+> (Stunde 2577) und `puffer_soc.csv` von 1042. Der R25-Rechenweg auf Linux gegen R25 ist **GESAMT PASS,
+> 455/460 CSV byte-gleich**, verschieden genau diese fünf Dateien — die Vorhersage von R25 aus der
+> Nachbildung ist damit auf einem echten Linux-Läufer bestätigt.
+>
+> **A/B gegen R25:** **14/15 PASS, 454/460 CSV byte-gleich**. Zerlegt nach Ursache:
+>
+> | Anteil | CSV | Befund |
+> |---|---|---|
+> | Rechenweg (R25-Rechenweg auf Linux → R26) | 1 | `aggregate.csv` von 1024: `Kessel[0].Laufstunden` 4 921 → 4 895, `.Starts` 228 → 233, `.Bereitschaftsstunden` 2 582 → 2 608 — jenseits der Toleranz |
+> | Plattformwechsel (Windows → Linux) | 5 | `heizstab.csv` 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` 1024, `puffer_soc.csv` 1042 — Reste ≤ 8,9·10⁻¹⁶, innerhalb der Toleranz |
+>
+> Die sieben CI-Projekte sind innerhalb der Toleranz gleich; byte-verschieden ist unter ihnen nur
+> `heizstab.csv` von 1007 und 1046 (Plattformwechsel).
+>
+> **Keine Einfrierregel ist berührt**, auch „gesäte Kesseldaten“ nicht: Heizgrenze, Betriebsbereitschaft und
+> Bereitschaftsleistung bleiben, geändert hat sich die Zählung. **Kein Fehlschlag, keine Ablehnung:** 15/15
+> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 460/460 CSV byte-gleich.
+> **Plattformnachweis:** gestört gegen ungestört 15/15 PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-29_R26_Kesselrest
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+### Die Vorgängerbasis R25 `2026-09-29_R25_Plattformrand`
+
+Fünfzehn Projekte, 460 CSV, 2 685 Skalare, Schemastand 154 (`2e417b36…`), auf Windows eingefroren; mit R26
+aus dem Arbeitsbaum gefallen, Protokoll unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen
+R25 und R26 hat sich die Testdatenbank nicht geändert.
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 155, Basis unverändert.** Die Volumina der
+> einzelnen Verfahren als Wahl der Füllstandslinie (Auftrag F1, Umsetzungskonzept Zapfprofilgenerator N36 (d))
+> bringen den Schemaschritt **155** (`TwwFuellstandSchema`, Nummer als `KesselHeizgrenzeSchema.SCHRITT + 1`):
+> `Tab_TwwProjekt` nach dem Hausrezept neu gebaut mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` — 5 … 8 sind
+> die vier Verfahren des Verfahrensvergleichs —, Zeilen, IDs und Zähler unverändert, **kein DML**. Die
+> Testdatenbank wurde aus der Fassung `2e417b36…` (Schemastand 154) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen, ein zweiter Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Zellvergleich über
+> alle Tabellen: allein `Tab_Applikation.SchemaVersion` 154 → 155, im Schema die Prüfklausel von
+> `Tab_TwwProjekt` und in `sqlite_sequence` die Reihenfolge (gleiche Werte, `Tab_TwwProjekt` ans Ende gewandert —
+> Folge des Tabellenneubaus). Neue Fassung **71 622 656 Byte, LFS-SHA-256
+> `2b28fb6f4783e5c64df8c6e2d1691ffca53f362bc6a6735ca8d97fc612d6ee44`**. **Die Basis bleibt:** Die fünfzehn
+> Projekte rechnen darauf auf Linux byte-gleich zum Lauf auf der Fassung `2e417b36…` (460/460 CSV) und
+> `vergleich` gegen R24 meldet GESAMT PASS. `Tab_TwwProjekt` des Referenzprojekts 1045 bleibt zellgleich — die
+> Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt, und die Speicherauslegung ist nachrichtlich.
+
+> **Nachtrag 29.09.2026 — Schemaschritt 156 (Kennlinienspalten des Heizkessels), Basis unverändert.** Konzept
+> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
+> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
+> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1) —,
+> reines DDL aus `KesselKennlinieSchema` (Nummer als `TwwFuellstandSchema.SCHRITT + 1`). Die Testdatenbank ist
+> aus der Fassung `2b28fb6f…` (Schemastand 155) mit `Werkzeuge/Testdatenbankschema` auf **156** gezogen (zweiter
+> Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung `SchemaVersion` 155 → 156, die neuen Spalten in
+> 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok, `foreign_key_check` leer; Zwischenstand LFS-SHA-256
+> `1aa6f548…`). Kein Rechenweg liest die Spalten.
+>
+> **Danach die Nachpflege des Kesselkatalogs** (Entscheide F2 und F3): `Werkzeuge/Testdatenbankschema
+> Referenzlaeufe/Kenndaten_Test.sqlite --kesselkatalog VDI-3805-Daten/SPK-Daten` (`KesselkatalogNachpflege`
+> im Kern) gleicht die 63 Sätze von `Tab_Heizkessel_STAMM` mit den 14 Kesseldateien (1 650 Sätze) ab: 60
+> zugeordnet und nachgepflegt — η₃₀ in 46, η₁₀₀ aus Satz 710.01 in 27, kleinste Leistung in 60 Sätzen,
+> `Brennwert` 0 → 1 in 40; danach **46 Brennwertgeräte** (vorher 6); ohne Dateisatz bleiben `eloBLOCK VE 10`,
+> `eloBLOCK VE 15` und `Test`. Zellvergleich gegen den Zwischenstand: 173 Zellen, allein in
+> `Tab_Heizkessel_STAMM` (`Wirkungsgrad_Teillast30` 46, `Mindestleistung` 60, `Brennwert` 40,
+> `Wirkungsgrad_Gas` 26, `Wirkungsgrad_Öl` 1); **`Tab_Heizkessel` (die Projektkopien) zellgleich**; ein zweiter
+> Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **71 626 752 Byte, LFS-SHA-256
+> `111be18945ece5aba5e605eeca082993646e0a267428eb7400d29c3fa2b4c39d`**. **Die Basis bleibt:** Die Projekte rechnen
+> aus ihren Projektkopien, der Lauf der fünfzehn Projekte auf dieser Fassung ist gegen R26 byte-gleich. Die
+> Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem Rechenweg der Etappe E2.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

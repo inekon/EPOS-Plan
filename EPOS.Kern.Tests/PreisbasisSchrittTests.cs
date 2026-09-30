@@ -50,9 +50,10 @@ namespace EPOS.Kern.Tests
             // und eine „kg" mehr - die drei Trägerzeilen von 1017. ETAPPE E24 (§ 6.3 Nr. 24): eine
             // Zeile „Nm³" mehr - die Erdgaszeile von 1023 (Kopie der Zeile von 1030). Das Prüfprojekt
             // PV mit Preisen 1048: je eine Zeile „kWh" (Strom) und „Nm³" (Erdgas, Kopie von 1040).
-            // Das Referenzprojekt Solarthermie 1049: eine Zeile „Nm³" (Erdgas, Kopie von 1018).
-            Assert.Equal(9, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
-            Assert.Equal(20, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
+            // Das Referenzprojekt Solarthermie 1049: eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das
+            // Referenzprojekt Kesselkennlinie 1050: je eine Zeile „kWh" und „Nm³" (Kopie von 1023).
+            Assert.Equal(10, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
+            Assert.Equal(21, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
             Assert.Equal(2, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 

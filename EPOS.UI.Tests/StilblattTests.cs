@@ -604,6 +604,27 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Anwenderbefund 29.09.2026 (Wärmelast Jahresganglinie, WebView2): Die Kurven lagen
+    /// unter der Nulllinie und rechts über der Achse.</b> Die Maßregel des Diagramms
+    /// („füllt die Breite, behält sein Seitenverhältnis“) stand als NACHFAHRENregel da und
+    /// traf auch das innere <c>&lt;svg class="epos-flaeche"&gt;</c> der Zeichenfläche. Dessen
+    /// Breite und Höhe sind SVG-2-Geometrieeigenschaften: <c>width: 100%</c> und
+    /// <c>height: auto</c> zogen es auf das ganze Bild (im Chromium am Baustein gemessen:
+    /// Attribut 1 050 × 360, berechnet 1 240 × 560). Die Regel trifft deshalb nur das
+    /// ÄUSSERE SVG, das Kind der Fläche.
+    /// </summary>
+    [Fact]
+    public void Die_Massregel_des_Diagramms_trifft_nur_das_aeussere_SVG()
+    {
+        string block = Regelblock(".epos-diagramm-svg-flaeche > svg {");
+        Assert.Contains("width: 100%", block, StringComparison.Ordinal);
+        Assert.Contains("height: auto", block, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("\n.epos-diagramm-svg-flaeche svg {", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Stufe G6c, Welle D2: der Grundriss des Gebäudeimports.</b> Die zehn Zonenfarben stehen als Token in
     /// <c>:root</c> und kommen über die Klasse der Stelle an Fläche und Legende; ohne Zone grau, schematisch
     /// gestrichelt, der Rand bei jedem Maßstab 1 px (<c>vector-effect</c>). Im Kontrastmodus Canvas mit

@@ -10,14 +10,16 @@
 
 Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`;
 `EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows. Kommen Probebilder
-hinzu (zuletzt neun der Kalenderkarte, `Messlatte_2026-09-30.sha256`), zieht das nächste Windows-Gate die lokale Liste nach
-— jede alte Zeile muss gleich bleiben, die neuen kommen dazu.
+hinzu, zieht das nächste Windows-Gate die lokale Liste nach — jede alte Zeile muss gleich bleiben, die neuen kommen dazu.
+Ändert eine gewollte Bildänderung Zeilen, nennt der Abschnitt der Etappe in `Proben/ChartProben/LIESMICH.md` genau diese
+Bilder, und nur sie dürfen abweichen. Gegenwärtig (`Messlatte_2026-09-30.sha256`): neun Bilder der Kalenderkarte neu, die
+zwölf Bilder der Stufenregel des Stapels geändert.
 
 ## Referenzlauf und Plattform
 
 Schritt 5 von `gate_linux.sh` vergleicht mit der Basis, die `Referenzlaeufe/LIESMICH.md` als aktuelle nennt.
 Er gibt die Plattform an, auf der sie eingefroren ist (aus dem Quellpfad ihres `protokoll.txt`), zeigt alle
-roten Projekte und nennt die byte-verschiedenen CSV. Windows und Linux rechnen alle fünfzehn Projekte
+roten Projekte und nennt die byte-verschiedenen CSV. Windows und Linux rechnen alle sechzehn Projekte
 innerhalb der Toleranz gleich; Ursache und Behebung des früheren Unterschieds stehen im Protokoll
 [`PB1_Plattformbefund_Referenzlauf_Protokoll.md`](../../Dokumentation/ueberholt/Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
 **Jedes rote Projekt ist ein Befund des geprüften Stands.** Fehlt die Zeile `GESAMT`, ist Lauf oder Vergleich
@@ -25,12 +27,14 @@ gescheitert (etwa ohne `dotnet` im Pfad); Schritt 5 meldet das als „REFERENZLA
 
 | Basis | Lauf | erwartet |
 |---|---|---|
-| R26 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 15/15 PASS, 460/460 CSV byte-gleich |
-| R26 | Windows | 15/15 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
+| R27 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 16/16 PASS, 487/487 CSV byte-gleich |
+| R27 | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
 
 Die Windows-Zeile ist die Gegenrichtung des gemessenen Plattformwechsels: Der Rechenweg der Basis R25 ergab
 auf Linux gegen die Windows-Basis R25 genau diese fünf Dateien (GESAMT PASS, 455/460), und die Kesselregel
-von R26 streicht auf beiden Plattformen dieselben Reststunden. Auf Windows nachgerechnet ist sie noch nicht.
+von R26 streicht auf beiden Plattformen dieselben Reststunden; die Teillastkennlinie von R27 ist lineare
+Arithmetik ohne Betriebsschwelle und fügt keine Plattformkante hinzu. Auf Windows nachgerechnet ist die Zeile noch
+nicht.
 `gate_windows.sh` rechnet den Referenzlauf nicht; die CI (`kern.yml`) rechnet auf ubuntu die sieben
 CI-Projekte.
 

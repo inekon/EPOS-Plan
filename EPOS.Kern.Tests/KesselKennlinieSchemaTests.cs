@@ -18,7 +18,7 @@ namespace EPOS.Kern.Tests
     /// Füllstandslinie, Schritt 155) und ihr Eintrag im
     /// Register der Paketanhebung; die Definition der fünf Spalten an einer STRICT-Tabelle (vier
     /// nullbar ohne Vorgabe, der Schalter 0/1 mit Vorgabe 0); der Stand der Testdatenbank (die
-    /// Spalten stehen, keine Projektkopie trägt einen Wert); der Schritt aus dem Stand davor,
+    /// Spalten stehen, allein das Referenzprojekt 1050 trägt Werte); der Schritt aus dem Stand davor,
     /// wiederholbar und ohne DML; Projektduplikat und Projekttransfer tragen die Werte; Migration,
     /// Werkzeug und Testkopie führen den Schritt aus derselben Quelle, und die Repo-Datei trägt
     /// ihn.</para>
@@ -112,11 +112,12 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Die Spalten stehen an beiden Tabellen, beide bleiben STRICT, und KEINE Projektkopie trägt
-        /// einen Kennlinienwert — die Voraussetzung dafür, dass die Referenzbasis byte-gleich bleibt.
+        /// Die Spalten stehen an beiden Tabellen, beide bleiben STRICT, und allein die Projektkopie des
+        /// Referenzprojekts 1050 (Etappe E2, Konzept 4.3) trägt Kennlinienwerte — jede weitere verschöbe
+        /// die Referenzbasis (Einfrierregel „gesäte Kesseldaten“).
         /// </summary>
         [Fact]
-        public void Die_Testdatenbank_steht_auf_dem_Zielstand_und_keine_Projektkopie_traegt_eine_Kennlinie()
+        public void Die_Testdatenbank_steht_auf_dem_Zielstand_und_nur_1050_traegt_eine_Kennlinie()
         {
             if (!_db.Vorhanden) return;
 
@@ -124,9 +125,12 @@ namespace EPOS.Kern.Tests
             Assert.True(KesselKennlinieSchema.Vollstaendig());
             Assert.Empty(KesselKennlinieSchema.Anweisungen);
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Heizkessel") > 0);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE Wirkungsgrad_Teillast30 IS NOT NULL " +
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt <> 1050" +
+                                  " AND (Wirkungsgrad_Teillast30 IS NOT NULL " +
                                   "OR Kennlinie_Brennwert <> 0 OR Mindestleistung IS NOT NULL " +
-                                  "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL"));
+                                  "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL)"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt = 1050" +
+                                  " AND Wirkungsgrad_Teillast30 IS NOT NULL AND Kennlinie_Brennwert = 1"));
             // Im Katalog pflegt die Nachpflege (F2) nur eta30, eta100, Brennwert und Mindestleistung -
             // Schalter, Anfahrverlust und Mindestlaufzeit bleiben ueberall leer.
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel_STAMM WHERE Kennlinie_Brennwert <> 0 " +
@@ -220,8 +224,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Die Werkzeug-Wache.</b> Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und die
         /// Nachzieh-Liste der Tests führen den Schritt aus derselben Quelle, hinter Schritt 155; die
-        /// REPO-Datei trägt die Spalten, und keine Projektkopie trägt einen Wert (gelesen nur lesend und
-        /// ohne Spuren).
+        /// REPO-Datei trägt die Spalten, und allein das Referenzprojekt 1050 trägt Werte (gelesen nur
+        /// lesend und ohne Spuren).
         /// </summary>
         [Fact]
         public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt()
@@ -266,9 +270,10 @@ namespace EPOS.Kern.Tests
                                                   "name = 'Kennlinie_Brennwert' AND type = 'INTEGER' AND " +
                                                   "\"notnull\" = 1 AND dflt_value = '0'"));
             }
-            Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Wirkungsgrad_Teillast30 IS NOT NULL " +
+            Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt <> 1050" +
+                                              " AND (Wirkungsgrad_Teillast30 IS NOT NULL " +
                                               "OR Kennlinie_Brennwert <> 0 OR Mindestleistung IS NOT NULL " +
-                                              "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL"));
+                                              "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL)"));
         }
 
         // -----------------------------------------------------------------------------

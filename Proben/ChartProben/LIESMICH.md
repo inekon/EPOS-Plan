@@ -69,8 +69,10 @@ gegen diese Datei.
   getauschten Rolle; ihre zwei Bilder stehen **nicht** in der Ablage und nicht in der
   Messlatte — sonst hinge die eingefrorene Liste an einer Einstellung.
 - **Wann sie neu eingefroren wird.** Nur, wenn ein Bild sich **bewusst** ändern soll — die
-  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te). Dann entsteht
-  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.
+  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te), die Stufenregel
+  des Stapels (Abschnitt „Gestapelte Jahresganglinien" unten) ist einer. Dann entsteht
+  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt; die
+  Commit-Nachricht nennt die geänderten Bilder und den Grund.
 - **Wann sie nachgezogen wird.** Kommen Proben hinzu, ohne dass sich ein Bild ändert, zieht der
   nächste Lauf auf dem Linux-Läufer die Liste nach: `--ablage` und `--hashes` ergeben
   `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
@@ -425,15 +427,58 @@ Das sind **22 Maßproben** und 22 Schriftproben; die Maßproben ergeben **22 neu
 Messlatte, die Schriftproben zeichnen kein PNG. Die Bilder im festen Maß bleiben unverändert: Ein
 neuer Parameter hat eine Vorgabe, die das Bild byte-gleich lässt (`EPOS.Kern/CLAUDE.md`, „Bericht").
 
-## Wärmelast mit gestapelten Bedarfsarten
+## Gestapelte Jahresganglinien
 
 `ganglinie_normiert_gestapelt` zeichnet die normierte Ganglinie so, wie sie die Bedarfsseite
 zeigt: Heizung, Brauchwasser und Prozesswärme als Flächen übereinander
-(`Stapelart.Flaeche`), die Summe als Linie darunter, die als Rand auf der Oberkante steht, und
-der Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie
-tragen keine Flächenreihe und bleiben byte-gleich — auf Windows nachgewiesen wie oben
-beschrieben: alle Bilder des Stands davor gleich, eines neu. Die Zeile der Messlatte zieht der
-nächste Lauf auf dem Linux-Läufer nach.
+(`Stapelart.Flaeche`), die Summe als schmaler Rand auf der Oberkante des Stapels und der
+Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie tragen
+keine Flächenreihe.
+
+Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
+Stapels** (`Pfadregel.Stufen`, `Pfadregel.Spitzenstunden`, `Pfadregel.Stundenwerte`,
+`Pfadregel.Stufenstuecke`, `Pfadregel.Treppe` in
+`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
+Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur,
+Kanten), zeichnet je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange ein Tag
+schmaler als vier Bildpunktspalten ist, sonst je Spalte —, und zwar ALLE mit den Werten
+derselben Stunde: der **Spitzenstunde** der Bezugsgröße (`Datenreihe.Bezug`: die Bedarfs- oder
+Summenlinie, sonst die Kontur, sonst die Oberkante des Stapels; bei Gleichstand die erste
+Stunde). So summieren sich die Schichten je Stufe zur Oberkante, die Dicke jeder Schicht ist
+ihr Wert in dieser Stunde, und ein taktender Erzeuger steht nicht als Band auf Nennleistung da.
+Nachbarschichten teilen ihre Kante genau, die Schichten decken voll, und PNG und Druck malen sie
+von der Achse, die oberste zuerst — keine Lücke, nichts scheint durch, die Summe liegt als Rand
+auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspitze“
+(`CHART_HINWEIS_STUFE_TAG`). Die überlagerte Produktion der Wärmepumpenseite (eine Säulengruppe
+über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
+Dauerlinie stapelt nicht.
+
+**Eine Lücke bleibt Lücke.** Ein nicht endlicher Wert (NaN — etwa „aus“ einer Kalenderwoche)
+wählt keine Spitzenstunde; eine Stufe ohne endlichen Bezugswert nimmt ihre erste Stunde. Steht
+eine Reihe in der Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder
+Unterkante —, ist die Stufe für sie eine Lücke: Die Treppe bricht dort ab und setzt danach mit
+eigenem Teilpfad neu an (`Pfadregel.Stufenstuecke`; im SVG je Stück ein Teilpfad, eine Schicht
+mit `Z` geschlossen, im PNG je Stück ein Vieleck oder Linienzug). Die Lücke steht nie als Null
+da, keine Nachbarstufe reicht in sie hinein, und die Zeigerzeile nennt die Schicht in dieser
+Stufe nicht. Ein Vormittag „aus“ an einem Tag mit der Spitze am Abend ist deshalb keine Lücke,
+ein Tag, dem allein die Spitzenstunde fehlt, schon. Die Proben stehen in `PfadregelTests.cs`
+(`EineLueckeBleibtLuecke`), `SvgSchreiberTests.cs`
+(`EineStapelschichtMitLueckeZeigtDieLueckeAlsLuecke`) und `ChartRendererTests.cs`
+(`Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke`); kein Probebild trägt eine Stapelschicht mit
+Lücke, die Messlatte berührt das nicht.
+
+Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
+`erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
+`erzeugerstapel_neun_reihen` samt `…_wenige` und `…_viele`, `erzeugerstapel_fenster` samt
+`…_a` und `…_b` sowie `erzeugerstapel_zweite_achse_a` und `…_b` (`erzeugerstapel_fenster` und
+`…_fenster_b` zeichnen einen Ausschnitt, der nicht dichter ist als die Spalten — sie ändern sich
+nur durch die deckenden Schichten). Byte-gleich bleiben die Dauerlinien
+(`erzeugerstapel_kessel_sortiert`, `ganglinie_normiert_sortiert`), die Bilder ohne
+Stapelschicht (`erzeugerstapel_solar_zwei_linien`) und der Berichtsstapel `jahresverlauf_waerme`
+(Tagesmittel, nicht dichter als die Spalten). Die Proben „Schichten summieren sich in jeder
+Stufe zur Oberkante“, „kein taktender Erzeuger als Nennleistungsband“, „keine Löcher“ und „Summe
+scheint nicht durch“ stehen in `EPOS.Kern.Tests/ChartRendererTests.cs` und
+`PfadregelTests.cs`, die Treppen in `SvgSchreiberTests.cs`.
 
 ## Konditionierungsprofile (KP2, Welle K4): Teppichbild und Woche mit Lücke
 
@@ -456,6 +501,10 @@ gröber. `KalenderwocheModell` ist die Woche einer Größe mit Einheit; NaN („
 | SVG-Probe | `svg_kalenderteppich_grenze_und_aus` | jedes Teppichbild höchstens 2 000 Elemente (Büro 169, Lüftung 521, Grenzbild 121), das Grenzbild nennt seine Vergröberung; jedes „aus"-Feld `RASTER_LOCH` mit genau einer Schraffur in `RAHMEN`; die Werte am Feld wörtlich |
 | SVG-Probe | `svg_kalenderwoche_luecke` | die Fläche der Woche zerfällt in fünf Teilpfade (roh und gebündelt), kein „NaN", die Einheit steht an der Reihe; ohne Lücke ein Zug |
 
-Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Kein Bild von vorher hat sich
-geändert: alle 185 Zeilen der Vorgängerdatei stehen unverändert in `Messlatte_2026-09-30.sha256` (194 Zeilen). Die
-Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: alte Zeilen gleich, neun neu.
+Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Die
+Teppichbilder ändern kein Bild von vorher. Die Woche ist ein Stundenprofil ohne Stapelschicht
+und geht deshalb nicht über die Stufenregel des Stapels; ihre Lücke ist die des Flächenzugs
+(`SvgSchreiber.Flaechenzug`). `Messlatte_2026-09-30.sha256` trägt beide Stände — die neun
+Teppichbilder und die zwölf Bilder der Stufenregel (Abschnitt oben). Die Windows-Messliste des
+Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: diese zwölf Zeilen geändert,
+neun neu, alle übrigen gleich.

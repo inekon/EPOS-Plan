@@ -898,6 +898,25 @@ else
             builder.CloseRegion();
         }
 
+        // Zusammengefasst zeigt jede Stufe EINE Stunde (Stufenregel des Stapels) - der
+        // Hinweis darunter sagt welche, wie das Bild der Vollansicht.
+        string hinweis = Stufenhinweis;
+        if (hinweis.Length > 0)
+        {
+            builder.OpenRegion(1000001);
+            builder.OpenElement(0, "text");
+            builder.AddAttribute(1, "class", "epos-diagramm-stufenhinweis");
+            builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
+            builder.AddAttribute(3, "y", Px(unten + 56f));
+            builder.AddAttribute(4, "font-size", "16px");
+            builder.AddAttribute(5, "text-anchor", "middle");
+            builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
+            builder.AddAttribute(7, "fill", textfarbe);
+            builder.AddContent(8, hinweis);
+            builder.CloseElement();
+            builder.CloseRegion();
+        }
+
         builder.CloseElement();
     }
 
@@ -1187,7 +1206,16 @@ else
 
             if (!_zeiger.HasValue || Modell?.Flaeche is null) return "";
 
-            var teile = new List<string>(Modell.Reihen.Count + 1) { Zeigerstelle(_zeiger.Value) };
+            // ZUSAMMENGEFASST ZEIGT JEDE STUFE EINE STUNDE (Stufenregel des Stapels): je Tag
+            // bzw. je Bildpunktspalte die Spitzenstunde der Bezugsgroesse. Die Zeile nennt dann
+            // diese Stunde mit Datum und Uhrzeit und liest ALLE Reihen in ihr - Zahl und Bild
+            // sagen dasselbe. Sonst steht die Stelle unter dem Zeiger.
+            (int Index, double X, Datenreihe Reihe)? spitze = Spitzenstelle(_zeiger.Value);
+            double stelle = spitze?.X ?? _zeiger.Value;
+            var teile = new List<string>(Modell.Reihen.Count + 1)
+            {
+                spitze is null ? Zeigerstelle(_zeiger.Value) : Spitzenstundentext(spitze.Value.Reihe, spitze.Value.X)
+            };
 
             // EINE REIHE STEHT EINMAL IN DER ZEILE. Seit die Schnittkurve ihre
             // Stuetzpunkte als eigene Punktreihen unter DEMSELBEN Namen fuehrt (damit
@@ -1199,7 +1227,7 @@ else
                 string name = r.Name ?? "";
                 if (_versteckt.Contains(name) || !genannt.Add(name)) continue;
 
-                int index = Reihenindex(r, _zeiger.Value);
+                int index = Reihenindex(r, stelle);
                 if (index < 0) continue;
                 // Eine LÜCKE der Reihe (ein nicht endlicher Wert, etwa der Vorlauf jenseits der
                 // Heizgrenze) hat unter dem Zeiger keinen Wert - die Reihe steht dann nicht in der Zeile.
@@ -1209,9 +1237,11 @@ else
                 // EINE STAPELSCHICHT NENNT IHREN EIGENEN BEITRAG, nicht ihre Oberkante:
                 // Werte ist die Summe bis einschliesslich dieser Schicht, Unten die
                 // darunter - die Differenz ist die Groesse, die ihr Legendenname meint.
+                // Dasselbe gilt fuer die KANTE einer ueberlagerten Stapelgruppe (eine
+                // Linie mit Unten, die Produktion ueber dem Bedarf).
                 double roh = r.Werte![index];
-                if (r.Art == Reihenart.Flaeche && r.Unten != null && index < r.Unten.Length
-                    && double.IsFinite(r.Unten[index]))
+                if ((r.Art == Reihenart.Flaeche || r.Art == Reihenart.Linie) && r.Unten != null
+                    && index < r.Unten.Length && double.IsFinite(r.Unten[index]))
                     roh -= r.Unten[index];
                 string wert = roh.ToString("0.###", CultureInfo.CurrentCulture);
                 teile.Add(string.IsNullOrEmpty(einheit)
@@ -1232,6 +1262,74 @@ else
         string ausModell = reihe?.Einheit ?? "";
         if (ausModell.Length > 0) return ausModell;
         return AufRechterAchse(reihe!) ? EinheitRechts : Einheit;
+    }
+
+    /// <summary>
+    /// <b>Die Spitzenstunde unter dem Zeiger</b> (Stufenregel des Stapels): Steht das Bild an
+    /// der Stelle <paramref name="x"/> in Stufen — je Tag oder je Bildpunktspalte die Werte
+    /// EINER Stunde —, deren Index in den Werten der Stapelreihe, ihre Stelle auf der x-Achse
+    /// und die Reihe; sonst <c>null</c>. Gefragt wird der Pfad, der gerade steht: im
+    /// nachgerechneten Ausschnitt der des Fensters, sonst der Vollpfad. Alle Stapelreihen eines
+    /// Bildes tragen dieselbe Bezugsgröße und damit dieselbe Stunde; die erste genügt.
+    /// </summary>
+    private (int Index, double X, Datenreihe Reihe)? Spitzenstelle(double x)
+    {
+        if (Modell?.Flaeche is null) return null;
+        foreach (Datenreihe r in Modell.Reihen)
+        {
+            if (!(Pfadregel.IstStapelschicht(r) || r.Huelle)) continue;
+            if (r.Werte is null || r.Werte.Length < 2) continue;
+            int stunde = _fenster is not null && _ausschnitt.ContainsKey(r.Name ?? "")
+                ? SvgSchreiber.Stufenstunde(r, Modell.Flaeche, _fenster.Value.Von, _fenster.Value.Bis, x)
+                : SvgSchreiber.Stufenstunde(r, Modell.Flaeche, x);
+            if (stunde < 0) continue;
+            Datenfenster? f = Reihenfenster(r);
+            if (f is null) continue;
+            double schritt = (f.XBis - f.XVon) / (r.Werte.Length - 1);
+            return (stunde, f.XVon + stunde * schritt, r);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Die Spitzenstunde, wie die Zeigerzeile sie nennt: „Spitzenstunde 14. Januar, 18:00" —
+    /// Datum und Uhrzeit, wenn die Reihe ein ganzes Jahresraster ab Jahresbeginn führt
+    /// (<c>Pfadregel.Zeitpunkt</c>), sonst die Stelle wie <see cref="Zeigerstelle"/>.
+    /// </summary>
+    private string Spitzenstundentext(Datenreihe reihe, double x)
+    {
+        Datenfenster? f = Reihenfenster(reihe);
+        DateTime? zeit = f is not null && Math.Abs(f.XVon) < 1e-9 && reihe.Werte is not null
+            ? Pfadregel.Zeitpunkt((int)Math.Round(x), reihe.Werte.Length)
+            : null;
+        if (!zeit.HasValue) return Zeigerstelle(x);
+        return string.Format(CultureInfo.CurrentCulture, Resource.CHART_ZEIGER_SPITZENSTUNDE,
+                             zeit.Value.ToString("M", CultureInfo.CurrentCulture),
+                             zeit.Value.ToString("t", CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Der Hinweis der Stufenregel für die stehende Ansicht — „je Tag die Stunde der
+    /// Tagesspitze" bzw. „je Bildpunkt …"; leer, wenn keine Stapelreihe in Stufen steht. Im
+    /// Ausschnitt zeichnet ihn <see cref="Ticks"/> unter den Achsentitel, in der Vollansicht
+    /// steht er schon im Bild (Marke <c>xachse</c>).
+    /// </summary>
+    private string Stufenhinweis
+    {
+        get
+        {
+            if (Modell?.Flaeche is null) return "";
+            foreach (Datenreihe r in Modell.Reihen)
+            {
+                if (!(Pfadregel.IstStapelschicht(r) || r.Huelle)) continue;
+                Stufenart art = _fenster is not null && _ausschnitt.ContainsKey(r.Name ?? "")
+                    ? SvgSchreiber.Stufenansicht(r, Modell.Flaeche, _fenster.Value.Von, _fenster.Value.Bis)
+                    : SvgSchreiber.Stufenansicht(r, Modell.Flaeche);
+                if (art == Stufenart.Tag) return Resource.CHART_HINWEIS_STUFE_TAG;
+                if (art == Stufenart.Spalte) return Resource.CHART_HINWEIS_STUFE_SPALTE;
+            }
+            return "";
+        }
     }
 
     /// <summary>
@@ -1460,7 +1558,14 @@ else
     /// steht wieder der Vollpfad des Schreibers.</para>
     ///
     /// <para>Rohe Reihen bleiben unberührt: Ihr Vollpfad trägt schon jede
-    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt.</para>
+    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt. <b>Stapelschichten
+    /// und die Linien, die einen Stapel begleiten, sind nie roh</b>, sobald sie mehr
+    /// Werte führen, als die Fläche Bildpunktspalten hat — sie gehen als Treppe ihrer
+    /// Werte in den Spitzenstunden in den Vollpfad (im Jahresbild je Tag), auch bis 8 760
+    /// Stützstellen und drei Reihen (Stufenregel des Stapels,
+    /// <c>Pfadregel.VollpfadRoh</c>). Sie werden deshalb ebenfalls nachgerechnet; im
+    /// Ausschnitt zeigen sie den Tagesgang je Spalte und, sobald je Spalte höchstens eine
+    /// Stunde steht, wieder jede Stunde.</para>
     /// </summary>
     private void Nachladen(int von, int bis, bool voll)
     {
@@ -1477,14 +1582,17 @@ else
         }
 
         int reihen = Modell.Reihen.Count;
+        int spalten = (int)Math.Max(1.0, Math.Round(Modell.Flaeche.Bild.Breite));
         var neu = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (Datenreihe r in Modell.Reihen)
         {
             int n = r.Werte is null ? 0 : r.Werte.Length;
             // EINE PUNKTWOLKE WIRD NIE GEBUENDELT (DG-E3-5) - ihr Vollpfad traegt schon
-            // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt.
-            if (n < 2 || r.Art == Reihenart.Punkte || Pfadregel.Roh(n, reihen)) continue;
+            // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt. Eine
+            // Stapelschicht oder Huellkurve mit mehr Werten als Spalten ist dagegen nie
+            // roh (Stufenregel des Stapels) - Pfadregel.VollpfadRoh sagt beides.
+            if (n < 2 || Pfadregel.VollpfadRoh(r, reihen, spalten)) continue;
 
             neu[r.Name ?? ""] =
                 SvgSchreiber.Reihenpfad(r, Modell.Flaeche, von, bis, true);

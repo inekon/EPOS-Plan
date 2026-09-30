@@ -661,17 +661,23 @@ namespace WindowsFormsApplication1.Zeichnung
                 }
             }
             else if (schritt > 0)
-            {
-                ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
-                biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
-                if (ab < 0) ab = 0;
-                if (biss > n - 1) biss = n - 1;
-            }
+                Indexgrenzen(rf, schritt, n, von, bis, out ab, out biss);
             if (biss < ab) return "";
 
             int laenge = biss - ab + 1;
             int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
             var sb = new StringBuilder(laenge * 12 + 16);
+
+            // DIE STUFENREGEL DES STAPELS: Eine Stapelschicht oder eine Linie, die einen
+            // Stapel begleitet, geht mit mehr Werten als Bildpunktspalten als TREPPE ihrer
+            // Werte in den Spitzenstunden in den Pfad - ob roh oder gebuendelt verlangt ist.
+            // Roh stuenden acht Stunden in einer Spalte, und der Browser deckte den Zickzack
+            // nur anteilig (Kopf der Stufenregel in Pfadregel).
+            if (Pfadregel.Spaltenweise(reihe, laenge, spalten))
+            {
+                Stufentreppe(sb, reihe, rf, schritt, ab, biss, laenge, spalten, hoehe, spanne);
+                return sb.ToString();
+            }
 
             if (reihe.Art == Reihenart.Flaeche)
             {
@@ -847,6 +853,177 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, false, XStelle(r, rf, schritt, ab + kanteUnten[i].X),
                       Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
             sb.Append(" Z");
+        }
+
+        /// <summary>
+        /// <b>Die Treppe einer Stapelschicht oder Hüllkurve</b> (Stufenregel in
+        /// <see cref="Pfadregel"/>): je Stufe — ein Tag im Jahresbild, sonst eine
+        /// Bildpunktspalte — der Wert in der SPITZENSTUNDE der Stufe als waagrechte Kante,
+        /// von der ersten bis zur letzten Stützstelle des Ausschnitts. Die Spitzenstunde
+        /// wählt die Bezugsgröße (<see cref="Datenreihe.Bezug"/>), die alle Reihen des Bildes
+        /// teilen. Eine Schicht schließt mit der Treppe ihrer Unterkante rückwärts und
+        /// <c>Z</c> — dieselbe Regel auf dieselben Zahlen wie die Oberkante der Schicht
+        /// darunter, also genau deren Kante. Eine Linie bleibt offen.
+        ///
+        /// <para><b>Eine Lücke bleibt Lücke</b> (Kopf der Stufenregel): Steht die Reihe in der
+        /// Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder Unterkante —,
+        /// lässt die Treppe die Stufe aus. Je Stück ohne Lücke ein eigener Teilpfad
+        /// (<see cref="Pfadregel.Stufenstuecke"/>), eine Schicht je Stück mit <c>Z</c> geschlossen,
+        /// Stücke durch ein Leerzeichen getrennt — wie der Flächenzug mit Lücke. Ohne Lücke ist es
+        /// ein einziges Stück, wörtlich die Treppe über alle Stufen.</para>
+        /// </summary>
+        private static void Stufentreppe(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                         int ab, int biss, int laenge, int spalten,
+                                         double hoehe, double spanne)
+        {
+            double x0 = XStelle(r, rf, schritt, ab);
+            double breite = XStelle(r, rf, schritt, biss) - x0;
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(r.Werte.Length, ab, laenge, spalten);
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(r), ab, laenge), stufen);
+            double[] oben = Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden);
+
+            if (r.Art != Reihenart.Flaeche)
+            {
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben))
+                {
+                    if (sb.Length > 0) sb.Append(' ');
+                    Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                }
+                return;
+            }
+
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+            double[] unterkante = r.Unten == null ? Gleichwert(laenge, null0) : Teil(r.Unten, ab, laenge);
+            double[] unten = Pfadregel.Stundenwerte(unterkante, stunden);
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben, unten))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                Treppenzug(sb, Pfadregel.Treppe(stufen, unten, von, bis), false, x0, breite, rf, hoehe, spanne);
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>
+        /// Die Punkte einer Treppe in den Pfad — <paramref name="vorwaerts"/> von links nach
+        /// rechts, mit <c>M</c> am ersten Punkt; sonst rückwärts als Fortsetzung (die
+        /// Unterkante einer Schicht).
+        /// </summary>
+        private static void Treppenzug(StringBuilder sb, IReadOnlyList<(double Anteil, double Wert)> treppe,
+                                       bool vorwaerts, double x0, double breite, Datenfenster rf,
+                                       double hoehe, double spanne)
+        {
+            if (vorwaerts)
+                for (int i = 0; i < treppe.Count; i++)
+                    Punkt(sb, i == 0, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+            else
+                for (int i = treppe.Count - 1; i >= 0; i--)
+                    Punkt(sb, false, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+        }
+
+        /// <summary>
+        /// Die Bezugsgröße der Stufenregel für eine Reihe: <see cref="Datenreihe.Bezug"/>,
+        /// wenn er so lang ist wie die Werte — sonst die eigenen Werte.
+        /// </summary>
+        private static double[] Bezugsreihe(Datenreihe r)
+            => r.Bezug != null && r.Werte != null && r.Bezug.Length == r.Werte.Length ? r.Bezug : r.Werte;
+
+        /// <summary>
+        /// Die Indexgrenzen eines Ausschnitts <paramref name="von"/> … <paramref name="bis"/>
+        /// (Einheit der x-Achse) bei gleichmäßigen Stützstellen: jede Stützstelle, die darin
+        /// liegt, in die Reihe geklemmt.
+        /// </summary>
+        private static void Indexgrenzen(Datenfenster rf, double schritt, int n, double von, double bis,
+                                         out int ab, out int biss)
+        {
+            ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
+            biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
+            if (ab < 0) ab = 0;
+            if (biss > n - 1) biss = n - 1;
+        }
+
+        // =====================================================================
+        // Die Stufen fuer die Oberflaeche (Zeigerzeile, Hinweis unter der Achse)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Wie steht die Reihe im Ausschnitt <paramref name="von"/> … <paramref name="bis"/>
+        /// im Pfad?</b> <see cref="Stufenart.Keine"/>, wenn sie nicht in Stufen gezeichnet wird
+        /// (roh, gebündelt, keine Stapelreihe) — sonst ob die Stufe der Tag oder die
+        /// Bildpunktspalte ist. Dieselbe Rechnung wie <see cref="Reihenpfad(Datenreihe, Zeichenflaeche, double, double, bool)"/>;
+        /// die Oberfläche nennt damit unter der Achse, was eine Stufe zeigt.
+        /// </summary>
+        public static Stufenart Stufenansicht(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out _, out int ab, out _, out int laenge, out int spalten))
+                return Zeichnung.Stufenart.Keine;
+            return Pfadregel.TagesStufen(reihe.Werte.Length, laenge, spalten)
+                ? Zeichnung.Stufenart.Tag
+                : Zeichnung.Stufenart.Spalte;
+        }
+
+        /// <summary>Dasselbe für den Vollpfad der Reihe.</summary>
+        public static Stufenart Stufenansicht(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? Zeichnung.Stufenart.Keine : Stufenansicht(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
+        /// <summary>
+        /// <b>Die Spitzenstunde, deren Werte die Treppe an der Stelle <paramref name="x"/>
+        /// zeigt</b> — der Index in <c>reihe.Werte</c>, oder <c>−1</c>, wenn die Reihe im
+        /// Ausschnitt <paramref name="von"/> … <paramref name="bis"/> nicht in Stufen steht.
+        /// Die Zeigerzeile nennt damit in der zusammengefassten Ansicht die Stunde, die eine
+        /// Stufe zeigt, und liest alle Reihen in DIESER Stunde. Dieselbe Rechnung wie der Pfad.
+        /// </summary>
+        public static int Stufenstunde(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis, double x)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out Datenfenster rf, out int ab, out int biss,
+                            out int laenge, out int spalten))
+                return -1;
+
+            double schritt = (rf.XBis - rf.XVon) / (reihe.Werte.Length - 1);
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(reihe.Werte.Length, ab, laenge, spalten);
+            if (stufen.Count == 0) return -1;
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(reihe), ab, laenge), stufen);
+
+            double x0 = XStelle(reihe, rf, schritt, ab);
+            double breite = XStelle(reihe, rf, schritt, biss) - x0;
+            double anteil = breite > 0 ? (x - x0) / breite : 0.0;
+            int s = 0;
+            while (s + 1 < stufen.Count && stufen[s + 1].Links <= anteil) s++;
+            return ab + stunden[s];
+        }
+
+        /// <summary>Dasselbe für den Vollpfad der Reihe.</summary>
+        public static int Stufenstunde(Datenreihe reihe, Zeichenflaeche flaeche, double x)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? -1 : Stufenstunde(reihe, flaeche, rf.XVon, rf.XBis, x);
+        }
+
+        /// <summary>
+        /// Die Lage einer Reihe im Ausschnitt, wenn sie dort IN STUFEN steht
+        /// (<see cref="Pfadregel.Spaltenweise"/>): ihr Fenster, die Indexgrenzen, die Länge
+        /// und die Bildpunktspalten. <c>false</c> sonst.
+        /// </summary>
+        private static bool Stufenlage(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis,
+                                       out Datenfenster rf, out int ab, out int biss,
+                                       out int laenge, out int spalten)
+        {
+            ab = 0; biss = -1; laenge = 0; spalten = 0;
+            rf = Reihenfenster(reihe, flaeche);
+            if (rf == null || reihe.Art == Reihenart.Punkte || reihe.XWerte != null) return false;
+
+            int n = reihe.Werte.Length;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+            if (schritt <= 0) return false;
+            Indexgrenzen(rf, schritt, n, von, bis, out ab, out biss);
+            if (biss < ab) return false;
+
+            laenge = biss - ab + 1;
+            spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
+            return Pfadregel.Spaltenweise(reihe, laenge, spalten);
         }
 
         /// <summary>

@@ -3,8 +3,9 @@
 **Anwenderentscheid 26.09.2026** („Optional Teillast-/Brennwertkennlinie") · Statusnummer **#569** ·
 Entscheide F1 bis F5 vom 29.09.2026 (Abschnitt 7).
 
-**Stand 29.09.2026** · Etappe **E1 umgesetzt** (Schemaschritt **156**, `KesselKennlinieSchema`) ·
-`SchemaStand.Zielversion` = 156 · Referenzbasis `2026-09-29_R26_Kesselrest` (byte-gleich) · E2 bis E4 offen.
+**Stand 30.09.2026** · Etappen **E1 und E2 umgesetzt** (E1: Schemaschritt **156**, `KesselKennlinieSchema`;
+E2: Teillastkennlinie `Kesselkennlinie`, Normvorgabe η₃₀, Referenzprojekt **1050**) · `SchemaStand.Zielversion` = 156 ·
+Referenzbasis `2026-09-30_R27_Kesselteillast` (sechzehn Projekte) · E3 und E4 offen.
 Befund und Optionen (Abschnitte 1 und 2) sind vom 26.09.2026 (Codestand `0a483bd4`, Schemastand 150).
 
 Ziel: Der Heizkessel rechnet heute mit einem festen Wirkungsgrad. Das Papier legt fest, wie eine
@@ -237,7 +238,7 @@ ohne Anfahrverlust ausgewiesen; leere Felder nehmen die Normvorgaben (7.1, F1).
 | Etappe | Inhalt | Aufwand | Basis |
 |---|---|---|---|
 | **E1** Daten + Import — **umgesetzt** | Schritt 156, Modelle und Controller, Satz 710.01 lesen (Spalten belegt), Bauart → `Brennwert`, Nachpflege des Bestandskatalogs (F2), Editor- und KI-Felder, Ressourcen | 1,5 Tage | byte-gleich |
-| **E2** Teillast | `Kesselkennlinie` im Kern, `Stunde_Abschluss`, Normvorgabe η₃₀ (F1), Tests, Kennzahlen, Reiter, Referenzprojekt | 1 Tag | Neueinfrierung (neues Projekt und jeder Kessel ohne η₃₀, F1) |
+| **E2** Teillast — **umgesetzt** | `Kesselkennlinie` im Kern, `Stunde_Abschluss`, Normvorgabe η₃₀ (F1), Tests, Kennzahlen, Reiter, Referenzprojekt 1050 | 1 Tag | Neueinfrierung R27 (1050 neu; von den Bestandsprojekten verschiebt die Normvorgabe allein 1023, den einzigen Brennwertkessel nach Kennzeichen) |
 | **E3** Brennwert | Rücklaufkette (AK1, Speicher, Paar, Rückfall 50 °C nach F5), Brennstofftabelle Taupunkt/Δ₃₀/Hs/Hi, Kohärenzzeile | 1,5–2 Tage | Neueinfrierung (nur das neue Projekt) |
 | **E4** Takten | Startzählung, Anfahrverlust, Mindestlaufzeit, Kennzahl Starts, Normvorgaben (F1) | 1 Tag | Neueinfrierung (Normvorgaben, F1) |
 
@@ -260,10 +261,10 @@ Die fünf Fragen sind am 29.09.2026 entschieden — Wortlaut und Folgen in Absch
 
 | Frage | Entscheid | Umsetzung |
 |---|---|---|
-| **F1** Standardwerte | Leere Felder bekommen **Normvorgaben** (Tabelle unten). | Werte hier festgelegt; wirksam erst mit E2 (η₃₀) und E4 (Takten). In E1 wirkungslos. |
+| **F1** Standardwerte | Leere Felder bekommen **Normvorgaben** (Tabelle unten). | Werte hier festgelegt; η₃₀ wirkt seit E2 (`Kesselkennlinie.Eta30Vorgabe`), die Taktwerte mit E4. |
 | **F2** Bestandskatalog | `Tab_Heizkessel_STAMM` wird aus den VDI-3805-Dateien **nachgepflegt**; die Auslieferungsvorlage folgt. | E1: `KesselkatalogNachpflege` im Kern, auf Zuruf über `Werkzeuge/Testdatenbankschema --kesselkatalog <ordner>` und `Werkzeuge/Auslieferungsvorlage --kesselkatalog <ordner>` (vor jeder Auslieferung mit `VDI-3805-Daten/SPK-Daten`). Nie eine Projektkopie. |
 | **F3** Nennlastwert | η₁₀₀ kommt aus **Satz 710.01** (Spalte 6), Satz 700 Spalte 26 nur als Rückfall. | E1: Import und Nachpflege. |
-| **F4** Referenzprojekt | **Kopie von 1023**, keine AK1-Variante, **nicht** in der CI-Auswahl. | Mit E2. |
+| **F4** Referenzprojekt | **Kopie von 1023**, keine AK1-Variante, **nicht** in der CI-Auswahl. | E2: Projekt 1050 „Referenzprojekt Kesselkennlinie“, Basis R27. |
 | **F5** Rückfall-Rücklauf | **50 °C** (Rückfallpaar 70/50, Empfehlung). | Mit E3 (`KESSEL_RUECKLAUF_RUECKFALL`). |
 
 **Stand E1.** Schemaschritt 156 an Katalog und Projektkopie; Modelle und beide Controller lesen und
@@ -273,6 +274,27 @@ Satz 710.01 (η₁₀₀, η₃₀, kleinste Leistung; das Paar mit dem niedrigs
 und KI-Feldtafel führen die fünf Felder mit dem Kurzhinweis „leer = Vorgabe“. Nachpflege der
 Testdatenbank: 60 von 63 Katalogsätzen zugeordnet und nachgepflegt, danach **46 Brennwertgeräte**
 (vorher 6), η₃₀ in 46 Sätzen; Projektkopien zellgleich; Basis R26 byte-gleich.
+
+**Stand E2.** `EPOS.Kern/Allgemein/Simulation/Kesselkennlinie.cs` trägt die Kurve (Option A, 4.1 Punkt 3), die
+Bauartregel, die Normvorgabe (7.1) samt Hs/Hi-Tafel (Gas 1,11, Heizöl 1,06, Holz und Pellets 1,08, sonst 1,0 — die
+Obergrenze nimmt nur die Anhebung zurück, nie unter η₁₀₀) und die Laststufe; `SimulationSPK.Stunde_Abschluss` ruft sie
+je Laufstunde, der Elektrokessel rechnet mit η₁₀₀. Die Kurve ist in β stetig und führt **keine neue Betriebsschwelle**
+ein (die Klemmung an 0,3 und 1 kippt keinen Zustand; die einzige Betriebsentscheidung bleibt `KesselLaeuft`); sie ist
+lineare Arithmetik und braucht die Plattformnaht nicht. Mitgeschrieben werden Brennstoff der Laufstunden,
+Mehrbrennstoff aus Teillast gegenüber η₁₀₀ und die Stundenreihe des Wirkungsgrads (4.1 Punkt 7, Teil Teillast).
+Oberfläche nach Abschnitt 5: Gruppe „Betrieb“ mit mittlerem Wirkungsgrad im Betrieb und Teillastbrennstoff,
+Kesseltabelle mit η₃₀ („(Vorgabe)“), Wirkungsgrad im Betrieb und mittlerer Laststufe, CSV-Export je
+Brennstoffkessel, Laufprotokoll mit η₁₀₀, η₃₀ und Herkunft; `ParameterVerwendung` führt η₃₀, `Brennwert` und
+`Beschreibung` als gerechnet. Referenzprojekt **1050** „Kesselkennlinie“ nach 4.3 (Skript
+`Referenzlaeufe/Skripte/referenzprojekt_1050_kesselkennlinie.cs`), Einfrierregel „gesäte Kesseldaten“ um die
+Kennlinienspalten, `Brennwert`, Bauart und 1050 erweitert (statt einer eigenen Regel „gesäte Kesselkennlinie“,
+3.3), Basis R27. **Befund zur Bauartregel:** Die Projektkopien der Bestandsprojekte tragen `Brennwert` = 1 nur in
+1023 (und 1009, kein Referenzprojekt); die übrigen Brennstoffkessel — nach Beschreibung meist Brennwertgeräte —
+rechnen als Niedertemperaturkessel mit flacher Kurve und bleiben byte-gleich. Das folgt der Regel 7.1 (die
+Nachpflege F2 hat nur den Katalog gekennzeichnet); ein Nachziehen der Projektkopien wäre eine eigene
+Anwenderentscheidung mit Neueinfrierung. Nicht in E2: Vorlagenfelder des Berichts (Abschnitt 5, letzter Punkt),
+die kleine Kurve im Katalogeditor. Protokoll
+[`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../ueberholt/Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md).
 
 ### 7.1 Normvorgaben für leere Felder (F1)
 

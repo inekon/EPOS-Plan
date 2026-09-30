@@ -166,6 +166,17 @@ namespace WindowsFormsApplication1
                 new CsvSpalte(MyResource.Resource.CHART_LEGENDE_REST_NACH_KESSEL, r.RestNachKessel)
             };
 
+            // Konzept Kesselkennlinie 5 (Etappe E2): je Brennstoffkessel der Wirkungsgrad der
+            // Stunde aus seiner Teillastkennlinie (0 in Stillstandsstunden).
+            SimulationSPK spk = sim.simulation_spk;
+            for (int i = 0; i < spk.KesselAnzahl; i++)
+            {
+                double[] eta = spk.WirkungsgradStunden(i);
+                if (eta == null || spk.IstStromkessel(i)) continue;
+                spalten.Add(new CsvSpalte(
+                    string.Format(MyResource.Resource.CHART_CSV_KESSEL_WIRKUNGSGRAD, spk.KesselName(i)), eta));
+            }
+
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.CHART_DATEI_HEIZKESSEL, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur, spalten, false);
