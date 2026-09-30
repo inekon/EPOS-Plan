@@ -109,6 +109,17 @@ namespace WindowsFormsApplication1
         {
             EinstellungenUebernehmen();
 
+            // DAS AUSNAHMEPROTOKOLL (Anwenderauftrag 30.09.2026): Jede ausgeloeste Ausnahme
+            // steht mit Aufrufstapel SOFORT in Logs\Ausnahmen.txt neben der Datenbank - auch
+            // die, die aus einem WebView2-Rueckruf herauslaeuft und den Prozess ohne Meldung
+            // beendet (0xc000041d, KERNELBASE.dll). Nach den Einstellungen, damit ein
+            // konfigurierter Datenbankordner gilt; der Ordner wird erst beim ersten Eintrag
+            // gebildet (Rueckfall: Temp-Ordner).
+            Ausnahmeprotokoll.Einschalten(
+                () => Path.Combine(Path.GetDirectoryName(DataRepository.GetDBPath()) ?? "", "Logs"),
+                "Start " + Application.ProductName + " " + Application.ProductVersion +
+                ", Prozess " + Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
+
             SpeicherFlottenProjektCtrl.PlanerFactory = () => new SpeicherPlanung.OrToolsFlottenPlaner();
 
             // DIE DIENSTE VOR ALLEM ANDEREN (Umsetzungskonzept iU5).
