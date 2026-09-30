@@ -29,6 +29,7 @@ namespace EPOS.Kern.Tests
         private const double ETA100_1023 = 0.874;
         private const int PROJEKT_NIEDERTEMPERATUR = 1007;
         private const int PROJEKT_ELEKTROKESSEL = 1017;
+        private const int PROJEKT_REFERENZ = 1050;
         private const int BRENNSTOFF_ERDGAS = 3;
         private const int BRENNSTOFF_HEIZOEL = 9;
         private const int BRENNSTOFF_PELLETS = 15;
@@ -315,6 +316,48 @@ namespace EPOS.Kern.Tests
             var erg = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);
             Assert.False(erg.MitKennlinie);
             Assert.False(erg.Module.Single().MitKennlinie);
+        }
+
+        /// <summary>
+        /// <b>Das Referenzprojekt 1050 „Referenzprojekt Kesselkennlinie“</b> (Konzept 4.3, Entscheid
+        /// F4): Kopie von 1023, der Projektkessel trägt die neutralen Kennlinienwerte — η₁₀₀ 0,97,
+        /// η₃₀ 1,05, Brennwertkennlinie an, Mindestleistung 3,86 kW, Anfahrverlust 0,1 kWh,
+        /// Mindestlaufzeit leer. Der Lauf rechnet mit dem gepflegten η₃₀ und liegt bei derselben
+        /// Wärme wie 1023 rund 9 MWh Brennstoff darunter. Die Zahlen hält die Basis; dieser Fall
+        /// hält die gesäten Zellen (Einfrierregel „gesäte Kesseldaten“).
+        /// </summary>
+        [Fact]
+        public void Das_Referenzprojekt_1050_rechnet_mit_seiner_gepflegten_Kennlinie()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            System.Data.DataTable k = DataRepository.GetDataTable(
+                "SELECT Ptherm, Brennwert, Wirkungsgrad_Gas, Wirkungsgrad_Teillast30, Kennlinie_Brennwert, " +
+                "Mindestleistung, Anfahrverlust_kWh, Mindestlaufzeit_min FROM Tab_Heizkessel WHERE ID_Projekt = ?",
+                new DbParam("@p", PROJEKT_REFERENZ));
+            Assert.Equal(1, k.Rows.Count);
+            System.Data.DataRow r = k.Rows[0];
+            Assert.Equal(19.3, Convert.ToDouble(r["Ptherm"]), 9);
+            Assert.Equal(1L, Convert.ToInt64(r["Brennwert"]));
+            Assert.Equal(0.97, Convert.ToDouble(r["Wirkungsgrad_Gas"]), 9);
+            Assert.Equal(1.05, Convert.ToDouble(r["Wirkungsgrad_Teillast30"]), 9);
+            Assert.Equal(1L, Convert.ToInt64(r["Kennlinie_Brennwert"]));
+            Assert.Equal(3.86, Convert.ToDouble(r["Mindestleistung"]), 9);
+            Assert.Equal(0.1, Convert.ToDouble(r["Anfahrverlust_kWh"]), 9);
+            Assert.Equal(DBNull.Value, r["Mindestlaufzeit_min"]);
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_REFERENZ, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            Assert.False(spk.TeillastwirkungsgradIstVorgabe(0));
+            Assert.Equal(1.05, spk.Teillastwirkungsgrad(0), 12);
+            Assert.Equal(0.97, spk.Nennwirkungsgrad(0), 12);
+            Assert.InRange(spk.WirkungsgradBetrieb(0), 0.97, 1.05);
+            Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 81.9, 82.0);
+            Assert.InRange(spk.TeillastMehrbrennstoff_KWh_Spk[0], -424.0, -423.8);
         }
 
         /// <summary>
