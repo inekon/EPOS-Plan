@@ -168,6 +168,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Verwaltung Heizkessel: Vorlauf und Rücklauf stehen als Gruppe „Auslegung für Verteilung“ und sind ohne Eintrag mit dem Paar vorbelegt, mit dem die Simulation rechnet. (#636)
 - Wärmepumpe: Die Nutzungsdauer wird im Kostendialog gepflegt; ein fehlender Rücklauf ist aus dem Vorlauf vorbelegt. (#636)
 - Auf der Seite „Kosten“ rechnet „Neu berechnen“ die Wirtschaftlichkeit der Versionen im Vergleich neu. (#637)
+- In langen Dialogfenstern bleiben Kopfzeile und Knopfleiste beim Rollen stehen. (#638)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
