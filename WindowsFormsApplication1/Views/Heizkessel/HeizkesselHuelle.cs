@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
-                zeilen.Add(ZeileZu(m));
+                zeilen.Add(ZeileZu(m, Vorbelegen(m, wizard)));
                 zuModell[m.ID] = m;
             }
 
@@ -551,6 +551,7 @@ namespace WindowsFormsApplication1
                 ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),
                 ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
+                ["GruppeAuslegung"] = Text_("HZK_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
                 ["TraegerTitel"] = MyResource.Resource.KAUSW_TITEL,
                 ["EditorTitel"] = Text_("HZKK_TITEL", "Administration Heizkessel"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
@@ -644,12 +645,6 @@ namespace WindowsFormsApplication1
                 ID_Carrier = traeger.CarrierId
             };
 
-            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
-            // der EINEN Wahrheit im Kern statt aus einer zweiten Abschrift
-            // "Vorlauf = stamm.Vorlauf". Sie setzt das Paar nur, wenn der Feldsatz noch
-            // keines traegt; ein frisches Modell traegt 0/0.
-            AnlagenTemperaturen.AusStammsatz(model, stammId);
-
             // Außerhalb des Assistenten den Stammsatz sofort in die Projekttabelle
             // kopieren (idempotent) und die PROJEKT-Id referenzieren; im Wizard nur die
             // Stamm-Id als Platzhalter - die Kopie macht WizardCtrl beim Speichern.
@@ -667,10 +662,19 @@ namespace WindowsFormsApplication1
                 model.ID_Kessel = stammId;
             }
 
+            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
+            // der EINEN Wahrheit im Kern statt aus einer zweiten Abschrift
+            // "Vorlauf = stamm.Vorlauf". Seit dem Anwenderauftrag vom 30.09.2026 ueber die
+            // Vorbelegung des Dialogs: Sie liest das Paar des Kessels, auf den ID_Kessel
+            // jetzt zeigt (die eben gezogene Projektkopie bzw. im Assistenten den
+            // Katalogsatz), und traegt ohne Paar die Vorgabe 70/50 °C ein - samt der Zeile,
+            // woher das Paar stammt. Ein frisches Modell traegt 0/0.
+            string herleitung = Vorbelegen(model, wizard);
+
             modelle.Add(model);
             zuModell[model.ID] = model;
 
-            return new AufnahmeErgebnis(ZeileZu(model), traeger.Meldung, false);
+            return new AufnahmeErgebnis(ZeileZu(model, herleitung), traeger.Meldung, false);
         }
 
         /// <summary>
@@ -700,7 +704,28 @@ namespace WindowsFormsApplication1
         // Abbildungen
         // =================================================================================
 
-        private static ErzeugerZeile ZeileZu(WErzeugerModel m)
+        /// <summary>
+        /// DIE VORBELEGUNG VON VOR- UND RUECKLAUF (Anwenderauftrag 30.09.2026): Ist das Paar
+        /// der Zeile unvollstaendig, setzt der Kern das Paar ein, mit dem die Simulation
+        /// ohne Eintrag rechnet (<c>AnlagenTemperaturen.KesselPaarVorbelegen</c>) - IN DAS
+        /// MODELL, damit es mit OK gespeichert wird; ein Abbruch verwirft die Liste des
+        /// Aufrufers ohnehin. Zurueck kommt die fertige Herleitungszeile, leer, wenn nichts
+        /// vorbelegt wurde.
+        /// </summary>
+        /// <remarks>
+        /// <c>ID_Kessel</c> zeigt auf den KATALOGSATZ nur im Assistenten und nur bei einer
+        /// dort frisch aufgenommenen Zeile (vorläufige Id ab
+        /// <see cref="WizardItemClass.ID_UNGESPEICHERT_START"/>); die Projektkopie entsteht
+        /// dort erst beim Speichern (<c>WizardCtrl</c>). Jede andere Zeile zeigt auf ihre
+        /// Projektkopie in <c>Tab_Heizkessel</c> — derselbe Satz, den die Simulation liest.
+        /// </remarks>
+        private static string Vorbelegen(WErzeugerModel m, bool wizard)
+        {
+            bool stammverweis = wizard && m.ID >= WizardItemClass.ID_UNGESPEICHERT_START;
+            return AnlagenTemperaturen.Herleitung(AnlagenTemperaturen.KesselPaarVorbelegen(m, stammverweis));
+        }
+
+        private static ErzeugerZeile ZeileZu(WErzeugerModel m, string temperaturHerleitung)
         {
             return new ErzeugerZeile
             {
@@ -710,6 +735,7 @@ namespace WindowsFormsApplication1
                 CarrierId = m.ID_Carrier,
                 Vorlauf = m.Vorlauf,
                 Ruecklauf = m.Ruecklauf,
+                TemperaturHerleitung = temperaturHerleitung ?? "",
                 // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
                 // formuliert im Kern; leer beim Referenzkessel und ohne Projekt.
                 Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)

@@ -1381,4 +1381,110 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
                               e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
     }
+
+    // =================================================================================
+    // Auslegung für Verteilung und Vorbelegung (Anwenderauftrag 30.09.2026)
+    // =================================================================================
+
+    /// <summary>Die Gruppe „Auslegung für Verteilung" im Detailraster.</summary>
+    private static AngleSharp.Dom.IElement Auslegungsgruppe(IRenderedComponent<HeizkesselDialog> cut)
+        => cut.FindAll(".epos-formularraster .epos-formulargruppe")
+              .Single(g => g.QuerySelector(".epos-formulargruppe-titel")?.TextContent == "Auslegung für Verteilung");
+
+    /// <summary>
+    /// <b>Die Anordnung</b>: Vorlauf und Rücklauf stehen als eigene Gruppe unter einer
+    /// Überschrift über alle Spalten — Überschrift, Vorlauf, Rücklauf unmittelbar
+    /// hintereinander, keines der beiden Felder über die volle Breite. Damit beginnen sie
+    /// eine neue Rasterzeile und stehen nebeneinander (zwei Feldpaare je Zeile). Darunter
+    /// die Herkunft der Vorbelegung, dann die Senken; der Brennwert-Schalter bleibt
+    /// außerhalb bei den Katalogdaten.
+    /// </summary>
+    [Fact]
+    public void Vorlauf_und_Ruecklauf_stehen_als_Gruppe_nebeneinander_mit_Herleitung_und_Senken()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.";
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser)";
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        var gruppe = Auslegungsgruppe(cut);
+        var kinder = gruppe.Children.ToList();
+
+        Assert.Equal(5, kinder.Count);
+        Assert.Contains("epos-formulargruppe-titel", kinder[0].ClassList);
+        Assert.Equal("Vorlauf:", kinder[1].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.Equal("Rücklauf:", kinder[2].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.DoesNotContain("epos-feld--breit", kinder[1].ClassList);
+        Assert.DoesNotContain("epos-feld--breit", kinder[2].ClassList);
+        Assert.Equal(zeile.TemperaturHerleitung, kinder[3].QuerySelector(".epos-herleitung-text")!.TextContent);
+        Assert.Equal(zeile.Senken, kinder[4].QuerySelector(".epos-herleitung-text")!.TextContent);
+
+        // Genau die zwei Temperaturfelder; der Brennwert-Schalter steht außerhalb der Gruppe.
+        Assert.Equal(2, gruppe.QuerySelectorAll("input[inputmode=numeric]").Length);
+        Assert.Empty(gruppe.QuerySelectorAll("input[type=checkbox]"));
+        Assert.Single(cut.Find(".epos-gruppenkopf-koerper").QuerySelectorAll("input[type=checkbox]"));
+    }
+
+    /// <summary>Ohne Vorbelegung (das Paar ist das der Anlage) steht nur die Senkenzeile.</summary>
+    [Fact]
+    public void Ohne_Vorbelegung_steht_keine_Herkunftszeile()
+    {
+        var cut = Aufbauen();
+
+        var gruppe = Auslegungsgruppe(cut);
+
+        Assert.Empty(gruppe.QuerySelectorAll(".epos-herleitung"));
+        Assert.Equal(new[] { "Vorlauf:", "Rücklauf:" },
+                     gruppe.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// <b>Die Vorbelegung</b>, wie die Hülle sie baut (Kern:
+    /// <c>AnlagenTemperaturen.KesselPaar</c> und <c>Herleitung</c>): ohne Paar an Anlage und
+    /// Kessel die Vorgabe 70/50 °C, mit Kesselpaar dessen Werte — jeweils in den Feldern und
+    /// mit ihrer Herkunft darunter.
+    /// </summary>
+    [Theory]
+    [InlineData(null, null, "70", "50", "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.")]
+    [InlineData(85, 65, "85", "65", "Aus dem Kesseldatensatz: 85/65 °C — so rechnet die Simulation ohne Eintrag.")]
+    public void Ein_leeres_Paar_zeigt_die_Vorbelegung_des_Kerns(
+        int? kesselVorlauf, int? kesselRuecklauf, string vorlauf, string ruecklauf, string herleitung)
+    {
+        AnlagenTemperaturen.PaarVorbelegung p = AnlagenTemperaturen.KesselPaar(0, 0, kesselVorlauf, kesselRuecklauf);
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.Vorlauf = p.Vorlauf;
+        zeile.Ruecklauf = p.Ruecklauf;
+        zeile.TemperaturHerleitung = AnlagenTemperaturen.Herleitung(p);
+
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        var gruppe = Auslegungsgruppe(cut);
+        var felder = gruppe.QuerySelectorAll("input[inputmode=numeric]");
+        Assert.Equal(vorlauf, felder[0].GetAttribute("value"));
+        Assert.Equal(ruecklauf, felder[1].GetAttribute("value"));
+        Assert.Equal(herleitung, gruppe.QuerySelector(".epos-herleitung-text")!.TextContent);
+    }
+
+    /// <summary>
+    /// Eine Eingabe macht das Paar zu dem des Anwenders: Die Herkunftszeile verschwindet,
+    /// der Wert geht ins Modell, die Senkenzeile bleibt.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_nimmt_die_Herkunftszeile_weg()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.";
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser)";
+        var uebernommen = new List<ErzeugerZeile>();
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, uebernehmen: z => uebernommen.Add(z));
+
+        Auslegungsgruppe(cut).QuerySelectorAll("input[inputmode=numeric]")[1].Input("45");
+
+        var gruppe = Auslegungsgruppe(cut);
+        Assert.Equal("", zeile.TemperaturHerleitung);
+        Assert.Equal(45, zeile.Ruecklauf);
+        Assert.Single(uebernommen);
+        Assert.Equal(new[] { zeile.Senken },
+                     gruppe.QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+    }
 }
