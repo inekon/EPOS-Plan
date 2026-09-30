@@ -11,8 +11,9 @@ Commits:
 - `0e31532b` Basis R29 eingefroren, R28 archiviert
 - `39179c7e` gepinnte Anker nachgezogen: Kapitalwerte 1030 (drei Szenarien) und 1048, Zerlegung der Anker 1030,
   CO₂-Summe 1018 (siehe 6)
-- Papiere (Basisname, Konzept, Wiki-Quelle, dieses Protokoll, Index) im Commit danach; Merge
-  `origin/ios_migration_september` und Gate-Zahlen danach
+- `c9ca58f9` Papiere (Basisname, Konzept, Wiki-Quelle, dieses Protokoll, Index)
+- `ba8328b6` Merge `origin/ios_migration_september` (`d80a1afc`: #626, #627, #628), konfliktfrei
+- Gate-Zahlen in diesem Protokoll im Commit danach
 
 ## 1 Auftrag und Entscheide
 
@@ -136,7 +137,24 @@ die Nennleistung die Vorgaben von Mindestleistung und Anfahrverlust.
 
 ## 6 Gate
 
-GATE_PLATZHALTER
+Gate auf dem Merge-Stand `ba8328b6` (enthält origin `d80a1afc`: #626 KP2 U2, #627, #628 Reiterfolge; Testdatenbank
+unverändert `5d59041f…`), Linux, `TMPDIR=/dev/shm`, `Werkzeuge/Gate/gate_linux.sh`:
+
+- Kern-Filter Release: 0 Fehler.
+- Tests mit den xUnit-Schaltern: KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 (1
+  übersprungen), EPOS.UI.Tests 7 121, EPOS.Kern.Tests 9 502 (1 übersprungen) — zusammen **17 585 grün, 0 rot**;
+  Dokumentationswachen 35 grün. Der erste volle Lauf vor dem Merge fand sechs rote Fälle, alle Folge des
+  Anfahrverlusts im Kesselbrennstoff: die Kapitalwertanker von 1030 (drei Szenarien, Erwartet −30.812.710,67 →
+  −30.873.773,32 €) und 1048 (−235.093,78 → −236.955,12 €), die Zerlegung der Anker 1030 (Kesselbrennstoff 5 203,2 →
+  5 240,16 MWh, Energiekosten +434.771,90 €/a, CO₂-Abgabe +71.721,28 €/a, ΔKW −8.978.396,05 €) und die CO₂-Summe von
+  1018 (24,8496 → 25,116 t/a). Nachgezogen in `39179c7e`, samt der Ankertafel im Wirtschaftlichkeitskonzept.
+- Werkzeugtests mit normaler Build-Ausgabe: Formularkarte 124, Auslieferungsvorlage 44, Gebaeudevergleich 24,
+  ZapfprofilValidierung 39 — grün.
+- SQL-Prüfer (Python 3.12): Selbsttest 35/0; 2 145 Texte, 0 Fundstellen.
+- ChartProben: alle grün; 194 Hashes gleich der Linux-Messlatte `Messlatte_2026-09-30.sha256`.
+- `EPOS.Referenzlauf` über alle sechzehn Projekte gegen R29: **GESAMT PASS, 487/487 CSV byte-gleich**; gestört
+  (`--stoerung ulp`) gegen ungestört 16/16 PASS (beim Einfrieren 480/487 byte-gleich).
+- Windows-Schale (`EnableWindowsTargeting=true`, Debug x64): 0 Fehler.
 
 ## 7 Wiki und Logbuch
 
