@@ -40423,5 +40423,86 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
     <value>Hilfe zur Kühlübergabe</value>
   </data>
+  <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
+    <value>{0} · Bezugsjahr {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
+    <value>Heizen</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_KUEHLEN" xml:space="preserve">
+    <value>Kühlen</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_LUEFTUNG" xml:space="preserve">
+    <value>Lüftung</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_GERAETE" xml:space="preserve">
+    <value>Geräte</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ACHSE_STUNDE" xml:space="preserve">
+    <value>Uhrzeit</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ACHSE_WOCHE" xml:space="preserve">
+    <value>Wochenstunde (Mo 0 Uhr … So 24 Uhr)</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_AUS" xml:space="preserve">
+    <value>aus</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_MONATE" xml:space="preserve">
+    <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_WOCHENTAGE" xml:space="preserve">
+    <value>Mo;Di;Mi;Do;Fr;Sa;So</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_DATUM" xml:space="preserve">
+    <value>{0:00}.{1:00}.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_DATUM_MONAT" xml:space="preserve">
+    <value>{0:00}.–{1:00}.{2:00}.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_STUNDEN" xml:space="preserve">
+    <value>{0}–{1} Uhr</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_WOCHE" xml:space="preserve">
+    <value>Standardwoche</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_GRUNDANGABE" xml:space="preserve">
+    <value>Grundangabe</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_PERIODE" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_SAISON" xml:space="preserve">
+    <value>außerhalb der Saison</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>mehrere Quellen</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_FEIERTAG" xml:space="preserve">
+    <value>Feiertag</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_ART_BETRIEBSPAUSE" xml:space="preserve">
+    <value>Betriebspause</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_VEREINFACHT" xml:space="preserve">
+    <value>Vereinfacht auf {0} Farbstufen, damit das Bild höchstens {1} Elemente trägt.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_VEREINFACHT_BLOECKE" xml:space="preserve">
+    <value>Vereinfacht auf {0} Farbstufen und Blöcke zu {2} Tagen, damit das Bild höchstens {1} Elemente trägt.</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_LEER" xml:space="preserve">
+    <value>Kein Kalender vorhanden.</value>
+  </data>
+  <data name="KOND_MSG_SP_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
 </root>
 
