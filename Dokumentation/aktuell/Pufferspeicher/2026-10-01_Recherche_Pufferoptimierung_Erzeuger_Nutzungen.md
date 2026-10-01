@@ -335,7 +335,7 @@ neben Kachel und ① Konfiguration und erfüllt ZU1.
 
 | Teil | Stand | Belegtiefe |
 |---|---|---|
-| Heizungspuffer nach Erzeugern (Runde 1) | fertig, K1–K16 | Primärquellen für WP (BWP, VdZ, Fraunhofer), Festbrennstoff (BImSchV, BEG), BHKW (OTH, Mini-KWK), Ökodesign (EU, BDH), § 14a (BNetzA/Verbraucherzentrale); VDI 4645 nur sekundär |
+| Heizungspuffer nach Erzeugern (Runde 1) | fertig, K1–K16 | Primärquellen für WP (BWP, VdZ, Fraunhofer), Festbrennstoff (BImSchV, BEG), BHKW (OTH, Mini-KWK), Ökodesign (EU, BDH), § 14a EnWG recherchiert, nach Anwenderentscheid 01.10.2026 nicht relevant; VDI 4645 nur sekundär |
 | Brauchwasserspeicher | fertig | DIN EN 12831-3 (IKZ), BWP TWW 2023, W 551 (DVGW, UBA, GdW); Verfahren in EPOS vorhanden |
 | Kombipuffer | fertig | BWP TWW 2023, GdW 2024; Zonenlogik aus dem EPOS-Modell |
 | Prozesswärmepuffer | ausreichend für P1 | nur dena und allgemeine Peak-Shaving-Literatur; keine Richtwerte — Lastgang-Kriterium trägt |
