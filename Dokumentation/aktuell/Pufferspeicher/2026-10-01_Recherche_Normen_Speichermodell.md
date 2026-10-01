@@ -10,6 +10,9 @@ die der Anwender am 01.10.2026 unter `Quellen/Waermespeicher-Tool/` abgelegt hat
 liegt weiterhin dort). Dieses Papier sagt, was jede Datei ist, was sie für die Auslegung und für das
 Puffermodell des Kerns hergibt, und schreibt Kriterientabelle, Vorschläge und Entscheide fort.
 
+**Fortsetzung.** Die vierte Runde — internationale Literatur zu Brauchwasserspeichern (SIA, ÖNORM, CIBSE,
+ASHRAE, Ecosizer, IEA Annex 46) — steht in [`2026-10-01_Recherche_International_Brauchwasserspeicher.md`](2026-10-01_Recherche_International_Brauchwasserspeicher.md) mit V46–V49 und E-P31–E-P32.
+
 **Grenzen.** Die Normen sind lizenziert (Anwenderentscheid E-P17: sie bleiben für Konzeption und
 Umsetzung im Repositorium). Sie werden hier mit Abschnitts- und Formelnummern **zitiert, nicht
 abgeschrieben**; Zahlen stehen nur, wo sie für den Rechenweg gebraucht werden. Keine Produktdaten.
