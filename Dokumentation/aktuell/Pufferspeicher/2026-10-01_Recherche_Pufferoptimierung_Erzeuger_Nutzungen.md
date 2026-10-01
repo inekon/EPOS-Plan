@@ -343,7 +343,8 @@ neben Kachel und ① Konfiguration und erfüllt ZU1.
 | Nutzungsarten-Kopplung | Vorschlag fertig | DIN EN 12831-3 Nutzungsarten, EPOS-Katalog (sechs Zapf-Nutzungsarten), Konditionierungs-`Nutzung`; Lücken Büro/Schule/Gewerbe und ID-Mapping benannt |
 | Bestand EPOS-Plan | fertig (zwei Sonnet-Befunde) | Klassen, Rechenweg, Zapfprofil-Schnittstelle, Lastgang-Quellen, Konditionierung, Verbund |
 | Normdateien vom 01.10.2026 (Runde 3) | fertig | VDI 4645 Hauptblatt (Entwurf 2026-03): 3 l/kW Vorprüfung, Faustwerte 20/3 l/kW nach Gerätetyp, Gleichung 22 Mindestlaufzeit, Gleichung 23 Abschaltzeiten mit Tabellen 14/15 — K1–K4/K14 bestätigt bzw. präzisiert, V37–V39; VDI-MT 4645 Blatt 1 = Qualifikationsblatt (kein Ertrag); prEN 15316-5:2024 Schichtenmodell, Formel (3) kWh/d → W/K, Standardaufteilung 0,10/0,16/0,37/0,37, Verbund seriell/parallel; DIN EN 15332 + A1 Prüfbedingung 65 °C bzw. ≥ 45 K über 20 °C; Vergleich mit dem Puffermodell des Kerns (Verlustansatz SOC-anteilig → V35 Folgeauftrag) |
-| Offen | Herstellerangaben Mindestlaufzeit nur allgemein (VDI 4645 verweist auf den Hersteller); Prozesstemperatur fehlt im Datenmodell; Raumtemperatur des Aufstellorts fehlt im Modell (V35) | — |
+| Sekundärquelle energie-experten.org (Runde 3, Abschnitt 7) | fertig | acht Seiten gegengelesen: Plausibilitätsband 12–35 l/kW (DIN EN 15450), Zirkulation 30–40 %, Starts 10–15/Tag und 2 000–3 000 je Heizperiode, DIN EN 303-5 für Festbrennstoff, VDI-Whitepaper (nur Meldung) — V40–V43, E-P29 |
+| Offen | VDI-Whitepaper „Thermische Speicher in Wärmepumpensystemen“ beschaffen (E-P29); Herstellerangaben Mindestlaufzeit nur allgemein (VDI 4645 verweist auf den Hersteller); Prozesstemperatur fehlt im Datenmodell; Raumtemperatur des Aufstellorts fehlt im Modell (V35) | — |
 
 
 ## 10 Quellenverzeichnis der zweiten Runde (abgerufen 01.10.2026)
