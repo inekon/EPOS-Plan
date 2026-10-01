@@ -219,7 +219,9 @@ wird so markiert (Warnhinweis mit Code, V20).
 | V37 | **K4 nach VDI 4645 Gleichung 23** als Standardweg: Auslegungsheizlast (aus dem Lastgang-Maximum oder der Heizlast des Projekts) × (Sperrdauer − t_aus,max nach Tabelle 14 aus Heizgrenze und Übergabeart des Gebäudes) ÷ (c · ((ϑ_VL + dT_SP) − (ϑ_RL + dT_Wü,min nach Tabelle 15))) − Anlagenvolumen; bivalent entfällt K4; Tool-Weg (rollierendes Lastmittel, Puffer-ΔT, Hysterese) als Expertenvariante mit Gegenüberstellung | richtlinienkonform, deutlich kleinere Volumina (Beispiel Abschnitt 5.4: 2 400 l statt 16 630 l), nutzt Übergabe- und Heizgrenzdaten, die EPOS je Gebäude führt | mittel (Tabellen 14/15 als Vorgabeschlüssel, Ableitung Übergabeart → dT_Wü,min) | **A, P1** (E-P28) |
 | V38 | **Durchmischungszuschlag 15 %** auf die Brauchwasser- und Frischwasserzone (f_TWE = 1,15) | VDI 4645 Anhang I1 und BWP TWW (15–20 %) stimmen überein; heute rechnet die Zapfprofil-Auslegung ihren eigenen Zuschlag (`Speicherauslegung.Zuschlag` 0,15) — für die Frischwasserzone (Runde 2, 4.1) fehlte er | klein (Vorgabeschlüssel `Pufferauslegung.Frischwasser.Zuschlag` = 0,15) | **A, P1** |
 | V40 | **Zirkulationszuschlag** für die Brauchwasserzone (Vorgabe 35 % des Tagesbedarfs über 5 K), nur wenn die Zapfprofil-Auslegung ihn nicht trägt | energie-experten (30–40 %), VDI 4645 Anhang I (Q_Zirk) | klein, nach Prüfung am Modell | **B, P1** |
-| V41 | **Plausibilitätsband 12–35 l/kW** (DIN EN 15450) als Hinweiszeile; über 35 l/kW bei Flächenheizung Hinweiscode „JAZ-Verlust wahrscheinlich“ (VDI-Whitepaper) | ordnet die Empfehlung ein, ohne zu sperren | klein | **A, P1** |
+| V41 | **Plausibilitätsband nach Übergabeart** (Fußbodenheizung 10–20, Heizkörper 25–45 l je kW Heizlast nach dem VDI-Whitepaper; dazu 12–35 l je kW Wärmepumpenleistung nach DIN EN 15450) als Hinweiszeile mit Hinweiscodes über und unter dem Band (Abschnitt 7.1) | ordnet die Empfehlung ein, ohne zu sperren | klein | **A, P1** |
+| V44 | **Bivalenz unterscheiden**: K4 entfällt nur bei freigegebenem Zweiterzeuger; Heizstab gilt als mitgesperrt (Abschnitt 7.1) | verhindert zu kleine Puffer bei monoenergetischen Anlagen | klein | **A, P1** |
+| V45 | **Hinweiscode Abtauung + Trinkwasservorrang** unter 20 l/kW Heizlast (Abschnitt 7.1) | Komfortfall aus dem Whitepaper | klein | **B, P1** |
 | V42 | **Kennzahl Starts je Heizperiode** mit Hinweisschwelle 3 000 neben Starts je Tag | Lebensdauer-Maß der Hersteller; Portalband 10–15/Tag als Beispielhilfe im Expertenfeld | klein | **B, P1** |
 | V43 | **K9 Festbrennstoff zweiter Weg nach DIN EN 303-5**: V = 15 · Q_K · T_B · (1 − 0,3 · Q_H/Q_K,min), Vorgabe Abbrandperiode 4 h Scheitholz, Expertenfeld | normnäher als der Faustwert, wenn Abbrandperiode und Mindestleistung vorliegen | klein | **B, P1** |
 | V39 | **Vorlage Wärmepumpe mit Schalter Fixed-Speed / leistungsgeregelt**: Faustwert 20 bzw. 3 l/kW (K2), Mindestlaufzeit bzw. Mindestleistung als führende Eingabe, Modulationsmodus (V4) nur bei leistungsgeregelt | folgt 7.8.1 Fußnote und 7.8.4; passt zum Kennfeld (`Mindestleistung` fehlt der Wärmepumpe heute → Eingabe mit Vorgabe 30 %) | klein | **A, P1** |
@@ -231,7 +233,8 @@ wird so markiert (Warnhinweis mit Code, V20).
 | E-P16 | Hauptblatt VDI 4645 beschaffen und gegenlesen? | **erledigt 01.10.2026**: Entwurf März 2026 liegt unter `Quellen/Waermespeicher-Tool/`, Gegenlesen in Abschnitt 2.3; Hinweis: Entwurf mit Einspruchsfrist bis 31.05.2026, die Weißdruck-Fassung kann abweichen — Herkunftsmarke „VDI 4645 E 2026-03“ |
 | E-P12 | § 14a EnWG | **entschieden: nicht relevant** — VDI 4645 7.6 bestätigt: für die Auslegung nicht berücksichtigt |
 | E-P28 | K4 Sperrzeit nach VDI 4645 Gleichung 23 als Standardweg (V37), Tool-Weg als Expertenvariante? | ja |
-| E-P29 | VDI-Whitepaper „Thermische Speicher in Wärmepumpensystemen“ (VDI Wissensforum) beschaffen und vor P2 gegenlesen (Abschnitt 7)? | ja; bis dahin Hinweiscode über 35 l/kW bei Flächenheizung (V41) |
+| E-P29 | VDI-Whitepaper „Thermische Speicher in Wärmepumpensystemen“ beschaffen und gegenlesen? | **erledigt 01.10.2026** (Abschnitt 7.1): V41 neu gefasst, V44, V45, V16 ergänzt |
+| E-P30 | Vorlage „Wärmepumpe bivalent“ mit der Wahl „Zweiterzeuger frei in der Sperre“ / „Heizstab (gesperrt)“ (V44)? | ja |
 | E-P26 | Verlustmodell der Simulation umgebungsbezogen umstellen (V35) — als Folgeauftrag mit neuer Referenzbasis, nicht in P1? | ja, Folgeauftrag nach P2 |
 | E-P27 | Standardaufteilung der Norm (0,10/0,16/0,37/0,37) als Vorgabehilfe für Kombi-Zonen (V36), EPOS-Schichtmodell (`Hoehe`, `Lambda_Eff`) unverändert? | ja |
 
@@ -286,14 +289,62 @@ Aktualisierungsdaten stehen in Abschnitt 8. Keine Produktdaten übernommen.
 |---|---|---|---|
 | Warmwasser mit Wärmepumpe | 1,45 kWh je Person und Tag ≈ 25 l bei 60 °C; Faustformel V_SP,min = 2 · n · 25 l · (60 − 10)/(t_soll − 10) (Beispiel 3 Personen, 50 °C → 187,5 l → 200 l); Zuschlag Durchmischung 15–20 %; Zirkulationsverluste 30–40 % des Tagesbedarfs, als Volumen über 60/55 °C umgerechnet; Wärmeübertrager 0,25 m²/kW; Ladestation 2–5 K Spreizung; Kombispeicher für Wärmepumpen energetisch nachteilig; JAZ Trinkwasser 2–2,5 (Fraunhofer: 3,1 Erdreich, 2,4 Luft), 19 % Anteil Trinkwasser im Bestand; Zapfprofile EN 15450 Anhang E (Einzelperson 36 l, Familie 100 l, Familie mit Baden 200 l bei 60 °C; Q_DP 2,1 / 5,845 / 11,655 kWh, Spitzenbedarf 0,945 / 2,24 / 4,445 kWh); 55–60 °C, W 551, DIN 4708-2 (N-Zahl) | Zuschlag 15 % = VDI 4645 Anhang I (V38); 0,25 m²/kW = VDI 4645 Anhang F; Zapfprofil-Werte = VDI 4645 Anhang J3 (5,845 kWh); Zirkulationsvolumen fehlt in Runde 2 | **V40**: Zirkulationszuschlag für die Brauchwasserzone bei Topologie Speicher/Frischwasser, wenn das Projekt Zirkulation führt (Vorgabe 35 % des Tagesbedarfs, umgerechnet über 5 K) — nur, wenn die Zapfprofil-Auslegung ihn nicht schon trägt (am Modell prüfen) |
 | Pufferspeicher für Wärmepumpen | DIN EN 15450: 12–35 l/kW maximaler Wärmepumpenleistung; VDI 4645 8.8.4: 20 l/kW; 3 l/kW nicht absperrbar → kein Puffer; Sperrzeit: V = P · t / (1,163 · ΔT), Faustwert 30–40 l/kW je Stunde Sperre; ohne Speichermassen 1–2 K Abkühlung in der Sperre; Einbindung Reihe (Vor- oder Rücklauf), parallel als Pendelpuffer; Fraunhofer: Puffer senkt Schalthäufigkeit um 20–60 % | alles in K1–K4 und K12 enthalten; das Band 12–35 l/kW der DIN EN 15450 ist neu | **V41**: Plausibilitätsband 12–35 l/kW (DIN EN 15450) als Hinweiszeile im Ergebnis der Heizzone — Empfehlung außerhalb des Bandes bekommt einen Hinweiscode, keine Sperre |
-| News: VDI-Whitepaper „Thermische Speicher in Wärmepumpensystemen: zu klein, zu groß oder überhaupt notwendig?“ (VDI Wissensforum) | Modelica-Simulation mit 30 Volumina 5–150 l/kW Heizlast; Schalthäufigkeit: bei kleinen Wärmepumpen und trägen Übergabesystemen genügen 10–20 l/kW; Abtauung: mindestens 20 l/kW, sonst Raumtemperatur unter 18 °C bei ungünstigem Abtauzeitpunkt; EVU-Sperren: monovalent 25 l/kW Heizlast, bivalent 40–50 l/kW; bei Fußbodenheizung und Sperrbetrachtung sind die Richtlinienwerte tendenziell zu groß und senken die JAZ; größere Speicher selten wirtschaftlich; Lebensdauer-Einfluss der Schalthäufigkeit unbekannt | Primärquelle hinter der Meldung ist das Whitepaper selbst — nicht gelesen; stützt V37 (Übergabeart entscheidet) und das Taktziel D2 als Komfort-, nicht Wirtschaftlichkeitskriterium | **E-P29**: Whitepaper beschaffen (VDI Wissensforum, frei erhältlich gegen Registrierung?) und vor P2 gegenlesen — Empfehlung ja; bis dahin Hinweiscode „über 35 l/kW bei Flächenheizung: JAZ-Verlust wahrscheinlich“ (V41) |
+| News: VDI-Whitepaper (Meldung) | Zusammenfassung der Studie, siehe 7.1 — das Whitepaper selbst liegt seit dem Abend des 01.10.2026 vor | — | E-P29 erledigt |
 | Wärmepumpe taktet | Hersteller 6–12 Starts/h; empfohlen 10–15 Starts/Tag, 30–60 min je Zyklus; 2 000–3 000 Starts je Heizperiode; Mindestlaufzeit 6–20 min; Taktpunkt (Heizlast = Mindestleistung) möglichst ≥ +5 °C; VDI 4645 ohne Vorgaben zu Mindestlaufzeit und Schalthäufigkeit; Fraunhofer: Überdimensionierung in Feldmessungen nicht als entscheidend nachweisbar | Startziel D2 (Runde 1: 6 Starts/Tag, Warnschwelle 15/Tag) liegt unter dem Portalband 10–15/Tag; Mindestlaufzeit 10 min (P4) liegt im Band 6–20 min | **V42**: Ergebniskennzahl „Starts je Heizperiode“ neben Starts je Tag mit Hinweisschwelle 3 000; Startziel-Vorgabe bleibt 6/Tag (Fraunhofer-Median), das Portalband 10–15/Tag als Beispielhilfe im Experten-Feld |
 | EVU-Sperrzeit (18.07.2026) | seit 2024: Dimmung auf 4,2 kW bis 2 h, „in der Regel kein Einfluss auf die Dimensionierung“; vor 2024: 3 × 2 h, Sperrzeitfaktor in der Leistung | bestätigt E-P12 und VDI 4645 7.6 | keine |
 | Trinkwasserspeicher | VDI 6023: 30 l je Person und Tag; Speicher 1,5- bis 2-fach des Tagesbedarfs, mindestens etwa 100 l; Tabelle 2 Personen 200 l … 9–10 Personen 900–1 000 l; Legionellen: nicht überdimensionieren, wöchentlich über 60 °C, VDI/DVGW 6023 | Faustwerte; die Zapfprofil-Auslegung rechnet genauer (Runde 2) | Beispielhilfe im Schritt „Lastgang“ für die Brauchwasserzone; keine Vorgabe |
 | Pufferspeicher-Technik (Heizungstechnik) | Festbrennstoff nach DIN EN 303-5: V_Pu = 15 · Q_K · T_B · (1 − 0,3 · Q_H/Q_K,min) mit Nennleistung Q_K, Abbrandperiode T_B, Heizlast Q_H, kleinster Kesselleistung Q_K,min; Richtwert 35–75 l/kW für Holzheizungen; Anschlüsse: Vorlauf oben, Rücklauf unten; Fühler oben/mittig/unten; Ökodesign Klasse C seit 26.09.2017 bis 2 000 l | K9 kennt nur 1. BImSchV und BEG (55/30/20 l/kW); die EN-303-5-Formel braucht die Abbrandperiode | **V43**: K9 um die DIN-EN-303-5-Formel als zweiten Weg ergänzen, wenn Abbrandperiode und Mindestleistung des Kessels vorliegen (Expertenfeld; Vorgabe T_B 4 h Scheitholz); sonst bleibt der Faustwert |
 | News: Feldtest Schichtenspeicher (12.02.2025) | Hochschule Düsseldorf, Zentrum ZIES: Austausch fehlerhaft eingebundener Speicher gegen gut schichtende Technik senkte den Strombedarf einer Luft/Wasser-Wärmepumpe um rund 30 %, JAZ +11 %, Schichtungseffizienz 85 % (Niedrigenergiehaus 1994, 250 m², 750 l + 2 × 120 l → 900 l) | zeigt, dass Hydraulik und Schichtung mehr wiegen als das Volumen; Produktnamen nicht übernommen | Begründungstext für den Hinweis „Schichtung und Einbindung vor Volumen“ im Ergebnisblatt; keine Rechengröße |
 
-**Zusammenfassung:** Das Portal liefert keine neue Rechenregel, aber drei brauchbare Ergänzungen —
+
+### 7.1 Das VDI-Whitepaper selbst (gelesen am 01.10.2026)
+
+*Thermische Speicher in Wärmepumpensystemen: zu klein, zu groß oder überhaupt notwendig?* —
+Wüllhorst, Vering, Müller, Haas (RWTH Aachen, Lehrstuhl für Gebäude- und Raumklimatechnik),
+VDI Wissensforum GmbH, 9 Seiten, Datei `WP_Thermische_Speicher_in_Waermepumpensystemen1_.pdf`
+unter `Quellen/Waermespeicher-Tool/`. Es ist eine **Simulationsstudie**, keine Richtlinie; es zitiert
+VDI 4645:2018 und DIN EN 15450:2007.
+
+- **Methode:** Modelica (BESMod, AixLib), Jahressimulation, Standort Potsdam; Puffer als direkt
+  beladener Schichtspeicher **parallel**, Beladung und Entnahme oben; Trinkwasserspeicher 125 l
+  parallel mit Vorrang; Regelung über Speichertemperatur-Hysterese **±5 K** mit PI-Regler
+  (Trinkwasser ±2,5 K); 30 Volumina von **5 bis 150 l je kW Heizlast** (36,5 bis 1 935 l); zwei
+  Wärmepumpengrößen (Bivalenztemperatur −12 °C und 0 °C, Zusatz durch Heizstab) und zwei
+  TABULA-Gebäude (Neubau 2015 mit Fußbodenheizung, Altbau 1980 mit Heizkörpern); Abtauung
+  zeitgesteuert alle 30 bis 240 min; EVU-Sperre als zwei feste Fenster von 2 h ohne vorausschauendes
+  Laden, Heizstab nach 30 min unter der unteren Hysteresegrenze; PV-Überhitzung des Puffers um 15 K.
+  Bezugsgröße ist die **Heizlast**, mit Umrechnungsfaktoren auf die Wärmepumpenleistung der DIN
+  (maximale Leistung) und der VDI (Nennleistung), weil Datenblätter die Maximalleistung oft nicht
+  nennen.
+- **Schalthäufigkeit (Abschnitt 3):** Schaltvorgänge je Tag sinken mit dem Volumen und
+  konvergieren; die JAZ sinkt zugleich (Speicherverluste, häufigerer Heizstab). Monovalent mit
+  Heizkörpern lohnt Volumen bis **45 l/kW Heizlast**; Kompromiss aus Schaltzahl und JAZ
+  **25–45 l/kW Heizlast**; kleinere Wärmepumpen und trägere Übergabe: **10–20 l/kW** genügen.
+- **Bereifung (Abschnitt 4):** mindestens **20 l/kW**, sonst Raumtemperatur unter 18 °C, wenn die
+  Abtauung ungünstig liegt — der kritische Fall ist **Abtauung mit anschließender Beladung des
+  Trinkwasserspeichers** (Vorrang).
+- **EVU-Sperre (Abschnitt 5):** zwei Sperren von 2 h je Tag; Neubau mit Fußbodenheizung ohne
+  Diskomfort bei jeder Größe; Altbau: monovalent **25 l/kW Heizlast**, bivalent (Heizstab)
+  **40–50 l/kW Heizlast** — der Heizstab ist in der Sperre ebenfalls gesperrt, die kleinere Wärmepumpe
+  braucht mehr Vorrat.
+- **PV (Abschnitt 6):** kostenoptimal ist bei heutigen Speicherpreisen stets die **minimale**
+  Speichergröße; regelbasierte SG-Ready-Steuerung nutzt PV-Strom nicht ganzjährig effizient.
+- **Fazit (Abschnitt 7):** Richtlinienwerte passen für Bestand mit Heizkörpern ohne Sperren; bei
+  Fußbodenheizung und bei Sperrbetrachtung sind sie tendenziell zu groß und senken die JAZ; größere
+  Speicher selten wirtschaftlich; die Schalthäufigkeit hat ohne bekannten Lebensdauer-Zusammenhang
+  keinen Einfluss auf die Wirtschaftlichkeit; Richtlinien sollten das Volumen spezifischer fassen.
+
+**Folgen für die Auslegung:**
+
+| Nr. | Folge |
+|---|---|
+| V41 (neu gefasst) | **Plausibilitätsband nach Übergabeart in l je kW Heizlast:** Fußbodenheizung 10–20, Heizkörper 25–45 (Whitepaper), daneben das Herstellerband 12–35 l je kW Wärmepumpenleistung (DIN EN 15450); Hinweiscode über dem oberen Bandwert „JAZ-Verlust wahrscheinlich“, unter dem unteren „Schaltzahl und Abtaureserve prüfen“ |
+| V44 | **Bivalenz unterscheiden:** nur ein in der Sperre **freigegebener Zweiterzeuger** lässt K4 entfallen; monoenergetisch (Heizstab) ist mitgesperrt (VDI 4645 7.12, Whitepaper) und braucht nach dem Whitepaper **mehr** Vorrat als monovalent — Vorlage „Wärmepumpe bivalent“ bekommt die Wahl „Zweiterzeuger frei in der Sperre“ / „Heizstab (gesperrt)“ |
+| V45 | **Warnhinweis Abtauung + Trinkwasservorrang:** bei Kombi oder Trinkwasservorrang die Abtau-Gegenprobe (K2, 20 l/kW) nicht unter die Mindestreserve fallen lassen; Hinweiscode, wenn die Heizzone kleiner als 20 l/kW Heizlast ausfällt |
+| V16 (Ergänzung) | Nutzen-Aufwand-Zeile sagt ausdrücklich: Mehrvolumen senkt Starts, erhöht Bereitschaftsverlust und senkt die JAZ; das Taktziel D2 ist ein Komfort- und Verschleißkriterium, kein Wirtschaftlichkeitsnachweis (Whitepaper, Abschnitt 7) |
+| Modellbezug | Die Studie rechnet mit Hysterese ±5 K am Puffer und Parallelverschaltung mit Entnahme oben — das entspricht dem EPOS-Puffer mit Schwellen und Bereitschaftszone oben; Bezugsgröße Heizlast = Maximum der Heizreihe oder Heizlast des Projekts (wie V37) |
+
+**Zusammenfassung zu energie-experten.org:** Das Portal liefert keine neue Rechenregel, aber drei brauchbare Ergänzungen —
 das Plausibilitätsband 12–35 l/kW (DIN EN 15450), die Zirkulations- und Starts-Kennzahlen (V40, V42)
 und die DIN-EN-303-5-Formel für Festbrennstoff (V43) — sowie den Hinweis auf das VDI-Whitepaper
 (E-P29), das die Übergabeart als entscheidende Randbedingung benennt und damit den Standardweg V37
@@ -328,6 +379,9 @@ Sekundärquelle energie-experten.org (Ratgeberportal, abgerufen 01.10.2026 über
 - Trinkwasserspeicher — https://www.energie-experten.org/heizung/heizungstechnik/warmwasserspeicher/trinkwasserspeicher
 - Pufferspeicher-Technik, Auslegung & Kosten — https://www.energie-experten.org/heizung/heizungstechnik/pufferspeicher
 - Wärmepumpen-Pufferspeicher im Test (12.02.2025) — https://www.energie-experten.org/news/waermepumpen-pufferspeicher-im-test-der-beste-schichtenspeicher-spart-30-strom
+
+Studie (lokale Datei unter `Quellen/Waermespeicher-Tool/`, nur zitiert):
+- Wüllhorst, Vering, Müller, Haas: *Thermische Speicher in Wärmepumpensystemen: zu klein, zu groß oder überhaupt notwendig?*, VDI Wissensforum GmbH, 9 Seiten (Whitepaper; Simulationsstudie der RWTH Aachen).
 
 Zum Vergleich herangezogen:
 - `EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs`
