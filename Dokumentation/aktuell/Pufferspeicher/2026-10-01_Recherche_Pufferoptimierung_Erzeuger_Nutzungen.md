@@ -16,8 +16,9 @@ an das Zapfprofil – also für Nutzungsarten optimierte Auslegung.“
 Repositorium (Repositorium wird nur vom Anwender genutzt); danach entfernen. Sie werden zitiert,
 nicht abgeschrieben.
 
-**Fortsetzung.** Die dritte Runde wertet die am 01.10.2026 abgelegten Normdateien aus (VDI-MT 4645
-Blatt 1 — Qualifikationsblatt ohne Auslegungsregeln; prEN 15316-5:2024 — Schichtenmodell und
+**Fortsetzung.** Die dritte Runde wertet die am 01.10.2026 abgelegten Normdateien aus (VDI 4645
+Hauptblatt, Entwurf 2026-03 — Gegenlesen von K1–K4, V37–V39; VDI-MT 4645 Blatt 1 — Qualifikationsblatt
+ohne Auslegungsregeln; prEN 15316-5:2024 — Schichtenmodell und
 W/K-Umrechnung; DIN EN 15332 mit A1 — Prüfbedingung 45 K hinter dem Katalogwert):
 [`2026-10-01_Recherche_Normen_Speichermodell.md`](2026-10-01_Recherche_Normen_Speichermodell.md) mit V33–V36 und E-P26–E-P27.
 
@@ -341,8 +342,8 @@ neben Kachel und ① Konfiguration und erfüllt ZU1.
 | Prozesswärmepuffer | ausreichend für P1 | nur dena und allgemeine Peak-Shaving-Literatur; keine Richtwerte — Lastgang-Kriterium trägt |
 | Nutzungsarten-Kopplung | Vorschlag fertig | DIN EN 12831-3 Nutzungsarten, EPOS-Katalog (sechs Zapf-Nutzungsarten), Konditionierungs-`Nutzung`; Lücken Büro/Schule/Gewerbe und ID-Mapping benannt |
 | Bestand EPOS-Plan | fertig (zwei Sonnet-Befunde) | Klassen, Rechenweg, Zapfprofil-Schnittstelle, Lastgang-Quellen, Konditionierung, Verbund |
-| Normdateien vom 01.10.2026 (Runde 3) | fertig | VDI-MT 4645 Blatt 1 = Qualifikationsblatt (kein Ertrag); prEN 15316-5:2024 Schichtenmodell, Formel (3) kWh/d → W/K, Standardaufteilung 0,10/0,16/0,37/0,37, Verbund seriell/parallel; DIN EN 15332 + A1 Prüfbedingung 65 °C bzw. ≥ 45 K über 20 °C; Vergleich mit dem Puffermodell des Kerns (Verlustansatz SOC-anteilig → V35 Folgeauftrag) |
-| Offen | **Hauptblatt** VDI 4645 (Abschnitt 8.8) beschaffen — das abgelegte Blatt 1 ist das Qualifikationsblatt; Herstellerangaben Mindestlaufzeit nur allgemein; Prozesstemperatur fehlt im Datenmodell; Raumtemperatur des Aufstellorts fehlt im Modell (V35) | — |
+| Normdateien vom 01.10.2026 (Runde 3) | fertig | VDI 4645 Hauptblatt (Entwurf 2026-03): 3 l/kW Vorprüfung, Faustwerte 20/3 l/kW nach Gerätetyp, Gleichung 22 Mindestlaufzeit, Gleichung 23 Abschaltzeiten mit Tabellen 14/15 — K1–K4/K14 bestätigt bzw. präzisiert, V37–V39; VDI-MT 4645 Blatt 1 = Qualifikationsblatt (kein Ertrag); prEN 15316-5:2024 Schichtenmodell, Formel (3) kWh/d → W/K, Standardaufteilung 0,10/0,16/0,37/0,37, Verbund seriell/parallel; DIN EN 15332 + A1 Prüfbedingung 65 °C bzw. ≥ 45 K über 20 °C; Vergleich mit dem Puffermodell des Kerns (Verlustansatz SOC-anteilig → V35 Folgeauftrag) |
+| Offen | Herstellerangaben Mindestlaufzeit nur allgemein (VDI 4645 verweist auf den Hersteller); Prozesstemperatur fehlt im Datenmodell; Raumtemperatur des Aufstellorts fehlt im Modell (V35) | — |
 
 
 ## 10 Quellenverzeichnis der zweiten Runde (abgerufen 01.10.2026)
