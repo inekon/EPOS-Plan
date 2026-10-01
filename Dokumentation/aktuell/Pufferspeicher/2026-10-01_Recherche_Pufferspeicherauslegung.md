@@ -10,6 +10,11 @@ Verbesserungsvorschlägen samt Empfehlung und den Folgen für den Bauplan P1.
 **Auftrag (Anwender, 01.10.2026):** „Recherchiere zu Pufferspeicherauslegung und prüfe nach
 Optimierung und Verbesserung des Konzepts.“
 
+**Fortsetzung.** Die zweite Runde — Speicherklassen (Heizung, Kombi, Brauchwasser, Prozess),
+Erzeuger je Klasse, Kopplung an Zapfprofil und Nutzungsarten — steht in
+[`2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md`](2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md);
+sie klärt V12 (Lastgang-Quelle) und ersetzt E-P11 durch das Nutzungsprofil.
+
 **Grenzen.** Normtexte werden zitiert, nicht abgeschrieben; aus Herstellerunterlagen kommen keine
 Produktdaten (Konzept Hilfesystem, Abschnitt 13). Zahlen aus Blogs und Ratgeberseiten sind als
 Sekundärquellen gekennzeichnet und tragen keine Vorgabewerte. Alle Rechenbeispiele sind fiktiv.
@@ -213,7 +218,7 @@ K12 rechnerisch), „Wohnfläche 2–3 l/m²“ (kein Bezug zu Erzeuger und Last
 | E-P14 | Vorprüfung „kein Puffer erforderlich“ zulassen, wenn das Anlagenvolumen reicht? | ja (V6) |
 | E-P15 | Startzähler und Sperrprofil im Kern (V13, V14) als eigene Folgeaufträge nach P2? | ja, nicht in P1 |
 | E-P16 | VDI 4645 Blatt 1 (2023) beschaffen und vor P2 gegenlesen? | ja |
-| E-P17 | Norm-PDFs und Herstellerunterlage unter `Quellen/Waermespeicher-Tool/` im Repositorium belassen oder entfernen (Hinweis vom 01.10.2026)? | entfernen (`git rm`, Geschichte bleibt); offen seit 01.10. |
+| E-P17 | Norm-PDFs und Herstellerunterlage unter `Quellen/Waermespeicher-Tool/` im Repositorium belassen oder entfernen (Hinweis vom 01.10.2026)? | **entschieden 01.10.2026: belassen** für Konzeption und Umsetzung (Repositorium wird nur vom Anwender genutzt), danach entfernen |
 
 
 ## 8 Folgen für den Bauplan P1 (03.10.2026)
