@@ -7,7 +7,7 @@ und [`2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md`](2026-10-01_
 (Runde 2: Speicherklassen, Zapfprofil-Kopplung, V21–V32, E-P18–E-P25). Anlass sind fünf Normdateien,
 die der Anwender am 01.10.2026 unter `Quellen/Waermespeicher-Tool/` abgelegt hat (Sync-Commits
 6b8806fe, 5dadb3e5 und 59af9382 — mit dem letzten kam das Hauptblatt VDI 4645; die Datei VDI 4655
-hat er dabei entfernt). Dieses Papier sagt, was jede Datei ist, was sie für die Auslegung und für das
+liegt weiterhin dort). Dieses Papier sagt, was jede Datei ist, was sie für die Auslegung und für das
 Puffermodell des Kerns hergibt, und schreibt Kriterientabelle, Vorschläge und Entscheide fort.
 
 **Grenzen.** Die Normen sind lizenziert (Anwenderentscheid E-P17: sie bleiben für Konzeption und
