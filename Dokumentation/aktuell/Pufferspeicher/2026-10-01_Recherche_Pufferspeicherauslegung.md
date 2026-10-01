@@ -13,7 +13,10 @@ Optimierung und Verbesserung des Konzepts.“
 **Fortsetzung.** Die zweite Runde — Speicherklassen (Heizung, Kombi, Brauchwasser, Prozess),
 Erzeuger je Klasse, Kopplung an Zapfprofil und Nutzungsarten — steht in
 [`2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md`](2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md);
-sie klärt V12 (Lastgang-Quelle) und ersetzt E-P11 durch das Nutzungsprofil.
+sie klärt V12 (Lastgang-Quelle) und ersetzt E-P11 durch das Nutzungsprofil. Die dritte Runde — die am
+01.10.2026 abgelegten Normdateien (VDI-MT 4645 Blatt 1, prEN 15316-5:2024, DIN EN 15332 mit A1) —
+steht in [`2026-10-01_Recherche_Normen_Speichermodell.md`](2026-10-01_Recherche_Normen_Speichermodell.md); sie fasst E-P16 neu
+(Hauptblatt VDI 4645) und ergänzt K11 um die Umrechnung in W/K (V33–V36, E-P26–E-P27).
 
 **Grenzen.** Normtexte werden zitiert, nicht abgeschrieben; aus Herstellerunterlagen kommen keine
 Produktdaten (Konzept Hilfesystem, Abschnitt 13). Zahlen aus Blogs und Ratgeberseiten sind als
@@ -40,12 +43,15 @@ Sekundärquellen gekennzeichnet und tragen keine Vorgabewerte. Alle Rechenbeispi
 | BaCoGa, *Ermittlung des Wasserinhaltes* ([PDF](http://www.bacoga.com/wp-content/uploads/2016/07/Ermittlung-Wasserinhalt.pdf)) | Herstellertabelle, produktneutral | Wasserinhalt je 1,16 kW: Konvektoren 6 l, Plattenheizkörper 10 l, Radiatoren 14 l; Fußbodenheizung 150 l je 100 m² |
 | energie-experten.org ([VDI 4645](https://www.energie-experten.org/heizung/waermepumpe/planung/vdi-4645), [Solarthermie](https://www.energie-experten.org/heizung/solarthermie/solarthermieanlage/auslegung)), baunetzwissen.de ([Pufferspeicher](https://www.baunetzwissen.de/heizung/fachwissen/speicher/dimensionierung-von-pufferspeichern-161296)), heizung.de ([Modulation](https://www.heizung.de/ratgeber/diverses/modulation-regulierung-der-heizleistung.html)) | Sekundärquellen | VDI 4645 Abschnitt 8.8.4 nenne 20 l/kW (nicht am Normtext geprüft); Solar 50 l/m² Flach-, 60–70 l/m² Röhrenkollektor; Gas moduliert 1:6, Öl 1:4 |
 
-**Nicht vorhanden:** VDI 4645 Blatt 1 (Ausgabe 2023) selbst — sie liegt weder im Repositorium noch
-im Ordner von `Z:`. Der Fraunhofer-Bericht stellt fest, dass sie keine Vorgaben zu Mindestlaufzeiten
-und Schalthäufigkeiten enthält; der Richtwert „20 l/kW“ aus 8.8.4 ist nur über Sekundärquellen
-belegt. **Empfehlung:** die Richtlinie beschaffen und vor P2 gegenlesen (Beleg für die Vorlage
-„Wärmepumpe“). Die Norm-PDFs unter `Quellen/Waermespeicher-Tool/` (DIN 4708, DIN EN 12831-3,
-DIN V 18599-10, VDI 4655, VDI 6002) betreffen Trinkwarmwasser und Lastprofile, nicht den Heizpuffer.
+**VDI 4645:** Das Hauptblatt (Abschnitt 8.8 „Wärmespeicher“) liegt weder im Repositorium noch im
+Ordner von `Z:`; die am 01.10.2026 abgelegte VDI-MT 4645 Blatt 1:2023-04 ist das Qualifikationsblatt
+ohne Auslegungsregeln (Runde 3, Abschnitt 2). Der Fraunhofer-Bericht stellt fest, dass die Richtlinie
+keine Vorgaben zu Mindestlaufzeiten und Schalthäufigkeiten enthält; der Richtwert „20 l/kW“ aus 8.8.4
+ist nur über Sekundärquellen belegt. **Empfehlung:** das Hauptblatt beschaffen und vor P2 gegenlesen
+(Beleg für die Vorlage „Wärmepumpe“). Die älteren Norm-PDFs unter `Quellen/Waermespeicher-Tool/`
+(DIN 4708, DIN EN 12831-3, DIN V 18599-10, VDI 4655, VDI 6002) betreffen Trinkwarmwasser und
+Lastprofile, nicht den Heizpuffer; prEN 15316-5:2024 (Schichtenmodell) und DIN EN 15332 mit A1
+(Prüfung des Nennwärmeverlusts) sind in Runde 3 ausgewertet.
 
 
 ## 2 Bestand in EPOS-Plan (Befund des Sonnet-Agenten, Zweig `ios_migration_september`, Schemastand 158)
@@ -217,7 +223,7 @@ K12 rechnerisch), „Wohnfläche 2–3 l/m²“ (kein Bezug zu Erzeuger und Last
 | E-P13 | Kachel-Einstieg als Knopf „Auslegen…“ im Pufferspeicher-Dialog (b) statt zweiter Kachelwirkung (a) oder eigener Kachel (c)? | (b) |
 | E-P14 | Vorprüfung „kein Puffer erforderlich“ zulassen, wenn das Anlagenvolumen reicht? | ja (V6) |
 | E-P15 | Startzähler und Sperrprofil im Kern (V13, V14) als eigene Folgeaufträge nach P2? | ja, nicht in P1 |
-| E-P16 | VDI 4645 Blatt 1 (2023) beschaffen und vor P2 gegenlesen? | ja |
+| E-P16 | VDI 4645 beschaffen und vor P2 gegenlesen? | ja — das **Hauptblatt** (Abschnitt 8.8 Wärmespeicher); das am 01.10.2026 abgelegte Blatt 1 ist das Qualifikationsblatt ohne Auslegungsregeln (Runde 3, E-P16 neu gefasst) |
 | E-P17 | Norm-PDFs und Herstellerunterlage unter `Quellen/Waermespeicher-Tool/` im Repositorium belassen oder entfernen (Hinweis vom 01.10.2026)? | **entschieden 01.10.2026: belassen** für Konzeption und Umsetzung (Repositorium wird nur vom Anwender genutzt), danach entfernen |
 
 

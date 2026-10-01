@@ -16,6 +16,11 @@ an das Zapfprofil – also für Nutzungsarten optimierte Auslegung.“
 Repositorium (Repositorium wird nur vom Anwender genutzt); danach entfernen. Sie werden zitiert,
 nicht abgeschrieben.
 
+**Fortsetzung.** Die dritte Runde wertet die am 01.10.2026 abgelegten Normdateien aus (VDI-MT 4645
+Blatt 1 — Qualifikationsblatt ohne Auslegungsregeln; prEN 15316-5:2024 — Schichtenmodell und
+W/K-Umrechnung; DIN EN 15332 mit A1 — Prüfbedingung 45 K hinter dem Katalogwert):
+[`2026-10-01_Recherche_Normen_Speichermodell.md`](2026-10-01_Recherche_Normen_Speichermodell.md) mit V33–V36 und E-P26–E-P27.
+
 Grenzen wie in Runde 1: Normen zitiert, keine Produktdaten, Sekundärquellen gekennzeichnet, alle
 Rechenbeispiele fiktiv.
 
@@ -336,7 +341,8 @@ neben Kachel und ① Konfiguration und erfüllt ZU1.
 | Prozesswärmepuffer | ausreichend für P1 | nur dena und allgemeine Peak-Shaving-Literatur; keine Richtwerte — Lastgang-Kriterium trägt |
 | Nutzungsarten-Kopplung | Vorschlag fertig | DIN EN 12831-3 Nutzungsarten, EPOS-Katalog (sechs Zapf-Nutzungsarten), Konditionierungs-`Nutzung`; Lücken Büro/Schule/Gewerbe und ID-Mapping benannt |
 | Bestand EPOS-Plan | fertig (zwei Sonnet-Befunde) | Klassen, Rechenweg, Zapfprofil-Schnittstelle, Lastgang-Quellen, Konditionierung, Verbund |
-| Offen | VDI 4645 Blatt 1 (2023) beschaffen; Herstellerangaben Mindestlaufzeit nur allgemein; Prozesstemperatur fehlt im Datenmodell | — |
+| Normdateien vom 01.10.2026 (Runde 3) | fertig | VDI-MT 4645 Blatt 1 = Qualifikationsblatt (kein Ertrag); prEN 15316-5:2024 Schichtenmodell, Formel (3) kWh/d → W/K, Standardaufteilung 0,10/0,16/0,37/0,37, Verbund seriell/parallel; DIN EN 15332 + A1 Prüfbedingung 65 °C bzw. ≥ 45 K über 20 °C; Vergleich mit dem Puffermodell des Kerns (Verlustansatz SOC-anteilig → V35 Folgeauftrag) |
+| Offen | **Hauptblatt** VDI 4645 (Abschnitt 8.8) beschaffen — das abgelegte Blatt 1 ist das Qualifikationsblatt; Herstellerangaben Mindestlaufzeit nur allgemein; Prozesstemperatur fehlt im Datenmodell; Raumtemperatur des Aufstellorts fehlt im Modell (V35) | — |
 
 
 ## 10 Quellenverzeichnis der zweiten Runde (abgerufen 01.10.2026)
