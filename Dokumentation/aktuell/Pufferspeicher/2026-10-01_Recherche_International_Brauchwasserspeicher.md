@@ -134,6 +134,9 @@ Gegenprobe, keine neue Vorgabe.
 
 ## 4 Vorschläge (Fortsetzung V1–V45) und Entscheide
 
+**Anwenderentscheid 01.10.2026: Die Vorschläge V46 bis V49 sind angenommen** („Nehme Vorschläge auf“); V46,
+V48 und V49 gehen in den Bau P1, V47 wird Folgeauftrag nach P2 (E-P32).
+
 | Nr. | Vorschlag | Nutzen | Aufwand | Empfehlung |
 |---|---|---|---|---|
 | V46 | **Gegenprobe Bedarf je Person** im Ergebnis der Brauchwasserzone: Tagesbedarf ÷ Personen gegen das Band 28–50 l (60 °C) mit Herkunft IEA/UK; Hinweiscode, wenn das Zonenvolumen mehr als das Doppelte des Tagesbedarfs beträgt (Überdimensionierung) | ordnet das Zapfprofil-Ergebnis ein | klein | **A, P1** |
@@ -143,8 +146,8 @@ Gegenprobe, keine neue Vorgabe.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| E-P31 | Internationale Werte (Runde 4) nur als Gegenprobe und Beispielhilfe, nie als Vorgabewert — Vorgaben bleiben EN 12831-3/VDI/W 551? | ja |
-| E-P32 | Speicher-gegen-Leistung-Kurve (V47) als Folgeauftrag nach P2, nicht in P1? | ja |
+| E-P31 | Internationale Werte (Runde 4) nur als Gegenprobe und Beispielhilfe, nie als Vorgabewert — Vorgaben bleiben EN 12831-3/VDI/W 551? | **entschieden 01.10.2026: ja** |
+| E-P32 | Speicher-gegen-Leistung-Kurve (V47) als Folgeauftrag nach P2, nicht in P1? | **entschieden 01.10.2026: ja** |
 
 
 ## 5 Folgen für den Bauplan P1
