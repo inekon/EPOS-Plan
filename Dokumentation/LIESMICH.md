@@ -170,7 +170,9 @@ Herkunft der Zahlen; die Rechenwege verweisen darauf —, `Ergebnis_Bandbreite_H
 `Administration_Heizkessel_Neuordnung.html`, `Administrationsdialoge_Schema.html`,
 `Wechselrichter_Mockup_2026-09-06.html`,
 `stromspeicher-optimierung-v2.html`, `Entwurf_Hydraulikuebersicht_Konfiguration.html` und
-`Zapfprofilgenerator_Mockup.html` (Konzept TWW-Zapfprofile mit Dialog, Diagrammen und Auslegungs-Ausblick) und
+`Zapfprofilgenerator_Mockup.html` (Konzept TWW-Zapfprofile mit Dialog, Diagrammen und Auslegungs-Ausblick),
+`Pufferspeicher_Auslegung_Mockup.html` (Pufferspeicher-Auslegung: geführter Dialog in vier Schritten mit Vorlagen,
+Beispielen, Ergebnisblatt und den zwei Einstiegen; Mockup zur Abnahme, Konzept folgt) und
 `BerichteKosten_Navigation_A.html`, `_B.html`, `_C.html` samt gleichnamigen PNG (Konzept Navigation Berichte & Kosten).
 
 ---
