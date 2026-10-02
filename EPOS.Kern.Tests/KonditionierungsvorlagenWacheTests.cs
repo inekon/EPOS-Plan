@@ -357,7 +357,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>„Kopieren nach …" mit jeder ausgelieferten Vorlage, die ein Ziel hat</b> (Konzept 3.5, 7.4):
         /// Geräte ↔ Personen tragen denselben Inhalt in die andere Liste, Heizen → Kühlen Zeitstruktur und
-        /// Nachtzeiten mit dem Komfortsollwert in jeder Zelle; die Kopie ist eigen, die Quelle bleibt Zeichen
+        /// Nachtzeiten mit dem Komfortsollwert am Tag und dem Absenksollwert darunter; die Kopie ist eigen, die Quelle bleibt Zeichen
         /// für Zeichen. Danach hält der Datenbankfall wie oben: <b>Inhalt nur in der eigenen Größe</b>, kein
         /// Nennwert, keine Saison, keine Matrixperiode (E54).
         /// </summary>
@@ -374,7 +374,8 @@ namespace EPOS.Kern.Tests
                 {
                     string zielwort = Konditionierungsgroessen.Kennwort(ziel);
                     KonditionierungCtrl.Ergebnis e = _vorlagen.KopierenNach(id, ziel, s.Bezeichner + " (" + s.Kennwort + ")",
-                                                                            Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, out long kopie);
+                                                                            Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE,
+                                                                            Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE, out long kopie);
                     Assert.True(e.Ok, s + " -> " + zielwort + ": " + e.Meldung);
                     kopien++;
                     KonditionierungsvorlageCtrl.Vorlage kopf = _vorlagen.Lesen(kopie);
@@ -387,7 +388,9 @@ namespace EPOS.Kern.Tests
                         continue;
                     }
 
-                    // Heizen -> Kühlen: jede Zeile der Saat mit ihren Zeiten, der Wert der Komfortsollwert.
+                    // Heizen -> Kühlen: jede Zeile der Saat mit ihren Zeiten, die Tagzeile mit dem Komfortsollwert,
+                    // jede Zeile darunter (Nacht, Wochenende, Ferien) mit dem Absenksollwert.
+                    double tagwert = s.Zeile(DbWerte.KOND_ZEILE_TAG).Wert.Value;
                     List<Vorgabezeile> zeilen = _kond.Vorgaben(KonditionierungCtrl.Eigner.Vorlage(kopie));
                     Assert.Equal(s.Zeilen.Count, zeilen.Count);
                     foreach (KonditionierungsvorlagenSaatzeile z in s.Zeilen)
@@ -395,7 +398,9 @@ namespace EPOS.Kern.Tests
                         Vorgabezeile ist = Assert.Single(zeilen, x => x.Zeile == z.Zeile);
                         Assert.Equal(zielwort, ist.Groesse);
                         Assert.Equal(z.Aus, ist.Aus);
-                        Assert.Equal(z.Aus ? (double?)null : Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, ist.Wert);
+                        Assert.Equal(z.Aus ? (double?)null
+                                     : z.Wert < tagwert ? Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE
+                                     : Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, ist.Wert);
                         Assert.Equal((z.Von, z.Bis), (ist.Von, ist.Bis));
                     }
                     Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender =
@@ -404,7 +409,7 @@ namespace EPOS.Kern.Tests
                     Assert.Equal(s.Feiertage ? 1 : 0, kalender.Count);
                     if (!s.Feiertage) continue;
                     Konditionierungskalender k = kalender[ziel];
-                    Assert.Equal(Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, k.Grundangabe.Wert);
+                    Assert.Equal(Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE, k.Grundangabe.Wert);   // Grundangabe unter dem Tagwert
                     Assert.Equal(9, k.Perioden.Count);
                     Assert.All(k.Perioden, r => Assert.Equal(KonditionierungsvorlagenSaattabelle.WIE_WOCHENTAG, r.Angabe.WieWochentag));
                 }

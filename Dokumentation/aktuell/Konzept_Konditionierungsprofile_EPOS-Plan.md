@@ -430,8 +430,15 @@ erreicht kein Gebäude.
 an; die Quelle bleibt, wie sie ist. **Geräte ↔ Personen** reisen direkt: gleiche Einheit (Anteil 0 … 1), Vorgabezeilen,
 Standardwoche, Perioden und Feiertagsregeln unverändert. **Heizen → Kühlen** nimmt nur die Zeitstruktur —
 Standardwoche, Perioden, Feiertagsregeln, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten — und die Aus-Zeiten:
-Wo Heizen „aus" ist, ist Kühlen „aus"; jede Zelle, Wochenstunde und Periode mit Heizsollwert bekommt den
-**Komfortsollwert** (Vorgabe 26 °C, im Kopierdialog änderbar in den Grenzen der Kühlspalte). Andere Richtungen —
+Wo Heizen „aus" ist, ist Kühlen „aus". Jede Zelle, Wochenstunde und Periode, deren Heizsollwert den **Tagwert** der
+Vorlage erreicht, bekommt den **Komfortsollwert** (Vorgabe 26 °C); jede mit niedrigerem Heizsollwert — die
+**Absenkzeit**: Nacht, Wochenende, Ferien, abgesenkte Stunden der Standardwoche und Perioden — bekommt den
+**Absenksollwert** (Vorgabe 28 °C) oder „aus", wie die ausgelieferte Kühlvorlage „Büro" nachts, am Wochenende und in
+den Ferien. Der Tagwert ist der Wert der Zeile „Tag"; trägt sie keinen Sollwert, der höchste Heizsollwert der Vorlage
+(Zeilen, Grundangabe, Standardwoche, Perioden). Beide Werte sind im Kopierdialog änderbar in den Grenzen der
+Kühlspalte; ein Absenksollwert unter dem Komfortsollwert wird benannt abgelehnt — beim Kühlen ist die Absenkung ein
+höherer Sollwert. Aus der Heizvorlage „Büro" (Tag 20 °C, sonst 16 °C) wird so eine Kühlvorlage mit 26 °C am Tag und
+28 °C bzw. „aus" in allen übrigen Zeiten. Andere Richtungen —
 Kühlen → Heizen, alles mit Lüftung — gibt es nicht; still umgerechnet wird nichts. Die Kopie trägt den Namen der Quelle
 als Vorschlag, ein Doppelname in der Zielliste wird benannt abgelehnt; die Beschreibung wird übernommen und um die
 Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernommen, `ReadOnly = 0`. Der Inhalt entsteht nur in
@@ -1019,9 +1026,11 @@ statt 11 bis 16 Handgriffe).
 
 **„Kopieren nach …"** (3.5) steht in jeder Zeile der Verwaltung neben „Duplizieren". Eine kleine Überlagerung mit Titel
 und Kreuz zeigt nur die erlaubten Ziele der Quelle — Heizen → Kühlen, Geräte ↔ Personen —, den Namen der Quelle als
-Vorschlag und, nur bei Heizen → Kühlen, das Feld des Komfortsollwerts (Vorgabe 26 °C, Grenzen der Kühlspalte). An
-Kühl- und Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein
-Doppelname der Zielliste steht am Namensfeld, ein ungültiger Sollwert am Sollwertfeld. Danach zeigt die Verwaltung die
+Vorschlag und, nur bei Heizen → Kühlen, die Felder des Komfortsollwerts (Vorgabe 26 °C) und des Absenksollwerts
+(Vorgabe 28 °C, nimmt „aus" wie die Zellen der Matrix), beide in den Grenzen der Kühlspalte. An Kühl- und
+Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein Doppelname
+der Zielliste steht am Namensfeld, ein ungültiger Sollwert an seinem Feld, ein Absenksollwert unter dem
+Komfortsollwert am Absenkfeld. Danach zeigt die Verwaltung die
 Zielliste mit der neuen Vorlage gewählt.
 
 ### 7.5 Die Kalenderkarte

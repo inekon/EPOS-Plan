@@ -41022,6 +41022,15 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB" xml:space="preserve">
     <value>The comfort setpoint {0} °C lies outside the limits of the cooling column {1} … {2} °C.</value>
   </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_FEHLT" xml:space="preserve">
+    <value>The setback setpoint for the copy from heating to cooling is missing – a number or “off”.</value>
+  </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_AUSSERHALB" xml:space="preserve">
+    <value>The setback setpoint {0} °C lies outside the limits of the cooling column {1} … {2} °C.</value>
+  </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_UNTER_KOMFORT" xml:space="preserve">
+    <value>The setback setpoint {0} °C lies below the comfort setpoint {1} °C – in cooling, setback is a higher setpoint or “off”.</value>
+  </data>
   <data name="KOND_MSG_KOPIE_HERKUNFT" xml:space="preserve">
     <value>from template ‘{0}’ ({1})</value>
   </data>
@@ -41046,6 +41055,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_LBL_KOMFORTSOLLWERT" xml:space="preserve">
     <value>Comfort setpoint</value>
   </data>
+  <data name="KOND_LBL_ABSENKSOLLWERT" xml:space="preserve">
+    <value>Setback setpoint</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ABSENKSOLLWERT" xml:space="preserve">
+    <value>Applies in the setback times – wherever the heating setpoint lies below the day value of the template. “off” switches cooling off there.</value>
+  </data>
   <data name="KOND_TXT_KOPIEREN_NACH" xml:space="preserve">
     <value>Creates an own template of another quantity — the template itself stays as it is.</value>
   </data>
@@ -41053,7 +41068,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Same unit: values and time structure go unchanged into the target quantity.</value>
   </data>
   <data name="KOND_TXT_KOPIEREN_ZEITSTRUKTUR" xml:space="preserve">
-    <value>The time structure – standard week, periods, public holidays, night, weekend and holiday rows with their times – and the off times are copied; every heating setpoint becomes the comfort setpoint.</value>
+    <value>The time structure – standard week, periods, public holidays, night, weekend and holiday rows with their times – and the off times are copied; every heating setpoint at the day value becomes the comfort setpoint, every lower one (setback time) the setback setpoint or “off”.</value>
   </data>
   <data name="KOND_TXT_GRUND_KEIN_KOPIERZIEL" xml:space="preserve">
     <value>A template of the quantity “{0}” cannot be copied to another quantity — “Copy to …” exists from heating to cooling and between equipment and people.</value>
@@ -41063,6 +41078,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TXT_MELDUNG_KOMFORTSOLLWERT" xml:space="preserve">
     <value>The comfort setpoint is a number from {0} to {1} °C.</value>
+  </data>
+  <data name="KOND_TXT_MELDUNG_ABSENKSOLLWERT" xml:space="preserve">
+    <value>The setback setpoint is a number from {0} to {1} °C or “{2}”.</value>
   </data>
   <data name="KOND_LBL_VORLAGE_ALLE" xml:space="preserve">
     <value>all quantities</value>
