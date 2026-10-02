@@ -151,10 +151,17 @@ namespace WindowsFormsApplication1
         /// selbst als gewählte Komponenten — auch ohne je gespeicherte Konfiguration.
         /// Eine gespeicherte Auswahl bleibt unangetastet, ergänzt wird nur Fehlendes.
         ///
-        /// <para>Genommen wird der ERSTE freie Platz in der Reihenfolge 1…4 — wörtlich
-        /// wie <c>VerbauteAnlagenVorwaehlen</c>:349-380 und damit ausdrücklich anders als
-        /// <c>Kaskade.Aufnehmen</c> (dort der erste freie Platz HINTER dem letzten
-        /// belegten, weil das die Bedienhandlung „+ aufnehmen" ist).</para>
+        /// <para><b>Vorgewählt wird in der Folge der Ladeprioritäten</b> (Anwenderentscheid
+        /// vom 29.09.2026): Solarthermie, Wärmepumpe, BHKW, Heizkessel — dieselbe Folge, in
+        /// der die Vorgabe-Ladeprioritäten (10, 20, 30, 40) die Erzeuger an den Puffer
+        /// lassen. Jeder verbaute, noch fehlende Erzeuger kommt über
+        /// <c>Kaskade.Vorwaehlen</c> vor den ersten belegten Platz mit schlechterer
+        /// Vorgabe-Ladepriorität, sonst ans Ende; schon belegte Plätze behalten ihre
+        /// Reihenfolge untereinander. Damit steht auch ein von
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> gesetzter Kessel hinter der
+        /// vorgewählten Wärmepumpe. Umordnen kann der Anwender mit den Pfeilen der
+        /// Erzeugerkarte (<c>Kaskade.Verschieben</c>); danach gilt die Kaskade als gepflegt
+        /// und wird nicht mehr vorgewählt.</para>
         ///
         /// <para><b>EINE GEPFLEGTE KASKADE WIRD NICHT VORGEWÄHLT</b> (Anwenderentscheid
         /// vom 16.09.2026, Merkspalte <c>Tab_Einstellungen.Kaskade_Gepflegt</c>). Die
@@ -175,17 +182,11 @@ namespace WindowsFormsApplication1
 
             try
             {
-                List<string> plaetze = Kaskade.Lesen(_konfiguration);
-
                 foreach (string erzeuger in ErzeugerKatalog.WAERMEERZEUGER)
                 {
                     if (!TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger)) continue;
-                    if (plaetze.Contains(erzeuger)) continue;
-
-                    for (int i = 0; i < plaetze.Count; i++)
-                        if (string.IsNullOrEmpty(plaetze[i])) { plaetze[i] = erzeuger; break; }
+                    Kaskade.Vorwaehlen(_konfiguration, erzeuger);
                 }
-                Kaskade.Schreiben(_konfiguration, plaetze);
 
                 if (TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_PHOTOVOLTAIK) &&
                     Kaskade.StromWert(_konfiguration, Kaskade.PLATZ_STROMERZEUGER) !=

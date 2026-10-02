@@ -104,6 +104,64 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", k.m_Tool_2);
         }
 
+        /// <summary>
+        /// Die Vorwahl in eine leere Kaskade folgt den Vorgabe-Ladeprioritäten:
+        /// Solarthermie, Wärmepumpe, BHKW, Heizkessel — gleich in welcher Folge vorgewählt wird.
+        /// </summary>
+        [Fact]
+        public void Vorwaehlen_ordnet_nach_der_Vorgabe_Ladeprioritaet()
+        {
+            KonfigurationModel k = Modell("", "", "", "");
+            foreach (string w in new[] { DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_BHKW,
+                                         DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_SOLARTHERMIE })
+                Assert.True(Kaskade.Vorwaehlen(k, w));
+
+            Assert.Equal(new[] { DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE,
+                                 DbWerte.ERZEUGER_BHKW, DbWerte.ERZEUGER_HEIZKESSEL },
+                         Kaskade.Lesen(k));
+        }
+
+        /// <summary>
+        /// Der vom Nachziehen an das Ende gesetzte Kessel steht nach der Vorwahl hinter der
+        /// Wärmepumpe; die Plätze ab dem Kessel rücken in den nächsten freien nach.
+        /// </summary>
+        [Fact]
+        public void Vorwaehlen_setzt_vor_den_ersten_schlechteren_Platz()
+        {
+            KonfigurationModel k = Modell(DbWerte.ERZEUGER_HEIZKESSEL, "", "", "");
+            Assert.True(Kaskade.Vorwaehlen(k, DbWerte.ERZEUGER_WAERMEPUMPE));
+            Assert.Equal(new[] { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL, "", "" },
+                         Kaskade.Lesen(k));
+
+            // Kein Platz mit schlechterer Priorität: hinten anfügen wie „+ aufnehmen".
+            Assert.True(Kaskade.Vorwaehlen(k, DbWerte.ERZEUGER_SOLARTHERMIE));
+            Assert.Equal(new[] { DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE,
+                                 DbWerte.ERZEUGER_HEIZKESSEL, "" }, Kaskade.Lesen(k));
+        }
+
+        /// <summary>
+        /// Die Reihenfolge der schon belegten Plätze bleibt erhalten — auch eine, die den
+        /// Ladeprioritäten widerspricht; gerückt wird nur, um Platz zu machen. Ist hinten kein
+        /// Platz frei, rücken die Plätze davor in die Lücke nach vorn.
+        /// </summary>
+        [Fact]
+        public void Vorwaehlen_behaelt_die_Folge_der_belegten_Plaetze()
+        {
+            KonfigurationModel k = Modell(DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_BHKW, "", "");
+            Assert.True(Kaskade.Vorwaehlen(k, DbWerte.ERZEUGER_WAERMEPUMPE));
+            Assert.Equal(new[] { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL,
+                                 DbWerte.ERZEUGER_BHKW, "" }, Kaskade.Lesen(k));
+
+            KonfigurationModel l = Modell("", DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_BHKW,
+                                          DbWerte.ERZEUGER_HEIZKESSEL);
+            Assert.True(Kaskade.Vorwaehlen(l, DbWerte.ERZEUGER_WAERMEPUMPE));
+            Assert.Equal(new[] { DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE,
+                                 DbWerte.ERZEUGER_BHKW, DbWerte.ERZEUGER_HEIZKESSEL }, Kaskade.Lesen(l));
+
+            Assert.False(Kaskade.Vorwaehlen(l, DbWerte.ERZEUGER_BHKW));
+            Assert.False(Kaskade.Vorwaehlen(null, DbWerte.ERZEUGER_BHKW));
+        }
+
         [Fact]
         public void Entfernen_leert_den_Platz_ohne_zu_verdichten()
         {
