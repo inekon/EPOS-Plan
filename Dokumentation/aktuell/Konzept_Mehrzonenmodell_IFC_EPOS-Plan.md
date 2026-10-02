@@ -1408,6 +1408,14 @@ Geometrierechnung (ADR-003):
 - **Dachfenster:** Fenster und Türen, die über `IfcRelAggregates` Teil eines Bauteils sind statt eine
   Öffnung zu füllen, werden Öffnungen dieses Bauteils (`IMP_IFC_PROT_OEFFNUNG_TEIL`, I); für die Regel
   „Dach oder seine Platten“ zählen sie nicht als Platten.
+- **Schichtdicken in Millimetern:** Liegt nach der Längeneinheit der Datei eine Dicke eines
+  `IfcMaterialLayerSet` über 1 m (der Export erklärt `METRE`, schreibt `LayerThickness` aber in
+  Millimetern), gilt der ganze Satz als Millimeter und alle seine Dicken werden durch 1000 geteilt
+  (`IMP_IFC_PROT_SCHICHTDICKE_MM`, W, ein Sammelhinweis je Datei mit Zahl der Sätze und
+  größter Dicke samt Satz). Schichten unter 1 mm (Folien, Anstriche) tragen keine
+  Wärmewirkung und werden übergangen (`IMP_IFC_PROT_SCHICHT_DUENN`, I, je Datei, nach Name und Dicke
+  zusammengefasst); die Bauteildicke
+  aus der Schichtsumme rechnet ohne sie.
 
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
 Eigenschaftsliste — `Pset_SpaceCommon` im FZK-Haus führt kein `IsExternal`, dafür die fremden

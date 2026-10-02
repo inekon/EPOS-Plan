@@ -38941,6 +38941,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
     <value>{0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells).</value>
   </data>
+  <data name="IMP_IFC_PROT_SCHICHTDICKE_MM" xml:space="preserve">
+    <value>Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
+    <value>{0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>

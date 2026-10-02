@@ -36205,11 +36205,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHICHTDICKE_MM {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHICHTDICKE_MM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHICHT_DUENN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHICHT_DUENN", resourceCulture);
             }
         }
         

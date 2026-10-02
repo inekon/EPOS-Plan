@@ -56,6 +56,7 @@ namespace EPOS.Kern.Tests
                 ["ifc4_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten.ifc", nullwerte: false),
                 ["ifc4_schichten_nullwerte.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten_nullwerte.ifc", nullwerte: true),
                 ["ifc2x3_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc2X3, "ifc2x3_schichten.ifc", nullwerte: false),
+                ["ifc4_schichtdicken_mm.ifc"] = SchichtdickenMillimeter(),
                 ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
                 ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
@@ -253,6 +254,37 @@ namespace EPOS.Kern.Tests
                 IIfcSlab p = b.Platte(eg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: null, brutto: 80.0,
                                       raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL_EARTH);
                 b.Schichten(p, boden, IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Das Millimeterhaus</b> (Rückfall „Schichtdicke in Millimetern"): Längeneinheit <c>METRE</c> ohne
+        /// Präfix, aber die Schichtdicken der Außenwand in Millimetern geschrieben, wie CAD-Exporte es tun —
+        /// Folie 0.2, Dämmung 160., Beton 200.; das Dach dagegen in Metern (Beton 0.2, Dämmung 0.016), die
+        /// Gegenprobe. Ein beheizter Raum (80 m², 2,5 m, 200 m³), Südwand 25 m², Dach 80 m², ohne U-Werte.
+        /// </summary>
+        public static byte[] SchichtdickenMillimeter()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_schichtdicken_mm.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false, meter: true);
+                IIfcBuilding g = b.Gebaeude("Millimeterhaus", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(eg, "0.01", "Wohnen", 0.15, 0.15, 80, 2.5, 200, beheizt: true);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ M", null);
+
+                IIfcMaterial folie = b.Baustoff("Folie", 0.2, 900, 1800);
+                IIfcMaterial daemm = b.Baustoff("Dämmung", 0.04, 30, 1500);
+                IIfcMaterial beton = b.Baustoff("Beton", 2.0, 2400, 1000);
+                IIfcMaterialLayerSet wand = b.Schichtsatz("Außenwand Millimeter", (folie, 0.2), (daemm, 160), (beton, 200));
+                IIfcMaterialLayerSet dach = b.Schichtsatz("Dach Meter", (beton, 0.2), (daemm, 0.016));
+
+                IIfcWall w = b.Wand(eg, Wandlage.Sued.Name, Wandlage.Sued, typ, null, "BaseQuantities", 25.0, null, null, new[] { r });
+                b.Schichten(w, wand, IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE);
+                IIfcSlab d = b.Platte(eg, "Dach", IfcSlabTypeEnum.ROOF, aussen: true, u: null, brutto: 80.0,
+                                      raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL);
+                b.Schichten(d, dach, IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
                 return b.Speichern();
             }
         }
@@ -665,12 +697,15 @@ namespace EPOS.Kern.Tests
                 return u;
             }
 
-            /// <summary>Projekt, Einheiten, Modellkontext (mit Nordrichtung und ggf. Koordinatenumrechnung), Grundstück.</summary>
-            public void Anfang(double[] nord, bool karte)
+            /// <summary>
+            /// Projekt, Einheiten, Modellkontext (mit Nordrichtung und ggf. Koordinatenumrechnung), Grundstück.
+            /// Längen in Millimetern, mit <paramref name="meter"/> in Metern.
+            /// </summary>
+            public void Anfang(double[] nord, bool karte, bool meter = false)
             {
                 _projekt = Wurzel<IIfcProject>("IfcProject", "Importprobe");
                 IIfcUnitAssignment e = N<IIfcUnitAssignment>("IfcUnitAssignment");
-                e.Units.Add(Einheit(IfcUnitEnum.LENGTHUNIT, IfcSIUnitName.METRE, IfcSIPrefix.MILLI));
+                e.Units.Add(Einheit(IfcUnitEnum.LENGTHUNIT, IfcSIUnitName.METRE, meter ? (IfcSIPrefix?)null : IfcSIPrefix.MILLI));
                 e.Units.Add(Einheit(IfcUnitEnum.AREAUNIT, IfcSIUnitName.SQUARE_METRE, null));
                 e.Units.Add(Einheit(IfcUnitEnum.VOLUMEUNIT, IfcSIUnitName.CUBIC_METRE, null));
                 e.Units.Add(Einheit(IfcUnitEnum.PLANEANGLEUNIT, IfcSIUnitName.RADIAN, null));
