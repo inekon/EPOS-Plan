@@ -110,8 +110,17 @@ steht in keiner CSV der Basis).
 
 ## Gate
 
-offen (volles Gate durch die Orchestrierung).
+Gate #649 auf `2fa896bff` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 016 grün, 2 übersprungen, 1 rot — der fremde,
+zeitabhängige `AssistentAbgleichTests` („Erzeuger“, Kostenstempel #647), danach mit `d44a6e36b` behoben (Kern 9 821, UI 7 233,
+KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+`2026-09-30_R30_Stromverbraucher` (5 180 240 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS. Nachtest auf dem
+Merge `bc93b52ce` (#649): Build 0 Fehler, Testklassen Wärmegestehung, Wirtschaftlichkeit, Bericht, Messlatten, Assistentenabgleich
+und Wachen 1 263 grün. Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
 
 ## Commit
 
-offen — Statuszeile, Merge und Push durch die Orchestrierung.
+Acht Commits auf `p646` hinter dem Auftrag `3112d2d69`: `3c3fd1108`, `a2102b5a3`, `15e55c75a`, `ac95e0ade`, `aec73f1f5`,
+`81bfa8047`, `d971023e7` (Fassung 13), `d44a6e36b` (Testkorrektur); Merges `2fa896bff` mit origin (#646–#648, eigene Nummer
+#649) und `bc93b52ce` (#649 Berichterstellung, eigene Nummer #650). Gepusht `51e9ac1e7` (nur Nummern) und der Folgecommit mit
+der Statuszeile #650; CI-Vermerk in Nach #650 (e).
