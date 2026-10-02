@@ -342,6 +342,7 @@ namespace WindowsFormsApplication1
                 v.LeistungspreisNichtAngesetzt = null;
                 v.LeistungspreisNichtAngesetztSatz = null;
                 v.LeistungspreisNichtAngesetztTraeger = null;
+                v.LeistungspreisNichtAngesetztMonatssatz = null;
                 KaeltestromZuruecksetzen(v);
                 v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
@@ -362,6 +363,7 @@ namespace WindowsFormsApplication1
             v.LeistungspreisNichtAngesetzt = null;   // EZ‑17 (nur im Vergleich gesetzt)
             v.LeistungspreisNichtAngesetztSatz = null;
             v.LeistungspreisNichtAngesetztTraeger = null;
+            v.LeistungspreisNichtAngesetztMonatssatz = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
             v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
 
@@ -1225,6 +1227,33 @@ namespace WindowsFormsApplication1
             // Satz und Träger auch einzeln — für die Fußzeile unter der Kostentafel des Berichts.
             v.LeistungspreisNichtAngesetztSatz = satz;
             v.LeistungspreisNichtAngesetztTraeger = name;
+            // Der Satz je Monat, wenn der Träger je Monat bemisst — für den Vergleich mit dem
+            // Monatspreis des Reststromtarifs (Register EZ‑18).
+            v.LeistungspreisNichtAngesetztMonatssatz = LeistungspreisMonatssatz(t);
+        }
+
+        /// <summary>
+        /// Der Leistungspreis eines Stromträgers in €/(kW·Monat), wenn er ihn je Monat bemisst —
+        /// in der Rangfolge der Rechnung (<see cref="LeistungsanteilStrom"/>): Eine Staffel bemisst
+        /// je Jahr (<c>null</c>); eine Saisonreihe zählt nur, wenn ihre zwölf Sätze gleich sind
+        /// (Toleranz 1e‑9), dann ihr Satz; sonst der Satz mit <c>price_power_modus</c> MONAT. Ein
+        /// Satz je Jahr ergibt <c>null</c>.
+        /// </summary>
+        private static double? LeistungspreisMonatssatz(TraegerInfo t)
+        {
+            if (t == null || t.Staffel.Gepflegt) return null;
+            if (t.ReiheJeKW != null)
+            {
+                if (t.ReiheJeKW.Length != 12) return null;
+                double erster = t.ReiheJeKW[0];
+                foreach (double satz in t.ReiheJeKW)
+                    if (Math.Abs(satz - erster) > 1e-9) return null;
+                return erster;
+            }
+            if (t.PreisLeistung.HasValue &&
+                string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return t.PreisLeistung.Value;
+            return null;
         }
 
         /// <summary>

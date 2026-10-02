@@ -488,6 +488,20 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("{1}", tarifDe);
             Assert.DoesNotContain("{1}", tarifEn);
             Assert.Equal(VariantenDaten.FUSSNOTE_LEISTUNGSPREIS_TARIF, tarifDe);
+
+            // Der Satz zum Monatspreis des Reststromtarifs (Modell MONATLICH): eine Stelle, der Preis.
+            string monatDe = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                VariantenDaten.SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT, new System.Globalization.CultureInfo("de-DE"));
+            string monatEn = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                VariantenDaten.SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT, new System.Globalization.CultureInfo("en-US"));
+            Assert.False(string.IsNullOrEmpty(monatDe));
+            Assert.False(string.IsNullOrEmpty(monatEn));
+            Assert.NotEqual(monatDe, monatEn);
+            Assert.Contains("{0} €/(kW·Monat)", monatDe);
+            Assert.Contains("{0} €/(kW·month)", monatEn);
+            Assert.DoesNotContain("{1}", monatDe);
+            Assert.DoesNotContain("{1}", monatEn);
+            Assert.Equal(VariantenDaten.FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT, monatDe);
         }
 
         // =================================================================
@@ -1261,22 +1275,22 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Im Rollentarif nennt die Fußzeile der Kostentafel das Leistungspreismodell des
-        /// Reststromtarifs</b> (Anwenderentscheid 02.10.2026, Register EZ‑18). Der Stromträger führt
-        /// 60 €/(kW·a), der Reststromtarif 10 €/(kW·Monat) monatlich. Der Tarif ersetzt die Preise des
-        /// Trägers: Merkmal, Fußzeile und Hinweis des Berichtslaufs nennen das Modell des
-        /// Reststromtarifs, den Trägersatz nicht. Die Zahl der Fußzeile ist die der Kopie — der
-        /// Berichtsweg rechnet die Gruppenzahl weiter mit den Preisen des Trägers. Die Emissionsfußzeile
-        /// nennt keinen Leistungspreis; Englisch aus der Ressource.
+        /// <b>Im Rollentarif nennt die Fußzeile der Kostentafel den Trägersatz und den abweichenden
+        /// Monatspreis des Reststromtarifs</b> (Anwenderentscheid 02.10.2026, Register EZ‑18). Der
+        /// Stromträger führt 60 €/(kW·a), der Reststromtarif 8 €/(kW·Monat) monatlich — ein Satz je
+        /// Jahr gegen einen Monatspreis ist unterschiedlich. Merkmal, Fußzeile und Hinweise des
+        /// Berichtslaufs nennen beide, den Trägersatz zuerst. Die Zahl der Fußzeile ist die der Kopie —
+        /// der Berichtsweg rechnet die Gruppenzahl weiter mit den Preisen des Trägers. Die
+        /// Emissionsfußzeile nennt keinen Leistungspreis; Englisch aus der Ressource.
         /// </summary>
         [Fact]
-        public void Im_Rollentarif_nennt_die_Fussnote_das_Leistungspreismodell_des_Reststromtarifs()
+        public void Im_Rollentarif_nennt_die_Fussnote_Traegersatz_und_Monatspreis_des_Reststromtarifs()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             Pruefstand();
             Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
-            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 8.0);
 
             BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
             stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
@@ -1287,12 +1301,14 @@ namespace EPOS.Kern.Tests
             KennzahlenKatalog.Berechne(variante);
             BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
 
-            // Das Merkmal: das Modell des Reststromtarifs, kein Trägersatz.
+            // Das Merkmal: der Trägersatz und dazu Modell und Monatspreis des Reststromtarifs.
             string modell = WindowsFormsApplication1.MyResource.Resource.TARIF_LM_MONATLICH;
             Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal("60,00 €/(kW·a)", stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.Equal("Elektrische Energie", stamm.Gruppenzahl.LeistungspreisTraeger);
             Assert.Equal(modell, stamm.Gruppenzahl.LeistungspreisTarifModell);
-            Assert.Null(stamm.Gruppenzahl.LeistungspreisSatz);
-            Assert.Null(stamm.Gruppenzahl.LeistungspreisTraeger);
+            Assert.Equal(8.0, stamm.Gruppenzahl.LeistungspreisTarifMonatspreis.Value, 9);
+            Assert.Null(stamm.LeistungspreisNichtAngesetztMonatssatz);   // der Stand bleibt unberührt
             Assert.Null(variante.Gruppenzahl);
 
             // Die Zahl ist die der Kopie — mit den Preisen des Trägers, ohne Leistungsanteil.
@@ -1303,25 +1319,33 @@ namespace EPOS.Kern.Tests
             Assert.Equal(kopie.Energiekosten.Value, stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 6);
             Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS,
                          stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 2);
+            Assert.Null(kopie.LeistungspreisNichtAngesetztMonatssatz);    // Satz je Jahr
 
-            // Die Fußzeile der Kostentafel: der Tarifsatz an Stelle des Trägersatzes.
+            // Die Fußzeile der Kostentafel: erst der Trägersatz, dann der Tarifsatz mit Monatspreis.
             var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
             string satzKosten = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
-            string tarifsatz = "Den Leistungspreis des Reststromtarifs nach dem Modell „" + modell +
-                               "“ setzt die Gruppenregel nicht an.";
-            Assert.EndsWith(" " + tarifsatz, satzKosten, StringComparison.Ordinal);
-            Assert.DoesNotContain("des Stromträgers", satzKosten);
+            const string traegersatz =
+                "Den Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ setzt die " +
+                "Gruppenregel nicht an.";
+            const string tarifsatz =
+                "Den Leistungspreis des Reststromtarifs von 8,00 €/(kW·Monat) setzt die Gruppenregel nicht an.";
+            Assert.EndsWith(" " + traegersatz + " " + tarifsatz, satzKosten, StringComparison.Ordinal);
+            Assert.DoesNotContain("nach dem Modell", satzKosten);
             Assert.Contains(stamm.Gruppenzahl.EnergiekostenEuroJahr.Value.ToString("N0", de) + " €/a", satzKosten);
             Assert.DoesNotContain("Leistungspreis",
                 stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_EMISSION));
 
-            // Der Hinweis des Berichtslaufs nennt das Modell, nicht den Träger.
-            Berichtshinweis h = Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+            // Die Hinweise des Berichtslaufs: der des Trägers und der des Reststromtarifs mit Modell.
+            Berichtshinweis ht = Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ nicht angesetzt",
+                StringComparison.Ordinal));
+            Berichtshinweis hr = Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
                 "Leistungspreis des Reststromtarifs nach dem Modell „" + modell + "“ nicht angesetzt",
                 StringComparison.Ordinal));
-            Assert.Equal(Berichtshinweisstufe.Hinweis, h.Stufe);
-            Assert.Equal(stamm.Anzeige, h.Stand);
-            Assert.DoesNotContain(daten.Hinweisliste, x => x.Text.Contains("des Stromträgers"));
+            Assert.Equal(Berichtshinweisstufe.Hinweis, ht.Stufe);
+            Assert.Equal(Berichtshinweisstufe.Hinweis, hr.Stufe);
+            Assert.Equal(stamm.Anzeige, ht.Stand);
+            Assert.Equal(stamm.Anzeige, hr.Stand);
 
             // Word und Excel tragen denselben Satz; Englisch aus der Ressource.
             Assert.Equal(satzKosten, Assert.Single(
@@ -1330,21 +1354,21 @@ namespace EPOS.Kern.Tests
             var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             string englisch = Assert.Single(
                 Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
-            Assert.Contains("The group rule does not apply the demand charge of the residual power tariff " +
-                            "with the model “", englisch);
-            Assert.DoesNotContain("electricity carrier", englisch);
-            Assert.EndsWith("”.", englisch, StringComparison.Ordinal);
+            Assert.Contains("“Elektrische Energie”", englisch);
+            Assert.EndsWith("”. The group rule does not apply the demand charge of the residual power tariff " +
+                            "of 8.00 €/(kW·month).", englisch, StringComparison.Ordinal);
             Assert.DoesNotContain("demand charge",
                 stamm.StromGruppenregelFussnote(en, KennzahlenKatalog.GR_EMISSION));
         }
 
         /// <summary>
-        /// Die Fußzeile nennt das Modell im Klartext der Tarifstruktur — hier die Staffel. Führt der
-        /// Reststromtarif keinen Leistungspreis, nennt sie keinen — auch nicht den des Stromträgers,
-        /// dessen Preise der Tarif ersetzt —, und der Berichtslauf meldet keinen.
+        /// Bei der Staffel des Reststromtarifs nennt die Fußzeile nach dem Trägersatz das Modell im
+        /// Klartext der Tarifstruktur — Staffel und Satz je Jahr sind unterschiedlich. Führt der
+        /// Reststromtarif keinen Leistungspreis, nennt sie allein den Trägersatz, und der Berichtslauf
+        /// meldet allein den Hinweis des Trägers; die Zahl ist dieselbe.
         /// </summary>
         [Fact]
-        public void Im_Rollentarif_nennt_die_Fussnote_die_Staffel_und_ohne_Leistungspreis_keinen()
+        public void Im_Rollentarif_nennt_die_Fussnote_nach_dem_Traegersatz_die_Staffel_und_ohne_Tarifpreis_keine()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -1353,6 +1377,9 @@ namespace EPOS.Kern.Tests
             Rollentarif(DbWerte.LEISTUNGSMODELL_STAFFEL, 0.0, 0.0,
                         new LeistungsStufe(0.0, 40.0, 60.0));
             var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            const string traegersatz =
+                " Den Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ setzt die " +
+                "Gruppenregel nicht an.";
 
             BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
             stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
@@ -1360,13 +1387,15 @@ namespace EPOS.Kern.Tests
             BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
             string staffel = WindowsFormsApplication1.MyResource.Resource.TARIF_LM_STAFFEL;
             Assert.Equal(staffel, stamm.Gruppenzahl.LeistungspreisTarifModell);
-            Assert.Null(stamm.Gruppenzahl.LeistungspreisSatz);
-            Assert.EndsWith(" Den Leistungspreis des Reststromtarifs nach dem Modell „" + staffel +
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisTarifMonatspreis);
+            Assert.Equal("60,00 €/(kW·a)", stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.EndsWith(traegersatz + " Den Leistungspreis des Reststromtarifs nach dem Modell „" + staffel +
                             "“ setzt die Gruppenregel nicht an.",
                             stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN), StringComparison.Ordinal);
             Assert.Single(daten.Hinweisliste, x => x.Text.Contains("nach dem Modell „" + staffel + "“ nicht angesetzt"));
+            Assert.Single(daten.Hinweisliste, x => x.Text.Contains("des Stromträgers „Elektrische Energie“ nicht angesetzt"));
 
-            // Ohne Leistungspreis am Reststromtarif: kein Satz, kein Hinweis — auch nicht des Trägers.
+            // Ohne Leistungspreis am Reststromtarif: allein der Trägersatz und der Trägerhinweis.
             Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 0.0, 0.0);
             BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out VariantenDaten varianteOhne);
             stammOhne.Zeitreihen = Stundenreihen(NETZBEZUG);
@@ -1374,14 +1403,104 @@ namespace EPOS.Kern.Tests
             BerichtsDatenSammler.StromGruppenzahlErmitteln(ohne);
             Assert.NotNull(stammOhne.Gruppenzahl);
             Assert.Null(stammOhne.Gruppenzahl.LeistungspreisTarifModell);
-            Assert.Null(stammOhne.Gruppenzahl.LeistungspreisSatz);
-            Assert.Null(stammOhne.Gruppenzahl.LeistungspreisTraeger);
+            Assert.Null(stammOhne.Gruppenzahl.LeistungspreisTarifMonatspreis);
+            Assert.Equal("60,00 €/(kW·a)", stammOhne.Gruppenzahl.LeistungspreisSatz);
+            Assert.Equal("Elektrische Energie", stammOhne.Gruppenzahl.LeistungspreisTraeger);
             string satzOhne = stammOhne.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
-            Assert.NotNull(satzOhne);
-            Assert.DoesNotContain("Leistungspreis", satzOhne);
-            Assert.DoesNotContain(ohne.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
+            Assert.EndsWith(traegersatz, satzOhne, StringComparison.Ordinal);
+            Assert.DoesNotContain("Reststromtarif", satzOhne);
+            Assert.Single(ohne.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
+            Assert.DoesNotContain(ohne.Hinweisliste, x => x.Text.Contains("Reststromtarif"));
             Assert.Equal(stamm.Gruppenzahl.EnergiekostenEuroJahr.Value,
                          stammOhne.Gruppenzahl.EnergiekostenEuroJahr.Value, 6);
+        }
+
+        /// <summary>
+        /// <b>Gleicher Monatspreis: nur der Trägersatz.</b> Der Stromträger bemisst 8 €/(kW·Monat) je
+        /// Monat, der Reststromtarif monatlich ebenso 8 €/(kW·Monat) — beide gleich. Die Fußzeile nennt
+        /// allein den Trägersatz, der Berichtslauf allein den Trägerhinweis.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_mit_gleichem_Monatspreis_nennt_die_Fussnote_nur_den_Traegersatz()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(8.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_MONAT);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 8.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal("8,00 €/(kW·Monat)", stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisTarifModell);
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisTarifMonatspreis);
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            string satzKosten = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
+            Assert.EndsWith(" Den Leistungspreis 8,00 €/(kW·Monat) des Stromträgers „Elektrische Energie“ " +
+                            "setzt die Gruppenregel nicht an.", satzKosten, StringComparison.Ordinal);
+            Assert.DoesNotContain("Reststromtarif", satzKosten);
+            Assert.Single(daten.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
+            Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 8,00 €/(kW·Monat) des Stromträgers", StringComparison.Ordinal));
+            Assert.DoesNotContain(daten.Hinweisliste, x => x.Text.Contains("Reststromtarif"));
+        }
+
+        /// <summary>
+        /// <b>Träger ohne Leistungspreis, Tarif mit:</b> Die Fußzeile nennt allein den Monatspreis des
+        /// Reststromtarifs, der Berichtslauf allein den Tarifhinweis.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_ohne_Traegerleistungspreis_nennt_die_Fussnote_nur_den_Tarifsatz()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(0.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisTraeger);
+            Assert.Equal(10.0, stamm.Gruppenzahl.LeistungspreisTarifMonatspreis.Value, 9);
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            string satzKosten = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
+            Assert.EndsWith(" Den Leistungspreis des Reststromtarifs von 10,00 €/(kW·Monat) setzt die " +
+                            "Gruppenregel nicht an.", satzKosten, StringComparison.Ordinal);
+            Assert.DoesNotContain("des Stromträgers", satzKosten);
+            Assert.Single(daten.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
+            Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis des Reststromtarifs nach dem Modell „", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Die Vergleichsregel</b> (<see cref="BerichtsDatenSammler.TarifLeistungspreisWieTraeger"/>):
+        /// gleich nur bei Monatspreis gegen Monatssatz desselben Werts; ein Träger ohne Monatssatz
+        /// (Satz je Jahr, Staffel, ungleiche Saisonreihe, kein Leistungspreis) und die Modelle STAFFEL
+        /// und JAHRESHOECHSTLAST sind unterschiedlich.
+        /// </summary>
+        [Theory]
+        [InlineData(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 8.0, true)]
+        [InlineData("", 8.0, 8.0, true)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 8.0 + 1e-12, true)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 7.5, false)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, null, false)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_STAFFEL, 8.0, 8.0, false)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, 8.0, 8.0, false)]
+        [InlineData(DbWerte.LEISTUNGSMODELL_STAFFEL, 0.0, null, false)]
+        public void Die_Vergleichsregel_des_Tarifleistungspreises(string modell, double monatspreis,
+                                                                   double? traegerMonatssatz, bool gleich)
+        {
+            var rolle = new TarifRolle { Leistungsmodell = modell, MonatspreisEurKWMonat = monatspreis };
+            Assert.Equal(gleich, BerichtsDatenSammler.TarifLeistungspreisWieTraeger(rolle, traegerMonatssatz));
         }
 
         // =================================================================
