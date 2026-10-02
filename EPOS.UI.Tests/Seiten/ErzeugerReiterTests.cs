@@ -1305,6 +1305,30 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.DoesNotContain("NaN", seite.Markup);
     }
 
+    /// <summary>
+    /// Welle M5 (PV3): Ohne Einspeisegrenze steht keine Abregelungszeile; mit Grenze und Abregelung
+    /// stehen Abregelung in MWh/a und in % der Erzeugung sowie die Grenze in kW.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_zeigt_die_Abregelung_nur_mit_Einspeisegrenze()
+    {
+        var ohne = PvZeichnen();
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_ABREGELUNG, ohne.Markup);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, ohne.Markup);
+
+        var daten = Pv();
+        daten.AbregelungMwh = 1.25;
+        daten.AbregelungProzent = 9.5;
+        daten.EinspeisegrenzeKw = 7.0;
+        var mit = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell));
+        string text = mit.Markup;
+        Assert.Contains(Resource.SIMERG_LBL_PV_ABREGELUNG, text);
+        Assert.Contains("1,25", text);
+        Assert.Contains("9,50", text);
+        Assert.Contains(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, text);
+        Assert.Contains("7,00", text);
+    }
+
     // ---- W11b‑B‑19: EINE Reihenzeile mit ALLEN vier Reihen -----------------
 
     /// <summary>

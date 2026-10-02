@@ -750,13 +750,14 @@ public class KiDialogkatalogTests : IDisposable
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_13_12_15_14_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_13_12_15_15_und_26_Felder()
     {
         Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
         // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
         Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
-        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
+        // Stromspeicherkatalog: vierzehn plus die Selbstentladung (Welle M5, SP1).
+        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
     }
 

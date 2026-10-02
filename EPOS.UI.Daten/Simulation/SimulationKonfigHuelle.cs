@@ -1945,6 +1945,7 @@ namespace WindowsFormsApplication1
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
             string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
             Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+            Einspeisegrenze einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1971,6 +1972,11 @@ namespace WindowsFormsApplication1
             // nichts ist zu schreiben.
             if (!aufheizvorgabe.Equals(Aufheizvorgabe.Aus))
                 KonfigurationCtrl.AufheizvorgabeSchreiben(m_ID_Projekt, aufheizvorgabe);
+
+            // DIE EINSPEISEGRENZE REIST MIT (Welle M5, PV3): Die neue Zeile traegt zwei NULL (= keine
+            // Grenze) - nachgereicht wird der Stand VOR dem Delete.
+            if (einspeisegrenze.Gesetzt)
+                KonfigurationCtrl.EinspeisegrenzeSchreiben(m_ID_Projekt, einspeisegrenze);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

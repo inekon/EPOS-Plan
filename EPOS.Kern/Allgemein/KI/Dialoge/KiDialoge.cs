@@ -8199,6 +8199,18 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimAufheizArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimAufheizArtErl, leerErlaubt: true),
 
+                    // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
+                    //
+                    // Wie die Aufheizoptimierung SOFORT geschrieben - Wert und Einheit ueber
+                    // denselben Delegaten wie der Abschnitt (EinspeisegrenzeSchreiben). Leer heisst
+                    // keine Grenze.
+                    new KiDialogFeld("einspeisegrenze", "SimulationKiSicht.Einspeisegrenze",
+                                     KiDialogTexte.SimEinspeisegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimEinspeisegrenzeErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("einspeisegrenze_einheit", "SimulationKiSicht.EinspeisegrenzeEinheit",
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitErl, leerErlaubt: true),
+
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //
                     // Quelle, konstante Quelltemperatur, WP-Prioritaet und Betriebsmodus
@@ -8777,7 +8789,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("standby", "ModulKatalogKiSicht.Standby",
                                      KiDialogTexte.ModkStandbyName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkStandbyErl,
-                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true, min: 0, max: 1000),
+                    // Welle M5 (SP1): die Selbstentladung des Speichers - leer heißt keine.
+                    new KiDialogFeld("selbstentladung", "ModulKatalogKiSicht.Selbstentladung",
+                                     KiDialogTexte.ModkSelbstentladungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkSelbstentladungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_MONAT, leerErlaubt: true, min: 0, max: 20)
                 },
                 knoepfe: Modulkatalogknoepfe());
         }

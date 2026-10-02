@@ -734,6 +734,7 @@ namespace WindowsFormsApplication1
                 Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
                 Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
+                Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
         }
@@ -772,7 +773,8 @@ namespace WindowsFormsApplication1
                         Heizgrenze = m.Kessel_Heizgrenze,
                         Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                         Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
-                        Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt)
+                        Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
+                        Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt)
                     };
                 },
                 // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
@@ -787,6 +789,9 @@ namespace WindowsFormsApplication1
                 // Kuehlschalters (Vormerksatz ohne Satz). Die Herleitungszeilen je Gebaeude
                 // (AufheizHerleitung) kommen mit der Welle D2; bis dahin steht keine Zeile da.
                 AufheizvorgabeSchreiben = vorgabe => KonfigurationCtrl.AufheizvorgabeSetzen(m_ID_Projekt, vorgabe),
+                // EINSPEISEGRENZE (Welle M5, PV3): der eine Schreibweg der Projekteinstellung - Wert und
+                // Einheit in einem UPDATE, nach der Regel des Kuehlschalters (Vormerksatz ohne Satz).
+                EinspeisegrenzeSchreiben = grenze => KonfigurationCtrl.EinspeisegrenzeSetzen(m_ID_Projekt, grenze),
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;

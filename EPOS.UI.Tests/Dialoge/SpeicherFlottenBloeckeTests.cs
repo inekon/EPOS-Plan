@@ -50,6 +50,24 @@ public sealed class SpeicherFlottenBloeckeTests : EposBunitContext
     }
 
     /// <summary>
+    /// Welle M5 (PV3): Die Einspeisegrenze der Projekteinstellung steht benannt am Feld der harten
+    /// Einspeisegrenze; ohne Projektgrenze steht keine Zeile da.
+    /// </summary>
+    [Fact]
+    public void Die_Einspeisegrenze_des_Projekts_steht_benannt_am_Feld()
+    {
+        var mit = Render<SpeicherFlottenNetzBlock>(p => p
+            .Add(x => x.Wert, new FlottenSimulationOptionen())
+            .Add(x => x.ProjektEinspeisegrenzeKw, 7.5));
+        string text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                    Resource.FLOTTE_ED_EINSPEISEGRENZE_PROJEKT, 7.5);
+        Assert.Equal(text, mit.Find("p[role=note]").TextContent.Trim());
+
+        var ohne = Render<SpeicherFlottenNetzBlock>(p => p.Add(x => x.Wert, new FlottenSimulationOptionen()));
+        Assert.Empty(ohne.FindAll("p[role=note]"));
+    }
+
+    /// <summary>
     /// Die PROGNOSEPLANUNG erscheint nur bei einem planenden Betriebsziel — ohne Planer
     /// gibt es keinen Planungshorizont, und ein Feld ohne Wirkung ist eine Behauptung.
     /// (Der mitgewanderte Fall aus <c>MultiUse_zeigt_Peak_und_Prognoseparameter</c>.)

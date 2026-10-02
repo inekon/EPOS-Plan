@@ -366,7 +366,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
         // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
         // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
-        new("SimulationKonfigSeite", 9),
+        // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
+        // als einspeisegrenze und einspeisegrenze_einheit (9 → 11).
+        new("SimulationKonfigSeite", 11),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

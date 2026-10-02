@@ -33,6 +33,13 @@
         <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_EINSPEISEGRENZE" Einheit="kW"
                     Wert="@Wert.NetzeinspeisungGrenzeKw" Min="0" Aktiv="@Aktiv"
                     WertChanged="@(v => Setzen(() => Wert.NetzeinspeisungGrenzeKw = v))" />
+        @* PV3 (Welle M5): Die Einspeisegrenze der Projekteinstellung steht benannt am Feld - sie
+           belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV weich ab. *@
+        @if (ProjektEinspeisegrenzeKw is double projektGrenze)
+        {
+            <p class="epos-flotte-hinweis epos-flotte-feldraster__zeile" role="note">@string.Format(Kultur,
+                Resource.FLOTTE_ED_EINSPEISEGRENZE_PROJEKT, projektGrenze)</p>
+        }
     </div>
 
     @if (HatPrognoseplanung)
@@ -102,6 +109,12 @@
     /// „Informationsstand", weil genau dort der eine der zwei Auswege liegt.
     /// </summary>
     [Parameter] public string PrognoseHinweis { get; set; } = "";
+
+    /// <summary>
+    /// Die Einspeisegrenze der Projekteinstellung [kW] (Welle M5, PV3); <c>null</c> = keine, dann steht
+    /// keine Zeile da.
+    /// </summary>
+    [Parameter] public double? ProjektEinspeisegrenzeKw { get; set; }
 
     /// <summary>Der Block zeigt sich nur bei einem PLANENDEN Betriebsziel (Prüfhilfe).</summary>
     public bool HatPrognoseplanung => Wert.Betriebsziel
