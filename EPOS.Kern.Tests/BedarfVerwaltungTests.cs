@@ -164,7 +164,7 @@ namespace EPOS.Kern.Tests
 
             var pw = new ProzesswaermeStammCtrl();
             pw.ReadAll();
-            Assert.Equal(32, pw.rows);
+            Assert.Equal(40, pw.rows);              // 32 + acht Betriebsweisen (PW5)
             Assert.Equal("Beckenwasseraufheizung", pw.items[0].m_szProzessname);
 
             var sv = new StromverbraucherStammCtrl();
@@ -223,7 +223,7 @@ namespace EPOS.Kern.Tests
                          BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher));
 
             Assert.Equal(16, BedarfStammCtrl.Bezeichner(BedarfsArt.Brauchwasser).Count);
-            Assert.Equal(32, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
+            Assert.Equal(40, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
             Assert.Equal(41, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);
         }
 

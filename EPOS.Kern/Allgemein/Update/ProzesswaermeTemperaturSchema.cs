@@ -19,8 +19,13 @@ namespace WindowsFormsApplication1
     // Die paarweisen Prüfklauseln stehen an der ZWEITEN Spalte - ALTER TABLE legt die Spalten
     // nacheinander an, und eine Klausel darf nur Spalten nennen, die schon stehen.
     //
-    // KEIN DML. Jede Bestandszeile bleibt ohne Temperaturpaar - und ohne Paar rechnet der Lauf
-    // Zeichen für Zeichen wie zuvor. Der Referenzlauf bleibt byte-gleich.
+    // KEIN DML AN BESTANDSZEILEN. Jede Bestandszeile bleibt ohne Temperaturpaar - und ohne Paar
+    // rechnet der Lauf Zeichen für Zeichen wie zuvor. Der Referenzlauf bleibt byte-gleich.
+    //
+    // DIE SAAT (PW5) gehört zum selben Schritt: acht ausgelieferte Betriebsweisen in
+    // Tab_Prozesswaerme_STAMM und Tab_Prozesstyp_STAMM, ReadOnly = 1, mit Temperaturpaar als
+    // Vorbelegung (ProzesstypSaat). Wiederholbar, nie überschreibend; kein Referenzprojekt ordnet
+    // einen Satz zu.
     //
     // DER NAME STEHT NUR ALS ARGUMENT (Muster KesselBereitschaftEinheitSchema): Die Anweisung
     // entsteht aus Tabelle, Spalte und Typ; Werkzeuge/SqlDialektPruefer sieht keinen fertigen
@@ -97,8 +102,11 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Ist der Schritt gelaufen?</summary>
-        public static bool Vollstaendig() => SpaltenVollstaendig();
+        /// <summary>
+        /// Ist der Schritt gelaufen? Die Spalten stehen, und die acht ausgelieferten Betriebsweisen
+        /// (<see cref="ProzesstypSaat"/>, PW5) stehen unter ihren Namen in beiden Katalogen.
+        /// </summary>
+        public static bool Vollstaendig() => SpaltenVollstaendig() && ProzesstypSaat.Vollstaendig();
 
         /// <summary>
         /// Die DDL-Anweisungen des Schritts — Beschreibung und SQL, je fehlende Spalte eine; leer,
@@ -125,7 +133,7 @@ namespace WindowsFormsApplication1
         /// Helfer, aus derselben <see cref="Anweisungen"/>.
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
-        /// <returns>Die Zahl der angelegten Spalten (0 bis 4).</returns>
+        /// <returns>Die Zahl der angelegten Spalten (0 bis 4); die Saat meldet in <paramref name="bericht"/>.</returns>
         public static int Ausfuehren(IList<string> bericht)
         {
             int n = 0;
@@ -136,6 +144,9 @@ namespace WindowsFormsApplication1
                 bericht?.Add(a.Key);
             }
             if (n == 0) bericht?.Add(TAB_STAMM + " und " + TAB_PROJEKT + ": Temperaturspalten vorhanden");
+
+            // PW5: die acht typischen Betriebsweisen - wiederholbar, nie überschreibend.
+            ProzesstypSaat.Ausfuehren(bericht);
             return n;
         }
     }

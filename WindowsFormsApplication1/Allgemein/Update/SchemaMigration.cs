@@ -6983,7 +6983,7 @@ namespace WindowsFormsApplication1
             // allein dort.
             new Schritt(SCHRITT_PROZESSWAERME_TEMPERATUR,
                         "Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme: Temperaturpaar je Prozess " +
-                        "(Vorlauf, Ruecklauf)",
+                        "(Vorlauf, Ruecklauf) und acht ausgelieferte Betriebsweisen",
                         "Ein Prozess waere eine reine Waermemenge; welches Temperaturniveau er verlangt, " +
                         "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
                         "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
@@ -12396,6 +12396,44 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
+            // PW5: die acht typischen Betriebsweisen ueber den KERN mit ?-Parametern, still wie die
+            // Saat der Konditionierungsvorlagen - dieser Zweig laeuft vor dem ersten Fenster.
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ProzesstypSaat.Ausfuehren(zeilen);
+                    vollstaendig = ProzesswaermeTemperaturSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die gesaeten Saetze bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Der Prozesswaermekatalog traegt nach dem Schritt nicht alle ausgelieferten Betriebsweisen.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Temperaturpaar je Prozess - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN Rechenergebnis aendert sich.");
