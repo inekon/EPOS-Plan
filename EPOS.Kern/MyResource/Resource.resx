@@ -9821,7 +9821,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Energieträgerverwaltung…</value>
   </data>
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
-    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1).</value>
+    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen.</value>
   </data>
   <data name="PVW_51A" xml:space="preserve">
     <value>§ 51a-Kompensation (Laufzeitverlängerung)</value>
@@ -10452,7 +10452,7 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
 Der Speicher ist zugeordnet:
   • {3}
 
-Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet — gesperrt sind sie nicht mehr.
 Nutzung trotzdem ändern?</value>
   </data>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
@@ -10536,7 +10536,7 @@ Nutzung trotzdem ändern?</value>
   <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
     <value>Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
 
-Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt.
 
 Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen.</value>
   </data>
@@ -11682,7 +11682,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Preisstand (gültig ab):</value>
   </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
-    <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
+    <value>Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
@@ -19534,7 +19534,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Adaptiv (kausal): Die Schwelle startet auf dem Startwert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann — sie kann nur steigen. Damit bleibt der Speicher für die große Spitze geladen, statt an kleineren leerzulaufen (Spezifikation 5.1.1).</value>
   </data>
   <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
-    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026).</value>
+    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze.</value>
   </data>
   <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
     <value>Grundlast als Startwert übernehmen</value>

@@ -9814,7 +9814,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>Energy carrier management…</value>
   </data>
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
-    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in (finding V1).</value>
+    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in.</value>
   </data>
   <data name="PVW_51A" xml:space="preserve">
     <value>Sec. 51a compensation (term extension)</value>
@@ -10445,7 +10445,7 @@ They typically stem from a variant copy without this trade and keep entering the
 The storage is assigned to:
   • {3}
 
-Assignments to a channel the storage no longer serves will be reported as a warning from now on (criterion W1) — they are no longer blocked.
+Assignments to a channel the storage no longer serves will be reported as a warning from now on — they are no longer blocked.
 Change the usage anyway?</value>
   </data>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
@@ -10529,7 +10529,7 @@ Change the usage anyway?</value>
   <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
     <value>Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified.
 
-A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist (concept 6.3, criterion W6).
+A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist.
 
 Please either set the number of layers to 1 or dissolve the bank in the heat sink dialog.</value>
   </data>
@@ -11675,7 +11675,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Price basis (valid from):</value>
   </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
-    <value>Feed-in (no demand price — finding 11 of the legacy application; shared field for PV and CHP feed-in)</value>
+    <value>Feed-in (no demand price; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Role model (stage E5) — difference method “avoided cost”</value>
@@ -19545,7 +19545,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Adaptive (causal): the threshold starts at the start value and is raised during the run as soon as the fleet cannot hold a peak — it can only rise. The storage therefore stays charged for the large peak instead of running empty on smaller ones (specification 5.1.1).</value>
   </data>
   <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
-    <value>Fixed: the threshold stays at the entered value for the whole period. Once the annual peak is missed, the fleet still discharges on every smaller peak (finding of 11.09.2026).</value>
+    <value>Fixed: the threshold stays at the entered value for the whole period. Once the annual peak is missed, the fleet still discharges on every smaller peak.</value>
   </data>
   <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
     <value>Apply base load as start value</value>

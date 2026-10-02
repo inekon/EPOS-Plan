@@ -22950,7 +22950,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze. ähnelt.
         /// </summary>
         public static string FLOTTE_PEAK_RATSCHE_NEIN {
             get {
@@ -70911,7 +70911,7 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher „{0}&quot; ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
         ///
-        ///Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+        ///Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt.
         ///
         ///Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen. ähnelt.
         /// </summary>
@@ -71790,7 +71790,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///Der Speicher ist zugeordnet:
         ///  • {3}
         ///
-        ///Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+        ///Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet — gesperrt sind sie nicht mehr.
         ///Nutzung trotzdem ändern? ähnelt.
         /// </summary>
         public static string PSP_MELDUNG_KLASSENSETWECHSEL {
@@ -84188,7 +84188,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen. ähnelt.
         /// </summary>
         public static string SIM_PV_V1_BHKW_GETRENNT {
             get {
@@ -89199,7 +89199,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
         /// </summary>
         public static string TARIF_G_EINSPEISUNG {
             get {
