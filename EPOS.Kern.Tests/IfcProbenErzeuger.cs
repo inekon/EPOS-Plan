@@ -47,6 +47,7 @@ namespace EPOS.Kern.Tests
             {
                 ["ifc4_haus.ifc"] = haus,
                 ["ifc2x3_haus.ifc"] = Haus(XbimSchemaVersion.Ifc2X3, "ifc2x3_haus.ifc"),
+                ["ifc2x3_enthaltensein.ifc"] = Enthaltensein(),
                 ["ifc4_haus.ifczip"] = Zip("ifc4_haus.ifc", haus),
                 ["ifc4x1_kopf.ifc"] = Ifc4x1Kopf(),
                 ["ifc4_zwei_gebaeude.ifc"] = ZweiGebaeude(),
@@ -418,6 +419,39 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Räume über das Enthaltensein, Mengen unter fremdem Satznamen</b> (IFC2X3, Mehrzonenkonzept 6.5) —
+        /// nach dem Muster eines CAD-Exports: Die Geschosse „EG" (0 mm) und „OG" (2800 mm) hängen über
+        /// <c>IfcRelContainedInSpatialStructure</c> am Gebäude, die Räume ebenso am Geschoss; der Raumname
+        /// steht in <c>Name</c>, <c>LongName</c> fehlt. Die Mengen stehen im Satz <c>CAD_RaumQuantities</c>
+        /// als <c>Area</c>/<c>Volume</c>/<c>Height</c>: EG „Wohnen" 40 m², 100 m³, 2,5 m; „Küche" 20 m², 50 m³,
+        /// 2,5 m — zusätzlich über <c>IfcRelAggregates</c> am EG (beide Wege, einmal gezählt); OG „Schlafen"
+        /// 30 m², 72 m³, 2,4 m; „Abstellraum" 5 m², 12 m³, 2,4 m (nach dem Namen unbeheizt); „Bad" mit
+        /// <c>BaseQuantities</c> (<c>NetFloorArea</c> 10 m², <c>NetVolume</c> 24 m³, <c>Height</c> 2,4 m) UND
+        /// einem fremden Satz mit <c>Area</c> 999 m² — der Standard geht vor. Dazu eine Außenwand Süd im EG
+        /// (U 0,3, brutto = netto 30 m²). Beheizt: 100 m², 246 m³.
+        /// </summary>
+        public static byte[] Enthaltensein()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_enthaltensein.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Probengebäude", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                b.RaumEnthalten(eg, "Wohnen", 150, 150, 40, 100, 2500, zerlegt: false);
+                b.RaumEnthalten(eg, "Küche", 6150, 150, 20, 50, 2500, zerlegt: true);
+                b.RaumEnthalten(og, "Schlafen", 150, 150, 30, 72, 2400, zerlegt: false);
+                b.RaumEnthalten(og, "Abstellraum", 6150, 150, 5, 12, 2400, zerlegt: false);
+                IIfcSpace bad = b.RaumEnthalten(og, "Bad", 6150, 4150, null, null, null, zerlegt: false);
+                b.RaumMengen(bad, "BaseQuantities", 10, 24, 2400, standard: true);
+                b.RaumMengen(bad, "CAD_RaumQuantities", 999, 999, 9999, standard: false);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ E", 0.3);
+                b.Wand(eg, "EG Süd", Wandlage.Sued, typ, null, "BaseQuantities", 30.0, 30.0, null, new IIfcSpace[0]);
+                return b.Speichern();
+            }
+        }
+
         /// <summary>Zwei Gebäude mit je einem beheizten Raum, einer Außenwand und einem Fenster (U13).</summary>
         public static byte[] ZweiGebaeude()
         {
@@ -728,6 +762,40 @@ namespace EPOS.Kern.Tests
                 }
                 return r;
             }
+
+            /// <summary>Ein Geschoss, das über das Enthaltensein (nicht die Zerlegung) am Gebäude hängt.</summary>
+            public IIfcBuildingStorey GeschossEnthalten(IIfcBuilding g, string name, double hoeheMm)
+            {
+                IIfcBuildingStorey s = Wurzel<IIfcBuildingStorey>("IfcBuildingStorey", name);
+                s.CompositionType = IfcElementCompositionEnum.ELEMENT;
+                s.Elevation = new IfcLengthMeasure(hoeheMm);
+                s.ObjectPlacement = Platzierung(g.ObjectPlacement, 0, 0, hoeheMm);
+                Enthalten(g, s);
+                return s;
+            }
+
+            /// <summary>
+            /// Ein Raum, der über das Enthaltensein am Geschoss hängt (mit <paramref name="zerlegt"/> zusätzlich
+            /// über die Zerlegung), Name in <c>Name</c>, ohne <c>LongName</c>; Mengen — wenn angegeben — im
+            /// fremden Satz <c>CAD_RaumQuantities</c> als <c>Area</c>, <c>Volume</c>, <c>Height</c>.
+            /// </summary>
+            public IIfcSpace RaumEnthalten(IIfcBuildingStorey s, string name, double x, double y,
+                                           double? flaecheM2, double? volumenM3, double? hoeheMm, bool zerlegt)
+            {
+                IIfcSpace r = Wurzel<IIfcSpace>("IfcSpace", name);
+                r.CompositionType = IfcElementCompositionEnum.ELEMENT;
+                r.ObjectPlacement = Platzierung(s.ObjectPlacement, x, y, 0);
+                _raumUrsprung[r.EntityLabel] = (x, y);
+                Enthalten(s, r);
+                if (zerlegt) Zerlegen(s, r);
+                if (flaecheM2.HasValue) RaumMengen(r, "CAD_RaumQuantities", flaecheM2.Value, volumenM3.Value, hoeheMm.Value, standard: false);
+                return r;
+            }
+
+            /// <summary>Raummengen unter den Standardnamen (<paramref name="standard"/>) oder den Namen des CAD-Exports.</summary>
+            public void RaumMengen(IIfcSpace r, string satz, double flaecheM2, double volumenM3, double hoeheMm, bool standard)
+                => Mengen(r, satz, Flaeche(standard ? "NetFloorArea" : "Area", flaecheM2),
+                          Volumen(standard ? "NetVolume" : "Volume", volumenM3), Laenge("Height", hoeheMm));
 
             public IIfcWallType Wandtyp(string name, double? u)
             {
