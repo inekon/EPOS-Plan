@@ -725,8 +725,56 @@ namespace WindowsFormsApplication1
         internal double[] PhiRadIW { get; private set; }
         /// <summary>Konvektive Last an der Raumluft [W].</summary>
         internal double[] PhiConv { get; private set; }
-        /// <summary>Heizsollwert [°C] (E8).</summary>
+        /// <summary>
+        /// Heizsollwert [°C] (E8). Mit Aufheizoptimierung trägt er nach
+        /// <see cref="HeizsollwertMitRampeSetzen"/> die Rampen (Entwurf KP3, Festlegungen 1 und 2) —
+        /// Übergabe, Kälte, F21 und die stündliche Kühlprüfung hat <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>
+        /// vorher an der Reihe ohne Rampe ausgelegt.
+        /// </summary>
         internal double[] ThetaSoll { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Heizsollwertreihe mit Rampe</b> (Entwurf KP3, Festlegungen 1, 2 und 8) — der
+        /// einzige Schreibweg nach dem Bauen: <see cref="Aufheizoptimierung.Anwenden"/> ruft ihn, wenn
+        /// die Planung mindestens eine Stunde angehoben hat. Ohne Schalter wird er nie gerufen
+        /// (Grundsatz 3), die Reihe bleibt dann Zeichen für Zeichen die des Bauers.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn die Reihe nicht 8 760 Stunden führt.</exception>
+        internal void HeizsollwertMitRampeSetzen(double[] reihe)
+        {
+            if (reihe == null || reihe.Length != 8760)
+                throw new ArgumentException("Die Heizsollwertreihe mit Rampe muss 8760 Stunden führen.", nameof(reihe));
+            ThetaSoll = reihe;
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt</b> [°C] in der <b>Außenform</b>
+        /// (Entwurf KP3, Befund B4, Festlegung 12): Außenluft und Fenster bei <paramref name="aussenC"/>
+        /// ohne Strahlung, das Erdreich mit seinem Tagesmittel am Tag <paramref name="tag"/>, der
+        /// unbeheizte Raum bei der Kellertemperatur — dieselben Gewichte und dieselbe Rechnung wie am
+        /// Auslegungspunkt der Anlagenkopplung (8.4), nur als Mitglied statt lokal in
+        /// <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>.
+        /// Ohne Sonne und Gewinne.
+        ///
+        /// <para><b>Nur ohne Nachbarglieder:</b> Im Bauteilweg mit Nachbarzonen teilte die Außenform
+        /// durch die U·A-Summe samt Nachbargliedern, summierte aber nur die Außenglieder (B4); die
+        /// Nachbarform kommt mit der Welle R3. Bis dahin lehnt das Mitglied einen solchen Eingang
+        /// benannt ab.</para>
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <exception cref="InvalidOperationException">bei einem Eingang mit Nachbargliedern oder ohne Bau.</exception>
+        internal double AequivalentN(int tag, double aussenC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            if (Nachbarglieder.Count > 0)
+                throw new InvalidOperationException(Bezeichnung + ": Die äquivalente Außentemperatur mit Nachbarzonen (Nachbarform) kommt mit der Welle R3.");
+            return _aequivalentN(tag, aussenC);
+        }
+
+        /// <summary>Die Außenform der äquivalenten Außentemperatur am Bemessungspunkt, gebildet im Bauen (B4).</summary>
+        private Func<int, double, double> _aequivalentN;
         /// <summary>Obere Regelgrenze je Stunde [°C]: der Kühlsollwert, ohne wirksame Kühlung +∞ (E32).</summary>
         internal double[] ThetaMax { get; private set; }
 
@@ -1055,6 +1103,8 @@ namespace WindowsFormsApplication1
             }
 
             e.ThetaEq = thetaEq;
+            // Entwurf KP3 (B4, Festlegung 12): dieselbe Außenform als Mitglied für die Aufheizbemessung.
+            e._aequivalentN = aequivalentN;
             e.PhiRadAW = phiRadAW;
             e.PhiRadIW = phiRadIW;
             e.PhiConv = phiConv;
