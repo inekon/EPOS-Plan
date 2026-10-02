@@ -6939,7 +6939,9 @@ namespace WindowsFormsApplication1
         ///     (<see cref="Waermegestehung.Entgangene9bReihe"/>) — sie mindert die
         ///     Stromgutschrift;</description></item>
         ///   <item><description>Erlöse: der eingespeiste BHKW-Strom und die Erlösreihen der
-        ///     Wärmeerzeuger (<see cref="Waermegestehung.ErloesReiheZaehlt"/>);</description></item>
+        ///     Wärmeerzeuger (<see cref="Waermegestehung.ErloesReiheZaehlt"/>) — ohne die
+        ///     Stromsteuer-Befreiung des Modus ERLOES, die schon in der Stromgutschrift steht
+        ///     (Register EZ‑21);</description></item>
         ///   <item><description>kein Risikoabzug — er bewertet die Unsicherheit des Standes, er ist
         ///     keine Zahlung der Wärmeerzeugung.</description></item>
         /// </list>
@@ -6989,6 +6991,9 @@ namespace WindowsFormsApplication1
             w.Behg = gesamt.Behg;
             w.BehgJeJahr = gesamt.BehgJeJahr;
             w.Erloes = gesamt.ErloesKwk;
+            // Die Stromsteuer zählt EINMAL (Register EZ‑21): Die Befreiungsreihe des Modus ERLOES
+            // (§ 9 Abs. 1 Nr. 3 StromStG) bleibt hier draußen — die Stromgutschrift oben bewertet
+            // den Eigenstrom zum Arbeitspreis samt Stromsteuer (Regel: ErloesReiheZaehlt).
             foreach (KapitalwertRechner.ErloesReihe r in gesamt.ErloesReihen)
                 if (r != null && Waermegestehung.ErloesReiheZaehlt(r.Name)) w.ErloesReihen.Add(r);
 
@@ -9225,6 +9230,9 @@ namespace WindowsFormsApplication1
                         e.OhneNachweis = !r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) ||
                                          r[SPALTE_NACHWEIS_JSON] == DBNull.Value ||
                                          string.IsNullOrWhiteSpace(Convert.ToString(r[SPALTE_NACHWEIS_JSON]));
+                        // P646: Ohne Umschlag ist die Wärmegestehung die mit dem Kapitalwert des
+                        // ganzen Projekts; ein lesbarer Umschlag sagt es nach seiner Fassung (Uebernimm).
+                        e.GestehungAlteFormel = e.OhneNachweis;
 
                         if (r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) &&
                             r[SPALTE_NACHWEIS_JSON] != DBNull.Value)

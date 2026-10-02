@@ -20,14 +20,16 @@ namespace WindowsFormsApplication1
     ///     allgemeinen Positionen, die keiner Stromanlage zugeordnet sind.</description></item>
     ///   <item><description><b>Energie</b>: die Energiekosten der Wärmeerzeuger
     ///     (<see cref="Energiekosten"/>) — Brennstoff der Kessel und BHKW samt CO₂-Abgabe, der Strom
-    ///     von Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers ohne
-    ///     Anrechnung von PV-Eigenverbrauch, Grund- und Leistungspreis eines Trägers nach
+    ///     von Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers der Anlage
+    ///     (<see cref="WaermestromArbeitEur"/>, Register EZ‑6) ohne Anrechnung von
+    ///     PV-Eigenverbrauch, Grund- und Leistungspreis eines Trägers nach
     ///     <see cref="Anteil"/> —, abzüglich der Stromgutschrift für den im Projekt verbrauchten
     ///     BHKW-Strom (<see cref="StromgutschriftEur"/>); bei produzierendem Gewerbe mindert die
     ///     entgangene Entlastung nach § 9b StromStG diese Gutschrift
     ///     (<see cref="Entgangene9bReihe"/>).</description></item>
     ///   <item><description><b>Erlöse</b>: die Erlöse der Wärmeerzeuger — eingespeister BHKW-Strom
-    ///     und die Reihen aus <see cref="ErloesReiheZaehlt"/>.</description></item>
+    ///     und die Reihen aus <see cref="ErloesReiheZaehlt"/>. Die Stromsteuer-Befreiung des
+    ///     BHKW-Eigenstroms zählt nicht: Die Stromgutschrift enthält sie schon.</description></item>
     /// </list>
     /// <para><b>Draußen</b> bleiben Haushaltsstrom und Stromverbraucher, Kältestrom und Kühlung,
     /// Photovoltaik (Investition, Betrieb, Erlöse, Eigenverbrauch) und Stromspeicher. Der
@@ -110,19 +112,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Erlösreihen der Wärmeerzeuger</b>: KWK-Zuschlag und seine Pauschale,
-        /// Energiesteuer-Entlastung (§ 53/§ 53a/§ 54 EnergieStG — Brennstoff von BHKW und Kessel)
-        /// und die Stromsteuer-Befreiung des BHKW-Stroms (§ 9 Abs. 1 Nr. 3 StromStG). Nicht dabei:
-        /// die PV-Vergütung und die Stromsteuer-Entlastung nach § 9b StromStG, die am Netzbezug des
-        /// ganzen Anschlusses hängt — die Wärmeerzeugung trägt von ihr allein den Teil, der auf den
-        /// BHKW-Eigenstrom entgeht (<see cref="Entgangene9bReihe"/>).
+        /// <b>Die Erlösreihen der Wärmeerzeuger</b>: KWK-Zuschlag und seine Pauschale und die
+        /// Energiesteuer-Entlastung (§ 53/§ 53a/§ 54 EnergieStG — Brennstoff von BHKW und Kessel).
+        /// Nicht dabei: die PV-Vergütung; die Stromsteuer-Entlastung nach § 9b StromStG, die am
+        /// Netzbezug des ganzen Anschlusses hängt — die Wärmeerzeugung trägt von ihr allein den Teil,
+        /// der auf den BHKW-Eigenstrom entgeht (<see cref="Entgangene9bReihe"/>); und die
+        /// Stromsteuer-Befreiung des BHKW-Stroms (§ 9 Abs. 1 Nr. 3 StromStG, Reihe
+        /// <see cref="KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG"/>, nur im Modus ERLOES).
+        ///
+        /// <para><b>Warum die Befreiung nicht zählt</b> (Anwenderentscheid 02.10.2026, „Befunde wie
+        /// Empfehlung umsetzen", Register EZ‑21): Die Stromgutschrift
+        /// (<see cref="StromgutschriftEur"/>) schreibt den BHKW-Eigenstrom zum Arbeitspreis des
+        /// Netzträgers gut — und dieser Arbeitspreis enthält die Stromsteuer. Der Vorteil, dass auf
+        /// den Eigenstrom keine Stromsteuer anfällt, steht damit schon in der Gutschrift; die
+        /// Befreiungsreihe zählte ihn ein zweites Mal. Die Stromsteuer zählt deshalb einmal — in der
+        /// Gutschrift. Kapitalwert und übrige Kennzahlen buchen die Reihe im Modus ERLOES
+        /// unverändert.</para>
         /// </summary>
         internal static bool ErloesReiheZaehlt(string name)
         {
             return string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal) ||
                    string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE, StringComparison.Ordinal) ||
-                   string.Equals(name, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, StringComparison.Ordinal) ||
-                   string.Equals(name, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, StringComparison.Ordinal);
+                   string.Equals(name, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -177,6 +188,97 @@ namespace WindowsFormsApplication1
                      Math.Max(0.0, m.Waermepumpe.Stromverbrauch_Heizstab);
             if (m.Heizkessel != null) s += Math.Max(0.0, m.Heizkessel.Stromverbrauch);
             return s;
+        }
+
+        /// <summary>
+        /// Der Strom einer Erzeugerzeile, deren Anlage einen <b>eigenen Stromträger</b> führt —
+        /// Menge und Arbeitspreis dieses Trägers (<see cref="WaermestromArbeitEur"/>).
+        /// </summary>
+        internal sealed class EigenerStrom
+        {
+            /// <summary>Der Modulname der Erzeugerzeile (= Bezeichner der Anlage).</summary>
+            public string Modul = "";
+            /// <summary>Der eigene Stromträger der Anlage (<c>energy_carrier.id</c>).</summary>
+            public int CarrierId;
+            /// <summary>Der Wärmestrom dieser Zeile [MWh/a].</summary>
+            public double MengeMWh;
+            /// <summary>Der Arbeitspreis des eigenen Trägers [€/kWh]; <c>null</c> = nicht gepflegt.</summary>
+            public double? PreisJeKwh;
+        }
+
+        /// <summary>
+        /// Der Strom der Wärmeerzeuger <b>je Erzeugerzeile</b> [MWh/a], in der Reihenfolge des
+        /// Laufs: je Wärmepumpen-Modulzeile Strom und Heizstab
+        /// (<see cref="ErgebnisWaermepumpeModulModel.Stromverbrauch"/> +
+        /// <see cref="ErgebnisWaermepumpeModulModel.Heizstab"/>, ohne Kältestrom), je Kessel-Modulzeile
+        /// eines Elektrokessels der Stromeinsatz
+        /// (<see cref="SimulationSPK.StromeinsatzElektrokesselMwh"/>). Der Schlüssel ist der Modulname
+        /// (getrimmt) — derselbe wie der Bezeichner der Anlage. Die Summe ist der Sache nach
+        /// <see cref="WaermestromMWh"/>; gerechnet wird mit ihr nur der Teil, der einen eigenen Träger
+        /// trägt.
+        /// </summary>
+        /// <param name="elektrokessel">Die Modulnamen der Elektrokessel des Projekts (getrimmt).</param>
+        internal static List<KeyValuePair<string, double>> WaermestromJeModul(ErgebnisModel m,
+                                                                             ICollection<string> elektrokessel)
+        {
+            var liste = new List<KeyValuePair<string, double>>();
+            if (m == null) return liste;
+            if (m.Waermepumpe != null && m.Waermepumpe.Module != null)
+                foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
+                {
+                    if (mo == null) continue;
+                    double mwh = Math.Max(0.0, mo.Stromverbrauch) + Math.Max(0.0, mo.Heizstab);
+                    if (mwh > 0) liste.Add(new KeyValuePair<string, double>((mo.Modul ?? "").Trim(), mwh));
+                }
+            if (m.Heizkessel != null && m.Heizkessel.Module != null && elektrokessel != null &&
+                elektrokessel.Count > 0)
+                foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
+                {
+                    if (mo == null) continue;
+                    string name = (mo.Modul ?? "").Trim();
+                    if (!elektrokessel.Contains(name)) continue;
+                    double mwh = Math.Max(0.0, SimulationSPK.StromeinsatzElektrokesselMwh(mo.Waerme_Gas, mo.Waerme_Oel));
+                    if (mwh > 0) liste.Add(new KeyValuePair<string, double>(name, mwh));
+                }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Die Arbeitskosten des Wärmestroms [€/a]</b> — EZ‑6 gilt auch hier (Register EZ‑6 und
+        /// EZ‑21, P646): „Der Strompreis einer Anlage ist der ihres eigenen Trägers." Der Strom
+        /// einer Wärmepumpe, eines Heizstabs oder eines Elektrokessels, dessen Anlage einen eigenen
+        /// Stromträger führt (<see cref="ProjektEnergietraegerCtrl.EigeneStromTraeger"/>), zählt zum
+        /// Arbeitspreis dieses Trägers; der übrige Wärmestrom zum Arbeitspreis des Trägers, der den
+        /// Netzbezug bepreist (zugeordnet oder Rückfallträger). Dieselbe Wahl wie der
+        /// Endenergie-Auflöser der Betriebskosten (<c>EndenergieAufloeser.Strompreis</c>).
+        ///
+        /// <para><c>Σ min(Menge_eigen, Rest) × Preis_eigen + Rest × Preis_Netz</c>; der Rest beginnt
+        /// bei <paramref name="waermestromMWh"/> — die Summe der Mengen übersteigt nie den
+        /// Wärmestrom des Laufs. Ein eigener Träger ohne Arbeitspreis rechnet seine Menge zum
+        /// Netzpreis (benannte Grenze: Der Netzbezug wird einmal mit dem Netzträger bezahlt, ein
+        /// Preis aus dem Nichts entsteht nicht). Ohne eigene Träger ist das Ergebnis Zeichen für
+        /// Zeichen <c>Wärmestrom × 1.000 × Preis_Netz</c>.</para>
+        ///
+        /// <para>Die Stromgutschrift des BHKW-Eigenstroms bleibt beim Netzträger
+        /// (<see cref="StromgutschriftEur"/>, Entscheid „Arbeitspreis bleibt").</para>
+        /// </summary>
+        internal static double WaermestromArbeitEur(double waermestromMWh, double netzpreisJeKwh,
+                                                    IEnumerable<EigenerStrom> eigene)
+        {
+            double rest = Math.Max(0.0, waermestromMWh);
+            double eur = 0.0;
+            bool abweichend = false;
+            if (eigene != null)
+                foreach (EigenerStrom e in eigene)
+                {
+                    if (e == null || !(e.MengeMWh > 0) || !e.PreisJeKwh.HasValue || !(rest > 0)) continue;
+                    double menge = Math.Min(e.MengeMWh, rest);
+                    eur += menge * 1000.0 * e.PreisJeKwh.Value;
+                    rest -= menge;
+                    abweichend = true;
+                }
+            if (!abweichend) return waermestromMWh * 1000.0 * netzpreisJeKwh;
+            return eur + rest * 1000.0 * netzpreisJeKwh;
         }
 
         /// <summary>

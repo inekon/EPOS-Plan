@@ -58,7 +58,10 @@ namespace EPOS.Kern.Tests
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.KWKG));
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE));
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.ENERGIESTEUER));
-            Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG));
+            // Register EZ‑21: Die Befreiung nach § 9 Abs. 1 Nr. 3 StromStG (Modus ERLOES) steht schon in
+            // der Stromgutschrift — der Arbeitspreis, zu dem sie den Eigenstrom gutschreibt, enthält die
+            // Stromsteuer. Die Stromsteuer zählt einmal.
+            Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.PV_VERGUETUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(null));
@@ -109,6 +112,75 @@ namespace EPOS.Kern.Tests
             Assert.Equal(40.0, Waermegestehung.WaermestromMWh(m), 12);          // WP + Heizstab + Elektrokessel
             Assert.Equal(409.0, Waermegestehung.StromverbrauchGesamtMWh(m), 12); // + Grundstrom + Kältestrom
             Assert.Equal(0.0, Waermegestehung.WaermestromMWh(null));
+        }
+
+        // ------------------------------------------------------------ EZ‑6: Strompreis des eigenen Trägers (P646)
+
+        [Fact]
+        public void Der_Waermestrom_je_Erzeugerzeile()
+        {
+            var m = new ErgebnisModel
+            {
+                Waermepumpe = new ErgebnisWaermepumpeModel
+                {
+                    Module =
+                    {
+                        new ErgebnisWaermepumpeModulModel { Modul = "WP 1 ", Stromverbrauch = 20.0, Heizstab = 5.0,
+                                                            Stromverbrauch_Kuehlung = 3.0 },
+                        new ErgebnisWaermepumpeModulModel { Modul = "WP 2", Stromverbrauch = 0.0, Heizstab = 0.0 }
+                    }
+                },
+                Heizkessel = new ErgebnisHeizkesselModel
+                {
+                    Module =
+                    {
+                        new ErgebnisHeizkesselModulModel { Modul = "E-Kessel", Waerme_Gas = 10.0 },
+                        new ErgebnisHeizkesselModulModel { Modul = "Gaskessel", Waerme_Gas = 80.0 }
+                    }
+                }
+            };
+            List<KeyValuePair<string, double>> zeilen =
+                Waermegestehung.WaermestromJeModul(m, new HashSet<string> { "E-Kessel" });
+            // WP 1: Strom + Heizstab, ohne Kältestrom, Name getrimmt; WP 2 ohne Strom fehlt; der
+            // Gaskessel ist kein Elektrokessel.
+            Assert.Equal(2, zeilen.Count);
+            Assert.Equal("WP 1", zeilen[0].Key);
+            Assert.Equal(25.0, zeilen[0].Value, 12);
+            Assert.Equal("E-Kessel", zeilen[1].Key);
+            Assert.Equal(10.0, zeilen[1].Value, 12);
+            Assert.Single(Waermegestehung.WaermestromJeModul(m, null));
+            Assert.Empty(Waermegestehung.WaermestromJeModul(null, null));
+        }
+
+        /// <summary>
+        /// Der Wärmestrom einer Anlage mit eigenem Stromträger zählt zu dessen Arbeitspreis, der übrige
+        /// zum Preis des Trägers, der den Netzbezug bepreist — zugeordnet oder Rückfallträger. Ohne
+        /// eigenen Träger ist es die bisherige Zahl Zeichen für Zeichen.
+        /// </summary>
+        [Fact]
+        public void Der_Waermestrom_nimmt_den_Preis_des_eigenen_Traegers()
+        {
+            // Ohne Zuordnung: alles zum Netz- bzw. Rückfallpreis — bitgleich.
+            Assert.Equal(40.0 * 1000.0 * 0.35, Waermegestehung.WaermestromArbeitEur(40.0, 0.35, null));
+            Assert.Equal(40.0 * 1000.0 * 0.35,
+                         Waermegestehung.WaermestromArbeitEur(40.0, 0.35, new List<Waermegestehung.EigenerStrom>()));
+
+            // Die Wärmepumpe (25 MWh) mit eigenem Träger zu 0,20 €/kWh, der Rest (15 MWh) zum Netzpreis.
+            var eigen = new List<Waermegestehung.EigenerStrom>
+            {
+                new Waermegestehung.EigenerStrom { Modul = "WP 1", CarrierId = 58, MengeMWh = 25.0, PreisJeKwh = 0.20 }
+            };
+            Assert.Equal(25.0 * 1000.0 * 0.20 + 15.0 * 1000.0 * 0.35,
+                         Waermegestehung.WaermestromArbeitEur(40.0, 0.35, eigen), 9);   // 5.000 + 5.250
+
+            // Ein eigener Träger ohne Arbeitspreis rechnet zum Netzpreis (benannte Grenze).
+            eigen[0].PreisJeKwh = null;
+            Assert.Equal(40.0 * 1000.0 * 0.35, Waermegestehung.WaermestromArbeitEur(40.0, 0.35, eigen), 9);
+
+            // Mehr eigene Menge als Wärmestrom: höchstens der Wärmestrom des Laufs.
+            eigen[0].PreisJeKwh = 0.20;
+            eigen[0].MengeMWh = 60.0;
+            Assert.Equal(40.0 * 1000.0 * 0.20, Waermegestehung.WaermestromArbeitEur(40.0, 0.35, eigen), 9);
         }
 
         [Fact]
@@ -429,6 +501,48 @@ namespace EPOS.Kern.Tests
             ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":11}").Uebernimm(alt);
             Assert.NotNull(alt.EnergiekostenJeTraeger);
             Assert.Empty(alt.EnergiekostenJeTraeger);
+        }
+
+        /// <summary>
+        /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag vor Fassung 13 trägt die
+        /// Wärmegestehungskosten nach einer früheren Regel — Fassung 11 mit dem Kapitalwert des ganzen
+        /// Projekts, Fassung 12 (#642) mit doppelter Stromsteuer im Modus ERLOES und dem Wärmestrom zum
+        /// Netzpreis; die Kennzahl sagt es an der Zelle („… mit der nächsten Rechnung"). Fassung 13 und
+        /// ein frischer Lauf nicht, eine Zelle ohne Zahl auch nicht.
+        /// </summary>
+        [Fact]
+        public void Ein_Lauf_vor_Fassung_13_traegt_den_Vermerk_an_der_Kennzahl()
+        {
+            Assert.Equal(13, ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG);
+
+            var alt = new WirtschaftlichkeitErgebnis { IdProjekt = 1, IstStamm = true, Gestehungskosten = 0.12 };
+            ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":11}").Uebernimm(alt);
+            Assert.True(alt.GestehungAlteFormel);
+
+            var w642 = new WirtschaftlichkeitErgebnis { IdProjekt = 5, Gestehungskosten = 0.115 };
+            ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}").Uebernimm(w642);
+            Assert.True(w642.GestehungAlteFormel);
+
+            var neu = new WirtschaftlichkeitErgebnis { IdProjekt = 2, Gestehungskosten = 0.11 };
+            ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":13}").Uebernimm(neu);
+            Assert.False(neu.GestehungAlteFormel);
+
+            var frisch = new WirtschaftlichkeitErgebnis { IdProjekt = 3, Gestehungskosten = 0.10 };
+            string grund;
+            ErgebnisNachweisUmschlag.Lesen(ErgebnisNachweisUmschlag.Schreiben(frisch, out grund)).Uebernimm(frisch);
+            Assert.False(frisch.GestehungAlteFormel);
+
+            var ohneZahl = new WirtschaftlichkeitErgebnis { IdProjekt = 4, GestehungAlteFormel = true };
+
+            var menge = new List<WirtschaftlichkeitErgebnis> { alt, w642, neu, frisch, ohneZahl };
+            WirtZeile geste = WirtschaftlichkeitZeilen.Kennzahlen(menge, new TarifParameter(), 0, true)
+                                                      .Single(z => z.Schluessel == "GESTEHUNGSKOSTEN");
+            Assert.Equal(R.WIRT_GESTEHUNG_ALTER_LAUF, geste.Warnung(alt));
+            Assert.Contains("nächsten Rechnung", geste.Warnung(alt));
+            Assert.Equal(R.WIRT_GESTEHUNG_ALTER_LAUF, geste.Warnung(w642));
+            Assert.Equal("", geste.Warnung(neu));
+            Assert.Equal("", geste.Warnung(frisch));
+            Assert.Equal("", geste.Warnung(ohneZahl));
         }
     }
 }

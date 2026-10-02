@@ -6768,6 +6768,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
     <value>Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse und der Stromgutschrift für BHKW-Eigenstrom zum Arbeitspreis, bei produzierendem Gewerbe gemindert um die entgangene Entlastung nach § 9b StromStG), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht</value>
   </data>
+  <data name="WIRT_GESTEHUNG_ALTER_LAUF" xml:space="preserve">
+    <value>gespeicherter Lauf nach einer früheren Regel der Wärmegestehungskosten — die Zahl nach heutiger Regel liegt mit der nächsten Rechnung vor</value>
+  </data>
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt.</value>
   </data>
@@ -39969,6 +39972,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
+    <value>Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.</value>
   </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Konditionierung</value>

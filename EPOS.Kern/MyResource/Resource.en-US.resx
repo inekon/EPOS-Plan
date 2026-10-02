@@ -6752,6 +6752,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
     <value>Cost of heat generation (plant, fuel, electricity of the heat generators, less their revenues and the electricity credit for CHP electricity used in the project at the energy price, for a manufacturing business reduced by the forgone relief under § 9b StromStG), annualised, per kWh of heat demand; household electricity, PV and battery storage are not included</value>
   </data>
+  <data name="WIRT_GESTEHUNG_ALTER_LAUF" xml:space="preserve">
+    <value>stored run under an earlier rule for the levelised cost of heat — the figure under the current rule follows with the next calculation</value>
+  </data>
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Levelised cost of heat without electricity credit: no energy price of the electricity carrier is maintained for {0} MWh/a of CHP electricity used in the project.</value>
   </data>
@@ -39962,6 +39965,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS" xml:space="preserve">
     <value>The group rule does not apply the demand charge {0} of the electricity carrier “{1}”.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
+    <value>The group rule does not apply the demand charge of the residual power tariff with the model “{0}”.</value>
   </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Conditioning</value>

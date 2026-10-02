@@ -681,6 +681,15 @@ namespace WindowsFormsApplication1
         /// Wirtschaftlichkeit. Satz und Träger legt er dazu an die Gruppenzahl
         /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>); die Fußzeile unter der Kostentafel
         /// nennt sie.</para>
+        ///
+        /// <para><b>Im Rollentarif</b> (Register EZ‑18) ersetzt der Tarif die Preise des Trägers. Wirkt
+        /// er an der Kopie — dieselbe Bedingung wie in <c>WirtschaftlichkeitCtrl.RechneProjekt</c>:
+        /// Tarif der Gruppe wirksam, die Kopie ohne Strombedarf ohne Verwendung —, nennen Hinweis und
+        /// Fußzeile an Stelle des Trägersatzes das Leistungspreismodell des Reststromtarifs
+        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>), wenn er einen Leistungspreis
+        /// führt, sonst keinen. Den Tarif lädt derselbe Controllerweg wie im Kapitel
+        /// Wirtschaftlichkeit (<see cref="WirtschaftlichkeitCtrl.LadeTarif"/>). Die Gruppenzahl selbst
+        /// rechnet der Berichtsweg weiter mit den Preisen des Trägers.</para>
         /// </summary>
         internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
         {
@@ -689,6 +698,11 @@ namespace WindowsFormsApplication1
             try { regel = WirtschaftlichkeitCtrl.StromGruppenregel(daten); }
             catch (Exception) { return; }       // ohne Antwort bleibt die Regel je Stand
             if (regel.Count == 0) return;
+
+            // EZ‑18: der Tarif der Gruppe, einmal — ohne Antwort bleibt es beim Trägersatz.
+            TarifParameter tarif;
+            try { tarif = new WirtschaftlichkeitCtrl().LadeTarif(daten.IdStamm); }
+            catch (Exception) { tarif = null; }
 
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -708,6 +722,13 @@ namespace WindowsFormsApplication1
                 // oder keinen Netzbezug), gibt es nichts zu vermerken.
                 if (!kopie.StromGruppenregelMWh.HasValue) continue;
 
+                // EZ‑18: Wirkt der Rollentarif, ersetzt er die Preise des Trägers — dann zählt allein
+                // der Leistungspreis des Reststromtarifs, den die Regel ebenso nicht ansetzt.
+                bool rollentarif = tarif != null && tarif.Wirksam &&
+                                   !kopie.StrombedarfOhneVerwendungMWh.HasValue;
+                string tarifModell = rollentarif && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)
+                    ? WirtschaftlichkeitCtrl.Leistungsmodelltext(tarif.Reststrom) : null;
+
                 v.Gruppenzahl = new StromGruppenzahl
                 {
                     EnergiekostenEuroJahr = kopie.Energiekosten,
@@ -715,16 +736,26 @@ namespace WindowsFormsApplication1
                     NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
                     Verwender = verwender,
                     // EZ‑17: der Leistungspreis, den die Gruppenzahl nicht enthält — für den Satz
-                    // der Fußzeile unter der Kostentafel.
-                    LeistungspreisSatz = kopie.LeistungspreisNichtAngesetztSatz,
-                    LeistungspreisTraeger = kopie.LeistungspreisNichtAngesetztSatz != null
+                    // der Fußzeile unter der Kostentafel; im Rollentarif (EZ‑18) das Modell des
+                    // Reststromtarifs an Stelle des Trägersatzes.
+                    LeistungspreisSatz = rollentarif ? null : kopie.LeistungspreisNichtAngesetztSatz,
+                    LeistungspreisTraeger = !rollentarif && kopie.LeistungspreisNichtAngesetztSatz != null
                         ? kopie.LeistungspreisNichtAngesetztTraeger : null,
+                    LeistungspreisTarifModell = tarifModell,
                 };
 
                 // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der
-                // Leistungspreis, den die Gruppenzahl nicht enthält.
-                if (!string.IsNullOrEmpty(kopie.LeistungspreisNichtAngesetzt))
-                    daten.Melde(v, Berichtshinweisstufe.Hinweis, kopie.LeistungspreisNichtAngesetzt);
+                // Leistungspreis, den die Gruppenzahl nicht enthält; im Rollentarif (EZ‑18) im
+                // Wortlaut der Hinweiszeile der Wirtschaftlichkeit mit dem Modell des Reststromtarifs.
+                string hinweis = rollentarif
+                    ? (tarifModell != null
+                        ? string.Format(BerichtTexte.Kultur,
+                                        WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
+                                        tarifModell)
+                        : null)
+                    : kopie.LeistungspreisNichtAngesetzt;
+                if (!string.IsNullOrEmpty(hinweis))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, hinweis);
             }
         }
 

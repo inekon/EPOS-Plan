@@ -404,7 +404,8 @@ namespace EPOS.Kern.Tests
             // je Betriebskostenposition („alle n Jahre").
             // Wärmegestehung/Energiekosten je Träger: alt 11, neu 12 — Fassung 12 trägt
             // zusätzlich die Aufstellung „Menge × Preis" je Energieträger.
-            Assert.Equal(12, ErgebnisNachweisUmschlag.FASSUNG);
+            // P646: alt 12, neu 13 — kein neues Feld, Kennung der Wärmegestehung nach EZ‑21.
+            Assert.Equal(13, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(
@@ -768,6 +769,8 @@ namespace EPOS.Kern.Tests
                 ctrl.LadeErgebnisse(new List<int> { WOEHLER, WOEHLER_TEST1, WOEHLER_TEST2 });
             Assert.Equal(9, gespeichert.Count);
             Assert.All(gespeichert, e => Assert.True(e.OhneNachweis));
+            // P646: ohne Umschlag ist die Wärmegestehung die mit dem Kapitalwert des Projekts.
+            Assert.All(gespeichert, e => Assert.True(e.GestehungAlteFormel));
             Assert.All(gespeichert, e => Assert.Equal(R.WIRT_NACHWEIS_NAECHSTE_RECHNUNG,
                                                       ValeriAusweis.NachweisKennzeichen(e)));
 
@@ -784,6 +787,7 @@ namespace EPOS.Kern.Tests
                 new WirtschaftlichkeitCtrl().LadeErgebnisse(new List<int> { 1040, 1041, 1042 });
             Assert.Equal(9, neu.Count);
             Assert.All(neu, e => Assert.False(e.OhneNachweis));
+            Assert.All(neu, e => Assert.False(e.GestehungAlteFormel));   // Fassung 13
         }
 
         // =====================================================================

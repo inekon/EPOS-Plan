@@ -427,6 +427,50 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Equal("7.850 kWh × 0,35 €/kWh", gliederung[1].QuerySelectorAll("td")[0].TextContent.Trim());
     }
 
+    /// <summary>
+    /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag der Fassung 12 (#642) trägt die
+    /// Wärmegestehungskosten nach einer früheren Regel — die Kennzahl zeigt an seiner Zelle den
+    /// Vermerk „… mit der nächsten Rechnung" (Zeichen in der Zelle, Zeile unter der Tafel); ein Lauf
+    /// der Fassung 13 nicht. Die Zeile kommt aus der Zeilendefinition des Kerns
+    /// über dieselbe Abbildung der Hülle, die die Seite bekommt.
+    /// </summary>
+    [Fact]
+    public void Ein_Lauf_der_Fassung_12_zeigt_den_Vermerk_an_den_Waermegestehungskosten()
+    {
+        var alt = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis
+        {
+            IdProjekt = STAMM, IstStamm = true, Gestehungskosten = 0.12
+        };
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}")!.Uebernimm(alt);
+        var neu = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis { IdProjekt = WP, Gestehungskosten = 0.11 };
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":13}")!.Uebernimm(neu);
+        var spalten = new List<WindowsFormsApplication1.WirtschaftlichkeitErgebnis> { alt, neu };
+
+        WindowsFormsApplication1.WirtZeile geste = WindowsFormsApplication1.WirtschaftlichkeitZeilen
+            .Kennzahlen(spalten, new WindowsFormsApplication1.TarifParameter(), 0, true)
+            .Single(z => z.Schluessel == "GESTEHUNGSKOSTEN");
+        MatrixZeile zeile = WindowsFormsApplication1.WirtschaftlichkeitSeiteGaben.Matrixzeile(
+            geste, spalten, CultureInfo.GetCultureInfo("de-DE"), MatrixZeile.ABSCHNITT_KENNZAHL);
+
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Kennzahltafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein" },
+            Zeilen = new[] { zeile }
+        };
+        var cut = Zeige(stand);
+
+        string vermerk = WindowsFormsApplication1.MyResource.Resource.WIRT_GESTEHUNG_ALTER_LAUF;
+        Assert.Contains("nächsten Rechnung", vermerk);
+        IReadOnlyList<IElement> zellen = cut.Find(".epos-wirt-kennzahltafel").QuerySelectorAll("tbody td").ToList();
+        Assert.Equal(2, zellen.Count);
+        Assert.Equal(vermerk, zellen[0].QuerySelector(".epos-wirt-zellwarnung")!.GetAttribute("title"));
+        Assert.Null(zellen[1].QuerySelector(".epos-wirt-zellwarnung"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent == "⚠ Stamm — " + zeile.Titel + ": " + vermerk);
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"), e => e.TextContent.StartsWith("⚠ WP klein"));
+    }
+
     // =====================================================================
     //  U4 — Bandbreite nebeneinander, Klappliste nur für die Tafeln darunter
     // =====================================================================
