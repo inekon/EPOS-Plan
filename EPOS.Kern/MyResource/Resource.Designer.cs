@@ -61297,6 +61297,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren nach … ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string KOND_BTN_LOESCHEN {
@@ -61743,6 +61761,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_KATALOG_KALENDER {
             get {
                 return ResourceManager.GetString("KOND_LBL_KATALOG_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komfortsollwert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOMFORTSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOMFORTSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ kopieren nach … ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielgröße ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOPIERZIEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOPIERZIEL", resourceCulture);
             }
         }
         
@@ -62350,6 +62395,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Komfortsollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Kopie von Heizen nach Kühlen fehlt der Komfortsollwert. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOMFORTSOLLWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOMFORTSOLLWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben. ähnelt.
         /// </summary>
         public static string KOND_MSG_KOPF_NICHT_ANGELEGT {
@@ -62359,11 +62422,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel der Konditionierungskopie sind derselbe Eigentümer — kopiert wird nichts. ähnelt.
         /// </summary>
         public static string KOND_MSG_KOPIE_GLEICHER_EIGNER {
             get {
                 return ResourceManager.GetString("KOND_MSG_KOPIE_GLEICHER_EIGNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Vorlage ‚{0}‘ ({1}) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage der Größe {0} lässt sich nicht nach {1} kopieren — „Kopieren nach …“ gibt es nur von Heizen nach Kühlen und zwischen Geräten und Personen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_RICHTUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_RICHTUNG", resourceCulture);
             }
         }
         
@@ -62764,6 +62854,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Inhalt einer Vorlage der Größe {0} trägt Zeilen der Größe {1} — eine Vorlage gehört genau einer Größe. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_FREMDE_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_FREMDE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage {0} gehört zur Auslieferung (Schloss) — sie lässt sich nicht ändern. Legen Sie über „Duplizieren…“ eine eigene Vorlage an. ähnelt.
         /// </summary>
         public static string KOND_MSG_VORLAGE_GESPERRT {
@@ -63075,6 +63174,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_GRUND_KEINE_VORLAGE {
             get {
                 return ResourceManager.GetString("KOND_TXT_GRUND_KEINE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage der Größe „{0}“ lässt sich in keine andere Größe kopieren — „Kopieren nach …“ gibt es von Heizen nach Kühlen und zwischen Geräten und Personen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_KEIN_KOPIERZIEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_KEIN_KOPIERZIEL", resourceCulture);
             }
         }
         
@@ -63466,6 +63574,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleiche Einheit: Werte und Zeitstruktur gehen unverändert in die Zielgröße. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_DIREKT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KUEHLEN_GESPERRT {
@@ -63489,6 +63624,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_LEER {
             get {
                 return ResourceManager.GetString("KOND_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Komfortsollwert ist eine Zahl von {0} bis {1} °C. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_MELDUNG_KOMFORTSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_MELDUNG_KOMFORTSOLLWERT", resourceCulture);
             }
         }
         
@@ -63741,6 +63885,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_VORLAGE_KEINE {
             get {
                 return ResourceManager.GetString("KOND_TXT_VORLAGE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ in der Liste „{1}“ als Kopie von „{2}“ ({3}) angelegt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_KOPIERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_KOPIERT", resourceCulture);
             }
         }
         

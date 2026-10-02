@@ -8,7 +8,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Der Controller der Konditionierungsvorlagen</b> (Stufe KP1b, Konzept
     /// Konditionierungsprofile 3.5 und 5.7): <b>listen</b> je Größe, <b>als Vorlage speichern</b>
-    /// (E54), <b>übernehmen</b> (P12), <b>umbenennen</b>, <b>löschen</b> und <b>duplizieren</b> —
+    /// (E54), <b>übernehmen</b> (P12), <b>umbenennen</b>, <b>löschen</b>, <b>duplizieren</b> und
+    /// <b>in eine andere Größe kopieren</b> („Kopieren nach …", <see cref="Vorlagenkopierregel"/>) —
     /// dazu die <b>Werkzeuge der Karte</b> als dünne Wrapper um
     /// <see cref="Kalenderwerkzeuge"/>.
     ///
@@ -249,12 +250,29 @@ namespace WindowsFormsApplication1
             string nutzungswert = Nutzungspruefung(nutzung, out meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
 
+            return KopfUndInhaltAnlegen(inhalt, groesse, name, beschreibung, nutzungswert, out id);
+        }
+
+        /// <summary>
+        /// <b>Kopfsatz und Inhalt einer neuen eigenen Vorlage in EINEM Vorgang</b> — der gemeinsame
+        /// Schreibweg von <see cref="SpeichernAus"/> und <see cref="KopierenNach"/>. Der Inhalt steht nur in
+        /// der Größe der Vorlage (<see cref="Groessenregel"/>, Konzept 5.7: der Controller hält die Größe
+        /// gleich); Name und Nutzung hat der Aufrufer geprüft.
+        /// </summary>
+        private static KonditionierungCtrl.Ergebnis KopfUndInhaltAnlegen(Konditionierungsstand inhalt,
+                                                                         Konditionierungsgroesse groesse, string name,
+                                                                         string beschreibung, string nutzung, out long id)
+        {
+            id = 0;
+            string fremd = Groessenregel(inhalt, groesse);
+            if (fremd != null) return KonditionierungCtrl.Ergebnis.Fehler(fremd);
+
             using (DbVorgang v = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
             {
                 try
                 {
-                    long neu = KopfAnlegen(v, groesse, name, beschreibung, nutzungswert);
+                    long neu = KopfAnlegen(v, groesse, name, beschreibung, nutzung);
                     if (neu <= 0)
                     {
                         v.Rollback();
@@ -559,6 +577,55 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  Kopieren nach … — in eine andere Größe (Konzept 3.5, 7.4)
+        // =================================================================
+
+        /// <summary>
+        /// <b>„Kopieren nach …"</b>: legt aus einer Vorlage — auch einer <b>ausgelieferten</b> — eine
+        /// <b>eigene</b> Vorlage einer <b>anderen</b> Größe an (<c>ReadOnly = 0</c>); die Quelle bleibt, wie
+        /// sie ist. Der Inhalt entsteht nach <see cref="Vorlagenkopierregel.Umsetzen"/>: Geräte ↔ Personen
+        /// unverändert, Heizen → Kühlen mit Zeitstruktur und Aus-Zeiten, jede Zelle mit Sollwert auf dem
+        /// <paramref name="komfortsollwert"/>; jede andere Richtung wird benannt abgelehnt.
+        ///
+        /// <para><b>Name und Rechte:</b> Der Name gilt in der <b>Zielliste</b> — ein Doppelname wird benannt
+        /// abgelehnt wie beim Anlegen, nicht still eindeutig gemacht. Die Beschreibung der Quelle wird um
+        /// die Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)", <see cref="Vorlagenkopierregel.Beschreibung"/>),
+        /// die Nutzung übernommen. Kopf und Inhalt entstehen in <b>einem</b> Vorgang, der Inhalt nur in der
+        /// Zielgröße.</para>
+        /// </summary>
+        /// <param name="id">Die Vorlage, die kopiert wird.</param>
+        /// <param name="ziel">Die Zielgröße — eine der <see cref="Vorlagenkopierregel.Ziele"/> der Quelle.</param>
+        /// <param name="bezeichner">Der Name der Kopie in der Zielliste; getrimmt, 1 … 80 Zeichen.</param>
+        /// <param name="komfortsollwert">Der Komfortsollwert [°C] bei Heizen → Kühlen; sonst ohne Bedeutung.</param>
+        /// <param name="neueId">Die Id der Kopie; 0 im Fehlerfall.</param>
+        public KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
+                                                         double? komfortsollwert, out long neueId)
+        {
+            neueId = 0;
+            string bereit = Bereit();
+            if (bereit != null) return KonditionierungCtrl.Ergebnis.Fehler(bereit);
+
+            Vorlage v = Lesen(id);
+            if (v == null)
+                return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_VORLAGE_FEHLT, id.ToString(CultureInfo.InvariantCulture)));
+
+            string regel = Vorlagenkopierregel.Pruefen(v.Groesse, ziel, komfortsollwert);
+            if (regel != null) return KonditionierungCtrl.Ergebnis.Fehler(regel);
+            string name = Namenspruefung(ziel, bezeichner, 0, out string meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+
+            Konditionierungsstand quelle = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Vorlage(id), out meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(quelle, v.Groesse, ziel, komfortsollwert);
+            if (!inhalt.Ok) return KonditionierungCtrl.Ergebnis.Fehler(inhalt.Meldung);
+
+            return KopfUndInhaltAnlegen(inhalt.Stand, ziel, name,
+                                        Vorlagenkopierregel.Beschreibung(v.Beschreibung, v.Bezeichner, v.Groesse),
+                                        v.Nutzung, out neueId);
+        }
+
+        // =================================================================
         //  Die Werkzeuge der Karte — dünne Wrapper (Konzept 3.5)
         // =================================================================
 
@@ -648,15 +715,39 @@ namespace WindowsFormsApplication1
                 return name;
             }
 
+            // Die Liste heisst, wie der Umschalter der Verwaltung sie nennt („Kühlen"), nicht nach ihrem
+            // Persistenzwert - die Ablehnung steht am Namensfeld vor dem Anwender.
             foreach (string vorhanden in vorhandene ?? Array.Empty<string>())
                 if (string.Equals(vorhanden, name, StringComparison.OrdinalIgnoreCase))
                 {
                     meldung = string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.KOND_MSG_VORLAGE_NAME_DOPPELT,
-                        name, Konditionierungsgroessen.Kennwort(groesse));
+                        name, Konditionierungsarbeit.Groessenname(groesse));
                     return name;
                 }
             return name;
+        }
+
+        /// <summary>
+        /// <b>Die Größenregel</b> (Konzept 5.7): Der Inhalt einer Vorlage steht nur in ihrer Größe — eine
+        /// Vorgabezeile oder ein Kalender einer anderen Größe wird benannt abgelehnt. Eine reine Regel,
+        /// die auch die Ablage ohne Datenbank nimmt.
+        /// </summary>
+        /// <returns><c>null</c>, wenn der Inhalt nur in <paramref name="groesse"/> steht, sonst die benannte Ablehnung.</returns>
+        public static string Groessenregel(Konditionierungsstand inhalt, Konditionierungsgroesse groesse)
+        {
+            if (inhalt == null) return null;
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                if (g == groesse) continue;
+                bool fremd = inhalt.Kalender(g) != null;
+                foreach (string zeile in DbWerte.KOND_ZEILEN)
+                    fremd |= Konditionierungsstand.Traegt(inhalt.Vorgabe(g, zeile));
+                if (fremd)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_VORLAGE_FREMDE_GROESSE,
+                                         Konditionierungsarbeit.Groessenname(groesse), Konditionierungsarbeit.Groessenname(g));
+            }
+            return null;
         }
 
         /// <summary>Die Namen einer Größe, ohne den der Vorlage <paramref name="ausser"/>.</summary>

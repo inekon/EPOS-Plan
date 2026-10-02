@@ -40975,5 +40975,56 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
     <value>Die Woche braucht 168 Werte (Montag 00:00 bis Sonntag 23:00) oder einen Wert für die Grundangabe, durch „;“ getrennt und „aus“ für abgeschaltet – übergeben sind {0}.</value>
   </data>
+  <data name="KOND_MSG_KOPIE_RICHTUNG" xml:space="preserve">
+    <value>Eine Vorlage der Größe {0} lässt sich nicht nach {1} kopieren — „Kopieren nach …“ gibt es nur von Heizen nach Kühlen und zwischen Geräten und Personen.</value>
+  </data>
+  <data name="KOND_MSG_KOMFORTSOLLWERT_FEHLT" xml:space="preserve">
+    <value>Für die Kopie von Heizen nach Kühlen fehlt der Komfortsollwert.</value>
+  </data>
+  <data name="KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB" xml:space="preserve">
+    <value>Der Komfortsollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C.</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_HERKUNFT" xml:space="preserve">
+    <value>aus Vorlage ‚{0}‘ ({1})</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_BESCHREIBUNG" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FREMDE_GROESSE" xml:space="preserve">
+    <value>Der Inhalt einer Vorlage der Größe {0} trägt Zeilen der Größe {1} — eine Vorlage gehört genau einer Größe.</value>
+  </data>
+  <data name="KOND_BTN_KOPIEREN_NACH" xml:space="preserve">
+    <value>Kopieren nach …</value>
+  </data>
+  <data name="KOND_BTN_KOPIEREN" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="KOND_LBL_KOPIEREN_NACH" xml:space="preserve">
+    <value>Vorlage „{0}“ kopieren nach …</value>
+  </data>
+  <data name="KOND_LBL_KOPIERZIEL" xml:space="preserve">
+    <value>Zielgröße</value>
+  </data>
+  <data name="KOND_LBL_KOMFORTSOLLWERT" xml:space="preserve">
+    <value>Komfortsollwert</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_NACH" xml:space="preserve">
+    <value>Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist.</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_DIREKT" xml:space="preserve">
+    <value>Gleiche Einheit: Werte und Zeitstruktur gehen unverändert in die Zielgröße.</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_KEIN_KOPIERZIEL" xml:space="preserve">
+    <value>Eine Vorlage der Größe „{0}“ lässt sich in keine andere Größe kopieren — „Kopieren nach …“ gibt es von Heizen nach Kühlen und zwischen Geräten und Personen.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_KOPIERT" xml:space="preserve">
+    <value>Vorlage „{0}“ in der Liste „{1}“ als Kopie von „{2}“ ({3}) angelegt.</value>
+  </data>
+  <data name="KOND_TXT_MELDUNG_KOMFORTSOLLWERT" xml:space="preserve">
+    <value>Der Komfortsollwert ist eine Zahl von {0} bis {1} °C.</value>
+  </data>
 </root>
 
