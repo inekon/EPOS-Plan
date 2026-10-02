@@ -283,7 +283,7 @@ für CO₂ und die Menge.
 - **Bleibende Eigenheit (benannt, nicht geändert):** Die Hinweiszeile des Kapitels Wirtschaftlichkeit
   (`WirtschaftlichkeitCtrl`, Auswahl zwischen `LeistungspreisTarifNichtAngesetzt` und `LeistungspreisNichtAngesetzt`)
   nennt im Rollentarif weiterhin nur das Tarifmodell an Stelle des Trägersatzes — das ist Sache der Sitzung
-  Wirtschaftlichkeit und hier nicht geändert. Die Eigenheit der Gruppenzahl aus § 9 (Preise des Trägers an der Kopie)
+  Wirtschaftlichkeit und hier nicht geändert (aufgehoben mit § 11). Die Eigenheit der Gruppenzahl aus § 9 (Preise des Trägers an der Kopie)
   bleibt.
 - **Prüfungen:** `StromGruppenregelTests` — umgewidmet *Im_Rollentarif_nennt_die_Fussnote_Traegersatz_und_Monatspreis_des_Reststromtarifs*
   (Rollentarif monatlich 8 €/(kW·Monat), Träger 60 €/(kW·a): Trägersatz und Tarifsatz „… von 8,00 €/(kW·Monat) …“ in
@@ -299,4 +299,44 @@ für CO₂ und die Menge.
   des Stromträgers und bei aktiver Tarifstruktur zusätzlich den abweichenden des Reststromtarifs (Monatspreis als Zahl,
   Staffel als Modell). Der Logbuchsatz unter Version 1.2.0.6 ist neu gefasst (#644, #649, #654). Der
   Wiki-Upload steht gebündelt aus.
+- **Gate:** siehe Statuszeile.
+
+## 11 Nachtrag: Hinweiszeile der Wirtschaftlichkeit nach derselben Regel (02.10.2026)
+
+- **Anlass:** Die in § 10 benannte Eigenheit — die Hinweiszeile des Kapitels Wirtschaftlichkeit nannte im Rollentarif
+  nur das Modell des Reststromtarifs an Stelle des Trägersatzes (Register EZ‑18, P630) — hat der Anwender am
+  02.10.2026 nach Erläuterung der beiden Wege entschieden: Variante 1, die Hinweiszeile folgt derselben Regel wie die
+  Fußzeile der Kostentafel. Die Umsetzung, auch der Eingriff im Entscheidungsregister der Wirtschaftlichkeit, liegt bei
+  dieser Sitzung. Kein Rechenweg, keine Zahl, kein Schemaschritt, keine Ressource berührt; keine Referenzbasis neu
+  eingefroren; `EPOS.iOS/` und die Windows-Schale nicht berührt.
+- **Umsetzung:**
+  - **Die Regel an einem Ort:** `TarifLeistungspreisWieTraeger` (`internal`) und `TarifJeMonat` (`public`) sind aus
+    `BerichtsDatenSammler` nach `StromTarifRechner` gewandert, samt XML-Doku, die beide Aufrufer nennt; der Sammler
+    ruft sie von dort, die Verweise in `BerichtsDaten.cs` zeigen auf den neuen Ort. Keine zweite Kopie.
+  - **Hinweiszeile** (`WirtschaftlichkeitCtrl.RechneProjekt`): Der Trägerhinweis `VariantenDaten.LeistungspreisNichtAngesetzt`
+    steht immer, wenn gesetzt; der Tarifhinweis `ProjektEingabe.LeistungspreisTarifNichtAngesetzt` kommt dahinter
+    zusätzlich, wenn der Rollentarif gerechnet hat und der Hinweis gesetzt ist.
+  - **Tarifhinweis** (`WirtschaftlichkeitCtrl.RechneRollentarif`): gebildet nur noch, wenn außerdem
+    `!StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom, v.LeistungspreisNichtAngesetztMonatssatz)` —
+    „falls unterschiedlich“ wie unter der Kostentafel. Der Monatssatz des Trägers ist dort gesetzt: Die Kopie der
+    Gruppenregel entsteht in `Szenariodaten` mit `KostenEmissionRechner.Berechne`, bevor `BaueEingabe` den
+    Rollentarif rechnet; ohne Kopie (`StromImVergleichBepreisen` falsch) entsteht kein Tarifhinweis.
+  - Kommentare an beiden Stellen und an `ProjektEingabe.LeistungspreisTarifNichtAngesetzt` auf die neue Regel
+    umgeschrieben; der Verweis „an die Stelle“ entfällt.
+  - **Register:** EZ‑18 in der letzten Spalte um den Anwenderentscheid fortgeschrieben; im konsolidierten Konzept der
+    Wirtschaftlichkeit (§ 3.5, Rollentarif der Gruppenregel) der Satz „an der Stelle des Hinweises zum Träger“ auf
+    „zusätzlich, falls unterschiedlich“ gefasst. Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel`:
+    Der Hinweis nennt den Leistungspreis des Stromträgers und bei aktiver Tarifstruktur zusätzlich den abweichenden
+    des Reststromtarifs. Kein Logbuchsatz (Kleinigkeit nach Regel 13.4; der Satz zu #644, #649, #654 deckt die
+    Fußzeile); P630 trägt einen Nachtrag mit Verweis hierher.
+- **Prüfungen:** `StromGruppenregelTests` — *Im_Rollentarif_setzt_der_Stand_ohne_Verwendung_keinen_Leistungspreis_an*
+  (Träger 60 €/(kW·a), Tarif monatlich 10 €/(kW·Monat): in jedem Szenario Trägerhinweis, dahinter Tarifhinweis; Zahlen
+  unverändert zugesichert), umgewidmet
+  *Der_Tarifhinweis_nennt_das_Modell_nach_dem_Traeger_und_ohne_Tarifpreis_steht_nur_der_Traeger* (Staffel hinter dem
+  Trägerhinweis; ohne Leistungspreis am Reststromtarif nur der Trägerhinweis, dieselbe Zahl), neu
+  *Im_Rollentarif_mit_gleichem_Monatspreis_nennt_die_Hinweiszeile_nur_den_Traeger* (Träger je Monat 10 €/(kW·Monat)
+  gleich dem Tarif: nur der Trägerhinweis, Zahlen zugesichert) und
+  *Im_Rollentarif_ohne_Traegerleistungspreis_nennt_die_Hinweiszeile_nur_den_Tarif* (nur der Tarifhinweis, Zahlen
+  zugesichert); die Theorie *Die_Vergleichsregel_des_Tarifleistungspreises* ruft die Regel am neuen Ort und prüft
+  dazu `TarifJeMonat`. Bericht-Messlatten byte-gleich (`BerichtVorlagenMesslatteTests`).
 - **Gate:** siehe Statuszeile.
