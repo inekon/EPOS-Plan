@@ -228,7 +228,11 @@ namespace WindowsFormsApplication1
                     Hilfsstromanteil = hilfsstromanteil,
                     Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null,
                     Kuehltraeger = kuehltraeger,
-                    EigenerZaehler = eigenerZaehler
+                    EigenerZaehler = eigenerZaehler,
+                    // Welle M4, WP1: der Taktverlust gilt auch im Kühlbetrieb - die Mindestleistung als
+                    // Anteil der Heiz-Nennleistung (Tab_WP.Nennleistung); ohne beide keine Taktrechnung.
+                    Mindestanteil = Kaeltekaskade.Mindestanteil(simulation_wp.TaktMindestleistung(i), m.Grenzleistung),
+                    Cd = simulation_wp.TaktCd(i)
                 });
             }
 

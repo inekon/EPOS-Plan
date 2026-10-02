@@ -564,6 +564,132 @@ namespace WindowsFormsApplication1
         private readonly double[] _heizWaermeStunde = new double[MAX_WP];
         private readonly double[] _heizLeistungStunde = new double[MAX_WP];
 
+        // ==================================================================
+        //  Welle M4, WP1: der Taktverlust nach EN 14825
+        //
+        // Je Modul mit gepflegter Mindestleistung (Tab_WP.Mindestleistung_kW > 0) sammelt die
+        // Stunde Verdichterwärme und Verdichterstrom aus Bedarfsdeckung und Speicherladung; am
+        // Stundenende (Zweikanalig_StundeEnde) rechnet Waermepumpentakt den Mehrstrom der
+        // Taktstunde und die Starts. Ohne Mindestleistung in irgendeinem Modul ist jede Zeile
+        // hierzu ein sofortiger Rücksprung - die Stunde rechnet Anweisung für Anweisung wie zuvor.
+        // ==================================================================
+
+        /// <summary>Gilt die Taktrechnung für irgendein Modul des Laufs?</summary>
+        private bool _taktIrgendein;
+
+        /// <summary>Je Modul: rechnet es den Taktverlust (Mindestleistung gepflegt)?</summary>
+        private readonly bool[] _takt = new bool[MAX_WP];
+
+        /// <summary>Je Modul: die Mindestleistung P_min [kW]; 0 ohne Taktrechnung.</summary>
+        private readonly double[] _taktMindestleistungKw = new double[MAX_WP];
+
+        /// <summary>Je Modul: der wirksame Teillastkoeffizient C_d.</summary>
+        private readonly double[] _taktCd = new double[MAX_WP];
+
+        /// <summary>Je Modul: gepflegtes C_d? (Ausweis gepflegt oder Vorgabe.)</summary>
+        private readonly bool[] _taktCdGepflegt = new bool[MAX_WP];
+
+        private readonly double[] _taktWaermeStunde = new double[MAX_WP];
+        private readonly double[] _taktStromStunde = new double[MAX_WP];
+        private readonly bool[] _taktLiefVorstunde = new bool[MAX_WP];
+
+        /// <summary>STARTS je Modul [1/a] im Heizbetrieb (WP1): im Takt so viele, wie Mindestläufe die Wärme braucht, sonst je Laufphase einer. Nur mit Mindestleistung.</summary>
+        public int[] Starts_WP = new int[MAX_WP];
+
+        /// <summary>TAKTSTUNDEN je Modul [h/a]: Laufstunden mit einer Wärme unter der Mindestleistung.</summary>
+        public int[] Taktstunden_WP = new int[MAX_WP];
+
+        /// <summary>MEHRSTROM aus Taktverlust je Modul [kWh/a] — Teil von <see cref="Modul_WP_Strombedarf"/>.</summary>
+        public double[] Taktstrom_KWh_WP = new double[MAX_WP];
+
+        /// <summary>Rechnet das Modul den Taktverlust (Mindestleistung gepflegt)?</summary>
+        public bool RechnetMitTakt(int index) => index >= 0 && index < MAX_WP && _takt[index];
+
+        /// <summary>Die Mindestleistung des Moduls [kW]; 0 ohne Taktrechnung.</summary>
+        public double TaktMindestleistung(int index) => index >= 0 && index < MAX_WP ? _taktMindestleistungKw[index] : 0.0;
+
+        /// <summary>Der wirksame Teillastkoeffizient C_d des Moduls.</summary>
+        public double TaktCd(int index) => index >= 0 && index < MAX_WP ? _taktCd[index] : Waermepumpentakt.VORGABE_CD;
+
+        /// <summary>Rechnet das Modul mit der Vorgabe 0,9 (C_d leer)?</summary>
+        public bool TaktCdIstVorgabe(int index) => index >= 0 && index < MAX_WP && _takt[index] && !_taktCdGepflegt[index];
+
+        /// <summary>
+        /// Liest Mindestleistung und C_d der Projektkopie <paramref name="idWp"/> (<c>Tab_WP</c>). Eine
+        /// Datenbank ohne die Spalten (vor <see cref="ErzeugerTeillastSchema.SCHRITT"/>) liefert sie leer.
+        /// </summary>
+        private void TaktwerteLesen(int index, int idWp)
+        {
+            _takt[index] = false;
+            _taktMindestleistungKw[index] = 0.0;
+            _taktCd[index] = Waermepumpentakt.VORGABE_CD;
+            _taktCdGepflegt[index] = false;
+            if (index < 0 || index >= MAX_WP) return;
+
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", idWp));
+            if (dt == null || dt.Rows.Count == 0) return;
+            System.Data.DataRow r = dt.Rows[0];
+            double? pmin = NullbareZahl(r, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG);
+            double? cd = NullbareZahl(r, ErzeugerTeillastSchema.SPALTE_WP_CD);
+            if (!Waermepumpentakt.RechnetMitTakt(pmin)) return;
+
+            _takt[index] = true;
+            _taktIrgendein = true;
+            _taktMindestleistungKw[index] = pmin.Value;
+            _taktCd[index] = Waermepumpentakt.CdWirksam(cd);
+            _taktCdGepflegt[index] = cd.HasValue && _taktCd[index] == cd.Value;
+        }
+
+        private static double? NullbareZahl(System.Data.DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte)) return null;
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Stundenende der Taktrechnung: je Modul mit Mindestleistung der Mehrstrom der Taktstunde
+        /// (<see cref="Waermepumpentakt.Mehrstrom"/>) in Stunden-, Jahres- und Modulsumme, dazu Starts
+        /// und Taktstunden. Die Wärme der Stunde bleibt; nur ihre Leistungszahl sinkt.
+        /// </summary>
+        private void TaktStundeAbschliessen(int stunde)
+        {
+            int module = Math.Min(wp_model.Count, MAX_WP);
+            for (int i = 0; i < module; i++)
+            {
+                if (!_takt[i]) continue;
+                double q = _taktWaermeStunde[i];
+                double p = _taktStromStunde[i];
+                bool lief = q >= Rechenrand.ABSOLUT;
+                if (lief)
+                {
+                    int starts;
+                    if (Waermepumpentakt.Taktet(q, _taktMindestleistungKw[i]))
+                    {
+                        starts = Waermepumpentakt.StartsImTakt(q, _taktMindestleistungKw[i]);
+                        Taktstunden_WP[i]++;
+                        double mehr = Waermepumpentakt.Mehrstrom(p, q, _taktMindestleistungKw[i], _taktCd[i]);
+                        if (mehr > 0)
+                        {
+                            if (stunde >= 0 && stunde < WP_Strombedarf_stuendlich.Length)
+                                WP_Strombedarf_stuendlich[stunde] += mehr;
+                            WpStrombedarfGesamtKwh += mehr;
+                            Modul_WP_Strombedarf[i] += mehr;
+                            Taktstrom_KWh_WP[i] += mehr;
+                        }
+                    }
+                    else
+                    {
+                        starts = _taktLiefVorstunde[i] ? 0 : 1;
+                    }
+                    Starts_WP[i] += starts;
+                }
+                _taktLiefVorstunde[i] = lief;
+            }
+        }
+
         /// <summary>
         /// Stellt Module auf Kühlbetrieb (Stufe KU2) — gerufen von <c>SimulationControl</c> nach
         /// dem Modulaufbau und vor der Kaskade, EINMAL je Lauf.
@@ -723,6 +849,9 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 wp_model.Add(model);
+
+                // Welle M4, WP1: Mindestleistung und C_d der Projektkopie (leer = keine Taktrechnung).
+                TaktwerteLesen(i, model.ID_WP);
 
                 // K-3: einmaliger Hinweis, wenn eine bivalent-alternative Anlage mit der
                 // Vorbelegung 0 °C als Bivalenztemperatur rechnet. Steht hier, weil der
@@ -1403,6 +1532,13 @@ namespace WindowsFormsApplication1
                 Array.Clear(_heizWaermeStunde, 0, MAX_WP);
                 Array.Clear(_heizLeistungStunde, 0, MAX_WP);
             }
+
+            // Welle M4, WP1: die Taktrechnung beginnt die Stunde ohne Wärme und Strom.
+            if (_taktIrgendein)
+            {
+                Array.Clear(_taktWaermeStunde, 0, MAX_WP);
+                Array.Clear(_taktStromStunde, 0, MAX_WP);
+            }
         }
 
         /// <summary>
@@ -1653,6 +1789,11 @@ namespace WindowsFormsApplication1
                     // steht NICHT hier, sondern zentral in Phase G.
                     double erzeugt = WP_Waermeproduktion_stuendlich[stunde] - vorherTherm;
                     double strom = WP_Strombedarf_stuendlich[stunde] - vorherEl;
+                    if (_taktIrgendein && _takt[index])
+                    {
+                        _taktWaermeStunde[index] += erzeugt;
+                        _taktStromStunde[index] += strom;
+                    }
                     if (quelle != null)
                     {
                         double entnahme = erzeugt - strom;
@@ -1740,6 +1881,9 @@ namespace WindowsFormsApplication1
         public void Zweikanalig_StundeEnde(int stunde, double[] rest)
         {
             waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
+
+            // Welle M4, WP1: Taktverlust und Starts der Stunde.
+            if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
             // KU2 (5.2): der Zeitanteil des Heizbetriebs dieser Stunde je Modul im Kühlbetrieb.
             if (KuehlModule != null && stunde >= 0 && stunde < 8760)
@@ -2115,6 +2259,13 @@ namespace WindowsFormsApplication1
                 WP_Strombedarf_stuendlich[stunde] += (double)strom;
                 WpStrombedarfGesamtKwh += strom;
                 Modul_WP_Strombedarf[index] += strom;
+
+                // Welle M4, WP1: die Ladung gehört zur Wärme der Stunde.
+                if (_taktIrgendein && index < MAX_WP && _takt[index])
+                {
+                    _taktWaermeStunde[index] += ladung;
+                    _taktStromStunde[index] += strom;
+                }
 
                 if (ladeTherm[index] > 0)
                 {
@@ -2572,6 +2723,18 @@ namespace WindowsFormsApplication1
                 // ModuleAufbauen füllt ihn gleich danach aus der Anlagenzeile; ein Lauf mit
                 // kürzerer Modulliste dürfte keinen Schalter des Vorlaufs erben.
                 WP_MitHeizstab[i] = false;
+
+                // Welle M4, WP1: Taktwerte und Taktausweis gehören zum Laufzustand.
+                _takt[i] = false;
+                _taktMindestleistungKw[i] = 0;
+                _taktCd[i] = Waermepumpentakt.VORGABE_CD;
+                _taktCdGepflegt[i] = false;
+                _taktWaermeStunde[i] = 0;
+                _taktStromStunde[i] = 0;
+                _taktLiefVorstunde[i] = false;
+                Starts_WP[i] = 0;
+                Taktstunden_WP[i] = 0;
+                Taktstrom_KWh_WP[i] = 0;
             }
 
             for (int i = 0; i < 8760; i++)
@@ -2586,6 +2749,7 @@ namespace WindowsFormsApplication1
             HeizstabGesamtKwh = 0;
             WpStrombedarfGesamtKwh = 0;
             WP_Laufzeit = 0;
+            _taktIrgendein = false;
             // B0-7: Bilanzgrößen mit zurücksetzen — bei einem Abbruch der Berechnung
             // blieben sonst Werte des Vorlaufs stehen und BaueErgebnis meldete eine
             // falsche Deckung/einen falschen Restbedarf.
