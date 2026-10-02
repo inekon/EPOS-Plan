@@ -59,6 +59,61 @@ namespace EPOS.Kern.Tests
         private static string Text(int? x) => x.HasValue ? x.Value.ToString(CultureInfo.InvariantCulture) : "NULL";
 
         /// <summary>
+        /// <b>Ergebniszeile und Export</b> eines Laufs (N-AH7, Welle D2): die Zeile aus
+        /// <see cref="GebaeudeKennzahlen.Bilden"/> (Gebäude und Zonen) und der Satz aus
+        /// <see cref="GebaeudeErgebnisexport.Satz"/>. <paramref name="mitZahlen"/>: jede Gleitkommazahl Bit für Bit
+        /// (zwei Läufe, beide Kulturen); sonst nur Zustände, Texte, Ganzzahlen und Schlüssel — der Vergleich des
+        /// gestörten Laufs, in dem die letzten Bits von P_auf und T_a abweichen dürfen, n und die Zähler nicht.
+        /// </summary>
+        internal static string Zeile(AufheizLauf.Gebaeudelauf l, bool mitZahlen)
+        {
+            double[] kw = (double[])l.Ziel.Clone();
+            WPPlan.Core.BhkwPlan.WattToKw(kw);
+            ErgebnisGebaeudeModel z = GebaeudeKennzahlen.Bilden(0, l.Gebaeude, "", DbWerte.GEBAEUDE_MODELL_VDI6007, kw, l.Ergebnis);
+            GebaeudeExportsatz satz = GebaeudeErgebnisexport.Satz(l.Ergebnis);
+            var sb = new StringBuilder();
+            if (mitZahlen)
+            {
+                sb.Append("Zeile ").Append(AufheizKennzahlenTests.Abdruck(z)).Append(" | ").Append(Bits(z.HeizwaermeMwh))
+                  .Append(' ').Append(Bits(z.SpitzeKw)).Append(' ').Append(Text(z.SommerlueftungsstundenH)).Append('\n');
+                foreach (ErgebnisZoneModel zz in z.Zonen) sb.Append("Zone ").Append(AufheizKennzahlenTests.Abdruck(zz)).Append('\n');
+            }
+            else
+            {
+                sb.Append("Zeile ").Append(Ganz(z.AufheizZustand, z.AufheizBemessung, z.AufheizLeistungsquelle, z.AufheizzeitMaxH,
+                    z.Aufheiztage, z.AufheiztageBegrenzt, z.AufheiztageUnerreichbar, z.AufheiztageNachweisband, z.AufheizstundenH,
+                    z.AufheizzeitLaengsteH, z.AufheizspruengeAus)).Append('\n');
+                foreach (ErgebnisZoneModel zz in z.Zonen)
+                    sb.Append("Zone ").Append(Ganz(zz.AufheizZustand, null, zz.AufheizLeistungsquelle, zz.AufheizzeitMaxH, zz.Aufheiztage,
+                        zz.AufheiztageBegrenzt, zz.AufheiztageUnerreichbar, zz.AufheiztageNachweisband, zz.AufheizstundenH,
+                        zz.AufheizzeitLaengsteH, zz.AufheizspruengeAus)).Append('\n');
+            }
+            foreach (KeyValuePair<string, string> t in satz.Texte) sb.Append(t.Key).Append('=').Append(t.Value).Append('\n');
+            foreach (KeyValuePair<string, double> k in satz.Skalare)
+                sb.Append(k.Key).Append(mitZahlen ? "=" + Bits(k.Value) : "").Append('\n');
+            foreach (KeyValuePair<string, double[]> r in satz.Reihen)
+            {
+                sb.Append(r.Key);
+                if (mitZahlen)
+                {
+                    var bytes = new byte[8 * r.Value.Length];
+                    for (int h = 0; h < r.Value.Length; h++)
+                        BitConverter.GetBytes(BitConverter.DoubleToInt64Bits(r.Value[h])).CopyTo(bytes, 8 * h);
+                    sb.Append('=').Append(Convert.ToHexString(SHA256.HashData(bytes)));
+                }
+                sb.Append('\n');
+            }
+            return sb.ToString();
+        }
+
+        private static string Bits(double x) => BitConverter.DoubleToInt64Bits(x).ToString("X16", CultureInfo.InvariantCulture);
+
+        private static string Bits(double? x) => x.HasValue ? Bits(x.Value) : "NULL";
+
+        private static string Ganz(string zustand, string bemessung, string quelle, params int?[] zahlen)
+            => (zustand ?? "NULL") + "|" + (bemessung ?? "NULL") + "|" + (quelle ?? "NULL") + "|" + string.Join("|", zahlen.Select(Text));
+
+        /// <summary>
         /// <b>Der Einstieg der gestörten Kopie</b> — per Reflexion in der zweiten Ladekopie gerufen: die
         /// Testdatenbank des Prozesses, ein Lauf mit Schalter an, Abdruck und Hash. Liefert zuerst, ob die
         /// Störung der Naht in dieser Kopie wirkt.
@@ -67,7 +122,7 @@ namespace EPOS.Kern.Tests
         {
             DataRepository.PfadUeberschreibung = dbPfad;
             AufheizLauf.Gebaeudelauf l = Lauf(projekt, gebaeude, zonen);
-            return new[] { Plattformrundung.UlpStoerung ? "gestört" : "ungestört", Plaene(l), Reihenhash(l) };
+            return new[] { Plattformrundung.UlpStoerung ? "gestört" : "ungestört", Plaene(l), Reihenhash(l), Zeile(l, false) };
         }
 
         internal static AufheizLauf.Gebaeudelauf Lauf(int projekt, int gebaeude, bool zonen)
@@ -80,7 +135,8 @@ namespace EPOS.Kern.Tests
     /// Testdatenbank mit Schalter an — Projekt 1018 (Gebäude 10632, Rampe an rund 20 Tagen) einzonig und in der
     /// Mehrzonenfassung, Projekt 1008 (Gebäude 10576): zwei Läufe bitgleich; de-DE gegen en-US
     /// (<see cref="Kulturvorrichtung"/>) bitgleich; die ulp-Störung der Naht <see cref="Plattformrundung"/>
-    /// kippt kein n. Ergebniszeile und Export kommen mit D2.
+    /// kippt kein n. Ergebniszeile und Export (Welle D2): zwei Läufe und beide Kulturen bitgleich, im gestörten Lauf
+    /// dieselben Zustände, Zähler und Schlüssel.
     ///
     /// <para><b>Die Störung im Test.</b> <see cref="Plattformrundung.UlpStoerung"/> wird einmal je Prozess
     /// gelesen und darf in den Tests nie wirken (<c>PlattformrundungTests</c>). Deshalb rechnet der gestörte
@@ -150,6 +206,31 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine(wo + "\n" + Aufheizabdruck.Plaene(eins).Split('\n').Last());
         }
 
+        /// <summary>
+        /// <b>N-AH7 Ergebniszeile und Export</b> (Welle D2): Die Zeile aus <see cref="GebaeudeKennzahlen.Bilden"/> —
+        /// Gebäude und Zonen, alle Aufheizwerte — und der Exportsatz (Texte, Schlüssel mit Werten, Reihen samt
+        /// <c>heizsollwert_&lt;n&gt;.csv</c>) sind über zwei Läufe und de-DE gegen en-US Bit für Bit gleich.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(Gebaeude))]
+        public void N_AH7_Ergebniszeile_und_Export_sind_bitgleich(int projekt, int gebaeude, bool zonen)
+        {
+            if (!_db.Vorhanden) return;
+            string eins = Aufheizabdruck.Zeile(Aufheizabdruck.Lauf(projekt, gebaeude, zonen), true);
+            string zwei = Aufheizabdruck.Zeile(Aufheizabdruck.Lauf(projekt, gebaeude, zonen), true);
+            string de, en;
+            using (new Kulturvorrichtung("de-DE")) de = Aufheizabdruck.Zeile(Aufheizabdruck.Lauf(projekt, gebaeude, zonen), true);
+            using (new Kulturvorrichtung("en-US")) en = Aufheizabdruck.Zeile(Aufheizabdruck.Lauf(projekt, gebaeude, zonen), true);
+            Assert.Equal(eins, zwei);
+            Assert.Equal(de, en);
+            Assert.Equal(eins, de);
+            Assert.Contains("Aufheizzustand=", eins, StringComparison.Ordinal);
+            Assert.Contains("heizsollwert_", eins, StringComparison.Ordinal);
+            Assert.Contains("AufheizLeistungKw=", eins, StringComparison.Ordinal);
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "N-AH7 Zeile/Export: Projekt {0}, Gebäude {1}{2}: {3} Zeilen bitgleich",
+                projekt, gebaeude, zonen ? " (Zonen)" : "", eins.Split('\n').Length - 1));
+        }
+
         // =====================================================================
         //  ulp-Störung der Naht (B13)
         // =====================================================================
@@ -217,6 +298,8 @@ namespace EPOS.Kern.Tests
             string[] g = Gestoert(dbPfad, projekt, gebaeude, zonen);
             Assert.Equal("gestört", g[0]);
             Assert.Equal(Aufheizabdruck.Plaene(normal), g[1]);
+            // Welle D2: Ergebniszeile und Export tragen dieselben Zustände, Zähler und Schlüssel.
+            Assert.Equal(Aufheizabdruck.Zeile(normal, false), g[3]);
             Assert.NotEqual(Aufheizabdruck.Reihenhash(normal), g[2]);
             Assert.False(Plattformrundung.UlpStoerung);
             Assert.False(AppContext.TryGetSwitch(Plattformrundung.SCHALTER_ULP, out bool an) && an);
