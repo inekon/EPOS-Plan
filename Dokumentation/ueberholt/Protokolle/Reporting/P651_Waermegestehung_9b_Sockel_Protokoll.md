@@ -1,6 +1,6 @@
 # P651 — § 9b-Abzug der Wärmegestehung mit Sockelbetrag und Deckelung (Protokoll, 02.10.2026)
 
-Statuszeile vorläufig #651 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile vorläufig #653 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push; mit dieser Welle keine Statuszeile); Auftrag
 [`P651_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P651_Auftrag_2026-10-02.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P646_Waermegestehung_Nachlese_Protokoll.md`](P646_Waermegestehung_Nachlese_Protokoll.md)
@@ -93,4 +93,17 @@ Nr. 40 und 41: Empfehlung umsetzen" — der Abzug folgt denselben Regeln wie die
 
 ## Gate
 
-Gate: offen (Orchestrierung). Commit des Merges: offen.
+Gate #651 auf `06d2c4b1a` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 026 grün, 2 übersprungen, 0 rot (Kern 9 831, UI 7 233,
+KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+`2026-09-30_R30_Stromverbraucher` (5 180 240 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS. Nachtest auf dem
+Merge `448b1f0eb` (#651, #652): Build 0 Fehler, Testklassen Wärmegestehung, Wirtschaftlichkeit, Stromsteuer, Kohärenz, Bericht,
+Messlatten, Absenkung, Kühlung und Wachen 1 450 grün, fremde Klassen Konditionierung, Vorlagenkopierregel, KI-Maskenabdeckung 426 grün.
+Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
+
+## Commit
+
+Sieben Commits auf `p651` hinter dem Auftrag `c6ddc51e5` (`6f44f146f`, `2d489b42e`, `a0a8e55aa`, `e7db6242b`, `4b314b9cb`,
+`70801ee3c`, `868556386`); Merges `06d2c4b1a` mit origin (#650 Nachträge, KP3-Entwurf; eigene Nummer #651) und `448b1f0eb`
+(#651 Absenksollwert, #652 E58; eigene Nummer #653). Statuszeile #653 im Folgecommit; Push nach Freigabe des Anwenders;
+CI-Vermerk in Nach #653 (e).
