@@ -444,8 +444,12 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Nachtfenster | night window | die Nachtzeit einer Spalte (von / bis, volle Stunde 0 … 23), leer = das der Heizspalte; bei Heizen „Nachtabsenkung von / bis" (oben) |
 | Aufheizzeit | preheat time | Dauer der Aufheizrampe vor einem Sprung des Heizsollwerts nach oben (Stufe KP3) |
 | Aufheizleistung | preheat power | die Leistung, mit der die Aufheizung bemessen wird (Stufe KP3) |
-| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3) |
-| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6) |
+| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3); Feld „Aufheizreserve ρ" → „Preheat reserve ρ" in %, 1 … 100, Vorgabe 20 %, gespeichert als Anteil |
+| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6); Schalter „Aufheizoptimierung rechnen" → „Calculate preheat optimisation" (`SIMKONF_AUFH_*`) |
+| Bemessung (der Aufheizzeit) | design basis | woran die längste Aufheizzeit bemessen wird: „kälteste Stunde" → „coldest hour" (Vorgabe), „kälteste Stunde − ΔT_K" → „coldest hour − ΔT_K"; die Persistenzwerte `STUNDE`, `STUNDE_ABZUG` bleiben (§ 10); Bemessungsfall → design case |
+| Abzug ΔT_K | deduction ΔT_K | um wie viel K die Bemessung (b) kälter rechnet als die kälteste Stunde (0 … 10 K, Vorgabe 2 K) |
+| Art der Aufheizzeit | preheat time mode | „täglich" → „daily" (Vorgabe: jeder Tag nach seiner Außentemperatur), „fest" → „fixed" (jeder Tag so lange wie der Bemessungsfall); die Persistenzwerte `TAEGLICH`, `FEST` bleiben (§ 10) |
+| Herleitungszeile | derivation line | leise Zeile unter einem Feld oder Abschnitt, die sagt, woraus ein Wert folgt — bei der Aufheizoptimierung je Gebäude „t_auf,max … bei … · P_auf … · C_w …"; das Wort selbst steht in keiner Beschriftung |
 | Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
 | Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |

@@ -99,8 +99,30 @@ namespace WindowsFormsApplication1
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
             if (eingang.Nachbarglieder.Count > 0 || eingang.Luftkopplungen.Count > 0)
                 throw new ArgumentException("Eine Zone mit Nachbarn braucht ihre Nachbarn.", nameof(eingang));
-            return new ZonenEingang(eingang, 0, Array.Empty<int>(), Array.Empty<int>());
+            var zone = new ZonenEingang(eingang, 0, Array.Empty<int>(), Array.Empty<int>());
+            zone._gebaeudezonen = new[] { zone };
+            return zone;
         }
+
+        /// <summary>Die Zonen des Gebäudes in der Rechenreihenfolge, diese an der Stelle <see cref="Index"/>; eine Einzelzone allein.</summary>
+        private IReadOnlyList<ZonenEingang> _gebaeudezonen;
+
+        /// <summary>
+        /// Die Zonen des Gebäudes, zu dem diese Zone gehört (in der Rechenreihenfolge, diese an der
+        /// Stelle <see cref="Index"/>) — die Nachbarn der Aufheizplanung (Entwurf KP3, Welle R3).
+        /// </summary>
+        internal IReadOnlyList<ZonenEingang> Gebaeudezonen => _gebaeudezonen;
+
+        /// <summary>
+        /// <b>Der Aufheizplan der Zone</b> (Entwurf KP3, Welle R3, Festlegungen 1 und 25) — gesetzt von
+        /// <see cref="Aufheizoptimierung"/> am Ende von <see cref="Bauen"/> bzw. bei
+        /// <see cref="Aufheizoptimierung.Anwenden"/>; <c>null</c> heißt „Schalter aus" (Grundsatz 3).
+        /// Eine unbeheizte Zone trägt den Zustand UNBEHEIZT, eine gekoppelte GEKOPPELT. R4 übernimmt ihn.
+        /// </summary>
+        internal Aufheizplan Aufheizplan { get; private set; }
+
+        /// <summary>Setzt den Aufheizplan der Zone — nur <see cref="Aufheizoptimierung"/>.</summary>
+        internal void AufheizplanSetzen(Aufheizplan plan) => Aufheizplan = plan ?? throw new ArgumentNullException(nameof(plan));
 
         /// <summary>Der Eingang des Gebäudemodells der Zone.</summary>
         internal GebaeudeModellEingang Eingang { get; }
@@ -138,6 +160,36 @@ namespace WindowsFormsApplication1
             IReadOnlyList<Nachbarglied> glieder = e.Nachbarglieder;
             for (int k = 0; k < _nachbarIndex.Length; k++) zaehler += glieder[k].UA_WK * thetaAir[_nachbarIndex[k]];
             return zaehler / e.UaSummeGewichtung_WK;
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt mit festen Nachbarn</b> [°C] (Entwurf
+        /// KP3, B4, Festlegungen 12–14): die Nachbarform von <see cref="GebaeudeModellEingang.AequivalentN(int, double, ReadOnlySpan{double})"/>
+        /// mit den Lufttemperaturen <paramref name="thetaAir"/> aller Zonen (nach <see cref="Index"/>),
+        /// in der Reihenfolge der Nachbarglieder wie <see cref="ThetaEq"/>.
+        /// </summary>
+        internal double AequivalentN(int tag, double aussenC, ReadOnlySpan<double> thetaAir)
+        {
+            if (_nachbarIndex.Length == 0) return Eingang.AequivalentN(tag, aussenC, ReadOnlySpan<double>.Empty);
+            Span<double> nachbarn = _nachbarIndex.Length <= 16 ? stackalloc double[_nachbarIndex.Length] : new double[_nachbarIndex.Length];
+            for (int k = 0; k < _nachbarIndex.Length; k++) nachbarn[k] = thetaAir[_nachbarIndex[k]];
+            return Eingang.AequivalentN(tag, aussenC, nachbarn);
+        }
+
+        /// <summary>
+        /// <b>Die Zulufttemperatur am Bemessungspunkt</b> [°C] (Entwurf KP3, Festlegungen 12–14): derselbe
+        /// Ausdruck wie <see cref="ThetaLue"/>, mit der Außenluft <paramref name="aussenC"/> und dem
+        /// Zusatzleitwert <paramref name="zusatzleitwertWK"/> der Stunde statt der Reihe —
+        /// ((G_ve + Z)·θ_out + Σ G_zj·θ_j) / (G_ve + Σ G_zj + Z). Ohne Luftaustausch die Außenluft selbst.
+        /// </summary>
+        internal double ZuluftN(double aussenC, double zusatzleitwertWK, ReadOnlySpan<double> thetaAir)
+        {
+            if (_luftIndex.Length == 0) return aussenC;
+            double z = zusatzleitwertWK;
+            double zaehler = (_gAussen + z) * aussenC;
+            IReadOnlyList<Luftkopplung> luft = Eingang.Luftkopplungen;
+            for (int k = 0; k < _luftIndex.Length; k++) zaehler += luft[k].Leitwert_WK * thetaAir[_luftIndex[k]];
+            return zaehler / (_gGesamt + z);
         }
 
         /// <summary>
@@ -196,6 +248,11 @@ namespace WindowsFormsApplication1
         /// <c>null</c> oder <see cref="Trennflaechenzuordnung.Regel"/> = noch nicht entschieden.</param>
         /// <param name="adiabat">Der adiabate Vorlauf der 4-K-Regel (W4): jede Trennfläche rechnet in der
         /// Innengruppe, ohne Luftaustausch — jede Zone für sich.</param>
+        /// <param name="aufheizvorgabe">Die Aufheizoptimierung des Projekts (Entwurf KP3, Welle R3,
+        /// Festlegung 1): eingeschaltet plant <see cref="Aufheizoptimierung.AnwendenZonen"/> am Ende jede
+        /// Zone mit den Reihen ihrer Nachbarn und setzt die Rampen; <c>null</c> oder aus = kein Aufruf
+        /// (Grundsatz 3).</param>
+        /// <param name="aufheizleistungTestW">Testnaht der Grenzfallprobe (N-AH8): P_auf statt der Bemessung [W]; NaN = keine.</param>
         /// <exception cref="GebaeudeModellException">benannt: keine beheizte Zone, eine Trennfläche oder
         /// ein Luftstrom zu einer Zone, die das Gebäude nicht führt, eine unlesbare Zone, oder jede
         /// Prüfung des Eingangsbauers.</exception>
@@ -203,7 +260,9 @@ namespace WindowsFormsApplication1
                                                           bool kuehlbetrieb = false, string anlagenkopplung = null,
                                                           Func<int, int, Trennflaechenzuordnung> vierK = null,
                                                           bool adiabat = false,
-                                                          Func<long?, Konditionierungssatz> konditionierung = null)
+                                                          Func<long?, Konditionierungssatz> konditionierung = null,
+                                                          Aufheizvorgabe aufheizvorgabe = null,
+                                                          double aufheizleistungTestW = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -314,6 +373,15 @@ namespace WindowsFormsApplication1
                 int[] luftIndex = e.Luftkopplungen.Select(x => index[x.ZonenId]).ToArray();
                 ergebnis[i] = new ZonenEingang(e, i, nachbarIndex, luftIndex);
             }
+            foreach (ZonenEingang z in ergebnis) z._gebaeudezonen = ergebnis;
+
+            // Stufe KP3 (Entwurf KP3, Festlegung 1): die Aufheizrampen erst HIER - in beiden
+            // Aufbauten (adiabater Vorlauf der 4-K-Regel und gekoppelter Lauf) -, denn erst jetzt
+            // stehen die Reihen der Nachbarn. Uebergabe, Kaelte, F21 und die stuendliche
+            // Kuehlpruefung haben im Eingangsbauer die Reihe ohne Rampe gesehen. Schalter aus =
+            // kein Aufruf (Grundsatz 3).
+            if (aufheizvorgabe != null && aufheizvorgabe.An)
+                Aufheizoptimierung.AnwendenZonen(ergebnis, aufheizvorgabe, aufheizleistungTestW);
             return ergebnis;
         }
 

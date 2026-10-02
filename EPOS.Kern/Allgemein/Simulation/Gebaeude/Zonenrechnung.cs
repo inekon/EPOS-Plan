@@ -41,8 +41,10 @@ namespace WindowsFormsApplication1
     {
         internal Mehrzonenergebnis(GebaeudeModellErgebnis gebaeude, IReadOnlyList<GebaeudeModellErgebnis> zonen,
                                    IReadOnlyList<ZonenEingang> eingaenge, Zonenschleife schleife,
-                                   IReadOnlyList<Zonenpaarzuordnung> paare, double zeitGesamtMs, double zeitVorlaeufeMs)
+                                   IReadOnlyList<Zonenpaarzuordnung> paare, double zeitGesamtMs, double zeitVorlaeufeMs,
+                                   Aufheizgebaeude aufheizgebaeude = null)
         {
+            Aufheizgebaeude = aufheizgebaeude;
             Gebaeude = gebaeude;
             Zonen = zonen;
             Eingaenge = eingaenge;
@@ -72,6 +74,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Rechenzeit der Vorläufe [ms]: adiabater Vorlauf der 4-K-Regel und gekoppelter Vorlauf.</summary>
         internal double ZeitVorlaeufeMs { get; }
+
+        /// <summary>
+        /// Die Aufheizwerte des Gebäudes (Entwurf KP3, Welle R3, Festlegung 22) aus den Plänen der Zonen
+        /// (<see cref="ZonenEingang.Aufheizplan"/> an <see cref="Eingaenge"/>); <c>null</c> heißt
+        /// „Schalter aus". R4 übernimmt sie in das Gebäudeergebnis.
+        /// </summary>
+        internal Aufheizgebaeude Aufheizgebaeude { get; }
     }
 
     /// <summary>
@@ -95,9 +104,14 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Rechnet das Gebäude <paramref name="gebaeude"/> mit seinen Zonen (Klassenkopf).</summary>
         /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen, der Kopplung oder der Schleife.</exception>
+        /// <param name="aufheizvorgabe">Die Aufheizoptimierung des Projekts (Entwurf KP3, Welle R3): eingeschaltet
+        /// planen beide Aufbauten der Zonen ihre Rampen (Festlegung 1); <c>null</c> oder aus = kein Aufruf.</param>
+        /// <param name="aufheizleistungTestW">Testnaht der Grenzfallprobe (N-AH8): P_auf statt der Bemessung [W].</param>
         internal static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima, bool kuehlbetrieb,
                                                   string anlagenkopplung, int index, int idGebaeude,
-                                                  Func<long?, Konditionierungssatz> konditionierung = null)
+                                                  Func<long?, Konditionierungssatz> konditionierung = null,
+                                                  Aufheizvorgabe aufheizvorgabe = null,
+                                                  double aufheizleistungTestW = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -111,7 +125,9 @@ namespace WindowsFormsApplication1
             if (regelpaare.Count > 0)
             {
                 IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung,
-                                                                         adiabat: true, konditionierung: konditionierung);
+                                                                         adiabat: true, konditionierung: konditionierung,
+                                                                         aufheizvorgabe: aufheizvorgabe,
+                                                                         aufheizleistungTestW: aufheizleistungTestW);
                 var luft = new Dictionary<int, double[]>();
                 foreach (ZonenEingang z in adiabat)
                     if (z.IstBeheizt && regelpaare.Any(p => p.A == z.ZonenId || p.B == z.ZonenId))
@@ -129,7 +145,9 @@ namespace WindowsFormsApplication1
             Trennflaechenzuordnung VierK(int a, int b)
                 => zuordnung.TryGetValue(Paar(a, b), out Trennflaechenzuordnung g) ? g : Trennflaechenzuordnung.Regel;
             IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
-                                                                   konditionierung: konditionierung);
+                                                                   konditionierung: konditionierung,
+                                                                   aufheizvorgabe: aufheizvorgabe,
+                                                                   aufheizleistungTestW: aufheizleistungTestW);
             var schleife = new Zonenschleife(zonen, wer);
             double vorBeginn = uhr.Elapsed.TotalMilliseconds;
             schleife.Vorlauf();
@@ -147,9 +165,13 @@ namespace WindowsFormsApplication1
 
             GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude);
             summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
+            // Stufe KP3 (Festlegung 22): die Gebaeudewerte aus den Plaenen der Zonen - nur mit Schalter.
+            Aufheizgebaeude aufheiz = zonen[0].Aufheizplan == null
+                ? null
+                : Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
-                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf);
+                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
         }
 
         /// <summary>
