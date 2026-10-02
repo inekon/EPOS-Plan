@@ -310,7 +310,14 @@
        Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und geschlossener Kreis (AK3) stehen in
        der Liste, sind aber gesperrt und nennen den Grund - steht eine davon schon in der
        Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet dann AK1 und sagt es).
-       Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
+       Scheitert das Schreiben, kehrt die Wahl zurueck (@key).
+
+       „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1): der Schalter (Vorgabe aus) und
+       - nur bei Schalter an - Bemessung, ΔT_K (nur bei „kaelteste Stunde − ΔT_K"), Aufheizreserve
+       ρ in % und Art der Aufheizzeit. Jedes Feld schreibt sofort die GANZE Einstellung
+       (AufheizvorgabeSchreiben, normalisiert nach Festlegung 24: Vorgaben als NULL, ein getippter
+       Wert bleibt); scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. Die
+       Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung). *@
     @if (Parameter?.Laden is not null)
     {
         <fieldset class="epos-simkonfig-einstellungen" disabled="@_daten.Gesperrt">
@@ -363,6 +370,67 @@
                                          Aktiv="@(!_daten.Gesperrt)"
                                          AuswahlChanged="AnlagenkopplungGewaehlt" />
                             <Herleitungszeile Text="@Kopplungszeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @if (Parameter.AufheizvorgabeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-aufheizung" aria-label="@Resource.SIMKONF_AUFH_GRP">
+                    @* Hilfe zur Projekteinstellung: die Seite „Gebäudemodell VDI 6007" (help_mapping.txt). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Simulation_Config_Aufheizung.btn_Help"
+                                   StandardKurztext="@Resource.SIMKONF_AUFH_HILFE_KNOPF" MitAssistent="false" />
+                    </div>
+                    <Formularraster Einspaltig="true" @key="_aufheizSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_AUFH_LBL_SCHALTER"
+                                      Wert="@Aufheizung.An"
+                                      Aktiv="@(!_daten.Gesperrt)"
+                                      WertChanged="AufheizSchalterGesetzt" />
+                            @if (Aufheizung.An)
+                            {
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_BEMESSUNG"
+                                             Eintraege="@Bemessungseintraege"
+                                             Auswahl="@(Aufheizung.MitAbzug ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizBemessungGewaehlt" />
+                                @if (Aufheizung.MitAbzug)
+                                {
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ABZUG"
+                                                Wert="@Aufheizung.AbzugK"
+                                                Einheit="K" Min="0" Max="10"
+                                                Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_VORGABE_K)"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizAbzugGesetzt" />
+                                }
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
+                                            Wert="@ReserveProzent"
+                                            Einheit="%" Min="1" Max="100"
+                                            Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE * 100.0)"
+                                            Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="AufheizReserveGesetzt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ART"
+                                             Eintraege="@Arteintraege"
+                                             Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizArtGewaehlt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
+                                @if (_parameter.Anlagenkopplung == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1)
+                                {
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GEKOPPELT" />
+                                }
+                                @foreach (string zeile in _aufheizZeilen)
+                                {
+                                    <Herleitungszeile Text="@zeile" />
+                                }
+                            }
+                            else
+                            {
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AUS" />
+                            }
                         </KindInhalt>
                     </Formularraster>
                 </section>
@@ -907,6 +975,7 @@
     private void Neuladen()
     {
         _parameter = Parameter?.Laden?.Invoke() ?? new ParameterDaten();
+        AufheizZeilenLaden();
         KachelnNeuladen();
     }
 
@@ -1059,6 +1128,106 @@
 
         _anlagenkopplungSchluessel++;
         Melden(Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _aufheizSchluessel;
+
+    /// <summary>
+    /// Die Herleitungszeilen je Gebäude (<c>AufheizHerleitung</c>, verdrahtet mit der Welle D2);
+    /// leer ohne Delegat — dann steht keine Zeile da.
+    /// </summary>
+    private IReadOnlyList<string> _aufheizZeilen = Array.Empty<string>();
+
+    /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe Aufheizung
+        => _parameter.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    /// <summary>Die Reserve ρ in Prozent, wie das Feld sie zeigt; <c>null</c> = leer (Vorgabe).</summary>
+    private double? ReserveProzent => Aufheizung.Reserve is double r ? r * 100.0 : null;
+
+    /// <summary>Die zwei Bemessungen (Id 0 = (a) kälteste Stunde, 1 = (b) kälteste Stunde − ΔT_K).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Bemessungseintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE),
+        (1, Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG)
+    };
+
+    /// <summary>Die zwei Arten (Id 0 = täglich, 1 = fest).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Arteintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_ART_TAEGLICH),
+        (1, Resource.SIMKONF_AUFH_ART_FEST)
+    };
+
+    /// <summary>Der leise Platzhalter eines leeren Zahlenfeldes („Vorgabe 2") in der Oberflächenkultur.</summary>
+    private static string Vorgabetext(double wert)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_VORGABE,
+                         wert.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>Liest die Herleitungszeilen je Gebäude neu — ohne Delegat keine.</summary>
+    private void AufheizZeilenLaden()
+        => _aufheizZeilen = Parameter?.AufheizHerleitung?.Invoke() ?? Array.Empty<string>();
+
+    private void AufheizSchalterGesetzt(bool an)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+    }
+
+    private void AufheizBemessungGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art));
+    }
+
+    private void AufheizAbzugGesetzt(double? wert)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art));
+    }
+
+    /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
+    private void AufheizReserveGesetzt(double? prozent)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        double? anteil = prozent is double p ? p / 100.0 : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+    }
+
+    private void AufheizArtGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!));
+    }
+
+    /// <summary>
+    /// Schreibt die ganze Einstellung SOFORT über die Naht der Hülle (Muster Kühlschalter). Steht
+    /// danach nicht die gewünschte Einstellung, zeigt der Abschnitt wieder den gespeicherten Stand
+    /// (@key), und die Fußzeile meldet es — kein stilles Zurückspringen.
+    /// </summary>
+    private void AufheizSchreiben(WindowsFormsApplication1.Aufheizvorgabe neu)
+    {
+        if (Parameter?.AufheizvorgabeSchreiben is null) return;
+        if (neu.Equals(Aufheizung)) return;
+
+        if (Parameter.AufheizvorgabeSchreiben(neu))
+        {
+            _parameter.Aufheizung = neu;
+            AufheizZeilenLaden();
+            return;
+        }
+
+        _aufheizSchluessel++;
+        Melden(Resource.SIMKONF_AUFH_MSG_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>

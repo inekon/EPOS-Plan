@@ -49953,6 +49953,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT_K in K, um den die Bemessung kälter als die kälteste Stunde rechnet. Nur bei der Bemessung „kälteste Stunde − ΔT_K“; leer = Vorgabe 2 K, zulässig 0 bis 10 K; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_ABZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_ABZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit: TAEGLICH = jeder Tag nach seiner Außentemperatur (Vorgabe), FEST = jeder Tag so lange wie der Bemessungsfall. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung der längsten Aufheizzeit: STUNDE = kälteste Stunde (Vorgabe), STUNDE_ABZUG = kälteste Stunde − ΔT_K. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_BEMESSUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_BEMESSUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufheizoptimierung ist ausgeschaltet; die Maske zeigt das Feld erst, wenn der Schalter gesetzt ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_NICHT_AN {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_NICHT_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT_K gilt nur für die Bemessung „kälteste Stunde − ΔT_K“; erst diese Bemessung wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_NUR_ABZUG {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_NUR_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ in %: Zuschlag auf die stationäre Last, wenn das Gebäude keine Heizleistungsgrenze führt. Leer = Vorgabe 20 %, zulässig 1 bis 100 %. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_RESERVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_RESERVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe (Gebäude nach VDI 6007), aus = der Sollwert springt wie im Kalender. Projekteinstellung; wird sofort gespeichert, die übrigen Werte bleiben beim Ausschalten erhalten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHALTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHALTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wert „{0}“ gibt es nicht; bekannt sind {1}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUTARKIE_ERL {
@@ -79737,6 +79809,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR {
             get {
                 return ResourceManager.GetString("SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_ART_FEST {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_ART_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die täglich ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_ART_TAEGLICH {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_ART_TAEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kälteste Stunde − ΔT_K ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_BEMESSUNG_ABZUG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_BEMESSUNG_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kälteste Stunde ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_BEMESSUNG_STUNDE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_BEMESSUNG_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_GRP {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_GRP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HILFE_KNOPF {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HILFE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_AN {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_GEKOPPELT {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_GEKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug ΔT_K ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_ABZUG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_ART {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung rechnen ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_SCHALTER {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_VORGABE", resourceCulture);
             }
         }
         
