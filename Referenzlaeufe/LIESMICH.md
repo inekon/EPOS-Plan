@@ -545,8 +545,9 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 der Aufheizoptimierung der Schemaschritte 160 und 161 (Nachtrag „Schemaschritte 160 und 161“ unten), Schalter
 überall 0, alles übrige leer, und die Einheitenspalte des Kessel-Bereitschaftsverlusts aus Schemaschritt 162
 (Nachtrag „Schemaschritt 162“ unten), überall `kW`, und die Albedo-Spalte der Anlagenzeile aus Schemaschritt 163
-(Nachtrag „Schemaschritt 163“ unten), überall leer: Schemastand **163**, 81 170 432 Byte, LFS-SHA-256
-`be9d733ca8d503dc159310b202e72071abf6608e2c3644f77b9a8b593807c200`. **Die Basis bleibt**, weil kein Rechenwert
+(Nachtrag „Schemaschritt 163“ unten), überall leer, das Temperaturpaar der Prozesswärme samt den acht gesäten
+Betriebsweisen aus Schemaschritt 164 (Nachtrag „Schemaschritt 164“ unten): Schemastand **164**, 81 182 720 Byte, LFS-SHA-256
+`ba38fb601e6a4fd1f5ac3872e58e3ccbebe6ae0642b0a41209e29fa484da8dc1`. **Die Basis bleibt**, weil kein Rechenwert
 betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten, und die Vorgabe `kW`
 rechnet den Bereitschaftsverlust wie zuvor. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
@@ -666,6 +667,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Testdatenbank ist aus der Fassung `05783be1…` (Schemastand 162) mit `Werkzeuge/Testdatenbankschema` auf **163**
 > gezogen (1 Spalte, keine Tabelle), jede Zeile leer. Neue Fassung **81 170 432 Byte, LFS-SHA-256
 > `be9d733ca8d503dc159310b202e72071abf6608e2c3644f77b9a8b593807c200`**. **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so
+> gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 164 (Temperaturpaar je Prozess, Saat der Betriebsweisen), Basis unverändert.**
+> `ProzesswaermeTemperaturSchema` (Nummer `AlbedoSchema.SCHRITT + 1`): an `Tab_Prozesswaerme_STAMM` und `Tab_Prozesswaerme` die
+> nullbaren Spalten `Vorlauf` und `Ruecklauf` (0 … 250 °C, beide oder keiner, Vorlauf ≥ Rücklauf); dazu die wiederholbare
+> Saat `ProzesstypSaat` von acht Sätzen typischer Betriebsweisen (`Tab_Prozesswaerme_STAMM`/`Tab_Prozesstyp_STAMM`,
+> `ReadOnly = 1`, 100 MWh je Satz, gehalten von `EPOS.Kern.Tests/ProzesstypSaatWacheTests`). Kein Referenzprojekt trägt ein
+> Paar oder eine Zuordnung zu einem gesäten Satz. Die Testdatenbank ist aus der Fassung `be9d733c…` (163) mit
+> `Werkzeuge/Testdatenbankschema` auf **164** gezogen. Neue Fassung **81 182 720 Byte, LFS-SHA-256
+> `ba38fb601e6a4fd1f5ac3872e58e3ccbebe6ae0642b0a41209e29fa484da8dc1`**. **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so
 > gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R30 `2026-09-30_R30_Stromverbraucher`
