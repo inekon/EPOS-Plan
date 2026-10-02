@@ -176,6 +176,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt, und bei aktiver Tarifstruktur zusätzlich den abweichenden Leistungspreis des Reststromtarifs. (#644, #649, #654)
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
+- Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

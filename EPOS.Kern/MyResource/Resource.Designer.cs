@@ -98489,6 +98489,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegestehungskosten: Der § 9b-Abzug rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers. ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_9B_DECKEL {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_9B_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegestehungskosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; der § 9b-Abzug rechnet mit höchstens dem Regelsatz der Stromsteuer von {0} €/MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_9B_REGELSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_9B_REGELSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegestehungskosten: Der § 9b-Abzug beträgt {0} €/a statt {1} €/a — der Netzbezug von {2} MWh/a trägt den Sockelbetrag von {3} €/a nicht ganz. ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_9B_SOCKEL {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_9B_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gespeicherter Lauf nach einer früheren Regel der Wärmegestehungskosten — die Zahl nach heutiger Regel liegt mit der nächsten Rechnung vor ähnelt.
         /// </summary>
         public static string WIRT_GESTEHUNG_ALTER_LAUF {

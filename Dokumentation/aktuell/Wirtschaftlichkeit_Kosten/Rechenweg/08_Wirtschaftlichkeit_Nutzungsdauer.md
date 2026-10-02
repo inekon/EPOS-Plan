@@ -113,6 +113,13 @@ Kennzahlen
   Netzträgers (bei produzierendem Gewerbe abzüglich der entgangenen Entlastung nach § 9b StromStG);
   ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher. Kapitalwert und übrige Kennzahlen
   bleiben projektweit.
+  Entgangene § 9b-Entlastung im Jahr t (EZ‑22, dieselben Regeln wie die Entlastung des Projekts):
+    E_t = max(0, (N + E) × s_eff − S_t) − max(0, N × s_eff − S_t)
+    s_eff = min(s_t, a) ; a = Stromsteueranteil des Arbeitspreises der Gutschrift [€/MWh],
+            ohne gepflegten Anteil der Regelsatz der Stromsteuer des Jahres
+    N = Netzbezug nach dem Lauf, E = BHKW-Eigenstrom, s_t = § 9b-Satz, S_t = Sockelbetrag
+    als eigene negative Reihe, jahresscharf, nicht mit p_E fortgeschrieben ; trägt N den Sockel,
+    ist E_t = E × s_eff (1024: 73,91 MWh × 20,00 €/MWh = 1.478,20 €/a)
   Grenzen: Eine reversible Wärmepumpe geht mit Investition, Betrieb und Heizstrom ganz in die Wärme
   ein, ihr Kältestrom nicht. Die Position „Stromeinspeisung" ohne Anlagenzuordnung zählt in einem
   Projekt mit BHKW ganz, auch wenn daneben eine Photovoltaikanlage einspeist (einer PV-Anlage
