@@ -1,6 +1,6 @@
 # P654 — Deckel an der § 9b-Korrektur des Ausweises der vermiedenen Stromkosten (Protokoll, 02.10.2026)
 
-Statuszeile vorläufig #654 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile vorläufig #656 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push; mit dieser Welle keine Statuszeile); Auftrag
 [`P654_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P654_Auftrag_2026-10-02.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P651_Waermegestehung_9b_Sockel_Protokoll.md`](P651_Waermegestehung_9b_Sockel_Protokoll.md)
@@ -82,8 +82,14 @@ nur bei § 9b-Satz > 0. Ohne Deckel unter dem Satz Zeichen für Zeichen das Erge
 
 ## Gate
 
-offen
+Gate #656 auf `b1e4ed526` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 065 grün, 2 übersprungen, 0 rot (Kern 9 864, UI 7 239,
+KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+`2026-09-30_R30_Stromverbraucher` (5 180 240 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS. Der Merge `3d85f9967`
+danach trägt nur Papiere (CI-Vermerk #654 der Berichterstellung), Dokumentationswachen erneut grün. Windows-Schale 0 Fehler (Agent).
 
 ## Commit
 
-offen
+Vier Commits auf `p654` hinter dem Auftrag `2ec61ab69` (`292f1b939`, `09f0c97fd`, `719c4d6eb`, `789350ac4`); Merges `b1e4ed526`
+mit origin (#654, #655; eigene Nummer #656) und `3d85f9967`. Statuszeile #656 im Folgecommit; Push nach Freigabe des Anwenders;
+CI-Vermerk in Nach #656 (c).
