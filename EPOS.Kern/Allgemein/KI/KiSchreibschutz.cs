@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     /// <b>Schematolerant wie der Bestand.</b> Nicht jede Tabelle fuehrt <c>ReadOnly</c>.
     /// Geprueft wird deshalb ueber <c>DataTable.Columns.Contains("ReadOnly")</c> - genau
     /// das Muster, mit dem <c>BHKWStammCtrl</c>, <c>GebaeudeStammCtrl</c>,
-    /// <c>ProzesswaermeCtrl</c> und die uebrigen den Wert lesen. Fuehrt die Tabelle das
+    /// <c>ProzesswaermeStammCtrl</c> und die uebrigen den Wert lesen. Fuehrt die Tabelle das
     /// Feld nicht, gibt es dort auch keinen Schreibschutz - und die Wache greift, sobald
     /// eine Migration das Feld nachtraegt, ohne dass hier etwas zu aendern waere.
     /// </para>
