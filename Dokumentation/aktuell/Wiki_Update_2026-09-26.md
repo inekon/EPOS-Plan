@@ -175,7 +175,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Brauchwasser- und Prozesswärmeprofile rechnen mit ihrer gepflegten Jahressumme auch dann, wenn ihre Projektkopie anders heißt als der Katalogeintrag. (#643)
 - Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt. (#644)
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
-- Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#646 vorläufig, P646; Version bestätigt der Anwender beim Upload)
+- Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#649 vorläufig, P646; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
@@ -242,6 +242,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 - Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)
 - Die Häkchen der Berichtsbausteine wirken auch auf die Blätter der Excel-Mappe und richten sich nach der gewählten Excel-Vorlage. (#607)
+- Das Band „bitte neu berechnen“ der Seiten Kosten und Wirtschaftlichkeit erscheint auch, wenn nach der letzten Rechnung Kosten, Preise, Wirtschaftlichkeitsparameter oder der Kostenkatalog bearbeitet wurden, und nennt den Grund. (#647)
+- In der Vorlagenverwaltung der Konditionierung legt „Kopieren nach …“ aus einer Vorlage eine eigene Vorlage einer anderen Größe an: von Heizen nach Kühlen mit wählbarem Komfortsollwert sowie zwischen Geräten und Personen. (#648)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

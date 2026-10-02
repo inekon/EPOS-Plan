@@ -204,6 +204,8 @@ namespace EPOS.Kern.Tests
             ("KnopfUebernehmenAnpassen", "Vom Gebäude übernehmen und anpassen"),
             ("KnopfDuplizieren", "Duplizieren"),
             ("KnopfUmbenennen", "Umbenennen"),
+            ("KnopfKopierenNach", "Kopieren nach …"),
+            ("LabelKomfortsollwert", "Komfortsollwert"),
             ("KnopfZeitstruktur", "Zeitstruktur übernehmen"),
             ("LabelGrundangabe", "Grundangabe"),
             ("LabelStandardwoche", "Standardwoche"),
@@ -223,6 +225,8 @@ namespace EPOS.Kern.Tests
             ("LabelVorlageEigen", "ausgeliefert / eigen"),
             ("TextJahresmittel", "Jahresmittel"),
             ("TextHerleitungGeraete", "Interne Wärmegewinne"),
+            // KP2 U5 (E57): die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen“.
+            ("HinweisVorlageAlle", "Vorlage in allen Größen übernehmen"),
         };
 
         [Fact]

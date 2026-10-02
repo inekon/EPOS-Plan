@@ -219,6 +219,7 @@ namespace WindowsFormsApplication1
             // Das Band „… bitte neu berechnen": das Projekt der Kacheln hier, jede Version
             // im Vergleich in der Gegenueberstellung.
             stand.Nachrechnen = w.Veraltet;
+            stand.NachrechnenGrund = w.Grund;
             Gegenueberstellung(stand, kultur, w);
             stand.Komponenten = Komponenten(kultur);
             stand.TraegerSpalten = Traegerspalten();
@@ -284,7 +285,11 @@ namespace WindowsFormsApplication1
                             : (string.IsNullOrEmpty(v.Bezeichner) ? v.Projektname : v.Bezeichner));
                 speicher.Add(v.Speicher ?? "");
                 Kostenwerte w = v.IdProjekt == _idProjekt ? werteProjekt : Kostenwerte.Lies(_wirt, v.IdProjekt);
-                if (w.Veraltet) stand.Nachrechnen = true;
+                if (w.Veraltet)
+                {
+                    stand.Nachrechnen = true;
+                    stand.NachrechnenGrund = KostenAenderungsstempel.Vorrang(stand.NachrechnenGrund, w.Grund);
+                }
                 invest.Add(w.InvestText(kultur));
                 betrieb.Add(w.BetriebText(kultur));
                 energie.Add(w.EnergieText(kultur));
@@ -347,12 +352,19 @@ namespace WindowsFormsApplication1
             internal bool EnergieNull = true;
 
             /// <summary>
-            /// Das gespeicherte Ergebnis passt nicht mehr zum Simulationslauf seines Projekts —
-            /// dieselbe Frage (<see cref="WirtschaftlichkeitCtrl.ErgebnisAktuell"/>), mit der die
+            /// Das gespeicherte Ergebnis gilt nicht mehr — dieselbe Frage
+            /// (<see cref="WirtschaftlichkeitCtrl.ErgebnisAktuell"/>), mit der die
             /// Wirtschaftlichkeitsseite ihr Band „… bitte neu berechnen" und die Reiterzeile ihr
             /// „veraltet" stellen. Ohne gespeichertes Ergebnis ist nichts veraltet, es fehlt.
             /// </summary>
             internal bool Veraltet;
+
+            /// <summary>
+            /// Warum (<see cref="WirtschaftlichkeitCtrl.Veraltung"/>): jüngerer Simulationslauf,
+            /// geänderte Kosten der Gruppe oder geänderter Kostenkatalog; sonst
+            /// <see cref="Ergebnisveraltung.Keine"/>.
+            /// </summary>
+            internal Ergebnisveraltung Grund;
 
             internal static Kostenwerte Lies(WirtschaftlichkeitCtrl wirt, int idProjekt)
             {
@@ -395,7 +407,10 @@ namespace WindowsFormsApplication1
                     {
                         w.Energie = erg.EnergiekostenJahr.Value;
                         w.EnergieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
-                        w.Veraltet = !wirt.ErgebnisAktuell(erg);
+                        // EINE Kernfrage: Veraltung ist die Regel hinter ErgebnisAktuell - für ein
+                        // gelesenes Ergebnis ist „nicht aktuell" genau „ein Grund steht".
+                        w.Grund = wirt.Veraltung(erg);
+                        w.Veraltet = w.Grund != Ergebnisveraltung.Keine;
                         w.EnergieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
                             erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
                     }

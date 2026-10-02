@@ -526,9 +526,11 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
 `5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Die Testdatenbank trägt seither die
 Ergebnisspalte `Tab_ErgebnisWirtschaftlichkeit.Lauf_Staende` (Laufvermerk, P641, über
-`Werkzeuge/Testdatenbankschema` nachgezogen, kein Schemaschritt): Schemastand **158** unverändert, 81 137 664 Byte,
-LFS-SHA-256 `c1a153dc227c6f7b91a71657eb9705ba7056116551f900259fad5d3cfc543eed`, alle 48 Bestandszeilen NULL. **Die
-Basis bleibt**, weil kein Rechenwert betroffen ist: Der Referenzlauf liest diese Tabelle nicht. Gegen diese Basis hält
+`Werkzeuge/Testdatenbankschema` nachgezogen, kein Schemaschritt; alle 48 Bestandszeilen NULL) und die
+Änderungsstempel des Schemaschritts 159 (Nachtrag „Schemaschritt 159“ unten): Schemastand
+**159**, 81 162 240 Byte, LFS-SHA-256 `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`, kein
+Stempel gesetzt. **Die Basis bleibt**, weil kein Rechenwert betroffen ist: Der Referenzlauf liest weder den
+Laufvermerk noch die Stempel. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -602,6 +604,21 @@ das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des 
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
 > [`SV1_Stromverbraucher_Summe_R30_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SV1_Stromverbraucher_Summe_R30_Protokoll.md).
+
+> **Nachtrag — Schemaschritt 159 (Änderungsstempel für Kosten, Preise und Kostenkatalog), Basis unverändert.**
+> Reines DDL aus `KostenStempelSchema` (Nummer `KesselBrennwertNachzug.SCHRITT + 1`): die nullbaren Spalten
+> `Tab_Projekt.Kosten_Geaendert` und `Tab_Applikation.Kostenkatalog_Geaendert` (TEXT) und 63 Trigger, die sie bei
+> jeder Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen (Liste in
+> [`BETRIEB_SQLITE.md`](../Dokumentation/aktuell/BETRIEB_SQLITE.md), Abschnitt 2b). Die Testdatenbank ist aus der
+> Fassung `c1a153dc…` (Schemastand 158 samt Laufvermerk `Lauf_Staende`, P641) mit `Werkzeuge/Testdatenbankschema`
+> auf **159** gezogen; ein zweiter Lauf
+> legt nichts an und setzt — auch über die erneut gefahrenen Schritte davor — keinen Stempel. Zeilenvergleich über
+> alle Tabellen: allein `Tab_Applikation` (`SchemaVersion` 158 → 159); das Schema wächst nur um die zwei Spalten und
+> die 63 Trigger (153 STRICT-Tabellen); die Stempel sind überall leer; `integrity_check` ok, `foreign_key_check`
+> leer. Neue Fassung **81 162 240 Byte, LFS-SHA-256
+> `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Stempel; die sechzehn Projekte rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich.
+> Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R29 `2026-09-30_R29_Kesseltakten`
 

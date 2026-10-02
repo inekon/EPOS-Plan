@@ -550,7 +550,19 @@ namespace WindowsFormsApplication1
                     "aus der Matrix stammt, eigene Perioden und Feiertage bleiben; vorgewählt ist 'Nein'. Steht die " +
                     "Lüftung als Gesamtangabe, fragt er zuerst, ob er sie aufteilen soll. Geschrieben wird mit OK " +
                     "des Editors, Abbrechen verwirft die Übernahme. Der Assistent übernimmt eine Vorlage über das " +
-                    "Feld 'Vorlage' der Größe; eine Rückfrage beantwortet der Anwender selbst."),
+                    "Feld 'Vorlage' der Größe; eine Rückfrage beantwortet der Anwender selbst. " +
+                    // Die Abkürzung nach E57 (Stufe KP2, Welle U5).
+                    "Wer alle fünf Größen nach demselben Muster belegen will, nimmt die Abkürzung 'Gleichnamige " +
+                    "Vorlage in allen Größen übernehmen' in der Zeile 'Vorlage' der Matrix: Die Liste 'alle Größen' " +
+                    "in ihrer Kopfzelle führt jeden Namen, der in mindestens einer der fünf Listen steht. Die Wahl " +
+                    "eines Namens stellt sofort EINE Rückfrage für alle Größen - vorgewählt ist 'Nein' - und nennt je " +
+                    "Größe, was geschieht: übernehmen, was an einem angelegten Kalender ersetzt wird und was bleibt, " +
+                    "das Aufteilen der Gesamtangabe der Lüftung, 'keine Vorlage dieses Namens - bleibt' oder den " +
+                    "Grund einer gesperrten Größe (Kühlen ohne 'Gebäude wird gekühlt'). 'Ja' übernimmt die Vorlage in " +
+                    "jeder Größe, deren Liste sie führt, als einen Schritt für 'Zurücknehmen'; Größen ohne " +
+                    "gleichnamige Vorlage bleiben, wie sie sind, und die Liste steht danach wieder auf '—'. Der " +
+                    "Assistent wählt den Namen über das Feld 'Vorlage · alle Größen'; die Rückfrage beantwortet der " +
+                    "Anwender selbst."),
 
                 new WissensAbschnitt("Konditionierung: Als Vorlage speichern (save as template)",
                     KiChatKontext.B_GEBAEUDE,
@@ -569,7 +581,13 @@ namespace WindowsFormsApplication1
                     "Vorlage zeigt eine Zeile Name und Nutzung, eine ausgelieferte dazu das Schloss; ein Klick auf " +
                     "den Namen zeigt ihre Woche. " +
                     "Eine ausgelieferte Vorlage (Schloss) lässt sich nur duplizieren; eine eigene lässt sich " +
-                    "umbenennen, duplizieren und löschen - Löschen fragt vorher. Jede dieser Handlungen wirkt " +
+                    "umbenennen, duplizieren und löschen - Löschen fragt vorher. 'Kopieren nach …' legt aus einer " +
+                    "Vorlage, auch einer ausgelieferten, eine eigene Vorlage einer anderen Größe an: Geräte und " +
+                    "Personen gegenseitig mit denselben Werten und Zeiten (beide sind Anteile); Heizen nach Kühlen " +
+                    "nur mit der Zeitstruktur und den Aus-Zeiten - jede Stunde mit Heizsollwert bekommt den " +
+                    "Komfortsollwert, vorgeschlagen 26 °C. Andere Richtungen (Kühlen nach Heizen, alles mit " +
+                    "Lüftung) gibt es nicht. Der Name gilt in der Liste der Zielgröße und muss dort frei sein; die " +
+                    "Beschreibung nennt die Herkunft. Jede dieser Handlungen wirkt " +
                     "SOFORT auf die Vorlagen, nicht erst mit dem OK des Editors, und ändert kein Gebäude: Ein " +
                     "Kalender, der aus einer gelöschten Vorlage stammt, behält seine Werte und nennt weiter ihren " +
                     "Namen. Danach sind die Auswahllisten der Karten neu gelesen."),

@@ -1,6 +1,6 @@
 # P646 — Nachlese der Wärmegestehung (#642): Stromsteuer einmal, EZ‑6 gilt, Register, Konzept, Zielvorgabe, Altläufe (Protokoll, 02.10.2026)
 
-Statuszeile vorläufig #646 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile vorläufig #649 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push); Auftrag [`P646_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P646_Auftrag_2026-10-02.md)
 der Sitzung „EPOS Plan Wirtschaftlichkeit". Vorgänger: [`W642_Waermegestehung_Protokoll.md`](W642_Waermegestehung_Protokoll.md)
 (#642, nachgetragen mit dieser Welle) und [`P641_Laufvermerk_Protokoll.md`](P641_Laufvermerk_Protokoll.md) (#645). Zweig `p646`

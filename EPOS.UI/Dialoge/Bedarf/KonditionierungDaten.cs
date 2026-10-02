@@ -218,7 +218,13 @@ public enum KonditionierungHandlung
     /// „In den Kalender übernehmen" an der Wärmeübergabe (Teilkonzept 5.5, Welle U3): das Sollwert-Zeitprogramm
     /// wird die Standardwoche des Heizkalenders.
     /// </summary>
-    SollwertprofilUebernehmen = 20
+    SollwertprofilUebernehmen = 20,
+
+    /// <summary>
+    /// „Kopieren nach …" (Vorlagenverwaltung, Teilkonzept 3.5, 7.4): eine Vorlage als eigene Vorlage einer
+    /// anderen Größe — Heizen → Kühlen, Geräte ↔ Personen; schreibt sofort.
+    /// </summary>
+    VorlageKopieren = 21
 }
 
 /// <summary>
@@ -615,8 +621,28 @@ public sealed record KonditionierungFeiertag(string Regel, string Name);
 public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, KonditionierungNutzung Nutzung);
 
 /// <summary>
-/// Was eine Handlung an einer Vorlage ergeben hat (speichern, umbenennen, löschen, duplizieren) —
-/// sie schreiben sofort (Festlegung 13).
+/// Ein erlaubtes Ziel von „Kopieren nach …" (Teilkonzept 3.5, 7.4) — der Dialog zeigt nur diese. Wo die
+/// Richtung neue Sollwerte braucht (Heizen → Kühlen), tragen sie die Vorgabe des Komfortsollwerts und die
+/// Grenzen seines Feldes.
+/// </summary>
+/// <param name="Ziel">Die Zielgröße.</param>
+/// <param name="Komfortsollwert">
+/// Die Vorgabe des Komfortsollwerts [°C]; <c>null</c> = Werte und Zeitstruktur reisen unverändert (Geräte ↔
+/// Personen), es gibt kein Sollwertfeld.
+/// </param>
+/// <param name="Min">Der kleinste Komfortsollwert [°C] (die Grenzen der Kühlspalte); ohne Sollwertfeld ohne Bedeutung.</param>
+/// <param name="Max">Der größte Komfortsollwert [°C].</param>
+public sealed record KonditionierungKopierziel(KonditionierungGroesse Ziel, double? Komfortsollwert, double Min, double Max);
+
+/// <summary>Was „Kopieren nach …" erfragt (Teilkonzept 7.4): Zielgröße, Name der Kopie, bei Heizen → Kühlen den Komfortsollwert.</summary>
+/// <param name="Ziel">Die Zielgröße — eines der erlaubten Ziele der Quelle.</param>
+/// <param name="Name">Der Name der Kopie in der Liste der Zielgröße.</param>
+/// <param name="Komfortsollwert">Der Komfortsollwert [°C]; nur bei Heizen → Kühlen, sonst <c>null</c>.</param>
+public sealed record KonditionierungVorlageKopie(KonditionierungGroesse Ziel, string Name, double? Komfortsollwert);
+
+/// <summary>
+/// Was eine Handlung an einer Vorlage ergeben hat (speichern, umbenennen, löschen, duplizieren, kopieren
+/// nach …) — sie schreiben sofort (Festlegung 13).
 /// </summary>
 /// <param name="Ok">Wurde geschrieben?</param>
 /// <param name="Meldung">Die benannte Ablehnung (etwa ein Doppelname in der Liste); leer im guten Fall.</param>
@@ -628,6 +654,12 @@ public sealed record KonditionierungVorlageErgebnis(bool Ok, string Meldung, Kon
     /// sie am Namensfeld, nicht im Banner (Teilkonzept 7.4; Stufe KP2, Welle U2).
     /// </summary>
     public bool AmNamen { get; init; }
+
+    /// <summary>
+    /// Betrifft die Ablehnung den KOMFORTSOLLWERT von „Kopieren nach …" (fehlt, außerhalb der Grenzen der
+    /// Kühlspalte)? Dann nennt der Dialog sie am Sollwertfeld.
+    /// </summary>
+    public bool AmSollwert { get; init; }
 }
 
 /// <summary>Die Angaben des Werkzeugs „Zeitfenster eintragen" (Teilkonzept 3.5, 7.5).</summary>

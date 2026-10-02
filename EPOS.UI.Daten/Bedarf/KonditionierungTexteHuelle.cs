@@ -243,6 +243,22 @@ namespace WindowsFormsApplication1
             t.HinweisVorlageZeile = Text_("KOND_TXT_HINWEIS_VORLAGE_ZEILE", t.HinweisVorlageZeile);
             t.TextVorschauLeer = Text_("KOND_TXT_VORSCHAU_LEER", t.TextVorschauLeer);
             t.TextVorschauOhneAnteile = Text_("KOND_TXT_VORSCHAU_OHNE_ANTEILE", t.TextVorschauOhneAnteile);
+
+            // Kopieren nach … (Teilkonzept 3.5, 7.4)
+            t.KnopfKopierenNach = Text_("KOND_BTN_KOPIEREN_NACH", t.KnopfKopierenNach);
+            t.KnopfKopieren = Text_("KOND_BTN_KOPIEREN", t.KnopfKopieren);
+            t.LabelKopierenNach = Text_("KOND_LBL_KOPIEREN_NACH", t.LabelKopierenNach);
+            t.LabelKopierziel = Text_("KOND_LBL_KOPIERZIEL", t.LabelKopierziel);
+            t.LabelKomfortsollwert = Text_("KOND_LBL_KOMFORTSOLLWERT", t.LabelKomfortsollwert);
+            t.HinweisKopierenNach = Text_("KOND_TXT_KOPIEREN_NACH", t.HinweisKopierenNach);
+            t.HinweisKopierenDirekt = Text_("KOND_TXT_KOPIEREN_DIREKT", t.HinweisKopierenDirekt);
+            t.HinweisKopierenZeitstruktur = Text_("KOND_TXT_KOPIEREN_ZEITSTRUKTUR", t.HinweisKopierenZeitstruktur);
+            t.GrundKeinKopierziel = Text_("KOND_TXT_GRUND_KEIN_KOPIERZIEL", t.GrundKeinKopierziel);
+            t.TextVorlageKopiert = Text_("KOND_TXT_VORLAGE_KOPIERT", t.TextVorlageKopiert);
+            t.MeldungKomfortsollwert = Text_("KOND_TXT_MELDUNG_KOMFORTSOLLWERT", t.MeldungKomfortsollwert);
+            // Die Abkürzung „alle Größen“ (E57, Welle U5)
+            t.LabelVorlageAlle = Text_("KOND_LBL_VORLAGE_ALLE", t.LabelVorlageAlle);
+            t.HinweisVorlageAlle = Text_("KOND_TXT_HINWEIS_VORLAGE_ALLE", t.HinweisVorlageAlle);
             return t;
         }
 
@@ -263,6 +279,16 @@ namespace WindowsFormsApplication1
             f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
             f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
             f.Sollwertprofil = Text_("KOND_FRAGE_SOLLWERTPROFIL", f.Sollwertprofil);
+
+            // Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ (E57, Welle U5)
+            f.VorlageAlleTitel = Text_("KOND_FRAGE_VORLAGE_ALLE_TITEL", f.VorlageAlleTitel);
+            f.VorlageAlle = Text_("KOND_FRAGE_VORLAGE_ALLE", f.VorlageAlle);
+            f.VorlageAlleZeile = Text_("KOND_FRAGE_VORLAGE_ALLE_ZEILE", f.VorlageAlleZeile);
+            f.VorlageAlleUebernehmen = Text_("KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN", f.VorlageAlleUebernehmen);
+            f.VorlageAlleErsetzt = Text_("KOND_FRAGE_VORLAGE_ALLE_ERSETZT", f.VorlageAlleErsetzt);
+            f.VorlageAlleAufteilen = Text_("KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN", f.VorlageAlleAufteilen);
+            f.VorlageAlleOhne = Text_("KOND_FRAGE_VORLAGE_ALLE_OHNE", f.VorlageAlleOhne);
+            f.VorlageAlleGesperrt = Text_("KOND_FRAGE_VORLAGE_ALLE_GESPERRT", f.VorlageAlleGesperrt);
             return f;
         }
 

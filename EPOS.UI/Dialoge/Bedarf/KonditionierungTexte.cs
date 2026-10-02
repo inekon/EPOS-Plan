@@ -811,4 +811,63 @@ public sealed class KonditionierungTexte
     /// </summary>
     public string TextVorschauOhneAnteile { get; set; }
         = "Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.";
+
+    // ------------------------------------------------------------ Kopieren nach … (Teilkonzept 3.5, 7.4)
+
+    /// <summary><c>KOND_BTN_KOPIEREN_NACH</c> — Vorlagenverwaltung: eine Vorlage in eine andere Größe kopieren</summary>
+    public string KnopfKopierenNach { get; set; } = "Kopieren nach …";
+
+    /// <summary><c>KOND_BTN_KOPIEREN</c> — das OK der Abfrage „Kopieren nach …“; schreibt sofort</summary>
+    public string KnopfKopieren { get; set; } = "Kopieren";
+
+    /// <summary><c>KOND_LBL_KOPIEREN_NACH</c> — Titel der Abfrage „Kopieren nach …“; „{0}“ der Name der Quelle</summary>
+    public string LabelKopierenNach { get; set; } = "Vorlage „{0}“ kopieren nach …";
+
+    /// <summary><c>KOND_LBL_KOPIERZIEL</c> — die Wahl der Zielgröße; nur die erlaubten Ziele der Quelle</summary>
+    public string LabelKopierziel { get; set; } = "Zielgröße";
+
+    /// <summary><c>KOND_LBL_KOMFORTSOLLWERT</c> — das Sollwertfeld bei Heizen → Kühlen</summary>
+    public string LabelKomfortsollwert { get; set; } = "Komfortsollwert";
+
+    /// <summary><c>KOND_TXT_KOPIEREN_NACH</c> — Kurztext des Knopfs „Kopieren nach …“</summary>
+    public string HinweisKopierenNach { get; set; }
+        = "Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist.";
+
+    /// <summary><c>KOND_TXT_KOPIEREN_DIREKT</c> — unter einem Ziel gleicher Einheit (Geräte ↔ Personen)</summary>
+    public string HinweisKopierenDirekt { get; set; }
+        = "Gleiche Einheit: Werte und Zeitstruktur gehen unverändert in die Zielgröße.";
+
+    /// <summary><c>KOND_TXT_KOPIEREN_ZEITSTRUKTUR</c> — unter dem Ziel Kühlen einer Heizvorlage</summary>
+    public string HinweisKopierenZeitstruktur { get; set; }
+        = "Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert.";
+
+    /// <summary>
+    /// <c>KOND_TXT_GRUND_KEIN_KOPIERZIEL</c> — der Grund des weich gesperrten „Kopieren nach …“ (Kühlen,
+    /// Lüftung); „{0}“ die Größe
+    /// </summary>
+    public string GrundKeinKopierziel { get; set; }
+        = "Eine Vorlage der Größe „{0}“ lässt sich in keine andere Größe kopieren — „Kopieren nach …“ gibt es von Heizen nach Kühlen und zwischen Geräten und Personen.";
+
+    /// <summary>
+    /// <c>KOND_TXT_VORLAGE_KOPIERT</c> — die Zeile der Verwaltung; „{0}“ der Name der Kopie, „{1}“ die Zielgröße,
+    /// „{2}“ der Name der Quelle, „{3}“ ihre Größe
+    /// </summary>
+    public string TextVorlageKopiert { get; set; } = "Vorlage „{0}“ in der Liste „{1}“ als Kopie von „{2}“ ({3}) angelegt.";
+
+    /// <summary>
+    /// <c>KOND_TXT_MELDUNG_KOMFORTSOLLWERT</c> — am Sollwertfeld, solange es keine gültige Zahl trägt; „{0}“ und
+    /// „{1}“ die Grenzen
+    /// </summary>
+    public string MeldungKomfortsollwert { get; set; } = "Der Komfortsollwert ist eine Zahl von {0} bis {1} °C.";
+    // ------------------------------------------------------------ Die Abkürzung „alle Größen“ (E57, Welle U5)
+
+    /// <summary>
+    /// <c>KOND_LBL_VORLAGE_ALLE</c> — die Liste der Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ in
+    /// der Kopfzelle der Zeile „Vorlage“
+    /// </summary>
+    public string LabelVorlageAlle { get; set; } = "alle Größen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ALLE</c> — der Hinweis (title) der Liste „alle Größen“</summary>
+    public string HinweisVorlageAlle { get; set; }
+        = "Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt.";
 }

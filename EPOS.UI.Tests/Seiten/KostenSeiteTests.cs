@@ -1037,4 +1037,26 @@ public class KostenSeiteTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
+
+    /// <summary>
+    /// Das Band nennt seinen Grund (Änderungsstempel der Datenbank): geänderte Kosten, Preise oder
+    /// Parameter, ein geänderter Kostenkatalog — und nur beim jüngeren Simulationslauf den älteren Lauf.
+    /// </summary>
+    [Theory]
+    [InlineData(Ergebnisveraltung.Kosten, "Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der letzten Rechnung geändert")]
+    [InlineData(Ergebnisveraltung.Katalog, "Der Kostenkatalog (Energieträger, Emissionen, Gesetzesparameter, Nutzungsdauern) wurde nach der letzten Rechnung geändert")]
+    [InlineData(Ergebnisveraltung.Simulation, "Die angezeigten Werte stammen aus einem älteren Lauf")]
+    public void Das_Band_nennt_seinen_Grund(Ergebnisveraltung grund, string satz)
+    {
+        KostenStand stand = Standard();
+        stand.Nachrechnen = true;
+        stand.NachrechnenGrund = grund;
+        var cut = Zeige(null, stand);
+
+        IElement band = cut.Find(".epos-warnbanner");
+        Assert.Contains(satz, band.TextContent);
+        Assert.Contains("bitte neu berechnen", band.TextContent);
+        if (grund != Ergebnisveraltung.Simulation)
+            Assert.DoesNotContain("älteren Lauf", band.TextContent);
+    }
 }

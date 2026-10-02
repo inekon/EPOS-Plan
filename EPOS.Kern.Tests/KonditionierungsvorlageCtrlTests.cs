@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -635,6 +636,219 @@ namespace EPOS.Kern.Tests
             long id = VorlageMitTagwert(Konditionierungsgroesse.Heizsoll, "Gegen das Schloss", 21.0);
             e = _ctrl.Uebernehmen(id, KonditionierungCtrl.Eigner.Katalogbau(stamm), Zielmatrix());
             Assert.False(e.Ok);
+        }
+
+        // =============================================================================
+        //  Kopieren nach … (Konzept 3.5, 7.4)
+        // =============================================================================
+
+        /// <summary>Die Id einer Vorlage über Größe und Namen; 0, wenn es sie nicht gibt.</summary>
+        private static long Vorlagenid(Konditionierungsgroesse groesse, string name)
+            => Id("SELECT \"ID\" FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE +
+                  "\" WHERE \"Groesse\" = ? AND \"Bezeichner\" = ?",
+                  new DbParam("@gr", Konditionierungsgroessen.Kennwort(groesse)), new DbParam("@bz", name));
+
+        /// <summary>
+        /// Der Inhalt einer Vorlage als Zeilen, wie die Datenbank ihn trägt — Vorgabezeilen, Kalender samt
+        /// Bemerkung und Perioden, ohne Ids und ohne Größe: Zwei Vorlagen mit gleichen Zeilen tragen
+        /// bitgleich denselben Inhalt.
+        /// </summary>
+        private static List<string> Inhaltszeilen(long idVorlage)
+        {
+            var zeilen = new List<string>();
+            Hinzu(zeilen, "SELECT \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\", \"Bedingt_K\" FROM \"" +
+                          KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Vorlage\" = ? ORDER BY \"Zeile\"", idVorlage);
+            Hinzu(zeilen, "SELECT \"Wert\", \"Aus\", \"Woche\", \"Nennwert\", \"Bemerkung\" FROM \"" +
+                          KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" = ?", idVorlage);
+            Hinzu(zeilen, "SELECT p.\"Rang\", p.\"Art\", p.\"Bezeichner\", p.\"Beginn\", p.\"Ende\", p.\"Feiertagsregel\", " +
+                          "p.\"Wert\", p.\"Aus\", p.\"Woche\", p.\"WieWochentag\" FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                          "\" p JOIN \"" + KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" " +
+                          "WHERE k.\"ID_Vorlage\" = ? ORDER BY p.\"Rang\"", idVorlage);
+            return zeilen;
+        }
+
+        private static void Hinzu(List<string> zeilen, string sql, long idVorlage)
+        {
+            DataTable t = DataRepository.GetDataTable(sql, new DbParam("@v", idVorlage));
+            Assert.NotNull(t);
+            foreach (DataRow r in t.Rows)
+            {
+                var teile = new List<string>();
+                foreach (object o in r.ItemArray)
+                    teile.Add(o == null || o == DBNull.Value ? "NULL" : Convert.ToString(o, CultureInfo.InvariantCulture));
+                zeilen.Add(string.Join(";", teile));
+            }
+        }
+
+        /// <summary>Wie viele Vorgabe- und Kalenderzeilen der Vorlage NICHT in <paramref name="groesse"/> stehen.</summary>
+        private static long AusserhalbDerGroesse(long idVorlage, Konditionierungsgroesse groesse)
+        {
+            var p = new[] { new DbParam("@v", idVorlage), new DbParam("@gr", Konditionierungsgroessen.Kennwort(groesse)) };
+            return Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE +
+                           "\" WHERE \"ID_Vorlage\" = ? AND \"Groesse\" <> ?", p)
+                   + Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                             "\" WHERE \"ID_Vorlage\" = ? AND \"Groesse\" <> ?", p);
+        }
+
+        [Fact]
+        public void Kopieren_nach_Personen_und_zurueck_ist_bitgleich_und_steht_nur_in_der_Zielgroesse()
+        {
+            if (!Bereit()) return;
+            KonditionierungCtrl.Ergebnis s = _ctrl.SpeichernAus(VorlagenkopierregelTests.Geraetevorlage(),
+                                                                Konditionierungsgroesse.Geraete, "Werkstatt", "Probe der Kopie",
+                                                                DbWerte.KOND_NUTZUNG_SONSTIGE, out long geraete);
+            Assert.True(s.Ok, s.Meldung);
+            List<string> original = Inhaltszeilen(geraete);
+            Assert.Equal(4 + 1 + 11, original.Count);                 // vier Zeilen, der Kalender, elf Perioden
+
+            KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(geraete, Konditionierungsgroesse.Personen, " Werkstatt ", null,
+                                                                out long personen);
+            Assert.True(e.Ok, e.Meldung);
+            Assert.True(personen > 0);
+            Assert.Equal(original, Inhaltszeilen(personen));          // Vorgaben, Woche, Perioden, Feiertagsregeln, Bemerkung
+            Assert.Equal(0, AusserhalbDerGroesse(personen, Konditionierungsgroesse.Personen));
+
+            KonditionierungsvorlageCtrl.Vorlage kopf = _ctrl.Lesen(personen);
+            Assert.Equal((Konditionierungsgroesse.Personen, "Werkstatt", DbWerte.KOND_NUTZUNG_SONSTIGE, false),
+                         (kopf.Groesse, kopf.Bezeichner, kopf.Nutzung, kopf.Ausgeliefert));
+            Assert.Equal(Vorlagenkopierregel.Beschreibung("Probe der Kopie", "Werkstatt", Konditionierungsgroesse.Geraete),
+                         kopf.Beschreibung);
+
+            // Und zurück - unter einem Namen, den die Geräteliste noch nicht führt.
+            Assert.False(_ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "werkstatt", null, out _).Ok);
+            e = _ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "Werkstatt zurück", null, out long zurueck);
+            Assert.True(e.Ok, e.Meldung);
+            Assert.Equal(original, Inhaltszeilen(zurueck));
+            Assert.Equal(0, AusserhalbDerGroesse(zurueck, Konditionierungsgroesse.Geraete));
+            Assert.Equal(original, Inhaltszeilen(geraete));           // die Quelle bleibt, wie sie war
+        }
+
+        [Fact]
+        public void Heizen_nach_Kuehlen_nimmt_Zeitstruktur_und_Aus_Zeiten_und_setzt_den_Komfortsollwert()
+        {
+            if (!Bereit()) return;
+            Assert.True(_ctrl.SpeichernAus(VorlagenkopierregelTests.Heizvorlage(rein: true), Konditionierungsgroesse.Heizsoll,
+                                           "Werkhalle", null, null, out long heizen).Ok);
+            List<string> vorher = Inhaltszeilen(heizen);
+
+            KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(heizen, Konditionierungsgroesse.Kuehlsoll, "Werkhalle", 25.5,
+                                                                out long kuehlen);
+            Assert.True(e.Ok, e.Meldung);
+            Assert.Equal(vorher, Inhaltszeilen(heizen));
+            Assert.Equal(0, AusserhalbDerGroesse(kuehlen, Konditionierungsgroesse.Kuehlsoll));
+
+            // Die Zeilen: jeder Sollwert der Komfortsollwert, die Nachtzeiten bleiben, „aus" bleibt „aus".
+            Dictionary<string, Vorgabezeile> z = Vorlagenzeilen(kuehlen);
+            Assert.Equal(new[] { DbWerte.KOND_ZEILE_FERIEN, DbWerte.KOND_ZEILE_NACHT, DbWerte.KOND_ZEILE_TAG,
+                                 DbWerte.KOND_ZEILE_WOCHENENDE },
+                         z.Keys.OrderBy(k => k, StringComparer.Ordinal));
+            Assert.Equal(((double?)25.5, false, (int?)null, (int?)null), (z[DbWerte.KOND_ZEILE_TAG].Wert, z[DbWerte.KOND_ZEILE_TAG].Aus,
+                                                                 z[DbWerte.KOND_ZEILE_TAG].Von, z[DbWerte.KOND_ZEILE_TAG].Bis));
+            Assert.Equal(((double?)25.5, false, (int?)18, (int?)7), (z[DbWerte.KOND_ZEILE_NACHT].Wert, z[DbWerte.KOND_ZEILE_NACHT].Aus,
+                                                            z[DbWerte.KOND_ZEILE_NACHT].Von, z[DbWerte.KOND_ZEILE_NACHT].Bis));
+            Assert.Equal(((double?)null, true), (z[DbWerte.KOND_ZEILE_WOCHENENDE].Wert, z[DbWerte.KOND_ZEILE_WOCHENENDE].Aus));
+            Assert.Equal((double?)25.5, z[DbWerte.KOND_ZEILE_FERIEN].Wert);
+
+            // Der Kalender: dieselbe Woche mit 25,5 statt jedes Heizwerts, „aus" bleibt; die Perioden mit Rang,
+            // Art, Tagen und Feiertagsregel, „wie Sonntag" bleibt; kein Nennwert, keine Herkunft der Heizung.
+            Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender =
+                _kond.Kalender(KonditionierungCtrl.Eigner.Vorlage(kuehlen), out string m);
+            Assert.Null(m);
+            Konditionierungskalender k = Assert.Single(kalender).Value;
+            Assert.Equal(Konditionierungsgroesse.Kuehlsoll, k.Groesse);
+            Assert.Null(k.Nennwert);
+            Konditionierungskalender h = VorlagenkopierregelTests.Heizvorlage(rein: true).Kalender(Konditionierungsgroesse.Heizsoll);
+            for (int i = 0; i < Kalenderwoche.WOCHENWERTE; i++)
+                Assert.Equal(double.IsNaN(h.Standardwoche[i]) ? double.NaN : 25.5, k.Standardwoche[i]);
+            Assert.Equal(h.Perioden.Select(r => (r.Rang, r.Art, r.Bezeichner, r.Beginn, r.Ende, r.Feiertagsregel, r.Angabe.Art,
+                                                 r.Angabe.WieWochentag)),
+                         k.Perioden.Select(r => (r.Rang, r.Art, r.Bezeichner, r.Beginn, r.Ende, r.Feiertagsregel, r.Angabe.Art,
+                                                 r.Angabe.WieWochentag)));
+            Assert.Equal(25.5, Assert.Single(k.Perioden, r => r.Angabe.Art == Angabeart.Wert).Angabe.Wert);
+            Assert.All(Assert.Single(k.Perioden, r => r.Angabe.Art == Angabeart.Woche).Angabe.Woche,
+                       w => Assert.True(double.IsNaN(w) || w == 25.5));
+            Assert.Equal(0, Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                                    "\" WHERE \"ID_Vorlage\" = ? AND \"Bemerkung\" IS NOT NULL", new DbParam("@v", kuehlen)));
+
+            // E54: keine Zeilen NENNWERT und SAISON, keine Ferien- oder Saisonperiode.
+            Assert.Equal(0, Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE +
+                                    "\" WHERE \"ID_Vorlage\" = ? AND \"Zeile\" IN (?, ?)", new DbParam("@v", kuehlen),
+                                    new DbParam("@z1", DbWerte.KOND_ZEILE_NENNWERT), new DbParam("@z2", DbWerte.KOND_ZEILE_SAISON)));
+            Assert.Equal(0, Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p JOIN \"" +
+                                    KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" " +
+                                    "WHERE k.\"ID_Vorlage\" = ? AND p.\"Art\" IN (?, ?)", new DbParam("@v", kuehlen),
+                                    new DbParam("@a1", DbWerte.KOND_ART_FERIEN), new DbParam("@a2", DbWerte.KOND_ART_BETRIEBSPAUSE)));
+        }
+
+        [Fact]
+        public void Eine_ausgelieferte_Quelle_bleibt_unveraendert_und_die_Kopie_ist_eine_eigene_Vorlage()
+        {
+            if (!Bereit()) return;
+            long buero = Vorlagenid(Konditionierungsgroesse.Heizsoll, "Büro");
+            Assert.True(buero > 0);
+            List<string> vorher = Inhaltszeilen(buero);
+
+            KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(buero, Konditionierungsgroesse.Kuehlsoll, "Büro aus Heizen",
+                                                                Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, out long kopie);
+            Assert.True(e.Ok, e.Meldung);
+            Assert.Equal(vorher, Inhaltszeilen(buero));
+            Assert.True(_ctrl.Lesen(buero).Ausgeliefert);
+
+            KonditionierungsvorlageCtrl.Vorlage kopf = _ctrl.Lesen(kopie);
+            Assert.False(kopf.Ausgeliefert);
+            Assert.Equal(0, Zaehlen("SELECT \"ReadOnly\" FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE +
+                                    "\" WHERE \"ID\" = ?", new DbParam("@id", kopie)));
+            Assert.Equal((Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_NUTZUNG_BUERO), (kopf.Groesse, kopf.Nutzung));
+            Assert.Equal(Vorlagenkopierregel.Beschreibung(_ctrl.Lesen(buero).Beschreibung, "Büro", Konditionierungsgroesse.Heizsoll),
+                         kopf.Beschreibung);
+
+            // Büro heizt Tag 20, Nacht 16 (18–7), Wochenende 16 und Ferien 16 - die Kopie kühlt überall auf 26 °C,
+            // die neun Feiertage bleiben „wie Sonntag".
+            Dictionary<string, Vorgabezeile> z = Vorlagenzeilen(kopie);
+            Assert.Equal(4, z.Count);
+            Assert.All(z.Values, v => Assert.Equal(((double?)26.0, false), (v.Wert, v.Aus)));
+            Assert.Equal(((int?)18, (int?)7), (z[DbWerte.KOND_ZEILE_NACHT].Von, z[DbWerte.KOND_ZEILE_NACHT].Bis));
+            Konditionierungskalender k = Assert.Single(_kond.Kalender(KonditionierungCtrl.Eigner.Vorlage(kopie), out _)).Value;
+            Assert.Equal(26.0, k.Grundangabe.Wert);
+            Assert.Equal(9, k.Perioden.Count);
+            Assert.All(k.Perioden, r => Assert.Equal((DbWerte.KOND_ART_FEIERTAG, 7), (r.Art, r.Angabe.WieWochentag)));
+
+            // Die Kopie ist eigen: umbenennen und löschen gehen, die Quelle bleibt.
+            Assert.True(_ctrl.Umbenennen(kopie, "Kontor Kühlung").Ok);
+            Assert.True(_ctrl.Loeschen(kopie).Ok);
+            Assert.Equal(vorher, Inhaltszeilen(buero));
+        }
+
+        [Fact]
+        public void Doppelname_fehlender_Komfortsollwert_und_fremde_Richtungen_werden_benannt_abgelehnt()
+        {
+            if (!Bereit()) return;
+            long heizBuero = Vorlagenid(Konditionierungsgroesse.Heizsoll, "Büro");
+            long kuehlBuero = Vorlagenid(Konditionierungsgroesse.Kuehlsoll, "Büro");
+            long lueftBuero = Vorlagenid(Konditionierungsgroesse.Lueftung, "Büro");
+            Assert.True(heizBuero > 0 && kuehlBuero > 0 && lueftBuero > 0);
+            string anzahl = "SELECT COUNT(*) FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE + "\"";
+            long vorher = Zaehlen(anzahl);
+
+            foreach ((long id, Konditionierungsgroesse ziel, string name, double? komfort) in new (long, Konditionierungsgroesse, string, double?)[]
+                     {
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "BÜRO", 26.0),            // Doppelname in der Zielliste
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "", 26.0),                // kein Name
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", null),    // Komfortsollwert fehlt
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 31.0),    // außerhalb der Kühlspalte
+                         (heizBuero, Konditionierungsgroesse.Heizsoll, "Büro Heizung", 26.0),     // dieselbe Größe
+                         (heizBuero, Konditionierungsgroesse.Lueftung, "Büro Heizung", 26.0),     // keine Richtung
+                         (kuehlBuero, Konditionierungsgroesse.Heizsoll, "Büro Kühlung", 20.0),    // Kühlen -> Heizen
+                         (lueftBuero, Konditionierungsgroesse.Personen, "Büro Lüftung", null),    // alles mit Lüftung
+                         (999999, Konditionierungsgroesse.Kuehlsoll, "Nichts", 26.0),             // die Quelle fehlt
+                     })
+            {
+                KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(id, ziel, name, komfort, out long neu);
+                Assert.False(e.Ok, id + " -> " + ziel + " „" + name + "“");
+                Assert.False(string.IsNullOrEmpty(e.Meldung));
+                Assert.Equal(0, neu);
+            }
+            Assert.Equal(vorher, Zaehlen(anzahl));
         }
 
         // =============================================================================

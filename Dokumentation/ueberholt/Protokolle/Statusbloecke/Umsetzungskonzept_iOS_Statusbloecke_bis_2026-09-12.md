@@ -11103,7 +11103,8 @@ und Kapitel 8 (Berichtigung seit 19.09. angemahnt, nicht Teil von #604).
 lokalen Zweigen entfernt (alle vollständig auf `origin`, keine ungesicherten Dateien):
 4 553 MB frei (Worktrees 11,1 → 6,6 GB). Geblieben: `konzept-konditionierung` (Zweig nicht
 auf `origin`; ungesichert `Dokumentation/LIESMICH.md`, `Status_Gebaeudesimulation_VDI6007.md`
-und die neue Datei `Gebaeudesimulation/2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md` —
+und die neue Datei `Gebaeudesimulation/2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md` (heute
+`ueberholt/2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md`) —
 Übergabe-Notiz, nicht anfassen), `p555` (Wirtschaftlichkeit räumt selbst), `wi31` von der
 Nachbarsitzung bereits entfernt.
 

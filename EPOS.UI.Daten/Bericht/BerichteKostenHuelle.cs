@@ -488,8 +488,9 @@ namespace WindowsFormsApplication1
                     return new Reiterstatus(R.BK_STATUS_NICHT_BERECHNET);
                 }
 
-                // Passen die gespeicherten Ergebnisse noch zum Simulationsstand? Dieselbe Frage
-                // wie die Statuszeile der Seite — je Projekt und Ergebnisstand EINMAL gestellt.
+                // Gelten die gespeicherten Ergebnisse noch (Simulationslauf, Kosten der Gruppe,
+                // Kostenkatalog)? Dieselbe Frage wie die Statuszeile der Seite — je Projekt und
+                // Ergebnisstand EINMAL gestellt.
                 var gefragt = new HashSet<string>();
                 foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
                 {

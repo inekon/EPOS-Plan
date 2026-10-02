@@ -100,7 +100,7 @@
 
     @if (_stand.Nachrechnen)
     {
-        <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenBandText" />
     }
 
     @* KOSTEN IM VERGLEICH (Anwenderwunsch 08.09.2026, W5-B-5): die drei Kategorien
@@ -410,6 +410,22 @@
 
     /// <summary>Das Band, wenn angezeigte Werte aus einem älteren Lauf stammen (<c>WIRT_BAND_NACHRECHNEN</c>).</summary>
     [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
+
+    /// <summary>Das Band, wenn Kosten, Preise oder Parameter nach der Rechnung geändert wurden
+    /// (<c>WIRT_BAND_NACHRECHNEN_KOSTEN</c>).</summary>
+    [Parameter] public string NachrechnenKostenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KOSTEN;
+
+    /// <summary>Das Band, wenn der Kostenkatalog nach der Rechnung geändert wurde
+    /// (<c>WIRT_BAND_NACHRECHNEN_KATALOG</c>).</summary>
+    [Parameter] public string NachrechnenKatalogText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KATALOG;
+
+    /// <summary>Der Satz des Bandes nach seinem Grund (<see cref="KostenStand.NachrechnenGrund"/>).</summary>
+    private string NachrechnenBandText => _stand.NachrechnenGrund switch
+    {
+        Ergebnisveraltung.Kosten => NachrechnenKostenText,
+        Ergebnisveraltung.Katalog => NachrechnenKatalogText,
+        _ => NachrechnenText,
+    };
 
     /// <summary>Beschriftung des Fortschrittsbalkens für die Sprachausgabe (<c>BKS_LBL_FORTSCHRITT</c>).</summary>
     [Parameter] public string LabelFortschritt { get; set; } = Resource.BKS_LBL_FORTSCHRITT;

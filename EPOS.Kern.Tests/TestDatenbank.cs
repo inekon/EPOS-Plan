@@ -809,6 +809,12 @@ namespace EPOS.Kern.Tests
                 // Quelle wie Migration und Werkzeug; wiederholbar - nur gesetzt, nie geloescht.
                 KesselBrennwertNachzug.Ausfuehren(null);
 
+                // Schritt KostenStempelSchema.SCHRITT (Folge von #637): die Stempelspalten
+                // Tab_Projekt.Kosten_Geaendert und Tab_Applikation.Kostenkatalog_Geaendert samt ihren
+                // Triggern. Aus DERSELBEN Quelle wie Migration und Werkzeug; ZULETZT, damit kein
+                // Nachzug davor die Stempel einer frischen Kopie setzt; wiederholbar, KEIN DML.
+                KostenStempelSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
