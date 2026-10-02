@@ -272,6 +272,44 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Ist der Leistungspreis des Reststromtarifs dem des Stromträgers gleich?</b> (Register
+        /// EZ‑18, Anwenderentscheide 02.10.2026) — die eine Vergleichsregel für beide Stellen, die
+        /// den nicht angesetzten Leistungspreis nennen: die Fußzeile unter der Kostentafel des
+        /// Variantenvergleichs samt Hinweisliste des Berichtslaufs
+        /// (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>) und die Hinweiszeile des Kapitels
+        /// Wirtschaftlichkeit (<c>WirtschaftlichkeitCtrl.RechneRollentarif</c>). Beide nennen den
+        /// Trägersatz immer und den Leistungspreis des Tarifs nur zusätzlich, wenn diese Regel ihn
+        /// als unterschiedlich wertet.
+        ///
+        /// <para>Die Regel: <b>Gleich</b> sind beide nur, wenn beide je Monat bemessen sind und
+        /// derselbe Preis steht — der Reststromtarif mit dem Modell MONATLICH (leer oder unbekannt
+        /// zählt wie dort, <see cref="Leistungskosten"/>) und der Träger mit einem
+        /// Satz je Monat (<paramref name="traegerMonatssatz"/>: <c>price_power_modus</c> MONAT oder
+        /// eine Saisonreihe aus zwölf gleichen Sätzen;
+        /// <see cref="VariantenDaten.LeistungspreisNichtAngesetztMonatssatz"/>), beide auf 1e‑9
+        /// gleich. Alles andere ist <b>unterschiedlich</b>: ein Satz je Jahr gegen den Monatspreis,
+        /// eine Staffel des Trägers, die Modelle STAFFEL und JAHRESHOECHSTLAST des Tarifs — auch
+        /// Staffel gegen Staffel, deren Bemessung verschieden ist —, und ein Träger ohne
+        /// Leistungspreis (<c>null</c>) gegen einen Tarif mit. Ob der Tarif überhaupt einen
+        /// Leistungspreis führt, prüft der Aufrufer (<see cref="LeistungspreisGepflegt"/>).</para>
+        /// </summary>
+        internal static bool TarifLeistungspreisWieTraeger(TarifRolle reststrom, double? traegerMonatssatz)
+        {
+            if (reststrom == null || !traegerMonatssatz.HasValue) return false;
+            if (!TarifJeMonat(reststrom)) return false;
+            return Math.Abs(traegerMonatssatz.Value - reststrom.MonatspreisEurKWMonat) <= 1e-9;
+        }
+
+        /// <summary>Bemisst der Tarif seinen Leistungspreis je Monat (Modell MONATLICH, leer oder
+        /// unbekannt wie in <see cref="Leistungskosten"/>)?</summary>
+        public static bool TarifJeMonat(TarifRolle rolle)
+        {
+            string modell = rolle == null ? null : rolle.Leistungsmodell;
+            return !string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal) &&
+                   !string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Dieselbe Rolle OHNE Leistungspreis — Arbeits- und Grundpreis und das Modell
         /// bleiben, Monatspreis und Staffel entfallen. Die Rechnung trägt dann keinen
         /// Leistungsanteil, und die Herleitung nennt weiter das Modell der Rolle. Die übergebene
