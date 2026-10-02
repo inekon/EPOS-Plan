@@ -7,8 +7,9 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die Welle M2 Solarthermie am Referenzprojekt 1049</b> (Entscheidungsvorlage Modellgrenzen
-    /// ST1 bis ST6), je auf einer Arbeitskopie der Testdatenbank: Bezugsfläche (ST6) über das
-    /// Potenzial der Felder.
+    /// ST1 bis ST6), je auf einer Arbeitskopie der Testdatenbank: Bezugsfläche (ST6) und Diffus-IAM
+    /// (ST5) über das Potenzial der Felder, Arbeitstemperatur aus dem Speicher (ST2 mit ST4) und
+    /// Pumpenstrom (ST1) über den ganzen Lauf.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class SolarthermieModellgrenzenTests : IDisposable
@@ -30,13 +31,118 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID_Solar FROM Tab_Energieanlagen WHERE ID = ?", new DbParam("@id", FeldAnlage())));
 
+        /// <summary>
+        /// Das Feld von 1049 vorbereitet und einmal ohne Bedarf durch das Jahr geführt — das Potenzial
+        /// rechnet je Stunde (ST2); mit fester Arbeitstemperatur hängt es nicht vom Bedarf ab.
+        /// </summary>
         private static SimulationSolarthermie Vorbereitet()
         {
             SimulationProtokoll.NeuStarten();
             var st = new SimulationSolarthermie();
             Assert.True(st.Vorbereiten_Zweikanalig(PROJEKT, null));
             Assert.Equal(1, st.FelderAnzahl);
+
+            double[] rest = new double[Kanal.ANZAHL];
+            for (int h = 0; h < 8760; h++)
+            {
+                Array.Clear(rest, 0, rest.Length);
+                st.Stunde_Start(h, rest);
+                st.Stunde_Bedarf(h, rest);
+                st.Stunde_Ende(h);
+            }
+            st.Abschluss_Zweikanalig();
             return st;
+        }
+
+        /// <summary>Ein ganzer Lauf des Projekts 1049 auf der Arbeitskopie.</summary>
+        private static SimulationRunner Lauf()
+        {
+            var l = new SimulationRunner();
+            string fehler;
+            Assert.True(l.Simuliere(PROJEKT, out fehler), "Lauf gescheitert: " + fehler);
+            return l;
+        }
+
+        private static void FeldSetzen(string spalte, object wert)
+            => DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET \"" + spalte + "\" = ? WHERE ID = ?",
+                                              new DbParam("@w", wert ?? DBNull.Value), new DbParam("@id", FeldAnlage()));
+
+        // =================================================================
+        // ST2 mit ST4 - Arbeitstemperatur aus dem Speicher
+        // =================================================================
+
+        /// <summary>
+        /// „fest" ausdrücklich gesetzt rechnet Bit für Bit wie das leere Feld (die Vorgabe vor der
+        /// Welle); „speicher" bildet die Arbeitstemperatur aus der untersten Zone des Puffers
+        /// (35/60 °C, eine Zone) plus 5 K Grädigkeit und 5 K halber Spreizung — der Ertrag ändert sich,
+        /// die mittlere Arbeitstemperatur liegt zwischen 45 und 70 °C, und die Wärme der Kaskade geht
+        /// weiter auf (Solar plus BHKW plus Kessel deckt den Bedarf).
+        /// </summary>
+        [Fact]
+        public void Fest_ist_byte_gleich_und_Speicher_rechnet_aus_der_untersten_Zone()
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationRunner leer = Lauf();
+            SimulationSolarthermie a = leer.sim.simulation_solarthermie;
+            Assert.Equal(50.0, a.Kollektor_Ergebnisse[0].ArbeitstemperaturMittelC, 9);
+
+            FeldSetzen(SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR, DbWerte.SOLAR_ARBEITSTEMPERATUR_FEST);
+            SimulationSolarthermie b = Lauf().sim.simulation_solarthermie;
+            for (int h = 0; h < 8760; h++)
+            {
+                Assert.Equal(BitConverter.DoubleToInt64Bits(a.Waermeproduktion[h]), BitConverter.DoubleToInt64Bits(b.Waermeproduktion[h]));
+                Assert.Equal(BitConverter.DoubleToInt64Bits(a.Ueberschuss[h]), BitConverter.DoubleToInt64Bits(b.Ueberschuss[h]));
+            }
+
+            FeldSetzen(SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR, DbWerte.SOLAR_ARBEITSTEMPERATUR_SPEICHER);
+            SimulationRunner speicherLauf = Lauf();
+            SimulationSolarthermie c = speicherLauf.sim.simulation_solarthermie;
+            Assert.Contains(speicherLauf.Protokoll.Hinweise,
+                            t => t.Contains("bildet seine Arbeitstemperatur aus der untersten Zone des Puffers"));
+
+            double bruttoFest = a.WaermeproduktionGesamtKwh + a.UeberschussSummeKwh;
+            double bruttoSpeicher = c.WaermeproduktionGesamtKwh + c.UeberschussSummeKwh;
+            Assert.NotEqual(bruttoFest, bruttoSpeicher);
+            Assert.InRange(bruttoSpeicher / bruttoFest, 0.7, 1.3);
+            Assert.InRange(c.Kollektor_Ergebnisse[0].ArbeitstemperaturMittelC, 45.0, 70.0);
+        }
+
+        // =================================================================
+        // ST1 - Pumpenstrom im Lauf
+        // =================================================================
+
+        /// <summary>
+        /// 80 W Pumpe: Strom nur in Stunden mit Abgabe, als Verbraucher im Strombedarf des Anschlusses
+        /// (Restbedarf um genau die Pumpenreihe höher), die Wärmerechnung bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Pumpenstrom_geht_in_den_Strombedarf()
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationRunner ohne = Lauf();
+            FeldSetzen(SolarthermieFelderSchema.SPALTE_PUMPENLEISTUNG, 80.0);
+            SimulationRunner mit = Lauf();
+
+            SimulationSolarthermie st = mit.sim.simulation_solarthermie;
+            int betrieb = 0;
+            for (int h = 0; h < 8760; h++)
+            {
+                bool abgabe = st.Waermeproduktion[h] > 0;
+                Assert.Equal(abgabe ? 0.08 : 0.0, st.Pumpenstrom_stuendlich[h], 12);
+                if (abgabe) betrieb++;
+            }
+            Assert.True(betrieb > 500, "Betriebsstunden " + betrieb);
+            Assert.Equal(betrieb * 0.08, st.PumpenstromGesamtKwh, 6);
+            Assert.Equal(ohne.sim.simulation_solarthermie.WaermeproduktionGesamtKwh, st.WaermeproduktionGesamtKwh);
+
+            double vorher = ohne.sim.Strombedarf_Verbraucher_viertelstuendlich.Sum() / 4.0;
+            double nachher = mit.sim.Strombedarf_Verbraucher_viertelstuendlich.Sum() / 4.0;
+            Assert.Equal(st.PumpenstromGesamtKwh, nachher - vorher, 3);
+
+            var e = SimulationErgebnisCtrl.Solarthermie(mit.sim, mit.simulation_Waermebedarf);
+            Assert.Equal(st.PumpenstromGesamtKwh / 1000.0, e.PumpenstromMwh, 12);
         }
 
         // =================================================================

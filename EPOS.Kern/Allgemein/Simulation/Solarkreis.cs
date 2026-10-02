@@ -142,6 +142,51 @@ namespace WindowsFormsApplication1
             return Math.Max(0, q);
         }
 
+        // =================================================================
+        // ST2 mit ST4 - Arbeitstemperatur aus dem Speicher
+        // =================================================================
+
+        /// <summary>
+        /// Die feste Arbeitstemperatur [°C] — mittlere Fluidtemperatur für das ganze Jahr, der Weg
+        /// „fest" und der Rückfall ohne Senkentemperatur.
+        /// </summary>
+        public const double ARBEITSTEMPERATUR_FEST_C = 50;
+
+        /// <summary>Grädigkeit des Wärmeübertragers ohne gepflegten Wert [K] — externer Plattenübertrager.</summary>
+        public const double GRAEDIGKEIT_VORGABE_K = 5;
+
+        /// <summary>Spreizung des Kollektorkreises ohne gepflegten Wert [K].</summary>
+        public const double SPREIZUNG_VORGABE_K = 10;
+
+        /// <summary>„speicher" gewählt? Alles andere — leer, NULL, „fest" — ist die feste Arbeitstemperatur.</summary>
+        public static bool ArbeitstemperaturAusSpeicher(string weg)
+            => string.Equals((weg ?? "").Trim(), DbWerte.SOLAR_ARBEITSTEMPERATUR_SPEICHER, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>Grädigkeit [K]: gepflegt 0 … 30, sonst die Vorgabe 5 K.</summary>
+        public static double Graedigkeit(double? k) => Begrenzt(k, GRAEDIGKEIT_VORGABE_K);
+
+        /// <summary>Spreizung [K]: gepflegt 0 … 30, sonst die Vorgabe 10 K.</summary>
+        public static double Spreizung(double? k) => Begrenzt(k, SPREIZUNG_VORGABE_K);
+
+        private static double Begrenzt(double? k, double vorgabe)
+            => k.HasValue && !double.IsNaN(k.Value) && k.Value >= 0 &&
+               k.Value <= SolarthermieFelderSchema.TEMPERATURDIFFERENZ_MAX_K ? k.Value : vorgabe;
+
+        /// <summary>
+        /// Die MITTLERE FLUIDTEMPERATUR des Kollektors [°C] aus der Temperatur am kalten Ende der
+        /// Senke (ST2 mit ST4): Eintritt <c>ϑ_ein = ϑ_unten + ΔT_WT</c>, Mitte
+        /// <c>ϑ_m = ϑ_ein + ΔT_Koll/2</c>. Bezug: EN ISO 9806 (Kennlinie auf die mittlere
+        /// Fluidtemperatur), EN 15316-4-3 (Solarkreis).
+        /// </summary>
+        /// <param name="tUnten">Temperatur der untersten Zone des Senkenpuffers bzw. Rücklauf der Senke [°C].</param>
+        /// <param name="graedigkeitK">Grädigkeit des Wärmeübertragers [K].</param>
+        /// <param name="spreizungK">Spreizung des Kollektorkreises [K].</param>
+        public static double MittlereFluidtemperatur(double tUnten, double graedigkeitK, double spreizungK)
+        {
+            double eintritt = tUnten + graedigkeitK;
+            return eintritt + spreizungK / 2.0;
+        }
+
         /// <summary>Rechnet das Feld überhaupt einen Pumpenstrom?</summary>
         public static bool RechnetPumpenstrom(double? pumpenleistungW, double? hilfsenergieAnteilProzent)
             => (pumpenleistungW.HasValue && pumpenleistungW.Value > 0) ||

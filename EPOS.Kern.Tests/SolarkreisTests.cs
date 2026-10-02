@@ -205,6 +205,102 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, Solarkreis.LeistungJeQm(10, 5, -10, 80, 0.5, 0.737, 3.69, 0.012, 0.91, 0.9));
         }
 
+        // =================================================================
+        // ST2 mit ST4 - Arbeitstemperatur aus dem Speicher
+        // =================================================================
+
+        /// <summary>ϑ_m = ϑ_unten + ΔT_WT + ΔT_Koll/2; Vorgaben 5 K und 10 K; nur „speicher" schaltet um.</summary>
+        [Fact]
+        public void Mittlere_Fluidtemperatur_und_Vorgaben()
+        {
+            Assert.Equal(50.0, Solarkreis.MittlereFluidtemperatur(40, 5, 10));
+            Assert.Equal(57.5, Solarkreis.MittlereFluidtemperatur(40, 10, 15));
+            Assert.Equal(5.0, Solarkreis.Graedigkeit(null));
+            Assert.Equal(10.0, Solarkreis.Graedigkeit(10));
+            Assert.Equal(5.0, Solarkreis.Graedigkeit(31));
+            Assert.Equal(10.0, Solarkreis.Spreizung(null));
+            Assert.Equal(0.0, Solarkreis.Spreizung(0));
+            Assert.Equal(10.0, Solarkreis.Spreizung(-1));
+
+            Assert.True(Solarkreis.ArbeitstemperaturAusSpeicher("speicher"));
+            Assert.True(Solarkreis.ArbeitstemperaturAusSpeicher(" Speicher"));
+            Assert.False(Solarkreis.ArbeitstemperaturAusSpeicher("fest"));
+            Assert.False(Solarkreis.ArbeitstemperaturAusSpeicher(null));
+            Assert.Equal(50.0, Solarkreis.ARBEITSTEMPERATUR_FEST_C);
+        }
+
+        private static double Erwartet(double tMittel)
+            => new SimulationSolarthermie().CalculateThermalPower(800, 10, tMittel, 1.0, 0.8, 3.0, 0.01, 0.95)
+               * 10 * 0.92 / 1000.0;
+
+        private static SimulationSolarthermie Feld(bool ausSpeicher)
+        {
+            SimulationProtokoll.NeuStarten();
+            var st = new SimulationSolarthermie();
+            st.Vorbereiten_Testfelder(new List<SimulationSolarthermie.Testfeld>
+            {
+                new SimulationSolarthermie.Testfeld { ID_Anlage = 1, Strahlung = 800, AusSpeicher = ausSpeicher }
+            }, null);
+            return st;
+        }
+
+        /// <summary>
+        /// Je Stunde aus der untersten Zone des Puffers am Stundenanfang: leer ϑ_RL = 40 °C →
+        /// ϑ_m = 50 °C; halb geladen (eine Zone) ϑ = 40 + ½ · 20 = 50 °C → ϑ_m = 60 °C. Ein Feld mit
+        /// fester Arbeitstemperatur bleibt bei 50 °C.
+        /// </summary>
+        [Fact]
+        public void Arbeitstemperatur_je_Stunde_aus_der_untersten_Zone()
+        {
+            var sp = new SimulationPufferspeicher();
+            sp.Init(1000, 60, 40, 0);
+            Assert.Equal(40.0, sp.T_unten);
+
+            SimulationSolarthermie st = Feld(true);
+            st.TemperaturSpeicherSetzen(0, sp);
+            Assert.True(st.ArbeitstemperaturAusSpeicher(0));
+            Assert.Same(sp, st.TemperaturSpeicher(0));
+
+            double[] rest = new double[Kanal.ANZAHL];
+            st.Stunde_Start(0, rest);
+            Assert.Equal(Erwartet(50.0), st.Potenzial(0, 0), 12);
+            st.Stunde_Ende(0);
+
+            sp.Laden(sp.Q_max / 2, 0);
+            Assert.Equal(50.0, sp.T_unten, 9);
+            st.Stunde_Start(1, rest);
+            Assert.Equal(Erwartet(60.0), st.Potenzial(0, 1), 12);
+            Assert.True(st.Potenzial(0, 1) < st.Potenzial(0, 0), "Ein wärmerer Speicher senkt den Ertrag.");
+
+            // Fest: derselbe Puffer bleibt wirkungslos.
+            SimulationSolarthermie fest = Feld(false);
+            fest.TemperaturSpeicherSetzen(0, sp);
+            Assert.Null(fest.TemperaturSpeicher(0));
+            fest.Stunde_Start(1, rest);
+            Assert.Equal(Erwartet(50.0), fest.Potenzial(0, 1), 12);
+        }
+
+        /// <summary>Ohne Puffer der gerechnete Heizkreisrücklauf der Stunde; ohne beides fest mit Hinweis.</summary>
+        [Fact]
+        public void Ohne_Puffer_der_Heizkreisruecklauf_sonst_fest()
+        {
+            SimulationSolarthermie st = Feld(true);
+            st.Heizkreisruecklauf = new double[8760];
+            st.Heizkreisruecklauf[0] = 30;
+            st.Heizkreisruecklauf[1] = 45;
+
+            double[] rest = new double[Kanal.ANZAHL];
+            st.Stunde_Start(0, rest);
+            Assert.Equal(Erwartet(40.0), st.Potenzial(0, 0), 12);
+            st.Stunde_Start(1, rest);
+            Assert.Equal(Erwartet(55.0), st.Potenzial(0, 1), 12);
+
+            SimulationSolarthermie ohne = Feld(true);
+            ohne.Stunde_Start(0, rest);
+            Assert.Equal(Erwartet(50.0), ohne.Potenzial(0, 0), 12);
+            Assert.Contains(SimulationProtokoll.Aktuell.Hinweise, t => t.Contains("festen Arbeitstemperatur"));
+        }
+
         /// <summary>Der Hilfsenergieanteil als Ersatzweg: Anteil der in der Stunde genutzten Wärme.</summary>
         [Fact]
         public void Pumpenstrom_aus_Hilfsenergieanteil()
