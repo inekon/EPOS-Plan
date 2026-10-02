@@ -144,6 +144,60 @@ viele gelöscht und wie viele abhängige Zeilen mitgenommen wurden.
 
 ---
 
+## 2b. Änderungsstempel: Trigger als Teil des Schemas
+
+Zwei Spalten setzt nicht die Anwendung, sondern **die Datenbank selbst** — über Trigger
+(Schemaschritt 159, Quelle `EPOS.Kern/Allgemein/Update/KostenStempelSchema.cs`):
+
+| Spalte | Was sie festhält |
+|---|---|
+| `Tab_Projekt.Kosten_Geaendert` | die letzte Änderung an Kosten, Preisen oder Wirtschaftlichkeitsparametern **dieses Projekts** |
+| `Tab_Applikation.Kostenkatalog_Geaendert` | die letzte Änderung am **Kostenkatalog**, der in jedem Projekt gilt |
+
+Beide sind nullbares `TEXT`; leer heißt „keine Änderung festgehalten". Die Trigger schreiben
+`datetime('now','localtime')` — Ortszeit `JJJJ-MM-TT hh:mm:ss`, dasselbe Format wie der
+Zeitstempel eines gespeicherten Wirtschaftlichkeitsergebnisses
+(`Tab_ErgebnisWirtschaftlichkeit.Zeitstempel`, gesetzt am Ende der Rechnung). Ist der jüngste
+Stempel der Vergleichsgruppe (Stamm und Varianten über `Tab_Variante.ID_ProjektRef`) oder der
+Katalogstempel **strikt jünger** als das Ergebnis, gilt es als veraltet, und die Seiten Kosten und
+Wirtschaftlichkeit zeigen das Band „bitte neu berechnen" mit dem Grund
+(`KostenAenderungsstempel`, `WirtschaftlichkeitCtrl.Veraltung`). Eine Änderung in derselben Sekunde
+wie das Speichern des Ergebnisses zählt als davor.
+
+**Was stempelt** — Anlegen, Ändern und Löschen einer Zeile, je Zeile:
+
+| Stempel | Tabellen |
+|---|---|
+| das Projekt der Zeile | `Tab_ProjektWerte`, `Tab_ProjektWirtschaftlichkeit`, `Tab_ProjektTarif`, `energy_project_settings`, `energy_price`, `Tab_ProjektPhotovoltaik` |
+| Variante **und** Stamm | `Tab_Variante` |
+| das Projekt der Anlage | `Tab_Energieanlagen` — Anlegen und Löschen immer, Ändern nur an den Kostenspalten (`ID_Carrier`, die elf `KWKG_*`, `Energiesteuer_Wahl`, `Aufteilung_Methode`, `Hilfsenergie_Anteil`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`) |
+| das Projekt selbst | `Tab_Projekt` — nur ein geänderter `Emission_Berechnungsmodus` |
+| das Projekt, als Stammreihe der Katalog | `Tab_Preisreihe`, `Tab_PreisreiheDaten` — eine Reihe ohne Projekt gilt in jedem Projekt |
+| der Katalog | `energy_carrier`, `pricing_model`, `energy_conversion`, `Tab_Brennstoff_Stamm`, `Tab_BrennstoffKategorien`, `emissionswert`, `Tab_Gesetzesparameter`, `Tab_Kostenfaktor`, `Tab_KostenKomponente`, `Tab_Nutzungsdauer`; `emissionsart` nur bei geändertem `co2_aequivalent`, `Tab_Applikation` nur bei geändertem `Emission_Berechnungsmodus` |
+
+**Was nicht stempelt**, mit Absicht: Geräte-, Gebäude- und Einstellungstabellen — sie wirken über
+die Simulation, deren Lauf die Frage nach dem Ergebnis ohnehin prüft —, `Tab_Kraftwerkspark`,
+`Tab_ProjektWirkung`, die Kostenvorlagen, `Tab_KostenGruppenKatalog` und alle Ergebnistabellen.
+Die Trigger an `Tab_Projekt` und `Tab_Applikation` lösen sich nicht selbst aus: Sie hören nur auf
+den Emissionsmodus, ihr eigenes `UPDATE` setzt allein die Stempelspalte.
+
+**Trigger sind Teil des Schemas.** Die 63 Trigger (`trg_Kostenstempel_*`, `trg_Katalogstempel_*`)
+stehen in `sqlite_master` neben Tabellen und Indizes; sie reisen mit jeder Dateikopie, mit
+`VACUUM INTO` (Abschnitt 3.2) und mit der Auslieferungsvorlage. Daraus folgt:
+
+* **Wer eine der Tabellen oben neu baut** (umbenennen, neu anlegen, umkopieren, löschen — der Weg
+  der Schemaschritte für Spaltentypen und Fremdschlüssel), verliert ihre Trigger mit der alten
+  Tabelle. Danach legt `KostenStempelSchema.Ausfuehren` bzw. dessen Anweisungen sie wieder an
+  (`CREATE TRIGGER IF NOT EXISTS`); die Wache `EPOS.Kern.Tests/KostenStempelSchemaTests` hält die
+  Testdatenbank gegen die volle Liste.
+* **Wer eine der genannten Spalten entfernt oder umbenennt**, prüft die Trigger mit — ihre
+  Spaltenlisten (`UPDATE OF …`) und Rümpfe stehen im Text des Triggers.
+* **Eine Änderung von Hand** (etwa mit `sqlite3` in einer der Tabellen oben) stempelt genauso;
+  die Seiten zeigen danach das Band. Eine reine Abfrage stempelt nicht.
+* Nachsehen: `SELECT name, tbl_name FROM sqlite_master WHERE type = 'trigger';`
+
+---
+
 ## 3. Sicherung
 
 Gesichert wird immer die **ganze Datei**: Kataloge und Projektdaten stehen in derselben
