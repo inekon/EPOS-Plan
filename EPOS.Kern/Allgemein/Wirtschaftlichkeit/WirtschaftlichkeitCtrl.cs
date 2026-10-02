@@ -6672,6 +6672,22 @@ namespace WindowsFormsApplication1
             // (SteuerGutschriftRechner.ProduzierendesGewerbe) — eine zweite Fassung
             // waere eine zweite Antwort auf dieselbe Frage.
             erg.VermiedenMengeMWh = eingabe.VermiedenMengeMWh;
+
+            // Der Stromsteueranteil des Netzträgers [€/MWh] — der Deckel des § 9b-Satzes, EINE
+            // Ermittlung für den Ausweis hier und den Abzug der Wärmegestehung (BaueWaermeEingabe,
+            // Register EZ‑22, EZ‑23). Gelesen wird er höchstens einmal je Ergebnis und nur, wenn eine
+            // der beiden Stellen ihn braucht.
+            double? anteil9b = null;
+            bool anteil9bGelesen = false;
+            Func<double?> stromsteueranteil9b = () =>
+            {
+                if (!anteil9bGelesen)
+                {
+                    anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, eingabe.EnergiekostenJeTraeger);
+                    anteil9bGelesen = true;
+                }
+                return anteil9b;
+            };
             if (eingabe.SteuerEingabe != null &&
                 SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
             {
@@ -6683,12 +6699,28 @@ namespace WindowsFormsApplication1
                     // mit der vermiedenen Menge, der Sockelbetrag gegen den Netzbezug, mit dem die
                     // Entlastung des Projekts rechnet (§ 3.8). Trägt der Netzbezug den Sockel, ist
                     // es Zeichen für Zeichen Satz × vermiedene Menge.
+                    //
+                    // Anwenderentscheid 02.10.2026 (EZ‑23, „Deckel"): derselbe Deckel wie im Abzug der
+                    // Gestehung — der wirksame Satz ist höchstens der Stromsteueranteil des Preises, mit
+                    // dem der Eigenstrom bewertet wird. Der Ausweis bewertet im Rollentarif mit der
+                    // Bezugsrolle; sie führt keinen eigenen Träger (Tab_ProjektTarif kennt keinen) und
+                    // ersetzt die Preise des Netzträgers (RechneRollentarif) — ihr Träger ist der
+                    // Netzträger, sein Anteil derselbe wie in der Gestehung. Ohne gepflegten Anteil
+                    // (Rückfallträger) der Regelsatz des Jahres als Obergrenze; eine abgeschaltete
+                    // Komponente ist Anteil 0, kein Abzug. Deckel ab dem Satz → bitgleich.
                     if (_gesetze == null) _gesetze = new GesetzKatalog();
                     int jahr1 = Foerderbeginn(p);
                     double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1);
+                    double? anteil = null, regelsatz = null;
+                    if (satz.HasValue && satz.Value > 0)
+                    {
+                        anteil = stromsteueranteil9b();
+                        regelsatz = _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1);
+                    }
                     erg.VermiedenEntlastung9bJahr = SteuerGutschriftRechner.Entgangene9bEur(
                         eingabe.SteuerEingabe.NetzbezugMWh, eingabe.VermiedenMengeMWh, satz,
-                        _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1));
+                        _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1),
+                        anteil ?? regelsatz);
                 }
             }
 
@@ -6910,9 +6942,9 @@ namespace WindowsFormsApplication1
                 double stromgutschrift, eigenstromOhnePreisMWh;
                 KapitalwertRechner.ErloesReihe entgangen9b;
                 string nachweis9b;
-                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, out stromgutschrift,
-                                                          out eigenstromOhnePreisMWh, out entgangen9b,
-                                                          out nachweis9b);
+                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, stromsteueranteil9b,
+                                                          out stromgutschrift, out eigenstromOhnePreisMWh,
+                                                          out entgangen9b, out nachweis9b);
                 // Der Nachweis des § 9b-Abzugs (EZ‑22): Sockel und Deckel, wenn sie wirken, und die
                 // Obergrenze ohne gepflegten Stromsteueranteil — Text am Laufhinweis.
                 if (!string.IsNullOrEmpty(nachweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweis9b);
@@ -6959,6 +6991,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private ProjektEingabe BaueWaermeEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                                  ProjektEingabe gesamt, string szenario,
+                                                 Func<double?> stromsteueranteil9b,
                                                  out double stromgutschrift,
                                                  out double eigenstromOhnePreisMWh,
                                                  out KapitalwertRechner.ErloesReihe entgangen9b,
@@ -7026,7 +7059,7 @@ namespace WindowsFormsApplication1
             bool kann9b = gesamt.SteuerEingabe != null &&
                           SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
                           eigenstrom > 0 && stromgutschrift > 0;
-            if (kann9b) anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, gesamt.EnergiekostenJeTraeger);
+            if (kann9b) anteil9b = stromsteueranteil9b();
             entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
                 p.Betrachtungszeitraum, Foerderbeginn(p),
                 jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
@@ -7048,8 +7081,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Stromsteueranteil des Netzträgers [€/MWh]</b> — der Deckel des § 9b-Abzugs der
-        /// Wärmegestehung (Konzept § 3.8, § 6.3 Nr. 41; Register EZ‑22). Der Träger ist der, dessen
-        /// Arbeitspreis die Stromgutschrift trägt: der Netzeintrag der Aufstellung je Träger, ohne
+        /// Wärmegestehung (Konzept § 3.8, § 6.3 Nr. 41; Register EZ‑22) und der § 9b-Korrektur des
+        /// Ausweises der vermiedenen Stromkosten (§ 3.6, EZ‑23; der Träger der Bezugsrolle). Der
+        /// Träger ist der, dessen Arbeitspreis die Stromgutschrift trägt: der Netzeintrag der Aufstellung je Träger, ohne
         /// ihn der Projektträger samt Rückfall (<see cref="Kaeltestromabrechnung.Projekttraeger"/>,
         /// dieselbe Wahl wie <see cref="StromArbeitspreisEurJeKwh(int, string)"/>). Der Anteil ist
         /// der in „Strompreis Details" gepflegte Wert (§ 3.9, <see cref="StrompreisZerlegungCtrl.StromsteuerRoh"/>)
