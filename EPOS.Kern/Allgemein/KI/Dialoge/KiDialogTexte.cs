@@ -221,6 +221,8 @@
         internal static string HkWgOelErl => MyResource.Resource.KI_DLG_HK_WG_OEL_ERL;
         internal static string HkBbVerlustName => MyResource.Resource.KI_DLG_HK_BB_VERLUST_NAME;
         internal static string HkBbVerlustErl => MyResource.Resource.KI_DLG_HK_BB_VERLUST_ERL;
+        internal static string HkBbProzentName => MyResource.Resource.KI_DLG_HK_BB_PROZENT_NAME;
+        internal static string HkBbProzentErl => MyResource.Resource.KI_DLG_HK_BB_PROZENT_ERL;
 
         // HIER STANDEN DIE TEXTE der Felder Investition, Wartung, Raumbedarf,
         // Nutzungsdauer und der fuenf Emissionsfaktoren. Der Heizkessel-Katalogeditor
@@ -3009,6 +3011,8 @@
                         case KatalogBrowserProfil.FeldWirkungsgradGas: return HkWgGasErl;
                         case KatalogBrowserProfil.FeldWirkungsgradOel: return HkWgOelErl;
                         case KatalogBrowserProfil.FeldBBVerlust: return HkBbVerlustErl;
+                        case KatalogBrowserProfil.FeldBBEinheit:
+                            return MyResource.Resource.KI_DLG_KBROW_BB_EINHEIT_ERL;
                         case KatalogBrowserProfil.FeldTeillast30: return HkTeillast30Erl;
                         case KatalogBrowserProfil.FeldKennlinieBrennwert: return HkKennlinieBrennwertErl;
                         case KatalogBrowserProfil.FeldMindestleistung: return HkMindestleistungErl;

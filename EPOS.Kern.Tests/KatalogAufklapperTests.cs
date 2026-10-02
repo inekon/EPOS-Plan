@@ -71,6 +71,8 @@ namespace EPOS.Kern.Tests
                     "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM", "INVESTITIONSKOSTEN",
                     "BRENNWERT", "VORLAUF", "RUECKLAUF",
                     "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST",
+                    // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+                    "BBVERLUST_EINHEIT",
                     // Die Kennlinie (Konzept Kesselkennlinie, Etappe E1).
                     "WIRKUNGSGRAD_TEILLAST30", "KENNLINIE_BRENNWERT", "MINDESTLEISTUNG",
                     "ANFAHRVERLUST", "MINDESTLAUFZEIT",
@@ -243,7 +245,8 @@ namespace EPOS.Kern.Tests
                      {
                          KatalogBrowserProfil.FeldBrennstoff, KatalogBrowserProfil.FeldFirma,
                          KatalogBrowserProfil.FeldWirkungsgradGas, KatalogBrowserProfil.FeldWirkungsgradOel,
-                         KatalogBrowserProfil.FeldBBVerlust, KatalogBrowserProfil.FeldRaumbedarf,
+                         KatalogBrowserProfil.FeldBBVerlust, KatalogBrowserProfil.FeldBBEinheit,
+                         KatalogBrowserProfil.FeldRaumbedarf,
                          KatalogBrowserProfil.FeldWartungskosten, KatalogBrowserProfil.FeldWartungEinheit,
                          KatalogBrowserProfil.FeldNutzungsdauer, KatalogBrowserProfil.FeldCo2,
                          KatalogBrowserProfil.FeldSo2, KatalogBrowserProfil.FeldNox,
@@ -695,15 +698,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Bereitschaftsverlust eines Kessels führt im Katalogbrowser dieselbe Einheit wie
-        /// im Katalogdialog und in der Rechnung: kW (Verbesserungen 29.09.2026, B6).
+        /// Der Bereitschaftsverlust eines Kessels steht in kW ODER % der Nennleistung
+        /// (Anwenderentscheid 02.10.2026): Das Wertfeld trägt keine feste Einheit, die Einheit
+        /// steht im Feld unmittelbar dahinter — wie im Katalogdialog.
         /// </summary>
         [Fact]
-        public void Der_Bereitschaftsverlust_steht_in_kW()
+        public void Der_Bereitschaftsverlust_traegt_seine_Einheit_im_Feld_dahinter()
         {
-            BrowserDetailfeld bb = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel).Detailfelder
-                .Single(f => f.Schluessel == KatalogBrowserProfil.FeldBBVerlust);
-            Assert.Equal("kW", bb.Einheit);
+            var felder = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel).Detailfelder.ToList();
+            int bb = felder.FindIndex(f => f.Schluessel == KatalogBrowserProfil.FeldBBVerlust);
+            Assert.True(bb >= 0);
+            Assert.Equal("", felder[bb].Einheit);
+            Assert.Equal(KatalogBrowserProfil.FeldBBEinheit, felder[bb + 1].Schluessel);
+            Assert.True(felder[bb + 1].Editierbar);
         }
     }
 }

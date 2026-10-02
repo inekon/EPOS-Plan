@@ -283,12 +283,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// BEREITSCHAFTSLEISTUNG je Kessel [kW] — der Brennstoffeinsatz einer
         /// Stillstandsstunde ist dieser Wert mal eine Stunde (<see cref="Stunde_Abschluss"/>).
-        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c>, und das ist eine
-        /// LEISTUNG in kW, kein Anteil der Nennleistung: Der Import liest sie aus
-        /// VDI 3805 Blatt 3, Satz 700, Spalte 28 (die Bereitschaftsleistung des
-        /// Produktdatenblatts, im Katalog 0,03 … 0,16 kW, bei einer Baureihe gleich über
-        /// alle Leistungsgrößen) und weist sie in kW aus (<c>KatalogImportProfil</c>,
-        /// Feld VERLUSTE). Siehe <see cref="BereitschaftsleistungKw"/>.
+        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c> in der Einheit
+        /// <c>Tab_Heizkessel.Bereitschaft_Einheit</c>: kW (Vorgabe; der Import liest die
+        /// Bereitschaftsleistung aus VDI 3805 Blatt 3, Satz 700, Spalte 28, im Katalog
+        /// 0,03 … 0,16 kW) oder Prozent der Nennleistung. Hier steht immer die Leistung in kW
+        /// (<see cref="KesselBereitschaft.LeistungKw"/>, gerufen über
+        /// <see cref="BereitschaftsleistungKw(double, string, double)"/>).
         /// </summary>
         double[] Betriebsbereitschaft_Verluste = new double[MAX_SPK];
         string[] Kessel_Name = new string[MAX_SPK];
@@ -573,7 +573,9 @@ namespace WindowsFormsApplication1
                 TaktwerteBilden(i, heizkesselctrl.items[0]);
 
                 Betriebsbereitschaft_Verluste[i] =
-                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
+                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust,
+                                            heizkesselctrl.items[0].Bereitschaft_Einheit,
+                                            heizkesselctrl.items[0].Ptherm);
 
                 // Ein Katalogwert über 2 % der Nennleistung ist für eine Bereitschafts-
                 // leistung ungewöhnlich hoch — der Lauf rechnet mit ihm, nennt ihn aber,
@@ -664,10 +666,16 @@ namespace WindowsFormsApplication1
         /// Zweiundzwanzigfache. Negativ oder nicht gesetzt heißt: kein Bereitschaftsverlust.</para>
         /// </summary>
         internal static double BereitschaftsleistungKw(double katalogwertKw)
-        {
-            if (double.IsNaN(katalogwertKw) || katalogwertKw <= 0) return 0;
-            return katalogwertKw;
-        }
+            => KesselBereitschaft.LeistungKw(katalogwertKw, DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW, 0);
+
+        /// <summary>
+        /// Die Bereitschaftsleistung [kW] aus Wert und Einheit des Katalogsatzes — bei kW der
+        /// Wert selbst (wie <see cref="BereitschaftsleistungKw(double)"/>), bei Prozent
+        /// <c>Wert × Nennleistung / 100</c>. Die Regel steht einmal in
+        /// <see cref="KesselBereitschaft.LeistungKw"/>.
+        /// </summary>
+        internal static double BereitschaftsleistungKw(double wert, string einheit, double nennleistungKw)
+            => KesselBereitschaft.LeistungKw(wert, einheit, nennleistungKw);
 
         private int CarrierZuKessel(string bezeichner)
         {

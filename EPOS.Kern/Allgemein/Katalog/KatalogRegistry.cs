@@ -190,8 +190,8 @@ namespace WindowsFormsApplication1
                 // Mindestleistung aus Satz 710.01 - HeizkesselImportSatz.Vergleichswerte.
                 ImportSpalten = new[] { "Firma", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
                     "Wirkungsgrad_Öl", "Raumbedarf", "CO2", "SO2", "NOx", "CO", "Staub",
-                    "Betriebsbereitschaftverlust", "Brennwert", "Wirkungsgrad_Teillast30",
-                    "Mindestleistung" }
+                    "Betriebsbereitschaftverlust", KesselBereitschaftEinheitSchema.SPALTE, "Brennwert",
+                    "Wirkungsgrad_Teillast30", "Mindestleistung" }
             },
             new KatalogDefinition
             {

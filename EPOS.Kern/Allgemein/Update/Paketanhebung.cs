@@ -227,6 +227,9 @@ namespace WindowsFormsApplication1
                       "Aufheizoptimierung als Projekteinstellung (Schalter, Bemessung, Abzug, Reserve, Art)"),
             new Stufe(AufheizErgebnisSchema.SCHRITT, Art.Ddl,
                       "Ergebnisspalten der Aufheizoptimierung je Gebäude und Zone"),
+            // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
+            new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
+                      "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

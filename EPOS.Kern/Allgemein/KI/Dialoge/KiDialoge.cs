@@ -961,7 +961,10 @@ namespace WindowsFormsApplication1
                     ["hersteller"] = KatalogBrowserProfil.FeldFirma,
                     ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
                     ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
-                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust
+                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust,
+                    // Die Einheit (Anwenderentscheid 02.10.2026): im Editor ein Schalter „in %",
+                    // in der Verwaltung das Textfeld „kW"/„%".
+                    ["bereitschaftsverlust_prozent"] = KatalogBrowserProfil.FeldBBEinheit
                 },
                 [KiMaskennamen.BHKW] = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
@@ -7086,11 +7089,17 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.HkWgOelName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkWgOelErl,
                                      leerErlaubt: true),
+                    // Der Wert steht in kW ODER % der Nennleistung (Anwenderentscheid 02.10.2026);
+                    // welche Einheit gilt, sagt das Feld darunter - deshalb hier keine feste.
                     new KiDialogFeld("bereitschaftsverlust",
                                      "HeizkesselKatalogDaten.Betriebsbereitschaftverlust",
                                      KiDialogTexte.HkBbVerlustName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkBbVerlustErl,
-                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                                     leerErlaubt: true),
+                    new KiDialogFeld("bereitschaftsverlust_prozent",
+                                     "HeizkesselKatalogDaten.BereitschaftProzent",
+                                     KiDialogTexte.HkBbProzentName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.HkBbProzentErl),
                     new KiDialogFeld("vorlauf", "HeizkesselKatalogDaten.Vorlauf",
                                      KiDialogTexte.HkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkVorlaufErl,

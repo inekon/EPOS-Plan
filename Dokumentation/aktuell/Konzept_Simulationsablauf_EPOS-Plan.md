@@ -928,8 +928,17 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 | Zustand der Stunde | Brennstoffeinsatz |
 |---|---|
 | läuft (Abgabe ab dem Zahlenrand von 10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer; ein Rest darunter aus einer Vorstufe zählt nicht als Lauf) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
-| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust`, eine Leistung, kein Prozentwert) |
+| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust` in der Einheit `Bereitschaft_Einheit`, siehe unten) |
 | steht still und ist abgeschaltet | 0 |
+
+**Die Bereitschaftsleistung in ihrer Einheit.** Katalog und Projektkopie führen den Wert
+`Betriebsbereitschaftverlust` und seine Einheit `Bereitschaft_Einheit` (Schemaschritt 162,
+`KesselBereitschaftEinheitSchema`): `kW` — Vorgabe jeder Bestandszeile und die Einheit des Imports
+aus VDI 3805 — oder `%` der Nennleistung. Der Lauf rechnet in kW; die Umrechnung steht einmal in
+`KesselBereitschaft.LeistungKw` (bei `%`: Wert × `Ptherm` / 100, ohne Nennleistung 0), gerufen beim
+Einlesen des Kessels (`SimulationSPK.BereitschaftsleistungKw`). Die Prüfgrenzen je Einheit
+(`KesselBereitschaft.Verstoss`: kW 0 … Nennleistung, % 0 … 100) halten Katalogeditor und
+Katalogbrowser beim Speichern. Ein Import überschreibt mit seinem kW-Wert auch die Einheit.
 
 **Betriebsbereit** ist ein stillstehender Kessel (`SimulationSPK.IstBetriebsbereit`), wenn
 
@@ -1012,5 +1021,32 @@ höchste Stundenwert des Brennstoffs (Wärmeabgabe ÷ Wirkungsgrad plus Anfahrve
 die Summe dieser Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
-Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
+`EPOS.Kern.Tests/KesselKennlinieTests`,
 `EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R31_Rechenwegbefunde` (Größen `Kessel[i].*` in `aggregate.csv`).
+
+## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
+
+Die vier Wärmeplätze `Tab_Einstellungen.Tool_1` bis `Tool_4` ordnen die Direktdeckung einer Stunde;
+welcher Erzeuger einen Pufferspeicher zuerst lädt, entscheidet die Ladepriorität der Wärmesenke
+(Vorgaben Solarthermie 10, Wärmepumpe 20, BHKW 30, Heizkessel 40, `Ladeordnung.VorgabeLadeprio`).
+
+**Vorwahl.** Solange eine Kaskade nicht von Hand gepflegt ist (`Tab_Einstellungen.Kaskade_Gepflegt`
+= 0), wählt die Simulationskonfiguration beim Öffnen die verbauten Wärmeerzeuger des Projekts vor
+(`SimulationKonfigHuelle.VerbauteAnlagenVorwaehlen`) — in der Folge der Vorgabe-Ladeprioritäten
+Solarthermie, Wärmepumpe, BHKW, Heizkessel (`ErzeugerKatalog.WAERMEERZEUGER`). Jeder noch fehlende
+Erzeuger kommt über `Kaskade.Vorwaehlen` vor den ersten belegten Platz, dessen Erzeuger eine
+schlechtere Vorgabe-Ladepriorität hat; die Plätze ab dort rücken in den nächsten freien nach. Hat
+keiner eine schlechtere, gilt `Kaskade.Aufnehmen` (erster freier Platz hinter dem letzten belegten).
+Die schon belegten Plätze behalten ihre Reihenfolge untereinander. Ein Heizkessel, den
+`KonfigurationCtrl.HeizkesselNachziehen` in eine gespeicherte, ungepflegte Kaskade an das Ende gesetzt
+hat, steht damit auch nach der Vorwahl einer Wärmepumpe hinter ihr. Geschrieben wird die Vorwahl
+erst mit „Konfiguration speichern“.
+
+**Wahl des Anwenders.** Die Erzeugerkarten tragen ihren Rang; die Pfeile der Karte ordnen um
+(`Kaskade.Verschieben`), „+ aufnehmen“ hängt hinten an (`Kaskade.Aufnehmen`), „×“ nimmt heraus. Jeder
+dieser Handgriffe setzt `Kaskade_Gepflegt`; eine gepflegte Kaskade wird weder vorgewählt noch
+nachgezogen. Gespeicherte Kaskaden — auch die der Referenzprojekte — rechnet der Lauf unverändert.
+
+Gehalten von `EPOS.Kern.Tests/KaskadeTests` (`Vorwaehlen_*`) und
+`EPOS.Kern.Tests/KuehlbetriebProgrammeinstellungTests.Die_Vorwahl_folgt_den_Ladeprioritaeten`.

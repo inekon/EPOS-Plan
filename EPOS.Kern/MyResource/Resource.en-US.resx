@@ -9291,7 +9291,16 @@ The seat becomes available for another device; a new activation is required to c
     <value>Standby losses</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Power in kW lost merely by keeping the boiler ready for operation; the simulation applies it as fuel input in every idle hour.</value>
+    <value>Power lost merely by keeping the boiler ready for operation, in the selected unit: kW or percent of the thermal output. The simulation applies it in kW as fuel input in every idle hour.</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_NAME" xml:space="preserve">
+    <value>Standby loss in % of rated output</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_ERL" xml:space="preserve">
+    <value>Yes = the standby loss is given in percent of the thermal output, No = in kW. The simulation converts a percentage to kW using the thermal output.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BB_EINHEIT_ERL" xml:space="preserve">
+    <value>“kW” or “%”: the unit of the standby loss. A percentage refers to the thermal output; the simulation calculates in kW.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Flow temperature</value>
@@ -12186,6 +12195,21 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="HZKK_FELD_BBVERLUST" xml:space="preserve">
     <value>Operational readiness losses</value>
+  </data>
+  <data name="HZKK_LBL_BB_EINHEIT" xml:space="preserve">
+    <value>Standby loss unit:</value>
+  </data>
+  <data name="HZKK_FELD_BB_EINHEIT" xml:space="preserve">
+    <value>Standby loss unit</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% of rated output</value>
+  </data>
+  <data name="KBROW_HINT_BB_EINHEIT" xml:space="preserve">
+    <value>kW or % (of rated output)</value>
   </data>
   <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
     <value>Condensing boiler</value>
