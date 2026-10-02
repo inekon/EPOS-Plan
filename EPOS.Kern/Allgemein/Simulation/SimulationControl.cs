@@ -1718,18 +1718,18 @@ namespace WindowsFormsApplication1
         /// <see cref="Ladeordnung.SqlAnlagenprio"/> (gepflegte Priorität zuerst, dann ID) —
         /// wie Wärmepumpen, Kessel und Kollektorfelder.
         ///
-        /// <c>bhkwGrenzL</c> wird hier aus der ANLAGE vorbelegt (Prozentwert / 100);
-        /// <c>SimulationBHKW.Moduldaten_Einlesen</c> überschreibt den Wert anschließend
-        /// aus dem Katalog, sofern dort eine Grenzleistung hinterlegt ist. Der KATALOGWERT
-        /// wird dort seit dem Einheiten-Fix dieses Pakets ebenfalls durch 100 geteilt -
-        /// vorher trug er als Prozentzahl (z. B. 50) in eine Formel ein, die einen Faktor
-        /// erwartet (0,5). Siehe die Begründung in <c>Moduldaten_Einlesen</c>.
+        /// Das ANLAGENFELD der unteren Grenzleistung geht in Prozent nach
+        /// <c>bhkw_anlagen_grenzleistung</c>; <c>SimulationBHKW.Grenzfaktor</c> löst daraus
+        /// mit Katalog- und Projektwert die Untergrenze je Modul auf — das Anlagenfeld gilt,
+        /// sobald es gepflegt ist (Befund BHKW-Untergrenze, Papier „Verbesserungen
+        /// 29.09.2026"). Bis dahin überschrieb der Katalog- bzw. Projektwert es immer.
         /// </summary>
         private void BHKW_Liste_Laden()
         {
             simulation_bhkw.bhkw_list.Clear();
             simulation_bhkw.bhkw_list_Namen.Clear();
             simulation_bhkw.bhkw_anlagen_ids.Clear();
+            simulation_bhkw.bhkw_anlagen_grenzleistung.Clear();
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_BHKW, ID, Bezeichner, Grenzleistung FROM Tab_Energieanlagen " +
@@ -1745,17 +1745,14 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            int i = 0;
             foreach (DataRow r in dt.Rows)
             {
                 simulation_bhkw.bhkw_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID_BHKW")));
                 simulation_bhkw.bhkw_anlagen_ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
                 simulation_bhkw.bhkw_list_Namen.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
 
-                if (i < SimulationBHKW.MAX_BHKW)
-                    simulation_bhkw.bhkwGrenzL[i] =
-                        (double)(StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")) / 100.0);
-                i++;
+                simulation_bhkw.bhkw_anlagen_grenzleistung.Add(
+                    (double)StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")));
             }
         }
 

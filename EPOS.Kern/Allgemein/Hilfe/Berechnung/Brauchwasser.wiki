@@ -101,7 +101,7 @@ Was die Rechnung selbst bildet:
 
 Der Lauf holt die Namen aller dem Projekt zugeordneten Brauchwasserprofile und rechnet sie '''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu beruehren.
 
-Findet sich zu einem Namen kein Kopfsatz, geht das Profil mit '''Anteil 0''' ein und der Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
+Findet sich zu einem Namen kein Kopfsatz oder fehlt der Typbezug, geht das Profil mit '''Anteil 0''' ein und der Lauf meldet es; die uebrigen Profile rechnen vollstaendig.
 
 === 2. Jahressumme des Projekts einrechnen ===
 

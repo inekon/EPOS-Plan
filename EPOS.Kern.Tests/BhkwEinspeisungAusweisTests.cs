@@ -111,7 +111,7 @@ namespace EPOS.Kern.Tests
         /// 15 MWh/a (SV1, R30) 17,1 bzw. 24,6 MWh, 1024 nichts — dort fehlt die Reihe (Schwelle 0,5 kWh).
         /// </summary>
         [Theory]
-        [InlineData(1018, 27.4575)]
+        [InlineData(1018, 25.5543)]   // vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575
         [InlineData(1030, 0.392)]
         [InlineData(1017, 17.1199)]
         [InlineData(1024, 0.0)]
@@ -166,7 +166,8 @@ namespace EPOS.Kern.Tests
             Assert.True(abw < 1e-9, "Stundenformel weicht vom BHKW-Überschuss der PV ab: " + abw);
 
             var bh = SimulationErgebnisCtrl.Bhkw(r.sim, r.simulation_Waermebedarf, r.simulation_Strombedarf);
-            Assert.Equal(27.4575, bh.EinspeisungMwh, 4);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh.
+            Assert.Equal(25.5543, bh.EinspeisungMwh, 4);
 
             // E29‑Q10 a: der PV-Deckungsgrad bleibt ≤ 100 % und ist in Ergebnis und Ansicht gleich.
             ErgebnisModel e = SimulationRunner.BaueErgebnis(1018, r.simulation_Waermebedarf,
