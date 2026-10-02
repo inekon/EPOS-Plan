@@ -15,17 +15,17 @@ Referenzbasis **R23 `Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`**, Testda
 (`git show origin/ios_migration_september:Dokumentation/aktuell/Status_iOS_Migration.md | grep -oE '^\| \*\*#5[89][0-9]'`),
 weil die Berichtsvorlagen-Cloud-Sitzung Nummern ohne Abstimmung vergibt (#566, #581).
 
-Zeilen dieser Sitzung in [`../Status_iOS_Migration.md`](../Status_iOS_Migration.md): #542–#557,
+Zeilen dieser Sitzung in [`../Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md): #542–#557,
 #559, #560, #562–#565, #567–#569, #571–#577, #580, #582, #584–#587. Protokolle:
-[`DA1`](../../ueberholt/Protokolle/Views/DA1_Dialogdarstellung_Protokoll.md),
-[`DA2`](../../ueberholt/Protokolle/Views/DA2_Dialoge_Korrekturen_Welle_Protokoll.md),
-[`SA1`](../../ueberholt/Protokolle/Simulation/SA1_Waermeautarkie_Solarthermie_Protokoll.md),
-[`SK1`](../../ueberholt/Protokolle/Simulation/SK1_Kessel_Bereitschaft_kW_Protokoll.md),
-[`SK2`](../../ueberholt/Protokolle/Simulation/SK2_Kessel_Bereitschaft_Stunden_R23_Protokoll.md),
-[`PT1`](../../ueberholt/Protokolle/Views/PT1_Projektpaket_Anhebung_Protokoll.md),
-[`PT2`](../../ueberholt/Protokolle/Views/PT2_Projektpaket_Anhebung_Stufe2_Protokoll.md).
+[`DA1`](Protokolle/Views/DA1_Dialogdarstellung_Protokoll.md),
+[`DA2`](Protokolle/Views/DA2_Dialoge_Korrekturen_Welle_Protokoll.md),
+[`SA1`](Protokolle/Simulation/SA1_Waermeautarkie_Solarthermie_Protokoll.md),
+[`SK1`](Protokolle/Simulation/SK1_Kessel_Bereitschaft_kW_Protokoll.md),
+[`SK2`](Protokolle/Simulation/SK2_Kessel_Bereitschaft_Stunden_R23_Protokoll.md),
+[`PT1`](Protokolle/Views/PT1_Projektpaket_Anhebung_Protokoll.md),
+[`PT2`](Protokolle/Views/PT2_Projektpaket_Anhebung_Stufe2_Protokoll.md).
 Logbuch-Sätze für die Version **1.2.0.5** und die Kandidaten des nächsten Sammel-Uploads
-stehen in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md).
+stehen in [`../Wiki_Update_2026-09-26.md`](../aktuell/Wiki_Update_2026-09-26.md).
 
 ## 2 Was aussteht
 
@@ -34,8 +34,8 @@ stehen in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md).
 | Thema | Frage | Empfehlung |
 |---|---|---|
 | Kessel (#568, SK2) | (a) Bereitschaftsverlust des Elektrokessels nur im Nutzungsgrad, nicht im Netzbezug; (b) „Maximale Brennstoffleistung Gas“ bei mehreren Kesseln = Summe der Einzelmaxima; (d) Heiztag = Raumwärme > 0 — VDI-6007-Gebäude sind fast ganzjährig „betriebsbereit“ | (a) belassen, (b) belassen mit Kurztext, (d) Schwelle je Gebäudemodell prüfen |
-| Kessel-Kennlinie (#569) | Fragen F1–F5 des [Konzepts](../../ueberholt/Konzept_Kessel_Kennlinie_EPOS-Plan.md) | E1 + E2 |
-| Berichte & Kosten (#574) | BN-Q1–Q3 des [Konzepts](../../ueberholt/Konzept_BerichteKosten_Navigation_EPOS-Plan.md), Mockups A/B/C | Variante A |
+| Kessel-Kennlinie (#569) | Fragen F1–F5 des [Konzepts](Konzept_Kessel_Kennlinie_EPOS-Plan.md) | E1 + E2 |
+| Berichte & Kosten (#574) | BN-Q1–Q3 des [Konzepts](Konzept_BerichteKosten_Navigation_EPOS-Plan.md), Mockups A/B/C | Variante A |
 | Zapfprofil-Dialog (#572) | Struktur statt Überlagerung in Überlagerung — Nachtrag N35 im Zapfprofil-Umsetzungskonzept | Blattwechsel „‹ Warmwasser“ |
 | Wirtschaftlichkeit (#582) | Soll der Bericht dem gewählten Szenario folgen? | ja, als eigener Auftrag |
 | Repowurzel | `Berichtsvorlagen/Mitgeliefert/` kam mit einem Sync-Commit herein (Laufzeiterzeugnis?) | entfernen und in `.gitignore` |

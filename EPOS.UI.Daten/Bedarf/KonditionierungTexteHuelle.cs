@@ -250,12 +250,15 @@ namespace WindowsFormsApplication1
             t.LabelKopierenNach = Text_("KOND_LBL_KOPIEREN_NACH", t.LabelKopierenNach);
             t.LabelKopierziel = Text_("KOND_LBL_KOPIERZIEL", t.LabelKopierziel);
             t.LabelKomfortsollwert = Text_("KOND_LBL_KOMFORTSOLLWERT", t.LabelKomfortsollwert);
+            t.LabelAbsenksollwert = Text_("KOND_LBL_ABSENKSOLLWERT", t.LabelAbsenksollwert);
+            t.HinweisAbsenksollwert = Text_("KOND_TXT_HINWEIS_ABSENKSOLLWERT", t.HinweisAbsenksollwert);
             t.HinweisKopierenNach = Text_("KOND_TXT_KOPIEREN_NACH", t.HinweisKopierenNach);
             t.HinweisKopierenDirekt = Text_("KOND_TXT_KOPIEREN_DIREKT", t.HinweisKopierenDirekt);
             t.HinweisKopierenZeitstruktur = Text_("KOND_TXT_KOPIEREN_ZEITSTRUKTUR", t.HinweisKopierenZeitstruktur);
             t.GrundKeinKopierziel = Text_("KOND_TXT_GRUND_KEIN_KOPIERZIEL", t.GrundKeinKopierziel);
             t.TextVorlageKopiert = Text_("KOND_TXT_VORLAGE_KOPIERT", t.TextVorlageKopiert);
             t.MeldungKomfortsollwert = Text_("KOND_TXT_MELDUNG_KOMFORTSOLLWERT", t.MeldungKomfortsollwert);
+            t.MeldungAbsenksollwert = Text_("KOND_TXT_MELDUNG_ABSENKSOLLWERT", t.MeldungAbsenksollwert);
             // Die Abkürzung „alle Größen“ (E57, Welle U5)
             t.LabelVorlageAlle = Text_("KOND_LBL_VORLAGE_ALLE", t.LabelVorlageAlle);
             t.HinweisVorlageAlle = Text_("KOND_TXT_HINWEIS_VORLAGE_ALLE", t.HinweisVorlageAlle);

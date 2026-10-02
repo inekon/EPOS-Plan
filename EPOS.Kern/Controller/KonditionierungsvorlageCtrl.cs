@@ -584,8 +584,10 @@ namespace WindowsFormsApplication1
         /// <b>„Kopieren nach …"</b>: legt aus einer Vorlage — auch einer <b>ausgelieferten</b> — eine
         /// <b>eigene</b> Vorlage einer <b>anderen</b> Größe an (<c>ReadOnly = 0</c>); die Quelle bleibt, wie
         /// sie ist. Der Inhalt entsteht nach <see cref="Vorlagenkopierregel.Umsetzen"/>: Geräte ↔ Personen
-        /// unverändert, Heizen → Kühlen mit Zeitstruktur und Aus-Zeiten, jede Zelle mit Sollwert auf dem
-        /// <paramref name="komfortsollwert"/>; jede andere Richtung wird benannt abgelehnt.
+        /// unverändert, Heizen → Kühlen mit Zeitstruktur und Aus-Zeiten, jede Zelle mit Sollwert in Höhe des
+        /// Tagwerts auf dem <paramref name="komfortsollwert"/>, jede Absenkzeit (Heizsollwert unter dem Tagwert,
+        /// <see cref="Vorlagenkopierregel.Tagwert"/>) auf dem <paramref name="absenksollwert"/> bzw. „aus"; jede
+        /// andere Richtung wird benannt abgelehnt.
         ///
         /// <para><b>Name und Rechte:</b> Der Name gilt in der <b>Zielliste</b> — ein Doppelname wird benannt
         /// abgelehnt wie beim Anlegen, nicht still eindeutig gemacht. Die Beschreibung der Quelle wird um
@@ -597,9 +599,13 @@ namespace WindowsFormsApplication1
         /// <param name="ziel">Die Zielgröße — eine der <see cref="Vorlagenkopierregel.Ziele"/> der Quelle.</param>
         /// <param name="bezeichner">Der Name der Kopie in der Zielliste; getrimmt, 1 … 80 Zeichen.</param>
         /// <param name="komfortsollwert">Der Komfortsollwert [°C] bei Heizen → Kühlen; sonst ohne Bedeutung.</param>
+        /// <param name="absenksollwert">
+        /// Der Absenksollwert [°C] bei Heizen → Kühlen, <see cref="Vorlagenkopierregel.ABSENKSOLLWERT_AUS"/> = „aus";
+        /// sonst ohne Bedeutung.
+        /// </param>
         /// <param name="neueId">Die Id der Kopie; 0 im Fehlerfall.</param>
         public KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
-                                                         double? komfortsollwert, out long neueId)
+                                                         double? komfortsollwert, double? absenksollwert, out long neueId)
         {
             neueId = 0;
             string bereit = Bereit();
@@ -610,14 +616,14 @@ namespace WindowsFormsApplication1
                 return KonditionierungCtrl.Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KOND_MSG_VORLAGE_FEHLT, id.ToString(CultureInfo.InvariantCulture)));
 
-            string regel = Vorlagenkopierregel.Pruefen(v.Groesse, ziel, komfortsollwert);
+            string regel = Vorlagenkopierregel.Pruefen(v.Groesse, ziel, komfortsollwert, absenksollwert);
             if (regel != null) return KonditionierungCtrl.Ergebnis.Fehler(regel);
             string name = Namenspruefung(ziel, bezeichner, 0, out string meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
 
             Konditionierungsstand quelle = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Vorlage(id), out meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
-            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(quelle, v.Groesse, ziel, komfortsollwert);
+            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(quelle, v.Groesse, ziel, komfortsollwert, absenksollwert);
             if (!inhalt.Ok) return KonditionierungCtrl.Ergebnis.Fehler(inhalt.Meldung);
 
             return KopfUndInhaltAnlegen(inhalt.Stand, ziel, name,

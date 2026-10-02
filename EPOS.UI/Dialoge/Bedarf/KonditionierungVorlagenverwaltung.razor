@@ -13,10 +13,13 @@
    KOPIEREN NACH ... (Teilkonzept 3.5, 7.4). Eine Vorlage - auch eine ausgelieferte - wird eine EIGENE
    Vorlage einer anderen Groesse. Welche Ziele es gibt, sagt der Kern (Heizen -> Kuehlen, Geraete <->
    Personen); die Abfrage ist eine kleine Ueberlagerung mit Titel und Kreuz und zeigt NUR diese Ziele, den
-   Namen der Quelle als Vorschlag und bei Heizen -> Kuehlen das Feld des Komfortsollwerts (Vorgabe und
-   Grenzen aus dem Kern). Kuehl- und Lueftungsvorlagen haben kein Ziel: Der Knopf steht weich gesperrt da,
-   der Grund am Knopf. Ein Doppelname in der Zielliste steht am Namensfeld, ein ungueltiger Sollwert am
-   Sollwertfeld; nach dem Kopieren zeigt das Blatt die Zielliste mit der neuen Vorlage gewaehlt.
+   Namen der Quelle als Vorschlag und bei Heizen -> Kuehlen die Felder des Komfort- und des Absenksollwerts
+   (Vorgaben und Grenzen aus dem Kern; das Absenkfeld nimmt dazu "aus" wie die Zellen der Matrix). Der
+   Absenksollwert gilt in den Absenkzeiten der Quelle - ueberall, wo ihr Heizsollwert unter dem Tagwert
+   liegt. Kuehl- und Lueftungsvorlagen haben kein Ziel: Der Knopf steht weich gesperrt da, der Grund am
+   Knopf. Ein Doppelname in der Zielliste steht am Namensfeld, ein ungueltiger Sollwert an seinem Feld -
+   ein Absenksollwert unter dem Komfortsollwert am Absenkfeld; nach dem Kopieren zeigt das Blatt die
+   Zielliste mit der neuen Vorlage gewaehlt.
 
    DAS SCHLOSS. Eine ausgelieferte Vorlage laesst sich nur duplizieren: Umbenennen und Loeschen stehen
    WEICH gesperrt da (aria-disabled, der Grund als Kurztext, der Versuch meldet ihn).
@@ -178,7 +181,7 @@
 
     @* "KOPIEREN NACH ..." - ein kurzer Unterdialog als Ueberlagerung mit Titel und Kreuz (Esc und Kreuz wie
        Abbrechen). Die Optionsgruppe fuehrt nur die erlaubten Ziele der Quelle, darunter je Ziel die Regel;
-       das Sollwertfeld steht nur, wo die Richtung neue Sollwerte braucht. "Kopieren" schreibt SOFORT. *@
+       die Sollwertfelder stehen nur, wo die Richtung neue Sollwerte braucht. "Kopieren" schreibt SOFORT. *@
     <Ueberlagerung Offen="@(_kopieren is not null)" Titel="@Kopiertitel" Geschlossen="KopierenAbbrechen">
         <KindInhalt>
             <div class="epos-kond-kopieren">
@@ -204,6 +207,16 @@
                                 @if (_kopierSollwertFehler is not null)
                                 {
                                     <p class="epos-kond-feldmeldung" role="alert">@_kopierSollwertFehler</p>
+                                }
+                            </div>
+                            <div class="epos-kond-kopieren-absenkwert @(_kopierAbsenkFehler is null ? "" : "epos-kond-feldfehler")">
+                                <Zahlenfeld Bezeichnung="@Texte.LabelAbsenksollwert" Einheit="°C" Wert="@_kopierAbsenkwert"
+                                            Titel="@Texte.HinweisAbsenksollwert" AusText="@Texte.ZelleAus"
+                                            WertChanged="KopierAbsenkwertGeaendert" Min="@mitSollwert.Min" Max="@mitSollwert.Max"
+                                            Feldname="@Texte.LabelAbsenksollwert" FehlerZustand="AbsenkFehlerZustand" />
+                                @if (_kopierAbsenkFehler is not null)
+                                {
+                                    <p class="epos-kond-feldmeldung" role="alert">@_kopierAbsenkFehler</p>
                                 }
                             </div>
                         }
@@ -405,8 +418,12 @@
     private string _kopierName = "";
     private double? _kopierSollwert;
     private bool _sollwertFehleingabe;
+    /// <summary>Der Absenksollwert der Abfrage; <see cref="double.NaN"/> = „aus".</summary>
+    private double? _kopierAbsenkwert;
+    private bool _absenkFehleingabe;
     private string? _kopierNameFehler;
     private string? _kopierSollwertFehler;
+    private string? _kopierAbsenkFehler;
     private string? _kopierFehler;
 
     /// <summary>Steht die Abfrage „Kopieren nach …"? Prüfhilfe für die Tests.</summary>
@@ -438,7 +455,7 @@
 
     /// <summary>
     /// Öffnet die Abfrage: das erste erlaubte Ziel gewählt, der Name der Quelle als Vorschlag, bei Heizen →
-    /// Kühlen die Vorgabe des Komfortsollwerts. Ohne Ziel meldet der Versuch den Grund.
+    /// Kühlen die Vorgaben des Komfort- und des Absenksollwerts. Ohne Ziel meldet der Versuch den Grund.
     /// </summary>
     private async Task KopierenOeffnen(KonditionierungVorlageDaten v, string? sperre)
     {
@@ -472,6 +489,9 @@
         _kopierSollwert = ziel.Komfortsollwert;
         _sollwertFehleingabe = false;
         _kopierSollwertFehler = null;
+        _kopierAbsenkwert = ziel.Absenksollwert;
+        _absenkFehleingabe = false;
+        _kopierAbsenkFehler = null;
     }
 
     private void KopierNameGeaendert(string w)
@@ -492,6 +512,18 @@
         if (!zustand.Fehlerhaft) _kopierSollwertFehler = null;
     }
 
+    private void KopierAbsenkwertGeaendert(double? w)
+    {
+        _kopierAbsenkwert = w;
+        _kopierAbsenkFehler = null;
+    }
+
+    private void AbsenkFehlerZustand((string Feld, bool Fehlerhaft) zustand)
+    {
+        _absenkFehleingabe = zustand.Fehlerhaft;
+        if (!zustand.Fehlerhaft) _kopierAbsenkFehler = null;
+    }
+
     /// <summary>Abbrechen, Esc und das Kreuz: Die Abfrage geht zu, geschrieben wird nichts.</summary>
     private void KopierenAbbrechen()
     {
@@ -501,8 +533,11 @@
         _kopierName = "";
         _kopierSollwert = null;
         _sollwertFehleingabe = false;
+        _kopierAbsenkwert = null;
+        _absenkFehleingabe = false;
         _kopierNameFehler = null;
         _kopierSollwertFehler = null;
+        _kopierAbsenkFehler = null;
         _kopierFehler = null;
     }
 
@@ -515,7 +550,8 @@
 
     /// <summary>
     /// Das eigene OK der Abfrage: schreibt SOFORT. Eine Ablehnung des Namens steht am Namensfeld, eine des
-    /// Komfortsollwerts am Sollwertfeld, jede andere in der Abfrage; sie bleibt dann offen. Danach zeigt das
+    /// Komfortsollwerts am Sollwertfeld, eine des Absenksollwerts am Absenkfeld, jede andere in der Abfrage; sie
+    /// bleibt dann offen. Danach zeigt das
     /// Blatt die Liste der Zielgröße mit der neuen Vorlage gewählt.
     /// </summary>
     private async Task KopierenSchreiben()
@@ -523,20 +559,28 @@
         if (_kopieren is not KonditionierungVorlageDaten quelle || GewaehltesKopierziel is not KonditionierungKopierziel ziel)
             return;
         bool mitSollwert = ziel.Komfortsollwert is not null;
-        if (mitSollwert && _sollwertFehleingabe)
+        if (mitSollwert && (_sollwertFehleingabe || _absenkFehleingabe))
         {
-            // Das Feld trägt keine gültige Zahl - kopiert würde sonst mit dem letzten gültigen Wert.
-            _kopierSollwertFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungKomfortsollwert,
-                                                  Zahl(ziel.Min), Zahl(ziel.Max));
+            // Ein Feld trägt keine gültige Angabe - kopiert würde sonst mit dem letzten gültigen Wert.
+            if (_sollwertFehleingabe)
+                _kopierSollwertFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungKomfortsollwert,
+                                                      Zahl(ziel.Min), Zahl(ziel.Max));
+            if (_absenkFehleingabe)
+                _kopierAbsenkFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungAbsenksollwert,
+                                                    Zahl(ziel.Min), Zahl(ziel.Max), Texte.ZelleAus);
             return;
         }
 
         KonditionierungVorlageErgebnis e = Bearbeitung.VorlageKopieren(
-            quelle.Id, new KonditionierungVorlageKopie(ziel.Ziel, _kopierName, mitSollwert ? _kopierSollwert : null));
+            quelle.Id, new KonditionierungVorlageKopie(ziel.Ziel, _kopierName, mitSollwert ? _kopierSollwert : null)
+            {
+                Absenksollwert = mitSollwert ? _kopierAbsenkwert : null,
+            });
         if (!e.Ok)
         {
             if (e.AmNamen) _kopierNameFehler = e.Meldung;
             else if (e.AmSollwert) _kopierSollwertFehler = e.Meldung;
+            else if (e.AmAbsenkwert) _kopierAbsenkFehler = e.Meldung;
             else _kopierFehler = e.Meldung;
             return;
         }

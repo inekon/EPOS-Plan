@@ -702,7 +702,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4 + 1 + 11, original.Count);                 // vier Zeilen, der Kalender, elf Perioden
 
             KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(geraete, Konditionierungsgroesse.Personen, " Werkstatt ", null,
-                                                                out long personen);
+                                                                null, out long personen);
             Assert.True(e.Ok, e.Meldung);
             Assert.True(personen > 0);
             Assert.Equal(original, Inhaltszeilen(personen));          // Vorgaben, Woche, Perioden, Feiertagsregeln, Bemerkung
@@ -715,8 +715,8 @@ namespace EPOS.Kern.Tests
                          kopf.Beschreibung);
 
             // Und zurück - unter einem Namen, den die Geräteliste noch nicht führt.
-            Assert.False(_ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "werkstatt", null, out _).Ok);
-            e = _ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "Werkstatt zurück", null, out long zurueck);
+            Assert.False(_ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "werkstatt", null, null, out _).Ok);
+            e = _ctrl.KopierenNach(personen, Konditionierungsgroesse.Geraete, "Werkstatt zurück", null, null, out long zurueck);
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal(original, Inhaltszeilen(zurueck));
             Assert.Equal(0, AusserhalbDerGroesse(zurueck, Konditionierungsgroesse.Geraete));
@@ -724,7 +724,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Heizen_nach_Kuehlen_nimmt_Zeitstruktur_und_Aus_Zeiten_und_setzt_den_Komfortsollwert()
+        public void Heizen_nach_Kuehlen_nimmt_Zeitstruktur_und_Aus_Zeiten_und_setzt_Komfort_und_Absenksollwert()
         {
             if (!Bereit()) return;
             Assert.True(_ctrl.SpeichernAus(VorlagenkopierregelTests.Heizvorlage(rein: true), Konditionierungsgroesse.Heizsoll,
@@ -732,24 +732,25 @@ namespace EPOS.Kern.Tests
             List<string> vorher = Inhaltszeilen(heizen);
 
             KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(heizen, Konditionierungsgroesse.Kuehlsoll, "Werkhalle", 25.5,
-                                                                out long kuehlen);
+                                                                28.0, out long kuehlen);
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal(vorher, Inhaltszeilen(heizen));
             Assert.Equal(0, AusserhalbDerGroesse(kuehlen, Konditionierungsgroesse.Kuehlsoll));
 
-            // Die Zeilen: jeder Sollwert der Komfortsollwert, die Nachtzeiten bleiben, „aus" bleibt „aus".
+            // Die Zeilen: der Tagwert (21 °C) wird der Komfortsollwert, jeder Sollwert darunter (Nacht 17, Ferien 16)
+            // der Absenksollwert, die Nachtzeiten bleiben, „aus" bleibt „aus".
             Dictionary<string, Vorgabezeile> z = Vorlagenzeilen(kuehlen);
             Assert.Equal(new[] { DbWerte.KOND_ZEILE_FERIEN, DbWerte.KOND_ZEILE_NACHT, DbWerte.KOND_ZEILE_TAG,
                                  DbWerte.KOND_ZEILE_WOCHENENDE },
                          z.Keys.OrderBy(k => k, StringComparer.Ordinal));
             Assert.Equal(((double?)25.5, false, (int?)null, (int?)null), (z[DbWerte.KOND_ZEILE_TAG].Wert, z[DbWerte.KOND_ZEILE_TAG].Aus,
                                                                  z[DbWerte.KOND_ZEILE_TAG].Von, z[DbWerte.KOND_ZEILE_TAG].Bis));
-            Assert.Equal(((double?)25.5, false, (int?)18, (int?)7), (z[DbWerte.KOND_ZEILE_NACHT].Wert, z[DbWerte.KOND_ZEILE_NACHT].Aus,
+            Assert.Equal(((double?)28.0, false, (int?)18, (int?)7), (z[DbWerte.KOND_ZEILE_NACHT].Wert, z[DbWerte.KOND_ZEILE_NACHT].Aus,
                                                             z[DbWerte.KOND_ZEILE_NACHT].Von, z[DbWerte.KOND_ZEILE_NACHT].Bis));
             Assert.Equal(((double?)null, true), (z[DbWerte.KOND_ZEILE_WOCHENENDE].Wert, z[DbWerte.KOND_ZEILE_WOCHENENDE].Aus));
-            Assert.Equal((double?)25.5, z[DbWerte.KOND_ZEILE_FERIEN].Wert);
+            Assert.Equal((double?)28.0, z[DbWerte.KOND_ZEILE_FERIEN].Wert);
 
-            // Der Kalender: dieselbe Woche mit 25,5 statt jedes Heizwerts, „aus" bleibt; die Perioden mit Rang,
+            // Der Kalender: dieselbe Woche mit 25,5 statt 21 °C und 28 statt 17 °C, „aus" bleibt; die Perioden mit Rang,
             // Art, Tagen und Feiertagsregel, „wie Sonntag" bleibt; kein Nennwert, keine Herkunft der Heizung.
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender =
                 _kond.Kalender(KonditionierungCtrl.Eigner.Vorlage(kuehlen), out string m);
@@ -759,12 +760,13 @@ namespace EPOS.Kern.Tests
             Assert.Null(k.Nennwert);
             Konditionierungskalender h = VorlagenkopierregelTests.Heizvorlage(rein: true).Kalender(Konditionierungsgroesse.Heizsoll);
             for (int i = 0; i < Kalenderwoche.WOCHENWERTE; i++)
-                Assert.Equal(double.IsNaN(h.Standardwoche[i]) ? double.NaN : 25.5, k.Standardwoche[i]);
+                Assert.Equal(double.IsNaN(h.Standardwoche[i]) ? double.NaN : h.Standardwoche[i] < 21.0 ? 28.0 : 25.5,
+                             k.Standardwoche[i]);
             Assert.Equal(h.Perioden.Select(r => (r.Rang, r.Art, r.Bezeichner, r.Beginn, r.Ende, r.Feiertagsregel, r.Angabe.Art,
                                                  r.Angabe.WieWochentag)),
                          k.Perioden.Select(r => (r.Rang, r.Art, r.Bezeichner, r.Beginn, r.Ende, r.Feiertagsregel, r.Angabe.Art,
                                                  r.Angabe.WieWochentag)));
-            Assert.Equal(25.5, Assert.Single(k.Perioden, r => r.Angabe.Art == Angabeart.Wert).Angabe.Wert);
+            Assert.Equal(28.0, Assert.Single(k.Perioden, r => r.Angabe.Art == Angabeart.Wert).Angabe.Wert);   // Inventur 15 °C
             Assert.All(Assert.Single(k.Perioden, r => r.Angabe.Art == Angabeart.Woche).Angabe.Woche,
                        w => Assert.True(double.IsNaN(w) || w == 25.5));
             Assert.Equal(0, Zaehlen("SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER +
@@ -789,7 +791,8 @@ namespace EPOS.Kern.Tests
             List<string> vorher = Inhaltszeilen(buero);
 
             KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(buero, Konditionierungsgroesse.Kuehlsoll, "Büro aus Heizen",
-                                                                Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, out long kopie);
+                                                                Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE,
+                                                                Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE, out long kopie);
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal(vorher, Inhaltszeilen(buero));
             Assert.True(_ctrl.Lesen(buero).Ausgeliefert);
@@ -802,14 +805,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Vorlagenkopierregel.Beschreibung(_ctrl.Lesen(buero).Beschreibung, "Büro", Konditionierungsgroesse.Heizsoll),
                          kopf.Beschreibung);
 
-            // Büro heizt Tag 20, Nacht 16 (18–7), Wochenende 16 und Ferien 16 - die Kopie kühlt überall auf 26 °C,
-            // die neun Feiertage bleiben „wie Sonntag".
+            // Büro heizt Tag 20, Nacht 16 (18–7), Wochenende 16, Ferien 16 und in der Grundangabe 16 - die Kopie
+            // kühlt am Tag auf 26 °C, in den Absenkzeiten auf 28 °C; die neun Feiertage bleiben „wie Sonntag".
             Dictionary<string, Vorgabezeile> z = Vorlagenzeilen(kopie);
             Assert.Equal(4, z.Count);
-            Assert.All(z.Values, v => Assert.Equal(((double?)26.0, false), (v.Wert, v.Aus)));
+            Assert.Equal(((double?)26.0, false), (z[DbWerte.KOND_ZEILE_TAG].Wert, z[DbWerte.KOND_ZEILE_TAG].Aus));
+            foreach (string absenk in new[] { DbWerte.KOND_ZEILE_NACHT, DbWerte.KOND_ZEILE_WOCHENENDE, DbWerte.KOND_ZEILE_FERIEN })
+                Assert.Equal(((double?)28.0, false), (z[absenk].Wert, z[absenk].Aus));
             Assert.Equal(((int?)18, (int?)7), (z[DbWerte.KOND_ZEILE_NACHT].Von, z[DbWerte.KOND_ZEILE_NACHT].Bis));
             Konditionierungskalender k = Assert.Single(_kond.Kalender(KonditionierungCtrl.Eigner.Vorlage(kopie), out _)).Value;
-            Assert.Equal(26.0, k.Grundangabe.Wert);
+            Assert.Equal(28.0, k.Grundangabe.Wert);
             Assert.Equal(9, k.Perioden.Count);
             Assert.All(k.Perioden, r => Assert.Equal((DbWerte.KOND_ART_FEIERTAG, 7), (r.Art, r.Angabe.WieWochentag)));
 
@@ -820,7 +825,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Doppelname_fehlender_Komfortsollwert_und_fremde_Richtungen_werden_benannt_abgelehnt()
+        public void Doppelname_fehlende_Sollwerte_und_fremde_Richtungen_werden_benannt_abgelehnt()
         {
             if (!Bereit()) return;
             long heizBuero = Vorlagenid(Konditionierungsgroesse.Heizsoll, "Büro");
@@ -830,20 +835,24 @@ namespace EPOS.Kern.Tests
             string anzahl = "SELECT COUNT(*) FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE + "\"";
             long vorher = Zaehlen(anzahl);
 
-            foreach ((long id, Konditionierungsgroesse ziel, string name, double? komfort) in new (long, Konditionierungsgroesse, string, double?)[]
+            foreach ((long id, Konditionierungsgroesse ziel, string name, double? komfort, double? absenk) in
+                     new (long, Konditionierungsgroesse, string, double?, double?)[]
                      {
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "BÜRO", 26.0),            // Doppelname in der Zielliste
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "", 26.0),                // kein Name
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", null),    // Komfortsollwert fehlt
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 31.0),    // außerhalb der Kühlspalte
-                         (heizBuero, Konditionierungsgroesse.Heizsoll, "Büro Heizung", 26.0),     // dieselbe Größe
-                         (heizBuero, Konditionierungsgroesse.Lueftung, "Büro Heizung", 26.0),     // keine Richtung
-                         (kuehlBuero, Konditionierungsgroesse.Heizsoll, "Büro Kühlung", 20.0),    // Kühlen -> Heizen
-                         (lueftBuero, Konditionierungsgroesse.Personen, "Büro Lüftung", null),    // alles mit Lüftung
-                         (999999, Konditionierungsgroesse.Kuehlsoll, "Nichts", 26.0),             // die Quelle fehlt
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "BÜRO", 26.0, 28.0),            // Doppelname in der Zielliste
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "", 26.0, 28.0),                // kein Name
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", null, 28.0),    // Komfortsollwert fehlt
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 36.0, 28.0),    // außerhalb der Kühlspalte
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, null),    // Absenksollwert fehlt
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, 36.0),    // außerhalb der Kühlspalte
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, 25.0),    // unter dem Komfortsollwert
+                         (heizBuero, Konditionierungsgroesse.Heizsoll, "Büro Heizung", 26.0, 28.0),     // dieselbe Größe
+                         (heizBuero, Konditionierungsgroesse.Lueftung, "Büro Heizung", 26.0, 28.0),     // keine Richtung
+                         (kuehlBuero, Konditionierungsgroesse.Heizsoll, "Büro Kühlung", 20.0, 28.0),    // Kühlen -> Heizen
+                         (lueftBuero, Konditionierungsgroesse.Personen, "Büro Lüftung", null, null),    // alles mit Lüftung
+                         (999999, Konditionierungsgroesse.Kuehlsoll, "Nichts", 26.0, 28.0),             // die Quelle fehlt
                      })
             {
-                KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(id, ziel, name, komfort, out long neu);
+                KonditionierungCtrl.Ergebnis e = _ctrl.KopierenNach(id, ziel, name, komfort, absenk, out long neu);
                 Assert.False(e.Ok, id + " -> " + ziel + " „" + name + "“");
                 Assert.False(string.IsNullOrEmpty(e.Meldung));
                 Assert.Equal(0, neu);
