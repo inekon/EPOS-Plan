@@ -41341,5 +41341,23 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
     <value>Den Wert „{0}“ gibt es nicht; bekannt sind {1}.</value>
   </data>
+  <data name="SIMENG_AUFH_W1" xml:space="preserve">
+    <value>Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2" xml:space="preserve">
+    <value>Aufheizoptimierung (W2): An {0} Tagen begrenzt die Absenkdauer die Rampe — die Absenkung ist dort weitgehend wirkungslos.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2_BEMESSUNG" xml:space="preserve">
+    <value>Aufheizoptimierung (W2): Die maximale Aufheizzeit von {0} h erreicht die kürzeste Absenkdauer der gerampten Sprünge ({1} h) — bei Bemessungswetter ist die Absenkung weitgehend wirkungslos.</value>
+  </data>
+  <data name="SIMENG_AUFH_W3" xml:space="preserve">
+    <value>Aufheizoptimierung (W3): An {0} Tagen verlässt der Lauf das Nachweisband der Rampe (Kappung durch die Heizleistungsgrenze bzw. Stundenleistung über 1,01 · Aufheizleistung). Die Vorhersage kennt Vorgeschichte, Sonne, innere Gewinne und Lüftungswechsel nicht; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_AUFH_W4" xml:space="preserve">
+    <value>Aufheizoptimierung (W4): {0} Übergänge aus „aus“ bekommen keine Rampe, davon {1} am Beginn der Heizperiode — der Anfangswert der frei schwingenden Zone ist vor dem Lauf unbekannt.</value>
+  </data>
+  <data name="SIMENG_AUFH_W5" xml:space="preserve">
+    <value>Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung.</value>
+  </data>
 </root>
 

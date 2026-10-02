@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
         /// im Mehrzonenweg und bei einem Fehler. Im Mehrzonenweg (Welle R3) stehen die Pläne je Zone an
         /// <see cref="Mehrzonenergebnis.Eingaenge"/> (<see cref="ZonenEingang.Aufheizplan"/>) und die
         /// Gebäudewerte in <see cref="Mehrzonenergebnis.Aufheizgebaeude"/> von <see cref="LetztesMehrzonenergebnis"/>.
-        /// R4 übernimmt sie in das Gebäudeergebnis.
+        /// Das Gebäudeergebnis trägt sie als <see cref="GebaeudeModellErgebnis.Aufheizung"/> (Welle R4).
         /// </summary>
         internal Aufheizplan LetzterAufheizplan { get; private set; }
 
@@ -183,7 +183,7 @@ namespace WindowsFormsApplication1
                     LetzterAufheizplan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(eingang), Aufheizvorgabe,
                                                                      AufheizleistungTestW);
 
-                GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
+                GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude, LetzterAufheizplan);
 
                 Array.Copy(ergebnis.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = ergebnis.VerbrauchAltKwh;
@@ -298,6 +298,8 @@ namespace WindowsFormsApplication1
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
             }
+            // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
+            HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
 
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
@@ -452,6 +454,54 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Laufhinweise der Aufheizoptimierung</b> (Entwurf KP3, Festlegung 21; Teilkonzept 4.8) —
+        /// einmal je Gebäude im Protokoll, mit Zahl in der Kultur des Anwenders; die Zähler stehen in der
+        /// Ergebniszeile (<see cref="Aufheizergebnis"/>). <b>Der Lauf rechnet weiter</b> — es sind Hinweise.
+        /// <list type="bullet">
+        /// <item><b>W1</b> Aufheizleistung reicht nicht: Tage ohne haltendes n ≤ 48, Unterzahl P_auf ≤ Φ_stat;
+        /// auch bei unerreichbarer Bemessung ohne einen solchen Tag (Festlegung 17).</item>
+        /// <item><b>W2</b> durch die Absenkdauer begrenzt: die Tage mit n − 1 = D bei größerem Bedarf; dazu der
+        /// Bemessungshinweis, wenn t_auf,max die kürzeste Absenkdauer der gerampten Sprünge erreicht
+        /// (Festlegung 18).</item>
+        /// <item><b>W3</b> Nachweisband: die Tage, an denen der Lauf es verlässt (Festlegung 19).</item>
+        /// <item><b>W4</b> Übergang aus „aus" ohne Rampe, Unterzahl Beginn der Heizperiode.</item>
+        /// <item><b>W5</b> gekoppeltes Gebäude nicht optimiert, ohne Zahl.</item>
+        /// </list>
+        /// Ohne Aufheizwerte (Schalter aus) und für ein Gebäude ohne beheizte Planung schweigt die Methode.
+        /// </summary>
+        internal static void HinweisAufheizung(Aufheizergebnis a, string wer)
+        {
+            if (a == null) return;
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string kopf = "Gebäudemodell VDI 6007: " + wer + " — ";
+            if (a.Gekoppelt)
+            {
+                p.HinweisEinmal("aufh-w5-" + wer, kopf + MyResource.Resource.SIMENG_AUFH_W5);
+                return;
+            }
+            if (!a.Geplant) return;
+
+            int w1 = a.AufheiztageUnerreichbar ?? 0;
+            if (w1 > 0 || a.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR)
+                p.HinweisEinmal("aufh-w1-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W1, w1.ToString(k), (a.TageUnterStationaer ?? 0).ToString(k)));
+            int w2 = a.AufheiztageBegrenzt ?? 0;
+            if (w2 > 0)
+                p.HinweisEinmal("aufh-w2-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_AUFH_W2, w2.ToString(k)));
+            if (a.AufheizzeitMaxH is int tMax && a.KuerzesteAbsenkdauerH is int dMin && tMax >= dMin)
+                p.HinweisEinmal("aufh-w2-bemessung-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W2_BEMESSUNG, tMax.ToString(k), dMin.ToString(k)));
+            int w3 = a.AufheiztageNachweisband ?? 0;
+            if (w3 > 0)
+                p.HinweisEinmal("aufh-w3-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_AUFH_W3, w3.ToString(k)));
+            int w4 = a.AufheizspruengeAus ?? 0;
+            if (w4 > 0)
+                p.HinweisEinmal("aufh-w4-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W4, w4.ToString(k), (a.SpruengeAusHeizperiode ?? 0).ToString(k)));
+        }
+
+        /// <summary>
         /// <b>Der Hinweis auf einen Personenkalender ohne Anwesenheitsstunde</b> (Stufe KP1b, F16):
         /// Dann gibt es keine Nutzungszeit aus der Anwesenheit; die Kennzahlen zählen nach der
         /// Nachtzeit wie ohne Kalender. Ohne diesen Fall schweigt die Methode.
@@ -481,8 +531,12 @@ namespace WindowsFormsApplication1
         /// Der eine Lauf eines Gebäudes ohne Protokoll: Vorlauf 720 h, Jahreslauf 8 760 h,
         /// Plausibilität der Reihen. Liefert das <b>unskalierte</b> Ergebnis.
         /// </summary>
+        /// <param name="aufheizplan">Der Aufheizplan des Eingangs (Entwurf KP3, Welle R4): mit ihm trägt das
+        /// Ergebnis die Aufheizwerte samt W3 und Rampenmaske; <c>null</c> = Schalter aus, das Ergebnis bleibt,
+        /// wie es war.</param>
         /// <exception cref="GebaeudeModellException">bei jedem Fehler des Lösers oder der Plausibilität.</exception>
-        internal static GebaeudeModellErgebnis Laufen(GebaeudeModellEingang eingang, int index, int idGebaeude)
+        internal static GebaeudeModellErgebnis Laufen(GebaeudeModellEingang eingang, int index, int idGebaeude,
+                                                     Aufheizplan aufheizplan = null)
         {
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
 
@@ -538,6 +592,12 @@ namespace WindowsFormsApplication1
             double[] kBegrenzt = kuehlgekoppelt ? new double[8760] : null;
             double stundenKl = 0.0, stundenKk = 0.0, stundenGrenze = 0.0, ueberschreitung = 0.0;
 
+            // Stufe KP3 (Entwurf KP3, Festlegung 20, B1/B22): der Kappungsanteil von Heizleistung_Max je
+            // Stunde, auch ohne Kopplung - ein eigener Akkumulator neben stundenHl; keine bestehende Summe
+            // aendert ihre Reihenfolge, gelesen wird er nur in den neuen Feldern des Ergebnisses.
+            var kappung = new double[8760];
+            double kappungH = 0.0;
+
             for (int h = 0; h < 8760; h++)
             {
                 bool sommer = regel != null && regel.Stunde(h, luftVor, aussenVor);
@@ -555,6 +615,8 @@ namespace WindowsFormsApplication1
                 if (s.Abschnitte > 1) umschaltung++;
                 if (s.HeizleistungW > 0.0 && s.KuehlleistungW > 0.0) beides++;
                 summeW += s.HeizleistungW;
+                kappung[h] = s.HeizleistungMaxAnteil;
+                kappungH += s.HeizleistungMaxAnteil;
 
                 if (!Endlich(heiz[h]) || heiz[h] < 0.0 || !Endlich(kuehl[h]) || kuehl[h] < 0.0
                     || !Endlich(luft[h]) || !Endlich(op[h]))
@@ -632,6 +694,10 @@ namespace WindowsFormsApplication1
                 kuehlkreis = KuehlkreisErgebnis.Bilden(eingang, kVorlauf, kRuecklauf, kBegrenzt, stundenKl, stundenKk,
                                                        stundenGrenze, kuehlW, ueberschreitung);
             }
+            // Stufe KP3 (Welle R4): die Aufheizwerte aus Plan und Lauf - nur mit Plan (Schalter an).
+            Aufheizergebnis aufheizung = aufheizplan == null
+                ? null
+                : Aufheizergebnis.Bilden(aufheizplan, heiz, kappung, kappungH);
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, umschaltung, beides,
@@ -640,7 +706,7 @@ namespace WindowsFormsApplication1
                                                   ? (double?)eingang.KuehlSollwert : null,
                                               heizkreis, kuehlkreis, eingang.Nachtzeit,
                                               eingang.NachtauskuehlungWK != null ? (int?)nachtStunden : null,
-                                              eingang.Nutzungsmaske);
+                                              eingang.Nutzungsmaske, kappung, kappungH, aufheizung);
         }
 
         /// <summary>
@@ -790,6 +856,7 @@ namespace WindowsFormsApplication1
             HinweisNachtauskuehlung(e, r, wer);
             HinweisNutzungsmaske(e, wer);
             HinweisUntertemperatur(e, r, wer);
+            HinweisAufheizung(r.Aufheizung, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als
