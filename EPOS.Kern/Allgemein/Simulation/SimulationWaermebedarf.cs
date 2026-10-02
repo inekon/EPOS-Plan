@@ -258,6 +258,29 @@ namespace WindowsFormsApplication1
         private bool _anlagenkopplungGelesen;
 
         /// <summary>
+        /// Die Aufheizoptimierung dieses Projekts (<c>Tab_Einstellungen.Aufheizoptimierung</c> und
+        /// <c>Aufheiz_*</c>, Schemaschritt KP-S2; Entwurf KP3, Grundsatz 5) — gelesen EINMAL je Lauf und
+        /// Auskunft (zurückgesetzt in <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und
+        /// fehlende Spalte heißen „aus" (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>).
+        ///
+        /// <para><b>Eine Naht ohne Leser im Rechenweg:</b> Den Einbau in den VDI-Weg bringt die Welle R2
+        /// (eine Zeile neben <c>_vdi6007.Kuehlbetrieb</c>). Bis dahin liest kein Lauf die Einstellung,
+        /// und der Setter dient als Testnaht; <c>null</c> setzt „aus".</para>
+        /// </summary>
+        internal Aufheizvorgabe AufheizvorgabeProjekt
+        {
+            get
+            {
+                if (_aufheizvorgabeProjekt == null)
+                    _aufheizvorgabeProjekt = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+                return _aufheizvorgabeProjekt;
+            }
+            set { _aufheizvorgabeProjekt = value ?? Aufheizvorgabe.Aus; }
+        }
+
+        private Aufheizvorgabe _aufheizvorgabeProjekt;
+
+        /// <summary>
         /// Der projektierte Vorlauf des Heizkanals [°C] — der feste Vorlauf gekoppelter Gebäude
         /// ohne Heizkurve (<see cref="WErzeugerCtrl.VorlaufDesHeizkanals"/>). Gelesen einmal je
         /// Lauf und nur, wenn das Projekt eine Kopplungsstufe rechnet; NaN = keiner.
@@ -856,6 +879,10 @@ namespace WindowsFormsApplication1
             // Auskunft - hier neu, aus demselben Grund.
             _anlagenkopplungGelesen = false;
             _anlagenkopplungProjekt = null;
+
+            // AUFHEIZOPTIMIERUNG (KP3): die Projekteinstellung gilt je Lauf bzw. Auskunft - hier neu,
+            // aus demselben Grund.
+            _aufheizvorgabeProjekt = null;
             _anlagenVorlaufGelesen = false;
             _anlagenVorlaufC = double.NaN;
             _kuehlVorlaufGelesen = false;
