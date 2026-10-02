@@ -99,6 +99,11 @@ Aufteilung je Anlage (V‑4) — Schlüssel brutto aus der Strommatrix
 Korrektur um die entgangene Entlastung (Klarstellung 1, Konzept § 2.6)
   Vermieden_effektiv = Vermieden_brutto − Entlastungssatz(§ 9b) × vermiedene Menge
                        nur produzierendes Gewerbe / Land- und Forstwirtschaft
+  Abzug = max(0, (N + M) × s_eff − S) − max(0, N × s_eff − S)       (Konzept § 3.6, EZ‑22, EZ‑23)
+    s_eff = min(s, a) ; a = Stromsteueranteil des Netzträgers (Träger der Bezugsrolle) [€/MWh],
+            ohne gepflegten Anteil der Regelsatz der Stromsteuer, abgeschaltete Komponente 0
+    N = Netzbezug nach dem Lauf, M = vermiedene Menge, S = Sockelbetrag ; trägt N den Sockel,
+    ist der Abzug M × s_eff (Beispielprojekt: a = 20,50 ≥ s = 20,00 → 1.179,7 × 20,00)
 
 Welche Vorschrift hängt an der Unternehmensart (Klarstellung 2)
   § 53, § 53a Abs. 5 EnergieStG (BHKW-Brennstoff)     NEIN
