@@ -10,7 +10,7 @@ namespace EPOS.Kern.Tests
     /// <b>Rückfall „Schichtdicke in Millimetern"</b> des IFC-Lesers: CAD-Exporte erklären <c>METRE</c> als
     /// Längeneinheit, schreiben <c>IfcMaterialLayer.LayerThickness</c> aber in Millimetern. Liegt eine Dicke
     /// eines Schichtsatzes über 1 m, gilt der ganze Satz als Millimeter; Schichten unter 1 mm (Folien) werden
-    /// übergangen — beides mit Hinweis je Satz. Probe: <c>ifc4_schichtdicken_mm.ifc</c>.
+    /// übergangen — beides mit Sammelhinweis je Datei. Probe: <c>ifc4_schichtdicken_mm.ifc</c>.
     /// </summary>
     public sealed class IfcSchichtdickenTests : System.IDisposable
     {
@@ -35,14 +35,11 @@ namespace EPOS.Kern.Tests
 
             PruefMeldung mm = Assert.Single(a.Abbild.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
             Assert.Equal(PruefStufe.Warnung, mm.Stufe);
-            Assert.Equal(wand.Aufbau.Kennung, mm.Werte[0]);
-            Assert.Equal("Außenwand Millimeter", mm.Werte[1]);
-            Assert.Equal("200", mm.Werte[2]);
+            // Ein Sammelhinweis je Datei: ein Satz, größte Dicke 200 m nach der Dateieinheit, mit Satz und Name.
+            Assert.Equal(new[] { "1", "200", wand.Aufbau.Kennung, "Außenwand Millimeter" }, mm.Werte);
             PruefMeldung duenn = Assert.Single(a.Abbild.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN");
             Assert.Equal(PruefStufe.Info, duenn.Stufe);
-            Assert.Equal(wand.Aufbau.Kennung, duenn.Werte[0]);
-            Assert.Equal("1", duenn.Werte[2]);
-            Assert.Equal("Folie (0.2 mm)", duenn.Werte[3]);
+            Assert.Equal(new[] { "1", "Folie (0.2 mm) ×1" }, duenn.Werte);
             // Die Meldungen tragen einen Text in beiden Sprachen.
             foreach (string kultur in new[] { "de-DE", "en-US" })
                 foreach (string schluessel in new[] { "IMP_IFC_PROT_SCHICHTDICKE_MM", "IMP_IFC_PROT_SCHICHT_DUENN" })
@@ -58,9 +55,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, dach.Aufbau.Schichten.Count);
             BauteilvorschlagProbe.Nah(0.2, dach.Aufbau.Schichten[0].DickeM);
             BauteilvorschlagProbe.Nah(0.016, dach.Aufbau.Schichten[1].DickeM);
-            Assert.DoesNotContain(a.Abbild.Meldungen, m => (m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM"
-                                                            || m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN")
-                                                           && m.Werte[0] == dach.Aufbau.Kennung);
+            // Der Sammelhinweis zählt nur den Satz der Wand.
+            PruefMeldung mm = Assert.Single(a.Abbild.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
+            Assert.Equal("1", mm.Werte[0]);
+            Assert.NotEqual(dach.Aufbau.Kennung, mm.Werte[2]);
         }
 
         [Fact]

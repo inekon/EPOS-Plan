@@ -36205,7 +36205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“: Eine Schichtdicke liegt nach der Längeneinheit der Datei bei {2} m — der Schichtsatz gilt als in Millimetern geschrieben, alle Dicken werden durch 1000 geteilt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHTDICKE_MM {
             get {
@@ -36223,7 +36223,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“: {2} Schichten unter 1 mm übergangen ({3}) — sie tragen keine Wärmewirkung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHT_DUENN {
             get {

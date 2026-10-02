@@ -1389,22 +1389,30 @@ namespace WindowsFormsApplication1
         private readonly SortedDictionary<int, (string Kennung, string Name, double Groesste)> _schichtMillimeter
             = new SortedDictionary<int, (string Kennung, string Name, double Groesste)>();
 
-        /// <summary>Schichtsatz → Kennung, Name und die übergangenen Schichten unter der kleinsten Schichtdicke.</summary>
-        private readonly SortedDictionary<int, (string Kennung, string Name, SortedSet<string> Schichten)> _schichtDuenn
-            = new SortedDictionary<int, (string Kennung, string Name, SortedSet<string> Schichten)>();
+        /// <summary>Die schon gezählten Schichtsätze — ein Satz an mehreren Bauteilen zählt seine Folien einmal.</summary>
+        private readonly HashSet<int> _schichtsatzGezaehlt = new HashSet<int>();
+
+        /// <summary>Übergangene Schichten unter der kleinsten Schichtdicke: „Name (d mm)" → Zahl der Schichten.</summary>
+        private readonly SortedDictionary<string, int> _schichtDuenn = new SortedDictionary<string, int>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Die Hinweise der Schichtdicken, je Schichtsatz einer: als Millimeter gelesen (W) und Schichten unter
-        /// <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>, die übergangen sind (I).
+        /// Die Sammelhinweise der Schichtdicken, je Datei einer: Sätze als Millimeter gelesen (W, mit der
+        /// größten Dicke und ihrem Satz) und Schichten unter <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>,
+        /// die übergangen sind (I, nach Name und Dicke zusammengefasst).
         /// </summary>
         private void SchichtdickenMelden()
         {
-            foreach ((string kennung, string name, double groesste) in _schichtMillimeter.Values)
-                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "SCHICHTDICKE_MM", kennung, name ?? "—",
-                    Zahl(Math.Round(groesste, 3))));
-            foreach ((string kennung, string name, SortedSet<string> schichten) in _schichtDuenn.Values)
-                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "SCHICHT_DUENN", kennung, name ?? "—",
-                    Ganz(schichten.Count), string.Join(", ", schichten)));
+            if (_schichtMillimeter.Count > 0)
+            {
+                // Die größte Dicke; bei Gleichstand der Satz mit der kleinsten Kennung.
+                (string kennung, string name, double groesste) = _schichtMillimeter.Values
+                    .Aggregate((x, y) => y.Groesste > x.Groesste ? y : x);
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "SCHICHTDICKE_MM", Ganz(_schichtMillimeter.Count),
+                    Zahl(Math.Round(groesste, 3)), kennung, name ?? "—"));
+            }
+            if (_schichtDuenn.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "SCHICHT_DUENN", Ganz(_schichtDuenn.Values.Sum()),
+                    string.Join(", ", _schichtDuenn.Select(kv => kv.Key + " ×" + Ganz(kv.Value)))));
         }
 
         /// <summary>
@@ -1416,8 +1424,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Rückfall „Schichtdicke in Millimetern"</b>: Liegt nach der Längeneinheit der Datei
         /// mindestens eine Dicke des Satzes über <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MAX_M"/>, gilt
         /// der ganze Satz als in Millimetern geschrieben (CAD-Exporte mit <c>METRE</c> im Kopf): alle Dicken
-        /// durch 1000, ein Hinweis je Satz. Schichten unter <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>
-        /// (Folien, Anstriche) tragen keine Wärmewirkung und werden mit Hinweis übergangen.</para>
+        /// durch 1000, ein Sammelhinweis je Datei. Schichten unter <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>
+        /// (Folien, Anstriche) tragen keine Wärmewirkung und werden mit Sammelhinweis übergangen.</para>
         /// </summary>
         private AbbildAufbau Aufbau(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
@@ -1437,6 +1445,7 @@ namespace WindowsFormsApplication1
                                        .Select(d => d > 0.0 && !double.IsInfinity(d) ? d * _einheiten.Laenge : 0.0).ToArray();
             double groesste = dicken.Length == 0 ? 0.0 : dicken.Max();
             bool millimeter = groesste > GebaeudeFestwerte.SCHICHT_DICKE_MAX_M;
+            bool zaehlen = _schichtsatzGezaehlt.Add(satz.EntityLabel);
             if (millimeter)
             {
                 for (int i = 0; i < dicken.Length; i++) dicken[i] /= 1000.0;
@@ -1448,9 +1457,7 @@ namespace WindowsFormsApplication1
                 if (dicken[i] > 0.0 && dicken[i] < GebaeudeFestwerte.SCHICHT_DICKE_MIN_M)
                 {
                     // Folie, Anstrich: ohne Wärmewirkung — übergangen statt abgelehnt.
-                    if (!_schichtDuenn.ContainsKey(satz.EntityLabel))
-                        _schichtDuenn[satz.EntityLabel] = (a.Kennung, a.Name, new SortedSet<string>(StringComparer.Ordinal));
-                    _schichtDuenn[satz.EntityLabel].Schichten.Add((stoff?.Name.ToString() ?? "—") + " (" + Zahl(Math.Round(dicken[i] * 1000.0, 3)) + " mm)");
+                    if (zaehlen) Zaehlen(_schichtDuenn, (stoff?.Name.ToString() ?? "—") + " (" + Zahl(Math.Round(dicken[i] * 1000.0, 3)) + " mm)");
                     continue;
                 }
                 (double? lambda, double? rho, double? cp) = Stoffwerte(stoff);

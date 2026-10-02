@@ -1411,8 +1411,10 @@ Geometrierechnung (ADR-003):
 - **Schichtdicken in Millimetern:** Liegt nach der Längeneinheit der Datei eine Dicke eines
   `IfcMaterialLayerSet` über 1 m (der Export erklärt `METRE`, schreibt `LayerThickness` aber in
   Millimetern), gilt der ganze Satz als Millimeter und alle seine Dicken werden durch 1000 geteilt
-  (`IMP_IFC_PROT_SCHICHTDICKE_MM`, W, je Satz). Schichten unter 1 mm (Folien, Anstriche) tragen keine
-  Wärmewirkung und werden übergangen (`IMP_IFC_PROT_SCHICHT_DUENN`, I, je Satz); die Bauteildicke
+  (`IMP_IFC_PROT_SCHICHTDICKE_MM`, W, ein Sammelhinweis je Datei mit Zahl der Sätze und
+  größter Dicke samt Satz). Schichten unter 1 mm (Folien, Anstriche) tragen keine
+  Wärmewirkung und werden übergangen (`IMP_IFC_PROT_SCHICHT_DUENN`, I, je Datei, nach Name und Dicke
+  zusammengefasst); die Bauteildicke
   aus der Schichtsumme rechnet ohne sie.
 
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete

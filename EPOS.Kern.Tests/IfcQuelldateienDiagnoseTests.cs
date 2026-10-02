@@ -120,8 +120,12 @@ namespace EPOS.Kern.Tests
             using (FileStream s = File.OpenRead(pfad))
                 a.Lesen(s, pfad, new IfcImportProfil());
             Assert.True(a.Abbild != null && a.Abbild.Gebaeude.Count > 0, Text(a.Meldungen));
-            Assert.Contains(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
-            Assert.Contains(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN");
+            // Gebündelt: genau eine Warnung und genau ein Hinweis je Datei.
+            PruefMeldung mm = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
+            Assert.Equal(PruefStufe.Warnung, mm.Stufe);
+            PruefMeldung duenn = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN");
+            Assert.Equal(PruefStufe.Info, duenn.Stufe);
+            _aus.WriteLine(datei + ": " + Text(new[] { mm, duenn }));
 
             var abgleich = new Baustoffabgleich(BaustoffabgleichDaten.AusSaat());
             for (int gi = 0; gi < a.Abbild.Gebaeude.Count; gi++)
