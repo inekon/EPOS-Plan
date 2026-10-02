@@ -6752,6 +6752,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
     <value>Cost of heat generation (plant, fuel, electricity of the heat generators, less their revenues and the electricity credit for CHP electricity used in the project at the energy price, for a manufacturing business reduced by the forgone relief under § 9b StromStG), annualised, per kWh of heat demand; household electricity, PV and battery storage are not included</value>
   </data>
+  <data name="WIRT_GESTEHUNG_ALTER_LAUF" xml:space="preserve">
+    <value>stored run with the net present value of the whole project — the figure for heat generation only follows with the next calculation</value>
+  </data>
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Levelised cost of heat without electricity credit: no energy price of the electricity carrier is maintained for {0} MWh/a of CHP electricity used in the project.</value>
   </data>

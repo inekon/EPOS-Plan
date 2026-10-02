@@ -502,5 +502,41 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(alt.EnergiekostenJeTraeger);
             Assert.Empty(alt.EnergiekostenJeTraeger);
         }
+
+        /// <summary>
+        /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag vor Fassung 12 trägt die
+        /// Wärmegestehungskosten mit dem Kapitalwert des ganzen Projekts — die Kennzahl sagt es an der
+        /// Zelle („… mit der nächsten Rechnung"); Fassung 12 und ein frischer Lauf nicht, eine Zelle
+        /// ohne Zahl auch nicht.
+        /// </summary>
+        [Fact]
+        public void Ein_Lauf_vor_Fassung_12_traegt_den_Vermerk_an_der_Kennzahl()
+        {
+            Assert.Equal(12, ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG);
+
+            var alt = new WirtschaftlichkeitErgebnis { IdProjekt = 1, IstStamm = true, Gestehungskosten = 0.12 };
+            ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":11}").Uebernimm(alt);
+            Assert.True(alt.GestehungAlteFormel);
+
+            var neu = new WirtschaftlichkeitErgebnis { IdProjekt = 2, Gestehungskosten = 0.11 };
+            ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}").Uebernimm(neu);
+            Assert.False(neu.GestehungAlteFormel);
+
+            var frisch = new WirtschaftlichkeitErgebnis { IdProjekt = 3, Gestehungskosten = 0.10 };
+            string grund;
+            ErgebnisNachweisUmschlag.Lesen(ErgebnisNachweisUmschlag.Schreiben(frisch, out grund)).Uebernimm(frisch);
+            Assert.False(frisch.GestehungAlteFormel);
+
+            var ohneZahl = new WirtschaftlichkeitErgebnis { IdProjekt = 4, GestehungAlteFormel = true };
+
+            var menge = new List<WirtschaftlichkeitErgebnis> { alt, neu, frisch, ohneZahl };
+            WirtZeile geste = WirtschaftlichkeitZeilen.Kennzahlen(menge, new TarifParameter(), 0, true)
+                                                      .Single(z => z.Schluessel == "GESTEHUNGSKOSTEN");
+            Assert.Equal(R.WIRT_GESTEHUNG_ALTER_LAUF, geste.Warnung(alt));
+            Assert.Contains("nächsten Rechnung", geste.Warnung(alt));
+            Assert.Equal("", geste.Warnung(neu));
+            Assert.Equal("", geste.Warnung(frisch));
+            Assert.Equal("", geste.Warnung(ohneZahl));
+        }
     }
 }

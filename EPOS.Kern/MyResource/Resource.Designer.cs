@@ -98147,6 +98147,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gespeicherter Lauf mit dem Kapitalwert des ganzen Projekts — die Zahl nur der Wärmeerzeugung liegt mit der nächsten Rechnung vor ähnelt.
+        /// </summary>
+        public static string WIRT_GESTEHUNG_ALTER_LAUF {
+            get {
+                return ResourceManager.GetString("WIRT_GESTEHUNG_ALTER_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse und der Stromgutschrift für BHKW-Eigenstrom zum Arbeitspreis, bei produzierendem Gewerbe gemindert um die entgangene Entlastung nach § 9b StromStG), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht ähnelt.
         /// </summary>
         public static string WIRT_GESTEHUNG_KURZTEXT {

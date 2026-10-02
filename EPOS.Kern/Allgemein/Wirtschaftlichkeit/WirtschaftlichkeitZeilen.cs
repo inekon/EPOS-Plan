@@ -1036,6 +1036,11 @@ namespace WindowsFormsApplication1
                                    e => e.Gestehungskosten);
             geste.Format = "N3"; geste.ExcelFormat = "#,##0.000";
             geste.Kurztext = MyResource.Resource.WIRT_GESTEHUNG_KURZTEXT;
+            // P646: Ein gespeicherter Lauf vor dieser Regel (Nachweisumschlag älter als Fassung 12
+            // oder keiner) trägt die Zahl mit dem Kapitalwert des ganzen Projekts — die Kennzahl
+            // sagt es an der Zelle, wie „Menge × Preis" unter den Energiekosten.
+            geste.Warntext = e => e != null && e.GestehungAlteFormel && e.Gestehungskosten.HasValue
+                                  ? MyResource.Resource.WIRT_GESTEHUNG_ALTER_LAUF : "";
             z.Add(geste);
 
             z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,

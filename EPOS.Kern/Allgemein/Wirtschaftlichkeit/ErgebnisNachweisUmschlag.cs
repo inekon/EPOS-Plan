@@ -63,6 +63,14 @@ namespace WindowsFormsApplication1
         /// die Aufstellung; die Zeile sagt dann, dass sie mit der nächsten Rechnung vorliegt.</para></summary>
         public const int FASSUNG = 12;
 
+        /// <summary>
+        /// Die erste Fassung, deren Lauf die Wärmegestehungskosten „nur Wärmeerzeuger" rechnet
+        /// (Welle #642, <see cref="Waermegestehung"/>). Ein Lauf mit älterem Umschlag — oder ganz
+        /// ohne — trägt die Zahl mit dem Kapitalwert des ganzen Projekts; die Kennzahl sagt es
+        /// (<see cref="WirtschaftlichkeitErgebnis.GestehungAlteFormel"/>, P646).
+        /// </summary>
+        public const int FASSUNG_WAERMEGESTEHUNG = 12;
+
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
         public const int FASSUNG_MINDESTENS = 1;
@@ -335,6 +343,9 @@ namespace WindowsFormsApplication1
             e.EnergiekostenJeAnlage = EnergiekostenJeAnlage;
             // Fassung 12 — einem älteren Umschlag fehlt die Aufstellung je Träger: leere Liste.
             e.EnergiekostenJeTraeger = EnergiekostenJeTraeger ?? new List<EnergieTraegerNachweis>();
+            // Fassung 12 — vor ihr rechnete der Lauf die Wärmegestehungskosten mit dem Kapitalwert
+            // des ganzen Projekts; die Kennzahl trägt dann den Vermerk (P646).
+            e.GestehungAlteFormel = Version < FASSUNG_WAERMEGESTEHUNG;
             e.Betriebskosten = Betriebskosten;
             e.KohaerenzHinweise = KohaerenzHinweise;
             e.VermiedenMengeMWh = VermiedenMengeMWh;

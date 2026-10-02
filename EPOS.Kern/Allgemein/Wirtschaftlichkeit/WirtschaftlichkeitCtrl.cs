@@ -9219,6 +9219,9 @@ namespace WindowsFormsApplication1
                         e.OhneNachweis = !r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) ||
                                          r[SPALTE_NACHWEIS_JSON] == DBNull.Value ||
                                          string.IsNullOrWhiteSpace(Convert.ToString(r[SPALTE_NACHWEIS_JSON]));
+                        // P646: Ohne Umschlag ist die Wärmegestehung die mit dem Kapitalwert des
+                        // ganzen Projekts; ein lesbarer Umschlag sagt es nach seiner Fassung (Uebernimm).
+                        e.GestehungAlteFormel = e.OhneNachweis;
 
                         if (r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) &&
                             r[SPALTE_NACHWEIS_JSON] != DBNull.Value)

@@ -1651,6 +1651,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Gestehungskosten;
 
+        /// <summary>
+        /// <c>true</c> = dieses Ergebnis ist geladen und trägt einen Nachweisumschlag vor der Fassung
+        /// <see cref="ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG"/> oder keinen: Seine
+        /// <see cref="Gestehungskosten"/> sind mit dem Kapitalwert des ganzen Projekts gerechnet. Die
+        /// Kennzahl sagt es (<c>WIRT_GESTEHUNG_ALTER_LAUF</c>), wie die Zeile „Menge × Preis" bei
+        /// einem Lauf ohne Aufstellung; die Zahl nur der Wärmeerzeugung liegt mit der nächsten
+        /// Rechnung vor. Ein frisch gerechnetes Ergebnis trägt immer <c>false</c>.
+        /// </summary>
+        public bool GestehungAlteFormel;
+
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
     }
