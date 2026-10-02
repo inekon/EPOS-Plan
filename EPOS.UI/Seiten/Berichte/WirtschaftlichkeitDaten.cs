@@ -606,6 +606,14 @@ public sealed class WirtschaftlichkeitStand
     /// <summary>Die Statuszeile beim Aufbau (gespeicherter Stand, veraltet, keiner).</summary>
     public string Statuszeile { get; set; } = "";
 
+    /// <summary>
+    /// Warum die gespeicherten Ergebnisse nicht mehr gelten — der gewichtigste Grund über alle
+    /// gespeicherten Zeilen der Gruppe (<c>WirtschaftlichkeitCtrl.Veraltung</c>,
+    /// <c>KostenAenderungsstempel.Vorrang</c>); <see cref="WindowsFormsApplication1.Ergebnisveraltung.Keine"/>,
+    /// wenn sie gelten oder keine gespeichert sind. Statuszeile und Band nennen ihn.
+    /// </summary>
+    public WindowsFormsApplication1.Ergebnisveraltung NachrechnenGrund { get; set; }
+
     // =====================================================================
     // KONZEPT § 2.9 und § 2.15 — Referenz und Vergleichssicht
     // =====================================================================
