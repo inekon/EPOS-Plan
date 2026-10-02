@@ -155,7 +155,9 @@ wird: die gepflegte Jahressumme der Zuordnungszeile statt der Summe der Kopie. M
 
 ## 7 Gate
 
-Gate auf dem Merge-Stand: siehe Statuszeile der Hauptsitzung.
+Gate #641 auf dem Merge-Stand `cce8bfd92` (Statuszeile #641): Kern-Filter 0 Fehler, ChartProben 200 Hashes gleich der
+Messlatte, Tests Kern 9 633 grün und 7 rot — Fassungspins von 1017/1047 auf R29-Stand in `StromStufeneingangKlemmeTests`, `BhkwStromdeckungTests`, `BhkwEinspeisungAusweisTests` (Stufeneingang 635,2/640,19 → 7,35/8,25 MWh, Stromdeckung 5,31/5,30 → 55,15/56,20 %, Einspeisung 0 → 17,12/24,60 MWh), nachgezogen, die drei Klassen danach 40/40 grün; UI 7 206, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27, Dokumentationswachen 35 grün, Referenzlauf der sechzehn Projekte gegen R30 16/16 PASS, 487/487 CSV byte-gleich,
+Plattformnachweis 16/16 PASS. Zuvor der volle Testlauf des Parkzweigs auf dem vereinigten Stand.
 
 ## 8 Wiki und Logbuch
 
@@ -164,12 +166,13 @@ Keine Repo-Quelle unter `Projekte/Wiki/` beschreibt die Zuordnung der Stromverbr
 gepflegte Jahressumme eines Stromverbrauchers gilt auch dann, wenn seine Projektkopie anders heißt als der
 Katalogeintrag.“
 
-## 9 Offen (Anwenderfrage)
+## 9 Entscheide des Anwenders (02.10.2026)
 
-1. **Dieselbe ID-Regel für Brauchwasser und Prozesswärme?** `Z_Projekt_Brauchwasser` und `Z_Projekt_Prozesswaerme`
-   führen mit `ID_Brauchwasser` und `ID_Prozesswaerme` dieselbe Spalte auf die Projektkopie. Dort gilt der
-   Projektfilter schon, die Jahressumme wird aber weiter über den Bezeichner gesucht (`ZuordnungIdSpalte` ist nicht
-   gesetzt). In der Testdatenbank trägt keine ihrer Zuordnungszeilen (19 bzw. eine) einen anderen Namen als ihre Kopie.
-2. **Neue Einfrierregel „gesäte Stromverbraucherdaten“?** R30 hängt an der gepflegten Jahressumme 15 MWh/a der
-   Zuordnungszeilen von 1017 und 1047; `CLAUDE.md` führt für die Stromverbraucherdaten der Referenzprojekte
-   (Zuordnungszeilen, Projektkopien, Wochenprofile) bisher keine Einfrierregel.
+1. **Dieselbe ID-Regel für Brauchwasser und Prozesswärme: ja** — eigene Welle SV2. Befund vorab: `Z_Projekt_Brauchwasser`
+   und `Z_Projekt_Prozesswaerme` führen mit `ID_Brauchwasser` und `ID_Prozesswaerme` dieselbe Spalte auf die Projektkopie,
+   die Typtabellen ebenso; der Projektfilter gilt dort schon, Kopf und Jahressumme laufen aber über den Bezeichner
+   (`ZuordnungIdSpalte` nicht gesetzt). Beim Brauchwasser würde die Summe wie beim Strom überlesen, bei der Prozesswärme
+   fehlte der Kopfsatz, weil die Sicht den Zuordnungsnamen liefert. In der Testdatenbank trägt keine Zuordnungszeile
+   (19 bzw. eine) einen anderen Namen als ihre Kopie; R30 bleibt unberührt, kein Schemaschritt nötig.
+2. **Einfrierregel „gesäte Bedarfsdaten“: ja** — in `CLAUDE.md` (Regressionsnetz) für die Zuordnungszeilen,
+   Projektkopien und Typsätze der Stromverbraucher, des Brauchwassers und der Prozesswärme eines Referenzprojekts.

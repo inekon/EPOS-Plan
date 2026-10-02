@@ -215,7 +215,12 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Mindestlaufzeit_min`), sein Schalter `Brennwert` und die Bauart in `Beschreibung`, die über die
   Normvorgaben von η₃₀ und Mindestleistung entscheiden, beim Referenzprojekt 1050 dazu, was den Rücklauf seiner
   Brennwertkennlinie bestimmt (Temperaturpaar an Anlage und Kessel, Senken des Kessels,
-  Kopplungsstufe), und das Anlegen oder Entfernen des Referenzprojekts 1050.
+  Kopplungsstufe), und das Anlegen oder Entfernen des Referenzprojekts 1050;
+- gesäte Bedarfsdaten eines Referenzprojekts: seine Zuordnungszeilen für Stromverbraucher, Brauchwasser und
+  Prozesswärme (`Z_Projekt_Stromverbraucher`, `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme` — ID der
+  Projektkopie und gepflegte `Summe`), die zugeordneten Projektkopien samt Typsätzen (`Tab_Stromverbraucher` und
+  `Tab_Stromverbrauchertyp`, `Tab_Brauchwasser` und `Tab_Brauchwassertyp`, `Tab_Prozesswaerme` und `Tab_Prozesstyp`)
+  und das Anlegen oder Entfernen einer solchen Zuordnung.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
