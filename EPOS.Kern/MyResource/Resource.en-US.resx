@@ -38835,6 +38835,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
   </data>
+  <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
+    <value>Building {0}: {1} storeys and {2} spaces are attached by containment (IfcRelContainedInSpatialStructure) instead of decomposition (IfcRelAggregates) — they are imported as if decomposed.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MENGE_RUECKFALL" xml:space="preserve">
+    <value>Building {0}: {1} spaces without Qto_SpaceBaseQuantities.{2} — the value is taken from quantity {4} in quantity set {3}.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>

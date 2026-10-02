@@ -219,7 +219,11 @@ namespace WindowsFormsApplication1
             Baujahr(b, g);
 
             var besucht = new HashSet<int>();
+            _enthalteneGeschosse = _enthalteneRaeume = 0;
             Struktur(b, index, null, besucht);
+            if (_enthalteneGeschosse + _enthalteneRaeume > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "STRUKTUR_ENTHALTEN", g.Anzeigename,
+                    Ganz(_enthalteneGeschosse), Ganz(_enthalteneRaeume)));
 
             List<AbbildRaum> raeume = g.Raeume;
             g.ZahlGeschosseMitRaeumen = raeume.Select(r => r.GeschossKennung).Where(s => s != null).Distinct(StringComparer.Ordinal).Count();
@@ -244,6 +248,13 @@ namespace WindowsFormsApplication1
         /// Läuft die räumliche Struktur eines Gebäudes ab: Zerlegung (<c>IsDecomposedBy</c>) und Enthaltensein
         /// (<c>ContainsElements</c>). Ein eingeschachteltes <c>IfcBuilding</c> ist ein eigenes Gebäude und wird
         /// hier nicht betreten; Zonen hängen nicht an der Zerlegung und bleiben ohnehin draußen.
+        ///
+        /// <para><b>Räumliche Elemente über das Enthaltensein</b> (Mehrzonenkonzept 6.5): Manche CAD-Exporte
+        /// hängen Geschosse und Räume nicht über <c>IfcRelAggregates</c>, sondern über
+        /// <c>IfcRelContainedInSpatialStructure</c> an — das Schema lässt jedes <c>IfcProduct</c> zu. Solche
+        /// Kinder werden wie zerlegte betreten, aber erst NACH der Zerlegung: Was beide Wege erreichen, nimmt
+        /// den Weg der Zerlegung (Geschoss), und jedes räumliche Element zählt einmal
+        /// (<paramref name="besucht"/>). Gezählt wird für <c>IMP_IFC_PROT_STRUKTUR_ENTHALTEN</c>.</para>
         /// </summary>
         private void Struktur(IIfcObjectDefinition knoten, int gi, IIfcBuildingStorey geschoss, HashSet<int> besucht)
         {
@@ -255,10 +266,15 @@ namespace WindowsFormsApplication1
             }
             if (knoten is IIfcSpace raum) RaumAnlegen(raum, gi, geschoss);
 
+            List<IIfcSpatialElement> enthalten = null;
             if (knoten is IIfcSpatialElement raeumlich)
                 foreach (IIfcRelContainedInSpatialStructure rel in _bezuege.Enthaelt(raeumlich))
-                    foreach (IIfcElement e in rel.RelatedElements.OfType<IIfcElement>().OrderBy(x => x.EntityLabel))
-                        ElementZuordnen(e, gi, geschoss, besucht);
+                    foreach (IIfcProduct p in rel.RelatedElements.OrderBy(x => x.EntityLabel))
+                    {
+                        if (p is IIfcElement e) ElementZuordnen(e, gi, geschoss, besucht);
+                        else if (p is IIfcSpatialElement kindRaum && !(p is IIfcBuilding))
+                            (enthalten ??= new List<IIfcSpatialElement>()).Add(kindRaum);
+                    }
 
             foreach (IIfcRelAggregates rel in _bezuege.ZerlegtDurch(knoten))
                 foreach (IIfcObjectDefinition kind in rel.RelatedObjects.OrderBy(x => x.EntityLabel))
@@ -267,7 +283,19 @@ namespace WindowsFormsApplication1
                     if (kind is IIfcSpatialElement) Struktur(kind, gi, geschoss, besucht);
                     else if (kind is IIfcElement e) ElementZuordnen(e, gi, geschoss, besucht);
                 }
+
+            if (enthalten == null) return;
+            foreach (IIfcSpatialElement kind in enthalten)
+            {
+                if (besucht.Contains(kind.EntityLabel)) continue;
+                if (kind is IIfcBuildingStorey) _enthalteneGeschosse++;
+                else if (kind is IIfcSpace) _enthalteneRaeume++;
+                Struktur(kind, gi, geschoss, besucht);
+            }
         }
+
+        /// <summary>Geschosse und Räume des laufenden Gebäudes, die allein über das Enthaltensein hängen.</summary>
+        private int _enthalteneGeschosse, _enthalteneRaeume;
 
         private void ElementZuordnen(IIfcElement e, int gi, IIfcBuildingStorey geschoss, HashSet<int> besucht)
         {
@@ -313,6 +341,60 @@ namespace WindowsFormsApplication1
 
         private readonly Dictionary<int, double?[]> _raumflaechen = new Dictionary<int, double?[]>();
 
+        // ------------------------------------------------------------------
+        //  Mengenrückfall der Räume (Mehrzonenkonzept 6.5)
+        // ------------------------------------------------------------------
+
+        /// <summary>Rückfall der Nettofläche, wenn weder <c>NetFloorArea</c> noch <c>GrossFloorArea</c> im Qto steht.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_NETTOFLAECHE = new[] { "NetFloorArea", "Area", "NetArea" };
+
+        /// <summary>Rückfall der Bruttofläche — nur gelesen, wenn auch die Nettofläche fehlt.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_BRUTTOFLAECHE = new[] { "GrossFloorArea", "GrossArea" };
+
+        /// <summary>Rückfall des Volumens, wenn weder <c>NetVolume</c> noch <c>GrossVolume</c> im Qto steht.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_VOLUMEN = new[] { "NetVolume", "GrossVolume", "Volume" };
+
+        /// <summary>Rückfall der Raumhöhe, wenn <c>Height</c> nicht im Qto steht.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_HOEHE = new[] { "Height", "FinishCeilingHeight" };
+
+        /// <summary>Raum → Herkunft der zurückgefallenen Fläche je Platz (0 netto, 1 brutto).</summary>
+        private readonly Dictionary<int, (string Satz, string Name)?[]> _flaechenRueckfall = new Dictionary<int, (string Satz, string Name)?[]>();
+
+        /// <summary>Gebäude → genutzte Rückfälle (Zielmenge, Satz, Menge) in Lesereihenfolge.</summary>
+        private readonly Dictionary<int, List<(string Ziel, string Satz, string Name)>> _rueckfaelle
+            = new Dictionary<int, List<(string Ziel, string Satz, string Name)>>();
+
+        private double? Rueckfall(IIfcSpace s, IReadOnlyList<string> namen, out (string Satz, string Name)? herkunft)
+        {
+            double? w = IfcEigenschaften.MengeRueckfall(_bezuege, s, namen, _einheiten, out string satz, out string name);
+            herkunft = w.HasValue ? (satz, name) : ((string, string)?)null;
+            return w;
+        }
+
+        private void RueckfallMerken(int gi, string ziel, (string Satz, string Name) herkunft)
+        {
+            if (!_rueckfaelle.TryGetValue(gi, out List<(string Ziel, string Satz, string Name)> liste))
+                _rueckfaelle[gi] = liste = new List<(string Ziel, string Satz, string Name)>();
+            liste.Add((ziel, herkunft.Satz, herkunft.Name));
+        }
+
+        /// <summary>
+        /// Benennt die genutzten Rückfälle eines Gebäudes — eine Warnung je Zielmenge, Satz und Menge
+        /// (<c>IMP_IFC_PROT_MENGE_RUECKFALL</c>): Der Anwender sieht, welcher Mengenname galt.
+        /// </summary>
+        private void RueckfaelleMelden(int gi)
+        {
+            if (!_rueckfaelle.TryGetValue(gi, out List<(string Ziel, string Satz, string Name)> liste)) return;
+            AbbildGebaeude g = _abbild.Gebaeude[gi];
+            string[] reihenfolge = { "NetFloorArea", "GrossFloorArea", "NetVolume", "Height" };
+            foreach (var gruppe in liste.GroupBy(x => x)
+                                        .OrderBy(x => Array.IndexOf(reihenfolge, x.Key.Ziel))
+                                        .ThenBy(x => x.Key.Satz, StringComparer.Ordinal)
+                                        .ThenBy(x => x.Key.Name, StringComparer.Ordinal))
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "MENGE_RUECKFALL", g.Anzeigename,
+                    Ganz(gruppe.Count()), gruppe.Key.Ziel, gruppe.Key.Satz, gruppe.Key.Name));
+        }
+
         private void RaumAnlegen(IIfcSpace s, int gi, IIfcBuildingStorey geschoss)
         {
             if (_raum.ContainsKey(s.EntityLabel)) return;
@@ -326,14 +408,32 @@ namespace WindowsFormsApplication1
                 Name = langname ?? name,
                 GeschossKennung = geschoss?.GlobalId.ToString(),
             };
-            _raumflaechen[s.EntityLabel] = new[]
+            double?[] flaechen =
             {
                 IfcEigenschaften.Menge(_bezuege, s, "Space", "NetFloorArea", _einheiten),
                 IfcEigenschaften.Menge(_bezuege, s, "Space", "GrossFloorArea", _einheiten),
             };
+            if (!(flaechen[0] > 0.0) && !(flaechen[1] > 0.0))
+            {
+                var herkunft = new (string Satz, string Name)?[2];
+                flaechen[0] = Rueckfall(s, RUECKFALL_NETTOFLAECHE, out herkunft[0]);
+                flaechen[1] = Rueckfall(s, RUECKFALL_BRUTTOFLAECHE, out herkunft[1]);
+                if (herkunft[0].HasValue || herkunft[1].HasValue) _flaechenRueckfall[s.EntityLabel] = herkunft;
+            }
+            _raumflaechen[s.EntityLabel] = flaechen;
             r.HoeheM = Positiv(IfcEigenschaften.Menge(_bezuege, s, "Space", "Height", _einheiten));
+            if (!r.HoeheM.HasValue)
+            {
+                r.HoeheM = Rueckfall(s, RUECKFALL_HOEHE, out (string Satz, string Name)? h);
+                if (h.HasValue) RueckfallMerken(gi, "Height", h.Value);
+            }
             r.VolumenM3 = Positiv(IfcEigenschaften.Menge(_bezuege, s, "Space", "NetVolume", _einheiten)
                                   ?? IfcEigenschaften.Menge(_bezuege, s, "Space", "GrossVolume", _einheiten));
+            if (!r.VolumenM3.HasValue)
+            {
+                r.VolumenM3 = Rueckfall(s, RUECKFALL_VOLUMEN, out (string Satz, string Name)? v);
+                if (v.HasValue) RueckfallMerken(gi, "NetVolume", v.Value);
+            }
 
             r.SollHeizenC = Sollwert(s);
             Beheizung(s, r, langname, name, g);
@@ -582,8 +682,13 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<int, AbbildRaum> kv in raeume)
             {
                 double?[] f = _raumflaechen[kv.Key];
-                kv.Value.FlaecheM2 = kv.Value.Beheizt ? Positiv(f[quelle]) : Positiv(f[0] ?? f[1]);
+                int platz = kv.Value.Beheizt ? quelle : f[0].HasValue ? 0 : 1;
+                kv.Value.FlaecheM2 = Positiv(f[platz]);
+                if (kv.Value.FlaecheM2.HasValue && _flaechenRueckfall.TryGetValue(kv.Key, out (string Satz, string Name)?[] herkunft)
+                    && herkunft[platz].HasValue)
+                    RueckfallMerken(gi, platz == 0 ? "NetFloorArea" : "GrossFloorArea", herkunft[platz].Value);
             }
+            RueckfaelleMelden(gi);
 
             if (raeume.Count == 0 || raeume.All(kv => !(_raumflaechen[kv.Key][0] > 0.0) && !(_raumflaechen[kv.Key][1] > 0.0)))
                 g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEINE_RAEUME", g.Anzeigename, Ganz(raeume.Count)));

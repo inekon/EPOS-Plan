@@ -35935,6 +35935,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_MENGE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_MENGE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_NETTOFLAECHE_NEGATIV {
@@ -36075,6 +36084,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_STOFFWERT_NULL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_STOFFWERT_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
             }
         }
         

@@ -38842,6 +38842,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
   </data>
+  <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
+    <value>Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MENGE_RUECKFALL" xml:space="preserve">
+    <value>Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>

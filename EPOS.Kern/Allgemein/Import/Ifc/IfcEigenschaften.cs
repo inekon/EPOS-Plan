@@ -127,7 +127,37 @@ namespace WindowsFormsApplication1
         public static double? Menge(IfcRueckbezuege bezuege, IIfcObject objekt, string klasse, string name, IfcEinheiten einheiten)
         {
             IIfcPhysicalSimpleQuantity q = MengeFinden(bezuege, objekt, klasse, name);
-            if (q == null) return null;
+            return q == null ? null : Wert(q, einheiten);
+        }
+
+        /// <summary>
+        /// <b>Der Mengenrückfall</b> (Mehrzonenkonzept 6.5): die erste Menge eines der <paramref name="namen"/>
+        /// (in dieser Reihenfolge) mit positivem Wert, gesucht in ALLEN Mengensätzen des Vorkommnisses —
+        /// auch unter einem fremden Satznamen (ein CAD-Export schreibt etwa <c>HSETU_RaumQuantities</c>).
+        /// <paramref name="satz"/> und <paramref name="gefunden"/> nennen, woher der Wert stammt; <c>null</c> = keiner.
+        /// </summary>
+        public static double? MengeRueckfall(IfcRueckbezuege bezuege, IIfcObject objekt, IReadOnlyList<string> namen,
+                                             IfcEinheiten einheiten, out string satz, out string gefunden)
+        {
+            satz = null;
+            gefunden = null;
+            List<IIfcElementQuantity> saetze = Saetze(bezuege, objekt).OfType<IIfcElementQuantity>().ToList();
+            foreach (string name in namen)
+                foreach (IIfcElementQuantity s in saetze)
+                    foreach (IIfcPhysicalSimpleQuantity q in s.Quantities.OfType<IIfcPhysicalSimpleQuantity>())
+                    {
+                        if (!Gleich(q.Name.ToString(), name)) continue;
+                        double? w = Wert(q, einheiten);
+                        if (!(w > 0.0) || double.IsInfinity(w.Value)) continue;
+                        satz = Text(s.Name) ?? "";
+                        gefunden = q.Name.ToString();
+                        return w;
+                    }
+            return null;
+        }
+
+        private static double? Wert(IIfcPhysicalSimpleQuantity q, IfcEinheiten einheiten)
+        {
             switch (q)
             {
                 case IIfcQuantityArea a:
