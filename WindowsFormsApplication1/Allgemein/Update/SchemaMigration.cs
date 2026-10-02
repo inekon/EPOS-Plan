@@ -4884,6 +4884,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_SOLARTHERMIE_FELDER = SolarthermieFelderSchema.SCHRITT;
 
+        // ---- Welle M5 Strom in Viertelstunden: Einspeisegrenze und Selbstentladung ----
+
+        /// <summary>
+        /// Schritt <see cref="StromViertelstundenSchema.SCHRITT"/> — <b>die Einspeisegrenze des Projekts
+        /// und die Selbstentladung des Stromspeichers</b> (Welle M5 der Entscheidungsvorlage Modellgrenzen:
+        /// PV3, SP1). Er folgt auf <see cref="SCHRITT_SOLARTHERMIE_FELDER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Einstellungen</c> die nullbaren Spalten
+        /// <c>Einspeisegrenze_Wert</c> und <c>Einspeisegrenze_Einheit</c>, an <c>Tab_Stromspeicher_STAMM</c>
+        /// und <c>Tab_Stromspeicher</c> die Spalte <c>Selbstentladung_Prozent_Monat</c>, alle mit
+        /// Prüfklausel. Die Anweisungen stehen bei <see cref="StromViertelstundenSchema"/>, die Nummer
+        /// allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten heißen keine
+        /// Einspeisegrenze und keine Selbstentladung.</para>
+        /// </summary>
+        public const int SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7044,6 +7062,16 @@ namespace WindowsFormsApplication1
                         "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen ihre " +
                         "Vorgaben, jeder Kollektorsatz bekommt die Aperturflaeche.",
                         Schritt_SolarthermieFelder),
+            // WELLE M5 STROM IN VIERTELSTUNDEN - die Einspeisegrenze an der Projekteinstellung und die
+            // Selbstentladung am Stromspeicher. REIN DDL; die Quelle ist StromViertelstundenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROM_VIERTELSTUNDEN,
+                        "Tab_Einstellungen: Einspeisegrenze_Wert, Einspeisegrenze_Einheit; " +
+                        "Tab_Stromspeicher(_STAMM): Selbstentladung_Prozent_Monat",
+                        "Die Einspeisegrenze des Projekts und die Selbstentladung des Stromspeichers " +
+                        "haetten keinen Ort. KEIN Rechenergebnis aendert sich - die Felder entstehen leer " +
+                        "und heissen keine Grenze und keine Selbstentladung.",
+                        Schritt_StromViertelstunden),
         };
 
         /// <summary>
@@ -12573,6 +12601,49 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Felder des Kollektorfelds - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. Vorgabe apertur).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einspeisegrenze und Selbstentladung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/>, die Anweisungen bei
+        /// <see cref="StromViertelstundenSchema"/>. <b>Wiederholbar</b>:
+        /// <c>StromViertelstundenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_StromViertelstunden(Lauf l)
+        {
+            string nr = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromViertelstundenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(StromViertelstundenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!StromViertelstundenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Einspeisegrenze und der Selbstentladung an " +
+                                  StromViertelstundenSchema.TAB_EINSTELLUNGEN + ", " +
+                                  StromViertelstundenSchema.TAB_KATALOG_STAMM + " und " +
+                                  StromViertelstundenSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einspeisegrenze und Selbstentladung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN DML.");
             return true;
         }

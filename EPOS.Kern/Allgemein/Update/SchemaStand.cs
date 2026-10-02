@@ -778,11 +778,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="SolarthermieFelderSchema"/>). <b>Ergebnisneutral:</b> Die Anlagenspalten entstehen
         /// leer und rechnen ihre Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche. Die Nummer steht
         /// allein bei <see cref="SolarthermieFelderSchema.SCHRITT"/>.
+        /// Danach, mit der EINSPEISEGRENZE UND DER SELBSTENTLADUNG (Welle M5 „Strom in Viertelstunden"
+        /// der Entscheidungsvorlage Modellgrenzen, PV3 und SP1), steht das Ziel auf
+        /// <see cref="StromViertelstundenSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> die nullbaren
+        /// Spalten <c>Einspeisegrenze_Wert</c> (≥ 0) und <c>Einspeisegrenze_Einheit</c> ('kW'/'%'), an
+        /// <c>Tab_Stromspeicher_STAMM</c> und <c>Tab_Stromspeicher</c> <c>Selbstentladung_Prozent_Monat</c>
+        /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
+        /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
+        /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = SolarthermieFelderSchema.SCHRITT;
+        public const int Zielversion = StromViertelstundenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

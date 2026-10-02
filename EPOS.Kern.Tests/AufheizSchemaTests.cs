@@ -212,8 +212,9 @@ namespace EPOS.Kern.Tests
             Assert.Empty(KostenStempelSchema.FehlendeTrigger());
 
             List<string> einst = DataRepository.SpaltenVonTabelle("Tab_Einstellungen");
-            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL, einst.Count);
-            Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).ToArray());
+            // Hinter der Aufheizoptimierung stehen die Spalten der Einspeisegrenze (StromViertelstundenSchema).
+            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL + StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length, einst.Count);
+            Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).Take(SPALTEN_VORGABE.Length).ToArray());
             List<string> geb = DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude");
             Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(geb.Count - 14).ToArray());
@@ -280,7 +281,8 @@ namespace EPOS.Kern.Tests
             foreach (string sp in SPALTEN_VORGABE)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"" + sp + "\"");
             Assert.False(AufheizvorgabeSchema.Vollstaendig());
-            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL_VORHER, DataRepository.SpaltenVonTabelle("Tab_Einstellungen").Count);
+            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL_VORHER + StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length,
+                         DataRepository.SpaltenVonTabelle("Tab_Einstellungen").Count);
             Assert.Equal(5, AufheizvorgabeSchema.Anweisungen.Count());
 
             var bericht = new List<string>();
@@ -302,7 +304,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, AufheizvorgabeSchema.Ausfuehren(null));
             Assert.True(AufheizvorgabeSchema.Vollstaendig());
             Assert.Equal(SPALTEN_VORGABE.Take(3).Concat(new[] { "Aufheiz_Art", "Aufheiz_Reserve" }).ToArray(),
-                         DataRepository.SpaltenVonTabelle("Tab_Einstellungen").Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).ToArray());
+                         DataRepository.SpaltenVonTabelle("Tab_Einstellungen").Where(s => s.StartsWith("Aufheiz", StringComparison.Ordinal)).ToArray());
             Assert.Empty(KostenStempelSchema.FehlendeTrigger());
         }
 
