@@ -257,6 +257,19 @@ public sealed record GebaeudeBauteileDaten
     /// <summary>Die Bauteilzeilen in der Reihenfolge des Vorschlags.</summary>
     public IReadOnlyList<GebaeudeBauteilzeileDaten> Zeilen { get; init; } = Array.Empty<GebaeudeBauteilzeileDaten>();
 
+    /// <summary>
+    /// Die Spalten der Bauteilliste (Bauteil, Art, Fläche, U-Wert, Azimut, Neigung, Randbedingung,
+    /// Herkunft) — die Liste ist die <c>Katalogliste</c> mit Suche, Sortierung und Trichter je Spalte;
+    /// <c>null</c> = keine Liste.
+    /// </summary>
+    public Katalogfilterprofil? Profil { get; init; }
+
+    /// <summary>
+    /// Die Bauteilzeilen als Zeilen der <c>Katalogliste</c>, in der Reihenfolge des Vorschlags — dieselben
+    /// Bauteile wie <see cref="Zeilen"/>, die Zahlen als Zahlen (Sortierung, Trichter mit Vergleich).
+    /// </summary>
+    public IReadOnlyList<Katalogfilterzeile> Liste { get; init; } = Array.Empty<Katalogfilterzeile>();
+
     /// <summary>Die Zeile zur inneren Masse (Innenbauteile, Innenflächenfaktor aus der Datei oder Vorgabe); leer = keine.</summary>
     public string Innenweg { get; init; } = "";
 

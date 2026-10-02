@@ -267,7 +267,7 @@
         {
             @* DER BAUTEILVORSCHLAG (Stufe G4b): eine Zone mit echten Bauteilen statt der Summen.
                Der Schalter ist vorbelegt "ein", wenn der Vorschlag sich bilden laesst; sonst "aus"
-               und gesperrt, der Grund steht daneben. Eine schlichte Tabelle ohne Virtualisierung. *@
+               und gesperrt, der Grund steht daneben. *@
             GebaeudeZonierungDaten? mehrere = stand.Zonierung is { Einzonig: false } z ? z : null;
             <Gruppenkopf Titel="@Texte.GruppeBauteile" />
             <div class="epos-gebimport-bauteile">
@@ -398,43 +398,20 @@
                     <Herleitungszeile Text="@Texte.FlaechenHinweis" />
                 }
             }
-            else if (bauteile.Zeilen.Count == 0)
+            else if (bauteile.Profil is null || bauteile.Liste.Count == 0)
             {
                 <p class="epos-leisezeile epos-gebimport-bauteile-leer">@Texte.KeineBauteile</p>
             }
             else
             {
-                <div class="epos-raster-huelle">
-                    <table class="epos-raster epos-gebimport-bauteilliste">
-                        <thead>
-                            <tr>
-                                <th>@Texte.SpalteBauteil</th>
-                                <th>@Texte.SpalteArt</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteUWert</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteAzimut</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteNeigung</th>
-                                <th>@Texte.SpalteRand</th>
-                                <th>@Texte.SpalteHerkunft</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (int i = 0; i < bauteile.Zeilen.Count; i++)
-                            {
-                                GebaeudeBauteilzeileDaten b = bauteile.Zeilen[i];
-                                <tr @key="i" data-kennung="@b.Kennung">
-                                    <td title="@b.Kennung">@b.Bezeichner</td>
-                                    <td>@b.Art</td>
-                                    <td class="epos-gebimport-zahl">@b.Flaeche</td>
-                                    <td class="epos-gebimport-zahl">@b.UWert</td>
-                                    <td class="epos-gebimport-zahl">@b.Azimut</td>
-                                    <td class="epos-gebimport-zahl">@b.Neigung</td>
-                                    <td>@b.Randbedingung</td>
-                                    <td class="@("epos-gebimport-herkunft epos-gebimport-herkunft--" + (b.HerkunftSchluessel ?? "").ToLowerInvariant())">@b.HerkunftText</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                @* DIE BAUTEILE DER ZONE: dieselbe virtualisierte Katalogliste wie die Flaechen je Zone - Suche
+                   ueber alle Spalten, Sortierung und Trichter je Spalte, die Zaehlung "n von m Saetzen". Eine
+                   grosse Datei traegt ueber hundert Bauteile. Die Zeile ist die Wahl, gewaehlt wird nur zum
+                   Ansehen; der Filterstand ueberdauert ein Neuzuordnen. *@
+                <div class="epos-gebimport-bauteilliste">
+                    <Katalogliste Profil="@bauteile.Profil" Zeilen="@bauteile.Liste" Filterstand="@_bauteilfilter"
+                                  ZeileIstWahl="true" Gewaehlt="@_bauteilGewaehlt" GewaehltChanged="BeiBauteil"
+                                  Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
                 </div>
             }
             @if (bauteile.Innenweg.Length > 0)
@@ -739,10 +716,19 @@
     /// <summary>Die gewählte Fläche (Schlüssel der Zeile); nur zum Ansehen.</summary>
     private string _flaecheGewaehlt = "";
 
+    /// <summary>Suche, Sortierung und Trichter der Bauteilliste (eine Zone) — sie überdauern ein Neuzuordnen.</summary>
+    private Katalogfilterstand _bauteilfilter = new();
+
+    /// <summary>Das gewählte Bauteil (Schlüssel der Zeile); nur zum Ansehen.</summary>
+    private string _bauteilGewaehlt = "";
+
+    /// <summary>Suche und Spaltenfilter der Bauteilliste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Bauteilfilter => _bauteilfilter;
+
     /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — EINE Instanz je Menge (die Liste vergleicht nach Referenz).</summary>
     private IReadOnlyList<Katalogfilterzeile> _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
 
-    /// <summary>Ab so vielen Zeilen virtualisiert die Flächenliste (Hausregel W6-B-2).</summary>
+    /// <summary>Ab so vielen Zeilen virtualisieren Flächen- und Bauteilliste (Hausregel W6-B-2).</summary>
     private const int VIRTUALISIEREN_AB = 120;
 
     /// <summary>Die Zeilen der Flächenliste nach den Filtern (Prüfhilfe für Tests).</summary>
@@ -940,7 +926,7 @@
     // Mehrere Zonen — Regel, Zonen, Flächen (Stufe G6c)
     // =====================================================================
 
-    /// <summary>Ein neuer Kontext (Datei, Gebäude): Regel, Aufklappen, Filter und Wahl der Flächenliste auf Anfang.</summary>
+    /// <summary>Ein neuer Kontext (Datei, Gebäude): Regel, Aufklappen, Filter und Wahl der Flächen- und der Bauteilliste auf Anfang.</summary>
     private void ZonenZuruecksetzen()
     {
         _regel = null;
@@ -956,6 +942,8 @@
         _flaechenfilter = new Katalogfilterstand();
         _flaecheGewaehlt = "";
         _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
+        _bauteilfilter = new Katalogfilterstand();
+        _bauteilGewaehlt = "";
     }
 
     private static IReadOnlyList<(int Id, string Text)> Regelliste(GebaeudeZonierungDaten zon)
@@ -1262,6 +1250,8 @@
     }
 
     private void BeiFlaeche(string schluessel) => _flaecheGewaehlt = schluessel ?? "";
+
+    private void BeiBauteil(string schluessel) => _bauteilGewaehlt = schluessel ?? "";
 
     /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — neu nur nach Zuordnen oder Filterwechsel.</summary>
     private void FlaechenFiltern()

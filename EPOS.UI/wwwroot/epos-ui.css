@@ -5490,7 +5490,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 
 /* Der Bauteilvorschlag (Stufe G4b): der Schalter mit dem Grund daneben, wenn er
-   gesperrt ist; in der Bauteilliste Zahlen rechtsbuendig, Meldungstexte brechen um. */
+   gesperrt ist; Meldungstexte brechen um. Die Bauteilliste selbst ist die Katalogliste. */
 .epos-gebimport-bauteile {
     display: flex;
     flex-wrap: wrap;
@@ -5501,11 +5501,6 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-gebimport-bauteile-ablehnung {
     color: var(--epos-stufe-fehler);
     overflow-wrap: anywhere;
-}
-
-.epos-gebimport-bauteilliste td.epos-gebimport-zahl,
-.epos-gebimport-bauteilliste th.epos-gebimport-zahl {
-    text-align: right;
 }
 
 /* Mehrere Zonen (Stufe G6c): die Bilanz wie der Kopf, Banner und Knopf der groeberen Regel mit

@@ -744,6 +744,8 @@ namespace WindowsFormsApplication1
                     : Formatieren(MyResource.Resource.GIMP_BT_KOPF, zone.Bezeichner, GebaeudeZuordnungsModell.ZahlText(zone.Nutzflaeche),
                                   v.Zeilen.Count, v.Aufbauten.Count),
                 Zeilen = v.Zeilen.Select(BauteilzeileDaten).ToList(),
+                Profil = v.Zeilen.Count > 0 ? Bauteilprofil() : null,
+                Liste = v.Zeilen.Select(Bauteilfilterzeile).ToList(),
                 Innenweg = zone == null ? "" : InnenwegText(v),
                 Meldungen = v.Meldungen.Select(MeldungDaten).ToList(),
             };
@@ -774,6 +776,56 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.HerkunftText(herkunft),
                 GebaeudeZuordnungsModell.HerkunftSchluessel(herkunft),
                 z.Kennung);
+        }
+
+        /// <summary>Der Schlüssel des Profils der Bauteilliste (eine Zone).</summary>
+        internal const string PROFIL_BAUTEILE = "GEBIMPORT_BAUTEILE";
+
+        /// <summary>
+        /// Die Spalten der Bauteilliste (eine Zone) in der Katalogliste mit Suche, Sortierung und
+        /// Trichter je Spalte: Bauteil (die elastische Spalte), Art, Fläche, U-Wert,
+        /// Azimut, Neigung, Randbedingung und Herkunft; die Einheit steht im Spaltenkopf. Bauteil, Fläche,
+        /// U-Wert und Randbedingung stehen immer, die übrigen weichen, wenn die Liste schmal wird.
+        /// </summary>
+        internal static Katalogfilterprofil Bauteilprofil()
+        {
+            return Katalogfilterprofil.AusSpalten(PROFIL_BAUTEILE, new[]
+            {
+                new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
+                new Katalogspalte(GebaeudeImportZonen.SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
+                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
+                                  rang: Katalogspaltenrang.BeiPlatz),
+                new Katalogspalte(GebaeudeImportZonen.SP_NEIGUNG, MyResource.Resource.GIMP_DLG_SP_NEIGUNG, "°", Katalogspaltenart.Zahl,
+                                  rang: Katalogspaltenrang.Breit),
+                new Katalogspalte(GebaeudeImportZonen.SP_RAND, MyResource.Resource.GIMP_DLG_SP_RAND),
+                new Katalogspalte(GebaeudeImportZonen.SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
+            });
+        }
+
+        /// <summary>
+        /// Eine Bauteilzeile als Zeile der Katalogliste: die Zahlen als Zahlen (Fläche auf zwei, U-Wert auf drei,
+        /// Azimut und Neigung auf eine Nachkommastelle — der Azimut wie <see cref="AzimutText"/>), der U-Wert
+        /// eines geschichteten Bauteils als „aus Schichten". Der Schlüssel ist die Stelle im Vorschlag.
+        /// </summary>
+        private static Katalogfilterzeile Bauteilfilterzeile(GebaeudeBauteilzeile z, int i)
+        {
+            BauteilModel b = z.Bauteil;
+            Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
+            var zeile = new Katalogfilterzeile(i, b.Bezeichner ?? "")
+                .MitText(Katalogfilterprofil.SpBezeichner, b.Bezeichner ?? "")
+                .MitText(GebaeudeImportZonen.SP_ART, BauteilaufbauCtrl.BauteilartText(b.Bauteilart))
+                .MitZahl(GebaeudeImportZonen.SP_FLAECHE, b.Flaeche, 2)
+                .Mit(GebaeudeImportZonen.SP_UWERT, b.U_Wert.HasValue ? Katalogwert.AusZahl(b.U_Wert, 3)
+                                                   : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
+                                                   : Katalogwert.Leer)
+                .MitZahl(GebaeudeImportZonen.SP_AZIMUT, b.Azimut.HasValue ? GebaeudeImportZonen.Azimut(b.Azimut.Value) : (double?)null, 1)
+                .MitZahl(GebaeudeImportZonen.SP_NEIGUNG, b.Neigung, 1)
+                .MitText(GebaeudeImportZonen.SP_RAND, RandText(b.Randbedingung))
+                .MitText(GebaeudeImportZonen.SP_HERKUNFT, GebaeudeZuordnungsModell.HerkunftText(herkunft));
+            zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
+            return zeile;
         }
 
         /// <summary>
