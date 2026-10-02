@@ -1934,6 +1934,11 @@ namespace WindowsFormsApplication1
             public double Erloes;           // €/a Einspeisevergütung (konstant)
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
 
+            /// <summary>Die Energiekosten je Träger dieses Laufs samt Anteil an der CO₂-Abgabe
+            /// des ersten Jahres (<see cref="EnergieTraegerNachweis.MitCo2Abgabe"/>) — Herleitung
+            /// unter „Energiekosten" und Grundlage der Wärmegestehungskosten.</summary>
+            public List<EnergieTraegerNachweis> EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
+
             /// <summary>
             /// ETAPPE K6 (Konzept § 8.3, E5): die CO₂-Abgabe <b>jahresscharf</b> [€],
             /// Index 1…T, aus dem Preispfad des Gesetzeskatalogs. <c>null</c> = kein
@@ -2448,6 +2453,11 @@ namespace WindowsFormsApplication1
                                           : (p.CO2Preis > 0 ? behgBasisT * p.CO2Preis : 0);
             if (co2Hinweis != null && behgBasisT > 0)
                 e.Hinweis = Anhaengen(e.Hinweis, co2Hinweis);
+
+            // Die Aufstellung je Träger mit ihrem Anteil an der CO₂-Abgabe des ersten Jahres —
+            // aufgeteilt nach derselben abgabepflichtigen Menge, aus der e.Behg entstand.
+            e.EnergiekostenJeTraeger = EnergieTraegerNachweis.MitCo2Abgabe(
+                v.EnergiekostenJeTraeger, e.Behg, efOhneNachweis);
 
             // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
             // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
@@ -6623,6 +6633,10 @@ namespace WindowsFormsApplication1
             // gebucht (ErgebnisNachweisUmschlag).
             if (v.EnergiekostenJeAnlage != null)
                 erg.EnergiekostenJeAnlage = v.EnergiekostenJeAnlage;
+            // Die Energiekosten je Träger samt Anteil an der CO₂-Abgabe — die Herleitungszeilen
+            // „Menge × Preis" unter den Energiekosten; mit dem Lauf gebucht (Umschlag, Fassung 12).
+            if (eingabe.EnergiekostenJeTraeger != null)
+                erg.EnergiekostenJeTraeger = eingabe.EnergiekostenJeTraeger;
 
             // ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die § 9b-KORREKTUR des
             // AUSWEISES. Sie ruehrt den Kapitalwert nicht an: Angehaengt wird keine
@@ -6857,13 +6871,139 @@ namespace WindowsFormsApplication1
             erg.ErsatzBarwert = ErsatzBarwert(bild, p.Zinssatz);
             erg.Kapitalwert = bild.Kapitalwert;
 
-            // Wärmegestehungskosten: annuisierte Nettokosten ÷ Jahreswärmebedarf.
+            // WÄRMEGESTEHUNGSKOSTEN „nur Wärmeerzeuger" (Anwenderentscheid 30.09.2026): die
+            // annuisierten Kosten der WÄRMEERZEUGUNG ÷ Jahreswärmebedarf. Bis hierher stand hier
+            // der Kapitalwert des GANZEN Projekts im Zähler — Haushaltsstrom, Photovoltaik,
+            // Stromspeicher und PV-Erlöse verschoben die Kennzahl, sobald ein Strombedarfsprofil
+            // angelegt war. Der Kapitalwert und alle übrigen Kennzahlen bleiben projektweit; nur
+            // diese eine Kennzahl rechnet mit dem Zahlungsgerüst der Wärmeerzeugung
+            // (Regel: Waermegestehung), durch denselben Rechenkern.
             if (eingabe.WaermeMWh > 0)
             {
-                double a = KapitalwertRechner.Annuitaet(p.Zinssatz / 100.0, p.Betrachtungszeitraum);
-                erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);
+                double stromgutschrift, eigenstromOhnePreisMWh;
+                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, out stromgutschrift,
+                                                          out eigenstromOhnePreisMWh);
+                // Kein stilles Weglassen: Fehlt dem im Projekt verbrauchten BHKW-Strom der
+                // Arbeitspreis, rechnet die Kennzahl ohne Stromgutschrift — und sagt es.
+                if (eigenstromOhnePreisMWh > 0)
+                    erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(BerichtTexte.Kultur,
+                        MyResource.Resource.WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT,
+                        eigenstromOhnePreisMWh.ToString("N1", BerichtTexte.Kultur)));
+                KapitalwertRechner.Zahlungsbild bildW = RechneBild(waerme, p, p.Zinssatz,
+                                                                  p.PreissteigerungEnergie, 1.0, 1.0);
+                erg.Gestehungskosten = Waermegestehung.Kennzahl(bildW.Kapitalwert, p.Zinssatz,
+                                                               p.Betrachtungszeitraum, eingabe.WaermeMWh);
+                erg.GestehungZerlegung = Waermegestehung.Zerlegung.Aus(
+                    Zahlungsgliederung.Aus(bildW, p.Zinssatz), eingabe.WaermeMWh, stromgutschrift);
+                StufenfehlerAnhaengen(erg);   // eine gescheiterte Anlagenlesung (jede Zeile einmal)
             }
             return erg;
+        }
+
+        /// <summary>
+        /// <b>Das Zahlungsgerüst der Wärmeerzeugung</b> — die Grundlage der
+        /// Wärmegestehungskosten. Die Regel steht in <see cref="Waermegestehung"/>; hier werden
+        /// die Zahlen des Laufs danach ausgelesen:
+        /// <list type="bullet">
+        ///   <item><description>Investition, Zuschuss und Betriebskosten aus denselben Lesewegen
+        ///     wie das Projekt, beschränkt auf die Positionen, die
+        ///     <see cref="Waermegestehung.PositionZaehlt"/> der Wärme zuordnet;</description></item>
+        ///   <item><description>Energiekosten der Wärmeerzeuger aus der Aufstellung je Träger
+        ///     (<see cref="Waermegestehung.Energiekosten"/>) abzüglich der Stromgutschrift für den
+        ///     im Projekt verbrauchten BHKW-Strom; die CO₂-Abgabe ganz (sie hängt allein am
+        ///     Brennstoff von Kessel und BHKW);</description></item>
+        ///   <item><description>Erlöse: der eingespeiste BHKW-Strom und die Erlösreihen der
+        ///     Wärmeerzeuger (<see cref="Waermegestehung.ErloesReiheZaehlt"/>);</description></item>
+        ///   <item><description>kein Risikoabzug — er bewertet die Unsicherheit des Standes, er ist
+        ///     keine Zahlung der Wärmeerzeugung.</description></item>
+        /// </list>
+        /// </summary>
+        private ProjektEingabe BaueWaermeEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                                 ProjektEingabe gesamt, string szenario,
+                                                 out double stromgutschrift,
+                                                 out double eigenstromOhnePreisMWh)
+        {
+            stromgutschrift = 0.0;
+            eigenstromOhnePreisMWh = 0.0;
+            SzenarioSatz satz = p.SatzFuer(szenario);
+            ErgebnisBHKWModel bhkw = v.Ergebnis != null ? v.Ergebnis.BHKW : null;
+            bool bhkwImProjekt = bhkw != null && bhkw.Module != null && bhkw.Module.Count > 0;
+            Dictionary<int, int> typen = AnlagentypenDesProjekts(v.IdProjekt);
+            Func<int, int, bool> zaehlt = (komponente, anlage) =>
+            {
+                int typ = 0;
+                if (anlage > 0) typen.TryGetValue(anlage, out typ);
+                return Waermegestehung.PositionZaehlt(komponente, typ, bhkwImProjekt);
+            };
+
+            var w = new ProjektEingabe();
+            double zuschuss;
+            w.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, satz, zaehlt, out zuschuss);
+            w.Zuschuss = zuschuss;
+            BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz, zaehlt);
+            w.Betrieb = topfe.BetriebSofort;
+            w.BetriebAbJahr = topfe.BetriebAbJahr;
+            w.Endenergie = topfe.EndenergieSofort;
+            w.EndenergieAbJahr = topfe.EndenergieAbJahr;
+            w.InvestGekoppelt = topfe.InvestGekoppeltSofort;
+            w.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;
+            w.Wiederholt = topfe.Wiederholt;
+
+            double eigenstrom = Waermegestehung.BhkwEigenstromMWh(gesamt.Matrix, bhkw);
+            if (eigenstrom > 0)
+            {
+                double? preis = NetzArbeitspreis(gesamt.EnergiekostenJeTraeger)
+                                ?? StromArbeitspreisEurJeKwh(v.IdProjekt, szenario);
+                stromgutschrift = Waermegestehung.StromgutschriftEur(eigenstrom, preis);
+                if (!preis.HasValue) eigenstromOhnePreisMWh = eigenstrom;
+            }
+            w.Energie = (Waermegestehung.Energiekosten(gesamt.EnergiekostenJeTraeger) ?? 0.0) - stromgutschrift;
+            w.Behg = gesamt.Behg;
+            w.BehgJeJahr = gesamt.BehgJeJahr;
+            w.Erloes = gesamt.ErloesKwk;
+            foreach (KapitalwertRechner.ErloesReihe r in gesamt.ErloesReihen)
+                if (r != null && Waermegestehung.ErloesReiheZaehlt(r.Name)) w.ErloesReihen.Add(r);
+            w.Risikoabzug = 0.0;
+            w.WaermeMWh = gesamt.WaermeMWh;
+            return w;
+        }
+
+        /// <summary>Der Arbeitspreis [€/kWh] des Trägers, der den Netzbezug bepreist, aus der
+        /// Aufstellung je Träger; <c>null</c>, wenn sie keinen solchen Eintrag führt.</summary>
+        private static double? NetzArbeitspreis(IList<EnergieTraegerNachweis> traeger)
+        {
+            if (traeger == null) return null;
+            foreach (EnergieTraegerNachweis t in traeger)
+                if (t != null && t.Netzstrom) return t.PreisJeEinheit;
+            return null;
+        }
+
+        /// <summary>
+        /// Die Anlagen des Projekts mit ihrem Typ (<c>Tab_Energieanlagen.ID</c> →
+        /// <c>ID_Type</c>) — für die Zuordnung einer allgemeinen Kostenposition, die einer Anlage
+        /// zugeordnet ist (<see cref="Waermegestehung.PositionZaehlt"/>). Scheitert das Lesen,
+        /// bleibt die Tafel leer (die Position zählt dann nach ihrer Komponente), und die Stufe
+        /// wird benannt.
+        /// </summary>
+        private Dictionary<int, int> AnlagentypenDesProjekts(int idProjekt)
+        {
+            var typen = new Dictionary<int, int>();
+            try
+            {
+                DataTable dt = StilleDb.TabelleStreng(
+                    "SELECT ID, ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@p", idProjekt));
+                foreach (DataRow r in dt.Rows)
+                {
+                    int id = StilleDb.Zahl(r["ID"]);
+                    if (id > 0) typen[id] = StilleDb.Zahl(r["ID_Type"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Stufenfehler(idProjekt, STUFE_ANLAGEN, Fehlergrund.Text(ex));
+            }
+            return typen;
         }
 
         /// <summary>
@@ -6988,6 +7128,20 @@ namespace WindowsFormsApplication1
         internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
             int idProjekt, string szenario, SzenarioSatz satz, out double zuschuss)
         {
+            return LiesInvestitionen(idProjekt, szenario, satz, null, out zuschuss);
+        }
+
+        /// <summary>
+        /// Dieselbe Leselogik, beschränkt auf die Zeilen, die <paramref name="zaehlt"/> annimmt
+        /// (Kostenkomponente, Anlage) — der Weg der Wärmegestehungskosten
+        /// (<see cref="Waermegestehung.PositionZaehlt"/>). Zuschusszeilen gehen durch denselben
+        /// Filter: Ein Zuschuss auf die Photovoltaik mindert nicht die Wärmeerzeugung.
+        /// <c>null</c> = alle Zeilen, Zeichen für Zeichen der Weg ohne Filter.
+        /// </summary>
+        internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
+            int idProjekt, string szenario, SzenarioSatz satz, Func<int, int, bool> zaehlt,
+            out double zuschuss)
+        {
             var liste = new List<KapitalwertRechner.InvestPosition>();
             zuschuss = 0;
 
@@ -7000,6 +7154,7 @@ namespace WindowsFormsApplication1
             foreach (InvestKaskade.Zeile z in InvestKaskade.Lies(idProjekt, szenario))
             {
                 if (z.Betrag == 0) continue;
+                if (zaehlt != null && !zaehlt(z.Komponente, z.Anlage)) continue;
 
                 if (z.Zuschuss)
                 {
@@ -7402,6 +7557,20 @@ namespace WindowsFormsApplication1
         internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario,
                                                              SzenarioSatz satz)
         {
+            return LiesBetriebskostenTopfe(idProjekt, szenario, satz, null);
+        }
+
+        /// <summary>
+        /// Dieselbe Leseschleife, beschränkt auf die Zeilen, die <paramref name="zaehlt"/>
+        /// annimmt (Kostenkomponente, Anlage) — der Weg der Wärmegestehungskosten
+        /// (<see cref="Waermegestehung.PositionZaehlt"/>). Eine Datenbank ohne die
+        /// Bemessungsspalten kennt keine Komponente; dort zählt jede Zeile. <c>null</c> = alle
+        /// Zeilen, Zeichen für Zeichen der Weg ohne Filter.
+        /// </summary>
+        internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario,
+                                                             SzenarioSatz satz,
+                                                             Func<int, int, bool> zaehlt)
+        {
             var topfe = new BetriebsTopfe();
             double summe = 0;
             double summeEnde = 0;
@@ -7463,6 +7632,12 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in dt.Rows)
                 {
+                    if (zaehlt != null && mitBemessung)
+                    {
+                        int komponenteZ, anlageZ;
+                        KomponenteUndAnlage(r, out komponenteZ, out anlageZ);
+                        if (!zaehlt(komponenteZ, anlageZ)) continue;
+                    }
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     int start = StartJahrDerZeile(r);
                     double beitrag;
@@ -7605,8 +7780,11 @@ namespace WindowsFormsApplication1
                 // Summationsreihenfolge der gelesenen Zeilen bleibt.
                 if (hilfsPlan != null)
                     foreach (HilfsenergieAusAnteil.Anlage a in hilfsPlan.OhneZeile)
+                    {
+                        if (zaehlt != null && !zaehlt(a.Komponente, a.IdAnlage)) continue;
                         summeEnde += HilfsenergieBetrag(idProjekt, a, ref endenergie,
                                                         ref endenergieVersucht, szenario, satz);
+                    }
             }
             catch (Exception ex)
             {

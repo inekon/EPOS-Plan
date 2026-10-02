@@ -60,6 +60,8 @@ namespace WindowsFormsApplication1
                             "kapitalwert_diff_eur", KiHilfe.Wert(e.KapitalwertDiff),
                             "amortisation_a", KiHilfe.Wert(e.AmortisationJahre),
                             "gestehungskosten_eur_kwh", KiHilfe.Wert(e.Gestehungskosten),
+                            // Was die Kennzahl umfasst — nur die Wärmeerzeugung (Waermegestehung).
+                            "gestehungskosten_umfang", KiHilfe.Text(MyResource.Resource.WIRT_GESTEHUNG_KURZTEXT),
                             "aktuell", istAktuell,
                             "fehlgrund", KiHilfe.Text(e.Fehlgrund)));
                     }

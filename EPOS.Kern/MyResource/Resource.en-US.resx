@@ -6749,6 +6749,12 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_GESTEHUNGSKOSTEN" xml:space="preserve">
     <value>Levelised cost of heat [€/kWh]</value>
   </data>
+  <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
+    <value>Cost of heat generation (plant, fuel, electricity of the heat generators, less their revenues), annualised, per kWh of heat demand; household electricity, PV and battery storage are not included</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
+    <value>Levelised cost of heat without electricity credit: no energy price of the electricity carrier is maintained for {0} MWh/a of CHP electricity used in the project.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(reference)</value>
   </data>
@@ -17801,6 +17807,9 @@ Please go through the project page again so that the data of the selected projec
   <data name="WIRT_GL_NOMINAL" xml:space="preserve">
     <value>nominal {0}</value>
   </data>
+  <data name="WIRT_GL_NOMINAL_TIPP" xml:space="preserve">
+    <value>Sum of payments over {0} years, not discounted</value>
+  </data>
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Difference {0} − {1}</value>
   </data>
@@ -21706,6 +21715,27 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
     <value>Grid supply, electricity</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ZEILE" xml:space="preserve">
+    <value>{0}: quantity × price</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ZEILE_ALLE" xml:space="preserve">
+    <value>Quantity × price</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ARBEIT" xml:space="preserve">
+    <value>{0} {1} × {2} €/{1}</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_GRUND" xml:space="preserve">
+    <value>+ {0} €/a standing charge</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_LEISTUNG" xml:space="preserve">
+    <value>+ {0} €/a capacity charge</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_CO2" xml:space="preserve">
+    <value>+ CO₂ {0} €/a</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_FEHLT" xml:space="preserve">
+    <value>Quantity × price available after the next calculation</value>
   </data>
   <data name="ETV_BLOCK_PREIS" xml:space="preserve">
     <value>Price and calorific value</value>

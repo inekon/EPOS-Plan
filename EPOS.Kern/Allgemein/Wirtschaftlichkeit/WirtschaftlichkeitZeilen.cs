@@ -88,6 +88,20 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn die Zeile Text statt einer Zahl führt.</summary>
         public bool IstText { get { return Text != null; } }
 
+        /// <summary>
+        /// Der KURZTEXT der Zeile — was die Größe umfasst, in einem Satz; die Seite zeigt ihn als
+        /// Tooltip am Titel. <c>null</c> oder leer = keiner. Heute an den Wärmegestehungskosten
+        /// (<c>WIRT_GESTEHUNG_KURZTEXT</c>).
+        /// </summary>
+        public string Kurztext;
+
+        /// <summary>
+        /// Eine leise HERLEITUNGSZEILE (Menge × Preis unter den Energiekosten): Sie erklärt die
+        /// Zahl darüber und trägt selbst keinen Betrag, der addiert würde; die Seite setzt sie
+        /// zurück. Nur Darstellung.
+        /// </summary>
+        public bool Herleitung;
+
         // =====================================================================
         // ETAPPE B7 — die Rubrik „Erlöse und Vorteile" (Konzept § 2.6)
         // =====================================================================
@@ -341,7 +355,22 @@ namespace WindowsFormsApplication1
         public static List<WirtZeile> Kennzahlen(IList<WirtschaftlichkeitErgebnis> menge,
                                                  TarifParameter tarif, int idReferenz)
         {
-            List<WirtZeile> zeilen = Baue(menge, tarif);
+            return Kennzahlen(menge, tarif, idReferenz, false);
+        }
+
+        /// <summary>
+        /// Dieselbe Zeilendefinition, auf Wunsch MIT den leisen Herleitungszeilen „Menge × Preis"
+        /// je Energieträger unter den Energiekosten (<see cref="WirtZeile.Herleitung"/>,
+        /// Anwenderentscheid 30.09.2026: auf der Wirtschaftlichkeitsseite). Die Berichte (Word,
+        /// Excel, Platzhalter) rufen ohne sie — ihre Tafeln und Ankerzeilen bleiben, wie sie sind;
+        /// alle übrigen Zeilen sind in beiden Fassungen dieselben.
+        /// </summary>
+        /// <param name="mitHerleitung"><c>true</c> = die Herleitungszeilen je Energieträger stehen
+        /// unter den Energiekosten (Seite).</param>
+        public static List<WirtZeile> Kennzahlen(IList<WirtschaftlichkeitErgebnis> menge,
+                                                 TarifParameter tarif, int idReferenz, bool mitHerleitung)
+        {
+            List<WirtZeile> zeilen = Baue(menge, tarif, mitHerleitung);
             if (idReferenz > 0)
                 foreach (WirtZeile z in zeilen) z.IdReferenz = idReferenz;
             return zeilen;
@@ -396,7 +425,7 @@ namespace WindowsFormsApplication1
         }
 
         private static List<WirtZeile> Baue(IList<WirtschaftlichkeitErgebnis> menge,
-                                            TarifParameter tarif)
+                                            TarifParameter tarif, bool mitHerleitung)
         {
             var z = new List<WirtZeile>();
             if (menge == null) return z;
@@ -467,6 +496,14 @@ namespace WindowsFormsApplication1
                             string.Format(MyResource.Resource.WIRT_ENK_ZEILE, name),
                             e => AnlageKosten(e, name), ""));
             }
+
+            // HERLEITUNG „Menge × Preis" JE ENERGIETRÄGER (Anwenderentscheid 30.09.2026): die
+            // abgerechnete Menge stand bis hierher nirgends in der Oberfläche. Je Träger eine leise
+            // Zeile „7.850 kWh × 0,35 €/kWh + … €/a Grundpreis + CO₂ … €/a" — aus der Aufstellung
+            // des Laufs (EnergieTraegerNachweis), also aus denselben Zahlen, mit denen der Kern
+            // rechnet. Ein gespeicherter Lauf ohne Aufstellung sagt es, statt still zu fehlen.
+            // Nur auf Wunsch (Seite) — die Berichtstafeln bleiben ohne sie.
+            if (mitHerleitung) TraegerHerleitungszeilen(menge, z);
 
             // ETAPPE E7 — die Zeile hieß bis hierher in BEIDEN Tarifmodellen
             // „Stromkosten Tarif". Im Rollenmodell trägt sie aber den RESTSTROM-Betrag,
@@ -993,9 +1030,12 @@ namespace WindowsFormsApplication1
                 z.Add(irr);
             }
 
+            // Die Wärmegestehungskosten umfassen NUR die Wärmeerzeugung (Anwenderentscheid
+            // 30.09.2026, Regel Waermegestehung) — der Kurztext sagt es am Titel.
             WirtZeile geste = Zahl("GESTEHUNGSKOSTEN", MyResource.Resource.WIRT_ZEILE_GESTEHUNGSKOSTEN,
                                    e => e.Gestehungskosten);
             geste.Format = "N3"; geste.ExcelFormat = "#,##0.000";
+            geste.Kurztext = MyResource.Resource.WIRT_GESTEHUNG_KURZTEXT;
             z.Add(geste);
 
             z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,
@@ -1686,6 +1726,124 @@ namespace WindowsFormsApplication1
                        n.KostenEur.ToString("N2", kultur) + " €/a (" + n.Traeger + ")";
             }
             return "";
+        }
+
+        // =====================================================================
+        // Herleitung „Menge × Preis" je Energieträger (Anwenderentscheid 30.09.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Herleitungszeilen unter den Energiekosten: je Träger der Gruppe eine leise
+        /// Textzeile. Führt kein Stand der Gruppe die Aufstellung (gespeicherte Läufe ohne sie),
+        /// steht EINE Zeile, die an jedem Stand mit Energiekosten sagt, dass die Herleitung mit
+        /// der nächsten Rechnung vorliegt.
+        /// </summary>
+        private static void TraegerHerleitungszeilen(IList<WirtschaftlichkeitErgebnis> menge,
+                                                     List<WirtZeile> z)
+        {
+            string fehlt = MyResource.Resource.WIRT_ENK_TRAEGER_FEHLT;
+            List<string> traeger = Traegernamen(menge);
+            if (traeger.Count == 0)
+            {
+                if (Irgendein(menge, OhneAufstellung))
+                    z.Add(Herleitungszeile("ENERGIEKOSTEN_TRAEGER__ALLE",
+                                           MyResource.Resource.WIRT_ENK_TRAEGER_ZEILE_ALLE,
+                                           e => OhneAufstellung(e) ? fehlt : ""));
+                return;
+            }
+            for (int i = 0; i < traeger.Count; i++)
+            {
+                string name = traeger[i];      // Fangkopie für den Abschluss
+                bool erste = i == 0;
+                z.Add(Herleitungszeile("ENERGIEKOSTEN_TRAEGER_" + Schluesselform(name),
+                                       string.Format(MyResource.Resource.WIRT_ENK_TRAEGER_ZEILE, name),
+                                       e => OhneAufstellung(e)
+                                            ? (erste ? fehlt : "")
+                                            : TraegerHerleitung(e, name, BerichtTexte.Kultur)));
+            }
+        }
+
+        /// <summary>Eine leise Herleitungszeile mit Text (Einzug 1, nie in einer Summe).</summary>
+        private static WirtZeile Herleitungszeile(string schluessel, string titel,
+                                                  Func<WirtschaftlichkeitErgebnis, string> text)
+        {
+            WirtZeile z = UnterText(schluessel, titel, text, "");
+            z.Herleitung = true;
+            return z;
+        }
+
+        /// <summary>Führt der Stand Energiekosten, aber keine Aufstellung je Träger (gespeicherter
+        /// Lauf ohne sie)? Dann ist die Herleitung erst mit der nächsten Rechnung da.</summary>
+        private static bool OhneAufstellung(WirtschaftlichkeitErgebnis e)
+        {
+            return e != null && e.EnergiekostenJahr.HasValue &&
+                   (e.EnergiekostenJeTraeger == null || e.EnergiekostenJeTraeger.Count == 0);
+        }
+
+        /// <summary>Die Träger der Gruppe in Ausgabereihenfolge (je Name einmal).</summary>
+        private static List<string> Traegernamen(IList<WirtschaftlichkeitErgebnis> menge)
+        {
+            var namen = new List<string>();
+            if (menge == null) return namen;
+            foreach (WirtschaftlichkeitErgebnis e in menge)
+            {
+                if (e == null || e.EnergiekostenJeTraeger == null) continue;
+                foreach (EnergieTraegerNachweis t in e.EnergiekostenJeTraeger)
+                    if (t != null && !string.IsNullOrEmpty(t.Traeger) && !namen.Contains(t.Traeger))
+                        namen.Add(t.Traeger);
+            }
+            return namen;
+        }
+
+        /// <summary>
+        /// Die Herleitung EINES Trägers in einem Ergebnis; leer, wenn das Ergebnis ihn nicht
+        /// führt. Führt es mehrere Einträge desselben Namens, stehen sie mit „ · " getrennt.
+        /// </summary>
+        public static string TraegerHerleitung(WirtschaftlichkeitErgebnis e, string traeger,
+                                               CultureInfo kultur)
+        {
+            if (e == null || e.EnergiekostenJeTraeger == null) return "";
+            var teile = new List<string>();
+            foreach (EnergieTraegerNachweis t in e.EnergiekostenJeTraeger)
+                if (t != null && string.Equals(t.Traeger, traeger, StringComparison.Ordinal))
+                {
+                    string s = TraegerHerleitung(t, kultur);
+                    if (s.Length > 0) teile.Add(s);
+                }
+            return string.Join(" · ", teile.ToArray());
+        }
+
+        /// <summary>
+        /// Die Herleitung eines Trägers als Klartext: „7.850 kWh × 0,35 €/kWh" (Menge in der
+        /// Abrechnungseinheit × Arbeitspreis), dazu ein gepflegter Grundpreis und ein
+        /// Leistungsanteil als „+ … €/a" und der Anteil an der CO₂-Abgabe als „+ CO₂ … €/a",
+        /// jeweils nur, wenn er größer als 0 ist. Einheiten sind Zeichen, keine Anzeigetexte.
+        /// </summary>
+        public static string TraegerHerleitung(EnergieTraegerNachweis t, CultureInfo kultur)
+        {
+            if (t == null) return "";
+            if (kultur == null) kultur = BerichtTexte.Kultur;
+            var teile = new List<string>();
+            if (t.MengeAbrechnung > 0)
+            {
+                string einheit = string.IsNullOrEmpty(t.Einheit) ? "kWh" : t.Einheit;
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ENK_TRAEGER_ARBEIT,
+                                        t.MengeAbrechnung.ToString("N0", kultur), einheit,
+                                        t.PreisJeEinheit.ToString("#,##0.00##", kultur)));
+            }
+            if (t.GrundpreisEur > 0)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ENK_TRAEGER_GRUND,
+                                        t.GrundpreisEur.ToString("N0", kultur)));
+            if (t.LeistungEur > 0)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ENK_TRAEGER_LEISTUNG,
+                                        t.LeistungEur.ToString("N0", kultur)));
+            if (t.Co2AbgabeEur > 0)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ENK_TRAEGER_CO2,
+                                        t.Co2AbgabeEur.ToString("N0", kultur)));
+            string text = string.Join(" ", teile.ToArray());
+            // Ohne Arbeitsmenge beginnt die Zeile mit dem ersten Festbetrag — ohne Pluszeichen.
+            if (text.StartsWith("+ ", StringComparison.Ordinal)) text = text.Substring(2);
+            return text;
         }
 
         /// <summary>
