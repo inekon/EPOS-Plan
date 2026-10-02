@@ -2198,6 +2198,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_HINWEIS_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_HINWEIS_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo [-]: ähnelt.
+        /// </summary>
+        public static string ANLAGE_LABEL_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_LABEL_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_TIP_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_TIP_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -42956,6 +42983,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ADMSET_WIKI_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ADMSET_WIKI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALBEDO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALBEDO_ERL", resourceCulture);
             }
         }
         

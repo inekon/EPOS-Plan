@@ -41259,5 +41259,17 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1: the share of global irradiance the ground reflects onto the tilted surface. Empty means 0.2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Typical albedo: grass 0.2 · concrete 0.3 · light roof 0.5–0.6 · snow 0.7–0.8. Empty = 0.2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1; empty means 0.2 (grass). Typical values: concrete 0.3, light roof 0.5 to 0.6, snow 0.7 to 0.8.</value>
+  </data>
 </root>
 

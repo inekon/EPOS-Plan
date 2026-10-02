@@ -6664,7 +6664,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "SolarkollektorenKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -7258,6 +7262,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvSystemverlusteErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "PhotovoltaikKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true),
 
                     // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
                     new KiDialogFeld("mit_wechselrichter", "PhotovoltaikKiSicht.MitWechselrichter",
