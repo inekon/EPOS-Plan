@@ -2198,6 +2198,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_HINWEIS_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_HINWEIS_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo [-]: ähnelt.
+        /// </summary>
+        public static string ANLAGE_LABEL_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_LABEL_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_TIP_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_TIP_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -18761,6 +18788,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_BANNER_HINWEISE {
             get {
                 return ResourceManager.GetString("FLOTTE_BANNER_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_BTN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_ERKL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_KEINE_SUCHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_KEINE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_NULLVARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_NULLVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_UEBERNOMMEN", resourceCulture);
             }
         }
         
@@ -42960,6 +43041,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALBEDO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALBEDO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Alle Daten) ähnelt.
         /// </summary>
         public static string KI_DLG_ALLE_DATEN_NAME {
@@ -52311,11 +52401,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Prozesses in °C (nur Prozesswärme); nicht über dem Vorlauf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ aus dem Typkatalog; er bringt das Wochen-Stundenprofil mit, nach dem die Monatswerte verteilt werden. ähnelt.
         /// </summary>
         public static string KI_DLG_TSTAMM_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TSTAMM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur, die der Prozess verlangt, in °C (nur Prozesswärme); leer zusammen mit dem Rücklauf = ohne Temperaturniveau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -76305,6 +76413,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturen übernehmen ähnelt.
+        /// </summary>
+        public static string PW_BTN_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_BTN_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau des Prozesses ähnelt.
+        /// </summary>
+        public static string PW_GRP_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_GRP_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = ohne Temperaturniveau, der Prozess rechnet als reine Wärmemenge. Mit Vorlauf und Rücklauf führt der Lauf je Stunde den höchsten geforderten Vorlauf des Prozesskanals; ein Erzeuger, der ihn nicht erreicht, deckt den Prozess in dieser Stunde nicht. ähnelt.
+        /// </summary>
+        public static string PW_HINW_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_HINW_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
+        /// </summary>
+        public static string PW_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("PW_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau: ähnelt.
+        /// </summary>
+        public static string PW_LBL_TEMPERATURNIVEAU {
+            get {
+                return ResourceManager.GetString("PW_LBL_TEMPERATURNIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
+        /// </summary>
+        public static string PW_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("PW_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf müssen zwischen 0 und 250 °C liegen. ähnelt.
+        /// </summary>
+        public static string PW_MSG_TEMPERATUR_BEREICH {
+            get {
+                return ResourceManager.GetString("PW_MSG_TEMPERATUR_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf bitte beide angeben oder beide leer lassen. ähnelt.
+        /// </summary>
+        public static string PW_MSG_TEMPERATUR_PAAR {
+            get {
+                return ResourceManager.GetString("PW_MSG_TEMPERATUR_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vorlauf darf nicht unter dem Rücklauf liegen. ähnelt.
+        /// </summary>
+        public static string PW_MSG_TEMPERATUR_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("PW_MSG_TEMPERATUR_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau übernommen; gespeichert wird mit OK. ähnelt.
+        /// </summary>
+        public static string PW_MSG_TEMPERATUR_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PW_MSG_TEMPERATUR_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne ähnelt.
+        /// </summary>
+        public static string PW_TEMPERATUR_OHNE {
+            get {
+                return ResourceManager.GetString("PW_TEMPERATUR_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string SCHLIESSKREUZ_TOOLTIP {
@@ -78218,6 +78425,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_PROZESSWAERME_TYP_UNDEFINIERT {
             get {
                 return ResourceManager.GetString("SIMENG_PROZESSWAERME_TYP_UNDEFINIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot;: In {1} Stunden geht der Prozessrücklauf (im Mittel {2:0.#} °C) anteilig in den Rücklauf der Brennwertkennlinie ein. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_KESSEL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_KESSEL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot;: In {1} Stunden deckt der Kessel den Prozesskanal nicht – gefordert bis {2:0.#} °C, sein Vorlauf beträgt {3:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_NICHT_ERREICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}&quot;: In {1} Stunden entnimmt der Prozesskanal nichts – gefordert bis {2:0.#} °C, der Speicher hält {3:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_PUFFER_GESPERRT {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_PUFFER_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}&quot;: In {1} Stunden entnimmt der Prozesskanal nur aus den Schichten, die den Prozessvorlauf halten (bis {2:0.#} °C). ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_PUFFER_ZONE {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_PUFFER_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau aus {0} Profil(en) mit Temperaturpaar, Vorlauf bis {1:0.#} °C in {2} Stunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_TEMPERATURNIVEAU {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_TEMPERATURNIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul „{0}&quot;: In {1} Stunden rechnet die Kennlinie am Prozessvorlauf (bis {2:0.#} °C), weil der Prozesskanal eine höhere Temperatur verlangt als die Kennlinie der Stunde. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_WP_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_WP_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul „{0}&quot;: In {1} Stunden deckt es den Prozesskanal nicht – gefordert bis {2:0.#} °C, die oberste Kennlinie liegt bei {3} °C und die Extrapolation ist nicht erlaubt. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_WP_NICHT_ERREICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_WP_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul „{0}&quot;: In {1} Stunden deckt es den Prozesskanal nicht – die Kennlinie am Prozessvorlauf ({2} °C) beginnt erst bei der Quelltemperatur {3:0.#} °C; darunter gibt es für diesen Vorlauf keinen Betriebspunkt. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESS_WP_QUELLE {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESS_WP_QUELLE", resourceCulture);
             }
         }
         
@@ -82681,6 +82960,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Erzeuger-Vorlauf {1} °C liegt unter dem Prozessvorlauf {2} °C eines Prozesswärmeprofils. In Stunden mit diesem Bedarf deckt die Anlage den Prozesskanal nicht. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W3_UNTER_PROZESS {
+            get {
+                return ResourceManager.GetString("SIMWARN_W3_UNTER_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Erzeuger-Vorlauf {1} °C liegt unter der Nutztemperatur Brauchwasser {2} °C des Zielspeichers „{3}&quot;. Der Brauchwasserkanal bliebe an diesem Erzeuger dauerhaft abgeschaltet. ähnelt.
         /// </summary>
         public static string SIMWARN_W3_UNTER_TNUTZ {
@@ -85142,6 +85430,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Ganglinie ‚{0}‘ ähnelt.
+        /// </summary>
+        public static string SIM_SOLARGANGLINIE_FELDNAME {
+            get {
+                return ResourceManager.GetString("SIM_SOLARGANGLINIE_FELDNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Anlage ähnelt.
         /// </summary>
         public static string SIM_SOLARTHERMIE_ANLAGE {
@@ -86017,6 +86314,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_KASKADE_VOLL {
             get {
                 return ResourceManager.GetString("SIM_W_KASKADE_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ {
+            get {
+                return ResourceManager.GetString("SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ", resourceCulture);
             }
         }
         
@@ -88165,7 +88471,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds. ähnelt.
         /// </summary>
         public static string START_E_TIPP {
             get {

@@ -1050,3 +1050,115 @@ nachgezogen. Gespeicherte Kaskaden — auch die der Referenzprojekte — rechnet
 
 Gehalten von `EPOS.Kern.Tests/KaskadeTests` (`Vorwaehlen_*`) und
 `EPOS.Kern.Tests/KuehlbetriebProgrammeinstellungTests.Die_Vorwahl_folgt_den_Ladeprioritaeten`.
+
+## 14. Solarthermie-Ganglinie als Rechenweg
+
+Die Solarthermie eines Projekts rechnet entweder über das **Kollektorfeld** (Klimadaten,
+Kollektorkennwerte, Ausrichtung — die Vorgabe) oder über eine zugeordnete **Solarthermieganglinie**
+mit 8 760 Stundenwerten (`Allgemein/Simulation/SolarganglinieWeiche.cs`, Rechenweg in
+`SimulationSolarthermie.GanglinieEinsetzen`).
+
+**Weiche.** Die Auswahl „Profil“/„Ganglinie“ der Startseiten-Kachel wählt nur den Dialog; sie wird
+nicht gespeichert. Maßgeblich ist der Datenstand: Die Weiche steht auf Ganglinie genau dann, wenn dem
+Projekt über `Z_ProjektSolarganglinie` eine Ganglinie zugeordnet ist, deren Projektkopie
+(`Tab_SolarganglinieDaten`, gelesen nach `ID`) **genau 8 760 endliche, nicht negative Werte** führt.
+Sonst rechnet das Kollektorfeld. Bei mehreren Zuordnungen rechnet die mit der kleinsten
+Zuordnungs-ID; die übrigen werden als Warnung gemeldet. Einen Schemaschritt braucht die Weiche nicht.
+
+**Einheit.** Ein Wert ist die Wärmeleistung der Stunde in kW und damit die Wärmemenge der Stunde in
+kWh — absolut, ohne Bezug auf eine Fläche. Die Ganglinie ist das stündliche Potenzial EINES Felds;
+was davon den Bedarf deckt, den Puffer lädt oder als Überschuss verfällt, entscheidet die Stunde.
+
+**Senken, Puffer, Kaskade.** Führt das Projekt eine Solarthermie-Anlagenzeile, ist die mit der
+kleinsten `Tab_Energieanlagen.ID` der Träger der Ganglinie: Die Ganglinie rechnet unter ihrer ID —
+mit ihren Senken (`Z_AnlageSenke`, sonst der Vorbelegung Heizkreis/Beides), ihrer Pufferladung samt
+Nachrang-Schwelle und an ihrem Kaskadenplatz. Weitere Kollektorfelder rechnen dann nicht (Hinweis im
+Protokoll). Ohne Anlagenzeile deckt die Ganglinie alle Wärmekanäle — Heizung, Brauchwasser,
+Prozesswärme — direkt und ohne Puffer (Hinweis im Protokoll). In beiden Fällen rechnet sie nur, wenn
+die Solarthermie einen Kaskadenplatz hat; die Vorwahl der Simulationskonfiguration zählt eine
+vollständige Ganglinie wie ein Kollektorfeld, und ohne Platz meldet der Lauf
+`SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ` (`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`).
+
+**Rückfälle.** Eine zugeordnete, aber unvollständige Ganglinie (zu wenige oder zu viele Werte, leere,
+negative oder nicht endliche Werte) ist eine Warnung mit dem benannten Mangel; der Lauf rechnet mit
+dem Kollektorfeld, ohne Kollektorfeld liefert die Solarthermie nichts. Der Statuspunkt der Kachel
+(`KomponentenBestandCtrl`) ist ohne Anlagenzeile nur mit vollständiger Ganglinie an.
+
+**Ergebnis und Bericht.** Die Ganglinie erscheint in `Kollektor_Ergebnisse` und damit in
+`Tab_ErgebnisSolarthermieModul`, im Ergebnisreiter und in den Erzeugertabellen des Berichts als eine
+Zeile „Solarthermie-Ganglinie ‚Bezeichner‘“ mit Jahresertrag (genutzt plus Überschuss), genutzter
+Wärme und Überschuss; Fläche und Anzahl stehen auf 0 und werden im Ergebnisreiter als „–“ gezeigt
+(`SolarKollektorErgebnis.IstGanglinie`, `JahresertragKwh`, `NutzanteilProzent`). Die
+Wirtschaftlichkeit kennt für die Ganglinie keine eigene Investition; ihre Wärmemenge steht in der
+Wärmemenge der Komponente Solarthermie. Eine Kostenposition, die an eine einzelne Anlage gebunden ist,
+findet die Ganglinienzeile nicht unter dem Anlagennamen und behält ihre gespeicherte Menge.
+
+Gehalten von `EPOS.Kern.Tests/SolarganglinieRechenwegTests` und
+`EPOS.UI.Tests/Seiten/ErzeugerReiterTests.Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl`.
+Kein Referenzprojekt führt eine Solarthermieganglinie.
+## 15. Prozesswärme: Temperaturniveau und Betriebsweisen
+
+Ein Prozesswärmesatz trägt neben Monatswerten und Wochenprofil ein **Temperaturpaar**: `Vorlauf`
+und `Ruecklauf` [°C] an `Tab_Prozesswaerme_STAMM` und an der Projektkopie `Tab_Prozesswaerme`
+(Schemaschritt `ProzesswaermeTemperaturSchema`; REAL, nullbar, 0 … 250 °C, beide oder keiner,
+Vorlauf nicht unter dem Rücklauf). Leer heißt „ohne Temperaturniveau“ — der Prozess ist dann
+eine reine Wärmemenge, und der Lauf rechnet Zeichen für Zeichen wie ohne die Spalten.
+
+**Das Niveau des Kanals.** Die Profilroutine meldet jedes gerechnete Profil mit Kopfsatz und
+Jahresreihe (`ProfilLaufInfo.JeProfil`); `Prozesstemperatur` bildet daraus je Stunde
+
+- den **höchsten geforderten Vorlauf** der Prozesse, die in der Stunde Wärme verlangen und ein
+  Paar tragen, und
+- ihren **Rücklauf, mengengewichtet** über dieselben Prozesse.
+
+In Stunden ohne einen solchen Prozess steht NaN; ohne ein einziges Paar entsteht kein Niveau
+(`SimulationWaermebedarf.ProzessTemperatur` bleibt `null`). Lastgänge mit Kanal Prozesswärme
+tragen kein Temperaturniveau.
+
+**Wirkung im Lauf** — nur in Stunden mit Prozessbedarf und gefordertem Vorlauf:
+
+| | Erzeuger bzw. Speicher | Regel |
+|---|---|---|
+| a | Wärmepumpe mit Direktsenke Prozesswärme | Liegt der Prozessvorlauf über der Kennlinie der Stunde, rechnet die Stunde mit der **untersten Kennlinie, die ihn erreicht** (`ProzessKennlinieWaehlen`) — für die ganze Abgabe der Stunde, die höchste geforderte Temperatur bestimmt den Betriebspunkt. Über der obersten Stützstelle gilt die Extrapolationsregel des Projekts (erlaubt: oberste Kennlinie; verboten: nicht erreicht). Unter der untersten Quelltemperatur dieser Kennlinie gibt es keinen Betriebspunkt — nicht erreicht, weder Extrapolation noch Abbruch. |
+| b | jeder Erzeuger mit Direktsenke Prozesswärme | Erreicht er den Prozessvorlauf nicht, ist der Prozesskanal für ihn in dieser Stunde gesperrt (Muster der Heizkanalsperre im Kühlbetrieb). Die Wärmepumpe misst am Kennfeld (a), der Heizkessel an seinem **gepflegten** Vorlauf (Kette Anlage → Heizkessel; ohne Paar keine Sperre). Das BHKW deckt Prozesswärme nur über einen Puffer. Das Warnkriterium W3 meldet einen Erzeuger mit Direktsenke Prozesswärme, dessen gepflegter Vorlauf unter dem höchsten Prozessvorlauf des Projekts liegt (Wärmepumpe ausgenommen). |
+| c | Brennwertkessel mit Kennlinie | Der Anteil seiner Stundenabgabe, der in den Prozesskanal ging, sieht den Prozessrücklauf: `T_RL = a · T_RL,Prozess + (1 − a) · T_RL,Kette`, `a` = Prozessabgabe ÷ Abgabe der Stunde. |
+| d | Pufferspeicher, Entnahme in den Prozesskanal | Geschichtet: Die Mindest-Nutztemperatur des Prozesskanals steigt für diese Entnahme auf den Prozessvorlauf — entnommen wird nur aus Schichten, die ihn halten. Ungeschichtet mit gepflegtem Paar: Hält `VL_eff` den Prozessvorlauf nicht, entnimmt der Prozess nichts; ohne gepflegtes Paar keine Sperre. |
+
+Das Laufprotokoll nennt je Erzeuger und Speicher die Stunden mit Kennlinie am Prozessvorlauf, ohne
+Prozessdeckung, mit Prozessrücklauf und mit begrenzter Entnahme. Der Bericht führt in der
+Bedarfstafel die Zeile „Temperaturniveau Prozesswärme“ (höchster Vorlauf / tiefster Rücklauf), nur
+wenn ein Prozess ein Paar trägt.
+
+**Stufe 2, nicht gebaut.** Die Wärmepumpe teilt eine Stunde nicht zeitlich in Prozess- und
+Heizanteil, sie rechnet die ganze Stunde am höchsten geforderten Vorlauf; auch ihre Pufferladung
+in einer solchen Stunde. Die Solarthermie wertet den Prozessvorlauf nicht aus (eigene feste
+Arbeitstemperatur, Punkt ST2 der Entscheidungsvorlage). Eine zweikanalige Ganglinie mit
+Vorlauftemperatur je Stunde (PW1 Stufe 2) gibt es nicht.
+
+**Bedienung.** Der Stammkopf der Prozesswärme führt Vorlauf und Rücklauf (Prüfung
+`Prozesstemperatur.Paarpruefung`, dieselben Grenzen wie die Prüfklauseln); die Projektkopie
+übernimmt das Paar des Katalogs. Im Projektdialog zeigt der Infoblock das Temperaturniveau, und
+„Temperaturen übernehmen“ setzt das Paar der gewählten Projektzeile in den Arbeitsstand —
+geschrieben wird mit OK (`WizardCtrl.Add_Projekt_Prozess`, nur bei geänderter Zeile).
+
+**Katalog typischer Betriebsweisen.** Derselbe Schemaschritt sät acht Sätze in
+`Tab_Prozesswaerme_STAMM` und `Tab_Prozesstyp_STAMM` (`ProzesstypSaat`, `ReadOnly = 1`, wiederholbar,
+nie überschreibend; ein eigener gleichnamiger Satz bleibt): Jahresmenge 100 MWh, Monatswerte nach
+Monatsfaktor × Kalendertagen, Wochenprofil als relative Last, Temperaturpaar als Vorbelegung,
+Beschreibung mit dem Vermerk „Schichtmodell, keine Messung“.
+
+| Satz | Wochenprofil | Monatsfaktoren | Vorlauf/Rücklauf |
+|---|---|---|---|
+| Einschicht 5 Tage | Mo–Fr 6–14 Uhr 1,0, 5 Uhr 0,5 | August 0,4, Dezember 0,8 | 60/40 °C |
+| Zweischicht 5 Tage | Mo–Fr 6–22 Uhr 1,0 | August 0,4, Dezember 0,8 | 70/50 °C |
+| Dreischicht 5 Tage | Mo 6 Uhr bis Sa 6 Uhr 1,0 | August 0,4, Dezember 0,8 | 80/60 °C |
+| Durchlaufbetrieb 7 Tage | täglich 6–22 Uhr 1,0, 22–6 Uhr 0,9 | August 0,7 (Revision) | 90/70 °C |
+| Reinigung/Spülen (CIP) | Mo–Fr 14 und 22 Uhr je 1,0 | 1,0 | 75/40 °C |
+| Trocknung/Lackierung | Mo–Fr 6 Uhr 1,5, 7–22 Uhr 1,0 | 1,0 | 120/90 °C |
+| Waschen/Bäder | Mo–Fr 6–18 Uhr 1,0, Montag 6 Uhr 2,0 | 1,0 | 60/45 °C |
+| Raumlufttechnik Halle | Mo–Fr 5–20 Uhr 1,0 | Oktober–April 1,0, Mai–September 0,1 | 50/30 °C |
+
+Kein Referenzprojekt ordnet einen dieser Sätze zu und keines trägt ein Temperaturpaar; die Basis
+bleibt unberührt. Gehalten von `EPOS.Kern.Tests/ProzesswaermeTemperaturSchemaTests`,
+`ProzesstemperaturRechenwegTests` (Läufe auf Kopien von 1041 und 1050), `ProzesswaermeTemperaturWegeTests`,
+`ProzesstypSaatWacheTests` und `EPOS.UI.Tests/Dialoge/ProzessTemperaturDialogTests`.

@@ -230,6 +230,12 @@ namespace WindowsFormsApplication1
             // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
             new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
                       "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
+            // Die Spalte kommt leer an - leer rechnet die Vorgabe 0,2, wie das Paket gerechnet hat.
+            new Stufe(AlbedoSchema.SCHRITT, Art.Ddl,
+                      "Bodenalbedo je Photovoltaik- und Solarthermie-Anlage"),
+            // Die Spalten kommen leer an - ein Paketsatz ohne Temperaturpaar rechnet wie zuvor.
+            new Stufe(ProzesswaermeTemperaturSchema.SCHRITT, Art.Ddl,
+                      "Temperaturpaar je Prozesswärmesatz (Vorlauf, Rücklauf) und Katalog typischer Betriebsweisen"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

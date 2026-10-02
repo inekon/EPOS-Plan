@@ -4832,6 +4832,39 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT;
 
+        // ---- Entscheidungsvorlage Modellgrenzen, PV4: die Bodenalbedo je Anlage ----
+
+        /// <summary>
+        /// Schritt <see cref="AlbedoSchema.SCHRITT"/> — <b>die Bodenalbedo je Photovoltaik- und
+        /// Solarthermie-Anlage</b>. Er folgt auf <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Energieanlagen</c> die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1). Die Anweisung steht bei <see cref="AlbedoSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt NULL und
+        /// rechnet mit der Vorgabe 0,2; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_ALBEDO = AlbedoSchema.SCHRITT;
+
+        // ---- Welle M3a (Entscheidungsvorlage Modellgrenzen PW1 Stufe 1 und PW5): Prozesswärme ----
+
+        /// <summary>
+        /// Schritt <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/> — <b>das Temperaturpaar je
+        /// Prozess</b> (PW1 Stufe 1). Er folgt auf <see cref="SCHRITT_ALBEDO"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c> die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, beide oder keine,
+        /// Vorlauf nicht unter dem Rücklauf). Die Anweisungen stehen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt ohne Paar und
+        /// rechnet wie zuvor; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6961,6 +6994,25 @@ namespace WindowsFormsApplication1
                         "Prozent der Nennleistung muesste von Hand umgerechnet werden. KEIN Rechenergebnis " +
                         "aendert sich - jede Bestandszeile bekommt kW, die Einheit, in der sie rechnet.",
                         Schritt_KesselBereitschaftEinheit),
+            // ENTSCHEIDUNGSVORLAGE MODELLGRENZEN, PV4 - die Bodenalbedo je Anlage: eine nullbare
+            // Spalte an Tab_Energieanlagen. REIN DDL; die Quelle ist AlbedoSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_ALBEDO,
+                        "Tab_Energieanlagen: Bodenalbedo je Anlage (Albedo, 0 bis 1, leer = 0,2)",
+                        "Die Bodenalbedo vor einer Photovoltaik- oder Solarthermie-Anlage liesse sich " +
+                        "nicht pflegen; Fassaden, helle Daecher und Schnee rechneten mit 0,2. Die Spalte " +
+                        "entsteht leer. KEIN Rechenergebnis aendert sich - leer rechnet die Vorgabe 0,2.",
+                        Schritt_Albedo),
+            // WELLE M3a (PW1 Stufe 1, PW5) - das Temperaturpaar je Prozess: zwei nullbare Spalten an
+            // Katalog und Projektkopie. Die Quelle ist ProzesswaermeTemperaturSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_PROZESSWAERME_TEMPERATUR,
+                        "Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme: Temperaturpaar je Prozess " +
+                        "(Vorlauf, Ruecklauf) und acht ausgelieferte Betriebsweisen",
+                        "Ein Prozess waere eine reine Waermemenge; welches Temperaturniveau er verlangt, " +
+                        "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
+                        "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
+                        Schritt_ProzesswaermeTemperatur),
         };
 
         /// <summary>
@@ -12329,6 +12381,125 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Einheit des Bereitschaftsverlusts - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Vorgabe kW).") +
                     " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bodenalbedo je Anlage" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ALBEDO"/>, die Anweisung bei <see cref="AlbedoSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AlbedoSchema.Anweisungen</c> nennt nur die fehlende Spalte. Fehlt
+        /// die Anlagentabelle, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Albedo(Lauf l)
+        {
+            string nr = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(AlbedoSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + AlbedoSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AlbedoSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AlbedoSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + AlbedoSchema.SPALTE + " an " + AlbedoSchema.TABELLE +
+                                  " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Bodenalbedo je Anlage - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte angelegt (leer = 0,2).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Temperaturpaar je Prozess" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/>, die Anweisungen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>. <b>Wiederholbar</b>:
+        /// <c>ProzesswaermeTemperaturSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine
+        /// der beiden Prozesswärmetabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_ProzesswaermeTemperatur(Lauf l)
+        {
+            string nr = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzesswaermeTemperaturSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzesswaermeTemperaturSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzesswaermeTemperaturSchema.SpaltenVollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten " + ProzesswaermeTemperaturSchema.SPALTE_VORLAUF + " und " +
+                                  ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF + " an " +
+                                  ProzesswaermeTemperaturSchema.TAB_STAMM + " und " +
+                                  ProzesswaermeTemperaturSchema.TAB_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // PW5: die acht typischen Betriebsweisen ueber den KERN mit ?-Parametern, still wie die
+            // Saat der Konditionierungsvorlagen - dieser Zweig laeuft vor dem ersten Fenster.
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ProzesstypSaat.Ausfuehren(zeilen);
+                    vollstaendig = ProzesswaermeTemperaturSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die gesaeten Saetze bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Der Prozesswaermekatalog traegt nach dem Schritt nicht alle ausgelieferten Betriebsweisen.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Temperaturpaar je Prozess - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

@@ -281,6 +281,9 @@
         internal static string PvWrWirkungsgradErl => MyResource.Resource.KI_DLG_PV_WR_WIRKUNGSGRAD_ERL;
         internal static string PvSystemverlusteName => MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE;
         internal static string PvSystemverlusteErl => MyResource.Resource.KI_DLG_PV_SYSTEMVERLUSTE_ERL;
+        // Bodenalbedo der Anlage (PV4) - Photovoltaik und Solarthermie teilen Name und Erlaeuterung.
+        internal static string AlbedoName => MyResource.Resource.ANLAGE_LABEL_ALBEDO;
+        internal static string AlbedoErl => MyResource.Resource.KI_DLG_ALBEDO_ERL;
         internal static string PvMitWrName => MyResource.Resource.PVS_WAHL;
         internal static string PvMitWrErl => MyResource.Resource.KI_DLG_PV_MIT_WR_ERL;
 
@@ -1436,6 +1439,11 @@
         // Welle #458 Stufe 3b: die zwoelf Monatswerte als Zahlenreihe.
         internal static string TstammMonatswerteName => MyResource.Resource.BTYP_GRP_MONATE;
         internal static string TstammMonatswerteErl => MyResource.Resource.KI_DLG_TSTAMM_MONATSWERTE_ERL;
+        // PW1 Stufe 1: das Temperaturpaar der Prozesswärme.
+        internal static string TstammVorlaufName => MyResource.Resource.PW_LBL_VORLAUF;
+        internal static string TstammVorlaufErl => MyResource.Resource.KI_DLG_TSTAMM_VORLAUF_ERL;
+        internal static string TstammRuecklaufName => MyResource.Resource.PW_LBL_RUECKLAUF;
+        internal static string TstammRuecklaufErl => MyResource.Resource.KI_DLG_TSTAMM_RUECKLAUF_ERL;
 
         // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
 

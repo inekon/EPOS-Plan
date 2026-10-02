@@ -52,6 +52,14 @@
                     WertChanged="BeiSystemverluste" Min="0" Max="100" Nachkommastellen="2"
                     Feldname="Systemverluste" />
     </div>
+    @* Die BODENALBEDO der Anlage (Entscheidungsvorlage Modellgrenzen, PV4): leer = 0,2, in
+       beiden Rechenmodellen wirksam. Die Auswahlhilfe steht als Hinweis darunter. *@
+    <div title="@Texte.TipAlbedo">
+        <Zahlenfeld Bezeichnung="@Texte.LabelAlbedo" Wert="@Zeile.Albedo"
+                    WertChanged="BeiAlbedo" Min="0" Max="1" Nachkommastellen="2"
+                    Feldname="Albedo" />
+    </div>
+    <p class="epos-herleitung epos-pvmodell-albedo">@Texte.HinweisAlbedo</p>
 
     @* Was die Modellwahl unterscheidet - und was sie NICHT unterscheidet (Konzept 7). *@
     <p class="epos-herleitung epos-pvmodell-zeile">@Modellzeile</p>
@@ -99,6 +107,14 @@
     private Task BeiSystemverluste(double? wert)
     {
         Zeile.Systemverluste = wert.HasValue && wert.Value > 0.0 ? wert : null;
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task BeiAlbedo(double? wert)
+    {
+        // Leer = NULL = 0,2. 0 ist ein gültiger Wert (kein Bodenreflex); ausserhalb 0..1 ist eine
+        // Fehleingabe, die das Feld faerbt (Zahlenfeld) - uebernommen wird sie nicht.
+        Zeile.Albedo = wert.HasValue && wert.Value >= 0.0 && wert.Value <= 1.0 ? wert : null;
         return Geaendert.InvokeAsync();
     }
 }

@@ -788,9 +788,13 @@ namespace WindowsFormsApplication1
         //  Solarthermie
         // =================================================================
 
-        /// <summary>Eine Zeile der Kollektortabelle.</summary>
+        /// <summary>
+        /// Eine Zeile der Kollektortabelle. <paramref name="Ganglinie"/>: die Zeile der
+        /// Solarthermieganglinie (Folgeauftrag 4) — ohne Fläche und Anzahl.
+        /// </summary>
         public sealed record SolarModulZeile(string Name, double FlaecheM2, long Anzahl,
-                                             double WaermeproduktionMwh, double UeberschussMwh);
+                                             double WaermeproduktionMwh, double UeberschussMwh,
+                                             bool Ganglinie = false);
 
         public sealed class SolarthermieErgebnis
         {
@@ -850,7 +854,8 @@ namespace WindowsFormsApplication1
                 foreach (var k in st.Kollektor_Ergebnisse)
                     e.Module.Add(new SolarModulZeile(k.Name, k.Flaeche, k.Anzahl,
                                                      k.WaermeproduktionKwh / 1000.0,
-                                                     k.UeberschussKwh / 1000.0));
+                                                     k.UeberschussKwh / 1000.0,
+                                                     k.IstGanglinie));
 
             e.HinweisOhneAbnehmer = SolarHinweisOhneAbnehmer(sim, wb, e.UeberschussMwh);
 

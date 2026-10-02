@@ -245,6 +245,10 @@ namespace WindowsFormsApplication1
                 double etaWr = ctrl.items[n].PV_WrWirkungsgrad ?? WR_WIRKUNGSGRAD_VORGABE;
                 double systemFaktor = 1.0 - (ctrl.items[n].PV_Systemverluste ?? SYSTEMVERLUSTE_VORGABE) / 100.0;
 
+                // PV4: die Bodenalbedo JE ANLAGE. NULL = 0,2 (Bodenalbedo.VORGABE), damit ist der
+                // Vorgabefall bitgleich zum Bestand.
+                double albedo = Bodenalbedo.Wert(ctrl.items[n]);
+
                 // E2 (Paket B): die Modellweiche je Anlage. NULL und jeder unbekannte
                 // Wert heissen EINFACH - der Rechenweg aus Paket A.
                 bool erweitert = IstErweitert(ctrl.items[n]);
@@ -318,7 +322,8 @@ namespace WindowsFormsApplication1
                         // dt.DayOfYear). Bis Paket A stand hier i/24, also 0…364.
                         double effStr = SolarCalculator.CalculateHourly(Lon, Lat, ctrl.items[n].m_Neigung, ctrl.items[n].m_Azimut,
                                         zeile.Globalstrahlung, zeile.Direktstrahlung,
-                                        zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc);
+                                        zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc,
+                                        albedo);
 
                         if (effStr > MaxPSolar) MaxPSolar = effStr;
 
@@ -365,7 +370,8 @@ namespace WindowsFormsApplication1
                         double gT = SolarCalculator.CalculateHourlyHayDavies(
                                         Lon, Lat, ctrl.items[n].m_Neigung, ctrl.items[n].m_Azimut,
                                         zeile.Globalstrahlung, zeile.Direktstrahlung,
-                                        zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc);
+                                        zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc,
+                                        albedo);
 
                         if (gT > MaxPSolar) MaxPSolar = gT;
 
@@ -1208,6 +1214,9 @@ namespace WindowsFormsApplication1
 
             var einstrahlung = new double[neigungen.Count];
 
+            // PV4: die Bodenalbedo der Anlage gilt fuer alle ihre Straenge.
+            double albedo = Bodenalbedo.Wert(anlage);
+
             for (int i = 0; i < stunden; i++)
             {
                 SolardatenModel zeile = ctrldat.items[i];
@@ -1218,11 +1227,12 @@ namespace WindowsFormsApplication1
                         ? SolarCalculator.CalculateHourlyHayDavies(
                               Lon, Lat, neigungen[k], azimute[k],
                               zeile.Globalstrahlung, zeile.Direktstrahlung,
-                              zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc)
+                              zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc, albedo)
                         : SolarCalculator.CalculateHourly(
                               Lon, Lat, neigungen[k], azimute[k],
                               zeile.Globalstrahlung, zeile.Direktstrahlung,
-                              zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc);
+                              zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc,
+                              albedo);
 
                     if (einstrahlung[k] > MaxPSolar) MaxPSolar = einstrahlung[k];
                 }

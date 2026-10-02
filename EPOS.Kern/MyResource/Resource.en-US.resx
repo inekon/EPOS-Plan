@@ -16239,7 +16239,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Tip</value>
   </data>
   <data name="START_E_TIPP" xml:space="preserve">
-    <value>You can combine several energy producers. Select all the technologies you want.</value>
+    <value>You can combine several energy producers. Select all the technologies you want. Solar thermal: if a complete profile is assigned to the project (8,760 hourly values in kW), the simulation calculates the profile instead of the collector field.</value>
   </data>
   <data name="START_E_PROFIL" xml:space="preserve">
     <value>Profile</value>
@@ -18088,6 +18088,12 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>{0} “{1}” exists in the project but is not part of the cascade — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>The solar thermal profile “{0}” is assigned to the project, but solar thermal is not part of the cascade — the profile is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_SOLARGANGLINIE_FELDNAME" xml:space="preserve">
+    <value>Solar thermal profile ‘{0}’</value>
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} “{1}” exists in the project but has not been added to the simulation — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
@@ -41333,6 +41339,102 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
     <value>The value “{0}” does not exist; known values are {1}.</value>
+  </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1: the share of global irradiance the ground reflects onto the tilted surface. Empty means 0.2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Typical albedo: grass 0.2 · concrete 0.3 · light roof 0.5–0.6 · snow 0.7–0.8. Empty = 0.2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1; empty means 0.2 (grass). Typical values: concrete 0.3, light roof 0.5 to 0.6, snow 0.7 to 0.8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Adopt best variant</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>The best variant becomes the fleet of the design and is activated for the project simulation. The simulation result changes only with the next project run.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Best variant adopted: it is the fleet of the design and activated for the project simulation. Please recalculate the project simulation.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>There is no design search whose best variant could be adopted.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>The best variant is “without storage” — there is no fleet to adopt.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Locked: the result no longer matches the current settings, or a run is in progress. Recalculate first.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
+    <value>Please enter both flow and return temperature, or leave both empty.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_BEREICH" xml:space="preserve">
+    <value>Flow and return temperature must lie between 0 and 250 °C.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_REIHENFOLGE" xml:space="preserve">
+    <value>The flow temperature must not be below the return temperature.</value>
+  </data>
+  <data name="SIMENG_PROZESS_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>temperature level from {0} profile(s) with a temperature pair, flow temperature up to {1:0.#} °C in {2} hours.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_KENNLINIE" xml:space="preserve">
+    <value>module "{0}": in {1} hours the characteristic curve at the process flow temperature applies (up to {2:0.#} °C), because the process channel requires a higher temperature than the curve of the hour.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_NICHT_ERREICHT" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – up to {2:0.#} °C required, the highest characteristic curve is at {3} °C and extrapolation is not allowed.</value>
+  </data>
+  <data name="SIMENG_PROZESS_NICHT_ERREICHT" xml:space="preserve">
+    <value>"{0}": in {1} hours the boiler does not cover the process channel – up to {2:0.#} °C required, its flow temperature is {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PROZESS_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>"{0}": in {1} hours the process return temperature (on average {2:0.#} °C) enters the return temperature of the condensing curve proportionally.</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_ZONE" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel only draws from the layers that hold the process flow temperature (up to {2:0.#} °C).</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_GESPERRT" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel draws nothing – up to {2:0.#} °C required, the storage holds {3:0.#} °C.</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_PROZESS" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the process flow temperature of {2} °C of a process heat profile. In hours with this demand the unit does not cover the process channel.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – the characteristic curve at the process flow temperature ({2} °C) only starts at the source temperature {3:0.#} °C; below that there is no operating point for this flow temperature.</value>
+  </data>
+  <data name="PW_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow temperature:</value>
+  </data>
+  <data name="PW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return temperature:</value>
+  </data>
+  <data name="PW_GRP_TEMPERATUR" xml:space="preserve">
+    <value>Temperature level of the process</value>
+  </data>
+  <data name="PW_LBL_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperature level:</value>
+  </data>
+  <data name="PW_HINW_TEMPERATUR" xml:space="preserve">
+    <value>Empty = no temperature level, the process is calculated as a pure quantity of heat. With flow and return temperature the run tracks the highest required flow temperature of the process channel per hour; a generator that does not reach it does not cover the process in that hour.</value>
+  </data>
+  <data name="PW_BTN_TEMPERATUR" xml:space="preserve">
+    <value>Apply temperatures</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_UEBERNOMMEN" xml:space="preserve">
+    <value>Temperature level applied; it is saved with OK.</value>
+  </data>
+  <data name="PW_TEMPERATUR_OHNE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature the process requires, in °C (process heat only); empty together with the return temperature = no temperature level.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
+    <value>The return temperature of the process in °C (process heat only); not above the flow temperature.</value>
   </data>
   <data name="SIMENG_AUFH_W1" xml:space="preserve">
     <value>Preheat optimisation (W1): the preheat power is insufficient — on {0} days no ramp of up to 48 h holds, on {1} of them it does not exceed the steady-state heating load. The ramp fills the setback there; the run continues.</value>

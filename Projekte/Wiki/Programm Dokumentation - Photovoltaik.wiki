@@ -12,7 +12,7 @@ Eine PV-Anlage entsteht in vier Schritten; die Felder im Einzelnen beschreiben [
 
 # '''Modul im Katalog.''' ''Administration → Energiesysteme → Photovoltaik → PV Module'' pflegt den Modulkatalog. Datensätze aus der CEC-Liste oder im PVsyst-Format liest ''Administration → Daten & Import → Photovoltaik → PV Module (CEC, PAN)...'' ein.
 # {{Anker|beschreibung-der-anlage|modulauswahl}}'''Anlage im Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Photovoltaik'' den Dialog ''Verwaltung Photovoltaik Module''. Das Modul in ''Module aus Datenbank'' wählen und ''In das Projekt übernehmen'': Jede Übernahme legt eine eigene Anlage an, die als Zeile in ''ausgewählte Module'' steht. Für die markierte Zeile stehen im Block ''PV Anlage Eigenschaften'' die Felder ''Neigung [°]'', ''Azimut [°]'' (0° = Süden, Osten negativ, Westen positiv), der Energieträger und ''Anzahl Module''. ''Gesamtleistung [kW]'' im Block ''Modul Eigenschaften'' zählt alle Anlagen des Projekts zusammen.
-# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
+# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). ''Albedo [-]'' ist der Bodenreflex vor der Anlage, 0 bis 1 (leer = 0,2); die Zeile darunter nennt Richtwerte. Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
 # '''Simulationskonfiguration.''' In Schritt ① der Ansicht ''Simulation'' steht die Photovoltaik in der Gruppe ''Stromerzeuger''. Solange die Kaskade nicht von Hand gepflegt ist, setzt das Programm eine vorhandene PV-Anlage beim Öffnen selbst auf diesen Platz; sonst ''einblenden'', ''+ aufnehmen'' und ''Konfiguration speichern''. Alle PV-Anlagen des Projekts rechnen gemeinsam auf diesem einen Platz ([[Programm Dokumentation/Simulation#erzeugerliste|Simulation]]).
 
 {{Anker|teilfelder}}'''Teilfelder.''' Eine Dachfläche mit anderer Ausrichtung wird eine eigene Anlage – dasselbe Modul ein zweites Mal übernehmen – oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut. Teilen sich Dachflächen einen Wechselrichter, müssen es Stränge derselben Anlage sein: Jede Anlage rechnet nur ihre eigenen Geräte. Den Ertrag aller Anlagen addiert der Lauf Stunde für Stunde.
@@ -44,7 +44,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 |-
 | Verwaltung Photovoltaik Module || ''Module aus Datenbank'', dann ''In das Projekt übernehmen'' || Modul 1, 400 W || eine Übernahme ist eine Anlage
 |-
-| rowspan="6" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
+| rowspan="7" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
 |-
 | ''Azimut [°]'' || 0 || Süddach
 |-
@@ -55,6 +55,8 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 | ''Rechenmodell'' || Erweitert || genauere Einstrahlung; der ''WR-Wirkungsgrad'' ist dann gesperrt
 |-
 | ''Systemverluste [%]'' || 3 || Verschmutzung und Leitungen; leer rechnet mit 0 %
+|-
+| ''Albedo [-]'' || leer || Bodenreflex vor der Anlage, 0 bis 1; leer rechnet mit 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8 – wirksam vor allem bei steilen und Fassadenanlagen
 |-
 | Verwaltung Photovoltaik Module, ''Wechselrichter und Stränge'' || Option || vereinfacht || das Gerät wird ausgelegt, wenn die Größe steht
 |-

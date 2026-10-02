@@ -43,7 +43,7 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 1 | Kühlkennlinie aus dem Katalog nachholbar machen | – | Kühlung, Gerätekataloge |
 | 2 | PV-Dialog: Hinweistexte an den Rechenweg angleichen | nur zur Beschriftung „Standby-Verbrauch“ | Photovoltaik, Wechselrichter |
 | 3 | Drei Nebenbefunde im PV-Rechenweg beheben | nur die Frage zum 5-kWh-Speicher | Simulationsergebnisse (Monatsbild) |
-| 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
+| 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja — Weg (a), umgesetzt | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
 | 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja — Variante (a), umgesetzt | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
 | 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
@@ -136,6 +136,16 @@ und 492–514). Soll das so bleiben?
   ändern.
 
 ## 4. Solarthermieganglinie: in die Rechnung oder entfernen
+
+**Umgesetzt:** Weg (a) nach dem Entscheid ST8 der
+[Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md) — die
+Ganglinie ist eigener Rechenweg mit Senken, Pufferladung und Kaskade des Kollektorfelds; Weiche über
+den Datenstand (vollständige zugeordnete Ganglinie), Werte absolut in kW je Stunde, Rückfall auf das
+Kollektorfeld mit Warnung. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 14](Konzept_Simulationsablauf_EPOS-Plan.md). Der KI-Erklärtext
+`KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL` beschreibt die Nachrang-Schwelle in beiden Sprachen bereits als
+Obergrenze, bis zu der nachrangige Erzeuger laden; er blieb unverändert. Die Wiki-Quelle
+Solarthermie ist nachgezogen.
 
 **Kurz:** Die Kachel Solarthermie bietet „Ganglinie“ an, und ihr Statuspunkt wird grün. Die
 Simulation liest die Ganglinie aber nicht.

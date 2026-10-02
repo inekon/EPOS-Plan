@@ -1629,6 +1629,21 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// true, wenn die Anlage den PROZESSKANAL unmittelbar deckt — eine Zeile mit der
+        /// Direktsenke <see cref="Senke.Prozesswaerme"/> (PW1 Stufe 1: nur dann fragt sie das
+        /// Temperaturniveau des Prozesskanals).
+        /// </summary>
+        public bool BedientProzessDirekt
+        {
+            get
+            {
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].Ziel == Senke.Prozesswaerme) return true;
+                return false;
+            }
+        }
+
         /// <summary>true, wenn mindestens eine Zeile einen Puffer lädt.</summary>
         public bool HatPuffersenke
         {

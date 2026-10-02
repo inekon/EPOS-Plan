@@ -37,6 +37,67 @@ namespace WindowsFormsApplication1
                 string col = "Monat_" + (i + 1);
                 if (dt.Columns.Contains(col) && row[col] != DBNull.Value) item.m_Monat[i] = Convert.ToDouble(row[col]);
             }
+            item.m_Vorlauf = Zahl(row, ProzesswaermeTemperaturSchema.SPALTE_VORLAUF);
+            item.m_Ruecklauf = Zahl(row, ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF);
+        }
+
+        /// <summary>Eine nullbare Zahl einer Zeile; <c>null</c> ohne Spalte oder Wert (spaltentolerant).</summary>
+        private static double? Zahl(DataRow row, string spalte)
+        {
+            if (row == null || !row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            return Convert.ToDouble(row[spalte], System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Stehen die Temperaturspalten an der Tabelle (Schemaschritt <see cref="ProzesswaermeTemperaturSchema"/>)?</summary>
+        private static bool Temperaturspalten(string tabelle)
+            => DataRepository.SpalteVorhanden(tabelle, ProzesswaermeTemperaturSchema.SPALTE_VORLAUF) &&
+               DataRepository.SpalteVorhanden(tabelle, ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF);
+
+        /// <summary>
+        /// Das Temperaturpaar eines KATALOGsatzes (PW1 Stufe 1) — Vorbelegung des Dialogs und der
+        /// Projektkopie; <c>(null, null)</c> ohne Satz, ohne Paar oder vor dem Schemaschritt.
+        /// </summary>
+        public static (double? Vorlauf, double? Ruecklauf) Temperaturpaar(string szBezeichner)
+        {
+            if (!Temperaturspalten(TABLE)) return (null, null);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Vorlauf, Ruecklauf FROM " + TABLE + " WHERE Bezeichner = ?",
+                new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return (null, null);
+            return (Zahl(dt.Rows[0], ProzesswaermeTemperaturSchema.SPALTE_VORLAUF),
+                    Zahl(dt.Rows[0], ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF));
+        }
+
+        /// <summary>
+        /// Das Temperaturpaar einer PROJEKTKOPIE (<c>Tab_Prozesswaerme.ID</c>, PW1 Stufe 1);
+        /// <c>(null, null)</c> ohne Kopie, ohne Paar oder vor dem Schemaschritt.
+        /// </summary>
+        public static (double? Vorlauf, double? Ruecklauf) ProjektTemperaturpaar(int idKopie)
+        {
+            if (idKopie <= 0 || !Temperaturspalten(TABLE_PROJ)) return (null, null);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Vorlauf, Ruecklauf FROM " + TABLE_PROJ + " WHERE ID = ?",
+                new DbParam("@id", idKopie));
+            if (dt == null || dt.Rows.Count == 0) return (null, null);
+            return (Zahl(dt.Rows[0], ProzesswaermeTemperaturSchema.SPALTE_VORLAUF),
+                    Zahl(dt.Rows[0], ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF));
+        }
+
+        /// <summary>
+        /// Schreibt das Temperaturpaar einer PROJEKTKOPIE (PW1 Stufe 1). Geprüft wird mit
+        /// <see cref="Prozesstemperatur.Paarpruefung"/> — dieselben Grenzen wie die Prüfklauseln des
+        /// Schemas; ein unzulässiges Paar wird nicht geschrieben. Vor dem Schemaschritt tut der Weg
+        /// nichts und meldet <c>false</c>.
+        /// </summary>
+        public static bool ProjektTemperaturSetzen(int idKopie, double? vorlauf, double? ruecklauf)
+        {
+            if (idKopie <= 0 || !Temperaturspalten(TABLE_PROJ)) return false;
+            if (Prozesstemperatur.Paarpruefung(vorlauf, ruecklauf) != null) return false;
+            return DataRepository.ExecuteSQL(
+                "UPDATE " + TABLE_PROJ + " SET Vorlauf = ?, Ruecklauf = ? WHERE ID = ?",
+                new DbParam("@v", (object)vorlauf ?? DBNull.Value),
+                new DbParam("@r", (object)ruecklauf ?? DBNull.Value),
+                new DbParam("@id", idKopie));
         }
 
         public void ReadAll()
@@ -59,6 +120,7 @@ namespace WindowsFormsApplication1
                 new[] { new DbParam("@bez", szBezeichner ?? (object)DBNull.Value) });
             _internalList.Clear();
             m_ID = 0; m_szProzessname = ""; m_szTyp = ""; m_szBeschreibung = ""; m_bReadOnly = false;
+            m_Vorlauf = null; m_Ruecklauf = null;
             for (int i = 0; i < 12; i++) m_Monat[i] = 0.0;
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -167,6 +229,10 @@ namespace WindowsFormsApplication1
                     StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
                     for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
                     cols.Append(", ReadOnly"); vals.Append(", ?");
+                    // PW1 Stufe 1: das Temperaturpaar des Katalogsatzes als Vorbelegung der Kopie -
+                    // nur, wenn beide Tabellen die Spalten führen.
+                    bool paar = Temperaturspalten(TABLE) && Temperaturspalten(TABLE_PROJ);
+                    if (paar) { cols.Append(", Vorlauf, Ruecklauf"); vals.Append(", ?, ?"); }
                     {
                         List<DbParam> p = new List<DbParam>();
                         p.Add(new DbParam("@hid", neuProzId));
@@ -177,6 +243,11 @@ namespace WindowsFormsApplication1
                         for (int i = 1; i <= 12; i++)
                             p.Add(new DbParam("@hmon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
                         p.Add(new DbParam("@hro", false));
+                        if (paar)
+                        {
+                            p.Add(new DbParam("@hvl", ColOrNull(h, ProzesswaermeTemperaturSchema.SPALTE_VORLAUF)));
+                            p.Add(new DbParam("@hrl", ColOrNull(h, ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF)));
+                        }
                         v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
                     }
 
@@ -263,8 +334,19 @@ namespace WindowsFormsApplication1
         /// <c>btn_Speichern_Click</c>:146.
         /// </summary>
         public bool SaveHead(string bez, string typ, string beschr, double[] monat, bool isNew)
+            => SaveHead(bez, typ, beschr, monat, isNew, null, null, false);
+
+        /// <summary>
+        /// Wie <see cref="SaveHead(string, string, string, double[], bool)"/>, dazu das Temperaturpaar
+        /// (PW1 Stufe 1), wenn <paramref name="mitTemperatur"/> gesetzt ist und die Spalten stehen. Ein
+        /// unzulässiges Paar (<see cref="Prozesstemperatur.Paarpruefung"/>) schreibt nichts.
+        /// </summary>
+        public bool SaveHead(string bez, string typ, string beschr, double[] monat, bool isNew,
+                             double? vorlauf, double? ruecklauf, bool mitTemperatur)
         {
             if (monat == null || monat.Length < 12) return false;
+            bool paar = mitTemperatur && Temperaturspalten(TABLE);
+            if (paar && Prozesstemperatur.Paarpruefung(vorlauf, ruecklauf) != null) return false;
 
             if (isNew)
             {
@@ -283,6 +365,12 @@ namespace WindowsFormsApplication1
                 }
                 cols.Append(", ReadOnly"); vals.Append(", ?");
                 ps.Add(new DbParam("@hro", DbParamTyp.Boolean) { Wert = false });
+                if (paar)
+                {
+                    cols.Append(", Vorlauf, Ruecklauf"); vals.Append(", ?, ?");
+                    ps.Add(new DbParam("@hvl", (object)vorlauf ?? DBNull.Value));
+                    ps.Add(new DbParam("@hrl", (object)ruecklauf ?? DBNull.Value));
+                }
                 return DataRepository.ExecuteSQL("INSERT INTO " + TABLE + " (" + cols + ") VALUES (" + vals + ")", ps.ToArray());
             }
 
@@ -303,6 +391,12 @@ namespace WindowsFormsApplication1
             {
                 set.Append(", Monat_" + (i + 1) + " = ?");
                 pu.Add(new DbParam("@umon" + (i + 1).ToString("D2"), DbParamTyp.Double) { Wert = monat[i] });
+            }
+            if (paar)
+            {
+                set.Append(", Vorlauf = ?, Ruecklauf = ?");
+                pu.Add(new DbParam("@uvl", (object)vorlauf ?? DBNull.Value));
+                pu.Add(new DbParam("@url", (object)ruecklauf ?? DBNull.Value));
             }
             pu.Add(new DbParam("@ukey", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") });
             return DataRepository.ExecuteSQL("UPDATE " + TABLE + " SET " + set + " WHERE Bezeichner = ?", pu.ToArray());

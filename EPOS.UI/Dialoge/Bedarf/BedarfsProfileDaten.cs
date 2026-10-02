@@ -23,6 +23,21 @@ public sealed class BedarfsProfilZeile
 
     /// <summary>Der Jahresverbrauch dieser Zuordnung.</summary>
     public double Summe { get; set; }
+
+    /// <summary>
+    /// Die geforderte Vorlauftemperatur der Projektkopie [°C] — nur Prozesswärme (PW1 Stufe 1);
+    /// <c>null</c> = ohne Temperaturniveau.
+    /// </summary>
+    public double? Vorlauf { get; set; }
+
+    /// <summary>Die Rücklauftemperatur der Projektkopie [°C]; <c>null</c> = ohne.</summary>
+    public double? Ruecklauf { get; set; }
+
+    /// <summary>
+    /// <c>true</c>, sobald der Anwender das Paar im Dialog übernommen hat — erst dann schreibt das
+    /// Speichern (OK) es in die Projektkopie.
+    /// </summary>
+    public bool TemperaturGeaendert { get; set; }
 }
 
 /// <summary>
@@ -31,7 +46,10 @@ public sealed class BedarfsProfilZeile
 /// <param name="Name">Der Bezeichner.</param>
 /// <param name="Beschreibung">Die Beschreibung aus dem Kopfsatz.</param>
 /// <param name="Typ">Der Profiltyp aus dem Kopfsatz.</param>
-public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ);
+/// <param name="Vorlauf">Das Temperaturpaar des Kopfsatzes — nur Prozesswärme (PW1 Stufe 1).</param>
+/// <param name="Ruecklauf">Der Rücklauf dazu; beide <c>null</c> = ohne Temperaturniveau.</param>
+public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ,
+                                       double? Vorlauf = null, double? Ruecklauf = null);
 
 /// <summary>
 /// Die Beschriftungen des Zapfprofil-Einstiegs im Bedarfsprofil-Dialog der Ausprägung

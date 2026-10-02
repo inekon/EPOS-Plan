@@ -121,7 +121,8 @@ public class TypStammDialogTests : EposBunitContext
                                meldungTyp: "Prozesstyp auswählen!", titel: "Eingabe Prozess");
         Assert.Contains("Eingabe Prozess", prozess.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Prozesstyp:", prozess.Markup);
-        Assert.Equal(12, prozess.FindAll("input[inputmode=decimal]").Count);
+        // Zwölf Monatswerte und - nur bei der Prozesswärme - Vorlauf und Rücklauf (PW1 Stufe 1).
+        Assert.Equal(14, prozess.FindAll("input[inputmode=decimal]").Count);
 
         var bw = Aufbauen(Daten(BedarfsArt.Brauchwasser), labelTyp: "Brauchwassertyp:",
                           meldungTyp: "Brauchwassertyp auswählen!",

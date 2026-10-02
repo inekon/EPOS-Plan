@@ -96,6 +96,63 @@ namespace WindowsFormsApplication1
         public Kaskadenkontext Kontext;
 
         /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (Entscheidungsvorlage Modellgrenzen, PW1
+        /// Stufe 1) — gesetzt von <c>SimulationControl</c> vor dem Lauf; <c>null</c> = kein Prozess
+        /// mit Temperaturpaar, dann entlädt jeder Speicher wie zuvor. Wirkung in
+        /// <see cref="ProzessEntnahmeGrenze"/>.
+        /// </summary>
+        public Prozesstemperatur Prozesstemperatur;
+
+        // PW1 Stufe 1: je Speicher die Stunden, in denen der Prozesskanal nur aus der Zone über dem
+        // Prozessvorlauf entnahm (geschichtet), und die Stunden, in denen er gar nicht entnahm, weil
+        // das gepflegte Temperaturpaar den Prozessvorlauf nicht hält (ungeschichtet).
+        private readonly Dictionary<SimulationPufferspeicher, int> _prozessZoneStunden =
+            new Dictionary<SimulationPufferspeicher, int>();
+        private readonly Dictionary<SimulationPufferspeicher, int> _prozessGesperrtStunden =
+            new Dictionary<SimulationPufferspeicher, int>();
+        private readonly Dictionary<SimulationPufferspeicher, double> _prozessGefordertMax =
+            new Dictionary<SimulationPufferspeicher, double>();
+
+        /// <summary>Stunden mit Entnahme nur aus der Zone über dem Prozessvorlauf (PW1 Stufe 1).</summary>
+        public int ProzessZoneStunden(SimulationPufferspeicher sp)
+            => sp != null && _prozessZoneStunden.TryGetValue(sp, out int n) ? n : 0;
+
+        /// <summary>Stunden, in denen der Speicher den Prozessvorlauf nicht hielt und den Prozesskanal nicht bediente (PW1 Stufe 1).</summary>
+        public int ProzessGesperrtStunden(SimulationPufferspeicher sp)
+            => sp != null && _prozessGesperrtStunden.TryGetValue(sp, out int n) ? n : 0;
+
+        /// <summary>
+        /// <b>Die Entnahme des Prozesskanals aus einem Speicher</b> (PW1 Stufe 1, Punkt d): Der Speicher
+        /// gibt an den Prozess nur Wärme ab, die den geforderten Vorlauf der Stunde hält.
+        ///
+        /// <para><b>Geschichtet</b> (N &gt; 1): Die Mindest-Nutztemperatur des Prozesskanals steigt für
+        /// diese Entnahme auf den Prozessvorlauf — die Entladefähigkeit zählt dann nur die Schichten ab
+        /// dieser Temperatur (dieselbe Regel wie <c>T_Nutz_BW</c> beim Brauchwasser). Rückgabe: die
+        /// zu setzende Grenze. <b>Ungeschichtet</b> (N = 1): Hält das GEPFLEGTE Paar (VL_eff) den
+        /// Prozessvorlauf nicht, entnimmt der Prozess in dieser Stunde nichts (Rückgabe
+        /// <see cref="double.PositiveInfinity"/>); ohne gepflegtes Paar entscheidet nichts — eine
+        /// Sperre aus Unkenntnis wäre schlechter als keine (Lesart W3).</para>
+        ///
+        /// <para>Ohne Temperaturniveau, in Stunden ohne Forderung und für jeden anderen Kanal NaN: Die
+        /// Entnahme bleibt Anweisung für Anweisung die bisherige.</para>
+        /// </summary>
+        internal double ProzessEntnahmeGrenze(SimulationPufferspeicher sp, int kanal, int stunde)
+        {
+            if (kanal != Kanal.PROZESS || Prozesstemperatur == null || sp == null) return double.NaN;
+            double gefordert = Prozesstemperatur.Vorlauf(stunde);
+            if (double.IsNaN(gefordert)) return double.NaN;
+
+            if (sp.Geschichtet)
+                return gefordert > sp.RL_eff ? gefordert : double.NaN;
+
+            if (sp.RueckfallDeltaT > 0) return double.NaN;              // kein gepflegtes Paar
+            return Prozesstemperatur.Erreicht(sp.VL_eff, gefordert) ? double.NaN : double.PositiveInfinity;
+        }
+
+        private static void Zaehlen(Dictionary<SimulationPufferspeicher, int> z, SimulationPufferspeicher sp)
+            => z[sp] = z.TryGetValue(sp, out int n) ? n + 1 : 1;
+
+        /// <summary>
         /// Erzeugerarten (<c>ProjektPuffer.TYP_*</c>) der Phase B in KASKADENREIHENFOLGE.
         /// Sie bestimmt, wer den Momentanbedarf zuerst deckt — anders als die Ladeordnung
         /// der Phasen C/D, die kaskadenübergreifend nach Ladepriorität arbeitet (3.4).
@@ -1727,6 +1784,28 @@ namespace WindowsFormsApplication1
                 // solange der Speicher nicht im Bilanzraum eines BHKW steht oder keine
                 // Reserve gepflegt ist. Math.Min mit MaxValue gibt den Bedarf unverändert
                 // zurück - kein Projekt ohne BHKW ändert sein Ergebnis.
+                // PW1 STUFE 1 (d): Der Prozesskanal entnimmt nur, was den geforderten Vorlauf der
+                // Stunde hält - geschichtet ab der Zone über dem Prozessvorlauf (die Grenze steht
+                // für die Dauer dieser Entnahme an TNutz[PROZESS] und wird danach zurückgelegt),
+                // ungeschichtet gar nicht, wenn das gepflegte Paar ihn nicht hält. Ohne
+                // Temperaturniveau ist die Grenze NaN und der Zweig wird nicht betreten.
+                double prozessGrenze = ProzessEntnahmeGrenze(sp, kanal, stunde);
+                double tNutzZurueck = double.NaN;
+                if (!double.IsNaN(prozessGrenze))
+                {
+                    double g = Prozesstemperatur.Vorlauf(stunde);
+                    if (_prozessGefordertMax.TryGetValue(sp, out double m) ? g > m : true) _prozessGefordertMax[sp] = g;
+                    if (double.IsPositiveInfinity(prozessGrenze))
+                    {
+                        Zaehlen(_prozessGesperrtStunden, sp);
+                        continue;
+                    }
+                    tNutzZurueck = sp.TNutz[kanal];
+                    if (prozessGrenze > tNutzZurueck) sp.TNutz[kanal] = prozessGrenze;
+                    Zaehlen(_prozessZoneStunden, sp);
+                }
+                try
+                {
                 double entnehmbar = sp.EntnahmeObergrenze();
                 if (bedarf > entnehmbar) bedarf = entnehmbar;
 
@@ -1791,6 +1870,36 @@ namespace WindowsFormsApplication1
                 // Zehntelwattstundenbereich; ihn zu behalten hieße, den Speicher an einer
                 // Summe zu messen, die er im Dreikanalmodell gar nicht mehr sieht.
                 if (vorab && rest[kanal] > 0.0001) sp.LaedtGerade = true;
+                }
+                finally
+                {
+                    if (!double.IsNaN(tNutzZurueck)) sp.TNutz[kanal] = tNutzZurueck;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Speicher die Stunden, in denen der Prozesskanal nur aus der
+        /// Zone über dem Prozessvorlauf entnahm oder gar nicht (PW1 Stufe 1). Ohne Temperaturniveau
+        /// meldet sie nichts.
+        /// </summary>
+        public void ProzessMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            var speicher = new List<SimulationPufferspeicher>();
+            foreach (SimulationPufferspeicher sp in _prozessZoneStunden.Keys) if (!speicher.Contains(sp)) speicher.Add(sp);
+            foreach (SimulationPufferspeicher sp in _prozessGesperrtStunden.Keys) if (!speicher.Contains(sp)) speicher.Add(sp);
+            foreach (SimulationPufferspeicher sp in speicher)
+            {
+                double max = _prozessGefordertMax.TryGetValue(sp, out double m) ? m : 0;
+                int zone = ProzessZoneStunden(sp);
+                int gesperrt = ProzessGesperrtStunden(sp);
+                if (zone > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_PUFFER_ZONE, sp.BezeichnerAnzeige(), zone, max));
+                if (gesperrt > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_PUFFER_GESPERRT, sp.BezeichnerAnzeige(), gesperrt, max, sp.VL_eff));
             }
         }
 

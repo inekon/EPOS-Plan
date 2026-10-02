@@ -768,6 +768,24 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(new[] { "0,02", "0,01", "0,01" }, b[4..]);
     }
 
+    /// <summary>
+    /// Die Zeile der SOLARTHERMIEGANGLINIE (Folgeauftrag 4) hat weder Fläche noch Anzahl —
+    /// dort steht ein Strich statt „0,00“ und „0“; Ertrag, Nutzung und Überschuss wie bei
+    /// einem Kollektorfeld.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl()
+    {
+        var e = Solar();
+        e.Module.Clear();
+        e.Module.Add(new SimulationErgebnisCtrl.SolarModulZeile("Solarthermie-Ganglinie ‚Dach‘", 0, 0, 30.0, 20.0, true));
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        string[] z = Assert.Single(seite.FindAll("table.epos-raster tbody tr"))
+                           .QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "1", "Solarthermie-Ganglinie ‚Dach‘", "–", "–", "50,00", "30,00", "20,00" }, z);
+    }
+
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
 
     /// <summary>

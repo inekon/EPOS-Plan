@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -128,6 +129,7 @@ namespace WindowsFormsApplication1
         private readonly List<double> _feldFlaeche = new List<double>();
         private readonly List<long> _feldAnzahl = new List<long>();
         private readonly List<Senkenliste> _feldSenke = new List<Senkenliste>();
+        private readonly List<bool> _feldGanglinie = new List<bool>();
 
         /// <summary>Anzahl der Kollektorfelder des zweikanaligen Wegs.</summary>
         public int FelderAnzahl { get { return _feldName.Count; } }
@@ -138,6 +140,19 @@ namespace WindowsFormsApplication1
             if (index < 0 || index >= _feldSenke.Count) return null;
             return _feldSenke[index];
         }
+
+        /// <summary>
+        /// Die Weiche des letzten Aufbaus (Folgeauftrag 4, Entscheid ST8 Weg a): was das
+        /// Projekt an Solarthermieganglinie führt. Nie <c>null</c> nach
+        /// <see cref="Vorbereiten_Zweikanalig"/>; Regel in <see cref="SolarganglinieWeiche"/>.
+        /// </summary>
+        public SolarganglinieWeiche.Stand Ganglinie = SolarganglinieWeiche.Keine();
+
+        /// <summary>
+        /// true, wenn der letzte Aufbau die Solarthermie über die Ganglinie rechnet: EIN
+        /// Feld, dessen Potenzial die Ganglinienwerte sind (kW je Stunde = kWh).
+        /// </summary>
+        public bool RechnetGanglinie { get; private set; }
 
         // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
         // einkanaligen Altpfads (Klimaregion, Kollektorfelder_Lesen, Jahresschleife je
@@ -163,6 +178,16 @@ namespace WindowsFormsApplication1
             public int Stunden;
             /// <summary>Potenzieller Bruttoertrag je Stunde [kWh].</summary>
             public double[] Potenzial = new double[8760];
+            /// <summary><c>Tab_Energieanlagen.Bezeichner</c> der Anlagenzeile ("" ohne Zeile).</summary>
+            public string Anlagenname = "";
+            /// <summary>
+            /// Eigene Senkenliste des Felds; <c>null</c> = aus den Senkenlisten des Projekts
+            /// über <see cref="ID_Anlage"/> (der Regelfall). Gesetzt nur für die Ganglinie
+            /// ohne Anlagenzeile (alle Wärmekanäle direkt).
+            /// </summary>
+            public Senkenliste Senke;
+            /// <summary>true für das Feld der Solarthermieganglinie.</summary>
+            public bool IstGanglinie;
         }
 
         /// <summary>
@@ -248,6 +273,7 @@ namespace WindowsFormsApplication1
 
                 SolarFeld f = new SolarFeld();
                 f.ID_Anlage = ctrl.items[n].ID;
+                f.Anlagenname = ctrl.items[n].Bezeichner ?? "";
                 f.Name = ctrlsol.m_szKollektorname;
                 f.Flaeche = nFlaeche * nAnzahl;
                 f.Anzahl = nAnzahl;
@@ -410,13 +436,32 @@ namespace WindowsFormsApplication1
             Init();
             Array.Clear(Waermebedarf, 0, Waermebedarf.Length);
 
+            List<SolarFeld> felder = Kollektorfelder_Lesen();
+
+            // Folgeauftrag 4 (ST8 Weg a): die Weiche Kollektorfeld / Ganglinie. Mit
+            // vollständiger Ganglinie tritt EIN Feld an die Stelle der Kollektorfelder;
+            // alles Weitere (Senken, Pufferladung, Kaskadenplatz, Überschuss) bleibt der
+            // Weg des Kollektorfelds.
+            Ganglinie = SolarganglinieWeiche.Lesen(ID_Projekt);
+            felder = GanglinieEinsetzen(felder, Ganglinie);
+
+            FelderUebernehmen(felder, senken);
+            return true;
+        }
+
+        /// <summary>
+        /// Übernimmt die Felder in die Rechenstruktur des zweikanaligen Wegs — indexgleich
+        /// <see cref="solar_anlagen_ids"/>, Name, Fläche, Anzahl, Senkenliste und Potenzial.
+        /// </summary>
+        private void FelderUebernehmen(List<SolarFeld> felder, List<Senkenliste> senken)
+        {
             solar_anlagen_ids.Clear();
             _feldName.Clear();
             _feldFlaeche.Clear();
             _feldAnzahl.Clear();
             _feldSenke.Clear();
+            _feldGanglinie.Clear();
 
-            List<SolarFeld> felder = Kollektorfelder_Lesen();
             List<double[]> potenziale = new List<double[]>();
 
             for (int n = 0; n < felder.Count; n++)
@@ -428,15 +473,135 @@ namespace WindowsFormsApplication1
                 _feldName.Add(f.Name);
                 _feldFlaeche.Add(f.Flaeche);
                 _feldAnzahl.Add(f.Anzahl);
-                _feldSenke.Add(SenkeZuAnlage(senken, f.ID_Anlage));
+                _feldSenke.Add(f.Senke ?? SenkeZuAnlage(senken, f.ID_Anlage));
+                _feldGanglinie.Add(f.IstGanglinie);
             }
 
             _potenzialFeld = potenziale.ToArray();
             _restPotenzial = new double[_potenzialFeld.Length];
             _prodFeld = new double[_potenzialFeld.Length];
             _ueberFeld = new double[_potenzialFeld.Length];
+        }
 
-            return true;
+        /// <summary>
+        /// DIE WEICHE IM RECHENWEG (Folgeauftrag 4, Entscheid ST8 Weg a). Ohne vollständige
+        /// Ganglinie bleiben die Kollektorfelder; mit ihr rechnet genau EIN Feld, dessen
+        /// Potenzial die Ganglinienwerte sind — <b>absolut, Wert = kW in der Stunde = kWh</b>,
+        /// ohne Bezug auf eine Fläche.
+        ///
+        /// <para><b>Senken und Puffer.</b> Führt das Projekt eine Solarthermie-Anlagenzeile,
+        /// ist die mit der kleinsten <c>Tab_Energieanlagen.ID</c> der TRÄGER: Das Feld rechnet
+        /// unter ihrer ID, also mit ihren Senken (<c>Z_AnlageSenke</c>, sonst der Vorbelegung
+        /// Heizkreis/Beides), ihrer Pufferladung samt Nachrang-Schwelle und an ihrem
+        /// Kaskadenplatz. Weitere Anlagenzeilen rechnen nicht. Ohne Anlagenzeile deckt die
+        /// Ganglinie alle Wärmekanäle (Heizung, Brauchwasser, Prozesswärme) direkt, ohne
+        /// Puffer.</para>
+        ///
+        /// <para><b>Rückfälle, alle benannt:</b> Eine zugeordnete, aber unvollständige
+        /// Ganglinie (nicht genau 8 760 Werte, leere, negative oder nicht endliche Werte) ist
+        /// eine Warnung, und der Lauf rechnet mit dem Kollektorfeld.</para>
+        /// </summary>
+        private List<SolarFeld> GanglinieEinsetzen(List<SolarFeld> kollektorfelder,
+                                                  SolarganglinieWeiche.Stand stand)
+        {
+            RechnetGanglinie = false;
+            if (stand == null || !stand.Zugeordnet) return kollektorfelder;
+
+            SimulationProtokoll protokoll = SimulationProtokoll.Aktuell;
+
+            if (!stand.Vollstaendig)
+            {
+                protokoll.WarnungEinmal("solar-ganglinie-unvollstaendig",
+                    "Solarthermie: Die Ganglinie ‚" + stand.Bezeichner + "‘ ist unvollständig (" +
+                    stand.Mangel + ") - der Lauf rechnet mit dem Kollektorfeld" +
+                    (kollektorfelder.Count == 0
+                        ? "; das Projekt führt keines, die Solarthermie liefert nichts."
+                        : "."));
+                return kollektorfelder;
+            }
+
+            if (stand.WeitereZuordnungen > 0)
+                protokoll.WarnungEinmal("solar-ganglinie-mehrere",
+                    "Solarthermie: Dem Projekt sind " + (stand.WeitereZuordnungen + 1) +
+                    " Ganglinien zugeordnet - es rechnet nur die zuerst zugeordnete ‚" +
+                    stand.Bezeichner + "‘.");
+
+            SolarFeld traeger = null;
+            foreach (SolarFeld f in kollektorfelder)
+                if (traeger == null || f.ID_Anlage < traeger.ID_Anlage) traeger = f;
+
+            SolarFeld g = new SolarFeld();
+            g.IstGanglinie = true;
+            g.Name = string.Format(CultureInfo.CurrentCulture,
+                                   MyResource.Resource.SIM_SOLARGANGLINIE_FELDNAME, stand.Bezeichner);
+            g.Flaeche = 0;
+            g.Anzahl = 0;
+            g.Stunden = SolarganglinieWeiche.STUNDEN;
+            Array.Copy(stand.Werte, g.Potenzial, SolarganglinieWeiche.STUNDEN);
+
+            string summe = stand.SummeKwh.ToString("F0", CultureInfo.InvariantCulture);
+
+            if (traeger != null)
+            {
+                g.ID_Anlage = traeger.ID_Anlage;
+                g.Anlagenname = traeger.Anlagenname;
+                protokoll.HinweisEinmal("solar-ganglinie-traeger",
+                    "Solarthermie: Das Projekt rechnet mit der Ganglinie ‚" + stand.Bezeichner +
+                    "‘ (Jahressumme " + summe + " kWh) statt mit dem Kollektorfeld. Senken, Puffer " +
+                    "und Kaskadenplatz der Anlage „" + traeger.Anlagenname + "“ (ID " +
+                    traeger.ID_Anlage + ") gelten für die Ganglinie.");
+
+                if (kollektorfelder.Count > 1)
+                    protokoll.HinweisEinmal("solar-ganglinie-weitere-felder",
+                        "Solarthermie: Neben der Ganglinie rechnen die " + (kollektorfelder.Count - 1) +
+                        " weiteren Kollektorfelder des Projekts nicht.");
+            }
+            else
+            {
+                g.ID_Anlage = 0;
+                g.Senke = AlleWaermekanaeleDirekt();
+                protokoll.HinweisEinmal("solar-ganglinie-ohne-anlage",
+                    "Solarthermie: Das Projekt rechnet mit der Ganglinie ‚" + stand.Bezeichner +
+                    "‘ (Jahressumme " + summe + " kWh). Es führt keine Solarthermie-Anlage - die " +
+                    "Ganglinie deckt alle Wärmekanäle direkt, ohne Puffer.");
+            }
+
+            RechnetGanglinie = true;
+            return new List<SolarFeld> { g };
+        }
+
+        /// <summary>
+        /// Senkenliste der Ganglinie ohne Anlagenzeile: Heizkreis/Beides (Heizung und
+        /// Brauchwasser) auf Rang 1, Prozesswärme auf Rang 2 — alle Wärmekanäle direkt,
+        /// kein Puffer.
+        /// </summary>
+        internal static Senkenliste AlleWaermekanaeleDirekt()
+        {
+            Senkenliste l = Senkenliste.Vorbelegung(0);
+            l.Zeilen.Add(new Senkenzeile { Ziel = Senke.Prozesswaerme, Rang = 2 });
+            return l;
+        }
+
+        /// <summary>
+        /// Testeinstieg ohne Datenbank: baut die Felder wie
+        /// <see cref="Vorbereiten_Zweikanalig"/>, aber aus vorgegebenen Anlagen-IDs
+        /// (Kollektorfelder ohne Potenzial) und einem vorgegebenen Stand der Weiche.
+        /// </summary>
+        internal void Vorbereiten_OhneDatenbank(IList<int> kollektorAnlagen,
+                                                SolarganglinieWeiche.Stand stand,
+                                                List<Senkenliste> senken)
+        {
+            Init();
+            Array.Clear(Waermebedarf, 0, Waermebedarf.Length);
+
+            List<SolarFeld> felder = new List<SolarFeld>();
+            if (kollektorAnlagen != null)
+                foreach (int id in kollektorAnlagen)
+                    felder.Add(new SolarFeld { ID_Anlage = id, Name = "Feld " + id,
+                                               Anlagenname = "Anlage " + id, Stunden = 8760 });
+
+            Ganglinie = stand ?? SolarganglinieWeiche.Keine();
+            FelderUebernehmen(GanglinieEinsetzen(felder, Ganglinie), senken);
         }
 
         /// <summary>
@@ -611,7 +776,8 @@ namespace WindowsFormsApplication1
                     Flaeche = _feldFlaeche[f],
                     Anzahl = _feldAnzahl[f],
                     WaermeproduktionKwh = _prodFeld[f],
-                    UeberschussKwh = _ueberFeld[f]
+                    UeberschussKwh = _ueberFeld[f],
+                    IstGanglinie = f < _feldGanglinie.Count && _feldGanglinie[f]
                 });
             }
 
@@ -671,5 +837,19 @@ namespace WindowsFormsApplication1
         public long Anzahl;
         public double WaermeproduktionKwh; // kWh/a
         public double UeberschussKwh;      // kWh/a
+
+        /// <summary>
+        /// true für die Zeile der Solarthermieganglinie (Folgeauftrag 4): Sie hat keine
+        /// Fläche und keine Anzahl — <see cref="Flaeche"/> und <see cref="Anzahl"/> stehen
+        /// auf 0 und werden nicht angezeigt.
+        /// </summary>
+        public bool IstGanglinie;
+
+        /// <summary>Jahresertrag [kWh/a] = genutzte Wärme + Überschuss.</summary>
+        public double JahresertragKwh => WaermeproduktionKwh + UeberschussKwh;
+
+        /// <summary>Nutzanteil [%] = genutzte Wärme / Jahresertrag; <c>null</c> ohne Ertrag.</summary>
+        public double? NutzanteilProzent
+            => JahresertragKwh > 0 ? WaermeproduktionKwh / JahresertragKwh * 100.0 : (double?)null;
     }
 }

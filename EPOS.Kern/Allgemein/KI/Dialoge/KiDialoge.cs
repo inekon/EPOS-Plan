@@ -5162,7 +5162,16 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TstammMonatswerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.TstammMonatswerteErl,
                                      einheit: KiDialogTexte.EINHEIT_MWH,
-                                     reihe: KiZahlenreihen.Monate())
+                                     reihe: KiZahlenreihen.Monate()),
+                    // PW1 Stufe 1: das Temperaturpaar - nur die Prozesswärme zeigt es; leer = ohne.
+                    new KiDialogFeld("vorlauf", "TypStammDaten.Vorlauf",
+                                     KiDialogTexte.TstammVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "TypStammDaten.Ruecklauf",
+                                     KiDialogTexte.TstammRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -6664,7 +6673,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "SolarkollektorenKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -7258,6 +7271,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvSystemverlusteErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "PhotovoltaikKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true),
 
                     // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
                     new KiDialogFeld("mit_wechselrichter", "PhotovoltaikKiSicht.MitWechselrichter",
