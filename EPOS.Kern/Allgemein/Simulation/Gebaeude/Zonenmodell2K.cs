@@ -122,6 +122,17 @@ namespace WindowsFormsApplication1
     /// Kühlübergabe bleibt die Kühlung des Bestands wörtlich. Gründe und Zeitanteile stehen je
     /// Seite im Ergebnis.</para>
     ///
+    /// <para><b>Der Kappungsanteil</b> (Entwurf KP3, Befund B1, Festlegung 20): Jede Stunde trägt
+    /// den Zeitanteil, in dem <c>Heizleistung_Max</c> gekappt hat (Betriebsfall
+    /// <see cref="Betriebsfall.Heizgrenze"/>), in <see cref="Stundenergebnis.HeizleistungMaxAnteil"/> —
+    /// mit Übergabe wie gehabt aus den Begrenzungsgründen, ohne sie aus einem eigenen Akkumulator.
+    /// Ein neuer Ausgang, keine geänderte Zahl.</para>
+    ///
+    /// <para><b>Die Aufheizantwort</b> (<see cref="Aufheizantwort(double, double)"/>, Entwurf KP3
+    /// Abschnitt 2 Nr. 2, Festlegung 4) liefert die Größen des geregelten Falls, aus denen
+    /// <see cref="Aufheizstufen"/> die Stufenformel rechnet — zustandsfrei, ohne den Rechenpuffer
+    /// der Heizlage zu berühren.</para>
+    ///
     /// <para>Ohne Datenbank, ohne Protokoll, ohne Statik, einfädig, durchgehend
     /// <c>double</c>.</para>
     /// </summary>
@@ -180,6 +191,21 @@ namespace WindowsFormsApplication1
         private Fallsystem _heizen;
         private Fallsystem _kuehlen;
         private Fallsystem _kuehlenUebergabe;
+
+        /// <summary>
+        /// Die Plätze des Speichers der Aufheizantworten (Entwurf KP3, Befund B3, Festlegung 4): je
+        /// (Strahlungsanteil, Zusatzleitwert der Sprungstunde) eine Antwort; mit Lüftungskalender kommen
+        /// wenige verschiedene Zusatzleitwerte vor (Muster <see cref="FREISYSTEM_PLAETZE"/>, R7).
+        /// </summary>
+        internal const int AUFHEIZANTWORT_PLAETZE = 4;
+
+        // Rechenpuffer der Aufheizantworten (kein Zustand): bitgenauer Schlüssel, Ersatz der Reihe nach.
+        private readonly Aufheizantwort[] _aufheizantwort = new Aufheizantwort[AUFHEIZANTWORT_PLAETZE];
+        private int _aufheizantwortBelegt;
+        private int _aufheizantwortNaechster;
+
+        /// <summary>Zähler der Neubauten einer <see cref="Aufheizantwort(double, double)"/> — nur Messung, ohne Wirkung.</summary>
+        internal int AufheizantwortNeubauten;
 
         // Der Zustand: die beiden Massentemperaturen [°C].
         private double _thetaMAw;
@@ -302,6 +328,9 @@ namespace WindowsFormsApplication1
             tauJeGrund.Clear();
             Span<double> tauJeGrundKuehl = stackalloc double[GRUENDE];
             tauJeGrundKuehl.Clear();
+            // Der Kappungsanteil von Heizleistung_Max [s] auch im idealen Fall (Entwurf KP3, Befund B1,
+            // Festlegung 20): ein eigener Akkumulator, nur geschrieben, nie in eine andere Summe gelesen.
+            double akkKappung = 0.0;
 
             while (t < STUNDE_S)
             {
@@ -377,6 +406,7 @@ namespace WindowsFormsApplication1
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
                 if (ab.Gekoppelt && ab.K.Seite == Uebergabeseite.Kuehlen) tauJeGrundKuehl[(int)ab.Grund] += tau;
                 else if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
                 // Spiegelbildlich zur Heizseite zählt ein ungekoppelter Abschnitt auf der Kälteseite
@@ -412,7 +442,8 @@ namespace WindowsFormsApplication1
                     akkM2 / STUNDE_S,
                     x.A,
                     x.B,
-                    abschnitte);
+                    abschnitte,
+                    heizleistungMaxAnteil: akkKappung / STUNDE_S);
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
@@ -450,7 +481,9 @@ namespace WindowsFormsApplication1
                 ruecklauf,
                 (Begrenzungsgrund)grund,
                 tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
-                tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
+                // Mit Übergabe wie gehabt aus den Gründen; eine Stunde nur mit Kühlübergabe heizt ideal
+                // und trägt den Anteil aus dem eigenen Akkumulator (Entwurf KP3, Festlegung 20).
+                r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S : akkKappung / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
                 kuehlVorlauf,
                 kuehlRuecklauf,
@@ -534,6 +567,7 @@ namespace WindowsFormsApplication1
             double t = 0.0;
             double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
+            double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
             for (int i = 0; i < n; i++)
             {
                 if (!(t < STUNDE_S))
@@ -580,6 +614,7 @@ namespace WindowsFormsApplication1
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
                 akkS2 += s2 * tau;
@@ -611,7 +646,8 @@ namespace WindowsFormsApplication1
                 akkM2 / STUNDE_S,
                 x.A,
                 x.B,
-                n);
+                n,
+                heizleistungMaxAnteil: akkKappung / STUNDE_S);
         }
 
         /// <summary>
@@ -636,6 +672,90 @@ namespace WindowsFormsApplication1
             Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
             Vektor2 xStationaer = -1.0 * (h.System.Rechner.A.Inverse() * h.B);
             return h.Ausgang(2, xStationaer);
+        }
+
+        /// <summary>
+        /// <b>Der eingeschwungene Zustand</b> der beiden Massenknoten [°C] im geregelten Fall bei
+        /// festen Randbedingungen — x = −A⁻¹·b, dieselbe Rechnung wie in
+        /// <see cref="StationaereHeizlastW"/>. Der Anfangszustand der Gleichgewichtsform der
+        /// Stufenformel (Entwurf KP3 Abschnitt 2 Nr. 2, Nachweise N-AH1 und N-AH2). Der Zustand des
+        /// Modells bleibt unberührt.
+        /// </summary>
+        internal Vektor2 StationaererZustand(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil,
+                                             double zusatzleitwertWK = 0.0)
+        {
+            var r = new Stundenrand(thetaOutC, thetaEqC, thetaRaumC, double.PositiveInfinity, 0.0, 0.0, 0.0,
+                                    heizungStrahlungsanteil: strahlungsanteil,
+                                    zusatzleitwertWK: zusatzleitwertWK);
+            Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
+            return -1.0 * (h.System.Rechner.A.Inverse() * h.B);
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizantwort des geregelten Falls</b> (Entwurf KP3 Abschnitt 2 Nr. 2, Festlegungen 4
+        /// und 5; Teilkonzept Konditionierungsprofile 4.2, 4.3, 6): die Systemmatrix A der Heizlage zum
+        /// Strahlungsanteil, die Ausgangszeile z = (Z₂₀, Z₂₁) der Leistung, die Empfindlichkeit
+        /// ΔB = ∂b/∂θ_soll und G_0 = ∂c₂/∂θ_soll beim Zusatzleitwert <paramref name="zusatzleitwertWK"/>;
+        /// daraus <see cref="WindowsFormsApplication1.Aufheizantwort"/> H_s, τ_k, C_k und C_w.
+        ///
+        /// <para><b>Zustandsfrei.</b> Das Fallsystem entsteht neu aus dem Parametersatz — derselbe
+        /// Bau wie die Heizlage des Lösers, aber ohne deren Rechenpuffer zu berühren; Zustand und
+        /// Lauf ändern sich nicht. Jede Exponentialfunktion läuft über
+        /// <see cref="Uebergangsrechner.Bei"/>, also über die Naht <see cref="Plattformrundung"/>.</para>
+        ///
+        /// <para><b>Warum der Zusatzleitwert</b> (Befund B3): Die Matrix der geregelten Lage enthält
+        /// g_ext nicht, die rechte Seite schon. Mit Strahlungsanteil &gt; 0 hängen ΔB, G_0 und damit
+        /// H_s und C_w vom Luftwechsel ab, die Zeitkonstanten nicht. Die Antworten liegen deshalb je
+        /// (Strahlungsanteil, Zusatzleitwert) in einem kleinen geordneten Speicher
+        /// (<see cref="AUFHEIZANTWORT_PLAETZE"/>, bitgenauer Schlüssel, Ersatz der Reihe nach); er
+        /// ändert keine Zahl, eine Antwort entsteht deterministisch aus ihrem Schlüssel.</para>
+        /// </summary>
+        /// <param name="strahlungsanteil">Strahlungsanteil der Heizung [–], 0 … 1.</param>
+        /// <param name="zusatzleitwertWK">Zusatzleitwert Außenluft ↔ Raumluft [W/K] über dem
+        /// Jahresminimum, endlich und ≥ 0 (der unbedingte Wert der Sprungstunde, Festlegung 12).</param>
+        /// <exception cref="ArgumentOutOfRangeException">bei einem Anteil außerhalb 0 … 1 oder einem
+        /// negativen oder nicht endlichen Zusatzleitwert.</exception>
+        internal Aufheizantwort Aufheizantwort(double strahlungsanteil, double zusatzleitwertWK)
+        {
+            if (!AnteilGueltig(strahlungsanteil))
+                throw new ArgumentOutOfRangeException(nameof(strahlungsanteil), strahlungsanteil,
+                    _bezeichnung + ": Der Strahlungsanteil der Aufheizantwort muss zwischen 0 und 1 liegen.");
+            if (!Endlich(zusatzleitwertWK) || zusatzleitwertWK < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(zusatzleitwertWK), zusatzleitwertWK,
+                    _bezeichnung + ": Der Zusatzleitwert der Aufheizantwort muss endlich und nicht negativ sein.");
+
+            // Der Schlüssel ist BITGENAU, wie im Speicher der freien Fallsysteme.
+            long bitsAnteil = BitConverter.DoubleToInt64Bits(strahlungsanteil);
+            long bitsZusatz = BitConverter.DoubleToInt64Bits(zusatzleitwertWK);
+            for (int i = 0; i < _aufheizantwortBelegt; i++)
+            {
+                Aufheizantwort vorhanden = _aufheizantwort[i];
+                if (BitConverter.DoubleToInt64Bits(vorhanden.Strahlungsanteil) == bitsAnteil
+                    && BitConverter.DoubleToInt64Bits(vorhanden.ZusatzleitwertWK) == bitsZusatz)
+                    return vorhanden;
+            }
+
+            AufheizantwortNeubauten++;
+            var s = new Fallsystem(this, geregelt: true,
+                                   anteilAW: strahlungsanteil * _wAW,
+                                   anteilIW: strahlungsanteil * _wIW,
+                                   anteilLuft: 1.0 - strahlungsanteil,
+                                   gExt: _gExt,
+                                   schluessel: strahlungsanteil);
+
+            // ∂r′/∂θ_soll der geregelten Lage (Geregelt): (G_c,AW, G_c,IW, −(G_c,AW + G_c,IW + g_ext + Zusatz));
+            // c = −L⁻¹·r′ ist linear, also ∂c/∂θ = Konstante(∂r′/∂θ). b = ((G_Rest·θ_eq + G1·c₀)/C₁, G2·c₁/C₂).
+            double gExt = _gExt + zusatzleitwertWK;
+            s.Konstante(_gcAW, _gcIW, -(_gcAW + _gcIW + gExt), out double dc0, out double dc1, out double dc2);
+            var deltaB = new Vektor2((_g1 * dc0) / _c1, (_g2 * dc1) / _c2);
+            var antwort = new Aufheizantwort(strahlungsanteil, zusatzleitwertWK, s.Rechner,
+                                             new Vektor2(s.Z20, s.Z21), deltaB, dc2);
+
+            int platz;
+            if (_aufheizantwortBelegt < AUFHEIZANTWORT_PLAETZE) platz = _aufheizantwortBelegt++;
+            else { platz = _aufheizantwortNaechster; _aufheizantwortNaechster = (platz + 1) % AUFHEIZANTWORT_PLAETZE; }
+            _aufheizantwort[platz] = antwort;
+            return antwort;
         }
 
         // =============================================================================
