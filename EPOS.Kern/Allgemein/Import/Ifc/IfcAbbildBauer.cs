@@ -795,6 +795,7 @@ namespace WindowsFormsApplication1
             if (_dachteilOeffnungen > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_TEIL", Ganz(_dachteilOeffnungen)));
             BauteilRueckfaelleMelden();
+            SchichtdickenMelden();
         }
 
         // ==================================================================
@@ -1384,12 +1385,39 @@ namespace WindowsFormsApplication1
         /// <summary>Der allgemeine Eigenschaftssatz des Baustoffs (ρ) — IFC4/IFC4X3.</summary>
         internal const string PSET_STOFF_ALLGEMEIN = "Pset_MaterialCommon";
 
+        /// <summary>Schichtsatz → Kennung, Name und größte Dicke nach der Dateieinheit [m]: als Millimeter gelesen.</summary>
+        private readonly SortedDictionary<int, (string Kennung, string Name, double Groesste)> _schichtMillimeter
+            = new SortedDictionary<int, (string Kennung, string Name, double Groesste)>();
+
+        /// <summary>Schichtsatz → Kennung, Name und die übergangenen Schichten unter der kleinsten Schichtdicke.</summary>
+        private readonly SortedDictionary<int, (string Kennung, string Name, SortedSet<string> Schichten)> _schichtDuenn
+            = new SortedDictionary<int, (string Kennung, string Name, SortedSet<string> Schichten)>();
+
+        /// <summary>
+        /// Die Hinweise der Schichtdicken, je Schichtsatz einer: als Millimeter gelesen (W) und Schichten unter
+        /// <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>, die übergangen sind (I).
+        /// </summary>
+        private void SchichtdickenMelden()
+        {
+            foreach ((string kennung, string name, double groesste) in _schichtMillimeter.Values)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "SCHICHTDICKE_MM", kennung, name ?? "—",
+                    Zahl(Math.Round(groesste, 3))));
+            foreach ((string kennung, string name, SortedSet<string> schichten) in _schichtDuenn.Values)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "SCHICHT_DUENN", kennung, name ?? "—",
+                    Ganz(schichten.Count), string.Join(", ", schichten)));
+        }
+
         /// <summary>
         /// Der Aufbau eines Bauteils aus seinem <c>IfcMaterialLayerSet</c>: Dicke je Schicht und die
         /// Stoffwerte λ, ρ, c ihres Baustoffs (<see cref="Stoffwerte"/>). Die Schichtfolge steht, wie die
         /// Datei sie zählt; ob die erste Schicht außen oder innen liegt, entscheidet erst
         /// <see cref="Schichtfolge(IIfcElement, AbbildBauteil, IIfcMaterialLayerSetUsage, List{IIfcRelSpaceBoundary}, int)"/>
         /// — bis dahin gilt die Annahme „erste Schicht außen".
+        /// <para><b>Rückfall „Schichtdicke in Millimetern"</b>: Liegt nach der Längeneinheit der Datei
+        /// mindestens eine Dicke des Satzes über <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MAX_M"/>, gilt
+        /// der ganze Satz als in Millimetern geschrieben (CAD-Exporte mit <c>METRE</c> im Kopf): alle Dicken
+        /// durch 1000, ein Hinweis je Satz. Schichten unter <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>
+        /// (Folien, Anstriche) tragen keine Wärmewirkung und werden mit Hinweis übergangen.</para>
         /// </summary>
         private AbbildAufbau Aufbau(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
@@ -1402,16 +1430,35 @@ namespace WindowsFormsApplication1
                 Richtung = Schichtrichtung.AussenNachInnen,
                 RichtungAngenommen = true,
             };
-            foreach (IIfcMaterialLayer schicht in satz.MaterialLayers)
+            // Die Dicken nach der Längeneinheit der Datei; liegt eine über dem Band, ist der ganze Satz
+            // in Millimetern geschrieben (Rückfall „Schichtdicke in mm", je Schichtsatz).
+            List<IIfcMaterialLayer> schichten = satz.MaterialLayers.ToList();
+            double[] dicken = schichten.Select(x => IfcEigenschaften.Wert(x?.LayerThickness))
+                                       .Select(d => d > 0.0 && !double.IsInfinity(d) ? d * _einheiten.Laenge : 0.0).ToArray();
+            double groesste = dicken.Length == 0 ? 0.0 : dicken.Max();
+            bool millimeter = groesste > GebaeudeFestwerte.SCHICHT_DICKE_MAX_M;
+            if (millimeter)
             {
-                IIfcMaterial stoff = schicht?.Material;
-                double dicke = IfcEigenschaften.Wert(schicht?.LayerThickness);
+                for (int i = 0; i < dicken.Length; i++) dicken[i] /= 1000.0;
+                _schichtMillimeter[satz.EntityLabel] = (a.Kennung, a.Name, groesste);
+            }
+            for (int i = 0; i < schichten.Count; i++)
+            {
+                IIfcMaterial stoff = schichten[i]?.Material;
+                if (dicken[i] > 0.0 && dicken[i] < GebaeudeFestwerte.SCHICHT_DICKE_MIN_M)
+                {
+                    // Folie, Anstrich: ohne Wärmewirkung — übergangen statt abgelehnt.
+                    if (!_schichtDuenn.ContainsKey(satz.EntityLabel))
+                        _schichtDuenn[satz.EntityLabel] = (a.Kennung, a.Name, new SortedSet<string>(StringComparer.Ordinal));
+                    _schichtDuenn[satz.EntityLabel].Schichten.Add((stoff?.Name.ToString() ?? "—") + " (" + Zahl(Math.Round(dicken[i] * 1000.0, 3)) + " mm)");
+                    continue;
+                }
                 (double? lambda, double? rho, double? cp) = Stoffwerte(stoff);
                 a.Schichten.Add(new AbbildSchicht
                 {
                     BaustoffKennung = stoff?.Name.ToString() ?? "",
                     Name = stoff?.Name.ToString(),
-                    DickeM = dicke > 0.0 ? dicke * _einheiten.Laenge : (double?)null,
+                    DickeM = dicken[i] > 0.0 ? dicken[i] : (double?)null,
                     LambdaWmK = lambda,
                     RhoKgM3 = rho,
                     CpJkgK = cp,

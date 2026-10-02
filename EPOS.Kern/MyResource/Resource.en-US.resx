@@ -38934,6 +38934,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
     <value>{0} external elements without space boundary: the orientation is taken from {1} as stated by the file at the element (0° = north, clockwise, without the model's north angle).</value>
   </data>
+  <data name="IMP_IFC_PROT_SCHICHTDICKE_MM" xml:space="preserve">
+    <value>{0} “{1}”: a layer thickness is {2} m in the length unit of the file — the layer set is taken as written in millimetres, all thicknesses are divided by 1000.</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
+    <value>{0} “{1}”: {2} layers below 1 mm skipped ({3}) — they carry no thermal effect.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>
