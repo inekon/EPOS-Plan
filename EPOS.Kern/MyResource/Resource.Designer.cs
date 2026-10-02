@@ -6805,6 +6805,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bundesland ist unbekannt. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_BUNDESLAND {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_BUNDESLAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ferienfaktor liegt zwischen 0 und 100 %. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FAKTOR {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Betriebskalender führt höchstens vier Ferienzeiträume. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_ANZAHL {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar). ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_DATUM {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Bezeichnung für den Betriebskalender eingeben. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung darf höchstens 100 Zeichen lang sein. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_NAME_LANG {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_NAME_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {
@@ -67981,6 +68035,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Netzverlust je Kanal darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_NEGATIV {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Netzverlust in % darf höchstens 100 betragen. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_PROZENT {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufzeit der Zirkulation liegt zwischen 0 und 24 h/d. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_ZIRK_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_ZIRK_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulationsleistung liegt zwischen 0 und 100 kW. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_ZIRK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_ZIRK_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die OND-Datei wurde nicht gefunden. ähnelt.
         /// </summary>
         public static string OND_MSG_DATEI_FEHLT {
@@ -77862,6 +77952,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien. ähnelt.
+        /// </summary>
+        public static string SIMENG_KALENDER_MONAT_OHNE_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KALENDER_MONAT_OHNE_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
         /// </summary>
         public static string SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT {
@@ -78245,6 +78344,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_NACHTZEIT_NUR_EINE {
             get {
                 return ResourceManager.GetString("SIMENG_NACHTZEIT_NUR_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste je Kanal: Heizung {0:0.###} MWh, Brauchwasser {1:0.###} MWh, Prozesswärme {2:0.###} MWh; der Projektwert gilt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_NETZVERLUSTE_JE_KANAL {
+            get {
+                return ResourceManager.GetString("SIMENG_NETZVERLUSTE_JE_KANAL", resourceCulture);
             }
         }
         
@@ -78893,6 +79001,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_ZU_VIELE_MODULE {
             get {
                 return ResourceManager.GetString("SIMENG_WP_ZU_VIELE_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation {0:0.##} kW in {1:0.##} h/d, Jahresmenge {2:0.###} MWh. ähnelt.
+        /// </summary>
+        public static string SIMENG_ZIRKULATION_BESTANDSWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_ZIRKULATION_BESTANDSWEG", resourceCulture);
             }
         }
         

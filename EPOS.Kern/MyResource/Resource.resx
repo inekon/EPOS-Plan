@@ -41443,5 +41443,44 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
     <value>Die Rücklauftemperatur des Prozesses in °C (nur Prozesswärme); nicht über dem Vorlauf.</value>
   </data>
+  <data name="NETZKANAL_MSG_NEGATIV" xml:space="preserve">
+    <value>Ein Netzverlust je Kanal darf nicht negativ sein.</value>
+  </data>
+  <data name="NETZKANAL_MSG_PROZENT" xml:space="preserve">
+    <value>Ein Netzverlust in % darf höchstens 100 betragen.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Die Zirkulationsleistung liegt zwischen 0 und 100 kW.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation liegt zwischen 0 und 24 h/d.</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_JE_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal: Heizung {0:0.###} MWh, Brauchwasser {1:0.###} MWh, Prozesswärme {2:0.###} MWh; der Projektwert gilt nicht.</value>
+  </data>
+  <data name="SIMENG_ZIRKULATION_BESTANDSWEG" xml:space="preserve">
+    <value>Zirkulation {0:0.##} kW in {1:0.##} h/d, Jahresmenge {2:0.###} MWh.</value>
+  </data>
+  <data name="SIMENG_KALENDER_MONAT_OHNE_BETRIEB" xml:space="preserve">
+    <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte eine Bezeichnung für den Betriebskalender eingeben.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_LANG" xml:space="preserve">
+    <value>Die Bezeichnung darf höchstens 100 Zeichen lang sein.</value>
+  </data>
+  <data name="BKAL_MSG_BUNDESLAND" xml:space="preserve">
+    <value>Das Bundesland ist unbekannt.</value>
+  </data>
+  <data name="BKAL_MSG_FAKTOR" xml:space="preserve">
+    <value>Der Ferienfaktor liegt zwischen 0 und 100 %.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
+    <value>Ein Betriebskalender führt höchstens vier Ferienzeiträume.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
+    <value>Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar).</value>
+  </data>
 </root>
 
