@@ -17170,7 +17170,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</value>
   </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
-    <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
+    <value>Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
     <value>Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken.</value>
@@ -17317,7 +17317,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Temperaturkoeffizient beta_OC des Moduls</value>
   </data>
   <data name="PVS_PFLEGEWEG" xml:space="preserve">
-    <value>Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“</value>
+    <value>Pflege: αSC und βOC kommen nur über den Modulimport — Administration → Daten &amp; Import → Photovoltaik → „PV Module (CEC, PAN)…“ (Neuimport aus „CEC Modules.csv“ oder einer PAN-Datei); Leerlauf- und MPP-Spannung, Kurzschlussstrom und T_NOCT lassen sich auch unter Administration → Energiesysteme → Photovoltaik → PV Module eintragen.</value>
   </data>
   <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
     <value>– nicht gepflegt</value>
@@ -41112,6 +41112,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
     <value>Kühlkennlinie aus dem Katalog übernehmen</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_CLIPPING" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping).</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab.</value>
   </data>
 </root>
 

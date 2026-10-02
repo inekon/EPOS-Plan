@@ -74160,6 +74160,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping). ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_ERWEITERT_CLIPPING {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_ERWEITERT_CLIPPING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_ERWEITERT_OHNE_AC {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_ERWEITERT_OHNE_AC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die DC-Leitungen, Sicherungen und Schalter sind mit dem 1,25-fachen Kurzschlussstrom zu bemessen; das prüft dieses Werkzeug nicht — P4 rechnet allein die thermische Korrektur. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_ISC_125 {
@@ -74187,7 +74205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_VEREINFACHT {
             get {
@@ -74457,7 +74475,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: αSC und βOC kommen nur über den Modulimport — Administration → Daten &amp; Import → Photovoltaik → „PV Module (CEC, PAN)…“ (Neuimport aus „CEC Modules.csv“ oder einer PAN-Datei); Leerlauf- und MPP-Spannung, Kurzschlussstrom und T_NOCT lassen sich auch unter Administration → Energiesysteme → Photovoltaik → PV Module eintragen. ähnelt.
         /// </summary>
         public static string PVS_PFLEGEWEG {
             get {

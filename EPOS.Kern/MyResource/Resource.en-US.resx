@@ -17181,7 +17181,7 @@ Please go through the project page again so that the data of the selected projec
     <value>with inverter — catalogue, strings, efficiency curve, clipping</value>
   </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
-    <value>The system calculates with an efficiency of {0} and without clipping.</value>
+    <value>“Simple” model: the system calculates with the fixed efficiency of {0} and without clipping; the inverter system values have no effect in this model.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
     <value>No string yet: choose a device above and press “Create string”.</value>
@@ -17328,7 +17328,7 @@ Please go through the project page again so that the data of the selected projec
     <value>temperature coefficient beta_OC of the module</value>
   </data>
   <data name="PVS_PFLEGEWEG" xml:space="preserve">
-    <value>Maintain here: Administration → Energy systems → Photovoltaics → PV modules → Edit (fields alpha_SC, beta_OC, T_NOCT), alternatively re-import from “CEC Modules.csv”</value>
+    <value>Maintain: αSC and βOC come only from the module import — Administration → Data &amp; import → Photovoltaics → “PV modules (CEC, PAN)…” (re-import from “CEC Modules.csv” or a PAN file); open-circuit and MPP voltage, short-circuit current and T_NOCT can also be entered under Administration → Energy systems → Photovoltaics → PV modules.</value>
   </data>
   <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
     <value>– not maintained</value>
@@ -41105,6 +41105,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
     <value>Take cooling curve from the catalogue</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_CLIPPING" xml:space="preserve">
+    <value>“Extended” model: the system calculates with the inverter curve of the system values and curtails above the AC rated power of {0} kW (clipping).</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
+    <value>“Extended” model: the system calculates with the inverter curve of the system values; without an AC rated power there is no clipping. Once an AC rated power is entered, EPOS-Plan curtails above it.</value>
   </data>
 </root>
 
