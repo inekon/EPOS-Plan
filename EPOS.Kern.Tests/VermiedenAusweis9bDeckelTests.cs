@@ -77,6 +77,9 @@ namespace EPOS.Kern.Tests
             Assert.True(e.StromsteuerEntlastungJahr1 > 0);              // der Netzbezug trägt den Sockel
             Assert.Equal(SATZ_9B * e.VermiedenMengeMWh, e.VermiedenEntlastung9bJahr);
             Assert.Equal(8646.0, e.VermiedenEntlastung9bJahr, 2);
+            // Der Nachweis des Ausweises schweigt — die Obergrenze wirkt nicht (die Gestehung nennt
+            // sie mit ihrem eigenen Text, EZ‑22).
+            Assert.DoesNotContain("Vermiedene Stromkosten: ", e.Hinweis ?? "");
         }
 
         /// <summary>
@@ -101,6 +104,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ohne.VermiedenEffektivJahr + 4323.0, mit.VermiedenEffektivJahr, 2);
             Assert.Equal(ohne.Kapitalwert.Value, mit.Kapitalwert.Value, 2);
             Assert.Equal(ohne.StromsteuerEntlastungJahr1, mit.StromsteuerEntlastungJahr1);
+
+            // Der Nachweis nennt den Deckel am Laufhinweis (Punkt 2), ohne Deckel steht er nicht.
+            Assert.Contains("Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit 10,00 €/MWh statt " +
+                            "20,00 €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des " +
+                            "Netzstromträgers.", mit.Hinweis);
+            Assert.DoesNotContain("§ 9b-Korrektur", ohne.Hinweis ?? "");
         }
 
         /// <summary>
@@ -119,6 +128,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(MENGE_MWH, e.VermiedenMengeMWh, 6);
             Assert.Equal(0.0, e.VermiedenEntlastung9bJahr);
             Assert.Equal(e.VermiedenGesamtJahr, e.VermiedenEffektivJahr);
+            Assert.Contains("Die § 9b-Korrektur rechnet mit 0,00 €/MWh statt 20,00 €/MWh", e.Hinweis);
         }
 
         /// <summary>
@@ -136,6 +146,41 @@ namespace EPOS.Kern.Tests
             WirtschaftlichkeitErgebnis mit = Rechne();
             Assert.Equal(ohne.VermiedenEntlastung9bJahr, mit.VermiedenEntlastung9bJahr);
             Assert.Equal(SATZ_9B * MENGE_MWH, mit.VermiedenEntlastung9bJahr, 6);
+            Assert.DoesNotContain("§ 9b-Korrektur", mit.Hinweis ?? "");
+        }
+
+        // =====================================================================
+        //  Der Nachweis (ohne Datenbank)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Nachweis nennt den Deckel nur, wenn er wirkt.</b> Gepflegter Anteil unter dem Satz
+        /// → <c>WIRT_VERMIEDEN_9B_DECKEL</c> (auch Anteil 0); kein Anteil und ein Regelsatz unter dem
+        /// Satz → <c>WIRT_VERMIEDEN_9B_REGELSATZ</c>; Anteil oder Regelsatz ab dem Satz, kein Satz →
+        /// kein Text.
+        /// </summary>
+        [Fact]
+        public void Der_Nachweis_nennt_den_Deckel_nur_wenn_er_wirkt()
+        {
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            Assert.Equal("Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit 10,00 €/MWh statt 20,00 €/MWh — " +
+                         "gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers.",
+                         WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, 10.0, 20.50, de));
+            Assert.Contains("mit 0,00 €/MWh statt 20,00 €/MWh",
+                            WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, 0.0, 20.50, de));
+            Assert.Equal("Vermiedene Stromkosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; die " +
+                         "§ 9b-Korrektur rechnet mit dem Regelsatz der Stromsteuer von 15,00 €/MWh statt 20,00 €/MWh.",
+                         WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, null, 15.0, de));
+
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, 20.50, 20.50, de));   // Anteil ab dem Satz
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, 20.0, 20.50, de));    // gleich: wirkt nicht
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, null, 20.50, de));    // Regelsatz ab dem Satz
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(20.0, null, null, de));     // nichts gepflegt
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(null, 10.0, 20.50, de));    // kein Satz
+            Assert.Null(WirtschaftlichkeitCtrl.Nachweis9bAusweis(0.0, 10.0, 20.50, de));
+
+            // Die Zahl folgt derselben Regel: Der Regelsatz unter dem Satz deckelt auch die Korrektur.
+            Assert.Equal(1000.0 * 15.0, SteuerGutschriftRechner.Entgangene9bEur(500.0, 1000.0, 20.0, 250.0, 15.0), 6);
         }
 
         // =====================================================================

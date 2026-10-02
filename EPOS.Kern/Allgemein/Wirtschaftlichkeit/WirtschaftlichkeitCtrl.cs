@@ -6688,6 +6688,7 @@ namespace WindowsFormsApplication1
                 }
                 return anteil9b;
             };
+            string nachweisAusweis9b = null;
             if (eingabe.SteuerEingabe != null &&
                 SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
             {
@@ -6721,6 +6722,7 @@ namespace WindowsFormsApplication1
                         eingabe.SteuerEingabe.NetzbezugMWh, eingabe.VermiedenMengeMWh, satz,
                         _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1),
                         anteil ?? regelsatz);
+                    nachweisAusweis9b = Nachweis9bAusweis(satz, anteil, regelsatz, BerichtTexte.Kultur);
                 }
             }
 
@@ -6744,6 +6746,9 @@ namespace WindowsFormsApplication1
             erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
 
             erg.Hinweis = eingabe.Hinweis;
+            // Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises (EZ‑23) — Text am
+            // Laufhinweis, nur wenn er wirkt (wie der Nachweis des § 9b-Abzugs der Gestehung).
+            if (!string.IsNullOrEmpty(nachweisAusweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweisAusweis9b);
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
             // Strom-Energieträger auf den Strommix-Vorgabewert zurück (Flag aus
@@ -7077,6 +7082,29 @@ namespace WindowsFormsApplication1
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;
             return w;
+        }
+
+        /// <summary>
+        /// <b>Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises</b> der vermiedenen
+        /// Stromkosten (Konzept § 3.6, Register EZ‑23) — ein Text, nur wenn der Deckel wirkt
+        /// (wirksamer Satz unter dem § 9b-Satz): mit gepflegtem Anteil
+        /// <c>WIRT_VERMIEDEN_9B_DECKEL</c> (auch Anteil 0, die abgeschaltete Komponente), ohne ihn
+        /// <c>WIRT_VERMIEDEN_9B_REGELSATZ</c> (der Regelsatz als Obergrenze unter dem Satz).
+        /// <c>null</c>, wenn nichts wirkt oder kein Satz gepflegt ist.
+        /// </summary>
+        internal static string Nachweis9bAusweis(double? satzEurJeMWh, double? anteilEurJeMWh,
+                                                 double? regelsatzEurJeMWh,
+                                                 System.Globalization.CultureInfo kultur)
+        {
+            if (!satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return null;
+            double satz = satzEurJeMWh.Value;
+            double wirksam = SteuerGutschriftRechner.Satz9bWirksam(satz, anteilEurJeMWh ?? regelsatzEurJeMWh).Value;
+            if (!(wirksam < satz)) return null;
+            if (anteilEurJeMWh.HasValue)
+                return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_DECKEL,
+                    wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
+            return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_REGELSATZ,
+                wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
         }
 
         /// <summary>
