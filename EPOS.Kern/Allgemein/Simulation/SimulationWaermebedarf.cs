@@ -263,9 +263,9 @@ namespace WindowsFormsApplication1
         /// Auskunft (zurückgesetzt in <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und
         /// fehlende Spalte heißen „aus" (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>).
         ///
-        /// <para><b>Eine Naht ohne Leser im Rechenweg:</b> Den Einbau in den VDI-Weg bringt die Welle R2
-        /// (eine Zeile neben <c>_vdi6007.Kuehlbetrieb</c>). Bis dahin liest kein Lauf die Einstellung,
-        /// und der Setter dient als Testnaht; <c>null</c> setzt „aus".</para>
+        /// <para><b>Der Leser im Rechenweg</b> ist <see cref="Vdi6007Rechenweg.Aufheizvorgabe"/>, gesetzt in
+        /// <see cref="HeizwaermeEinesGebaeudes"/> neben <c>_vdi6007.Kuehlbetrieb</c> (Welle R2). Der Setter
+        /// dient als Testnaht; <c>null</c> setzt „aus".</para>
         /// </summary>
         internal Aufheizvorgabe AufheizvorgabeProjekt
         {
@@ -977,6 +977,7 @@ namespace WindowsFormsApplication1
             // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
             // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
             _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
+            _vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt;
 
             // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
             // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
