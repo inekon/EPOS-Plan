@@ -194,6 +194,65 @@ namespace EPOS.Kern.Tests
                 x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.IdProjekt == 1030);
         }
 
+        /// <summary>
+        /// <b>EZ‑6 gilt auch in der Wärmegestehung</b> (Register EZ‑21, Befund 2 der Nachlese P646):
+        /// Führt der Elektrokessel von 1024 einen eigenen Stromträger (0,30 €/kWh), zählt sein Strom
+        /// (52,99 MWh) zu dessen Arbeitspreis, der übrige Wärmestrom (Wärmepumpe 29,38 + Heizstab
+        /// 13,65 = 43,03 MWh) zum Arbeitspreis des Netzträgers (0,46746 €/kWh):
+        /// 43,03 MWh × 467,46 €/MWh + 52,99 MWh × 300 €/MWh = 20.114,80 + 15.897,00 = 36.011,80 €/a
+        /// statt 96,02 × 467,46 = 44.885,51 €/a. Δ = 52,99 × (300 − 467,46) = −8.873,71 €/a; ohne
+        /// Energiepreissteigerung (p_E = 0) ist das die Änderung der Energie-Annuität, je kWh
+        /// Wärmebedarf −8.873,71 ÷ 389.730 = −0,0227689 €/kWh: 0,0616162 → 0,0388473 €/kWh.
+        /// Kapitalwert, Energiekosten und die Stromgutschrift (zum Netzpreis, Entscheid
+        /// „Arbeitspreis bleibt") bleiben, wie sie sind.
+        /// </summary>
+        [Fact]
+        public void Waermegestehungskosten_1024_Elektrokessel_mit_eigenem_Stromtraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitErgebnis vorher = Rechne(1024, out _, out _);
+            EigenerStromtraeger();
+            WirtschaftlichkeitErgebnis e = Rechne(1024, out VariantenDaten v, out WirtschaftlichkeitParameter p);
+            Assert.NotNull(e);
+            Assert.Equal(0.0, p.PreissteigerungEnergie, 12);
+
+            EnergieTraegerNachweis strom = e.EnergiekostenJeTraeger.Single(t => t.Netzstrom);
+            Assert.Equal(60, strom.CarrierId);                                     // Netzträger bleibt 60
+            Assert.Equal(0.46746, strom.PreisJeEinheit, 10);
+            Assert.Equal(96.02, strom.WaermeMengeMWh, 2);
+            Assert.Equal(43.03 * 1000.0 * 0.46746 + 52.99 * 1000.0 * 0.30, strom.WaermeArbeitEur, 2);   // 36.011,80
+
+            Assert.Equal(vorher.Kapitalwert.Value, e.Kapitalwert.Value, 2);        // projektweit unberührt
+            Assert.Equal(vorher.EnergiekostenJahr.Value, e.EnergiekostenJahr.Value, 2);
+            Assert.Equal(34549.97, e.GestehungZerlegung.StromgutschriftJahr1, 2); // Gutschrift zum Netzpreis
+
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(-8873.71, e.GestehungZerlegung.EnergieEurJahr - vorher.GestehungZerlegung.EnergieEurJahr, 2);
+            Assert.Equal(0.06161616494867317 + 52.99 * 1000.0 * (0.30 - 0.46746) / waermeKwh,
+                         e.Gestehungskosten.Value, 10);
+            Assert.Equal(0.03884731112679649, e.Gestehungskosten.Value, 10);
+        }
+
+        /// <summary>
+        /// Gibt dem Elektrokessel „eloBLOCK VE 10" (Anlage 11255) des Projekts 1024 einen eigenen
+        /// Stromträger (58 „Elektrische Energie 2", dem Projekt zugeordnet mit 0,30 €/kWh) und der
+        /// Wärmepumpe (Anlage 11262) den Träger 60, der den Netzbezug ohnehin bepreist — so bleibt 60
+        /// der Netzträger (Rang 0 der Anlagenwahl), und nur der Elektrokessel weicht ab.
+        /// </summary>
+        private static void EigenerStromtraeger()
+        {
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO energy_project_settings (ID_Projekt, [ID_Energieträger], custom_hi, custom_price_work) " +
+                "VALUES (?, ?, 1, ?)",
+                new DbParam("@p", 1024), new DbParam("@c", 58), new DbParam("@w", 0.30));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", 58), new DbParam("@a", 11255));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", 60), new DbParam("@a", 11262));
+        }
+
         /// <summary>Stellt die Unternehmensart eines Projekts der Arbeitskopie um.</summary>
         private static void Unternehmensart(int idProjekt, string art)
         {

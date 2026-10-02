@@ -1782,7 +1782,9 @@ namespace WindowsFormsApplication1
         public double VerbrauchGesamtMWh;
 
         /// <summary>Arbeitskosten der Wärmemenge [€/a] (beim Strom ohne Anrechnung von
-        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis).</summary>
+        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis; der Strom einer Anlage mit eigenem
+        /// Stromträger zu dessen Arbeitspreis, Register EZ‑6 —
+        /// <see cref="Waermegestehung.WaermestromArbeitEur"/>).</summary>
         public double WaermeArbeitEur;
 
         /// <summary>Energiekosten des Trägers [€/a] = Arbeit + Grundpreis + Leistungsanteil.</summary>

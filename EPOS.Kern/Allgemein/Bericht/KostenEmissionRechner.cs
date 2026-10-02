@@ -754,6 +754,10 @@ namespace WindowsFormsApplication1
                     // Grundpreis (der Leistungsanteil kommt unten dazu). Für die Wärmegestehung dazu
                     // der Strom der Wärmeerzeuger — zum Arbeitspreis, ohne Anrechnung von
                     // PV-Eigenverbrauch — und der Verbrauch aller Verbraucher des Anschlusses.
+                    // EZ‑6 gilt auch hier (P646): Der Strom einer Anlage mit EIGENEM Stromträger
+                    // zählt zu dessen Arbeitspreis (Waermegestehung.WaermestromArbeitEur); die
+                    // Menge, der Preis des Eintrags und damit die Stromgutschrift bleiben beim
+                    // Träger, der den Netzbezug bepreist.
                     netzEintrag = new EnergieTraegerNachweis
                     {
                         CarrierId = stromCarrierKosten,
@@ -768,7 +772,9 @@ namespace WindowsFormsApplication1
                         WaermeMengeMWh = Waermegestehung.WaermestromMWh(m),
                         VerbrauchGesamtMWh = Waermegestehung.StromverbrauchGesamtMWh(m)
                     };
-                    netzEintrag.WaermeArbeitEur = netzEintrag.WaermeMengeMWh * 1000.0 * preistraeger.PreisArbeit.Value;
+                    netzEintrag.WaermeArbeitEur = Waermegestehung.WaermestromArbeitEur(
+                        netzEintrag.WaermeMengeMWh, preistraeger.PreisArbeit.Value,
+                        EigenerWaermestrom(v.IdProjekt, m, stromkessel, stromCarrierKosten, szenario));
                     traegerListe.Add(netzEintrag);
 
                     // ---- DER LEISTUNGSPREIS DES STROMTRÄGERS (Anwenderentscheid
@@ -1557,6 +1563,70 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return namen;
+        }
+
+        /// <summary>
+        /// <b>Der Wärmestrom der Anlagen mit eigenem Stromträger</b> (Register EZ‑6, gilt seit P646
+        /// auch in der Wärmegestehung): je Erzeugerzeile (<see cref="Waermegestehung.WaermestromJeModul"/>)
+        /// deren Anlage einen eigenen, dem Projekt zugeordneten ELECTRICITY-Träger führt
+        /// (<see cref="ProjektEnergietraegerCtrl.EigeneStromTraeger"/> — dieselbe Erkennung wie der
+        /// Endenergie-Auflöser), der vom bepreisenden Träger <paramref name="netzCarrier"/> abweicht:
+        /// Menge und Arbeitspreis dieses Trägers im Szenario. Verbunden wird über den Bezeichner der
+        /// Anlage, der zugleich der Modulname ist.
+        ///
+        /// <para>Leere Liste — dann rechnet die Wärmegestehung Zeichen für Zeichen wie ohne diese
+        /// Auskunft —, wenn keine Anlage einen eigenen Stromträger führt (der Regelfall: dann ist
+        /// es nur die eine Abfrage der Karte), alle eigenen Träger der Netzträger sind oder eine
+        /// Abfrage scheitert.</para>
+        /// </summary>
+        private static List<Waermegestehung.EigenerStrom> EigenerWaermestrom(
+            int idProjekt, ErgebnisModel m, ICollection<string> elektrokessel, int netzCarrier, string szenario)
+        {
+            var liste = new List<Waermegestehung.EigenerStrom>();
+            if (idProjekt <= 0 || m == null) return liste;
+            try
+            {
+                Dictionary<int, int> eigene = ProjektEnergietraegerCtrl.EigeneStromTraeger(idProjekt);
+                if (eigene == null || eigene.Count == 0) return liste;
+
+                var traegerJeName = new Dictionary<string, int>(StringComparer.Ordinal);
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@p", idProjekt));
+                if (dt == null) return liste;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["ID"] == DBNull.Value || r["Bezeichner"] == DBNull.Value) continue;
+                    int carrier;
+                    if (!eigene.TryGetValue(Convert.ToInt32(r["ID"]), out carrier) || carrier == netzCarrier)
+                        continue;
+                    string name = Convert.ToString(r["Bezeichner"]).Trim();
+                    if (name.Length > 0 && !traegerJeName.ContainsKey(name)) traegerJeName[name] = carrier;
+                }
+                if (traegerJeName.Count == 0) return liste;
+
+                var preise = new Dictionary<int, double?>();
+                foreach (KeyValuePair<string, double> zeile in Waermegestehung.WaermestromJeModul(m, elektrokessel))
+                {
+                    int carrier;
+                    if (!traegerJeName.TryGetValue(zeile.Key, out carrier)) continue;
+                    double? preis;
+                    if (!preise.TryGetValue(carrier, out preis))
+                    {
+                        preis = ArbeitspreisJeKwh(idProjekt, carrier, szenario);
+                        preise[carrier] = preis;
+                    }
+                    liste.Add(new Waermegestehung.EigenerStrom
+                    {
+                        Modul = zeile.Key,
+                        CarrierId = carrier,
+                        MengeMWh = zeile.Value,
+                        PreisJeKwh = preis
+                    });
+                }
+            }
+            catch { liste.Clear(); }
+            return liste;
         }
 
         /// <summary>
