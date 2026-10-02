@@ -96572,6 +96572,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenkatalog (Energieträger, Emissionen, Gesetzesparameter, Nutzungsdauern) wurde nach der letzten Rechnung geändert — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der letzten Rechnung geändert — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN_KOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten. ähnelt.
         /// </summary>
         public static string WIRT_BAND_SIMULATION_VERALTET {
@@ -100492,6 +100510,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Der Kostenkatalog wurde nach der Rechnung geändert — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_VERALTET_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_VERALTET_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der Rechnung geändert — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_VERALTET_KOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_VERALTET_KOSTEN", resourceCulture);
             }
         }
         

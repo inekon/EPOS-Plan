@@ -10971,6 +10971,12 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
     <value>The values shown come from an earlier run — please recalculate.</value>
   </data>
+  <data name="WIRT_BAND_NACHRECHNEN_KATALOG" xml:space="preserve">
+    <value>The cost catalogue (energy carriers, emissions, statutory parameters, service lives) has changed since the last calculation — please recalculate.</value>
+  </data>
+  <data name="WIRT_BAND_NACHRECHNEN_KOSTEN" xml:space="preserve">
+    <value>Costs, prices or economic parameters have changed since the last calculation — please recalculate.</value>
+  </data>
   <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
     <value>The simulation result is older than the last change to the project — please run the simulation again.</value>
   </data>
@@ -12509,6 +12515,12 @@ Overwrite it anyway?</value>
   </data>
   <data name="WIRT_STATUS_VERALTET" xml:space="preserve">
     <value>⚠ Saved results no longer match the simulation state — please use “Calculate”.</value>
+  </data>
+  <data name="WIRT_STATUS_VERALTET_KATALOG" xml:space="preserve">
+    <value>⚠ The cost catalogue has changed since the calculation — please use “Calculate”.</value>
+  </data>
+  <data name="WIRT_STATUS_VERALTET_KOSTEN" xml:space="preserve">
+    <value>⚠ Costs, prices or economic parameters have changed since the calculation — please use “Calculate”.</value>
   </data>
   <data name="WIRT_STATUS_STAND" xml:space="preserve">
     <value>Saved results from {0}.</value>

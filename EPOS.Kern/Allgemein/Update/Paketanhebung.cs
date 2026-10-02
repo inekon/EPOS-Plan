@@ -217,6 +217,10 @@ namespace WindowsFormsApplication1
                       "die 14 ausgelieferten Konditionierungsvorlagen"),
             new Stufe(KesselBrennwertNachzug.SCHRITT, Art.Umformung,
                       "Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung", SchrittKesselBrennwert),
+            // Ein Paket führt keine Trigger: Die Stempelspalten kommen leer an, und der Import selbst
+            // stempelt im Ziel - dessen Trigger feuern beim Einfügen der Projektzeilen.
+            new Stufe(KostenStempelSchema.SCHRITT, Art.Ddl,
+                      "Änderungsstempel für Kosten, Preise und Kostenkatalog (zwei Spalten und ihre Trigger)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

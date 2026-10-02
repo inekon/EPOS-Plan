@@ -107,7 +107,7 @@
         <div class="epos-wirt-warnband">
             @if (_nachrechnen)
             {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenBandText" />
             }
             @* Anwenderentscheid 30.09.2026 (Register EZ-18): Ein Haken oder die Referenzwahl
                hat die Staende mit Stromverwendung des Laufs geaendert und damit die
@@ -949,6 +949,23 @@
     /// <summary>Der Satz des Warnbandes, wenn die gespeicherten Ergebnisse nicht mehr
     /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
     [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
+
+    /// <summary>Der Satz des Warnbandes, wenn Kosten, Preise oder Parameter der Gruppe nach der
+    /// Rechnung geändert wurden (<c>WIRT_BAND_NACHRECHNEN_KOSTEN</c>).</summary>
+    [Parameter] public string NachrechnenKostenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KOSTEN;
+
+    /// <summary>Der Satz des Warnbandes, wenn der Kostenkatalog nach der Rechnung geändert wurde
+    /// (<c>WIRT_BAND_NACHRECHNEN_KATALOG</c>).</summary>
+    [Parameter] public string NachrechnenKatalogText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KATALOG;
+
+    /// <summary>Der Satz des Warnbandes nach dem Grund, den die Hülle beim Lesen nennt
+    /// (<see cref="WirtschaftlichkeitStand.NachrechnenGrund"/>); ohne Grund der allgemeine Satz.</summary>
+    private string NachrechnenBandText => _stand.NachrechnenGrund switch
+    {
+        WindowsFormsApplication1.Ergebnisveraltung.Kosten => NachrechnenKostenText,
+        WindowsFormsApplication1.Ergebnisveraltung.Katalog => NachrechnenKatalogText,
+        _ => NachrechnenText,
+    };
 
     /// <summary>Der Satz des Warnbandes, wenn das SIMULATIONSergebnis einer gewählten
     /// Version älter ist als die letzte Änderung ihres Projekts.</summary>

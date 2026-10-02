@@ -731,11 +731,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="KesselBrennwertNachzug"/>). <b>Rechenwirksam:</b> Die Normvorgabe von η₃₀
         /// folgt der Bauart; die Referenzbasis ist neu eingefroren. Die Nummer steht allein bei
         /// <see cref="KesselBrennwertNachzug.SCHRITT"/>.
+        /// Danach, mit den ÄNDERUNGSSTEMPELN FÜR KOSTEN, PREISE UND KOSTENKATALOG (Folge von #637)
+        /// steht das Ziel auf <see cref="KostenStempelSchema.SCHRITT"/>: die nullbaren Spalten
+        /// <c>Tab_Projekt.Kosten_Geaendert</c> und <c>Tab_Applikation.Kostenkatalog_Geaendert</c>
+        /// (TEXT) und die Trigger, die sie bei jeder Änderung an Kosten, Preisen,
+        /// Wirtschaftlichkeitsparametern und Kostenkatalog setzen, reines DDL
+        /// (<see cref="KostenStempelSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer,
+        /// und kein Rechenweg liest sie. Die Nummer steht allein bei
+        /// <see cref="KostenStempelSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselBrennwertNachzug.SCHRITT;
+        public const int Zielversion = KostenStempelSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

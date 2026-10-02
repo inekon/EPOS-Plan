@@ -127,11 +127,19 @@ public sealed class KostenStand
     public string Statuszeile { get; set; } = "";
 
     /// <summary>
-    /// Stammen angezeigte Energiekosten aus einem gespeicherten Ergebnis, das nicht mehr zum
-    /// Simulationslauf seines Projekts passt? Dann steht über den Kacheln das Band
-    /// „… bitte neu berechnen" der Wirtschaftlichkeitsseite. Die Frage beantwortet die Hülle
-    /// mit derselben Kernmethode wie die Wirtschaftlichkeit (<c>ErgebnisAktuell</c>) —
-    /// für das Projekt der Kacheln und jede Version im Vergleich.
+    /// Stammen angezeigte Energiekosten aus einem gespeicherten Ergebnis, das nicht mehr gilt —
+    /// ein jüngerer Simulationslauf seines Projekts, geänderte Kosten oder Preise der Gruppe oder
+    /// ein geänderter Kostenkatalog? Dann steht über den Kacheln das Band „… bitte neu berechnen"
+    /// der Wirtschaftlichkeitsseite. Die Frage beantwortet die Hülle mit derselben Kernmethode
+    /// wie die Wirtschaftlichkeit (<c>ErgebnisAktuell</c> bzw. <c>Veraltung</c>) — für das
+    /// Projekt der Kacheln und jede Version im Vergleich.
     /// </summary>
     public bool Nachrechnen { get; set; }
+
+    /// <summary>
+    /// Der Grund des Bandes — der gewichtigste über die angezeigten Stände
+    /// (<c>KostenAenderungsstempel.Vorrang</c>); <see cref="WindowsFormsApplication1.Ergebnisveraltung.Keine"/>
+    /// ohne Band. Die Seite nennt ihn im Satz des Bandes.
+    /// </summary>
+    public WindowsFormsApplication1.Ergebnisveraltung NachrechnenGrund { get; set; }
 }

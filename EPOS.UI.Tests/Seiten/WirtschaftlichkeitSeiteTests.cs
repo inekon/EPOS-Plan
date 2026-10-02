@@ -1385,6 +1385,28 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// Nennt die Hülle geänderte Kosten oder einen geänderten Kostenkatalog als Grund
+    /// (<see cref="WirtschaftlichkeitStand.NachrechnenGrund"/>), sagt das Band es — mit dem
+    /// Rechenknopf darunter, statt vom älteren Lauf zu sprechen.
+    /// </summary>
+    [Theory]
+    [InlineData(Ergebnisveraltung.Kosten, "Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der letzten Rechnung geändert")]
+    [InlineData(Ergebnisveraltung.Katalog, "Der Kostenkatalog (Energieträger, Emissionen, Gesetzesparameter, Nutzungsdauern) wurde nach der letzten Rechnung geändert")]
+    public void Das_Band_nennt_den_Grund_der_Huelle(Ergebnisveraltung grund, string satz)
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Statuszeile = "⚠ Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der Rechnung geändert.";
+        stand.NachrechnenGrund = grund;
+        var cut = Zeige(p => p.Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m)
+            => Task.FromResult(new LaufErgebnis())), stand);
+
+        string band = cut.Find(".epos-wirt-warnband").TextContent;
+        Assert.Contains(satz, band);
+        Assert.DoesNotContain("älteren Lauf", band);
+        Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
+    }
+
+    /// <summary>
     /// <b>Anwenderbefund 22.09.2026.</b> Ist das SIMULATIONSergebnis einer gewählten
     /// Version älter als die letzte Änderung ihres Projekts, sagt das Band es. Bis
     /// hierher stand das allein als Farbe in der Spalte „Simulation“ — der Anwender

@@ -599,6 +599,20 @@ das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des 
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
 > [`SV1_Stromverbraucher_Summe_R30_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SV1_Stromverbraucher_Summe_R30_Protokoll.md).
 
+> **Nachtrag — Schemaschritt 159 (Änderungsstempel für Kosten, Preise und Kostenkatalog), Basis unverändert.**
+> Reines DDL aus `KostenStempelSchema` (Nummer `KesselBrennwertNachzug.SCHRITT + 1`): die nullbaren Spalten
+> `Tab_Projekt.Kosten_Geaendert` und `Tab_Applikation.Kostenkatalog_Geaendert` (TEXT) und 63 Trigger, die sie bei
+> jeder Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen (Liste in
+> [`BETRIEB_SQLITE.md`](../Dokumentation/aktuell/BETRIEB_SQLITE.md), Abschnitt 2b). Die Testdatenbank ist aus der
+> Fassung `5d59041f…` (Schemastand 158) mit `Werkzeuge/Testdatenbankschema` auf **159** gezogen; ein zweiter Lauf
+> legt nichts an und setzt — auch über die erneut gefahrenen Schritte davor — keinen Stempel. Zeilenvergleich über
+> alle Tabellen: allein `Tab_Applikation` (`SchemaVersion` 158 → 159); das Schema wächst nur um die zwei Spalten und
+> die 63 Trigger (153 STRICT-Tabellen); die Stempel sind überall leer; `integrity_check` ok, `foreign_key_check`
+> leer. Neue Fassung **81 162 240 Byte, LFS-SHA-256
+> `83cc8d52dc64ea02a4b140181453c5b0fe4404d2339d072be393ea2cc65c6214`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Stempel; die sechzehn Projekte rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich.
+> Keine Einfrierregel ist berührt.
+
 ### Die Vorgängerbasis R29 `2026-09-30_R29_Kesseltakten`
 
 Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
