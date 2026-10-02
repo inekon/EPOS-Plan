@@ -77,6 +77,36 @@ namespace WindowsFormsApplication1
             return titel.Replace('_', ' ').Trim().Trim('/').Trim();
         }
 
+        /// <summary>
+        /// Die Wiki-Adresse eines Ziels aus <c>help_mapping.txt</c>: ein Kurzname der Rubrik
+        /// („Pufferspeicher", „Berechnung/Wärmepumpe#rechenweg") oder ein Seitenpfad
+        /// (<c>/wiki/Grundlagen/Kessel_und_Spitzenlast#kennzahlen</c>). Beide Formen gehen
+        /// durch <see cref="WikiWissen.SeitenUrl"/>: Je Pfadsegment
+        /// <see cref="Uri.EscapeDataString"/>, Umlaute und Sonderzeichen kodiert. Ein bereits
+        /// kodierter Seitenpfad wird vorher dekodiert (<see cref="Seitentitel"/>) und damit
+        /// nicht doppelt kodiert. Leer, wenn das Ziel leer ist.
+        /// </summary>
+        /// <param name="basis">Die Wiki-Basis ohne Schrägstrich am Ende (<see cref="WikiWissen.Basis"/>).</param>
+        /// <param name="ziel">Kurzname oder Seitenpfad, wahlweise mit <c>#Anker</c>.</param>
+        public static string Seitenadresse(string basis, string ziel)
+        {
+            if (string.IsNullOrWhiteSpace(ziel)) return "";
+
+            string rest = ziel.Trim();
+            string anker = "";
+
+            int raute = rest.IndexOf('#');
+            if (raute >= 0)
+            {
+                anker = rest.Substring(raute + 1).Trim();
+                rest = rest.Substring(0, raute).Trim();
+            }
+            if (rest.Length == 0) return "";
+
+            string titel = IstPfadziel(rest) ? Seitentitel(rest) : WikiWissen.RubrikTitel(rest);
+            return WikiWissen.SeitenUrl(basis, titel, anker);
+        }
+
         /// <summary>Zeigt das Ziel (Seitenpfad oder Wiki-Adresse) auf eine Seite der Rubrik Grundlagen?</summary>
         public static bool IstGrundlagenseite(string zielOderAdresse)
         {
