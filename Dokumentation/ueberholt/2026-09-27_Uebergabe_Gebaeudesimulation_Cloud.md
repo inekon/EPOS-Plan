@@ -1,7 +1,7 @@
 # Übergabe: Sitzung „Gebäudesimulation“ — Stand 27.09.2026, Wechsel in die Cloud-Umgebung
 
 > **Abgelöst** durch die [Übergabe vom 30.09.2026](2026-09-30_Uebergabe_KP2_Abschluss.md), mit dem Abschluss von KP2
-> (02.10.2026, Statuszeile #644) unter `ueberholt/`. Dieses Papier ist Geschichte, nicht Regelquelle.
+> (02.10.2026, Statuszeile #646) unter `ueberholt/`. Dieses Papier ist Geschichte, nicht Regelquelle.
 
 Die Sitzung „Gebäudesimulation EPOS-Plan“ (VDI 6007, Kühlung, Anlagenkopplung, Mehrzonen, Import und
 Export, Baualtersklassen, Konditionierungsprofile) wird in einer Cloud-Umgebung fortgeführt (Claude Code

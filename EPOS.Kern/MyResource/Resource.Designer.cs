@@ -12245,6 +12245,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an. ähnelt.
+        /// </summary>
+        public static string BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wert nicht bestimmbar ähnelt.
         /// </summary>
         public static string BV_GRUND_AUSNAHME {

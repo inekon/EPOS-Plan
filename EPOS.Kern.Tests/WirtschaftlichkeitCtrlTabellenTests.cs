@@ -23,7 +23,7 @@ namespace EPOS.Kern.Tests
     /// genau eine Zeile <c>Tab_Projekt / ID_Projekt → ID / ON DELETE CASCADE</c>.
     /// <see cref="WirtschaftlichkeitCtrl.StelleTabellenSicher"/> legt deshalb keine Tabelle an —
     /// eine solche Anlage entstünde ohne Beziehung und ohne <c>STRICT</c>, und Schritt 96 bräche
-    /// an ihr ab (<see cref="ProjektFremdschluessel.Zieltext"/>) — und zieht nur noch die drei
+    /// an ihr ab (<see cref="ProjektFremdschluessel.Zieltext"/>) — und zieht nur noch die vier
     /// Ergebnisspalten nach, die kein Schemaschritt führt.</para>
     ///
     /// <para><b>Geprüft wird an einer Arbeitskopie:</b> das Schema der fünf Tabellen; dass
@@ -138,7 +138,7 @@ namespace EPOS.Kern.Tests
         /// Schritt 96 bräche an ihr ab) und holt keine Spalte zurück, die ein Schemaschritt
         /// entfernt hat — <c>Aufschlaege_Anwenden</c> steht noch in der Liste
         /// <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>, fiel aber mit Schritt 85. Was
-        /// bleibt, sind die drei Ergebnisspalten ohne Schemaschritt.
+        /// bleibt, sind die vier Ergebnisspalten ohne Schemaschritt.
         /// </summary>
         [Fact]
         public void Die_Vorsorge_legt_keine_Tabelle_an_und_holt_keine_entfernte_Spalte_zurueck()
@@ -168,9 +168,46 @@ namespace EPOS.Kern.Tests
 
             foreach (string spalte in new[] { WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
                                               WirtschaftlichkeitCtrl.SPALTE_ERSATZ_BARWERT,
-                                              WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON })
+                                              WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON,
+                                              WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE })
                 Assert.True(DataRepository.SpalteVorhanden(WirtschaftlichkeitCtrl.TAB_ERGEBNIS, spalte),
                             WirtschaftlichkeitCtrl.TAB_ERGEBNIS + "." + spalte + " fehlt.");
+        }
+
+        /// <summary>
+        /// DER LAUFVERMERK (Anwenderentscheid 02.10.2026, Register EZ‑19): Fehlt
+        /// <see cref="WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE"/> — eine Anwenderdatenbank aus
+        /// einer älteren Auslieferungsvorlage —, legt <see cref="WirtschaftlichkeitCtrl.StelleTabellenSicher"/>
+        /// sie als nullbare Textspalte an, ohne nummerierten Schemaschritt; ein zweiter Lauf ändert
+        /// das Schema nicht mehr, und keiner hinterlässt eine Vorsorgewarnung.
+        /// </summary>
+        [Fact]
+        public void Die_Vorsorge_legt_den_Laufvermerk_an_und_ein_zweiter_Lauf_aendert_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string tabelle = WirtschaftlichkeitCtrl.TAB_ERGEBNIS;
+            string spalte = WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE;
+            if (DataRepository.SpalteVorhanden(tabelle, spalte))
+                DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
+            Assert.False(DataRepository.SpalteVorhanden(tabelle, spalte), "DROP COLUMN hat nicht gegriffen.");
+
+            new WirtschaftlichkeitCtrl().StelleTabellenSicher();
+            Assert.True(string.IsNullOrEmpty(WirtschaftlichkeitCtrl.Vorsorgewarnung),
+                        WirtschaftlichkeitCtrl.Vorsorgewarnung);
+            Assert.True(DataRepository.SpalteVorhanden(tabelle, spalte), tabelle + "." + spalte + " fehlt.");
+            Assert.Equal("TEXT|0", Text(DataRepository.ExecuteScalar(
+                "SELECT type || '|' || \"notnull\" FROM pragma_table_info(?) WHERE name = ?",
+                new DbParam("@t", tabelle), new DbParam("@s", spalte))));
+
+            string schema = Text(DataRepository.ExecuteScalar(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@t", tabelle)));
+            new WirtschaftlichkeitCtrl().StelleTabellenSicher();
+            Assert.True(string.IsNullOrEmpty(WirtschaftlichkeitCtrl.Vorsorgewarnung),
+                        WirtschaftlichkeitCtrl.Vorsorgewarnung);
+            Assert.Equal(schema, Text(DataRepository.ExecuteScalar(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@t", tabelle))));
         }
 
         // =============================================================================

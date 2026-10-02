@@ -1,9 +1,9 @@
 # Übergabe: Sitzung „Gebäudesimulation“ — Stand 30.09.2026, KP2 bis auf U5 umgesetzt
 
-> **Erledigt mit dem Abschluss von KP2 am 02.10.2026** (Welle U5, Statuszeile #644):
+> **Erledigt mit dem Abschluss von KP2 am 02.10.2026** (Welle U5, Statuszeile #646):
 > [Protokoll](Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept
 > N1.66. Offen beim Anwender bleiben SA1 und die Versionsnummer der Logbuch-Sätze (Statusdatei der Migration, „Nach
-> #644“). Dieses Papier ist Geschichte, nicht Regelquelle.
+> #646“). Dieses Papier ist Geschichte, nicht Regelquelle.
 
 **Anlass:** Die Sitzung hat bei 87 % Wochennutzung angehalten (Anwendervorgabe: Halt bei 90 %); die Arbeit geht auf
 einem anderen Claude-Konto weiter. Diese Übergabe löst die [Übergabe vom 27.09.2026](2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md)

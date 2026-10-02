@@ -6,7 +6,7 @@ Arbeitszweig `claude/inspiring-bell-b8wq90`, die Welle U5 auf dem anderen Konto 
 **Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../2026-09-29_Entwurf_KP2.md) ·
 **Entscheide** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) und E57 (Teilkonzept 9.7) ·
 **Festlegungen der Umsetzung** im Leitkonzept N1.66 (Entwurf Abschnitt 5, die Wellen, die Abkürzung) · **Statuszeilen**
-#618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1), #626 (U2), #634 (U4, U3), #644 (U5)
+#618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1), #626 (U2), #634 (U4, U3), #646 (U5)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
 Vorlagen, Nachtauskühlung). Das Protokoll ist mit jeder Welle gewachsen; jede Welle hat einen Abschnitt unter 2 und eine
@@ -216,7 +216,7 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Konditionierungsprobe:** Der Fall `vorlagen` ist gekühlt und misst Liste, Rückfrage, „Nein" und „Ja"; die Probe
   liest ihre Texte je Kultur aus einer Tafel und läuft in beiden Kulturen — je 36 Läufe ohne Verstoß.
 - **Abschluss:** Festlegungen als N1.66 im Leitkonzept; Teilkonzept 7.2, 7.4, 8, 9.7, 10.5, 11 und 12; Entwurf KP2 und
-  die zwei Übergaben unter `ueberholt/`; Statuszeile #644.
+  die zwei Übergaben unter `ueberholt/`; Statuszeile #646.
 
 ## 3. Schemaschritte
 
@@ -283,7 +283,7 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 | Gate KP2f nach dem Merge `origin` #629/#630 (`dde818b6`) | KP2f auf `dde818b6` (U4 mit `origin` bis #630, **gegen R29**): Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (194), Tests Kern 9 538, UI 7 141, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R29**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 145 Texte); Windows-Schale 0 Fehler. Davor KP2e auf `c00d37fe` gegen R28 grün (Kern 9 496, UI 7 138). Nach den Merges `origin` #630–#633 (`281200f7`) und U3 (`22c04ad1`) gezielt: UI 7 143 bzw. 7 175, Kern 2 903 bzw. 2 316 grün, Referenzlauf je 487/487 byte-gleich gegen R29, Windows-Schale 0. U3 im Worktree gegen R29: Kern 9 556, UI 7 173, Referenzlauf 487/487, gestörter Lauf PASS. |
 | Abnahme U3 im Worktree gegen R29 (`75180194`) | Kern 9 556, UI 7 173, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf 16/16 PASS, 487/487 byte-gleich, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 36 Läufe ohne Verstoß |
 | Nach den Merges `origin` #630–#633 (`281200f7`) und U3 | Kern-Filter 0 Fehler; UI 7 175; Kern 2 316 gezielt (Konditionierung, Kalender, Gebäude, Zone, KI, Wachen, Wärmeübergabe) grün; Referenzlauf 16/16 PASS, 487/487 byte-gleich gegen R29; Windows-Schale 0 Fehler |
-| Abnahme U5 im Worktree (`485dbfc9`, Gate #644, auf `4cfbf017`) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 634, UI 7 221, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R29**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer ohne Abweichung außer den Zeilenenden; Konditionierungsprobe je 36 Läufe ohne Verstoß in de-DE und en-US |
+| Abnahme U5 im Worktree (`485dbfc9`, Gate #646, auf `4cfbf017`) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 634, UI 7 221, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R29**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer ohne Abweichung außer den Zeilenenden; Konditionierungsprobe je 36 Läufe ohne Verstoß in de-DE und en-US |
 | Gate im Hauptbaum nach dem Merge U5 × `origin` #641–#643 (`c13b2acd`, Basis R30 statt R29) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 704, UI 7 222, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R30**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer-Prüflauf 13 536 Blöcke gleich; Konditionierungsprobe unverändert aus der Abnahme im Worktree |
 | Kern-Lauf auf `2d8dbde2` (#626) | grün (36689699460, Arbeitszweig) |
 | Abnahme U2 im Worktree (`12b9b6f1`) | Kern 9 379, UI 7 110, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 28 Läufe ohne Verstoß |

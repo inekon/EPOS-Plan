@@ -880,6 +880,60 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Laufvermerk nach einem Seitenwechsel</b> (Anwenderentscheid 02.10.2026, Register
+    /// EZ‑19): Die gespeicherten Ergebnisse tragen die Stände ihres Laufs
+    /// (<see cref="WindowsFormsApplication1.WirtschaftlichkeitErgebnis.LaufStaende"/>), und die Hülle
+    /// prüft beim Laden die Läufe der gewählten Stände (<see cref="WindowsFormsApplication1.Laufvermerk"/>)
+    /// gegen die Wahl. Neu geladen mit einer Wahl, die vom gespeicherten Lauf abweicht („WP klein",
+    /// der einzige Stromverwender, ist auf einer anderen Seite abgehakt worden), zeigt die Seite das
+    /// Band sofort, ohne Haken; neu geladen mit der Wahl des Laufs nicht. Gerechnet wird nicht.
+    /// </summary>
+    [Fact]
+    public void Neu_geladen_zeigt_die_Seite_das_Band_nach_dem_Vermerk_des_gespeicherten_Laufs()
+    {
+        string vermerk = WindowsFormsApplication1.Laufvermerk.Schreiben(new[] { STAMM, WP, BHKW });
+        var gespeichert = new[] { STAMM, WP, BHKW }
+            .Select(id => new WindowsFormsApplication1.WirtschaftlichkeitErgebnis { IdProjekt = id, LaufStaende = vermerk })
+            .ToList();
+        int laeufe = 0;
+
+        // Die Hülle als Delegat: die Läufe der gewählten Stände aus ihrem Vermerk, die Gruppenregel
+        // ist die Menge der Stromverwender — hier allein „WP klein".
+        WirtschaftlichkeitStand Stand(List<int> gewaehlt)
+        {
+            WirtschaftlichkeitStand s = Voll();
+            s.GewaehlteVarianten = gewaehlt.ToArray();
+            s.Ansicht = VolleAnsicht();
+            s.Ansicht.GruppenregelVeraltet = WindowsFormsApplication1.Laufvermerk
+                .Laeufe(gespeichert, gewaehlt, gewaehlt)
+                .Any(lauf => lauf.Contains(WP) != gewaehlt.Contains(WP));
+            return s;
+        }
+        IRenderedComponent<WirtschaftlichkeitSeite> Neu(List<int> gewaehlt) => Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () => Stand(gewaehlt))
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                laeufe++;
+                return Task.FromResult(new LaufErgebnis { Erfolg = true });
+            }));
+
+        string satz = WindowsFormsApplication1.MyResource.Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
+        bool Band(IRenderedComponent<WirtschaftlichkeitSeite> c) =>
+            c.FindAll(".epos-wirt-warnband .epos-warnbanner").Any(b => b.TextContent.Contains(satz));
+
+        // Abweichende Wahl: Band beim Laden.
+        IRenderedComponent<WirtschaftlichkeitSeite> cut = Neu(new List<int> { STAMM, BHKW });
+        Assert.True(cut.Instance.GruppenregelVeraltet);
+        Assert.True(Band(cut));
+
+        // Gleiche Wahl wie der Lauf: kein Band.
+        cut = Neu(new List<int> { STAMM, WP, BHKW });
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band(cut));
+        Assert.Equal(0, laeufe);
+    }
+
+    /// <summary>
     /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Ausweis (seit E9b
     /// an der Stelle des Hinweistexts) in
     /// „Was ist angenommen?" — je Szenario in der Reihenfolge der Bandbreite (Ungünstig ·
