@@ -474,7 +474,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 
 Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 
-### WP1 Keine Taktung innerhalb der Stunde
+### WP1 Keine Taktung innerhalb der Stunde — umgesetzt
 
 - **Stand heute:** Eine Stunde ist voll, moduliert oder aus; Mindestlaufzeit, Mindestpause und
   Anlaufverluste fehlen (Hilfeseite Wärmepumpe, Grenzen). Moduliert heißt heute: jede Teillast bis
@@ -491,7 +491,15 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 - **Empfehlung: ja**, Aufwand M. Gleiche Bauart wie Kessel E4, die Mindestleistung steht in jedem
   Datenblatt, der Effekt trifft genau die Übergangszeit, in der überdimensionierte Geräte schlecht
   laufen. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Mindestleistung_kW` und `Taktverlustfaktor_Cd` in
+  `Tab_WP_STAMM` und `Tab_WP` (Schemaschritt 166, leer = keine Taktrechnung bzw. 0,9). Je Stunde
+  und Modul Lastverhältnis aus Verdichterwärme von Deckung und Ladung, Mehrstrom
+  `P · (1/f − 1)` in Strombedarf und JAZ, Starts nach der Kesselregel mit fest 10 min; im
+  Kühlbetrieb dieselbe Rechnung in der Kältekaskade. Ausweis Starts und Mehrstrom im Reiter
+  „Wärmepumpe“. Der VDI-3805-Import setzt keine der Spalten (Blatt 22 nennt einen
+  Modulationsbereich in %, keine Mindestleistung in kW, kein C_d).
+  [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### WP2 Extrapolation nach oben gekappt, nach unten vorhanden
 
@@ -530,7 +538,7 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 
 Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
 
-### BH1 Teillastkennlinie
+### BH1 Teillastkennlinie — umgesetzt
 
 - **Stand heute:** Ein elektrischer und ein thermischer Wirkungsgrad für jede Auslastung; die
   „Laufzeit“ ist eine thermische Vollbenutzungsstundenzahl, keine Betriebsstundenzahl
@@ -546,9 +554,16 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
 - **Empfehlung: ja**, Aufwand M. Wärmegeführte Module laufen im Sommer lange in Teillast; die
   KWKG-Strommenge und der Brennstoff hängen daran. Herstellerblätter nennen Werte bei 50 % und
   75 %. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Wirkungsgrad_el_Teillast50` und `Wirkungsgrad_th_Teillast50`
+  (Faktor 0 … 1 wie die Volllastwerte) in `Tab_BHKW_STAMM` und `Tab_BHKW`. η_el,100 und η_th,100
+  teilen den Gesamtwirkungsgrad im Verhältnis der Nennleistungen; unter β = 0,5 gilt der Wert
+  bei 0,5. Die Motorläufe rechnen Wärme und Strom über die Stromkennzahl an der Auslastung, der
+  Brennstoff je Stunde ist `P/η_el(β)`, die Abweichung gegen `(Q + P)/η` steht als
+  Teillast-Mehrbrennstoff im Reiter „BHKW“ und geht in Brennstoff und Emissionen. Editor mit
+  kleiner Kurve. [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### BH2 Taktung, Mindestlaufzeit, Anfahrverluste
+### BH2 Taktung, Mindestlaufzeit, Anfahrverluste — umgesetzt
 
 - **Stand heute:** Keine Taktung (`SimulationBHKW.cs:109-113`). Die „Untere Grenzleistung“ wirkt
   nicht (Befund in Folgeauftrag 6 der
@@ -563,7 +578,15 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
   bereit. Basis: Folgeauftrag 6 berührt BHKW-Projekte der Referenzbasis (die Testdatenbank führt
   Grenzleistungen von 468 bis 1 027 % — Datenbefund, vor der Umsetzung zu bereinigen); mit
   Vorgabe leer sonst unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Anfahrverlust_kWh` und `Mindestlaufzeit_min` in
+  `Tab_BHKW_STAMM` und `Tab_BHKW`. Mit einem der beiden Felder und einer Untergrenze > 0 taktet
+  ein Modul unter der Untergrenze in allen drei Fahrweisen, statt auszubleiben; Starts nach der
+  Kesselregel gegen die Wärme der Untergrenze (Mindestlaufzeit leer = 10 min), je Start der
+  Anfahrverlust (leer = 0) auf den Brennstoff. Ausweis Starts und Anfahrverlust im Reiter
+  „BHKW“. Die Untergrenze selbst ist wirksam (Folgeauftrag 6). Kein Referenzprojekt pflegt die
+  Felder; die Basis R32 bleibt bitgleich.
+  [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### BH3 Erläuterung Energieprobe
 
@@ -995,9 +1018,9 @@ Umstellen eines Referenzprojekts.
 | SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
 | KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
 | PW2 Kalenderschicht für alle Profile | ja | M | nein (Option) | ☐ |
-| WP1 Taktverlust nach EN 14825, Starts | ja | M | nein (Option) | ☐ |
-| BH1 BHKW-Teillastkennlinie | ja | M | nein (Option) | ☐ |
-| BH2 BHKW-Takten mit Folgeauftrag 6 | ja | M | ja, wenn die Untergrenze in Referenzprojekten wirksam wird | ☐ |
+| WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
+| BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
+| BH2 BHKW-Takten mit Folgeauftrag 6 | umgesetzt (Welle M4) | M | nein (Option; kein Referenzprojekt pflegt die Felder) | ☑ |
 | PV3 Einspeisebegrenzung mit Abregelung | ja | M | nein (Option) | ☐ |
 | ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
 | PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |

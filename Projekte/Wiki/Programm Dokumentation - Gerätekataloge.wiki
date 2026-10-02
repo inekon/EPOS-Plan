@@ -58,6 +58,11 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 * '''Untere Grenzleistung''' – in Prozent der Nennleistung.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+* {{Anker|bhkw-teillast}}Gruppe '''Teillast und Takten''' – alle Felder dürfen leer bleiben:
+** '''El. Wirkungsgrad bei 50 % Last''' und '''Th. Wirkungsgrad bei 50 % Last''' – je als Faktor zwischen 0 und 1 wie die Volllastwerte; leer = wie Volllast. Eine kleine Kurve daneben zeigt beide Wirkungsgrade über der Last.
+** '''Anfahrverlust je Start''' – in kWh Brennstoff; leer = kein Anfahrverlust.
+** '''Mindestlaufzeit''' – in Minuten, ganzzahlig, höchstens 60; leer = 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
+: Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben ([[Programm Dokumentation/BHKW#teillast|BHKW: Teillast und Takten]]). Dieselben vier Felder stehen im Aufklapper ''Alle Daten anzeigen''; ein dort geleertes Feld wird als „nicht gepflegt" gespeichert.
 
 Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg). Auch die Nutzungsdauer rechnet nicht; maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]].
 
@@ -99,6 +104,8 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
 * '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
+* {{Anker|wp-mindestleistung}}'''Mindestleistung''' – in kW, die kleinste Leistung, auf die das Gerät herunterregelt; leer = es moduliert bis null. Unter ihr taktet das Gerät, und die Simulation rechnet den Taktverlust ([[Programm Dokumentation/Wärmepumpe#takten|Wärmepumpe: Takten]]).
+* '''Teillastkoeffizient C_d''' – Faktor zwischen 0 und 1 für den Taktverlust nach EN 14825; leer gilt die Vorgabe 0,9 der Norm. In den Projektdialogen stehen beide Werte nur lesend.
 * '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
 
 ''Kennliniendaten Ansicht/Bearbeiten…'' zeigt die Heizkennlinie und, wenn zur gewählten Pumpe Kühlkenndaten vorliegen, über einen Umschalter auch die Kühlkennlinie, als Diagramm. ''Modul-Katalog…'' öffnet eine durchsuchbare Auswahl aus dem Stammkatalog: eine Suchzeile über alle Spalten, dazu die Spalten Hersteller, Quelle, Nennleistung, Vorlauf minimal und maximal sowie Zuheizung; Bauart, Auslegung, Aufstellung und Regelung stehen im Kenndatenblock der gewählten Pumpe statt als eigene Spalte.
@@ -163,7 +170,7 @@ Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, d
 
 {{Anker|import-heizkessel}}Beim Heizkessel liest der Import aus dem Leistungssatz 710.01 den Wirkungsgrad bei Nennlast, den Wirkungsgrad bei 30 % Last und die kleinste Leistung, jeweils vom Temperaturpaar mit dem niedrigsten Rücklauf; führt der Satz keinen Nennlastwert, gilt der Wirkungsgrad des Gerätesatzes 700. Prozentangaben werden zu Faktoren, ein unplausibler Teillastwert bleibt leer. Die Bauart „Brennwert…“ setzt den Schalter '''Brennwertkessel'''; die '''Brennwertkennlinie''' bleibt aus, Anfahrverlust und Mindestlaufzeit bleiben leer.
 
-{{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
+{{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. ''Mindestleistung'' und ''Teillastkoeffizient C_d'' setzt der Import nicht: Die Datei nennt einen Modulationsbereich in Prozent, aber keine Mindestleistung in kW und keinen Teillastkoeffizienten. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
 
 Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme sind die neuen Sätze in der Liste gewählt — mehrere über ihre Kästchen, sodass ''Vergleichen'', ''Schloss setzen…'' oder ''Löschen'' gleich auf sie wirken —, der erste steht im Stammblatt, und die Statuszeile nennt die Zahl der übernommenen Sätze.
 
