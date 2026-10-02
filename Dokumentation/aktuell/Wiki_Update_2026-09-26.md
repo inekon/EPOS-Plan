@@ -261,6 +261,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Eine zugeordnete Solarthermieganglinie geht in die Simulation ein. (#665)
 - An Photovoltaik- und Solarthermieanlagen lässt sich die Bodenreflexion (Albedo) angeben; leer rechnet mit 0,2. (#666)
 - Die Speicherauslegung übernimmt die beste Rastervariante mit einem Knopf als Projektflotte. (#666)
+- Ein Prozesswärmesatz trägt ein Temperaturpaar (Vorlauf/Rücklauf); die Simulation wertet Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus. (#667)
+- Der Katalog liefert acht typische Betriebsweisen der Prozesswärme als Vorlage. (#667)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
