@@ -298,7 +298,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: Stufe 1 ja** (M; ohne Temperatur bleibt die Wärmepumpe in der Industrie nicht
   bewertbar, und genau das fragen Kunden); **Stufe 2 später** (M), wenn erste Messreihen mit
   Temperatur vorliegen. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (Stufe 1 umgesetzt in Welle M3a, Stufe 2 später)** — Spalten `Vorlauf`/`Ruecklauf` an `Tab_Prozesswaerme(_STAMM)` (`ProzesswaermeTemperaturSchema`), Niveau je Stunde in `Prozesstemperatur`; Wirkung (a) Wärmepumpe, (b) Ausschluss, (c) Brennwertkessel, (d) Puffer gebaut. Regeln: [Konzept Simulationsablauf, Abschnitt 15](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PW2 Starrer Wochengang
 
@@ -368,7 +368,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: ja**, Aufwand S (Saat-Schritt wie bei Gebäuden und Kalendervorlagen). Spart dem
   Anwender das Tippen von 168 Werten und macht PW1 sofort nutzbar. Keine Herstellerdaten. Basis
   unberührt (Katalogsätze, keine Zuordnung in Referenzprojekten).
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3a)** — acht Sätze in `Tab_Prozesswaerme_STAMM` und `Tab_Prozesstyp_STAMM` (`ProzesstypSaat`, `ReadOnly = 1`), gesät im Schemaschritt des Temperaturpaars; „Raumlufttechnik Halle“ mit Sommer Mai bis September, „Durchlaufbetrieb“ mit Revisionsmonat August.
 
 ### PW6 Abbruch statt Nullprofil bei fehlendem Typbezug
 
@@ -965,7 +965,7 @@ Umstellen eines Referenzprojekts.
 | Punkt | Empfehlung | Aufwand | Basis betroffen | Entscheidung |
 |---|---|---|---|---|
 | ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | ja | M | ja, 1049 (als Option erst beim Umstellen) | ☐ |
-| PW1 Temperaturniveau je Prozess (Stufe 1) | ja | M | nein (Option) | ☐ |
+| PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | ja | M | nein (Option) | ☐ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
 | KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
@@ -977,7 +977,7 @@ Umstellen eines Referenzprojekts.
 | ST5 Diffus-IAM mit K_dfu | ja | S | ja, 1049 | ☐ |
 | PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
-| PW5 Katalog typischer Betriebsweisen | ja | S | nein | ☐ |
+| PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
 | SP1 Standby des Speichersystems | ja | S–M | nein (Option) | ☐ |
 | EQ1 Erdreichprüfung speichern | ja | S–M | nein | ☐ |
 | ST1 Pumpenstrom Solarkreis | ja | S | nein (Option) | ☐ |

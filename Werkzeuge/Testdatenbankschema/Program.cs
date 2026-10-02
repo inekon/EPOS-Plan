@@ -2409,6 +2409,26 @@ namespace Testdatenbankschema
                                   AlbedoSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+            //      Temperaturpaar je Prozess - Vorlauf und Ruecklauf (REAL, nullbar, 0 bis 250 degC,
+            //      paarweise) an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme. Aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_ProzesswaermeTemperatur bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt ohne Temperaturpaar.
+            string nrProzess = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProzess + " - Temperaturpaar je Prozess: " +
+                              (ProzesswaermeTemperaturSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProzess = new List<string>();
+                angelegt += ProzesswaermeTemperaturSchema.Ausfuehren(berichtProzess);
+                foreach (string zeile in berichtProzess)
+                    Console.WriteLine("Schritt " + nrProzess + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProzess + " - vollstaendig: " +
+                                  ProzesswaermeTemperaturSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -86,6 +86,15 @@ namespace WindowsFormsApplication1
         public double[] Waermebedarf_Prozess_Stunde = new double[8760];
 
         /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (PW1 Stufe 1): höchster geforderter Vorlauf
+        /// und mengengewichteter Rücklauf je Stunde, gebildet in <see cref="Prozesswaerme_berechnen"/>
+        /// aus den Profilen mit Temperaturpaar. <c>null</c>, solange kein Profil des Projekts ein Paar
+        /// trägt — dann rechnet der Lauf Zeichen für Zeichen wie ohne Temperaturniveau. Nur die
+        /// Projektrechnung bildet es; die Vorschau des Dialogs kennt keine Erzeuger.
+        /// </summary>
+        public Prozesstemperatur ProzessTemperatur;
+
+        /// <summary>
         /// HEIZKANAL je Stunde [kWh] (Gebäudewärme samt Heizungs-Lastgängen) vor der
         /// Netzverlustverteilung — die Reihe, deren Monatssummen
         /// <see cref="Waermebedarf_Gebaeude_Monat"/> sind. Nur für die Ganglinie des
@@ -1318,9 +1327,34 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
                 quelle.Jahressummen = jahressummen;
+
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur im Lauf. Jedes
+                // gerechnete Profil mit vollständigem Paar trägt seine Stunden bei; ohne ein
+                // einziges bleibt ProzessTemperatur null und der Lauf rechnet wie zuvor.
+                ProzessTemperatur = null;
+                Prozesstemperatur niveau = modus == ProfilQuellmodus.Projektrechnung ? new Prozesstemperatur() : null;
+                ProfilLaufInfo info = niveau == null ? null : new ProfilLaufInfo
+                {
+                    JeProfil = (kopf, reihe) =>
+                    {
+                        if (Prozesstemperatur.PaarAusZeile(kopf, out double vl, out double rl))
+                            niveau.Aufnehmen(vl, rl, reihe);
+                    }
+                };
+
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
-                                     prozesswerte, Waermebedarf_Prozess_Monat);
+                                     prozesswerte, Waermebedarf_Prozess_Monat, info);
+
+                if (niveau != null && niveau.Profile > 0)
+                {
+                    niveau.Abschliessen();
+                    ProzessTemperatur = niveau;
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_PROZESSWAERME + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_TEMPERATURNIVEAU,
+                        niveau.Profile, niveau.VorlaufMax, niveau.Stunden));
+                }
 
                 // Der reine Profilanteil für die Ganglinie des Ergebnisdialogs: Der
                 // Rechenweg schlägt später den Netzverlust auf prozesswerte, die

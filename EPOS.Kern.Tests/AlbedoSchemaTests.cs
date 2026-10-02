@@ -62,7 +62,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(KesselBereitschaftEinheitSchema.SCHRITT + 1, AlbedoSchema.SCHRITT);
             Assert.Equal(163, AlbedoSchema.SCHRITT);
-            Assert.Equal(AlbedoSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= AlbedoSchema.SCHRITT);
             Assert.Equal("Tab_Energieanlagen", AlbedoSchema.TABELLE);
 
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == AlbedoSchema.SCHRITT);

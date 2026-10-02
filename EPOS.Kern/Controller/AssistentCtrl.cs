@@ -625,6 +625,8 @@ namespace WindowsFormsApplication1
                 item.szProzessname = zeile.szProzessname;
                 item.ID_Prozesswaerme = zeile.ID_Prozesswaerme;
                 item.Summe = zeile.Summe;
+                item.Vorlauf = zeile.Vorlauf;          // PW1 Stufe 1: Anzeige; geschrieben nur nach Änderung
+                item.Ruecklauf = zeile.Ruecklauf;
 
                 Prozess.Add(item);
             }

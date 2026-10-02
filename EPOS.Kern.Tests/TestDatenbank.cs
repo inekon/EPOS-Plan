@@ -847,6 +847,10 @@ namespace EPOS.Kern.Tests
                 // Bodenalbedo an Tab_Energieanlagen, nullbar, leer = 0,2. Aus DERSELBEN Quelle wie
                 // Migration und Werkzeug; wiederholbar, KEIN DML.
                 AlbedoSchema.Ausfuehren(null);
+                // Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+                // Temperaturpaar je Prozess an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme, leer. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                ProzesswaermeTemperaturSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -88,6 +88,8 @@ namespace WindowsFormsApplication1
                 item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
                 item.szProzessname = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
                 item.Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                // PW1 Stufe 1: das Temperaturpaar der Projektkopie (spaltentolerant).
+                (item.Vorlauf, item.Ruecklauf) = ProzesswaermeStammCtrl.ProjektTemperaturpaar(item.ID_Prozesswaerme);
                 liste.Add(item);
             }
             return liste;
