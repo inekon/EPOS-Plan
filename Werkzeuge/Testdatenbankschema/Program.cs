@@ -2282,6 +2282,35 @@ namespace Testdatenbankschema
                                   KesselBrennwertNachzug.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KostenStempelSchema.SCHRITT (Folge von #637): die Aenderungsstempel fuer
+            //      Kosten, Preise und Kostenkatalog - die nullbaren Spalten Tab_Projekt.Kosten_Geaendert
+            //      und Tab_Applikation.Kostenkatalog_Geaendert (TEXT) und ihre Trigger. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KostenStempel bedient
+            //      (KostenStempelSchema). ZULETZT: Kein Schritt davor darf in dieser Datei einen Stempel
+            //      setzen - die Spalten entstehen leer, kein gespeichertes Ergebnis wird veraltet.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Stempel.
+            string nrStempel = KostenStempelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStempel + " - Aenderungsstempel fuer Kosten und Kostenkatalog: " +
+                              (KostenStempelSchema.Vollstaendig()
+                                   ? "steht bereits"
+                                   : "offen (" + KostenStempelSchema.FehlendeTrigger().Count + " von " +
+                                     KostenStempelSchema.Trigger.Count + " Trigger fehlen)") + ".");
+            if (!trocken)
+            {
+                var berichtStempel = new List<string>();
+                int stempel = KostenStempelSchema.Ausfuehren(berichtStempel);
+                foreach (string zeile in berichtStempel)
+                    if (!zeile.StartsWith("Trigger ", StringComparison.Ordinal))
+                    {
+                        Console.WriteLine("Schritt " + nrStempel + " - " + zeile + ".");
+                        if (zeile.EndsWith(" anlegen", StringComparison.Ordinal)) angelegt++;
+                    }
+                Console.WriteLine("Schritt " + nrStempel + " - " + stempel + " Anweisung(en) in diesem Lauf; " +
+                                  "vollstaendig: " + KostenStempelSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
