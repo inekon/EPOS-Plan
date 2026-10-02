@@ -79,6 +79,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
             if (dt == null) return liste;
+            // PW2/BW2: der Betriebskalender je Zuordnungszeile (spaltentolerant).
+            Dictionary<int, int?> kalender = BetriebskalenderCtrl.KalenderDerZuordnungen("Z_Projekt_Brauchwasser", idProjekt);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -88,6 +90,7 @@ namespace WindowsFormsApplication1
                 item.ID_Brauchwasser = Convert.ToInt32(row["ID_Brauchwasser"]);
                 item.szBezeichner = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
                 item.Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                item.ID_Betriebskalender = kalender.TryGetValue(item.ID_Z, out int? k) ? k : null;
                 liste.Add(item);
             }
             return liste;
@@ -116,6 +119,7 @@ namespace WindowsFormsApplication1
                 if (neu == null) return false;
                 if (!string.Equals(alt.szBezeichner ?? "", neu.szBezeichner ?? "", StringComparison.Ordinal)) return false;
                 if (!alt.Summe.Equals(neu.Summe)) return false;
+                if (alt.ID_Betriebskalender != neu.ID_Betriebskalender) return false;
                 int kopie = BrauchwasserStammCtrl.GetProjektIdUeberId(neu.ID_Brauchwasser, neu.szBezeichner, idProjekt);
                 if (kopie <= 0) kopie = BrauchwasserStammCtrl.GetProjektId(neu.szBezeichner, idProjekt);
                 if (alt.ID_Brauchwasser != kopie) return false;

@@ -14,6 +14,12 @@ namespace WindowsFormsApplication1
         public string szBezeichner; 
         public double Summe;
 
+        /// <summary>
+        /// Der Betriebskalender der Zuordnung (<c>ID_Betriebskalender</c>, PW2/BW2); <c>null</c> =
+        /// keiner — das Wochenprofil gilt für alle Wochen.
+        /// </summary>
+        public int? ID_Betriebskalender;
+
         public Z_ProjektBrauchwasserModel()
         {
             items = null;

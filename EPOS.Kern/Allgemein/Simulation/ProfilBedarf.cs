@@ -503,6 +503,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Jahressumme der Zuordnungszeile [MWh]; <c>null</c> = nachschlagen.</summary>
             public double? Summe;
+
+            /// <summary>
+            /// Betriebskalender der Zuordnungszeile (PW2/BW2); 0 = keiner, <c>null</c> = über die ID
+            /// des Kopfsatzes nachschlagen (Vorschau).
+            /// </summary>
+            public int? KalenderId;
         }
 
         /// <summary>
@@ -517,9 +523,13 @@ namespace WindowsFormsApplication1
         {
             var eintraege = new List<Profileintrag>();
 
+            // PW2/BW2: die Kalenderspalte nur, wenn der Schemaschritt gelaufen ist.
+            bool mitKalender = BedarfNetzKalenderSchema.KalenderspaltenVorhanden();
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT " + quelle.ZuordnungIdSpalte + " AS KopfId, " + quelle.ZuordnungSummeSpalte +
-                " AS Summe, Bezeichner FROM " + quelle.ZuordnungTabelle +
+                " AS Summe, Bezeichner" +
+                (mitKalender ? ", " + BedarfNetzKalenderSchema.SPALTE_ID_KALENDER + " AS KalenderId" : "") +
+                " FROM " + quelle.ZuordnungTabelle +
                 " WHERE ID_Projekt=? ORDER BY ID",
                 new DbParam("?", idProjekt));
 
@@ -531,7 +541,8 @@ namespace WindowsFormsApplication1
                     Name = row["Bezeichner"] != DBNull.Value ? row["Bezeichner"].ToString() : "",
                     KopfId = row["KopfId"] != DBNull.Value ? Convert.ToInt32(row["KopfId"]) : 0,
                     // NULL heißt wie im Bestand „keine Summe" (0 skaliert nicht).
-                    Summe = row["Summe"] != DBNull.Value ? Convert.ToDouble(row["Summe"]) : 0.0
+                    Summe = row["Summe"] != DBNull.Value ? Convert.ToDouble(row["Summe"]) : 0.0,
+                    KalenderId = mitKalender && row["KalenderId"] != DBNull.Value ? Convert.ToInt32(row["KalenderId"]) : 0
                 });
             }
             return eintraege;
@@ -604,6 +615,12 @@ namespace WindowsFormsApplication1
             double[] jahreswerte = new double[STUNDEN_JAHR];
 
             bool vollstaendig = true;
+
+            // PW2/BW2: die Betriebskalender dieses Aufrufs - je ID einmal gelesen, ihre Tagesarten
+            // gegen das Referenzjahr des Projekts aufgelöst. Ohne Kalender bleibt beides leer.
+            var kalender = new Dictionary<int, Betriebskalender>();
+            var tagesarten = new Dictionary<int, byte[]>();
+            int referenzjahr = 0;
 
             for (int k = 0; k < liste.Count; k++)
             {
@@ -726,8 +743,29 @@ namespace WindowsFormsApplication1
                 }
 
                 // Jahresverteilung gemäß Wochenprofil - mit dem Wochentag des 1. Januar (F3).
-                WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
-                                                      moAnfang, moEnde, wochentagJan1);
+                // PW2/BW2: Mit Betriebskalender legt die Kalenderschicht Feiertage und Ferien
+                // zwischen Kachelung und Monatsnormierung; ohne ihn rechnet der Weg wie zuvor.
+                Betriebskalender kal = KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                if (kal == null)
+                {
+                    WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
+                                                          moAnfang, moEnde, wochentagJan1);
+                }
+                else
+                {
+                    if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
+                    {
+                        if (referenzjahr == 0) referenzjahr = SolardatenCtrl.Referenzjahr(idProjekt);
+                        arten = kal.Tagesarten(referenzjahr);
+                        tagesarten[kal.ID] = arten;
+                    }
+                    if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,
+                                                             moAnfang, moEnde, wochentagJan1,
+                                                             arten, kal.Ferienfaktor, kal.FerienKuerzen))
+                        SimulationProtokoll.Aktuell.Hinweis(string.Format(
+                            MyResource.Resource.SIMENG_KALENDER_MONAT_OHNE_BETRIEB,
+                            quelle.Praefix, name, kal.Bezeichner));
+                }
                 info?.JeProfil?.Invoke(kopf, jahreswerte);
                 WPPlan.Core.BhkwPlan.VectorenAddieren(jahreswerte, ziel);
                 if (info != null) info.Gerechnet++;
@@ -737,6 +775,42 @@ namespace WindowsFormsApplication1
                 WPPlan.Core.BhkwPlan.MonatsSumme(ziel, monatssummen, moAnfang, moEnde);
 
             return vollstaendig;
+        }
+
+        /// <summary>
+        /// Der Betriebskalender eines Eintrags (PW2/BW2); <c>null</c> = keiner. Eine Zuordnungszeile
+        /// bringt seine ID mit; die Projektvorschau sucht sie wie die Jahressumme über die ID des
+        /// Kopfsatzes. Die Katalogvorschau und ein Katalogsatz (Rückfall) kennen keinen Kalender.
+        /// Ein Kalender, den es nicht mehr gibt, gilt als keiner.
+        /// </summary>
+        private static Betriebskalender KalenderDesEintrags(ProfilQuelle quelle, ProfilQuelle satzquelle, int idProjekt,
+                                                            Profileintrag eintrag, DataRow kopf,
+                                                            Dictionary<int, Betriebskalender> cache)
+        {
+            int id = 0;
+            if (eintrag.KalenderId.HasValue)
+                id = eintrag.KalenderId.Value;
+            else if (idProjekt != 0 && satzquelle.Modus != ProfilQuellmodus.Katalogvorschau &&
+                     BedarfNetzKalenderSchema.KalenderspaltenVorhanden())
+            {
+                int kopfId = KopfId(kopf);
+                if (kopfId > 0)
+                {
+                    object wert = DataRepository.ExecuteScalar(
+                        "SELECT " + BedarfNetzKalenderSchema.SPALTE_ID_KALENDER + " FROM " + quelle.ZuordnungTabelle +
+                        " WHERE ID_Projekt=? AND " + quelle.ZuordnungIdSpalte + "=? ORDER BY ID",
+                        new DbParam("?", idProjekt),
+                        new DbParam("?", kopfId));
+                    if (wert != null && wert != DBNull.Value) id = Convert.ToInt32(wert);
+                }
+            }
+            if (id <= 0) return null;
+            if (!cache.TryGetValue(id, out Betriebskalender kal))
+            {
+                kal = BetriebskalenderCtrl.Lies(id);
+                cache[id] = kal;
+            }
+            return kal;
         }
 
         /// <summary>Eine Namensliste als Einträge ohne Zuordnungsbezug.</summary>

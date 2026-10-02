@@ -98,6 +98,9 @@ namespace WindowsFormsApplication1
             { "ID_Tagesgangsatz", TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM },
             { "ID_Bedarfstag",    TwwSchema.TAB_TWW_BEDARFSTAG_STAMM },
             { "ID_Ausstattung",   TwwSchema.TAB_TWW_DIN4708_WERT_STAMM },
+            // Betriebskalender der Bedarfsprofile (PW2/BW2): projektuebergreifend, im Ziel ueber den
+            // Bezeichner wiedergefunden; fehlt er dort, steht die Zuordnung ohne Kalender.
+            { BedarfNetzKalenderSchema.SPALTE_ID_KALENDER, BedarfNetzKalenderSchema.TAB_KALENDER },
             // TODO: bei Bedarf ID_Stamm / StammID / KategorieID ergänzen.
         };
 
@@ -113,6 +116,7 @@ namespace WindowsFormsApplication1
             { TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, new[] { "Bezeichner", "Katalogversion" } },
             { TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,    new[] { "Bezeichner", "Katalogversion" } },
             { TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,  new[] { "Art", "Schluessel", "Katalogversion" } },
+            { BedarfNetzKalenderSchema.TAB_KALENDER, new[] { BedarfNetzKalenderSchema.SPALTE_BEZEICHNER } },
         };
         // -----------------------------------------------------------------------------------
 
