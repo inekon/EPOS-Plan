@@ -394,6 +394,8 @@ namespace EPOS.Kern.Tests
             WirtZeile z = WirtschaftlichkeitZeilen.Kennzahlen(menge, null).Single(x => x.Schluessel == "GESTEHUNGSKOSTEN");
             Assert.Equal(R.WIRT_GESTEHUNG_KURZTEXT, z.Kurztext);
             Assert.Contains("Haushaltsstrom, PV und Stromspeicher zählen nicht", z.Kurztext);
+            Assert.Contains("Stromgutschrift für BHKW-Eigenstrom zum Arbeitspreis", z.Kurztext);
+            Assert.Contains("entgangene Entlastung nach § 9b StromStG", z.Kurztext);
         }
 
         // ------------------------------------------------------------ Nachweisumschlag

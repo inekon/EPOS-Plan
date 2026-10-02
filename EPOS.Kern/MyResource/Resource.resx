@@ -6766,7 +6766,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wärmegestehungskosten [€/kWh]</value>
   </data>
   <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
-    <value>Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht</value>
+    <value>Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse und der Stromgutschrift für BHKW-Eigenstrom zum Arbeitspreis, bei produzierendem Gewerbe gemindert um die entgangene Entlastung nach § 9b StromStG), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht</value>
   </data>
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt.</value>
