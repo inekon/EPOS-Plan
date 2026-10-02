@@ -10,7 +10,9 @@ Teilkonzepts Konditionierungsprofile entschieden (Kapitel 10), P3 abweichend von
 K11 (Vermerk dort); Rev. 2 des Teilkonzepts (26.09.2026) brachte die fünf Punkte P9 bis P13, die E53 (26.09.2026,
 Konzept N1.60) am selben Tag entschieden hat — P11 abweichend von der Empfehlung — samt der Heizperiode (Kapitel 10).
 E54 (27.09.2026, Konzept N1.62) entscheidet zwei Fragen aus dem Entwurf der zweiten Hälfte von KP1, die nicht im
-Register standen, und berührt keinen offenen Punkt.**
+Register standen, und berührt keinen offenen Punkt. E58 (02.10.2026, Konzept N1.67) entscheidet die acht Fragen des
+Entwurfs KP3; F7 (Aufheizreserve ρ) ist ein Entscheid nach der Messung in RP1 und steht als offener Punkt P14 in
+Kapitel 10.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -50,16 +52,20 @@ Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.
 - **Kapitel 10** führt die mit **E52** (26.09.2026) entschiedenen Punkte P1 bis P8 des Teilkonzepts
   Konditionierungsprofile im selben Aufbau, mit dem Vermerk „**Entschieden: E52 (26.09.2026, Konzept N1.59)**", die
   mit **E53** entschiedenen Punkte P9 bis P13 der Rev. 2 mit dem Vermerk „**Entschieden: E53 (26.09.2026, Konzept
-  N1.60)**" und die Festlegungen F1 bis F22 als Vermerk, F20 mit der Heizperiode.
+  N1.60)**", die Festlegungen F1 bis F22 als Vermerk, F20 mit der Heizperiode, und den offenen Punkt **P14**
+  (Aufheizreserve ρ nach der Messung in RP1, aus E58).
 - Zahlen und Empfehlungen stehen im Wortlaut der Papiere. Wo zwei Papiere zu derselben Frage
   Verschiedenes sagen, sind **beide** genannt.
 - Die Nummern sind die der Papiere und werden nicht umnummeriert: **Q** Konzept, **U**
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung, **P** Konditionierungsprofile.
 
-**Umfang in Zahlen.** **1 offener Punkt** (Stand E53, 26.09.2026), im Mehrzonenkonzept (M11, fällig
-vor G6d); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur, Kühlkonzept und das Teilkonzept
-Konditionierungsprofile haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **2 offene Punkte** (Stand E58, 02.10.2026): im Mehrzonenkonzept M11 (fällig vor G6d), im
+Teilkonzept Konditionierungsprofile P14 (Aufheizreserve ρ nach der Messung in RP1, fällig vor dem Einfrieren von KP3);
+Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
+**E58** (02.10.2026, Konzept N1.67) hat die acht Fragen des Entwurfs KP3 entschieden — F1, F2, F5, F6 und F8 nach
+Empfehlung, F3 und F4 abweichend — und F7 abweichend als Entscheid nach der Messung gefasst: RP1 misst ρ_min aller 17
+VDI-Gebäude, danach entscheidet der Anwender; die Zählung steigt damit auf 2.
 **E53** (26.09.2026, Konzept N1.60) hat die fünf Punkte **P9 bis P13** der Rev. 2 entschieden — P9, P10, P12 und P13
 nach Empfehlung, **P11 abweichend** (Vorlagen je Größe: je Größe eine Liste vorbefüllter Kalender) — und die
 Heizperiode festgelegt (Start und Ende als Datum, außerhalb Raumheizung „aus"); die Zählung ist wieder bei 1.
@@ -161,7 +167,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 1 Punkt, er erfüllt das Kriterium dieser Liste nicht.** U9 (GB) und U4
+**Was noch offen ist — 2 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
 (23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
@@ -171,7 +177,9 @@ abweichend davon; vor KU2 ist keiner mehr offen. U13, U14 und U15 (G4) sind mit 
 M6 (G6b) sind mit **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschieden, M7, M8, M12 und
 M13 (G6c) mit **E50** (26.09.2026, Konzept N1.57); vor G6b und G6c ist keiner mehr offen. P1 bis P8 (KP1) sind
 mit **E52** (26.09.2026, Konzept N1.59) entschieden, P3 abweichend von der Empfehlung, P9 bis P13 (Rev. 2) mit **E53**
-(26.09.2026, Konzept N1.60), P11 abweichend; vor KP1 ist keiner mehr offen. Nach Fälligkeit: **G6d** M11.
+(26.09.2026, Konzept N1.60), P11 abweichend; vor KP1 ist keiner mehr offen. Die acht Fragen des Entwurfs KP3 sind mit **E58** (02.10.2026, Konzept
+N1.67) entschieden, F7 als Entscheid nach der Messung in RP1 (P14). Nach Fälligkeit: **RP2 (Einfrieren von KP3)** P14,
+**G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -2110,7 +2118,7 @@ Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine 
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
 
-## 10. Konditionierungsprofile — P1 bis P13 (entschieden)
+## 10. Konditionierungsprofile — P1 bis P13 (entschieden), P14 (offen)
 
 Quelle: [`Konzept_Konditionierungsprofile_EPOS-Plan.md`](Konzept_Konditionierungsprofile_EPOS-Plan.md), Kapitel 9
 (Rev. 3, 26.09.2026). Die Stufen sind KP0 (Konzept, Entscheid, Probe der Aufheizreserve, Glossar, Nachzug der
@@ -2122,7 +2130,9 @@ vom selben Tag (Vorgabe-Matrix, Vorlagen, Nachtauskühlung) — und sind mit **E
 entschieden, Wortlaut „P9: (b) / P10: (b) / P11: Eine Vorlage mit vorbefülltem Kalender zur Auswahl aus mehreren
 Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben mit Datum Start und Datum Ende. In
 dieser Zeit ist der Heizwärmeerzeuger aus." — P11 **abweichend von der Empfehlung**; P11, P12 und die Heizperiode sind
-per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20).
+per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20). **P14** kommt aus dem Entscheid **E58**
+(02.10.2026, Konzept N1.67) zu Frage F7 des [Entwurfs KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md): ein
+Entscheid nach einer Messung, offen bis zur Welle RP1.
 
 ### P1 — was `Interne_Waermegewinne` unter Kalendern bedeutet
 
@@ -2357,6 +2367,29 @@ per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20).
 - **Folge bei Nichtentscheid:** Die Kühlspalte der Matrix hätte keinen festen Ort für den Nachtwert.
 - **Fällig vor:** **KP1**.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.3 und 9.3 (P13).
+
+### P14 — Aufheizreserve ρ nach der Messung in RP1
+
+**Offen — Entscheid nach der Messung** (E58 zu F7, 02.10.2026, Konzept N1.67). Bis dahin gilt ρ = 20 %.
+
+- **Frage:** Bleibt der Startwert der Aufheizreserve ρ bei 20 %, wenn die Messung mit dem echten Kern vorliegt?
+- **Hintergrund:** Die Probe KP0 rechnete konvektiv und fand an keinem Bestandsbau eine Rampe in Bemessung (a). Der
+  Kern rechnet jede Gebäudezeile ohne Angabe mit dem Strahlungsanteil 0,3; damit liegt die Überhöhung der Sprungspitze
+  um 20–31 % höher, und hochgerechnet lägen 1008 (Gebäude 1), 1018 und 1049 mit rund 22–25 % über 20 % (Entwurf KP3,
+  B26). Die Welle RP1 misst ρ_min aller 17 VDI-Gebäude der Referenzprojekte mit dem echten Kern und legt sie dem
+  A/B-Protokoll bei.
+- **Optionen** (wie im Entwurf KP3, F7):
+  - **(a) 20 % bleibt** — mit Schalter an rampen die Bauten über 20 % an ihren kältesten Stunden 1–3 h, die gewollte
+    Funktion; die Basis der Bestandsprojekte berührt das nicht (Schalter aus).
+  - **(b) 25 %** — „kein Bestandsbau rampt in (a)" gilt auch mit 0,3, Rampen werden seltener, das Referenzprojekt
+    braucht einen schärferen Bau.
+- **Empfehlung des Papiers:** (a), mit der Messung im A/B-Protokoll; der Anwender hat mit E58 den Entscheid auf die
+  Messung gelegt.
+- **Folge bei Nichtentscheid:** Es bleibt bei 20 %; das Referenzprojekt 1051 rechnet mit leerer Reserve den Startwert
+  und friert ihn in die neue Basis ein.
+- **Fällig vor:** **RP2** (Einfrieren der Basis R31), nach der Messung in RP1.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.4 und 9.8;
+  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) B26, F7 und Abschnitt 7.
 
 ### Festlegungen F1 bis F22 — Vermerk
 
