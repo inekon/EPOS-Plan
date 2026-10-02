@@ -31,11 +31,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Theory]
-        [InlineData(1017, 5.31)]
+        [InlineData(1017, 55.15)]
         [InlineData(1018, 0.0)]
         [InlineData(1024, 20.94)]
         [InlineData(1030, 9.02)]
-        [InlineData(1047, 5.30)]
+        [InlineData(1047, 56.20)]
         public void Die_Stromdeckung_ist_der_Eigenverbrauch_am_Gesamtbedarf(int projekt, double gerundet)
         {
             if (!_db.Vorhanden) return;

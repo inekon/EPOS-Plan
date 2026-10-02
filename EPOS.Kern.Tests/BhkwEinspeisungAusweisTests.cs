@@ -107,15 +107,15 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Reiterzeile = Diagnosereihe = KWK-Split des Laufs: 1018 speist die ganze Erzeugung
-        /// ein (kein Strombedarf), 1030 zwölf Stunden, 1017/1024/1047 nichts — dort fehlt die
-        /// Reihe (Schwelle 0,5 kWh).
+        /// ein (kein Strombedarf), 1030 zwölf Stunden, 1017 und 1047 mit der gepflegten Jahressumme
+        /// 15 MWh/a (SV1, R30) 17,1 bzw. 24,6 MWh, 1024 nichts — dort fehlt die Reihe (Schwelle 0,5 kWh).
         /// </summary>
         [Theory]
         [InlineData(1018, 27.4575)]
         [InlineData(1030, 0.392)]
-        [InlineData(1017, 0.0)]
+        [InlineData(1017, 17.1199)]
         [InlineData(1024, 0.0)]
-        [InlineData(1047, 0.0)]
+        [InlineData(1047, 24.5972)]
         public void Reiter_Reihe_und_KWK_Split_fuehren_dieselbe_Einspeisung(int idProjekt, double erwartetMwh)
         {
             if (!_db.Vorhanden) return;
@@ -279,11 +279,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Stromgang (Bild, Summenlinie, CSV) stapelt als „Heizkessel" den Stromverbrauch
-        /// des Kessels — 1017: 20,12 MWh, nicht den Strom-Stufeneingang 635,2 MWh; 1030: 0 statt
+        /// des Kessels — 1017: 20,12 MWh, nicht den Strom-Stufeneingang 7,35 MWh; 1030: 0 statt
         /// 4.790,09 MWh.
         /// </summary>
         [Theory]
-        [InlineData(1017, 20.12, 635.2)]
+        [InlineData(1017, 20.12, 7.35)]
         [InlineData(1030, 0.0, 4790.09)]
         public void Der_Stromgang_fuehrt_den_Stromverbrauch_des_Kessels(int idProjekt, double verbrauchMwh,
                                                                        double stufeneingangMwh)

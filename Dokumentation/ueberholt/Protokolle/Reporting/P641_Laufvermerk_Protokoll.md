@@ -1,6 +1,6 @@
 # P641 — Laufvermerk je Ergebnis, Bezugsrolle bestätigt, Kohärenz am Rückfallträger als benannte Grenze (Protokoll, 02.10.2026)
 
-Statuszeile folgt (#641 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile folgt (#642 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P641_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P641_Auftrag_2026-10-02.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md`](P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md)
 (#633). Zweig `p641` ab `d14b5bbf3` (Auftrag auf `4cfbf0171`, origin/ios_migration_september mit #640).
@@ -11,7 +11,7 @@ Offen waren die drei Punkte aus Nach #633: (a) die Bezugsrolle ohne Leistungspre
 Bestätigung, (b) der Lauf gespeicherter Ergebnisse, den die Seite nur kannte, solange sie ihn selbst gerechnet hatte,
 (c) die Kohärenz am Rückfallträger, die nie „stimmig" wird. Anwenderentscheid 02.10.2026 (**EZ‑19**, Wortlaut im
 Register): „Nach #633 (a): Empfehlung, (b): Empfehlung, (c): Empfehlung". Kein nummerierter Schemaschritt (Zielversion
-158), kein Rechenweg der Simulation, keine neue Basis (R29).
+158), kein Rechenweg der Simulation, keine neue Basis (R30).
 
 ## Analyse — was war, was sich ändert
 
@@ -49,7 +49,7 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
   `c1a153dc227c6f7b91a71657eb9705ba7056116551f900259fad5d3cfc543eed` (vorher `5d59041f…`), als LFS-Zeiger committet.
 - Kein neuer Ressourcenschlüssel (das Band nutzt `WIRT_BAND_GRUPPENREGEL_VERALTET`), Designer unverändert. Der
   Referenzlauf liest `Tab_ErgebnisWirtschaftlichkeit` nicht (geprüft: keine Fundstelle in `EPOS.Referenzlauf` und im
-  Simulationsweg), die Basis R29 bleibt.
+  Simulationsweg), die Basis R30 bleibt.
 
 ## Tests
 
@@ -83,11 +83,11 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 ## Papiere
 
 - Konzept: Kopf (Stand 02.10.2026, Codestand `9b022053c`, Zielversion 158, P641 ohne Schritt, Spalte `Lauf_Staende`
-  nachgezogen, Basis R29), § 2.15 (Laufvermerk, Altbestand ohne Vermerk), § 3.5 (Bezugsrolle bestätigt), § 3.9
+  nachgezogen, Basis R30), § 2.15 (Laufvermerk, Altbestand ohne Vermerk), § 3.5 (Bezugsrolle bestätigt), § 3.9
   (Grenze am Rückfallträger), § 6.1 (Zeile P641; P630 auf #633), § 6.2 (Wachen), § 6.5 (vier Ergebnisspalten).
 - Register: EZ‑19 mit Wortlaut und den drei Punkten, Vermerk „bestätigt 02.10.2026" an EZ‑18 (dort #633 statt
   vorläufig), Quellenabsatz, Familientafel (R‑EZ 19), Kopf.
-- Statusdatei: Nach #633 (a), (b), (c) als erledigt mit #641; keine Statuszeile.
+- Statusdatei: Nach #633 (a), (b), (c) als erledigt mit #642; keine Statuszeile.
 - `Referenzlaeufe/LIESMICH.md`: nachgezogene Spalte, neue LFS-SHA und Bytezahl, Basis unverändert.
 - Wiki-Quelle `Programm Dokumentation - Wirtschaftlichkeit.wiki`, Anker `hinweisband`: das Band erscheint auch nach
   einem Wechsel der Seite und für eine Version aus einem älteren Lauf; Gegenlese mit dem Muster aus `CLAUDE.md` ohne

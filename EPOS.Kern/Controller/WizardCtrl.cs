@@ -3277,7 +3277,14 @@ namespace WindowsFormsApplication1
                 // Tab_Stromverbraucher (die PROJEKTtabelle) zeigt - "SQLite Error 19:
                 // FOREIGN KEY constraint failed", weit weg von der Ursache. Eine
                 // Katalog-Id gehoert nie in eine Projektzuordnung.
-                int projSvId = StromverbraucherStammCtrl.CopyFromStamm(item.m_szVerbraucher, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV1 vom 30.09.2026): Zeigt die Zeile schon
+                // auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei genau dieser
+                // Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem Katalog kopiert.
+                int projSvId = StromverbraucherStammCtrl.GetProjektIdUeberId(
+                    item.m_ID_Stromverbraucher, item.m_szVerbraucher, projektID);
+                if (projSvId <= 0)
+                    projSvId = StromverbraucherStammCtrl.CopyFromStamm(item.m_szVerbraucher, projektID);
                 if (projSvId <= 0)
                 {
                     DataRepository.FehlerMelden(

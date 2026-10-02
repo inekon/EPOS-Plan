@@ -124,15 +124,15 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// 1017 und 1047 haben den Kessel hinter dem BHKW (1047 über den N3-Nachzug hinter der
-        /// Wärmepumpe), aber keine Überschussstunde. 1018 und 1030 haben Überschussstunden; ihr
-        /// Kessel rechnet in derselben Speicherstufe wie das BHKW und sieht den Eingang vor dem
-        /// BHKW. Alle vier bleiben, was R20 führt.
+        /// Wärmepumpe); mit der gepflegten Jahressumme 15 MWh/a (SV1, R30) speist auch ihr BHKW
+        /// ein. 1018 und 1030 haben Überschussstunden; ihr Kessel rechnet in derselben Speicherstufe
+        /// wie das BHKW und sieht den Eingang vor dem BHKW. Alle vier bleiben, was R30 führt.
         /// </summary>
         [Theory]
-        [InlineData(1017, 635.2)]
+        [InlineData(1017, 7.35)]
         [InlineData(1018, 0.0)]
         [InlineData(1030, 4790.09)]
-        [InlineData(1047, 640.19)]
+        [InlineData(1047, 8.25)]
         public void Die_Kesselzeile_der_BHKW_Projekte_bleibt_bitgleich(int idProjekt, double strombedarfMwh)
         {
             if (!_db.Vorhanden) return;
