@@ -164,6 +164,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(Anlagenart.Heizkessel, "Ptherm")]
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
+        [InlineData(Anlagenart.Heizkessel, "Bereitschaft_Einheit")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
         [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
         [InlineData(Anlagenart.Heizkessel, "Brennwert")]
@@ -430,6 +431,8 @@ namespace EPOS.Kern.Tests
                                    "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
                                    "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
+                                   // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+                                   "Bereitschaft_Einheit",
                                    // Konzept Kesselkennlinie 3.4: die Gruppe „Kennlinie" des Editors
                                    // (HeizkesselAdminHuelle.Schreiben, AnzeigefelderSchreiben).
                                    "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert", "Mindestleistung",

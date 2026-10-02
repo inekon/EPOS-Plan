@@ -1107,7 +1107,7 @@ namespace EPOS.Kern.Tests
         /// Inhaltsvergleich gaebe.
         /// </summary>
         [Theory]
-        [InlineData("HEIZKESSEL", 15)]   // Kesselkennlinie E1: Brennwert, eta30, Mindestleistung
+        [InlineData("HEIZKESSEL", 16)]   // Kesselkennlinie E1: Brennwert, eta30, Mindestleistung; Bereitschaft_Einheit (02.10.2026)
         [InlineData("PUFFERSPEICHER", 4)]
         [InlineData("SOLARKOLLEKTOREN", 9)]
         [InlineData("WP", 10)]

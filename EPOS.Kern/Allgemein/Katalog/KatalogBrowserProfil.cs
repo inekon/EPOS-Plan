@@ -320,6 +320,13 @@ namespace WindowsFormsApplication1
         public const string FeldWirkungsgradGas = "WIRKUNGSGRAD_GAS";
         public const string FeldWirkungsgradOel = "WIRKUNGSGRAD_OEL";
         public const string FeldBBVerlust = "BBVERLUST";
+
+        /// <summary>
+        /// Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026): „kW" oder „%"
+        /// der Nennleistung, sprachneutral und deshalb als Textfeld bedient wie
+        /// <see cref="FeldWartungEinheit"/>.
+        /// </summary>
+        public const string FeldBBEinheit = "BBVERLUST_EINHEIT";
         public const string FeldRaumbedarf = "RAUMBEDARF";
         public const string FeldWartungskosten = "WARTUNGSKOSTEN";
         public const string FeldWartungEinheit = "WARTUNG_EINHEIT";
@@ -440,8 +447,14 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWirkungsgradOel, t("HZKK_LBL_WG_OEL"), "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "kW",
+                            // Der Bereitschaftsverlust in kW ODER % der Nennleistung (Anwender-
+                            // entscheid 02.10.2026): Die Einheit steht im Feld darunter, wie bei
+                            // den Wartungskosten - eine feste Einheit hier wäre bei % falsch.
+                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldBBEinheit,    t("HZKK_LBL_BB_EINHEIT"), "",
+                                                  BrowserFeldArt.Text, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_BB_EINHEIT")),
 
                             // Die Kennlinie (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Leer
                             // heisst hier NICHT 0, sondern „Vorgabe" (Entscheid F1) - der Vermerk
