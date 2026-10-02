@@ -103,13 +103,16 @@ namespace WindowsFormsApplication1
         private string _abdeckungSchluessel;
 
         /// <summary>
-        /// Anwenderentscheid 30.09.2026 (Register EZ‑18): die Stände des Laufs, dem die gezeigten
-        /// Ergebnisse gehören — gesetzt von <see cref="Berechnen"/> mit den Ständen, die er
-        /// gerechnet hat, und vorher einmal beim ersten <see cref="Laden"/> mit den Ständen des
-        /// Laufs, wie ihn die Wahl dann bildet (die gespeicherten Ergebnisse tragen ihren Lauf
-        /// nicht). Weder ein Haken noch eine Referenzwahl noch ein erneutes Laden setzt ihn;
-        /// gegen ihn prüft <see cref="Ansicht"/>, ob die Wahl die Gruppenregel geändert hat.
-        /// <c>null</c> = noch nicht geladen.
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18), seit EZ‑19 der Lauf für Ergebnisse
+        /// OHNE Laufvermerk: Jedes gespeicherte Ergebnis trägt die Stände seines Laufs selbst
+        /// (<see cref="WirtschaftlichkeitErgebnis.LaufStaende"/>), und gegen diese Läufe prüft
+        /// <see cref="Ansicht"/>, ob die Wahl die Gruppenregel geändert hat
+        /// (<see cref="Laufvermerk.GruppenregelVeraltet"/>) — auch nach einem Seitenwechsel und
+        /// für einen neu angehakten Stand aus einem älteren Lauf. Nur eine Zeile aus dem
+        /// Altbestand ohne Vermerk zählt zu diesem Lauf: gesetzt von <see cref="Berechnen"/> mit
+        /// den Ständen, die er gerechnet hat, und vorher einmal beim ersten <see cref="Laden"/>
+        /// mit den Ständen des Laufs, wie ihn die Wahl dann bildet. Weder ein Haken noch eine
+        /// Referenzwahl noch ein erneutes Laden setzt ihn. <c>null</c> = noch nicht geladen.
         /// </summary>
         private List<int> _ergebnisLauf;
 
@@ -358,8 +361,9 @@ namespace WindowsFormsApplication1
             _referenzzeile = stand.Referenzzeile ?? "";
             _referenzWirksam = wahl.IdReferenz;
 
-            // EZ‑18: Beim ersten Laden gehören die gespeicherten Ergebnisse zum Lauf der Wahl;
-            // danach setzt ihn allein „Berechnen" neu.
+            // EZ‑18/EZ‑19: Den Lauf gespeicherter Ergebnisse nennt ihr Laufvermerk; nur für eine
+            // Zeile ohne Vermerk (Altbestand) gilt beim ersten Laden der Lauf der Wahl, danach
+            // setzt ihn allein „Berechnen" neu.
             if (_ergebnisLauf == null) _ergebnisLauf = Laufstaende().Select(s => s.Key).ToList();
 
             var szenarien = new List<ValueTuple<int, string>>();
@@ -663,21 +667,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Anwenderentscheid 30.09.2026 (Register EZ‑18): Ändert die Wahl — ein Haken, die
-        /// Referenz — die Stände mit Stromverwendung gegenüber dem Lauf der gezeigten Ergebnisse
-        /// (<see cref="_ergebnisLauf"/>), gilt eine andere Gruppenregel; die gespeicherten
-        /// Ergebnisse bleiben bis zum nächsten „Berechnen" stehen und sind veraltet. Die Regel
-        /// steht im Kern (<see cref="WirtschaftlichkeitCtrl.StromGruppenregelGeaendert"/>). Ohne
-        /// gespeicherte Ergebnisse gibt es nichts, was veralten könnte; ein Lesefehler kostet die
-        /// Fahne, nie die Ansicht.
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18) und 02.10.2026 (EZ‑19): Ändert die Wahl —
+        /// ein Haken, die Referenz — die Stände mit Stromverwendung gegenüber dem Lauf, aus dem die
+        /// Ergebnisse der gewählten Stände stammen (ihr Laufvermerk, ohne Vermerk
+        /// <see cref="_ergebnisLauf"/>; tragen sie verschiedene Vermerke, jeder dieser Läufe), gilt
+        /// eine andere Gruppenregel; die gespeicherten Ergebnisse bleiben bis zum nächsten
+        /// „Berechnen" stehen und sind veraltet. Die Regel steht im Kern
+        /// (<see cref="Laufvermerk.GruppenregelVeraltet"/>, darin
+        /// <see cref="WirtschaftlichkeitCtrl.StromGruppenregelGeaendert"/>). Ohne gespeicherte
+        /// Ergebnisse gibt es nichts, was veralten könnte; ein Lesefehler kostet die Fahne, nie
+        /// die Ansicht.
         /// </summary>
         private bool GruppenregelVeraltet()
         {
             if (_ergebnisLauf == null || _ergebnisse.Count == 0) return false;
             try
             {
-                return WirtschaftlichkeitCtrl.StromGruppenregelGeaendert(
-                    _ergebnisLauf, Laufstaende().Select(s => s.Key));
+                return Laufvermerk.GruppenregelVeraltet(
+                    _ergebnisse, Laufstaende().Select(s => s.Key), _ergebnisLauf);
             }
             catch { return false; }
         }
@@ -1681,7 +1688,8 @@ namespace WindowsFormsApplication1
 
                 _tarifCache = null;
                 // EZ‑18: Die gezeigten Ergebnisse gehören jetzt zu diesem Lauf — seine Stände sind
-                // die, gegen die ein Haken die Gruppenregel prüft.
+                // die, gegen die ein Haken die Gruppenregel prüft (EZ‑19: jedes Ergebnis trägt sie
+                // ohnehin als Laufvermerk; dieser Lauf gilt für Zeilen ohne Vermerk).
                 if (_letzteDaten != null)
                     _ergebnisLauf = _letzteDaten.Varianten.Where(v => v != null).Select(v => v.IdProjekt).ToList();
                 BilanzenAuffrischen();

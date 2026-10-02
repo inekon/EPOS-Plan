@@ -1609,6 +1609,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool OhneNachweis;
 
+        /// <summary>
+        /// Anwenderentscheid 02.10.2026 (Register EZ‑19) — der <b>Laufvermerk</b>: die Stände
+        /// des Laufs, aus dem dieses Ergebnis stammt, aufsteigend mit Komma (<c>1030,1031,1033</c>;
+        /// <see cref="Laufvermerk.Schreiben"/>). <c>Berechne</c> setzt ihn für jeden Lauf,
+        /// <c>Persistiere</c> schreibt ihn in <c>Lauf_Staende</c>, <c>LadeErgebnisse</c> liest ihn
+        /// zurück. Leer = Altbestand ohne Vermerk (Spalte NULL).
+        /// </summary>
+        public string LaufStaende = "";
+
         // Stufe W3 (Phase 8)
         public double? StromkostenTarif;       // Reststromkosten nach Rollentarif [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)

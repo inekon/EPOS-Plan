@@ -348,6 +348,19 @@ namespace Testdatenbankschema
                                             WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON,
                                             "TEXT", 89, trocken);
 
+            // ---- Register EZ-19 (Anwenderentscheid 02.10.2026): der LAUFVERMERK der
+            //      Ergebniszeile (Lauf_Staende, die Staende des Laufs mit Komma). KEIN eigener
+            //      Schritt - wie Nachweis_Json eine Ergebnisspalte, die allein
+            //      WirtschaftlichkeitCtrl.SpalteSicher nachzieht; die Zielversion bleibt 158,
+            //      die Nummer im Bericht nennt sie nur. Wortgleiche Begruendung wie oben: Der
+            //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei auf.
+            //      Bestandszeilen bleiben NULL (Altbestand ohne Vermerk); die Basis fuehrt
+            //      keinen Wert dieser Tabelle. Die Quelle ist dieselbe Konstante, die auch der
+            //      Ctrl nimmt.
+            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
+                                            WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE,
+                                            "TEXT", 158, trocken);
+
             // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
             //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
             //      Datenanweisungen. Beide Quellen sind dieselben, aus denen sich

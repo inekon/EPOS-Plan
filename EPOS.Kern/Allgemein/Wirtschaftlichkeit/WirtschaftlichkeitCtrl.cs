@@ -260,6 +260,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_NACHWEIS_JSON = "Nachweis_Json";
 
+        /// <summary>
+        /// Anwenderentscheid 02.10.2026 (Register EZ‑19) — der <b>Laufvermerk</b> einer Zeile in
+        /// <see cref="TAB_ERGEBNIS"/>: die Stände des Laufs, aus dem sie stammt (Stamm, angehakte
+        /// Varianten, Referenz), aufsteigend mit Komma (<see cref="Laufvermerk.Schreiben"/>).
+        /// Über <c>SpalteSicher</c> — dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// NULL heißt „Altbestand ohne Vermerk": Die Seite nimmt dann wie zuvor die Wahl beim
+        /// ersten Laden als Lauf der gespeicherten Ergebnisse.
+        /// </summary>
+        public const string SPALTE_LAUF_STAENDE = "Lauf_Staende";
+
         public const string SPALTE_PV_FORM = "PvVerguetungsform";
         /// <inheritdoc cref="SPALTE_PV_FORM"/>
         public const string SPALTE_PV_AW = "PvAnzulegenderWert";
@@ -354,10 +364,11 @@ namespace WindowsFormsApplication1
         /// dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
         /// <c>WirtschaftlichkeitCtrlTabellenTests</c>).</para>
         ///
-        /// <para><b>Was bleibt, und warum.</b> Drei Ergebnisspalten führt weder das Grundschema
+        /// <para><b>Was bleibt, und warum.</b> Vier Ergebnisspalten führt weder das Grundschema
         /// noch ein Schemaschritt: <see cref="SPALTE_STROMST_MODUS"/> (Etappe B6),
-        /// <see cref="SPALTE_ERSATZ_BARWERT"/> (W5-B-10) und <see cref="SPALTE_NACHWEIS_JSON"/>
-        /// (B7P). Die Testdatenbank bekommt sie einzeln über <c>Werkzeuge/Testdatenbankschema</c>,
+        /// <see cref="SPALTE_ERSATZ_BARWERT"/> (W5-B-10), <see cref="SPALTE_NACHWEIS_JSON"/>
+        /// (B7P) und <see cref="SPALTE_LAUF_STAENDE"/> (Register EZ‑19). Die Testdatenbank bekommt
+        /// sie einzeln über <c>Werkzeuge/Testdatenbankschema</c>,
         /// eine Anwenderdatenbank aus einer älteren Auslieferungsvorlage nur hier. Bis ein
         /// Schemaschritt sie führt, bleibt dieser additive Nachzug (<see cref="SpalteSicher"/>:
         /// <c>ALTER TABLE … ADD COLUMN</c> nur bei nachweislichem Fehlen, kein DML); ein
@@ -372,6 +383,7 @@ namespace WindowsFormsApplication1
             SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
             SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");    // W5-B-10
             SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");   // B7P
+            SpalteSicher(TAB_ERGEBNIS, SPALTE_LAUF_STAENDE, "TEXT");        // EZ‑19
 
             // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
             // Verbindung, eigener Fang: Ein Fehlschlag darf die Spalten oben nicht
@@ -1651,6 +1663,15 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
+
+            // Anwenderentscheid 02.10.2026 (Register EZ‑19): der LAUFVERMERK — jedes Ergebnis
+            // trägt die Stände des Laufs, aus dem es stammt (Stamm, angehakte Varianten,
+            // Referenz: daten.Varianten). Persistiere schreibt ihn mit; so kennt die Seite den
+            // Lauf gespeicherter Ergebnisse auch nach einem Seitenwechsel.
+            var laufIds = new List<int>();
+            foreach (VariantenDaten v in daten.Varianten) if (v != null) laufIds.Add(v.IdProjekt);
+            string laufvermerk = Laufvermerk.Schreiben(laufIds);
+            foreach (WirtschaftlichkeitErgebnis e in alle) e.LaufStaende = laufvermerk;
 
             if (persistieren) Persistiere(alle, sens, matrizen, p);
             return alle;
@@ -8991,6 +9012,8 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@fg", (object)e.Fehlgrund ?? DBNull.Value));
                                 pl.Add(new DbParam("@erb", R(e.ErsatzBarwert)));   // W5-B-10
                                 pl.Add(new DbParam("@nw", (object)nwJson ?? DBNull.Value));   // B7P
+                                pl.Add(new DbParam("@lauf", string.IsNullOrEmpty(e.LaufStaende)   // EZ‑19
+                                    ? (object)DBNull.Value : e.LaufStaende));
                                 v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
                                 "IstStamm, Anzeige, Zeitstempel, " +
                                 "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
@@ -9010,8 +9033,9 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                 "StromkostenTarif, HinweisText, Fehlgrund, " +
-                                SPALTE_ERSATZ_BARWERT + ", " + SPALTE_NACHWEIS_JSON + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                SPALTE_ERSATZ_BARWERT + ", " + SPALTE_NACHWEIS_JSON + ", " +
+                                SPALTE_LAUF_STAENDE + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -9176,7 +9200,9 @@ namespace WindowsFormsApplication1
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,
-                            Fehlgrund = r["Fehlgrund"] != DBNull.Value ? r["Fehlgrund"].ToString() : null
+                            Fehlgrund = r["Fehlgrund"] != DBNull.Value ? r["Fehlgrund"].ToString() : null,
+                            // EZ‑19: der Laufvermerk; leer bei NULL (Altbestand) und ohne Spalte.
+                            LaufStaende = Text(r, SPALTE_LAUF_STAENDE)
                         };
                         if (r["Zeitstempel"] != DBNull.Value) e.Zeitstempel = Convert.ToDateTime(r["Zeitstempel"]);
 
