@@ -13777,6 +13777,27 @@ td.epos-vorlage-katalogbeschreibung {
     min-width: 0;
 }
 
+/* DIE ABKUERZUNG "ALLE GROESSEN" (Stufe KP2, Welle U5; E57): die Liste in
+   der Kopfzelle der Zeile "Vorlage", unter ihrer Beschriftung - der
+   Flexkasten steht IN der Zelle (Hausregel: kein display:flex auf th), in
+   beiden Anordnungen. Die Liste haelt ihren laengsten Namen nicht als
+   Mindestmass: Sie nimmt die Breite der Kopfspalte (8,5em), statt die
+   Tabelle quer zu schieben; das Schloss bricht notfalls darunter. */
+.epos-kond-vorlage-alle {
+    margin-top: 4px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.epos-kond-vorlage-alle > .epos-feld {
+    flex: 1 1 5rem;
+}
+
+.epos-kond-vorlage-alle .epos-feld-zeile > select.epos-eingabe {
+    width: 100%;
+    min-width: 0;
+}
+
 .epos-kond-vorlage-beschreibung,
 .epos-kond-vorschau-vorlage {
     margin: 4px 0 0;

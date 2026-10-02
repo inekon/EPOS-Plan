@@ -40998,5 +40998,38 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
     <value>The week needs 168 values (Monday 00:00 to Sunday 23:00) or one value for the base value, separated by “;” and “off” for switched off – {0} were passed.</value>
   </data>
+  <data name="KOND_LBL_VORLAGE_ALLE" xml:space="preserve">
+    <value>all quantities</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ALLE" xml:space="preserve">
+    <value>Apply template to all quantities: heating, cooling, ventilation, equipment and people receive the template of this name where it exists.</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_TITEL" xml:space="preserve">
+    <value>Apply template to all quantities</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE" xml:space="preserve">
+    <value>Apply the template “{0}” to all quantities?</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>apply</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_ERSETZT" xml:space="preserve">
+    <value>replaced: {0}; kept: {1}</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN" xml:space="preserve">
+    <value>the total air change rate {0} 1/h is split (infiltration {1}, occupant ventilation {2})</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_OHNE" xml:space="preserve">
+    <value>no template of this name — unchanged</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_GESPERRT" xml:space="preserve">
+    <value>locked — {0}</value>
+  </data>
+  <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
+    <value>The shortcut “all quantities” in the “Template” row of the “Conditioning” tab: the name of a template that is in at least one of the five lists. Setting it asks ONE question for all quantities, which the user answers; after “Yes” every quantity with a template of this name applies it like the “Apply” button, in one step for “Undo” – a quantity without a template of the same name and a locked quantity remain unchanged. Reading gives the template that all quantities with a template of this name carry as their origin; empty = none in common.</value>
+  </data>
 </root>
 

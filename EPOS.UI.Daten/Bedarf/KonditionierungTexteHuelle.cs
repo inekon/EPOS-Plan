@@ -243,6 +243,10 @@ namespace WindowsFormsApplication1
             t.HinweisVorlageZeile = Text_("KOND_TXT_HINWEIS_VORLAGE_ZEILE", t.HinweisVorlageZeile);
             t.TextVorschauLeer = Text_("KOND_TXT_VORSCHAU_LEER", t.TextVorschauLeer);
             t.TextVorschauOhneAnteile = Text_("KOND_TXT_VORSCHAU_OHNE_ANTEILE", t.TextVorschauOhneAnteile);
+
+            // Die Abkürzung „alle Größen“ (E57, Welle U5)
+            t.LabelVorlageAlle = Text_("KOND_LBL_VORLAGE_ALLE", t.LabelVorlageAlle);
+            t.HinweisVorlageAlle = Text_("KOND_TXT_HINWEIS_VORLAGE_ALLE", t.HinweisVorlageAlle);
             return t;
         }
 
@@ -263,6 +267,16 @@ namespace WindowsFormsApplication1
             f.VorlageUebernehmen = Text_("KOND_FRAGE_VORLAGE_UEBERNEHMEN", f.VorlageUebernehmen);
             f.VorlageLoeschen = Text_("KOND_FRAGE_VORLAGE_LOESCHEN", f.VorlageLoeschen);
             f.Sollwertprofil = Text_("KOND_FRAGE_SOLLWERTPROFIL", f.Sollwertprofil);
+
+            // Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ (E57, Welle U5)
+            f.VorlageAlleTitel = Text_("KOND_FRAGE_VORLAGE_ALLE_TITEL", f.VorlageAlleTitel);
+            f.VorlageAlle = Text_("KOND_FRAGE_VORLAGE_ALLE", f.VorlageAlle);
+            f.VorlageAlleZeile = Text_("KOND_FRAGE_VORLAGE_ALLE_ZEILE", f.VorlageAlleZeile);
+            f.VorlageAlleUebernehmen = Text_("KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN", f.VorlageAlleUebernehmen);
+            f.VorlageAlleErsetzt = Text_("KOND_FRAGE_VORLAGE_ALLE_ERSETZT", f.VorlageAlleErsetzt);
+            f.VorlageAlleAufteilen = Text_("KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN", f.VorlageAlleAufteilen);
+            f.VorlageAlleOhne = Text_("KOND_FRAGE_VORLAGE_ALLE_OHNE", f.VorlageAlleOhne);
+            f.VorlageAlleGesperrt = Text_("KOND_FRAGE_VORLAGE_ALLE_GESPERRT", f.VorlageAlleGesperrt);
             return f;
         }
 

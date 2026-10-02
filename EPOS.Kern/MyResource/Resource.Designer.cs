@@ -61531,6 +61531,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ in allen Größen übernehmen? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gesamtangabe {0} 1/h wird aufgeteilt (Infiltration {1}, Nutzerlüftung {2}) ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ersetzt wird: {0}; es bleibt: {1} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_ERSETZT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gesperrt — {0} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Vorlage dieses Namens — bleibt ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_OHNE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage in allen Größen übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_ZEILE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ löschen? ähnelt.
         /// </summary>
         public static string KOND_FRAGE_VORLAGE_LOESCHEN {
@@ -62049,6 +62121,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_VERWALTUNG {
             get {
                 return ResourceManager.GetString("KOND_LBL_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Größen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_ALLE", resourceCulture);
             }
         }
         
@@ -63313,6 +63394,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte. ähnelt.
         /// </summary>
         public static string KOND_TXT_HINWEIS_VORLAGE_ZEILE {
@@ -63408,6 +63498,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KI_VORLAGE {
             get {
                 return ResourceManager.GetString("KOND_TXT_KI_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_VORLAGE_ALLE", resourceCulture);
             }
         }
         

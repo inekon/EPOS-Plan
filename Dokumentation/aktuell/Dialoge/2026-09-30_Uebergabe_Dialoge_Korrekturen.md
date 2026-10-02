@@ -122,7 +122,7 @@ Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand s
 5. **Kalendervorlagen „Kopieren nach …“** — noch nicht begonnen. Vorlagen sind je Größe
    (`KonditionierungsvorlageCtrl`, Größengleichheit „P11“); Einheiten: Heizen/Kühlen °C, Lüftung 1/h,
    Geräte/Personen Anteil 0 … 1. Die Konditionierung gehört fachlich der Gebäudesimulation (KP2) — mit deren
-   Übergabepapier [`2026-09-30_Uebergabe_KP2_Abschluss.md`](../Gebaeudesimulation/2026-09-30_Uebergabe_KP2_Abschluss.md)
+   Übergabepapier [`2026-09-30_Uebergabe_KP2_Abschluss.md`](../../ueberholt/2026-09-30_Uebergabe_KP2_Abschluss.md)
    abstimmen.
 6. **Absturz beim Öffnen der Dialogfenster — behoben (#640).** Ursache: die Fenstermarke aus #638 als zweite
    Wurzelkomponente an `body::after`, den der BlazorWebView mit den Entwicklerwerkzeugen selbst belegt. Jetzt
