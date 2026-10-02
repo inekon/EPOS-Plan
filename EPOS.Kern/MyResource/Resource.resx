@@ -41104,5 +41104,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
     <value>Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens als Herkunft tragen; leer = keine gemeinsame.</value>
   </data>
+  <data name="WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN" xml:space="preserve">
+    <value>Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KUEHL_KATALOG" xml:space="preserve">
+    <value>Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
+    <value>Kühlkennlinie aus dem Katalog übernehmen</value>
+  </data>
 </root>
 

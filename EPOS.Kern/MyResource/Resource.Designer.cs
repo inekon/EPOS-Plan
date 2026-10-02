@@ -102867,6 +102867,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkennlinie aus dem Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_KUEHLKENNLINIE_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_BTN_KUEHLKENNLINIE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
@@ -102944,6 +102953,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_HERLEITUNG_KATALOG {
             get {
                 return ResourceManager.GetString("WPA_HERLEITUNG_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_KUEHL_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_KUEHL_KATALOG", resourceCulture);
             }
         }
         
@@ -104375,6 +104393,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WP_PROJ_MSG_KEIN_SATZ {
             get {
                 return ResourceManager.GetString("WP_PROJ_MSG_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN", resourceCulture);
             }
         }
         

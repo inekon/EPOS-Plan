@@ -41097,5 +41097,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
     <value>The shortcut “all quantities” in the “Template” row of the “Conditioning” tab: the name of a template that is in at least one of the five lists. Setting it asks ONE question for all quantities, which the user answers; after “Yes” every quantity with a template of this name applies it like the “Apply” button, in one step for “Undo” – a quantity without a template of the same name and a locked quantity remain unchanged. Reading gives the template that all quantities with a template of this name carry as their origin; empty = none in common.</value>
   </data>
+  <data name="WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN" xml:space="preserve">
+    <value>The project holds no cooling characteristic for this unit, but the catalogue does — it can be fetched in the plant dialog under “Heat pump characteristics” with “Take cooling curve from the catalogue”. Until then cooling mode remains locked.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KUEHL_KATALOG" xml:space="preserve">
+    <value>The project holds no cooling characteristic for this unit; the catalogue record has one. The calculation uses the project curves only — without a cooling curve in the project, cooling mode remains locked.</value>
+  </data>
+  <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
+    <value>Take cooling curve from the catalogue</value>
+  </data>
 </root>
 
