@@ -58,8 +58,11 @@ namespace EPOS.Kern.Tests
             return new Konditionierungskalender(g, Kalenderangabe.AusWoche(woche), nenn, null);
         }
 
-        /// <summary>Der Büro-Kalender aller fünf Größen (Werte der Vorlage „Büro", Lüftung am Tag mit dem Wert des Gebäudes).</summary>
-        internal static Konditionierungssatz Satz()
+        /// <summary>
+        /// Der Büro-Kalender aller fünf Größen (Werte der Vorlage „Büro", Lüftung am Tag mit dem Wert des
+        /// Gebäudes); <paramref name="personenAb"/> verschiebt den Beginn der Anwesenheit (Vorlage: 8 Uhr).
+        /// </summary>
+        internal static Konditionierungssatz Satz(int personenAb = 8)
         {
             var satz = new Konditionierungssatz(GebaeudeModellEingang.WochentagDesErstenTags(Vdi6007Probe.Wochenende()), 2025);
             satz.Setzen(Konditionierungsgroesse.Heizsoll,
@@ -71,7 +74,7 @@ namespace EPOS.Kern.Tests
             satz.Setzen(Konditionierungsgroesse.Geraete,
                 Woche(Konditionierungsgroesse.Geraete, (w, st) => Werktag(w) && st >= 7 && st < 18 ? 1.0 : 0.1));
             satz.Setzen(Konditionierungsgroesse.Personen,
-                Woche(Konditionierungsgroesse.Personen, (w, st) => Werktag(w) && st >= 8 && st < 17 ? 1.0 : 0.0, PERSONEN_NENN_W));
+                Woche(Konditionierungsgroesse.Personen, (w, st) => Werktag(w) && st >= personenAb && st < 17 ? 1.0 : 0.0, PERSONEN_NENN_W));
             return satz;
         }
 
@@ -86,8 +89,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Der Eingang mit Büro-Kalender, Kühlbetrieb an.</summary>
-        internal static GebaeudeModellEingang Eingang(ProjektGebaeudeModel g, SolardatenModel[] reihe = null)
-            => GebaeudeModellEingang.Bauen(g, Klima(reihe), kuehlbetrieb: true, konditionierung: Satz());
+        internal static GebaeudeModellEingang Eingang(ProjektGebaeudeModel g, SolardatenModel[] reihe = null, int personenAb = 8)
+            => GebaeudeModellEingang.Bauen(g, Klima(reihe), kuehlbetrieb: true, konditionierung: Satz(personenAb));
 
         internal static Aufheizvorgabe An(bool abzug = false, double? reserve = null)
             => new Aufheizvorgabe(true, abzug ? DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null, null, reserve, null);
@@ -113,9 +116,10 @@ namespace EPOS.Kern.Tests
             internal GebaeudeModellErgebnis Ergebnis;
         }
 
-        internal static Lauf Rechnen(ProjektGebaeudeModel g, Aufheizvorgabe vorgabe, SolardatenModel[] reihe = null)
+        internal static Lauf Rechnen(ProjektGebaeudeModel g, Aufheizvorgabe vorgabe, SolardatenModel[] reihe = null,
+                                     int personenAb = 8)
         {
-            GebaeudeModellEingang e = Eingang(g, reihe);
+            GebaeudeModellEingang e = Eingang(g, reihe, personenAb);
             ZonenEingang z = ZonenEingang.Einzeln(e);
             Aufheizplan p = vorgabe != null && vorgabe.An ? Aufheizoptimierung.Anwenden(z, vorgabe) : null;
             return new Lauf { Eingang = e, Zone = z, Plan = p, Ergebnis = Vdi6007Rechenweg.Laufen(e, 0, g.ID_Gebaeude, p) };
