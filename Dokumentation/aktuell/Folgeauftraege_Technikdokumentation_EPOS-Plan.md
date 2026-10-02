@@ -47,7 +47,7 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
 | 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
-| 8 | Tww-Einspielskript Python-versionsfest machen | – | – |
+| 8 | Tww-Einspielskript Python-versionsfest machen — **erledigt** (#592) | – | – |
 | 9 | Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle | – | – |
 | 10 | Wache gegen harte Umbrüche und Formelzeichen außerhalb von `<math>` | – | – |
 
@@ -247,6 +247,8 @@ Kühlung.
 betreffen.
 
 ## 8. Tww-Einspielskript Python-versionsfest machen
+
+**Erledigt** mit Statuszeile #592: Das Skript normiert jetzt unabhängig von der Python-Fassung; Testdatenbank, Paketteil und Referenzlauf sind unverändert.
 
 **Kurz:** Der Test `EPOS.Kern.Tests/TwwKatalogWacheTests.cs`,
 `Das_Einspielskript_ist_wiederholbar`, ist unter Python 3.11 rot und ab 3.12 grün.
