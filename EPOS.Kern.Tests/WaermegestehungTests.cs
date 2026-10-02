@@ -285,6 +285,77 @@ namespace EPOS.Kern.Tests
             Assert.Equal(-150.0, r.Wert(10), 9);   // 2037
         }
 
+        // ------------------------------------------------------------ § 9b: Sockelbetrag (EZ‑22, § 6.3 Nr. 40)
+
+        /// <summary>
+        /// Der Sockelbetrag wirkt bei kleinem Netzbezug: Die Entlastung OHNE BHKW wäre
+        /// (5 + 50) MWh × 20,00 €/MWh − 250 € = 850 €/a, MIT BHKW 5 × 20 − 250 &lt; 0 → 0. Entgangen
+        /// sind 850 €/a, nicht 50 × 20 = 1.000 €/a — dieselbe Regel wie die Entlastung des Projekts
+        /// (<see cref="SteuerGutschriftRechner.Entlastung9bEur"/>). Reicht auch der Netzbezug ohne
+        /// BHKW nicht an den Sockel (0 + 10 MWh × 20 = 200 € &lt; 250 €), entgeht nichts.
+        /// </summary>
+        [Fact]
+        public void Der_Sockelbetrag_mindert_den_9b_Abzug_bei_kleinem_Netzbezug()
+        {
+            Assert.Equal(850.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 5.0, 250.0), 9);
+            Assert.True(Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 5.0, 250.0) < 50.0 * 20.0);
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(10.0, 20.0, 0.0, 250.0));
+            // Genau an der Schwelle: N × s = S — die Entlastung mit BHKW ist 0, ohne BHKW E × s.
+            Assert.Equal(1000.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 12.5, 250.0), 9);
+
+            // Dieselbe Größe wie die Differenz der Entlastung des Projekts ohne und mit Eigenstrom.
+            foreach (double n in new[] { 0.0, 3.0, 12.0, 12.5, 13.0, 400.0 })
+                foreach (double e in new[] { 0.5, 6.0, 50.0 })
+                    Assert.Equal(SteuerGutschriftRechner.Entlastung9bEur(n + e, 20.0, 250.0) -
+                                 SteuerGutschriftRechner.Entlastung9bEur(n, 20.0, 250.0),
+                                 Waermegestehung.Entgangene9bEntlastungEur(e, 20.0, n, 250.0), 9);
+        }
+
+        /// <summary>
+        /// Trägt der Netzbezug den Sockel schon (387,12 MWh × 20 € &gt; 250 €), ist der Abzug Zeichen
+        /// für Zeichen Eigenstrom × Satz — wie ohne Sockel im Katalog (<c>null</c> oder 0), auch bei
+        /// Netzbezug 0. Die Gegenprobe der Bitgleichheit: kein Toleranzband.
+        /// </summary>
+        [Fact]
+        public void Ohne_Sockel_oder_mit_getragenem_Sockel_ist_der_9b_Abzug_bitgleich()
+        {
+            double heute = 73.91 * 20.0;
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0, 387.12, 250.0));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0, 0.0, null));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0, 0.0, 0.0));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0, 5.0, null));
+        }
+
+        /// <summary>
+        /// Die Reihe nimmt den Sockel jahresscharf (Kalenderjahr Förderbeginn + t − 1) gegen den
+        /// Netzbezug der Steuereingabe: 2027 und 2028 mit 250 € → (5 + 50) × 20 − 250 = 850 €/a,
+        /// 2029 ohne Sockel → 50 × 20 = 1.000 €/a. Ohne Sockelfunktion die Reihe von heute.
+        /// </summary>
+        [Fact]
+        public void Die_9b_Reihe_nimmt_den_Sockel_des_Kalenderjahres()
+        {
+            var steuer = new SteuerEingabe
+            {
+                Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE,
+                NetzbezugMWh = 5.0
+            };
+            KapitalwertRechner.ErloesReihe r = Waermegestehung.Entgangene9bReihe(
+                steuer, 50.0, 12500.0, 3, 2027, jahr => 20.0, jahr => jahr < 2029 ? 250.0 : (double?)null);
+            Assert.Equal(-850.0, r.Wert(1), 9);
+            Assert.Equal(-850.0, r.Wert(2), 9);
+            Assert.Equal(-1000.0, r.Wert(3), 9);
+
+            KapitalwertRechner.ErloesReihe ohne = Waermegestehung.Entgangene9bReihe(
+                steuer, 50.0, 12500.0, 3, 2027, jahr => 20.0);
+            for (int t = 1; t <= 3; t++) Assert.Equal(-50.0 * 20.0, ohne.Wert(t));
+
+            // Ganz vom Sockel geschluckt: keine Reihe.
+            Assert.Null(Waermegestehung.Entgangene9bReihe(
+                new SteuerEingabe { Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE },
+                10.0, 2500.0, 3, 2027, jahr => 20.0, jahr => 250.0));
+        }
+
         /// <summary>
         /// Der Rechenkern summiert eine negative Erlösreihe richtig: Kapitalwert und Barwert der
         /// Einnahmen sinken um ihren Barwert, die Gliederung bleibt stimmig. Die Zerlegung des

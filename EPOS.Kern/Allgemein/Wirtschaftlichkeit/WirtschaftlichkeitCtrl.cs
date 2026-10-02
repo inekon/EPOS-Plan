@@ -6678,11 +6678,17 @@ namespace WindowsFormsApplication1
                 erg.ProduzierendesGewerbe = true;
                 if (eingabe.VermiedenMengeMWh > 0)
                 {
+                    // Anwenderentscheid 02.10.2026 (EZ‑22): dieselbe Größe wie der § 9b-Abzug der
+                    // Wärmegestehung und dieselbe Funktion — die Differenz der Entlastung ohne und
+                    // mit der vermiedenen Menge, der Sockelbetrag gegen den Netzbezug, mit dem die
+                    // Entlastung des Projekts rechnet (§ 3.8). Trägt der Netzbezug den Sockel, ist
+                    // es Zeichen für Zeichen Satz × vermiedene Menge.
                     if (_gesetze == null) _gesetze = new GesetzKatalog();
-                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B,
-                                                 Foerderbeginn(p));
-                    if (satz.HasValue && satz.Value > 0)
-                        erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
+                    int jahr1 = Foerderbeginn(p);
+                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1);
+                    erg.VermiedenEntlastung9bJahr = SteuerGutschriftRechner.Entgangene9bEur(
+                        eingabe.SteuerEingabe.NetzbezugMWh, eingabe.VermiedenMengeMWh, satz,
+                        _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1));
                 }
             }
 
@@ -7003,12 +7009,13 @@ namespace WindowsFormsApplication1
             // das BHKW. Dieselbe Unternehmensart und dieselbe Prüfung wie die § 9b-Korrektur des
             // Ausweises (gesamt.SteuerEingabe), der Satz jahresscharf aus dem Gesetzeskatalog wie
             // die Steuerreihen. Ohne Gewerbe, Gutschrift oder Satz entsteht keine Reihe (bitgleich).
+            // Anwenderentscheid 02.10.2026 (EZ‑22): dieselben Regeln wie die Entlastung des Projekts
+            // — der Sockelbetrag des Jahres gegen den Netzbezug der Steuereingabe.
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
             entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
-                p.Betrachtungszeitraum, Foerderbeginn(p), jahr =>
-                {
-                    if (_gesetze == null) _gesetze = new GesetzKatalog();
-                    return _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr);
-                });
+                p.Betrachtungszeitraum, Foerderbeginn(p),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr));
             if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;

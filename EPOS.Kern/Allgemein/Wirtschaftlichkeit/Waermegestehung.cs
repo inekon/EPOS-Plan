@@ -329,36 +329,47 @@ namespace WindowsFormsApplication1
         /// Arbeitspreis der Stromgutschrift enthält die Stromsteuer; auf den Netzbezug, den der
         /// BHKW-Eigenstrom ersetzt, bekäme ein Unternehmen des produzierenden Gewerbes (oder der
         /// Land- und Forstwirtschaft) die Entlastung nach § 9b ohnehin. Der Vorteil des Eigenstroms
-        /// ist deshalb nur Arbeitspreis − Entlastungssatz je MWh; abgezogen wird Eigenstrom × Satz —
-        /// dieselbe Größe wie die § 9b-Korrektur des Ausweises der vermiedenen Stromkosten, hier auf
-        /// den Eigenstrom der Stromgutschrift. 0 ohne Menge oder ohne Satz &gt; 0.
+        /// ist deshalb nur Arbeitspreis − Entlastungssatz je MWh.
+        ///
+        /// <para><b>Dieselben Regeln wie die Entlastung des Projekts</b> (Anwenderentscheid
+        /// 02.10.2026, Register EZ‑22): abgezogen wird die Differenz der Entlastung ohne und mit
+        /// BHKW-Eigenstrom, <c>max(0, (N + E) × s − S) − max(0, N × s − S)</c> — der Sockelbetrag S
+        /// mindert sie nur, soweit der Netzbezug N ihn nicht schon trägt. Gerechnet von
+        /// <see cref="SteuerGutschriftRechner.Entgangene9bEur"/>, derselben Funktion wie die
+        /// § 9b-Korrektur des Ausweises der vermiedenen Stromkosten. Ohne Sockel (oder wenn N ihn
+        /// trägt) ist das Ergebnis Zeichen für Zeichen Eigenstrom × Satz. 0 ohne Menge oder ohne
+        /// Satz &gt; 0.</para>
         /// </summary>
         /// <param name="eigenstromMWh">Der im Projekt verbrauchte BHKW-Strom [MWh/a]
         /// (<see cref="BhkwEigenstromMWh"/>).</param>
         /// <param name="satzEurJeMWh">Der Entlastungssatz [€/MWh]; <c>null</c> = nicht gepflegt.</param>
-        internal static double Entgangene9bEntlastungEur(double eigenstromMWh, double? satzEurJeMWh)
+        /// <param name="netzbezugMWh">Der Netzbezug des Projekts nach dem Lauf [MWh/a] — dieselbe
+        /// Menge, mit der die Entlastung des Projekts rechnet
+        /// (<see cref="SteuerEingabe.NetzbezugMWh"/>).</param>
+        /// <param name="sockelEur">Der Sockelbetrag des Jahres [€/a]; <c>null</c> = nicht gepflegt.</param>
+        internal static double Entgangene9bEntlastungEur(double eigenstromMWh, double? satzEurJeMWh,
+                                                        double netzbezugMWh = 0.0, double? sockelEur = null)
         {
-            if (!(eigenstromMWh > 0) || !satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return 0.0;
-            return eigenstromMWh * satzEurJeMWh.Value;
+            return SteuerGutschriftRechner.Entgangene9bEur(netzbezugMWh, eigenstromMWh, satzEurJeMWh, sockelEur);
         }
 
         /// <summary>
         /// <b>Die entgangene § 9b-Entlastung jahresscharf</b>: die NEGATIVE Erlösreihe
         /// <see cref="KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG_ENTGANGEN"/> des
         /// Zahlungsgerüsts der Wärmeerzeugung — im Jahr t = 1…T −<see cref="Entgangene9bEntlastungEur"/>
-        /// mit dem Satz des Kalenderjahres <c>Förderbeginn + t − 1</c>, wie die Steuerreihen des
-        /// Projekts. Als eigene Reihe bleibt der Abzug jahresscharf und nominal; im Energiebetrag
-        /// würde er mit der Energiepreissteigerung fortgeschrieben, die für einen gesetzlichen Satz
-        /// nicht gilt.
+        /// mit Satz und Sockelbetrag des Kalenderjahres <c>Förderbeginn + t − 1</c>, wie die
+        /// Steuerreihen des Projekts. Als eigene Reihe bleibt der Abzug jahresscharf und nominal; im
+        /// Energiebetrag würde er mit der Energiepreissteigerung fortgeschrieben, die für einen
+        /// gesetzlichen Satz nicht gilt.
         ///
         /// <para><c>null</c> — dann rechnet die Kennzahl bitgleich ohne Abzug —, wenn das Projekt
         /// weder produzierendes Gewerbe noch Land- und Forstwirtschaft ist
         /// (<see cref="SteuerGutschriftRechner.ProduzierendesGewerbe"/>, dieselbe Prüfung wie die
         /// § 9b-Korrektur des Ausweises), wenn keine Stromgutschrift gerechnet ist (ohne Gutschrift
-        /// gibt es nichts zu mindern) oder wenn kein Jahr einen Satz &gt; 0 führt.</para>
+        /// gibt es nichts zu mindern) oder wenn kein Jahr einen Abzug &gt; 0 führt.</para>
         /// </summary>
-        /// <param name="steuer">Die Steuereingabe des Laufs (Unternehmensart); <c>null</c> = kein
-        /// Steuerpfad.</param>
+        /// <param name="steuer">Die Steuereingabe des Laufs (Unternehmensart, Netzbezug); <c>null</c>
+        /// = kein Steuerpfad.</param>
         /// <param name="eigenstromMWh">Der im Projekt verbrauchte BHKW-Strom [MWh/a] — dieselbe
         /// Menge, mit der die Stromgutschrift rechnet.</param>
         /// <param name="stromgutschriftEur">Die Stromgutschrift des ersten Jahres [€/a]
@@ -368,9 +379,13 @@ namespace WindowsFormsApplication1
         /// <param name="satzImJahr">Der Entlastungssatz eines Kalenderjahres [€/MWh] aus dem
         /// Gesetzeskatalog; <c>null</c> = nicht gepflegt. Gefragt wird nur, wenn die Reihe greifen
         /// kann.</param>
+        /// <param name="sockelImJahr">Der Sockelbetrag eines Kalenderjahres [€/a] aus dem
+        /// Gesetzeskatalog; <c>null</c> (die Funktion oder ihr Wert) = keiner. Der Netzbezug, gegen
+        /// den er wirkt, ist <see cref="SteuerEingabe.NetzbezugMWh"/> der Steuereingabe.</param>
         internal static KapitalwertRechner.ErloesReihe Entgangene9bReihe(
             SteuerEingabe steuer, double eigenstromMWh, double stromgutschriftEur,
-            int jahre, int foerderbeginn, Func<int, double?> satzImJahr)
+            int jahre, int foerderbeginn, Func<int, double?> satzImJahr,
+            Func<int, double?> sockelImJahr = null)
         {
             if (steuer == null || !SteuerGutschriftRechner.ProduzierendesGewerbe(steuer)) return null;
             if (!(eigenstromMWh > 0) || !(stromgutschriftEur > 0) || satzImJahr == null) return null;
@@ -380,7 +395,9 @@ namespace WindowsFormsApplication1
             bool etwas = false;
             for (int t = 1; t <= T; t++)
             {
-                double abzug = Entgangene9bEntlastungEur(eigenstromMWh, satzImJahr(foerderbeginn + t - 1));
+                int jahr = foerderbeginn + t - 1;
+                double abzug = Entgangene9bEntlastungEur(eigenstromMWh, satzImJahr(jahr), steuer.NetzbezugMWh,
+                                                         sockelImJahr != null ? sockelImJahr(jahr) : null);
                 if (abzug == 0.0) continue;
                 jeJahr[t] = -abzug;
                 etwas = true;
