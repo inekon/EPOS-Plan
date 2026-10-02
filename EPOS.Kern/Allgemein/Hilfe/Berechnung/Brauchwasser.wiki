@@ -8,7 +8,9 @@
 
 Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
 
-Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''dieser''' Weg nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+
+Diese Seite beschreibt den '''Bestandsweg''': Rechenweg ''Bestandsprofile'' im Bedarfsprofil-Dialog ''Brauchwasserwärme''. Steht dort der Rechenweg ''Zapfprofil'', entsteht die Reihe stattdessen im '''Zapfprofilgenerator''' aus den Nutzungszonen des Projekts — die Zapfenergie je Zone aus Tagesbedarf, Tagesgang, Wochen- und Monatsanteilen bzw. aus gezogenen Zapfereignissen, die '''Zirkulation''' als eigene Teilreihe daneben; beide zusammen bilden den Brauchwasserkanal, und die Bestandsprofile rechnen nicht mit. Eingaben und Rechenweg des Generators beschreibt die Seite [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]].
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -194,9 +196,9 @@ Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
-* '''Kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 sind damit '''nicht''' abgedeckt — die Auslegung eines Speichers ist eine andere Rechnung als dieser Bedarf.
+* '''Auf dem Bestandsweg kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 deckt dieser Weg '''nicht''' ab — einzelne Zapfereignisse und die Auslegung des Speichers rechnet der Zapfprofilgenerator (Rechenweg ''Zapfprofil'').
 * '''Keine Temperaturen im Rechenweg.''' In (1) bis (6) kommt keine Temperatur vor: Der Bedarf kommt als Energiemenge herein. Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten — sie stehen nur in (7), also in der HERLEITUNG der Monatswerte. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
-* '''Keine Zirkulationsverluste als eigener Posten.''' Sie sind entweder in den Katalogwerten enthalten oder ueber die Netzverluste abzubilden.
+* '''Auf dem Bestandsweg keine Zirkulationsverluste als eigener Posten.''' Sie sind entweder in den Katalogwerten enthalten oder ueber die Netzverluste abzubilden. Der Zapfprofilgenerator fuehrt die Zirkulation als eigene Teilreihe im Brauchwasserkanal.
 * '''Kein Legionellenbetrieb, keine Nachheizung''' als eigener Vorgang.
 * '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage, Betriebsferien und Belegungsschwankungen bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsnormierung glaettet.''' Wegen (4) und (5) verschiebt der Kalender innerhalb eines Monats nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
@@ -215,6 +217,7 @@ Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang 
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] — Bedienung des Dialogs und Katalogpflege
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] — der Rechenweg ''Zapfprofil'': Nutzungszonen, Zirkulation, Auslegung
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht
 * [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]] — dieselbe Profilroutine
 * [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]] — dieselbe Profilroutine
