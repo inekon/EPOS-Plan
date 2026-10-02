@@ -829,6 +829,12 @@ namespace EPOS.Kern.Tests
                 // Nachzug davor die Stempel einer frischen Kopie setzt; wiederholbar, KEIN DML.
                 KostenStempelSchema.Ausfuehren(null);
 
+                // Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+                // Einheit des Bereitschaftsverlusts an Tab_Heizkessel_STAMM und Tab_Heizkessel, Vorgabe
+                // kW. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML - ein
+                // ALTER TABLE loest keinen Stempeltrigger aus.
+                KesselBereitschaftEinheitSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

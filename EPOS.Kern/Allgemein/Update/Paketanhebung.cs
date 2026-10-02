@@ -221,6 +221,9 @@ namespace WindowsFormsApplication1
             // stempelt im Ziel - dessen Trigger feuern beim Einfügen der Projektzeilen.
             new Stufe(KostenStempelSchema.SCHRITT, Art.Ddl,
                       "Änderungsstempel für Kosten, Preise und Kostenkatalog (zwei Spalten und ihre Trigger)"),
+            // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
+            new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
+                      "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -361,6 +361,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KESSEL_WARTUNG_EINHEIT_PROZENT = "%/a";
 
+        // =====================================================================
+        // Einheit des Bereitschaftsverlusts des Heizkessels
+        //   Tab_Heizkessel.Bereitschaft_Einheit und
+        //   Tab_Heizkessel_STAMM.Bereitschaft_Einheit
+        //   (Schemaschritt KesselBereitschaftEinheitSchema.SCHRITT)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist eine LEISTUNG in kW — die Vorgabe jeder
+        /// Bestandszeile und die Einheit des Imports aus VDI 3805.
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_KW = "kW";
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist ein ANTEIL DER NENNLEISTUNG in Prozent; die
+        /// Rechnung macht daraus kW (<c>KesselBereitschaft.LeistungKw</c>).
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_PROZENT = "%";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim

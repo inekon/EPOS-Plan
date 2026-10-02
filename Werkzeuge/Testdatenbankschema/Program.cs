@@ -2324,6 +2324,27 @@ namespace Testdatenbankschema
                                   "vollstaendig: " + KostenStempelSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+            //      Einheit des Bereitschaftsverlusts - Bereitschaft_Einheit (TEXT, Vorgabe kW, Pruefklausel
+            //      kW oder %) an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_KesselBereitschaftEinheit bedient. Ein ALTER TABLE
+            //      loest keinen Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bekommt kW, die Einheit, in der sie rechnet.
+            string nrBereitschaft = KesselBereitschaftEinheitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBereitschaft + " - Einheit des Bereitschaftsverlusts: " +
+                              (KesselBereitschaftEinheitSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBereitschaft = new List<string>();
+                angelegt += KesselBereitschaftEinheitSchema.Ausfuehren(berichtBereitschaft);
+                foreach (string zeile in berichtBereitschaft)
+                    Console.WriteLine("Schritt " + nrBereitschaft + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBereitschaft + " - vollstaendig: " +
+                                  KesselBereitschaftEinheitSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

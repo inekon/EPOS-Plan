@@ -739,11 +739,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="KostenStempelSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer,
         /// und kein Rechenweg liest sie. Die Nummer steht allein bei
         /// <see cref="KostenStempelSchema.SCHRITT"/>.
+        /// Danach, mit der EINHEIT DES BEREITSCHAFTSVERLUSTS (Anwenderentscheid vom 02.10.2026),
+        /// steht das Ziel auf <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>: die Spalte
+        /// <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %) an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c>, reines DDL
+        /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
+        /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
+        /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KostenStempelSchema.SCHRITT;
+        public const int Zielversion = KesselBereitschaftEinheitSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
