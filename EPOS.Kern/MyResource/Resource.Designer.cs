@@ -77736,6 +77736,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur. ähnelt.
+        /// </summary>
+        public static string SIMENG_QUELLE_CSV_UNBRAUCHBAR {
+            get {
+                return ResourceManager.GetString("SIMENG_QUELLE_CSV_UNBRAUCHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur. ähnelt.
         /// </summary>
         public static string SIMENG_QUELLPROFIL_UNLESBAR {
@@ -78164,6 +78173,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt {0} Wärmepumpenanlagen; gerechnet werden höchstens {1}. Bitte Anlagen zusammenfassen oder entfernen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_ZU_VIELE_MODULE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_ZU_VIELE_MODULE", resourceCulture);
             }
         }
         
@@ -79255,7 +79273,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmproduktion ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion ähnelt.
         /// </summary>
         public static string SIMERG_TAB_WP_PRODUKTION {
             get {
@@ -80505,7 +80523,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///WP-Typ: {0}
         ///
         ///Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-        ///Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen. ähnelt.
+        ///Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
         /// </summary>
         public static string SIMQ_MSG_LUFT_WASSER {
             get {
@@ -81385,7 +81403,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil (Monatswerte) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil (Monats-, Tages- oder Stundenwerte) ähnelt.
         /// </summary>
         public static string SIMQ_TYP_QUELLPROFIL {
             get {

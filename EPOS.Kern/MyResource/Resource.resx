@@ -3617,7 +3617,7 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
 WP-Typ: {0}
 
 Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.</value>
+Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
@@ -3817,7 +3817,7 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
     <value>Pufferspeicher</value>
   </data>
   <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
-    <value>Quellprofil (Monatswerte)</value>
+    <value>Quellprofil (Monats-, Tages- oder Stundenwerte)</value>
   </data>
   <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
     <value> Achtung: Sondenzahl bzw. λ liegen außerhalb des kodierten Tabellenbereichs (B2-Auszug); der Grenzwert wurde auf die Randstützstelle geklemmt. Auf der Sondenzahl-Achse ist das nicht konservativ - größere Sondenfelder brauchen kleinere spezifische Entzugsleistungen, als der Randwert zulässt.</value>
@@ -14688,7 +14688,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärme-/Strombedarf</value>
   </data>
   <data name="SIMERG_TAB_WP_PRODUKTION" xml:space="preserve">
-    <value>Wärmproduktion</value>
+    <value>Wärmeproduktion</value>
   </data>
   <data name="SIMERG_TAB_WP_STROM" xml:space="preserve">
     <value>Stromverbrauch</value>
@@ -41118,6 +41118,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
     <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab.</value>
+  </data>
+  <data name="SIMENG_WP_ZU_VIELE_MODULE" xml:space="preserve">
+    <value>Das Projekt führt {0} Wärmepumpenanlagen; gerechnet werden höchstens {1}. Bitte Anlagen zusammenfassen oder entfernen.</value>
+  </data>
+  <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
+    <value>Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur.</value>
   </data>
 </root>
 

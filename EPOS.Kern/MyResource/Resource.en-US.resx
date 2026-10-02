@@ -3601,7 +3601,7 @@ annual full-load hours from a simulation run.</value>
 HP type: {0}
 
 If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
-Administration → Heat pump → change the heat pump type, then select the heat pump again in the project.</value>
+Administration → Heat requirement &amp; heating → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -3801,7 +3801,7 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
     <value>Buffer storage</value>
   </data>
   <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
-    <value>Source profile (monthly values)</value>
+    <value>Source profile (monthly, daily or hourly values)</value>
   </data>
   <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
     <value> Caution: the number of boreholes or λ lies outside the coded table range (B2 extract); the limit was clamped to the boundary data point. On the borehole-number axis this is not conservative - larger borehole fields require lower specific extraction rates than the boundary value allows.</value>
@@ -41111,6 +41111,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
     <value>“Extended” model: the system calculates with the inverter curve of the system values; without an AC rated power there is no clipping. Once an AC rated power is entered, EPOS-Plan curtails above it.</value>
+  </data>
+  <data name="SIMENG_WP_ZU_VIELE_MODULE" xml:space="preserve">
+    <value>The project holds {0} heat pump plants; at most {1} can be calculated. Please merge or remove plants.</value>
+  </data>
+  <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
+    <value>Source temperature of plant {0}: the CSV file “{1}” is missing or does not provide 8,760 hourly values — the outdoor temperature is used instead.</value>
   </data>
 </root>
 
