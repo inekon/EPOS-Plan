@@ -22,21 +22,21 @@ Ergebnisgrößen sind die Wärmeproduktion, der Strombedarf der Wärmepumpe, der
 |-
 | Kennfeld: Quelltemperatur, COP, thermische Leistung je Vorlauftemperatur || °C, —, kW || Kennlinien-Editor der Wärmepumpe (Projektkopie des Katalogkennfelds)
 |-
-| Bauart (Luft/Wasser, Sole/Wasser, …) || — || Wärmepumpenkatalog, Feld „Typ"
+| Bauart (Luft/Wasser, Sole/Wasser, …) || — || Wärmepumpenkatalog, Feld „Wärmepumpentyp"
 |-
 | Nennleistung || kW || Wärmepumpenkatalog
 |-
-| Heizstableistung || kW || Dialog „Wärmepumpe", Abschnitt „Kenndaten", Feld „P Heizstab"
+| Heizstableistung || kW || Wärmepumpen Verwaltung, Detailansicht, Gruppe „Wärmepumpen Kenndaten", Feld „Heizstab"
 |-
-| Vorlauftemperatur, Rücklauftemperatur || °C || Dialog „Wärmepumpe", Abschnitt „Auslegung"
+| Vorlauftemperatur, Rücklauftemperatur || °C || Wärmepumpen Verwaltung, Detailansicht, Gruppe „Auslegung für Verteilung"
 |-
-| Heizstab ein/aus || — || Abschnitt „Spitzenlast und Betrieb", Schalter „Heizstab"
+| Heizstab ein/aus || — || „Konfiguration…" der Wärmepumpe, Schalter „Heizstab mitrechnen"
 |-
 | Sperrzeit ein/aus, von, bis || —, h || derselbe Abschnitt
 |-
 | Bivalenter Betrieb, Betriebsart, Bivalenztemperatur || —, °C || derselbe Abschnitt; die Bivalenztemperatur erscheint nur, wenn sie rechenwirksam ist
 |-
-| Wärmequelle (Außenluft, konstant, Erdreich, Quellprofil, CSV-Reihe, Pufferspeicher) || — || Simulationskonfiguration, Karte der Anlage, Chip „Wärmequelle"
+| Wärmequelle (Außenluft, konstant, Erdreich, Quellprofil, CSV-Reihe, Pufferspeicher) || — || Simulationskonfiguration, Karte der Anlage, Chip „Quelle:"
 |-
 | Leistungssteuerung (laufzeit-, leistungs- oder PV-optimiert) || — || Simulationskonfiguration, Chip „Betriebsmodus"
 |-
@@ -176,7 +176,7 @@ Lässt sich eine Quelle nicht auflösen — kein Profil, keine lesbare Datei, ke
 
 === Schritt 2 — Kennfeldauswertung ===
 
-Gerechnet wird mit der Kennlinie der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math>, die an der Anlage steht. Mit der Anlagenkopplung „Heizkreis (AK1)" wählt der Lauf für Module mit Heizwärme je Stunde die Kennlinie der Vorlaufstufe, die dem gerechneten Heizkreisvorlauf am nächsten liegt; zwischen zwei Stufen wird nicht interpoliert. Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math> '''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert — getrennt für COP und für die Leistung:
+Gerechnet wird mit der Kennlinie der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math>, die an der Anlage steht. Mit der Anlagenkopplung „Heizkreis (AK1)" wählt der Lauf für Module mit Heizwärme je Stunde die Kennlinie der Vorlaufstufe, die dem gerechneten Heizkreisvorlauf am nächsten liegt; zwischen zwei Stufen wird nicht interpoliert. Braucht in einer Stunde kein gekoppeltes Gebäude Heizwärme — auch weil sein Heizsollwert dort „aus" ist, etwa außerhalb der Heizperiode, die sein Reiter „Konditionierung" festlegt —, gilt wieder die Kennlinie von <math>\vartheta_{\mathrm{VL}}</math>. Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math> '''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert — getrennt für COP und für die Leistung:
 
 : <math>\displaystyle \operatorname{COP}(t) = \operatorname{COP}_{\mathrm{u}} + \left( \operatorname{COP}_{\mathrm{o}} - \operatorname{COP}_{\mathrm{u}} \right) \cdot \frac{\vartheta_{\mathrm{Q}}(t) - \vartheta_{\mathrm{u}}}{\vartheta_{\mathrm{o}} - \vartheta_{\mathrm{u}}}</math> &nbsp;&nbsp;(2)
 :: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
@@ -251,6 +251,8 @@ Der Unterschied zwischen <math>\le</math> und dem strengen „kleiner" betrifft 
 :: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Quellpuffers [kWh]
 :: <math>Q_{\mathrm{Q}}(t)</math> – geforderte Verdampferwärme aus (6) [kWh]
 :: <math>P'_{\mathrm{th}}(t)</math>, <math>P'_{\mathrm{el}}(t)</math> – gekürzte thermische und elektrische Leistung der Stunde [kW]
+
+Ein Rest unter <math>10^{-9}</math>&nbsp;kWh im Quellpuffer gilt als leer, <math>Q_{\mathrm{Sp}}(t) = 0</math>. Das ist Rechentechnik, keine Fachgrenze: Die Entnahme lässt in Gleitkommaarithmetik oft einen winzigen Rest stehen, und eine Stunde mit beinahe null Leistung zählte sonst als volle Laufzeit.
 
 Die tatsächlich entnommene Quellwärme wird dem Speicher abgezogen. Ist der Quellpuffer zugleich Senke eines anderen Erzeugers, wird die Entnahme diesem gutgeschrieben und der Wärmepumpe entsprechend von ihrer Direktdeckung abgezogen — sonst wäre dieselbe kWh zweimal als Deckung ausgewiesen.
 
@@ -342,7 +344,7 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
 * '''Keine Vorlaufregelung ohne Anlagenkopplung.''' Ohne Kopplung wird das Kennfeld das ganze Jahr zu der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math> ausgewertet, die an der Anlage steht. Erst die Anlagenkopplung „Heizkreis (AK1)" bringt eine Heizkurve ins Spiel — dann wählt der Lauf je Stunde die nächstgelegene Vorlaufstufe des Kennfelds (Schritt 2), ohne Zwischenwerte.
 * '''Der Kühlbetrieb rechnet getrennt.''' Eine Wärmepumpe mit Kühlkennlinie und eingeschaltetem Kühlbetrieb deckt an Kühltagen den Kältebedarf in einer eigenen Kältekaskade nach der Wärmekaskade; an diesen Tagen ist ihr Heizkanal gesperrt, Warmwasser bleibt. Kälte und Kältestrom stehen in eigenen Reihen und gehen in die Wärmebilanz und die Jahresarbeitszahl der Wärme nicht ein ([[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]).
 * '''Der Heizstab hat keinen eigenen Wirkungsgrad''' — <math>\operatorname{COP}_{\mathrm{HS}} = 1</math> nach (12).
-* '''Fünf Katalogspalten hat kein Leser''': Länge, Breite, Höhe, Gewicht und Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand nirgends gelesen. Sie sind die einzigen Spalten aller sieben Gerätekataloge ohne jede Verwendung.
+* '''Katalogspalten ohne Leser''': Länge, Breite, Höhe, Gewicht und Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand nirgends gelesen.
 * '''Höchstens neun Module''' je Projekt; mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht.
 * '''Strompreis, Wärmepumpentarif und Kapitaldienst''' gehören zur Wirtschaftlichkeit; der Lauf liefert ihr die Strommengen <math>E_{\mathrm{a}}</math> und <math>E_{\mathrm{HS,a}}</math>.
 
