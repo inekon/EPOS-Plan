@@ -648,6 +648,15 @@ namespace WindowsFormsApplication1
             // "vereinfacht" und ist zugleich "nie gewaehlt" - eine Datenbank vor
             // Migrationsschritt 66 laeuft damit unveraendert weiter.
             item.PV_Wechselrichterweg = Text(dt, row, SchemaKatalog.SPALTE_EA_PV_WECHSELRICHTERWEG);
+
+            // --- Kollektorfeld der Solarthermie (Welle M2) ----------------------------
+            // Ausdruecklich mit null - NULL heisst „es gilt die Vorgabe"; eine Datenbank vor
+            // dem Schemaschritt laeuft damit unveraendert weiter.
+            item.Pumpenleistung_W = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_PUMPENLEISTUNG);
+            item.Solarkreisverluste_Prozent = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_VERLUSTE);
+            item.Uebertrager_Graedigkeit_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_GRAEDIGKEIT);
+            item.Kollektor_Spreizung_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_SPREIZUNG);
+            item.Arbeitstemperatur_Weg = Text(dt, row, SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

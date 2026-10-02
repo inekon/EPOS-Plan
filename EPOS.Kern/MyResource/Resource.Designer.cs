@@ -79255,6 +79255,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pumpenstrom Solarkreis: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SOLAR_PUMPENSTROM {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SOLAR_PUMPENSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicher: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_SPEICHERAUSWAHL {

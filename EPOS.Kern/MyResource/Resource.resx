@@ -41272,5 +41272,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
   </data>
+  <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
+    <value>Pumpenstrom Solarkreis:</value>
+  </data>
 </root>
 

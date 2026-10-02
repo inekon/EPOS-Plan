@@ -125,6 +125,29 @@ namespace WindowsFormsApplication1
         /// <summary>Jahressumme des verworfenen Überschusses je Feld [kWh].</summary>
         private double[] _ueberFeld = new double[0];
 
+        /// <summary>In der laufenden Stunde genutzte Wärme je Feld (Deckung plus Ladung) [kWh] — die Betriebsbedingung des Pumpenstroms.</summary>
+        private double[] _abgabeStunde = new double[0];
+
+        /// <summary>Pumpenleistung je Feld [W]; <c>null</c> = nicht gepflegt (ST1).</summary>
+        private double?[] _pumpeW = new double?[0];
+
+        /// <summary><c>Hilfsenergie_Anteil</c> je Feld [%] — der Ersatzweg ohne Pumpenleistung (ST1).</summary>
+        private double?[] _hilfsAnteil = new double?[0];
+
+        /// <summary>Jahressumme des Pumpenstroms je Feld [kWh].</summary>
+        private double[] _pumpeFeld = new double[0];
+
+        /// <summary>
+        /// Pumpenstrom der Solarkreise je Stunde [kWh] (ST1): Pumpenleistung · 1 h in jeder Stunde,
+        /// in der ein Feld Wärme abgibt, hilfsweise der Hilfsenergieanteil auf die genutzte Wärme.
+        /// <c>SimulationControl</c> bucht die Reihe in den Strombedarf; ohne gepflegten Wert bleibt
+        /// sie 0.
+        /// </summary>
+        public double[] Pumpenstrom_stuendlich = new double[8760];
+
+        /// <summary>Jahressumme des Pumpenstroms [kWh].</summary>
+        public double PumpenstromGesamtKwh = 0;
+
         private readonly List<string> _feldName = new List<string>();
         private readonly List<double> _feldFlaeche = new List<double>();
         private readonly List<long> _feldAnzahl = new List<long>();
@@ -188,6 +211,10 @@ namespace WindowsFormsApplication1
             public Senkenliste Senke;
             /// <summary>true für das Feld der Solarthermieganglinie.</summary>
             public bool IstGanglinie;
+            /// <summary>Pumpenleistung [W]; <c>null</c> = nicht gepflegt (ST1).</summary>
+            public double? PumpenleistungW;
+            /// <summary><c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> [%]; Ersatzweg des Pumpenstroms.</summary>
+            public double? HilfsenergieAnteil;
         }
 
         /// <summary>
@@ -269,7 +296,10 @@ namespace WindowsFormsApplication1
                 double k2 = ctrlsol.m_k2;
                 double kdir50 = ctrlsol.m_Kdir;
                 double tStorage = 50; // Annahme Speichertemperatur
-                double leitungsverluste = 0.92;
+
+                // ST3 Stufe 1: die Verluste des Solarkreises aus dem Feld; leer = 8 % - der
+                // Faktor (100 - 8) / 100 ist bitgleich das frühere Literal 0,92.
+                double leitungsverluste = Solarkreis.Verlustfaktor(ctrl.items[n].Solarkreisverluste_Prozent);
 
                 SolarFeld f = new SolarFeld();
                 f.ID_Anlage = ctrl.items[n].ID;
@@ -278,6 +308,8 @@ namespace WindowsFormsApplication1
                 f.Flaeche = nFlaeche * nAnzahl;
                 f.Anzahl = nAnzahl;
                 f.Stunden = Math.Min(ctrldat.rows, 8760);
+                f.PumpenleistungW = ctrl.items[n].Pumpenleistung_W;
+                f.HilfsenergieAnteil = HilfsenergieAnteilLesen(f.ID_Anlage);
 
                 for (int i = 0; i < f.Stunden; i++)
                 {
@@ -315,6 +347,20 @@ namespace WindowsFormsApplication1
             return felder;
         }
 
+        /// <summary>
+        /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> einer Anlagenzeile [%] — eine Fachspalte, die
+        /// das Anlagenmodell nicht trägt; <c>null</c> ohne Wert oder ohne Spalte.
+        /// </summary>
+        private static double? HilfsenergieAnteilLesen(int idAnlage)
+        {
+            if (idAnlage <= 0 || !DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN, "Hilfsenergie_Anteil"))
+                return null;
+            object v = StilleDb.Scalar("SELECT Hilfsenergie_Anteil FROM Tab_Energieanlagen WHERE ID = ?",
+                                       StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v, CultureInfo.InvariantCulture);
+        }
+
         public void Init()
         {
             Array.Clear(Restwaerme, 0, Restwaerme.Length);
@@ -328,6 +374,10 @@ namespace WindowsFormsApplication1
             // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             SpeicherladungGesamtKwh = 0;
+
+            // ST1: der Pumpenstrom der Solarkreise.
+            Array.Clear(Pumpenstrom_stuendlich, 0, Pumpenstrom_stuendlich.Length);
+            PumpenstromGesamtKwh = 0;
             DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
 
@@ -463,6 +513,8 @@ namespace WindowsFormsApplication1
             _feldGanglinie.Clear();
 
             List<double[]> potenziale = new List<double[]>();
+            _pumpeW = new double?[felder.Count];
+            _hilfsAnteil = new double?[felder.Count];
 
             for (int n = 0; n < felder.Count; n++)
             {
@@ -475,12 +527,18 @@ namespace WindowsFormsApplication1
                 _feldAnzahl.Add(f.Anzahl);
                 _feldSenke.Add(f.Senke ?? SenkeZuAnlage(senken, f.ID_Anlage));
                 _feldGanglinie.Add(f.IstGanglinie);
+
+                // Die Ganglinie (Abschnitt 14) bleibt ohne Pumpenstrom: Sie ist ein gegebener Ertrag.
+                _pumpeW[n] = f.IstGanglinie ? null : f.PumpenleistungW;
+                _hilfsAnteil[n] = f.IstGanglinie ? null : f.HilfsenergieAnteil;
             }
 
             _potenzialFeld = potenziale.ToArray();
             _restPotenzial = new double[_potenzialFeld.Length];
             _prodFeld = new double[_potenzialFeld.Length];
             _ueberFeld = new double[_potenzialFeld.Length];
+            _abgabeStunde = new double[_potenzialFeld.Length];
+            _pumpeFeld = new double[_potenzialFeld.Length];
         }
 
         /// <summary>
@@ -604,6 +662,44 @@ namespace WindowsFormsApplication1
             FelderUebernehmen(GanglinieEinsetzen(felder, Ganglinie), senken);
         }
 
+        /// <summary>Ein Kollektorfeld für den Testeinstieg <see cref="Vorbereiten_Testfelder"/>.</summary>
+        internal sealed class Testfeld
+        {
+            /// <summary>Anlagen-ID des Felds (Schlüssel der Senkenliste).</summary>
+            public int ID_Anlage;
+            /// <summary>Bruttopotenzial je Stunde [kWh]; <c>null</c> = 0.</summary>
+            public double[] Potenzial;
+            /// <summary>Pumpenleistung [W]; <c>null</c> = nicht gepflegt.</summary>
+            public double? PumpenleistungW;
+            /// <summary>Hilfsenergieanteil [%]; <c>null</c> = nicht gepflegt.</summary>
+            public double? HilfsenergieAnteil;
+        }
+
+        /// <summary>
+        /// Testeinstieg ohne Datenbank für den Solarkreis (Welle M2): Felder mit vorgegebenem
+        /// Potenzial und Pumpenangaben, gerechnet über dieselben Stundenschritte wie im Lauf.
+        /// </summary>
+        internal void Vorbereiten_Testfelder(IList<Testfeld> testfelder, List<Senkenliste> senken)
+        {
+            Init();
+            Array.Clear(Waermebedarf, 0, Waermebedarf.Length);
+
+            List<SolarFeld> felder = new List<SolarFeld>();
+            foreach (Testfeld t in testfelder)
+            {
+                SolarFeld f = new SolarFeld { ID_Anlage = t.ID_Anlage, Name = "Feld " + t.ID_Anlage,
+                                              Anlagenname = "Anlage " + t.ID_Anlage, Stunden = 8760,
+                                              PumpenleistungW = t.PumpenleistungW,
+                                              HilfsenergieAnteil = t.HilfsenergieAnteil };
+                if (t.Potenzial != null) Array.Copy(t.Potenzial, f.Potenzial, Math.Min(8760, t.Potenzial.Length));
+                felder.Add(f);
+            }
+
+            Ganglinie = SolarganglinieWeiche.Keine();
+            RechnetGanglinie = false;
+            FelderUebernehmen(felder, senken);
+        }
+
         /// <summary>
         /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
         /// Heizkreis/Beides — dieselbe Regel wie beim Kontextaufbau der Wärmepumpe
@@ -633,7 +729,10 @@ namespace WindowsFormsApplication1
         public void Stunde_Start(int stunde, double[] rest)
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
+            {
                 _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
+                _abgabeStunde[f] = 0;
+            }
 
             double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
@@ -687,6 +786,7 @@ namespace WindowsFormsApplication1
 
                 _restPotenzial[f] -= prod;
                 _prodFeld[f] += prod;
+                _abgabeStunde[f] += prod;
                 DirektdeckungGesamtKwh += prod;
                 if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
             }
@@ -736,6 +836,7 @@ namespace WindowsFormsApplication1
 
             _restPotenzial[f] -= ladung;
             _prodFeld[f] += ladung;
+            _abgabeStunde[f] += ladung;
             SpeicherladungGesamtKwh += ladung;
             if (stunde >= 0 && stunde < 8760)
             {
@@ -755,6 +856,14 @@ namespace WindowsFormsApplication1
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
             {
+                // ST1: der Pumpenstrom der Stunde - nur, wenn das Feld Wärme abgegeben hat.
+                double pumpe = Solarkreis.PumpenstromKwh(_pumpeW[f], _hilfsAnteil[f], _abgabeStunde[f]);
+                if (pumpe > 0)
+                {
+                    _pumpeFeld[f] += pumpe;
+                    if (stunde >= 0 && stunde < 8760) Pumpenstrom_stuendlich[stunde] += pumpe;
+                }
+
                 double rest = _restPotenzial[f];
                 if (rest <= 0) continue;
 
@@ -777,9 +886,12 @@ namespace WindowsFormsApplication1
                     Anzahl = _feldAnzahl[f],
                     WaermeproduktionKwh = _prodFeld[f],
                     UeberschussKwh = _ueberFeld[f],
+                    PumpenstromKwh = _pumpeFeld[f],
                     IstGanglinie = f < _feldGanglinie.Count && _feldGanglinie[f]
                 });
             }
+
+            PumpenstromGesamtKwh = Pumpenstrom_stuendlich.Sum();
 
             WaermebedarfGesamtKwh = Waermebedarf.Sum();
             Max_Waermebedarf = Waermebedarf.Max();
@@ -837,6 +949,9 @@ namespace WindowsFormsApplication1
         public long Anzahl;
         public double WaermeproduktionKwh; // kWh/a
         public double UeberschussKwh;      // kWh/a
+
+        /// <summary>Pumpenstrom des Solarkreises [kWh/a] (ST1); 0 ohne gepflegte Pumpe.</summary>
+        public double PumpenstromKwh;
 
         /// <summary>
         /// true für die Zeile der Solarthermieganglinie (Folgeauftrag 4): Sie hat keine

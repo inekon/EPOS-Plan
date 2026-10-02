@@ -85,6 +85,15 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// Die Welle M2 Solarthermie (Schemaschritt <c>SolarthermieFelderSchema.SCHRITT</c>) hat
+        /// die fuenf Felder des Kollektorfelds ergaenzt - <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>,
+        /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>. MODELLspalten: Der
+        /// Kollektordialog schreibt sie, <c>SimulationSolarthermie</c> liest sie. Alle nullbar,
+        /// NULL = Vorgabe.
+        /// </para>
+        ///
+        /// <para>
         /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
@@ -111,7 +120,9 @@ namespace WindowsFormsApplication1
                          PV_WrWirkungsgrad, PV_Systemverluste,
                          PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
                          PV_Wechselrichterweg,
-                         Kuehl_ID_Carrier, Kuehl_EigenerZaehler)
+                         Kuehl_ID_Carrier, Kuehl_EigenerZaehler,
+                         Pumpenleistung_W, Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K,
+                         Kollektor_Spreizung_K, Arbeitstemperatur_Weg)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
@@ -119,6 +130,8 @@ namespace WindowsFormsApplication1
                                 ?,?,
                                 ?,?,?,?,?,
                                 ?,
+                                ?,?,
+                                ?,?,?,
                                 ?,?)";
 
         /// <summary>
@@ -253,7 +266,16 @@ namespace WindowsFormsApplication1
                         // wird geschrieben, alles andere als NULL - die Spalte kennt keine
                         // DDL-Vorgabe, und 0 hiesse dasselbe wie NULL.
                         ProjektPuffer.Par("@kuehlzaehler", DbParamTyp.Integer,
-                            EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler))
+                            EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler)),
+
+                        // --- Kollektorfeld der Solarthermie (Welle M2) -------------------
+                        // Ausdruecklicher Typ wie bei den PV-Feldern: NULL ist der Regelfall
+                        // ("es gilt die Vorgabe").
+                        ProjektPuffer.Par("@solpumpe",   DbParamTyp.Double,   Wert(item.Pumpenleistung_W)),
+                        ProjektPuffer.Par("@solverl",    DbParamTyp.Double,   Wert(item.Solarkreisverluste_Prozent)),
+                        ProjektPuffer.Par("@solgraed",   DbParamTyp.Double,   Wert(item.Uebertrager_Graedigkeit_K)),
+                        ProjektPuffer.Par("@solspreiz",  DbParamTyp.Double,   Wert(item.Kollektor_Spreizung_K)),
+                        ProjektPuffer.Par("@solweg",     DbParamTyp.VarWChar, item.Arbeitstemperatur_Weg)
                     };
         }
 

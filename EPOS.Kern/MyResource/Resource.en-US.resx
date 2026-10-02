@@ -41265,5 +41265,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
+  <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
+    <value>Solar loop pump electricity:</value>
+  </data>
 </root>
 

@@ -907,7 +907,11 @@ namespace WindowsFormsApplication1
                         bSimulationKessel = true;
                     }
 
-                    if (_solarInSchleife) bSimulationSolarthermie = true;
+                    if (_solarInSchleife)
+                    {
+                        bSimulationSolarthermie = true;
+                        SolarPumpenstromBuchen();
+                    }
 
                     if (_bhkwInSchleife)
                     {
@@ -942,6 +946,7 @@ namespace WindowsFormsApplication1
                     Simulation_Solarthermie_Ctrl_Zweikanalig(kanaele);
 
                     bSimulationSolarthermie = true;
+                    SolarPumpenstromBuchen();
                 }
                 else if (tool[i] == DbWerte.ERZEUGER_BHKW)
                 {
@@ -974,6 +979,21 @@ namespace WindowsFormsApplication1
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);
+        }
+
+        /// <summary>
+        /// ST1 (Welle M2 Solarthermie): der PUMPENSTROM der Solarkreise als Verbraucher am Anschluss —
+        /// an der Position der Solarthermie in den Rest des Strombedarfs, wie der Strom der
+        /// Wärmepumpe. Ohne gepflegte Pumpenleistung und ohne Hilfsenergieanteil ist die Reihe 0 und
+        /// der Vektor bleibt unberührt (bitgleich).
+        /// </summary>
+        private void SolarPumpenstromBuchen()
+        {
+            SimulationSolarthermie st = simulation_solarthermie;
+            if (st == null || !(st.PumpenstromGesamtKwh > 0)) return;
+
+            double[] pumpe = Stundenwerte_zu_viertelstunden(st.Pumpenstrom_stuendlich);
+            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, pumpe);
         }
 
         /// <summary>

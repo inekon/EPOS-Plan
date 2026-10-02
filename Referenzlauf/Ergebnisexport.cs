@@ -285,6 +285,12 @@ namespace WindowsFormsApplication1.Referenzlauf
             skalare.Add(Neu("Sim.bSimulationWP", sim.bSimulationWP.ToString()));
             skalare.Add(Neu("Sim.bSimulationKessel", sim.bSimulationKessel.ToString()));
             skalare.Add(Neu("Sim.bSimulationSolarthermie", sim.bSimulationSolarthermie.ToString()));
+            // ST1 (Welle M2): der Pumpenstrom der Solarkreise [MWh/a] - NUR mit gepflegter Pumpe
+            // oder Hilfsenergieanteil; ohne beides kein Schluessel, die Basis bleibt byte-gleich.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null &&
+                sim.simulation_solarthermie.PumpenstromGesamtKwh > 0)
+                skalare.Add(Neu("Solarthermie.PumpenstromMwh",
+                                Zahl(sim.simulation_solarthermie.PumpenstromGesamtKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationBHKW", sim.bSimulationBHKW.ToString()));
             skalare.Add(Neu("Sim.bSimulationPV", sim.bSimulationPV.ToString()));
             skalare.Add(Neu("Sim.bSimulationSSP", sim.bSimulationSSP.ToString()));
