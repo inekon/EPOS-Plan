@@ -91,6 +91,25 @@ namespace WindowsFormsApplication1
         /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// Der Standby des Speichersystems (Welle M5, SP1) aus Eingang und Ladereihe des Speicherlaufs:
+        /// belegt <see cref="SpeichersystemStandbyAusPvKw"/>, <see cref="SpeichersystemStandbyAusNetzKw"/>
+        /// und <see cref="SpeichersystemEigenverbrauchKwh"/>. Ohne Standby bleibt alles leer.
+        /// </summary>
+        private void StandbyAufteilen(StromspeicherLaufKontext kontext, SpeicherEngine.SpeicherErgebnis ergebnis)
+        {
+            double standbyKw = kontext?.Parameter?.StandbyKw ?? 0.0;
+            if (!(standbyKw > 0.0) || kontext.Eingang == null) return;
+
+            SpeicherEngine.StandbyBilanz bilanz = SpeicherEngine.Speichersystem.Standby(
+                kontext.Eingang.LastKw, kontext.Eingang.PvKw, ergebnis?.LadungAcKwh,
+                standbyKw, StromspeicherSimCtrl.INTERVALL_H);
+            kontext.Standby = bilanz;
+            SpeichersystemStandbyAusPvKw = bilanz.AusPvKw;
+            SpeichersystemStandbyAusNetzKw = bilanz.AusNetzKw;
+            SpeichersystemEigenverbrauchKwh = bilanz.GesamtKwh;
+        }
+
         internal double[] SpeicherlaufAusfuehren(int ID_Projekt,
             System.Threading.CancellationToken abbruch = default)
         {
@@ -132,6 +151,13 @@ namespace WindowsFormsApplication1
                     Rest_Strombedarf_viertelstuendlich =
                         (double[])Speicherflottennetzbilanz.NetzbezugKw.Clone();
                     SpeicherflotteErsetztReststrom = true;
+
+                    // SP1 (Welle M5): Der Eigenverbrauch des Speichersystems ist im Flottenpfad der
+                    // Hilfsverbrauch der Einheiten - er steht bereits als Standortlast in der Bilanz.
+                    double hilfsKwh = 0;
+                    foreach (SpeicherEngine.FlottenIntervallErgebnis iv in lauf.Studie.Variante.Intervalle)
+                        hilfsKwh += iv.HilfsverbrauchKw * StromspeicherSimCtrl.INTERVALL_H;
+                    SpeichersystemEigenverbrauchKwh = hilfsKwh;
                     return new double[Rest_Strombedarf_viertelstuendlich.Length];
                 }
                 catch (OperationCanceledException) { throw; }
@@ -188,6 +214,11 @@ namespace WindowsFormsApplication1
 
             Speicherergebnis = ergebnis;
             Speicherkontext = ctrl.LetzterKontext;
+
+            // SP1 (Welle M5): der Standby des Speichersystems - aus dem PV-Überschuss nach der Ladung,
+            // sonst aus dem Netz. Ohne Standby keine Reihe, der Lauf bleibt, wie er war.
+            StandbyAufteilen(ctrl.LetzterKontext, ergebnis);
+
             Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(ergebnis.SoCKwh);
             Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(Speicherfuellstand_viertelstuendlich);
 
