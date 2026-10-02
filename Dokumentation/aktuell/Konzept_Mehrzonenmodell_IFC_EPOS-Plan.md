@@ -1343,6 +1343,27 @@ selbst einträgt: **Eine stillschweigend entkoppelte Mehrzonenrechnung wäre sch
 Einzonenrechnung.** Das ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
 Zone entschieden.
 
+**Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
+`IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
+Schema lässt dort jedes `IfcProduct` zu. Der Leser betritt solche räumlichen Kinder wie zerlegte, aber
+erst **nach** der Zerlegung desselben Knotens: Was beide Wege erreichen, nimmt den Weg der Zerlegung
+(und dessen Geschoss), jedes räumliche Element zählt einmal, ein enthaltenes `IfcBuilding` bleibt ein
+eigenes Gebäude. Die Zahl der so gefundenen Geschosse und Räume nennt `IMP_IFC_PROT_STRUKTUR_ENTHALTEN`
+(I) am Gebäude.
+
+**Mengenrückfall der Räume.** Fläche, Volumen und Höhe eines Raums kommen aus
+`Qto_SpaceBaseQuantities` (bzw. `BaseQuantities`, `Qto_SpaceQuantities`). Fehlen dort **beide**
+Flächen `NetFloorArea` und `GrossFloorArea`, fällt der Leser auf **alle** Mengensätze des Raums
+zurück, auch unter fremdem Satznamen (etwa `HSETU_RaumQuantities`), und nimmt je Größe die erste
+positive Menge dieser Namen: Nettofläche `NetFloorArea` → `Area` → `NetArea`, Bruttofläche
+`GrossFloorArea` → `GrossArea` (die Wahl netto/brutto bleibt die der Flächenart), Volumen
+(wenn `NetVolume` und `GrossVolume` fehlen) `NetVolume` → `GrossVolume` → `Volume`, Höhe (wenn
+`Height` fehlt) `Height` → `FinishCeilingHeight`. Ein Wert im Standardsatz geht immer vor. Jeder
+genutzte Rückfall wird je Zielgröße, Satz und Menge mit der Zahl der Räume benannt
+(`IMP_IFC_PROT_MENGE_RUECKFALL`, W) — der Anwender sieht, welcher Mengenname galt. Geometrie wird
+dafür nicht gerechnet (ADR-003). Für Bauteile gilt der Rückfall nicht: Ihre fremden Sätze führen
+Längen in anderer Bedeutung (im gemessenen CAD-Export ist `Width` die Wandlänge, nicht die Dicke).
+
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
 Eigenschaftsliste — `Pset_SpaceCommon` im FZK-Haus führt kein `IsExternal`, dafür die fremden
 `NaturalVentilation` und `Category`; unbekannte Eigenschaften sind folgenlos zu übergehen.
