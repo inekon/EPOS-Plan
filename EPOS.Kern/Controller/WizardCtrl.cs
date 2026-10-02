@@ -3219,7 +3219,15 @@ namespace WindowsFormsApplication1
                 // (die PROJEKTtabelle) zeigt - daraus wurde "FOREIGN KEY constraint
                 // failed" an einer Stelle, die mit der Ursache nichts zu tun hat. Eine
                 // Katalog-Id gehoert nie in eine Projektzuordnung.
-                int projPwId = ProzesswaermeStammCtrl.CopyFromStamm(item.szProzessname, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV2, wie SV1 beim Stromverbraucher): Zeigt
+                // die Zeile schon auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei
+                // genau dieser Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem
+                // Katalog kopiert.
+                int projPwId = ProzesswaermeStammCtrl.GetProjektIdUeberId(
+                    item.ID_Prozesswaerme, item.szProzessname, projektID);
+                if (projPwId <= 0)
+                    projPwId = ProzesswaermeStammCtrl.CopyFromStamm(item.szProzessname, projektID);
                 if (projPwId <= 0)
                 {
                     DataRepository.FehlerMelden(
@@ -3411,7 +3419,15 @@ namespace WindowsFormsApplication1
                 // die Kopie, bricht der Schritt BENANNT ab, statt die KATALOG-Id in
                 // Z_Projekt_Brauchwasser zu schreiben, deren Fremdschluessel auf
                 // Tab_Brauchwasser (die PROJEKTtabelle) zeigt.
-                int projBwId = BrauchwasserStammCtrl.CopyFromStamm(item.szBezeichner, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV2, wie SV1 beim Stromverbraucher): Zeigt
+                // die Zeile schon auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei
+                // genau dieser Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem
+                // Katalog kopiert.
+                int projBwId = BrauchwasserStammCtrl.GetProjektIdUeberId(
+                    item.ID_Brauchwasser, item.szBezeichner, projektID);
+                if (projBwId <= 0)
+                    projBwId = BrauchwasserStammCtrl.CopyFromStamm(item.szBezeichner, projektID);
                 if (projBwId <= 0)
                 {
                     DataRepository.FehlerMelden(

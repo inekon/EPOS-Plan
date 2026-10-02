@@ -215,7 +215,7 @@ trägt eine Gültigkeitsprüfung, und das Ergebnis des Verfahrensvergleichs ist 
 
 | Stelle | Konzept bzw. Mockup | Dieses Papier |
 |---|---|---|
-| Konzept Teil 3.0–3.2, 3.5 | WinForms-Tripel, Access, `UpdateDB.ini`, `float`, native DLL, Spaltenfehler `M1…M12` | Kern + Razor + SQLite mit `SchemaMigration`, `double`, C#-Port `BhkwPlan`; der Spaltenfehler ist behoben (`BrauchwasserCtrl.cs:78-102`), die Access-Hygiene entfällt |
+| Konzept Teil 3.0–3.2, 3.5 | WinForms-Tripel, Access, `UpdateDB.ini`, `float`, native DLL, Spaltenfehler `M1…M12` | Kern + Razor + SQLite mit `SchemaMigration`, `double`, C#-Port `BhkwPlan`; der Spaltenfehler ist behoben, die Klasse `BrauchwasserCtrl` entfallen, die Access-Hygiene entfällt |
 | Konzept 3.1 | eigenes Klassenbibliotheks- und Testprojekt | Ordner `EPOS.Kern/Allgemein/Zapfprofil/`, Tests in `EPOS.Kern.Tests` (A1) |
 | Konzept 3.2 | A100- und Ecodesign-Profile als Katalogeinträge `Tab_Zapfprofil` | Bedarfstage der Auslegung als eigener Katalog `Tab_TwwBedarfstag_STAMM` schon in T1 (Normprofile erst nach K1/K8); die Bilanzreihe wird **nicht gespeichert**, sondern je Lauf gerechnet (A2) |
 | Konzept 3.4 | Normkennwerte „im Code als gekapselte Parameter" | Normkonstanten nie im Quelltext, sondern als Parametersatz aus `Tab_TwwParameter_STAMM`; Tests mit erfundenen Parametern (Kapitel 6) |
