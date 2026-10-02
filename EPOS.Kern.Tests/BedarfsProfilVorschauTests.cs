@@ -122,7 +122,10 @@ namespace EPOS.Kern.Tests
 
             Assert.All(sim.Strombedarf_monat.Take(12),
                        m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-5)."));
-            Assert.Equal(67.462, sim.Strombedarf_monat[0], 2);
+            // SV1 (30.09.2026): 67,462 MWh bei der ungeskalierten Kopie (672 MWh im Jahr);
+            // mit der gepflegten Jahressumme 15 MWh, jetzt ueber die ID gefunden, sind es
+            // 67,462 x 15 / 672 = 1,506 MWh.
+            Assert.Equal(1.506, sim.Strombedarf_monat[0], 3);
         }
 
         // ==================================================================
@@ -283,8 +286,11 @@ namespace EPOS.Kern.Tests
 
             // Die eingefrorene Zahl: die Stundenreihe des Projekts in MWh. Sie ist
             // zeichengleich zu der, die der PROJEKTLAUF fuer dieselbe Reihe ausweist -
-            // 672 000 kWh im Jahr, verteilt auf das Standardlastprofil EFH_3_Pers.
-            Assert.Equal(672.000, v.Strom.Strombedarf_Gebaeude_gesamt, 3);
+            // die gepflegte Jahressumme 15 MWh, verteilt auf das Standardlastprofil
+            // EFH_3_Pers. SV1 (30.09.2026): Bis dahin stand hier 672 - die Summe der zwoelf
+            // Monatswerte der Kopie, weil die Jahressumme der Zuordnung ueber den Namen
+            // gesucht wurde und die Kopie "EFH_3_Pers (P1017)" heisst. Jetzt ueber die ID.
+            Assert.Equal(15.000, v.Strom.Strombedarf_Gebaeude_gesamt, 3);
 
             // Die Vorschau kennt keine Stromganglinie - sie rechnet die AUSGEWAEHLTEN
             // Profile. Die Gesamtsumme ist deshalb die Summe beider Posten mit einem

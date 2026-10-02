@@ -102,6 +102,28 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
+        /// <summary>
+        /// Die Projektkopie mit der ID <paramref name="idKopie"/>, wenn sie zu DIESEM Projekt
+        /// gehört und den Namen <paramref name="szBezeichner"/> trägt; sonst 0.
+        ///
+        /// <para><b>Die Zuordnung über die ID</b> (Auftrag SV1 vom 30.09.2026). Eine gespeicherte
+        /// Zuordnungszeile kennt ihre Kopie per ID; beim erneuten Speichern bleibt sie bei genau
+        /// dieser Kopie, statt sie über den Namen neu zu suchen — unter gleichnamigen Kopien
+        /// desselben Projekts träfe <see cref="GetProjektId"/> sonst irgendeine. Der Name muss
+        /// übereinstimmen: Eine neu aufgenommene Zeile trägt die KATALOG-Id, und die kann
+        /// zahlengleich mit der Id einer ganz anderen Projektkopie sein.</para>
+        /// </summary>
+        public static int GetProjektIdUeberId(int idKopie, string szBezeichner, int idProjekt)
+        {
+            if (idKopie <= 0 || idProjekt <= 0 || string.IsNullOrEmpty(szBezeichner)) return 0;
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM " + TABLE_PROJ + " WHERE ID = ? AND ID_Projekt = ? AND Bezeichner = ?",
+                new DbParam("@id", idKopie),
+                new DbParam("@proj", idProjekt),
+                new DbParam("@bez", szBezeichner));
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
         // Kopiert einen Stamm-Stromverbraucher (+ Typ-Profil) ins Projekt, falls noch nicht vorhanden.
         // Rueckgabe: Projekt-Stromverbraucher-ID (Tab_Stromverbraucher.ID), -1 bei Fehler.
         public static int CopyFromStamm(string szBezeichner, int idProjekt)
