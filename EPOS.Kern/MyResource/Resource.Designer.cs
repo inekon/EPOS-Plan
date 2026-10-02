@@ -12254,6 +12254,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an. ähnelt.
+        /// </summary>
+        public static string BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF {
+            get {
+                return ResourceManager.GetString("BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wert nicht bestimmbar ähnelt.
         /// </summary>
         public static string BV_GRUND_AUSNAHME {

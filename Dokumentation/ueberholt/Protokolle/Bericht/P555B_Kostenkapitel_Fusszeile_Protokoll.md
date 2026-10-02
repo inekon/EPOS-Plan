@@ -176,7 +176,7 @@ für CO₂ und die Menge.
   `LeistungspreisTarifNichtAngesetzt` mit dem Leistungsmodell des Reststromtarifs. Die Gruppenzahl der Fußzeile ist mit
   den Preisen des Stromträgers gerechnet; entsprechend nennt die Fußzeile höchstens den Leistungspreis des
   **Stromträgers**, nie den des Reststromtarifs. Bei aktivem Rollentarif kann sie ihn deshalb nicht nennen; das ist
-  nicht nachgebaut. Die Hinweiszeile des Kapitels Wirtschaftlichkeit nennt ihn weiter (§ 7).
+  nicht nachgebaut. Die Hinweiszeile des Kapitels Wirtschaftlichkeit nennt ihn weiter (§ 7). Diese Grenze hebt § 9 auf.
 - **Prüfungen:** `StromGruppenregelTests` neu *Die_Fussnote_der_Kostentafel_nennt_den_nicht_angesetzten_Leistungspreis*
   (Satz und Träger an der Gruppenzahl, Stand unberührt; Kostenfußzeile = Fußzeile ohne Merkmal + Leerzeichen + Satz, Zahl
   ohne Leistungspreis; Emissionsfußzeile ohne „Leistungspreis“; Gruppentafel, Gesamttafel und Blatt „Vergleich“;
@@ -185,4 +185,53 @@ für CO₂ und die Menge.
   (de/en, zwei Stellen, de gleich Rückfall). Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
 - **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel` um einen Satz mit neutralem Beispiel
   ergänzt; Logbuchsatz unter Version 1.2.0.6 (#644). Der Wiki-Upload steht gebündelt aus.
+- **Gate:** siehe Statuszeile.
+
+## 9 Nachtrag: Leistungspreis des Reststromtarifs in der Fußzeile (02.10.2026)
+
+- **Anlass:** Anwenderentscheid vom 02.10.2026 — die Fußzeile unter der Kostentafel nennt im Rollentarif (Register
+  EZ‑18) auch den Leistungspreis des Reststromtarifs. Das hebt die Grenze aus § 8 auf. Kein Schemaschritt, kein
+  Rechenweg berührt, keine Referenzbasis neu eingefroren, `EPOS.iOS/` und die Windows-Schale nicht berührt.
+- **Tarif der Gruppe im Sammler:** `BerichtsDatenSammler.StromGruppenzahlErmitteln` lädt den Tarif einmal vor der
+  Schleife über denselben Controllerweg wie das Kapitel Wirtschaftlichkeit (`WirtschaftlichkeitCtrl.LadeTarif(daten.
+  IdStamm)`), gefangen wie das Laden der Regel: ohne Tarif bleibt alles wie nach § 8. Der Rollentarif wirkt an der
+  Kopie nach derselben Bedingung wie in `WirtschaftlichkeitCtrl.RechneProjekt` — Tarif wirksam (`Wirksam`), Kopie ohne
+  `StrombedarfOhneVerwendungMWh`.
+- **Merkmal an der Gruppenzahl:** `StromGruppenzahl.LeistungspreisTarifModell` — der Klartext des Leistungspreismodells
+  des Reststromtarifs (`WirtschaftlichkeitCtrl.Leistungsmodelltext`, die Texte `TARIF_LM_*` der Tarifstruktur), gesetzt,
+  wenn der Rollentarif wirkt und `StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)`; sonst `null`. Wirkt der
+  Rollentarif, bleiben `LeistungspreisSatz` und `LeistungspreisTraeger` leer: Der Tarif ersetzt die Preise des Trägers,
+  sein Satz tritt **an die Stelle** des Trägersatzes — wie in der Hinweiszeile der Wirtschaftlichkeit
+  (`RechneRollentarif`, `LeistungspreisTarifNichtAngesetzt`).
+- **Fußzeile:** `VariantenDaten.StromGruppenregelFussnote` hängt unter der Kostentafel den Tarifsatz an, wenn
+  `LeistungspreisTarifModell` gesetzt ist, sonst wie nach § 8 den Trägersatz — nie beide. Die Emissionsfußzeile bleibt
+  unverändert; ohne beide Merkmale ist die Kostenfußzeile byte-gleich zum Stand nach § 8.
+- **Wortlaut** — Ressource `BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF`, {0} = Modell, dazu der deutsche Rückfall
+  `VariantenDaten.FUSSNOTE_LEISTUNGSPREIS_TARIF`; `Werkzeuge/ResourceDesigner` nachgezogen (ein neuer Eintrag,
+  Zeilenenden auf den vorgefundenen Stand zurückgesetzt):
+  - de: `Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.`
+  - en: `The group rule does not apply the demand charge of the residual power tariff with the model “{0}”.` — nach
+    dem Wortlaut von `WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT` („residual power tariff“, „with the model“).
+  - Der Modelltext entsteht im Sammler in der Kultur des Laufs, wie der Satz aus § 8; die Fußzeile übernimmt ihn als Text.
+- **Hinweis des Berichtslaufs:** Wirkt der Rollentarif, meldet der Schritt an die Hinweisliste den Satz aus
+  `WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT` mit dem Modelltext — nur, wenn der
+  Reststromtarif einen Leistungspreis führt —, nicht den Trägerhinweis der Kopie. Ohne Rollentarif wie nach § 8.
+- **Bleibende Eigenheit (benannt, nicht geändert):** Die Gruppenzahl des Berichtswegs rechnet `KostenEmissionRechner.
+  Berechne` an der Kopie und damit mit den Preisen des Stromträgers; das Kapitel Wirtschaftlichkeit rechnet im
+  Rollentarif mit dem Tarif (Arbeits- und Grundpreis des Reststromtarifs). Die Zahl der Fußzeile und die Zahl der
+  Kennzahltafel können im Rollentarif deshalb auseinanderliegen; die Fußzeile nennt dennoch den Leistungspreis des
+  Tarifs, weil dieser die Trägerpreise ersetzt. Ebenso fragt der Sammler nur die Bedingung aus `RechneProjekt` ab, nicht
+  die Rückfälle in `RechneRollentarif` (fehlende Stundenreihen, kein Arbeitspreis gepflegt, unvollständige
+  Flat-Energiekosten), in denen die Wirtschaftlichkeit mit den Trägerpreisen rechnet.
+- **Prüfungen:** `StromGruppenregelTests` neu *Im_Rollentarif_nennt_die_Fussnote_das_Leistungspreismodell_des_Reststromtarifs*
+  (Rollentarif monatlich, Träger mit Leistungspreis: Merkmal mit `TARIF_LM_MONATLICH`, Trägersatz leer; Zahl gleich der
+  Kopie; Kostenfußzeile endet mit dem Tarifsatz, ohne „des Stromträgers“; Emissionsfußzeile ohne „Leistungspreis“;
+  Hinweis nennt das Modell, nicht den Träger; Gruppentafel und Blatt „Vergleich“; Englisch aus der Ressource) und
+  *Im_Rollentarif_nennt_die_Fussnote_die_Staffel_und_ohne_Leistungspreis_keinen* (Modelltext der Staffel; ohne
+  Leistungspreis am Reststromtarif weder Tarif- noch Trägersatz, kein Hinweis, dieselbe Zahl);
+  *Die_Fussnoten_kommen_aus_den_Ressourcen* prüft den neuen Schlüssel (de/en, verschieden, eine Stelle, de gleich
+  Rückfall). Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
+- **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel` um den Tarifsatz mit neutralem Beispiel
+  ergänzt; der Logbuchsatz unter Version 1.2.0.6 deckt beide Fälle (#644, #649). Der Wiki-Upload steht
+  gebündelt aus.
 - **Gate:** siehe Statuszeile.

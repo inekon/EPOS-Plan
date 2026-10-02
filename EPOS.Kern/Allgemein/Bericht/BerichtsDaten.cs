@@ -481,7 +481,11 @@ namespace WindowsFormsApplication1
         /// <para>Unter der Kostentafel folgt, durch ein Leerzeichen getrennt, der Satz zum
         /// Leistungspreis, den die Gruppenzahl nicht enthält (Register EZ‑17;
         /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>) — nur, wenn der Stromträger einen führt
-        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Die Emissionsfußzeile nennt ihn nicht.</para>
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Wirkt der Rollentarif (Register EZ‑18),
+        /// tritt an seine Stelle der Satz zum Leistungspreismodell des Reststromtarifs
+        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>,
+        /// <see cref="StromGruppenzahl.LeistungspreisTarifModell"/>) — nie beide. Die
+        /// Emissionsfußzeile nennt keinen.</para>
         /// </summary>
         public string StromGruppenregelFussnote(System.Globalization.CultureInfo kultur, string gruppe)
         {
@@ -508,8 +512,13 @@ namespace WindowsFormsApplication1
             catch (FormatException) { satz = vorlage; }
 
             // Register EZ‑17: Unter der Kostentafel nennt die Fußzeile den Leistungspreis, den die
-            // Gruppenzahl nicht enthält — nur dort, und nur, wenn der Stromträger einen führt.
-            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
+            // Gruppenzahl nicht enthält — nur dort, und nur, wenn der Stromträger einen führt. Im
+            // Rollentarif (EZ‑18) ersetzt der Tarif die Preise des Trägers: Dann nennt sie an dessen
+            // Stelle das Leistungspreismodell des Reststromtarifs, wie die Hinweiszeile der
+            // Wirtschaftlichkeit.
+            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisTarifModell))
+                satz += " " + LeistungspreisTarifFussnote(k);
+            else if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
                 satz += " " + LeistungspreisFussnote(k);
             return satz;
         }
@@ -533,9 +542,25 @@ namespace WindowsFormsApplication1
             catch (FormatException) { return vorlage; }
         }
 
+        /// <summary>
+        /// Der Satz zum nicht angesetzten Leistungspreis des Reststromtarifs (Register EZ‑18) für die
+        /// Fußzeile unter der Kostentafel: das Modell aus der <see cref="Gruppenzahl"/>, Wortlaut aus
+        /// der Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>.
+        /// </summary>
+        private string LeistungspreisTarifFussnote(System.Globalization.CultureInfo k)
+        {
+            string vorlage = null;
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF, k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS_TARIF;
+            try { return string.Format(k, vorlage, Gruppenzahl.LeistungspreisTarifModell); }
+            catch (FormatException) { return vorlage; }
+        }
+
         internal const string SCHLUESSEL_FUSSNOTE_KOSTEN = "BV_FUSSNOTE_GRUPPENREGEL_KOSTEN";
         internal const string SCHLUESSEL_FUSSNOTE_EMISSION = "BV_FUSSNOTE_GRUPPENREGEL_EMISSION";
         internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF";
 
         /// <summary>Rückfall der Fußzeile unter der Kostentafel, falls die Ressource fehlt.</summary>
         internal const string FUSSNOTE_KOSTEN =
@@ -553,6 +578,12 @@ namespace WindowsFormsApplication1
         /// Fußzeile unter der Kostentafel anhängt, falls die Ressource fehlt; {0} = Satz, {1} = Träger.</summary>
         internal const string FUSSNOTE_LEISTUNGSPREIS =
             "Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis des Reststromtarifs
+        /// (Register EZ‑18), den die Fußzeile unter der Kostentafel im Rollentarif an Stelle von
+        /// <see cref="FUSSNOTE_LEISTUNGSPREIS"/> anhängt, falls die Ressource fehlt; {0} = Modell.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS_TARIF =
+            "Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.";
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
@@ -699,6 +730,13 @@ namespace WindowsFormsApplication1
         /// <summary>Der Stromträger zu <see cref="LeistungspreisSatz"/> (Anzeigename); <c>null</c>
         /// ohne Leistungspreis.</summary>
         public string LeistungspreisTraeger;
+
+        /// <summary>Das Leistungspreismodell des Reststromtarifs im Klartext der Tarifstruktur, das die
+        /// Gruppenregel nicht ansetzt (Register EZ‑18); <c>null</c>, wenn kein Rollentarif wirkt oder
+        /// der Reststromtarif keinen Leistungspreis führt. Wirkt der Rollentarif, ersetzt er die Preise
+        /// des Trägers — dann bleiben <see cref="LeistungspreisSatz"/> und
+        /// <see cref="LeistungspreisTraeger"/> leer, und die Fußzeile nennt dieses Modell.</summary>
+        public string LeistungspreisTarifModell;
     }
 
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>
