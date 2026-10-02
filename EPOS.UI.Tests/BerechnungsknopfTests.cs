@@ -108,7 +108,8 @@ public sealed class BerechnungsknopfTests
     private static readonly Dictionary<string, string> FassungImKopf =
         new(StringComparer.Ordinal)
         {
-            { "Stromspeicher", "Fassung 7" }
+            { "Stromspeicher", "Fassung 7" },
+            { "Solarthermie", "Fassung 4" }
         };
 
     /// <summary>
