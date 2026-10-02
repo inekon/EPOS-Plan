@@ -131,7 +131,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Naht der Oberfläche: Die Ergebnishülle liest die Einstellung in die Laufparameter und
-        /// schreibt sie über denselben Weg; den Herleitungsweg je Gebäude bringt erst D2.
+        /// schreibt sie über denselben Weg; den Herleitungsweg je Gebäude belegt D2 (ohne Gebäude keine Zeile).
         /// </summary>
         [Fact]
         public void Die_Ergebnishuelle_liest_und_schreibt_die_Einstellung()
@@ -141,13 +141,16 @@ namespace EPOS.Kern.Tests
                 SimulationErgebnisHuelle.Erzeugen(null, REFERENZ, new BedarfsZustand());
             SimulationParameterDienste wege = huelle.ParameterGaben();
             Assert.NotNull(wege.AufheizvorgabeSchreiben);
-            Assert.Null(wege.AufheizHerleitung);
+            // Welle D2: die Herleitungszeilen je Gebäude - ohne Schalter keine; 1030 führt kein Gebäude.
+            Assert.NotNull(wege.AufheizHerleitung);
+            Assert.Empty(wege.AufheizHerleitung());
 
             Assert.Equal(Aufheizvorgabe.Aus, wege.Laden().Aufheizung);
             Assert.True(wege.AufheizvorgabeSchreiben(GEPFLEGT));
             Assert.Equal(GEPFLEGT, KonfigurationCtrl.AufheizvorgabeLesen(REFERENZ));
             Assert.Equal(GEPFLEGT, wege.Laden().Aufheizung);
             Assert.Equal(GEPFLEGT, wege.Laden().Kopie().Aufheizung);
+            Assert.Empty(wege.AufheizHerleitung());
         }
 
         // -----------------------------------------------------------------------------

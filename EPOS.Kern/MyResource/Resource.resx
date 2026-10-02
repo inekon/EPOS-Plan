@@ -41461,5 +41461,38 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung.</value>
   </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
+    <value>{0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
+    <value>{0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
+    <value>{0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
+    <value>{0}: Tagesbilanz — ohne Aufheizoptimierung</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0}: keine Bemessung — {1}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_GRENZE" xml:space="preserve">
+    <value>(Eingabe {0} kW gilt dem Katalogbau, × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR" xml:space="preserve">
+    <value>(Katalogbau {0} kW × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>(am Katalogbau; den Faktor der Verbrauchsangabe bestimmt erst der Lauf)</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GRENZE" xml:space="preserve">
+    <value>Heizleistungsgrenze</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_ZIEL" xml:space="preserve">
+    <value>Zielleistung</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>Grenze und Zielleistung je Zone</value>
+  </data>
 </root>
 

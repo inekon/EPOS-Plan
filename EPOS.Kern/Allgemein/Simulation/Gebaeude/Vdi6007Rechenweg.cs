@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
             // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
             // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
             // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
-            if (gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count))
+            if (Mehrzonenweg(gebaeude))
                 return RechnenMehrzonen(gebaeude, index, ziel, gemeinsam, out verbrauchAltKwh);
 
             verbrauchAltKwh = 0.0;
@@ -162,19 +162,7 @@ namespace WindowsFormsApplication1
                 if (gemeinsam == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
-                // Stufe KP1: die Konditionierung des Projektgebaeudes - null heisst woertlich der
-                // Bestandszweig (Konzept Konditionierungsprofile 6). Der Lauf liest ausschliesslich
-                // Projektmatrix und Projektkalender, nie den Katalog.
-                Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
-                    gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Referenzjahr,
-                    Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
-                    Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
-
-                GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
-                    gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
-                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
-                    konditionierung);
+                GebaeudeModellEingang eingang = EingangBauen(gebaeude, gemeinsam);
 
                 // Stufe KP3 (Entwurf KP3, Festlegungen 1 und 2): die Aufheizrampe NACH dem Bauen -
                 // Uebergabe, Kaelte, F21 und die stuendliche Kuehlpruefung haben die Reihe ohne Rampe
@@ -228,19 +216,10 @@ namespace WindowsFormsApplication1
                 if (gemeinsam == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
-                var klima = new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                                              gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
-                // Stufe KP1: EINE Naht fuer alle Zonen - der Datenweg liest je Zone ihren Satz
-                // (Konzept 3.4); das Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
-                bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
-                bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
                 // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
-                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index,
-                    gebaeude.ID_Gebaeude,
-                    idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone),
-                    Aufheizvorgabe != null && Aufheizvorgabe.An ? Aufheizvorgabe : null, AufheizleistungTestW);
+                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
+                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW);
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
@@ -256,6 +235,67 @@ namespace WindowsFormsApplication1
                     (ex.Message.StartsWith(wer, StringComparison.Ordinal) ? ex.Message : wer + ": " + ex.Message));
                 return false;
             }
+        }
+
+        // =====================================================================
+        //  Die Eingänge des Laufs - auch für die Auskunft ohne Jahreslauf
+        // =====================================================================
+
+        /// <summary>Rechnet das Gebäude in der Zonenschleife (ab zwei Zonen bis zur Grenze der Regelklasse, Stufe G6b)?</summary>
+        internal static bool Mehrzonenweg(ProjektGebaeudeModel gebaeude)
+            => gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count);
+
+        /// <summary>Die Aufheizvorgabe, wenn sie eingeschaltet ist; sonst <c>null</c> (Grundsatz 3: kein Aufruf).</summary>
+        private Aufheizvorgabe AufheizvorgabeAn => Aufheizvorgabe != null && Aufheizvorgabe.An ? Aufheizvorgabe : null;
+
+        /// <summary>
+        /// <b>Der Eingang eines Gebäudes ohne Zonenschleife</b> — mit dem Konditionierungssatz und den Schaltern
+        /// dieses Wegs, wie <see cref="Rechnen"/> ihn baut (Stufe KP1: <c>null</c> als Satz heißt wörtlich der
+        /// Bestandszweig, Konzept Konditionierungsprofile 6; der Lauf liest ausschließlich Projektmatrix und
+        /// Projektkalender, nie den Katalog). Der Rumpf ist ausgelagert, damit die Auskunft der Aufheizbemessung
+        /// (Entwurf KP3, Welle D2, B14) denselben Eingang bekommt — <c>SimulationWaermebedarf.UebergabeEingang</c>
+        /// baut ohne Satz.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Eingangsbauers.</exception>
+        internal GebaeudeModellEingang EingangBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
+        {
+            Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
+                gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Referenzjahr,
+                Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
+                Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
+
+            return GebaeudeModellEingang.Bauen(
+                gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
+                Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
+                konditionierung);
+        }
+
+        /// <summary>
+        /// <b>Die Zonen eines Mehrzonengebäudes vor dem Jahr</b> (Entwurf KP3, Welle D2, Festlegung 3) — dieselben
+        /// Eingänge wie in <see cref="RechnenMehrzonen"/> (<see cref="Zonenrechnung.ZonenBauen"/>: 4-K-Regel, dann
+        /// die Zonen samt Aufheizplänen bei eingeschalteter Vorgabe), ohne Zonenschleife und Jahr des Gebäudes.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen oder der Kopplung.</exception>
+        internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
+            => Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
+                                        Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
+                                        out _, out _, out _, out _);
+
+        private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
+            => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                                 gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
+
+        /// <summary>
+        /// Stufe KP1: EINE Naht für alle Zonen — der Datenweg liest je Zone ihren Satz (Konzept 3.4); das
+        /// Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
+        /// </summary>
+        private Func<long?, Konditionierungssatz> Zonenkonditionierung(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
+        {
+            bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
+            bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
+            return idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
+                                                          gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone);
         }
 
         /// <summary>

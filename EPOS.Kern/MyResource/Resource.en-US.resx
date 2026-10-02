@@ -41454,5 +41454,38 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Preheat optimisation (W5): the building is calculated with system coupling and is not optimised; the heat emitter limits the output after the step.</value>
   </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
+    <value>{0}: longest preheat time {1} h at {2} °C ({3}) · preheat power {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
+    <value>{0}: The preheat power is insufficient — at {1} °C ({2}) no ramp of up to 48 h holds · preheat power {3} kW {4}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
+    <value>{0}: heating circuit coupled (AK1) — not optimised</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
+    <value>{0}: daily balance — no preheat optimisation</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0}: no design — {1}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_GRENZE" xml:space="preserve">
+    <value>(input {0} kW applies to the catalogue building, × factor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR" xml:space="preserve">
+    <value>(catalogue building {0} kW × factor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>(catalogue building; the factor of the consumption entry is set by the run)</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GRENZE" xml:space="preserve">
+    <value>heating power limit</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_ZIEL" xml:space="preserve">
+    <value>target power</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>limit and target power per zone</value>
+  </data>
 </root>
 

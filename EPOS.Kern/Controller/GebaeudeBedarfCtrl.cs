@@ -523,6 +523,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Aufheizbemessung je Gebäude des Projekts, ohne Jahreslauf</b> (Entwurf KP3, Welle D2;
+        /// Grundsatz 3, Festlegung 3, B14) — die Auskunft hinter den Herleitungszeilen der Projekteinstellung
+        /// „Aufheizoptimierung". Je Gebäude in der Reihenfolge des Laufs
+        /// (<see cref="SimulationWaermebedarf.AufheizbemessungEinesGebaeudes"/>, Klimakalender und Schalter des
+        /// Projekts wie im Lauf); leer ohne Projekt, ohne Klimaregion oder mit ausgeschalteter Optimierung.
+        /// Gelesen, nicht geschrieben.
+        /// </summary>
+        internal static IReadOnlyList<Aufheizauskunft> Aufheizbemessung(int idProjekt, int idKlimaregion)
+        {
+            var liste = new List<Aufheizauskunft>();
+            if (idProjekt <= 0 || idKlimaregion <= 0) return liste;
+            if (!KonfigurationCtrl.AufheizvorgabeLesen(idProjekt).An) return liste;
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            sim.KlimakalenderLesen(idKlimaregion);
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(idProjekt);
+            for (int i = 0; i < ctrl.rows; i++)
+                liste.Add(sim.AufheizbemessungEinesGebaeudes(ctrl.items[i]));
+            return liste;
+        }
+
+        /// <summary>
         /// Die Zeile EINER Zone (Stufe G6b, W5): Reihen und Kennzahlen aus dem Zonenergebnis, die
         /// Heizlast mit derselben Umrechnung wie die Gebäudereihe (Watt → kW, Jahressumme durch
         /// 1000); eine unbeheizte Zone trägt keine Energie und keinen Heizsollwert (A2).
