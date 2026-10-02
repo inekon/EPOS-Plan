@@ -1010,11 +1010,12 @@ namespace EPOS.Kern.Tests
             // W14a-E-10-Q7 (Migrationsschritt 68, 07.09.2026): Der Stromspeicher
             // bekommt sein Feld "Firma" - VIERZEHN statt dreizehn, davon acht im
             // Bestandsblock. Er war der einzige Modulkatalog ohne dieses Feld.
-            Assert.Equal(14, sp.Felder.Count);
+            // Welle M5 (SP1): dazu die Selbstentladung im Block Geraetetechnik - FUENFZEHN.
+            Assert.Equal(15, sp.Felder.Count);
             Assert.Equal(15, pv.Felder.Count);
 
             Assert.Equal(8, sp.Felder.Count(f => f.Gruppe == 0));
-            Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);
 
