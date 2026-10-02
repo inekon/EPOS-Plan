@@ -1010,7 +1010,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Vorbereiten_Zweikanalig()
         {
-            if (wp_list.Count >= MAX_WP) return false;
+            string zuviele = ModulzahlPruefen(wp_list.Count);
+            if (zuviele != null)
+            {
+                Fehlertext = zuviele;
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
+                return false;
+            }
 
             Meldung.Warten(true);
 
@@ -1018,6 +1025,19 @@ namespace WindowsFormsApplication1
 
             QuellspeicherZusammenfuehren();
             return true;
+        }
+
+        /// <summary>
+        /// Die Modulgrenze des Laufs: <see cref="MAX_WP"/> Wärmepumpenmodule gelten, erst
+        /// das elfte wird abgelehnt — und zwar BENANNT (<c>SIMENG_WP_ZU_VIELE_MODULE</c>),
+        /// nicht still. <c>null</c> = die Zahl ist zulässig.
+        /// </summary>
+        /// <param name="anzahl">Zahl der Wärmepumpenanlagen des Projekts.</param>
+        public static string ModulzahlPruefen(int anzahl)
+        {
+            if (anzahl <= MAX_WP) return null;
+            return string.Format(CultureInfo.CurrentCulture,
+                                 MyResource.Resource.SIMENG_WP_ZU_VIELE_MODULE, anzahl, MAX_WP);
         }
 
         /// <summary>

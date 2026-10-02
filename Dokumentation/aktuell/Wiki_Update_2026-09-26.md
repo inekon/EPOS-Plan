@@ -173,7 +173,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Wärmegestehungskosten enthalten nur noch die Kosten der Wärmeerzeugung; Haushaltsstrom, Photovoltaik und Stromspeicher zählen nicht mehr mit. Unter den Energiekosten steht je Energieträger die Herleitung Menge × Preis. (#642)
 - Bei Unternehmen des produzierenden Gewerbes mindert die entgangene Entlastung nach § 9b StromStG die Stromgutschrift der Wärmegestehungskosten. (#642)
 - Brauchwasser- und Prozesswärmeprofile rechnen mit ihrer gepflegten Jahressumme auch dann, wenn ihre Projektkopie anders heißt als der Katalogeintrag. (#643)
-- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis, den die Gruppenregel nicht ansetzt – den des Stromträgers oder das Modell des Reststromtarifs. (#644, #649)
+- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt, und bei aktiver Tarifstruktur zusätzlich den abweichenden Leistungspreis des Reststromtarifs. (#644, #649, #654)
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
 - Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
@@ -246,6 +246,11 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Das Band „bitte neu berechnen“ der Seiten Kosten und Wirtschaftlichkeit erscheint auch, wenn nach der letzten Rechnung Kosten, Preise, Wirtschaftlichkeitsparameter oder der Kostenkatalog bearbeitet wurden, und nennt den Grund. (#647)
 - In der Vorlagenverwaltung der Konditionierung legt „Kopieren nach …“ aus einer Vorlage eine eigene Vorlage einer anderen Größe an: von Heizen nach Kühlen mit wählbarem Komfortsollwert sowie zwischen Geräten und Personen. (#648)
 - Beim Kopieren einer Heizvorlage nach Kühlen lässt sich für die Absenkzeiten ein eigener Kühlsollwert (Vorgabe 28 °C) oder „aus“ wählen. (#651)
+- Fehlt einer Wärmepumpe im Projekt nur die Kühlkennlinie, lässt sie sich im Anlagendialog aus dem Katalog übernehmen. (#655)
+- Der Photovoltaik-Dialog zeigt je Rechenmodell, ob die Anlage abregelt; im Modell „Einfach“ sind die wirkungslosen Wechselrichterwerte gesperrt. (#655)
+- Die Monatssäulen der Autarkie-Analyse folgen den Kalendermonaten. (#655)
+- Projekte mit zehn Wärmepumpen werden gerechnet, mehr werden mit einer Meldung abgelehnt; eine unbrauchbare CSV-Quelle meldet der Lauf als Warnung. (#655)
+- Der Gebäudedialog nennt den Grund, wenn sich kein Wärmebedarf berechnen lässt. (#655)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

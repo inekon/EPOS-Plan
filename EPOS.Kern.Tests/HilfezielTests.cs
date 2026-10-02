@@ -152,5 +152,31 @@ namespace EPOS.Kern.Tests
             using var englisch = new Kulturvorrichtung("en-US");
             Assert.Equal("Fundamentals: {0}", WindowsFormsApplication1.MyResource.Resource.HILFE_GRUNDLAGEN_KURZTEXT);
         }
+
+        /// <summary>
+        /// <b>Die Adresse eines Ziels</b> (Verbesserungen 29.09.2026, B9): Ein Seitenpfad
+        /// geht wie ein Kurzname je Segment durch <c>Uri.EscapeDataString</c> — ein Umlaut
+        /// steht kodiert in der Adresse, der Schrägstrich der Unterseite bleibt, der Anker
+        /// hängt hinten. Ein schon kodierter Pfad wird nicht doppelt kodiert.
+        /// </summary>
+        [Fact]
+        public void Die_Seitenadresse_kodiert_auch_einen_Seitenpfad_je_Segment()
+        {
+            const string B = "https://wiki.example";
+
+            Assert.Equal(B + "/wiki/Grundlagen/W%C3%A4rmepumpe#kennzahlen",
+                         Hilfeziel.Seitenadresse(B, "/wiki/Grundlagen/Wärmepumpe#kennzahlen"));
+            Assert.Equal(B + "/wiki/Grundlagen/W%C3%A4rmepumpe",
+                         Hilfeziel.Seitenadresse(B, "/wiki/Grundlagen/W%C3%A4rmepumpe"));
+            Assert.Equal(B + "/wiki/Grundlagen/Kessel_und_Spitzenlast",
+                         Hilfeziel.Seitenadresse(B, "/wiki/Grundlagen/Kessel_und_Spitzenlast"));
+
+            // Der Kurzname bekommt die Rubrik davor - wie bisher.
+            Assert.Equal(B + "/wiki/Programm_Dokumentation/Berechnung/W%C3%A4rmepumpe#rechenweg",
+                         Hilfeziel.Seitenadresse(B, "Berechnung/Wärmepumpe#rechenweg"));
+
+            Assert.Equal("", Hilfeziel.Seitenadresse(B, ""));
+            Assert.Equal("", Hilfeziel.Seitenadresse(B, "#nur-anker"));
+        }
     }
 }

@@ -269,6 +269,10 @@ namespace WindowsFormsApplication1
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
                 ["BtnKennlinienText"] = Text_("WPA_BTN_KENNLINIEN_KATALOG",
                     "Kennlinien aus dem Katalog übernehmen"),
+                ["HerleitungKuehlKatalog"] = Text_("WPA_HERLEITUNG_KUEHL_KATALOG",
+                    "Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt."),
+                ["BtnKuehlKennlinieText"] = Text_("WPA_BTN_KUEHLKENNLINIE_KATALOG",
+                    "Kühlkennlinie aus dem Katalog übernehmen"),
                 ["TextKennlinienUebernommen"] = Text_("WPA_MSG_KENNLINIEN_UEBERNOMMEN",
                     "{0} Stützstellen aus dem Katalog in das Projekt übernommen."),
                 ["TextKennlinienOhneKatalog"] = Text_("WPA_MSG_KENNLINIEN_OHNE_KATALOG",
@@ -384,7 +388,8 @@ namespace WindowsFormsApplication1
                     quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
                 quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog
                     ? Kennlinienherkunft.Katalog : Kennlinienherkunft.Projekt,
-                quelle.Nachholbar);
+                quelle.Nachholbar,
+                quelle.KuehlNachholbar);
         }
 
         /// <summary>

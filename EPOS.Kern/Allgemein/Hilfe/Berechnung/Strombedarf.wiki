@@ -111,7 +111,7 @@ Der Profilanteil <math>P_{\mathrm{h}}(t)</math> entsteht als '''Stundenreihe''' 
 
 Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Gleichungen (1) bis (5) — es sind dieselben, mit demselben Zeichenvorrat.
 
-'''Eine Abweichung gibt es''': Der Stromzweig filtert Kopf- und Typsaetze '''nicht''' auf das Projekt, waehrend Brauchwasser und Prozesswaerme diesen Pflichtfilter fuehren. Praktisch heisst das: Traegt ein Stromverbraucherprofil in zwei Projekten denselben Namen bei verschiedenen Werten, kann die Rechnung den falschen Kopfsatz erwischen.
+'''Die Zuordnung gilt über die ID.''' Jede Zuordnungszeile des Projekts zeigt auf ihre Projektkopie — wie bei Brauchwasser und Prozesswaerme. Kopf- und Typsatz werden nur im eigenen Projekt gelesen, und die gepflegte Jahressumme der Zuordnungszeile skaliert genau diese Kopie; ein gleichnamiges Profil eines anderen Projekts rechnet nicht mit.
 
 '''Bricht die Profilrechnung ab''' — kein Typbezug, unlesbare Monats- oder Wochenfelder —, '''bricht der ganze Simulationslauf ab''': Ein Ergebnis mit leerem Stromprofil saehe vollstaendig aus und waere keines.
 
@@ -205,7 +205,7 @@ Der fertige Vektor <math>P(k)</math> ist der '''Reststrombedarf''' zu Beginn der
 
 === 7. Peak-Shaving: eine Auswertung, kein Bedarf ===
 
-Die Peak-Shaving-Maske sucht die '''kleinste erreichbare Netzbezugsspitze''' zu einem Lastgang und einem Speicher. Sie ist eine '''eigenstaendige Auswertung''' auf einer gewaehlten Ganglinie — aus dem Projekt, aus dem Katalog oder ad hoc aus einer Datei eingelesen — und '''schreibt nichts''' in die Datenbank: weder die eingelesene Ganglinie noch ihre Ergebnisse. Der Ausgabeweg ist CSV. Sie veraendert damit keinen Simulationsbedarf und kein Simulationsergebnis.
+Die Peak-Shaving-Maske sucht die '''kleinste erreichbare Netzbezugsspitze''' zu einem Lastgang und einem Speicher. Sie ist eine '''eigenstaendige Auswertung''' auf einer gewaehlten Ganglinie — aus dem Projekt, aus dem Katalog oder ad hoc aus einer Datei eingelesen. Die Rechnung selbst schreibt nichts in die Datenbank, weder die eingelesene Ganglinie noch ihre Ergebnisse; der Ausgabeweg der Reihen ist CSV. Mit geoeffnetem Projekt traegt der Knopf „In Variante übernehmen“ die gefundene Zielschwelle und das Kennzeichen „adaptiv“ in die '''aktive Speichervariante''' des Projekts und stellt deren Berechnungsart auf die Lastspitzenkappung — fuehrt die Variante eine andere Berechnungsart, fragt die Maske zuerst nach. Erst ueber diese Variante wirkt die Schwelle im Simulationslauf, im Stromspeicher; den Strombedarf veraendert die Maske nicht.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
@@ -214,9 +214,8 @@ Die Peak-Shaving-Maske sucht die '''kleinste erreichbare Netzbezugsspitze''' zu 
 * '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' <math>P(k)</math> ist Wirkleistung.
 * '''Kein Gleichzeitigkeitsfaktor.''' Die Summe in (2) ist ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
 * '''Der Wochengang ist starr''' und die Monatsmenge unantastbar — wie bei den beiden Waermeprofilen.
-* '''Kein Projektfilter im Stromzweig''' (siehe Schritt 1).
 * '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein, also (4) ohne den zweiten Summanden von (2). Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
-* '''Die Peak-Shaving-Maske schreibt nicht''' (siehe Schritt 7).
+* '''Die Peak-Shaving-Maske schreibt keinen Bedarf.''' Sie schreibt allein ueber „In Variante übernehmen“ Zielschwelle und Adaptiv-Kennzeichen in die aktive Speichervariante (siehe Schritt 7).
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}

@@ -226,8 +226,7 @@ namespace WindowsFormsApplication1
                 ["MeldungGeloescht"] = Text_("GEB_MSG_GELOESCHT", "Gebäude gelöscht!"),
                 ["MeldungKeineWahl"] = Text_("GEB_MSG_KEINE_WAHL", "Gebäude in DB auswählen!"),
                 ["MeldungKeinBedarf"] = Text_("GEB_MSG_KEIN_BEDARF",
-                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. "
-                    + "Bitte das Projekt speichern und eine Klimaregion auswählen."),
+                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen."),
 
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };

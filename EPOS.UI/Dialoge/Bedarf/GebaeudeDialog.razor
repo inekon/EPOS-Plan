@@ -660,12 +660,13 @@
     [Parameter] public string MeldungKeineWahl { get; set; } = "Gebäude in DB auswählen!";
 
     /// <summary>
-    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen…" — die Zeile ist noch
-    /// nicht gespeichert, oder das Projekt führt keine Klimaregion (W9‑E‑2).
+    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen." — die allgemeine Meldung,
+    /// wenn die Datenseite keinen benannten Grund liefert (<see cref="BedarfBefund"/>); jeder
+    /// bekannte Fall (kein Projekt, keine Klimaregion, kein Katalogsatz, Importzeile mit Zone)
+    /// nennt seinen eigenen Grund.
     /// </summary>
     [Parameter] public string MeldungKeinBedarf { get; set; } =
-        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. " +
-        "Bitte das Projekt speichern und eine Klimaregion auswählen.";
+        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen.";
 
     /// <summary>
     /// Der benannte Grund, wenn <see cref="BedarfGaben"/> zuletzt <c>null</c> lieferte (Stufe G6a —

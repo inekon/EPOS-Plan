@@ -693,5 +693,17 @@ namespace EPOS.Kern.Tests
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
             Assert.Equal("", ergebnis.Name);
         }
+
+        /// <summary>
+        /// Der Bereitschaftsverlust eines Kessels führt im Katalogbrowser dieselbe Einheit wie
+        /// im Katalogdialog und in der Rechnung: kW (Verbesserungen 29.09.2026, B6).
+        /// </summary>
+        [Fact]
+        public void Der_Bereitschaftsverlust_steht_in_kW()
+        {
+            BrowserDetailfeld bb = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel).Detailfelder
+                .Single(f => f.Schluessel == KatalogBrowserProfil.FeldBBVerlust);
+            Assert.Equal("kW", bb.Einheit);
+        }
     }
 }

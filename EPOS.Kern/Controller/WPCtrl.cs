@@ -432,8 +432,11 @@ namespace WindowsFormsApplication1
         public static string KuehlbetriebSperrgrund(int idWp, int idProjekt)
         {
             if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp))
-                return Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
-                    "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
+                return KuehlkennlinieNachholbar(idWp)
+                    ? Text("WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN",
+                        "Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt.")
+                    : Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
+                        "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
 
             try
             {
@@ -864,15 +867,7 @@ namespace WindowsFormsApplication1
                     " FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
                 if (kopf == null || kopf.Rows.Count == 0) return -1;
 
-                string bez = kopf.Rows[0]["Bezeichner"] == DBNull.Value
-                    ? "" : kopf.Rows[0]["Bezeichner"].ToString();
-
-                // Der KATALOGVERWEIS zuerst (Schemaschritt 80), der Name als Rückfall.
-                // Sonst holte der Knopf die Stützstellen eines gleichnamigen Fremdsatzes,
-                // sobald jemand den eigenen Katalogsatz umbenannt hat.
-                int stammId = Verweis(kopf.Rows[0]);
-                if (stammId <= 0)
-                    stammId = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+                int stammId = KatalogsatzDerKopie(kopf.Rows[0]);
                 if (stammId <= 0) return 0;
 
                 bool waermeFehlt = Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", projektWpId) == 0;
@@ -952,6 +947,53 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Fehler beim Nachholen der WP-Kennlinien: " + ex.Message);
                 return -1;
+            }
+        }
+
+        /// <summary>
+        /// Der Katalogsatz einer Gerätekopie: der KATALOGVERWEIS zuerst (Schemaschritt 80),
+        /// der Bezeichner als Rückfall. Sonst holte der Knopf die Stützstellen eines
+        /// gleichnamigen Fremdsatzes, sobald jemand den eigenen Katalogsatz umbenannt hat.
+        /// 0, wenn keiner gefunden wird.
+        /// </summary>
+        private static int KatalogsatzDerKopie(DataRow kopf)
+        {
+            int stammId = Verweis(kopf);
+            if (stammId > 0) return stammId;
+
+            string bez = kopf["Bezeichner"] == DBNull.Value ? "" : kopf["Bezeichner"].ToString();
+            return DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+        }
+
+        /// <summary>
+        /// Lässt sich an dieser Gerätekopie allein die KÜHLkennlinie nachholen? Wahr, wenn
+        /// <c>Tab_Kenndaten_Kuehlung</c> für die Kopie keine Zeile führt und ihr Katalogsatz
+        /// (Verweis vor Bezeichner, wie <see cref="KennlinienAusKatalog"/>) eine Kühlkennlinie
+        /// hat. Der Knopf „Kühlkennlinie aus dem Katalog übernehmen" erscheint nur dann; eine
+        /// vorhandene Kühlkennlinie (etwa die der Referenzprojekte) rührt er nicht an.
+        /// </summary>
+        /// <param name="projektWpId">Die Gerätekopie (<c>Tab_WP.ID</c>).</param>
+        public static bool KuehlkennlinieNachholbar(int projektWpId)
+        {
+            if (projektWpId <= 0) return false;
+            try
+            {
+                DataTable kopf = DataRepository.GetDataTable(
+                    "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
+                if (kopf == null || kopf.Rows.Count == 0) return false;
+
+                if (Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", projektWpId) > 0)
+                    return false;
+
+                int stammId = KatalogsatzDerKopie(kopf.Rows[0]);
+                if (stammId <= 0) return false;
+
+                return Zeilenzahl("SELECT COUNT(*) FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ?", stammId) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Pruefung der Kuehlkennlinie: " + ex.Message);
+                return false;
             }
         }
 

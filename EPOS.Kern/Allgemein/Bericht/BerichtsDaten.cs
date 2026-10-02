@@ -252,6 +252,16 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = kein solcher Fall.
         /// </summary>
         public string LeistungspreisNichtAngesetztTraeger;
+
+        /// <summary>
+        /// Der Satz des nicht angesetzten Leistungspreises (Register EZ‑17) in €/(kW·Monat), wenn
+        /// der Stromträger ihn je Monat bemisst — <c>price_power_modus</c> MONAT oder eine
+        /// Saisonreihe aus zwölf gleichen Sätzen; <c>null</c> bei einem Satz je Jahr, einer Staffel,
+        /// einer Saisonreihe mit verschiedenen Sätzen und ohne solchen Fall. Der Berichtslauf
+        /// vergleicht ihn mit dem Monatspreis des Reststromtarifs
+        /// (<c>BerichtsDatenSammler.TarifLeistungspreisWieTraeger</c>).
+        /// </summary>
+        public double? LeistungspreisNichtAngesetztMonatssatz;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -481,11 +491,14 @@ namespace WindowsFormsApplication1
         /// <para>Unter der Kostentafel folgt, durch ein Leerzeichen getrennt, der Satz zum
         /// Leistungspreis, den die Gruppenzahl nicht enthält (Register EZ‑17;
         /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>) — nur, wenn der Stromträger einen führt
-        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Wirkt der Rollentarif (Register EZ‑18),
-        /// tritt an seine Stelle der Satz zum Leistungspreismodell des Reststromtarifs
-        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>,
-        /// <see cref="StromGruppenzahl.LeistungspreisTarifModell"/>) — nie beide. Die
-        /// Emissionsfußzeile nennt keinen.</para>
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Wirkt der Rollentarif (Register EZ‑18)
+        /// und unterscheidet sich der Leistungspreis seines Reststromtarifs von dem des Trägers
+        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>), folgt danach der Satz zum
+        /// Leistungspreis des Reststromtarifs — beim Modell MONATLICH mit dem Monatspreis
+        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT"/>,
+        /// <see cref="StromGruppenzahl.LeistungspreisTarifMonatspreis"/>), sonst mit dem Modell
+        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>). Die Emissionsfußzeile nennt
+        /// keinen.</para>
         /// </summary>
         public string StromGruppenregelFussnote(System.Globalization.CultureInfo kultur, string gruppe)
         {
@@ -512,14 +525,13 @@ namespace WindowsFormsApplication1
             catch (FormatException) { satz = vorlage; }
 
             // Register EZ‑17: Unter der Kostentafel nennt die Fußzeile den Leistungspreis, den die
-            // Gruppenzahl nicht enthält — nur dort, und nur, wenn der Stromträger einen führt. Im
-            // Rollentarif (EZ‑18) ersetzt der Tarif die Preise des Trägers: Dann nennt sie an dessen
-            // Stelle das Leistungspreismodell des Reststromtarifs, wie die Hinweiszeile der
-            // Wirtschaftlichkeit.
+            // Gruppenzahl nicht enthält — nur dort: zuerst den des Stromträgers, wenn er einen
+            // führt; im Rollentarif (EZ‑18) danach den des Reststromtarifs, wenn er sich von dem
+            // des Trägers unterscheidet (der Sammler setzt das Merkmal nur dann).
+            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
+                satz += " " + LeistungspreisFussnote(k);
             if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisTarifModell))
                 satz += " " + LeistungspreisTarifFussnote(k);
-            else if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
-                satz += " " + LeistungspreisFussnote(k);
             return satz;
         }
 
@@ -544,12 +556,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Satz zum nicht angesetzten Leistungspreis des Reststromtarifs (Register EZ‑18) für die
-        /// Fußzeile unter der Kostentafel: das Modell aus der <see cref="Gruppenzahl"/>, Wortlaut aus
-        /// der Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>.
+        /// Fußzeile unter der Kostentafel: beim Modell MONATLICH der Monatspreis aus der
+        /// <see cref="Gruppenzahl"/> (Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT"/>,
+        /// <c>N2</c> in der Kultur des Laufs), sonst das Modell (Ressource
+        /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>).
         /// </summary>
         private string LeistungspreisTarifFussnote(System.Globalization.CultureInfo k)
         {
             string vorlage = null;
+            if (Gruppenzahl.LeistungspreisTarifMonatspreis.HasValue)
+            {
+                try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT, k); }
+                catch (Exception) { vorlage = null; }
+                if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT;
+                try { return string.Format(k, vorlage, Gruppenzahl.LeistungspreisTarifMonatspreis.Value.ToString("N2", k)); }
+                catch (FormatException) { return vorlage; }
+            }
             try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF, k); }
             catch (Exception) { vorlage = null; }
             if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS_TARIF;
@@ -561,6 +583,7 @@ namespace WindowsFormsApplication1
         internal const string SCHLUESSEL_FUSSNOTE_EMISSION = "BV_FUSSNOTE_GRUPPENREGEL_EMISSION";
         internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS";
         internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT";
 
         /// <summary>Rückfall der Fußzeile unter der Kostentafel, falls die Ressource fehlt.</summary>
         internal const string FUSSNOTE_KOSTEN =
@@ -580,10 +603,16 @@ namespace WindowsFormsApplication1
             "Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.";
 
         /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis des Reststromtarifs
-        /// (Register EZ‑18), den die Fußzeile unter der Kostentafel im Rollentarif an Stelle von
-        /// <see cref="FUSSNOTE_LEISTUNGSPREIS"/> anhängt, falls die Ressource fehlt; {0} = Modell.</summary>
+        /// (Register EZ‑18) bei den Modellen STAFFEL und JAHRESHOECHSTLAST, den die Fußzeile unter der
+        /// Kostentafel im Rollentarif nach <see cref="FUSSNOTE_LEISTUNGSPREIS"/> anhängt, falls die
+        /// Ressource fehlt; {0} = Modell.</summary>
         internal const string FUSSNOTE_LEISTUNGSPREIS_TARIF =
             "Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis des Reststromtarifs
+        /// (Register EZ‑18) beim Modell MONATLICH, falls die Ressource fehlt; {0} = Monatspreis.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT =
+            "Den Leistungspreis des Reststromtarifs von {0} €/(kW·Monat) setzt die Gruppenregel nicht an.";
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
@@ -732,11 +761,16 @@ namespace WindowsFormsApplication1
         public string LeistungspreisTraeger;
 
         /// <summary>Das Leistungspreismodell des Reststromtarifs im Klartext der Tarifstruktur, das die
-        /// Gruppenregel nicht ansetzt (Register EZ‑18); <c>null</c>, wenn kein Rollentarif wirkt oder
-        /// der Reststromtarif keinen Leistungspreis führt. Wirkt der Rollentarif, ersetzt er die Preise
-        /// des Trägers — dann bleiben <see cref="LeistungspreisSatz"/> und
-        /// <see cref="LeistungspreisTraeger"/> leer, und die Fußzeile nennt dieses Modell.</summary>
+        /// Gruppenregel nicht ansetzt (Register EZ‑18); <c>null</c>, wenn kein Rollentarif wirkt, der
+        /// Reststromtarif keinen Leistungspreis führt oder sein Leistungspreis dem des Trägers gleich
+        /// ist (<c>BerichtsDatenSammler.TarifLeistungspreisWieTraeger</c>). Die Fußzeile nennt den
+        /// Leistungspreis des Reststromtarifs dann zusätzlich zu <see cref="LeistungspreisSatz"/>.</summary>
         public string LeistungspreisTarifModell;
+
+        /// <summary>Der Monatspreis des Reststromtarifs [€/(kW·Monat)] zu
+        /// <see cref="LeistungspreisTarifModell"/>, nur beim Modell MONATLICH; <c>null</c> sonst. Ist er
+        /// gesetzt, nennt die Fußzeile den Preis statt des Modells.</summary>
+        public double? LeistungspreisTarifMonatspreis;
     }
 
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>

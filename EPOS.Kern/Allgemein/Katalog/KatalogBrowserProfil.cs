@@ -440,7 +440,7 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWirkungsgradOel, t("HZKK_LBL_WG_OEL"), "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "%",
+                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "kW",
                                                   BrowserFeldArt.Zahl, editierbar: true),
 
                             // Die Kennlinie (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Leer

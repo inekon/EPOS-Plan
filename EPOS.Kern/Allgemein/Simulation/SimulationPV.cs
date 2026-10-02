@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -153,7 +154,6 @@ namespace WindowsFormsApplication1
         public double[] Berechnung(int ID_Projekt)
         {
             WErzeugerCtrl ctrl = new WErzeugerCtrl();
-            RecordSet rs = new RecordSet();
             int nID_Klimaregion = 0;
             double Lon = 0, Lat = 0;
 
@@ -163,16 +163,17 @@ namespace WindowsFormsApplication1
             Strombedarf_stuendlich = Viertelstunden_zu_stunden(Strombedarf);
 
             // Geodaten laden
-            rs.Open("select * from Tab_Projekt where ID=" + ID_Projekt);
-            if (rs.Next()) nID_Klimaregion = (int)rs.Read("ID_Klimaregion");
-            rs.Close();
+            DataTable projekt = DataRepository.GetDataTable(
+                "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?", new DbParam("@id", ID_Projekt));
+            if (projekt != null && projekt.Rows.Count > 0)
+                nID_Klimaregion = Convert.ToInt32(projekt.Rows[0]["ID_Klimaregion"]);
 
             KlimaregionCtrl ctrlklima = new KlimaregionCtrl();
-            ctrlklima.ReadSingle("select * from Tab_Klimaregion where ID=" + nID_Klimaregion);
+            ctrlklima.ReadSingle("SELECT * FROM Tab_Klimaregion WHERE ID = ?", new DbParam("@id", nID_Klimaregion));
             if (ctrlklima.rows > 0) { Lon = ctrlklima.Longitude; Lat = ctrlklima.Latitude; }
 
             // PV-POTENTIAL ALLER MODULE SAMMELN
-            ctrl.ReadAllFilter("ID_Projekt=" + ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            ctrl.LesenJeTyp(ID_Projekt, WizardItemClass.PV_TYP);
 
             // S3.2: die Strangebene. GELESEN WIRD NUR, WENN MINDESTENS EINE ANLAGE DEN
             // SCHALTER TRAEGT - die Vorrangregel steht vor dem Zugriff, nicht dahinter

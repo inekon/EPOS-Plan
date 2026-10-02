@@ -399,6 +399,8 @@
                holen. Der Lauf rechnet ausschliesslich mit den Projektkennlinien;
                eine Katalogkennlinie ohne diesen Satz behauptete einen Stand, den
                die Simulation nicht kennt. *@
+            @* Fehlt allein die KUEHLkennlinie im Projekt (die Waerme ist da), sagt der
+               Dialog auch das und bietet denselben Schreibweg an - er holt nur, was fehlt. *@
             @if (_bilder.Herkunft == Kennlinienherkunft.Katalog)
             {
                 <div class="epos-wp-kennlinienquelle">
@@ -409,6 +411,20 @@
                         <div class="epos-leiste">
                             <button type="button" class="epos-knopf"
                                     @onclick="BeiKennlinienUebernehmen">@BtnKennlinienText</button>
+                        </div>
+                    }
+                </div>
+            }
+            else if (_bilder.KuehlNachholbar)
+            {
+                <div class="epos-wp-kennlinienquelle">
+                    <Herleitungszeile Text="@HerleitungKuehlKatalog" />
+
+                    @if (KennlinienUebernehmen is not null && !NurLesen)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf"
+                                    @onclick="BeiKennlinienUebernehmen">@BtnKuehlKennlinieText</button>
                         </div>
                     }
                 </div>
@@ -854,6 +870,16 @@
 
     /// <summary>Beschriftung des Knopfes (<c>WPA_BTN_KENNLINIEN_KATALOG</c>).</summary>
     [Parameter] public string BtnKennlinienText { get; set; } = "Kennlinien aus dem Katalog übernehmen";
+
+    /// <summary>
+    /// Die Herleitungszeile, wenn dem Projekt allein die KÜHLkennlinie fehlt und der
+    /// Katalogsatz eine führt (<c>WPA_HERLEITUNG_KUEHL_KATALOG</c>).
+    /// </summary>
+    [Parameter] public string HerleitungKuehlKatalog { get; set; } =
+        "Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt.";
+
+    /// <summary>Beschriftung des Knopfes, der allein die Kühlkennlinie holt (<c>WPA_BTN_KUEHLKENNLINIE_KATALOG</c>).</summary>
+    [Parameter] public string BtnKuehlKennlinieText { get; set; } = "Kühlkennlinie aus dem Katalog übernehmen";
 
     /// <summary>Rückmeldung nach dem Übernehmen; <c>{0}</c> ist die Zahl der Stützstellen.</summary>
     [Parameter] public string TextKennlinienUebernommen { get; set; } =

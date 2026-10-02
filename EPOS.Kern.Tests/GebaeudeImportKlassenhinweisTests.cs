@@ -144,16 +144,58 @@ namespace EPOS.Kern.Tests
 
         private const int PROJEKT = 1007;
 
+        /// <summary>
+        /// Eine ungespeicherte Zeile rechnet aus dem Arbeitsstand; fehlt ihr Katalogsatz, nennt
+        /// die Auskunft genau das — nicht „bitte speichern" (Verbesserungen 29.09.2026, A1).
+        /// </summary>
         [Fact]
-        public void Eine_ungespeicherte_Zeile_nennt_das_fehlende_OK()
+        public void Eine_ungespeicherte_Zeile_ohne_Katalogsatz_nennt_den_Katalogsatz()
         {
             if (!_db.Vorhanden) return;
 
             IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
-                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX }, PROJEKT, out string befund);
+                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX, Name = "A1 ohne Katalogsatz" },
+                PROJEKT, out string befund);
 
             Assert.Null(gaben);
-            Assert.Equal(R.GEB_MSG_BEDARF_UNGESPEICHERT, befund);
+            Assert.Equal(string.Format(R.GEB_MSG_BEDARF_OHNE_KATALOGSATZ, "A1 ohne Katalogsatz"), befund);
+            Assert.DoesNotContain("gespeichert", befund, StringComparison.Ordinal);
+        }
+
+        /// <summary>A1: Ohne Klimaregion des Projekts nennt die Auskunft die Klimaregion.</summary>
+        [Fact]
+        public void Ohne_Klimaregion_nennt_die_Auskunft_die_Klimaregion()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET ID_Klimaregion = 0 WHERE ID = ?",
+                                                  new DbParam("@id", PROJEKT)));
+
+            IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
+                GebaeudeHuelle.AusModell(Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0]), PROJEKT, out string befund);
+
+            Assert.Null(gaben);
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_KLIMAREGION, befund);
+        }
+
+        /// <summary>A1: Eine gespeicherte Zuordnung, deren Projektkopie fehlt, nennt die Projektkopie.</summary>
+        [Fact]
+        public void Ohne_Projektkopie_nennt_die_Auskunft_die_Projektkopie()
+        {
+            if (!_db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
+                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX - 1 }, PROJEKT, out string befund);
+
+            Assert.Null(gaben);
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE, befund);
+        }
+
+        /// <summary>A1: Ohne Projekt nennt die Auskunft das fehlende Projekt.</summary>
+        [Fact]
+        public void Ohne_Projekt_nennt_die_Auskunft_das_Projekt()
+        {
+            Assert.Null(GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = 1 }, 0, out string befund));
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_PROJEKT, befund);
         }
 
         [Fact]

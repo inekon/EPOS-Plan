@@ -12263,6 +12263,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Leistungspreis des Reststromtarifs von {0} €/(kW·Monat) setzt die Gruppenregel nicht an. ähnelt.
+        /// </summary>
+        public static string BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT {
+            get {
+                return ResourceManager.GetString("BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wert nicht bestimmbar ähnelt.
         /// </summary>
         public static string BV_GRUND_AUSNAHME {
@@ -22959,7 +22968,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze. ähnelt.
         /// </summary>
         public static string FLOTTE_PEAK_RATSCHE_NEIN {
             get {
@@ -28297,11 +28306,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen. ähnelt.
         /// </summary>
-        public static string GEB_MSG_BEDARF_UNGESPEICHERT {
+        public static string GEB_MSG_BEDARF_OHNE_KATALOGSATZ {
             get {
-                return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_KATALOGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dem Projekt ist keine Klimaregion zugeordnet — bitte in den Projektdaten eine Klimaregion wählen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE", resourceCulture);
             }
         }
         
@@ -28342,7 +28378,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_KEIN_BEDARF {
             get {
@@ -48954,7 +48990,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltschwelle für nachrangige Erzeuger in Prozent: Bis zu diesem Füllstand laden nachrangige Erzeuger den Speicher; darüber lädt nur noch der vorrangige Erzeuger, bis zur Abschaltschwelle. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
             get {
@@ -70974,7 +71010,7 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher „{0}&quot; ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
         ///
-        ///Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+        ///Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt.
         ///
         ///Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen. ähnelt.
         /// </summary>
@@ -71853,7 +71889,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///Der Speicher ist zugeordnet:
         ///  • {3}
         ///
-        ///Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+        ///Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet — gesperrt sind sie nicht mehr.
         ///Nutzung trotzdem ändern? ähnelt.
         /// </summary>
         public static string PSP_MELDUNG_KLASSENSETWECHSEL {
@@ -74223,6 +74259,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping). ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_ERWEITERT_CLIPPING {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_ERWEITERT_CLIPPING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_ERWEITERT_OHNE_AC {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_ERWEITERT_OHNE_AC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die DC-Leitungen, Sicherungen und Schalter sind mit dem 1,25-fachen Kurzschlussstrom zu bemessen; das prüft dieses Werkzeug nicht — P4 rechnet allein die thermische Korrektur. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_ISC_125 {
@@ -74250,7 +74304,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_VEREINFACHT {
             get {
@@ -74520,7 +74574,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: αSC und βOC kommen nur über den Modulimport — Administration → Daten &amp; Import → Photovoltaik → „PV Module (CEC, PAN)…“ (Neuimport aus „CEC Modules.csv“ oder einer PAN-Datei); Leerlauf- und MPP-Spannung, Kurzschlussstrom und T_NOCT lassen sich auch unter Administration → Energiesysteme → Photovoltaik → PV Module eintragen. ähnelt.
         /// </summary>
         public static string PVS_PFLEGEWEG {
             get {
@@ -77781,6 +77835,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur. ähnelt.
+        /// </summary>
+        public static string SIMENG_QUELLE_CSV_UNBRAUCHBAR {
+            get {
+                return ResourceManager.GetString("SIMENG_QUELLE_CSV_UNBRAUCHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur. ähnelt.
         /// </summary>
         public static string SIMENG_QUELLPROFIL_UNLESBAR {
@@ -78213,6 +78276,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt {0} Wärmepumpenanlagen; gerechnet werden höchstens {1}. Bitte Anlagen zusammenfassen oder entfernen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_ZU_VIELE_MODULE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_ZU_VIELE_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
         /// </summary>
         public static string SIMERG_ACHSE_MONAT {
@@ -78442,10 +78514,10 @@ namespace WindowsFormsApplication1.MyResource {
         ///Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
         ///
         ///Stromgeführt (Wirtschaftlich)
-        ///Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
+        ///Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im Speicher gepuffert, solange Speicherkapazität verfügbar ist; darüber hinaus wird überschüssige Wärme weggekühlt.
         ///
         ///Ohne Einspeisung (Zero-Export)
-        ///Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, s [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt s [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string SIMERG_INFO_BHKW {
             get {
@@ -79300,7 +79372,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmproduktion ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion ähnelt.
         /// </summary>
         public static string SIMERG_TAB_WP_PRODUKTION {
             get {
@@ -80550,7 +80622,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///WP-Typ: {0}
         ///
         ///Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-        ///Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen. ähnelt.
+        ///Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
         /// </summary>
         public static string SIMQ_MSG_LUFT_WASSER {
             get {
@@ -81430,7 +81502,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil (Monatswerte) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil (Monats-, Tages- oder Stundenwerte) ähnelt.
         /// </summary>
         public static string SIMQ_TYP_QUELLPROFIL {
             get {
@@ -84233,7 +84305,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen. ähnelt.
         /// </summary>
         public static string SIM_PV_V1_BHKW_GETRENNT {
             get {
@@ -89244,7 +89316,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
         /// </summary>
         public static string TARIF_G_EINSPEISUNG {
             get {
@@ -102984,6 +103056,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkennlinie aus dem Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_KUEHLKENNLINIE_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_BTN_KUEHLKENNLINIE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
@@ -103061,6 +103142,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_HERLEITUNG_KATALOG {
             get {
                 return ResourceManager.GetString("WPA_HERLEITUNG_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_KUEHL_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_KUEHL_KATALOG", resourceCulture);
             }
         }
         
@@ -104492,6 +104582,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WP_PROJ_MSG_KEIN_SATZ {
             get {
                 return ResourceManager.GetString("WP_PROJ_MSG_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN", resourceCulture);
             }
         }
         

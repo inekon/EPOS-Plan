@@ -764,8 +764,10 @@ namespace WindowsFormsApplication1
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------
 
         /// <summary>
-        /// Die zwölf Monatssäulen — wörtlich <c>FillMonthlyChart</c> :431-474: feste
-        /// 730-h-Monate, im Viertelstundenraster also 2 920 Intervalle je Monat.
+        /// Die zwölf Monatssäulen je KALENDERMONAT im 365-Tage-Raster ohne Schaltjahr
+        /// (<see cref="Netzbezugsspitze.TageJeMonat"/>): Januar 31 Tage, Februar 28 … —
+        /// im Viertelstundenraster 96 Intervalle je Tag. Die Säulen stehen damit auf
+        /// denselben Monaten wie jede andere Monatssumme des Programms.
         ///
         /// <para><b>Seit der Etappe DG-E3, Gruppe (c), ein ZEICHENMODELL.</b> Zwölf
         /// starre Fächer sind keine Zeitachse: Der Stapel trägt keine Zeichenfläche
@@ -777,27 +779,9 @@ namespace WindowsFormsApplication1
             if (_autarkieSpeicher == null || _autarkieLast == null) AutarkieRechnen(kwh);
             if (_autarkieSpeicher == null) return null;
 
-            double[] direkt = new double[12];
-            double[] ausSpeicher = new double[12];
-            double[] luecke = new double[12];
-
-            for (int m = 0; m < 12; m++)
-            {
-                for (int v = 0; v < 2920; v++)
-                {
-                    int i = m * 2920 + v;
-                    if (i >= _autarkieLast.Length) break;
-
-                    IntervallEnergien e = Vorverarbeitung.Berechne(
-                        _autarkieLast[i], _autarkiePv[i], 0.0,
-                        StromspeicherSimCtrl.INTERVALL_H, true, false);
-
-                    direkt[m] += e.EDirektKwh;
-                    double entnahme = _autarkieSpeicher.EntladungAcKwh[i];
-                    ausSpeicher[m] += entnahme;
-                    luecke[m] += e.EDefizitKwh - entnahme;
-                }
-            }
+            double[] direkt, ausSpeicher, luecke;
+            AutarkieMonate(_autarkieLast, _autarkiePv, _autarkieSpeicher.EntladungAcKwh,
+                           out direkt, out ausSpeicher, out luecke);
 
             var reihen = new List<ChartRenderer.Reihe>
             {
@@ -813,6 +797,43 @@ namespace WindowsFormsApplication1
             // trägt sie nicht mehr („(kWh) [kWh]").
             return ChartRenderer.MonatsStapelModell(
                 MyResource.Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG, "kWh", reihen);
+        }
+
+        /// <summary>
+        /// Die Monatssummen des Autarkie-Stapels je KALENDERMONAT (365-Tage-Raster ohne
+        /// Schaltjahr, <see cref="Netzbezugsspitze.TageJeMonat"/>) aus den
+        /// Viertelstundenreihen: direkt gedeckter Eigenverbrauch, Entnahme aus dem Speicher
+        /// und die verbleibende Autarkielücke [kWh]. Eine kürzere Reihe endet im Monat, in
+        /// dem sie endet.
+        /// </summary>
+        internal static void AutarkieMonate(double[] last, double[] pv, double[] entladung,
+                                            out double[] direkt, out double[] ausSpeicher,
+                                            out double[] luecke)
+        {
+            direkt = new double[12];
+            ausSpeicher = new double[12];
+            luecke = new double[12];
+
+            int jeTag = (int)Math.Round(24.0 / StromspeicherSimCtrl.INTERVALL_H);
+            int anfang = 0;
+            for (int m = 0; m < 12; m++)
+            {
+                int ende = anfang + Netzbezugsspitze.TageJeMonat[m] * jeTag;
+                for (int i = anfang; i < ende; i++)
+                {
+                    if (i >= last.Length) break;
+
+                    IntervallEnergien e = Vorverarbeitung.Berechne(
+                        last[i], pv[i], 0.0,
+                        StromspeicherSimCtrl.INTERVALL_H, true, false);
+
+                    direkt[m] += e.EDirektKwh;
+                    double entnahme = entladung[i];
+                    ausSpeicher[m] += entnahme;
+                    luecke[m] += e.EDefizitKwh - entnahme;
+                }
+                anfang = ende;
+            }
         }
 
         // ---- B6b: der Wärme-Monatsstapel der Autarkie-Analyse --------------

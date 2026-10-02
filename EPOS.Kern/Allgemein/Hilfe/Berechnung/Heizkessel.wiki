@@ -1,5 +1,6 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Heizkessel | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
+     EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs, EPOS.Kern/Allgemein/Simulation/Kesselkennlinie.cs,
+     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
      (Kesselzweig, Kessel-Kaskade), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
      EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs -->
@@ -9,7 +10,7 @@
 
 Der Heizkessel ist die Spitzenlast- und Rückfallstufe der Wärmeversorgung. In jeder Stunde deckt er den Bedarf, der nach den vorgelagerten Erzeugern noch offen ist, und lädt — als letzter Lader der Kaskade — Pufferspeicher nach. Ergebnisgrößen sind die '''Nutzwärme''' (Direktdeckung plus Speicherladung), der '''Brennstoffverbrauch''' einschließlich der Stillstandsverluste, die '''Emissionen''', der '''Jahresnutzungsgrad''' je Kessel, die '''Gasspitze''' und die verbleibende '''Restwärme'''.
 
-Der Brennstoffverbrauch entsteht '''stündlich''', nicht als Jahrespauschale: Läuft der Kessel in einer Stunde, folgt sein Verbrauch dem Wirkungsgrad; steht er betriebsbereit still, wird ihm seine Bereitschaftsleistung angelastet.
+Der Brennstoffverbrauch entsteht '''stündlich''', nicht als Jahrespauschale: Läuft der Kessel in einer Stunde, folgt sein Verbrauch dem Wirkungsgrad seiner '''Laststufe''' — beim Brennwertkessel mit Brennwertkennlinie auch dem '''Rücklauf''' der Stunde —, dazu je Start ein '''Anfahrverlust'''; steht er betriebsbereit still, wird ihm seine Bereitschaftsleistung angelastet.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -29,9 +30,23 @@ Der Brennstoffverbrauch entsteht '''stündlich''', nicht als Jahrespauschale: L�
 |-
 | Betriebsbereitschaftsverlust (Bereitschaftsleistung) || kW || Kesselkatalog, Feld „Betriebsbereitschaftsverluste"; eine Leistung, kein Anteil der Nennleistung
 |-
+| Wirkungsgrad bei 30&nbsp;% Last || — || Kesselkatalog, Feld „Wirkungsgrad bei 30&nbsp;% Last"; leer = Vorgabe nach Bauart
+|-
+| Brennwertkessel, Brennwertkennlinie || — || Kesselkatalog, Schalter „Brennwertkessel" und „Brennwertkennlinie"; die Kennlinie rechnet nur, wenn beide gesetzt sind
+|-
+| Mindestleistung || kW || Kesselkatalog, Feld „Mindestleistung"; leer = Vorgabe
+|-
+| Anfahrverlust je Start || kWh || Kesselkatalog, Feld „Anfahrverlust je Start"; leer = Vorgabe
+|-
+| Mindestlaufzeit || min || Kesselkatalog, Feld „Mindestlaufzeit"; leer = Vorgabe 10&nbsp;min
+|-
 | Betriebsbereitschaft || h/a || Simulationskonfiguration, Karte des Heizkessels, „Konfiguration…", Feld „Betriebsbereitschaft"; 0 = kein Deckel
 |-
-| Raumwärmebedarf des Projekts vor der Kaskade || kWh je Stunde || Ergebnis der Bedarfsrechnung — bestimmt die Heiztage
+| Heizgrenze der Kesselbereitschaft || °C || Simulationskonfiguration, Karte des Heizkessels, „Konfiguration…"; Vorgabe 15&nbsp;°C
+|-
+| Außentemperatur || °C je Stunde || Klimaregion des Projekts — bestimmt mit der Heizgrenze die Heiztage
+|-
+| Rücklauf der Stunde (nur Brennwertkennlinie) || °C || gerechneter Rücklauf des Heizkreises (Anlagenkopplung), sonst der Senkenspeicher, sonst das Temperaturpaar von Anlage bzw. Katalog, sonst 50&nbsp;°C
 |-
 | Emissionsfaktoren CO₂ bzw. SO₂, NOₓ, Staub || g/kWh bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht der Kesselkatalog, siehe „Grenzen und Annahmen"
 |-
@@ -75,6 +90,22 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 | <math>\vartheta_{\mathrm{RL}}</math> || Rücklauftemperatur (Systemrücklauf) || °C || derselbe Abschnitt, Feld „Rücklauf"
 |-
 | <math>\eta_{0}</math> || Wirkungsgrad, wenn der Katalog keinen brauchbaren führt || — || '''Vorgabe: 0,90'''
+|-
+| <math>\eta_{30}</math> || Wirkungsgrad bei 30&nbsp;% Last || — || Kesselkatalog, Feld „Wirkungsgrad bei 30&nbsp;% Last"; leer = Vorgabe nach Bauart (11)
+|-
+| <math>\Delta_{30}</math> || Kondensationsgewinn des Brennwertkessels bei 30&nbsp;°C Rücklauf || — || '''Konstante je Brennstoffgruppe:''' Gase 0,08, Heizöle 0,04, Holz und Pellets 0,05
+|-
+| <math>\vartheta_{\mathrm{Tau}}</math> || Taupunkt des Abgases || °C || '''Konstante je Brennstoffgruppe:''' Gase 57, Heizöle 47, Holz und Pellets 50
+|-
+| <math>H_{\mathrm{s}}/H_{\mathrm{i}}</math> || Brennwert durch Heizwert — Obergrenze des Wirkungsgrads || — || '''Konstante je Brennstoffgruppe:''' Gase 1,11, Heizöle 1,06, Holz und Pellets 1,08
+|-
+| <math>P_{\mathrm{min}}</math> || Mindestleistung — untere Grenze der Modulation || kW || Kesselkatalog, Feld „Mindestleistung"; leer = 30&nbsp;% der Nennleistung beim Gas-Brennwertkessel, sonst 60&nbsp;%
+|-
+| <math>Q_{\mathrm{An}}</math> || Anfahrverlust je Start || kWh || Kesselkatalog, Feld „Anfahrverlust je Start"; leer = <math>0{,}002\,\mathrm{h} \cdot P_{\mathrm{nenn}}</math>
+|-
+| <math>t_{\mathrm{min}}</math> || Mindestlaufzeit eines Laufs || min || Kesselkatalog, Feld „Mindestlaufzeit"; leer = 10
+|-
+| <math>\vartheta_{\mathrm{H}}</math> || Heizgrenze der Kesselbereitschaft: Ein Tag mit einem Tagesmittel der Außentemperatur darunter ist Heiztag || °C || Simulationskonfiguration, Karte des Heizkessels, „Konfiguration…"; '''Vorgabe: 15'''
 |-
 | <math>s_{\eta}</math> || Schwelle, ab der ein Wirkungsgrad als Prozentangabe gilt || — || '''Konstante: 1,5''' — Brennwertkessel erreichen Hi-bezogen rund 104&nbsp;%
 |-
@@ -122,25 +153,39 @@ Größen, die der Lauf je Stunde oder je Kessel bildet.
 |-
 | <math>Q_{\mathrm{Sp}}(t)</math> || Inhalt des Quellpuffers || kWh || Pufferspeicher (Eingang)
 |-
-| <math>Q_{\mathrm{ab}}(t)</math> || gesamte Abgabe des Kessels, einschließlich des Puffer-Anteils || kWh || Stundenschleife; entscheidet zwischen (10) und (11)
+| <math>Q_{\mathrm{ab}}(t)</math> || gesamte Abgabe des Kessels, einschließlich des Puffer-Anteils || kWh || Stundenschleife; entscheidet zwischen (16) und (17)
 |-
-| <math>b(t)</math> || Betriebsbereitschaft der Stunde: 1 an Heiztagen und im Nachlauf, sonst 0 || — || Stundenregel zu (11)
+| <math>b(t)</math> || Betriebsbereitschaft der Stunde: 1 an Heiztagen und im Nachlauf, sonst 0 || — || Stundenregel zu (17)
 |-
-| <math>\eta</math> || Wirkungsgrad, mit dem diese Stunde rechnet || — || (8) und (9)
+| <math>\eta_{100}</math> || Volllastwirkungsgrad nach Brennstoff || — || (8) und (9)
 |-
-| <math>Q_{\mathrm{B}}(t)</math> || Brennstoffverbrauch der Stunde || kWh || (10) bzw. (11)
+| <math>\beta(t)</math> || Laststufe der Stunde || — || (10)
 |-
-| <math>P_{\mathrm{Gas,max}}</math> || Gasspitze des Projekts || kW || (12) und (13)
+| <math>\eta_{30}'</math> || wirksamer Teillastwirkungsgrad: <math>\eta_{30}</math> bzw. seine Vorgabe, mit Brennwertkennlinie um <math>\Delta_{30}</math> vermindert || — || (11)
+|-
+| <math>\eta_{\mathrm{tr}}(t)</math> || Wirkungsgrad der Laststufe ohne Kondensationsgewinn || — || (12)
+|-
+| <math>\vartheta_{\mathrm{RL,K}}(t)</math> || Rücklauf der Stunde am Kessel (nur Brennwertkennlinie) || °C || Rücklaufkette, siehe Schritt 4
+|-
+| <math>g(t)</math> || Kondensationsanteil der Stunde || — || (13)
+|-
+| <math>\eta_{\mathrm{eff}}(t)</math> || Wirkungsgrad, mit dem diese Stunde rechnet || — || (14)
+|-
+| <math>n_{\mathrm{S}}(t)</math> || Starts der Stunde || — || (15)
+|-
+| <math>Q_{\mathrm{B}}(t)</math> || Brennstoffverbrauch der Stunde || kWh || (16) bzw. (17)
+|-
+| <math>P_{\mathrm{Gas,max}}</math> || Gasspitze des Projekts || kW || (18) und (19)
 |-
 | <math>Q_{\mathrm{Gas,a}}</math> || Gasverbrauch des Projekts im Jahr || MWh || Jahressumme über die Gaskessel
 |-
-| <math>Q_{\mathrm{B,a}}</math> || Brennstoffverbrauch eines Kessels im Jahr, einschließlich Stillstand || MWh || Jahressumme über (10) und (11)
+| <math>Q_{\mathrm{B,a}}</math> || Brennstoffverbrauch eines Kessels im Jahr, einschließlich Stillstand und Anfahren || MWh || Jahressumme über (16) und (17)
 |-
 | <math>Q_{\mathrm{K,a}}</math> || brennstoffbasierte Nutzwärme eines Kessels im Jahr || MWh || Jahressumme über (6)
 |-
-| <math>m_{\mathrm{E}}</math> || Jahresemission je Schadstoff || kg || (14)
+| <math>m_{\mathrm{E}}</math> || Jahresemission je Schadstoff || kg || (20)
 |-
-| <math>\eta_{\mathrm{a}}</math> || Jahresnutzungsgrad des Kessels || % || (15) und (16)
+| <math>\eta_{\mathrm{a}}</math> || Jahresnutzungsgrad des Kessels || % || (21) und (22)
 |}
 
 == Rechenweg ==
@@ -208,42 +253,92 @@ Ohne Quellpuffer sind <math>a(t)</math> und <math>Q_{\mathrm{Puffer}}(t)</math> 
 
 === Schritt 4 — Brennstoffbilanz der Stunde ===
 
-Sie läuft '''genau einmal je Stunde und Kessel''', nach Bedarfsdeckung, Ladephase und Nachentladung. Erst dann steht fest, was der Kessel insgesamt abgegeben hat.
+Sie läuft '''genau einmal je Stunde und Kessel''', nach Bedarfsdeckung, Ladephase und Nachentladung. Erst dann steht fest, was der Kessel insgesamt abgegeben hat. Ausgangspunkt ist der Volllastwirkungsgrad des Brennstoffs:
 
-: <math>\displaystyle \eta = \begin{cases} \eta_{\mathrm{Oel}} & 6 \le \mathrm{ID}_{\mathrm{B}} \le 9 \; \mathrm{oder} \; 18 \le \mathrm{ID}_{\mathrm{B}} \le 22 \\ \eta_{\mathrm{Gas}} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(8)
-:: <math>\eta</math> – Wirkungsgrad, mit dem diese Stunde rechnet [–]
+: <math>\displaystyle \eta_{100} = \begin{cases} \eta_{\mathrm{Oel}} & 6 \le \mathrm{ID}_{\mathrm{B}} \le 9 \; \mathrm{oder} \; 18 \le \mathrm{ID}_{\mathrm{B}} \le 22 \\ \eta_{\mathrm{Gas}} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(8)
+:: <math>\eta_{100}</math> – Volllastwirkungsgrad, Bezug der Kennlinie [–]
 :: <math>\eta_{\mathrm{Oel}}</math> – Wirkungsgrad bei flüssigen Brennstoffen [–]
 :: <math>\mathrm{ID}_{\mathrm{B}}</math> – Kennung des Brennstoffs [–]
 :: <math>\eta_{\mathrm{Gas}}</math> – Wirkungsgrad bei gasförmigen und festen Brennstoffen [–]
 
-: <math>\displaystyle \eta \le 0 \; \to \; \eta = \eta_{0} = 0{,}90</math> &nbsp;&nbsp;(9)
-:: <math>\eta</math> – Wirkungsgrad, mit dem diese Stunde rechnet [–]
+: <math>\displaystyle \eta_{100} \le 0 \; \to \; \eta_{100} = \eta_{0} = 0{,}90</math> &nbsp;&nbsp;(9)
+:: <math>\eta_{100}</math> – Volllastwirkungsgrad [–]
 :: <math>\eta_{0}</math> – Wirkungsgrad, wenn der Katalog keinen brauchbaren führt [–], Vorgabe 0,90
 
-: <math>\displaystyle Q_{\mathrm{ab}}(t) > 0 \; \to \; Q_{\mathrm{B}}(t) = \frac{Q_{\mathrm{K}}(t)}{\eta}</math> &nbsp;&nbsp;(10)
+'''Teillast.''' Der Wirkungsgrad einer Laufstunde folgt ihrer Laststufe, der brennstoffbasierten Wärme im Verhältnis zur Nennleistung:
+
+: <math>\displaystyle \beta(t) = \min\left( \frac{Q_{\mathrm{K}}(t)}{P_{\mathrm{nenn}}} , 1 \right)</math> &nbsp;&nbsp;(10)
+:: <math>\beta(t)</math> – Laststufe der Stunde [–]
+:: <math>Q_{\mathrm{K}}(t)</math> – brennstoffbasierter Anteil der Abgabe aus (6) [kWh]
+:: <math>P_{\mathrm{nenn}}</math> – thermische Nennleistung des Kessels [kW]
+
+Ist <math>\eta_{30}</math> im Katalog leer, gilt eine Vorgabe nach der Bauart des Kessels — Brennwertkessel, wenn der Schalter „Brennwertkessel" gesetzt ist, Standardkessel, wenn die Beschreibung die Bauart „Standard…" nennt, sonst Niedertemperaturkessel:
+
+: <math>\displaystyle \eta_{30} = \begin{cases} \min\left( \eta_{100} + 0{,}06 , H_{\mathrm{s}}/H_{\mathrm{i}} \right) & \mathrm{Brennwertkessel} \\ \eta_{100} & \mathrm{Niedertemperaturkessel} \\ \eta_{100} - 0{,}03 & \mathrm{Standardkessel} \end{cases}</math> &nbsp;&nbsp;(11)
+:: <math>\eta_{30}</math> – Wirkungsgrad bei 30&nbsp;% Last, hier die Vorgabe für ein leeres Feld [–]
+:: <math>\eta_{100}</math> – Volllastwirkungsgrad aus (8) und (9) [–]
+:: <math>H_{\mathrm{s}}/H_{\mathrm{i}}</math> – Brennwert durch Heizwert des Brennstoffs [–]
+
+: <math>\displaystyle \eta_{\mathrm{tr}}(t) = \eta_{30}' + \left( \eta_{100} - \eta_{30}' \right) \cdot \frac{\max\left( \beta(t) , 0{,}3 \right) - 0{,}3}{0{,}7}</math> &nbsp;&nbsp;(12)
+:: <math>\eta_{\mathrm{tr}}(t)</math> – Wirkungsgrad der Laststufe ohne Kondensationsgewinn [–]
+:: <math>\eta_{30}'</math> – wirksamer Teillastwirkungsgrad: <math>\eta_{30}</math> bzw. seine Vorgabe aus (11); mit Brennwertkennlinie <math>\eta_{30} - \Delta_{30}</math>, weil der Katalogwert bei 30&nbsp;°C Rücklauf gemessen ist [–]
+:: <math>\eta_{100}</math> – Volllastwirkungsgrad [–]
+:: <math>\beta(t)</math> – Laststufe aus (10) [–]
+
+Zwischen 30&nbsp;% und 100&nbsp;% Last ist die Kurve linear, darunter gilt <math>\eta_{30}'</math>. Beim Niedertemperaturkessel ohne eigenes <math>\eta_{30}</math> ist sie flach: Er rechnet in jeder Stunde mit <math>\eta_{100}</math>. Der Elektrokessel (<math>\mathrm{ID}_{\mathrm{B}} = 13</math>) hat keine Kennlinie und rechnet stets mit <math>\eta_{100}</math>.
+
+'''Brennwertkennlinie.''' Sind am Kessel „Brennwertkessel" und „Brennwertkennlinie" gesetzt und brennt er Gas, Heizöl, Holz oder Pellets, hängt der Wirkungsgrad zusätzlich am Rücklauf der Stunde. Der Rücklauf <math>\vartheta_{\mathrm{RL,K}}(t)</math> kommt aus der ersten belegten Stufe: dem gerechneten Rücklauf des Heizkreises (Anlagenkopplung), dem Senkenspeicher (bei geschichtetem Speicher die unterste Schicht), dem gepflegten Temperaturpaar von Anlage bzw. Katalog, sonst 50&nbsp;°C.
+
+: <math>\displaystyle g(t) = \min\left( \max\left( \frac{\vartheta_{\mathrm{Tau}} - \vartheta_{\mathrm{RL,K}}(t)}{\vartheta_{\mathrm{Tau}} - 30} , 0 \right) , 1{,}2 \right)</math> &nbsp;&nbsp;(13)
+:: <math>g(t)</math> – Kondensationsanteil der Stunde: 0 am und über dem Taupunkt, 1 bei 30&nbsp;°C Rücklauf [–]
+:: <math>\vartheta_{\mathrm{Tau}}</math> – Taupunkt des Abgases [°C]
+:: <math>\vartheta_{\mathrm{RL,K}}(t)</math> – Rücklauf der Stunde am Kessel [°C]
+
+: <math>\displaystyle \eta_{\mathrm{eff}}(t) = \max\left( \min\left( \eta_{\mathrm{tr}}(t) + \Delta_{30} \cdot g(t) , H_{\mathrm{s}}/H_{\mathrm{i}} \right) , \eta_{\mathrm{tr}}(t) \right)</math> &nbsp;&nbsp;(14)
+:: <math>\eta_{\mathrm{eff}}(t)</math> – Wirkungsgrad, mit dem diese Stunde rechnet; ohne Brennwertkennlinie gleich <math>\eta_{\mathrm{tr}}(t)</math> [–]
+:: <math>\eta_{\mathrm{tr}}(t)</math> – Wirkungsgrad der Laststufe aus (12) [–]
+:: <math>\Delta_{30}</math> – Kondensationsgewinn bei 30&nbsp;°C Rücklauf [–]
+:: <math>g(t)</math> – Kondensationsanteil aus (13) [–]
+:: <math>H_{\mathrm{s}}/H_{\mathrm{i}}</math> – Obergrenze des Wirkungsgrads [–]
+
+An den zwei Prüfpunkten trifft die Kennlinie den Katalog: Bei 30&nbsp;% Last und 30&nbsp;°C Rücklauf ist <math>\eta_{\mathrm{eff}} = \eta_{30}</math>, bei Volllast und einem Rücklauf am Taupunkt <math>\eta_{\mathrm{eff}} = \eta_{100}</math>.
+
+'''Takten.''' Liegt die Wärme der Stunde unter der Mindestleistung, taktet der Kessel; die Starts der Stunde sind so viele, wie Mindestläufe die Wärme brauchen, höchstens so viele, wie ganz in die Stunde passen. Sonst ist ein Start der Übergang aus einer Stillstandsstunde in eine Laufstunde:
+
+: <math>\displaystyle n_{\mathrm{S}}(t) = \begin{cases} \min\left( \left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor , \left\lceil \frac{Q_{\mathrm{K}}(t)}{P_{\mathrm{min}} \cdot t_{\mathrm{min}}/60} \right\rceil \right) & 0 < Q_{\mathrm{K}}(t) < P_{\mathrm{min}} \\ 1 & Q_{\mathrm{ab}}(t-1) = 0 \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(15)
+:: <math>n_{\mathrm{S}}(t)</math> – Starts der Stunde [–]
+:: <math>t_{\mathrm{min}}</math> – Mindestlaufzeit eines Laufs [min]
+:: <math>Q_{\mathrm{K}}(t)</math> – brennstoffbasierte Wärme der Stunde [kWh]
+:: <math>P_{\mathrm{min}}</math> – Mindestleistung des Kessels [kW]
+:: <math>Q_{\mathrm{ab}}(t-1)</math> – Abgabe in der Vorstunde; 0 heißt: der Kessel stand [kWh]
+
+Der Elektrokessel taktet nicht; seine Starts sind seine Laufphasen. Damit ist der Brennstoff einer Laufstunde:
+
+: <math>\displaystyle Q_{\mathrm{ab}}(t) > 0 \; \to \; Q_{\mathrm{B}}(t) = \frac{Q_{\mathrm{K}}(t)}{\eta_{\mathrm{eff}}(t)} + n_{\mathrm{S}}(t) \cdot Q_{\mathrm{An}}</math> &nbsp;&nbsp;(16)
 :: <math>Q_{\mathrm{B}}(t)</math> – Brennstoffverbrauch der Stunde [kWh]
 :: <math>Q_{\mathrm{ab}}(t)</math> – gesamte Abgabe des Kessels, einschließlich des Puffer-Anteils [kWh]
 :: <math>Q_{\mathrm{K}}(t)</math> – brennstoffbasierter Anteil der Abgabe aus (6) [kWh]
-:: <math>\eta</math> – Wirkungsgrad dieser Stunde aus (8) und (9) [–]
+:: <math>\eta_{\mathrm{eff}}(t)</math> – Wirkungsgrad der Stunde aus (14) [–]
+:: <math>n_{\mathrm{S}}(t)</math> – Starts der Stunde aus (15) [–]
+:: <math>Q_{\mathrm{An}}</math> – Anfahrverlust je Start [kWh]
 
-: <math>\displaystyle Q_{\mathrm{ab}}(t) = 0 \;\text{und}\; b(t) = 1 \; \to \; Q_{\mathrm{B}}(t) = P_{\mathrm{B}} \cdot 1\,\mathrm{h}</math> &nbsp;&nbsp;(11)
+: <math>\displaystyle Q_{\mathrm{ab}}(t) = 0 \;\text{und}\; b(t) = 1 \; \to \; Q_{\mathrm{B}}(t) = P_{\mathrm{B}} \cdot 1\,\mathrm{h}</math> &nbsp;&nbsp;(17)
 :: <math>Q_{\mathrm{B}}(t)</math> – Brennstoffverbrauch der Stunde, hier der Bereitschaftsverlust [kWh]
 :: <math>Q_{\mathrm{ab}}(t)</math> – Abgabe des Kessels; 0 heißt: der Kessel steht [kWh]
 :: <math>b(t)</math> – Betriebsbereitschaft der Stunde: 1, wenn der Tag ein Heiztag ist oder der Kessel in den letzten <math>n_{\mathrm{N}} = 24</math>&nbsp;Stunden gelaufen ist, sonst 0 [–]
 :: <math>P_{\mathrm{B}}</math> – Bereitschaftsleistung des Kessels [kW]
 
-Steht der Kessel und ist er nicht betriebsbereit — außerhalb der Heizperiode und nach Ablauf des Nachlaufs —, ist <math>Q_{\mathrm{B}}(t) = 0</math>. Ein '''Heiztag''' ist ein Tag, an dem der Raumwärmebedarf des Projekts vor der Kaskade größer 0 ist; ohne Raumwärmereihe gilt jeder Tag als Heiztag. Der Lauf zählt je Kessel die Laufstunden, die '''Starts''' — Laufstunden, denen eine Stillstandsstunde vorausgeht — und die betriebsbereiten Stillstandsstunden. Ist die Betriebsbereitschaft <math>h_{\mathrm{B}}</math> des Projekts größer 0, darf ein Kessel höchstens <math>h_{\mathrm{B}}</math> minus seine Laufstunden an Bereitschaftsstunden tragen; den Überhang samt Verbrauch nimmt der Deckel zurück, und das Laufprotokoll nennt ihn.
+Steht der Kessel und ist er nicht betriebsbereit — außerhalb der Heizperiode und nach Ablauf des Nachlaufs —, ist <math>Q_{\mathrm{B}}(t) = 0</math>. Ein '''Heiztag''' ist ein Tag, dessen Tagesmittel der Außentemperatur unter der Heizgrenze <math>\vartheta_{\mathrm{H}}</math> liegt; ohne Temperaturreihe gilt jeder Tag als Heiztag. Der Lauf zählt je Kessel die Laufstunden, die '''Starts''' nach (15), die Taktstunden und die betriebsbereiten Stillstandsstunden. Ist die Betriebsbereitschaft <math>h_{\mathrm{B}}</math> des Projekts größer 0, darf ein Kessel höchstens <math>h_{\mathrm{B}}</math> minus seine Laufstunden an Bereitschaftsstunden tragen; den Überhang samt Verbrauch nimmt der Deckel zurück, und das Laufprotokoll nennt ihn.
 
-Der Bereitschaftsverlust (11) genau einmal je Stunde zu buchen, ist die zentrale Bedingung: Fiele die Wahl je Kanal, entstünde er in einer Stunde zweimal, und der Jahresnutzungsgrad kippte entsprechend. Maßgeblich für „läuft der Kessel?" ist die '''Abgabe''' <math>Q_{\mathrm{ab}}</math>, nicht der brennstoffbasierte Anteil <math>Q_{\mathrm{K}}</math> — ein Kessel, der vorgewärmtes Wasser nur noch geringfügig anhebt, steht nicht still.
+Der Bereitschaftsverlust (17) genau einmal je Stunde zu buchen, ist die zentrale Bedingung: Fiele die Wahl je Kanal, entstünde er in einer Stunde zweimal, und der Jahresnutzungsgrad kippte entsprechend. Maßgeblich für „läuft der Kessel?" ist die '''Abgabe''' <math>Q_{\mathrm{ab}}</math>, nicht der brennstoffbasierte Anteil <math>Q_{\mathrm{K}}</math> — ein Kessel, der vorgewärmtes Wasser nur noch geringfügig anhebt, steht nicht still.
 
-Bei Gaskesseln wird nebenher die '''Gasspitze''' mitgeführt: je Kessel der höchste Wert des Jahres, über alle Gaskessel aufsummiert.
+Bei Gaskesseln wird nebenher die '''Gasspitze''' mitgeführt: je Kessel der höchste Brennstoff einer Laufstunde samt Anfahrverlust, über alle Gaskessel aufsummiert.
 
-: <math>\displaystyle P_{\mathrm{Gas,max}} = \sum_{\mathrm{Gaskessel}} \max_{t} \left( \frac{Q_{\mathrm{K}}(t)}{\eta} \right)</math> &nbsp;&nbsp;(12)
+: <math>\displaystyle P_{\mathrm{Gas,max}} = \sum_{\mathrm{Gaskessel}} \max_{t} Q_{\mathrm{B}}(t)</math> &nbsp;&nbsp;(18)
 :: <math>P_{\mathrm{Gas,max}}</math> – Gasspitze des Projekts [kW]
-:: <math>Q_{\mathrm{K}}(t)</math> – brennstoffbasierter Anteil der Abgabe aus (6) [kWh]
-:: <math>\eta</math> – Wirkungsgrad dieser Stunde [–]
+:: <math>Q_{\mathrm{B}}(t)</math> – Brennstoff einer Laufstunde aus (16) [kWh]
 
-: <math>\displaystyle Q_{\mathrm{Gas,a}} < s_{\mathrm{Gas}} = 0{,}1 \; \mathrm{MWh} \; \to \; P_{\mathrm{Gas,max}} = 0</math> &nbsp;&nbsp;(13)
+: <math>\displaystyle Q_{\mathrm{Gas,a}} < s_{\mathrm{Gas}} = 0{,}1 \; \mathrm{MWh} \; \to \; P_{\mathrm{Gas,max}} = 0</math> &nbsp;&nbsp;(19)
 :: <math>P_{\mathrm{Gas,max}}</math> – Gasspitze des Projekts [kW]
 :: <math>Q_{\mathrm{Gas,a}}</math> – Gasverbrauch des Projekts im Jahr [MWh]
 :: <math>s_{\mathrm{Gas}}</math> – Schwelle, unter der die Gasspitze entfällt [MWh], Konstante 0,1
@@ -278,7 +373,7 @@ Nutzwärme und Verbrauch werden je Kessel auf MWh umgerechnet. Der Verbrauch geh
 
 Die Emissionen folgen dem '''gemessenen''' Jahresverbrauch:
 
-: <math>\displaystyle m_{\mathrm{E}} = \frac{Q_{\mathrm{B,a}} \cdot f_{\mathrm{E}}}{1\,000}</math> &nbsp;&nbsp;(14)
+: <math>\displaystyle m_{\mathrm{E}} = \frac{Q_{\mathrm{B,a}} \cdot f_{\mathrm{E}}}{1\,000}</math> &nbsp;&nbsp;(20)
 :: <math>m_{\mathrm{E}}</math> – Jahresemission [t für CO₂, kg für SO₂, NO<sub>x</sub> und Staub]
 :: <math>Q_{\mathrm{B,a}}</math> – Brennstoffverbrauch des Kessels im Jahr [MWh]
 :: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Energieträgers [g/kWh für CO₂, mg/kWh für die übrigen]
@@ -286,18 +381,18 @@ Die Emissionen folgen dem '''gemessenen''' Jahresverbrauch:
 
 Der Jahresnutzungsgrad wird aus den Jahressummen gebildet, nicht aus Volllastwerten. Im Zähler steht dabei die '''brennstoffbasierte''' Nutzwärme <math>Q_{\mathrm{K,a}}</math> — bei einem Kessel mit Quellpuffer ist das weniger als seine Abgabe, denn der Puffer-Anteil hat ihn keinen Brennstoff gekostet:
 
-: <math>\displaystyle \eta_{\mathrm{a}} = \frac{Q_{\mathrm{K,a}}}{Q_{\mathrm{B,a}}} \cdot 100</math> &nbsp;&nbsp;(15)
+: <math>\displaystyle \eta_{\mathrm{a}} = \frac{Q_{\mathrm{K,a}}}{Q_{\mathrm{B,a}}} \cdot 100</math> &nbsp;&nbsp;(21)
 :: <math>\eta_{\mathrm{a}}</math> – Jahresnutzungsgrad des Kessels [%]
 :: <math>Q_{\mathrm{K,a}}</math> – brennstoffbasierte Nutzwärme des Kessels im Jahr [MWh]
 :: <math>Q_{\mathrm{B,a}}</math> – Brennstoffverbrauch des Kessels im Jahr, einschließlich Stillstand [MWh]
 :: <math>100</math> – Umrechnung des Verhältnisses in Prozent [%]
 
-: <math>\displaystyle \eta_{\mathrm{a}} > 110 \; \to \; \eta_{\mathrm{a}} = 108 \; ; \quad \eta_{\mathrm{a}} < 1 \; \to \; \eta_{\mathrm{a}} = 1</math> &nbsp;&nbsp;(16)
+: <math>\displaystyle \eta_{\mathrm{a}} > 110 \; \to \; \eta_{\mathrm{a}} = 108 \; ; \quad \eta_{\mathrm{a}} < 1 \; \to \; \eta_{\mathrm{a}} = 1</math> &nbsp;&nbsp;(22)
 :: <math>\eta_{\mathrm{a}}</math> – Jahresnutzungsgrad des Kessels [%]
 :: <math>\eta_{\mathrm{a,max}}</math> – obere Plausibilitätsgrenze [%], Konstante 110; darüber wird auf <math>\eta_{\mathrm{a,neu}} = 108</math> gesetzt
 :: <math>\eta_{\mathrm{a,min}}</math> – untere Plausibilitätsgrenze [%], Konstante 1
 
-Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math>Q_{\mathrm{B,a}} = 0</math> —, ist <math>\eta_{\mathrm{a}} = 0</math>. <math>Q_{\mathrm{B,a}}</math> enthält die Stillstandsstunden; deshalb liegt der Jahresnutzungsgrad unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürzer der Kessel läuft.
+Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math>Q_{\mathrm{B,a}} = 0</math> —, ist <math>\eta_{\mathrm{a}} = 0</math>. <math>Q_{\mathrm{B,a}}</math> enthält die Stillstandsstunden und die Anfahrverluste; deshalb liegt der Jahresnutzungsgrad unter dem mittleren Wirkungsgrad im Betrieb, und zwar umso deutlicher, je kürzer und je öfter der Kessel läuft. Der mittlere Wirkungsgrad im Betrieb ist die Wärme der Laufstunden durch ihren Brennstoff nach (14), ohne Anfahr- und Bereitschaftsverlust.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
@@ -308,13 +403,13 @@ Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math
 
 * '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des Kessels ist deshalb immer 0.
 
-* '''Kein Teillastwirkungsgrad.''' <math>\eta</math> ist ein Wert je Brennstoffart, unabhängig von der Auslastung der Stunde. Ein modulierender Kessel wird damit nicht besser und nicht schlechter gerechnet als ein voll laufender.
+* '''Die Teillastkurve ist eine Gerade zwischen zwei Prüfpunkten''' (12): 30&nbsp;% und 100&nbsp;% Last; unter 30&nbsp;% Last gilt der Wert bei 30&nbsp;%. Die Vorgaben für ein leeres <math>\eta_{30}</math> (11) und für Mindestleistung, Anfahrverlust und Mindestlaufzeit sind gerundete Näherungen aus den Mindestanforderungen der Richtlinie 92/42/EWG und einer Auswertung von Herstellerdaten, keine Werte eines bestimmten Geräts.
 
-* '''Keine Taktung.''' An- und Abschalten innerhalb einer Stunde, Anfahr- und Abstrahlverluste über <math>P_{\mathrm{B}}</math> hinaus, Mindestlaufzeiten und Mindestpausen bildet das Modell nicht ab.
+* '''Das Takten ist eine Zählung''' (15): Unter der Mindestleistung zählt der Lauf die Starts, die Mindestläufe der Stunde brauchen, und schlägt je Start den Anfahrverlust auf. Mindestpausen, das Abkühlen zwischen zwei Läufen und Abstrahlverluste über <math>P_{\mathrm{B}}</math> hinaus bildet das Modell nicht ab.
 
-* '''Der Bereitschaftsverlust ist eine feste Leistung''' (11), unabhängig von Kesseltemperatur, Nennleistung und Speicherzustand; er fällt nur in betriebsbereiten Stillstandsstunden an.
+* '''Der Bereitschaftsverlust ist eine feste Leistung''' (17), unabhängig von Kesseltemperatur, Nennleistung und Speicherzustand; er fällt nur in betriebsbereiten Stillstandsstunden an.
 
-* '''Keine Brennwertrechnung als eigener Weg.''' Der Brennwertvorteil steckt im Wirkungsgrad des Katalogs — deshalb sind dort Werte über 100&nbsp;% zulässig und beabsichtigt, und deshalb steht <math>s_{\eta}</math> bei 1,5.
+* '''Die Brennwertkennlinie rechnet nur mit beiden Schaltern''' — „Brennwertkessel" und „Brennwertkennlinie" — und nur für Gase, Heizöle, Holz und Pellets. Taupunkt, <math>\Delta_{30}</math> und <math>H_{\mathrm{s}}/H_{\mathrm{i}}</math> sind gerundete Näherungen je Brennstoffgruppe. Ohne Brennwertkennlinie steckt der Brennwertvorteil allein in den Katalogwirkungsgraden — deshalb sind dort Werte über 100&nbsp;% zulässig, und deshalb steht <math>s_{\eta}</math> bei 1,5. Ohne gerechneten Rücklauf gilt die nächste Stufe der Rücklaufkette bis zum Rückfall 50&nbsp;°C.
 
 * '''Keine hydraulische Grenze zwischen Quellpuffer und Kessel.''' Der Speicher hat eine Lade- und Entladeleistungsgrenze; einen eigenen Wärmeübertrager zwischen Puffer und Kessel kennt das Modell nicht. In (7) steht deshalb der Speicherinhalt und keine Übertragerleistung.
 
@@ -325,7 +420,7 @@ Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Heizkessel"''' — je Kessel Nutzwärme, Brennstoffverbrauch, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math> und Deckungsanteil; in der Gruppe „Betrieb" Starts, Bereitschaftsstunden und Bereitschaftsverlust; dazu die Ganglinie der Kesselleistung. Die Emissionen stehen im Bericht und in der Wirtschaftlichkeit, nicht im Reiter.
+* '''Simulationsergebnis, Reiter „Heizkessel"''' — je Kessel Nutzwärme, Brennstoffverbrauch, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math> und Deckungsanteil; in der Gruppe „Betrieb" Starts, Bereitschaftsstunden und Bereitschaftsverlust; mit Kennlinie der mittlere Wirkungsgrad im Betrieb und der Teillastbrennstoff — der Mehrverbrauch gegenüber einem Betrieb mit <math>\eta_{100}</math>, negativ, wo die Teillast Brennstoff spart; dazu die Ganglinie der Kesselleistung. Die Emissionen stehen im Bericht und in der Wirtschaftlichkeit, nicht im Reiter.
 
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil des Kessels an der Jahreswärme und die verbleibende Restwärme.
 
