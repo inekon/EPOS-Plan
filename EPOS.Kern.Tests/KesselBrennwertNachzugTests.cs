@@ -46,7 +46,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(KonditionierungsvorlagenSaatSchema.SCHRITT + 1, KesselBrennwertNachzug.SCHRITT);
             Assert.Equal(158, KesselBrennwertNachzug.SCHRITT);
-            Assert.Equal(KesselBrennwertNachzug.SCHRITT, SchemaStand.Zielversion);
+            Assert.Equal(KesselBrennwertNachzug.SCHRITT + 1, KostenStempelSchema.SCHRITT);
         }
 
         [Fact]
