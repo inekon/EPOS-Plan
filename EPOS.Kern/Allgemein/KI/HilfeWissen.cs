@@ -584,8 +584,12 @@ namespace WindowsFormsApplication1
                     "umbenennen, duplizieren und löschen - Löschen fragt vorher. 'Kopieren nach …' legt aus einer " +
                     "Vorlage, auch einer ausgelieferten, eine eigene Vorlage einer anderen Größe an: Geräte und " +
                     "Personen gegenseitig mit denselben Werten und Zeiten (beide sind Anteile); Heizen nach Kühlen " +
-                    "nur mit der Zeitstruktur und den Aus-Zeiten - jede Stunde mit Heizsollwert bekommt den " +
-                    "Komfortsollwert, vorgeschlagen 26 °C. Andere Richtungen (Kühlen nach Heizen, alles mit " +
+                    "nur mit der Zeitstruktur und den Aus-Zeiten - jede Stunde, deren Heizsollwert den Tagwert der " +
+                    "Vorlage erreicht (den Wert der Zeile 'Tag', ohne sie den höchsten Heizsollwert), bekommt den " +
+                    "Komfortsollwert, vorgeschlagen 26 °C; jede Stunde mit niedrigerem Heizsollwert (Absenkzeit: " +
+                    "Nacht, Wochenende, Ferien) bekommt den Absenksollwert, vorgeschlagen 28 °C, oder 'aus' - so " +
+                    "kühlt die Kopie dort gar nicht. Ein Absenksollwert unter dem Komfortsollwert wird am Feld " +
+                    "abgelehnt. Andere Richtungen (Kühlen nach Heizen, alles mit " +
                     "Lüftung) gibt es nicht. Der Name gilt in der Liste der Zielgröße und muss dort frei sein; die " +
                     "Beschreibung nennt die Herkunft. Jede dieser Handlungen wirkt " +
                     "SOFORT auf die Vorlagen, nicht erst mit dem OK des Editors, und ändert kein Gebäude: Ein " +

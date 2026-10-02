@@ -61675,6 +61675,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absenksollwert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_ABSENKSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_ABSENKSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Angabe ähnelt.
         /// </summary>
         public static string KOND_LBL_ANGABE {
@@ -62436,6 +62445,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_ZONE_KALENDER {
             get {
                 return ResourceManager.GetString("KOND_LBL_ZONE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Absenksollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ABSENKSOLLWERT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ABSENKSOLLWERT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Kopie von Heizen nach Kühlen fehlt der Absenksollwert – eine Zahl oder „aus“. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ABSENKSOLLWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ABSENKSOLLWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Absenksollwert {0} °C liegt unter dem Komfortsollwert {1} °C – beim Kühlen ist die Absenkung ein höherer Sollwert oder „aus“. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ABSENKSOLLWERT_UNTER_KOMFORT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ABSENKSOLLWERT_UNTER_KOMFORT", resourceCulture);
             }
         }
         
@@ -63412,6 +63448,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt in den Absenkzeiten – überall, wo der Heizsollwert unter dem Tagwert der Vorlage liegt. „aus“ schaltet die Kühlung dort ab. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_ABSENKSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_ABSENKSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur stehen im Reiter „Konditionierung“. ähnelt.
         /// </summary>
         public static string KOND_TXT_HINWEIS_ALTFELDER {
@@ -63718,7 +63763,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert in Höhe des Tagwerts wird der Komfortsollwert, jeder niedrigere (Absenkzeit) der Absenksollwert oder „aus“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KOPIEREN_ZEITSTRUKTUR {
             get {
@@ -63750,6 +63795,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_LEER {
             get {
                 return ResourceManager.GetString("KOND_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Absenksollwert ist eine Zahl von {0} bis {1} °C oder „{2}“. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_MELDUNG_ABSENKSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_MELDUNG_ABSENKSOLLWERT", resourceCulture);
             }
         }
         

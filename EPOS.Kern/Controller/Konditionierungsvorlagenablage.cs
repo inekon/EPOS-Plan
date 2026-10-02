@@ -44,10 +44,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// „Kopieren nach …": eine Vorlage — auch eine ausgelieferte — als eigene Vorlage einer anderen Größe
         /// (<see cref="Vorlagenkopierregel"/>); der Name gilt in der Zielliste, ein Doppelname wird benannt
-        /// abgelehnt; der Komfortsollwert [°C] nur bei Heizen → Kühlen.
+        /// abgelehnt; Komfort- und Absenksollwert [°C] (Absenksollwert <see cref="double.NaN"/> = „aus") nur bei
+        /// Heizen → Kühlen.
         /// </summary>
         KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
-                                                  double? komfortsollwert, out long neueId);
+                                                  double? komfortsollwert, double? absenksollwert, out long neueId);
 
         /// <summary>
         /// Die Namensregel (getrimmt, 1 … 80 Zeichen, je Größe eindeutig ohne Unterschied der
@@ -221,16 +222,16 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc/>
         public KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
-                                                         double? komfortsollwert, out long neueId)
+                                                         double? komfortsollwert, double? absenksollwert, out long neueId)
         {
             neueId = 0;
             Eintrag e = Finde(id);
             if (e == null) return KonditionierungCtrl.Ergebnis.Fehler(Fehlt(id));
-            string meldung = Vorlagenkopierregel.Pruefen(e.Kopf.Groesse, ziel, komfortsollwert);
+            string meldung = Vorlagenkopierregel.Pruefen(e.Kopf.Groesse, ziel, komfortsollwert, absenksollwert);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
             string name = KonditionierungsvorlageCtrl.Namensregel(ziel, bezeichner, Namen(ziel, 0), out meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
-            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(e.Inhalt, e.Kopf.Groesse, ziel, komfortsollwert);
+            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(e.Inhalt, e.Kopf.Groesse, ziel, komfortsollwert, absenksollwert);
             if (!inhalt.Ok) return KonditionierungCtrl.Ergebnis.Fehler(inhalt.Meldung);
             meldung = KonditionierungsvorlageCtrl.Groessenregel(inhalt.Stand, ziel);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
