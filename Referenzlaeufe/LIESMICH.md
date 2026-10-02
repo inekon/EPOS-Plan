@@ -523,7 +523,11 @@ danach im Wegweiser desselben Ordners.
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
 `Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
-`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Gegen diese Basis hält
+`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Die Testdatenbank trägt seither die
+Ergebnisspalte `Tab_ErgebnisWirtschaftlichkeit.Lauf_Staende` (Laufvermerk, P641, über
+`Werkzeuge/Testdatenbankschema` nachgezogen, kein Schemaschritt): Schemastand **158** unverändert, 81 137 664 Byte,
+LFS-SHA-256 `c1a153dc227c6f7b91a71657eb9705ba7056116551f900259fad5d3cfc543eed`, alle 48 Bestandszeilen NULL. **Die
+Basis bleibt**, weil kein Rechenwert betroffen ist: Der Referenzlauf liest diese Tabelle nicht. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,

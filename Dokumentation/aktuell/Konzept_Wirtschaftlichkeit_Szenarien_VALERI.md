@@ -259,7 +259,7 @@ ohne Verwendung im Stand „X“: Im Vergleich mit „Y“ wird der Netzbezug vo
 bewertet (Gruppenregel).“ Die geltende Regel — je Lauf über Stamm, angehakte Varianten und Referenz, mit
 Arbeits- und Grundpreis und ohne Leistungspreis an einem Stand ohne stromverwendenden Erzeuger, auch im
 Rollentarif, samt dem Ausweis im Bericht — steht im konsolidierten Konzept
-([§ 3.5](Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md), → Register R‑EZ, EZ‑13 bis EZ‑18).
+([§ 3.5](Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md), → Register R‑EZ, EZ‑13 bis EZ‑19).
 
 ---
 
