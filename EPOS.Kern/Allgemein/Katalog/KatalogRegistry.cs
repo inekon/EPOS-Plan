@@ -206,8 +206,9 @@ namespace WindowsFormsApplication1
                 Schluessel = "SOLARKOLLEKTOREN",
                 Tabelle = "Tab_Solarkollektoren_STAMM",
                 AusschlussSpalten = new[] { "Investitionskosten" },
+                // ST6 (Welle M2): die Bezugsflaeche der Kennwerte setzt der Import, wo die Quelle sie nennt.
                 ImportSpalten = new[] { "Firma", "Kollektortyp", "Modulflaeche", "Aperturflaeche",
-                    "h0", "k1", "k2", "Kdir", "Kdfu" }
+                    "h0", "k1", "k2", "Kdir", "Kdfu", SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE }
             },
             new KatalogDefinition
             {

@@ -85,6 +85,14 @@
                     @* Ohne bekannten Bezug bleibt das Feld LEER - woertlich :4603. *@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                Daten.DeckungBekannt ? Zahl(Daten.DeckungProzent) : "", "%")
+
+                    @* PUMPENSTROM DER SOLARKREISE (ST1): nur mit gepflegter Pumpenleistung oder
+                       Hilfsenergieanteil - ohne beides rechnet der Lauf keinen, und die Zeile
+                       bleibt weg. Die Zahl ist der Strom, den der Lauf in den Strombedarf bucht. *@
+                    @if (Daten.PumpenstromMwh > 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_SOLAR_PUMPENSTROM, Zahl(Daten.PumpenstromMwh), MWH)
+                    }
                 </dl>
 
                 @* ERTRAG OHNE ABNEHMER: Ueberschuss, weil die Senken der Felder den

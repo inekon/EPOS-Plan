@@ -364,6 +364,12 @@ namespace WindowsFormsApplication1
         public const string FeldKdir = "KDIR";
         public const string FeldKdiff = "KDIFF";
 
+        /// <summary>
+        /// Bezugsfläche der Kollektorkennwerte (ST6, Spalte <c>Bezugsflaeche</c>): „apertur" oder
+        /// „brutto" (<see cref="Solarkreis.BEZUGSFLAECHEN"/>).
+        /// </summary>
+        public const string FeldBezugsflaeche = "BEZUGSFLAECHE";
+
         // -----------------------------------------------------------------
         // Die Gruppe KOSTEN des Stammblatts (Konzept Administrationsdialoge,
         // Stufe 3, Vorschlag V9): Das Stammblatt einer Verwaltung teilt die
@@ -660,9 +666,15 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldAperturflaeche, t("KBROW_LBL_APERTURFLAECHE"), "m²",
                                                   BrowserFeldArt.Zahl, editierbar: true),
 
+                            // ST6 (Welle M2): auf welche Fläche η₀, a₁, a₂ bezogen sind - die
+                            // Fläche, mit der die Simulation rechnet.
+                            new BrowserDetailfeld(FeldBezugsflaeche, t("KBROW_LBL_BEZUGSFLAECHE"), "",
+                                                  BrowserFeldArt.Text, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_BEZUGSFLAECHE")),
+
                             // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
-                            // Kdfu heisst im Editor „Kdiff" und hat im Rechenweg keinen
-                            // Leser (ParameterVerwendung); gepflegt wird er trotzdem.
+                            // Kdfu heisst im Editor „Kdiff" und korrigiert die Diffus- und
+                            // Bodenreflexstrahlung (Welle M2 ST5); 0 = Faktor der Direktstrahlung.
                             new BrowserDetailfeld(FeldH0,   "h0:",   "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldK1,   "k1:",   "W/(m²*K)",
@@ -671,7 +683,7 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldKdir, "Kdir:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "50°",
+                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
                                                   BrowserFeldArt.Zahl, editierbar: true)

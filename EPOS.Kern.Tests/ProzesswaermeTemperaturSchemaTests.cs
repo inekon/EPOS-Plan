@@ -32,7 +32,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(AlbedoSchema.SCHRITT + 1, ProzesswaermeTemperaturSchema.SCHRITT);
             Assert.Equal(164, ProzesswaermeTemperaturSchema.SCHRITT);   // 163 ist die Bodenalbedo
-            Assert.Equal(ProzesswaermeTemperaturSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= ProzesswaermeTemperaturSchema.SCHRITT);
             Assert.Equal(new[] { "Tab_Prozesswaerme_STAMM", "Tab_Prozesswaerme" }, ProzesswaermeTemperaturSchema.TABELLEN);
             Assert.Equal(new[] { "Vorlauf", "Ruecklauf" }, ProzesswaermeTemperaturSchema.SPALTEN.Select(s => s.Key));
 

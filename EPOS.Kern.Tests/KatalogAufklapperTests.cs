@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
                 new[]
                 {
                     "BEZEICHNER", "KOLLEKTORTYP", "FIRMA", "BESCHREIBUNG",
-                    "MODULFLAECHE", "APERTURFLAECHE",
+                    "MODULFLAECHE", "APERTURFLAECHE", "BEZUGSFLAECHE",
                     "H0", "K1", "K2", "KDIR", "KDIFF", "INVESTITIONSKOSTEN"
                 }
             };

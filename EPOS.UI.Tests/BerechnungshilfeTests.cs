@@ -489,7 +489,10 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             // Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle - die kausale
             // Ratsche" (Spezifikation 5.1.1). Auftrag #247: Fassung 7 - der
             // Abschnitt "Rastersuche" nennt die zwei Suchmethoden.
-            { "Stromspeicher", "Fassung 7" }
+            { "Stromspeicher", "Fassung 7" },
+            // Welle M2: Arbeitstemperatur aus dem Speicher, Diffus-IAM, Bezugsflaeche
+            // und Solarkreis (Pumpenstrom, Verluste).
+            { "Solarthermie", "Fassung 4" }
         };
 
     /// <summary>

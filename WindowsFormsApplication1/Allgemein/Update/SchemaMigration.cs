@@ -4864,6 +4864,25 @@ namespace WindowsFormsApplication1
         /// rechnet wie zuvor; eine stehende Spalte wird übergangen.</para>
         /// </summary>
         public const int SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT;
+        // ---- Welle M2 Solarthermie: Felder des Kollektorfelds und Bezugsfläche des Kollektorsatzes ----
+
+        /// <summary>
+        /// Schritt <see cref="SolarthermieFelderSchema.SCHRITT"/> — <b>die Felder des
+        /// Kollektorfelds</b> (Welle M2 der Entscheidungsvorlage Modellgrenzen: ST1, ST2, ST3 Stufe 1,
+        /// ST4, ST6). Er folgt auf <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Energieanlagen</c> die nullbaren Spalten
+        /// <c>Pumpenleistung_W</c>, <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>,
+        /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>, an
+        /// <c>Tab_Solarkollektoren_STAMM</c> und <c>Tab_Solarkollektoren</c> die Spalte
+        /// <c>Bezugsflaeche</c> (TEXT, Vorgabe apertur), alle mit Prüfklausel. Die Anweisungen stehen bei
+        /// <see cref="SolarthermieFelderSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Anlagenspalten rechnen ihre
+        /// Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche, mit der er rechnet.</para>
+        /// </summary>
+        public const int SCHRITT_SOLARTHERMIE_FELDER = SolarthermieFelderSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -7013,6 +7032,18 @@ namespace WindowsFormsApplication1
                         "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
                         "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
                         Schritt_ProzesswaermeTemperatur),
+            // WELLE M2 SOLARTHERMIE - die Felder des Kollektorfelds an der Anlagenzeile und die
+            // Bezugsflaeche der Kennwerte am Kollektorsatz. REIN DDL; die Quelle ist
+            // SolarthermieFelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_SOLARTHERMIE_FELDER,
+                        "Tab_Energieanlagen: Felder des Kollektorfelds (Pumpenleistung_W, " +
+                        "Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K, " +
+                        "Arbeitstemperatur_Weg); Tab_Solarkollektoren(_STAMM): Bezugsflaeche",
+                        "Pumpenstrom, Verluste des Solarkreises, Graedigkeit, Spreizung und Arbeitstemperatur " +
+                        "des Kollektorfelds und die Bezugsflaeche der Kollektorkennwerte haetten keinen Ort. " +
+                        "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen ihre " +
+                        "Vorgaben, jeder Kollektorsatz bekommt die Aperturflaeche.",
+                        Schritt_SolarthermieFelder),
         };
 
         /// <summary>
@@ -12500,6 +12531,49 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Temperaturpaar je Prozess - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Der Schritt „Felder des Kollektorfelds" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_SOLARTHERMIE_FELDER"/>, die Anweisungen bei
+        /// <see cref="SolarthermieFelderSchema"/>. <b>Wiederholbar</b>:
+        /// <c>SolarthermieFelderSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_SolarthermieFelder(Lauf l)
+        {
+            string nr = SolarthermieFelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in SolarthermieFelderSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(SolarthermieFelderSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!SolarthermieFelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten des Kollektorfelds an " + SolarthermieFelderSchema.TAB_ANLAGEN +
+                                  ", " + SolarthermieFelderSchema.TAB_KATALOG_STAMM + " und " +
+                                  SolarthermieFelderSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Felder des Kollektorfelds - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. Vorgabe apertur).") +
+                    " KEIN DML.");
             return true;
         }
 

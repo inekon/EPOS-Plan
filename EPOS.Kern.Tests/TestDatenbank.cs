@@ -851,6 +851,11 @@ namespace EPOS.Kern.Tests
                 // Temperaturpaar je Prozess an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme, leer. Aus
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 ProzesswaermeTemperaturSchema.Ausfuehren(null);
+                // Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+                // Kollektorfelds an Tab_Energieanlagen (leer) und die Bezugsflaeche an
+                // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML.
+                SolarthermieFelderSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

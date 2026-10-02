@@ -263,6 +263,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Speicherauslegung übernimmt die beste Rastervariante mit einem Knopf als Projektflotte. (#666)
 - Ein Prozesswärmesatz trägt ein Temperaturpaar (Vorlauf/Rücklauf); die Simulation wertet Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus. (#667)
 - Der Katalog liefert acht typische Betriebsweisen der Prozesswärme als Vorlage. (#667)
+- Die Solarthermie rechnet die Kollektortemperatur wahlweise aus dem Speicherzustand mit Übertrager-Grädigkeit statt mit festen 50 °C, berücksichtigt die Diffus-Einfallswinkelkorrektur des Kollektors und führt Solarkreisverluste, Pumpenstrom und die Bezugsfläche der Kennwerte als Eingaben. (#668)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

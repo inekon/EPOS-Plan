@@ -342,7 +342,8 @@ namespace EPOS.Kern.Tests
                 // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
                 [KatalogBrowserArt.Heizkessel] = 27,
                 [KatalogBrowserArt.Bhkw] = 27,
-                [KatalogBrowserArt.Solarkollektoren] = 12,
+                // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
+                [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
             };
 
@@ -398,7 +399,7 @@ namespace EPOS.Kern.Tests
             // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
             Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
             foreach (var art in KatalogBrowserProfil.AlleArten)

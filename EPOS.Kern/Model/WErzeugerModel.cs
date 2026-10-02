@@ -339,6 +339,32 @@
         /// </summary>
         public System.Collections.Generic.List<AnlageStrangModel> PV_Straenge;
 
+        // =============================================================================
+        // Kollektorfeld der Solarthermie (Welle M2; Schemaschritt SolarthermieFelderSchema.SCHRITT)
+        // =============================================================================
+        //
+        // Dieselbe Begruendung und dieselbe NULL-Semantik wie bei den PV-Feldern: Der
+        // Speicherweg ist Loeschen + Neuanlegen, was das Modell nicht kennt, geht bei jedem
+        // Speichern verloren. NULL heisst „nie gepflegt, es gilt die Vorgabe" (Solarkreis).
+
+        /// <summary>Pumpenleistung_W - elektrische Leistung der Solarkreispumpe [W]; <b>NULL = keine</b>.</summary>
+        public double? Pumpenleistung_W;
+
+        /// <summary>Solarkreisverluste_Prozent - Wärmeverluste des Solarkreises [%]; <b>NULL = 8 %</b>.</summary>
+        public double? Solarkreisverluste_Prozent;
+
+        /// <summary>Uebertrager_Graedigkeit_K - Grädigkeit des Wärmeübertragers [K]; <b>NULL = 5 K</b>.</summary>
+        public double? Uebertrager_Graedigkeit_K;
+
+        /// <summary>Kollektor_Spreizung_K - Spreizung des Kollektorkreises [K]; <b>NULL = 10 K</b>.</summary>
+        public double? Kollektor_Spreizung_K;
+
+        /// <summary>
+        /// Arbeitstemperatur_Weg - <see cref="DbWerte.SOLAR_ARBEITSTEMPERATUR_FEST"/> oder
+        /// <see cref="DbWerte.SOLAR_ARBEITSTEMPERATUR_SPEICHER"/>; <b>NULL = fest</b>.
+        /// </summary>
+        public string Arbeitstemperatur_Weg;
+
         public WErzeugerModel()
         {
             ID = 0;

@@ -141,8 +141,9 @@ namespace EPOS.Kern.Tests
         /// Das Referenzprojekt 1049 deckt SICHTBAR: direkt am Heizkreis und über den Puffer,
         /// mit Überschuss im Sommer, und der Lauf meldet die Nachrang-Vorgabe 30 % (leere
         /// <c>Schwelle_Aus_Nachrang</c>). Die Zahlen hält die aktuelle Referenzbasis genau; hier
-        /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, und die Gleichheit mit
-        /// der Übersicht.
+        /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, die Gleichheit mit
+        /// der Übersicht und die Anker der Basis R32: Das Feld bildet seine Arbeitstemperatur aus
+        /// der untersten Zone des Puffers (Welle M2, ST2 mit ST4; Grädigkeit 5 K, Spreizung 10 K).
         /// </summary>
         [Fact]
         public void Das_Referenzprojekt_1049_deckt_direkt_und_ueber_den_Puffer()
@@ -178,6 +179,16 @@ namespace EPOS.Kern.Tests
 
                 double[] p = w.DeckungMonatProzent;
                 Assert.True(p[6] > p[0], "Juli " + p[6] + " %, Januar " + p[0] + " %");
+
+                // Anker der Basis R32 (2026-10-02_R32_Solarthermie, Toleranz der Referenzsuite 1e-4
+                // relativ): genutzte Solarwärme, Überschuss und mittlere Arbeitstemperatur des Felds.
+                Assert.Equal(9382.4459, st.WaermeproduktionGesamtKwh, 9382.4459 * 1e-4);
+                Assert.Equal(19730.2372, st.UeberschussSummeKwh, 19730.2372 * 1e-4);
+                Assert.True(st.Kollektor_Ergebnisse[0].ArbeitstemperaturAusSpeicher);
+                Assert.Equal(65.3160776, st.Kollektor_Ergebnisse[0].ArbeitstemperaturMittelC, 65.3160776 * 1e-4);
+                Assert.Equal(0.0, st.PumpenstromGesamtKwh);
+                Assert.Contains(l.Protokoll.Hinweise,
+                                t => t.Contains("bildet seine Arbeitstemperatur aus der untersten Zone des Puffers"));
             }
         }
 
