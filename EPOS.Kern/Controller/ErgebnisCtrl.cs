@@ -114,8 +114,17 @@ namespace WindowsFormsApplication1
             // Zeilen, wie sie waren (Muster SpalteVorhanden), und der Referenzlauf bleibt gleich.
             bool nachtSpalteGebaeude = gebaeudeTabelle && DataRepository.SpalteVorhanden(
                 ErgebnisGebaeudeSchema.TAB, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
-            bool nachtSpalteZone = zonenTabelle && DataRepository.SpalteVorhanden(
-                ZonenkopplungSchema.TAB_ERGEBNIS, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
+            // Stufe G6b/KP3 (B23): die Zonenzeile entsteht aus der Spaltenliste nach Vorhandensein -
+            // jede Spalte, die die Datenbank traegt, wird geschrieben (Nachtauskuehlung KP-S1v,
+            // Sommerlueftung und Aufheizoptimierung KP-S3), ebenso vor der Transaktion gefragt.
+            List<Ergebnisspalte<ErgebnisZoneModel>> zonenSpalten = zonenTabelle
+                ? Vorhandene(ZonenkopplungSchema.TAB_ERGEBNIS, ZONENSPALTEN)
+                : new List<Ergebnisspalte<ErgebnisZoneModel>>();
+            // Stufe KP3 (KP-S3): die vierzehn Aufheizspalten des Gebaeudes - nur, wo sie stehen; auf einer
+            // Datenbank davor bleibt die Zeile, wie sie war.
+            List<Ergebnisspalte<ErgebnisGebaeudeModel>> aufheizSpaltenGebaeude = gebaeudeTabelle
+                ? Vorhandene(ErgebnisGebaeudeSchema.TAB, AUFHEIZSPALTEN_GEBAEUDE)
+                : new List<Ergebnisspalte<ErgebnisGebaeudeModel>>();
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -843,9 +852,11 @@ namespace WindowsFormsApplication1
                                 : "") +
                             (nachtSpalteGebaeude
                                 ? ", " + KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN
-                                : "") + ") " +
+                                : "") +
+                            Spaltentext(aufheizSpaltenGebaeude) + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") +
-                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + (nachtSpalteGebaeude ? ", ?" : "") + ")";
+                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + (nachtSpalteGebaeude ? ", ?" : "") +
+                            Platzhalter(aufheizSpaltenGebaeude.Count) + ")";
                         foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
                         {
                             List<DbParam> p = new List<DbParam>();
@@ -889,6 +900,9 @@ namespace WindowsFormsApplication1
                             // Stufe KP1b: NULL heisst "keine Nachtauskuehlung gesetzt" (E30).
                             if (nachtSpalteGebaeude)
                                 p.Add(new DbParam("@n1", DbParamTyp.Integer) { Wert = Oder(g.NachtauskuehlstundenH) });
+                            // Stufe KP3 (KP-S3): die Aufheizwerte, wie GebaeudeKennzahlen sie gebildet hat -
+                            // NULL heisst "Schalter aus" (Grundsatz 4).
+                            Parameter(p, aufheizSpaltenGebaeude, g);
                             v.Ausfuehren(sqlG, p.ToArray());
 
                             // Stufe G6b (A6): je Zone eine Zeile, nur Skalare, NULL = nicht gerechnet.
@@ -896,29 +910,16 @@ namespace WindowsFormsApplication1
                             {
                                 int zeile = gId - 1;
                                 int zId = NextId(v, ZonenkopplungSchema.TAB_ERGEBNIS);
+                                string sqlZ = ZonenEinfuegen(zonenSpalten);
                                 foreach (ErgebnisZoneModel z in g.Zonen)
                                 {
                                     var pz = new List<DbParam>
                                     {
                                         new DbParam("@id", DbParamTyp.Integer) { Wert = zId++ },
                                         new DbParam("@geb", DbParamTyp.Integer) { Wert = zeile },
-                                        new DbParam("@zone", DbParamTyp.Integer) { Wert = z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value },
-                                        new DbParam("@rang", DbParamTyp.Integer) { Wert = Math.Max(1, z.Rang) },
-                                        new DbParam("@name", DbParamTyp.VarWChar) { Wert = (object)(z.Bezeichner ?? "") },
-                                        new DbParam("@beheizt", DbParamTyp.Integer) { Wert = z.IstBeheizt ? 1 : 0 },
-                                        new DbParam("@z1", DbParamTyp.Double) { Wert = Oder(z.HeizwaermeMwh) },
-                                        new DbParam("@z2", DbParamTyp.Double) { Wert = Oder(z.SpitzeKw) },
-                                        new DbParam("@z3", DbParamTyp.Double) { Wert = Oder(z.KuehlenergieMwh) },
-                                        new DbParam("@z4", DbParamTyp.Double) { Wert = Oder(z.MittlereRaumtemperaturC) },
-                                        new DbParam("@z5", DbParamTyp.Integer) { Wert = Oder(z.UeberhitzungsstundenH) },
-                                        new DbParam("@z6", DbParamTyp.Double) { Wert = Oder(z.DeltaThetaMaxK) },
-                                        new DbParam("@z7", DbParamTyp.Integer) { Wert = Oder(z.DurchlaeufeMax) },
-                                        new DbParam("@z8", DbParamTyp.Integer) { Wert = Oder(z.MusterwechselH) },
                                     };
-                                    if (nachtSpalteZone)
-                                        pz.Add(new DbParam("@z9", DbParamTyp.Integer) { Wert = Oder(z.NachtauskuehlstundenH) });
-                                    v.Ausfuehren(nachtSpalteZone ? SQL_ZONE_EINFUEGEN_NACHT : SQL_ZONE_EINFUEGEN,
-                                                 pz.ToArray());
+                                    Parameter(pz, zonenSpalten, z);
+                                    v.Ausfuehren(sqlZ, pz.ToArray());
                                 }
                             }
                         }
@@ -1360,6 +1361,8 @@ namespace WindowsFormsApplication1
                     g.KuehlRuecklaufMittelC = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C);
                     g.KuehlUebergabeBegrenztStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H);
                     g.KuehlVorlaufgrenzeStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H);
+                    // Stufe KP3 (KP-S3): fehlt die Spalte oder steht sie auf NULL, bleibt der Wert null.
+                    foreach (Ergebnisspalte<ErgebnisGebaeudeModel> sp in AUFHEIZSPALTEN_GEBAEUDE) sp.Lesen(g, rg);
                     m.Gebaeude.Add(g);
                 }
 
@@ -1372,44 +1375,157 @@ namespace WindowsFormsApplication1
                     int platz = I(rz, "Merkplatz");
                     ErgebnisGebaeudeModel g = m.Gebaeude.Find(x => x.Merkplatz == platz);
                     if (g == null) continue;
-                    int zone = GanzOderNull(rz, "ID_Zone") ?? 0;
-                    g.Zonen.Add(new ErgebnisZoneModel
-                    {
-                        ID_Zone = zone > 0 ? zone : (int?)null,
-                        Rang = I(rz, "Rang"),
-                        Bezeichner = S(rz, "Bezeichner"),
-                        IstBeheizt = I(rz, "IstBeheizt") != 0,
-                        HeizwaermeMwh = DN(rz, "Heizwaerme_Mwh"),
-                        SpitzeKw = DN(rz, "Spitze_Kw"),
-                        KuehlenergieMwh = DN(rz, "Kuehlenergie_Mwh"),
-                        MittlereRaumtemperaturC = DN(rz, "MittlereRaumtemperatur_C"),
-                        UeberhitzungsstundenH = GanzOderNull(rz, "Ueberhitzungsstunden_H"),
-                        DeltaThetaMaxK = DN(rz, "DeltaThetaMax_K"),
-                        DurchlaeufeMax = GanzOderNull(rz, "DurchlaeufeMax"),
-                        MusterwechselH = GanzOderNull(rz, "Musterwechsel_H"),
-                        NachtauskuehlstundenH = GanzOderNull(rz, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN),
-                    });
+                    // B23: dieselbe Spaltenliste wie beim Schreiben; eine fehlende Spalte bleibt null.
+                    var z = new ErgebnisZoneModel();
+                    foreach (Ergebnisspalte<ErgebnisZoneModel> sp in ZONENSPALTEN) sp.Lesen(z, rz);
+                    g.Zonen.Add(z);
                 }
 
             return m;
         }
 
-        /// <summary>Die Einfügeanweisung einer Zeile von <c>Tab_ErgebnisZone</c> (Stufe G6b, A6).</summary>
-        private const string SQL_ZONE_EINFUEGEN =
-            "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
-            "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
-            "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?)";
+        // =====================================================================
+        //  Die Spaltenlisten der Gebäude- und Zonenzeilen (Stufe G6b, KP3; Befund B23)
+        // =====================================================================
 
         /// <summary>
-        /// Dieselbe Anweisung mit der Kennzahl der Nachtauskühlung (Stufe KP1b) — sie gilt nur, wo
-        /// der Schemaschritt die Spalte angelegt hat; sonst bleibt <see cref="SQL_ZONE_EINFUEGEN"/>.
+        /// Eine Spalte einer Ergebniszeile: Name, Parametertyp, der Wert aus dem Modell (NULL als
+        /// <c>DBNull</c>) und der Rückweg in das Modell. Schreiben und Lesen gehen über DIESELBE Liste —
+        /// eine neue Spalte ist eine neue Zeile der Liste, kein zweiter Einfügetext.
         /// </summary>
-        private static readonly string SQL_ZONE_EINFUEGEN_NACHT =
-            "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
-            "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
-            "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\", \"" +
-            KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN +
-            "\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
+        private sealed class Ergebnisspalte<T>
+        {
+            internal Ergebnisspalte(string name, DbParamTyp typ, Func<T, object> wert, Action<T, DataRow> lesen)
+            {
+                Name = name;
+                Typ = typ;
+                Wert = wert;
+                Lesen = lesen;
+            }
+
+            internal string Name { get; }
+            internal DbParamTyp Typ { get; }
+            internal Func<T, object> Wert { get; }
+            internal Action<T, DataRow> Lesen { get; }
+        }
+
+        private static Ergebnisspalte<T> Ganz<T>(string name, Func<T, int?> wert, Action<T, int?> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.Integer, m => Oder(wert(m)), (m, r) => setzen(m, GanzOderNull(r, name)));
+
+        private static Ergebnisspalte<T> Zahl<T>(string name, Func<T, double?> wert, Action<T, double?> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.Double, m => Oder(wert(m)), (m, r) => setzen(m, DN(r, name)));
+
+        /// <summary>Ein nullbarer Text: leer wird NULL, NULL wird <c>null</c>.</summary>
+        private static Ergebnisspalte<T> Text<T>(string name, Func<T, string> wert, Action<T, string> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.VarWChar,
+                                     m => string.IsNullOrEmpty(wert(m)) ? DBNull.Value : (object)wert(m),
+                                     (m, r) => { string t = S(r, name); setzen(m, t.Length > 0 ? t : null); });
+
+        /// <summary>
+        /// Die Spalten einer Zeile von <c>Tab_ErgebnisZone</c> nach den Schlüsseln <c>ID</c> und
+        /// <c>ID_ErgebnisGebaeude</c>, in Schemareihenfolge: Schritt S-G (G6b, A6), die Nachtauskühlung
+        /// (KP-S1v), dann KP-S3 — die Sommerlüftung und die Aufheizoptimierung. Geschrieben und gelesen
+        /// wird nur, was die Datenbank trägt (<see cref="Vorhandene{T}"/>).
+        /// </summary>
+        private static readonly Ergebnisspalte<ErgebnisZoneModel>[] ZONENSPALTEN =
+        {
+            new Ergebnisspalte<ErgebnisZoneModel>("ID_Zone", DbParamTyp.Integer,
+                z => z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value,
+                (z, r) => { int id = GanzOderNull(r, "ID_Zone") ?? 0; z.ID_Zone = id > 0 ? id : (int?)null; }),
+            new Ergebnisspalte<ErgebnisZoneModel>("Rang", DbParamTyp.Integer,
+                z => Math.Max(1, z.Rang), (z, r) => z.Rang = I(r, "Rang")),
+            new Ergebnisspalte<ErgebnisZoneModel>("Bezeichner", DbParamTyp.VarWChar,
+                z => z.Bezeichner ?? "", (z, r) => z.Bezeichner = S(r, "Bezeichner")),
+            new Ergebnisspalte<ErgebnisZoneModel>("IstBeheizt", DbParamTyp.Integer,
+                z => z.IstBeheizt ? 1 : 0, (z, r) => z.IstBeheizt = I(r, "IstBeheizt") != 0),
+            Zahl<ErgebnisZoneModel>("Heizwaerme_Mwh", z => z.HeizwaermeMwh, (z, w) => z.HeizwaermeMwh = w),
+            Zahl<ErgebnisZoneModel>("Spitze_Kw", z => z.SpitzeKw, (z, w) => z.SpitzeKw = w),
+            Zahl<ErgebnisZoneModel>("Kuehlenergie_Mwh", z => z.KuehlenergieMwh, (z, w) => z.KuehlenergieMwh = w),
+            Zahl<ErgebnisZoneModel>("MittlereRaumtemperatur_C", z => z.MittlereRaumtemperaturC, (z, w) => z.MittlereRaumtemperaturC = w),
+            Ganz<ErgebnisZoneModel>("Ueberhitzungsstunden_H", z => z.UeberhitzungsstundenH, (z, w) => z.UeberhitzungsstundenH = w),
+            Zahl<ErgebnisZoneModel>("DeltaThetaMax_K", z => z.DeltaThetaMaxK, (z, w) => z.DeltaThetaMaxK = w),
+            Ganz<ErgebnisZoneModel>("DurchlaeufeMax", z => z.DurchlaeufeMax, (z, w) => z.DurchlaeufeMax = w),
+            Ganz<ErgebnisZoneModel>("Musterwechsel_H", z => z.MusterwechselH, (z, w) => z.MusterwechselH = w),
+            Ganz<ErgebnisZoneModel>(KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN,
+                z => z.NachtauskuehlstundenH, (z, w) => z.NachtauskuehlstundenH = w),
+            Text<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZUSTAND, z => z.AufheizZustand, (z, w) => z.AufheizZustand = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZEIT_MAX, z => z.AufheizzeitMaxH, (z, w) => z.AufheizzeitMaxH = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_AUSSEN, z => z.AufheizAussenC, (z, w) => z.AufheizAussenC = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_LEISTUNG, z => z.AufheizLeistungKw, (z, w) => z.AufheizLeistungKw = w),
+            Text<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_QUELLE, z => z.AufheizLeistungsquelle, (z, w) => z.AufheizLeistungsquelle = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE, z => z.Aufheiztage, (z, w) => z.Aufheiztage = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_BEGRENZT, z => z.AufheiztageBegrenzt, (z, w) => z.AufheiztageBegrenzt = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_UNERREICHBAR, z => z.AufheiztageUnerreichbar, (z, w) => z.AufheiztageUnerreichbar = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_NACHWEISBAND, z => z.AufheiztageNachweisband, (z, w) => z.AufheiztageNachweisband = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_STUNDEN, z => z.AufheizstundenH, (z, w) => z.AufheizstundenH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZEIT_LAENGSTE, z => z.AufheizzeitLaengsteH, (z, w) => z.AufheizzeitLaengsteH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, z => z.AufheizspruengeAus, (z, w) => z.AufheizspruengeAus = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, z => z.HeizleistungMaxStundenH, (z, w) => z.HeizleistungMaxStundenH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SOMMERLUEFTUNG, z => z.SommerlueftungsstundenH, (z, w) => z.SommerlueftungsstundenH = w),
+        };
+
+        /// <summary>
+        /// Die vierzehn Aufheizspalten einer Zeile von <c>Tab_ErgebnisGebaeude</c> (KP-S3), in
+        /// Schemareihenfolge; angehängt an die Spalten der Schritte 107 bis KP-S1v.
+        /// </summary>
+        private static readonly Ergebnisspalte<ErgebnisGebaeudeModel>[] AUFHEIZSPALTEN_GEBAEUDE =
+        {
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZUSTAND, g => g.AufheizZustand, (g, w) => g.AufheizZustand = w),
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_BEMESSUNG, g => g.AufheizBemessung, (g, w) => g.AufheizBemessung = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZEIT_MAX, g => g.AufheizzeitMaxH, (g, w) => g.AufheizzeitMaxH = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_AUSSEN, g => g.AufheizAussenC, (g, w) => g.AufheizAussenC = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_LEISTUNG, g => g.AufheizLeistungKw, (g, w) => g.AufheizLeistungKw = w),
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_QUELLE, g => g.AufheizLeistungsquelle, (g, w) => g.AufheizLeistungsquelle = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE, g => g.Aufheiztage, (g, w) => g.Aufheiztage = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_BEGRENZT, g => g.AufheiztageBegrenzt, (g, w) => g.AufheiztageBegrenzt = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_UNERREICHBAR, g => g.AufheiztageUnerreichbar, (g, w) => g.AufheiztageUnerreichbar = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_NACHWEISBAND, g => g.AufheiztageNachweisband, (g, w) => g.AufheiztageNachweisband = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_STUNDEN, g => g.AufheizstundenH, (g, w) => g.AufheizstundenH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZEIT_LAENGSTE, g => g.AufheizzeitLaengsteH, (g, w) => g.AufheizzeitLaengsteH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, g => g.AufheizspruengeAus, (g, w) => g.AufheizspruengeAus = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, g => g.HeizleistungMaxStundenH, (g, w) => g.HeizleistungMaxStundenH = w),
+        };
+
+        /// <summary>Die Spalten der Liste, die <paramref name="tabelle"/> trägt (ohne Unterschied von Groß- und Kleinschreibung).</summary>
+        private static List<Ergebnisspalte<T>> Vorhandene<T>(string tabelle, IEnumerable<Ergebnisspalte<T>> liste)
+        {
+            var vorhanden = new HashSet<string>(DataRepository.SpaltenVonTabelle(tabelle), StringComparer.OrdinalIgnoreCase);
+            var ergebnis = new List<Ergebnisspalte<T>>();
+            foreach (Ergebnisspalte<T> s in liste)
+                if (vorhanden.Contains(s.Name)) ergebnis.Add(s);
+            return ergebnis;
+        }
+
+        /// <summary>Die Spaltennamen als Fortsetzung einer Spaltenliste: <c>, "A", "B"</c>; leer ohne Spalte.</summary>
+        private static string Spaltentext<T>(IEnumerable<Ergebnisspalte<T>> spalten)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (Ergebnisspalte<T> s in spalten) sb.Append(", \"").Append(s.Name).Append('"');
+            return sb.ToString();
+        }
+
+        /// <summary>Die Platzhalter als Fortsetzung einer Werteliste: <c>, ?, ?</c>.</summary>
+        private static string Platzhalter(int anzahl)
+        {
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < anzahl; i++) sb.Append(", ?");
+            return sb.ToString();
+        }
+
+        /// <summary>Hängt je Spalte den Wert des Modells als Parameter an.</summary>
+        private static void Parameter<T>(List<DbParam> p, IEnumerable<Ergebnisspalte<T>> spalten, T modell)
+        {
+            foreach (Ergebnisspalte<T> s in spalten)
+                p.Add(new DbParam("@" + s.Name, s.Typ) { Wert = s.Wert(modell) });
+        }
+
+        /// <summary>
+        /// Die Einfügeanweisung einer Zeile von <c>Tab_ErgebnisZone</c> aus der Spaltenliste (B23): die
+        /// beiden Schlüssel, dann jede vorhandene Spalte von <see cref="ZONENSPALTEN"/>.
+        /// </summary>
+        private static string ZonenEinfuegen(List<Ergebnisspalte<ErgebnisZoneModel>> spalten)
+            => "INSERT INTO \"" + ZonenkopplungSchema.TAB_ERGEBNIS + "\" (\"ID\", \"ID_ErgebnisGebaeude\"" +
+               Spaltentext(spalten) + ") VALUES (?, ?" + Platzhalter(spalten.Count) + ")";
 
         /// <summary>Die Zonenzeilen eines Ergebnisses samt Merkplatz des Gebäudes; <c>null</c> ohne Tabelle.</summary>
         private static DataTable ZonenZeilenLesenStill(int idErgebnis)
