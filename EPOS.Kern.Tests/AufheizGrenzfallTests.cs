@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,14 +28,20 @@ namespace EPOS.Kern.Tests
             internal double[] Ziel;
             internal GebaeudeModellErgebnis Ergebnis;
             internal Aufheizplan Plan;
+            internal Mehrzonenergebnis Mehrzonen;
 
             public override string ToString()
                 => string.Format(CultureInfo.InvariantCulture, "Projekt {0}, Gebäude {1}", Projekt, Gebaeude);
         }
 
-        /// <summary>Rechnet alle Gebäude des Projekts auf dem VDI-Weg mit <paramref name="vorgabe"/>.</summary>
+        /// <summary>
+        /// Rechnet alle Gebäude des Projekts auf dem VDI-Weg mit <paramref name="vorgabe"/>;
+        /// <paramref name="umbau"/> formt jede ausgewählte, frisch gelesene Gebäudezeile vor ihrem Lauf um
+        /// (die Mehrzonenfassung der Probe N-AH8 mit Zonen).
+        /// </summary>
         internal static List<Gebaeudelauf> Projekt(int idProjekt, Aufheizvorgabe vorgabe, double aufheizleistungTestW = double.NaN,
-                                                   Func<ProjektGebaeudeModel, bool> auswahl = null)
+                                                   Func<ProjektGebaeudeModel, bool> auswahl = null,
+                                                   Action<ProjektGebaeudeModel> umbau = null)
         {
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(idProjekt);
@@ -51,6 +58,8 @@ namespace EPOS.Kern.Tests
                 ProjektGebaeudeModel item = ctrl.items[i];
                 if (!Gebaeuderechenweg.IstVdi6007(item.Gebaeude_Modell)) continue;
                 if (auswahl != null && !auswahl(item)) continue;
+                umbau?.Invoke(item);
+                bool zonen = item.Zonen != null && item.Zonen.Count >= 2;
                 var ziel = new double[8760];
                 bool ok = sim.HeizwaermeEinesGebaeudes(item, i, ziel);
                 liste.Add(new Gebaeudelauf
@@ -61,9 +70,45 @@ namespace EPOS.Kern.Tests
                     Ziel = ziel,
                     Ergebnis = sim.GebaeudeErgebnisse.Ergebnis(i),
                     Plan = sim.Vdi6007weg.LetzterAufheizplan,
+                    Mehrzonen = zonen && ok ? sim.Vdi6007weg.LetztesMehrzonenergebnis : null,
                 });
             }
             return liste;
+        }
+
+        /// <summary>Hat die Gebäudezeile mindestens zwei Zonen (Mehrzonenweg)?</summary>
+        internal static bool MitZonen(ProjektGebaeudeModel g) => g.Zonen != null && g.Zonen.Count >= 2;
+
+        /// <summary>
+        /// <b>Die Mehrzonenfassung eines Referenzgebäudes</b> (N-AH8 mit Zonen): das Gebäude als eine Zone
+        /// übernommen (<see cref="GebaeudeZonenuebernahme.AlsEineZone(ProjektGebaeudeModel)"/>) und in zwei
+        /// Hälften geteilt — eine Trennwand der Außengruppe und ein Luftstrom zwischen ihnen —, dazu ein
+        /// unbeheizter Nebenraum an der ersten Hälfte. Jede Zone erbt die Vorgaben des Gebäudes.
+        /// </summary>
+        internal static void Mehrzonenfassung(ProjektGebaeudeModel g)
+        {
+            const int EINS = 9001, ZWEI = 9002, NEBEN = 9003;
+            GebaeudeZonensatz basis = GebaeudeZonenuebernahme.AlsEineZone(g);
+            List<BauteilEingang> halb = basis.Bauteile
+                .Select(b => new BauteilEingang(b.Bezeichnung, b.Art, 0.5 * b.Flaeche_M2, b.Rand, b.UWert_WM2K, b.Schichten,
+                                                b.NeigungGrad, b.AzimutGrad, b.GWert, b.Rahmenanteil, b.Verschattungsfaktor,
+                                                0.5 * b.PsiL_WK, b.AlphaKonInnen_WM2K, b.AlphaKonAussen_WM2K))
+                .ToList();
+            var trenn = new BauteilEingang("Trennwand", Bauteilart.Innenwand, 6.0, Bauteilrand.Zone, 1.5,
+                                           idNachbarzone: ZWEI, zuordnung: Trennflaechenzuordnung.Aussen);
+            double f = 0.5 * basis.Nutzflaeche_M2;
+            g.Zonen = new[]
+            {
+                new GebaeudeZonensatz(EINS, "Hälfte 1", halb.Append(trenn).ToList(), f, new Zoneneingaben(Nutzflaeche: f), 1),
+                new GebaeudeZonensatz(ZWEI, "Hälfte 2", halb, f, new Zoneneingaben(Nutzflaeche: f), 2),
+                new GebaeudeZonensatz(NEBEN, "Nebenraum", new List<BauteilEingang>
+                {
+                    new BauteilEingang("Außenwand Nebenraum", Bauteilart.Aussenwand, 12.0, Bauteilrand.Aussenluft, 1.0,
+                                       neigungGrad: 90.0, azimutGrad: 0.0),
+                    new BauteilEingang("Trennwand Nebenraum", Bauteilart.Innenwand, 6.0, Bauteilrand.Zone, 1.0, idNachbarzone: EINS),
+                }, 8.0, new Zoneneingaben(Nutzflaeche: 8.0, IstBeheizt: false), 3),
+            };
+            g.Zonenluftstroeme = new[] { new Zonenluftstrom(EINS, ZWEI, 50.0) };
         }
     }
 
@@ -128,6 +173,87 @@ namespace EPOS.Kern.Tests
             }
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "N-AH8: {0} Gebäude bitgleich, davon {1} gekoppelt (W5), {2} Sprünge mit n = 1", gebaeude, gekoppelt, spruenge));
+            Assert.True(gebaeude >= 17, "Weniger VDI-Gebäude als erwartet: " + gebaeude);
+            Assert.True(spruenge > 0);
+        }
+
+        /// <summary>
+        /// <b>N-AH8 mit Zonen</b> (Welle R3): Jedes Mehrzonengebäude der sechzehn Referenzprojekte — die
+        /// Testdatenbank führt heute keines (keine Zeile in <c>Tab_Zone</c>, G6d offen) — und jedes
+        /// VDI-Gebäude der sechzehn Projekte in seiner Mehrzonenfassung
+        /// (<see cref="AufheizLauf.Mehrzonenfassung"/>: zwei Hälften mit Trennwand und Luftstrom, ein
+        /// unbeheizter Nebenraum) rechnen über die Fassade mit eingeschalteter Aufheizoptimierung und
+        /// P_auf = +∞ bitgleich zu „aus" — Gebäude und jede Zone; die Planung lief in jeder Zone (UNBEHEIZT,
+        /// GEKOPPELT oder n = 1 überall), schrieb aber keine Stunde.
+        /// </summary>
+        [Fact]
+        public void N_AH8_mit_Zonen_Schalter_an_mit_unendlicher_Aufheizleistung_rechnet_bitgleich_zu_aus()
+        {
+            if (!_db.Vorhanden) return;
+
+            var an = new Aufheizvorgabe(true, null, null, null, null);
+            int ausDb = 0, gebaeude = 0, zonen = 0, gekoppelt = 0, unbeheizt = 0, spruenge = 0;
+            foreach (int projekt in AufheizLauf.Referenzprojekte)
+            {
+                foreach (bool fassung in new[] { false, true })
+                {
+                    Func<ProjektGebaeudeModel, bool> auswahl = fassung ? (g => !AufheizLauf.MitZonen(g)) : AufheizLauf.MitZonen;
+                    Action<ProjektGebaeudeModel> umbau = fassung ? AufheizLauf.Mehrzonenfassung : null;
+                    List<AufheizLauf.Gebaeudelauf> aus = AufheizLauf.Projekt(projekt, Aufheizvorgabe.Aus, double.NaN, auswahl, umbau);
+                    List<AufheizLauf.Gebaeudelauf> mit = AufheizLauf.Projekt(projekt, an, double.PositiveInfinity, auswahl, umbau);
+                    Assert.Equal(aus.Count, mit.Count);
+                    for (int i = 0; i < aus.Count; i++)
+                    {
+                        AufheizLauf.Gebaeudelauf a = aus[i], m = mit[i];
+                        string wo = m + (fassung ? " (Mehrzonenfassung)" : " (Testdatenbank)");
+                        Assert.True(a.Gerechnet && m.Gerechnet, "nicht gerechnet: " + wo);
+                        Assert.NotNull(a.Mehrzonen);
+                        Assert.NotNull(m.Mehrzonen);
+                        Assert.Null(a.Plan);
+                        Assert.Null(m.Plan);
+                        Assert.Null(a.Mehrzonen.Aufheizgebaeude);
+                        Assert.All(a.Mehrzonen.Eingaenge, z => Assert.Null(z.Aufheizplan));
+
+                        foreach (ZonenEingang z in m.Mehrzonen.Eingaenge)
+                        {
+                            Aufheizplan p = z.Aufheizplan;
+                            Assert.NotNull(p);
+                            Assert.False(p.Geaendert, wo + ", " + z.Bezeichnung);
+                            Assert.Equal(0, p.Aufheiztage);
+                            Assert.Equal(0, p.AufheizstundenH);
+                            if (p.Unbeheizt) unbeheizt++;
+                            else if (p.Gekoppelt) gekoppelt++;
+                            else
+                            {
+                                Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, p.Zustand);
+                                Assert.Equal(0, p.Bemessung.VarianteA.AufheizzeitMaxH);
+                                Assert.Equal(0, p.Bemessung.VarianteB.AufheizzeitMaxH);
+                                Assert.Equal(0, p.TageUnerreichbar);
+                                Assert.Equal(0, p.TageBegrenzt);
+                                foreach (Aufheizsprung sp in p.Spruenge) Assert.Equal(1, sp.N);
+                                spruenge += p.Spruenge.Count;
+                            }
+                            zonen++;
+                        }
+                        Aufheizgebaeude geb = m.Mehrzonen.Aufheizgebaeude;
+                        Assert.NotNull(geb);
+                        Assert.Equal(0, geb.Aufheiztage);
+                        Assert.Equal(0, geb.MaskenstundenH);
+                        if (!geb.Gekoppelt) Assert.Equal(0, geb.AufheizzeitMaxH);
+
+                        Bitgleich(a.Ziel, m.Ziel, wo + ", Heizreihe");
+                        Bitgleich(a.Ergebnis, m.Ergebnis, wo);
+                        Assert.Equal(a.Mehrzonen.Zonen.Count, m.Mehrzonen.Zonen.Count);
+                        for (int z = 0; z < a.Mehrzonen.Zonen.Count; z++)
+                            Bitgleich(a.Mehrzonen.Zonen[z], m.Mehrzonen.Zonen[z], wo + ", " + m.Mehrzonen.Eingaenge[z].Bezeichnung);
+                        if (fassung) gebaeude++;
+                        else ausDb++;
+                    }
+                }
+            }
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "N-AH8 mit Zonen: {0} Mehrzonengebäude der Testdatenbank, {1} Gebäude in Mehrzonenfassung, {2} Zonen bitgleich, " +
+                "davon {3} gekoppelt (W5), {4} unbeheizt; {5} Sprünge mit n = 1", ausDb, gebaeude, zonen, gekoppelt, unbeheizt, spruenge));
             Assert.True(gebaeude >= 17, "Weniger VDI-Gebäude als erwartet: " + gebaeude);
             Assert.True(spruenge > 0);
         }
