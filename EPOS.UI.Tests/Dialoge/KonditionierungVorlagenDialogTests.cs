@@ -279,6 +279,166 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // „Kopieren nach …" (Teilkonzept 3.5, 7.4)
+    // =================================================================================
+
+    /// <summary>Der Editor mit der Vorlagenverwaltung als Blatt, die Größe <paramref name="g"/> vorn.</summary>
+    private IRenderedComponent<GebaeudeKatalogDialog> Verwaltung(Konditionierungsvorlagenablage ablage, KonditionierungGroesse g)
+    {
+        var cut = Editor(ablage);
+        ReiterWaehlen(cut, REITER);
+        Karte(cut, g).QuerySelector("button.epos-kond-verwalten")!.Click();
+        return cut;
+    }
+
+    /// <summary>Die Ziele, die die Abfrage „Kopieren nach …" zur Wahl stellt.</summary>
+    private static List<string> Ziele(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.FindAll(".epos-kond-kopieren .epos-option .epos-feld-text").Select(e => e.TextContent.Trim()).ToList();
+
+    /// <summary>Das eigene OK der Abfrage: „Kopieren".</summary>
+    private static void Kopieren(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.FindAll(".epos-kond-kopieren .epos-leiste button.epos-knopf--primaer").Single().Click();
+
+    [Fact]
+    public void Kopieren_nach_steht_in_jeder_Zeile_und_ist_ohne_Ziel_weich_gesperrt()
+    {
+        var cut = Verwaltung(Konditionierungsvorlagenablage.AusSaat(), KonditionierungGroesse.Heizen);
+
+        // Heizen hat ein Ziel: der Knopf in jeder Zeile, immer sichtbar, nicht gesperrt.
+        IReadOnlyList<IElement> knoepfe = cut.FindAll("table.epos-kond-vorlagenliste button.epos-kond-kopieren-nach");
+        Assert.Equal(3, knoepfe.Count);
+        Assert.All(knoepfe, k => Assert.Null(k.GetAttribute("aria-disabled")));
+        Assert.Equal("Kopieren nach …", Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Kühlen und Lüftung haben keins: weich gesperrt mit dem Grund am Knopf, der Versuch meldet ihn.
+        foreach (int g in new[] { (int)KonditionierungGroesse.Kuehlen, (int)KonditionierungGroesse.Lueftung })
+        {
+            cut.Find($"button.epos-kond-verwaltung-groesse[data-groesse='{g}']").Click();
+            IElement knopf = cut.FindAll("table.epos-kond-vorlagenliste button.epos-kond-kopieren-nach").First();
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.Contains("in keine andere Größe", knopf.GetAttribute("title"));
+            knopf.Click();
+            Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+            Assert.Contains("in keine andere Größe", Blatt(cut).QuerySelector(".epos-warnbanner")!.TextContent);
+        }
+    }
+
+    [Fact]
+    public void Der_Dialog_zeigt_nur_die_erlaubten_Ziele_und_das_Sollwertfeld_nur_bei_Heizen_nach_Kuehlen()
+    {
+        var cut = Verwaltung(Konditionierungsvorlagenablage.AusSaat(), KonditionierungGroesse.Heizen);
+        Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+
+        // Eine Überlagerung mit Titel und Kreuz; Kühlen - das einzige Ziel - gewählt, der Name der Quelle als
+        // Vorschlag, der Komfortsollwert mit der Vorgabe 26 °C.
+        IElement ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Vorlage „Büro“ kopieren nach …", ueberlagerung.QuerySelector(".epos-ueberlagerung-titel")!.TextContent.Trim());
+        Assert.NotNull(ueberlagerung.QuerySelector("button.epos-ueberlagerung-zu"));
+        Assert.Equal(new[] { "Kühlen" }, Ziele(cut));
+        Assert.True(cut.Find(".epos-kond-kopieren input.epos-option-kasten").HasAttribute("checked"));
+        Assert.Contains("Zeitstruktur", cut.Find(".epos-kond-kopieren .epos-option-beschreibung").TextContent);
+        Assert.Equal("Büro", cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name input").GetAttribute("value"));
+        Assert.Contains("Komfortsollwert", cut.Find(".epos-kond-kopieren-sollwert").TextContent);
+        Assert.Equal("26", cut.Find(".epos-kond-kopieren-sollwert input").GetAttribute("value"));
+        Assert.Contains("sofort gespeichert", cut.Find(".epos-kond-kopieren-sofort").TextContent);
+
+        // Abbrechen schließt, ohne zu schreiben.
+        cut.FindAll(".epos-kond-kopieren .epos-leiste button").Single(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Geräte: nur Personen und kein Sollwertfeld; das Kreuz wirkt wie Abbrechen.
+        cut.Find($"button.epos-kond-verwaltung-groesse[data-groesse='{(int)KonditionierungGroesse.Geraete}']").Click();
+        Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+        Assert.Equal(new[] { "Personen" }, Ziele(cut));
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren-sollwert"));
+        Assert.Contains("unverändert", cut.Find(".epos-kond-kopieren .epos-option-beschreibung").TextContent);
+        cut.Find(".epos-ueberlagerung button.epos-ueberlagerung-zu").Click();
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Personen: nur Geräte; Esc schließt die Abfrage, das Blatt bleibt.
+        cut.Find($"button.epos-kond-verwaltung-groesse[data-groesse='{(int)KonditionierungGroesse.Personen}']").Click();
+        Zeile(cut, "Wohnen").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+        Assert.Equal(new[] { "Geräte" }, Ziele(cut));
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren-sollwert"));
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+        Assert.True(cut.Instance.VorlagenblattOffen);
+        Assert.Empty(_geschrieben);
+    }
+
+    [Fact]
+    public void Ein_Doppelname_steht_am_Feld_und_danach_zeigt_das_Blatt_die_Zielliste_mit_der_Kopie()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Verwaltung(ablage, KonditionierungGroesse.Heizen);
+        Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+
+        // Der Vorschlag „Büro" steht in der Kühlliste schon: am Feld genannt, nichts geschrieben, die Abfrage bleibt.
+        Kopieren(cut);
+        Assert.Contains("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name").ClassList);
+        string meldung = cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name .epos-kond-feldmeldung").TextContent;
+        Assert.Contains("„Büro“", meldung);
+        Assert.Contains("Kühlen", meldung);
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
+        Assert.NotEmpty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Ein freier Name und 24,5 °C: Die Kopie entsteht sofort, das Blatt zeigt die Kühlliste mit ihr gewählt.
+        cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name input").Input("Büro Heizung");
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren .epos-kond-feldmeldung"));
+        cut.Find(".epos-kond-kopieren-sollwert input").Input("24,5");
+        Kopieren(cut);
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+        Assert.Equal("true", cut.Find($"button.epos-kond-verwaltung-groesse[data-groesse='{(int)KonditionierungGroesse.Kuehlen}']")
+                                .GetAttribute("aria-selected"));
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen", "Büro Heizung" }, Namen(cut));
+        Assert.Equal("true", Zeile(cut, "Büro Heizung").GetAttribute("aria-selected"));
+        Assert.Null(Zeile(cut, "Büro Heizung").QuerySelector(".epos-schloss"));
+        Assert.Equal("Vorlage „Büro Heizung“ in der Liste „Kühlen“ als Kopie von „Büro“ (Heizen) angelegt.",
+                     cut.Find(".epos-kond-verwaltung-zeile").TextContent.Trim());
+
+        KonditionierungsvorlageCtrl.Vorlage kopie = ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Single(v => v.Bezeichner == "Büro Heizung");
+        Assert.False(kopie.Ausgeliefert);
+        Konditionierungsstand inhalt = ablage.Inhalt(kopie.Id, out _).Inhalt;
+        Assert.Equal(24.5, inhalt.Vorgabe(Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG).Wert);
+        Assert.Equal(24.5, inhalt.Kalender(Konditionierungsgroesse.Kuehlsoll)!.Grundangabe.Wert);
+
+        // Der Editor schrieb nichts - die Vorlage steht sofort, sein Arbeitsstand bleibt.
+        Assert.Empty(_geschrieben);
+        Assert.Null(_ausgang);
+    }
+
+    [Fact]
+    public void Ein_ungueltiger_Komfortsollwert_steht_am_Feld_und_schreibt_nichts()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Verwaltung(ablage, KonditionierungGroesse.Heizen);
+        Zeile(cut, "Schule").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+        cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name input").Input("Schule Heizung");
+
+        // Außerhalb der Grenzen der Kühlspalte färbt das Feld; „Kopieren" nennt die Grenzen am Feld.
+        cut.Find(".epos-kond-kopieren-sollwert input").Input("40");
+        Kopieren(cut);
+        Assert.Contains("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren-sollwert").ClassList);
+        Assert.Equal("Der Komfortsollwert ist eine Zahl von 15 bis 30 °C.",
+                     cut.Find(".epos-kond-kopieren-sollwert .epos-kond-feldmeldung").TextContent.Trim());
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
+
+        // Ein leeres Feld: Der Kern nennt den fehlenden Komfortsollwert am Feld.
+        cut.Find(".epos-kond-kopieren-sollwert input").Input("");
+        Kopieren(cut);
+        Assert.Contains("fehlt der Komfortsollwert", cut.Find(".epos-kond-kopieren-sollwert .epos-kond-feldmeldung").TextContent);
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
+        Assert.NotEmpty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Mit gültigem Wert entsteht die Kopie.
+        cut.Find(".epos-kond-kopieren-sollwert input").Input("27");
+        Kopieren(cut);
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+        Assert.Contains(ablage.Liste(Konditionierungsgroesse.Kuehlsoll), v => v.Bezeichner == "Schule Heizung" && !v.Ausgeliefert);
+    }
+
+    // =================================================================================
     // Der Assistent (Entwurf KP2 D9: kond_<größe>_vorlage mit der Aktion des Knopfs)
     // =================================================================================
 

@@ -468,6 +468,8 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Speichern unter | save as | legt eine bearbeitbare Kopie unter neuem Namen an; Bestand `GEBK_HINWEIS_SPEICHERN_UNTER` |
 | Duplizieren | duplicate | Kopie einer ausgelieferten Vorlage oder eines Katalogsatzes; Kernmeldungen „Duplicate…" |
 | Umbenennen | rename | eigene Vorlagen in der Verwaltung |
+| Kopieren nach … | copy to … | Handlung der Vorlagenverwaltung: eine Vorlage als eigene Vorlage einer anderen Größe — Heizen → Kühlen, Geräte ↔ Personen |
+| Komfortsollwert | comfort setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in jede Zelle mit Heizsollwert setzt (Vorgabe 26 °C) |
 | Katalogbau | catalogue building | ein Gebäude des Gebäudekatalogs, Träger von Matrix und Kalendern; „Katalogsatz" (oben) ist der allgemeine Begriff |
 | Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
 | erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |

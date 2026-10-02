@@ -240,6 +240,8 @@ public sealed class KonditionierungDatenTests
         VorlageUmbenennen = (_, _) => VORLAGE_GUT,
         VorlageLoeschen = _ => VORLAGE_GUT,
         VorlageDuplizieren = (_, _) => VORLAGE_GUT,
+        VorlageKopieren = (_, _) => VORLAGE_GUT,
+        Kopierziele = _ => Array.Empty<KonditionierungKopierziel>(),
         Zeitfenster = (s, _, _) => Gut(s),
         Feiertage = (s, _, _) => Gut(s),
         Zeitstruktur = (s, _, _) => Gut(s),
@@ -258,7 +260,7 @@ public sealed class KonditionierungDatenTests
         Sperre = sperre
     };
 
-    /// <summary>Ein Bündel mit genau dem Delegaten einer Handlung (bei „Übernehmen" samt Liste).</summary>
+    /// <summary>Ein Bündel mit genau dem Delegaten einer Handlung (bei „Übernehmen" samt Liste, bei „Kopieren nach …" samt Zielen).</summary>
     private static KonditionierungWeg Nur(KonditionierungHandlung h) => h switch
     {
         KonditionierungHandlung.ZelleSetzen => new() { ZelleSetzen = (s, _, _, _) => Gut(s) },
@@ -286,6 +288,11 @@ public sealed class KonditionierungDatenTests
         KonditionierungHandlung.RangVerschieben => new() { RangVerschieben = (s, _, _, _) => Gut(s) },
         KonditionierungHandlung.PeriodeLoeschen => new() { PeriodeLoeschen = (s, _, _) => Gut(s) },
         KonditionierungHandlung.SollwertprofilUebernehmen => new() { SollwertprofilUebernehmen = s => Gut(s) },
+        KonditionierungHandlung.VorlageKopieren => new()
+        {
+            VorlageKopieren = (_, _) => VORLAGE_GUT,
+            Kopierziele = _ => Array.Empty<KonditionierungKopierziel>()
+        },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 
@@ -314,9 +321,11 @@ public sealed class KonditionierungDatenTests
                 Assert.True(weg.Bietet(andere) == (andere == h), $"Nur {h}: Bietet({andere}) = {weg.Bietet(andere)}");
         }
 
-        // „Übernehmen" ohne die Liste, aus der gewählt wird, ist kein Knopf.
+        // „Übernehmen" ohne die Liste, aus der gewählt wird, ist kein Knopf - „Kopieren nach …" ohne Ziele ebenso.
         Assert.False(new KonditionierungWeg { VorlageUebernehmen = (s, _, _) => Gut(s) }
                          .Bietet(KonditionierungHandlung.VorlageUebernehmen));
+        Assert.False(new KonditionierungWeg { VorlageKopieren = (_, _) => VORLAGE_GUT }
+                         .Bietet(KonditionierungHandlung.VorlageKopieren));
     }
 
     [Fact]
@@ -434,7 +443,8 @@ public sealed class KonditionierungDatenTests
             typeof(KonditionierungKalender), typeof(KonditionierungPeriode), typeof(KonditionierungVorlageDaten),
             typeof(KonditionierungVorlageEingabe), typeof(KonditionierungZeitfenster), typeof(KonditionierungRueckfrage),
             typeof(KonditionierungPosten), typeof(KonditionierungLasten), typeof(KonditionierungOrt),
-            typeof(KonditionierungStand), typeof(KonditionierungErgebnis), typeof(KonditionierungVorlageErgebnis)
+            typeof(KonditionierungStand), typeof(KonditionierungErgebnis), typeof(KonditionierungVorlageErgebnis),
+            typeof(KonditionierungKopierziel), typeof(KonditionierungVorlageKopie)
         };
         Assembly kern = typeof(Konditionierungsgroesse).Assembly;
         foreach (Type t in datentypen)

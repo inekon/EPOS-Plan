@@ -6,8 +6,17 @@
    role=tab; die Groesse der Karte, aus der das Blatt kam, steht vorn), dann die LISTE der Vorlagen dieser
    Groesse in der Reihenfolge des Kerns - die ausgelieferten zuerst mit Kennzeichen (Schloss), die
    eigenen ohne - mit Nutzung und den Zeilenhandlungen, die IMMER sichtbar sind: Umbenennen, Duplizieren,
-   Loeschen. Ein Klick auf den Namen waehlt die Zeile; unter der Liste stehen ihre Beschreibung und die
-   VORSCHAU der Woche am Ziel (dieselbe Rechnung wie in der Karte, die Wahl der Karte bleibt).
+   Kopieren nach ..., Loeschen. Ein Klick auf den Namen waehlt die Zeile; unter der Liste stehen ihre
+   Beschreibung und die VORSCHAU der Woche am Ziel (dieselbe Rechnung wie in der Karte, die Wahl der Karte
+   bleibt).
+
+   KOPIEREN NACH ... (Teilkonzept 3.5, 7.4). Eine Vorlage - auch eine ausgelieferte - wird eine EIGENE
+   Vorlage einer anderen Groesse. Welche Ziele es gibt, sagt der Kern (Heizen -> Kuehlen, Geraete <->
+   Personen); die Abfrage ist eine kleine Ueberlagerung mit Titel und Kreuz und zeigt NUR diese Ziele, den
+   Namen der Quelle als Vorschlag und bei Heizen -> Kuehlen das Feld des Komfortsollwerts (Vorgabe und
+   Grenzen aus dem Kern). Kuehl- und Lueftungsvorlagen haben kein Ziel: Der Knopf steht weich gesperrt da,
+   der Grund am Knopf. Ein Doppelname in der Zielliste steht am Namensfeld, ein ungueltiger Sollwert am
+   Sollwertfeld; nach dem Kopieren zeigt das Blatt die Zielliste mit der neuen Vorlage gewaehlt.
 
    DAS SCHLOSS. Eine ausgelieferte Vorlage laesst sich nur duplizieren: Umbenennen und Loeschen stehen
    WEICH gesperrt da (aria-disabled, der Grund als Kurztext, der Versuch meldet ihn).
@@ -48,6 +57,8 @@
     }
     else
     {
+        // Die Ziele von „Kopieren nach …" gelten je Größe, nicht je Zeile: einmal je Zeichenlauf.
+        string? kopierSperre = KopierSperre;
         <div class="epos-raster-huelle epos-raster-huelle--frei epos-kond-verwaltung-liste">
             <table class="epos-raster epos-kond-vorlagenliste" data-groesse="@((int)_groesse)">
                 <thead>
@@ -115,6 +126,14 @@
                                                     aria-label="@(vorlage.Name + " – " + Texte.KnopfDuplizieren)"
                                                     @onclick="() => Duplizieren(vorlage)">@Texte.KnopfDuplizieren</button>
                                         }
+                                        @if (Bearbeitung.Weg.Bietet(KonditionierungHandlung.VorlageKopieren))
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-kopieren-nach"
+                                                    aria-disabled="@(kopierSperre is null ? null : "true")"
+                                                    title="@(kopierSperre ?? Texte.HinweisKopierenNach)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfKopierenNach)"
+                                                    @onclick="() => KopierenOeffnen(vorlage, kopierSperre)">@Texte.KnopfKopierenNach</button>
+                                        }
                                         @if (Bearbeitung.Weg.VorlageLoeschen is not null)
                                         {
                                             <button type="button" class="epos-knopf epos-kond-loeschen"
@@ -156,6 +175,50 @@
 
     <Rueckfrage Offen="@(_loeschen is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@Loeschfrage" VorgabeNein="true"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* "KOPIEREN NACH ..." - ein kurzer Unterdialog als Ueberlagerung mit Titel und Kreuz (Esc und Kreuz wie
+       Abbrechen). Die Optionsgruppe fuehrt nur die erlaubten Ziele der Quelle, darunter je Ziel die Regel;
+       das Sollwertfeld steht nur, wo die Richtung neue Sollwerte braucht. "Kopieren" schreibt SOFORT. *@
+    <Ueberlagerung Offen="@(_kopieren is not null)" Titel="@Kopiertitel" Geschlossen="KopierenAbbrechen">
+        <KindInhalt>
+            <div class="epos-kond-kopieren">
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <Optionsgruppe Bezeichnung="@Texte.LabelKopierziel" Eintraege="@Kopierzieleintraege"
+                                       Auswahl="@_kopierziel" AuswahlChanged="KopierzielGewaehlt"
+                                       Beschreibungen="@Kopierregeln" />
+                        <div class="epos-kond-vorlage-name @(_kopierNameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_kopierName"
+                                      WertChanged="KopierNameGeaendert" Hoechstlaenge="80" />
+                            @if (_kopierNameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_kopierNameFehler</p>
+                            }
+                        </div>
+                        @if (GewaehltesKopierziel is { Komfortsollwert: not null } mitSollwert)
+                        {
+                            <div class="epos-kond-kopieren-sollwert @(_kopierSollwertFehler is null ? "" : "epos-kond-feldfehler")">
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKomfortsollwert" Einheit="°C" Wert="@_kopierSollwert"
+                                            WertChanged="KopierSollwertGeaendert" Min="@mitSollwert.Min" Max="@mitSollwert.Max"
+                                            Feldname="@Texte.LabelKomfortsollwert" FehlerZustand="SollwertFehlerZustand" />
+                                @if (_kopierSollwertFehler is not null)
+                                {
+                                    <p class="epos-kond-feldmeldung" role="alert">@_kopierSollwertFehler</p>
+                                }
+                            </div>
+                        }
+                    </KindInhalt>
+                </Formularraster>
+                @if (_kopierFehler is not null)
+                {
+                    <p class="epos-kond-feldmeldung epos-kond-kopieren-fehler" role="alert">@_kopierFehler</p>
+                }
+                <p class="epos-leisezeile epos-kond-kopieren-sofort">@Texte.HinweisVorlageSofort</p>
+                <SpeichernLeiste OkText="@Texte.KnopfKopieren" AbbrechenText="@Texte.KnopfAbbrechen"
+                                 Ergebnis="KopierenErgebnis" />
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -330,6 +393,168 @@
         _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageGeloescht, v.Name);
         await Geaendert.InvokeAsync();
     }
+
+    // ------------------------------------------------------------ Kopieren nach … (Teilkonzept 3.5, 7.4)
+
+    private static readonly IReadOnlyList<KonditionierungKopierziel> KEINE_ZIELE = Array.Empty<KonditionierungKopierziel>();
+
+    /// <summary>Die Quelle der offenen Abfrage „Kopieren nach …"; <c>null</c> = die Abfrage ist zu.</summary>
+    private KonditionierungVorlageDaten? _kopieren;
+    private IReadOnlyList<KonditionierungKopierziel> _kopierziele = KEINE_ZIELE;
+    private int? _kopierziel;
+    private string _kopierName = "";
+    private double? _kopierSollwert;
+    private bool _sollwertFehleingabe;
+    private string? _kopierNameFehler;
+    private string? _kopierSollwertFehler;
+    private string? _kopierFehler;
+
+    /// <summary>Steht die Abfrage „Kopieren nach …"? Prüfhilfe für die Tests.</summary>
+    public bool KopierenOffen => _kopieren is not null;
+
+    /// <summary>
+    /// Der Grund des weich gesperrten „Kopieren nach …" in der Liste der gewählten Größe — sie hat kein Ziel
+    /// (Kühlen, Lüftung); <c>null</c> = es gibt eins.
+    /// </summary>
+    private string? KopierSperre
+        => Bearbeitung.Kopierziele(_groesse).Count > 0
+            ? null
+            : string.Format(CultureInfo.CurrentCulture, Texte.GrundKeinKopierziel, Bearbeitung.Groessenname(_groesse));
+
+    private KonditionierungKopierziel? GewaehltesKopierziel
+        => _kopierziele.FirstOrDefault(z => (int)z.Ziel == _kopierziel);
+
+    private string Kopiertitel
+        => _kopieren is null ? "" : string.Format(CultureInfo.CurrentCulture, Texte.LabelKopierenNach, _kopieren.Name);
+
+    /// <summary>Die Einträge der Zielwahl — nur die erlaubten Ziele der Quelle.</summary>
+    private IReadOnlyList<(int Id, string Text)> Kopierzieleintraege
+        => _kopierziele.Select(z => ((int)z.Ziel, Bearbeitung.Groessenname(z.Ziel))).ToList();
+
+    /// <summary>Unter jedem Ziel die Regel, nach der kopiert wird.</summary>
+    private IReadOnlyDictionary<int, string> Kopierregeln
+        => _kopierziele.ToDictionary(z => (int)z.Ziel,
+                                     z => z.Komfortsollwert is null ? Texte.HinweisKopierenDirekt : Texte.HinweisKopierenZeitstruktur);
+
+    /// <summary>
+    /// Öffnet die Abfrage: das erste erlaubte Ziel gewählt, der Name der Quelle als Vorschlag, bei Heizen →
+    /// Kühlen die Vorgabe des Komfortsollwerts. Ohne Ziel meldet der Versuch den Grund.
+    /// </summary>
+    private async Task KopierenOeffnen(KonditionierungVorlageDaten v, string? sperre)
+    {
+        IReadOnlyList<KonditionierungKopierziel> ziele = sperre is null ? Bearbeitung.Kopierziele(v.Groesse) : KEINE_ZIELE;
+        if (ziele.Count == 0)
+        {
+            await Melden(sperre ?? string.Format(CultureInfo.CurrentCulture, Texte.GrundKeinKopierziel,
+                                                 Bearbeitung.Groessenname(v.Groesse)), WarnStufe.Hinweis);
+            return;
+        }
+        UmbenennenAbbrechen();
+        _kopieren = v;
+        _kopierziele = ziele;
+        _kopierName = v.Name;
+        _kopierNameFehler = null;
+        _kopierFehler = null;
+        KopierzielSetzen(ziele[0]);
+    }
+
+    private void KopierzielGewaehlt(int? id)
+    {
+        if (_kopierziele.FirstOrDefault(z => (int)z.Ziel == id) is not KonditionierungKopierziel ziel) return;
+        KopierzielSetzen(ziel);
+        _kopierNameFehler = null;           // der Name gilt in der Liste des Ziels
+        _kopierFehler = null;
+    }
+
+    private void KopierzielSetzen(KonditionierungKopierziel ziel)
+    {
+        _kopierziel = (int)ziel.Ziel;
+        _kopierSollwert = ziel.Komfortsollwert;
+        _sollwertFehleingabe = false;
+        _kopierSollwertFehler = null;
+    }
+
+    private void KopierNameGeaendert(string w)
+    {
+        _kopierName = w ?? "";
+        _kopierNameFehler = null;
+    }
+
+    private void KopierSollwertGeaendert(double? w)
+    {
+        _kopierSollwert = w;
+        _kopierSollwertFehler = null;
+    }
+
+    private void SollwertFehlerZustand((string Feld, bool Fehlerhaft) zustand)
+    {
+        _sollwertFehleingabe = zustand.Fehlerhaft;
+        if (!zustand.Fehlerhaft) _kopierSollwertFehler = null;
+    }
+
+    /// <summary>Abbrechen, Esc und das Kreuz: Die Abfrage geht zu, geschrieben wird nichts.</summary>
+    private void KopierenAbbrechen()
+    {
+        _kopieren = null;
+        _kopierziele = KEINE_ZIELE;
+        _kopierziel = null;
+        _kopierName = "";
+        _kopierSollwert = null;
+        _sollwertFehleingabe = false;
+        _kopierNameFehler = null;
+        _kopierSollwertFehler = null;
+        _kopierFehler = null;
+    }
+
+    private Task KopierenErgebnis(bool ok)
+    {
+        if (ok) return KopierenSchreiben();
+        KopierenAbbrechen();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Das eigene OK der Abfrage: schreibt SOFORT. Eine Ablehnung des Namens steht am Namensfeld, eine des
+    /// Komfortsollwerts am Sollwertfeld, jede andere in der Abfrage; sie bleibt dann offen. Danach zeigt das
+    /// Blatt die Liste der Zielgröße mit der neuen Vorlage gewählt.
+    /// </summary>
+    private async Task KopierenSchreiben()
+    {
+        if (_kopieren is not KonditionierungVorlageDaten quelle || GewaehltesKopierziel is not KonditionierungKopierziel ziel)
+            return;
+        bool mitSollwert = ziel.Komfortsollwert is not null;
+        if (mitSollwert && _sollwertFehleingabe)
+        {
+            // Das Feld trägt keine gültige Zahl - kopiert würde sonst mit dem letzten gültigen Wert.
+            _kopierSollwertFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungKomfortsollwert,
+                                                  Zahl(ziel.Min), Zahl(ziel.Max));
+            return;
+        }
+
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageKopieren(
+            quelle.Id, new KonditionierungVorlageKopie(ziel.Ziel, _kopierName, mitSollwert ? _kopierSollwert : null));
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _kopierNameFehler = e.Meldung;
+            else if (e.AmSollwert) _kopierSollwertFehler = e.Meldung;
+            else _kopierFehler = e.Meldung;
+            return;
+        }
+
+        KopierenAbbrechen();
+        _groesse = ziel.Ziel;
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageKopiert, e.Vorlage?.Name ?? "",
+                               Bearbeitung.Groessenname(ziel.Ziel), quelle.Name, Bearbeitung.Groessenname(quelle.Groesse));
+        if (e.Vorlage is not null) Zeigen(e.Vorlage.Id);
+        else
+        {
+            _gewaehlt = null;
+            _modell = null;
+        }
+        await Geaendert.InvokeAsync();
+    }
+
+    private static string Zahl(double w) => w.ToString("0.##", CultureInfo.CurrentCulture);
 
     /// <summary>Wie lange ein Hinweis des Blattes steht.</summary>
     private static readonly TimeSpan MELDUNGSDAUER = TimeSpan.FromSeconds(8);

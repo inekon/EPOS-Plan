@@ -243,6 +243,19 @@ namespace WindowsFormsApplication1
             t.HinweisVorlageZeile = Text_("KOND_TXT_HINWEIS_VORLAGE_ZEILE", t.HinweisVorlageZeile);
             t.TextVorschauLeer = Text_("KOND_TXT_VORSCHAU_LEER", t.TextVorschauLeer);
             t.TextVorschauOhneAnteile = Text_("KOND_TXT_VORSCHAU_OHNE_ANTEILE", t.TextVorschauOhneAnteile);
+
+            // Kopieren nach … (Teilkonzept 3.5, 7.4)
+            t.KnopfKopierenNach = Text_("KOND_BTN_KOPIEREN_NACH", t.KnopfKopierenNach);
+            t.KnopfKopieren = Text_("KOND_BTN_KOPIEREN", t.KnopfKopieren);
+            t.LabelKopierenNach = Text_("KOND_LBL_KOPIEREN_NACH", t.LabelKopierenNach);
+            t.LabelKopierziel = Text_("KOND_LBL_KOPIERZIEL", t.LabelKopierziel);
+            t.LabelKomfortsollwert = Text_("KOND_LBL_KOMFORTSOLLWERT", t.LabelKomfortsollwert);
+            t.HinweisKopierenNach = Text_("KOND_TXT_KOPIEREN_NACH", t.HinweisKopierenNach);
+            t.HinweisKopierenDirekt = Text_("KOND_TXT_KOPIEREN_DIREKT", t.HinweisKopierenDirekt);
+            t.HinweisKopierenZeitstruktur = Text_("KOND_TXT_KOPIEREN_ZEITSTRUKTUR", t.HinweisKopierenZeitstruktur);
+            t.GrundKeinKopierziel = Text_("KOND_TXT_GRUND_KEIN_KOPIERZIEL", t.GrundKeinKopierziel);
+            t.TextVorlageKopiert = Text_("KOND_TXT_VORLAGE_KOPIERT", t.TextVorlageKopiert);
+            t.MeldungKomfortsollwert = Text_("KOND_TXT_MELDUNG_KOMFORTSOLLWERT", t.MeldungKomfortsollwert);
             return t;
         }
 

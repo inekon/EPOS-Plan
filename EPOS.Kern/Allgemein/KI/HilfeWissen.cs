@@ -569,7 +569,13 @@ namespace WindowsFormsApplication1
                     "Vorlage zeigt eine Zeile Name und Nutzung, eine ausgelieferte dazu das Schloss; ein Klick auf " +
                     "den Namen zeigt ihre Woche. " +
                     "Eine ausgelieferte Vorlage (Schloss) lässt sich nur duplizieren; eine eigene lässt sich " +
-                    "umbenennen, duplizieren und löschen - Löschen fragt vorher. Jede dieser Handlungen wirkt " +
+                    "umbenennen, duplizieren und löschen - Löschen fragt vorher. 'Kopieren nach …' legt aus einer " +
+                    "Vorlage, auch einer ausgelieferten, eine eigene Vorlage einer anderen Größe an: Geräte und " +
+                    "Personen gegenseitig mit denselben Werten und Zeiten (beide sind Anteile); Heizen nach Kühlen " +
+                    "nur mit der Zeitstruktur und den Aus-Zeiten - jede Stunde mit Heizsollwert bekommt den " +
+                    "Komfortsollwert, vorgeschlagen 26 °C. Andere Richtungen (Kühlen nach Heizen, alles mit " +
+                    "Lüftung) gibt es nicht. Der Name gilt in der Liste der Zielgröße und muss dort frei sein; die " +
+                    "Beschreibung nennt die Herkunft. Jede dieser Handlungen wirkt " +
                     "SOFORT auf die Vorlagen, nicht erst mit dem OK des Editors, und ändert kein Gebäude: Ein " +
                     "Kalender, der aus einer gelöschten Vorlage stammt, behält seine Werte und nennt weiter ihren " +
                     "Namen. Danach sind die Auswahllisten der Karten neu gelesen."),
