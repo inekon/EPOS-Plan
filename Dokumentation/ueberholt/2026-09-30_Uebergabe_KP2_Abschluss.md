@@ -1,5 +1,10 @@
 # Übergabe: Sitzung „Gebäudesimulation“ — Stand 30.09.2026, KP2 bis auf U5 umgesetzt
 
+> **Erledigt mit dem Abschluss von KP2 am 02.10.2026** (Welle U5, Statuszeile #641):
+> [Protokoll](Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept
+> N1.66. Offen beim Anwender bleiben SA1 und die Versionsnummer der Logbuch-Sätze (Statusdatei der Migration, „Nach
+> #641“). Dieses Papier ist Geschichte, nicht Regelquelle.
+
 **Anlass:** Die Sitzung hat bei 87 % Wochennutzung angehalten (Anwendervorgabe: Halt bei 90 %); die Arbeit geht auf
 einem anderen Claude-Konto weiter. Diese Übergabe löst die [Übergabe vom 27.09.2026](2026-09-27_Uebergabe_Gebaeudesimulation_Cloud.md)
 ab; beide wandern mit dem Abschluss von KP2 (Welle U5) nach `ueberholt/`.
@@ -14,9 +19,9 @@ ab; beide wandern mit dem Abschluss von KP2 (Welle U5) nach `ueberholt/`.
 - **KP2 nach dem [Entwurf](2026-09-29_Entwurf_KP2.md) (E56):** umgesetzt und veröffentlicht die Wellen
   K1, U0a, U0b (#618), K3 (#619), K2, K4 (#621), U1 (#623), U2 (#626), U4, U3 (#634) — jede mit Gate, alle
   Referenzläufe byte-gleich gegen die jeweils gültige Basis, CI grün (zuletzt Kern-Lauf 36708236840 auf `d8289c1d`).
-  Einzelheiten, Befunde und Nachweise: [Protokoll KP2](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md);
-  Stand je Welle in [`Status_iOS_Migration.md`](../Status_iOS_Migration.md) (Zeilen und Blöcke „Nach #618“ bis „Nach #634“)
-  und [`Status_Gebaeudesimulation_VDI6007.md`](../Status_Gebaeudesimulation_VDI6007.md) (Zeile KP2, Entscheide E55–E57).
+  Einzelheiten, Befunde und Nachweise: [Protokoll KP2](Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md);
+  Stand je Welle in [`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md) (Zeilen und Blöcke „Nach #618“ bis „Nach #634“)
+  und [`Status_Gebaeudesimulation_VDI6007.md`](../aktuell/Status_Gebaeudesimulation_VDI6007.md) (Zeile KP2, Entscheide E55–E57).
 - **Entscheid E57** (30.09.2026): Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ wird gebaut — ein
   Eintrag in der Zeile „Vorlage“, eine Rückfrage für alle Größen, kein Satzbegriff (P11 bleibt). Noch nicht umgesetzt.
 
@@ -29,8 +34,8 @@ ab; beide wandern mit dem Abschluss von KP2 (Welle U5) nach `ueberholt/`.
    Kalender, „aufteilen“ bei Gesamtangabe der Lüftung); Zählfall KN6 neu zählen (heute 11–16 Handgriffe); Assistent und
    Aktionswissen nachziehen; Konditionierungsprobe um den Fall erweitern.
 2. **Abschluss der Stufe:** Festlegungen der Umsetzung als **N1.66** im
-   [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Entwurf Abschnitt 5 samt den Festlegungen der
-   Wellen im Protokoll); Verweise und Stufenstand im [Teilkonzept](../Konzept_Konditionierungsprofile_EPOS-Plan.md)
+   [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Entwurf Abschnitt 5 samt den Festlegungen der
+   Wellen im Protokoll); Verweise und Stufenstand im [Teilkonzept](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md)
    (Kapitel 7, 8); Protokoll KP2 abschließen; Entwurf KP2 und beide Übergaben per `git mv` nach `ueberholt/` samt
    Indexzeilen; Statuszeile.
 3. **Logbuch-Sätze** entwerfen (K1 „Speichern unter“, U1 Reiter, U2 Vorlagen, U3/U4 Karte, Zonen, Verwaltung) —

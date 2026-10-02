@@ -1,16 +1,19 @@
 # Übergabe: Sitzung „Gebäudesimulation“ — Stand 27.09.2026, Wechsel in die Cloud-Umgebung
 
+> **Abgelöst** durch die [Übergabe vom 30.09.2026](2026-09-30_Uebergabe_KP2_Abschluss.md), mit dem Abschluss von KP2
+> (02.10.2026, Statuszeile #641) unter `ueberholt/`. Dieses Papier ist Geschichte, nicht Regelquelle.
+
 Die Sitzung „Gebäudesimulation EPOS-Plan“ (VDI 6007, Kühlung, Anlagenkopplung, Mehrzonen, Import und
 Export, Baualtersklassen, Konditionierungsprofile) wird in einer Cloud-Umgebung fortgeführt (Claude Code
 im Web, gestartet aus der Desktop-App). Dort gibt es nur, was im Repositorium liegt. Dieses Papier ersetzt
 das maschinenlokale Gedächtnis der bisherigen Sitzung: Stand, offene Punkte, Regeln, Nachbarn und was in
-der Cloud anders ist. Die Sachlage selbst steht in der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md),
-im [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), im
-[Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Nachträge N1.x) und in den Protokollen
-unter [`ueberholt/Protokolle/Gebaeudesimulation/`](../../ueberholt/Protokolle/Gebaeudesimulation/). Die
+der Cloud anders ist. Die Sachlage selbst steht in der [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md),
+im [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), im
+[Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Nachträge N1.x) und in den Protokollen
+unter [`ueberholt/Protokolle/Gebaeudesimulation/`](Protokolle/Gebaeudesimulation/). Die
 Vorgängerübergaben bleiben gültig:
-[`2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md`](2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md)
-(AK1, G6a, G6b, G7a, Arbeitsweise) und [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md)
+[`2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md)
+(AK1, G6a, G6b, G7a, Arbeitsweise) und [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md)
 (G6c, E51).
 
 ## 1 Stand
@@ -25,9 +28,9 @@ Vorgängerübergaben bleiben gültig:
   **#588** —
   `git show origin/ios_migration_september:Dokumentation/aktuell/Status_iOS_Migration.md | grep -oE '^\| \*\*#5[89][0-9]' | sort | tail -1`.
 - **Fertig und gepusht:** alles bis KP1a. Stufen und Nachweise: Statusdatei Abschnitt 2 (Stufentabelle),
-  zuletzt KP0 (Teilkonzept [Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) Rev. 3,
-  E52, E53, [Aufheizleistungsprobe](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-27_KP0_Aufheizleistungsprobe.md))
-  und **KP1a** ([Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-27_KP1_Konditionierungskalender.md),
+  zuletzt KP0 (Teilkonzept [Konditionierungsprofile](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) Rev. 3,
+  E52, E53, [Aufheizleistungsprobe](Protokolle/Gebaeudesimulation/2026-09-27_KP0_Aufheizleistungsprobe.md))
+  und **KP1a** ([Protokoll](Protokolle/Gebaeudesimulation/2026-09-27_KP1_Konditionierungskalender.md),
   N1.61, Statuszeile #583): Schemaschritt 151, Kalendermodell, Standardfahrplan bitgleich, fünf Reihen,
   `KonditionierungCtrl`; Referenzlauf 15/15 byte-gleich gegen R23.
 - **Nachzutragen in Statuszeile #583 und im Block „Nach #583“:** Push (Kopf `092544f` auf
@@ -36,7 +39,7 @@ Vorgängerübergaben bleiben gültig:
   enthält. Damit ist auch der im Protokoll (Abschnitt 5)
   offene volle Lauf von `EPOS.Kern.Tests` belegt — der Kern-Lauf führt ihn vollständig aus.
 - **Nachtrag der Cloud-Sitzung (27.09.2026):** Statuszeile #583 und Block „Nach #583" nachgetragen; KP1b entworfen
-  ([Entwurf](../../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)), E54 entschieden (N1.62); #588 hat eine Nachbarsitzung belegt. Nächste
+  ([Entwurf](Entwurf_KP1b_Konditionierungsprofile.md)), E54 entschieden (N1.62); #588 hat eine Nachbarsitzung belegt. Nächste
   Nummern damit: Schemaschritt **152**, Entscheid **E55**, Nachtrag **N1.63**, Statuszeile die nächste freie nach
   #588 — am 29.09.2026 führen zwei Nachbarzweige (Wiki-Hilfe, Technikdoku) schon eine #589, die noch nicht auf
   `ios_migration_september` liegt; weiter unmittelbar vor jeder Vergabe gegen `origin` messen.
@@ -51,7 +54,7 @@ Vorgängerübergaben bleiben gültig:
 
 ### 2.1 Nächste Stufe: KP1b (auf Auftrag)
 
-**Erledigt am 29.09.2026** (Statuszeile #596, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
+**Erledigt am 29.09.2026** (Statuszeile #596, [Protokoll](Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
 N1.63). Nächste Stufe ist **KP2** (Oberfläche, Saat der 14 Vorlagen; erste Kernwelle gbXML `SollHeizenC`, Ferien des
 Zapfprofils, „Zeitstruktur übernehmen"), auf Auftrag. Der [Entwurf KP2](2026-09-29_Entwurf_KP2.md) liegt vor, E56 ist
 entschieden (N1.65).
@@ -81,7 +84,7 @@ Referenzprojekt, Einfrierregel „gesäte Konditionierungsdaten“, neue Basis),
    Schritt 148 benennt Auslieferungssätze um), G4b samt Namensabgleich, E51, G6c-Importdialog samt
    Grundriss. KP1a braucht keine (keine Oberfläche).
 2. **Wiki:** Nachschlag-Upload der Seite „Mehrzonenmodell“, der G6b-Nachzüge in „Gebäude“ und
-   „Gebäudemodell VDI 6007“ und der Logbuch-Sätze aus dem [Update-Papier](../Wiki_Update_2026-09-26.md)
+   „Gebäudemodell VDI 6007“ und der Logbuch-Sätze aus dem [Update-Papier](../aktuell/Wiki_Update_2026-09-26.md)
    (1.2.0.4 und 1.2.0.5). Hochladen mit `Werkzeuge/WikiUpload/`; die Anmeldung mit dem Bot-Passwort führt
    der Anwender selbst aus — in der Cloud werden keine Zugangsdaten eingegeben.
 3. **Vor jeder Auslieferung** `GebaeudeExportRegeln.GbxmlExportFreigegeben` ausschalten, bis G7b folgt.
@@ -117,8 +120,8 @@ Referenzprojekt, Einfrierregel „gesäte Konditionierungsdaten“, neue Basis),
 
 ## 4 Nachbarsitzungen
 
-Cloud-Sitzungen „Dialoge und Korrekturen“ ([Übergabe](../Dialoge/2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md)),
-„EPOS Plan Wirtschaftlichkeit“ ([Übergabe](../Wirtschaftlichkeit_Kosten/Uebergabe_Cloud_Wirtschaftlichkeit_2026-09-27.md)),
+Cloud-Sitzungen „Dialoge und Korrekturen“ ([Übergabe](../aktuell/Dialoge/2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md)),
+„EPOS Plan Wirtschaftlichkeit“ ([Übergabe](../aktuell/Wirtschaftlichkeit_Kosten/Uebergabe_Cloud_Wirtschaftlichkeit_2026-09-27.md)),
 „Zapfprofil“ und „EPOS-Plan Berichterstellung“. Sitzungsnachrichten erreichen sie aus der Cloud nicht;
 abgestimmt wird allein über `origin` (Statusdatei, Testdatenbank-oid, Schemaschritte): vor jedem Push
 `git fetch` und mergen. Die Berichtsvorlagen-Sitzung vergibt Statusnummern ohne Abstimmung — deshalb

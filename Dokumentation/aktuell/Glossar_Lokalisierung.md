@@ -401,7 +401,7 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 
 Die Begriffe des Reiters „Konditionierung" im Gebäude-Katalogeditor: Vorgabe-Matrix, Kalender, Vorlagen und
 Aufheizoptimierung (Konzept [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.7, Entwurf
-[KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
+[KP2](../ueberholt/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
 **vor** den englischen Ressourcenwerten fest (Entscheid E28 zu U4, wie oben). Was in dieser Tafel schon steht, gilt
 unverändert weiter: Infiltration, Nutzerlüftung, Sommerlüftung, Heizsollwert, obere Raumtemperatur, Überhitzungsstunden,
 Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg. Die Vorlagennamen („Wohnen", „Büro",
