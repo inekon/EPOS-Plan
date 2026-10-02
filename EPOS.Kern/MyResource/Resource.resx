@@ -39958,6 +39958,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.</value>
   </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
+    <value>Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.</value>
+  </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Konditionierung</value>
   </data>

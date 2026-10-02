@@ -39951,6 +39951,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS" xml:space="preserve">
     <value>The group rule does not apply the demand charge {0} of the electricity carrier “{1}”.</value>
   </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
+    <value>The group rule does not apply the demand charge of the residual power tariff with the model “{0}”.</value>
+  </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Conditioning</value>
   </data>
