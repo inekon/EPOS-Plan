@@ -2096,10 +2096,11 @@ namespace WindowsFormsApplication1
             /// Anwenderentscheid 30.09.2026 (Register EZ‑18) — der Hinweis, dass der Rollentarif
             /// an einem Stand ohne stromverwendenden Erzeuger (Kopie der Gruppenregel) den
             /// Leistungspreis seines Reststromtarifs nicht ansetzt; <c>null</c> = kein solcher
-            /// Fall oder der Tarif führt keinen. Er gilt nur, wenn <see cref="RollenGerechnet"/>
-            /// steht, und tritt dann an die Stelle des Hinweises zum Leistungspreis des
-            /// Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>), dessen
-            /// Preise der Rollentarif ersetzt.
+            /// Fall, der Tarif führt keinen, oder sein Leistungspreis ist dem des Stromträgers
+            /// gleich (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>,
+            /// Anwenderentscheid 02.10.2026). Er steht ZUSÄTZLICH zum Hinweis zum Leistungspreis
+            /// des Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>) —
+            /// dieselbe Regel wie die Fußzeile unter der Kostentafel des Berichts.
             /// </summary>
             public string LeistungspreisTarifNichtAngesetzt;
 
@@ -2638,10 +2639,13 @@ namespace WindowsFormsApplication1
             // Modells nicht — er ist an einem solchen Stand eine Größe der Lastoptimierung. Die
             // Bezugsrolle rechnet ebenso ohne, damit die vermiedenen Kosten keinen
             // Leistungsanteil ausweisen, den keine Anlage vermeidet. Führt der Reststromtarif
-            // einen Leistungspreis, nennt ihn der Hinweis mit dem Klartext seines Modells; er
-            // tritt an die Stelle des Hinweises zum Leistungspreis des Stromträgers, dessen
-            // Preise der Tarif ersetzt (RechneProjekt). Stände mit Stromverwendung rechnen
-            // unverändert.
+            // einen Leistungspreis, der sich von dem des Stromträgers unterscheidet
+            // (StromTarifRechner.TarifLeistungspreisWieTraeger, Anwenderentscheid 02.10.2026),
+            // nennt ihn der Hinweis mit dem Klartext seines Modells — zusätzlich zum Hinweis zum
+            // Leistungspreis des Trägers (RechneProjekt), dieselbe Regel wie die Fußzeile unter
+            // der Kostentafel des Berichts. Den Monatssatz des Trägers hat der
+            // KostenEmissionRechner an dieser Kopie schon gesetzt (Szenariodaten). Stände mit
+            // Stromverwendung rechnen unverändert.
             bool ohneLeistungspreis = v.StromImVergleichBepreisen;
             TarifRolle bezug = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Bezug) : tarif.Bezug;
             TarifRolle reststrom = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Reststrom) : tarif.Reststrom;
@@ -2668,7 +2672,9 @@ namespace WindowsFormsApplication1
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
             e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
             e.LeistungspreisTarifNichtAngesetzt =
-                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)
+                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
+                !StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                 v.LeistungspreisNichtAngesetztMonatssatz)
                     ? string.Format(BerichtTexte.Kultur, HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
                                     Leistungsmodelltext(tarif.Reststrom))
                     : null;
@@ -6781,13 +6787,15 @@ namespace WindowsFormsApplication1
             // eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn diese Zeile
             // (Satz und Träger, gebildet vom KostenEmissionRechner); dieselbe Reise wie die
             // Zeilen darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
-            // EZ‑18: Hat der Rollentarif den Stromanteil ersetzt, gilt sein Reststromtarif und
-            // nicht der Träger — dann nennt die Zeile den Leistungspreis des Tarifs (Modell),
-            // gebildet in RechneRollentarif, oder es steht keine.
-            string leistungspreisNichtAngesetzt = eingabe.RollenGerechnet
-                ? eingabe.LeistungspreisTarifNichtAngesetzt : v.LeistungspreisNichtAngesetzt;
-            if (!string.IsNullOrEmpty(leistungspreisNichtAngesetzt))
-                erg.Hinweis = Anhaengen(erg.Hinweis, leistungspreisNichtAngesetzt);
+            // EZ‑18 (Anwenderentscheid 02.10.2026): Den Leistungspreis des Trägers nennt die Zeile
+            // immer; hat der Rollentarif den Stromanteil ersetzt, dahinter zusätzlich den des
+            // Reststromtarifs (Modell), wenn er sich von dem des Trägers unterscheidet — gebildet
+            // in RechneRollentarif nach StromTarifRechner.TarifLeistungspreisWieTraeger. Dieselbe
+            // Regel wie die Fußzeile unter der Kostentafel des Berichts.
+            if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, v.LeistungspreisNichtAngesetzt);
+            if (eingabe.RollenGerechnet && !string.IsNullOrEmpty(eingabe.LeistungspreisTarifNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, eingabe.LeistungspreisTarifNichtAngesetzt);
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein

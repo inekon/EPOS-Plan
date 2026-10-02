@@ -1178,10 +1178,13 @@ namespace EPOS.Kern.Tests
         /// Netzbezug (Bedarf = Netzbezug), der Stromträger dazu einen Leistungspreis von 60 €/(kW·a).
         /// Der Stamm ohne Stromverwendung: 50 + 16,12 MWh × 0,32 €/kWh + 100 = 5.308,40 €/a — ohne
         /// 12 × 1,8402 kW × 10 = 220,82 €/a Leistungsanteil; die vermiedenen Kosten tragen keinen
-        /// Leistungsanteil (16,12 MWh × (0,30 − 0,32) €/kWh − 100 = −422,40 €/a), und der Hinweis nennt
-        /// das Modell des Reststromtarifs statt des Stromträgers, dessen Preise der Tarif ersetzt. Die
-        /// Variante mit Wärmepumpe: 50 + 6,12 MWh × 0,32 + 100 + 12 × 0,6986 kW × 10 = 2.192,24 €/a —
-        /// ihr Leistungsanteil bleibt (vermieden 12 × 0,6986 × (8 − 10) = −16,77 €/a), kein Hinweis.
+        /// Leistungsanteil (16,12 MWh × (0,30 − 0,32) €/kWh − 100 = −422,40 €/a). Die Hinweiszeile
+        /// nennt den Leistungspreis des Stromträgers und dahinter zusätzlich das Modell des
+        /// Reststromtarifs — ein Satz je Jahr gegen einen Monatspreis ist unterschiedlich
+        /// (Anwenderentscheid 02.10.2026, Register EZ‑18; dieselbe Regel wie die Fußzeile der
+        /// Kostentafel). Die Variante mit Wärmepumpe: 50 + 6,12 MWh × 0,32 + 100 + 12 × 0,6986 kW × 10
+        /// = 2.192,24 €/a — ihr Leistungsanteil bleibt (vermieden 12 × 0,6986 × (8 − 10) = −16,77 €/a),
+        /// kein Hinweis.
         /// </summary>
         [Fact]
         public void Im_Rollentarif_setzt_der_Stand_ohne_Verwendung_keinen_Leistungspreis_an()
@@ -1213,16 +1216,17 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, s.VermiedenLeistungJahr, 6);
             Assert.Equal(NETZBEZUG * 1000.0 * (0.30 - 0.32) - 100.0, s.VermiedenGesamtJahr, 2);
 
-            // Der Hinweis nennt das Modell des Reststromtarifs — in jedem Szenario —, nicht den Träger.
-            string hinweis = "Leistungspreis des Reststromtarifs nach dem Modell „" +
-                             WindowsFormsApplication1.MyResource.Resource.TARIF_LM_MONATLICH +
-                             "“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet";
+            // Die Hinweiszeile nennt in jedem Szenario erst den Leistungspreis des Trägers, dann
+            // zusätzlich das Modell des Reststromtarifs.
             foreach (string sz in WirtschaftlichkeitSzenario.Alle)
             {
-                WirtschaftlichkeitErgebnis stand = Finde(alle, STAMM, sz);
-                Assert.Contains("Gruppenregel", stand.Hinweis ?? "");
-                Assert.Contains(hinweis, stand.Hinweis ?? "");
-                Assert.DoesNotContain("des Stromträgers „Elektrische Energie“ nicht angesetzt", stand.Hinweis ?? "");
+                string zeile = Finde(alle, STAMM, sz).Hinweis ?? "";
+                Assert.Contains("Gruppenregel", zeile);
+                int traeger = zeile.IndexOf(TRAEGERHINWEIS_60_JAHR, StringComparison.Ordinal);
+                int tarif = zeile.IndexOf(Tarifhinweis(TarifModelltext(DbWerte.LEISTUNGSMODELL_MONATLICH)),
+                                          StringComparison.Ordinal);
+                Assert.True(traeger >= 0, "Trägerhinweis fehlt (" + sz + "): " + zeile);
+                Assert.True(tarif > traeger, "Tarifhinweis fehlt oder steht vor dem Träger (" + sz + "): " + zeile);
             }
 
             // Die Variante mit Stromverwendung rechnet unverändert mit Leistungsanteil.
@@ -1239,16 +1243,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Hinweis nennt das Modell des Reststromtarifs im Klartext der Tarifstruktur — hier
-        /// die Staffel. Führt der Reststromtarif keinen Leistungspreis, steht kein Hinweis und die
-        /// Zahl ist dieselbe.
+        /// Der Tarifhinweis nennt das Modell des Reststromtarifs im Klartext der Tarifstruktur — hier
+        /// die Staffel, die sich vom Satz je Jahr des Trägers unterscheidet —, hinter dem
+        /// Trägerhinweis. Führt der Reststromtarif keinen Leistungspreis, steht allein der
+        /// Trägerhinweis, und die Zahl ist dieselbe.
         /// </summary>
         [Fact]
-        public void Der_Tarifhinweis_nennt_das_Modell_und_ohne_Leistungspreis_keinen()
+        public void Der_Tarifhinweis_nennt_das_Modell_nach_dem_Traeger_und_ohne_Tarifpreis_steht_nur_der_Traeger()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             Pruefstand();
+            Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
             Rollentarif(DbWerte.LEISTUNGSMODELL_STAFFEL, 0.0, 0.0,
                         new LeistungsStufe(0.0, 40.0, 60.0));
 
@@ -1260,10 +1266,14 @@ namespace EPOS.Kern.Tests
                                                  STAMM, WirtschaftlichkeitSzenario.ERWARTET);
             double mitStaffel = s.EnergiekostenJahr.Value;
             Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, mitStaffel, 2);
-            Assert.Contains("nach dem Modell „" + WindowsFormsApplication1.MyResource.Resource.TARIF_LM_STAFFEL +
-                            "“ nicht angesetzt", s.Hinweis ?? "");
+            string zeile = s.Hinweis ?? "";
+            int traeger = zeile.IndexOf(TRAEGERHINWEIS_60_JAHR, StringComparison.Ordinal);
+            int tarif = zeile.IndexOf(Tarifhinweis(TarifModelltext(DbWerte.LEISTUNGSMODELL_STAFFEL)),
+                                      StringComparison.Ordinal);
+            Assert.True(traeger >= 0, zeile);
+            Assert.True(tarif > traeger, zeile);
 
-            // Ohne Leistungspreis am Reststromtarif: dieselbe Zahl, kein Hinweis.
+            // Ohne Leistungspreis am Reststromtarif: dieselbe Zahl, allein der Trägerhinweis.
             Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 0.0, 0.0);
             BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out VariantenDaten varianteOhne);
             stammOhne.Zeitreihen = Stundenreihen(NETZBEZUG);
@@ -1271,7 +1281,79 @@ namespace EPOS.Kern.Tests
             WirtschaftlichkeitErgebnis so = Finde(ctrl.Berechne(ohne, ctrl.LadeParameter(STAMM)),
                                                   STAMM, WirtschaftlichkeitSzenario.ERWARTET);
             Assert.Equal(mitStaffel, so.EnergiekostenJahr.Value, 6);
-            Assert.DoesNotContain("nicht angesetzt", so.Hinweis ?? "");
+            Assert.Contains(TRAEGERHINWEIS_60_JAHR, so.Hinweis ?? "");
+            Assert.DoesNotContain("Reststromtarif", so.Hinweis ?? "");
+        }
+
+        /// <summary>
+        /// <b>Gleicher Monatspreis: allein der Trägerhinweis.</b> Der Stromträger bemisst
+        /// 10 €/(kW·Monat) je Monat, der Reststromtarif monatlich ebenso 10 €/(kW·Monat) — beide gleich
+        /// (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>). Die Hinweiszeile nennt nur
+        /// den Leistungspreis des Trägers; die Zahlen sind die des Falls mit unterschiedlichem Preis
+        /// (kein Leistungsanteil am Stand ohne Verwendung).
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_mit_gleichem_Monatspreis_nennt_die_Hinweiszeile_nur_den_Traeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(10.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_MONAT);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            WirtschaftlichkeitErgebnis s = Finde(alle, STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+
+            // Die Zahlen bleiben: Arbeits- und Grundpreis des Reststromtarifs, kein Leistungsanteil.
+            Assert.Null(s.Fehlgrund);
+            Assert.Equal(NETZBEZUG * 1000.0 * 0.32 + 100.0, s.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(0.0, s.VermiedenLeistungJahr, 6);
+
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                string zeile = Finde(alle, STAMM, sz).Hinweis ?? "";
+                Assert.Contains("Leistungspreis 10,00 €/(kW·Monat) des Stromträgers „Elektrische Energie“ " +
+                                "nicht angesetzt", zeile);
+                Assert.DoesNotContain("Reststromtarif", zeile);
+            }
+        }
+
+        /// <summary>
+        /// <b>Träger ohne Leistungspreis, Tarif mit:</b> Die Hinweiszeile nennt allein den
+        /// Leistungspreis des Reststromtarifs mit seinem Modell; die Zahlen bleiben.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_ohne_Traegerleistungspreis_nennt_die_Hinweiszeile_nur_den_Tarif()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(0.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+            Rollentarif(DbWerte.LEISTUNGSMODELL_MONATLICH, 8.0, 10.0);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Stundenreihen(NETZBEZUG);
+            variante.Zeitreihen = Stundenreihen(NETZBEZUG - EINSPARUNG);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            WirtschaftlichkeitErgebnis s = Finde(alle, STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.Null(s.Fehlgrund);
+            Assert.Equal(NETZBEZUG * 1000.0 * 0.32 + 100.0, s.StromkostenTarif.Value, 2);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * 0.32 + 100.0, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(0.0, s.VermiedenLeistungJahr, 6);
+
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                string zeile = Finde(alle, STAMM, sz).Hinweis ?? "";
+                Assert.Contains(Tarifhinweis(TarifModelltext(DbWerte.LEISTUNGSMODELL_MONATLICH)), zeile);
+                Assert.DoesNotContain("des Stromträgers", zeile);
+            }
         }
 
         /// <summary>
@@ -1482,7 +1564,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Vergleichsregel</b> (<see cref="BerichtsDatenSammler.TarifLeistungspreisWieTraeger"/>):
+        /// <b>Die Vergleichsregel</b> (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>,
+        /// die eine Regel für Fußzeile der Kostentafel und Hinweiszeile der Wirtschaftlichkeit):
         /// gleich nur bei Monatspreis gegen Monatssatz desselben Werts; ein Träger ohne Monatssatz
         /// (Satz je Jahr, Staffel, ungleiche Saisonreihe, kein Leistungspreis) und die Modelle STAFFEL
         /// und JAHRESHOECHSTLAST sind unterschiedlich.
@@ -1500,12 +1583,34 @@ namespace EPOS.Kern.Tests
                                                                    double? traegerMonatssatz, bool gleich)
         {
             var rolle = new TarifRolle { Leistungsmodell = modell, MonatspreisEurKWMonat = monatspreis };
-            Assert.Equal(gleich, BerichtsDatenSammler.TarifLeistungspreisWieTraeger(rolle, traegerMonatssatz));
+            Assert.Equal(gleich, StromTarifRechner.TarifLeistungspreisWieTraeger(rolle, traegerMonatssatz));
+            bool jeMonat = modell != DbWerte.LEISTUNGSMODELL_STAFFEL && modell != DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST;
+            Assert.Equal(jeMonat, StromTarifRechner.TarifJeMonat(rolle));
         }
 
         // =================================================================
         // Handgriffe
         // =================================================================
+
+        /// <summary>Der Hinweis zum nicht angesetzten Leistungspreis von 60 €/(kW·a) des
+        /// Auslieferungs-Stromträgers (Register EZ‑17), ohne die Begründung.</summary>
+        private const string TRAEGERHINWEIS_60_JAHR =
+            "Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ nicht angesetzt";
+
+        /// <summary>Der Hinweis zum nicht angesetzten Leistungspreis des Reststromtarifs (Register
+        /// EZ‑18) mit dem Klartext seines Modells, ohne die Begründung.</summary>
+        private static string Tarifhinweis(string modell)
+        {
+            return "Leistungspreis des Reststromtarifs nach dem Modell „" + modell + "“ nicht angesetzt";
+        }
+
+        /// <summary>Der Klartext eines Leistungspreismodells der Tarifstruktur.</summary>
+        private static string TarifModelltext(string modell)
+        {
+            return modell == DbWerte.LEISTUNGSMODELL_STAFFEL
+                ? WindowsFormsApplication1.MyResource.Resource.TARIF_LM_STAFFEL
+                : WindowsFormsApplication1.MyResource.Resource.TARIF_LM_MONATLICH;
+        }
 
         /// <summary>Gruppe 1026: Stamm und „Andere WP" (1027) ohne stromverwendenden Erzeuger,
         /// allein „Erdwärme" (1029) verwendet Strom.</summary>

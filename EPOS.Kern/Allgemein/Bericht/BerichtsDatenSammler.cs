@@ -686,7 +686,7 @@ namespace WindowsFormsApplication1
         /// Trägersatz stehen. Wirkt der Tarif an der Kopie — dieselbe Bedingung wie in
         /// <c>WirtschaftlichkeitCtrl.RechneProjekt</c>: Tarif der Gruppe wirksam, die Kopie ohne
         /// Strombedarf ohne Verwendung — und führt sein Reststromtarif einen Leistungspreis, der sich
-        /// von dem des Trägers unterscheidet (<see cref="TarifLeistungspreisWieTraeger"/>), nennen
+        /// von dem des Trägers unterscheidet (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>), nennen
         /// Hinweis und Fußzeile ZUSÄTZLICH den Leistungspreis des Reststromtarifs
         /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>, beim Modell MONATLICH mit
         /// <see cref="StromGruppenzahl.LeistungspreisTarifMonatspreis"/>). Den Tarif lädt derselbe
@@ -730,10 +730,10 @@ namespace WindowsFormsApplication1
                 bool rollentarif = tarif != null && tarif.Wirksam &&
                                    !kopie.StrombedarfOhneVerwendungMWh.HasValue;
                 bool tarifsatz = rollentarif && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
-                                 !TarifLeistungspreisWieTraeger(tarif.Reststrom,
-                                                                kopie.LeistungspreisNichtAngesetztMonatssatz);
+                                 !StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                                   kopie.LeistungspreisNichtAngesetztMonatssatz);
                 string tarifModell = tarifsatz ? WirtschaftlichkeitCtrl.Leistungsmodelltext(tarif.Reststrom) : null;
-                double? tarifMonatspreis = tarifsatz && TarifJeMonat(tarif.Reststrom)
+                double? tarifMonatspreis = tarifsatz && StromTarifRechner.TarifJeMonat(tarif.Reststrom)
                     ? tarif.Reststrom.MonatspreisEurKWMonat : (double?)null;
 
                 v.Gruppenzahl = new StromGruppenzahl
@@ -764,39 +764,6 @@ namespace WindowsFormsApplication1
                                       WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
                                       tarifModell));
             }
-        }
-
-        /// <summary>
-        /// <b>Ist der Leistungspreis des Reststromtarifs dem des Stromträgers gleich?</b> (Register
-        /// EZ‑18, Anwenderentscheid 02.10.2026) — dann nennt die Fußzeile unter der Kostentafel nur
-        /// den Trägersatz, sonst zusätzlich den des Tarifs.
-        ///
-        /// <para>Die Regel: <b>Gleich</b> sind beide nur, wenn beide je Monat bemessen sind und
-        /// derselbe Preis steht — der Reststromtarif mit dem Modell MONATLICH (leer oder unbekannt
-        /// zählt wie dort, <see cref="StromTarifRechner.Leistungskosten"/>) und der Träger mit einem
-        /// Satz je Monat (<paramref name="traegerMonatssatz"/>: <c>price_power_modus</c> MONAT oder
-        /// eine Saisonreihe aus zwölf gleichen Sätzen;
-        /// <see cref="VariantenDaten.LeistungspreisNichtAngesetztMonatssatz"/>), beide auf 1e‑9
-        /// gleich. Alles andere ist <b>unterschiedlich</b>: ein Satz je Jahr gegen den Monatspreis,
-        /// eine Staffel des Trägers, die Modelle STAFFEL und JAHRESHOECHSTLAST des Tarifs — auch
-        /// Staffel gegen Staffel, deren Bemessung verschieden ist —, und ein Träger ohne
-        /// Leistungspreis (<c>null</c>) gegen einen Tarif mit. Ob der Tarif überhaupt einen
-        /// Leistungspreis führt, prüft der Aufrufer (<see cref="StromTarifRechner.LeistungspreisGepflegt"/>).</para>
-        /// </summary>
-        internal static bool TarifLeistungspreisWieTraeger(TarifRolle reststrom, double? traegerMonatssatz)
-        {
-            if (reststrom == null || !traegerMonatssatz.HasValue) return false;
-            if (!TarifJeMonat(reststrom)) return false;
-            return Math.Abs(traegerMonatssatz.Value - reststrom.MonatspreisEurKWMonat) <= 1e-9;
-        }
-
-        /// <summary>Bemisst der Tarif seinen Leistungspreis je Monat (Modell MONATLICH, leer oder
-        /// unbekannt wie in <see cref="StromTarifRechner.Leistungskosten"/>)?</summary>
-        private static bool TarifJeMonat(TarifRolle rolle)
-        {
-            string modell = rolle == null ? null : rolle.Leistungsmodell;
-            return !string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal) &&
-                   !string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal);
         }
 
         /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>
