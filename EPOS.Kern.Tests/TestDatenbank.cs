@@ -843,6 +843,12 @@ namespace EPOS.Kern.Tests
                 // ALTER TABLE loest keinen Stempeltrigger aus.
                 KesselBereitschaftEinheitSchema.Ausfuehren(null);
 
+                // Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+                // Kollektorfelds an Tab_Energieanlagen (leer) und die Bezugsflaeche an
+                // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML.
+                SolarthermieFelderSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

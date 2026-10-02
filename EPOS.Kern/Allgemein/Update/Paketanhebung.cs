@@ -230,6 +230,10 @@ namespace WindowsFormsApplication1
             // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
             new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
                       "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
+            // Die Anlagenspalten kommen leer an (Vorgaben: kein Pumpenstrom, 8 % Verluste, feste
+            // Arbeitstemperatur), der Kollektorsatz mit der Vorgabe apertur - so, wie er rechnet.
+            new Stufe(SolarthermieFelderSchema.SCHRITT, Art.Ddl,
+                      "Felder des Kollektorfelds (Pumpe, Verluste, Grädigkeit, Spreizung, Arbeitstemperatur) und Bezugsfläche des Kollektorsatzes"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

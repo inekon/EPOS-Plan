@@ -97,7 +97,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(AufheizErgebnisSchema.SCHRITT + 1, KesselBereitschaftEinheitSchema.SCHRITT);
             Assert.Equal(162, KesselBereitschaftEinheitSchema.SCHRITT);
-            Assert.Equal(KesselBereitschaftEinheitSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KesselBereitschaftEinheitSchema.SCHRITT);
             Assert.Equal(new[] { "Tab_Heizkessel_STAMM", "Tab_Heizkessel" }, KesselBereitschaftEinheitSchema.TABELLEN);
 
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == KesselBereitschaftEinheitSchema.SCHRITT);

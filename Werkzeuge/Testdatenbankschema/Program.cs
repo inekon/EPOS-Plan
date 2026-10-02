@@ -2388,6 +2388,30 @@ namespace Testdatenbankschema
                                   KesselBereitschaftEinheitSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+            //      Kollektorfelds an Tab_Energieanlagen (Pumpenleistung_W, Solarkreisverluste_Prozent,
+            //      Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K, Arbeitstemperatur_Weg; nullbar) und
+            //      die Bezugsflaeche an Tab_Solarkollektoren_STAMM und Tab_Solarkollektoren (Vorgabe
+            //      apertur). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_SolarthermieFelder bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen ihre Vorgaben, jeder Kollektorsatz
+            //      bekommt die Aperturflaeche, mit der er rechnet.
+            string nrSolarFelder = SolarthermieFelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSolarFelder + " - Felder des Kollektorfelds: " +
+                              (SolarthermieFelderSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSolarFelder = new List<string>();
+                angelegt += SolarthermieFelderSchema.Ausfuehren(berichtSolarFelder);
+                foreach (string zeile in berichtSolarFelder)
+                    Console.WriteLine("Schritt " + nrSolarFelder + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSolarFelder + " - vollstaendig: " +
+                                  SolarthermieFelderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

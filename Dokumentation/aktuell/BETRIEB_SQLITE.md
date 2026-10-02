@@ -409,7 +409,7 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Schemastand 162** (`Tab_Applikation.SchemaVersion`; jüngste Schritte 156 Kessel-Kennlinie, 157 Saat der Konditionierungsvorlagen, 158 Brennwert in Projekten, 159 Änderungsstempel — Abschnitt 2b, 160 und 161 Aufheizoptimierung (Projekteinstellung, Ergebnisspalten), 162 Einheit des Bereitschaftsverlusts am Heizkessel (`Bereitschaft_Einheit`, kW oder %, Vorgabe kW); die Schritte bis 76 im Einzelnen: 65 Wechselrichterkatalog,
+**Schemastand 163** (`Tab_Applikation.SchemaVersion`; jüngste Schritte 156 Kessel-Kennlinie, 157 Saat der Konditionierungsvorlagen, 158 Brennwert in Projekten, 159 Änderungsstempel — Abschnitt 2b, 160 und 161 Aufheizoptimierung (Projekteinstellung, Ergebnisspalten), 162 Einheit des Bereitschaftsverlusts am Heizkessel (`Bereitschaft_Einheit`, kW oder %, Vorgabe kW), 163 Felder des Kollektorfelds an `Tab_Energieanlagen` (`Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K`, `Arbeitstemperatur_Weg`, nullbar mit Prüfklausel) und Bezugsfläche der Kennwerte an `Tab_Solarkollektoren(_STAMM)` (`Bezugsflaeche`, apertur oder brutto, Vorgabe apertur); die Schritte bis 76 im Einzelnen: 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
 repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
 `Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
