@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R32_Solarthermie` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R33_Viertelstunden` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 
