@@ -3601,7 +3601,7 @@ annual full-load hours from a simulation run.</value>
 HP type: {0}
 
 If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
-Administration → Heat pump → change the heat pump type, then select the heat pump again in the project.</value>
+Administration → Heat requirement &amp; heating → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -3801,7 +3801,7 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
     <value>Buffer storage</value>
   </data>
   <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
-    <value>Source profile (monthly values)</value>
+    <value>Source profile (monthly, daily or hourly values)</value>
   </data>
   <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
     <value> Caution: the number of boreholes or λ lies outside the coded table range (B2 extract); the limit was clamped to the boundary data point. On the borehole-number axis this is not conservative - larger borehole fields require lower specific extraction rates than the boundary value allows.</value>
@@ -9817,7 +9817,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>Energy carrier management…</value>
   </data>
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
-    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in (finding V1).</value>
+    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in.</value>
   </data>
   <data name="PVW_51A" xml:space="preserve">
     <value>Sec. 51a compensation (term extension)</value>
@@ -10448,7 +10448,7 @@ They typically stem from a variant copy without this trade and keep entering the
 The storage is assigned to:
   • {3}
 
-Assignments to a channel the storage no longer serves will be reported as a warning from now on (criterion W1) — they are no longer blocked.
+Assignments to a channel the storage no longer serves will be reported as a warning from now on — they are no longer blocked.
 Change the usage anyway?</value>
   </data>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
@@ -10532,7 +10532,7 @@ Change the usage anyway?</value>
   <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
     <value>Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified.
 
-A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist (concept 6.3, criterion W6).
+A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist.
 
 Please either set the number of layers to 1 or dissolve the bank in the heat sink dialog.</value>
   </data>
@@ -11678,7 +11678,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Price basis (valid from):</value>
   </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
-    <value>Feed-in (no demand price — finding 11 of the legacy application; shared field for PV and CHP feed-in)</value>
+    <value>Feed-in (no demand price; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Role model (stage E5) — difference method “avoided cost”</value>
@@ -14432,7 +14432,7 @@ Please check all entries!</value>
     <value>Calculate and show the heat requirement of the building selected in the project list</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
-    <value>The heat requirement of this building cannot be calculated. Please save the project and select a climate region.</value>
+    <value>The heat requirement of this building cannot be calculated.</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF_GRUND" xml:space="preserve">
     <value>The heat requirement of this building cannot be calculated: {0}</value>
@@ -17184,7 +17184,7 @@ Please go through the project page again so that the data of the selected projec
     <value>with inverter — catalogue, strings, efficiency curve, clipping</value>
   </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
-    <value>The system calculates with an efficiency of {0} and without clipping.</value>
+    <value>“Simple” model: the system calculates with the fixed efficiency of {0} and without clipping; the inverter system values have no effect in this model.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
     <value>No string yet: choose a device above and press “Create string”.</value>
@@ -17331,7 +17331,7 @@ Please go through the project page again so that the data of the selected projec
     <value>temperature coefficient beta_OC of the module</value>
   </data>
   <data name="PVS_PFLEGEWEG" xml:space="preserve">
-    <value>Maintain here: Administration → Energy systems → Photovoltaics → PV modules → Edit (fields alpha_SC, beta_OC, T_NOCT), alternatively re-import from “CEC Modules.csv”</value>
+    <value>Maintain: αSC and βOC come only from the module import — Administration → Data &amp; import → Photovoltaics → “PV modules (CEC, PAN)…” (re-import from “CEC Modules.csv” or a PAN file); open-circuit and MPP voltage, short-circuit current and T_NOCT can also be entered under Administration → Energy systems → Photovoltaics → PV modules.</value>
   </data>
   <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
     <value>– not maintained</value>
@@ -19548,7 +19548,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Adaptive (causal): the threshold starts at the start value and is raised during the run as soon as the fleet cannot hold a peak — it can only rise. The storage therefore stays charged for the large peak instead of running empty on smaller ones (specification 5.1.1).</value>
   </data>
   <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
-    <value>Fixed: the threshold stays at the entered value for the whole period. Once the annual peak is missed, the fleet still discharges on every smaller peak (finding of 11.09.2026).</value>
+    <value>Fixed: the threshold stays at the entered value for the whole period. Once the annual peak is missed, the fleet still discharges on every smaller peak.</value>
   </data>
   <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
     <value>Apply base load as start value</value>
@@ -22770,7 +22770,7 @@ Do you want to allow this?</value>
     <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>State of charge in percent from which subordinate generators may charge as well. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
+    <value>Cut-off threshold for subordinate generators in percent: subordinate generators charge the storage up to this state of charge; above it only the priority generator charges, up to the cut-off threshold. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>
@@ -33341,8 +33341,8 @@ Do you want to allow this?</value>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
     <value>Derived from the file's year of construction {0} – the year of construction takes precedence, no other class can be chosen.</value>
   </data>
-  <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>the building has not been saved in the project yet, and its catalogue record cannot be found – it is saved with OK, after which its heat requirement can be calculated.</value>
+  <data name="GEB_MSG_BEDARF_OHNE_KATALOGSATZ" xml:space="preserve">
+    <value>its catalogue record “{0}” cannot be found in the building catalogue — without it there are no building data to calculate from. Please select the building from the catalogue again.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
     <value>the building comes from an import with a zone and building elements that are only created with OK – it is saved with OK, after which its heat requirement can be calculated.</value>
@@ -41120,6 +41120,36 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
     <value>The shortcut “all quantities” in the “Template” row of the “Conditioning” tab: the name of a template that is in at least one of the five lists. Setting it asks ONE question for all quantities, which the user answers; after “Yes” every quantity with a template of this name applies it like the “Apply” button, in one step for “Undo” – a quantity without a template of the same name and a locked quantity remain unchanged. Reading gives the template that all quantities with a template of this name carry as their origin; empty = none in common.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN" xml:space="preserve">
+    <value>The project holds no cooling characteristic for this unit, but the catalogue does — it can be fetched in the plant dialog under “Heat pump characteristics” with “Take cooling curve from the catalogue”. Until then cooling mode remains locked.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KUEHL_KATALOG" xml:space="preserve">
+    <value>The project holds no cooling characteristic for this unit; the catalogue record has one. The calculation uses the project curves only — without a cooling curve in the project, cooling mode remains locked.</value>
+  </data>
+  <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
+    <value>Take cooling curve from the catalogue</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_CLIPPING" xml:space="preserve">
+    <value>“Extended” model: the system calculates with the inverter curve of the system values and curtails above the AC rated power of {0} kW (clipping).</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
+    <value>“Extended” model: the system calculates with the inverter curve of the system values; without an AC rated power there is no clipping. Once an AC rated power is entered, EPOS-Plan curtails above it.</value>
+  </data>
+  <data name="SIMENG_WP_ZU_VIELE_MODULE" xml:space="preserve">
+    <value>The project holds {0} heat pump plants; at most {1} can be calculated. Please merge or remove plants.</value>
+  </data>
+  <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
+    <value>Source temperature of plant {0}: the CSV file “{1}” is missing or does not provide 8,760 hourly values — the outdoor temperature is used instead.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
+    <value>the project copy of the building cannot be found — please remove the building from the project and take it over from the catalogue again.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_KLIMAREGION" xml:space="preserve">
+    <value>no climate region is assigned to the project — please select a climate region in the project data.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
+    <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
 </root>
 

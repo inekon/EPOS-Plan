@@ -326,9 +326,9 @@ namespace WindowsFormsApplication1
         public static double lastCosTheta;
 
         /// <summary>
-        /// Bodenalbedo beider Transpositionsmodelle. Der Wert stand als Literal 0,2 in
-        /// <see cref="CalculateHourly"/>; die Konstante benennt ihn, ohne die
-        /// Bestandszeile anzufassen (PAKET B, Stufe E2.5).
+        /// Bodenalbedo beider Transpositionsmodelle — die eine Quelle des Werts für alle
+        /// Stellen, die den bodenreflektierten Anteil rechnen. Als Konstante wird sie zur
+        /// Übersetzungszeit eingesetzt; die Rechnung ist damit bitgleich zum Literal 0,2.
         /// </summary>
         public const double ALBEDO_BODEN = 0.2;
 
@@ -452,7 +452,7 @@ namespace WindowsFormsApplication1
             double direct = dni * cosTheta;
             double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
             double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
-            double gTotal = direct + (dhi * skyView) + (ghi * 0.2 * groundView); // 0.2 = Albedo Boden
+            double gTotal = direct + (dhi * skyView) + (ghi * ALBEDO_BODEN * groundView);
 
 
             // 5. Temperaturkorrektur (Zelltemp)
@@ -596,7 +596,7 @@ namespace WindowsFormsApplication1
             double zen = (Math.PI / 2.0) - el;
             double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Plattformrundung.Cos(zen));
             double diff = dhi * (1.0 + Plattformrundung.Cos(sR)) / 2.0;
-            double refl = ghi * 0.2 * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
+            double refl = ghi * ALBEDO_BODEN * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
 
             return Math.Max(0, beam + diff + refl);
         }

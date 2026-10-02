@@ -3617,7 +3617,7 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
 WP-Typ: {0}
 
 Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.</value>
+Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
@@ -3817,7 +3817,7 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
     <value>Pufferspeicher</value>
   </data>
   <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
-    <value>Quellprofil (Monatswerte)</value>
+    <value>Quellprofil (Monats-, Tages- oder Stundenwerte)</value>
   </data>
   <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
     <value> Achtung: Sondenzahl bzw. λ liegen außerhalb des kodierten Tabellenbereichs (B2-Auszug); der Grenzwert wurde auf die Randstützstelle geklemmt. Auf der Sondenzahl-Achse ist das nicht konservativ - größere Sondenfelder brauchen kleinere spezifische Entzugsleistungen, als der Randwert zulässt.</value>
@@ -9824,7 +9824,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Energieträgerverwaltung…</value>
   </data>
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
-    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1).</value>
+    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen.</value>
   </data>
   <data name="PVW_51A" xml:space="preserve">
     <value>§ 51a-Kompensation (Laufzeitverlängerung)</value>
@@ -10455,7 +10455,7 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
 Der Speicher ist zugeordnet:
   • {3}
 
-Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet — gesperrt sind sie nicht mehr.
 Nutzung trotzdem ändern?</value>
   </data>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
@@ -10539,7 +10539,7 @@ Nutzung trotzdem ändern?</value>
   <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
     <value>Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
 
-Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt.
 
 Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen.</value>
   </data>
@@ -11685,7 +11685,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Preisstand (gültig ab):</value>
   </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
-    <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
+    <value>Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
@@ -14439,7 +14439,7 @@ Alle Eingaben überprüfen!</value>
     <value>Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
-    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen.</value>
+    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen.</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF_GRUND" xml:space="preserve">
     <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}</value>
@@ -14691,7 +14691,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärme-/Strombedarf</value>
   </data>
   <data name="SIMERG_TAB_WP_PRODUKTION" xml:space="preserve">
-    <value>Wärmproduktion</value>
+    <value>Wärmeproduktion</value>
   </data>
   <data name="SIMERG_TAB_WP_STROM" xml:space="preserve">
     <value>Stromverbrauch</value>
@@ -14920,7 +14920,7 @@ Alle Eingaben überprüfen!</value>
 Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
 
 Stromgeführt (Wirtschaftlich)
-Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
+Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im Speicher gepuffert, solange Speicherkapazität verfügbar ist; darüber hinaus wird überschüssige Wärme weggekühlt.
 
 Ohne Einspeisung (Zero-Export)
 Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
@@ -17173,7 +17173,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</value>
   </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
-    <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
+    <value>Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
     <value>Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken.</value>
@@ -17320,7 +17320,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Temperaturkoeffizient beta_OC des Moduls</value>
   </data>
   <data name="PVS_PFLEGEWEG" xml:space="preserve">
-    <value>Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“</value>
+    <value>Pflege: αSC und βOC kommen nur über den Modulimport — Administration → Daten &amp; Import → Photovoltaik → „PV Module (CEC, PAN)…“ (Neuimport aus „CEC Modules.csv“ oder einer PAN-Datei); Leerlauf- und MPP-Spannung, Kurzschlussstrom und T_NOCT lassen sich auch unter Administration → Energiesysteme → Photovoltaik → PV Module eintragen.</value>
   </data>
   <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
     <value>– nicht gepflegt</value>
@@ -19537,7 +19537,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Adaptiv (kausal): Die Schwelle startet auf dem Startwert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann — sie kann nur steigen. Damit bleibt der Speicher für die große Spitze geladen, statt an kleineren leerzulaufen (Spezifikation 5.1.1).</value>
   </data>
   <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
-    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026).</value>
+    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze.</value>
   </data>
   <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
     <value>Grundlast als Startwert übernehmen</value>
@@ -22777,7 +22777,7 @@ Möchten Sie das zulassen?</value>
     <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
+    <value>Abschaltschwelle für nachrangige Erzeuger in Prozent: Bis zu diesem Füllstand laden nachrangige Erzeuger den Speicher; darüber lädt nur noch der vorrangige Erzeuger, bis zur Abschaltschwelle. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>
@@ -33348,8 +33348,8 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
     <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
-  <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+  <data name="GEB_MSG_BEDARF_OHNE_KATALOGSATZ" xml:space="preserve">
+    <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
     <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
@@ -41127,6 +41127,36 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
     <value>Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens als Herkunft tragen; leer = keine gemeinsame.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN" xml:space="preserve">
+    <value>Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KUEHL_KATALOG" xml:space="preserve">
+    <value>Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
+    <value>Kühlkennlinie aus dem Katalog übernehmen</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_CLIPPING" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping).</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab.</value>
+  </data>
+  <data name="SIMENG_WP_ZU_VIELE_MODULE" xml:space="preserve">
+    <value>Das Projekt führt {0} Wärmepumpenanlagen; gerechnet werden höchstens {1}. Bitte Anlagen zusammenfassen oder entfernen.</value>
+  </data>
+  <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
+    <value>Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
+    <value>die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_KLIMAREGION" xml:space="preserve">
+    <value>dem Projekt ist keine Klimaregion zugeordnet — bitte in den Projektdaten eine Klimaregion wählen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
+    <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
   </data>
 </root>
 

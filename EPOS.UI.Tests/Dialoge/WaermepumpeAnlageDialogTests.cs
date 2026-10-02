@@ -1782,6 +1782,48 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Allein die Kühlkennlinie fehlt</b> (Verbesserungen 29.09.2026, B1): Die Bilder
+    /// kommen aus dem Projekt, der Dialog nennt die fehlende Kühlkennlinie und bietet
+    /// „Kühlkennlinie aus dem Katalog übernehmen" an — mit derselben Geräte-Id.
+    /// </summary>
+    [Fact]
+    public void B1_Fehlt_allein_die_Kuehlkennlinie_erscheint_ihr_Knopf()
+    {
+        int gerufenMit = 0;
+        bool geholt = false;
+
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt, false, !geholt))
+            .Add(x => x.KennlinienUebernehmen, id =>
+            {
+                gerufenMit = id;
+                geholt = true;
+                return 4;
+            }));
+
+        Assert.Contains("keine Kühlkennlinie", cut.Find(".epos-wp-kennlinienquelle .epos-herleitung").TextContent);
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", cut.Markup);
+
+        Knopf(cut, "Kühlkennlinie aus dem Katalog übernehmen").Click();
+
+        Assert.Equal(77, gerufenMit);
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("4 Stützstellen", cut.Markup);
+
+        // Ohne Schreibweg: Herleitung ja, Knopf nein.
+        var ohneDelegat = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt, false, true)));
+        Assert.Single(ohneDelegat.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kühlkennlinie aus dem Katalog übernehmen", ohneDelegat.Markup);
+    }
+
+    /// <summary>
     /// Gab es nichts zu holen — kein Katalogsatz gleichen Namens —, meldet der Dialog
     /// das als WARNUNG statt still nichts zu tun.
     /// </summary>

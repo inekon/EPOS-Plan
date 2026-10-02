@@ -678,7 +678,17 @@ namespace WindowsFormsApplication1
                         {
                             string pfad = WertLesenStill(idEnergieanlage, "WQ_CSV") as string;
                             double[] profil = ProfilAusCsv(pfad);
-                            return profil ?? aussentemp;
+                            if (profil != null) return profil;
+
+                            // Unbrauchbare CSV-Quelle (Datei fehlt oder liefert keine 8 760
+                            // Stundenwerte): gerechnet wird mit der Außentemperatur - das
+                            // sagt der Lauf BENANNT, statt still zurückzufallen. Je Anlage
+                            // einmal (Quelltemperatur läuft je Modul einmal).
+                            SimulationProtokoll.Aktuell.WarnungEinmal(
+                                "quelle-csv-unbrauchbar-" + idEnergieanlage,
+                                string.Format(MyResource.Resource.SIMENG_QUELLE_CSV_UNBRAUCHBAR,
+                                              idEnergieanlage, pfad ?? ""));
+                            return aussentemp;
                         }
 
                     case TYP_ERDREICH:

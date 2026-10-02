@@ -694,17 +694,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void EnergietraegerZuordnungLesen(int idType, string gewerk, Dictionary<string, int> ziel)
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + idType);
-            while (rs.Next())
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, ID_Carrier FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", idType));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
             {
-                object bezeichner = rs.Read("Bezeichner");
-                object carrier = rs.Read("ID_Carrier");
+                object bezeichner = r["Bezeichner"];
+                object carrier = r["ID_Carrier"];
 
                 if (bezeichner == null || bezeichner == DBNull.Value)
                 {
                     Protokoll.Warnung("Energieträger-Zuordnung: Eine " + gewerk + "-Anlage des Projekts " +
-                                      "(Tab_Energieanlagen ID " + rs.GetString("ID") + ") trägt keinen " +
+                                      "(Tab_Energieanlagen ID " + Convert.ToString(r["ID"], System.Globalization.CultureInfo.InvariantCulture) + ") trägt keinen " +
                                       "Bezeichner - Brennstoff, Kosten und Emissionen dieser Anlage können " +
                                       "im Bericht keinem Energieträger zugeordnet werden.");
                     continue;
@@ -721,7 +724,6 @@ namespace WindowsFormsApplication1
 
                 ziel.TryAdd(bezeichner.ToString(), Convert.ToInt32(carrier));
             }
-            rs.Close();
         }
 
         // ===================================================================
@@ -4445,15 +4447,17 @@ namespace WindowsFormsApplication1
         {
             // Läuft überhaupt eine Wärmepumpe im PV-Modus?
             bool pvModus = false;
-            RecordSet rs = new RecordSet();
-            rs.Open("select ID from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt +
-                    " and ID_Type=" + WizardItemClass.WP_TYP);
-            while (rs.Next())
+            DataTable wpAnlagen = DataRepository.GetDataTable(
+                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", WizardItemClass.WP_TYP));
+            if (wpAnlagen != null)
             {
-                string modus = WaermequelleClass.WertLesen((int)rs.Read("ID"), "BM_Typ") as string;
-                if (modus == WaermequelleClass.MODUS_PV) { pvModus = true; break; }
+                foreach (DataRow r in wpAnlagen.Rows)
+                {
+                    string modus = WaermequelleClass.WertLesen(Convert.ToInt32(r["ID"]), "BM_Typ") as string;
+                    if (modus == WaermequelleClass.MODUS_PV) { pvModus = true; break; }
+                }
             }
-            rs.Close();
 
             if (!pvModus || tool == null || tool.Length < 5 || tool[4] != DbWerte.ERZEUGER_PHOTOVOLTAIK) return null;
 
@@ -4700,16 +4704,16 @@ namespace WindowsFormsApplication1
 
         private double[] Simulation_Photovoltaik_Ctrl(double[] Strombedarf)
         {
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            DataTable pvAnlagen = DataRepository.GetDataTable(
+                "SELECT ID_PV FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", WizardItemClass.PV_TYP));
 
             simulation_pv.photovoltaik_list.Clear();
-            while (rs.Next())
+            if (pvAnlagen != null)
             {
-                simulation_pv.photovoltaik_list.Add((int)rs.Read("ID_PV"));
+                foreach (DataRow r in pvAnlagen.Rows)
+                    simulation_pv.photovoltaik_list.Add(Convert.ToInt32(r["ID_PV"]));
             }
-            rs.Close();
 
             simulation_pv.Strombedarf = Strombedarf;
 
