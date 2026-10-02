@@ -1,9 +1,6 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
-     EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
-     EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Energieeinheit.cs,
-     EPOS.Kern/Allgemein/Simulation/Prozesstemperatur.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs,
-     EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Fassung 3 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, SimulationWaermebedarf.cs, Prozesstemperatur.cs, SimulationWaermepumpe.cs, SimulationSPK.cs,
+     Kaskadenschleife.cs, Init.cs, SimulationKanaele.cs, EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Energieeinheit.cs,
      EPOS.Kern/Allgemein/Update/ProzesstypSaat.cs -->
 
 == Was berechnet wird ==
