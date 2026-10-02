@@ -83,6 +83,9 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
+            // Die Testdatenbank führt 1049 mit Arbeitstemperatur aus dem Speicher (Basis R32);
+            // die Vorgabe vor der Welle ist das leere Feld.
+            FeldSetzen(SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR, null);
             SimulationRunner leer = Lauf();
             SimulationSolarthermie a = leer.sim.simulation_solarthermie;
             Assert.Equal(50.0, a.Kollektor_Ergebnisse[0].ArbeitstemperaturMittelC, 9);
