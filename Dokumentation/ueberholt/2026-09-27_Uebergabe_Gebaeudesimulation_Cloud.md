@@ -120,7 +120,7 @@ Referenzprojekt, Einfrierregel „gesäte Konditionierungsdaten“, neue Basis),
 
 ## 4 Nachbarsitzungen
 
-Cloud-Sitzungen „Dialoge und Korrekturen“ ([Übergabe](../aktuell/Dialoge/2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md)),
+Cloud-Sitzungen „Dialoge und Korrekturen“ ([Übergabe](2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md)),
 „EPOS Plan Wirtschaftlichkeit“ ([Übergabe](../aktuell/Wirtschaftlichkeit_Kosten/Uebergabe_Cloud_Wirtschaftlichkeit_2026-09-27.md)),
 „Zapfprofil“ und „EPOS-Plan Berichterstellung“. Sitzungsnachrichten erreichen sie aus der Cloud nicht;
 abgestimmt wird allein über `origin` (Statusdatei, Testdatenbank-oid, Schemaschritte): vor jedem Push

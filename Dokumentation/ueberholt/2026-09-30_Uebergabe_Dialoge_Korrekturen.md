@@ -1,10 +1,12 @@
 # Übergabe der Sitzung „Dialoge und Korrekturen“ auf ein anderes Konto (30.09.2026)
 
+> **Abgelöst:** alle Punkte umgesetzt (Statuszeilen #641–#648), Stand siehe [Statusdatei](../aktuell/Status_iOS_Migration.md).
+
 Dieses Papier übergibt die Cloud-Sitzung „Dialoge und Korrekturen“ an eine neue Sitzung unter einem anderen
 Claude-Konto (Anlass: Wochenbudget des abgebenden Kontos erschöpft). Es löst das Papier
 [`2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md`](2026-09-27_Uebergabe_Dialoge_Korrekturen_Cloud.md) ab.
-Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand steht in der
-[Statusdatei](../Status_iOS_Migration.md). Bei Widerspruch gilt die Statusdatei.
+Regelquelle bleibt die [`CLAUDE.md`](../../CLAUDE.md); der dauerhafte Stand steht in der
+[Statusdatei](../aktuell/Status_iOS_Migration.md). Bei Widerspruch gilt die Statusdatei.
 
 ## 1 Stand
 
@@ -22,15 +24,15 @@ Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand s
 | Nr. | Gegenstand | Protokoll |
 |---|---|---|
 | #610 | doppelter KI-Knopf im Zapfprofil-Blatt; Regel „ein KI-Knopf je Dialog“ | — |
-| #616 | Kessel-Kennlinie E1: Daten, Import Satz 710.01, Schema 156 | [`SK4`](../../ueberholt/Protokolle/Simulation/SK4_Kessel_Kennlinie_E1_Protokoll.md) |
+| #616 | Kessel-Kennlinie E1: Daten, Import Satz 710.01, Schema 156 | [`SK4`](Protokolle/Simulation/SK4_Kessel_Kennlinie_E1_Protokoll.md) |
 | #617 | freier Zapfprofil-Paketteil als Ordner, selbst nachladen | — |
 | #624 | Stapeldiagramme „Spitzenstunde je Stufe“ | — |
-| #625 | Kessel E2 Teillast, Referenzprojekt 1050, Basis R27 | [`SK5`](../../ueberholt/Protokolle/Simulation/) |
-| #627 | Kessel E2b (Brennwert in Projekten, Schritt 158) und E3 Brennwertkennlinie, Basis R28 | [`SK6`](../../ueberholt/Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md) |
+| #625 | Kessel E2 Teillast, Referenzprojekt 1050, Basis R27 | [`SK5`](Protokolle/Simulation/) |
+| #627 | Kessel E2b (Brennwert in Projekten, Schritt 158) und E3 Brennwertkennlinie, Basis R28 | [`SK6`](Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md) |
 | #628 | Reiter „Ergebnis“ der Simulation ganz rechts (`Reiter.Reihenfolge`) | — |
-| #630 | Kessel E4 Takten, Basis R29 | [`SK7`](../../ueberholt/Protokolle/Simulation/) |
+| #630 | Kessel E4 Takten, Basis R29 | [`SK7`](Protokolle/Simulation/) |
 | #631 | WP-Konfiguration: gesperrter Kühlschalter ohne Haken | — |
-| #635 | Kessel E5: Kurve η(β) im Editor, Kesseltafel im Vorlagenfeldkatalog v11 | [`SK8`](../../ueberholt/Protokolle/Simulation/SK8_Kessel_Kennlinie_Abschluss_Protokoll.md) |
+| #635 | Kessel E5: Kurve η(β) im Editor, Kesseltafel im Vorlagenfeldkatalog v11 | [`SK8`](Protokolle/Simulation/SK8_Kessel_Kennlinie_Abschluss_Protokoll.md) |
 | #636 | Heizkessel/WP: Vorlauf/Rücklauf als Gruppe mit Vorbelegung, Nutzungsdauer nur im Kostendialog | — |
 | #637 | Kosten-Reiter: Knopf „Neu berechnen“ | — |
 | #638 | Fensterdialoge: Kopf und Schlussleiste haften (Kopf+Fuß fest), Fensterprobe in `Proben/Rasterprobe` | — |
@@ -122,7 +124,7 @@ Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand s
 5. **Kalendervorlagen „Kopieren nach …“** — noch nicht begonnen. Vorlagen sind je Größe
    (`KonditionierungsvorlageCtrl`, Größengleichheit „P11“); Einheiten: Heizen/Kühlen °C, Lüftung 1/h,
    Geräte/Personen Anteil 0 … 1. Die Konditionierung gehört fachlich der Gebäudesimulation (KP2) — mit deren
-   Übergabepapier [`2026-09-30_Uebergabe_KP2_Abschluss.md`](../../ueberholt/2026-09-30_Uebergabe_KP2_Abschluss.md)
+   Übergabepapier [`2026-09-30_Uebergabe_KP2_Abschluss.md`](2026-09-30_Uebergabe_KP2_Abschluss.md)
    abstimmen.
 6. **Absturz beim Öffnen der Dialogfenster — behoben (#640).** Ursache: die Fenstermarke aus #638 als zweite
    Wurzelkomponente an `body::after`, den der BlazorWebView mit den Entwicklerwerkzeugen selbst belegt. Jetzt
@@ -137,7 +139,7 @@ Regelquelle bleibt die [`CLAUDE.md`](../../../CLAUDE.md); der dauerhafte Stand s
 - **Einrichtung im neuen Container:** SDK aus `global.json` (`dotnet-install.sh --jsonfile global.json`),
   `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""` (kein
   130-Byte-Zeiger).
-- **Gate:** `Werkzeuge/Gate/gate_linux.sh` ([`LIESMICH`](../../../Werkzeuge/Gate/LIESMICH.md)), dazu die
+- **Gate:** `Werkzeuge/Gate/gate_linux.sh` ([`LIESMICH`](../../Werkzeuge/Gate/LIESMICH.md)), dazu die
   Windows-Schale mit `-p:EnableWindowsTargeting=true` und der `SqlDialektPruefer` bei SQL-Änderungen. Der
   volle Kern-Testlauf dauert 35–45 Minuten; lange Läufe losgelöst starten
   (`setsid nohup bash <skript> > /dev/null 2>&1 &`) und die Protokolldatei abfragen — der Container wird
