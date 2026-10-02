@@ -756,6 +756,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
         /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
         /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
+        /// Danach, mit der BODENALBEDO JE ANLAGE (Entscheidungsvorlage Modellgrenzen, PV4), steht
+        /// das Ziel auf <see cref="AlbedoSchema.SCHRITT"/>: die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1) an <c>Tab_Energieanlagen</c>, reines DDL
+        /// (<see cref="AlbedoSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile bleibt NULL
+        /// und rechnet mit der Vorgabe 0,2. Die Nummer steht allein bei
+        /// <see cref="AlbedoSchema.SCHRITT"/>.
+        /// Danach, mit dem TEMPERATURPAAR JE PROZESS (Entscheidungsvorlage Modellgrenzen, PW1 Stufe 1,
+        /// Welle M3a), steht das Ziel auf <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>: die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, paarweise, Vorlauf
+        /// nicht unter dem Rücklauf) an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c>
+        /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
+        /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
         /// Danach, mit den FELDERN DES KOLLEKTORFELDS (Welle M2 Solarthermie der Entscheidungsvorlage
         /// Modellgrenzen), steht das Ziel auf <see cref="SolarthermieFelderSchema.SCHRITT"/>: an
         /// <c>Tab_Energieanlagen</c> die nullbaren Spalten <c>Pumpenleistung_W</c>,

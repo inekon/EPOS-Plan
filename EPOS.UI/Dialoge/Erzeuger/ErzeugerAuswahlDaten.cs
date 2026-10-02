@@ -91,6 +91,11 @@ public sealed class ErzeugerZeile
     public double? WrWirkungsgrad { get; set; }
     /// <summary>Systemverluste in Prozent; NULL = 0.</summary>
     public double? Systemverluste { get; set; }
+    /// <summary>
+    /// Bodenalbedo vor der Anlage (0…1); NULL = 0,2. Bei Photovoltaik und Solarthermie belegt
+    /// (<c>Tab_Energieanlagen.Albedo</c>).
+    /// </summary>
+    public double? Albedo { get; set; }
     /// <summary>Rechenmodell ERWEITERT gewaehlt (sonst EINFACH, der Rechenweg des Bestands).</summary>
     public bool ModellErweitert { get; set; }
     /// <summary>Wechselrichter (nur ERWEITERT): AC-Nennleistung in kW; NULL = ohne Clipping.</summary>

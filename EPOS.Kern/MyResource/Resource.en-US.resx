@@ -41265,6 +41265,177 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
+  <data name="SIMKONF_AUFH_GRP" xml:space="preserve">
+    <value>Preheat optimisation</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_SCHALTER" xml:space="preserve">
+    <value>Calculate preheat optimisation</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_BEMESSUNG" xml:space="preserve">
+    <value>Design basis</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_STUNDE" xml:space="preserve">
+    <value>coldest hour</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_ABZUG" xml:space="preserve">
+    <value>coldest hour − ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ABZUG" xml:space="preserve">
+    <value>Deduction ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_RESERVE" xml:space="preserve">
+    <value>Preheat reserve ρ</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ART" xml:space="preserve">
+    <value>Preheat time mode</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_TAEGLICH" xml:space="preserve">
+    <value>daily</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_FEST" xml:space="preserve">
+    <value>fixed</value>
+  </data>
+  <data name="SIMKONF_AUFH_VORGABE" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
+    <value>Off: the heating setpoint steps as the calendar defines it. On: before every upward step of the heating setpoint, the run calculates a preheat ramp so that the heating output does not exceed the preheat power. Applies to the whole project and to buildings calculated to VDI 6007; every field is saved immediately.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AN" xml:space="preserve">
+    <value>The preheat power is the heating output limit of the building or zone, without a limit the steady-state load at the coldest hour plus the preheat reserve ρ. The design basis fixes the longest preheat time; “coldest hour − ΔT_K” designs colder than the climate year. Daily: every day calculates its preheat time from its outdoor temperature, at most the longest. Fixed: every day preheats as long as the design case. Applies to the whole project; every field is saved immediately.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
+    <value>Empty means the default of 20 %. It is a starting value that is measured on reference buildings and fixed afterwards; allowed are 1 to 100 %.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
+    <value>With system coupling “Heating circuit (AK1)”, a building without zones is not optimised; the run names it. Buildings with zones receive the ramp.</value>
+  </data>
+  <data name="SIMKONF_AUFH_MSG_FEHLER" xml:space="preserve">
+    <value>The project setting “Preheat optimisation” could not be saved.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HILFE_KNOPF" xml:space="preserve">
+    <value>Help on preheat optimisation</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHALTER_ERL" xml:space="preserve">
+    <value>On = before every upward step of the heating setpoint, the run calculates a preheat ramp (buildings calculated to VDI 6007), off = the setpoint steps as in the calendar. Project setting; saved immediately, the other values are kept when switching off.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_BEMESSUNG_ERL" xml:space="preserve">
+    <value>Design basis of the longest preheat time: STUNDE = coldest hour (default), STUNDE_ABZUG = coldest hour − ΔT_K. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ABZUG_ERL" xml:space="preserve">
+    <value>ΔT_K in K by which the design basis is colder than the coldest hour. Only with the design basis “coldest hour − ΔT_K”; empty = default 2 K, allowed 0 to 10 K; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_RESERVE_ERL" xml:space="preserve">
+    <value>Preheat reserve ρ in %: surcharge on the steady-state load if the building has no heating output limit. Empty = default 20 %, allowed 1 to 100 %. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ART_ERL" xml:space="preserve">
+    <value>Preheat time mode: TAEGLICH = every day according to its outdoor temperature (default), FEST = every day as long as the design case. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NICHT_AN" xml:space="preserve">
+    <value>Preheat optimisation is switched off; the form shows the field only once the switch is set.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NUR_ABZUG" xml:space="preserve">
+    <value>ΔT_K applies only to the design basis “coldest hour − ΔT_K”; select this design basis first.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
+    <value>The value “{0}” does not exist; known values are {1}.</value>
+  </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1: the share of global irradiance the ground reflects onto the tilted surface. Empty means 0.2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Typical albedo: grass 0.2 · concrete 0.3 · light roof 0.5–0.6 · snow 0.7–0.8. Empty = 0.2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1; empty means 0.2 (grass). Typical values: concrete 0.3, light roof 0.5 to 0.6, snow 0.7 to 0.8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Adopt best variant</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>The best variant becomes the fleet of the design and is activated for the project simulation. The simulation result changes only with the next project run.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Best variant adopted: it is the fleet of the design and activated for the project simulation. Please recalculate the project simulation.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>There is no design search whose best variant could be adopted.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>The best variant is “without storage” — there is no fleet to adopt.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Locked: the result no longer matches the current settings, or a run is in progress. Recalculate first.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
+    <value>Please enter both flow and return temperature, or leave both empty.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_BEREICH" xml:space="preserve">
+    <value>Flow and return temperature must lie between 0 and 250 °C.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_REIHENFOLGE" xml:space="preserve">
+    <value>The flow temperature must not be below the return temperature.</value>
+  </data>
+  <data name="SIMENG_PROZESS_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>temperature level from {0} profile(s) with a temperature pair, flow temperature up to {1:0.#} °C in {2} hours.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_KENNLINIE" xml:space="preserve">
+    <value>module "{0}": in {1} hours the characteristic curve at the process flow temperature applies (up to {2:0.#} °C), because the process channel requires a higher temperature than the curve of the hour.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_NICHT_ERREICHT" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – up to {2:0.#} °C required, the highest characteristic curve is at {3} °C and extrapolation is not allowed.</value>
+  </data>
+  <data name="SIMENG_PROZESS_NICHT_ERREICHT" xml:space="preserve">
+    <value>"{0}": in {1} hours the boiler does not cover the process channel – up to {2:0.#} °C required, its flow temperature is {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PROZESS_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>"{0}": in {1} hours the process return temperature (on average {2:0.#} °C) enters the return temperature of the condensing curve proportionally.</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_ZONE" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel only draws from the layers that hold the process flow temperature (up to {2:0.#} °C).</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_GESPERRT" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel draws nothing – up to {2:0.#} °C required, the storage holds {3:0.#} °C.</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_PROZESS" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the process flow temperature of {2} °C of a process heat profile. In hours with this demand the unit does not cover the process channel.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – the characteristic curve at the process flow temperature ({2} °C) only starts at the source temperature {3:0.#} °C; below that there is no operating point for this flow temperature.</value>
+  </data>
+  <data name="PW_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow temperature:</value>
+  </data>
+  <data name="PW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return temperature:</value>
+  </data>
+  <data name="PW_GRP_TEMPERATUR" xml:space="preserve">
+    <value>Temperature level of the process</value>
+  </data>
+  <data name="PW_LBL_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperature level:</value>
+  </data>
+  <data name="PW_HINW_TEMPERATUR" xml:space="preserve">
+    <value>Empty = no temperature level, the process is calculated as a pure quantity of heat. With flow and return temperature the run tracks the highest required flow temperature of the process channel per hour; a generator that does not reach it does not cover the process in that hour.</value>
+  </data>
+  <data name="PW_BTN_TEMPERATUR" xml:space="preserve">
+    <value>Apply temperatures</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_UEBERNOMMEN" xml:space="preserve">
+    <value>Temperature level applied; it is saved with OK.</value>
+  </data>
+  <data name="PW_TEMPERATUR_OHNE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature the process requires, in °C (process heat only); empty together with the return temperature = no temperature level.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
+    <value>The return temperature of the process in °C (process heat only); not above the flow temperature.</value>
+  </data>
   <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
     <value>Solar loop pump electricity:</value>
   </data>

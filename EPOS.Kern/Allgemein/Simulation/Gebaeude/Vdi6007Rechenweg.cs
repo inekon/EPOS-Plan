@@ -103,6 +103,29 @@ namespace WindowsFormsApplication1
         internal bool Probelauf { get; set; }
 
         /// <summary>
+        /// Die Aufheizoptimierung des PROJEKTS (<c>Tab_Einstellungen.Aufheizoptimierung</c>, KP-S2) —
+        /// gesetzt von der Fassade vor jedem Aufruf, wie <see cref="Kuehlbetrieb"/>; Vorgabe „aus".
+        /// <b>Schalter aus = kein Aufruf</b> (Entwurf KP3, Grundsatz 3): Ohne ihn ruft der Weg
+        /// <see cref="Aufheizoptimierung"/> nicht, und jede Zahl bleibt, wie sie war.
+        /// </summary>
+        internal Aufheizvorgabe Aufheizvorgabe { get; set; } = Aufheizvorgabe.Aus;
+
+        /// <summary>
+        /// <b>Testnaht der Grenzfallprobe</b> (N-AH8): P_auf statt der Bemessung [W]; NaN = keine. Mit
+        /// +∞ ist überall n = 1, und der Lauf bleibt bitgleich zu „aus".
+        /// </summary>
+        internal double AufheizleistungTestW { get; set; } = double.NaN;
+
+        /// <summary>
+        /// Der Aufheizplan der letzten Einzonenrechnung dieses Wegs (Welle R2); <c>null</c> ohne Schalter,
+        /// im Mehrzonenweg und bei einem Fehler. Im Mehrzonenweg (Welle R3) stehen die Pläne je Zone an
+        /// <see cref="Mehrzonenergebnis.Eingaenge"/> (<see cref="ZonenEingang.Aufheizplan"/>) und die
+        /// Gebäudewerte in <see cref="Mehrzonenergebnis.Aufheizgebaeude"/> von <see cref="LetztesMehrzonenergebnis"/>.
+        /// R4 übernimmt sie in das Gebäudeergebnis.
+        /// </summary>
+        internal Aufheizplan LetzterAufheizplan { get; private set; }
+
+        /// <summary>
         /// Zahl der Gebäuderechnungen dieses Wegs seit seinem Bau — die Probe „Ein Lauf, zwei
         /// Reihen" (Kühlkonzept 10.2, E21) zählt hier: Das Modul läuft je Gebäude und Lauf
         /// EINMAL, und Heiz- wie Kühlreihe stammen aus diesem einen Ergebnis. Eine zweite
@@ -120,6 +143,7 @@ namespace WindowsFormsApplication1
         public bool Rechnen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
+            LetzterAufheizplan = null;
             // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
             // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
             // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
@@ -151,6 +175,13 @@ namespace WindowsFormsApplication1
                     gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
                     Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
                     konditionierung);
+
+                // Stufe KP3 (Entwurf KP3, Festlegungen 1 und 2): die Aufheizrampe NACH dem Bauen -
+                // Uebergabe, Kaelte, F21 und die stuendliche Kuehlpruefung haben die Reihe ohne Rampe
+                // gesehen; ThetaSoll traegt danach die Rampe. Schalter aus = kein Aufruf (Grundsatz 3).
+                if (Aufheizvorgabe != null && Aufheizvorgabe.An)
+                    LetzterAufheizplan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(eingang), Aufheizvorgabe,
+                                                                     AufheizleistungTestW);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
 
@@ -203,10 +234,13 @@ namespace WindowsFormsApplication1
                 // (Konzept 3.4); das Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
                 bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
                 bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
+                // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
+                // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude,
                     idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone));
+                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone),
+                    Aufheizvorgabe != null && Aufheizvorgabe.An ? Aufheizvorgabe : null, AufheizleistungTestW);
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);

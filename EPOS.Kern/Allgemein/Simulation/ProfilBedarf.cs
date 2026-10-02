@@ -313,6 +313,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl der Profile, die mit Anteil 0 übersprungen wurden.</summary>
         public int Uebersprungen;
+
+        /// <summary>
+        /// Wird je GERECHNETEM Profil gerufen — mit seinem Kopfsatz und seiner Jahresreihe [kWh],
+        /// bevor sie auf den Zielvektor addiert wird (PW1 Stufe 1: das Temperaturniveau des
+        /// Prozesskanals, <see cref="Prozesstemperatur"/>). Die Reihe gehört der Routine und wird
+        /// beim nächsten Profil überschrieben; der Empfänger liest sie nur. <c>null</c> = niemand
+        /// fragt, der Zahlenweg ist derselbe.
+        /// </summary>
+        public Action<DataRow, double[]> JeProfil;
     }
 
     /// <summary>
@@ -719,6 +728,7 @@ namespace WindowsFormsApplication1
                 // Jahresverteilung gemäß Wochenprofil - mit dem Wochentag des 1. Januar (F3).
                 WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
                                                       moAnfang, moEnde, wochentagJan1);
+                info?.JeProfil?.Invoke(kopf, jahreswerte);
                 WPPlan.Core.BhkwPlan.VectorenAddieren(jahreswerte, ziel);
                 if (info != null) info.Gerechnet++;
             }

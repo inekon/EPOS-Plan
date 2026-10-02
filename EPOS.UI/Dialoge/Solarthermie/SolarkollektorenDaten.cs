@@ -28,6 +28,8 @@ public sealed class SolarkollektorenEingaben
     /// <summary>Azimut [°]; <c>null</c> = leeres Feld.</summary>
     public int? Azimut { get; set; }
 
+    /// <summary>Bodenalbedo vor dem Kollektorfeld (0…1); <c>null</c> = leeres Feld (gilt als 0,2).</summary>
+    public double? Albedo { get; set; }
     // --- Solarkreis (Welle M2 der Entscheidungsvorlage Modellgrenzen) ---------------------
 
     /// <summary>Leistung der Solarkreispumpe [W]; <c>null</c> = leer (kein Pumpenstrom).</summary>

@@ -286,6 +286,8 @@ namespace WindowsFormsApplication1
             { "Deckungsgrad Heizung", "Coverage space heating" },
             { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
             { "Deckungsgrad Prozesswärme", "Coverage process heat" },
+            // PW1 Stufe 1: höchster Vorlauf / tiefster Rücklauf der Prozesse mit Temperaturpaar.
+            { "Temperaturniveau Prozesswärme", "Temperature level process heat" },
             // Die übrigen Zeilen der Eigenschaftstafel „Energiebedarf (Simulationsergebnis Stamm)“ — englisch wie die
             // Beschriftungen ihrer Kennzahlen (KennzahlenKatalog: energie.waermebedarf, .waermelast, .strombedarf, .strommax).
             { "Wärmebedarf gesamt", "Total heat demand" },

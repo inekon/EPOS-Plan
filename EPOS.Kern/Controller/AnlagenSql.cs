@@ -91,6 +91,10 @@ namespace WindowsFormsApplication1
         /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>. MODELLspalten: Der
         /// Kollektordialog schreibt sie, <c>SimulationSolarthermie</c> liest sie. Alle nullbar,
         /// NULL = Vorgabe.
+        /// Schemaschritt <see cref="AlbedoSchema.SCHRITT"/> (Entscheidungsvorlage Modellgrenzen,
+        /// PV4) hat <c>Albedo</c> ergaenzt - die Bodenalbedo der Photovoltaik- und
+        /// Solarthermie-Anlage, nullbar, NULL = Vorgabe 0,2. Eine MODELLspalte: Die
+        /// Anlagendialoge schreiben sie, PV- und Solarthermie-Rechner lesen sie.
         /// </para>
         ///
         /// <para>
@@ -122,7 +126,8 @@ namespace WindowsFormsApplication1
                          PV_Wechselrichterweg,
                          Kuehl_ID_Carrier, Kuehl_EigenerZaehler,
                          Pumpenleistung_W, Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K,
-                         Kollektor_Spreizung_K, Arbeitstemperatur_Weg)
+                         Kollektor_Spreizung_K, Arbeitstemperatur_Weg,
+                         Albedo)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
@@ -132,7 +137,8 @@ namespace WindowsFormsApplication1
                                 ?,
                                 ?,?,
                                 ?,?,?,
-                                ?,?)";
+                                ?,?,
+                                ?)";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -275,7 +281,13 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@solverl",    DbParamTyp.Double,   Wert(item.Solarkreisverluste_Prozent)),
                         ProjektPuffer.Par("@solgraed",   DbParamTyp.Double,   Wert(item.Uebertrager_Graedigkeit_K)),
                         ProjektPuffer.Par("@solspreiz",  DbParamTyp.Double,   Wert(item.Kollektor_Spreizung_K)),
-                        ProjektPuffer.Par("@solweg",     DbParamTyp.VarWChar, item.Arbeitstemperatur_Weg)
+                        ProjektPuffer.Par("@solweg",     DbParamTyp.VarWChar, item.Arbeitstemperatur_Weg),
+                        // --- Bodenalbedo (Schemaschritt AlbedoSchema.SCHRITT; PV4) ----------
+                        // NULL = Vorgabe 0,2. Ein Wert ausserhalb 0..1 waere ein Verstoss gegen
+                        // die Pruefklausel und liesse das INSERT nach dem DELETE scheitern -
+                        // er faellt deshalb zu NULL, wie ein Verweis ins Leere.
+                        ProjektPuffer.Par("@albedo", DbParamTyp.Double,
+                            Bodenalbedo.Zulaessig(item.Albedo) ? Wert(item.Albedo) : null)
                     };
         }
 

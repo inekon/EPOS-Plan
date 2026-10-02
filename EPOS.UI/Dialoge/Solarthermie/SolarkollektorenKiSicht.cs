@@ -44,6 +44,13 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
         set { if (Stand is SolarkollektorenEingaben s) s.Azimut = value; }
     }
 
+    /// <summary>Bodenalbedo vor dem Kollektorfeld (0…1); <c>null</c> = 0,2.</summary>
+    public double? Albedo
+    {
+        get => Stand?.Albedo;
+        set { if (Stand is SolarkollektorenEingaben s) s.Albedo = value; }
+    }
+
     // --- Solarkreis (Welle M2) ---------------------------------------------------------
 
     public double? PumpenleistungW

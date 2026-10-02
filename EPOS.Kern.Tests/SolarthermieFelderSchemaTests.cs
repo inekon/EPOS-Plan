@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(KesselBereitschaftEinheitSchema.SCHRITT + 1, SolarthermieFelderSchema.SCHRITT);
+            Assert.Equal(ProzesswaermeTemperaturSchema.SCHRITT + 1, SolarthermieFelderSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= SolarthermieFelderSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + SolarthermieFelderSchema.SCHRITT + ".");
 

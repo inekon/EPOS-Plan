@@ -32,6 +32,15 @@ public sealed class TypStammDaten
     /// <summary>Die zwölf Monatswerte; <c>null</c> = das Feld ist leer.</summary>
     public double?[] Monat { get; set; } = new double?[12];
 
+    /// <summary>
+    /// Die geforderte Vorlauftemperatur [°C] — nur die Prozesswärme führt sie (PW1 Stufe 1);
+    /// <c>null</c> = ohne Temperaturniveau.
+    /// </summary>
+    public double? Vorlauf { get; set; }
+
+    /// <summary>Die Rücklauftemperatur [°C] — nur die Prozesswärme; <c>null</c> = ohne.</summary>
+    public double? Ruecklauf { get; set; }
+
     /// <summary>Die zwölf Werte als <c>double[]</c> für den Speicherweg (leer zählt als 0).</summary>
     public double[] MonatWerte()
     {

@@ -86,6 +86,15 @@ namespace WindowsFormsApplication1
         public double[] Waermebedarf_Prozess_Stunde = new double[8760];
 
         /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (PW1 Stufe 1): höchster geforderter Vorlauf
+        /// und mengengewichteter Rücklauf je Stunde, gebildet in <see cref="Prozesswaerme_berechnen"/>
+        /// aus den Profilen mit Temperaturpaar. <c>null</c>, solange kein Profil des Projekts ein Paar
+        /// trägt — dann rechnet der Lauf Zeichen für Zeichen wie ohne Temperaturniveau. Nur die
+        /// Projektrechnung bildet es; die Vorschau des Dialogs kennt keine Erzeuger.
+        /// </summary>
+        public Prozesstemperatur ProzessTemperatur;
+
+        /// <summary>
         /// HEIZKANAL je Stunde [kWh] (Gebäudewärme samt Heizungs-Lastgängen) vor der
         /// Netzverlustverteilung — die Reihe, deren Monatssummen
         /// <see cref="Waermebedarf_Gebaeude_Monat"/> sind. Nur für die Ganglinie des
@@ -263,9 +272,9 @@ namespace WindowsFormsApplication1
         /// Auskunft (zurückgesetzt in <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und
         /// fehlende Spalte heißen „aus" (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>).
         ///
-        /// <para><b>Eine Naht ohne Leser im Rechenweg:</b> Den Einbau in den VDI-Weg bringt die Welle R2
-        /// (eine Zeile neben <c>_vdi6007.Kuehlbetrieb</c>). Bis dahin liest kein Lauf die Einstellung,
-        /// und der Setter dient als Testnaht; <c>null</c> setzt „aus".</para>
+        /// <para><b>Der Leser im Rechenweg</b> ist <see cref="Vdi6007Rechenweg.Aufheizvorgabe"/>, gesetzt in
+        /// <see cref="HeizwaermeEinesGebaeudes"/> neben <c>_vdi6007.Kuehlbetrieb</c> (Welle R2). Der Setter
+        /// dient als Testnaht; <c>null</c> setzt „aus".</para>
         /// </summary>
         internal Aufheizvorgabe AufheizvorgabeProjekt
         {
@@ -977,6 +986,7 @@ namespace WindowsFormsApplication1
             // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
             // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
             _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
+            _vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt;
 
             // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
             // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
@@ -1317,9 +1327,34 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
                 quelle.Jahressummen = jahressummen;
+
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur im Lauf. Jedes
+                // gerechnete Profil mit vollständigem Paar trägt seine Stunden bei; ohne ein
+                // einziges bleibt ProzessTemperatur null und der Lauf rechnet wie zuvor.
+                ProzessTemperatur = null;
+                Prozesstemperatur niveau = modus == ProfilQuellmodus.Projektrechnung ? new Prozesstemperatur() : null;
+                ProfilLaufInfo info = niveau == null ? null : new ProfilLaufInfo
+                {
+                    JeProfil = (kopf, reihe) =>
+                    {
+                        if (Prozesstemperatur.PaarAusZeile(kopf, out double vl, out double rl))
+                            niveau.Aufnehmen(vl, rl, reihe);
+                    }
+                };
+
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
-                                     prozesswerte, Waermebedarf_Prozess_Monat);
+                                     prozesswerte, Waermebedarf_Prozess_Monat, info);
+
+                if (niveau != null && niveau.Profile > 0)
+                {
+                    niveau.Abschliessen();
+                    ProzessTemperatur = niveau;
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_PROZESSWAERME + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_TEMPERATURNIVEAU,
+                        niveau.Profile, niveau.VorlaufMax, niveau.Stunden));
+                }
 
                 // Der reine Profilanteil für die Ganglinie des Ergebnisdialogs: Der
                 // Rechenweg schlägt später den Netzverlust auf prozesswerte, die

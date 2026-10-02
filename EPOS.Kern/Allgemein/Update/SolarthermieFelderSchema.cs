@@ -47,9 +47,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter der Einheit des Kessel-Bereitschaftsverlusts.
+        /// Schritt hinter dem Temperaturpaar je Prozess.
         /// </summary>
-        public const int SCHRITT = KesselBereitschaftEinheitSchema.SCHRITT + 1;
+        public const int SCHRITT = ProzesswaermeTemperaturSchema.SCHRITT + 1;
 
         /// <summary>Die Anlagenzeilen, an denen das Kollektorfeld steht.</summary>
         public const string TAB_ANLAGEN = SchemaKatalog.TAB_ENERGIEANLAGEN;

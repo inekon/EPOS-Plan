@@ -250,6 +250,14 @@
         /// </summary>
         public double? PV_Systemverluste;
 
+        /// <summary>
+        /// Albedo - die Bodenalbedo vor der Anlage (0…1), Photovoltaik und Solarthermie
+        /// (Schemaschritt <see cref="AlbedoSchema.SCHRITT"/>). <b>NULL = 0,2</b>
+        /// (<see cref="Bodenalbedo.VORGABE"/>), also ergebnisneutral; den Rechenwert liefert
+        /// <see cref="Bodenalbedo.Wert(WErzeugerModel)"/>.
+        /// </summary>
+        public double? Albedo;
+
         // =============================================================================
         // PV-Modellwahl und Wechselrichter (Paket B des PV-Ertragsmodells, Stufe E2)
         // =============================================================================

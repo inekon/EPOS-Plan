@@ -403,32 +403,44 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Startwerte (Festlegung 7): beheizt der Sollwert der ersten Vorlaufstunde, unbeheizt das
-        /// Mittel von θ_eq über die 720 Vorlaufstunden — mit den Startwerten der Nachbarn in den
-        /// Nachbargliedern, für unbeheizte Nachbarn in wenigen Jacobi-Schritten ab dem Mittel der
-        /// Außenluft (EPOS-Regel).
+        /// Die Startwerte des Vorlaufs (Festlegung 7) samt dem Hinweis auf eine beheizte Zone mit „aus" in
+        /// der ersten Vorlaufstunde — einmal je Zone; die Werte selbst bildet <see cref="StartwerteRechnen"/>.
+        /// </summary>
+        private double[] StartwerteBilden(int start)
+        {
+            // Stufe KP1b (G1): eine beheizte Zone mit "aus" in der ersten Vorlaufstunde startet wie
+            // eine unbeheizte - der Lauf nennt es.
+            for (int z = 0; z < _zonen.Count; z++)
+                if (_zonen[z].IstBeheizt && !MitStartsollwert(_zonen, z)) Vdi6007Rechenweg.HinweisVorlaufstartAus(_zonen[z].Eingang);
+            return StartwerteRechnen(_zonen, start);
+        }
+
+        /// <summary>
+        /// <b>Die Startwerte</b> (Festlegung 7, N1.56 Nr. 7) — rein, ohne Hinweis: beheizt der Sollwert
+        /// der ersten Vorlaufstunde, unbeheizt das Mittel von θ_eq über die Vorlaufstunden ab
+        /// <paramref name="start"/> — mit den Startwerten der Nachbarn in den Nachbargliedern, für
+        /// unbeheizte Nachbarn in wenigen Jacobi-Schritten ab dem Mittel der Außenluft (EPOS-Regel).
+        /// Dieselbe Zahl nimmt die Aufheizplanung für unbeheizte und „aus"-Nachbarn (Entwurf KP3,
+        /// Festlegungen 13 und 14).
         ///
         /// <para><b>„Beheizt" heißt hier: beheizt UND endlich</b> (Stufe KP1b, G1): Steht der
         /// Heizsollwert der ersten Vorlaufstunde auf „aus" (NaN, Konzept 3.6), gilt der Zone die
         /// Regel der unbeheizten — auch in den Jacobi-Schritten der Nachbarn, in die das NaN sonst
         /// weiterliefe. Ohne „aus" steht jeder Ausdruck wörtlich wie im Bestand.</para>
         /// </summary>
-        private double[] StartwerteBilden(int start)
+        internal static double[] StartwerteRechnen(IReadOnlyList<ZonenEingang> zonen, int start)
         {
-            int n = _zonen.Count;
+            int n = zonen.Count;
             var s = new double[n];
             double aussen = 0.0;
-            for (int h = start; h < 8760; h++) aussen += _zonen[0].Eingang.ThetaOut[h];
+            for (int h = start; h < 8760; h++) aussen += zonen[0].Eingang.ThetaOut[h];
             aussen /= 8760 - start;
             bool unbeheizt = false;
             for (int z = 0; z < n; z++)
             {
-                if (MitStartsollwert(z)) s[z] = _zonen[z].Eingang.ThetaSoll[start];
+                if (MitStartsollwert(zonen, z)) s[z] = zonen[z].Eingang.ThetaSoll[start];
                 else
                 {
-                    // Stufe KP1b (G1): eine beheizte Zone mit "aus" in der ersten Vorlaufstunde
-                    // startet wie eine unbeheizte - der Lauf nennt es.
-                    if (_zonen[z].IstBeheizt) Vdi6007Rechenweg.HinweisVorlaufstartAus(_zonen[z].Eingang);
                     s[z] = aussen;
                     unbeheizt = true;
                 }
@@ -441,9 +453,9 @@ namespace WindowsFormsApplication1
                 Array.Copy(s, neu, n);
                 for (int z = 0; z < n; z++)
                 {
-                    if (MitStartsollwert(z)) continue;
+                    if (MitStartsollwert(zonen, z)) continue;
                     double summe = 0.0;
-                    for (int h = start; h < 8760; h++) summe += _zonen[z].ThetaEq(h, s);
+                    for (int h = start; h < 8760; h++) summe += zonen[z].ThetaEq(h, s);
                     neu[z] = summe / (8760 - start);
                 }
                 Array.Copy(neu, s, n);
@@ -457,10 +469,10 @@ namespace WindowsFormsApplication1
         /// unbeheizten Zone (Stufe KP1b, G1; Konzept 3.6, N1.56 Festlegung 7). Ohne Nebenwirkung:
         /// Den Hinweis gibt <see cref="StartwerteBilden"/> einmal.
         /// </summary>
-        private bool MitStartsollwert(int z)
+        internal static bool MitStartsollwert(IReadOnlyList<ZonenEingang> zonen, int z)
         {
-            if (!_zonen[z].IstBeheizt) return false;
-            double soll = _zonen[z].Eingang.ThetaSoll[8760 - Vdi6007Rechenweg.VORLAUF_H];
+            if (!zonen[z].IstBeheizt) return false;
+            double soll = zonen[z].Eingang.ThetaSoll[8760 - Vdi6007Rechenweg.VORLAUF_H];
             return !double.IsNaN(soll) && !double.IsInfinity(soll);
         }
 

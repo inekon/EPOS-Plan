@@ -342,6 +342,23 @@ public sealed class SimulationParameterDienste
     /// </summary>
     public Func<string?, bool>? AnlagenkopplungSchreiben;
 
+    /// <summary>
+    /// Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1) — schreibt
+    /// SOFORT je Feld wie der Kühlschalter und meldet, ob danach die gewünschte Einstellung steht
+    /// (<c>KonfigurationCtrl.AufheizvorgabeSetzen</c>, ohne Einstellungssatz mit Vormerksatz). Der
+    /// Parameter ist die ganze Einstellung; geschrieben wird ihre normalisierte Form (Festlegung 24).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt
+    /// „Aufheizoptimierung" nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Aufheizvorgabe, bool>? AufheizvorgabeSchreiben;
+
+    /// <summary>
+    /// Die Herleitungszeilen der Aufheizoptimierung, eine je Gebäude („Gebäude: t_auf,max … bei … ·
+    /// P_auf … · C_w …"), in der Oberflächensprache — die Bemessung ohne Jahreslauf (Entwurf KP3,
+    /// Festlegung 3; verdrahtet mit der Welle D2). <c>null</c> = kein Weg; dann steht keine Zeile da.
+    /// </summary>
+    public Func<IReadOnlyList<string>>? AufheizHerleitung;
+
     // =====================================================================
     //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)
     // =====================================================================

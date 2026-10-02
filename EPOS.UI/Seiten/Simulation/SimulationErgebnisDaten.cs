@@ -226,6 +226,15 @@ public sealed class ParameterDaten
     /// </summary>
     public string? Anlagenkopplung;
 
+    // ---- Aufheizoptimierung (Entwurf KP3, Grundsatz 5; Welle O1) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Aufheizoptimierung" (<c>Tab_Einstellungen.Aufheizoptimierung</c> und
+    /// <c>Aufheiz_*</c>) in der gespeicherten, normalisierten Form (Festlegung 24): Schalter,
+    /// Bemessung, ΔT_K, Reserve als Anteil, Art. Ohne Einstellungssatz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Aufheizvorgabe Aufheizung = WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
     /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
@@ -245,7 +254,8 @@ public sealed class ParameterDaten
         Bereitschaft = Bereitschaft,
         Heizgrenze = Heizgrenze,
         Kuehlbetrieb = Kuehlbetrieb,
-        Anlagenkopplung = Anlagenkopplung
+        Anlagenkopplung = Anlagenkopplung,
+        Aufheizung = Aufheizung
     };
 }
 

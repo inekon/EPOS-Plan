@@ -733,6 +733,7 @@ namespace WindowsFormsApplication1
                 Heizgrenze = m.Kessel_Heizgrenze,
                 Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
+                Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
         }
@@ -770,7 +771,8 @@ namespace WindowsFormsApplication1
                         Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
                         Heizgrenze = m.Kessel_Heizgrenze,
                         Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
-                        Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt)
+                        Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
+                        Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt)
                     };
                 },
                 // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
@@ -780,6 +782,11 @@ namespace WindowsFormsApplication1
                 // ANLAGENKOPPLUNG (Konzept Anlagenkopplung 9.4): der eine Schreibweg der
                 // Projektstufe - nach der Regel des Kuehlschalters (Vormerksatz ohne Satz).
                 AnlagenkopplungSchreiben = stufe => KonfigurationCtrl.AnlagenkopplungSetzen(m_ID_Projekt, stufe),
+                // AUFHEIZOPTIMIERUNG (Entwurf KP3, Grundsatz 5; Welle O1): der eine Schreibweg der
+                // Projekteinstellung - die ganze Einstellung in einem UPDATE, nach der Regel des
+                // Kuehlschalters (Vormerksatz ohne Satz). Die Herleitungszeilen je Gebaeude
+                // (AufheizHerleitung) kommen mit der Welle D2; bis dahin steht keine Zeile da.
+                AufheizvorgabeSchreiben = vorgabe => KonfigurationCtrl.AufheizvorgabeSetzen(m_ID_Projekt, vorgabe),
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;

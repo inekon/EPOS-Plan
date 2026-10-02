@@ -633,6 +633,10 @@ namespace WindowsFormsApplication1
             item.PV_WrWirkungsgrad = Kommazahl(dt, row, "PV_WrWirkungsgrad");
             item.PV_Systemverluste = Kommazahl(dt, row, "PV_Systemverluste");
 
+            // Bodenalbedo (Schemaschritt AlbedoSchema.SCHRITT, PV und Solarthermie): NULL bleibt
+            // null und heisst Vorgabe 0,2; eine fehlende Spalte gilt wie NULL.
+            item.Albedo = Kommazahl(dt, row, AlbedoSchema.SPALTE);
+
             // --- PV-Modellwahl und Wechselrichter (Paket B, Stufe E2) ----------------
             // Ebenfalls ausdruecklich mit null. Bei PV_Modell traegt NULL die Aussage
             // "vereinfachtes Modell" - eine Datenbank vor Migrationsschritt 63 laeuft

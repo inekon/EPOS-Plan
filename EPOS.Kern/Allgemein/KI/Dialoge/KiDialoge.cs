@@ -5162,7 +5162,16 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TstammMonatswerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.TstammMonatswerteErl,
                                      einheit: KiDialogTexte.EINHEIT_MWH,
-                                     reihe: KiZahlenreihen.Monate())
+                                     reihe: KiZahlenreihen.Monate()),
+                    // PW1 Stufe 1: das Temperaturpaar - nur die Prozesswärme zeigt es; leer = ohne.
+                    new KiDialogFeld("vorlauf", "TypStammDaten.Vorlauf",
+                                     KiDialogTexte.TstammVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "TypStammDaten.Ruecklauf",
+                                     KiDialogTexte.TstammRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -6681,7 +6690,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SkGraedigkeitErl, leerErlaubt: true),
                     new KiDialogFeld("spreizung", "SolarkollektorenKiSicht.SpreizungK",
                                      KiDialogTexte.SkSpreizungName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.SkSpreizungErl, leerErlaubt: true)
+                                     KiDialogTexte.SkSpreizungErl, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "SolarkollektorenKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -7275,6 +7288,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvSystemverlusteErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "PhotovoltaikKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true),
 
                     // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
                     new KiDialogFeld("mit_wechselrichter", "PhotovoltaikKiSicht.MitWechselrichter",
@@ -8156,6 +8173,31 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("anlagenkopplung", "SimulationKiSicht.Anlagenkopplung",
                                      KiDialogTexte.SimAnlagenkopplungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimAnlagenkopplungErl),
+
+                    // ---- Die Aufheizoptimierung (Entwurf KP3, Grundsatz 5; Welle O1) ----------
+                    //
+                    // Neben der Anlagenkopplung und wie sie SOFORT geschrieben - jede Setzung
+                    // schreibt die ganze Einstellung ueber denselben Delegaten wie der Abschnitt
+                    // (AufheizvorgabeSchreiben), normalisiert nach Festlegung 24. Bemessung, Reserve
+                    // und Art nur bei Schalter an, ΔT_K nur bei „kaelteste Stunde − ΔT_K" - sonst
+                    // lehnt die Sicht benannt ab, wie die Maske sie nicht zeigt.
+                    new KiDialogFeld("aufheizoptimierung", "SimulationKiSicht.Aufheizoptimierung",
+                                     KiDialogTexte.SimAufheizSchalterName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAufheizSchalterErl),
+                    new KiDialogFeld("aufheiz_bemessung", "SimulationKiSicht.AufheizBemessung",
+                                     KiDialogTexte.SimAufheizBemessungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizBemessungErl, leerErlaubt: true),
+                    new KiDialogFeld("aufheiz_abzug", "SimulationKiSicht.AufheizAbzugK",
+                                     KiDialogTexte.SimAufheizAbzugName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizAbzugErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0, max: 10),
+                    new KiDialogFeld("aufheiz_reserve", "SimulationKiSicht.AufheizReserveProzent",
+                                     KiDialogTexte.SimAufheizReserveName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizReserveErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 1, max: 100),
+                    new KiDialogFeld("aufheiz_art", "SimulationKiSicht.AufheizArt",
+                                     KiDialogTexte.SimAufheizArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizArtErl, leerErlaubt: true),
 
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //

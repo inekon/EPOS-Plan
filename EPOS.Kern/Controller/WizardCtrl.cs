@@ -3238,6 +3238,17 @@ namespace WindowsFormsApplication1
                 }
                 item.ID_Prozesswaerme = projPwId;
 
+                // PW1 Stufe 1: Ein im Dialog geändertes Temperaturpaar geht in DIESE Projektkopie; ohne
+                // Änderung bleibt die Kopie, wie sie ist (eine neue trägt die Vorbelegung des Katalogs).
+                if (item.TemperaturGeaendert &&
+                    !ProzesswaermeStammCtrl.ProjektTemperaturSetzen(projPwId, item.Vorlauf, item.Ruecklauf))
+                {
+                    DataRepository.FehlerMelden(
+                        "Das Temperaturpaar der Prozesswaerme \"" + (item.szProzessname ?? "") + "\" konnte nicht " +
+                        "gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;

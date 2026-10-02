@@ -318,7 +318,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: Stufe 1 ja** (M; ohne Temperatur bleibt die Wärmepumpe in der Industrie nicht
   bewertbar, und genau das fragen Kunden); **Stufe 2 später** (M), wenn erste Messreihen mit
   Temperatur vorliegen. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (Stufe 1 umgesetzt in Welle M3a, Stufe 2 später)** — Spalten `Vorlauf`/`Ruecklauf` an `Tab_Prozesswaerme(_STAMM)` (`ProzesswaermeTemperaturSchema`), Niveau je Stunde in `Prozesstemperatur`; Wirkung (a) Wärmepumpe, (b) Ausschluss, (c) Brennwertkessel, (d) Puffer gebaut. Regeln: [Konzept Simulationsablauf, Abschnitt 15](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PW2 Starrer Wochengang
 
@@ -388,7 +388,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: ja**, Aufwand S (Saat-Schritt wie bei Gebäuden und Kalendervorlagen). Spart dem
   Anwender das Tippen von 168 Werten und macht PW1 sofort nutzbar. Keine Herstellerdaten. Basis
   unberührt (Katalogsätze, keine Zuordnung in Referenzprojekten).
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3a)** — acht Sätze in `Tab_Prozesswaerme_STAMM` und `Tab_Prozesstyp_STAMM` (`ProzesstypSaat`, `ReadOnly = 1`), gesät im Schemaschritt des Temperaturpaars; „Raumlufttechnik Halle“ mit Sommer Mai bis September, „Durchlaufbetrieb“ mit Revisionsmonat August.
 
 ### PW6 Abbruch statt Nullprofil bei fehlendem Typbezug
 
@@ -954,16 +954,16 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
 Beim Nachlesen fiel auf (keine Modellfrage, sondern Pflege oder Fehler):
 
-1. **Hilfeseite Heizkessel veraltet:** `Berechnung/Heizkessel.wiki` Z. 311–317 nennt „kein
+1. ☑ umgesetzt — **Hilfeseite Heizkessel veraltet:** `Berechnung/Heizkessel.wiki` Z. 311–317 nennt „kein
    Teillastwirkungsgrad“, „keine Taktung“, „keine Brennwertrechnung als eigener Weg“ — gebaut mit
    #625–#635. Seite nachziehen (Wiki-Sammel-Upload).
-2. **Hilfeseite Strombedarf veraltet:** „Kein Projektfilter im Stromzweig“ (Z. 217) nach
+2. ☑ umgesetzt — **Hilfeseite Strombedarf veraltet:** „Kein Projektfilter im Stromzweig“ (Z. 217) nach
    #641/#643 nicht mehr zutreffend; „Die Peak-Shaving-Maske schreibt nicht“ (Z. 208, 219)
    übersieht den Knopf „in die Variante übernehmen“ (SB3).
 3. **PW6 ist ein Fehler:** Der Abbruch der Profilschleife hinterlässt eine reihenfolgeabhängige
    Teilsumme, die der Wärmezweig still weiterrechnet (`ProfilBedarf.cs:678-686`,
    `SimulationWaermebedarf.cs:1293`, `:1378`); die Hilfeseite beschreibt einen echten Abbruch.
-4. **Albedo als Literal:** `SolarPVGISCalculator.cs:455` und `:599` rechnen mit `0.2` statt
+4. ☑ umgesetzt — **Albedo als Literal:** `SolarPVGISCalculator.cs:455` und `:599` rechnen mit `0.2` statt
    `ALBEDO_BODEN` (`:333`) — bei PV4 mitziehen.
 5. **Bezugsfläche der Kollektorkennwerte — geprüft (Welle M2):** Die Kollektorsätze der
    Testdatenbank führen keine Modulfläche (nur ein Prüfsatz); ihre Kennwerte beziehen sich auf die
@@ -972,7 +972,7 @@ Beim Nachlesen fiel auf (keine Modellfrage, sondern Pflege oder Fehler):
    Apertur behandelt); keine Quelle bezieht auf die Bruttofläche. Apertur/Brutto bei
    Flachkollektoren 0,86–0,94, bei Röhren bis 0,38. Der Kommentar in `SimulationSolarthermie`
    ist berichtigt.
-6. **Zusammengesetzte SQL-Texte** im PV-Zweig (`SimulationPV.cs:166`,
+6. ☑ umgesetzt — **Zusammengesetzte SQL-Texte** im PV-Zweig (`SimulationPV.cs:166`,
    `SimulationControl.cs:4705`) entgegen der Regel „`?`-Parameter“ der `CLAUDE.md` — bei der
    nächsten Arbeit an der Stelle umstellen.
 7. **BHKW-Grenzleistungen der Testdatenbank** von 468 bis 1 027 % (Folgeauftrag 6, Punkt 4) —
@@ -990,7 +990,7 @@ Umstellen eines Referenzprojekts.
 | Punkt | Empfehlung | Aufwand | Basis betroffen | Entscheidung |
 |---|---|---|---|---|
 | ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | umgesetzt (M2) | M | ja, 1049 (R32) | ☑ |
-| PW1 Temperaturniveau je Prozess (Stufe 1) | ja | M | nein (Option) | ☐ |
+| PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | ja | M | nein (Option) | ☐ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
 | KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
@@ -1002,14 +1002,14 @@ Umstellen eines Referenzprojekts.
 | ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
 | PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
-| PW5 Katalog typischer Betriebsweisen | ja | S | nein | ☐ |
+| PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
 | SP1 Standby des Speichersystems | ja | S–M | nein (Option) | ☐ |
 | EQ1 Erdreichprüfung speichern | ja | S–M | nein | ☐ |
 | ST1 Pumpenstrom Solarkreis | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST6 Bezugsfläche der Kennwerte | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST3 Stufe 1 Solarkreisverluste als Feld | umgesetzt (M2) | S | nein (Vorgabe 8 %) | ☑ |
-| PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☐ |
-| SP2 Beste Rastervariante übernehmen | ja | S | nein | ☐ |
+| PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☑ umgesetzt |
+| SP2 Beste Rastervariante übernehmen | ja | S | nein | ☑ umgesetzt |
 | BW3 Brauchwasser-Vorlauf je Erzeuger | später | M | nein (Option) | ☐ |
 | BW5 Thermische Desinfektion | später | M | nein (Option) | ☐ |
 | PW3 Wochenprofil je Monat oder Saison | später | M | nein (Option) | ☐ |
