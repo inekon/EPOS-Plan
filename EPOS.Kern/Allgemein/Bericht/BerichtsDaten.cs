@@ -237,6 +237,21 @@ namespace WindowsFormsApplication1
         /// seine Hinweisliste.</para>
         /// </summary>
         public string LeistungspreisNichtAngesetzt;
+
+        /// <summary>
+        /// Der Satz des nicht angesetzten Leistungspreises (Register EZ‑17) als Text in der Kultur
+        /// des Laufs — Staffel, Saisonreihe oder Satz je Monat bzw. Jahr; gesetzt zusammen mit
+        /// <see cref="LeistungspreisNichtAngesetzt"/>, <c>null</c> = kein solcher Fall. Die Fußzeile
+        /// unter der Kostentafel nennt ihn (<see cref="StromGruppenzahl.LeistungspreisSatz"/>).
+        /// </summary>
+        public string LeistungspreisNichtAngesetztSatz;
+
+        /// <summary>
+        /// Der Stromträger, dessen Leistungspreis die Gruppenregel nicht ansetzt (Register EZ‑17,
+        /// Anzeigename); gesetzt zusammen mit <see cref="LeistungspreisNichtAngesetzt"/>,
+        /// <c>null</c> = kein solcher Fall.
+        /// </summary>
+        public string LeistungspreisNichtAngesetztTraeger;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -462,6 +477,11 @@ namespace WindowsFormsApplication1
         /// <para><c>null</c> für jede andere Gruppe, ohne Gruppenzahl
         /// (<see cref="Gruppenzahl"/> leer) und wenn der Gruppenzahl gerade die Zahl dieser Tafel
         /// fehlt — dann steht keine Fußzeile.</para>
+        ///
+        /// <para>Unter der Kostentafel folgt, durch ein Leerzeichen getrennt, der Satz zum
+        /// Leistungspreis, den die Gruppenzahl nicht enthält (Register EZ‑17;
+        /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>) — nur, wenn der Stromträger einen führt
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Die Emissionsfußzeile nennt ihn nicht.</para>
         /// </summary>
         public string StromGruppenregelFussnote(System.Globalization.CultureInfo kultur, string gruppe)
         {
@@ -477,18 +497,45 @@ namespace WindowsFormsApplication1
             try { vorlage = MyResource.Resource.ResourceManager.GetString(schluessel, k); }
             catch (Exception) { vorlage = null; }
             if (string.IsNullOrEmpty(vorlage)) vorlage = kosten ? FUSSNOTE_KOSTEN : FUSSNOTE_EMISSION;
+            string satz;
             try
             {
-                return string.Format(k, vorlage, Anzeige,
+                satz = string.Format(k, vorlage, Anzeige,
                                      WirtschaftlichkeitCtrl.Zitiert(Gruppenzahl.Verwender, vorlage),
                                      Gruppenzahl.NetzbezugMWh.ToString("N1", k),
                                      zahl.Value.ToString(kosten ? "N0" : "N1", k));
+            }
+            catch (FormatException) { satz = vorlage; }
+
+            // Register EZ‑17: Unter der Kostentafel nennt die Fußzeile den Leistungspreis, den die
+            // Gruppenzahl nicht enthält — nur dort, und nur, wenn der Stromträger einen führt.
+            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
+                satz += " " + LeistungspreisFussnote(k);
+            return satz;
+        }
+
+        /// <summary>
+        /// Der Satz zum nicht angesetzten Leistungspreis (Register EZ‑17) für die Fußzeile unter der
+        /// Kostentafel: Satz und Stromträger aus der <see cref="Gruppenzahl"/>, Wortlaut aus der
+        /// Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>.
+        /// </summary>
+        private string LeistungspreisFussnote(System.Globalization.CultureInfo k)
+        {
+            string vorlage = null;
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS, k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS;
+            try
+            {
+                return string.Format(k, vorlage, Gruppenzahl.LeistungspreisSatz,
+                                     Gruppenzahl.LeistungspreisTraeger ?? "?");
             }
             catch (FormatException) { return vorlage; }
         }
 
         internal const string SCHLUESSEL_FUSSNOTE_KOSTEN = "BV_FUSSNOTE_GRUPPENREGEL_KOSTEN";
         internal const string SCHLUESSEL_FUSSNOTE_EMISSION = "BV_FUSSNOTE_GRUPPENREGEL_EMISSION";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS";
 
         /// <summary>Rückfall der Fußzeile unter der Kostentafel, falls die Ressource fehlt.</summary>
         internal const string FUSSNOTE_KOSTEN =
@@ -501,6 +548,11 @@ namespace WindowsFormsApplication1
             "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von " +
             "{2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. " +
             "Die Tafel weist die Einzelbetrachtung des Standes aus.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis (Register EZ‑17), den die
+        /// Fußzeile unter der Kostentafel anhängt, falls die Ressource fehlt; {0} = Satz, {1} = Träger.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS =
+            "Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.";
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
@@ -638,6 +690,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Stände der Gruppe, die Strom verwenden (Anzeigenamen) — sie lösen die Regel aus.</summary>
         public List<string> Verwender;
+
+        /// <summary>Der Leistungspreis des Stromträgers als Text, den die Gruppenzahl nicht enthält
+        /// (Register EZ‑17); <c>null</c>, wenn der Träger keinen führt. Die Fußzeile unter der
+        /// Kostentafel nennt ihn.</summary>
+        public string LeistungspreisSatz;
+
+        /// <summary>Der Stromträger zu <see cref="LeistungspreisSatz"/> (Anzeigename); <c>null</c>
+        /// ohne Leistungspreis.</summary>
+        public string LeistungspreisTraeger;
     }
 
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>
