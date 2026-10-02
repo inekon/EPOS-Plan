@@ -422,6 +422,55 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Nachweis des § 9b-Abzugs</b> (Register EZ‑22): eine Hinweiszeile je Regel, die im
+        /// ersten Jahr wirkt — der Deckel (gepflegter Stromsteueranteil unter dem Satz,
+        /// <c>WIRT_GESTEHUNG_9B_DECKEL</c>), die Obergrenze ohne gepflegten Anteil (Regelsatz der
+        /// Stromsteuer, <c>WIRT_GESTEHUNG_9B_REGELSATZ</c> — benannt, auch wenn sie nicht greift)
+        /// und der Sockelbetrag, den der Netzbezug nicht ganz trägt (<c>WIRT_GESTEHUNG_9B_SOCKEL</c>:
+        /// Abzug statt Eigenstrom × wirksamem Satz). Die Zahlen rechnet dieselbe Funktion wie die
+        /// Reihe (<see cref="SteuerGutschriftRechner.Entgangene9bEur"/>). Mehrere Zeilen mit
+        /// „ | " verkettet wie die übrigen Laufhinweise; <c>null</c>, wenn keine Regel zu nennen ist
+        /// oder kein Abzug greifen kann (ohne Eigenstrom, ohne Satz &gt; 0).
+        /// </summary>
+        /// <param name="eigenstromMWh">Der BHKW-Eigenstrom der Gutschrift [MWh/a].</param>
+        /// <param name="netzbezugMWh">Der Netzbezug des Projekts [MWh/a] (§ 3.8).</param>
+        /// <param name="satzEurJeMWh">Der § 9b-Satz des ersten Jahres [€/MWh].</param>
+        /// <param name="sockelEur">Der Sockelbetrag des ersten Jahres [€/a]; <c>null</c> = keiner.</param>
+        /// <param name="anteilEurJeMWh">Der gepflegte Stromsteueranteil des Netzträgers [€/MWh];
+        /// <c>null</c> = nicht gepflegt.</param>
+        /// <param name="regelsatzEurJeMWh">Der Regelsatz der Stromsteuer des ersten Jahres [€/MWh] —
+        /// die Obergrenze ohne gepflegten Anteil; <c>null</c> = nicht gepflegt.</param>
+        internal static string Nachweis9b(double eigenstromMWh, double netzbezugMWh, double? satzEurJeMWh,
+                                          double? sockelEur, double? anteilEurJeMWh, double? regelsatzEurJeMWh,
+                                          System.Globalization.CultureInfo kultur)
+        {
+            if (!(eigenstromMWh > 0) || !satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return null;
+            var teile = new List<string>();
+            double satz = satzEurJeMWh.Value;
+            double? deckel = anteilEurJeMWh ?? regelsatzEurJeMWh;
+            double wirksam = SteuerGutschriftRechner.Satz9bWirksam(satz, deckel).Value;
+
+            if (anteilEurJeMWh.HasValue)
+            {
+                if (wirksam < satz)
+                    teile.Add(string.Format(kultur, MyResource.Resource.WIRT_GESTEHUNG_9B_DECKEL,
+                        wirksam.ToString("N2", kultur), satz.ToString("N2", kultur)));
+            }
+            else if (regelsatzEurJeMWh.HasValue)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_GESTEHUNG_9B_REGELSATZ,
+                    regelsatzEurJeMWh.Value.ToString("N2", kultur)));
+
+            double abzug = SteuerGutschriftRechner.Entgangene9bEur(netzbezugMWh, eigenstromMWh, satz, sockelEur, deckel);
+            double ohneSockel = wirksam > 0 ? eigenstromMWh * wirksam : 0.0;
+            if (abzug < ohneSockel)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_GESTEHUNG_9B_SOCKEL,
+                    abzug.ToString("N2", kultur), ohneSockel.ToString("N2", kultur),
+                    Math.Max(0.0, netzbezugMWh).ToString("N1", kultur), (sockelEur ?? 0.0).ToString("N2", kultur)));
+
+            return teile.Count == 0 ? null : string.Join(" | ", teile);
+        }
+
+        /// <summary>
         /// <b>Die Kennzahl [€/kWh]</b>: <c>(−Kapitalwert × a(i, T)) ÷ (Wärmebedarf × 1.000)</c>;
         /// <c>null</c> ohne Wärmebedarf.
         /// </summary>

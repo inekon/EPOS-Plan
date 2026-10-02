@@ -6909,8 +6909,13 @@ namespace WindowsFormsApplication1
             {
                 double stromgutschrift, eigenstromOhnePreisMWh;
                 KapitalwertRechner.ErloesReihe entgangen9b;
+                string nachweis9b;
                 ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, out stromgutschrift,
-                                                          out eigenstromOhnePreisMWh, out entgangen9b);
+                                                          out eigenstromOhnePreisMWh, out entgangen9b,
+                                                          out nachweis9b);
+                // Der Nachweis des § 9b-Abzugs (EZ‑22): Sockel und Deckel, wenn sie wirken, und die
+                // Obergrenze ohne gepflegten Stromsteueranteil — Text am Laufhinweis.
+                if (!string.IsNullOrEmpty(nachweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweis9b);
                 // Kein stilles Weglassen: Fehlt dem im Projekt verbrauchten BHKW-Strom der
                 // Arbeitspreis, rechnet die Kennzahl ohne Stromgutschrift — und sagt es.
                 if (eigenstromOhnePreisMWh > 0)
@@ -6956,11 +6961,13 @@ namespace WindowsFormsApplication1
                                                  ProjektEingabe gesamt, string szenario,
                                                  out double stromgutschrift,
                                                  out double eigenstromOhnePreisMWh,
-                                                 out KapitalwertRechner.ErloesReihe entgangen9b)
+                                                 out KapitalwertRechner.ErloesReihe entgangen9b,
+                                                 out string nachweis9b)
         {
             stromgutschrift = 0.0;
             eigenstromOhnePreisMWh = 0.0;
             entgangen9b = null;
+            nachweis9b = null;
             SzenarioSatz satz = p.SatzFuer(szenario);
             ErgebnisBHKWModel bhkw = v.Ergebnis != null ? v.Ergebnis.BHKW : null;
             bool bhkwImProjekt = bhkw != null && bhkw.Module != null && bhkw.Module.Count > 0;
@@ -7016,14 +7023,23 @@ namespace WindowsFormsApplication1
             // nur gelesen, wenn der Abzug greifen kann.
             if (_gesetze == null) _gesetze = new GesetzKatalog();
             double? anteil9b = null;
-            if (gesamt.SteuerEingabe != null && SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
-                eigenstrom > 0 && stromgutschrift > 0)
-                anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, gesamt.EnergiekostenJeTraeger);
+            bool kann9b = gesamt.SteuerEingabe != null &&
+                          SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
+                          eigenstrom > 0 && stromgutschrift > 0;
+            if (kann9b) anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, gesamt.EnergiekostenJeTraeger);
             entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
                 p.Betrachtungszeitraum, Foerderbeginn(p),
                 jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
                 jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr),
                 jahr => anteil9b ?? _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr));
+            if (kann9b)
+            {
+                int jahr1 = Foerderbeginn(p);
+                nachweis9b = Waermegestehung.Nachweis9b(eigenstrom, gesamt.SteuerEingabe.NetzbezugMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1),
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1), anteil9b,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1), BerichtTexte.Kultur);
+            }
             if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;

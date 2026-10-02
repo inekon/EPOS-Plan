@@ -404,6 +404,45 @@ namespace EPOS.Kern.Tests
             Assert.Null(SteuerGutschriftRechner.Satz9bWirksam(null, 10.0));
         }
 
+        // ------------------------------------------------------------ § 9b: Nachweis (EZ‑22, Punkt 3)
+
+        /// <summary>
+        /// Der Nachweis nennt Sockel und Deckel, wenn sie im ersten Jahr wirken, und die Obergrenze
+        /// ohne gepflegten Anteil — sonst nichts. Deckel: 10,00 statt 20,00 €/MWh; Sockel:
+        /// (5 + 50) × 20 − 250 = 850 statt 50 × 20 = 1.000 €/a; beide zusammen: 300 statt
+        /// 50 × 10 = 500 €/a.
+        /// </summary>
+        [Fact]
+        public void Der_Nachweis_nennt_Sockel_und_Deckel_wenn_sie_wirken()
+        {
+            CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
+
+            // Weder Sockel noch Deckel wirken (Anteil 20,50 ≥ 20,00; Netzbezug trägt den Sockel).
+            Assert.Null(Waermegestehung.Nachweis9b(50.0, 400.0, 20.0, 250.0, 20.5, 20.5, de));
+            // Kein Abzug möglich.
+            Assert.Null(Waermegestehung.Nachweis9b(0.0, 5.0, 20.0, 250.0, 10.0, 20.5, de));
+            Assert.Null(Waermegestehung.Nachweis9b(50.0, 5.0, null, 250.0, 10.0, 20.5, de));
+
+            Assert.Equal("Wärmegestehungskosten: Der § 9b-Abzug rechnet mit 10,00 €/MWh statt 20,00 €/MWh — " +
+                         "gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers.",
+                         Waermegestehung.Nachweis9b(50.0, 400.0, 20.0, 250.0, 10.0, 20.5, de));
+
+            Assert.Equal("Wärmegestehungskosten: Der § 9b-Abzug beträgt 850,00 €/a statt 1.000,00 €/a — der " +
+                         "Netzbezug von 5,0 MWh/a trägt den Sockelbetrag von 250,00 €/a nicht ganz.",
+                         Waermegestehung.Nachweis9b(50.0, 5.0, 20.0, 250.0, 20.5, 20.5, de));
+
+            Assert.Equal(string.Format(de, R.WIRT_GESTEHUNG_9B_DECKEL, "10,00", "20,00") + " | " +
+                         string.Format(de, R.WIRT_GESTEHUNG_9B_SOCKEL, "300,00", "500,00", "5,0", "250,00"),
+                         Waermegestehung.Nachweis9b(50.0, 5.0, 20.0, 250.0, 10.0, 20.5, de));
+
+            // Ohne gepflegten Anteil: die Obergrenze benannt, auch wenn sie nicht greift.
+            Assert.Equal("Wärmegestehungskosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; " +
+                         "der § 9b-Abzug rechnet mit höchstens dem Regelsatz der Stromsteuer von 20,50 €/MWh.",
+                         Waermegestehung.Nachweis9b(50.0, 400.0, 20.0, 250.0, null, 20.5, de));
+            // Ohne Anteil und ohne Regelsatz im Katalog: nichts zu nennen.
+            Assert.Null(Waermegestehung.Nachweis9b(50.0, 400.0, 20.0, 250.0, null, null, de));
+        }
+
         /// <summary>
         /// Der Rechenkern summiert eine negative Erlösreihe richtig: Kapitalwert und Barwert der
         /// Einnahmen sinken um ihren Barwert, die Gliederung bleibt stimmig. Die Zerlegung des
