@@ -1,6 +1,6 @@
 # P641 — Laufvermerk je Ergebnis, Bezugsrolle bestätigt, Kohärenz am Rückfallträger als benannte Grenze (Protokoll, 02.10.2026)
 
-Statuszeile folgt (#642 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile #642 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P641_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P641_Auftrag_2026-10-02.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md`](P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md)
 (#633). Zweig `p641` ab `d14b5bbf3` (Auftrag auf `4cfbf0171`, origin/ios_migration_september mit #640).
@@ -82,7 +82,7 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 
 ## Papiere
 
-- Konzept: Kopf (Stand 02.10.2026, Codestand `9b022053c`, Zielversion 158, P641 ohne Schritt, Spalte `Lauf_Staende`
+- Konzept: Kopf (Stand 02.10.2026, Codestand `f9aa90012`, Zielversion 158, P641 ohne Schritt, Spalte `Lauf_Staende`
   nachgezogen, Basis R30), § 2.15 (Laufvermerk, Altbestand ohne Vermerk), § 3.5 (Bezugsrolle bestätigt), § 3.9
   (Grenze am Rückfallträger), § 6.1 (Zeile P641; P630 auf #633), § 6.2 (Wachen), § 6.5 (vier Ergebnisspalten).
 - Register: EZ‑19 mit Wortlaut und den drei Punkten, Vermerk „bestätigt 02.10.2026" an EZ‑18 (dort #633 statt
@@ -103,8 +103,15 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 
 ## Gate
 
-offen (Orchestrierung).
+Gate #642 auf `f9aa90012` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün
+und gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 17 814 grün, 2 übersprungen, 0 rot (Kern 9 645,
+UI 7 207, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+`2026-09-30_R30_Stromverbraucher` (5 180 240 Werte innerhalb der Toleranz, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp`
+gegen den ungestörten Lauf PASS. Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
 
 ## Commit
 
-offen (Orchestrierung).
+Sechs Commits auf `p641` (`0e5fa2c3d` Kern, `f9b94c9f1` Hülle, `5a4fab7be` Tests, `9b022053c` Testdatenbank, `84b315ede` Papiere,
+`dfaa071f3` Protokoll) hinter dem Auftrag `d14b5bbf3`; Merge `f9aa90012` mit origin (#641 SV1, Basis R30; eigene Fundstellen von
+#641 auf #642 und von R29 auf R30 nachgezogen). Statuszeile #642 im Folgecommit; Push nach Zuruf, Nummer beim Push gegen origin
+geprüft; CI-Vermerk in Nach #642 (c).
