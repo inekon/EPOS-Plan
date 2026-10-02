@@ -102,7 +102,14 @@ Kennzahlen
   Dynamische Amortisation = erstes t mit kumuliertem Barwert ≥ 0, linear interpoliert, OHNE Restwert
   Interner Zinsfuß = Nullstelle KW(r), Bisektion −99 %…1000 %, 200 Schritte — bei > 1 Vorzeichen-
   wechsel mehrdeutig → Warnung (V-G8)
-  Wärmegestehungskosten = (−KW × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh]
+  Wärmegestehungskosten = (−KW_Wärme × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh];
+  KW_Wärme = Kapitalwert allein der Wärmeerzeugung: Investition nach Zuschuss, Betrieb, Ersatz und
+  Restwert der Wärmeanlagen und allgemeinen Wärmepositionen, Brennstoff samt CO₂-Abgabe, Strom von
+  Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis (Grund- und Leistungspreis eines geteilten
+  Trägers anteilig nach Jahresmenge), Erlöse der Wärmeerzeuger, BHKW-Eigenstrom als Gutschrift zum
+  Arbeitspreis (bei produzierendem Gewerbe abzüglich der entgangenen Entlastung nach § 9b StromStG);
+  ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher. Kapitalwert und übrige Kennzahlen
+  bleiben projektweit.
 
 Szenarien — VALERI-Vorrang
   Szenariowert = Szenariospalte, falls ≠ 0 ; sonst eingegebener Wert

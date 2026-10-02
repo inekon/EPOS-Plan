@@ -1802,7 +1802,7 @@ Annuitätenfaktor a(i,n) = i·(1+i)^n / ((1+i)^n − 1) ;  a = 1/n bei i ≈ 0
 | Annuität | KW-Differenz × a(i, T) | Varianten |
 | Dynamische Amortisation | erstes t mit kumuliertem Barwert ≥ 0, linear interpoliert, **ohne Restwert** | Varianten |
 | Interner Zinsfuß | Nullstelle KW(r), Bisektion −99 %…1000 %, 200 Schritte | Varianten |
-| Wärmegestehungskosten | (−KW × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh] | je Projekt |
+| Wärmegestehungskosten | (−KW_Wärme × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh]; KW_Wärme = Kapitalwert allein der Wärmeerzeugung (Investition, Betrieb, Ersatz, Restwert der Wärmeanlagen; Brennstoff samt CO₂-Abgabe; Wärmestrom zum Arbeitspreis; Erlöse der Wärmeerzeuger; BHKW-Eigenstrom als Gutschrift zum Arbeitspreis, bei produzierendem Gewerbe abzüglich der entgangenen § 9b-Entlastung), ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher | je Projekt |
 
 **Szenarien (VALERI-Vorrang):**
 
