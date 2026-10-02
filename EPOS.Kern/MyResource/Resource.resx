@@ -16228,7 +16228,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Tipp</value>
   </data>
   <data name="START_E_TIPP" xml:space="preserve">
-    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.</value>
+    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds.</value>
   </data>
   <data name="START_E_PROFIL" xml:space="preserve">
     <value>Profil</value>
@@ -18077,6 +18077,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in der Kaskade — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_SOLARGANGLINIE_FELDNAME" xml:space="preserve">
+    <value>Solarthermie-Ganglinie ‚{0}‘</value>
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>

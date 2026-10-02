@@ -84863,6 +84863,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Ganglinie ‚{0}‘ ähnelt.
+        /// </summary>
+        public static string SIM_SOLARGANGLINIE_FELDNAME {
+            get {
+                return ResourceManager.GetString("SIM_SOLARGANGLINIE_FELDNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Anlage ähnelt.
         /// </summary>
         public static string SIM_SOLARTHERMIE_ANLAGE {
@@ -85738,6 +85747,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_KASKADE_VOLL {
             get {
                 return ResourceManager.GetString("SIM_W_KASKADE_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ {
+            get {
+                return ResourceManager.GetString("SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ", resourceCulture);
             }
         }
         
@@ -87886,7 +87904,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds. ähnelt.
         /// </summary>
         public static string START_E_TIPP {
             get {

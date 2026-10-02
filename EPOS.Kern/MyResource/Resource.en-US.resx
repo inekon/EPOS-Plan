@@ -16239,7 +16239,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Tip</value>
   </data>
   <data name="START_E_TIPP" xml:space="preserve">
-    <value>You can combine several energy producers. Select all the technologies you want.</value>
+    <value>You can combine several energy producers. Select all the technologies you want. Solar thermal: if a complete profile is assigned to the project (8,760 hourly values in kW), the simulation calculates the profile instead of the collector field.</value>
   </data>
   <data name="START_E_PROFIL" xml:space="preserve">
     <value>Profile</value>
@@ -18088,6 +18088,12 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>{0} “{1}” exists in the project but is not part of the cascade — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>The solar thermal profile “{0}” is assigned to the project, but solar thermal is not part of the cascade — the profile is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_SOLARGANGLINIE_FELDNAME" xml:space="preserve">
+    <value>Solar thermal profile ‘{0}’</value>
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} “{1}” exists in the project but has not been added to the simulation — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
