@@ -217,10 +217,13 @@ namespace WindowsFormsApplication1
                     // ExecuteNonQuery statt ExecuteSQL: Diese Methode meldet ihre Fehler
                     // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
                     if (StilleDb.NonQuery(sql, werte.ToArray()) < 0) return false;
+                    // Welle M4: die Teillastfelder (eigener Schritt, nur mit den Spalten).
+                    ErzeugerTeillastWerte.BhkwSchreiben(ErzeugerTeillastSchema.TAB_BHKW, model.m_ID, model);
                     return true;
                 }
 
                 Vorgang.Ausfuehren(sql, werte.ToArray());
+                ErzeugerTeillastWerte.BhkwSchreiben(ErzeugerTeillastSchema.TAB_BHKW, model.m_ID, model, Vorgang);
 
                 return true;
             }
@@ -332,6 +335,8 @@ namespace WindowsFormsApplication1
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
+                // Welle M4: Teillastkennlinie und Takten reisen mit - leer bleibt leer.
+                if (ok) ErzeugerTeillastWerte.BhkwKopieren(s, neueId);
                 return ok ? neueId : -1;
             }
             catch (Exception ex)
@@ -421,6 +426,8 @@ namespace WindowsFormsApplication1
             m.m_Kosten_Lieferung = row["Kosten_Lieferung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Lieferung"]) : 0;
             m.m_Kosten_Schallschutzhaube = row["Kosten_Schallschutzhaube"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Schallschutzhaube"]) : 0;
             m.m_Kosten_Abgasreinigung = row["Kosten_Abgasreinigung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Abgasreinigung"]) : 0;
+            // Welle M4: die Teillastfelder; eine nicht migrierte Datenbank liefert sie leer.
+            ErzeugerTeillastWerte.BhkwAusZeile(m, row);
             return m;
         }
 
@@ -454,6 +461,7 @@ namespace WindowsFormsApplication1
             this.m_Kosten_Lieferung = m.m_Kosten_Lieferung;
             this.m_Kosten_Schallschutzhaube = m.m_Kosten_Schallschutzhaube;
             this.m_Kosten_Abgasreinigung = m.m_Kosten_Abgasreinigung;
+            ErzeugerTeillastWerte.BhkwUebertragen(m, this);
         }
 
         #endregion
