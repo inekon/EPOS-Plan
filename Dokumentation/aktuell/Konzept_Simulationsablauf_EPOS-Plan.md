@@ -1162,3 +1162,82 @@ Kein Referenzprojekt ordnet einen dieser Sätze zu und keines trägt ein Tempera
 bleibt unberührt. Gehalten von `EPOS.Kern.Tests/ProzesswaermeTemperaturSchemaTests`,
 `ProzesstemperaturRechenwegTests` (Läufe auf Kopien von 1041 und 1050), `ProzesswaermeTemperaturWegeTests`,
 `ProzesstypSaatWacheTests` und `EPOS.UI.Tests/Dialoge/ProzessTemperaturDialogTests`.
+
+## 17. Bedarf: Netzverluste je Kanal, Zirkulation, Betriebskalender
+
+Drei Optionen der Bedarfsrechnung, alle mit der Vorgabe „leer = wie ohne sie“ (Schemaschritt
+`BedarfNetzKalenderSchema`; Punkte BW4, PW2 und BW2 der Entscheidungsvorlage Modellgrenzen). Kein
+Referenzprojekt setzt eine davon; die Basis bleibt unberührt.
+
+**Netzverluste je Kanal.** `Tab_Einstellungen` führt je Wärmekanal Wert und Einheit:
+`Netzverluste_Heizung`, `Netzverluste_Brauchwasser`, `Netzverluste_Prozess` (REAL ≥ 0) mit
+`…_Einheit` (`%` oder `kWh/a`, paarweise, ein Prozentwert höchstens 100). Die Regel
+(`SimulationWaermebedarf`, `Netzverlustvorgabe`):
+
+| Stand | Wirkung |
+|---|---|
+| alle drei Kanalwerte leer | der Projektwert `Netzverluste`/`NetzverlusteEinheit` als konstanter Stundenbetrag, je Stunde anteilig auf Heizung, Brauchwasser und Prozess verteilt (`Kanalsatz.NetzverlusteVerteilen`) |
+| mindestens ein Kanalwert gesetzt | je Kanal sein eigener Wert als fester Stundenbetrag auf genau diesen Kanal, ein leerer Kanal trägt 0; der Projektwert gilt nicht, und es wird nichts zwischen den Kanälen verteilt |
+
+Ein Kanalwert in % bezieht sich auf den Jahresbedarf des Kanals vor dem Aufschlag
+(`Q_k · p_k / 100 / 8760` je Stunde; beim Brauchwasser samt Zirkulation), ein Wert in kWh/a gilt
+fest (`W_k / 8760`). Die Kanäle sind die Wärmekanäle; der Kühlkanal trägt keinen Netzverlust.
+`Waermebedarf_Netzverluste` weist die Summe der drei Jahresmengen aus, das Laufprotokoll die drei
+Posten. Bedient im Abschnitt „Wärmebedarf“ der Simulationskonfiguration; sobald ein Kanalwert
+steht, sagt die Zeile unter den Netzverlusten, dass der Projektwert nicht gilt.
+
+**Zirkulation im Bestandsweg.** `Zirkulation_Leistung_kW` (0 … 100) und `Zirkulation_Laufzeit_h_d`
+(0 … 24) an `Tab_Einstellungen`. Rechnet das Projekt sein Brauchwasser aus den Bestandsprofilen,
+kommt eine Zirkulation als eigene Teilreihe in den Brauchwasserkanal — dieselbe Formel wie die
+Methode „manuell“ des Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+
+```
+q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+```
+
+Die Laufstunden liegen zusammenhängend um die Tagesmitte der Brauchwasserreihe
+(`Zirkulationskanal.Laufzeitfenster`), eine gebrochene Laufzeit belegt die letzte Stunde anteilig.
+Ohne Leistung oder ohne Laufzeit gibt es keine Zirkulation. Auf dem Generatorweg gilt dessen
+Zirkulation, die Projekteinstellung wirkt dort nicht; die Vorschau mit Namensliste rechnet keine.
+Ausgewiesen wird sie wie beim Generator: `Brauchwasser_Zirkulation_Mwh`, getrennte Monatsschichten
+Zapfung und Zirkulation, der Posten „davon Zirkulation“ und das gestapelte Monatsbild im Reiter
+Wärmebedarf. Normbezug: Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und
+DIN V 18599-8, Betrieb der Zirkulation nach DVGW W 551.
+
+**Betriebskalender.** `Tab_Betriebskalender` (STRICT) hält Kalender projektübergreifend wie einen
+Katalog: Bezeichnung, Bundesland (leer = nur die neun bundeseinheitlichen Feiertage), bis vier
+Betriebsferien als Tag im Jahr (Beginn nach Ende = über den Jahreswechsel), Ferienfaktor
+f (0 … 1), `Feiertag_wie_Sonntag` und `Ferien_kuerzen` (0/1). Je Zuordnungszeile
+(`Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`) zeigt die
+nullbare Spalte `ID_Betriebskalender` auf einen Kalender (`ON DELETE SET NULL`); leer = das
+Wochenprofil gilt für alle Wochen.
+
+Die Kalenderschicht (`Betriebskalenderschicht`) sitzt in `ProfilBedarf.Rechnen` zwischen der
+Kachelung des Wochenprofils und der Monatsnormierung — dieselbe Routine für alle drei Profilarten:
+
+```
+t(h) = w((24 · w₀ + h) mod 168)                      Kachelung ab dem Wochentag des 1. Januar
+a(h) = w(144 + s) an einem Feiertag, sonst t(h)       Sonntag des Wochenprofils
+b(h) = f · m_s an einem Ferientag, sonst a(h)         m_s = (1/7) · Σ_d w(24 d + s)
+q(h) = b(h) / Σ_M b · M_m · 1000                     Vorgabe: Ferien verteilen die Monatsmenge um
+q(h) = b(h) / Σ_M a · M_m · 1000                     „Ferien kürzen die Monatsmenge“
+```
+
+h = 24 d + s, M die Stunden des Monats m, M_m seine Menge [MWh]. Ferien gehen Feiertagen vor;
+Feiertage verteilen stets nur um. Die Feiertage kommen aus `Feiertage` (die neun
+bundeseinheitlichen, Ostern als Rechenvorschrift) und `Landesfeiertage` (die landesweiten
+Feiertage des gewählten Landes), aufgelöst gegen das Referenzjahr des Projekts
+(`SolardatenCtrl.Referenzjahr`) und als Tag im Gemeinjahr abgebildet. Hat ein Monat ohne Kürzen
+keine Stunde mit Bedarf mehr, rechnet er ohne Ferien und das Laufprotokoll nennt es. Ohne Kalender
+ruft die Routine die Kachelung `BhkwPlan.StromWocheToJahr` wie zuvor.
+
+Der Lauf liest den Kalender je Zuordnungszeile, die Projektvorschau über die ID des Kopfsatzes;
+Zuordnungsdialog, Assistent und Speichern tragen ihn mit (`LiesProjekt`, `WizardCtrl.Add_*`),
+Duplizieren behält die ID, Export und Import finden den Kalender über seinen Bezeichner. Bedient
+wird er in der Verwaltung „Betriebskalender“ (Administration → Wärmebedarf & Heizung → Profile &
+Lastgänge) und je Zuordnung in den Bedarfsprofil-Dialogen von Brauchwasser, Prozesswärme und
+Strom.
+
+Gehalten von `EPOS.Kern.Tests/BedarfNetzKalenderSchemaTests`, `NetzverlusteJeKanalTests`,
+`ZirkulationBestandswegTests` (Läufe auf Kopien von 1041 und 1045), `BetriebskalenderTests` und
+`EPOS.UI.Tests/Dialoge/BetriebskalenderDialogTests`.
