@@ -285,6 +285,17 @@ namespace WindowsFormsApplication1.Referenzlauf
             skalare.Add(Neu("Sim.bSimulationWP", sim.bSimulationWP.ToString()));
             skalare.Add(Neu("Sim.bSimulationKessel", sim.bSimulationKessel.ToString()));
             skalare.Add(Neu("Sim.bSimulationSolarthermie", sim.bSimulationSolarthermie.ToString()));
+            // ST2 (Welle M2): die mittlere Arbeitstemperatur eines Kollektorfelds [Grad C], mit dem
+            // Potenzial gewichtet - NUR fuer Felder mit Arbeitstemperatur aus dem Speicher; ein Feld
+            // mit fester Arbeitstemperatur bekommt keinen Schluessel.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
+            {
+                var felder = sim.simulation_solarthermie.Kollektor_Ergebnisse;
+                for (int i = 0; i < felder.Count; i++)
+                    if (felder[i].ArbeitstemperaturAusSpeicher && !double.IsNaN(felder[i].ArbeitstemperaturMittelC))
+                        skalare.Add(Neu("Solarthermie.Feld[" + i.ToString(CultureInfo.InvariantCulture) +
+                                        "].ArbeitstemperaturMittelC", Zahl(felder[i].ArbeitstemperaturMittelC)));
+            }
             // ST1 (Welle M2): der Pumpenstrom der Solarkreise [MWh/a] - NUR mit gepflegter Pumpe
             // oder Hilfsenergieanteil; ohne beides kein Schluessel, die Basis bleibt byte-gleich.
             if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null &&

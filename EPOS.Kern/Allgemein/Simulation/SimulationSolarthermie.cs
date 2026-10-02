@@ -1133,6 +1133,7 @@ namespace WindowsFormsApplication1
                     UeberschussKwh = _ueberFeld[f],
                     PumpenstromKwh = _pumpeFeld[f],
                     ArbeitstemperaturMittelC = ArbeitstemperaturMittel(f),
+                    ArbeitstemperaturAusSpeicher = ArbeitstemperaturAusSpeicher(f),
                     IstGanglinie = f < _feldGanglinie.Count && _feldGanglinie[f]
                 });
             }
@@ -1204,6 +1205,9 @@ namespace WindowsFormsApplication1
         /// fest 50 °C, aus dem Speicher der Mittelwert des Laufs; NaN für die Ganglinie.
         /// </summary>
         public double ArbeitstemperaturMittelC = double.NaN;
+
+        /// <summary>Bildet das Feld seine Arbeitstemperatur aus dem Speicher (ST2)?</summary>
+        public bool ArbeitstemperaturAusSpeicher;
 
         /// <summary>
         /// true für die Zeile der Solarthermieganglinie (Folgeauftrag 4): Sie hat keine
