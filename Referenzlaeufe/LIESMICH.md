@@ -544,8 +544,13 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R32_Solarthermie/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 081 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **163**, 81 174 528 Byte, LFS-SHA-256
-`486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Gegen diese Basis hält
+`Kenndaten_Test.sqlite` (Fassung mit den Feldern des Kollektorfelds, 81 174 528 Byte, LFS-SHA-256
+`486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
+Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
+Betriebsweisen (Schemaschritt 164) — Schemastand **165**, 81 186 816 Byte, LFS-SHA-256
+`7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af` (Nachtrag „Testdatenbank“ unten). **Die Basis
+bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
+gesäten Prozesssatz zu oder trägt ein Temperaturpaar. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -566,7 +571,7 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (ST1 bis ST6, Wellenplan vom Anwender freigegeben). Gebaut sind fünf Teile, eine Zahl der Basis verschiebt allein
 > der letzte:
 >
-> - **Schemaschritt 163** (`SolarthermieFelderSchema`): an `Tab_Energieanlagen` die nullbaren Felder
+> - **Schemaschritt 165** (`SolarthermieFelderSchema`): an `Tab_Energieanlagen` die nullbaren Felder
 >   `Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K` und
 >   `Arbeitstemperatur_Weg`, an `Tab_Solarkollektoren(_STAMM)` die Bezugsfläche der Kennwerte (`Bezugsflaeche`,
 >   Vorgabe `apertur`). Leere Felder rechnen ihre Vorgaben.
@@ -627,12 +632,18 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
 > [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 16.
 
-> **Testdatenbank — Schemaschritt 163 und Umstellung von 1049.** Die Fassung `05783be1…` (Schemastand 162) ist mit
-> `Werkzeuge/Testdatenbankschema` auf **163** gezogen (7 Spalten, keine Tabelle; Anlagenspalten leer, jeder
-> Kollektorsatz `apertur`); danach ist allein die Anlagenzeile des Kollektorfelds von 1049 geändert
-> (`Arbeitstemperatur_Weg = 'speicher'`, `Uebertrager_Graedigkeit_K = 5`, `Kollektor_Spreizung_K = 10`) und die Datei
-> verdichtet. `integrity_check` ok, `foreign_key_check` leer, kein Stempel gesetzt. Neue Fassung **81 174 528 Byte,
-> LFS-SHA-256 `486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`**.
+> **Testdatenbank — Schemaschritte 163 bis 165 und Umstellung von 1049.** Eingefroren ist R32 gegen eine Fassung
+> mit den Feldern des Kollektorfelds und dem umgestellten 1049 (81 174 528 Byte, `486d5b0c…`). Gültig ist die
+> Fassung aus `be9d733c…` (Schemastand 163: Albedo-Spalte an `Tab_Energieanlagen`, jede Zeile leer), mit
+> `Werkzeuge/Testdatenbankschema` auf **165** gezogen: 164 legt das Temperaturpaar je Prozess an
+> `Tab_Prozesswaerme(_STAMM)` an (leer) und sät die acht Betriebsweisen (`ReadOnly = 1`), 165 die Felder des
+> Kollektorfelds (Anlagenspalten leer, jeder Kollektorsatz `apertur`). Danach ist allein die Anlagenzeile des
+> Kollektorfelds von 1049 geändert (`Arbeitstemperatur_Weg = 'speicher'`, `Uebertrager_Graedigkeit_K = 5`,
+> `Kollektor_Spreizung_K = 10`) und die Datei verdichtet. `integrity_check` ok, `foreign_key_check` leer, kein
+> Stempel gesetzt. Neue Fassung **81 186 816 Byte, LFS-SHA-256
+> `7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf dieser Fassung gegen R32 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist
+> berührt.
 > [`Skripte/referenzprojekt_1049_solarthermie.cs`](Skripte/referenzprojekt_1049_solarthermie.cs) legt die Felder mit
 > an und prüft sie (auf der neuen Fassung: „steht schon mit allen Zielzellen“).
 
@@ -642,7 +653,7 @@ Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testd
 159), getragen bis zur Fassung `05783be1…` (Schemastand 162); mit R32 aus dem Arbeitsbaum gefallen, Protokoll und
 Anlass (BHKW-Untergrenze aus dem Anlagenfeld, RB1) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R31 und
-R32 hat die Testdatenbank den Schemaschritt 163 und die Umstellung des Kollektorfelds von 1049 bekommen.
+R32 hat die Testdatenbank die Felder des Kollektorfelds und die Umstellung des Kollektorfelds von 1049 bekommen.
 
 ## Was hier liegt
 

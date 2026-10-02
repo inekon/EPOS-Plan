@@ -420,14 +420,15 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var cut = Aufbauen(new List<ErzeugerZeile> { zeile });
 
         var kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
-        Assert.True(kollektor.QuerySelectorAll("input")[6].HasAttribute("disabled"));   // Grädigkeit gesperrt
-        kollektor.QuerySelectorAll("input")[4].Input("75");     // Pumpe
-        kollektor.QuerySelectorAll("input")[5].Input("6");      // Verluste
+        // input[4] ist die Albedo (PV4), dahinter der Solarkreis.
+        Assert.True(kollektor.QuerySelectorAll("input")[7].HasAttribute("disabled"));   // Grädigkeit gesperrt
+        kollektor.QuerySelectorAll("input")[5].Input("75");     // Pumpe
+        kollektor.QuerySelectorAll("input")[6].Input("6");      // Verluste
         cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!.Change("1");
 
         kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
-        Assert.False(kollektor.QuerySelectorAll("input")[6].HasAttribute("disabled"));
-        kollektor.QuerySelectorAll("input")[6].Input("10");     // Grädigkeit
+        Assert.False(kollektor.QuerySelectorAll("input")[7].HasAttribute("disabled"));
+        kollektor.QuerySelectorAll("input")[7].Input("10");     // Grädigkeit
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal(75.0, zeile.SolarPumpenleistungW);
