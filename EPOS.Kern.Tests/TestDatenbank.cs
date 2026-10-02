@@ -815,6 +815,14 @@ namespace EPOS.Kern.Tests
                 // Nachzug davor die Stempel einer frischen Kopie setzt; wiederholbar, KEIN DML.
                 KostenStempelSchema.Ausfuehren(null);
 
+                // Schritte AufheizvorgabeSchema.SCHRITT und AufheizErgebnisSchema.SCHRITT (KP-S2 und
+                // KP-S3, Entwurf KP3 Abschnitt 4): die fuenf Spalten der Aufheizoptimierung an
+                // Tab_Einstellungen und je vierzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+                // Tab_ErgebnisZone. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN
+                // DML - der Schalter steht auf 0, alles uebrige leer.
+                AufheizvorgabeSchema.Ausfuehren(null);
+                AufheizErgebnisSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
