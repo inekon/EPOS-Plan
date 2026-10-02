@@ -146,3 +146,43 @@ für CO₂ und die Menge.
 - **Grenze:** Fehlt das Kapitel Wirtschaftlichkeit im Bericht, steht der Hinweis nur in der Hinweisliste des Laufs, nicht
   im Dokument. Will der Anwender ihn auch dort, bekommt die Fußzeile der Kostentafel einen Halbsatz (eigene Ressource,
   Merkmal an `StromGruppenzahl`) — ein kleiner eigener Auftrag.
+
+## 8 Nachtrag: Leistungspreis in der Fußzeile der Kostentafel (02.10.2026)
+
+- **Anlass:** Anwenderauftrag vom 02.10.2026 — der Anwender wünscht den nach Register EZ‑17 nicht angesetzten
+  Leistungspreis auch im Dokument. Das hebt den Entscheid der Berichterstellung aus § 7 auf; umgesetzt ist der dort
+  beschriebene Weg (eigene Ressource, Merkmal an `StromGruppenzahl`). Kein Schemaschritt, kein Rechenweg berührt,
+  keine Referenzbasis neu eingefroren, `EPOS.iOS/` und die Windows-Schale nicht berührt.
+- **Merkmal am Stand:** `VariantenDaten` trägt neben `LeistungspreisNichtAngesetzt` die Felder
+  `LeistungspreisNichtAngesetztSatz` und `LeistungspreisNichtAngesetztTraeger`. `KostenEmissionRechner.
+  LeistungspreisNichtAngesetztVermerken` setzt alle drei aus demselben Satz (`LeistungspreisSatz`) und Träger
+  (`TraegerName`); beide Rücksetzstellen des Rechners (Rechenfehler, frischer Lauf) setzen sie mit zurück.
+- **Merkmal an der Gruppenzahl:** `StromGruppenzahl` trägt `LeistungspreisSatz` und `LeistungspreisTraeger` (`null`,
+  wenn der Träger keinen Leistungspreis führt). `BerichtsDatenSammler.StromGruppenzahlErmitteln` füllt sie aus der
+  Kopie; der Hinweis an die Hinweisliste des Laufs bleibt unverändert.
+- **Fußzeile:** `VariantenDaten.StromGruppenregelFussnote` hängt **nur unter der Kostentafel**
+  (`KennzahlenKatalog.GR_KOSTEN`) nach einem Leerzeichen den Satz an, und nur, wenn `LeistungspreisSatz` gesetzt ist.
+  Die Emissionsfußzeile bleibt, wie sie war; ohne Leistungspreis ist die Kostenfußzeile byte-gleich zum Stand nach § 3.
+  Fehlerbehandlung wie im Bestand (`FormatException` → Vorlage). Word (`Berichtstabellen`) und Excel (Blatt
+  „Vergleich“) bekommen den Satz über `BerichtsDaten.StromGruppenregelFussnoten` ohne eigene Änderung.
+- **Wortlaut** — Ressource `BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS`, {0} = Satz, {1} = Träger, dazu der deutsche
+  Rückfall `VariantenDaten.FUSSNOTE_LEISTUNGSPREIS`; `Werkzeuge/ResourceDesigner` nachgezogen (ein neuer Eintrag):
+  - de: `Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.`
+  - en: `The group rule does not apply the demand charge {0} of the electricity carrier “{1}”.`
+  - Der Satz {0} entsteht im Rechner in der Kultur des Laufs (`BerichtTexte.Kultur`), wie der Hinweis aus § 7; die
+    Fußzeile übernimmt ihn als Text.
+- **Grenze Rollentarif (Register EZ‑18):** Der Berichtsweg der Kopie ist `KostenEmissionRechner.Berechne`; der
+  Rollentarif rechnet allein in `WirtschaftlichkeitCtrl.RechneRollentarif`, und nur dort entsteht
+  `LeistungspreisTarifNichtAngesetzt` mit dem Leistungsmodell des Reststromtarifs. Die Gruppenzahl der Fußzeile ist mit
+  den Preisen des Stromträgers gerechnet; entsprechend nennt die Fußzeile höchstens den Leistungspreis des
+  **Stromträgers**, nie den des Reststromtarifs. Bei aktivem Rollentarif kann sie ihn deshalb nicht nennen; das ist
+  nicht nachgebaut. Die Hinweiszeile des Kapitels Wirtschaftlichkeit nennt ihn weiter (§ 7).
+- **Prüfungen:** `StromGruppenregelTests` neu *Die_Fussnote_der_Kostentafel_nennt_den_nicht_angesetzten_Leistungspreis*
+  (Satz und Träger an der Gruppenzahl, Stand unberührt; Kostenfußzeile = Fußzeile ohne Merkmal + Leerzeichen + Satz, Zahl
+  ohne Leistungspreis; Emissionsfußzeile ohne „Leistungspreis“; Gruppentafel, Gesamttafel und Blatt „Vergleich“;
+  Englisch mit „demand charge“); *Im_Bericht_zeigt_das_Kostenkapitel_die_Einzelzahl_mit_Fussnote* sichert ab, dass die
+  Fußzeile ohne Leistungspreis keinen nennt; *Die_Fussnoten_kommen_aus_den_Ressourcen* prüft den neuen Schlüssel
+  (de/en, zwei Stellen, de gleich Rückfall). Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
+- **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel` um einen Satz mit neutralem Beispiel
+  ergänzt; Logbuchsatz unter Version 1.2.0.6 (#641 vorläufig). Der Wiki-Upload steht gebündelt aus.
+- **Gate:** siehe Statuszeile.

@@ -169,6 +169,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Wärmepumpe: Die Nutzungsdauer wird im Kostendialog gepflegt; ein fehlender Rücklauf ist aus dem Vorlauf vorbelegt. (#636)
 - Auf der Seite „Kosten“ rechnet „Neu berechnen“ die Wirtschaftlichkeit der Versionen im Vergleich neu. (#637)
 - In langen Dialogfenstern bleiben Kopfzeile und Knopfleiste beim Rollen stehen. (#638)
+- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt. (#641 vorläufig)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
