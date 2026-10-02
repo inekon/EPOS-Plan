@@ -54,6 +54,46 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
+        // =================================================================
+        // ST6 - Bezugsfläche der Kollektorkennwerte
+        // =================================================================
+
+        /// <summary>Die zulässigen Werte der Bezugsfläche, in der Reihenfolge der Auswahl.</summary>
+        public static readonly string[] BEZUGSFLAECHEN =
+            { DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR, DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO };
+
+        /// <summary>
+        /// Die Bezugsfläche eines Kollektorsatzes als Persistenzwert: „brutto" nur, wenn es dasteht
+        /// (Groß- und Kleinschreibung gleich); alles andere — leer, NULL, fehlende Spalte — ist
+        /// „apertur", die Vorgabe.
+        /// </summary>
+        public static string Bezugsflaeche(string wert)
+            => string.Equals((wert ?? "").Trim(), DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO, StringComparison.OrdinalIgnoreCase)
+                ? DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO
+                : DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
+
+        /// <summary>
+        /// Die Fläche EINES Moduls, auf die η₀, a₁ und a₂ bezogen sind (ST6) [m²]: die Aperturfläche
+        /// (Vorgabe; ältere Datenblätter nach EN 12975) oder die Bruttofläche (Modulfläche; Prüfberichte
+        /// nach EN ISO 9806:2017). Passen Fläche und Kennwerte nicht zusammen, liegt der Ertrag um das
+        /// Verhältnis Apertur/Brutto daneben.
+        /// </summary>
+        /// <param name="bezug"><c>Bezugsflaeche</c> des Kollektorsatzes.</param>
+        /// <param name="apertur">Aperturfläche eines Moduls [m²].</param>
+        /// <param name="brutto">Bruttofläche (Modulfläche) eines Moduls [m²].</param>
+        /// <param name="rueckfall">
+        /// true, wenn „brutto" gewählt ist, der Satz aber keine Bruttofläche führt — dann gilt die
+        /// Aperturfläche, und der Lauf sagt es.
+        /// </param>
+        public static double Modulbezugsflaeche(string bezug, double apertur, double brutto, out bool rueckfall)
+        {
+            rueckfall = false;
+            if (Bezugsflaeche(bezug) != DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO) return apertur;
+            if (brutto > 0) return brutto;
+            rueckfall = true;
+            return apertur;
+        }
+
         /// <summary>Rechnet das Feld überhaupt einen Pumpenstrom?</summary>
         public static bool RechnetPumpenstrom(double? pumpenleistungW, double? hilfsenergieAnteilProzent)
             => (pumpenleistungW.HasValue && pumpenleistungW.Value > 0) ||

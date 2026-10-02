@@ -120,6 +120,45 @@ namespace EPOS.Kern.Tests
             Assert.All(st.Pumpenstrom_stuendlich, v => Assert.Equal(0.0, v));
         }
 
+        // =================================================================
+        // ST6 - Bezugsfläche der Kennwerte
+        // =================================================================
+
+        /// <summary>Apertur ist die Vorgabe; Brutto nimmt die Modulfläche, ohne sie die Apertur mit Rückfall.</summary>
+        [Fact]
+        public void Bezugsflaeche_waehlt_die_rechnende_Flaeche()
+        {
+            Assert.Equal("apertur", Solarkreis.Bezugsflaeche(null));
+            Assert.Equal("apertur", Solarkreis.Bezugsflaeche(""));
+            Assert.Equal("apertur", Solarkreis.Bezugsflaeche("absorber"));
+            Assert.Equal("brutto", Solarkreis.Bezugsflaeche(" Brutto "));
+
+            bool rueckfall;
+            Assert.Equal(2.35, Solarkreis.Modulbezugsflaeche("apertur", 2.35, 2.51, out rueckfall));
+            Assert.False(rueckfall);
+            Assert.Equal(2.35, Solarkreis.Modulbezugsflaeche(null, 2.35, 2.51, out rueckfall));
+            Assert.False(rueckfall);
+            Assert.Equal(2.51, Solarkreis.Modulbezugsflaeche("brutto", 2.35, 2.51, out rueckfall));
+            Assert.False(rueckfall);
+            Assert.Equal(2.35, Solarkreis.Modulbezugsflaeche("brutto", 2.35, 0, out rueckfall));
+            Assert.True(rueckfall);
+        }
+
+        /// <summary>
+        /// Der Import nach VDI 3805 Blatt 19: Ist die Bezugsfläche (Feld 11) die Bruttofläche (Feld 25),
+        /// ist der Bezug brutto; die Aperturfläche, eine Absorberfläche und fehlende Angaben bleiben apertur.
+        /// </summary>
+        [Fact]
+        public void Der_Import_erkennt_die_Bezugsflaeche()
+        {
+            Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(2.35, 2.51, 2.35));
+            Assert.Equal("brutto", Solarkollektorenlmport.BezugBestimmen(2.51, 2.51, 2.35));
+            Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(4.6, 5.16, 4.64));   // Absorberfläche
+            Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(2.0, 2.0, 2.0));     // nicht zu unterscheiden
+            Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(0, 2.51, 2.35));
+            Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(2.35, 0, 0));
+        }
+
         /// <summary>Der Hilfsenergieanteil als Ersatzweg: Anteil der in der Stunde genutzten Wärme.</summary>
         [Fact]
         public void Pumpenstrom_aus_Hilfsenergieanteil()

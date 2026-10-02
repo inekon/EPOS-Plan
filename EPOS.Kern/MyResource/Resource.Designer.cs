@@ -37762,6 +37762,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die apertur oder brutto ähnelt.
+        /// </summary>
+        public static string KBROW_HINT_BEZUGSFLAECHE {
+            get {
+                return ResourceManager.GetString("KBROW_HINT_BEZUGSFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
         /// </summary>
         public static string KBROW_HINT_LEER_VORGABE {
@@ -37785,6 +37794,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_LBL_BESCHREIBUNG {
             get {
                 return ResourceManager.GetString("KBROW_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsfläche der Kennwerte: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_BEZUGSFLAECHE {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_BEZUGSFLAECHE", resourceCulture);
             }
         }
         
@@ -85869,6 +85887,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fläche, auf die η₀, a₁ und a₂ im Datenblatt bezogen sind. Prüfberichte nach EN ISO 9806:2017 nennen meist die Bruttofläche, ältere Datenblätter nach EN 12975 die Aperturfläche. Die Simulation rechnet mit dieser Fläche mal Modulanzahl. ähnelt.
+        /// </summary>
+        public static string SKK_HINT_BEZUGSFLAECHE {
+            get {
+                return ResourceManager.GetString("SKK_HINT_BEZUGSFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche : ähnelt.
         /// </summary>
         public static string SKK_LBL_APERTURFLAECHE {
@@ -85883,6 +85910,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKK_LBL_BESCHREIBUNG {
             get {
                 return ResourceManager.GetString("SKK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsfläche der Kennwerte : ähnelt.
+        /// </summary>
+        public static string SKK_LBL_BEZUGSFLAECHE {
+            get {
+                return ResourceManager.GetString("SKK_LBL_BEZUGSFLAECHE", resourceCulture);
             }
         }
         
@@ -85982,6 +86018,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKK_MSG_ZAHL_FEHLT {
             get {
                 return ResourceManager.GetString("SKK_MSG_ZAHL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string SKK_OPT_BEZUG_APERTUR {
+            get {
+                return ResourceManager.GetString("SKK_OPT_BEZUG_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bruttofläche (Modulfläche) ähnelt.
+        /// </summary>
+        public static string SKK_OPT_BEZUG_BRUTTO {
+            get {
+                return ResourceManager.GetString("SKK_OPT_BEZUG_BRUTTO", resourceCulture);
             }
         }
         

@@ -194,7 +194,11 @@ namespace WindowsFormsApplication1
             /// <summary>Tab_Energieanlagen.ID des Felds.</summary>
             public int ID_Anlage;
             public string Name = "";
-            /// <summary>Aperturfläche gesamt [m²] = Modulfläche · Anzahl.</summary>
+            /// <summary>
+            /// Rechnende Kollektorfläche gesamt [m²] = Bezugsfläche eines Moduls · Anzahl — die Fläche,
+            /// auf die η₀, a₁ und a₂ bezogen sind: Apertur (Vorgabe) oder Brutto (ST6,
+            /// <see cref="Solarkreis.Modulbezugsflaeche"/>).
+            /// </summary>
             public double Flaeche;
             public long Anzahl;
             /// <summary>Zahl der ausgewerteten Stunden (Zeilen der Klimadaten, höchstens 8760).</summary>
@@ -281,7 +285,16 @@ namespace WindowsFormsApplication1
 
                 SolarkollektorenCtrl ctrlsol = new SolarkollektorenCtrl();
                 ctrlsol.ReadSingle(nId);
-                double nFlaeche = ctrlsol.m_Aperturfläche;
+                // ST6: die Fläche, auf die die Kennwerte bezogen sind - Apertur (Vorgabe) oder
+                // Brutto (Modulfläche). Brutto ohne gepflegte Modulfläche rechnet mit der Apertur.
+                bool flaechenRueckfall;
+                double nFlaeche = Solarkreis.Modulbezugsflaeche(ctrlsol.m_Bezugsflaeche, ctrlsol.m_Aperturfläche,
+                                                                ctrlsol.m_Modulfläche, out flaechenRueckfall);
+                if (flaechenRueckfall)
+                    SimulationProtokoll.Aktuell.WarnungEinmal("solar-bezugsflaeche-" + nId,
+                        "Solarthermie: Die Kennwerte des Kollektors ‚" + ctrlsol.m_szKollektorname + "‘ sind auf " +
+                        "die Bruttofläche bezogen, der Satz führt aber keine Modulfläche - der Lauf rechnet " +
+                        "mit der Aperturfläche.");
 
                 // B1 (Paket A): der zentrale Ortszeit-Lesepfad. Bis dahin stand die
                 // Kollektorreihe im UTC-Raster und damit 1 bis 2 Stunden vor dem
@@ -662,6 +675,14 @@ namespace WindowsFormsApplication1
             FelderUebernehmen(GanglinieEinsetzen(felder, Ganglinie), senken);
         }
 
+        /// <summary>Jahressumme des Bruttopotenzials eines Felds [kWh] — Prüfgröße der Tests.</summary>
+        internal double PotenzialSumme(int feld)
+            => feld >= 0 && feld < _potenzialFeld.Length ? _potenzialFeld[feld].Sum() : 0;
+
+        /// <summary>Rechnende Kollektorfläche eines Felds [m²] — Prüfgröße der Tests.</summary>
+        internal double FeldFlaeche(int feld)
+            => feld >= 0 && feld < _feldFlaeche.Count ? _feldFlaeche[feld] : 0;
+
         /// <summary>Ein Kollektorfeld für den Testeinstieg <see cref="Vorbereiten_Testfelder"/>.</summary>
         internal sealed class Testfeld
         {
@@ -945,7 +966,7 @@ namespace WindowsFormsApplication1
     public class SolarKollektorErgebnis
     {
         public string Name = "";
-        public double Flaeche;          // Aperturflaeche gesamt (m^2) = Modulflaeche * Anzahl
+        public double Flaeche;          // rechnende Kollektorflaeche gesamt (m^2) = Bezugsflaeche eines Moduls (Apertur oder Brutto) * Anzahl
         public long Anzahl;
         public double WaermeproduktionKwh; // kWh/a
         public double UeberschussKwh;      // kWh/a

@@ -41268,5 +41268,23 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
     <value>Solar loop pump electricity:</value>
   </data>
+  <data name="SKK_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Reference area of the coefficients:</value>
+  </data>
+  <data name="KBROW_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Reference area of the coefficients:</value>
+  </data>
+  <data name="KBROW_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>apertur (aperture) or brutto (gross)</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_APERTUR" xml:space="preserve">
+    <value>Aperture area</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_BRUTTO" xml:space="preserve">
+    <value>Gross area (module area)</value>
+  </data>
+  <data name="SKK_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>The area to which η₀, a₁ and a₂ refer in the data sheet. Test reports to EN ISO 9806:2017 usually state the gross area, older data sheets to EN 12975 the aperture area. The simulation calculates with this area times the number of modules.</value>
+  </data>
 </root>
 

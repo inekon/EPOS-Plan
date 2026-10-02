@@ -41275,5 +41275,23 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
     <value>Pumpenstrom Solarkreis:</value>
   </data>
+  <data name="SKK_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Bezugsfläche der Kennwerte :</value>
+  </data>
+  <data name="KBROW_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Bezugsfläche der Kennwerte:</value>
+  </data>
+  <data name="KBROW_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>apertur oder brutto</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_APERTUR" xml:space="preserve">
+    <value>Aperturfläche</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_BRUTTO" xml:space="preserve">
+    <value>Bruttofläche (Modulfläche)</value>
+  </data>
+  <data name="SKK_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Die Fläche, auf die η₀, a₁ und a₂ im Datenblatt bezogen sind. Prüfberichte nach EN ISO 9806:2017 nennen meist die Bruttofläche, ältere Datenblätter nach EN 12975 die Aperturfläche. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
+  </data>
 </root>
 

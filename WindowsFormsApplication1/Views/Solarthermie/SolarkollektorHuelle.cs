@@ -507,6 +507,7 @@ namespace WindowsFormsApplication1
             ziel.Kdir = m.m_Kdir;
             ziel.Kdiff = m.m_Kdfu;
             ziel.Kosten = m.m_Kosten;
+            ziel.Bezugsflaeche = Solarkreis.Bezugsflaeche(m.m_Bezugsflaeche);
         }
 
         /// <summary>
@@ -529,7 +530,9 @@ namespace WindowsFormsApplication1
                 m_k2 = d.K2 ?? 0,
                 m_Kdir = d.Kdir ?? 0,
                 m_Kdfu = d.Kdiff ?? 0,
-                m_Kosten = d.Kosten ?? 0
+                m_Kosten = d.Kosten ?? 0,
+                // ST6: ohne diese Zeile schriebe jedes „Überschreiben" die Vorgabe apertur zurück.
+                m_Bezugsflaeche = Solarkreis.Bezugsflaeche(d.Bezugsflaeche)
             };
         }
 

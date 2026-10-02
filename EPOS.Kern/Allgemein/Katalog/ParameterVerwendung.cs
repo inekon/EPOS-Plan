@@ -545,7 +545,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (16 Spalten)
+        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (15 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -553,7 +553,8 @@ namespace WindowsFormsApplication1
         /// gepflegt, aber nirgends gerechnet — der Kollektorwirkungsgrad benutzt nur
         /// <c>h0</c>, <c>k1</c>, <c>k2</c> und <c>Kdir</c>
         /// (<c>SimulationSolarthermie.cs:242-245</c>). Und <c>Modulflaeche</c> ist die
-        /// Flaeche EINES Moduls, gerechnet wird mit <c>Aperturflaeche</c> mal
+        /// Bruttoflaeche EINES Moduls; gerechnet wird mit der Flaeche, auf die die Kennwerte
+        /// bezogen sind (<c>Bezugsflaeche</c>: Apertur als Vorgabe oder Brutto, Welle M2 ST6), mal
         /// <c>Tab_Energieanlagen.Kollektormodulanzahl</c>.
         ///
         /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
@@ -577,10 +578,12 @@ namespace WindowsFormsApplication1
                   "SolarkollektorKatalogDialog.razor (Feld Beschreibung)"),
                 E("Kollektortyp", t("SKK_LBL_TYP"), "", BER,
                   "AbweichungsErmittler.cs:104"),
-                E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche) — gerechnet wird mit Aperturflaeche"),
+                E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", SIM,
+                  "Solarkreis.Modulbezugsflaeche (Bruttoflaeche, rechnet bei Bezugsflaeche = brutto); " +
+                  "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche)"),
                 E("Aperturflaeche", t("SKK_LBL_APERTURFLAECHE"), "m²", SIM_BER,
-                  "SimulationSolarthermie.cs:232; AbweichungsErmittler.cs:105"),
+                  "Solarkreis.Modulbezugsflaeche (rechnet bei Bezugsflaeche = apertur, der Vorgabe); " +
+                  "AbweichungsErmittler.cs:105"),
                 E("h0", "h0:", "", SIM, "SimulationSolarthermie.cs:242 (Konversionsfaktor)"),
                 E("k1", "k1:", "W/(m²*K)", SIM, "SimulationSolarthermie.cs:243"),
                 E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.cs:244"),
@@ -590,7 +593,13 @@ namespace WindowsFormsApplication1
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "SolarkollektorenStammCtrl (Auslieferungssatz)")
+                  "SolarkollektorenStammCtrl (Auslieferungssatz)"),
+
+                // Welle M2 ST6 (Schemaschritt SolarthermieFelderSchema.SCHRITT) - in der Reihenfolge
+                // der Tabelle die letzte Spalte.
+                E(SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, t("SKK_LBL_BEZUGSFLAECHE"), "", SIM,
+                  "SimulationSolarthermie.Kollektorfelder_Lesen → Solarkreis.Modulbezugsflaeche " +
+                  "(apertur oder brutto); SolarkollektorKatalogDialog.razor; KatalogBrowserProfil (Solarkollektoren)")
             };
         }
 

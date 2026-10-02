@@ -1109,7 +1109,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData("HEIZKESSEL", 16)]   // Kesselkennlinie E1: Brennwert, eta30, Mindestleistung; Bereitschaft_Einheit (02.10.2026)
         [InlineData("PUFFERSPEICHER", 4)]
-        [InlineData("SOLARKOLLEKTOREN", 9)]
+        [InlineData("SOLARKOLLEKTOREN", 10)]   // mit der Bezugsfläche (Welle M2, ST6)
         [InlineData("WP", 10)]
         [InlineData("PV", 14)]   // Merge 5: dazu "Technologie" (Paket B, Stufe E2.3)
         public void JederImportkatalogFuehrtSeineImportSpalten(string schluessel, int anzahl)

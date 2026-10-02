@@ -441,7 +441,8 @@ namespace WindowsFormsApplication1
                 m_Kdir = _satz.m_kdir,
                 m_Kdfu = _satz.m_kdiff,
                 m_Modulfläche = _satz.m_Modulfläche,
-                m_Aperturfläche = _satz.m_Aperturfläche
+                m_Aperturfläche = _satz.m_Aperturfläche,
+                m_Bezugsflaeche = Solarkreis.Bezugsflaeche(_satz.m_szBezugsflaeche)
             };
         }
 
@@ -458,7 +459,8 @@ namespace WindowsFormsApplication1
                 { "k1", m.m_k1 },
                 { "k2", m.m_k2 },
                 { "Kdir", m.m_Kdir },
-                { "Kdfu", m.m_Kdfu }
+                { "Kdfu", m.m_Kdfu },
+                { SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, m.m_Bezugsflaeche }
             };
         }
 
@@ -482,6 +484,7 @@ namespace WindowsFormsApplication1
             ctrl.m_Kdfu = m.m_Kdfu;
             ctrl.m_Modulfläche = m.m_Modulfläche;
             ctrl.m_Aperturfläche = m.m_Aperturfläche;
+            ctrl.m_Bezugsflaeche = m.m_Bezugsflaeche;
 
             return ctrl.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben
