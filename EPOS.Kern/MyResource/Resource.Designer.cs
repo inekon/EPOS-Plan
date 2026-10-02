@@ -101774,6 +101774,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_DECKEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; die § 9b-Korrektur rechnet mit dem Regelsatz der Stromsteuer von {0} €/MWh statt {1} €/MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_REGELSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_REGELSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation, dynamisch [a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_AMORTISATION {

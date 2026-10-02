@@ -6767,6 +6767,12 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_GESTEHUNG_9B_SOCKEL" xml:space="preserve">
     <value>Levelised cost of heat: the § 9b deduction is {0} €/a instead of {1} €/a — the grid supply of {2} MWh/a does not fully cover the base amount of {3} €/a.</value>
   </data>
+  <data name="WIRT_VERMIEDEN_9B_DECKEL" xml:space="preserve">
+    <value>Avoided electricity costs: the § 9b correction uses {0} €/MWh instead of {1} €/MWh — capped at the electricity tax share of the energy price of the grid electricity carrier.</value>
+  </data>
+  <data name="WIRT_VERMIEDEN_9B_REGELSATZ" xml:space="preserve">
+    <value>Avoided electricity costs: no electricity tax share is maintained for the grid electricity carrier; the § 9b correction uses the standard electricity tax rate of {0} €/MWh instead of {1} €/MWh.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(reference)</value>
   </data>
