@@ -183,13 +183,13 @@ namespace EPOS.UI.Bausteine;
 /// die zwei Punkte unter „Brauchwasser" hinzu, mit der Gebaeudesimulation G3 die zwei
 /// Kataloge unter „Gebaeude". Also
 /// 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 + 2 = 63, dazu 13 Trennstriche
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 + 2 + 1 = 64, dazu 13 Trennstriche
 /// (8 aus dem Bestand und die 5 aus MN-1: vier in der obersten Ebene des
 /// Kopfes "Administration", einer in "Daten &amp; Import").</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 63 Punkten handeln <b>49</b>, 14 klappen auf.
+/// vier klappen nur auf; von den 64 Punkten handeln <b>50</b>, 14 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
@@ -200,7 +200,7 @@ namespace EPOS.UI.Bausteine;
 /// (19.09.2026) faellt der zweite Weg zur Lizenzverwaltung (47 -> 46), weil
 /// derselbe Dialog unter Hilfe -> Lizenz steht. Mit dem Zapfprofilgenerator
 /// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47), mit der
-/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49).</para>
+/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49), mit den Betriebskalendern der Bedarfsprofile um deren Verwaltung (49 -> 50).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -288,6 +288,10 @@ public static class Menuetabelle
                     new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
+                    // Entscheidungsvorlage Modellgrenzen PW2/BW2: die Betriebskalender der
+                    // Bedarfsprofile (Feiertage, Betriebsferien) - sie gelten fuer Brauchwasser,
+                    // Prozesswaerme und Strom und stehen deshalb bei den Profilen.
+                    new Menuepunkt("MenuItem_Betriebskalender", "MENU_BETRIEBSKALENDER", Seitenschluessel.Betriebskalender),
                 },
                 new Menuepunkt("MenuItem_Kessel", "MENU_KESSEL", Seitenschluessel.HeizkesselAdmin, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher.

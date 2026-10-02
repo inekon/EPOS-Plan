@@ -236,7 +236,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
-        new("BedarfsProfileDialog", 5, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
+        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
+        // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
+        new("BetriebskalenderDialog", 8),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
         new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
@@ -366,7 +370,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
         // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
         // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
-        new("SimulationKonfigSeite", 9),
+        // Welle M3b (BW4): Netzverluste je Kanal mit Einheit und die Zirkulation des Bestandswegs - die
+        // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
+        new("SimulationKonfigSeite", 17),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

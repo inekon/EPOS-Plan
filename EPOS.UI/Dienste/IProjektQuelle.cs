@@ -385,6 +385,13 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => null;
 
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Betriebskalender"
+    /// (<c>Dialoge.Bedarf.BetriebskalenderDialog</c>; Entscheidungsvorlage PW2, BW2); <c>null</c> =
+    /// diese Hülle führt sie nicht (die Wurzel nennt dann den Grund).
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BetriebskalenderGaben() => null;
+
     // =====================================================================
     //  Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26)
     // =====================================================================

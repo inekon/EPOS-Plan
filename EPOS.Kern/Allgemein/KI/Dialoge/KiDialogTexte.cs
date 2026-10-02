@@ -1483,6 +1483,17 @@
 
         /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" (Welle #458, Stufe 3a).</summary>
         internal static string BpfRechenwegName => MyResource.Resource.BPF_LBL_RECHENWEG_BW;
+
+        // ---- Netzverluste je Kanal und Zirkulation (Simulationskonfiguration, BW4) ----
+        internal static string SimNvHeizungName => MyResource.Resource.SIMKONF_LBL_NV_HEIZUNG;
+        internal static string SimNvBrauchwasserName => MyResource.Resource.SIMKONF_LBL_NV_BRAUCHWASSER;
+        internal static string SimNvProzessName => MyResource.Resource.SIMKONF_LBL_NV_PROZESS;
+        internal static string SimNvKanalErl => MyResource.Resource.KI_DLG_SIM_NV_KANAL_ERL;
+        internal static string SimNvEinheitName => MyResource.Resource.SIMKONF_LBL_NV_EINHEIT;
+        internal static string SimNvEinheitErl => MyResource.Resource.KI_DLG_SIM_NV_EINHEIT_ERL;
+        internal static string SimZirkLeistungName => MyResource.Resource.SIMKONF_LBL_ZIRK_LEISTUNG;
+        internal static string SimZirkLaufzeitName => MyResource.Resource.SIMKONF_LBL_ZIRK_LAUFZEIT;
+        internal static string SimZirkErl => MyResource.Resource.KI_DLG_SIM_ZIRK_ERL;
         internal static string BpfRechenwegErl => MyResource.Resource.KI_DLG_BPF_RECHENWEG_ERL;
 
         // =========== Brauchwasser-Zapfprofil und seine Ueberlagerungen (Welle #458, Stufe 3a)
@@ -2104,6 +2115,26 @@
 
         // ---- Form_Nutzungsdauer
         internal static string MaskeNutzungsdauer => MyResource.Resource.KI_DLG_MASKE_NUD;
+
+        // ---- Betriebskalender (PW2, BW2) ----
+        internal static string MaskeBetriebskalender => MyResource.Resource.BKAL_TITEL;
+        internal static string BkalKalenderName => MyResource.Resource.BKAL_LBL_LISTE;
+        internal static string BkalKalenderErl => MyResource.Resource.KI_DLG_BKAL_KALENDER_ERL;
+        internal static string BkalBezeichnungName => MyResource.Resource.BKAL_LBL_BEZEICHNER;
+        internal static string BkalBezeichnungErl => MyResource.Resource.KI_DLG_BKAL_BEZEICHNUNG_ERL;
+        internal static string BkalBundeslandName => MyResource.Resource.BKAL_LBL_BUNDESLAND;
+        internal static string BkalBundeslandErl => MyResource.Resource.KI_DLG_BKAL_BUNDESLAND_ERL;
+        internal static string BkalFeiertagName => MyResource.Resource.BKAL_LBL_FEIERTAG;
+        internal static string BkalFeiertagErl => MyResource.Resource.BKAL_HRL_FEIERTAG;
+        internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
+        internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
+        internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;
+        internal static string BkalFaktorName => MyResource.Resource.BKAL_LBL_FAKTOR;
+        internal static string BkalFaktorErl => MyResource.Resource.BKAL_HRL_FAKTOR;
+        internal static string BkalKuerzenName => MyResource.Resource.BKAL_LBL_KUERZEN;
+        internal static string BkalKuerzenErl => MyResource.Resource.BKAL_HRL_KUERZEN;
+        internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
+        internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;

@@ -41482,5 +41482,206 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
     <value>Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar).</value>
   </data>
+  <data name="SIMKONF_GRP_NV_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal und Zirkulation</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_HEIZUNG" xml:space="preserve">
+    <value>Netzverluste Heizung</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_BRAUCHWASSER" xml:space="preserve">
+    <value>Netzverluste Brauchwasser</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_PROZESS" xml:space="preserve">
+    <value>Netzverluste Prozesswärme</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AUS" xml:space="preserve">
+    <value>Kanalwerte leer: Es gilt der Projektwert der Netzverluste, je Stunde anteilig auf Heizung, Brauchwasser und Prozesswärme verteilt.</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AN" xml:space="preserve">
+    <value>Kanalwerte gesetzt: Je Kanal gilt sein Wert als fester Stundenbetrag (leer = 0); der Projektwert der Netzverluste gilt nicht.</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Zirkulation Leistung</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Zirkulation Laufzeit</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile: feste Leistung in den Laufstunden um die Tagesmitte der Zapfung, Jahresmenge = Leistung × Laufzeit × 365; mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK_MENGE" xml:space="preserve">
+    <value>Jahresmenge {0:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMKONF_MSG_NV_KANAL_FEHLER" xml:space="preserve">
+    <value>Die Netzverluste je Kanal konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_KANAL_ERL" xml:space="preserve">
+    <value>Netzverlust dieses Kanals in seiner Einheit (% des Jahresbedarfs des Kanals oder kWh/a); leer = kein Kanalwert. Sind alle drei leer, gilt der Projektwert der Netzverluste.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit des Kanalwerts: % oder kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>Die Einheit „{0}“ gibt es nicht; wählbar sind % und kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_ZIRK_ERL" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile des Brauchwassers: Leistung in kW (0 bis 100) und Laufzeit in h/d (0 bis 24); leer = keine Zirkulation. Mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="KI_DLG_BKAL_KALENDER_ERL" xml:space="preserve">
+    <value>Der gezeigte Betriebskalender; leer = ein neuer, noch nicht gespeicherter.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Name des Betriebskalenders, höchstens 100 Zeichen.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BUNDESLAND_ERL" xml:space="preserve">
+    <value>Bundesland für die Landesfeiertage (BW … TH); leer = nur die neun bundeseinheitlichen Feiertage.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIEN_ERL" xml:space="preserve">
+    <value>Beginn bzw. Ende eines Ferienzeitraums als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel; leer = kein Zeitraum.</value>
+  </data>
+  <data name="MENU_BETRIEBSKALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_TITEL" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_KONTEXT" xml:space="preserve">
+    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
+  </data>
+  <data name="BKAL_LBL_LISTE" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="BKAL_LEER" xml:space="preserve">
+    <value>noch kein Kalender angelegt</value>
+  </data>
+  <data name="BKAL_NEU_PLATZHALTER" xml:space="preserve">
+    <value>neuer Kalender</value>
+  </data>
+  <data name="BKAL_BTN_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="BKAL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BKAL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="BKAL_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Bundesland</value>
+  </data>
+  <data name="BKAL_BUNDESLAND_KEINES" xml:space="preserve">
+    <value>nur bundeseinheitliche Feiertage</value>
+  </data>
+  <data name="BKAL_LBL_FEIERTAG" xml:space="preserve">
+    <value>Feiertag wie Sonntag</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_VON" xml:space="preserve">
+    <value>Betriebsferien {0} von</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>Betriebsferien {0} bis</value>
+  </data>
+  <data name="BKAL_LBL_FAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="BKAL_LBL_KUERZEN" xml:space="preserve">
+    <value>Ferien kürzen die Monatsmenge</value>
+  </data>
+  <data name="BKAL_HRL_FEIERTAG" xml:space="preserve">
+    <value>Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR" xml:space="preserve">
+    <value>Ein Ferientag trägt je Stunde diesen Anteil des Tagesmittels des Wochenprofils; 0 % = Stillstand.</value>
+  </data>
+  <data name="BKAL_HRL_KUERZEN" xml:space="preserve">
+    <value>Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.</value>
+  </data>
+  <data name="BKAL_HRL_JAHR" xml:space="preserve">
+    <value>Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts.</value>
+  </data>
+  <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Betriebskalender gespeichert.</value>
+  </data>
+  <data name="BKAL_MSG_GELOESCHT" xml:space="preserve">
+    <value>Betriebskalender gelöscht.</value>
+  </data>
+  <data name="BKAL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Kalender ist noch nicht gespeichert.</value>
+  </data>
+  <data name="BKAL_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Den Betriebskalender „{0}“ löschen? {1} Profilzuordnung(en) rechnen danach ohne Kalender.</value>
+  </data>
+  <data name="BKAL_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="BKAL_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="BKAL_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Betriebskalender stehen auf dieser Plattform nicht zur Verfügung.</value>
+  </data>
+  <data name="BPF_GRP_KALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BPF_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender der Zuordnung</value>
+  </data>
+  <data name="BPF_KALENDER_KEINER" xml:space="preserve">
+    <value>ohne Kalender</value>
+  </data>
+  <data name="BPF_HINW_KALENDER" xml:space="preserve">
+    <value>Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an.</value>
+  </data>
+  <data name="BKAL_LAND_BW" xml:space="preserve">
+    <value>Baden-Württemberg</value>
+  </data>
+  <data name="BKAL_LAND_BY" xml:space="preserve">
+    <value>Bayern</value>
+  </data>
+  <data name="BKAL_LAND_BE" xml:space="preserve">
+    <value>Berlin</value>
+  </data>
+  <data name="BKAL_LAND_BB" xml:space="preserve">
+    <value>Brandenburg</value>
+  </data>
+  <data name="BKAL_LAND_HB" xml:space="preserve">
+    <value>Bremen</value>
+  </data>
+  <data name="BKAL_LAND_HH" xml:space="preserve">
+    <value>Hamburg</value>
+  </data>
+  <data name="BKAL_LAND_HE" xml:space="preserve">
+    <value>Hessen</value>
+  </data>
+  <data name="BKAL_LAND_MV" xml:space="preserve">
+    <value>Mecklenburg-Vorpommern</value>
+  </data>
+  <data name="BKAL_LAND_NI" xml:space="preserve">
+    <value>Niedersachsen</value>
+  </data>
+  <data name="BKAL_LAND_NW" xml:space="preserve">
+    <value>Nordrhein-Westfalen</value>
+  </data>
+  <data name="BKAL_LAND_RP" xml:space="preserve">
+    <value>Rheinland-Pfalz</value>
+  </data>
+  <data name="BKAL_LAND_SL" xml:space="preserve">
+    <value>Saarland</value>
+  </data>
+  <data name="BKAL_LAND_SN" xml:space="preserve">
+    <value>Sachsen</value>
+  </data>
+  <data name="BKAL_LAND_ST" xml:space="preserve">
+    <value>Sachsen-Anhalt</value>
+  </data>
+  <data name="BKAL_LAND_SH" xml:space="preserve">
+    <value>Schleswig-Holstein</value>
+  </data>
+  <data name="BKAL_LAND_TH" xml:space="preserve">
+    <value>Thüringen</value>
+  </data>
 </root>
 

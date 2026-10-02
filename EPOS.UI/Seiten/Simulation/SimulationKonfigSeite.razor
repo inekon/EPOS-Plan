@@ -332,9 +332,56 @@
                                     Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
                                     WertChanged="NetzverlusteGesetzt" />
                         <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
+                        @if (_parameter.Netzkanaele.JeKanal)
+                        {
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_NV_KANAL_AN" />
+                        }
                     </KindInhalt>
                 </Formularraster>
             </section>
+
+            @* NETZVERLUSTE JE KANAL UND ZIRKULATION (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+               Simulationsablauf 17). Je Kanal Wert und Einheit; alle leer = der Projektwert darueber.
+               Die Zirkulation gilt nur auf dem Bestandsweg des Brauchwassers. Jedes Feld schreibt SOFORT
+               die ganze Vorgabe; scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. *@
+            @if (Parameter.NetzkanaeleSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-netzkanaele" aria-label="@Resource.SIMKONF_GRP_NV_KANAL">
+                    <Formularraster Einspaltig="true" @key="_netzkanalSchluessel">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_HEIZUNG" Feldname="@Resource.SIMKONF_LBL_NV_HEIZUNG"
+                                        Wert="@_parameter.Netzkanaele.HeizungWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.HeizungEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(0, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.HeizungEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(0, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER" Feldname="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER"
+                                        Wert="@_parameter.Netzkanaele.BrauchwasserWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(1, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(1, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_PROZESS" Feldname="@Resource.SIMKONF_LBL_NV_PROZESS"
+                                        Wert="@_parameter.Netzkanaele.ProzessWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.ProzessEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(2, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.ProzessEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(2, i))" />
+                            <Herleitungszeile Text="@(_parameter.Netzkanaele.JeKanal ? Resource.SIMKONF_HRL_NV_KANAL_AN : Resource.SIMKONF_HRL_NV_KANAL_AUS)" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG" Feldname="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLeistungKw" Min="0" Max="100" Nachkommastellen="2"
+                                        Einheit="kW" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLeistungGesetzt" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT" Feldname="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLaufzeitHd" Min="0" Max="24" Nachkommastellen="1"
+                                        Einheit="h/d" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLaufzeitGesetzt" />
+                            <Herleitungszeile Text="@ZirkulationZeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
 
             @if (Parameter.KuehlbetriebSchreiben is not null)
             {
@@ -1008,6 +1055,97 @@
         _parameter.Netzverluste = wert ?? 0.0;
         Parameter?.NetzverlusteSchreiben?.Invoke(_parameter.Netzverluste,
                                                  _parameter.NetzverlusteEinheit);
+    }
+
+    // =====================================================================
+    // Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _netzkanalSchluessel;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts: 0 = %, 1 = kWh/a.</summary>
+    private static readonly IReadOnlyList<(int Id, string Text)> KanalEinheiten = new[]
+    {
+        (0, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        (1, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    /// <summary>Der Platz einer Einheit in <see cref="KanalEinheiten"/>; leer gilt als %.</summary>
+    private static int KanalEinheitIndex(string? einheit)
+        => einheit == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH ? 1 : 0;
+
+    /// <summary>Die Einheit hinter dem Zahlenfeld; leer gilt als %.</summary>
+    private static string KanalEinheit(string? einheit) => KanalEinheiten[KanalEinheitIndex(einheit)].Text;
+
+    /// <summary>Die Herleitung der Zirkulation samt Jahresmenge, wenn Leistung und Laufzeit stehen.</summary>
+    private string ZirkulationZeile
+    {
+        get
+        {
+            WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+            if (!v.MitZirkulation) return Resource.SIMKONF_HRL_ZIRK;
+            return Resource.SIMKONF_HRL_ZIRK + " " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Resource.SIMKONF_HRL_ZIRK_MENGE, WindowsFormsApplication1.Energieeinheit.MWh.AusKWh(v.ZirkulationJahresKwh));
+        }
+    }
+
+    /// <summary>Der Wert eines Kanals (0 Heizung, 1 Brauchwasser, 2 Prozess); leer = kein Kanalwert.</summary>
+    private void KanalwertGesetzt(int kanal, double? wert)
+    {
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungWert = wert },
+            1 => v with { BrauchwasserWert = wert },
+            _ => v with { ProzessWert = wert }
+        });
+    }
+
+    /// <summary>Die Einheit eines Kanals; sie wirkt erst mit einem Wert.</summary>
+    private void KanalEinheitGewaehlt(int kanal, int? index)
+    {
+        if (index is null) return;
+        string einheit = KanalEinheiten[index.Value == 1 ? 1 : 0].Text;
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungEinheit = einheit },
+            1 => v with { BrauchwasserEinheit = einheit },
+            _ => v with { ProzessEinheit = einheit }
+        });
+    }
+
+    private void ZirkLeistungGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLeistungKw = wert });
+
+    private void ZirkLaufzeitGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLaufzeitHd = wert });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe SOFORT über die Naht der Hülle (Muster Aufheizoptimierung). Eine
+    /// Einheit ohne Wert bleibt im Arbeitsstand stehen, bis ein Wert dazukommt; scheitert das
+    /// Schreiben, zeigt der Abschnitt wieder den gespeicherten Stand (@key) und die Fußzeile meldet es.
+    /// </summary>
+    private void NetzkanaeleSchreiben(WindowsFormsApplication1.Netzverlustvorgabe neu)
+    {
+        if (Parameter?.NetzkanaeleSchreiben is null) return;
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is null && Parameter.NetzkanaeleSchreiben(gespeichert))
+        {
+            // Die gewählte Einheit eines leeren Kanals bleibt sichtbar stehen.
+            _parameter.Netzkanaele = gespeichert with
+            {
+                HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+                BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+                ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+            };
+            return;
+        }
+
+        _netzkanalSchluessel++;
+        Melden(grund ?? Resource.SIMKONF_MSG_NV_KANAL_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>@key des Kühlschalters — ein Neuaufbau nach gescheitertem Schreiben.</summary>

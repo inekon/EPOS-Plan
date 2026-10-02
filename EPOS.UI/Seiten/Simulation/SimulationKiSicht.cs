@@ -405,6 +405,121 @@ public sealed class SimulationKiSicht
                .ToList();
 
     // =====================================================================
+    //  Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4)
+    // =====================================================================
+    //
+    // Acht Felder über EINEN Delegaten (NetzkanaeleSchreiben): Jede Setzung schreibt die ganze
+    // Vorgabe sofort, wie ein Feld des Abschnitts. Leer = kein Kanalwert; sind alle drei leer, gilt
+    // der Projektwert „netzverluste". Eine Einheit ohne Wert bleibt im Arbeitsstand, bis ein Wert
+    // dazukommt.
+
+    /// <summary>Netzverlust des Heizkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustHeizung
+    {
+        get => Netzkanaele.HeizungWert;
+        set => NetzkanalSetzen(v => v with { HeizungWert = value });
+    }
+
+    /// <summary>Einheit des Heizkanalwerts: <c>%</c> oder <c>kWh/a</c>.</summary>
+    public string NetzverlustHeizungEinheit
+    {
+        get => Netzkanaele.HeizungEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { HeizungEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Brauchwasserkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustBrauchwasser
+    {
+        get => Netzkanaele.BrauchwasserWert;
+        set => NetzkanalSetzen(v => v with { BrauchwasserWert = value });
+    }
+
+    /// <summary>Einheit des Brauchwasserkanalwerts.</summary>
+    public string NetzverlustBrauchwasserEinheit
+    {
+        get => Netzkanaele.BrauchwasserEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { BrauchwasserEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Prozesskanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustProzess
+    {
+        get => Netzkanaele.ProzessWert;
+        set => NetzkanalSetzen(v => v with { ProzessWert = value });
+    }
+
+    /// <summary>Einheit des Prozesskanalwerts.</summary>
+    public string NetzverlustProzessEinheit
+    {
+        get => Netzkanaele.ProzessEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { ProzessEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Die Zirkulationsleistung des Bestandswegs [kW]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLeistung
+    {
+        get => Netzkanaele.ZirkulationLeistungKw;
+        set => NetzkanalSetzen(v => v with { ZirkulationLeistungKw = value });
+    }
+
+    /// <summary>Die Laufzeit der Zirkulation [h/d]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLaufzeit
+    {
+        get => Netzkanaele.ZirkulationLaufzeitHd;
+        set => NetzkanalSetzen(v => v with { ZirkulationLaufzeitHd = value });
+    }
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustHeizungEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustBrauchwasserEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustProzessEinheitWahl => Kanaleinheiten;
+
+    private static readonly IReadOnlyList<KiWahleintrag> Kanaleinheiten = new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    private WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele
+        => Parameter?.Netzkanaele ?? WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+
+    /// <summary>Eine Einheit aus der Wahl; eine fremde lehnt die Sicht benannt ab.</summary>
+    private static string KanalEinheit(string? wert)
+    {
+        string w = (wert ?? "").Trim();
+        if (w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT ||
+            w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH) return w;
+        throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_NV_EINHEIT_UNBEKANNT, w));
+    }
+
+    /// <summary>Schreibt die ganze Vorgabe sofort; scheitert es, steht der Grund in der Ausnahme.</summary>
+    private void NetzkanalSetzen(Func<WindowsFormsApplication1.Netzverlustvorgabe, WindowsFormsApplication1.Netzverlustvorgabe> aenderung)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? schreiben = Wege?.NetzkanaeleSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        WindowsFormsApplication1.Netzverlustvorgabe neu = aenderung(p.Netzkanaele);
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is not null) throw new InvalidOperationException(grund);
+        if (!schreiben(gespeichert))
+            throw new InvalidOperationException(Resource.SIMKONF_MSG_NV_KANAL_FEHLER);
+        p.Netzkanaele = gespeichert with
+        {
+            HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+            BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+            ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+        };
+    }
+
+    // =====================================================================
     //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
     // =====================================================================
     //

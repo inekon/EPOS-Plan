@@ -255,6 +255,9 @@ namespace WindowsFormsApplication1
             { "Form_WechselrichterImport",     B_PHOTOVOLTAIK },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
+            // Die Betriebskalender gelten fuer Brauchwasser, Prozesswaerme und Strom; ihr Bereich
+            // ist der des Simulationslaufs, in dem sie wirken.
+            { "Form_Betriebskalender",         B_SIMULATION },
             { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Hauptfenster",                  B_HAUPTFENSTER },
