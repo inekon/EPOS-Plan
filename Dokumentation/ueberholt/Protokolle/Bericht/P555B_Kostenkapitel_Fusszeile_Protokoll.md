@@ -232,6 +232,6 @@ für CO₂ und die Menge.
   *Die_Fussnoten_kommen_aus_den_Ressourcen* prüft den neuen Schlüssel (de/en, verschieden, eine Stelle, de gleich
   Rückfall). Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
 - **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel` um den Tarifsatz mit neutralem Beispiel
-  ergänzt; der Logbuchsatz unter Version 1.2.0.6 deckt beide Fälle (#644, #646 vorläufig). Der Wiki-Upload steht
+  ergänzt; der Logbuchsatz unter Version 1.2.0.6 deckt beide Fälle (#644, #649). Der Wiki-Upload steht
   gebündelt aus.
 - **Gate:** siehe Statuszeile.
