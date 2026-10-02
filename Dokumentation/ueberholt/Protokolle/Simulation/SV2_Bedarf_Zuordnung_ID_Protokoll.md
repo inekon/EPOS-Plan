@@ -135,7 +135,7 @@ Einfrierregel ist berührt.
 
 ## 6 Gate
 
-Gate auf dem Merge-Stand: siehe Statuszeile der Hauptsitzung.
+Gate #642 auf dem Merge-Stand `27159b252` (Statuszeile #643, gemeinsam mit #642): Kern-Filter 0 Fehler, ChartProben 200 Hashes = Messlatte, Tests Kern 9 703, UI 7 206 von 7 207 (`GebaeudeAdminDialogTests.Verwerfen_nimmt_die_Konditionierung_zurueck` einmal rot bei gleichzeitigem vollem UI-Testlauf eines Agenten im Nebenbaum, danach einzeln 45/45 und der volle UI-Lauf 7 207/7 207 grün), KiKern 549, SpeicherEngine 386, SpeicherPlanung 27, Wachen 35, Referenzlauf 16/16 PASS und 487/487 CSV byte-gleich, Plattformnachweis 16/16 PASS, Windows-Schale 0 Fehler.
 
 ## 7 Wiki und Logbuch
 
