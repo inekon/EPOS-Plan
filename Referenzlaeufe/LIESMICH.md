@@ -544,8 +544,9 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`). Die Testdatenbank trägt seither die Spalten
 der Aufheizoptimierung der Schemaschritte 160 und 161 (Nachtrag „Schemaschritte 160 und 161“ unten), Schalter
 überall 0, alles übrige leer, und die Einheitenspalte des Kessel-Bereitschaftsverlusts aus Schemaschritt 162
-(Nachtrag „Schemaschritt 162“ unten), überall `kW`: Schemastand **162**, 81 170 432 Byte, LFS-SHA-256
-`05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`. **Die Basis bleibt**, weil kein Rechenwert
+(Nachtrag „Schemaschritt 162“ unten), überall `kW`, und die Albedo-Spalte der Anlagenzeile aus Schemaschritt 163
+(Nachtrag „Schemaschritt 163“ unten), überall leer: Schemastand **163**, 81 170 432 Byte, LFS-SHA-256
+`be9d733ca8d503dc159310b202e72071abf6608e2c3644f77b9a8b593807c200`. **Die Basis bleibt**, weil kein Rechenwert
 betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten, und die Vorgabe `kW`
 rechnet den Bereitschaftsverlust wie zuvor. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
@@ -658,6 +659,14 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`**. **Die Basis bleibt:** Die sechzehn
 > Projekte rechnen auf einer so gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine
 > Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 163 (Albedo der Anlagenzeile), Basis unverändert.** Reines DDL aus `AlbedoSchema`
+> (Nummer `KesselBereitschaftEinheitSchema.SCHRITT + 1`): an `Tab_Energieanlagen` die nullbare Spalte
+> `Albedo REAL CHECK (Albedo IS NULL OR (Albedo >= 0 AND Albedo <= 1))`; leer rechnet mit 0,2 wie zuvor. Die
+> Testdatenbank ist aus der Fassung `05783be1…` (Schemastand 162) mit `Werkzeuge/Testdatenbankschema` auf **163**
+> gezogen (1 Spalte, keine Tabelle), jede Zeile leer. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `be9d733ca8d503dc159310b202e72071abf6608e2c3644f77b9a8b593807c200`**. **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so
+> gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R30 `2026-09-30_R30_Stromverbraucher`
 
