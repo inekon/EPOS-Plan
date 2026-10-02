@@ -68,19 +68,13 @@ namespace WindowsFormsApplication1
         public const double ABSENKSOLLWERT_AUS = double.NaN;
 
         /// <summary>
-        /// Der kleinste Komfortsollwert [°C]: die Grenzen der Kühlspalte der Matrix — die
-        /// Plausibilitätsgrenze des Kühlsollwerts (<see cref="Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"/>)
-        /// und die Zellgrenze der Größe Kühlen (<see cref="Konditionierungsgroessen.Min"/>), die engere gilt.
+        /// Der kleinste Komfort- und Absenksollwert [°C]: die Zellgrenze der Größe Kühlen
+        /// (<see cref="Konditionierungsgroessen.Min"/>) — dieselbe Grenze wie die Felder der Kühlspalte.
         /// </summary>
-        public static double KomfortsollwertMin
-            => Math.Max(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll));
+        public static double KomfortsollwertMin => Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll);
 
-        /// <summary>
-        /// Der größte Komfortsollwert [°C] — wie <see cref="KomfortsollwertMin"/> die engere der beiden Grenzen
-        /// der Kühlspalte.
-        /// </summary>
-        public static double KomfortsollwertMax
-            => Math.Min(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX, Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll));
+        /// <summary>Der größte Komfort- und Absenksollwert [°C] (<see cref="Konditionierungsgroessen.Max"/>).</summary>
+        public static double KomfortsollwertMax => Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll);
 
         /// <summary>Der Weg von einer Größe in eine andere; <see cref="Vorlagenkopierweg.Keiner"/> = die Richtung gibt es nicht.</summary>
         public static Vorlagenkopierweg Weg(Konditionierungsgroesse quelle, Konditionierungsgroesse ziel)

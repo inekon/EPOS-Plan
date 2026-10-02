@@ -224,7 +224,7 @@ KP0. Leitkonzept 15 ist mit N1.59 nachgezogen.
 | Größe | Werteart | heutige Spalten | ohne Kalender | Eigentümer |
 |---|---|---|---|---|
 | **Heizsollwert** θ_H | 0…30 °C oder „aus", auch je Stunde | vier Sollwerte, `Nachtabsenkung_Beginn/_Ende`, `Ferien`, `Ferienbeginn/-ende_1…4`; AK1 `Sollwertprofil` | Standardfahrplan (3.3) | Zone (Gebäude), Katalogbau, Vorlage |
-| **Kühlsollwert** θ_K | °C in den heutigen Grenzen oder „aus" | `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht` (P13) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau, Vorlage; Zone ab KU3 |
+| **Kühlsollwert** θ_K | 15…35 °C oder „aus" | `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht` (P13) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau, Vorlage; Zone ab KU3 |
 | **Lüftung** n_N | Nutzerlüftung 0…20 1/h; die Infiltration bleibt konstant darunter | `Luftwechsel_Nutzer` | der heutige Wert | Zone (Gebäude), Katalogbau, Vorlage |
 | **Geräte und Anlage** Q_G | Anteil 0…100 % eines Nennwerts [W] | `Interne_Waermegewinne` | 100 % | Zone (Gebäude), Katalogbau, Vorlage |
 | **Personen** Q_P | Anwesenheit 0…100 % × Nennwert [W] | neu; `Bewohner` schlägt die Personenzahl vor | kein Kalender = 0 W zusätzlich | Zone (Gebäude), Katalogbau, Vorlage |
@@ -468,7 +468,10 @@ genau seinen Zielbereich; gespeichert werden gewöhnliche Regeln, dazu ein lesba
 
 - **Streng (H-F10):** genau 168 Zellen je Woche, jede eine Zahl in den Grenzen der Größe oder „aus" (P2); höchstens
   **64 Perioden** je Kalender (EPOS-Wert); Rang eindeutig; Tage 1…365; Feiertagsregel aus der festen Liste. In der
-  Matrix: Stunden 0…23, Saisontage 1…365, Lüftung 0…20 1/h, Anteile 0…100 %.
+  Matrix: Stunden 0…23, Saisontage 1…365, Lüftung 0…20 1/h, Anteile 0…100 %. Die Grenzen einer Größe stehen an einer
+  Stelle des Kerns (`Konditionierungsgroessen.Min/Max`); Zellprüfung, Leser, die Felder der Matrix und der Kalenderkarte,
+  der Assistent und die Sollwerte von „Kopieren nach …" nehmen sie. Der Kühlsollwert hat die Plausibilitätsgrenzen
+  15…35 °C, dieselben wie der Kühlsollwert des Gebäudes, dessen Wert die Bestandszelle der Kühlspalte trägt.
 - **Kühl- über Heizsollwert je Stunde (F17):** θ_K(h) ≥ θ_H(h) + 1 K, wo beide wirken — bei konstantem Kühlsollwert
   genau die heutige Prüfung (`GebaeudeModellEingang.cs:1641`); die Matrix prüft dasselbe je Zeile vor. Die Rampe wird
   **vor** der Prüfung an θ_K(h) − 1 K gekappt, benannt und gezählt; eine Optimierung bricht nie einen Lauf ab.

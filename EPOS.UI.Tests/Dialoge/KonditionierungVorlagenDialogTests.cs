@@ -429,7 +429,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         cut.Find(".epos-kond-kopieren-sollwert input").Input("40");
         Kopieren(cut);
         Assert.Contains("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren-sollwert").ClassList);
-        Assert.Equal("Der Komfortsollwert ist eine Zahl von 15 bis 30 °C.",
+        Assert.Equal("Der Komfortsollwert ist eine Zahl von 15 bis 35 °C.",
                      cut.Find(".epos-kond-kopieren-sollwert .epos-kond-feldmeldung").TextContent.Trim());
         Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
 
@@ -470,7 +470,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         // Keine Zahl und nicht „aus": das Feld färbt, „Kopieren" nennt Grenzen und „aus" am Feld.
         cut.Find(".epos-kond-kopieren-absenkwert input").Input("warm");
         Kopieren(cut);
-        Assert.Equal("Der Absenksollwert ist eine Zahl von 15 bis 30 °C oder „aus“.",
+        Assert.Equal("Der Absenksollwert ist eine Zahl von 15 bis 35 °C oder „aus“.",
                      cut.Find(".epos-kond-kopieren-absenkwert .epos-kond-feldmeldung").TextContent.Trim());
         Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
 

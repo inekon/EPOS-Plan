@@ -356,25 +356,25 @@
 
     /// <summary>
     /// Die Untergrenze einer Zelle — der Kern prüft die Grenzen der Größe genau (Zellenprüfung); die
-    /// Kühlspalte trägt die Plausibilitätsgrenzen des Kühlsollwerts (15 … 35 °C), wie das Feld, das
-    /// sie ablöst.
+    /// Kühlspalte nimmt dieselbe Grenze wie diese (<c>Konditionierungsgroessen.Min</c>), die Plausibilitätsgrenze
+    /// des Kühlsollwerts.
     /// </summary>
     private static double? Minimum(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
     {
         (KonditionierungGroesse.Heizen, _) => null,
-        (KonditionierungGroesse.Kuehlen, _) => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN,
+        (KonditionierungGroesse.Kuehlen, _) => Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll),
         // Die Infiltration ist nie null (Stufe G2) - wie das Feld, das die Zelle abloest.
         (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => 0.01,
         _ => 0
     };
 
     /// <summary>
-    /// Die Obergrenze: Anteile höchstens 100 %, der Kühlsollwert höchstens 35 °C, der Luftwechsel
-    /// höchstens 10 1/h (Stufe G2).
+    /// Die Obergrenze: Anteile höchstens 100 %, der Kühlsollwert die Zellgrenze des Kerns
+    /// (<c>Konditionierungsgroessen.Max</c>), der Luftwechsel höchstens 10 1/h (Stufe G2).
     /// </summary>
     private static double? Maximum(KonditionierungGroesse g, KonditionierungZeile z) => g switch
     {
-        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX,
+        KonditionierungGroesse.Kuehlen => Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll),
         KonditionierungGroesse.Lueftung => 10,
         _ => KonditionierungBearbeitung.IstAnteil(g, z) ? 100 : null
     };

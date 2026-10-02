@@ -841,9 +841,9 @@ namespace EPOS.Kern.Tests
                          (heizBuero, Konditionierungsgroesse.Kuehlsoll, "BÜRO", 26.0, 28.0),            // Doppelname in der Zielliste
                          (heizBuero, Konditionierungsgroesse.Kuehlsoll, "", 26.0, 28.0),                // kein Name
                          (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", null, 28.0),    // Komfortsollwert fehlt
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 31.0, 28.0),    // außerhalb der Kühlspalte
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 36.0, 28.0),    // außerhalb der Kühlspalte
                          (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, null),    // Absenksollwert fehlt
-                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, 31.0),    // außerhalb der Kühlspalte
+                         (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, 36.0),    // außerhalb der Kühlspalte
                          (heizBuero, Konditionierungsgroesse.Kuehlsoll, "Büro Heizung", 26.0, 25.0),    // unter dem Komfortsollwert
                          (heizBuero, Konditionierungsgroesse.Heizsoll, "Büro Heizung", 26.0, 28.0),     // dieselbe Größe
                          (heizBuero, Konditionierungsgroesse.Lueftung, "Büro Heizung", 26.0, 28.0),     // keine Richtung

@@ -289,16 +289,16 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Komfortsollwert_haelt_die_Grenzen_der_Kuehlspalte()
         {
-            // Wirksam nimmt die Kühlspalte der Matrix 15 … 30 °C an: das Feld 15 … 35 °C, die Zelle der Größe
-            // Kühlen 0 … 30 °C - die engere Grenze gilt.
+            // Die Kühlspalte nimmt EINE Grenze: die Zellgrenze der Größe Kühlen, die Plausibilitätsgrenze des
+            // Kühlsollwerts 15 … 35 °C.
             Assert.Equal(15.0, Vorlagenkopierregel.KomfortsollwertMin);
-            Assert.Equal(30.0, Vorlagenkopierregel.KomfortsollwertMax);
+            Assert.Equal(35.0, Vorlagenkopierregel.KomfortsollwertMax);
             Assert.Equal(26.0, Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE);
             Assert.Null(Vorlagenkopierregel.KomfortsollwertPruefen(Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE));
 
-            foreach (double gut in new[] { 15.0, 22.5, 30.0, 25.1234 })
+            foreach (double gut in new[] { 15.0, 22.5, 30.0, 35.0, 25.1234 })
                 Assert.Null(Vorlagenkopierregel.KomfortsollwertPruefen(gut));
-            foreach (double? schlecht in new double?[] { null, double.NaN, double.PositiveInfinity, 14.99, 30.01, 35.0, 26.12345 })
+            foreach (double? schlecht in new double?[] { null, double.NaN, double.PositiveInfinity, 14.99, 35.01, 40.0, 26.12345 })
             {
                 Assert.NotNull(Vorlagenkopierregel.KomfortsollwertPruefen(schlecht));
                 Ebenenergebnis e = Vorlagenkopierregel.Umsetzen(Heizvorlage(), H, K, schlecht, 28.0);
@@ -306,7 +306,30 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Vorlagenkopierregel.KomfortsollwertPruefen(schlecht), e.Meldung);
             }
             Assert.Contains("15", Vorlagenkopierregel.KomfortsollwertPruefen(40.0));
-            Assert.Contains("30", Vorlagenkopierregel.KomfortsollwertPruefen(40.0));
+            Assert.Contains("35", Vorlagenkopierregel.KomfortsollwertPruefen(40.0));
+        }
+
+        [Fact]
+        public void Felder_Kernpruefung_und_Meldung_der_Kuehlspalte_nehmen_dieselbe_Grenze()
+        {
+            // Die eine Quelle: die Zellgrenze der Größe Kühlen ist die Plausibilitätsgrenze des Kühlsollwerts,
+            // dieselbe wie am Kühlsollwert des Gebäudes (dessen Wert die Bestandszelle der Spalte trägt).
+            double min = Konditionierungsgroessen.Min(K), max = Konditionierungsgroessen.Max(K);
+            Assert.Equal((Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX), (min, max));
+            Assert.Equal((min, max), (Vorlagenkopierregel.KomfortsollwertMin, Vorlagenkopierregel.KomfortsollwertMax));
+            Assert.Equal("15 … 35", Konditionierungsgroessen.Bereichstext(K));
+
+            // Die Zellprüfung des Kerns: genau an den Grenzen gut, knapp daneben benannt abgelehnt.
+            foreach (double gut in new[] { min, max })
+                Assert.Null(Konditionierungsarbeit.Zellenpruefung(K, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(gut)));
+            foreach (double schlecht in new[] { min - 0.01, max + 0.01, 0.0 })
+                Assert.Equal("Der Wert liegt außerhalb der Grenzen 15 … 35.",
+                             Konditionierungsarbeit.Zellenpruefung(K, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(schlecht)));
+
+            // Kalender und Assistent prüfen mit derselben Grenze.
+            Assert.True(Konditionierungsgroessen.ImBereich(K, max));
+            Assert.False(Konditionierungsgroessen.ImBereich(K, max + 0.01));
+            Assert.Throws<ArgumentException>(() => Kalenderwoche.Schreiben(Woche((t, s) => max + 1.0), K));
         }
 
         // =============================================================================
@@ -350,9 +373,9 @@ namespace EPOS.Kern.Tests
             Assert.Null(Vorlagenkopierregel.AbsenksollwertPruefen(Vorlagenkopierregel.ABSENKSOLLWERT_AUS, 26.0));
 
             // Dieselben Grenzen wie der Komfortsollwert; gleich dem Komfortsollwert ist erlaubt.
-            foreach (double gut in new[] { 26.0, 27.5, 30.0, 28.1234 })
+            foreach (double gut in new[] { 26.0, 27.5, 35.0, 28.1234 })
                 Assert.Null(Vorlagenkopierregel.AbsenksollwertPruefen(gut, 26.0));
-            foreach (double? schlecht in new double?[] { null, double.PositiveInfinity, double.NegativeInfinity, 30.01, 35.0, 28.12345 })
+            foreach (double? schlecht in new double?[] { null, double.PositiveInfinity, double.NegativeInfinity, 35.01, 40.0, 28.12345 })
             {
                 string meldung = Vorlagenkopierregel.AbsenksollwertPruefen(schlecht, 26.0);
                 Assert.NotNull(meldung);
@@ -362,7 +385,7 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal("Für die Kopie von Heizen nach Kühlen fehlt der Absenksollwert – eine Zahl oder „aus“.",
                          Vorlagenkopierregel.AbsenksollwertPruefen(null, 26.0));
-            Assert.Equal("Der Absenksollwert 40 °C liegt außerhalb der Grenzen der Kühlspalte 15 … 30 °C.",
+            Assert.Equal("Der Absenksollwert 40 °C liegt außerhalb der Grenzen der Kühlspalte 15 … 35 °C.",
                          Vorlagenkopierregel.AbsenksollwertPruefen(40.0, 26.0));
 
             // Unter dem Komfortsollwert: benannt abgelehnt - beim Kühlen ist die Absenkung höher.
