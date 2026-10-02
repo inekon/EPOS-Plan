@@ -31,9 +31,12 @@ namespace WindowsFormsApplication1
         public double Waermebedarf_Brauchwasser = 0;
 
         /// <summary>
-        /// Zapfprofilgenerator (Umsetzungskonzept Zapfprofilgenerator 2.2): Jahresverlust der
-        /// Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe mitläuft — auf dem
-        /// Bestandsweg 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND Zirkulation.
+        /// Jahresverlust der Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe
+        /// mitläuft: auf dem Generatorweg die Zirkulation des Zapfprofilgenerators
+        /// (Umsetzungskonzept Zapfprofilgenerator 2.2), auf dem Bestandsweg die feste Leistung in
+        /// Laufstunden aus der Projekteinstellung (<see cref="Netzverlustvorgabe"/>, Konzept
+        /// Simulationsablauf 17), sonst 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND
+        /// Zirkulation.
         /// </summary>
         public double Brauchwasser_Zirkulation_Mwh = 0;
 
@@ -1510,9 +1513,56 @@ namespace WindowsFormsApplication1
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
+
+                // ZIRKULATION IM BESTANDSWEG (BW4): nur in der Projektrechnung und nur, wenn das
+                // Projekt sie mit Leistung und Laufzeit führt; ohne sie bleibt der Kanal, wie er ist.
+                if (modus == ProfilQuellmodus.Projektrechnung)
+                    BestandswegZirkulation(NetzverlustvorgabeProjekt);
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+        }
+
+        /// <summary>
+        /// <b>Die Zirkulation des Bestandswegs</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf 17): eine feste Leistung P [kW] in t_Lauf Laufstunden je Tag als eigene
+        /// Teilreihe des Brauchwasserkanals — dieselbe Formel wie die Methode „manuell" des
+        /// Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+        /// <code>
+        /// q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+        /// </code>
+        /// Das Laufzeitfenster liegt wie beim Generator zusammenhängend um die Tagesmitte der
+        /// Zapfung (hier: der Brauchwasserreihe der Profile), eine gebrochene Laufzeit belegt die
+        /// letzte Stunde anteilig (<see cref="Zirkulationskanal.Laufzeitfenster"/>). Normbezug:
+        /// Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und DIN V 18599-8, Betrieb
+        /// der Zirkulation (Unterbrechung höchstens 8 h am Tag) nach DVGW W 551.
+        ///
+        /// <para>Ohne Zirkulation (<see cref="Netzverlustvorgabe.MitZirkulation"/> falsch) bleibt
+        /// alles, wie es war: kein Posten, keine Monatsschichten. Mit ihr tragen
+        /// <see cref="Brauchwasser_Zirkulation_Mwh"/>, die Monatsschichten Zapfung und Zirkulation
+        /// und die Monatssummen des Kanals die Teilreihe — derselbe Ausweis wie beim Generator.</para>
+        /// </summary>
+        internal void BestandswegZirkulation(Netzverlustvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.MitZirkulation) return;
+
+            double laufzeit = vorgabe.ZirkulationLaufzeitHd.Value;
+            double[] zapfung = (double[])brauchwasserwerte.Clone();
+            double mitte = Zirkulationskanal.Tagesmitte(new IReadOnlyList<double>[] { zapfung });
+            double[] fenster = Zirkulationskanal.Laufzeitfenster(laufzeit, mitte);
+            double[] zirkulation = Zirkulationskanal.Reihe(vorgabe.ZirkulationJahresKwh, laufzeit, fenster)
+                                                    .KopieStundenKwh();
+
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
+            Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(zirkulation.Sum());
+            WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zapfung, Waermebedarf_Brauchwasser_Zapfung_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat, mo_anfang, mo_ende);
+
+            SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER + string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_ZIRKULATION_BESTANDSWEG,
+                vorgabe.ZirkulationLeistungKw.Value, laufzeit, Brauchwasser_Zirkulation_Mwh));
         }
 
         // =====================================================================

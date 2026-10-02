@@ -192,7 +192,10 @@ namespace WindowsFormsApplication1
             };
 
             Zeichenmodell jahresmodell = null;
-            bool zapfprofil = mitBrauchwasser && simulation.Zapfprofil != null;
+            // Zapfung und Zirkulation getrennt: auf dem Zapfprofilweg und auf dem Bestandsweg mit
+            // Zirkulation (Entscheidungsvorlage Modellgrenzen BW4) - derselbe Posten, derselbe Stapel.
+            bool zapfprofil = mitBrauchwasser &&
+                              (simulation.Zapfprofil != null || simulation.Brauchwasser_Zirkulation_Mwh > 0);
             if (mitBrauchwasser)
             {
                 Monatssicht brauchwasser = Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
