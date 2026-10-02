@@ -78397,10 +78397,10 @@ namespace WindowsFormsApplication1.MyResource {
         ///Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
         ///
         ///Stromgeführt (Wirtschaftlich)
-        ///Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
+        ///Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im Speicher gepuffert, solange Speicherkapazität verfügbar ist; darüber hinaus wird überschüssige Wärme weggekühlt.
         ///
         ///Ohne Einspeisung (Zero-Export)
-        ///Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, s [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt s [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string SIMERG_INFO_BHKW {
             get {
