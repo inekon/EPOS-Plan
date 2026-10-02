@@ -112,6 +112,72 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// <b>Alle Eigenschaften eines Namens in allen Sätzen</b> (Mehrzonenkonzept 6.5): erst die Sätze des
+        /// Vorkommnisses, dann die des Typs, je in Dateireihenfolge. Verglichen wird der Name ohne eine
+        /// angehängte Einheit in Klammern (<see cref="NameOhneEinheit"/>), Groß-/Kleinschreibung egal — ein
+        /// CAD-Export schreibt etwa <c>ThermalTransmittance (W/(m K))</c> oder <c>UValue (W/(m² K))</c>.
+        /// </summary>
+        public static IEnumerable<IfcFund> AlleMitNamen(IfcRueckbezuege bezuege, IIfcObject objekt, IReadOnlyCollection<string> namen)
+        {
+            if (objekt == null) yield break;
+            foreach (IIfcPropertySet ps in Saetze(bezuege, objekt).OfType<IIfcPropertySet>())
+                foreach (IIfcProperty p in ps.HasProperties)
+                    if (p != null && namen.Any(n => Gleich(NameOhneEinheit(p.Name.ToString(), out _), n)))
+                        yield return new IfcFund(p, IfcEigenschaftsquelle.Vorkommnis, Text(ps.Name));
+            foreach (IIfcRelDefinesByType rel in bezuege.TypisiertDurch(objekt))
+            {
+                IIfcTypeObject typ = rel?.RelatingType;
+                if (typ?.HasPropertySets == null) continue;
+                foreach (IIfcPropertySet ps in typ.HasPropertySets.OfType<IIfcPropertySet>())
+                    foreach (IIfcProperty p in ps.HasProperties)
+                        if (p != null && namen.Any(n => Gleich(NameOhneEinheit(p.Name.ToString(), out _), n)))
+                            yield return new IfcFund(p, IfcEigenschaftsquelle.Typ, Text(ps.Name));
+            }
+        }
+
+        /// <summary>
+        /// Der Eigenschaftsname ohne angehängte Einheit: <c>ThermalTransmittance (W/(m K))</c> →
+        /// <c>ThermalTransmittance</c>, <paramref name="einheit"/> = <c>W/(m K)</c>; ohne Klammer am Ende
+        /// bleibt der Name, wie er ist, und die Einheit <c>null</c>.
+        /// </summary>
+        public static string NameOhneEinheit(string name, out string einheit)
+        {
+            einheit = null;
+            if (string.IsNullOrEmpty(name)) return name ?? "";
+            string t = name.Trim();
+            if (!t.EndsWith(")", StringComparison.Ordinal)) return t;
+            // Die öffnende Klammer, die zur letzten schließenden gehört.
+            int tiefe = 0;
+            for (int i = t.Length - 1; i >= 0; i--)
+            {
+                if (t[i] == ')') tiefe++;
+                else if (t[i] == '(' && --tiefe == 0)
+                {
+                    if (i == 0) return t;
+                    einheit = t.Substring(i + 1, t.Length - i - 2).Trim();
+                    return t.Substring(0, i).Trim();
+                }
+            }
+            return t;
+        }
+
+        /// <summary>
+        /// Ist das die Einheit eines Wärmedurchgangskoeffizienten, W/(m²K)? Leerzeichen, Klammern, Mal- und
+        /// Hochzeichen zählen nicht (<c>W/(m² K)</c>, <c>W/m2K</c>, <c>W/(m^2·K)</c>); <c>W/(m K)</c> ist es nicht.
+        /// </summary>
+        public static bool IstUWertEinheit(string einheit)
+        {
+            if (string.IsNullOrWhiteSpace(einheit)) return false;
+            var sb = new System.Text.StringBuilder();
+            foreach (char c in einheit)
+            {
+                if (char.IsWhiteSpace(c) || c == '(' || c == ')' || c == '*' || c == '·' || c == '⋅' || c == '^' || c == '.') continue;
+                sb.Append(c == '²' ? '2' : char.ToLowerInvariant(c));
+            }
+            return sb.ToString() == "w/m2k";
+        }
+
         /// <summary>Hat das Objekt (Vorkommnis) einen Eigenschaftssatz dieses Namens?</summary>
         public static bool HatSatz(IfcRueckbezuege bezuege, IIfcObject objekt, string satz)
             => Saetze(bezuege, objekt).OfType<IIfcPropertySet>().Any(ps => Gleich(Text(ps.Name), satz));

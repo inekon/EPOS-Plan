@@ -384,11 +384,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Gehört das Bauteil ohne jeden Nachbarraum zur Hülle seines Gebäudes? Der IFC-Leser setzt es
-        /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c>), das über die räumliche Struktur
-        /// einem Gebäude zugeordnet ist; es zählt dann nach seiner <see cref="Randbedingung"/>. gbXML setzt
-        /// es nie — dort hängt jede Fläche an ihren <c>AdjacentSpaceId</c>.
+        /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c> oder die Angrenzung eines
+        /// CAD-Exports: außen, Erdreich, unbeheizt), das über die räumliche Struktur einem Gebäude
+        /// zugeordnet ist und das die Datei nicht ausdrücklich aus der Hüllfläche nimmt; es zählt dann nach
+        /// seiner <see cref="Randbedingung"/>. gbXML setzt es nie — dort hängt jede Fläche an ihren
+        /// <c>AdjacentSpaceId</c>.
         /// </summary>
         public bool HuelleOhneNachbar { get; set; }
+
+        /// <summary>
+        /// Für ein Bauteil der Hülle ohne Nachbarraum gegen <see cref="Randbedingung.Unbeheizt"/> (IFC-Angrenzung
+        /// eines CAD-Exports, Mehrzonenkonzept 6.5): Ist es für die Zone Boden (<c>true</c>, etwa die Kellerdecke)
+        /// oder Decke (<c>false</c>, die oberste Geschossdecke)? <c>null</c> = nach der Bauteilart.
+        /// </summary>
+        public bool? ZonenbodenOhneNachbar { get; set; }
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }

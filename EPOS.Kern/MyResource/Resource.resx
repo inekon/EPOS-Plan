@@ -38848,6 +38848,39 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_MENGE_RUECKFALL" xml:space="preserve">
     <value>Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}.</value>
   </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_TEIL" xml:space="preserve">
+    <value>{0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL" xml:space="preserve">
+    <value>{0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_RUECKFALL" xml:space="preserve">
+    <value>{0} Bauteile ohne Pset_*Common.ThermalTransmittance — der U-Wert stammt aus {1}.{2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_EINHEIT" xml:space="preserve">
+    <value>{0} Bauteile: {1}.{2} nennt die Einheit {3} statt W/(m²K) — der Wert gilt nicht als U-Wert; {4} davon bleiben ohne U-Wert aus der Datei.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_AUSSEN" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Außenbauteil an Außenluft übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_ERDREICH" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als erdberührtes Bauteil übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_INNEN" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Innenbauteil übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Bauteil gegen einen unbeheizten Raum übernommen (Kellerdecke als Boden, oberste Geschossdecke als Decke der Zone).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} ist keiner Angrenzung zugeordnet — es gilt die Vorgabe der Bauteilart (Dach außen, Bodenplatte erdberührt, sonst unbestimmt).</value>
+  </data>
+  <data name="IMP_IFC_PROT_NICHT_HUELLE" xml:space="preserve">
+    <value>{0} Bauteile ohne Raumgrenze tragen {1} = FALSE — sie zählen nicht zur Hüllfläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
+    <value>{0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells).</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>

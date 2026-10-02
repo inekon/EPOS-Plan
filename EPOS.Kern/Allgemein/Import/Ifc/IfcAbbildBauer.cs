@@ -756,11 +756,14 @@ namespace WindowsFormsApplication1
         {
             var uebersprungen = new HashSet<int>();
             // Dach aus Platten (3.4, Zeile Dach): ENTWEDER das Dach mit eigener Fläche ODER seine Platten.
+            // Fenster und Türen als Teile des Dachs (Dachfenster über IfcRelAggregates, Mehrzonenkonzept 6.5)
+            // sind keine Platten: Sie werden Öffnungen des Dachs.
             foreach (IIfcRoof dach in Sortiert<IIfcRoof>())
             {
-                List<IIfcElement> teile = Teile(dach);
+                List<IIfcElement> teile = Teile(dach).Where(t => !(t is IIfcWindow) && !(t is IIfcDoor)).ToList();
                 if (teile.Count == 0) continue;
-                if (IfcEigenschaften.Menge(_bezuege, dach, "Roof", "GrossArea", _einheiten).HasValue)
+                if (IfcEigenschaften.Menge(_bezuege, dach, "Roof", "GrossArea", _einheiten).HasValue
+                    || IfcEigenschaften.MengeRueckfall(_bezuege, dach, RUECKFALL_BAUTEIL_BRUTTO, _einheiten, out _, out _).HasValue)
                     foreach (IIfcElement t in teile) uebersprungen.Add(t.EntityLabel);
                 else
                     uebersprungen.Add(dach.EntityLabel);
@@ -789,6 +792,156 @@ namespace WindowsFormsApplication1
                 .Where(e => !_gefuellt.Contains(e.EntityLabel)).Select(e => e.GlobalId.ToString()).ToList();
             if (ohneWirt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OHNE_WIRT", Ganz(ohneWirt.Count), Beispiele(ohneWirt)));
+            if (_dachteilOeffnungen > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_TEIL", Ganz(_dachteilOeffnungen)));
+            BauteilRueckfaelleMelden();
+        }
+
+        // ==================================================================
+        //  Rückfälle der Bauteile ohne Standardsätze (Mehrzonenkonzept 6.5)
+        // ==================================================================
+
+        /// <summary>Bruttofläche ohne Standardmenge, in dieser Reihenfolge aus allen Mengensätzen.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_BAUTEIL_BRUTTO = new[] { "GrossSideArea", "GrossArea", "Area" };
+
+        /// <summary>Nettofläche der Datei ohne Standardmenge, in dieser Reihenfolge aus allen Mengensätzen.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_BAUTEIL_NETTO = new[] { "NetSideArea", "NetArea" };
+
+        /// <summary>Fläche einer Öffnung ohne <c>Area</c>, Breite × Höhe und <c>OverallWidth × OverallHeight</c>.</summary>
+        internal static readonly IReadOnlyList<string> RUECKFALL_OEFFNUNG = new[] { "Area", "GrossArea" };
+
+        /// <summary>Die Namen des U-Werts: der Standardname und das Synonym fremder Sätze.</summary>
+        internal static readonly IReadOnlyList<string> UWERT_NAMEN = new[] { "ThermalTransmittance", "UValue" };
+
+        /// <summary>Die Eigenschaft der Angrenzung, wenn <c>IsExternal</c> fehlt (CAD-Export, <c>HSETU_BauteilAllgemein</c>).</summary>
+        internal const string ANGRENZUNG = "AdjacentType";
+
+        /// <summary>Die Hüllkennung eines CAD-Exports (<c>HSETU_BauteilEnergetischeBewertung</c>): zählt das Bauteil zur Hüllfläche?</summary>
+        internal static readonly IReadOnlyList<string> HUELLKENNUNG = new[] { "ElementEnergyConsultingProperties.CladdingSurface", "CladdingSurface" };
+
+        /// <summary>
+        /// <b>Die Abbildung der Angrenzung</b> (Mehrzonenkonzept 6.5): Wert ohne das Präfix <c>bta</c>,
+        /// Groß-/Kleinschreibung egal → Randbedingung und, gegen unbeheizt, ob das Bauteil für die Zone
+        /// Boden (<c>true</c>) oder Decke (<c>false</c>) ist. <c>None</c> und jeder andere Wert bleiben
+        /// unbestimmt (die bisherige Vorgabe, benannt).
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<string, (Randbedingung Rand, bool? Zonenboden)> ANGRENZUNG_ABBILDUNG
+            = new Dictionary<string, (Randbedingung, bool?)>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Outside"] = (Randbedingung.Aussenluft, null),
+                ["Ground"] = (Randbedingung.Erdreich, null),
+                ["Heated"] = (Randbedingung.Innen, null),
+                ["UnHeated"] = (Randbedingung.Unbeheizt, null),
+                ["CellarCeiling"] = (Randbedingung.Unbeheizt, true),
+                ["UppermostStorey"] = (Randbedingung.Unbeheizt, false),
+            };
+
+        private int _dachteilOeffnungen;
+        private readonly SortedDictionary<string, int> _bauteilMengenRueckfall = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, int> _uRueckfall = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, int[]> _uEinheit = new SortedDictionary<string, int[]>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, int> _angrenzung = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, int> _nichtHuelle = new SortedDictionary<string, int>(StringComparer.Ordinal);
+
+        private static void Zaehlen(SortedDictionary<string, int> zaehler, string schluessel)
+            => zaehler[schluessel] = zaehler.TryGetValue(schluessel, out int n) ? n + 1 : 1;
+
+        /// <summary>
+        /// Die Fläche aus allen Mengensätzen, wenn die Standardmenge fehlt — gezählt je Ziel, Satz und
+        /// Menge für <c>IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL</c>. Nur Flächennamen: Längen fremder Sätze
+        /// tragen eine andere Bedeutung (im gemessenen CAD-Export ist <c>Width</c> die Wandlänge).
+        /// </summary>
+        private double? FlaecheRueckfall(IIfcElement e, IReadOnlyList<string> namen, string ziel)
+        {
+            double? w = IfcEigenschaften.MengeRueckfall(_bezuege, e, namen, _einheiten, out string satz, out string name);
+            if (w.HasValue) Zaehlen(_bauteilMengenRueckfall, ziel + "\u0001" + satz + "\u0001" + name);
+            return w;
+        }
+
+        /// <summary>
+        /// <b>Die Angrenzung ohne <c>IsExternal</c></b>: die Eigenschaft <see cref="ANGRENZUNG"/> aus einem
+        /// beliebigen Satz (Vorkommnis vor Typ), abgebildet nach <see cref="ANGRENZUNG_ABBILDUNG"/>;
+        /// <c>null</c> = keine Angabe oder ein Wert ohne Abbildung (beides gezählt, wenn eine Angabe da ist).
+        /// </summary>
+        private (Randbedingung Rand, bool? Zonenboden)? Angrenzung(IIfcElement e)
+        {
+            IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, e, new[] { ANGRENZUNG }).FirstOrDefault();
+            if (f == null) return null;
+            string wert = f.Eigenschaft is IIfcPropertyEnumeratedValue aufz
+                ? aufz.EnumerationValues?.Select(IfcEigenschaften.Textwert).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))
+                : f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+            wert = (wert ?? "").Trim();
+            string kern = wert.StartsWith("bta", StringComparison.OrdinalIgnoreCase) ? wert.Substring(3) : wert;
+            string ort = f.Satz + "." + f.Eigenschaft.Name;
+            if (ANGRENZUNG_ABBILDUNG.TryGetValue(kern, out (Randbedingung Rand, bool? Zonenboden) a))
+            {
+                Zaehlen(_angrenzung, Ziel(a.Rand) + "\u0001" + ort + "\u0001" + wert);
+                return a;
+            }
+            Zaehlen(_angrenzung, P + "ANGRENZUNG_UNBESTIMMT\u0001" + ort + "\u0001" + (wert.Length == 0 ? "—" : wert));
+            return null;
+        }
+
+        private static string Ziel(Randbedingung r)
+        {
+            switch (r)
+            {
+                case Randbedingung.Aussenluft: return P + "ANGRENZUNG_AUSSEN";
+                case Randbedingung.Erdreich: return P + "ANGRENZUNG_ERDREICH";
+                case Randbedingung.Innen: return P + "ANGRENZUNG_INNEN";
+                default: return P + "ANGRENZUNG_UNBEHEIZT";
+            }
+        }
+
+        /// <summary>Die Hüllkennung des Bauteils (<see cref="HUELLKENNUNG"/>, Vorkommnis vor Typ); <c>null</c> = keine.</summary>
+        private bool? Huellkennung(IIfcElement e, out string ort)
+        {
+            ort = null;
+            foreach (IfcFund f in IfcEigenschaften.AlleMitNamen(_bezuege, e, HUELLKENNUNG))
+            {
+                if (!(f.Eigenschaft is IIfcPropertySingleValue einzel)) continue;
+                bool? w = IfcEigenschaften.Wahrheit(einzel.NominalValue);
+                if (!w.HasValue) continue;
+                ort = f.Satz + "." + f.Eigenschaft.Name;
+                return w;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Die Sammelmeldungen der Bauteil-Rückfälle: Mengen aus fremden Sätzen (W), U-Werte unter fremdem
+        /// Namen (I), U-Werte mit abweichender Einheit (W, wenn ein Bauteil dadurch ohne U-Wert bleibt, sonst
+        /// I), die Angrenzung ohne <c>IsExternal</c> (I, unbestimmt W) und Bauteile, die nach der Hüllkennung
+        /// nicht zur Hülle zählen (I).
+        /// </summary>
+        private void BauteilRueckfaelleMelden()
+        {
+            foreach (KeyValuePair<string, int> m in _bauteilMengenRueckfall)
+            {
+                string[] t = m.Key.Split('\u0001');
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "BAUTEIL_MENGE_RUECKFALL", Ganz(m.Value), t[0], t[1], t[2]));
+            }
+            foreach (KeyValuePair<string, int> m in _uRueckfall)
+            {
+                string[] t = m.Key.Split('\u0001');
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UWERT_RUECKFALL", Ganz(m.Value), t[0], t[1]));
+            }
+            foreach (KeyValuePair<string, int[]> m in _uEinheit)
+            {
+                string[] t = m.Key.Split('\u0001');
+                _abbild.Meldungen.Add(new PruefMeldung(m.Value[1] > 0 ? PruefStufe.Warnung : PruefStufe.Info, P + "UWERT_EINHEIT",
+                    Ganz(m.Value[0]), t[0], t[1], t[2], Ganz(m.Value[1])));
+            }
+            foreach (KeyValuePair<string, int> m in _angrenzung)
+            {
+                string[] t = m.Key.Split('\u0001');
+                _abbild.Meldungen.Add(new PruefMeldung(t[0] == P + "ANGRENZUNG_UNBESTIMMT" ? PruefStufe.Warnung : PruefStufe.Info,
+                    t[0], Ganz(m.Value), t[1], t[2]));
+            }
+            foreach (KeyValuePair<string, int> m in _azimutRueckfall)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "AZIMUT_RUECKFALL", Ganz(m.Value), m.Key));
+            foreach (KeyValuePair<string, int> m in _nichtHuelle)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "NICHT_HUELLE", Ganz(m.Value), m.Key));
         }
 
         private List<IIfcElement> Teile(IIfcElement e)
@@ -808,7 +961,9 @@ namespace WindowsFormsApplication1
             if (e is IIfcPlate && istAussen != true) return;
 
             List<IIfcRelSpaceBoundary> grenzen = GrenzenVon(e);
-            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte);
+            // Ohne IsExternal und ohne Raumgrenze: die Angrenzung eines CAD-Exports (Mehrzonenkonzept 6.5).
+            (Randbedingung Rand, bool? Zonenboden)? angrenzung = !istAussen.HasValue && grenzen.Count == 0 ? Angrenzung(e) : null;
+            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand);
 
             int gi = GebaeudeVon(e, grenzen);
             var b = new AbbildBauteil
@@ -835,13 +990,26 @@ namespace WindowsFormsApplication1
                 b.BruttoflaecheM2 = Positiv(IfcEigenschaften.Menge(_bezuege, e, klasse, "GrossArea", _einheiten));
                 b.NettoflaecheM2 = NichtNegativ(IfcEigenschaften.Menge(_bezuege, e, klasse, "NetArea", _einheiten));
             }
+            // Ohne Standardmenge: die Flächennamen aus allen Mengensätzen (Mehrzonenkonzept 6.5).
+            if (!b.BruttoflaecheM2.HasValue) b.BruttoflaecheM2 = FlaecheRueckfall(e, RUECKFALL_BAUTEIL_BRUTTO, "GrossArea");
+            if (!b.NettoflaecheM2.HasValue && b.BruttoflaecheM2.HasValue && !IfcEigenschaften.HatMengensatz(_bezuege, e, klasse))
+                b.NettoflaecheM2 = FlaecheRueckfall(e, RUECKFALL_BAUTEIL_NETTO, "NetArea");
             if (!b.BruttoflaecheM2.HasValue) _ohneMengen.Add(b.Kennung);
 
             UWert(e, satz, b);
             b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
 
             Nachbarn(b, rand, grenzen, gi, platte != null || e is IIfcRoof);
-            b.HuelleOhneNachbar = b.Nachbarn.Count == 0 && (rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich);
+            bool huelle = rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich
+                          || (rand == Randbedingung.Unbeheizt && angrenzung.HasValue);
+            if (b.Nachbarn.Count == 0 && huelle && Huellkennung(e, out string kennung) == false)
+            {
+                // Die Datei erklärt das Bauteil ausdrücklich als nicht zur Hüllfläche gehörig.
+                Zaehlen(_nichtHuelle, kennung);
+                huelle = false;
+            }
+            b.HuelleOhneNachbar = b.Nachbarn.Count == 0 && huelle;
+            if (b.HuelleOhneNachbar && rand == Randbedingung.Unbeheizt) b.ZonenbodenOhneNachbar = angrenzung?.Zonenboden;
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
             if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
@@ -865,6 +1033,17 @@ namespace WindowsFormsApplication1
                     if (f != null) _gefuellt.Add(f.EntityLabel);
                 }
             }
+            // Fenster und Türen als Teile des Bauteils (IfcRelAggregates — Dachfenster eines CAD-Exports):
+            // Öffnungen wie die einer Füllung, wenn keine Füllung sie schon trägt (Mehrzonenkonzept 6.5).
+            foreach (IIfcElement t in Teile(e))
+            {
+                if (_gefuellt.Contains(t.EntityLabel)) continue;
+                if (t is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b));
+                else if (t is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b));
+                else continue;
+                _gefuellt.Add(t.EntityLabel);
+                _dachteilOeffnungen++;
+            }
 
             if (gi < 0)
             {
@@ -880,9 +1059,12 @@ namespace WindowsFormsApplication1
         /// entscheidet <c>InternalOrExternalBoundary</c> der Raumgrenzen (<c>EXTERNAL_EARTH</c> = Erdreich,
         /// <c>EXTERNAL*</c> = außen, <c>INTERNAL</c> = innen), bei <c>NOTDEFINED</c> die Zählregel: außen, wenn
         /// genau eine physische Raumgrenze auf das Bauteil zeigt. Ein Dach ohne jede Angabe gilt als außen,
-        /// eine Bodenplatte als erdberührt — beides ist ihre Definition.
+        /// eine Bodenplatte als erdberührt — beides ist ihre Definition. Ohne beides gilt die
+        /// <paramref name="angrenzung"/> eines CAD-Exports (<see cref="ANGRENZUNG"/>, Mehrzonenkonzept 6.5)
+        /// vor diesen Vorgaben.
         /// </summary>
-        internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte)
+        internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte,
+                                           Randbedingung? angrenzung = null)
         {
             bool erde = grenzen.Any(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_EARTH);
             if (istAussen == true) return erde || bodenplatte ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
@@ -900,6 +1082,7 @@ namespace WindowsFormsApplication1
                     return Randbedingung.Aussenluft;
                 return Randbedingung.Innen;
             }
+            if (angrenzung.HasValue) return angrenzung.Value;
             if (dach) return Randbedingung.Aussenluft;
             if (bodenplatte) return Randbedingung.Erdreich;
             return Randbedingung.Unbekannt;
@@ -997,11 +1180,11 @@ namespace WindowsFormsApplication1
                 _platzierungsart[fremd] = _platzierungsart.TryGetValue(fremd, out int z) ? z + 1 : 1;
                 return;
             }
-            if (!rahmen.HasValue) { _seiteUnbestimmt.Add(b.Kennung); return; }
+            if (!rahmen.HasValue) { Unbestimmt(e, b, grenzen); return; }
 
             List<double[]> punkte = Raeume(grenzen, gi).Where(r => _raumPunkt.ContainsKey(r)).Select(r => _raumPunkt[r]).ToList();
             int? seite = IfcPlatzierung.Aussenseite(rahmen.Value, punkte);
-            if (!seite.HasValue) { _seiteUnbestimmt.Add(b.Kennung); return; }
+            if (!seite.HasValue) { Unbestimmt(e, b, grenzen); return; }
 
             double nx = seite.Value * rahmen.Value.Y[0], ny = seite.Value * rahmen.Value.Y[1];
             b.AzimutGrad = IfcPlatzierung.Azimut(nx, ny, _drehung);
@@ -1016,6 +1199,38 @@ namespace WindowsFormsApplication1
                     Azimut = b.AzimutGrad.Value,
                     AbstandM = (rahmen.Value.Ursprung[0] * n[0] + rahmen.Value.Ursprung[1] * n[1]) * _einheiten.Laenge,
                 });
+        }
+
+        /// <summary>Die Namen der Himmelsrichtung, die ein CAD-Export am Bauteil selbst nennt (<c>Orientation (°)</c>).</summary>
+        internal static readonly IReadOnlyList<string> ORIENTIERUNG = new[] { "Orientation" };
+
+        private readonly SortedDictionary<string, int> _azimutRueckfall = new SortedDictionary<string, int>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Die Seite ist aus Platzierung und Räumen nicht zu bestimmen. <b>Ohne Raumgrenze</b> gilt die
+        /// Himmelsrichtung, die die Datei am Bauteil selbst nennt (<see cref="ORIENTIERUNG"/>, Mehrzonenkonzept
+        /// 6.5): eine Zahl in [0°, 360°], 0° = Nord, im Uhrzeigersinn, auch als Text mit Dezimalkomma; als Einheit
+        /// im Namen nur Grad. Sie wird als geografische Richtung übernommen — ohne den Nordwinkel des Modells —
+        /// und benannt (<c>IMP_IFC_PROT_AZIMUT_RUECKFALL</c>); sonst bleibt die Seite unbestimmt.
+        /// </summary>
+        private void Unbestimmt(IIfcElement e, AbbildBauteil b, List<IIfcRelSpaceBoundary> grenzen)
+        {
+            if (grenzen.Count == 0)
+                foreach (IfcFund f in IfcEigenschaften.AlleMitNamen(_bezuege, e, ORIENTIERUNG))
+                {
+                    IfcEigenschaften.NameOhneEinheit(f.Eigenschaft.Name.ToString(), out string einheit);
+                    if (einheit != null && einheit != "°" && !einheit.Equals("deg", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!(f.Eigenschaft is IIfcPropertySingleValue einzel)) continue;
+                    double? w = IfcEigenschaften.Zahl(einzel.NominalValue);
+                    if (!w.HasValue && IfcEigenschaften.Textwert(einzel.NominalValue) is string t
+                        && double.TryParse(t.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
+                        w = z;
+                    if (!(w >= 0.0 && w <= 360.0)) continue;
+                    b.AzimutGrad = IfcPlatzierung.Normieren(w.Value);
+                    Zaehlen(_azimutRueckfall, f.Satz + "." + f.Eigenschaft.Name);
+                    return;
+                }
+            _seiteUnbestimmt.Add(b.Kennung);
         }
 
         private AbbildBauteil Oeffnung(IIfcElement o, string klasse, Bauteilart art, AbbildBauteil wirt)
@@ -1047,6 +1262,8 @@ namespace WindowsFormsApplication1
                 }
                 if (breite > 0.0 && hoehe > 0.0) flaeche = breite * hoehe * _einheiten.Laenge * _einheiten.Laenge;
             }
+            // Zuletzt ein Flächenname aus einem beliebigen Mengensatz — nie Breite × Höhe eines fremden Satzes.
+            if (!flaeche.HasValue) flaeche = FlaecheRueckfall(o, RUECKFALL_OEFFNUNG, "Area");
             b.BruttoflaecheM2 = flaeche;
             if (!flaeche.HasValue) _ohneMengen.Add(b.Kennung);
 
@@ -1109,16 +1326,53 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Der U-Wert eines Bauteils</b>: <c>Pset_&lt;Klasse&gt;Common.ThermalTransmittance</c> (Vorkommnis vor
+        /// Typ). Fehlt er, gilt jede Eigenschaft <see cref="UWERT_NAMEN"/> eines beliebigen Satzes
+        /// (Mehrzonenkonzept 6.5) — benannt (<c>IMP_IFC_PROT_UWERT_RUECKFALL</c>). Verglichen wird der Name ohne
+        /// angehängte Einheit; nennt der Name eine andere Einheit als W/(m²K) (etwa <c>W/(m K)</c>), gilt der
+        /// Wert nicht als U-Wert, sondern wird benannt übergangen (<c>IMP_IFC_PROT_UWERT_EINHEIT</c>).
+        /// </summary>
         private void UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
-            IfcFund f = IfcEigenschaften.Finden(_bezuege, e, satz, "ThermalTransmittance");
-            if (f == null) return;
-            double? u = Zahl(f);
-            if (!u.HasValue) return;
+            IfcFund gewaehlt = null;
+            double? u = null;
+            var abweichend = new List<string>();
+            List<IfcFund> kandidaten = IfcEigenschaften.AlleMitNamen(_bezuege, e, UWERT_NAMEN).ToList();
+            // Der Standardsatz zuerst (Vorkommnis vor Typ), dann alle übrigen in Dateireihenfolge.
+            IEnumerable<IfcFund> reihe = kandidaten.Where(f => IfcEigenschaften.Gleich(f.Satz, satz) && IstStandardname(f))
+                                                   .OrderBy(f => f.Quelle)
+                                                   .Concat(kandidaten.Where(f => !(IfcEigenschaften.Gleich(f.Satz, satz) && IstStandardname(f))));
+            foreach (IfcFund f in reihe)
+            {
+                IfcEigenschaften.NameOhneEinheit(f.Eigenschaft.Name.ToString(), out string einheit);
+                if (einheit != null && !IfcEigenschaften.IstUWertEinheit(einheit))
+                {
+                    abweichend.Add(f.Satz + "\u0001" + f.Eigenschaft.Name + "\u0001" + einheit);
+                    continue;
+                }
+                u = Zahl(f);
+                if (!u.HasValue) continue;
+                gewaehlt = f;
+                break;
+            }
+            foreach (string a in abweichend.Distinct())
+            {
+                if (!_uEinheit.TryGetValue(a, out int[] z)) _uEinheit[a] = z = new int[2];
+                z[0]++;
+                if (gewaehlt == null) z[1]++;
+            }
+            if (gewaehlt == null) return;
+            if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
+                      .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
+                Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
             _abbild.ZahlUWerte++;
             b.UWertWm2K = u;
-            b.UWertQuelle = f.Satz + (f.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
+            b.UWertQuelle = gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
         }
+
+        private static bool IstStandardname(IfcFund f)
+            => IfcEigenschaften.Gleich(IfcEigenschaften.NameOhneEinheit(f.Eigenschaft.Name.ToString(), out _), "ThermalTransmittance");
 
         // ==================================================================
         //  Schichten (IfcMaterialLayerSet, Pset_MaterialThermal / Pset_MaterialCommon)
