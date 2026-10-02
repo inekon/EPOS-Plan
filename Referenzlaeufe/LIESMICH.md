@@ -492,7 +492,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-30_R29_Kesseltakten`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-30_R30_Stromverbraucher`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -505,11 +505,12 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
 `2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug`, `2026-09-26_R20_Zapfprofil`, `2026-09-26_R21_BhkwDeckung` und
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
-`2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast` und `2026-09-30_R28_Kesselbrennwert` am 30.09.2026**
-(46 Basen, alle zweiundzwanzig Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
+`2026-09-30_R29_Kesseltakten` am 30.09.2026**
+(47 Basen, alle dreiundzwanzig Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 46 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 47 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -519,7 +520,7 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-30_R29_Kesseltakten/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-09-30_R30_Stromverbraucher/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
 `Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
@@ -531,90 +532,79 @@ ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den 
 `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
 `EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
 die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
-das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050 und
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel. 1050 steht nicht in der
-CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel und
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die
+**einzige** Basis im Arbeitsbaum.
 
-> **Anlass 1: Das Takten des Heizkessels** (Konzept Kesselkennlinie 4.2, Etappe E4; Entscheid F1). Liegt die
-> brennstoffbasierte Wärme Q eines Brennstoffkessels in einer Laufstunde unter seiner Mindestleistung P_min, taktet
-> er (`Kesselkennlinie.Taktet`, beide Enden am Zahlenrand): Die Stunde zählt min(⌊60/t⌋, ⌈Q/(P_min · t/60)⌉)
-> Starts — so viele Mindestläufe, wie die Wärme braucht, mit dem Zahlenrand an den Vielfachen eines Mindestlaufs
-> (`Kesselkennlinie.StartsImTakt`); jede andere Laufstunde zählt einen Start, wenn der Kessel in der Vorstunde
-> stand. Jeder Start kostet den Anfahrverlust als Brennstoff, auch in der Gasspitze der Stunde. Leere Felder nehmen
-> die Normvorgaben (Konzept 7.1): Mindestleistung 30 % der Nennleistung beim Gas-Brennwertkessel, sonst 60 %,
-> Anfahrverlust 0,002 h × Nennleistung, Mindestlaufzeit 10 min. In der Testdatenbank pflegt allein 1050 Taktwerte
-> (Mindestleistung 3,86 kW, Anfahrverlust 0,1 kWh, Mindestlaufzeit leer); jeder übrige Brennstoffkessel rechnet mit
-> den Normvorgaben. Die Elektrokessel (1017, 1024, 1047) takten nicht.
+> **Anlass: Die Zuordnung Projekt ↔ Stromverbraucher gilt über die ID** (Anwenderentscheid vom 30.09.2026,
+> „Stromverbraucher-Mängel beheben, mit neuer Referenzbasis“; Auftrag SV1). Zwei Mängel, eine Ursache: Der
+> Stromzweig löste die Zuordnung über Namen auf.
 >
-> **Anlass 2: `Kessel[i].Starts` zählt die Starts nach Konzept 4.2** statt der Laufphasen im Stundenraster. Die
-> Laufphasen (Übergänge aus → an) stehen daneben; es gilt Starts = Laufphasen + Σ über die Taktstunden (Starts der
-> Stunde − 1, wenn die Vorstunde stand). Beim Elektrokessel sind Starts und Laufphasen gleich.
+> **(a) Die Jahressumme wurde überlesen.** `Z_Projekt_Stromverbraucher.Summe` wurde über den Bezeichner der
+> Projektkopie gesucht; die Zuordnungszeile trägt aber den Namen, unter dem sie angelegt wurde. In 1017 und 1047
+> heißt die Kopie „EFH_3_Pers (P1017)“, die Zeile „EFH_3_Pers“ mit der Summe 15 MWh/a — gerechnet wurde das volle
+> Profil der Kopie (672 MWh/a, die Summe ihrer zwölf Monatswerte). Der Lauf rechnet jetzt je Zuordnungszeile: den
+> Kopfsatz über `ID_Stromverbraucher`, die Summe aus derselben Zeile (`ProfilQuelle.ZuordnungIdSpalte`).
 >
-> **Anlass 3: sechs neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].Laufphasen`, `.Taktstunden`,
-> `.AnfahrKwh` (Anfahrverlust im Jahr) und die drei Taktwerte, mit denen der Kessel rechnet —
-> `.MindestleistungKw`, `.AnfahrverlustJeStartKwh`, `.MindestlaufzeitMin` (gepflegt oder Normvorgabe); beim
-> Elektrokessel außer den Laufphasen je 0.
+> **(b) Eine fremde Projektkopie konnte gelten.** Kopf- und Typsatz wurden ohne Projektfilter über den Namen
+> gelesen, es galt die erste gleichnamige Kopie der Tabelle. In der Testdatenbank rechneten 1024 und 1040 bis 1045
+> mit Kopien von 1023, 1046 mit der von 1007 und 1047 mit der von 1017 — zeichengleich zu den eigenen, deshalb
+> ohne Wirkung auf die Zahlen. Die Kopie gilt jetzt nur im eigenen Projekt, das Wochenprofil über
+> `Tab_Stromverbrauchertyp.ID_Stromverbraucher`.
 >
-> **A/B gegen R28** (beide auf Linux; `vergleich` mit `--ohne` für die sechs neuen Schlüssel): **3/16 PASS** (1017,
-> 1024, 1047 — die Elektrokessel), 471/487 CSV byte-gleich — abgewichen ist allein `aggregate.csv`, jede Zeitreihe
-> ist byte-gleich (Wärme und Laufstunden ändern sich nicht, nur Starts und Brennstoff). Abgewichen sind je
-> Brennstoffkessel `Kessel[0].Starts`, der Brennstoff (`Heizkessel.Gasverbrauch`, `HeizkesselModul[0].Verbrauch`),
-> der Jahresnutzungsgrad und die Kesselemissionen, in neun Projekten die Gasspitze (+0,04 bis +1,44 kW: der
-> Anfahrverlust der Starts in der Spitzenstunde; 1018, 1023, 1039, 1040, 1041, 1042, 1045, 1049, 1050).
+> **Kein Schemaschritt, die Testdatenbank ist unverändert:** `ID_Stromverbraucher` bestand schon; alle 24
+> Zuordnungszeilen zeigen auf eine Kopie ihres eigenen Projekts, acht davon tragen einen anderen Namen als ihre
+> Kopie (1006, 1008 und 1032 je zwei, 1017 und 1047 je eine).
 >
-> Je Kessel (Brennstoff = `HeizkesselModul[0].Verbrauch`, Nutzungsgrad = `HeizkesselModul[0].Jahresnutzungsgrad`):
+> **A/B gegen R29** (beide auf Linux): **14/16 PASS**, 477/487 CSV byte-gleich. Abgewichen sind allein 1017 und
+> 1047, je fünf Dateien (`aggregate.csv`, `strombedarf_viertelstunde.csv`, `reststrom_viertelstunde.csv`,
+> `ssp_gespeichert_viertelstunde.csv`, `pv_speicherfuellstand.csv`) und je 13 Skalare. 1008 trägt dieselbe
+> Namensabweichung („Büro_Type_C“ gegen „Büro_Type_C (P1008)“), aber mit der Summe 365 = Summe der Kopie —
+> byte-gleich.
 >
-> | Projekt | P_min kW | Anfahrverlust kWh je Start | Laststufe | Laufphasen | Taktstunden | Starts R28 → R29 | Anfahrverlust kWh/a | Brennstoff MWh/a R28 → R29 | Nutzungsgrad % R28 → R29 |
-> |---|---|---|---|---|---|---|---|---|---|
-> | 1007, 1046 | 6,63 | 0,0442 | 0,23 | 259 | 1 323 | 259 → 4 276 | 189,0 | 10,01 → 10,20 (+1,90 %) | 90,43 → 88,75 |
-> | 1008 | 6,63 | 0,0442 | 0,38 | 260 | 1 385 | 260 → 5 248 | 232,0 | 22,86 → 23,09 (+1,01 %) | 89,89 → 88,99 |
-> | 1018 | 24,00 | 0,16 | 0,03 | 381 | 5 259 | 381 → 6 937 | 1 109,9 | 10,46 → 11,57 (+10,61 %) | 106,00 → 95,84 |
-> | 1023 | 5,79 | 0,0386 | 0,82 | 444 | 843 | 444 → 3 269 | 126,2 | 91,02 → 91,15 (+0,14 %) | 87,67 → 87,55 |
-> | 1030 | 660,00 | 4,40 | 0,36 | 398 | 3 012 | 398 → 8 402 | 36 968,8 | 5 203,20 → 5 240,16 (+0,71 %) | 103,84 → 103,11 |
-> | 1039 | 24,00 | 0,16 | 0,76 | 188 | 835 | 188 → 2 080 | 332,8 | 293,35 → 293,69 (+0,12 %) | 98,61 → 98,50 |
-> | 1040 | 24,00 | 0,16 | 0,09 | 252 | 2 113 | 252 → 4 921 | 787,4 | 15,27 → 16,06 (+5,17 %) | 105,96 → 100,77 |
-> | 1041 | 24,00 | 0,16 | 0,21 | 1 | 5 748 | 1 → 14 213 | 2 274,1 | 142,85 → 145,12 (+1,59 %) | 104,94 → 103,30 |
-> | 1042 | 36,00 | 0,24 | 0,05 | 208 | 2 954 | 208 → 4 793 | 1 150,3 | 18,21 → 19,36 (+6,32 %) | 104,00 → 97,82 |
-> | 1045 | 24,00 | 0,16 | 0,09 | 223 | 3 197 | 223 → 7 139 | 1 142,2 | 21,01 → 22,15 (+5,43 %) | 105,97 → 100,51 |
-> | 1049 | 24,00 | 0,16 | 0,06 | 488 | 1 329 | 488 → 2 372 | 379,5 | 5,96 → 6,34 (+6,38 %) | 106,00 → 99,66 |
-> | 1050 | 3,86 (gepflegt) | 0,10 (gepflegt) | 0,82 | 444 | 503 | 444 → 2 035 | 203,5 | 80,66 → 80,87 (+0,26 %) | 98,94 → 98,69 |
-> | 1017, 1024, 1047 | – (Elektrokessel) | – | – | 651, 233, 11 | 0 | unverändert | 0 | unverändert | unverändert |
+> | Größe | 1017 R29 → R30 | 1047 R29 → R30 |
+> |---|---|---|
+> | Strombedarf gesamt MWh/a (`Energiebedarf.Strombedarf_Gesamt`) | 672 → 15 | 672 → 15 |
+> | größter Strombedarf kW (`Energiebedarf.Strombedarf_Max`) | 312,61 → 6,98 | 312,61 → 6,98 |
+> | Netzbezug MWh/a (`Energiebedarf.Stromrestbedarf`) | 655,88 → 11,44 | 641,18 → 6,80 |
+> | Strombedarfsdeckung des BHKW % | 5,31 → 55,15 | 5,30 → 56,20 |
+> | Reststrom nach dem BHKW MWh/a (`BHKW.Reststrombedarf`) | 635,20 → 7,35 | 636,13 → 7,12 |
+> | Reststrom nach dem Kessel MWh/a (`Heizkessel.Reststrombedarf`) | 655,32 → 27,47 | 641,19 → 9,25 |
+> | Stromspeicher, Summe der Reihe `ssp_gespeichert_viertelstunde` | 44 862 → 181 256 | 44 862 → 228 056 |
 >
-> **Plausibel:** Der Anfahrverlust wächst mit der Überdimensionierung. Die Kessel mit einer mittleren Laststufe unter
-> 10 % (1018, 1040, 1042, 1045, 1049) takten in den meisten Laufstunden und brauchen 5 bis 11 % mehr Brennstoff —
-> Beispiel 1018: 80 kW Nennleistung, im Mittel 2,4 kWh Wärme je Laufstunde, ein Mindestlauf 24 kW × 10 min = 4 kWh,
-> also ein Start je Stunde mit 0,16 kWh, rund 6,7 % der Wärme. Die Kessel mit hoher Laststufe (1023, 1039, 1050:
-> 0,76 bis 0,82) takten selten und verlieren 0,1 bis 0,3 %. Die Platzhalter-Kessel mit η₁₀₀ = 1,0 (1018, 1040, 1045,
-> 1049) kommen dadurch von rund 106 % auf 96 bis 101 % Jahresnutzungsgrad. Die Formel des Konzepts nimmt je Taktstunde
-> die größte Startzahl an (jeder Lauf genau eine Mindestlaufzeit): Wärme knapp unter der Mindestleistung zählt sechs
-> Starts, im Mittel der Taktstunden sind es 1,32 (1018) bis 3,75 (1008). **Gegenprobe:** Aus `kessel_leistung.csv`
-> der Basis unabhängig nachgerechnet (Python, dieselbe Regel samt Rand) stimmen Starts, Laufphasen und Taktstunden
-> aller dreizehn Brennstoffkessel mit `aggregate.csv` überein.
+> **Unverändert:** Wärmepumpenstrom (1017: 0,02 MWh/a Heizen, 0,55 MWh/a Kühlen; 1047: 3,54 und 0,51), BHKW-Strom
+> (36,80 bzw. 35,87 MWh/a) und Elektrokessel (20,12 bzw. 1,00 MWh/a) — Wärmeseite und Erzeugerfahrplan hängen nicht
+> am Haushaltsstrom.
 >
-> **Die Einfrierregel „gesäte Kesseldaten“ ist nachgezogen** (oben): Mindestleistung, Anfahrverlust und
-> Mindestlaufzeit rechnen, Bauart und Brennstoff bestimmen die Normvorgabe der Mindestleistung. **Kein Fehlschlag,
-> keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487
-> CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben
-> sieben Dateien wie mit R28; `aggregate.csv` bleibt in allen sechzehn Projekten byte-gleich, keine Startzahl kippt.
+> **Plausibel:** 672 MWh/a waren für ein Einfamilienhausprofil nie ein Bedarf, sondern die ungeskalierte Summe der
+> Kopie. Mit den gepflegten 15 MWh/a deckt das BHKW mit rund 36 MWh/a Strom gut die Hälfte des Bedarfs
+> gleichzeitig; der Überschuss lädt den Stromspeicher (vier- bis fünfmal so viel gespeichert), der Netzbezug fällt
+> auf den Rest. **Gegenprobe:** Die Summe der Viertelstundenreihe `strombedarf_viertelstunde.csv` ist 60 000 =
+> 15 MWh × 4 000 (vorher 2 688 000 = 672 MWh × 4 000).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R29. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
->   --ziel Referenzlaeufe/2026-09-30_R29_Kesseltakten
+>   --ziel Referenzlaeufe/2026-09-30_R30_Stromverbraucher
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
-> [`SK7_Kessel_Takten_E4_R29_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SK7_Kessel_Takten_E4_R29_Protokoll.md).
+> [`SV1_Stromverbraucher_Summe_R30_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/SV1_Stromverbraucher_Summe_R30_Protokoll.md).
 
-### Die Vorgängerbasis R28 `2026-09-30_R28_Kesselbrennwert`
+### Die Vorgängerbasis R29 `2026-09-30_R29_Kesseltakten`
 
-Sechzehn Projekte, 487 CSV, 2 984 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
-158); mit R29 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Brennwertkennzeichen der Projektkessel,
-Brennwertkennlinie) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R28 und
-R29 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg der Etappe E4.
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
+158); mit R30 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Takten des Heizkessels, Etappe E4) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R29 und
+R30 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg des Stromzweigs (SV1).
 
 ## Was hier liegt
 
@@ -706,7 +696,7 @@ Kesseldaten“ oben. Es rechnet die Teillastkurve aus dem gepflegten η₃₀ un
 Brennwertkennlinie: ohne Anlagenkopplung, Senkenspeicher und gepflegtes Paar mit dem Rückfall-Rücklauf 50 °C, also
 in jeder Laufstunde mit η = 0,97 + 0,08 · 7/27 (η₃₀,tr = 1,05 − 0,08 = η₁₀₀, die trockene Kurve ist flach). Als
 einziges Referenzprojekt taktet es mit gepflegten Werten: Mindestleistung 3,86 kW, Anfahrverlust 0,1 kWh je Start,
-Mindestlaufzeit 10 min als Normvorgabe (503 Taktstunden, 2 035 Starts, 203,5 kWh/a Anfahrverlust in R29).
+Mindestlaufzeit 10 min als Normvorgabe (503 Taktstunden, 2 035 Starts, 203,5 kWh/a Anfahrverlust in R30).
 
 ```bash
 dotnet run Referenzlaeufe/Skripte/referenzprojekt_1050_kesselkennlinie.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
@@ -777,13 +767,14 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Re
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <ordner> <ordner>_stoerung
 ```
 
-Stand mit R29 (Zahlenrand an Phase G, Quellspeicher und Kessellauf; Teil- und Brennwertkennlinie des Kessels
-als lineare Arithmetik, Brennwertbetrieb und Takten am Zahlenrand): alle sechzehn Projekte GESAMT PASS, 480/487 CSV byte-gleich, die übrigen sieben nur mit
+Stand mit R30 (Zahlenrand an Phase G, Quellspeicher und Kessellauf; Teil- und Brennwertkennlinie des Kessels
+als lineare Arithmetik, Brennwertbetrieb und Takten am Zahlenrand, die Jahressumme der Stromprofile als
+Skalierung): alle sechzehn Projekte GESAMT PASS, 480/487 CSV byte-gleich, die übrigen sieben nur mit
 Rechenresten von höchstens 10⁻⁸ (Heizstab 1007/1046, Kessel 1024, Quellpuffer 1042, BHKW-Restwärme 1018,
 Wärmepumpe 1045). **Gegenprobe:** Mit dem blanken
 Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 durch — der Nachweis sieht
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
-(`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R29 487/487 CSV byte-gleich.
+(`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R30 487/487 CSV byte-gleich.
 
 ## Bedienung
 

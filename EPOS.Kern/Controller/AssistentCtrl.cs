@@ -687,28 +687,36 @@ namespace WindowsFormsApplication1
             Z_ProjektGebGanglinieCtrl.KanaeleNachladen(projctrl.m_ID, Waermebedarf);
         }
 
-        /// <summary>Die Stromverbraucherzuordnungen (Standardprofile).</summary>
+        /// <summary>
+        /// Die Stromverbraucherzuordnungen (Standardprofile).
+        ///
+        /// <para><b>Über die ID</b> (Auftrag SV1 vom 30.09.2026): Der Name je Zeile ist der
+        /// der Projektkopie, auf die die Zeile per <c>ID_Stromverbraucher</c> zeigt
+        /// (<see cref="Z_ProjektStromverbraucherCtrl.LiesProjekt"/>, wie die Kachel der
+        /// Startseite) — nicht der Bezeichner der Zuordnungszeile, der vielfach noch der
+        /// Katalogname ist. Nur so trifft das Sichern der Jahressumme
+        /// (<see cref="Z_ProjektStromverbraucherCtrl.UpdateSumme"/>) die Zeile, und das
+        /// Speichern bleibt bei derselben Kopie
+        /// (<see cref="StromverbraucherStammCtrl.GetProjektIdUeberId"/>).</para>
+        /// </summary>
         public void LadeStromverbraucher(string projekt)
         {
             if (string.IsNullOrEmpty(projekt)) return;
 
             ProjektCtrl projctrl = new ProjektCtrl();
-            Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
-
             projctrl.ReadSingle(projekt);
-            svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projctrl.m_ID);
 
             Stromverbraucher.Clear();
 
-            for (int n = 0; n < svctrl.rows; n++)
+            foreach (Z_ProjektStromverbraucherModel zeile in Z_ProjektStromverbraucherCtrl.LiesProjekt(projctrl.m_ID))
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
 
-                item.m_ID_Z = svctrl.items[n].m_ID_Z;
+                item.m_ID_Z = zeile.m_ID_Z;
                 item.m_ID_Projekt = projctrl.m_ID;
-                item.m_szVerbraucher = svctrl.items[n].m_szVerbraucher;
-                item.m_ID_Stromverbraucher = svctrl.items[n].m_ID_Stromverbraucher;
-                item.m_Summe = svctrl.items[n].m_Summe;
+                item.m_szVerbraucher = zeile.m_szVerbraucher;
+                item.m_ID_Stromverbraucher = zeile.m_ID_Stromverbraucher;
+                item.m_Summe = zeile.m_Summe;
 
                 Stromverbraucher.Add(item);
             }
