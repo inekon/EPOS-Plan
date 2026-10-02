@@ -1343,6 +1343,72 @@ selbst einträgt: **Eine stillschweigend entkoppelte Mehrzonenrechnung wäre sch
 Einzonenrechnung.** Das ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
 Zone entschieden.
 
+**Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
+`IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
+Schema lässt dort jedes `IfcProduct` zu. Der Leser betritt solche räumlichen Kinder wie zerlegte, aber
+erst **nach** der Zerlegung desselben Knotens: Was beide Wege erreichen, nimmt den Weg der Zerlegung
+(und dessen Geschoss), jedes räumliche Element zählt einmal, ein enthaltenes `IfcBuilding` bleibt ein
+eigenes Gebäude. Die Zahl der so gefundenen Geschosse und Räume nennt `IMP_IFC_PROT_STRUKTUR_ENTHALTEN`
+(I) am Gebäude.
+
+**Mengenrückfall der Räume.** Fläche, Volumen und Höhe eines Raums kommen aus
+`Qto_SpaceBaseQuantities` (bzw. `BaseQuantities`, `Qto_SpaceQuantities`). Fehlen dort **beide**
+Flächen `NetFloorArea` und `GrossFloorArea`, fällt der Leser auf **alle** Mengensätze des Raums
+zurück, auch unter fremdem Satznamen (etwa `HSETU_RaumQuantities`), und nimmt je Größe die erste
+positive Menge dieser Namen: Nettofläche `NetFloorArea` → `Area` → `NetArea`, Bruttofläche
+`GrossFloorArea` → `GrossArea` (die Wahl netto/brutto bleibt die der Flächenart), Volumen
+(wenn `NetVolume` und `GrossVolume` fehlen) `NetVolume` → `GrossVolume` → `Volume`, Höhe (wenn
+`Height` fehlt) `Height` → `FinishCeilingHeight`. Ein Wert im Standardsatz geht immer vor. Jeder
+genutzte Rückfall wird je Zielgröße, Satz und Menge mit der Zahl der Räume benannt
+(`IMP_IFC_PROT_MENGE_RUECKFALL`, W) — der Anwender sieht, welcher Mengenname galt. Geometrie wird
+dafür nicht gerechnet (ADR-003).
+
+**Bauteile eines CAD-Exports ohne Raumgrenzen.** Derselbe Export führt an den Bauteilen weder
+`IsExternal` noch Standardmengen; die Angaben stehen in fremden Sätzen. Der Leser fällt je Angabe
+zurück, nur wenn der Standard fehlt, und benennt jeden Rückfall mit Zahl, Satz und Name — ohne
+Geometrierechnung (ADR-003):
+
+- **Flächen:** Bruttofläche `GrossSideArea` → `GrossArea` → `Area`, Nettofläche der Datei
+  `NetSideArea` → `NetArea` (nur ohne Standardmengensatz), je aus einem beliebigen Mengensatz
+  (`IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL`, W). **Nur Flächennamen:** Im fremden Satz ist `Width` die
+  Wandlänge und `Length` die Höhe; Dicke und Fläche werden daraus nie abgeleitet. Eine Öffnung nimmt
+  `Area` bzw. Breite × Höhe nur aus dem Standardsatz, dann `OverallWidth × OverallHeight`, zuletzt
+  `Area` → `GrossArea` eines beliebigen Satzes.
+- **U-Wert:** `Pset_<Klasse>Common.ThermalTransmittance` (Vorkommnis vor Typ), sonst
+  `ThermalTransmittance` oder `UValue` in einem beliebigen Satz (`IMP_IFC_PROT_UWERT_RUECKFALL`, I).
+  Verglichen wird der Name ohne angehängte Einheit in Klammern, Groß-/Kleinschreibung egal. Nennt
+  der Name eine andere Einheit als W/(m²K) — der Export schreibt `ThermalTransmittance (W/(m K))` —,
+  gilt der Wert nicht als U-Wert (`IMP_IFC_PROT_UWERT_EINHEIT`, I; W, wenn ein Bauteil dadurch ohne
+  U-Wert bleibt).
+- **Außen/innen:** Ohne `IsExternal` und ohne Raumgrenze gilt die Angrenzung `AdjacentType` aus einem
+  beliebigen Satz (Aufzählung oder Text, Präfix `bta` ohne Belang), je Wert benannt
+  (`IMP_IFC_PROT_ANGRENZUNG_*`):
+
+  | `AdjacentType` | Randbedingung | Hülle ohne Nachbarraum | Meldung |
+  |---|---|---|---|
+  | `btaOutside` | Außenluft | ja | `ANGRENZUNG_AUSSEN` (I) |
+  | `btaGround` | Erdreich | ja | `ANGRENZUNG_ERDREICH` (I) |
+  | `btaHeated` | innen | nein (innere Masse ohne Nachbarn) | `ANGRENZUNG_INNEN` (I) |
+  | `btaUnHeated` | unbeheizt; Boden/Decke nach der Bauteilart | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaCellarCeiling` | unbeheizt, Boden der Zone (Kellerdecke) | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaUppermostStorey` | unbeheizt, Decke der Zone (oberste Geschossdecke) | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaNone`, jeder andere Wert | die bisherige Vorgabe (Dach außen, Bodenplatte erdberührt, sonst unbestimmt) | — | `ANGRENZUNG_UNBESTIMMT` (W) |
+
+  Die Angrenzung gilt nach `IsExternal` und nach den Raumgrenzen. Gegen unbeheizt zählt ein
+  Bauteil ohne Nachbarraum zur Hülle (`HuelleOhneNachbar`), Boden oder Decke sagt
+  `ZonenbodenOhneNachbar` (sonst die Bauteilart: Bodenplatte Boden, Dach Decke). Erklärt die Datei
+  ein Bauteil ohne Raumgrenze mit `ElementEnergyConsultingProperties.CladdingSurface = FALSE` als nicht
+  zur Hüllfläche gehörig, zählt es nicht zur Hülle (`IMP_IFC_PROT_NICHT_HUELLE`, I) — so bleiben
+  Kellerwände unter einer Kellerdecke und Dachflächen über einer obersten Geschossdecke draußen.
+- **Himmelsrichtung:** Ist die Außenseite aus Platzierung und Räumen nicht zu bestimmen (ohne
+  Raumgrenze; der Export platziert alle Bauteile im Ursprung), gilt `Orientation (°)` am Bauteil —
+  Zahl oder Text mit Dezimalkomma in [0°, 360°], 0° = Nord, im Uhrzeigersinn, als geografische
+  Richtung ohne Nordwinkel des Modells (`IMP_IFC_PROT_AZIMUT_RUECKFALL`, I); der Platzhalter
+  −987654321,99 liegt außerhalb und bleibt unbestimmt (`SEITE_UNBESTIMMT`).
+- **Dachfenster:** Fenster und Türen, die über `IfcRelAggregates` Teil eines Bauteils sind statt eine
+  Öffnung zu füllen, werden Öffnungen dieses Bauteils (`IMP_IFC_PROT_OEFFNUNG_TEIL`, I); für die Regel
+  „Dach oder seine Platten“ zählen sie nicht als Platten.
+
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
 Eigenschaftsliste — `Pset_SpaceCommon` im FZK-Haus führt kein `IsExternal`, dafür die fremden
 `NaturalVentilation` und `Category`; unbekannte Eigenschaften sind folgenlos zu übergehen.

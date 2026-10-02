@@ -38844,6 +38844,45 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
   </data>
+  <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
+    <value>Building {0}: {1} storeys and {2} spaces are attached by containment (IfcRelContainedInSpatialStructure) instead of decomposition (IfcRelAggregates) — they are imported as if decomposed.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MENGE_RUECKFALL" xml:space="preserve">
+    <value>Building {0}: {1} spaces without Qto_SpaceBaseQuantities.{2} — the value is taken from quantity {4} in quantity set {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_TEIL" xml:space="preserve">
+    <value>{0} windows and doors are attached as parts of an element (IfcRelAggregates, e.g. roof windows of a roof) instead of filling an opening — they are imported as openings of that element.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL" xml:space="preserve">
+    <value>{0} elements without the standard quantity {1} (Qto_*BaseQuantities) — the value is taken from quantity {3} in quantity set {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_RUECKFALL" xml:space="preserve">
+    <value>{0} elements without Pset_*Common.ThermalTransmittance — the U-value is taken from {1}.{2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_EINHEIT" xml:space="preserve">
+    <value>{0} elements: {1}.{2} states the unit {3} instead of W/(m²K) — the value is not used as a U-value; {4} of them remain without a U-value from the file.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_AUSSEN" xml:space="preserve">
+    <value>{0} elements without IsExternal and without space boundary: {1} = {2} — imported as external element facing outdoor air.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_ERDREICH" xml:space="preserve">
+    <value>{0} elements without IsExternal and without space boundary: {1} = {2} — imported as element in contact with the ground.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_INNEN" xml:space="preserve">
+    <value>{0} elements without IsExternal and without space boundary: {1} = {2} — imported as internal element.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT" xml:space="preserve">
+    <value>{0} elements without IsExternal and without space boundary: {1} = {2} — imported as element facing an unheated space (cellar ceiling as floor, top floor ceiling as ceiling of the zone).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT" xml:space="preserve">
+    <value>{0} elements without IsExternal and without space boundary: {1} = {2} is not mapped to an adjacency — the default of the element type applies (roof external, base slab ground, otherwise undetermined).</value>
+  </data>
+  <data name="IMP_IFC_PROT_NICHT_HUELLE" xml:space="preserve">
+    <value>{0} elements without space boundary carry {1} = FALSE — they do not count towards the thermal envelope.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
+    <value>{0} external elements without space boundary: the orientation is taken from {1} as stated by the file at the element (0° = north, clockwise, without the model's north angle).</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>

@@ -35728,6 +35728,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Außenbauteil an Außenluft übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_AUSSEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als erdberührtes Bauteil übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_ERDREICH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Innenbauteil übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_INNEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Bauteil gegen einen unbeheizten Raum übernommen (Kellerdecke als Boden, oberste Geschossdecke als Decke der Zone). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} ist keiner Angrenzung zugeordnet — es gilt die Vorgabe der Bauteilart (Dach außen, Bodenplatte erdberührt, sonst unbestimmt). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_AZIMUT_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_AZIMUT_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr aus „{0}“ gelesen: {1}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_TEXT {
@@ -35742,6 +35796,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_BAUJAHR_UNLESBAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL", resourceCulture);
             }
         }
         
@@ -35971,11 +36034,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_MENGE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_MENGE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_NETTOFLAECHE_NEGATIV {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_NETTOFLAECHE_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Raumgrenze tragen {1} = FALSE — sie zählen nicht zur Hüllfläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NICHT_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NICHT_HUELLE", resourceCulture);
             }
         }
         
@@ -35994,6 +36075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
             }
         }
         
@@ -36115,6 +36205,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Trennfläche zwischen {0} und {1} ist von beiden Seiten verschieden groß ({2} m² und {3} m²) — die größere zählt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH {
@@ -36174,6 +36273,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_UNBEHEIZT_NAME {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_UNBEHEIZT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile: {1}.{2} nennt die Einheit {3} statt W/(m²K) — der Wert gilt nicht als U-Wert; {4} davon bleiben ohne U-Wert aus der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UWERT_EINHEIT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UWERT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Pset_*Common.ThermalTransmittance — der U-Wert stammt aus {1}.{2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UWERT_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UWERT_RUECKFALL", resourceCulture);
             }
         }
         
