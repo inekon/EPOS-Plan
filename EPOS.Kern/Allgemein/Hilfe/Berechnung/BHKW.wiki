@@ -1,9 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, EPOS.Kern/Allgemein/Simulation/BhkwTeillast.cs,
-     EPOS.Kern/Allgemein/Simulation/Kesselkennlinie.cs (StartsImTakt),
-     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
-     (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
-     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
+     EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, BhkwTeillast.cs, Kesselkennlinie.cs (StartsImTakt),
+     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen),
+     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs -->
 
 == Was berechnet wird ==
