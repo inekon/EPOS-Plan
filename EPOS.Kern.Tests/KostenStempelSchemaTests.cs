@@ -152,6 +152,7 @@ namespace EPOS.Kern.Tests
             Assert.False(KostenStempelSchema.Vollstaendig());
             Assert.Equal(63, KostenStempelSchema.FehlendeTrigger().Count);
             Assert.Equal(65, KostenStempelSchema.Anweisungen.Count());
+            Assert.Equal(63, KostenStempelSchema.Anweisungen.Count(KostenStempelSchema.IstTriggeranweisung));
 
             var bericht = new List<string>();
             Assert.Equal(65, KostenStempelSchema.Ausfuehren(bericht));

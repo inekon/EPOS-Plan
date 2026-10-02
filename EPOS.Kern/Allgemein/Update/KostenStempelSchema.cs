@@ -275,6 +275,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt diese Anweisung aus <see cref="Anweisungen"/> einen Trigger an (und nicht eine
+        /// Spalte)? Gefragt wird die Liste selbst — so braucht kein Aufrufer ein SQL-Stück als
+        /// Erkennungsmerkmal.
+        /// </summary>
+        public static bool IstTriggeranweisung(KeyValuePair<string, string> anweisung)
+        {
+            return Trigger.Any(t => string.Equals(t.Sql, anweisung.Value, StringComparison.Ordinal));
+        }
+
+        /// <summary>
         /// Führt den Schritt aus — für <c>Werkzeuge/Testdatenbankschema</c> und
         /// <c>EPOS.Kern.Tests</c>; die Migration der Schale geht denselben Weg über ihre
         /// eigenen Helfer, aus derselben <see cref="Anweisungen"/>. <b>Kein DML.</b>

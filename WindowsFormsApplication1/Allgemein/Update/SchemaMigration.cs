@@ -12105,7 +12105,7 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<string, string> a in
                      new List<KeyValuePair<string, string>>(KostenStempelSchema.Anweisungen))
             {
-                bool istTrigger = a.Value.StartsWith("CREATE TRIGGER", StringComparison.Ordinal);
+                bool istTrigger = KostenStempelSchema.IstTriggeranweisung(a);
                 // Je Spalte eine Zeile im Protokoll; die Trigger zaehlen nur - ein Fehler steht
                 // trotzdem benannt da (SqliteAusfuehren notiert ihn ueber den Lauf).
                 if (!SqliteAusfuehren(istTrigger ? null : l, a.Value, a.Key, "angelegt"))
