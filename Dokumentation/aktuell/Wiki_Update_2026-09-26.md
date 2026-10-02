@@ -246,6 +246,11 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Das Band „bitte neu berechnen“ der Seiten Kosten und Wirtschaftlichkeit erscheint auch, wenn nach der letzten Rechnung Kosten, Preise, Wirtschaftlichkeitsparameter oder der Kostenkatalog bearbeitet wurden, und nennt den Grund. (#647)
 - In der Vorlagenverwaltung der Konditionierung legt „Kopieren nach …“ aus einer Vorlage eine eigene Vorlage einer anderen Größe an: von Heizen nach Kühlen mit wählbarem Komfortsollwert sowie zwischen Geräten und Personen. (#648)
 - Beim Kopieren einer Heizvorlage nach Kühlen lässt sich für die Absenkzeiten ein eigener Kühlsollwert (Vorgabe 28 °C) oder „aus“ wählen. (#651)
+- Fehlt einer Wärmepumpe im Projekt nur die Kühlkennlinie, lässt sie sich im Anlagendialog aus dem Katalog übernehmen. (#655)
+- Der Photovoltaik-Dialog zeigt je Rechenmodell, ob die Anlage abregelt; im Modell „Einfach“ sind die wirkungslosen Wechselrichterwerte gesperrt. (#655)
+- Die Monatssäulen der Autarkie-Analyse folgen den Kalendermonaten. (#655)
+- Projekte mit zehn Wärmepumpen werden gerechnet, mehr werden mit einer Meldung abgelehnt; eine unbrauchbare CSV-Quelle meldet der Lauf als Warnung. (#655)
+- Der Gebäudedialog nennt den Grund, wenn sich kein Wärmebedarf berechnen lässt. (#655)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
