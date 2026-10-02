@@ -40,7 +40,9 @@
 //                           Apertur 2,35 m2) mit den Spalten von SolarkollektorenCtrl.CopyFromStamm
 //        Tab_Energieanlagen "Kollektorfeld Sued", ID_Type 2, MODULE Module, Neigung 35 Grad,
 //                           Azimut 0 (Sued); Senken Rang 1 Heizkreis (Direktdeckung), Rang 2
-//                           Puffer Heizung mit Ladeprio 1 (Speicheranteil)
+//                           Puffer Heizung mit Ladeprio 1 (Speicheranteil); Arbeitstemperatur
+//                           aus dem Speicher (Welle M2, ST2) mit Graedigkeit 5 K und Spreizung
+//                           10 K, Verluste und Pumpe leer (8 %, kein Pumpenstrom)
 //        Z_AnlageSenke      die zwei Senkenzeilen des Felds
 //   Keine Rechenergebnisse, keine Katalogzeile, kein VACUUM. Alle Werte sind neutrale, runde
 //   Pruefwerte.
@@ -84,6 +86,9 @@ const string FELD = "Kollektorfeld Süd";
 const int MODULE = 35;
 const int NEIGUNG = 35;
 const int AZIMUT = 0;
+// Welle M2 (Basis R32): die Arbeitstemperatur aus der untersten Zone des Puffers.
+const string ARBEITSTEMPERATUR = "speicher";
+const double GRAEDIGKEIT = 5, SPREIZUNG = 10;
 
 const int PUFFER_VORLAGE = 1054175;     // "Stora B 1000-6 ER 1 B" (965 l) in 1018
 const string PUFFER_VORLAGE_NAME = "Stora B 1000-6 ER 1 B";
@@ -277,6 +282,11 @@ List<string> PruefeZiel(int id)
     Soll(f, "Feld Modulanzahl", D(a, "Kollektormodulanzahl"), MODULE);
     Soll(f, "Feld Neigung", D(a, "Neigung"), NEIGUNG);
     Soll(f, "Feld Azimut", D(a, "Azimut"), AZIMUT);
+    SollText(f, "Feld Arbeitstemperatur_Weg", Txt(a, "Arbeitstemperatur_Weg"), ARBEITSTEMPERATUR);
+    Soll(f, "Feld Uebertrager_Graedigkeit_K", D(a, "Uebertrager_Graedigkeit_K"), GRAEDIGKEIT);
+    Soll(f, "Feld Kollektor_Spreizung_K", D(a, "Kollektor_Spreizung_K"), SPREIZUNG);
+    Soll(f, "Feld Solarkreisverluste_Prozent", D(a, "Solarkreisverluste_Prozent"), null);
+    Soll(f, "Feld Pumpenleistung_W", D(a, "Pumpenleistung_W"), null);
     SollText(f, "Feld WS_Ziel", Txt(a, "WS_Ziel"), DbWerte.WS_ZIEL_HEIZKREIS);
     SollText(f, "Feld WS_Ziel2", Txt(a, "WS_Ziel2"), DbWerte.WS_ZIEL_PUFFER_HEIZUNG);
     Soll(f, "Feld WS_ID_Puffer2", D(a, "WS_ID_Puffer2"), puffer);
@@ -399,10 +409,12 @@ if (X("INSERT INTO Tab_Solarkollektoren (ID, ID_Projekt, Bezeichner, Firma, Besc
     return Abbruch("Kollektorsatz " + STAMM_KOLLEKTOR + " nicht kopiert.");
 X("INSERT INTO Tab_Energieanlagen (ID_Projekt, Bezeichner, ID_Type, ID_Solar, Kollektormodulanzahl, Neigung, Azimut, " +
   "ID_Carrier, WS_Typ, WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, " +
-  "WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2, Aufteilung_Methode) " +
-  "VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Beides', ?, NULL, 0, 0, 0, ?, ?, ?, 0, 'Berechnet')",
+  "WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2, Aufteilung_Methode, " +
+  "Arbeitstemperatur_Weg, Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K) " +
+  "VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Beides', ?, NULL, 0, 0, 0, ?, ?, ?, 0, 'Berechnet', ?, ?, ?)",
   id, FELD, TYP_SOLAR, kollektor, MODULE, NEIGUNG, AZIMUT,
-  DbWerte.WS_ZIEL_HEIZKREIS, DbWerte.WS_ZIEL_PUFFER_HEIZUNG, puffer, LADEPRIO_SOLAR);
+  DbWerte.WS_ZIEL_HEIZKREIS, DbWerte.WS_ZIEL_PUFFER_HEIZUNG, puffer, LADEPRIO_SOLAR,
+  ARBEITSTEMPERATUR, GRAEDIGKEIT, SPREIZUNG);
 long feld = AnlageJeTyp(id, TYP_SOLAR);
 if (feld <= 0) return Abbruch("Kollektorfeld nicht angelegt.");
 const string INSERT_SENKE =

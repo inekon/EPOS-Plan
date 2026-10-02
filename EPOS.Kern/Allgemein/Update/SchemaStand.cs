@@ -769,6 +769,15 @@ namespace WindowsFormsApplication1
         /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
         /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
         /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
+        /// Danach, mit den FELDERN DES KOLLEKTORFELDS (Welle M2 Solarthermie der Entscheidungsvorlage
+        /// Modellgrenzen), steht das Ziel auf <see cref="SolarthermieFelderSchema.SCHRITT"/>: an
+        /// <c>Tab_Energieanlagen</c> die nullbaren Spalten <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>, <c>Kollektor_Spreizung_K</c>
+        /// und <c>Arbeitstemperatur_Weg</c>, an <c>Tab_Solarkollektoren_STAMM</c> und
+        /// <c>Tab_Solarkollektoren</c> die Bezugsfläche der Kennwerte (TEXT, Vorgabe apertur), reines DDL
+        /// (<see cref="SolarthermieFelderSchema"/>). <b>Ergebnisneutral:</b> Die Anlagenspalten entstehen
+        /// leer und rechnen ihre Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche. Die Nummer steht
+        /// allein bei <see cref="SolarthermieFelderSchema.SCHRITT"/>.
         /// Danach, mit den NETZVERLUSTEN JE KANAL, der ZIRKULATION IM BESTANDSWEG und dem
         /// BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2,
         /// Welle M3b), steht das Ziel auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>: acht nullbare

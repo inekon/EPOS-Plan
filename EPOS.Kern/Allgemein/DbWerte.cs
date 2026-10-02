@@ -381,6 +381,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KESSEL_BEREITSCHAFT_EINHEIT_PROZENT = "%";
 
+        // =====================================================================
+        // Kollektorfeld der Solarthermie (Welle M2, ST2 und ST6)
+        //   Tab_Energieanlagen.Arbeitstemperatur_Weg und
+        //   Tab_Solarkollektoren(_STAMM).Bezugsflaeche
+        //   (Schemaschritt SolarthermieFelderSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors FEST: mittlere Fluidtemperatur 50 °C für das ganze
+        /// Jahr — die Vorgabe; leer heißt dasselbe.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_FEST = "fest";
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors AUS DEM SPEICHER: je Stunde aus der untersten Zone
+        /// des Senkenpuffers (bzw. dem Rücklauf der Senke) plus Grädigkeit und halber Spreizung.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_SPEICHER = "speicher";
+
+        /// <summary>Die Kollektorkennwerte sind auf die APERTURFLÄCHE bezogen — die Vorgabe.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_APERTUR = "apertur";
+
+        /// <summary>Die Kollektorkennwerte sind auf die BRUTTOFLÄCHE (Modulfläche) bezogen.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_BRUTTO = "brutto";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim

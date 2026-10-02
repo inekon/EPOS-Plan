@@ -379,6 +379,12 @@ jobs:
       # den sieben aendert sich allein 1049 (Anlagenfeld 35 statt Projekt 30 %:
       # BHKW-Waerme 52,00 -> 49,09 MWh/a, Kessel 6,32 -> 9,23 MWh/a; fuenf
       # Dateien), die uebrigen sechs bleiben byte-gleich.
+      # R32 (02.10.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil das Kollektorfeld von 1049 seine Arbeitstemperatur aus der untersten
+      # Zone des Puffers bildet (Welle M2 Solarthermie, ST2 mit ST4). Unter den
+      # sieben aendert sich allein 1049 (genutzte Solarwaerme 10,73 -> 9,38 MWh/a,
+      # Ueberschuss 27,13 -> 19,73 MWh/a; zwoelf Dateien), die uebrigen sechs
+      # bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -391,24 +397,24 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-02_R31_Rechenwegbefunde
+      - name: Vergleich mit Referenzbasis 2026-10-02_R32_Solarthermie
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-02_R32_Solarthermie/Projekt_1049 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
-      # Plattformnachweis (Befund PB-1, Basis R31): dieselben sieben Projekte noch
+      # Plattformnachweis (Befund PB-1, Basis R32): dieselben sieben Projekte noch
       # einmal mit --stoerung ulp. Exp, Sin, Cos, Asin und Acos der Naht
       # Plattformrundung (Gebaeudematrix, Sonnenstand, Erdreich, Kollektor,
       # Tagesbilanz) runden dann wie eine andere C-Bibliothek: etwa jedes

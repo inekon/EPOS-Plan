@@ -806,6 +806,14 @@ namespace WindowsFormsApplication1
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
             public double UeberschussMwh;
+
+            /// <summary>
+            /// Pumpenstrom der Solarkreise [MWh/a] (ST1) — der Strom, den der Lauf an der Position der
+            /// Solarthermie in den Strombedarf bucht; 0 ohne gepflegte Pumpenleistung und ohne
+            /// Hilfsenergieanteil.
+            /// </summary>
+            public double PumpenstromMwh;
+
             public List<SolarModulZeile> Module = new List<SolarModulZeile>();
 
             /// <summary>
@@ -849,6 +857,7 @@ namespace WindowsFormsApplication1
 
             e.WaermeproduktionMwh = st.WaermeproduktionGesamtKwh / 1000.0;
             e.UeberschussMwh = st.UeberschussSummeKwh / 1000.0;
+            e.PumpenstromMwh = st.PumpenstromGesamtKwh / 1000.0;
 
             if (st.Kollektor_Ergebnisse != null)
                 foreach (var k in st.Kollektor_Ergebnisse)

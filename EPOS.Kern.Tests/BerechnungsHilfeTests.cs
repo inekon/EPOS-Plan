@@ -633,7 +633,10 @@ namespace EPOS.Kern.Tests
                 // (Speicherflotte)", die adaptive Entladeschwelle und den Abschnitt
                 // "Rastersuche" mit den zwei Suchmethoden - vier Uploads mehr als die
                 // uebrigen Seiten.
-                { "Stromspeicher", 7 }
+                { "Stromspeicher", 7 },
+                // Die Solarthermieseite traegt Arbeitstemperatur aus dem Speicher,
+                // Diffus-IAM, Bezugsflaeche und den Solarkreis (Pumpenstrom, Verluste).
+                { "Solarthermie", 4 }
             };
 
         /// <summary>

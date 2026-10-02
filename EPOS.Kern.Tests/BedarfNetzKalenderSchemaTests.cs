@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Register()
         {
-            Assert.Equal(ProzesswaermeTemperaturSchema.SCHRITT + 1, BedarfNetzKalenderSchema.SCHRITT);
+            Assert.Equal(SolarthermieFelderSchema.SCHRITT + 1, BedarfNetzKalenderSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= BedarfNetzKalenderSchema.SCHRITT);
             Assert.Equal(8, BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Count);
             Assert.Equal(new[] { "Z_Projekt_Brauchwasser", "Z_Projekt_Prozesswaerme", "Z_Projekt_Stromverbraucher" },

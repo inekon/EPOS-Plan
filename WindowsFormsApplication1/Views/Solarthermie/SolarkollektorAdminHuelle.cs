@@ -121,7 +121,8 @@ namespace WindowsFormsApplication1
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK2),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdir),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdiff),
-                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten),
+                Bezugsflaeche: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBezugsflaeche));
 
             SolarkollektorenStammCtrl.SpeicherErgebnis e =
                 SolarkollektorenStammCtrl.AnzeigefelderSchreiben(name, werte);

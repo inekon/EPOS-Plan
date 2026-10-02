@@ -49,10 +49,10 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter dem Temperaturpaar je Prozess (<see cref="ProzesswaermeTemperaturSchema"/>).
+        /// Schritt hinter den Feldern des Kollektorfelds (<see cref="SolarthermieFelderSchema"/>).
         /// Wird der Schritt beim Zusammenführen umnummeriert, ändert sich nur diese Zeile.
         /// </summary>
-        public const int SCHRITT = ProzesswaermeTemperaturSchema.SCHRITT + 1;
+        public const int SCHRITT = SolarthermieFelderSchema.SCHRITT + 1;
 
         // =================================================================
         //  Teil 1 — Tab_Einstellungen

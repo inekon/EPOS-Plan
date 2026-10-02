@@ -907,7 +907,11 @@ namespace WindowsFormsApplication1
                         bSimulationKessel = true;
                     }
 
-                    if (_solarInSchleife) bSimulationSolarthermie = true;
+                    if (_solarInSchleife)
+                    {
+                        bSimulationSolarthermie = true;
+                        SolarPumpenstromBuchen();
+                    }
 
                     if (_bhkwInSchleife)
                     {
@@ -942,6 +946,7 @@ namespace WindowsFormsApplication1
                     Simulation_Solarthermie_Ctrl_Zweikanalig(kanaele);
 
                     bSimulationSolarthermie = true;
+                    SolarPumpenstromBuchen();
                 }
                 else if (tool[i] == DbWerte.ERZEUGER_BHKW)
                 {
@@ -974,6 +979,21 @@ namespace WindowsFormsApplication1
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);
+        }
+
+        /// <summary>
+        /// ST1 (Welle M2 Solarthermie): der PUMPENSTROM der Solarkreise als Verbraucher am Anschluss —
+        /// an der Position der Solarthermie in den Rest des Strombedarfs, wie der Strom der
+        /// Wärmepumpe. Ohne gepflegte Pumpenleistung und ohne Hilfsenergieanteil ist die Reihe 0 und
+        /// der Vektor bleibt unberührt (bitgleich).
+        /// </summary>
+        private void SolarPumpenstromBuchen()
+        {
+            SimulationSolarthermie st = simulation_solarthermie;
+            if (st == null || !(st.PumpenstromGesamtKwh > 0)) return;
+
+            double[] pumpe = Stundenwerte_zu_viertelstunden(st.Pumpenstrom_stuendlich);
+            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, pumpe);
         }
 
         /// <summary>
@@ -1347,6 +1367,9 @@ namespace WindowsFormsApplication1
             if (_solarInSchleife)
             {
                 Solar_Liste_Laden();
+                // ST2 (Welle M2): der gerechnete Heizkreisrücklauf als Eintrittsseite eines Felds
+                // mit Arbeitstemperatur aus dem Speicher, das keinen Puffer lädt.
+                simulation_solarthermie.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
                 if (!simulation_solarthermie.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
                     m_bError = true;
@@ -1436,6 +1459,10 @@ namespace WindowsFormsApplication1
             // KESSELKENNLINIE E3: Stufe (b) der Rücklaufkette - der Senkenspeicher eines Kessels mit
             // Brennwertkennlinie. Erst jetzt, weil die Registry offen sein muss.
             KesselRuecklaufSpeicherSetzen();
+
+            // WELLE M2 (ST2): der Senkenpuffer eines Kollektorfelds mit Arbeitstemperatur aus dem
+            // Speicher. Ebenfalls erst jetzt, weil die Registry offen sein muss.
+            SolarTemperaturSpeicherSetzen();
 
             // PAKET B1 (Konzept 8.2, L8): Temperaturkopplung der Wärmepumpen-Module.
             // MUSS hier stehen - nach QuellspeicherUebernehmen (erst dort wird die
@@ -2077,6 +2104,8 @@ namespace WindowsFormsApplication1
         {
             Solar_Liste_Laden();
 
+            // ST2 (Welle M2): ohne Puffer ist der gerechnete Heizkreisrücklauf die Eintrittsseite.
+            simulation_solarthermie.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
             simulation_solarthermie.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten());
         }
 
@@ -4216,6 +4245,40 @@ namespace WindowsFormsApplication1
                         ziel.Geschichtet
                             ? MyResource.Resource.SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT
                             : ziel.RL_eff.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " °C"));
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// WELLE M2 (ST2) — für jedes Kollektorfeld mit Arbeitstemperatur aus dem Speicher der erste
+        /// Pufferspeicher seiner Senkenliste in Rangfolge, als Instanz dieses Laufs aus der Registry.
+        /// Das Feld liest je Stunde dessen unterste Zone (<c>T_unten</c>, am Ende der Vorstunde).
+        /// Ohne Puffer bleibt der Heizkreisrücklauf der Anlagenkopplung, sonst die feste Temperatur.
+        /// </summary>
+        private void SolarTemperaturSpeicherSetzen()
+        {
+            if (!_solarInSchleife || simulation_solarthermie == null) return;
+
+            for (int f = 0; f < simulation_solarthermie.FelderAnzahl; f++)
+            {
+                if (!simulation_solarthermie.ArbeitstemperaturAusSpeicher(f)) continue;
+                Senkenliste senken = simulation_solarthermie.FeldSenke(f);
+                if (senken == null) continue;
+
+                foreach (Senkenzeile z in senken.Zeilen.OrderBy(s => s.Rang))
+                {
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
+
+                    SimulationPufferspeicher ziel;
+                    if (!speicherRegistry.TryGetValue(z.IDPuffer, out ziel) || ziel == null) continue;
+                    if (ziel.VL_eff <= ziel.RL_eff) continue;
+
+                    simulation_solarthermie.TemperaturSpeicherSetzen(f, ziel);
+                    Protokoll.Hinweis("Solarthermie: Das Kollektorfeld (Anlage " +
+                        simulation_solarthermie.solar_anlagen_ids[f] + ") bildet seine Arbeitstemperatur aus " +
+                        "der untersten Zone des Puffers „" + ziel.BezeichnerAnzeige() + "“ plus Grädigkeit und " +
+                        "halber Spreizung.");
                     break;
                 }
             }
