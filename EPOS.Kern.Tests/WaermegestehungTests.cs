@@ -12,7 +12,8 @@ namespace EPOS.Kern.Tests
     /// Die Regel der Wärmegestehungskosten „nur Wärmeerzeuger" (Anwenderentscheid 30.09.2026) und
     /// die Herleitung „Menge × Preis" je Energieträger — ohne Datenbank: Zuordnung der Positionen,
     /// Erlösreihen, Anteil an Grund- und Leistungspreis, Energiekosten der Wärmeerzeuger,
-    /// Stromgutschrift, Kennzahl, Aufteilung der CO₂-Abgabe, Klartext der Herleitung, die
+    /// Stromgutschrift und die entgangene § 9b-Entlastung, die sie mindert (Anwenderentscheid
+    /// 02.10.2026), Kennzahl, Aufteilung der CO₂-Abgabe, Klartext der Herleitung, die
     /// Zeilen der Tafel und der Nachweisumschlag.
     /// </summary>
     public class WaermegestehungTests : IDisposable
@@ -129,6 +130,130 @@ namespace EPOS.Kern.Tests
             Assert.Equal(60.0 * 1000.0 * 0.25, Waermegestehung.StromgutschriftEur(60.0, 0.25), 9);
             Assert.Equal(0.0, Waermegestehung.StromgutschriftEur(60.0, null));
             Assert.Equal(0.0, Waermegestehung.StromgutschriftEur(0.0, 0.25));
+        }
+
+        // ------------------------------------------------------------ § 9b StromStG (Anwenderentscheid 02.10.2026)
+
+        private static SteuerEingabe Steuer(string unternehmensart)
+            => new SteuerEingabe { Unternehmensart = unternehmensart };
+
+        [Fact]
+        public void Die_entgangene_9b_Entlastung_ist_Eigenstrom_mal_Satz()
+        {
+            Assert.Equal(73.91 * 20.0, Waermegestehung.Entgangene9bEntlastungEur(73.91, 20.0), 9);
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(73.91, null));
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(73.91, 0.0));
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(73.91, -20.0));
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(0.0, 20.0));
+        }
+
+        /// <summary>
+        /// Produzierendes Gewerbe (oder Land- und Forstwirtschaft) mit gepflegtem Satz: je Jahr
+        /// −Satz × Eigenstrom, eine NEGATIVE Erlösreihe; Jahr 0 bleibt frei.
+        /// </summary>
+        [Theory]
+        [InlineData(DbWerte.UNTERNEHMENSART_PROD_GEWERBE)]
+        [InlineData(DbWerte.UNTERNEHMENSART_LAND_FORST)]
+        public void Die_entgangene_9b_Entlastung_ist_eine_negative_Erloesreihe(string art)
+        {
+            KapitalwertRechner.ErloesReihe r = Waermegestehung.Entgangene9bReihe(
+                Steuer(art), 50.0, 12500.0, 20, 2027, jahr => 20.0);
+            Assert.NotNull(r);
+            Assert.Equal(KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG_ENTGANGEN, r.Name);
+            Assert.Equal(21, r.JeJahr.Length);
+            Assert.Equal(0.0, r.Wert(0));
+            for (int t = 1; t <= 20; t++) Assert.Equal(-1000.0, r.Wert(t), 9);
+            Assert.Equal(-1000.0, r.Jahr1, 9);
+        }
+
+        /// <summary>
+        /// Ohne produzierendes Gewerbe, ohne Steuerpfad, ohne Eigenstrom, ohne Stromgutschrift
+        /// (kein Arbeitspreis — nichts zu mindern) oder ohne Satz &gt; 0 entsteht keine Reihe; ohne
+        /// Gewerbe wird der Katalog nicht einmal gefragt.
+        /// </summary>
+        [Fact]
+        public void Ohne_Gewerbe_Gutschrift_oder_Satz_entsteht_keine_Reihe()
+        {
+            int gefragt = 0;
+            Func<int, double?> satz = jahr => { gefragt++; return 20.0; };
+            Assert.Null(Waermegestehung.Entgangene9bReihe(
+                Steuer(DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE), 50.0, 12500.0, 20, 2027, satz));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(Steuer(""), 50.0, 12500.0, 20, 2027, satz));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(null, 50.0, 12500.0, 20, 2027, satz));
+            Assert.Equal(0, gefragt);
+
+            SteuerEingabe prod = Steuer(DbWerte.UNTERNEHMENSART_PROD_GEWERBE);
+            Assert.Null(Waermegestehung.Entgangene9bReihe(prod, 0.0, 12500.0, 20, 2027, satz));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(prod, 50.0, 0.0, 20, 2027, satz));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(prod, 50.0, 12500.0, 20, 2027, null));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(prod, 50.0, 12500.0, 20, 2027, jahr => null));
+            Assert.Null(Waermegestehung.Entgangene9bReihe(prod, 50.0, 12500.0, 20, 2027, jahr => 0.0));
+        }
+
+        /// <summary>
+        /// Jahresscharf wie die Steuerreihen: im Jahr t der Satz des Kalenderjahres
+        /// Förderbeginn + t − 1; ein Jahr ohne Satz trägt keinen Abzug.
+        /// </summary>
+        [Fact]
+        public void Die_entgangene_9b_Entlastung_ist_jahresscharf()
+        {
+            var jahre = new List<int>();
+            KapitalwertRechner.ErloesReihe r = Waermegestehung.Entgangene9bReihe(
+                Steuer(DbWerte.UNTERNEHMENSART_PROD_GEWERBE), 10.0, 2500.0, 10, 2028, jahr =>
+                {
+                    jahre.Add(jahr);
+                    if (jahr == 2033) return null;
+                    return jahr < 2030 ? 20.0 : 15.0;
+                });
+            Assert.Equal(Enumerable.Range(2028, 10), jahre);
+            Assert.Equal(-200.0, r.Wert(1), 9);    // 2028
+            Assert.Equal(-200.0, r.Wert(2), 9);    // 2029
+            Assert.Equal(-150.0, r.Wert(3), 9);    // 2030
+            Assert.Equal(0.0, r.Wert(6));          // 2033 ohne Satz
+            Assert.Equal(-150.0, r.Wert(10), 9);   // 2037
+        }
+
+        /// <summary>
+        /// Der Rechenkern summiert eine negative Erlösreihe richtig: Kapitalwert und Barwert der
+        /// Einnahmen sinken um ihren Barwert, die Gliederung bleibt stimmig. Die Zerlegung des
+        /// Zählers führt sie unter Energie (sie mindert die Stromgutschrift) — die Erlöse bleiben
+        /// die ohne Reihe, der Zähler geht weiter in der Kennzahl auf, und bei einem festen Satz ist
+        /// ihre Annuität genau Satz × Eigenstrom.
+        /// </summary>
+        [Fact]
+        public void Eine_negative_Erloesreihe_mindert_den_Kapitalwert_und_zaehlt_in_der_Zerlegung_zur_Energie()
+        {
+            KapitalwertRechner.Zahlungsbild Bild(params KapitalwertRechner.ErloesReihe[] reihen)
+                => KapitalwertRechner.Rechne(
+                    new List<KapitalwertRechner.InvestPosition>
+                    { new KapitalwertRechner.InvestPosition { Betrag = 10000, Nutzungsdauer = 20 } },
+                    500.0, 8000.0, 1000.0, 3.0, 20, 2.0, 2.0, 0.0,
+                    new List<KapitalwertRechner.ErloesReihe>(reihen), 0.0, null);
+
+            KapitalwertRechner.ErloesReihe r9b = Waermegestehung.Entgangene9bReihe(
+                Steuer(DbWerte.UNTERNEHMENSART_PROD_GEWERBE), 60.0, 15000.0, 20, 2027, jahr => 20.0);
+            KapitalwertRechner.Zahlungsbild ohne = Bild();
+            KapitalwertRechner.Zahlungsbild mit = Bild(r9b);
+
+            double barwert = 0;
+            for (int t = 1; t <= 20; t++) barwert += -1200.0 * Math.Pow(1.03, -t);
+            Assert.Equal(ohne.Kapitalwert + barwert, mit.Kapitalwert, 6);
+            Assert.Equal(ohne.BarwertEinnahmen + barwert, mit.BarwertEinnahmen, 6);
+            Assert.Equal(ohne.BarwertAusgaben, mit.BarwertAusgaben, 9);
+            Zahlungsgliederung g = Zahlungsgliederung.Aus(mit, 3.0);
+            Assert.True(g.Stimmig);
+            Assert.Equal(1000.0 - 1200.0, g.Bestandteil(Zahlungsgliederung.ERLOESE).Wert(1), 9);
+
+            Waermegestehung.Zerlegung zo = Waermegestehung.Zerlegung.Aus(Zahlungsgliederung.Aus(ohne, 3.0), 100.0, 15000.0);
+            Waermegestehung.Zerlegung zm = Waermegestehung.Zerlegung.Aus(g, 100.0, 15000.0, r9b);
+            Assert.Equal(0.0, zo.Entgangene9bJahr1);
+            Assert.Equal(1200.0, zm.Entgangene9bJahr1, 9);
+            Assert.Equal(15000.0, zm.StromgutschriftJahr1);
+            Assert.Equal(zo.AnlagenEurJahr, zm.AnlagenEurJahr, 9);
+            Assert.Equal(zo.ErloeseEurJahr, zm.ErloeseEurJahr, 6);
+            Assert.Equal(zo.EnergieEurJahr + 1200.0, zm.EnergieEurJahr, 6);
+            Assert.Equal(Waermegestehung.Kennzahl(mit.Kapitalwert, 3.0, 20, 100.0).Value,
+                         zm.ZaehlerEurJahr / zm.WaermeKwh, 9);
         }
 
         [Fact]

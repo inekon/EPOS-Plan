@@ -23,7 +23,9 @@ namespace WindowsFormsApplication1
     ///     von Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers ohne
     ///     Anrechnung von PV-Eigenverbrauch, Grund- und Leistungspreis eines Trägers nach
     ///     <see cref="Anteil"/> —, abzüglich der Stromgutschrift für den im Projekt verbrauchten
-    ///     BHKW-Strom (<see cref="StromgutschriftEur"/>).</description></item>
+    ///     BHKW-Strom (<see cref="StromgutschriftEur"/>); bei produzierendem Gewerbe mindert die
+    ///     entgangene Entlastung nach § 9b StromStG diese Gutschrift
+    ///     (<see cref="Entgangene9bReihe"/>).</description></item>
     ///   <item><description><b>Erlöse</b>: die Erlöse der Wärmeerzeuger — eingespeister BHKW-Strom
     ///     und die Reihen aus <see cref="ErloesReiheZaehlt"/>.</description></item>
     /// </list>
@@ -112,7 +114,8 @@ namespace WindowsFormsApplication1
         /// Energiesteuer-Entlastung (§ 53/§ 53a/§ 54 EnergieStG — Brennstoff von BHKW und Kessel)
         /// und die Stromsteuer-Befreiung des BHKW-Stroms (§ 9 Abs. 1 Nr. 3 StromStG). Nicht dabei:
         /// die PV-Vergütung und die Stromsteuer-Entlastung nach § 9b StromStG, die am Netzbezug des
-        /// ganzen Anschlusses hängt.
+        /// ganzen Anschlusses hängt — die Wärmeerzeugung trägt von ihr allein den Teil, der auf den
+        /// BHKW-Eigenstrom entgeht (<see cref="Entgangene9bReihe"/>).
         /// </summary>
         internal static bool ErloesReiheZaehlt(string name)
         {
@@ -218,6 +221,75 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die entgangene Entlastung nach § 9b StromStG [€/a]</b> (Anwenderentscheid 02.10.2026:
+        /// „Die Stromsteuer-Entlastung nach § 9b StromStG mindert die Stromsteuer-Entlastung durch
+        /// das BHKW. Nur die zusätzliche Entlastung durch das BHKW wird angerechnet."). Der
+        /// Arbeitspreis der Stromgutschrift enthält die Stromsteuer; auf den Netzbezug, den der
+        /// BHKW-Eigenstrom ersetzt, bekäme ein Unternehmen des produzierenden Gewerbes (oder der
+        /// Land- und Forstwirtschaft) die Entlastung nach § 9b ohnehin. Der Vorteil des Eigenstroms
+        /// ist deshalb nur Arbeitspreis − Entlastungssatz je MWh; abgezogen wird Eigenstrom × Satz —
+        /// dieselbe Größe wie die § 9b-Korrektur des Ausweises der vermiedenen Stromkosten, hier auf
+        /// den Eigenstrom der Stromgutschrift. 0 ohne Menge oder ohne Satz &gt; 0.
+        /// </summary>
+        /// <param name="eigenstromMWh">Der im Projekt verbrauchte BHKW-Strom [MWh/a]
+        /// (<see cref="BhkwEigenstromMWh"/>).</param>
+        /// <param name="satzEurJeMWh">Der Entlastungssatz [€/MWh]; <c>null</c> = nicht gepflegt.</param>
+        internal static double Entgangene9bEntlastungEur(double eigenstromMWh, double? satzEurJeMWh)
+        {
+            if (!(eigenstromMWh > 0) || !satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return 0.0;
+            return eigenstromMWh * satzEurJeMWh.Value;
+        }
+
+        /// <summary>
+        /// <b>Die entgangene § 9b-Entlastung jahresscharf</b>: die NEGATIVE Erlösreihe
+        /// <see cref="KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG_ENTGANGEN"/> des
+        /// Zahlungsgerüsts der Wärmeerzeugung — im Jahr t = 1…T −<see cref="Entgangene9bEntlastungEur"/>
+        /// mit dem Satz des Kalenderjahres <c>Förderbeginn + t − 1</c>, wie die Steuerreihen des
+        /// Projekts. Als eigene Reihe bleibt der Abzug jahresscharf und nominal; im Energiebetrag
+        /// würde er mit der Energiepreissteigerung fortgeschrieben, die für einen gesetzlichen Satz
+        /// nicht gilt.
+        ///
+        /// <para><c>null</c> — dann rechnet die Kennzahl bitgleich ohne Abzug —, wenn das Projekt
+        /// weder produzierendes Gewerbe noch Land- und Forstwirtschaft ist
+        /// (<see cref="SteuerGutschriftRechner.ProduzierendesGewerbe"/>, dieselbe Prüfung wie die
+        /// § 9b-Korrektur des Ausweises), wenn keine Stromgutschrift gerechnet ist (ohne Gutschrift
+        /// gibt es nichts zu mindern) oder wenn kein Jahr einen Satz &gt; 0 führt.</para>
+        /// </summary>
+        /// <param name="steuer">Die Steuereingabe des Laufs (Unternehmensart); <c>null</c> = kein
+        /// Steuerpfad.</param>
+        /// <param name="eigenstromMWh">Der im Projekt verbrauchte BHKW-Strom [MWh/a] — dieselbe
+        /// Menge, mit der die Stromgutschrift rechnet.</param>
+        /// <param name="stromgutschriftEur">Die Stromgutschrift des ersten Jahres [€/a]
+        /// (<see cref="StromgutschriftEur"/>).</param>
+        /// <param name="jahre">Der Betrachtungszeitraum T [a].</param>
+        /// <param name="foerderbeginn">Das Kalenderjahr des ersten Betrachtungsjahres.</param>
+        /// <param name="satzImJahr">Der Entlastungssatz eines Kalenderjahres [€/MWh] aus dem
+        /// Gesetzeskatalog; <c>null</c> = nicht gepflegt. Gefragt wird nur, wenn die Reihe greifen
+        /// kann.</param>
+        internal static KapitalwertRechner.ErloesReihe Entgangene9bReihe(
+            SteuerEingabe steuer, double eigenstromMWh, double stromgutschriftEur,
+            int jahre, int foerderbeginn, Func<int, double?> satzImJahr)
+        {
+            if (steuer == null || !SteuerGutschriftRechner.ProduzierendesGewerbe(steuer)) return null;
+            if (!(eigenstromMWh > 0) || !(stromgutschriftEur > 0) || satzImJahr == null) return null;
+
+            int T = Math.Max(1, jahre);
+            var jeJahr = new double[T + 1];
+            bool etwas = false;
+            for (int t = 1; t <= T; t++)
+            {
+                double abzug = Entgangene9bEntlastungEur(eigenstromMWh, satzImJahr(foerderbeginn + t - 1));
+                if (abzug == 0.0) continue;
+                jeJahr[t] = -abzug;
+                etwas = true;
+            }
+            return etwas
+                ? new KapitalwertRechner.ErloesReihe(
+                      KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG_ENTGANGEN, jeJahr)
+                : null;
+        }
+
+        /// <summary>
         /// <b>Die Kennzahl [€/kWh]</b>: <c>(−Kapitalwert × a(i, T)) ÷ (Wärmebedarf × 1.000)</c>;
         /// <c>null</c> ohne Wärmebedarf.
         /// </summary>
@@ -230,19 +302,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die <b>Zerlegung des Zählers</b> [€/a, annuisiert]: Anlagen (Investition, Betrieb,
-        /// Ersatz, Restwert), Energie (samt CO₂-Abgabe und abzüglich der Stromgutschrift) und
-        /// Erlöse — Kosten positiv, Erlöse positiv als Abzug. Reine Auskunft aus dem Zahlungsbild
-        /// der Wärmeerzeugung; die Kennzahl rechnet mit dem Kapitalwert.
+        /// Ersatz, Restwert), Energie (samt CO₂-Abgabe, abzüglich der Stromgutschrift, zuzüglich
+        /// der entgangenen § 9b-Entlastung, die diese Gutschrift mindert) und Erlöse — Kosten
+        /// positiv, Erlöse positiv als Abzug. Reine Auskunft aus dem Zahlungsbild der
+        /// Wärmeerzeugung; die Kennzahl rechnet mit dem Kapitalwert.
         /// </summary>
         internal sealed class Zerlegung
         {
             /// <summary>Annuität der Anlagen [€/a] (Investition nach Zuschuss, Betrieb, Ersatz, Restwert).</summary>
             public double AnlagenEurJahr;
             /// <summary>Annuität der Energiekosten der Wärmeerzeuger [€/a], CO₂-Abgabe eingeschlossen,
-            /// Stromgutschrift abgezogen.</summary>
+            /// Stromgutschrift abgezogen, entgangene § 9b-Entlastung zugeschlagen.</summary>
             public double EnergieEurJahr;
             /// <summary>Darin: die Stromgutschrift des ersten Jahres [€/a] (nicht annuisiert).</summary>
             public double StromgutschriftJahr1;
+            /// <summary>Darin: die entgangene § 9b-Entlastung des ersten Jahres [€/a] (nicht
+            /// annuisiert), positiv — um sie ist die Stromgutschrift gemindert; 0 = kein Abzug.</summary>
+            public double Entgangene9bJahr1;
             /// <summary>Annuität der Erlöse der Wärmeerzeuger [€/a].</summary>
             public double ErloeseEurJahr;
             /// <summary>Der Jahreswärmebedarf [kWh/a].</summary>
@@ -251,8 +327,16 @@ namespace WindowsFormsApplication1
             /// <summary>Zähler [€/a] = Anlagen + Energie − Erlöse.</summary>
             public double ZaehlerEurJahr { get { return AnlagenEurJahr + EnergieEurJahr - ErloeseEurJahr; } }
 
-            /// <summary>Aus der Gliederung des Zahlungsbilds der Wärmeerzeugung; <c>null</c> ohne sie.</summary>
-            internal static Zerlegung Aus(Zahlungsgliederung g, double waermeMWh, double stromgutschriftJahr1)
+            /// <summary>
+            /// Aus der Gliederung des Zahlungsbilds der Wärmeerzeugung; <c>null</c> ohne sie. Die
+            /// entgangene § 9b-Entlastung reist im Kapitalwert als negative Erlösreihe (jahresscharf)
+            /// und steht deshalb in der Gliederung unter den Erlösen; der Sache nach mindert sie die
+            /// Stromgutschrift — die Zerlegung führt ihren Barwert unter Energie. Der Zähler bleibt
+            /// dabei derselbe.
+            /// </summary>
+            /// <param name="entgangen9b">Die Reihe aus <see cref="Entgangene9bReihe"/>; <c>null</c> = keine.</param>
+            internal static Zerlegung Aus(Zahlungsgliederung g, double waermeMWh, double stromgutschriftJahr1,
+                                          KapitalwertRechner.ErloesReihe entgangen9b = null)
             {
                 if (g == null || !(waermeMWh > 0)) return null;
                 double a = KapitalwertRechner.Annuitaet(g.ZinsProzent / 100.0, g.Jahre);
@@ -266,12 +350,25 @@ namespace WindowsFormsApplication1
                         erloese += b.Barwert;
                     else anlagen -= b.Barwert;
                 }
+                if (entgangen9b != null)
+                {
+                    // Barwert der (negativen) Reihe — aus den Erlösen heraus, als Kosten zur Energie.
+                    double barwert9b = 0;
+                    for (int t = 1; t <= g.Jahre; t++)
+                    {
+                        double w = entgangen9b.Wert(t);
+                        if (w != 0) barwert9b += w * Math.Pow(1.0 + g.ZinsProzent / 100.0, -t);
+                    }
+                    erloese -= barwert9b;
+                    energie -= barwert9b;
+                }
                 return new Zerlegung
                 {
                     AnlagenEurJahr = anlagen * a,
                     EnergieEurJahr = energie * a,
                     ErloeseEurJahr = erloese * a,
                     StromgutschriftJahr1 = stromgutschriftJahr1,
+                    Entgangene9bJahr1 = entgangen9b != null ? -entgangen9b.Jahr1 : 0.0,
                     WaermeKwh = waermeMWh * 1000.0
                 };
             }

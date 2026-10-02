@@ -18,6 +18,13 @@ namespace EPOS.Kern.Tests
     /// Kesselbrennstoff fehlt in den Modulzeilen, Warnung „Kesselbrennstoff fehlt"); die kleine
     /// Zahl ist deshalb eine Aussage über diesen Stand, nicht über das Projekt. Der Kapitalwert
     /// bewegt sich nicht (<see cref="WirtschaftlichkeitAnkerTests"/>).</para>
+    ///
+    /// <para><b>Entgangene § 9b-Entlastung</b> (Anwenderentscheid 02.10.2026): Kein Projekt der
+    /// Testdatenbank ist produzierendes Gewerbe (1024 ohne Angabe, 1030 „kein produzierendes
+    /// Gewerbe") — die beiden Anker oben bleiben deshalb bitgleich. Die Fälle mit umgestellter
+    /// Unternehmensart (auf der Arbeitskopie) halten den Abzug: 1024 alt 0,06162 → neu
+    /// 0,06541 €/kWh, 1030 alt 0,00684 → neu 0,00825 €/kWh; der Kapitalwert bleibt der ohne
+    /// Abzug.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WaermegestehungAnkerTests : IDisposable
@@ -111,6 +118,69 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.23978800641410303, Projektformel(e, v, p), 10);
             Assert.Equal(0.00684209053429058, e.Gestehungskosten.Value, 10);
             Assert.Equal(0.0, e.EnergiekostenJeTraeger.Single(t => t.Netzstrom).WaermeMengeMWh, 12);
+        }
+
+        /// <summary>Stellt die Unternehmensart eines Projekts der Arbeitskopie um.</summary>
+        private static void Unternehmensart(int idProjekt, string art)
+        {
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWirtschaftlichkeit SET Unternehmensart = ? WHERE ID_Projekt = ?",
+                new DbParam("@a", art), new DbParam("@p", idProjekt));
+        }
+
+        /// <summary>
+        /// 1024 als Unternehmen des produzierenden Gewerbes (Anwenderentscheid 02.10.2026): Die
+        /// Entlastung nach § 9b StromStG, die dem ersetzten Netzbezug ohnehin zustünde, mindert die
+        /// Stromgutschrift — 73,91 MWh × 20,00 €/MWh = 1.478,20 €/a, als Annuität eines festen Satzes
+        /// genau dieser Betrag. Wärmegestehungskosten alt 0,06162 → neu 0,06541 €/kWh. Kapitalwert,
+        /// Barwerte, Energiekosten und die § 9b-Entlastung des Projekts sind die vor dem Abzug.
+        /// </summary>
+        [Fact]
+        public void Waermegestehungskosten_1024_produzierendes_Gewerbe_ohne_entgangene_9b_Entlastung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Unternehmensart(1024, DbWerte.UNTERNEHMENSART_PROD_GEWERBE);
+            WirtschaftlichkeitErgebnis e = Rechne(1024, out VariantenDaten v, out _);
+            Assert.NotNull(e);
+            Assert.True(e.ProduzierendesGewerbe);
+            // projektweit, vom Abzug unberührt (gemessen ohne ihn)
+            Assert.Equal(-2784891.14, e.Kapitalwert.Value, 2);
+            Assert.Equal(2884358.13, e.BarwertAusgaben.Value, 2);
+            Assert.Equal(111467.99, e.BarwertEinnahmen.Value, 2);
+            Assert.Equal(188167.18, e.EnergiekostenJahr.Value, 2);
+            Assert.Equal(7492.40, e.StromsteuerEntlastungJahr1, 2);
+
+            Assert.Equal(0.06540904720048853, e.Gestehungskosten.Value, 10);   // alt 0,06161616494867317
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(0.06161616494867317 + 73.91 * 20.0 / waermeKwh, e.Gestehungskosten.Value, 12);
+
+            Waermegestehung.Zerlegung z = e.GestehungZerlegung;
+            Assert.Equal(34549.97, z.StromgutschriftJahr1, 2);
+            Assert.Equal(1478.20, z.Entgangene9bJahr1, 2);
+            Assert.Equal(e.Gestehungskosten.Value, z.ZaehlerEurJahr / z.WaermeKwh, 12);
+        }
+
+        /// <summary>
+        /// 1030 als Unternehmen des produzierenden Gewerbes: 432,3 MWh BHKW-Eigenstrom × 20,00 €/MWh
+        /// = 8.646 €/a. Wärmegestehungskosten alt 0,00684 → neu 0,00825 €/kWh; Kapitalwert unberührt.
+        /// </summary>
+        [Fact]
+        public void Waermegestehungskosten_1030_produzierendes_Gewerbe_ohne_entgangene_9b_Entlastung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Unternehmensart(1030, DbWerte.UNTERNEHMENSART_PROD_GEWERBE);
+            WirtschaftlichkeitErgebnis e = Rechne(1030, out VariantenDaten v, out _);
+            Assert.NotNull(e);
+            Assert.Equal(-20602441.40, e.Kapitalwert.Value, 2);                  // gemessen ohne Abzug
+            Assert.Equal(1352374.36, e.BarwertEinnahmen.Value, 2);
+            Assert.Equal(0.008250793667131643, e.Gestehungskosten.Value, 10);   // alt 0,00684209053429058
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(0.00684209053429058 + 8646.0 / waermeKwh, e.Gestehungskosten.Value, 12);
+            Assert.Equal(8646.0, e.GestehungZerlegung.Entgangene9bJahr1, 2);
         }
 
         /// <summary>

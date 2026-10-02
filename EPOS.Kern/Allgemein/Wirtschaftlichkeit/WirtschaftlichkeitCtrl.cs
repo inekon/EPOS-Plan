@@ -6881,8 +6881,9 @@ namespace WindowsFormsApplication1
             if (eingabe.WaermeMWh > 0)
             {
                 double stromgutschrift, eigenstromOhnePreisMWh;
+                KapitalwertRechner.ErloesReihe entgangen9b;
                 ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, out stromgutschrift,
-                                                          out eigenstromOhnePreisMWh);
+                                                          out eigenstromOhnePreisMWh, out entgangen9b);
                 // Kein stilles Weglassen: Fehlt dem im Projekt verbrauchten BHKW-Strom der
                 // Arbeitspreis, rechnet die Kennzahl ohne Stromgutschrift — und sagt es.
                 if (eigenstromOhnePreisMWh > 0)
@@ -6894,7 +6895,7 @@ namespace WindowsFormsApplication1
                 erg.Gestehungskosten = Waermegestehung.Kennzahl(bildW.Kapitalwert, p.Zinssatz,
                                                                p.Betrachtungszeitraum, eingabe.WaermeMWh);
                 erg.GestehungZerlegung = Waermegestehung.Zerlegung.Aus(
-                    Zahlungsgliederung.Aus(bildW, p.Zinssatz), eingabe.WaermeMWh, stromgutschrift);
+                    Zahlungsgliederung.Aus(bildW, p.Zinssatz), eingabe.WaermeMWh, stromgutschrift, entgangen9b);
                 StufenfehlerAnhaengen(erg);   // eine gescheiterte Anlagenlesung (jede Zeile einmal)
             }
             return erg;
@@ -6912,6 +6913,10 @@ namespace WindowsFormsApplication1
         ///     (<see cref="Waermegestehung.Energiekosten"/>) abzüglich der Stromgutschrift für den
         ///     im Projekt verbrauchten BHKW-Strom; die CO₂-Abgabe ganz (sie hängt allein am
         ///     Brennstoff von Kessel und BHKW);</description></item>
+        ///   <item><description>bei produzierendem Gewerbe die entgangene § 9b-Entlastung auf
+        ///     denselben Eigenstrom als negative, jahresscharfe Erlösreihe
+        ///     (<see cref="Waermegestehung.Entgangene9bReihe"/>) — sie mindert die
+        ///     Stromgutschrift;</description></item>
         ///   <item><description>Erlöse: der eingespeiste BHKW-Strom und die Erlösreihen der
         ///     Wärmeerzeuger (<see cref="Waermegestehung.ErloesReiheZaehlt"/>);</description></item>
         ///   <item><description>kein Risikoabzug — er bewertet die Unsicherheit des Standes, er ist
@@ -6921,10 +6926,12 @@ namespace WindowsFormsApplication1
         private ProjektEingabe BaueWaermeEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                                  ProjektEingabe gesamt, string szenario,
                                                  out double stromgutschrift,
-                                                 out double eigenstromOhnePreisMWh)
+                                                 out double eigenstromOhnePreisMWh,
+                                                 out KapitalwertRechner.ErloesReihe entgangen9b)
         {
             stromgutschrift = 0.0;
             eigenstromOhnePreisMWh = 0.0;
+            entgangen9b = null;
             SzenarioSatz satz = p.SatzFuer(szenario);
             ErgebnisBHKWModel bhkw = v.Ergebnis != null ? v.Ergebnis.BHKW : null;
             bool bhkwImProjekt = bhkw != null && bhkw.Module != null && bhkw.Module.Count > 0;
@@ -6963,6 +6970,20 @@ namespace WindowsFormsApplication1
             w.Erloes = gesamt.ErloesKwk;
             foreach (KapitalwertRechner.ErloesReihe r in gesamt.ErloesReihen)
                 if (r != null && Waermegestehung.ErloesReiheZaehlt(r.Name)) w.ErloesReihen.Add(r);
+
+            // Anwenderentscheid 02.10.2026: Bei produzierendem Gewerbe (oder Land- und
+            // Forstwirtschaft) mindert die § 9b-Entlastung, die dem ersetzten Netzbezug ohnehin
+            // zustünde, die Stromgutschrift — angerechnet wird nur die zusätzliche Entlastung durch
+            // das BHKW. Dieselbe Unternehmensart und dieselbe Prüfung wie die § 9b-Korrektur des
+            // Ausweises (gesamt.SteuerEingabe), der Satz jahresscharf aus dem Gesetzeskatalog wie
+            // die Steuerreihen. Ohne Gewerbe, Gutschrift oder Satz entsteht keine Reihe (bitgleich).
+            entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
+                p.Betrachtungszeitraum, Foerderbeginn(p), jahr =>
+                {
+                    if (_gesetze == null) _gesetze = new GesetzKatalog();
+                    return _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr);
+                });
+            if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;
             return w;
