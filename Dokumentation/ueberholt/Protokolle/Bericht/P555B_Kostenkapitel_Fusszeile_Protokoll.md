@@ -184,5 +184,5 @@ für CO₂ und die Menge.
   Fußzeile ohne Leistungspreis keinen nennt; *Die_Fussnoten_kommen_aus_den_Ressourcen* prüft den neuen Schlüssel
   (de/en, zwei Stellen, de gleich Rückfall). Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
 - **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel` um einen Satz mit neutralem Beispiel
-  ergänzt; Logbuchsatz unter Version 1.2.0.6 (#641 vorläufig). Der Wiki-Upload steht gebündelt aus.
+  ergänzt; Logbuchsatz unter Version 1.2.0.6 (#642). Der Wiki-Upload steht gebündelt aus.
 - **Gate:** siehe Statuszeile.
