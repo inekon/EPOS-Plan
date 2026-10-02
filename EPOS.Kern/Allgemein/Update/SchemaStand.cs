@@ -756,11 +756,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
         /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
         /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
+        /// Danach, mit dem TEMPERATURPAAR JE PROZESS (Entscheidungsvorlage Modellgrenzen, PW1 Stufe 1,
+        /// Welle M3a), steht das Ziel auf <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>: die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, paarweise, Vorlauf
+        /// nicht unter dem Rücklauf) an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c>
+        /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
+        /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselBereitschaftEinheitSchema.SCHRITT;
+        public const int Zielversion = ProzesswaermeTemperaturSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

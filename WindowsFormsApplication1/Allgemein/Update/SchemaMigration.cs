@@ -4832,6 +4832,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT;
 
+        // ---- Welle M3a (Entscheidungsvorlage Modellgrenzen PW1 Stufe 1 und PW5): Prozesswärme ----
+
+        /// <summary>
+        /// Schritt <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/> — <b>das Temperaturpaar je
+        /// Prozess</b> (PW1 Stufe 1). Er folgt auf <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c> die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, beide oder keine,
+        /// Vorlauf nicht unter dem Rücklauf). Die Anweisungen stehen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt ohne Paar und
+        /// rechnet wie zuvor; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6961,6 +6978,16 @@ namespace WindowsFormsApplication1
                         "Prozent der Nennleistung muesste von Hand umgerechnet werden. KEIN Rechenergebnis " +
                         "aendert sich - jede Bestandszeile bekommt kW, die Einheit, in der sie rechnet.",
                         Schritt_KesselBereitschaftEinheit),
+            // WELLE M3a (PW1 Stufe 1, PW5) - das Temperaturpaar je Prozess: zwei nullbare Spalten an
+            // Katalog und Projektkopie. Die Quelle ist ProzesswaermeTemperaturSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_PROZESSWAERME_TEMPERATUR,
+                        "Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme: Temperaturpaar je Prozess " +
+                        "(Vorlauf, Ruecklauf)",
+                        "Ein Prozess waere eine reine Waermemenge; welches Temperaturniveau er verlangt, " +
+                        "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
+                        "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
+                        Schritt_ProzesswaermeTemperatur),
         };
 
         /// <summary>
@@ -12329,6 +12356,49 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Einheit des Bereitschaftsverlusts - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Vorgabe kW).") +
                     " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Temperaturpaar je Prozess" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/>, die Anweisungen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>. <b>Wiederholbar</b>:
+        /// <c>ProzesswaermeTemperaturSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine
+        /// der beiden Prozesswärmetabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_ProzesswaermeTemperatur(Lauf l)
+        {
+            string nr = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzesswaermeTemperaturSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzesswaermeTemperaturSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzesswaermeTemperaturSchema.SpaltenVollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten " + ProzesswaermeTemperaturSchema.SPALTE_VORLAUF + " und " +
+                                  ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF + " an " +
+                                  ProzesswaermeTemperaturSchema.TAB_STAMM + " und " +
+                                  ProzesswaermeTemperaturSchema.TAB_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Temperaturpaar je Prozess - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 
