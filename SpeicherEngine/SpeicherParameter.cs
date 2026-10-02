@@ -53,6 +53,32 @@ namespace SpeicherEngine
         /// <summary>Intervalldauer dt [h], Default 0,25 (Viertelstundenraster).</summary>
         public double DtH { get; init; } = 0.25;
 
+        /// <summary>
+        /// Standby-Verbrauch des Speichersystems [kW AC] (Batteriemanagement, Wechselrichter im
+        /// Leerlauf; Welle M5, SP1), Default 0. Er wird je Intervall aus dem PV-Ueberschuss gedeckt,
+        /// der nach der Ladung bleibt, sonst aus dem Netz - nie aus der Batterie
+        /// (<see cref="Speichersystem.Standby"/>). Er veraendert den Fahrplan der Batterie nicht.
+        /// </summary>
+        public double StandbyKw { get; init; }
+
+        /// <summary>
+        /// Selbstentladung [% des Inhalts je Monat] (Welle M5, SP1), Default 0. Sie zehrt je
+        /// Intervall den Anteil <see cref="SelbstentladungJeIntervall"/> vom Inhalt, hoechstens bis
+        /// zur unteren SoC-Grenze (<see cref="Speichersystem.Selbstentladung"/>).
+        /// </summary>
+        public double SelbstentladungProzentMonat { get; init; }
+
+        /// <summary>Stunden eines mittleren Monats im festen Jahresraster (8 760 / 12).</summary>
+        public const double STUNDEN_JE_MONAT = 730.0;
+
+        /// <summary>
+        /// Der Anteil des Inhalts, der je Intervall durch Selbstentladung verloren geht [-]:
+        /// <c>s/100 · dt / 730 h</c>; 0 ohne Selbstentladung.
+        /// </summary>
+        public double SelbstentladungJeIntervall => SelbstentladungProzentMonat > 0.0
+            ? SelbstentladungProzentMonat / 100.0 * DtH / STUNDEN_JE_MONAT
+            : 0.0;
+
         // -------------------------------------------------------- Quellen-Matrix
 
         /// <summary>
@@ -202,6 +228,11 @@ namespace SpeicherEngine
                 throw new ArgumentOutOfRangeException(nameof(SoCMaxKwh), SoCMaxKwh, "SoC_max muss groesser oder gleich SoC_min sein.");
             if (!(RoundTripWirkungsgrad > 0.0) || RoundTripWirkungsgrad > 1.0)
                 throw new ArgumentOutOfRangeException(nameof(RoundTripWirkungsgrad), RoundTripWirkungsgrad, "eta_RT muss im Bereich (0..1] liegen.");
+            if (!(StandbyKw >= 0.0) || double.IsInfinity(StandbyKw))
+                throw new ArgumentOutOfRangeException(nameof(StandbyKw), StandbyKw, "Der Standby-Verbrauch darf nicht negativ sein.");
+            if (!(SelbstentladungProzentMonat >= 0.0) || SelbstentladungProzentMonat >= 100.0)
+                throw new ArgumentOutOfRangeException(nameof(SelbstentladungProzentMonat), SelbstentladungProzentMonat,
+                    "Die Selbstentladung muss im Bereich [0..100) %/Monat liegen.");
             if (CVerEurProKwhZyklus < 0.0)
                 throw new ArgumentOutOfRangeException(nameof(CVerEurProKwhZyklus), CVerEurProKwhZyklus, "c_ver darf nicht negativ sein.");
         }
