@@ -4,7 +4,7 @@
 @using EPOS.UI.Dialoge.Bedarf
 @inject NavigationManager Navigation
 
-@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3 und U4; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3, U4 und U5; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
     Pruefstand, nicht Auslieferung.
 
     Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
@@ -34,7 +34,8 @@
       ?fall=neu        Betriebsart Neu, der leere Satz der Huelle (Vorgabe)
       ?fall=ohnetabellen  Betriebsart Bearbeiten ohne die Tabellen der Konditionierung - der Weg der
                        Huelle ohne Datenbank: der Reiter benannt gesperrt (Festlegung 6)
-      ?fall=vorlagen   Betriebsart Bearbeiten, der volle Satz - die Vorlagen je Karte (Welle U2)
+      ?fall=vorlagen   Betriebsart Bearbeiten, der volle Satz, gekuehlt - die Vorlagen je Karte (Welle U2)
+                       und die Abkuerzung "alle Groessen" in der Zeile "Vorlage" (Welle U5, E57)
       ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
                        Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
                        Gemeinjahrdatum (Saison von/bis)
@@ -266,7 +267,11 @@
                 break;
 
             case VORLAGEN:
-                gaben["Daten"] = Satz("Probehaus Vorlagen");
+                // Gekuehlt (Welle U5): Die Abkuerzung "alle Groessen" (E57) uebernimmt dann in allen fuenf
+                // Groessen - ohne "Gebaeude wird gekuehlt" ist "Uebernehmen" der Kuehlkarte gesperrt, Kuehlen bliebe.
+                GebaeudeKatalogDaten vorlagen = Satz("Probehaus Vorlagen");
+                vorlagen.KuehlungAktiv = true;
+                gaben["Daten"] = vorlagen;
                 gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
                 break;
 

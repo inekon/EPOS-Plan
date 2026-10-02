@@ -79,4 +79,36 @@ public sealed class KonditionierungFragetexte
     /// </summary>
     public string Sollwertprofil { get; set; }
         = "Das Sollwert-Zeitprogramm ersetzt die Standardwoche des angelegten Heizkalenders; Perioden und Herkunft bleiben. Übernehmen?";
+
+    // ---- Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ (E57; Stufe KP2, Welle U5) ----
+    // EINE Rückfrage für alle Größen: der Satz, je Größe eine Zeile („{Größe}: {Teil}“), dazu die Zonen.
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE_TITEL</c> — der Titel der Rückfrage der Abkürzung</summary>
+    public string VorlageAlleTitel { get; set; } = "Vorlage in allen Größen übernehmen";
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE</c> — der Satz der Rückfrage; „{0}“ der Name der Vorlage (ein Datenwert)</summary>
+    public string VorlageAlle { get; set; } = "Die Vorlage „{0}“ in allen Größen übernehmen?";
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE_ZEILE</c> — die Zeile je Größe; „{0}“ die Größe, „{1}“ was mit ihr geschieht</summary>
+    public string VorlageAlleZeile { get; set; } = "{0}: {1}";
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN</c> — eine Größe übernimmt die Vorlage, ohne dass etwas ersetzt wird</summary>
+    public string VorlageAlleUebernehmen { get; set; } = "übernehmen";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_VORLAGE_ALLE_ERSETZT</c> — am angelegten Kalender (P12): „{0}“ was ersetzt wird, „{1}“ was bleibt
+    /// </summary>
+    public string VorlageAlleErsetzt { get; set; } = "ersetzt wird: {0}; es bleibt: {1}";
+
+    /// <summary>
+    /// <c>KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN</c> — an der Gesamtangabe der Lüftung (E56 F5 (a)): „{0}“ die
+    /// Luftwechselrate, „{1}“ die Infiltration, „{2}“ die Nutzerlüftung nach der Aufteilung [1/h]
+    /// </summary>
+    public string VorlageAlleAufteilen { get; set; } = "die Gesamtangabe {0} 1/h wird aufgeteilt (Infiltration {1}, Nutzerlüftung {2})";
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE_OHNE</c> — eine Größe ohne Vorlage dieses Namens</summary>
+    public string VorlageAlleOhne { get; set; } = "keine Vorlage dieses Namens — bleibt";
+
+    /// <summary><c>KOND_FRAGE_VORLAGE_ALLE_GESPERRT</c> — eine gesperrte Größe; „{0}“ der Grund (die Sperre der Karte)</summary>
+    public string VorlageAlleGesperrt { get; set; } = "gesperrt — {0}";
 }

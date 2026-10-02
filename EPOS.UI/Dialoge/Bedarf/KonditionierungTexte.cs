@@ -859,4 +859,15 @@ public sealed class KonditionierungTexte
     /// „{1}“ die Grenzen
     /// </summary>
     public string MeldungKomfortsollwert { get; set; } = "Der Komfortsollwert ist eine Zahl von {0} bis {1} °C.";
+    // ------------------------------------------------------------ Die Abkürzung „alle Größen“ (E57, Welle U5)
+
+    /// <summary>
+    /// <c>KOND_LBL_VORLAGE_ALLE</c> — die Liste der Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ in
+    /// der Kopfzelle der Zeile „Vorlage“
+    /// </summary>
+    public string LabelVorlageAlle { get; set; } = "alle Größen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ALLE</c> — der Hinweis (title) der Liste „alle Größen“</summary>
+    public string HinweisVorlageAlle { get; set; }
+        = "Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt.";
 }

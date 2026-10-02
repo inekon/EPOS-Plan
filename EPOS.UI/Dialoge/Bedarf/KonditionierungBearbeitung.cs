@@ -38,6 +38,11 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// stehen in der Zelle. Das Gebäude liest sie nur — ein Schritt, der das Gebäude ändern wollte (die
 /// Aufteilung der Gesamtangabe), wird benannt abgelehnt; geschrieben wird mit dem OK des Wirts. Die
 /// Platzhalter nennen, was eine leere Zelle erbt (<see cref="Erbplatzhalter"/>).</para>
+/// <para><b>Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“</b> (E57; Stufe KP2, Welle U5):
+/// <see cref="VorlageAlleWaehlen"/> stellt aus der Wahl eines Namens EINE Rückfrage für alle Größen, und „Ja“
+/// übernimmt in jeder Größe mit einer Vorlage dieses Namens über denselben Weg wie „Übernehmen“ der Karte — als
+/// EIN Schritt. Kein Satzbegriff (P11 bleibt): Die Vorlagen bleiben je Größe, der Weg je Karte bleibt, wie er
+/// ist.</para>
 /// </remarks>
 public sealed class KonditionierungBearbeitung
 {
@@ -987,6 +992,254 @@ public sealed class KonditionierungBearbeitung
 
     /// <summary>Die Zahl der Stunden einer Woche.</summary>
     private const int WOCHENWERTE = 168;
+
+    // =================================================================================
+    // Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ (E57; Stufe KP2, Welle U5)
+    // =================================================================================
+
+    /// <summary>
+    /// Ein Eintrag der Liste „alle Größen“ (E57): ein Name aus mindestens einer der fünf Listen — ein Datenwert,
+    /// nicht übersetzt (Glossar § 10) — und ob eine Vorlage dieses Namens zur Auslieferung gehört (das Schloss
+    /// wie an der Karte).
+    /// </summary>
+    /// <param name="Name">Der Name, wie ihn die erste Liste führt, die ihn trägt (Heizen zuerst).</param>
+    /// <param name="Ausgeliefert">Gehört eine Vorlage dieses Namens in einer der Listen zur Auslieferung?</param>
+    public sealed record VorlagennameAlle(string Name, bool Ausgeliefert);
+
+    /// <summary>
+    /// <b>Bietet der Reiter die Abkürzung</b> „gleichnamige Vorlage in allen Größen übernehmen…“ (E57)? Mit den
+    /// Vorlagen der Karten (<see cref="MitVorlagen"/>) am Gebäude und Katalogbau — die Karten einer Zone bieten
+    /// keine Vorlagen (Teilkonzept 3.4), also auch keine Abkürzung.
+    /// </summary>
+    public bool MitVorlageAlle => MitVorlagen && !IstZone;
+
+    /// <summary>
+    /// <b>Die Liste „alle Größen“</b> (E57): jeder Name, der in MINDESTENS EINER der fünf Listen
+    /// (<see cref="Vorlagen"/>) steht, ohne Dubletten — verglichen wie die Namensregel des Kerns (getrimmt,
+    /// ohne Unterschied der Groß- und Kleinschreibung) — in der Reihenfolge des Kerns: die ausgelieferten
+    /// zuerst, dann nach Name wie <c>COLLATE NOCASE</c> (<c>KonditionierungsvorlageCtrl.Vergleichen</c>). Ein
+    /// Name steht so an derselben Stelle wie in jeder Karte. Leer ohne die Abkürzung.
+    /// </summary>
+    public IReadOnlyList<VorlagennameAlle> VorlagenAlle()
+    {
+        if (!MitVorlageAlle) return Array.Empty<VorlagennameAlle>();
+        var namen = new List<VorlagennameAlle>();
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            foreach (KonditionierungVorlageDaten v in Vorlagen(g))
+            {
+                int i = namen.FindIndex(x => Namensgleich(x.Name, v.Name));
+                if (i < 0) namen.Add(new VorlagennameAlle((v.Name ?? "").Trim(), v.Ausgeliefert));
+                else if (v.Ausgeliefert && !namen[i].Ausgeliefert) namen[i] = namen[i] with { Ausgeliefert = true };
+            }
+        return namen.OrderBy(x => x.Ausgeliefert ? 0 : 1)
+                    .ThenBy(x => AsciiKlein(x.Name), StringComparer.Ordinal)
+                    .ToList();
+    }
+
+    /// <summary>
+    /// Die Vorlage des Namens <paramref name="name"/> in der Liste der Größe — verglichen wie die Namensregel des
+    /// Kerns; <c>null</c> = die Liste führt keine Vorlage dieses Namens.
+    /// </summary>
+    public KonditionierungVorlageDaten? VorlageGleichenNamens(KonditionierungGroesse g, string? name)
+        => Vorlagen(g).FirstOrDefault(v => Namensgleich(v.Name, name));
+
+    /// <summary>
+    /// <b>Warum „Übernehmen“ einer Größe gesperrt steht</b> — die Sperre der Karte (<c>Kalenderkarte.UebernehmenSperre</c>),
+    /// heute allein die Kühlspalte ohne „Gebäude wird gekühlt“, mit dem Grund, den die Wirte als Kühlsperre reichen
+    /// (<see cref="KonditionierungTexte.GrundKuehlenGesperrt"/>; Welle U1: die Kühlspalte sperrt allein „Kühlung
+    /// aktiv“). Die Abkürzung übergeht eine gesperrte Größe und nennt den Grund in ihrer Rückfrage; <c>null</c> = frei.
+    /// </summary>
+    public string? Uebernehmensperre(KonditionierungGroesse g)
+        => g == KonditionierungGroesse.Kuehlen && !Stand.KuehlungAktiv ? Texte.GrundKuehlenGesperrt : null;
+
+    /// <summary>Die Rückfrage der Abkürzung und ihr Name — die Wahl gilt, solange GENAU diese Frage steht.</summary>
+    private Rueckfrage? _frageAlle;
+
+    /// <summary>Der gewählte Name der Liste „alle Größen“ (siehe <see cref="GewaehlteVorlageAlle"/>).</summary>
+    private string? _nameAlle;
+
+    /// <summary>
+    /// Die Wahl der Liste „alle Größen“ — nur, solange ihre Rückfrage steht; nach „Ja“, „Nein“ oder Abbrechen und
+    /// nach jedem neuen Anfang wieder „—“. Die Wahl ändert den Arbeitsstand nicht.
+    /// </summary>
+    public string? GewaehlteVorlageAlle
+        => _frageAlle is not null && ReferenceEquals(OffeneFrage, _frageAlle) ? _nameAlle : null;
+
+    /// <summary>
+    /// <b>„Gleichnamige Vorlage in allen Größen übernehmen…“</b> (E57): die Wahl eines Namens der Liste „alle
+    /// Größen“ in der Zeile „Vorlage“. Sie stellt SOFORT EINE Rückfrage (Vorgabe „Nein“) aus den Befunden aller
+    /// Größen — vor dem Schreiben, aus dem Arbeitsstand (<see cref="VorlageAlleFragetext"/>). Weil die Wahl in einer
+    /// Liste ein einziger Griff ist, der sonst fünf Kalender schriebe, fragt der Reiter IMMER, auch ohne Befund
+    /// (wie <c>immer: true</c>). „Ja“ übernimmt als EIN Schritt (<see cref="VorlageAlleUebernehmen"/>); „Nein“ und
+    /// Abbrechen lassen alles, die Wahl steht danach wieder auf „—“. <c>false</c> = keine Abkürzung, ein Name, den
+    /// keine Liste führt, oder ein Befund scheiterte (gemeldet).
+    /// </summary>
+    public bool VorlageAlleWaehlen(string? name)
+    {
+        if (!MitVorlageAlle || string.IsNullOrWhiteSpace(name)) return false;
+        VorlagennameAlle? eintrag = VorlagenAlle().FirstOrDefault(x => Namensgleich(x.Name, name));
+        if (eintrag is null) return false;
+        if (VorlageAlleFragetext(eintrag.Name) is not string text) return false;
+        string gewaehlt = eintrag.Name;
+        var frage = new Rueckfrage(Fragen.VorlageAlleTitel, text, VorgabeNein: true, () => VorlageAlleUebernehmen(gewaehlt));
+        _nameAlle = gewaehlt;
+        _frageAlle = frage;
+        OffeneFrage = frage;
+        return true;
+    }
+
+    /// <summary>
+    /// <b>Der Text der einen Rückfrage</b> (E57): der Satz „Die Vorlage „Büro“ in allen Größen übernehmen?“ und
+    /// je Größe EINE Zeile — „übernehmen“; am angelegten Kalender, was ersetzt wird und was bleibt (P12, der Befund
+    /// des Wegs <see cref="KonditionierungWeg.Rueckfrage"/>); an der Gesamtangabe der Lüftung die Aufteilung (E56
+    /// F5 (a), gerechnet wie die Rückfrage „aufteilen“ auf einer Probe); „keine Vorlage dieses Namens — bleibt“;
+    /// „gesperrt — Grund“ (<see cref="Uebernehmensperre"/>) —, dazu die betroffenen Zonen mit Namen. Geändert wird
+    /// nichts; <c>null</c> = ein Befund scheiterte (gemeldet).
+    /// </summary>
+    public string? VorlageAlleFragetext(string name)
+    {
+        CultureInfo c = CultureInfo.CurrentCulture;
+        KonditionierungFragetexte f = Fragen;
+        var zeilen = new List<string> { string.Format(c, f.VorlageAlle, name) };
+        var zonen = new List<string>();
+        try
+        {
+            KonditionierungStand stand = Eingabestand();
+            foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                string teil;
+                if (Uebernehmensperre(g) is string sperre)
+                    teil = string.Format(c, f.VorlageAlleGesperrt, sperre);
+                else if (VorlageGleichenNamens(g, name) is not KonditionierungVorlageDaten v)
+                    teil = f.VorlageAlleOhne;
+                else
+                {
+                    var teile = new List<string>();
+                    KonditionierungRueckfrage? befund = Weg.Rueckfrage?.Invoke(stand, Ort(g), KonditionierungHandlung.VorlageUebernehmen);
+                    foreach (string zone in befund?.Zonen ?? Array.Empty<string>())
+                        if (!zonen.Contains(zone)) zonen.Add(zone);
+                    if (befund is not null && Angelegt(g))
+                        teile.Add(string.Format(c, f.VorlageAlleErsetzt, Posten(befund.Ersetzt), Posten(befund.Bleibt)));
+                    if (Aufteilung(stand, g, v.Id) is { } aufteilung)
+                        teile.Add(string.Format(c, f.VorlageAlleAufteilen, Zahlen.Anzeigetext(aufteilung.Rate),
+                                                Zahlen.Anzeigetext(aufteilung.Infiltration), Zahlen.Anzeigetext(aufteilung.Nutzer)));
+                    teil = teile.Count > 0 ? string.Join("; ", teile) : f.VorlageAlleUebernehmen;
+                }
+                zeilen.Add(string.Format(c, f.VorlageAlleZeile, Groessenname(g), teil));
+            }
+        }
+        catch (Exception ex)
+        {
+            Fehler(ex.Message);
+            return null;
+        }
+        if (zonen.Count > 0) zeilen.Add(string.Format(c, f.Zonen, string.Join(", ", zonen)));
+        return string.Join("\n", zeilen);
+    }
+
+    /// <summary>
+    /// Verlangt „Übernehmen“ der Vorlage <paramref name="id"/> in der Größe zuerst „aufteilen“ (E56 F5 (a))? Dann
+    /// die Aufteilung, die der Weg auf einer Probe rechnet — Rate, Infiltration, Nutzerlüftung, wie in der
+    /// Rückfrage „aufteilen“ (<see cref="AufteilenFragen"/>); sonst <c>null</c>. Geändert wird nichts.
+    /// </summary>
+    private (double? Rate, double? Infiltration, double? Nutzer)? Aufteilung(KonditionierungStand stand,
+                                                                            KonditionierungGroesse g, long id)
+    {
+        if (Weg.VorlageUebernehmen is null || Weg.LuftwechselAufteilen is null) return null;
+        KonditionierungErgebnis e = Weg.VorlageUebernehmen(stand, Ort(g), id);
+        if (e.Ok || e.Rueckfrage is null) return null;
+        KonditionierungErgebnis probe = Weg.LuftwechselAufteilen(stand);
+        if (!probe.Ok || probe.Stand is null) return null;
+        return (stand.Gebaeude.Luftwechselrate, probe.Stand.Gebaeude.LuftwechselInfiltration,
+                probe.Stand.Gebaeude.LuftwechselNutzer);
+    }
+
+    /// <summary>
+    /// <b>„Ja“ der Abkürzung</b> (E57): der Reihe nach Heizen, Kühlen, Lüftung, Geräte, Personen über den Weg
+    /// „Übernehmen“ (<see cref="KonditionierungWeg.VorlageUebernehmen"/>) in den Arbeitsstand — eine Größe ohne
+    /// gleichnamige Vorlage und eine gesperrte übergeht er; verlangt der Weg „aufteilen“ (E56 F5 (a)), teilt er
+    /// zuerst auf (<see cref="KonditionierungWeg.LuftwechselAufteilen"/>), denn die Antwort der einen Rückfrage
+    /// deckt das. EIN Schritt für „Zurücknehmen“ (Schlüssel <c>TA|name</c>); der Fehler eines Schritts bricht ab
+    /// und meldet, der Arbeitsstand bleibt der von davor. Danach ist auch die Wahl der Karten leer, die übernommen
+    /// haben (E56 F2 (a)): Karten und Zeile „Vorlage“ nennen die Herkunft je Größe.
+    /// </summary>
+    private void VorlageAlleUebernehmen(string name)
+    {
+        if (!MitVorlageAlle || Weg.VorlageUebernehmen is null) return;
+        KonditionierungStand vor = Eingabestand();
+        KonditionierungStand s = vor;
+        var uebernommen = new List<KonditionierungGroesse>();
+        try
+        {
+            foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                if (Uebernehmensperre(g) is not null || VorlageGleichenNamens(g, name) is not KonditionierungVorlageDaten v)
+                    continue;
+                KonditionierungErgebnis e = Weg.VorlageUebernehmen(s, Ort(g), v.Id);
+                if (!e.Ok && e.Rueckfrage is not null && Weg.LuftwechselAufteilen is not null)
+                {
+                    // „aufteilen“ (E56 F5 (a)): Die eine Rückfrage hat die Aufteilung genannt - keine zweite Frage.
+                    KonditionierungErgebnis a = Weg.LuftwechselAufteilen(s);
+                    if (!a.Ok || a.Stand is null)
+                    {
+                        Fehler(a.Meldung);
+                        return;
+                    }
+                    s = a.Stand;
+                    e = Weg.VorlageUebernehmen(s, Ort(g), v.Id);
+                }
+                if (!e.Ok || e.Stand is null)
+                {
+                    Fehler(e.Rueckfrage is not null ? Texte.TextPostenLuftwechsel : e.Meldung);
+                    return;
+                }
+                s = e.Stand;
+                uebernommen.Add(g);
+            }
+        }
+        catch (Exception ex)
+        {
+            Fehler(ex.Message);
+            return;
+        }
+        if (uebernommen.Count == 0) return;
+        Uebernehmen(vor, s);
+        foreach (KonditionierungGroesse g in uebernommen) _gewaehlt.Remove(g);
+        Merken("TA|" + name, vor, Eingabestand());
+    }
+
+    /// <summary>
+    /// <b>Die gemeinsame Herkunft</b> (Lesen von <c>kond_vorlage_alle</c>): der Name, den JEDE ungesperrte Größe
+    /// mit einer Vorlage dieses Namens als Herkunft trägt — mindestens eine; <c>null</c> = keine gemeinsame.
+    /// </summary>
+    public string? HerkunftAlle()
+    {
+        foreach (VorlagennameAlle n in VorlagenAlle())
+        {
+            bool getragen = false, abweichend = false;
+            foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                if (Uebernehmensperre(g) is not null || VorlageGleichenNamens(g, n.Name) is null) continue;
+                if (Namensgleich(Herkunft(g), n.Name)) getragen = true;
+                else abweichend = true;
+            }
+            if (getragen && !abweichend) return n.Name;
+        }
+        return null;
+    }
+
+    /// <summary>Zwei Namen sind gleich wie in der Namensregel des Kerns: getrimmt, ohne Unterschied der Groß- und Kleinschreibung.</summary>
+    private static bool Namensgleich(string? a, string? b)
+        => string.Equals((a ?? "").Trim(), (b ?? "").Trim(), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Faltet nur A … Z auf a … z — wie <c>COLLATE NOCASE</c> in der Reihenfolge der Listen des Kerns.</summary>
+    private static string AsciiKlein(string s)
+    {
+        char[] z = (s ?? "").ToCharArray();
+        for (int i = 0; i < z.Length; i++)
+            if (z[i] >= 'A' && z[i] <= 'Z') z[i] = (char)(z[i] + ('a' - 'A'));
+        return new string(z);
+    }
 
     // =================================================================================
     // Rückfragen

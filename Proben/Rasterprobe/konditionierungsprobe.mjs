@@ -1,7 +1,8 @@
 // =====================================================================
-//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3 und U4) — der Gebäude-Katalogeditor
-//  in der BREITEN Überlagerung, die Vorlagen je Karte, die Karte im Einzelnen, der Zonendialog
-//  als Blatt und die Gebäudeverwaltung mit dem Blatt „Konditionierung“, im echten Browser
+//  KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3, U4 und U5) — der Gebäude-Katalogeditor
+//  in der BREITEN Überlagerung, die Vorlagen je Karte und die Abkürzung „alle Größen“, die Karte im
+//  Einzelnen, der Zonendialog als Blatt und die Gebäudeverwaltung mit dem Blatt „Konditionierung“,
+//  im echten Browser — in beiden Kulturen (de-DE, en-US)
 // =====================================================================
 //
 //  WOZU. Der Editor steht in jeder Betriebsart in der breiten Überlagerung
@@ -66,6 +67,15 @@
 //      einer Zelle), sieben Tagesknöpfe, der Vermerk, das
 //      Teppichbild mit höchstens 2 000 Elementen und der Wert samt Quelle am
 //      Zeiger. Je Breite EIN Foto der aufgeklappten Karte.
+//    - die ABKÜRZUNG „alle Größen“ (Welle U5, E57; Fall vorlagen, neu geöffnet): die Liste
+//      in der Kopfzelle der Zeile „Vorlage“ (Ziel ≥ 44 px, breit und schmal, die Namen
+//      Büro, Schule, Wohnen), die Wahl „Büro“ stellt GENAU EINE Rückfrage mit fünf
+//      Größenzeilen (Vorgabe „Nein“), „Nein“ lässt die Herkunft leer, „Ja“ setzt sie in
+//      allen fünf Karten und Zellen der Zeile „Vorlage“, die Wahl steht danach auf „—“.
+//    - BEIDE KULTUREN (Welle U5): mit --kultur en-US vergleicht die Probe die englischen
+//      Texte (Tafel TEXTE); Felder der Matrix findet sie über ihre Zelle, die Antworten
+//      einer Rückfrage über die Reihenfolge der Knöpfe — nicht über ihren Text. Zahlen und
+//      Gemeinjahrdaten zeigt die Oberfläche in beiden Kulturen gleich (Komma, „TT.MM.“).
 //
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
 //    node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--nur <fall>] [--kultur de-DE]
@@ -92,6 +102,31 @@ const WURZEL = arg('url', 'http://127.0.0.1:5299');
 const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
 const KULTUR = arg('kultur', 'de-DE');
+
+// Die Texte, die die Probe vergleicht, je Kultur (Welle U5). Was sich über die Struktur finden lässt (Zelle der
+// Matrix, Reihenfolge der Knöpfe einer Rückfrage, Klassen), steht nicht hier. Die Vorlagennamen sind Daten und
+// bleiben deutsch (Glossar § 10). Die Felder zeigen Zahlen immer mit Komma (`Zahlen.Anzeigetext`), die
+// Herleitungszeilen im Zahlformat der Kultur (`wirksam`).
+const TEXTE = {
+  'de-DE': {
+    zonen: 'Zonen', oeffnen: /^Öffnen/, vorgabe: 'Vorgabe', vomGebaeude: 'vom Gebäude', angelegt: 'angelegt',
+    speichernUnter: 'Speichern unter', speichern: 'Speichern', verwerfen: 'Verwerfen', geaendert: 'geändert',
+    luftwechselrate: 'Luftwechselrate :', wirksam: '0,60',
+    groessen: ['Heizen', 'Kühlen', 'Lüftung', 'Geräte', 'Personen'],
+    alleLabel: 'alle Größen', alleTitel: 'Vorlage in allen Größen übernehmen',
+    alleSatz: v => `Die Vorlage „${v}“ in allen Größen übernehmen?`
+  },
+  'en-US': {
+    zonen: 'Zones', oeffnen: /^Open/, vorgabe: 'Default value', vomGebaeude: 'from the building', angelegt: 'created',
+    speichernUnter: 'Save as', speichern: 'Save', verwerfen: 'Discard', geaendert: 'changed',
+    luftwechselrate: 'Air exchange rate:', wirksam: '0.60',
+    groessen: ['Heating', 'Cooling', 'Ventilation', 'Equipment', 'People'],
+    alleLabel: 'all quantities', alleTitel: 'Apply template to all quantities',
+    alleSatz: v => `Apply the template “${v}” to all quantities?`
+  }
+};
+const T = TEXTE[KULTUR];
+if (!T) { console.error(`AUFBAUFEHLER: keine Texte für die Kultur ${KULTUR} (de-DE, en-US)`); process.exit(2); }
 
 const FAELLE = ['projekt', 'gesamt', 'gesperrt', 'neu', 'ohnetabellen', 'vorlagen', 'bausteine', 'verwaltung', 'karte'];
 const FENSTER = [
@@ -291,7 +326,21 @@ const blattPruefen = (marke, m, wo) => {
   for (const h of m.heraus) melde(marke, `${wo}: Bedienziel ragt aus dem Blatt: ${h}`);
 };
 
-// Ein Feld der Matrix nach seiner (vorgelesenen) Beschriftung.
+// Ein Feld der Matrix nach seiner ZELLE (Größe, Zeile; i = das wievielte Eingabefeld der Zelle) — unabhängig von
+// der Sprache der Beschriftung (Welle U5). Zeilen: 0 Nennwert, 1 Tag, 2 Nacht (Wert, Nachtfenster, ΔT), 3 Wochenende,
+// 4 Ferien, 5 Saison.
+const ZFELD = ([g, z, i = 0, wurzel = '.epos-ueberlagerung']) => {
+  const td = document.querySelector(`${wurzel} td.epos-kond-zelle[data-groesse="${g}"][data-zeile="${z}"]`);
+  const e = td ? td.querySelectorAll('input')[i] : null;
+  return e ? { wert: e.value, platzhalter: e.getAttribute('placeholder') || '' } : null;
+};
+const zfeld = (seite, g, z, i = 0, wurzel = '.epos-ueberlagerung') =>
+  seite.locator(`${wurzel} td.epos-kond-zelle[data-groesse="${g}"][data-zeile="${z}"] input`).nth(i);
+// Die Antworten einer Rückfrage nach ihrer Reihenfolge: zuerst „Ja“, dann „Nein“ (Baustein Rueckfrage).
+const ja = seite => seite.locator('.epos-rueckfrage .epos-leiste button').nth(0);
+const nein = seite => seite.locator('.epos-rueckfrage .epos-leiste button').nth(1);
+
+// Ein Feld nach seiner (vorgelesenen) Beschriftung — nur außerhalb der Matrix (Reiter 1).
 const FELD = text => {
   const l = [...document.querySelectorAll('.epos-ueberlagerung label.epos-feld')]
     .find(f => ((f.querySelector('.epos-feld-text') || {}).textContent || '').trim() === text);
@@ -333,9 +382,9 @@ const BAUSTEINE = ([ziel, tol, breite]) => {
 // Das Gebäude hat eben „Heizen“ angelegt. Die Zone „Wohnen EG“ trägt keine eigenen Werte.
 async function zoneProbe(seite, marke, name, f) {
   // Der Reiter „Zonen“ des Editors - nicht der letzte Reiter je Größe der schmalen Matrix.
-  await seite.locator('.epos-ueberlagerung .epos-reiter-leiste [role=tab]', { hasText: /^Zonen$/ }).click(); await schlaf(400);
+  await seite.locator('.epos-ueberlagerung .epos-reiter-leiste [role=tab]', { hasText: new RegExp('^' + T.zonen + '$') }).click(); await schlaf(400);
   const zeile = seite.locator('.epos-ueberlagerung .epos-zonenliste tbody tr', { hasText: 'Wohnen EG' });
-  await zeile.locator('button', { hasText: /^Öffnen/ }).click(); await schlaf(700);
+  await zeile.locator('button', { hasText: T.oeffnen }).click(); await schlaf(700);
   const blatt = await seite.evaluate(() => {
     const b = document.querySelector('.epos-ueberlagerung section.epos-blatt');
     return b ? { breit: b.classList.contains('epos-blatt--breit'),
@@ -352,25 +401,25 @@ async function zoneProbe(seite, marke, name, f) {
   kondPruefen(marke, k, 'Zonenmatrix');
 
   // erbt: leere Zelle mit dem Wert des Gebäudes als Platzhalter
-  const tag = await seite.evaluate(([feld]) => eval(feld)('Heizen · Tag'), [FELD.toString()]);
+  const tag = await seite.evaluate(ZFELD, [0, 1]);
   const heizen = k.zonenzeilen.find(z => z.groesse === '0');
   console.log(`  Zone erbt: „Heizen · Tag“ „${tag?.wert}“ (Platzhalter „${tag?.platzhalter}“); ` +
               `Heizen „${heizen?.zustand}“${heizen?.uebernehmen ? ' mit „Vom Gebäude übernehmen und anpassen“' : ''}; ` +
               `ohne Wirkung: ${k.ohneWirkung.join(',') || '—'}`);
-  if (!tag || tag.wert !== '' || tag.platzhalter !== 'Vorgabe 20') melde(marke, 'Zone: „Heizen · Tag“ erbt nicht „Vorgabe 20“');
-  if (!heizen || heizen.zustand !== 'vom Gebäude' || !heizen.uebernehmen) melde(marke, 'Zone: Heizen steht nicht „vom Gebäude“ mit „übernehmen“');
+  if (!tag || tag.wert !== '' || tag.platzhalter !== T.vorgabe + ' 20') melde(marke, `Zone: „Heizen · Tag“ erbt nicht „${T.vorgabe} 20“`);
+  if (!heizen || heizen.zustand !== T.vomGebaeude || !heizen.uebernehmen) melde(marke, `Zone: Heizen steht nicht „${T.vomGebaeude}“ mit „übernehmen“`);
   if (!k.ohneWirkung.includes('0')) melde(marke, 'Zone: die Heizspalte steht nicht „ohne Wirkung“');
   if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_zone-vom-gebaeude.png` });
 
   // überschreibt: eigene Gewinne der Zone (Nennwert der Geräte) - in der schmalen Anordnung erst die Größe wählen
   const geraete = seite.locator('.epos-ueberlagerung .epos-kond-groessen [role=tab]').nth(3);
   if (await geraete.isVisible()) { await geraete.click(); await schlaf(300); }
-  const feld = seite.locator('.epos-ueberlagerung label.epos-feld', { hasText: 'Geräte · Nennwert' }).locator('input');
+  const feld = zfeld(seite, 3, 0);
   const vorher = await feld.getAttribute('placeholder');
   await feld.fill('300'); await schlaf(500);
-  const eigen = await seite.evaluate(([f]) => eval(f)('Geräte · Nennwert'), [FELD.toString()]);
+  const eigen = await seite.evaluate(ZFELD, [3, 0]);
   console.log(`  Zone überschreibt: „Geräte · Nennwert“ Platzhalter „${vorher}“ → „${eigen?.wert}“`);
-  if (!vorher || !vorher.startsWith('Vorgabe')) melde(marke, 'Zone: „Geräte · Nennwert“ nennt keinen geerbten Wert');
+  if (!vorher || !vorher.startsWith(T.vorgabe)) melde(marke, 'Zone: „Geräte · Nennwert“ nennt keinen geerbten Wert');
   if (eigen?.wert !== '300') melde(marke, 'Zone: die eigene Zelle steht nicht');
 
   // „Vom Gebäude übernehmen und anpassen“: die Heizspalte der Zone bekommt einen eigenen Kalender
@@ -381,7 +430,7 @@ async function zoneProbe(seite, marke, name, f) {
   const n = await seite.evaluate(KOND);
   const h2 = n.zonenzeilen.find(z => z.groesse === '0');
   console.log(`  Zone nach „übernehmen“: Heizen „${h2?.zustand}“, ohne Wirkung: ${n.ohneWirkung.join(',') || '—'}`);
-  if (!h2 || h2.zustand === 'vom Gebäude' || h2.uebernehmen) melde(marke, 'Zone: „übernehmen“ legt keinen eigenen Kalender an');
+  if (!h2 || h2.zustand === T.vomGebaeude || h2.uebernehmen) melde(marke, 'Zone: „übernehmen“ legt keinen eigenen Kalender an');
   if (n.ohneWirkung.includes('0')) melde(marke, 'Zone: die Heizspalte bleibt nach „übernehmen“ ohne Wirkung');
   blattPruefen(marke, await seite.evaluate(MESSEN, [ZIEL, TOL, '.epos-ueberlagerung', 'section.epos-blatt']), 'Zonenblatt danach');
   if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_zone-eigen.png` });
@@ -417,8 +466,9 @@ async function verwaltung(browser, f) {
   if (await zumBlatt.count() && await zumBlatt.first().isVisible()) { await zumBlatt.first().click(); await schlaf(400); }
 
   const gruppe = await seite.evaluate(() => {
+    // Die Gruppe „Konditionierung“ ist die mit dem Knopf „Konditionierung…“ — in beiden Sprachen.
     const g = [...document.querySelectorAll('.epos-stammblatt section.epos-stammblattgruppe')]
-      .find(s => ((s.querySelector('.epos-stammblattgruppe-titel') || {}).innerText || '').trim() === 'Konditionierung');
+      .find(s => s.querySelector('button.epos-gebaeude-kondknopf'));
     if (!g) return null;
     const knopf = g.querySelector('button.epos-gebaeude-kondknopf');
     const kb = knopf ? knopf.getBoundingClientRect() : null;
@@ -461,24 +511,24 @@ async function verwaltung(browser, f) {
   // Eine Zelle zählt als Änderung; Esc führt zurück, nichts ist verworfen.
   const personen = seite.locator('.epos-kond-groessen [role=tab]').nth(4);
   if (await personen.isVisible()) { await personen.click(); await schlaf(300); }
-  await seite.locator('section.epos-blatt label.epos-feld', { hasText: 'Personen · Nennwert' }).locator('input').fill('800');
+  await zfeld(seite, 4, 0, 0, 'section.epos-blatt').fill('800');
   await schlaf(400);
   await seite.locator('section.epos-blatt .epos-blatt-kopf').focus();
   await seite.keyboard.press('Escape'); await schlaf(500);
   if (await zumBlatt.count() && await zumBlatt.first().isVisible()) { await zumBlatt.first().click(); await schlaf(400); }
-  const z = await seite.evaluate(() => ({
+  const z = await seite.evaluate(([sp]) => ({
     blatt: !!document.querySelector('.epos-gebaeude-admin section.epos-blatt'),
     fuss: ((document.querySelector('.epos-stammblatt-hinweis') || {}).innerText || '').trim(),
-    speichern: [...document.querySelectorAll('.epos-leiste button')].find(x => x.innerText.trim() === 'Speichern')?.disabled
-  }));
+    speichern: [...document.querySelectorAll('.epos-leiste button')].find(x => x.innerText.trim() === sp)?.disabled
+  }), [T.speichern]);
   console.log(`  Esc: Blatt ${z.blatt ? 'steht' : 'zu'}; Fuß „${z.fuss}“; Speichern ${z.speichern ? 'gesperrt' : 'frei'}`);
   if (z.blatt) melde(marke, 'Esc führt nicht zurück');
-  if (!z.fuss.includes('geändert') || z.speichern) melde(marke, 'die Zelle zählt nicht als Änderung');
+  if (!z.fuss.includes(T.geaendert) || z.speichern) melde(marke, 'die Zelle zählt nicht als Änderung');
 
   // Der ausgelieferte Satz: im Blatt nur Text (erst „Verwerfen“, sonst hält die Liste den Wechsel an).
-  await seite.locator('.epos-leiste button', { hasText: /^Verwerfen$/ }).click(); await schlaf(400);
+  await seite.locator('.epos-leiste button', { hasText: new RegExp('^' + T.verwerfen + '$') }).click(); await schlaf(400);
   // schmal: „‹ Liste“ zurück zur Liste
-  const zurueck = seite.locator('.epos-stammblatt button', { hasText: /Liste/ });
+  const zurueck = seite.locator('.epos-stammblatt button.epos-stammblatt-zurliste');
   if (await zurueck.count() && await zurueck.first().isVisible()) { await zurueck.first().click(); await schlaf(400); }
   await seite.locator('.epos-katalogliste tbody tr', { hasText: 'Probehaus ausgeliefert' }).locator('td', { hasText: 'Probehaus ausgeliefert' }).first().click();
   await schlaf(500);
@@ -568,37 +618,36 @@ async function fall(browser, name, f) {
     // Die Gesamtangabe: Luftwechselrate 0,6 im ersten Reiter samt Herleitung 0,60;
     // Infiltration und Nutzerlüftung stehen leer in der Spalte „Lüftung“ des
     // Reiters „Konditionierung“ (E56 F3 (a)).
-    const r1 = await seite.evaluate(([feld]) => {
+    const r1 = await seite.evaluate(([feld, lw, wirksam]) => {
       const zeile = [...document.querySelectorAll('.epos-ueberlagerung .epos-herleitung-text')]
-        .map(e => e.innerText.trim()).find(t => t.includes('0,60')) || '';
-      return { rate: eval(feld)('Luftwechselrate :'), zeile };
-    }, [FELD.toString()]);
+        .map(e => e.innerText.trim()).find(t => t.includes(wirksam)) || '';
+      return { rate: eval(feld)(lw), zeile };
+    }, [FELD.toString(), T.luftwechselrate, T.wirksam]);
     await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(400);
-    const vor = await seite.evaluate(([feld]) => ({
-      infiltration: eval(feld)('Lüftung · Infiltration'), nutzer: eval(feld)('Lüftung · Nutzerlüftung')
-    }), [FELD.toString()]);
+    const vor = { infiltration: await seite.evaluate(ZFELD, [2, 0]), nutzer: await seite.evaluate(ZFELD, [2, 1]) };
     console.log(`  Lüftung: Luftwechselrate „${r1.rate?.wert}“, Infiltration „${vor.infiltration?.wert}“, ` +
                 `Nutzerlüftung „${vor.nutzer?.wert}“; Herleitung „${r1.zeile}“`);
     if (!r1.rate || r1.rate.wert !== '0,6') melde(marke, 'die Luftwechselrate steht nicht als 0,6 da');
     for (const [n, e] of [['Infiltration', vor.infiltration], ['Nutzerlüftung', vor.nutzer]])
       if (!e || e.wert !== '') melde(marke, `${n} ist nicht leer`);
-    if (!r1.zeile) melde(marke, 'keine Herleitungszeile mit dem wirksamen Luftwechsel 0,60');
+    if (!r1.zeile) melde(marke, `keine Herleitungszeile mit dem wirksamen Luftwechsel ${T.wirksam}`);
 
     // F5 (a): die Nachtauskühlung an der Gesamtangabe fragt „aufteilen“; „Ja“ teilt auf
     // (Infiltration 0,3, Nutzerlüftung 0,3) und setzt die Zelle - ein Schritt.
     const groesse = seite.locator('.epos-ueberlagerung .epos-kond-groessen [role=tab]').nth(2);
     if (await groesse.isVisible()) { await groesse.click(); await schlaf(300); }
-    const nacht = seite.locator('.epos-ueberlagerung label.epos-feld', { hasText: 'Lüftung · Nachtauskühlung' }).locator('input');
+    const nacht = zfeld(seite, 2, 2);
     await nacht.fill('2'); await schlaf(500);
     const frage = ((await seite.locator('.epos-rueckfrage-text').allInnerTexts())[0] || '').trim();
     console.log(`  Aufteilen: „${frage.slice(0, 90)}…“`);
     if (!frage.includes('0,6') || !frage.includes('0,3')) melde(marke, 'die Rückfrage „aufteilen“ nennt Rate und Aufteilung nicht');
     if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_aufteilen.png` });
-    await seite.locator('.epos-rueckfrage button', { hasText: /^Ja$/ }).click(); await schlaf(500);
-    const nach = await seite.evaluate(([feld]) => ({
-      infiltration: eval(feld)('Lüftung · Infiltration'), nutzer: eval(feld)('Lüftung · Nutzerlüftung'),
-      nacht: eval(feld)('Lüftung · Nachtauskühlung'), dt: eval(feld)('Lüftung · ΔT Außenluft')
-    }), [FELD.toString()]);
+    await ja(seite).click(); await schlaf(500);
+    // Die Zelle „Lüftung · Nacht“ trägt den Wert, das Nachtfenster und - jetzt - ΔT der Nachtauskühlung.
+    const nach = {
+      infiltration: await seite.evaluate(ZFELD, [2, 0]), nutzer: await seite.evaluate(ZFELD, [2, 1]),
+      nacht: await seite.evaluate(ZFELD, [2, 2, 0]), dt: await seite.evaluate(ZFELD, [2, 2, 2])
+    };
     console.log(`  Nach „Ja“: Infiltration „${nach.infiltration?.wert}“, Nutzerlüftung „${nach.nutzer?.wert}“, ` +
                 `Nachtauskühlung „${nach.nacht?.wert}“, ΔT ${nach.dt ? 'steht (Platzhalter ' + nach.dt.platzhalter + ')' : 'fehlt'}`);
     if (nach.infiltration?.wert !== '0,3' || nach.nutzer?.wert !== '0,3' || nach.nacht?.wert !== '2')
@@ -619,7 +668,7 @@ async function fall(browser, name, f) {
     console.log(`  Projekt: Kopf ${kopf.kopf.join(' | ')}; Heizen nach „Kalender anlegen“: „${p.zustand}“, ` +
                 `Zurücknehmen aria-disabled=${p.zurueck}`);
     if (kopf.kopf.length !== 2) melde(marke, 'im Kopf fehlen „Aus dem Katalog erneut übernehmen…“ oder „Zurücknehmen“');
-    if (!p.zustand.startsWith('angelegt')) melde(marke, '„Kalender anlegen“ legt nicht an');
+    if (!p.zustand.startsWith(T.angelegt)) melde(marke, '„Kalender anlegen“ legt nicht an');
     if (p.zurueck !== null) melde(marke, '„Zurücknehmen“ ist nach dem Anlegen noch gesperrt');
     if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${name}_${f.breite}_angelegt.png` });
     await zoneProbe(seite, marke, name, f);
@@ -637,13 +686,13 @@ async function fall(browser, name, f) {
       melde(marke, `ohne Tabellen: Grund „${k.sperre}“, ${k.alleKarten} Karten, ${k.felder} Felder`);
   }
   if (name === 'gesperrt' || name === 'neu') {
-    const s = await seite.evaluate(() => {
+    const s = await seite.evaluate(([su]) => {
       const ueb = document.querySelector('.epos-ueberlagerung');
       const zeile = ueb.querySelector('.epos-gebk-sperrzeile');
       const leisten = [...ueb.querySelectorAll('.epos-leiste')];
       const leiste = leisten[leisten.length - 1];
       const ok = leiste ? leiste.querySelector('.epos-knopf--primaer') : null;
-      const unter = leiste ? [...leiste.querySelectorAll('button')].find(b => b.innerText.includes('Speichern unter')) : null;
+      const unter = leiste ? [...leiste.querySelectorAll('button')].find(b => b.innerText.includes(su)) : null;
       return {
         zeile: zeile ? zeile.innerText.replace(/\s+/g, ' ').trim() : null,
         schloss: zeile ? !!zeile.querySelector('.epos-schloss') : false,
@@ -652,11 +701,11 @@ async function fall(browser, name, f) {
         okDisabled: ok ? ok.disabled : null,
         unter: unter ? { gesperrt: unter.getAttribute('aria-disabled'), disabled: unter.disabled } : null
       };
-    });
+    }, [T.speichernUnter]);
     console.log(`  Grundzeile: ${s.zeile === null ? '—' : '„' + s.zeile + '“'}; OK aria-disabled=${s.okGesperrt} ` +
                 `disabled=${s.okDisabled}; „Speichern unter“: ${s.unter ? 'frei' : 'fehlt'}`);
     if (name === 'gesperrt') {
-      if (!s.zeile || !s.schloss || !s.zeile.includes('Speichern unter')) melde(marke, 'die Grundzeile samt Schloss fehlt');
+      if (!s.zeile || !s.schloss || !s.zeile.includes(T.speichernUnter)) melde(marke, 'die Grundzeile samt Schloss fehlt');
       if (s.okGesperrt !== 'true' || s.okDisabled || s.okGrund !== s.zeile) melde(marke, 'OK ist nicht weich gesperrt mit dem Grund am Knopf');
       if (!s.unter || s.unter.gesperrt || s.unter.disabled) melde(marke, '„Speichern unter“ ist nicht frei');
       // Der Versuch meldet den Grund, schreibt nichts, und die Überlagerung bleibt stehen.
@@ -692,7 +741,7 @@ async function fall(browser, name, f) {
     if (k.listen.some(l => l[0] !== 'Büro')) melde(marke, '„Büro“ steht nicht in jeder Liste zuerst');
     await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
   }
-  if (name === 'vorlagen') await vorlagen(seite, marke, f);
+  if (name === 'vorlagen') { await vorlagen(seite, marke, f); await vorlageAlle(seite, marke, f); }
   if (name === 'karte') await karte(seite, marke, f);
   const anordnung = b => b.behaelter >= 1150 ? [1, 24, '7 × 24'] : b.behaelter >= 600 ? [2, 12, '2 × 12'] : [4, 6, '4 × 6'];
   if (name === 'bausteine' && f.breite >= 1300) {
@@ -820,9 +869,9 @@ async function vorlagen(seite, marke, f) {
   console.log(`  Rückfrage P12 („${zweite}“): „${frage.slice(0, 110)}…“`);
   if (!frage.includes(zweite)) melde(marke, 'die Rückfrage P12 nennt die Vorlage nicht');
   await foto('rueckfrage');
-  await seite.locator('.epos-rueckfrage button', { hasText: /^Nein$/ }).click(); await schlaf(500);
-  const nein = await seite.evaluate(KARTE, 0);
-  if (!nein.zustand.includes('Büro')) melde(marke, '„Nein“ hat die Herkunft geändert');
+  await nein(seite).click(); await schlaf(500);
+  const ohne = await seite.evaluate(KARTE, 0);
+  if (!ohne.zustand.includes('Büro')) melde(marke, '„Nein“ hat die Herkunft geändert');
 
   // „Als Vorlage speichern…“: das Formular inline; „Speichern“ schreibt sofort, die eigene steht zuletzt.
   await karte.locator('button.epos-kond-als-vorlage').click(); await schlaf(400);
@@ -869,6 +918,121 @@ async function vorlagen(seite, marke, f) {
   console.log(`  Esc im Blatt: Überlagerung ${zurueck.ueb ? 'steht' : 'zu'}, Blatt ${zurueck.blatt ? 'offen' : 'zu'}, ` +
               `Reiter „Konditionierung“ ${zurueck.kond ? 'wieder da' : 'fehlt'}`);
   if (!zurueck.ueb || zurueck.blatt || !zurueck.kond) melde(marke, 'Esc im Blatt führt nicht zurück in den Editor');
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
+}
+
+// ------------------------------------------------------------ Welle U5: die Abkürzung „alle Größen“ (E57)
+// Die Liste in der Kopfzelle der Zeile „Vorlage“: ihr Kasten, ihre Wahl, ihre Namen, Beschriftung und Schloss.
+const ALLE = () => {
+  const s = document.querySelector(
+    '.epos-ueberlagerung table.epos-kond-matrix tr[data-zeile="vorlage"] > th[scope="row"] .epos-kond-vorlage-alle select');
+  if (!s) return null;
+  const gruppe = s.closest('.epos-kond-vorlage-alle');
+  const b = s.getBoundingClientRect();
+  return {
+    b: +b.width.toFixed(1), h: +b.height.toFixed(1),
+    sichtbar: b.width > 0 && b.height > 0 && getComputedStyle(s).visibility !== 'hidden',
+    wert: s.value, wahl: s.selectedOptions[0] ? s.selectedOptions[0].textContent.trim() : '',
+    eintraege: [...s.options].filter(o => o.value !== '').map(o => o.textContent.trim()),
+    platzhalter: ((s.querySelector('option[value=""]') || {}).textContent || '').trim(),
+    beschriftung: ((gruppe.querySelector('.epos-feld-text') || {}).textContent || '').trim(),
+    hinweis: gruppe.getAttribute('title') || '',
+    schloss: !!gruppe.querySelector('.epos-schloss')
+  };
+};
+
+// Die offene Rückfrage: wie viele stehen, Titel (aria-label ihrer Überlagerung), Zeilen, Vorgabe „Nein“.
+const FRAGE = () => {
+  const r = [...document.querySelectorAll('.epos-rueckfrage')];
+  const erste = r[0];
+  const knoepfe = erste ? [...erste.querySelectorAll('.epos-leiste button')] : [];
+  return {
+    anzahl: r.length,
+    titel: erste ? (erste.closest('.epos-ueberlagerung') || { getAttribute: () => '' }).getAttribute('aria-label') || '' : '',
+    zeilen: erste ? (((erste.querySelector('.epos-rueckfrage-text') || {}).innerText) || '').split('\n').map(z => z.trim()).filter(z => z) : [],
+    neinVorgabe: knoepfe.length >= 2 && knoepfe[1].classList.contains('epos-knopf--primaer')
+  };
+};
+
+// Neu geöffnet (keine Herkunft): Liste, die EINE Rückfrage, „Nein“, „Ja“ — breit und schmal.
+async function vorlageAlle(seite, marke, f) {
+  await seite.goto(`${WURZEL}/konditionierungsprobe?fall=vorlagen&kultur=${KULTUR}`, { waitUntil: 'domcontentloaded' });
+  await seite.waitForSelector('.epos-ueberlagerung', { timeout: 30000 });
+  await schlaf(800);
+  await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(500);
+  const pruefe = async was => {
+    const m = await seite.evaluate(MESSEN, [ZIEL, TOL]);
+    if (m.fehler) { melde(marke, m.fehler); return; }
+    console.log(`  ${was}: Blatt ${m.blatt ? m.blatt.b + ' px (quer ' + m.blatt.quer + ')' : '—'}, Ziele im Blatt ${m.zieleBlatt}, ` +
+                `unter 44: ${m.klein.length}, überdeckt: ${m.ueberdeckt.length}, heraus: ${m.heraus.length}`);
+    if (m.seiteQuer > 0 || m.ueb.quer > 0 || (m.blatt && m.blatt.quer > 0)) melde(marke, `${was}: Querrollen`);
+    for (const k of m.klein) melde(marke, `${was}: Bedienziel unter 44 px: ${k}`);
+    for (const u of m.ueberdeckt) melde(marke, `${was}: Bedienziele überdecken sich: ${u}`);
+    for (const h of m.heraus) melde(marke, `${was}: Bedienziel ragt aus dem Blatt: ${h}`);
+  };
+  const herkunft = async () => {
+    const k = await seite.evaluate(KOND);
+    const karten = [];
+    for (let g = 0; g < 5; g++) karten.push((await seite.evaluate(KARTE, g)).zustand);
+    return { zellen: k.herkunft, karten, breit: k.spalten === 5 };
+  };
+
+  const vor = await seite.evaluate(ALLE);
+  if (!vor) { melde(marke, 'keine Liste „alle Größen“ in der Kopfzelle der Zeile „Vorlage“'); return; }
+  const h0 = await herkunft();
+  console.log(`  Alle Größen (${h0.breit ? 'breit' : 'schmal'}): „${vor.beschriftung}“ ${vor.b}×${vor.h} px, Wahl „${vor.wahl}“, ` +
+              `Namen ${vor.eintraege.join(', ')}, Hinweis ${vor.hinweis ? 'da' : 'fehlt'}`);
+  if (!vor.sichtbar) melde(marke, 'die Liste „alle Größen“ ist nicht sichtbar');
+  if (vor.b < ZIEL - TOL || vor.h < ZIEL - TOL) melde(marke, `die Liste „alle Größen“ ist unter 44 px (${vor.b}×${vor.h})`);
+  if (vor.beschriftung !== T.alleLabel || vor.platzhalter !== '—' || !vor.hinweis)
+    melde(marke, `Beschriftung „${vor.beschriftung}“, Platzhalter „${vor.platzhalter}“ oder Hinweis der Liste stimmen nicht`);
+  if (vor.eintraege.join('|') !== 'Büro|Schule|Wohnen') melde(marke, `die Liste führt ${vor.eintraege.join(', ')} (soll Büro, Schule, Wohnen)`);
+  if (vor.wert !== '' || vor.schloss) melde(marke, 'die Liste „alle Größen“ steht nicht auf „—“');
+  if (h0.zellen.some(h => h !== '—') || h0.karten.some(z => z.includes('Büro'))) melde(marke, 'vor der Wahl steht schon eine Herkunft');
+  await pruefe('Alle Größen vor der Wahl');
+
+  // Die Wahl „Büro“: GENAU EINE Rückfrage mit fünf Größenzeilen, Vorgabe „Nein“; die Liste zeigt die Wahl samt Schloss.
+  const liste = seite.locator('.epos-ueberlagerung tr[data-zeile="vorlage"] > th .epos-kond-vorlage-alle select');
+  await liste.selectOption({ label: 'Büro' }); await schlaf(700);
+  const frage = await seite.evaluate(FRAGE);
+  const groessen = frage.zeilen.filter(z => T.groessen.some(g => z.startsWith(g + ': ')));
+  const mitWahl = await seite.evaluate(ALLE);
+  console.log(`  Wahl „Büro“: ${frage.anzahl} Rückfrage „${frage.titel}“ (Vorgabe ${frage.neinVorgabe ? '„Nein“' : '„Ja“'}), ` +
+              `${groessen.length} Größenzeilen: ${groessen.join(' | ')}; Liste „${mitWahl.wahl}“${mitWahl.schloss ? ' mit Schloss' : ''}`);
+  if (frage.anzahl !== 1) melde(marke, `${frage.anzahl} statt genau einer Rückfrage`);
+  if (frage.titel !== T.alleTitel) melde(marke, `die Rückfrage heißt „${frage.titel}“`);
+  if (frage.zeilen[0] !== T.alleSatz('Büro')) melde(marke, `der Satz der Rückfrage lautet „${frage.zeilen[0]}“`);
+  if (groessen.length !== 5 || T.groessen.some((g, i) => !(groessen[i] || '').startsWith(g + ': ')))
+    melde(marke, `die Rückfrage nennt ${groessen.length} Größenzeilen (soll fünf, in der Reihenfolge der Spalten)`);
+  if (!frage.neinVorgabe) melde(marke, 'die Rückfrage hat nicht „Nein“ als Vorgabe');
+  if (mitWahl.wahl !== 'Büro' || !mitWahl.schloss) melde(marke, 'die Liste zeigt die Wahl „Büro“ nicht samt Schloss');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/vorlagen_${f.breite}_alle-rueckfrage.png` });
+
+  // „Nein“ lässt die Herkunft leer, die Wahl steht wieder auf „—“.
+  await nein(seite).click(); await schlaf(600);
+  const hN = await herkunft();
+  const nachNein = await seite.evaluate(ALLE);
+  console.log(`  Nach „Nein“: Zeile „Vorlage“ ${hN.zellen.join(' | ')}; Wahl „${nachNein.wahl}“`);
+  if ((await seite.evaluate(FRAGE)).anzahl !== 0) melde(marke, 'nach „Nein“ steht noch eine Rückfrage');
+  if (hN.zellen.some(h => h !== '—') || hN.karten.some(z => z.includes('Büro'))) melde(marke, '„Nein“ hat eine Herkunft gesetzt');
+  if (nachNein.wert !== '' || nachNein.wahl !== '—') melde(marke, 'nach „Nein“ steht die Liste nicht auf „—“');
+
+  // „Ja“: alle fünf Karten und Zellen der Zeile „Vorlage“ nennen „Büro“; keine zweite Frage; die Wahl steht auf „—“.
+  await liste.selectOption({ label: 'Büro' }); await schlaf(700);
+  await ja(seite).click(); await schlaf(1000);
+  const hJ = await herkunft();
+  const nachJa = await seite.evaluate(ALLE);
+  console.log(`  Nach „Ja“: Zeile „Vorlage“ ${hJ.zellen.join(' | ')}; Karten ${hJ.karten.map(z => '„' + z + '“').join(', ')}; ` +
+              `Wahl „${nachJa.wahl}“`);
+  if ((await seite.evaluate(FRAGE)).anzahl !== 0) melde(marke, 'nach „Ja“ steht eine zweite Rückfrage');
+  if (hJ.zellen.length !== 5 || hJ.zellen.some(h => h !== 'Büro')) melde(marke, 'die Zeile „Vorlage“ nennt nicht in allen fünf Zellen „Büro“');
+  if (hJ.karten.some(z => !z.includes('Büro'))) melde(marke, 'nicht alle fünf Karten nennen die Herkunft „Büro“');
+  if (nachJa.wert !== '' || nachJa.wahl !== '—') melde(marke, 'nach „Ja“ steht die Liste nicht auf „—“');
+  await pruefe('Alle Größen nach „Ja“');
+  if (FOTOS) {
+    await liste.scrollIntoViewIfNeeded();
+    await seite.screenshot({ path: `${FOTOS}/vorlagen_${f.breite}_alle-uebernommen.png` });
+  }
   await seite.locator('.epos-ueberlagerung [role=tab]').nth(0).click(); await schlaf(300);
 }
 
