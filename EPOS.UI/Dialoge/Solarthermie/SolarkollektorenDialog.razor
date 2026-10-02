@@ -223,6 +223,12 @@
                               Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
                               Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
+                @* Die BODENALBEDO vor dem Kollektorfeld (Entscheidungsvorlage Modellgrenzen, PV4):
+                   leer = 0,2; die Auswahlhilfe steht als Hinweis darunter. *@
+                <Zahlenfeld Bezeichnung="@LabelAlbedo" Feldname="@LabelAlbedo"
+                            Wert="@_eingaben.Albedo" Min="0" Max="1" Nachkommastellen="2"
+                            WertChanged="w => { _eingaben.Albedo = w; }" />
+                <Herleitungszeile Text="@HinweisAlbedo" />
                 @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
                    HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile.
                    Bei der Solarthermie besonders wichtig: Ohne Senke fuer ihren Bedarf
@@ -393,6 +399,9 @@
     [Parameter] public string LabelAperturflaeche { get; set; } = "Aperturfläche [m²]:";
     [Parameter] public string LabelNeigung { get; set; } = "Neigung [°]:";
     [Parameter] public string LabelAzimut { get; set; } = "Azimut [°]:";
+    [Parameter] public string LabelAlbedo { get; set; } = "Albedo [-]:";
+    [Parameter] public string HinweisAlbedo { get; set; } =
+        "Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2.";
     [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
 
     /// <summary>
@@ -658,6 +667,7 @@
         _eingaben.Anzahl = (int?)(zeile.AnzahlModule ?? 0);
         _eingaben.Neigung = zeile.Neigung ?? 0;
         _eingaben.Azimut = zeile.Azimut ?? 0;
+        _eingaben.Albedo = zeile.Albedo;
     }
 
     /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
@@ -817,6 +827,9 @@
         _projektZeile.AnzahlModule = _eingaben.Anzahl ?? 0;
         _projektZeile.Neigung = _eingaben.Neigung ?? 0;
         _projektZeile.Azimut = _eingaben.Azimut ?? 0;
+        // Leer = 0,2; ausserhalb 0..1 ist eine Fehleingabe, die das Feld faerbt - sie wird
+        // nicht uebernommen.
+        _projektZeile.Albedo = _eingaben.Albedo is double a && a >= 0.0 && a <= 1.0 ? a : null;
 
         Uebernehmen?.Invoke(_projektZeile);
 

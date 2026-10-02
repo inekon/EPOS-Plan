@@ -320,7 +320,11 @@
                                                KandidatUebernehmen="@(EventCallback.Factory
                                                    .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
                                                Csv="@(Dienste?.Csv is null ? default
-                                                      : EventCallback.Factory.Create(this, KandidatenCsv))" />
+                                                      : EventCallback.Factory.Create(this, KandidatenCsv))"
+                                               BesteUebernehmen="@(Dienste?.BesteVarianteUebernehmen is null ? default
+                                                      : EventCallback.Factory.Create(this, BesteVarianteUebernehmen))"
+                                               BesteGesperrt="@(_veraltet || _laeuft)"
+                                               BesteGesperrtGrund="@Resource.FLOTTE_BESTE_GESPERRT" />
                 }
                 else
                 {
@@ -1592,6 +1596,33 @@
             _projektAktiv = false;
             _meldungErfolg = true;
             _meldung = Resource.FLOTTE_DLG_MSG_DEAKTIVIERT;
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    /// <summary>
+    /// „Beste Variante übernehmen" (Entscheidungsvorlage Modellgrenzen, SP2): Der Kern
+    /// schreibt den besten Rasterpunkt als Arbeitsstand und als aktivierte Projektflotte
+    /// (<c>StromspeicherAuslegungCtrl.BesteVarianteUebernehmen</c>); die Seite zieht ihren
+    /// Arbeitsstand nach und bleibt auf dem Ergebnis. Ins Simulationsergebnis schreibt der
+    /// Weg nichts — das rechnet der nächste Projektlauf.
+    /// </summary>
+    private async Task BesteVarianteUebernehmen()
+    {
+        FlottenStudieKonfiguration? beste = _flottenErgebnis?.Auslegung?.BesteKonfiguration;
+        if (_veraltet || _laeuft || beste is null || Dienste?.BesteVarianteUebernehmen is null) return;
+        try
+        {
+            string fehler = await Dienste.BesteVarianteUebernehmen(_flottenErgebnis!);
+            if (fehler.Length > 0) { _fehler = fehler; return; }
+
+            // Der Arbeitsstand der Seite folgt dem, was der Kern geschrieben hat - die beste
+            // Flotte, fest. Geschrieben IST er schon: deshalb nicht ungespeichert.
+            FlotteSetzen(beste);
+            _ungespeichert = false;
+            _projektAktiv = true;
+            _meldungErfolg = true;
+            _meldung = Resource.FLOTTE_BESTE_MSG_UEBERNOMMEN;
         }
         catch (Exception ex) { _fehler = ex.Message; }
     }

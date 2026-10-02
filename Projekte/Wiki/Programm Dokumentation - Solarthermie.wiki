@@ -18,6 +18,11 @@ Ein Kollektorfeld entsteht in fünf Schritten; erst seine Senkenliste entscheide
 
 Gerechnet wird Stunde für Stunde: zuerst das Bruttopotenzial des Felds aus Einstrahlung, Außentemperatur und Kollektorkennwerten – unabhängig von Bedarf und Speicherstand –, dann die Verteilung: die Direktsenken in Rangfolge, danach die Puffersenken bis zur Obergrenze des Speichers. Was übrig bleibt, ist Überschuss und wird verworfen.
 
+{{Anker|ganglinie}}'''Ganglinie statt Kollektorfeld.''' Statt aus dem Kollektorfeld kann der Ertrag aus einer fertigen Solarthermieganglinie kommen: Die Wahl ''Ganglinie'' der Kachel ordnet dem Projekt eine Ganglinie aus ''Administration → Wärmebedarf & Heizung → Solarthermieganglinie'' zu. Jeder ihrer 8 760 Stundenwerte ist die Wärmeleistung der Stunde in kW, also die Wärmemenge der Stunde in kWh, ohne Bezug auf eine Fläche. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle des Kollektorfelds; sonst rechnet das Kollektorfeld. Die Ganglinie ersetzt nur das Bruttopotenzial – die Verteilung auf Direktsenken, Puffer und Überschuss bleibt dieselbe:
+* Mit einem Kollektorfeld im Projekt gelten dessen Wärmesenken, Pufferspeicher und Platz in der Kaskade für die Ganglinie; bei mehreren Feldern die des zuerst angelegten, die übrigen Felder rechnen dann nicht.
+* Ohne Kollektorfeld deckt die Ganglinie Heizung, Warmwasser und Prozesswärme direkt, ohne Puffer. Die Solarthermie braucht auch dann einen Platz in der Kaskade; die Konfiguration schlägt ihn vor.
+* Im Reiter ''Solarthermie'' der Ergebnisse und im Bericht steht die Ganglinie als eine Zeile „Solarthermie-Ganglinie ‚Name‘“ mit Bruttoertrag, genutzter Wärme und Überschuss; Fläche und Modulanzahl hat sie nicht.
+
 {{Diagramm-Anfang|titel=Einbindung der Solarthermie in Beispiel B}}
 {{Fluss-Anfang}}
 {{Flusskasten|Kollektorfeld|50 m², 35° Süd|rolle=solar}}
@@ -127,7 +132,8 @@ Zwei Reihenfolgen bestimmen, was ein Kollektorfeld deckt: die Kaskade für die D
 * {{Anker|ueberschuss-und-dimensionierung|ueberschuss}}'''Überschuss ist der Maßstab.''' Steigt der Überschuss im Reiter ''Solarthermie'' deutlich, ist das Feld für Bedarf und Speicher zu groß. Deckt ein Feld nur Heizwärme, fällt der Sommerertrag größtenteils weg: In einem gerechneten Gebäude mit 68 MWh Heizwärme ohne Warmwasser, 80 m² Kollektorfläche und 3 000 l Puffer wurden von rund 38 MWh Bruttoertrag nur 11 MWh genutzt.
 * '''Übernehmen vergessen.''' Modulanzahl, Neigung und Azimut gelangen erst mit ''Übernehmen'' in das Feld; ''OK'' speichert nur, was übernommen ist.
 * '''Azimut 0° ist Süden.''' Negative Werte zeigen nach Osten, positive nach Westen – anders als bei den Bauteilen des Gebäudes, wo 0° Norden bedeutet.
-* '''Ganglinie statt Profil.''' Die Wahl ''Ganglinie'' der Kachel ordnet dem Projekt eine Solarthermieganglinie zu; der Lauf liest sie nicht. Gerechnet wird der Ertrag immer aus Klimadaten und Kollektorfeld.
+* '''Ganglinie zugeordnet, aber unvollständig.''' Eine Ganglinie mit weniger oder mehr als 8 760 Werten oder mit leeren oder negativen Werten rechnet nicht; der Lauf meldet den Mangel im Protokoll und rechnet mit dem Kollektorfeld. Ohne Kollektorfeld liefert die Solarthermie dann nichts, und der Statuspunkt der Kachel bleibt grau.
+* '''Ganglinie und Kollektorfeld zugleich.''' Ist eine vollständige Ganglinie zugeordnet, rechnet sie – auch wenn die Kachel auf ''Profil'' steht. Die Wahl der Kachel öffnet nur den Dialog; wer wieder mit dem Kollektorfeld rechnen will, entfernt die Ganglinie mit ''Ganglinie'' und ''Aus dem Projekt entfernen'' aus dem Projekt.
 * '''Was EPOS-Plan nicht abbildet.''' Der Wirkungsgrad rechnet gegen eine feste Arbeitstemperatur von 50 °C: Ein kalter Speicherboden oder eine Vorwärmstufe bringt im Modell keinen Mehrertrag, und Kollektortypen lassen sich nur bei diesem Temperaturniveau vergleichen. Die Leitungsverluste sind pauschal 8 %; es gibt keine Stagnation, keine Kollektorabschaltung und keinen Hilfsstrom der Solarpumpe. Die Einstrahlung auf die geneigte Fläche wird isotrop gerechnet, <math>K_{\mathrm{diff}}</math> des Katalogs rechnet nicht mit, und Vor- und Rücklauf des Kollektorkreises haben keinen Rechenweg.
 
 == Eingaben ==

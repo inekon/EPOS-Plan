@@ -358,12 +358,15 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         new("PufferSpProjektDialog", 20),
-        new("PvModellFelder", 3),
+        new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
-        new("SimulationKonfigSeite", 4),
+        // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
+        // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
+        // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
+        new("SimulationKonfigSeite", 9),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

@@ -184,7 +184,12 @@ namespace WindowsFormsApplication1
             {
                 foreach (string erzeuger in ErzeugerKatalog.WAERMEERZEUGER)
                 {
-                    if (!TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger)) continue;
+                    // Folgeauftrag 4: Eine vollständige Solarthermieganglinie rechnet auch
+                    // ohne Anlagenzeile - sie zählt für die Vorwahl wie ein Kollektorfeld.
+                    bool verbaut = TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger) ||
+                                   (erzeuger == DbWerte.ERZEUGER_SOLARTHERMIE &&
+                                    SolarganglinieWeiche.Lesen(m_ID_Projekt).Vollstaendig);
+                    if (!verbaut) continue;
                     Kaskade.Vorwaehlen(_konfiguration, erzeuger);
                 }
 

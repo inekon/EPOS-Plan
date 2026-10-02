@@ -26,8 +26,9 @@ namespace WindowsFormsApplication1
     /// <list type="number">
     /// <item>die Zusatzbedingung <c>ID_WP/ID_Solar/… &gt; 0</c> entfällt — es zählt
     ///       allein <c>ID_Type</c>, wie in der Bitmaske;</item>
-    /// <item>„Solar" gilt wie in der Bitmaske auch dann als vorhanden, wenn nur eine
-    ///       Solarganglinie zugeordnet ist.</item>
+    /// <item>„Solar" gilt auch dann als vorhanden, wenn nur eine Solarganglinie
+    ///       zugeordnet ist — aber nur eine VOLLSTÄNDIGE (8 760 Werte), denn nur sie
+    ///       rechnet (Folgeauftrag 4, <see cref="SolarganglinieWeiche"/>).</item>
     /// </list>
     /// </para>
     /// <para>
@@ -241,13 +242,13 @@ namespace WindowsFormsApplication1
             sgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + idProjekt);
             for (int n = 0; n < sgctrl.rows; n++) Merken(STROMLASTGANG, sgctrl.items[n].m_szStromganglinie);
 
-            // Solar: die Bitmaske der Startmaske setzt das Bit auch bei einer blossen
-            // Solarganglinie. Die Ganglinie wird beim Abwaehlen NICHT geloescht (der
-            // Assistent fasst Z_ProjektSolarganglinie nirgends an) - sie steht deshalb
-            // nur im Vorhanden-Merkmal, nicht in der Namensliste.
-            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
-            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + idProjekt);
-            if (solgctrl.rows > 0) _eintraege[SOLAR].Vorhanden = true;
+            // Solar: Ohne Anlagenzeile gilt die Solarthermie nur dann als vorhanden, wenn
+            // die Weiche auf Ganglinie steht, die Simulation sie also rechnet
+            // (Folgeauftrag 4, SolarganglinieWeiche): eine zugeordnete Ganglinie mit
+            // vollstaendigen 8 760 Werten. Eine unvollstaendige Ganglinie faerbt den
+            // Statuspunkt nicht - der Lauf rechnet dann das Kollektorfeld. Die Ganglinie
+            // steht nur im Vorhanden-Merkmal, nicht in der Namensliste.
+            if (SolarganglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[SOLAR].Vorhanden = true;
         }
 
         /// <summary>Namen der zugeordneten Gebäude (Verbund wie in <c>WizardParent.LoadZGeb</c>).</summary>

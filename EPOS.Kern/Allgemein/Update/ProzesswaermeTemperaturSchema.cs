@@ -45,10 +45,10 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter der Einheit des Bereitschaftsverlusts (<see cref="KesselBereitschaftEinheitSchema"/>).
+        /// Schritt hinter der Bodenalbedo je Anlage (<see cref="AlbedoSchema"/>).
         /// Wird der Schritt beim Zusammenführen umnummeriert, ändert sich nur diese Zeile.
         /// </summary>
-        public const int SCHRITT = KesselBereitschaftEinheitSchema.SCHRITT + 1;
+        public const int SCHRITT = AlbedoSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Auslieferung.</summary>
         public const string TAB_STAMM = "Tab_Prozesswaerme_STAMM";

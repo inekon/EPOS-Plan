@@ -105,7 +105,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>n_{\mathrm{R}}</math>, <math>n_{\mathrm{P}}</math> || Module in Reihe, parallele Stränge eines Strangs || Stück || Strangtabelle des Abschnitts „Wechselrichter und Stränge"
 |-
-| <math>\rho</math> || Boden-Albedo || — || '''Konstante: 0,2''' — in beiden Transpositionsmodellen, nicht einstellbar
+| <math>\rho</math> || Boden-Albedo || — || Feld ''Albedo'' der Anlage, 0 bis 1; '''leer 0,2''' — in beiden Transpositionsmodellen und im Weg mit Wechselrichter
 |-
 | <math>G_{\mathrm{STC}}</math> || Bestrahlungsstärke der Standardbedingungen || W/m² || '''Konstante: 1 000'''
 |-
@@ -242,7 +242,7 @@ Im '''einfachen''' Modell isotrop:
 :: <math>\mathrm{DHI}(t)</math> – Diffusstrahlung auf die Horizontale [W/m²]
 :: <math>\beta</math> – Neigung der Modulebene [°]
 :: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
-:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
+:: <math>\rho</math> – Boden-Albedo der Anlage [–]; leer 0,2
 
 Im '''erweiterten''' Modell anisotrop nach Hay-Davies — nur der Diffusanteil ändert sich:
 
@@ -272,7 +272,7 @@ Im '''erweiterten''' Modell anisotrop nach Hay-Davies — nur der Diffusanteil �
 :: <math>R_{\mathrm{b}}(t)</math> – Geometriefaktor aus (5) [–]
 :: <math>\beta</math> – Neigung der Modulebene [°]
 :: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
-:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
+:: <math>\rho</math> – Boden-Albedo der Anlage [–]; leer 0,2
 
 Die Klemme auf <math>\cos 85^{\circ}</math> in (5) hält den Geometriefaktor am Horizont endlich. Bei Nacht — Sonne unter dem Horizont — ist <math>G_{\mathrm{t}}(t) = 0</math>.
 
@@ -751,7 +751,7 @@ Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Re
 * '''Kein Clipping im einfachen Modell''' auf dem vereinfachten Weg, auch dann nicht, wenn eine AC-Nennleistung gepflegt ist — sie wirkt dort nur im erweiterten Modell (22). Im Weg „mit  Wechselrichter" klemmt das Gerät dagegen in '''beiden''' Modellen (33): Ein Wechselrichter ist ein  Gerät, keine Modellverfeinerung.
 
 * '''Keine Netzeinspeisebegrenzung''' (etwa eine feste Kappung der Einspeiseleistung) im Stundenlauf.
-* Der '''Boden-Albedo <math>\rho</math> ist fest 0,2''' und nicht einstellbar.
+* Der '''Boden-Albedo <math>\rho</math> gilt je Anlage''' für das ganze Jahr und für alle Stränge der Anlage; Schnee im Winter und ein heller Sommerboden lassen sich nicht getrennt angeben.
 * Zwei Stunden im Jahr sind durch die Ortszeitumstellung doppelt beziehungsweise gar nicht belegt. Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null, die Jahressumme der Globalstrahlung bleibt unverändert.
 
 * Der '''Stromspeicher''' gehört nicht hierher: Er wird getrennt gerechnet und verändert den hier ausgewiesenen PV-Ertrag nicht.

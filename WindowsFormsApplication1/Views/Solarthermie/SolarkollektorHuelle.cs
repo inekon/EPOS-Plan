@@ -231,6 +231,7 @@ namespace WindowsFormsApplication1
                         m.Kollektormodulanzahl = (int)(zeile.AnzahlModule ?? 0);
                         m.m_Neigung = zeile.Neigung ?? 0;
                         m.m_Azimut = zeile.Azimut ?? 0;
+                        m.Albedo = zeile.Albedo;
                         // Vor- und Ruecklauf der Anlagenzeile bleiben, wie sie sind: Der
                         // Dialog fuehrt sie nicht, sie haben beim Kollektor keinen
                         // Rechenweg (AnlagenTemperaturen.FuehrtTemperaturpaar).
@@ -255,6 +256,9 @@ namespace WindowsFormsApplication1
                 ["LabelAperturflaeche"] = Text_("SKV_LBL_APERTURFLAECHE", "Aperturfläche [m²]:"),
                 ["LabelNeigung"] = Text_("SKV_LBL_NEIGUNG", "Neigung [°]:"),
                 ["LabelAzimut"] = Text_("SKV_LBL_AZIMUT", "Azimut [°]:"),
+                ["LabelAlbedo"] = Text_("ANLAGE_LABEL_ALBEDO", "Albedo [-]:"),
+                ["HinweisAlbedo"] = Text_("ANLAGE_HINWEIS_ALBEDO",
+                    "Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2."),
                 ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
 
                 // „Bearbeiten…" STATT „Kollektor in DB ändern…" (Anwenderentscheid
@@ -385,6 +389,7 @@ namespace WindowsFormsApplication1
                 Neigung = m.m_Neigung,
                 Azimut = m.m_Azimut,
                 AnzahlModule = m.Kollektormodulanzahl,
+                Albedo = m.Albedo,
                 // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
                 // formuliert im Kern; leer beim Referenzfeld und ohne Projekt.
                 Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)

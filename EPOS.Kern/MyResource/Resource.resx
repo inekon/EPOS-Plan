@@ -16228,7 +16228,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Tipp</value>
   </data>
   <data name="START_E_TIPP" xml:space="preserve">
-    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.</value>
+    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds.</value>
   </data>
   <data name="START_E_PROFIL" xml:space="preserve">
     <value>Profil</value>
@@ -18077,6 +18077,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in der Kaskade — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_SOLARGANGLINIE_FELDNAME" xml:space="preserve">
+    <value>Solarthermie-Ganglinie ‚{0}‘</value>
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
@@ -41265,6 +41271,111 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
+  </data>
+  <data name="SIMKONF_AUFH_GRP" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_SCHALTER" xml:space="preserve">
+    <value>Aufheizoptimierung rechnen</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_STUNDE" xml:space="preserve">
+    <value>kälteste Stunde</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_ABZUG" xml:space="preserve">
+    <value>kälteste Stunde − ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ABZUG" xml:space="preserve">
+    <value>Abzug ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_RESERVE" xml:space="preserve">
+    <value>Aufheizreserve ρ</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_TAEGLICH" xml:space="preserve">
+    <value>täglich</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_FEST" xml:space="preserve">
+    <value>fest</value>
+  </data>
+  <data name="SIMKONF_AUFH_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
+    <value>Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AN" xml:space="preserve">
+    <value>Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
+    <value>Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
+    <value>Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe.</value>
+  </data>
+  <data name="SIMKONF_AUFH_MSG_FEHLER" xml:space="preserve">
+    <value>Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HILFE_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Aufheizoptimierung</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHALTER_ERL" xml:space="preserve">
+    <value>An = vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe (Gebäude nach VDI 6007), aus = der Sollwert springt wie im Kalender. Projekteinstellung; wird sofort gespeichert, die übrigen Werte bleiben beim Ausschalten erhalten.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_BEMESSUNG_ERL" xml:space="preserve">
+    <value>Bemessung der längsten Aufheizzeit: STUNDE = kälteste Stunde (Vorgabe), STUNDE_ABZUG = kälteste Stunde − ΔT_K. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ABZUG_ERL" xml:space="preserve">
+    <value>ΔT_K in K, um den die Bemessung kälter als die kälteste Stunde rechnet. Nur bei der Bemessung „kälteste Stunde − ΔT_K“; leer = Vorgabe 2 K, zulässig 0 bis 10 K; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_RESERVE_ERL" xml:space="preserve">
+    <value>Aufheizreserve ρ in %: Zuschlag auf die stationäre Last, wenn das Gebäude keine Heizleistungsgrenze führt. Leer = Vorgabe 20 %, zulässig 1 bis 100 %. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ART_ERL" xml:space="preserve">
+    <value>Art der Aufheizzeit: TAEGLICH = jeder Tag nach seiner Außentemperatur (Vorgabe), FEST = jeder Tag so lange wie der Bemessungsfall. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NICHT_AN" xml:space="preserve">
+    <value>Die Aufheizoptimierung ist ausgeschaltet; die Maske zeigt das Feld erst, wenn der Schalter gesetzt ist.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NUR_ABZUG" xml:space="preserve">
+    <value>ΔT_K gilt nur für die Bemessung „kälteste Stunde − ΔT_K“; erst diese Bemessung wählen.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
+    <value>Den Wert „{0}“ gibt es nicht; bekannt sind {1}.</value>
+  </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Beste Variante übernehmen</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen.</value>
   </data>
   <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
     <value>Vorlauf und Rücklauf bitte beide angeben oder beide leer lassen.</value>

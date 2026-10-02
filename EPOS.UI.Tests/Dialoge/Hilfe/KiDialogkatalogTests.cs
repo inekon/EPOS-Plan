@@ -659,8 +659,11 @@ public class KiDialogkatalogTests : IDisposable
         // GEWACHSEN ist er beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
         // Kesselkennlinie, Etappe E1): von 11 auf 16, mit der Einheit des
         // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) auf 17.
+        //
+        // Die Photovoltaik fuehrt dazu die Bodenalbedo der Anlage (Entscheidungsvorlage
+        // Modellgrenzen, PV4): 18.
         Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+        Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);

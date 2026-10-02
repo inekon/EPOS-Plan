@@ -1077,6 +1077,30 @@ namespace WindowsFormsApplication1
             return AnlagenkopplungSchreiben(idProjekt, wert);
         }
 
+        /// <summary>
+        /// <b>Die Projekteinstellung „Aufheizoptimierung"</b> (Entwurf KP3, Grundsatz 5; Welle O1) — der
+        /// Schreibweg der Oberfläche (Abschnitt „Aufheizoptimierung" der Simulationskonfiguration) und des
+        /// Assistenten, nach der Regel von <see cref="KuehlbetriebSetzen"/>: <b>Steht ein Einstellungssatz</b>,
+        /// werden die fünf Spalten in einem <c>UPDATE</c> geschrieben (<see cref="AufheizvorgabeSchreiben"/>,
+        /// normalisiert nach Festlegung 24). <b>Steht keiner</b>, ist <see cref="Aufheizvorgabe.Aus"/> ohne Satz
+        /// schon wahr — dann wird nichts geschrieben; jede andere Einstellung (auch „aus" mit gepflegten
+        /// Werten) legt denselben <b>Vormerksatz</b> an (<see cref="IstVormerksatz"/>), den das erste Speichern
+        /// der Kaskade zum Einstellungssatz macht (die Einstellung reist dort mit).
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Einstellung trägt.</returns>
+        public static bool AufheizvorgabeSetzen(int idProjekt, Aufheizvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (vorgabe.Equals(Aufheizvorgabe.Aus)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return AufheizvorgabeSchreiben(idProjekt, vorgabe);
+        }
+
         /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>
         private static bool SatzVorhanden(int idProjekt)
         {

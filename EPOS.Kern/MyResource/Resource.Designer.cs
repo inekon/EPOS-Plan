@@ -2198,6 +2198,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_HINWEIS_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_HINWEIS_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo [-]: ähnelt.
+        /// </summary>
+        public static string ANLAGE_LABEL_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_LABEL_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_TIP_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_TIP_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -18761,6 +18788,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_BANNER_HINWEISE {
             get {
                 return ResourceManager.GetString("FLOTTE_BANNER_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_BTN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_ERKL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_KEINE_SUCHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_KEINE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_NULLVARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_NULLVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_UEBERNOMMEN", resourceCulture);
             }
         }
         
@@ -42960,6 +43041,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALBEDO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALBEDO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Alle Daten) ähnelt.
         /// </summary>
         public static string KI_DLG_ALLE_DATEN_NAME {
@@ -50039,6 +50129,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_ANZEIGE_WAHL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT_K in K, um den die Bemessung kälter als die kälteste Stunde rechnet. Nur bei der Bemessung „kälteste Stunde − ΔT_K“; leer = Vorgabe 2 K, zulässig 0 bis 10 K; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_ABZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_ABZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit: TAEGLICH = jeder Tag nach seiner Außentemperatur (Vorgabe), FEST = jeder Tag so lange wie der Bemessungsfall. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung der längsten Aufheizzeit: STUNDE = kälteste Stunde (Vorgabe), STUNDE_ABZUG = kälteste Stunde − ΔT_K. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_BEMESSUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_BEMESSUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufheizoptimierung ist ausgeschaltet; die Maske zeigt das Feld erst, wenn der Schalter gesetzt ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_NICHT_AN {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_NICHT_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔT_K gilt nur für die Bemessung „kälteste Stunde − ΔT_K“; erst diese Bemessung wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_NUR_ABZUG {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_NUR_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ in %: Zuschlag auf die stationäre Last, wenn das Gebäude keine Heizleistungsgrenze führt. Leer = Vorgabe 20 %, zulässig 1 bis 100 %. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_RESERVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_RESERVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe (Gebäude nach VDI 6007), aus = der Sollwert springt wie im Kalender. Projekteinstellung; wird sofort gespeichert, die übrigen Werte bleiben beim Ausschalten erhalten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHALTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHALTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wert „{0}“ gibt es nicht; bekannt sind {1}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -80083,6 +80245,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_ART_FEST {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_ART_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die täglich ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_ART_TAEGLICH {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_ART_TAEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kälteste Stunde − ΔT_K ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_BEMESSUNG_ABZUG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_BEMESSUNG_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kälteste Stunde ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_BEMESSUNG_STUNDE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_BEMESSUNG_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_GRP {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_GRP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HILFE_KNOPF {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HILFE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_AN {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_GEKOPPELT {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_GEKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug ΔT_K ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_ABZUG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_ART {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung rechnen ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_SCHALTER {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration… ähnelt.
         /// </summary>
         public static string SIMKONF_BTN_KONFIGURATION {
@@ -85061,6 +85376,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Ganglinie ‚{0}‘ ähnelt.
+        /// </summary>
+        public static string SIM_SOLARGANGLINIE_FELDNAME {
+            get {
+                return ResourceManager.GetString("SIM_SOLARGANGLINIE_FELDNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie-Anlage ähnelt.
         /// </summary>
         public static string SIM_SOLARTHERMIE_ANLAGE {
@@ -85936,6 +86260,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_KASKADE_VOLL {
             get {
                 return ResourceManager.GetString("SIM_W_KASKADE_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ {
+            get {
+                return ResourceManager.GetString("SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ", resourceCulture);
             }
         }
         
@@ -88084,7 +88417,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds. ähnelt.
         /// </summary>
         public static string START_E_TIPP {
             get {

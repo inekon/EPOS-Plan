@@ -158,6 +158,7 @@ namespace WindowsFormsApplication1
                         // der Bestand erweitert war - NULL (nie gewaehlt) bleibt NULL.
                         m.PV_WrWirkungsgrad = zeile.WrWirkungsgrad;
                         m.PV_Systemverluste = zeile.Systemverluste;
+                        m.Albedo = zeile.Albedo;
                         m.PV_WrNennleistungKw = zeile.WrNennleistungKw;
                         m.PV_WrEta10 = zeile.WrEta10;
                         m.PV_WrEta50 = zeile.WrEta50;
@@ -463,6 +464,7 @@ namespace WindowsFormsApplication1
                 // Paket A/B des PV-Ertragsmodells (Merge 5)
                 WrWirkungsgrad = m.PV_WrWirkungsgrad,
                 Systemverluste = m.PV_Systemverluste,
+                Albedo = m.Albedo,
                 ModellErweitert = SimulationPV.IstErweitert(m),
                 WrNennleistungKw = m.PV_WrNennleistungKw,
                 WrEta10 = m.PV_WrEta10,

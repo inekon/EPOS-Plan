@@ -26,11 +26,12 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Nummer hinter der Kesseleinheit, Ziel des Schemas, Register mit Art Ddl.</summary>
+        /// <summary>Nummer hinter der Bodenalbedo, Ziel des Schemas, Register mit Art Ddl.</summary>
         [Fact]
         public void Nummer_Ziel_und_Register()
         {
-            Assert.Equal(KesselBereitschaftEinheitSchema.SCHRITT + 1, ProzesswaermeTemperaturSchema.SCHRITT);
+            Assert.Equal(AlbedoSchema.SCHRITT + 1, ProzesswaermeTemperaturSchema.SCHRITT);
+            Assert.Equal(164, ProzesswaermeTemperaturSchema.SCHRITT);   // 163 ist die Bodenalbedo
             Assert.Equal(ProzesswaermeTemperaturSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Equal(new[] { "Tab_Prozesswaerme_STAMM", "Tab_Prozesswaerme" }, ProzesswaermeTemperaturSchema.TABELLEN);
             Assert.Equal(new[] { "Vorlauf", "Ruecklauf" }, ProzesswaermeTemperaturSchema.SPALTEN.Select(s => s.Key));
@@ -104,7 +105,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den Schritt
-        /// aus derselben Quelle, hinter der Einheit des Bereitschaftsverlusts.
+        /// aus derselben Quelle, hinter der Bodenalbedo.
         /// </summary>
         [Fact]
         public void Werkzeug_Migration_und_Testkopie_fuehren_den_Schritt()
@@ -114,18 +115,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             Assert.True(werkzeug.IndexOf("ProzesswaermeTemperaturSchema.Ausfuehren(", StringComparison.Ordinal) >
-                        werkzeug.IndexOf("KesselBereitschaftEinheitSchema.Ausfuehren(", StringComparison.Ordinal));
+                        werkzeug.IndexOf("AlbedoSchema.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT", migration);
             Assert.True(migration.IndexOf("new Schritt(SCHRITT_PROZESSWAERME_TEMPERATUR", StringComparison.Ordinal) >
-                        migration.IndexOf("new Schritt(SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT", StringComparison.Ordinal));
+                        migration.IndexOf("new Schritt(SCHRITT_ALBEDO", StringComparison.Ordinal));
             Assert.Contains("ProzesswaermeTemperaturSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.True(vorrichtung.IndexOf("ProzesswaermeTemperaturSchema.Ausfuehren(null)", StringComparison.Ordinal) >
-                        vorrichtung.IndexOf("KesselBereitschaftEinheitSchema.Ausfuehren(null)", StringComparison.Ordinal));
+                        vorrichtung.IndexOf("AlbedoSchema.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
         // -----------------------------------------------------------------------------

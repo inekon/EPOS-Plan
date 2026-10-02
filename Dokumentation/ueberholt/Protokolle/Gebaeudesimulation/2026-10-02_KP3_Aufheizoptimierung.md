@@ -1,6 +1,6 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
-**Stand 02.10.2026 · in Umsetzung.** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
+**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3 gebaut; die Basis heißt R32, weil R31 am 02.10.2026 für die Rechenwegbefunde vergeben wurde).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
 (zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.68), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate
 (`Werkzeuge/Gate/gate_linux.sh`), Merge durch die Orchestrierung, Gate über den gemeinsamen Stand, Statuszeile, Push.
@@ -9,7 +9,7 @@
 
 Wie bei KP2: Auftrag als Datei, Agent im eigenen Worktree (`model: opus`), Abnahme mit vollem Gate im Worktree, danach
 Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachweis. Bis RP1 gilt die Basis R30 (16 Projekte,
-487 CSV byte-gleich), ab RP2 die Basis R31 mit 17 Projekten.
+487 CSV byte-gleich), ab RP2 die Basis R32 mit 17 Projekten.
 
 ## 2. Was gebaut ist
 
@@ -52,6 +52,62 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
   (B24) auf `AufheizErgebnisSchema.SPALTENZAHL_*`; `Auslieferungsvorlage.Tests` 44/44; `SqlDialektPruefer` 2 135 Texte,
   0 Fundstellen.
 
+### R2 — Aufheizplan einer Zone, Einbau in den Einzonenlauf
+
+- **`Aufheizplan` und `Aufheizoptimierung`** (reine Funktionen): Sprünge (Festlegung 7), Absenkdauer D, Ring über den
+  Jahreswechsel, Fenster des Tages und T_a (Festlegung 9), θ_N nach E58 F2 (b), Φ_stat und Antwort mit `AequivalentN`
+  (Außenform, Mitglied von `GebaeudeModellEingang`), P_auf nach Quelle (Grenze → Augenblick, Ziel → Stundenmittel, E58 F1 (b)),
+  Bemessungsfall je Variante, täglich/fest, Deckel 48, Rampe nach Festlegung 8 mit Kühlkappung, Zähler W1/W2/W4/W5,
+  Rampenmaske; `HeizsollwertMitRampeSetzen` als einziger Schreibweg nach dem Bauen.
+- **Einbau** in `Vdi6007Rechenweg.Rechnen` über `ZonenEingang.Einzeln` (Festlegung 1), Eigenschaft `Aufheizvorgabe` (Vorgabe aus),
+  Testnaht `AufheizleistungTestW`, `LetzterAufheizplan` für R4; die eine Zeile in `SimulationWaermebedarf` neben dem Kühlschalter.
+  Schalter aus = kein Aufruf: Referenzlauf byte-gleich.
+- **Tests:** `AufheizRaenderTests` (N-AH6, N-AH10 ohne Zonen, je gegen die Vorschrift der Festlegung 8 nachgerechnet),
+  `AufheizGrenzfallTests` (N-AH8: 17 Einzonengebäude der 16 Referenzprojekte, 5 840 Sprünge mit n = 1, bitgleich zu „aus“),
+  `AufheizLaufTests` (Projekt 1018, Gebäude 10632: t_auf,max 5 h (a) / 9 h (b), T_a,B −9,3 °C, P_auf 136,9 kW Ziel, 19 Rampentage,
+  Σ 34 h, längste Rampe 5 h, Spitze 37,36 → 32,12 kW, Jahresheizwärme 68,252 → 68,289 MWh, Nachweisband 4 → 0 Überschreitungen,
+  zwei Läufe bitgleich), `AufheizStufenformelTests` um „fest ≥ täglich“ (75 600 Gitterpunkte).
+
+### O1 — Projekteinstellung „Aufheizoptimierung“
+
+- **Abschnitt** `section.epos-simkonfig-aufheizung` in „Weitere Einstellungen“ nach der Anlagenkopplung: Schalter; bei an
+  Bemessung (a)/(b), ΔT_K nur bei (b) (0–10 K, Vorgabe 2), Reserve ρ 1–100 % (Vorgabe 20, als Anteil gespeichert, Hinweis zu
+  E58 F7 (c)), Art täglich/fest, Zeile zu Bemessung und Art, bei AK1 eine Zeile zu W5, Herleitungszeilen je Gebäude nur mit
+  Delegat (D2). Jedes Feld schreibt sofort die ganze Einstellung, normalisiert über den Record (Festlegung 24); Fehlschlag baut
+  den Abschnitt mit dem alten Stand neu auf und meldet.
+- **Schreibweg** `KonfigurationCtrl.AufheizvorgabeSetzen` mit Vormerksatz (Muster `KuehlbetriebSetzen`; „aus und leer“ ohne
+  Einstellungszeile wird nicht geschrieben); `ParameterDaten.Aufheizung`, `SimulationParameterDienste.AufheizvorgabeSchreiben`,
+  Delegat `AufheizHerleitung`, Naht in `SimulationErgebnisHuelle.ParameterGaben` (dort hängen auch Kühlschalter und Kopplung).
+- **Assistent:** fünf KI-Felder (`aufheizoptimierung`, `aufheiz_bemessung`, `aufheiz_abzug`, `aufheiz_reserve`, `aufheiz_art`),
+  benannte Absagen (Werte bei Schalter aus, ΔT_K bei (a), Grenzen, Fehlschlag), Aktionswissen „Aufheizoptimierung einstellen“;
+  `KiMaskenabdeckungWacheTests` 4 → 9, `KiSimulationMaskeTests` 48 → 53 Felder.
+- **Texte:** 25 Schlüssel (`SIMKONF_AUFH_*` 17, `KI_DLG_SIM_AUFH_*` 8) in beiden Sprachen, Glossar (Bemessung → design basis,
+  Abzug ΔT_K → deduction ΔT_K, Art der Aufheizzeit → preheat time mode, Herleitungszeile → derivation line), eine Zeile in
+  `help_mapping.txt` (Anker `#aufheizoptimierung` folgt mit dem Wiki in KP4).
+- **Tests:** `AufheizvorgabeSetzenTests` (5), 12 bunit-Fälle, KI-Tests.
+
+### R3 — Aufheizplanung im Mehrzonenweg
+
+- **Nachbarform (B4):** `GebaeudeModellEingang.AequivalentN(tag, aussen, nachbarC)` nimmt den Zähler der Außenglieder der Außenform
+  und hängt Σ U·A_j·θ_j in der Reihenfolge von `ZonenEingang.ThetaEq` an; die Außenform mit zwei Argumenten lehnt Nachbarglieder
+  weiter benannt ab. `ZonenEingang.AequivalentN(tag, aussen, thetaAir)` und `ZuluftN` (derselbe Ausdruck wie `ThetaLue`); Φ_stat
+  mit der Nachbarform und θ_Lue an der Stelle der Außenluft. Feste Nachbarn im Sprung: beheizte bei s_k(h_s − 1) ohne Rampe, „aus“
+  oder unbeheizte beim Startwert nach N1.56 Nr. 7; in Bemessung und Zielleistung beheizte bei ihrem θ_T,max.
+- **Zonenzustände (Festlegung 25, B5):** `Aufheizzone.AusZonen` (`Beheizt`, `AequivalentNachbarn`, `Zuluft`, `NachbarnImSprung`,
+  `NachbarnInDerBemessung`); unbeheizt → UNBEHEIZT ohne Rampe; GEKOPPELT bei `KopplungWirksam` oder im Mehrzonenweg bei
+  `KopplungAlsIdealeLast` mit wirksamer Heizseite; θ_T,max aus der eigenen Reihe (`Aufheizoptimierung.ThetaTMax`).
+- **Einbau (Festlegung 1):** `ZonenEingang.Bauen(…, aufheizvorgabe, aufheizleistungTestW)` ruft am Ende
+  `Aufheizoptimierung.AnwendenZonen` — erst alle Zonen planen, dann alle Rampen schreiben — in beiden Aufbauten (adiabater
+  Vorlauf der 4-K-Regel, gekoppelter Lauf); Schalter aus = kein Aufruf. Plan je Zone an `ZonenEingang.Aufheizplan`, Gebäude über
+  `ZonenEingang.Gebaeudezonen`; `Zonenrechnung.Rechnen` und `Vdi6007Rechenweg.RechnenMehrzonen` reichen Vorgabe und Testnaht
+  durch; Gebäudewerte in `Mehrzonenergebnis.Aufheizgebaeude`; `LetzterAufheizplan` bleibt im Mehrzonenweg `null`.
+  `Zonenschleife.StartwerteRechnen`/`MitStartsollwert` sind rein und statisch (eine Quelle für Vorlauf und Planung).
+- **Gebäudewerte (Festlegung 22):** Datensatz `Aufheizgebaeude` aus `Aufheizoptimierung.Gebaeudewerte` als Aggregator für R4;
+  `Aufheizplan` dazu `SprungstundenAus`, `SprungstundenAusHeizperiode`, `Kuehlkappmaske`, `Spruenge` mit Stundenlisten;
+  `HeizleistungMaxStundenH` = Σ_h max_z Anteil (die Anteile liefert R4).
+- **Tests:** `AufheizMehrzonenTests` (N-AH9), `AufheizGrenzfallTests` (N-AH8 mit Zonen), `AufheizRaenderTests` (N-AH10 mit Zonen).
+- Commits `efdd9544` (Nachbarform, Zustände), `8fef938e` (N-AH9), `420cdcf7` (N-AH10), `746b7b9e` (N-AH8); Gate 664 im Worktree.
+
 ## 3. Schemaschritte
 
 | Schritt | Klasse | Inhalt | Testdatenbank |
@@ -75,6 +131,26 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
   nur der `.wpx`-Transfer trägt die Ergebnisspalten.
 - Eine Stunde nur mit Kühlübergabe trägt den Kappungsanteil aus dem eigenen Akkumulator (bisher 0, dort nicht gelesen).
 
+- **Sprungstunde und Überlappung (R2):** Bei gestufter Absenkung hebt die Rampe des späteren Sprungs die Sprungstunde des
+  früheren über das Maximum; „die Sprungstunde nie“ (Festlegung 8) gilt je eigener Rampe.
+- **ρ-Probe mit dem echten Kern (R2, (a), ρ 20 %, täglich):** t_auf,max / Rampentage — 1007: 1 h / 1; 1008 (10576): 5 h / 3;
+  1017: 5 h / 5; 1018 und 1049: 5 h / 19; 1023, 1024, 1039 (10644), 1050: 2 h / 1; übrige 1039, 1041, 1042, 1045: 0 / 0. Mit (b)
+  steigt t_auf,max bis 9 h, die Rampentage kaum — Grundlage für RP1 und den Entscheid P14.
+- **Naht der Oberfläche (O1):** liegt in `SimulationErgebnisHuelle.ParameterGaben`, nicht in `SimulationKonfigHuelle`; der
+  Wiki-Anker `#aufheizoptimierung` fehlt noch (Hilfepille zeigt auf die Seite); eine weiche Sperre hat keinen Fall, weil die
+  abhängigen Felder ausgeblendet sind — der Sperrzustand der Seite gilt wie bei den Nachbarn.
+
+- **`ZonenschleifeProbenTests.Synthetisch(2)` (R3)** baut 0 Wohnungen (f = 1/0) und damit keine beheizte Zone; N-AH9 nutzt einen
+  eigenen Bauer nach demselben Muster. **Die Testdatenbank führt keine Zonen** (`Tab_Zone` leer): N-AH8 mit Zonen geht über die
+  Datenbank leer aus und stützt sich auf eine Mehrzonenfassung jedes VDI-Gebäudes (halbiert mit Trennwand und Luftstrom, dazu ein
+  unbeheizter Nebenraum) — bis G6d echte Zonenkalender säht.
+- **Startwertregel (R3):** Der Bezug „Muster `:1477-1482`“ im Entwurf zeigt auf die Auslegungsheizlast der Kopplung; die
+  Startwertregel steht in `Zonenschleife` und `StartwerteUnbeheiztC`. **AK1 im Mehrzonenweg:** `KopplungWirksam` ist dort immer
+  `false` (A4 (a), ideale Last) — ohne die eigene Regel (Abschnitt 5) griffe GEKOPPELT nie.
+- **N-AH9-Band (R3):** Der Fall „täglich (a) mit Wochenende“ ist der bindende — größte Stundenleistung 100,44 % P_auf (Band
+  1,01·P_auf); ohne Planung läge die Sprungstunde bei 121,22 %. Φ_stat mit Nachbarn 11 683 W / 11 162 W gegen 12 483 W / 11 992 W
+  mit Nachbarn bei 0 °C (B4).
+
 ## 5. Festlegungen der Wellen (für N1.68)
 
 - R1: Index 1 der schnelle, Index 2 der langsame Modus (Teilkonzept 4.2); im zusammenfallenden Zweig r_k, C_k NaN, τ₁ = τ₂ =
@@ -84,6 +160,24 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 - D1: `ErgebnisCtrl` schreibt das Modell unverändert, die NULL-Regeln der Festlegung 25 setzt D2 in `GebaeudeKennzahlen`;
   ungültige Werte lässt der Record stehen, `AufheizvorgabeSchreiben` scheitert dann an der Spalte (`false`, Zeile unverändert);
   keine Ressourcenschlüssel in D1.
+
+- R2: Bemessungsfenster θ_N in min(D, 48), im Lauf min(D, t_auf,max + 1); W2 täglich nur bei erreichbarem Bedarf (W1 hat
+  Vorrang), fest bei t_auf,max + 1 > D + 1, Wache `TageBemessungBegrenzt` = 0; Tage nach dem Tag der Sprungstunde, Rampentag =
+  n > 1, `AufheizstundenH` = Σ (n − 1) neben `MaskenstundenH`, W4 je Übergang aus NaN mit Unterzahl Heizperiode; Randvergleiche
+  über `Rechenrand` (`Zu(θ_T)`, `SchwelleErreicht`), Kühlkappe notfalls um ein ulp gesenkt; θ_T,max ohne Nutzungsstunde =
+  höchster endlicher Sollwert, Erdreich der Zielleistung am Tag der kältesten Stunde, `Heizleistung_Max` nur wenn endlich;
+  `AequivalentN` mit Nachbargliedern und `Aufheizzone.Aus` an gekoppelten Zonen lehnen benannt ab (R3).
+- O1: die Naht übergibt den Record als Ganzes; Reserve 1–100 % in Oberfläche und KI (Datenbank > 0); Zeile zu W5 bei AK1;
+  Glossarbegriffe wie oben.
+
+- R3: GEKOPPELT im Mehrzonenweg bei `KopplungAlsIdealeLast` und wirksamer Heizseite nach `Waermeuebergabe.KopplungWirksamFuer`
+  (die Konditionierung behandelt die Zonen dann als gekoppelt; N-AH10 verlangt W5); feste Nachbarwerte aus den Reihen ohne Rampe,
+  gelesen vor jeder Rampe, Startwert = Vorlaufwert aus `StartwerteRechnen` einmal je Gebäude, ein beheizter Nachbar mit endlichem
+  Sollwert am Vorlaufbeginn und „aus“ im Sprung bekommt einen Jacobi-Schritt von den Startwerten; Gebäudezustand GEKOPPELT nur,
+  wenn alle beheizten Zonen gekoppelt sind, sonst UNERREICHBAR, sobald eine geplante Zone es ist (t_auf,max `null`), sonst
+  BEMESSEN; P_auf Summe und T_a,B Minimum ohne NaN; `AufheizstundenH` des Gebäudes = Vereinigung der Rampenfenster
+  (h_s − n + 1 … h_s − 1, bei Überlappung weniger als Σ (n − 1)) neben vereinigter Maske und `MaskenstundenH`; W4 vereinigt über
+  die Übergangsstunden, Tageszähler aus den Sprunglisten; Startwerte aus `Zonenschleife` herausgezogen, nicht abgeschrieben.
 
 ## 6. Nachweise
 
@@ -98,14 +192,22 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 | Abnahme D1 im Worktree (`36c26656`) | Kern-Filter 0 Fehler, ChartProben JA, Kern 9 850, UI 7 233, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 byte-gleich gegen R30**, gestörter Lauf PASS, Windows-Schale 0 Fehler, `Auslieferungsvorlage.Tests` 44/44, `SqlDialektPruefer` 0 Fundstellen |
 | Gate im Hauptbaum nach den Merges R1 (`a3c3c655`) und D1 (`54bf19bb`) mit `origin` #654–#656 (`54bf19bb`), danach Merge `origin` #657 (`c457460b`, IFC-Import, Testdatenbank-Kopien) mit gezielter Nachprüfung | Gate auf `54bf19bb`: Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 9 905, UI 7 239, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R30**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert; gezielte Nachprüfung auf `c457460b` nach dem Merge #657: Kern-Filter 0 Fehler, 1 558 betroffene Kern-Tests (Aufheiz, Schema, Testdatenbank, Ifc, Zonenmodell, Ergebnis, Konditionierung, Wachen) und 7 239 UI-Tests grün, Referenzlauf 16/16 PASS, 487/487 byte-gleich, gestörter Lauf PASS, Windows-Schale 0 Fehler |
 
+| Abnahme R2 im Worktree (`29e7f8b9`) | Kern 9 946, UI 7 239, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 byte-gleich gegen R30**, gestörter Lauf PASS, Windows-Schale 0 Fehler |
+| Abnahme O1 im Worktree (`732c5918`) | Kern 9 938, UI 7 254, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 byte-gleich gegen R30**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer ohne Abweichung |
+| Gate im Hauptbaum nach den Merges O1 (`057765f0`) und R2 (`db1de321`) mit `origin` #659 (Basis **R31**) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 9 976, UI 7 254, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (auf `db1de321`); gezielte Nachprüfung auf `5d2bedc7` nach dem Merge `origin` #660–#662: Kern-Filter 0 Fehler, 4 004 betroffene Kern-Tests und 7 256 UI-Tests grün, Referenzlauf 16/16 PASS, 487/487 byte-gleich gegen R31, gestörter Lauf PASS, Windows-Schale 0 Fehler |
+| N-AH9 (R3) | Dreizonengebäude (zwei Wohnungen, Trennwand U·A 15,0 W/K = 3,06 % H_s, Luftstrom 40 m³/h, unbeheizter Keller am Erdreich), feste Ränder −5 °C ohne Sonne und Gewinne: Nachbarform gegen `ThetaEq` 182 Stunden, größte relative Abweichung 0, `ZuluftN` = `ThetaLue` bitgleich; Formel je Zone gegen die volle Zonenschleife im Band 1,01·P_auf über [h_s − n + 1, h_s + 2], fünf Fälle (täglich (a)/(b), fest (a): 730 Rampen, 92,9 %; täglich (a) mit Wochenende: 522 Rampen, 100,44 %; fest (b) mit Wochenende: 626 Rampen, 94,29 %), Bemessung mit Nachbarn bitgleich nachgerechnet, Keller UNBEHEIZT ohne Rampe (dieselbe Instanz), Aggregation synthetisch (GEMISCHT, UNERREICHBAR, GEKOPPELT, Σ_h max_z) und am Lauf |
+| N-AH8 mit Zonen (R3) | Testdatenbank ohne Zonen (0 Gebäude über die Datenbank); Mehrzonenfassung jedes VDI-Gebäudes der 16 Projekte: 17 Gebäude, 51 Zonen bitgleich zu „aus“ (Gebäude und jede Zone), 2 Zonen GEKOPPELT (1047), 17 UNBEHEIZT, 11 680 Sprünge mit n = 1 |
+| N-AH10 mit Zonen (R3) | AK1-Gebäude mit Zonen und unbeheiztem Keller: GEKOPPELT und UNBEHEIZT, Reihen unverändert, bitgleich zu „aus“, ohne Stufe rampt dasselbe Gebäude; Zone ohne Kalender (B5): eigener Tagwert 22 °C → θ_T,max 22 °C bei Auslegungsraumtemperatur 20 °C, ohne eigenen Tagwert erbt sie 20 °C, mit Kalender 23 °C; beide Aufbauten planen, Schalter aus ruft nichts, zwei Läufe bitgleich |
+| Abnahme R3 im Worktree (`746b7b9e`, Gate 664) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 011 (1 übersprungen), UI 7 256, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler |
+| Nachprüfung im Hauptbaum nach dem Fast-Forward auf `746b7b9e` (origin unverändert) | Kern-Filter 0 Fehler, 115 Aufheiz- und Zonentests (`Aufheiz*Tests`, `ZonenEingangTests`, `Zonenschleife*Tests`) grün auf demselben Stand, den das Gate im Worktree vollständig geprüft hat |
 ## 7. Offen
 
-- **R2** (Aufheizplan Einzone): `_vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt` neben `Kuehlbetrieb`; W1 und Deckel aus
+- ~~R2~~, ~~R3~~ erledigt (siehe Abschnitt 2); R3 war (Mehrzonen): Nachbarform von `AequivalentN` (B4), Luftkopplungen in Φ_stat, `Aufheizzone.Aus` für gekoppelte Zonen, θ_T,max je Zone (B5), Zustand UNBEHEIZT, Einbau am Ende von `ZonenEingang.Bauen` in beiden Aufbauten, Gebäudewerte nach Festlegung 22, `LetzterAufheizplan` im Mehrzonenweg. **R4:** Pläne und `Aufheizgebaeude` in `GebaeudeModellErgebnis` samt `Skaliert` und Zonen, `HeizleistungMaxStundenH` aus den Kappungsanteilen beider Jahresschleifen, W3 je Zone und Gebäude, vereinigte Rampenmaske in `NutzungBei`, Laufhinweise auch im Mehrzonenweg, Rücksetzen von `LetztesMehrzonenergebnis` bei Fehler entscheiden; G6d: echte Zonenkalender in der Testdatenbank für N-AH8 mit Zonen. Aus dem Wortlaut R4: P_auf skalieren (Festlegung 16), W3 aus den Sprüngen über [h_s − n + 1, h_s + 2], Kappungsreihe in beiden Jahresschleifen, Rampenmaske in `NutzungBei`, Laufhinweise `SIMENG_AUFH_W1…W5`. Aus R2 übernommen: `_vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt` neben `Kuehlbetrieb`; W1 und Deckel aus
   `Aufheizwahl` (N = 0); θ_N nach F2 (b); Φ_stat mit `AequivalentN` statt θ_eq = T_a; Antwort mit dem unbedingten
   Zusatzleitwert der Sprungstunde (`ZusatzleitwertWK(h_s, false, false)`); „fest ≥ täglich“ in N-AH5.
 - **D2:** `GebaeudeKennzahlen` füllt die neuen Modellfelder (auch `SommerlueftungsstundenH` der Zone, `HeizleistungMaxStundenH`
   als Σ der Anteile aus R4), Festlegung 25/26, Export nach E32.
-- **O1:** Schreibweg nach dem Muster `KuehlbetriebSetzen` mit Vormerksatz, wenn noch keine Einstellungszeile steht.
+- ~~O1~~ erledigt; offen: `AufheizHerleitung` in `SimulationErgebnisHuelle.ParameterGaben` nach D2 belegen; Wiki-Anker `#aufheizoptimierung` und `help_mapping.txt` mit KP4.
 - **Abschluss A:** Teilkonzept 4.3 (n = 37 bei a = 0,3 in der Augenblicksform), 10.3 „elfte“ Einfrierregel, 5.3 `GEMISCHT`,
   4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.68.
 - Beim Anwender: P14 (ρ nach der Messung in RP1), SA1 der KP2-Oberfläche, SA-KP3 am Ende.
