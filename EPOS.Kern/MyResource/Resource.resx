@@ -6774,6 +6774,15 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt.</value>
   </data>
+  <data name="WIRT_GESTEHUNG_9B_DECKEL" xml:space="preserve">
+    <value>Wärmegestehungskosten: Der § 9b-Abzug rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_REGELSATZ" xml:space="preserve">
+    <value>Wärmegestehungskosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; der § 9b-Abzug rechnet mit höchstens dem Regelsatz der Stromsteuer von {0} €/MWh.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_SOCKEL" xml:space="preserve">
+    <value>Wärmegestehungskosten: Der § 9b-Abzug beträgt {0} €/a statt {1} €/a — der Netzbezug von {2} MWh/a trägt den Sockelbetrag von {3} €/a nicht ganz.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(Referenz)</value>
   </data>
@@ -39975,6 +39984,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
     <value>Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT" xml:space="preserve">
+    <value>Den Leistungspreis des Reststromtarifs von {0} €/(kW·Monat) setzt die Gruppenregel nicht an.</value>
   </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Konditionierung</value>

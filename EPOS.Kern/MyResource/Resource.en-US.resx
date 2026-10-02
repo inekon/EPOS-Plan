@@ -6758,6 +6758,15 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Levelised cost of heat without electricity credit: no energy price of the electricity carrier is maintained for {0} MWh/a of CHP electricity used in the project.</value>
   </data>
+  <data name="WIRT_GESTEHUNG_9B_DECKEL" xml:space="preserve">
+    <value>Levelised cost of heat: the § 9b deduction uses {0} €/MWh instead of {1} €/MWh — capped at the electricity tax share of the energy price of the grid electricity carrier.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_REGELSATZ" xml:space="preserve">
+    <value>Levelised cost of heat: no electricity tax share is maintained for the grid electricity carrier; the § 9b deduction uses at most the standard electricity tax rate of {0} €/MWh.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_SOCKEL" xml:space="preserve">
+    <value>Levelised cost of heat: the § 9b deduction is {0} €/a instead of {1} €/a — the grid supply of {2} MWh/a does not fully cover the base amount of {3} €/a.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(reference)</value>
   </data>
@@ -39968,6 +39977,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
     <value>The group rule does not apply the demand charge of the residual power tariff with the model “{0}”.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT" xml:space="preserve">
+    <value>The group rule does not apply the demand charge of the residual power tariff of {0} €/(kW·month).</value>
   </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Conditioning</value>

@@ -682,14 +682,16 @@ namespace WindowsFormsApplication1
         /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>); die Fußzeile unter der Kostentafel
         /// nennt sie.</para>
         ///
-        /// <para><b>Im Rollentarif</b> (Register EZ‑18) ersetzt der Tarif die Preise des Trägers. Wirkt
-        /// er an der Kopie — dieselbe Bedingung wie in <c>WirtschaftlichkeitCtrl.RechneProjekt</c>:
-        /// Tarif der Gruppe wirksam, die Kopie ohne Strombedarf ohne Verwendung —, nennen Hinweis und
-        /// Fußzeile an Stelle des Trägersatzes das Leistungspreismodell des Reststromtarifs
-        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>), wenn er einen Leistungspreis
-        /// führt, sonst keinen. Den Tarif lädt derselbe Controllerweg wie im Kapitel
-        /// Wirtschaftlichkeit (<see cref="WirtschaftlichkeitCtrl.LadeTarif"/>). Die Gruppenzahl selbst
-        /// rechnet der Berichtsweg weiter mit den Preisen des Trägers.</para>
+        /// <para><b>Im Rollentarif</b> (Register EZ‑18; Anwenderentscheid 02.10.2026) bleibt der
+        /// Trägersatz stehen. Wirkt der Tarif an der Kopie — dieselbe Bedingung wie in
+        /// <c>WirtschaftlichkeitCtrl.RechneProjekt</c>: Tarif der Gruppe wirksam, die Kopie ohne
+        /// Strombedarf ohne Verwendung — und führt sein Reststromtarif einen Leistungspreis, der sich
+        /// von dem des Trägers unterscheidet (<see cref="TarifLeistungspreisWieTraeger"/>), nennen
+        /// Hinweis und Fußzeile ZUSÄTZLICH den Leistungspreis des Reststromtarifs
+        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>, beim Modell MONATLICH mit
+        /// <see cref="StromGruppenzahl.LeistungspreisTarifMonatspreis"/>). Den Tarif lädt derselbe
+        /// Controllerweg wie im Kapitel Wirtschaftlichkeit (<see cref="WirtschaftlichkeitCtrl.LadeTarif"/>).
+        /// Die Gruppenzahl selbst rechnet der Berichtsweg weiter mit den Preisen des Trägers.</para>
         /// </summary>
         internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
         {
@@ -722,12 +724,17 @@ namespace WindowsFormsApplication1
                 // oder keinen Netzbezug), gibt es nichts zu vermerken.
                 if (!kopie.StromGruppenregelMWh.HasValue) continue;
 
-                // EZ‑18: Wirkt der Rollentarif, ersetzt er die Preise des Trägers — dann zählt allein
-                // der Leistungspreis des Reststromtarifs, den die Regel ebenso nicht ansetzt.
+                // EZ‑18: Wirkt der Rollentarif, nennt die Fußzeile neben dem Leistungspreis des
+                // Trägers den des Reststromtarifs, den die Regel ebenso nicht ansetzt — nur, wenn er
+                // sich von dem des Trägers unterscheidet.
                 bool rollentarif = tarif != null && tarif.Wirksam &&
                                    !kopie.StrombedarfOhneVerwendungMWh.HasValue;
-                string tarifModell = rollentarif && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)
-                    ? WirtschaftlichkeitCtrl.Leistungsmodelltext(tarif.Reststrom) : null;
+                bool tarifsatz = rollentarif && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
+                                 !TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                kopie.LeistungspreisNichtAngesetztMonatssatz);
+                string tarifModell = tarifsatz ? WirtschaftlichkeitCtrl.Leistungsmodelltext(tarif.Reststrom) : null;
+                double? tarifMonatspreis = tarifsatz && TarifJeMonat(tarif.Reststrom)
+                    ? tarif.Reststrom.MonatspreisEurKWMonat : (double?)null;
 
                 v.Gruppenzahl = new StromGruppenzahl
                 {
@@ -736,27 +743,60 @@ namespace WindowsFormsApplication1
                     NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
                     Verwender = verwender,
                     // EZ‑17: der Leistungspreis, den die Gruppenzahl nicht enthält — für den Satz
-                    // der Fußzeile unter der Kostentafel; im Rollentarif (EZ‑18) das Modell des
-                    // Reststromtarifs an Stelle des Trägersatzes.
-                    LeistungspreisSatz = rollentarif ? null : kopie.LeistungspreisNichtAngesetztSatz,
-                    LeistungspreisTraeger = !rollentarif && kopie.LeistungspreisNichtAngesetztSatz != null
+                    // der Fußzeile unter der Kostentafel; im Rollentarif (EZ‑18) dazu der
+                    // abweichende Leistungspreis des Reststromtarifs.
+                    LeistungspreisSatz = kopie.LeistungspreisNichtAngesetztSatz,
+                    LeistungspreisTraeger = kopie.LeistungspreisNichtAngesetztSatz != null
                         ? kopie.LeistungspreisNichtAngesetztTraeger : null,
                     LeistungspreisTarifModell = tarifModell,
+                    LeistungspreisTarifMonatspreis = tarifMonatspreis,
                 };
 
                 // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der
-                // Leistungspreis, den die Gruppenzahl nicht enthält; im Rollentarif (EZ‑18) im
-                // Wortlaut der Hinweiszeile der Wirtschaftlichkeit mit dem Modell des Reststromtarifs.
-                string hinweis = rollentarif
-                    ? (tarifModell != null
-                        ? string.Format(BerichtTexte.Kultur,
-                                        WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
-                                        tarifModell)
-                        : null)
-                    : kopie.LeistungspreisNichtAngesetzt;
-                if (!string.IsNullOrEmpty(hinweis))
-                    daten.Melde(v, Berichtshinweisstufe.Hinweis, hinweis);
+                // Leistungspreis des Trägers, den die Gruppenzahl nicht enthält; im Rollentarif
+                // (EZ‑18) dazu der abweichende des Reststromtarifs im Wortlaut der Hinweiszeile der
+                // Wirtschaftlichkeit mit seinem Modell.
+                if (!string.IsNullOrEmpty(kopie.LeistungspreisNichtAngesetzt))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, kopie.LeistungspreisNichtAngesetzt);
+                if (tarifModell != null)
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis,
+                        string.Format(BerichtTexte.Kultur,
+                                      WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
+                                      tarifModell));
             }
+        }
+
+        /// <summary>
+        /// <b>Ist der Leistungspreis des Reststromtarifs dem des Stromträgers gleich?</b> (Register
+        /// EZ‑18, Anwenderentscheid 02.10.2026) — dann nennt die Fußzeile unter der Kostentafel nur
+        /// den Trägersatz, sonst zusätzlich den des Tarifs.
+        ///
+        /// <para>Die Regel: <b>Gleich</b> sind beide nur, wenn beide je Monat bemessen sind und
+        /// derselbe Preis steht — der Reststromtarif mit dem Modell MONATLICH (leer oder unbekannt
+        /// zählt wie dort, <see cref="StromTarifRechner.Leistungskosten"/>) und der Träger mit einem
+        /// Satz je Monat (<paramref name="traegerMonatssatz"/>: <c>price_power_modus</c> MONAT oder
+        /// eine Saisonreihe aus zwölf gleichen Sätzen;
+        /// <see cref="VariantenDaten.LeistungspreisNichtAngesetztMonatssatz"/>), beide auf 1e‑9
+        /// gleich. Alles andere ist <b>unterschiedlich</b>: ein Satz je Jahr gegen den Monatspreis,
+        /// eine Staffel des Trägers, die Modelle STAFFEL und JAHRESHOECHSTLAST des Tarifs — auch
+        /// Staffel gegen Staffel, deren Bemessung verschieden ist —, und ein Träger ohne
+        /// Leistungspreis (<c>null</c>) gegen einen Tarif mit. Ob der Tarif überhaupt einen
+        /// Leistungspreis führt, prüft der Aufrufer (<see cref="StromTarifRechner.LeistungspreisGepflegt"/>).</para>
+        /// </summary>
+        internal static bool TarifLeistungspreisWieTraeger(TarifRolle reststrom, double? traegerMonatssatz)
+        {
+            if (reststrom == null || !traegerMonatssatz.HasValue) return false;
+            if (!TarifJeMonat(reststrom)) return false;
+            return Math.Abs(traegerMonatssatz.Value - reststrom.MonatspreisEurKWMonat) <= 1e-9;
+        }
+
+        /// <summary>Bemisst der Tarif seinen Leistungspreis je Monat (Modell MONATLICH, leer oder
+        /// unbekannt wie in <see cref="StromTarifRechner.Leistungskosten"/>)?</summary>
+        private static bool TarifJeMonat(TarifRolle rolle)
+        {
+            string modell = rolle == null ? null : rolle.Leistungsmodell;
+            return !string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal) &&
+                   !string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal);
         }
 
         /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>

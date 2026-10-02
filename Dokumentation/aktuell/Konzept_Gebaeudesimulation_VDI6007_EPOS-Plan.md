@@ -1766,7 +1766,8 @@ Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, V
 und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
 P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
-N1.66), KP3 und KP4 auf Auftrag; kein Bestandteil der Stufen G0 bis GA.
+N1.66), KP3 entworfen und entschieden (E58, N1.67), Umsetzung läuft; KP4 auf Auftrag; kein Bestandteil der Stufen
+G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -4938,3 +4939,31 @@ Projekte gegen R29.
 **Folgen.** Teilkonzept Konditionierungsprofile im Kopf und in 7.2, 7.4, 8, 9.7, 10.5, 11 (R16) und 12 fortgeschrieben;
 Entwurf KP2 und die zwei Übergaben der Sitzung liegen unter `ueberholt/`. Offen beim Anwender: die Sichtabnahme SA1 unter Windows, die SA2
 weitgehend mit abdeckt, samt der Bestätigung von Nr. 27 („eine Rückfrage, immer"). KP3, KP4 und KU3 folgen auf Auftrag.
+
+### N1.67 Entscheid E58 — Konditionierungsprofile: Aufheizoptimierung, Variantenvergleich, Kurzbericht, Referenzprojekt 1051, Einfrieren, Reserve, Nachtlüftung
+
+**Anlass.** Der Entwurf der Stufe KP3
+([`Gebaeudesimulation/2026-10-02_Entwurf_KP3.md`](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)) — zwei Leser, zwei
+unabhängige Entwürfe (einer vom Rechenweg und den Nachweisen her, einer von Daten, Ergebnissen, Darstellung und
+Regressionsnetz her), eine Gegenprüfung jeder code-gestützten Aussage am Code, an der Testdatenbank und mit
+Rechenproben, die Synthese in einem Papier — legt acht Fragen vor; alles Übrige benennt er als 33 Festlegungen der
+Umsetzung, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 02.10.2026 alle acht per
+Auswahl: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und F7 abweichend**.
+
+| Frage | Entscheid |
+|---|---|
+| F1 Welche Leistung hält die Rampe bei Quelle `Heizleistung_Max`? | **(b)**, nach Empfehlung: der **Augenblickswert** bei Quelle Grenze (Leistung am Beginn der Sprungstunde, das Maximum über die Rampe bei festen Rändern), das **Stundenmittel** bei Zielleistung — die Grenze ist im Löser ein Augenblickswert, die Zielleistung eine Stundengröße des Erzeugers; am Prüfsatz n = 7 statt 5, die Sprungstunde kappt bei festen Rändern nicht |
+| F2 Ab welchem Sollwert bemisst sich ein Sprung nach gestufter Absenkung? | **(b)**, nach Empfehlung: θ_N ist der **kleinste endliche Sollwert im Fenster der Rampe** — sicher auch nach einer Wochenend- oder Ferienabsenkung unter dem Nachtwert (Prüfsatz n = 10 statt 2); bei einfacher Nachtabsenkung gleich s(h_s − 1) |
+| F3 Wo stehen Nachtauskühl-, Sommerlüftungs- und Aufheizwerte im Variantenvergleich? | **(c) beides, abweichend von der Empfehlung (a):** die Gebäudetafel je Stand im Vergleichskapitel (Marke `stand.tabelle.gebaeude`, je Variante jedes Gebäude, ohne Δ) **und** eine Kennzahlgruppe „Gebäude" im Kennzahlenkatalog mit Δ (Höchstwert über die Gebäude, P_auf als Summe; neue Kennzahlen nur mit `Kennzahl.Seit`); +0,75 PT. **Warum es trägt:** Die Tafel zeigt je Gebäude, was sich über Gebäude nicht addieren lässt; die Gruppe gibt dem Vergleich das Δ, das die Empfehlung allein `energie.waermelast` überlassen hätte, und legt die Verdichtung ausdrücklich fest (Höchstwert, Summe). Mit `Kennzahl.Seit` bleiben die eingefrorenen Listen v1–v11 unberührt, beides fällt in die Katalogfassung 12, die KP3 ohnehin hebt |
+| F4 Kurzbericht und Einzelfelder? | **(b), abweichend von der Empfehlung (a):** die Einzelfelder `gebaeude.ergebnis.*` für eigene Vorlagen **und** ein Aufheizabsatz im ausgelieferten Kurzbericht in beiden Sprachen; +0,25 PT. **Warum es trägt:** Die Kurzberichte werden mit der Fassung 12 ohnehin über `Werkzeuge/Berichtsvorlage` neu gebaut, der Absatz entsteht im selben Lauf und unter denselben Vorlagenwachen; nach dem Grundsatz „NULL heißt Schalter aus" (Entwurf Abschnitt 2) bleibt er ohne wirksamen Schalter leer |
+| F5 Zuschnitt des Referenzprojekts 1051 | **(a)**, nach Empfehlung: „Referenzprojekt Konditionierung", Kopie von 1007, Bau per Probe mit dem echten Kern, „Büro" in allen fünf Größen, `Kuehlung_Aktiv` = 1 bei Kühlbetrieb aus, Nachtauskühlung nach F8, Sommerlüftung an, Ferien 23.12.–6.1. und 1.–14.8., Heizperiode 1.10.–30.4., Bemessung „kälteste Stunde − 2 K", täglich, ρ leer, Zuordnung mit der Fläche des Baus; die CI rechnet es als achtes Projekt |
+| F6 Wann wird eingefroren? | **(a)**, nach Empfehlung: nach Rechenweg, Export und Referenzprojekt (RP2 nach RP1); Oberfläche und Bericht (O1–O3) danach byte-gleich gegen die neue Basis R31 — die Basis hängt nur an Kern und Export |
+| F7 Bleibt die Aufheizreserve ρ bei 20 %? | **(c) Entscheid nach der Messung, abweichend von der Empfehlung (a):** RP1 misst ρ_min aller 17 VDI-Gebäude der Referenzprojekte mit dem echten Kern und legt sie dem A/B-Protokoll bei; bis dahin gilt 20 %, danach entscheidet der Anwender (offener Entscheid, Register P14). **Warum es trägt:** Die Werte über 20 % (rund 22–25 % an 1008, 1018 und 1049) sind aus der konvektiven KP0-Probe auf den Strahlungsanteil 0,3 hochgerechnet; die Messung ersetzt die Hochrechnung, bevor ein Wert in eine Basis eingeht. Die Wellen bis RP1 hängen nicht am Zahlenwert — ρ ist eine Spalte mit Vorgabe, die Vorgabe eine Zahl im Kern —, fällig ist der Entscheid vor dem Einfrieren RP2, weil 1051 mit ρ leer die Vorgabe rechnet |
+| F8 Lüftungsvorlage „Büro" gegen Nachtauskühlung | **(a)**, nach Empfehlung: Das Skript übernimmt „Büro" in allen fünf Größen und überschreibt danach die Lüftungs-Nachtzeile mit der Nachtauskühlung (2,0 1/h, 18–7 Uhr, bedingt); Wochenende und Ferien bleiben 0,1 1/h — Vorlage und Anpassung stehen im Netz, die ausgelieferte Saat bleibt |
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 4.1, 4.3,
+4.4, 4.5, 5.4, 6, 7.6, 8, 10.1, 10.2 und 12 fortgeschrieben, die Entscheide stehen in 9.8; der Entwurf trägt je Frage
+den Entscheid. F3 (c) und F4 (b) heben die Welle O3 auf 2,5–3 PT und KP3 auf **14–18,25 PT** (Entwurf 13–17,25 PT,
+Teilkonzept 6–9 PT). F7 bleibt bis zur Messung in RP1 offen; das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+zählt danach **2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung — im Entwurf Abschnitt 5 benannt — folgen
+mit der Umsetzung als **N1.68**.

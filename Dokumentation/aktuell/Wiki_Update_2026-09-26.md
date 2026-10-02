@@ -173,9 +173,10 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Wärmegestehungskosten enthalten nur noch die Kosten der Wärmeerzeugung; Haushaltsstrom, Photovoltaik und Stromspeicher zählen nicht mehr mit. Unter den Energiekosten steht je Energieträger die Herleitung Menge × Preis. (#642)
 - Bei Unternehmen des produzierenden Gewerbes mindert die entgangene Entlastung nach § 9b StromStG die Stromgutschrift der Wärmegestehungskosten. (#642)
 - Brauchwasser- und Prozesswärmeprofile rechnen mit ihrer gepflegten Jahressumme auch dann, wenn ihre Projektkopie anders heißt als der Katalogeintrag. (#643)
-- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis, den die Gruppenregel nicht ansetzt – den des Stromträgers oder das Modell des Reststromtarifs. (#644, #649)
+- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt, und bei aktiver Tarifstruktur zusätzlich den abweichenden Leistungspreis des Reststromtarifs. (#644, #649, #654)
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
+- Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

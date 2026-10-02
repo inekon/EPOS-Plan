@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 02.10.2026** · Codestand `bc93b52ce` · `SchemaStand.Zielversion` = 158 · Schemaschritte 90–158 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); 145–154 den Nachbarsitzungen Zapfprofil, Gebäudesimulation und Dialoge, darunter 147 das Mehrzonenmodell, 149 die Katalogsätze E51, 150 die Solarthermie, 151 und 152 die Konditionierung, 153 die Bezugsart Zimmer, 154 die Heizgrenze der Kesselbereitschaft; 155–158 den Nachbarsitzungen Zapfprofil, Konditionierung und Kessel — 155 der Füllstand des Zapfprofils, 156 die Kesselkennlinie, 157 die Konditionierungsvorlagen, 158 das Kennzeichen Brennwert der Projektkessel; E19 bis E31, P555, P556, P630, P641, #642 und P646 ohne Schritt; die Ergebnisspalte `Lauf_Staende` (P641) zieht `StelleTabellenSicher` nach, die Testdatenbank trägt sie) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-30_R30_Stromverbraucher` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 02.10.2026** · Codestand `448b1f0eb` · `SchemaStand.Zielversion` = 158 · Schemaschritte 90–158 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); 145–154 den Nachbarsitzungen Zapfprofil, Gebäudesimulation und Dialoge, darunter 147 das Mehrzonenmodell, 149 die Katalogsätze E51, 150 die Solarthermie, 151 und 152 die Konditionierung, 153 die Bezugsart Zimmer, 154 die Heizgrenze der Kesselbereitschaft; 155–158 den Nachbarsitzungen Zapfprofil, Konditionierung und Kessel — 155 der Füllstand des Zapfprofils, 156 die Kesselkennlinie, 157 die Konditionierungsvorlagen, 158 das Kennzeichen Brennwert der Projektkessel; E19 bis E31, P555, P556, P630, P641, #642, P646 und P651 ohne Schritt; die Ergebnisspalte `Lauf_Staende` (P641) zieht `StelleTabellenSicher` nach, die Testdatenbank trägt sie) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-30_R30_Stromverbraucher` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -592,7 +592,8 @@ erscheinen um **2,00 ct/kWh zu hoch**.
 
 ```
 Vermieden_effektiv = Vermieden_brutto − Entlastungssatz(§ 9b) × vermiedene Menge
-                     (nur bei produzierendem Gewerbe / Land- und Forstwirtschaft)
+                     (nur bei produzierendem Gewerbe / Land- und Forstwirtschaft;
+                      mit Sockelbetrag: Differenz der Entlastung ohne und mit der Menge, § 3.8)
 ```
 
 Vorschlag: Die Rubrik zeigt beide Zeilen — „vermiedene Kosten brutto" und darunter „abzüglich
@@ -1810,7 +1811,7 @@ Annuitätenfaktor a(i,n) = i·(1+i)^n / ((1+i)^n − 1) ;  a = 1/n bei i ≈ 0
 | Annuität | KW-Differenz × a(i, T) | Varianten |
 | Dynamische Amortisation | erstes t mit kumuliertem Barwert ≥ 0, linear interpoliert, **ohne Restwert** | Varianten |
 | Interner Zinsfuß | Nullstelle KW(r), Bisektion −99 %…1000 %, 200 Schritte | Varianten |
-| Wärmegestehungskosten | (−KW_Wärme × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh]; KW_Wärme = Kapitalwert allein der Wärmeerzeugung (Investition nach Zuschuss, Betrieb, Ersatz, Restwert der Wärmeanlagen und allgemeinen Wärmepositionen; Brennstoff samt CO₂-Abgabe; Wärmestrom von Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers der Anlage — eines eigenen, sonst des Trägers, der den Netzbezug bepreist (EZ‑6) —; Grund- und Leistungspreis eines Trägers, den Wärmeerzeuger und andere Verbraucher teilen, anteilig nach Jahresmenge (Wärmemenge ÷ Verbrauch aller Verbraucher des Trägers); Erlöse der Wärmeerzeuger — KWK-Einspeisung, KWKG-Zuschlag und Pauschale, Energiesteuer, nicht die Stromsteuer-Befreiung des Modus ERLOES (§ 3.8); BHKW-Eigenstrom als Gutschrift zum Arbeitspreis des Netzträgers, bei produzierendem Gewerbe abzüglich der entgangenen § 9b-Entlastung), ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher; Regel `Waermegestehung`, → Register EZ‑20, EZ‑21; ein gespeicherter Lauf mit Nachweisumschlag vor Fassung 13 trägt an der Kennzahl den Vermerk `WIRT_GESTEHUNG_ALTER_LAUF` (§ 6.5) | je Projekt |
+| Wärmegestehungskosten | (−KW_Wärme × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh]; KW_Wärme = Kapitalwert allein der Wärmeerzeugung (Investition nach Zuschuss, Betrieb, Ersatz, Restwert der Wärmeanlagen und allgemeinen Wärmepositionen; Brennstoff samt CO₂-Abgabe; Wärmestrom von Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers der Anlage — eines eigenen, sonst des Trägers, der den Netzbezug bepreist (EZ‑6) —; Grund- und Leistungspreis eines Trägers, den Wärmeerzeuger und andere Verbraucher teilen, anteilig nach Jahresmenge (Wärmemenge ÷ Verbrauch aller Verbraucher des Trägers); Erlöse der Wärmeerzeuger — KWK-Einspeisung, KWKG-Zuschlag und Pauschale, Energiesteuer, nicht die Stromsteuer-Befreiung des Modus ERLOES (§ 3.8); BHKW-Eigenstrom als Gutschrift zum Arbeitspreis des Netzträgers, bei produzierendem Gewerbe abzüglich der entgangenen § 9b-Entlastung — Differenz der Entlastung ohne und mit Eigenstrom samt Sockelbetrag, Satz gedeckelt auf den Stromsteueranteil des Arbeitspreises, § 3.8, EZ‑22), ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher; Regel `Waermegestehung`, → Register EZ‑20, EZ‑21, EZ‑22; ein gespeicherter Lauf mit Nachweisumschlag vor Fassung 13 trägt an der Kennzahl den Vermerk `WIRT_GESTEHUNG_ALTER_LAUF` (§ 6.5) | je Projekt |
 
 **Szenarien (VALERI-Vorrang):**
 
@@ -2495,6 +2496,13 @@ Unterschied ist gewollt (Entscheid „Arbeitspreis bleibt", EZ‑20): Die Gesteh
 bewertet den ersetzten Bezug mit einem Preis, der nicht vom Lastbild des Anschlusses abhängt; der Ausweis vergleicht
 zwei Bezugsrechnungen. Keiner der beiden Werte geht ein zweites Mal in den Kapitalwert.
 
+**Sockel an der § 9b-Korrektur** (→ Register EZ‑22, P651). Die Korrektur des Ausweises ist dieselbe Größe wie der § 9b-Abzug
+der Gestehung und entsteht in derselben Funktion (`SteuerGutschriftRechner.Entgangene9bEur`, § 3.8): die Differenz der
+Entlastung ohne und mit der vermiedenen Menge, `max(0, (N + M) × s − S) − max(0, N × s − S)`, N = Netzbezug der Entlastung
+des Projekts, M = vermiedene Menge, S = Sockelbetrag des Förderbeginns. Trägt der Restbezug den Sockel, ist sie Zeichen für
+Zeichen s × M (Beispielprojekt: 250,0 MWh × 20,00 = 5.000 € > 250 €, Korrektur 23.594,0 €/a unverändert). Einen Deckel
+setzt der Ausweis nicht an — er bewertet über die Rollenkosten, nicht über den Arbeitspreis eines Trägers.
+
 **Ohne jede Eigenerzeugung** (§ 6.3 Nr. 32, → Register R‑NR; umgesetzt #437). Bedarf und Lastbild
 der Bezugsseite stehen **vor** Abzug der PV-Eigennutzung (`StromMatrix.BedarfGesamtMWh`,
 `LastBedarf`), die vermiedene Menge führt KWK- und PV-Eigenverbrauch, und die § 9b-Korrektur (§ 2.6)
@@ -2684,12 +2692,29 @@ zur Gestehung: Die Stromgutschrift bewertet den BHKW-Eigenstrom zum Arbeitspreis
 Stromsteuer — sie zählt damit einmal (P646). Gemessen an 1030 mit den flachen Stundenreihen des Prüffalls B6: Gestehung
 in beiden Modi 0,0068421 €/kWh; mit der Reihe wären es 8.862,15 € ÷ 6.137.560 kWh = 0,0014439 €/kWh weniger
 (`WaermegestehungAnkerTests`). Bei produzierendem Gewerbe oder Land- und Forstwirtschaft mindert der **§ 9b-Abzug** die
-Gutschrift: im Jahr t Eigenstrom [MWh/a] × Entlastungssatz des Kalenderjahres Förderbeginn + t − 1 [€/MWh], als eigene
-negative Erlösreihe `STROMSTEUER_ENTLASTUNG_ENTGANGEN` am Zahlungsgerüst der Wärmeerzeugung — jahresscharf und
-nominal, **nicht mit p_E fortgeschrieben** (ein gesetzlicher Satz steigt nicht mit dem Energiepreis); dieselbe Prüfung der
-Unternehmensart wie die § 9b-Korrektur des Ausweises (§ 2.6). Ohne Gewerbe, ohne Gutschrift oder ohne Satz entsteht keine
-Reihe. Der Sockel von 250 €/a und eine Deckelung auf den Steueranteil der Gutschrift sind nicht angesetzt (§ 6.3 Nr. 40,
-41).
+Gutschrift — nach denselben Regeln wie die Entlastung des Projekts (→ Register EZ‑22, P651):
+
+```
+E_t   = max(0, (N + E) × s_eff,t − S_t) − max(0, N × s_eff,t − S_t)
+s_eff,t = min(s_t, a)        a = Stromsteueranteil des Arbeitspreises der Gutschrift [€/MWh]
+                             ohne gepflegten Anteil: a = Regelsatz der Stromsteuer des Jahres
+N = Netzbezug nach dem Lauf (NetzbezugFuerStromsteuer, die Menge der Entlastung oben)
+E = BHKW-Eigenstrom (KwkEigenGesamtMWh)   s_t, S_t = Satz und Sockelbetrag des Kalenderjahres
+```
+
+Gerechnet wird mit **einer** Funktion (`SteuerGutschriftRechner.Entgangene9bEur`, darin `Entlastung9bEur` = max(0, s × N −
+S), der Weg der Entlastung des Projekts); die § 9b-Korrektur des Ausweises (§ 2.6, § 3.6) ruft dieselbe. Trägt der
+Netzbezug den Sockel (N × s > S), ist E_t Zeichen für Zeichen E × s — so an 1024 und 1030. Der Deckel liest den
+Träger, dessen Arbeitspreis die Gutschrift trägt (Netzeintrag der Aufstellung, sonst Projektträger samt Rückfall), und
+dort den in „Strompreis Details" gepflegten Anteil (§ 3.9) in ct/kWh × 10; eine abgeschaltete Komponente heißt „der Preis
+enthält keine Stromsteuer" (a = 0, kein Abzug). Ohne gepflegten Anteil — am Rückfallträger immer — ist der Regelsatz
+(20,50 €/MWh) die Obergrenze, beim heutigen Satz 20,00 €/MWh wirkt kein Deckel. Der Abzug steht als eigene negative
+Erlösreihe `STROMSTEUER_ENTLASTUNG_ENTGANGEN` am Zahlungsgerüst der Wärmeerzeugung — jahresscharf und nominal, **nicht mit
+p_E fortgeschrieben** (ein gesetzlicher Satz steigt nicht mit dem Energiepreis); dieselbe Prüfung der Unternehmensart
+wie die § 9b-Korrektur des Ausweises (§ 2.6). Ohne Gewerbe, ohne Gutschrift oder ohne Abzug > 0 entsteht keine Reihe.
+Der **Nachweis** steht am Laufhinweis der Ergebniszeile (Text, Umschlag Fassung 13): je wirkender Regel des ersten Jahres
+eine Zeile — Deckel (`WIRT_GESTEHUNG_9B_DECKEL`), Obergrenze ohne gepflegten Anteil (`WIRT_GESTEHUNG_9B_REGELSATZ`, auch
+wenn sie nicht greift), Sockel, den der Netzbezug nicht ganz trägt (`WIRT_GESTEHUNG_9B_SOCKEL`).
 
 ## 3.9 Kohärenzprüfung — Warnzeilen ohne Rechenwirkung
 
@@ -3023,6 +3048,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **P641 Laufvermerk je Ergebnis, Bezugsrolle bestätigt, Kohärenz am Rückfallträger als benannte Grenze** (§ 2.15, § 3.5, § 3.9, § 6.2; Nach #633 (a), (b), (c)) | Jede Zeile von `Tab_ErgebnisWirtschaftlichkeit` trägt die Stände ihres Laufs als Laufvermerk (`Lauf_Staende`, Ergebnisspalte ohne Schemaschritt über `StelleTabellenSicher`, Testdatenbank über `Werkzeuge/Testdatenbankschema` nachgezogen); die Ergebnisseite nimmt den Lauf gespeicherter Ergebnisse aus dem Vermerk und meldet eine geänderte Gruppenregel auch nach einem Seitenwechsel und für einen Stand aus einem älteren Lauf, ohne Vermerk (Altbestand) wie bisher; die Bezugsrolle ohne Leistungspreis an der Gruppenregel-Kopie ist bestätigt, die Kohärenz am Rückfallträger bleibt benannte Grenze — kein Rechenweg der Simulation, kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, Zielversion 158, Basis R30 (→ Register R‑EZ, EZ‑19). | Statuszeile #645 |
 | **#642 Wärmegestehungskosten nur Wärmeerzeuger** (§ 3.1, § 3.8; fremde Welle, nachgetragen mit P646; → Register EZ‑20) | Die Wärmegestehungskosten rechnen mit dem Kapitalwert allein der Wärmeerzeugung (`Waermegestehung`, `WirtschaftlichkeitCtrl.BaueWaermeEingabe`): Anlagen der Wärme, Brennstoff samt CO₂-Abgabe, Wärmestrom zum Arbeitspreis, Grund- und Leistungspreis eines geteilten Trägers mengenanteilig, Erlöse der Wärmeerzeuger, BHKW-Eigenstrom als Stromgutschrift zum Arbeitspreis, bei produzierendem Gewerbe abzüglich der entgangenen § 9b-Entlastung (Reihe `STROMSTEUER_ENTLASTUNG_ENTGANGEN`); unter den Energiekosten je Träger die Herleitung „Menge × Preis", Nachweisumschlag Fassung 12; 1024 0,49953 → 0,06162 €/kWh, 1030 0,23979 → 0,00684 €/kWh, 1019 bitgleich; Kapitalwert und Basis unberührt; Protokoll `W642_Waermegestehung_Protokoll.md` | #642 |
 | **P646 Nachlese der Wärmegestehung** (§ 3.1, § 3.4, § 3.6, § 3.8, § 6.2, § 6.3 Nr. 40–43, § 6.5; → Register EZ‑21) | Die Stromsteuer zählt einmal — die Befreiungsreihe des Modus ERLOES nicht zur Gestehung; der Wärmestrom einer Anlage mit eigenem Stromträger zum Arbeitspreis dieses Trägers (EZ‑6), die Gutschrift weiter zum Netzpreis; die Kennzahl eines gespeicherten Laufs mit Nachweisumschlag vor Fassung 13 (auch Läufe aus #642) trägt den Vermerk `WIRT_GESTEHUNG_ALTER_LAUF`; zwei Werte des Eigenstroms benannt, Grenzen benannt; keine Anker der Referenz-Prüfstände bewegt; Protokoll `P646_Waermegestehung_Nachlese_Protokoll.md` | P646 (Statuszeile #650) |
+| **P651 § 9b-Abzug der Wärmegestehung mit Sockelbetrag und Deckelung** (§ 2.6, § 3.1, § 3.6, § 3.8, § 6.2, § 6.3 Nr. 40, 41; → Register EZ‑22) | Der § 9b-Abzug der Gestehung folgt den Regeln der Entlastung des Projekts: Differenz der Entlastung ohne und mit BHKW-Eigenstrom samt Sockelbetrag des Jahres, Satz gedeckelt auf den Stromsteueranteil des Arbeitspreises der Gutschrift (ohne gepflegten Anteil der Regelsatz); eine Funktion `SteuerGutschriftRechner.Entgangene9bEur` für Gestehung und § 9b-Korrektur des Ausweises (dort nur der Sockel); Nachweis als Text am Laufhinweis (`WIRT_GESTEHUNG_9B_*`, Umschlag Fassung 13); Anker 1024 und 1030 unverändert, neu 1024 mit Anteil 1,00 ct/kWh; Kapitalwert und Basis unberührt; Protokoll `P651_Waermegestehung_9b_Sockel_Protokoll.md` | P651 |
 
 ## 6.2 Regressionsanker
 
@@ -3088,12 +3114,13 @@ Seitenwechsel, EZ‑19), `WirtschaftlichkeitCtrlTabellenTests` (die Vorsorge leg
 `EnergiekostenGrundTests` (die Stromseite der Kohärenz am Rückfallträger, auch unter der Gruppenregel) und bUnit
 `WirtschaftlichkeitErgebnisansichtTests` (das Band am Haken der einzigen Stromvariante, „Neu berechnen" räumt es; neu
 geladen nach dem Vermerk des gespeicherten Laufs).
-Die Wärmegestehungskosten (§ 3.1, #642, P646) hält `WaermegestehungAnkerTests` (8 Fälle, Weg wie
+Die Wärmegestehungskosten (§ 3.1, #642, P646, P651) hält `WaermegestehungAnkerTests` (9 Fälle, Weg wie
 `WirtschaftlichkeitAnkerTests`): 1019 ohne fremden Strom bitgleich zur Projektformel, 1024 und 1030 ohne Haushaltsstrom,
-§ 9b-Abzug mit umgestellter Unternehmensart, Photovoltaik zählt nicht und die Wärmezentrale schon, 1030 mit Stundenreihen
-in beiden Modi der Stromsteuer-Befreiung, 1024 mit eigenem Stromträger am Elektrokessel; die Regel ohne Datenbank hält
-`WaermegestehungTests` (Zuordnung, Erlösreihen, Anteil, Energiekosten, Wärmestrom je Erzeugerzeile und Preis des eigenen
-Trägers, Stromgutschrift, § 9b-Reihe, Kennzahl, Zerlegung, Herleitung, Umschlag und Vermerk alter Läufe). Kapitalwert-Anker
+§ 9b-Abzug mit umgestellter Unternehmensart (Sockel getragen, kein Deckel), 1024 mit gedeckeltem § 9b-Satz,
+Photovoltaik zählt nicht und die Wärmezentrale schon, 1030 mit Stundenreihen in beiden Modi der Stromsteuer-Befreiung,
+1024 mit eigenem Stromträger am Elektrokessel; die Regel ohne Datenbank hält `WaermegestehungTests` (Zuordnung,
+Erlösreihen, Anteil, Energiekosten, Wärmestrom je Erzeugerzeile und Preis des eigenen Trägers, Stromgutschrift, § 9b-Reihe
+mit Sockel, Deckel und Nachweis, Kennzahl, Zerlegung, Herleitung, Umschlag und Vermerk alter Läufe). Kapitalwert-Anker
 bewegt keiner.
 
 | Anker | Wert | Herkunft |
@@ -3109,7 +3136,8 @@ bewegt keiner.
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
 | Wärmegestehungskosten 1019 / 1024 / 1030 (gebuchte Stände ohne Stundenreihen) | **0,140677 · 0,061616 · 0,006842 €/kWh** | gemessen #642 (`WaermegestehungAnkerTests`); P646 unverändert — kein Prüfstand rechnet im Modus ERLOES oder führt einen abweichenden Stromträger |
-| Wärmegestehungskosten 1024 / 1030 als produzierendes Gewerbe | **0,065409 · 0,008251 €/kWh** = + 73,91 MWh × 20 €/MWh bzw. + 432,3 MWh × 20 €/MWh je kWh Wärmebedarf | gemessen #642 |
+| Wärmegestehungskosten 1024 / 1030 als produzierendes Gewerbe | **0,065409 · 0,008251 €/kWh** = + 73,91 MWh × 20 €/MWh bzw. + 432,3 MWh × 20 €/MWh je kWh Wärmebedarf | gemessen #642; P651 unverändert — der Netzbezug trägt den Sockel (Entlastung des Projekts > 0), der Satz liegt unter dem Stromsteueranteil (1024: 2,05 ct/kWh am Träger 60) bzw. dem Regelsatz 20,50 €/MWh (1030 ohne gepflegten Anteil) |
+| Wärmegestehungskosten 1024 als produzierendes Gewerbe, Stromsteueranteil des Netzträgers 1,00 ct/kWh | **0,0616162 + 739,10 €/a ÷ Wärmebedarf** — Abzug 73,91 MWh × min(20,00; 10,00) €/MWh = 739,10 statt 1.478,20 €/a; Komponente abgeschaltet: kein Abzug, 0,0616162 €/kWh | gemessen P651 |
 | Wärmegestehungskosten 1030 mit Stundenreihen, Modus AUSWEIS = ERLOES | **0,0068421 €/kWh** (mit der Befreiungsreihe wären es 0,0053982) | gemessen P646 |
 | Wärmegestehungskosten 1024, Elektrokessel mit eigenem Stromträger 0,30 €/kWh | **0,0388473 €/kWh** = 0,0616162 + 52,99 MWh × (300 − 467,46) €/MWh ÷ 389.730 kWh | gemessen P646 |
 | Referenzbasis | `Referenzlaeufe/2026-09-30_R30_Stromverbraucher` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
@@ -3304,11 +3332,12 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 
 **Aus #642 und P646 — Wärmegestehungskosten, benannte Grenzen**
 
-40. **§ 9b-Abzug ohne Sockel** — der Abzug der Gestehung (§ 3.8) setzt den Sockelbetrag von 250 €/a nicht an (wie die
-    § 9b-Korrektur des Ausweises, Etappe B7); offen, eine Etappe nur mit Anwenderentscheid.
-41. **§ 9b-Abzug nicht gedeckelt** — der Abzug ist nicht auf den Stromsteueranteil des Arbeitspreises begrenzt, mit dem
-    die Gutschrift rechnet; bei einem Arbeitspreis ohne Stromsteuer überstiege er den Vorteil, den er mindert; offen,
-    benannte Grenze.
+40. ~~**§ 9b-Abzug ohne Sockel**~~ — entschieden 02.10.2026 (EZ‑22), umgesetzt P651: Der Abzug der Gestehung und die
+    § 9b-Korrektur des Ausweises sind die Differenz der Entlastung ohne und mit der ersetzten Menge samt Sockelbetrag
+    (`SteuerGutschriftRechner.Entgangene9bEur`, § 3.6, § 3.8), siehe Protokoll.
+41. ~~**§ 9b-Abzug nicht gedeckelt**~~ — entschieden 02.10.2026 (EZ‑22), umgesetzt P651: Der Satz zählt höchstens mit dem
+    Stromsteueranteil des Arbeitspreises der Gutschrift, ohne gepflegten Anteil mit dem Regelsatz; eine abgeschaltete
+    Komponente lässt keinen Abzug (§ 3.8), siehe Protokoll.
 42. **Grenzen der Zuordnung** (P646, Rechenweg 08): Eine reversible Wärmepumpe geht mit Investition, Betrieb und Heizstrom
     ganz in die Wärme ein, ihr Kältestrom nicht; die Position „Stromeinspeisung" ohne Anlagenzuordnung zählt in einem
     Projekt mit BHKW ganz, auch neben einer einspeisenden Photovoltaikanlage; der Begriff „Stromgutschrift" der Gestehung
