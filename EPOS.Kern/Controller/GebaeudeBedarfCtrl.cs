@@ -93,8 +93,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? UeberhitzungsstundenH;
 
-        /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg und nur, wenn eine Sommerlüftung gesetzt
+        /// ist, sonst <c>null</c> (Entwurf KP3, Festlegung 26, B17; Muster der Nachtauskühlstunden); dieselbe
+        /// Zahl, die der Lauf als <c>Sommerlueftungsstunden_H</c> nach <c>Tab_ErgebnisGebaeude</c> schreibt.
+        /// </summary>
         internal int? SommerlueftungsstundenH;
+
+        /// <summary>
+        /// <b>Die Ergebniszeile des Gebäudes</b> (E30; Entwurf KP3, Grundsatz 4, B20) — gebildet von
+        /// <see cref="GebaeudeKennzahlen.Bilden"/>, derselben Stelle, aus der der Lauf
+        /// <c>Tab_ErgebnisGebaeude</c> füllt: Hier stehen die Aufheizwerte (Zustand, Bemessung, t_auf,max,
+        /// T_a,B, P_auf samt Quelle, Rampentage, W1–W4, Kappungsstunden; NULL = Schalter aus) und je Zone
+        /// <see cref="ErgebnisGebaeudeModel.Zonen"/> in der Reihenfolge von <see cref="Zonen"/>. Der
+        /// Bedarfsdialog (Welle O2) liest die Aufheizwerte von hier; <c>null</c> ohne Ergebnis.
+        /// </summary>
+        internal ErgebnisGebaeudeModel Ergebniszeile;
 
         /// <summary>
         /// Stunden mit wirksamer Nachtauskühlung [h] (Konzept Konditionierungsprofile 3.7) — nur
@@ -284,6 +298,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? NachtauskuehlstundenH;
 
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung der Zone [h]; <c>null</c> ohne Sommerlüftung (Entwurf KP3,
+        /// Festlegung 26, E54 je Zone) — die Zahl, die der Lauf nach <c>Tab_ErgebnisZone</c> schreibt.
+        /// </summary>
+        internal int? SommerlueftungsstundenH;
+
+        /// <summary>
+        /// Die Zeile der Zone aus <see cref="GebaeudeKennzahlen.Bilden"/> — dieselbe, die der Lauf nach
+        /// <c>Tab_ErgebnisZone</c> schreibt, samt Aufheizwerten der Zone (Entwurf KP3, B20).
+        /// </summary>
+        internal ErgebnisZoneModel Ergebniszeile;
+
         /// <summary>Die Heizlast je Stunde [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
         internal double[] HeizlastKw;
 
@@ -423,7 +449,7 @@ namespace WindowsFormsApplication1
                 ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
-                ergebnis.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                ergebnis.SommerlueftungsstundenH = GebaeudeKennzahlen.Sommerlueftungsstunden(vdi);
                 ergebnis.NachtauskuehlstundenH = vdi.StundenMitNachtauskuehlung;
                 ergebnis.RaumtemperaturC = vdi.Raumtemperatur;
                 ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
@@ -483,6 +509,12 @@ namespace WindowsFormsApplication1
                     ergebnis.KuehlAuslegungRuecklaufC = kk.AuslegungRuecklaufC;
                 }
             }
+            // Stufe KP3 (Grundsatz 4, B20): die Ergebniszeile des Laufs aus DERSELBEN Stelle (E30) - mit den
+            // Aufheizwerten des Gebaeudes und je Zone; die Reihe ist schon in kW wie im Lauf.
+            ergebnis.Ergebniszeile = GebaeudeKennzahlen.Bilden(0, gebaeude.ID_Gebaeude, gebaeude.Gebaeudename,
+                                                               ergebnis.Modell, werte, vdi);
+            for (int k = 0; k < ergebnis.Zonen.Count && k < ergebnis.Ergebniszeile.Zonen.Count; k++)
+                ergebnis.Zonen[k].Ergebniszeile = ergebnis.Ergebniszeile.Zonen[k];
             ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;
             ergebnis.KuehlungAktiv = gebaeude.Kuehlung_Aktiv;
             ergebnis.KuehlleistungMaxKw = ergebnis.KuehlSollwertC.HasValue ? gebaeude.Kuehlleistung_Max : null;
@@ -507,6 +539,7 @@ namespace WindowsFormsApplication1
                 UeberhitzungsstundenH = r.Ueberhitzungsstunden,
                 ObereRaumtemperaturC = r.ThetaMax,
                 NachtauskuehlstundenH = r.StundenMitNachtauskuehlung,
+                SommerlueftungsstundenH = GebaeudeKennzahlen.Sommerlueftungsstunden(r),
                 RaumtemperaturC = r.Raumtemperatur,
                 OperativeTemperaturC = r.OperativeTemperatur
             };

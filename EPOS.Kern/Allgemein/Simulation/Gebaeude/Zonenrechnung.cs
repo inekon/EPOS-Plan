@@ -245,7 +245,12 @@ namespace WindowsFormsApplication1
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
                                               schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
-                                              Gebaeudenutzung(zonen), aufheizung: aufheizung);
+                                              Gebaeudenutzung(zonen), aufheizung: aufheizung)
+            {
+                // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
+                SommerlueftungGesetzt = zonen.Any(z => z.Eingang.Sommerlueftung),
+                HeizkalenderWirksam = zonen.Any(z => z.IstBeheizt && z.Eingang.HeizkalenderWirksam),
+            };
         }
 
         /// <summary>
