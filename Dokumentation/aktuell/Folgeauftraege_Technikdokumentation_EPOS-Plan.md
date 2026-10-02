@@ -44,7 +44,7 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 2 | PV-Dialog: Hinweistexte an den Rechenweg angleichen | nur zur Beschriftung „Standby-Verbrauch“ | Photovoltaik, Wechselrichter |
 | 3 | Drei Nebenbefunde im PV-Rechenweg beheben | nur die Frage zum 5-kWh-Speicher | Simulationsergebnisse (Monatsbild) |
 | 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
-| 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
+| 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja — Variante (a), umgesetzt | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
 | 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
 | 8 | Tww-Einspielskript Python-versionsfest machen | – | – |
@@ -163,6 +163,12 @@ Simulation liest die Ganglinie aber nicht.
    und 518–590). In beiden Sprachen richtigstellen.
 
 ## 5. Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe
+
+**Umgesetzt:** Variante (a) nach dem Anwenderentscheid vom 29.09.2026 — Vorwahl in der Folge
+Solarthermie, Wärmepumpe, BHKW, Heizkessel (`Kaskade.Vorwaehlen`); Umordnen in der
+Konfiguration mit den Pfeilen der Erzeugerkarte. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 13](Konzept_Simulationsablauf_EPOS-Plan.md). Die Wiki-Quellen
+Simulation, Wärmepumpe, Heizkessel, BHKW und Solarthermie sind nachgezogen.
 
 **Kurz:** Neue Projekte bekommen die Kaskade BHKW, Heizkessel, Solarthermie, Wärmepumpe
 vorgeschlagen. Wer ohne Umordnen speichert, lässt in einer bivalenten Anlage den Kessel vor der
