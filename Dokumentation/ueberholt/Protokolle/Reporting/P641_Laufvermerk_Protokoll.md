@@ -82,7 +82,7 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 
 ## Papiere
 
-- Konzept: Kopf (Stand 02.10.2026, Codestand `f9aa90012`, Zielversion 158, P641 ohne Schritt, Spalte `Lauf_Staende`
+- Konzept: Kopf (Stand 02.10.2026, Codestand `54f8aaa9a`, Zielversion 158, P641 ohne Schritt, Spalte `Lauf_Staende`
   nachgezogen, Basis R30), § 2.15 (Laufvermerk, Altbestand ohne Vermerk), § 3.5 (Bezugsrolle bestätigt), § 3.9
   (Grenze am Rückfallträger), § 6.1 (Zeile P641; P630 auf #633), § 6.2 (Wachen), § 6.5 (vier Ergebnisspalten).
 - Register: EZ‑19 mit Wortlaut und den drei Punkten, Vermerk „bestätigt 02.10.2026" an EZ‑18 (dort #633 statt
@@ -103,9 +103,9 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 
 ## Gate
 
-Gate #644 auf `f9aa90012` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün
-und gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 17 814 grün, 2 übersprungen, 0 rot (Kern 9 645,
-UI 7 207, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+Gate #644 auf `54f8aaa9a` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün
+und gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 17 878 grün, 2 übersprungen, 0 rot (Kern 9 708,
+UI 7 208, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
 `2026-09-30_R30_Stromverbraucher` (5 180 240 Werte innerhalb der Toleranz, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp`
 gegen den ungestörten Lauf PASS. Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
 
@@ -113,5 +113,5 @@ gegen den ungestörten Lauf PASS. Windows-Schale 0 Fehler (Agent, x64 Debug, `En
 
 Sechs Commits auf `p641` (`0e5fa2c3d` Kern, `f9b94c9f1` Hülle, `5a4fab7be` Tests, `9b022053c` Testdatenbank, `84b315ede` Papiere,
 `dfaa071f3` Protokoll) hinter dem Auftrag `d14b5bbf3`; Merge `f9aa90012` mit origin (#641 SV1, Basis R30; eigene Fundstellen von
-#641 auf #644 und von R29 auf R30 nachgezogen). Statuszeile #644 im Folgecommit; Push nach Zuruf, Nummer beim Push gegen origin
+#641 auf #644 und von R29 auf R30 nachgezogen); zweiter Merge `54f8aaa9a` mit origin (#642 Wärmegestehung, #643 SV2), eigene Nummer #644. Statuszeile #644 im Folgecommit; Push nach Zuruf, Nummer beim Push gegen origin
 geprüft; CI-Vermerk in Nach #644 (c).
