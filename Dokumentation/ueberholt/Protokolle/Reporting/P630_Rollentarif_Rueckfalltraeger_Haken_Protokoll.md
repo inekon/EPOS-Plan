@@ -120,3 +120,10 @@ Code `fe05913cb` (Rollentarif), `aa688d81c` (Rückfallträger im Ausweis), `34c4
 (Veraltet-Band), Papiere `bd19c43b0`, Merge `acaf32a4a` mit origin (#629-Nachträge, Basis R29; Konflikte im Index-Zähler und
 im Logbuch 1.2.0.6 beidseitig übernommen); Statuszeile #633 und das Gate-Feld im Papier-Commit der Orchestrierung (Zweig `p630`,
 Push auf `ios_migration_september`).
+
+## Nachtrag (02.10.2026)
+
+Die Hinweiszeile nennt im Rollentarif den Leistungspreis des Trägers wieder immer und den des Reststromtarifs nur
+zusätzlich, wenn er sich unterscheidet — nicht mehr an seiner Stelle (Anwenderentscheid 02.10.2026, Variante 1;
+dieselbe Regel wie die Fußzeile der Kostentafel). Umsetzung und Prüfungen: Protokoll
+[P555B § 11](../Bericht/P555B_Kostenkapitel_Fusszeile_Protokoll.md#11-nachtrag-hinweiszeile-der-wirtschaftlichkeit-nach-derselben-regel-02102026).

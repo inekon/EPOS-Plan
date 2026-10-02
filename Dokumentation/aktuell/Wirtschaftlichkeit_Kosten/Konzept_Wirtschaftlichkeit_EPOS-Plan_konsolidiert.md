@@ -2133,8 +2133,8 @@ Rollentarif gilt dasselbe** (→ Register R‑EZ, EZ‑18): Der Reststromtarif b
 Standes mit Arbeits- und Grundpreis, den Leistungspreis seines Modells setzt er nicht an; die Differenzmethode
 rechnet dann auch die Bezugsrolle ohne Leistungsanteil (`StromTarifRechner.OhneLeistungspreis`), die vermiedenen
 Kosten tragen keinen — die Bezugsrolle ohne Leistungspreis hat der Anwender am 02.10.2026 bestätigt (EZ‑19 (a)). Führt der Reststromtarif einen Leistungspreis, nennt ihn
-`WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT` mit dem Klartext seines Modells (`TARIF_LM_*`) an der Stelle
-des Hinweises zum Träger, dessen Preise der Tarif ersetzt. Die § 9b-Menge gilt wie bei jedem Stand mit
+`WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT` mit dem Klartext seines Modells (`TARIF_LM_*`) zusätzlich
+zum Hinweis zum Träger, wenn er sich von dessen Leistungspreis unterscheidet (`StromTarifRechner.TarifLeistungspreisWieTraeger`). Die § 9b-Menge gilt wie bei jedem Stand mit
 Stromverwendung. Der Lauf sind Stamm, angehakte Varianten und Referenz; ein Stand
 allein ist kein Vergleich, und verwendet kein Stand des Laufs Strom, bleibt es bei der Regel je Stand. Die
 Wirtschaftlichkeit bestimmt die Regel einmal je Lauf (`WirtschaftlichkeitCtrl.StromGruppenregel`) und rechnet sie

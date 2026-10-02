@@ -257,9 +257,9 @@ namespace WindowsFormsApplication1
         /// Der Satz des nicht angesetzten Leistungspreises (Register EZ‑17) in €/(kW·Monat), wenn
         /// der Stromträger ihn je Monat bemisst — <c>price_power_modus</c> MONAT oder eine
         /// Saisonreihe aus zwölf gleichen Sätzen; <c>null</c> bei einem Satz je Jahr, einer Staffel,
-        /// einer Saisonreihe mit verschiedenen Sätzen und ohne solchen Fall. Der Berichtslauf
-        /// vergleicht ihn mit dem Monatspreis des Reststromtarifs
-        /// (<c>BerichtsDatenSammler.TarifLeistungspreisWieTraeger</c>).
+        /// einer Saisonreihe mit verschiedenen Sätzen und ohne solchen Fall. Der Berichtslauf und die
+        /// Hinweiszeile der Wirtschaftlichkeit vergleichen ihn mit dem Monatspreis des Reststromtarifs
+        /// (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>).
         /// </summary>
         public double? LeistungspreisNichtAngesetztMonatssatz;
         public double? CO2Gesamt;          // t/a
@@ -763,7 +763,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Leistungspreismodell des Reststromtarifs im Klartext der Tarifstruktur, das die
         /// Gruppenregel nicht ansetzt (Register EZ‑18); <c>null</c>, wenn kein Rollentarif wirkt, der
         /// Reststromtarif keinen Leistungspreis führt oder sein Leistungspreis dem des Trägers gleich
-        /// ist (<c>BerichtsDatenSammler.TarifLeistungspreisWieTraeger</c>). Die Fußzeile nennt den
+        /// ist (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>). Die Fußzeile nennt den
         /// Leistungspreis des Reststromtarifs dann zusätzlich zu <see cref="LeistungspreisSatz"/>.</summary>
         public string LeistungspreisTarifModell;
 
