@@ -364,9 +364,8 @@ namespace WindowsFormsApplication1
             switch (f.Groesse)
             {
                 case Konditionierungsgroesse.Heizsoll:
-                    return (KiDialogTexte.EINHEIT_GRAD_C, Konditionierungsgroessen.Min(f.Groesse), Konditionierungsgroessen.Max(f.Groesse));
                 case Konditionierungsgroesse.Kuehlsoll:
-                    return (KiDialogTexte.EINHEIT_GRAD_C, Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX);
+                    return (KiDialogTexte.EINHEIT_GRAD_C, Konditionierungsgroessen.Min(f.Groesse), Konditionierungsgroessen.Max(f.Groesse));
                 case Konditionierungsgroesse.Lueftung:
                     return (KiDialogTexte.EINHEIT_1_H, 0.0, 10.0);
                 default:

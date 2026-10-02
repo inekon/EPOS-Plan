@@ -707,8 +707,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die erlaubten Ziele von „Kopieren nach …" für Vorlagen der Größe <paramref name="quelle"/>
-        /// (<see cref="Vorlagenkopierregel.Ziele"/>) — bei Heizen → Kühlen mit der Vorgabe des Komfortsollwerts
-        /// und den Grenzen der Kühlspalte.
+        /// (<see cref="Vorlagenkopierregel.Ziele"/>) — bei Heizen → Kühlen mit den Vorgaben des Komfort- und des
+        /// Absenksollwerts und den Grenzen der Kühlspalte.
         /// </summary>
         private static IReadOnlyList<KonditionierungKopierziel> Kopierzielliste(KonditionierungGroesse quelle)
         {
@@ -717,15 +717,20 @@ namespace WindowsFormsApplication1
                 .Select(z => new KonditionierungKopierziel(
                     Oberflaeche(z),
                     Vorlagenkopierregel.MitKomfortsollwert(von, z) ? Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE : (double?)null,
-                    Vorlagenkopierregel.KomfortsollwertMin, Vorlagenkopierregel.KomfortsollwertMax))
+                    Vorlagenkopierregel.KomfortsollwertMin, Vorlagenkopierregel.KomfortsollwertMax)
+                {
+                    Absenksollwert = Vorlagenkopierregel.MitKomfortsollwert(von, z)
+                        ? Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE : (double?)null,
+                })
                 .ToList();
         }
 
         /// <summary>
         /// „Kopieren nach …" — die Kopie entsteht sofort (Festlegung 13). Die Richtung, die Namensregel in der
-        /// Zielliste und der Komfortsollwert laufen zuerst: Eine Ablehnung des Namens nennt der Dialog am
-        /// Namensfeld (<see cref="KonditionierungVorlageErgebnis.AmNamen"/>), eine des Komfortsollwerts am
-        /// Sollwertfeld (<see cref="KonditionierungVorlageErgebnis.AmSollwert"/>).
+        /// Zielliste, der Komfort- und der Absenksollwert laufen zuerst: Eine Ablehnung des Namens nennt der Dialog
+        /// am Namensfeld (<see cref="KonditionierungVorlageErgebnis.AmNamen"/>), eine des Komfortsollwerts am
+        /// Sollwertfeld (<see cref="KonditionierungVorlageErgebnis.AmSollwert"/>), eine des Absenksollwerts — auch
+        /// „unter dem Komfortsollwert" — am Absenkfeld (<see cref="KonditionierungVorlageErgebnis.AmAbsenkwert"/>).
         /// </summary>
         private static KonditionierungVorlageErgebnis Kopieren(IKonditionierungsvorlagen vorlagen, long id,
                                                                KonditionierungVorlageKopie kopie)
@@ -739,11 +744,16 @@ namespace WindowsFormsApplication1
             if (richtung != null) return new KonditionierungVorlageErgebnis(false, richtung, null);
             string name = vorlagen.NamePruefen(ziel, kopie.Name, 0);
             if (name != null) return new KonditionierungVorlageErgebnis(false, name, null) { AmNamen = true };
-            if (Vorlagenkopierregel.MitKomfortsollwert(quelle.Groesse, ziel)
-                && Vorlagenkopierregel.KomfortsollwertPruefen(kopie.Komfortsollwert) is string soll)
-                return new KonditionierungVorlageErgebnis(false, soll, null) { AmSollwert = true };
+            if (Vorlagenkopierregel.MitKomfortsollwert(quelle.Groesse, ziel))
+            {
+                if (Vorlagenkopierregel.KomfortsollwertPruefen(kopie.Komfortsollwert) is string soll)
+                    return new KonditionierungVorlageErgebnis(false, soll, null) { AmSollwert = true };
+                if (Vorlagenkopierregel.AbsenksollwertPruefen(kopie.Absenksollwert, kopie.Komfortsollwert) is string absenk)
+                    return new KonditionierungVorlageErgebnis(false, absenk, null) { AmAbsenkwert = true };
+            }
 
-            KonditionierungCtrl.Ergebnis e = vorlagen.KopierenNach(id, ziel, kopie.Name, kopie.Komfortsollwert, out long neu);
+            KonditionierungCtrl.Ergebnis e = vorlagen.KopierenNach(id, ziel, kopie.Name, kopie.Komfortsollwert,
+                                                                   kopie.Absenksollwert, out long neu);
             return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
         }
 

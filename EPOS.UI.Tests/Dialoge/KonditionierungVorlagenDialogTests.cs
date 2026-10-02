@@ -331,7 +331,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
 
         // Eine Überlagerung mit Titel und Kreuz; Kühlen - das einzige Ziel - gewählt, der Name der Quelle als
-        // Vorschlag, der Komfortsollwert mit der Vorgabe 26 °C.
+        // Vorschlag, der Komfortsollwert mit der Vorgabe 26 °C, der Absenksollwert mit 28 °C und dem Hinweis auf „aus".
         IElement ueberlagerung = cut.Find(".epos-ueberlagerung");
         Assert.Equal("Vorlage „Büro“ kopieren nach …", ueberlagerung.QuerySelector(".epos-ueberlagerung-titel")!.TextContent.Trim());
         Assert.NotNull(ueberlagerung.QuerySelector("button.epos-ueberlagerung-zu"));
@@ -341,6 +341,11 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Assert.Equal("Büro", cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name input").GetAttribute("value"));
         Assert.Contains("Komfortsollwert", cut.Find(".epos-kond-kopieren-sollwert").TextContent);
         Assert.Equal("26", cut.Find(".epos-kond-kopieren-sollwert input").GetAttribute("value"));
+        IElement absenk = cut.Find(".epos-kond-kopieren-absenkwert");
+        Assert.Contains("Absenksollwert", absenk.TextContent);
+        Assert.Equal("28", absenk.QuerySelector("input")!.GetAttribute("value"));
+        Assert.Contains("unter dem Tagwert", absenk.QuerySelector("label")!.GetAttribute("title"));
+        Assert.Contains("Absenksollwert", cut.Find(".epos-kond-kopieren .epos-option-beschreibung").TextContent);
         Assert.Contains("sofort gespeichert", cut.Find(".epos-kond-kopieren-sofort").TextContent);
 
         // Abbrechen schließt, ohne zu schreiben.
@@ -352,6 +357,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
         Assert.Equal(new[] { "Personen" }, Ziele(cut));
         Assert.Empty(cut.FindAll(".epos-kond-kopieren-sollwert"));
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren-absenkwert"));
         Assert.Contains("unverändert", cut.Find(".epos-kond-kopieren .epos-option-beschreibung").TextContent);
         cut.Find(".epos-ueberlagerung button.epos-ueberlagerung-zu").Click();
         Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
@@ -361,6 +367,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Zeile(cut, "Wohnen").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
         Assert.Equal(new[] { "Geräte" }, Ziele(cut));
         Assert.Empty(cut.FindAll(".epos-kond-kopieren-sollwert"));
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren-absenkwert"));
         cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
         Assert.True(cut.Instance.VorlagenblattOffen);
@@ -400,8 +407,10 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         KonditionierungsvorlageCtrl.Vorlage kopie = ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Single(v => v.Bezeichner == "Büro Heizung");
         Assert.False(kopie.Ausgeliefert);
         Konditionierungsstand inhalt = ablage.Inhalt(kopie.Id, out _).Inhalt;
+        // Der Tag kühlt auf 24,5 °C, die Absenkzeiten (Nacht und Grundangabe 16 °C beim Heizen) auf 28 °C.
         Assert.Equal(24.5, inhalt.Vorgabe(Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG).Wert);
-        Assert.Equal(24.5, inhalt.Kalender(Konditionierungsgroesse.Kuehlsoll)!.Grundangabe.Wert);
+        Assert.Equal(28.0, inhalt.Vorgabe(Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_NACHT).Wert);
+        Assert.Equal(28.0, inhalt.Kalender(Konditionierungsgroesse.Kuehlsoll)!.Grundangabe.Wert);
 
         // Der Editor schrieb nichts - die Vorlage steht sofort, sein Arbeitsstand bleibt.
         Assert.Empty(_geschrieben);
@@ -420,7 +429,7 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         cut.Find(".epos-kond-kopieren-sollwert input").Input("40");
         Kopieren(cut);
         Assert.Contains("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren-sollwert").ClassList);
-        Assert.Equal("Der Komfortsollwert ist eine Zahl von 15 bis 30 °C.",
+        Assert.Equal("Der Komfortsollwert ist eine Zahl von 15 bis 35 °C.",
                      cut.Find(".epos-kond-kopieren-sollwert .epos-kond-feldmeldung").TextContent.Trim());
         Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
 
@@ -436,6 +445,46 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Kopieren(cut);
         Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
         Assert.Contains(ablage.Liste(Konditionierungsgroesse.Kuehlsoll), v => v.Bezeichner == "Schule Heizung" && !v.Ausgeliefert);
+    }
+
+    [Fact]
+    public void Ein_Absenksollwert_unter_dem_Komfortsollwert_steht_am_Absenkfeld_und_aus_schaltet_die_Absenkzeiten_ab()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        var cut = Verwaltung(ablage, KonditionierungGroesse.Heizen);
+        Zeile(cut, "Schule").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+        cut.Find(".epos-kond-kopieren .epos-kond-vorlage-name input").Input("Schule Heizung");
+
+        // 24 °C unter dem Komfortsollwert 26 °C: der Kern lehnt ab, die Meldung steht am Absenkfeld, nicht am
+        // Komfortfeld; nichts geschrieben, die Abfrage bleibt.
+        cut.Find(".epos-kond-kopieren-absenkwert input").Input("24");
+        Kopieren(cut);
+        Assert.Contains("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren-absenkwert").ClassList);
+        Assert.Equal("Der Absenksollwert 24 °C liegt unter dem Komfortsollwert 26 °C – beim Kühlen ist die Absenkung " +
+                     "ein höherer Sollwert oder „aus“.",
+                     cut.Find(".epos-kond-kopieren-absenkwert .epos-kond-feldmeldung").TextContent.Trim());
+        Assert.DoesNotContain("epos-kond-feldfehler", cut.Find(".epos-kond-kopieren-sollwert").ClassList);
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
+        Assert.NotEmpty(cut.FindAll(".epos-kond-kopieren"));
+
+        // Keine Zahl und nicht „aus": das Feld färbt, „Kopieren" nennt Grenzen und „aus" am Feld.
+        cut.Find(".epos-kond-kopieren-absenkwert input").Input("warm");
+        Kopieren(cut);
+        Assert.Equal("Der Absenksollwert ist eine Zahl von 15 bis 35 °C oder „aus“.",
+                     cut.Find(".epos-kond-kopieren-absenkwert .epos-kond-feldmeldung").TextContent.Trim());
+        Assert.Equal(3, ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Count);
+
+        // „aus": Die Kopie kühlt am Tag auf 26 °C und in den Absenkzeiten gar nicht.
+        cut.Find(".epos-kond-kopieren-absenkwert input").Input("aus");
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren-absenkwert .epos-kond-feldmeldung"));
+        Kopieren(cut);
+        Assert.Empty(cut.FindAll(".epos-kond-kopieren"));
+        KonditionierungsvorlageCtrl.Vorlage kopie = ablage.Liste(Konditionierungsgroesse.Kuehlsoll).Single(v => v.Bezeichner == "Schule Heizung");
+        Konditionierungsstand inhalt = ablage.Inhalt(kopie.Id, out _).Inhalt;
+        Assert.Equal(26.0, inhalt.Vorgabe(Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG).Wert);
+        foreach (string zeile in new[] { DbWerte.KOND_ZEILE_NACHT, DbWerte.KOND_ZEILE_WOCHENENDE, DbWerte.KOND_ZEILE_FERIEN })
+            Assert.True(inhalt.Vorgabe(Konditionierungsgroesse.Kuehlsoll, zeile).Aus, zeile);
+        Assert.Equal(Angabeart.Aus, inhalt.Kalender(Konditionierungsgroesse.Kuehlsoll)!.Grundangabe.Art);
     }
 
     // =================================================================================

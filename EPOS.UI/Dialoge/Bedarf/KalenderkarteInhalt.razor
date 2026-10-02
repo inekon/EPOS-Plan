@@ -220,15 +220,15 @@
     private double? Minimum => Groesse switch
     {
         KonditionierungGroesse.Heizen => null,
-        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN,
+        KonditionierungGroesse.Kuehlen => Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll),
         _ => 0
     };
 
-    /// <summary>Die Obergrenze im Feld: Kühlsollwert 35 °C, Luftwechsel 10 1/h, Anteile 100 %.</summary>
+    /// <summary>Die Obergrenze im Feld: Kühlsollwert nach der Zellgrenze des Kerns, Luftwechsel 10 1/h, Anteile 100 %.</summary>
     private double? Maximum => Groesse switch
     {
         KonditionierungGroesse.Heizen => null,
-        KonditionierungGroesse.Kuehlen => Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX,
+        KonditionierungGroesse.Kuehlen => Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll),
         KonditionierungGroesse.Lueftung => 10,
         _ => 100
     };

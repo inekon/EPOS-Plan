@@ -224,7 +224,7 @@ KP0. Leitkonzept 15 ist mit N1.59 nachgezogen.
 | Größe | Werteart | heutige Spalten | ohne Kalender | Eigentümer |
 |---|---|---|---|---|
 | **Heizsollwert** θ_H | 0…30 °C oder „aus", auch je Stunde | vier Sollwerte, `Nachtabsenkung_Beginn/_Ende`, `Ferien`, `Ferienbeginn/-ende_1…4`; AK1 `Sollwertprofil` | Standardfahrplan (3.3) | Zone (Gebäude), Katalogbau, Vorlage |
-| **Kühlsollwert** θ_K | °C in den heutigen Grenzen oder „aus" | `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht` (P13) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau, Vorlage; Zone ab KU3 |
+| **Kühlsollwert** θ_K | 15…35 °C oder „aus" | `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht` (P13) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau, Vorlage; Zone ab KU3 |
 | **Lüftung** n_N | Nutzerlüftung 0…20 1/h; die Infiltration bleibt konstant darunter | `Luftwechsel_Nutzer` | der heutige Wert | Zone (Gebäude), Katalogbau, Vorlage |
 | **Geräte und Anlage** Q_G | Anteil 0…100 % eines Nennwerts [W] | `Interne_Waermegewinne` | 100 % | Zone (Gebäude), Katalogbau, Vorlage |
 | **Personen** Q_P | Anwesenheit 0…100 % × Nennwert [W] | neu; `Bewohner` schlägt die Personenzahl vor | kein Kalender = 0 W zusätzlich | Zone (Gebäude), Katalogbau, Vorlage |
@@ -430,8 +430,15 @@ erreicht kein Gebäude.
 an; die Quelle bleibt, wie sie ist. **Geräte ↔ Personen** reisen direkt: gleiche Einheit (Anteil 0 … 1), Vorgabezeilen,
 Standardwoche, Perioden und Feiertagsregeln unverändert. **Heizen → Kühlen** nimmt nur die Zeitstruktur —
 Standardwoche, Perioden, Feiertagsregeln, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten — und die Aus-Zeiten:
-Wo Heizen „aus" ist, ist Kühlen „aus"; jede Zelle, Wochenstunde und Periode mit Heizsollwert bekommt den
-**Komfortsollwert** (Vorgabe 26 °C, im Kopierdialog änderbar in den Grenzen der Kühlspalte). Andere Richtungen —
+Wo Heizen „aus" ist, ist Kühlen „aus". Jede Zelle, Wochenstunde und Periode, deren Heizsollwert den **Tagwert** der
+Vorlage erreicht, bekommt den **Komfortsollwert** (Vorgabe 26 °C); jede mit niedrigerem Heizsollwert — die
+**Absenkzeit**: Nacht, Wochenende, Ferien, abgesenkte Stunden der Standardwoche und Perioden — bekommt den
+**Absenksollwert** (Vorgabe 28 °C) oder „aus", wie die ausgelieferte Kühlvorlage „Büro" nachts, am Wochenende und in
+den Ferien. Der Tagwert ist der Wert der Zeile „Tag"; trägt sie keinen Sollwert, der höchste Heizsollwert der Vorlage
+(Zeilen, Grundangabe, Standardwoche, Perioden). Beide Werte sind im Kopierdialog änderbar in den Grenzen der
+Kühlspalte; ein Absenksollwert unter dem Komfortsollwert wird benannt abgelehnt — beim Kühlen ist die Absenkung ein
+höherer Sollwert. Aus der Heizvorlage „Büro" (Tag 20 °C, sonst 16 °C) wird so eine Kühlvorlage mit 26 °C am Tag und
+28 °C bzw. „aus" in allen übrigen Zeiten. Andere Richtungen —
 Kühlen → Heizen, alles mit Lüftung — gibt es nicht; still umgerechnet wird nichts. Die Kopie trägt den Namen der Quelle
 als Vorschlag, ein Doppelname in der Zielliste wird benannt abgelehnt; die Beschreibung wird übernommen und um die
 Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernommen, `ReadOnly = 0`. Der Inhalt entsteht nur in
@@ -461,7 +468,10 @@ genau seinen Zielbereich; gespeichert werden gewöhnliche Regeln, dazu ein lesba
 
 - **Streng (H-F10):** genau 168 Zellen je Woche, jede eine Zahl in den Grenzen der Größe oder „aus" (P2); höchstens
   **64 Perioden** je Kalender (EPOS-Wert); Rang eindeutig; Tage 1…365; Feiertagsregel aus der festen Liste. In der
-  Matrix: Stunden 0…23, Saisontage 1…365, Lüftung 0…20 1/h, Anteile 0…100 %.
+  Matrix: Stunden 0…23, Saisontage 1…365, Lüftung 0…20 1/h, Anteile 0…100 %. Die Grenzen einer Größe stehen an einer
+  Stelle des Kerns (`Konditionierungsgroessen.Min/Max`); Zellprüfung, Leser, die Felder der Matrix und der Kalenderkarte,
+  der Assistent und die Sollwerte von „Kopieren nach …" nehmen sie. Der Kühlsollwert hat die Plausibilitätsgrenzen
+  15…35 °C, dieselben wie der Kühlsollwert des Gebäudes, dessen Wert die Bestandszelle der Kühlspalte trägt.
 - **Kühl- über Heizsollwert je Stunde (F17):** θ_K(h) ≥ θ_H(h) + 1 K, wo beide wirken — bei konstantem Kühlsollwert
   genau die heutige Prüfung (`GebaeudeModellEingang.cs:1641`); die Matrix prüft dasselbe je Zeile vor. Die Rampe wird
   **vor** der Prüfung an θ_K(h) − 1 K gekappt, benannt und gezählt; eine Optimierung bricht nie einen Lauf ab.
@@ -1019,9 +1029,11 @@ statt 11 bis 16 Handgriffe).
 
 **„Kopieren nach …"** (3.5) steht in jeder Zeile der Verwaltung neben „Duplizieren". Eine kleine Überlagerung mit Titel
 und Kreuz zeigt nur die erlaubten Ziele der Quelle — Heizen → Kühlen, Geräte ↔ Personen —, den Namen der Quelle als
-Vorschlag und, nur bei Heizen → Kühlen, das Feld des Komfortsollwerts (Vorgabe 26 °C, Grenzen der Kühlspalte). An
-Kühl- und Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein
-Doppelname der Zielliste steht am Namensfeld, ein ungültiger Sollwert am Sollwertfeld. Danach zeigt die Verwaltung die
+Vorschlag und, nur bei Heizen → Kühlen, die Felder des Komfortsollwerts (Vorgabe 26 °C) und des Absenksollwerts
+(Vorgabe 28 °C, nimmt „aus" wie die Zellen der Matrix), beide in den Grenzen der Kühlspalte. An Kühl- und
+Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein Doppelname
+der Zielliste steht am Namensfeld, ein ungültiger Sollwert an seinem Feld, ein Absenksollwert unter dem
+Komfortsollwert am Absenkfeld. Danach zeigt die Verwaltung die
 Zielliste mit der neuen Vorlage gewählt.
 
 ### 7.5 Die Kalenderkarte
