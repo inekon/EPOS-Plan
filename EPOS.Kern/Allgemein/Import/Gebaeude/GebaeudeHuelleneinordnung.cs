@@ -172,8 +172,9 @@ namespace WindowsFormsApplication1
     ///
     /// <list type="bullet">
     /// <item><b>Hülle:</b> ein Bauteil mit einem beheizten Nachbarn DIESES Gebäudes; zwei beheizte
-    /// Nachbarn = innere Masse. Ein Außenbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
-    /// zählt nach seiner Randbedingung.</item>
+    /// Nachbarn = innere Masse. Ein Hüllbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
+    /// zählt nach seiner Randbedingung — Außenluft, Erdreich oder unbeheizt; gegen unbeheizt sagt
+    /// <see cref="BodenOhneNachbar"/>, ob es Boden oder Decke ist.</item>
     /// <item><b>Seite:</b> ohne zweiten Nachbarn nach der Randbedingung der Art (Außenluft, Erdreich,
     /// sonst unbeheizt); mit einem zweiten, nicht beheizten oder unbekannten Nachbarn unbeheizt.</item>
     /// <item><b>Summenfeld:</b> Außenluft — Außenwand → Außenwand, Dach und Decke → Dach, sonst
@@ -221,7 +222,8 @@ namespace WindowsFormsApplication1
                 if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && istBeheizt(r)
                     && raumGebaeude[s.Nachbarn[i].Kennung] == index) { hPos = i; break; }
             bool ohneNachbar = hPos < 0 && s.HuelleOhneNachbar && s.Nachbarn.Count == 0
-                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich);
+                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich
+                                   || s.Randbedingung == Randbedingung.Unbeheizt);
             if (hPos < 0 && !ohneNachbar) return;
 
             int aPos = -1;
@@ -262,7 +264,7 @@ namespace WindowsFormsApplication1
                     feld = GebaeudeZielfelder.FLAECHE_GRUND;
                     break;
                 default:
-                    boden = IstWaagerechteArt(s.Art) ? Boden(s, hPos, aPos) : null;
+                    boden = !IstWaagerechteArt(s.Art) ? null : hPos < 0 ? BodenOhneNachbar(s) : Boden(s, hPos, aPos);
                     feld = boden == true ? GebaeudeZielfelder.FLAECHE_GRUND
                          : boden == false ? GebaeudeZielfelder.FLAECHE_DACH
                          : GebaeudeZielfelder.FLAECHE_SONSTIGE;
@@ -305,6 +307,14 @@ namespace WindowsFormsApplication1
             if (b.HasValue) return hIstErster ? b.Value : !b.Value;
             return null;
         }
+
+        /// <summary>
+        /// Boden oder Decke eines Hüllbauteils ohne Nachbarraum gegen unbeheizt: die Angabe der Datei
+        /// (<see cref="AbbildBauteil.ZonenbodenOhneNachbar"/>), sonst die Bauteilart — eine Bodenplatte ist
+        /// Boden, ein Dach Decke; eine Decke ohne Angabe bleibt unbestimmt.
+        /// </summary>
+        internal static bool? BodenOhneNachbar(AbbildBauteil s)
+            => s.ZonenbodenOhneNachbar ?? (s.Art == Bauteilart.Bodenplatte ? true : s.Art == Bauteilart.Dach ? false : (bool?)null);
 
         /// <summary>Decke, Bodenplatte und Dach liegen waagerecht — nur sie sind Boden oder Decke.</summary>
         internal static bool IstWaagerechteArt(Bauteilart art)
