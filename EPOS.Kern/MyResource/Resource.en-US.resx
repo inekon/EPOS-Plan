@@ -41748,5 +41748,23 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BKAL_LAND_TH" xml:space="preserve">
     <value>Thuringia</value>
   </data>
+  <data name="SIMENG_AUFH_W1" xml:space="preserve">
+    <value>Preheat optimisation (W1): the preheat power is insufficient — on {0} days no ramp of up to 48 h holds, on {1} of them it does not exceed the steady-state heating load. The ramp fills the setback there; the run continues.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2" xml:space="preserve">
+    <value>Preheat optimisation (W2): on {0} days the setback duration limits the ramp — the setback is largely ineffective there.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2_BEMESSUNG" xml:space="preserve">
+    <value>Preheat optimisation (W2): the maximum preheat time of {0} h reaches the shortest setback duration of the ramped steps ({1} h) — in design weather the setback is largely ineffective.</value>
+  </data>
+  <data name="SIMENG_AUFH_W3" xml:space="preserve">
+    <value>Preheat optimisation (W3): on {0} days the run leaves the verification band of the ramp (capping by the heating power limit or hourly output above 1.01 × preheat power). The prediction does not know the preceding history, sun, internal gains or ventilation changes; the run continues.</value>
+  </data>
+  <data name="SIMENG_AUFH_W4" xml:space="preserve">
+    <value>Preheat optimisation (W4): {0} transitions from “off” receive no ramp, {1} of them at the start of the heating period — the initial value of the free-floating zone is unknown before the run.</value>
+  </data>
+  <data name="SIMENG_AUFH_W5" xml:space="preserve">
+    <value>Preheat optimisation (W5): the building is calculated with system coupling and is not optimised; the heat emitter limits the output after the step.</value>
+  </data>
 </root>
 
