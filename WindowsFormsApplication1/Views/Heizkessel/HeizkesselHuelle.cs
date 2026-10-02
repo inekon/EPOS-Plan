@@ -156,6 +156,14 @@ namespace WindowsFormsApplication1
                 ["HinweisWirkungsgrad"] = Text_("HZKK_HINT_WIRKUNGSGRAD", "(z. B. 0,9)"),
                 ["LabelBBVerlust"] = Text_("HZKK_LBL_BBVERLUST", "Betriebsbereitschaftsverluste:"),
                 ["LabelBBVerlustKurz"] = Text_("HZKK_FELD_BBVERLUST", "Betriebsbereitschaftsverluste"),
+                // Die Einheitenwahl des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+                ["LabelBBEinheit"] = Text_("HZKK_LBL_BB_EINHEIT", "Einheit Bereitschaftsverlust:"),
+                ["BBEinheiten"] = (IReadOnlyList<(int Id, string Text)>)new (int, string)[]
+                {
+                    (HeizkesselKatalogDialog.BB_EINHEIT_KW, Text_("HZKK_BB_EINHEIT_KW", "kW")),
+                    (HeizkesselKatalogDialog.BB_EINHEIT_PROZENT,
+                     Text_("HZKK_BB_EINHEIT_PROZENT", "% der Nennleistung"))
+                },
                 ["LabelBrennwert"] = Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"),
                 ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelVorlaufKurz"] = Text_("HZKK_FELD_VORLAUF", "Vorlauf"),
@@ -227,6 +235,7 @@ namespace WindowsFormsApplication1
             d.Wirkungsgrad_Gas = m.Wirkungsgrad_Gas;
             d.Wirkungsgrad_Oel = m.Wirkungsgrad_Oel;
             d.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            d.BereitschaftProzent = KesselBereitschaft.IstProzent(m.Bereitschaft_Einheit);
             d.Investitionskosten = m.Investitionskosten;
             d.Wartungskosten = m.Wartungskosten;
             d.WartungEinheit = EinheitIndex(m.Wartungskosten_Einheit);
@@ -273,6 +282,9 @@ namespace WindowsFormsApplication1
                 Wirkungsgrad_Gas = d.Wirkungsgrad_Gas ?? 0,
                 Wirkungsgrad_Oel = d.Wirkungsgrad_Oel ?? 0,
                 Betriebsbereitschaftverlust = d.Betriebsbereitschaftverlust ?? 0,
+                Bereitschaft_Einheit = d.BereitschaftProzent
+                    ? DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_PROZENT
+                    : DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW,
                 Investitionskosten = d.Investitionskosten ?? 0,
                 Wartungskosten = d.Wartungskosten ?? 0,
                 Wartungskosten_Einheit = EinheitWert(d.WartungEinheit),
