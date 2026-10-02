@@ -22767,7 +22767,7 @@ Do you want to allow this?</value>
     <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>State of charge in percent from which subordinate generators may charge as well. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
+    <value>Cut-off threshold for subordinate generators in percent: subordinate generators charge the storage up to this state of charge; above it only the priority generator charges, up to the cut-off threshold. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>

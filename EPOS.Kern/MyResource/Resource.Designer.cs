@@ -48945,7 +48945,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltschwelle für nachrangige Erzeuger in Prozent: Bis zu diesem Füllstand laden nachrangige Erzeuger den Speicher; darüber lädt nur noch der vorrangige Erzeuger, bis zur Abschaltschwelle. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
             get {
