@@ -189,7 +189,11 @@ stehen in `sqlite_master` neben Tabellen und Indizes; sie reisen mit jeder Datei
   der Schemaschritte für Spaltentypen und Fremdschlüssel), verliert ihre Trigger mit der alten
   Tabelle. Danach legt `KostenStempelSchema.Ausfuehren` bzw. dessen Anweisungen sie wieder an
   (`CREATE TRIGGER IF NOT EXISTS`); die Wache `EPOS.Kern.Tests/KostenStempelSchemaTests` hält die
-  Testdatenbank gegen die volle Liste.
+  Testdatenbank gegen die volle Liste. Ein Neubau von `Tab_Projekt`, `Tab_Applikation` oder
+  `Tab_Preisreihe` ohne `PRAGMA legacy_alter_table = ON` scheitert mit „error in trigger …: no such
+  table“, weil die Trigger der anderen Tabellen diese Namen nennen — die bestehenden Neubauten laufen
+  mit `legacy_alter_table`, allein `SpeicherAuslegungStrict` (Schritt 74) ohne, und keine Trigger
+  nennt `Tab_SpeicherAuslegung`.
 * **Wer eine der genannten Spalten entfernt oder umbenennt**, prüft die Trigger mit — ihre
   Spaltenlisten (`UPDATE OF …`) und Rümpfe stehen im Text des Triggers.
 * **Eine Änderung von Hand** (etwa mit `sqlite3` in einer der Tabellen oben) stempelt genauso;

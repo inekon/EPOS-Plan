@@ -8,6 +8,6 @@ Muster für neue Wellen: `E30_Auftrag_2026-09-26.md` (Auftrag mit Phase 0/1) und
 Verweise sind als Pfade in Codeschrift belassen, weil die Dateien an ihrem alten Ort standen.
 Nachtrag 29.09.2026: `E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md` ist die Fachvorgabe der Wirtschaftlichkeit für die Umsetzung
 „Der Bericht folgt dem gewählten Szenario" (Nach #582) in der Cloud-Sitzung Berichterstellung.
-Nachtrag 02.10.2026: `P644_Auftrag_2026-10-02.md` hält Auftrag und Befund der Welle „Änderungsstempel für Kosten und Preise“
+Nachtrag 02.10.2026: `P646_Auftrag_2026-10-02.md` hält Auftrag und Befund der Welle „Änderungsstempel für Kosten und Preise“
 (Schemaschritt 159) aus der Sitzung „Dialoge und Korrekturen“ fest; sie liegt hier, weil sie das Band „bitte neu berechnen“
 der Seiten Kosten und Wirtschaftlichkeit betrifft. Ihre Verweise sind relativ.
