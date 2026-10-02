@@ -678,7 +678,9 @@ namespace WindowsFormsApplication1
         /// meldet der Schritt ihn als HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>
         /// der Kopie) — in der Hinweisliste des Berichtslaufs, wo der Sammler auch den
         /// Leistungspreis ohne Bezugsspitze meldet, im selben Wortlaut wie die Hinweiszeile der
-        /// Wirtschaftlichkeit.</para>
+        /// Wirtschaftlichkeit. Satz und Träger legt er dazu an die Gruppenzahl
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>); die Fußzeile unter der Kostentafel
+        /// nennt sie.</para>
         /// </summary>
         internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
         {
@@ -712,6 +714,11 @@ namespace WindowsFormsApplication1
                     CO2TonnenJahr = kopie.CO2Gesamt,
                     NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
                     Verwender = verwender,
+                    // EZ‑17: der Leistungspreis, den die Gruppenzahl nicht enthält — für den Satz
+                    // der Fußzeile unter der Kostentafel.
+                    LeistungspreisSatz = kopie.LeistungspreisNichtAngesetztSatz,
+                    LeistungspreisTraeger = kopie.LeistungspreisNichtAngesetztSatz != null
+                        ? kopie.LeistungspreisNichtAngesetztTraeger : null,
                 };
 
                 // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der

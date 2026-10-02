@@ -301,6 +301,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("„mit PV“", satzKosten);
             Assert.Contains(NETZBEZUG.ToString("N1", de) + " MWh/a", satzKosten);
             Assert.Contains(stamm.Gruppenzahl.EnergiekostenEuroJahr.Value.ToString("N0", de) + " €/a", satzKosten);
+            // Ohne Leistungspreis am Träger nennt die Fußzeile keinen (Register EZ‑17).
+            Assert.Null(stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.DoesNotContain("Leistungspreis", satzKosten);
 
             // DIE EMISSIONSTAFEL trägt ihre eigene Fußzeile mit der CO₂-Zahl.
             Berichtstabelle emission = Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de);
@@ -326,6 +329,7 @@ namespace EPOS.Kern.Tests
                 Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
             Assert.Contains("group rule", englisch);
             Assert.Contains("individual assessment", englisch);
+            Assert.DoesNotContain("demand charge", englisch);
         }
 
         /// <summary>
@@ -454,6 +458,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal(VariantenDaten.FUSSNOTE_EMISSION,
                 WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
                     VariantenDaten.SCHLUESSEL_FUSSNOTE_EMISSION, new System.Globalization.CultureInfo("de-DE")));
+
+            // Der Satz zum Leistungspreis unter der Kostentafel (Register EZ‑17): zwei Stellen,
+            // Satz und Träger.
+            string lpDe = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                VariantenDaten.SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS, new System.Globalization.CultureInfo("de-DE"));
+            string lpEn = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                VariantenDaten.SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS, new System.Globalization.CultureInfo("en-US"));
+            Assert.False(string.IsNullOrEmpty(lpDe));
+            Assert.False(string.IsNullOrEmpty(lpEn));
+            Assert.NotEqual(lpDe, lpEn);
+            foreach (string stelle in new[] { "{0}", "{1}" })
+            {
+                Assert.Contains(stelle, lpDe);
+                Assert.Contains(stelle, lpEn);
+            }
+            Assert.Equal(VariantenDaten.FUSSNOTE_LEISTUNGSPREIS, lpDe);
         }
 
         // =================================================================
@@ -911,6 +931,84 @@ namespace EPOS.Kern.Tests
             Assert.Null(variante.Gruppenzahl);
             Assert.Null(variante.LeistungspreisNichtAngesetzt);
             Assert.Equal("Elektrische Energie", variante.LeistungspreisOhneSpitze);
+        }
+
+        /// <summary>
+        /// <b>Die Fußzeile unter der Kostentafel nennt den nicht angesetzten Leistungspreis.</b> Der
+        /// Auslieferungsträger führt 60 €/(kW·a); die Gruppenzahl enthält ihn nicht (EZ‑17), und die
+        /// Kostenfußzeile hängt nach ihrem Satz den Satz mit Leistungspreis und Träger an. Ihr erster
+        /// Teil und ihre Zahl sind byte-gleich die Fußzeile ohne Leistungspreis; die Emissionsfußzeile
+        /// nennt ihn nicht. Word (Gruppentafel, Gesamttafel) und Excel (Blatt „Vergleich") tragen
+        /// denselben Satz; Englisch aus der Ressource.
+        /// </summary>
+        [Fact]
+        public void Die_Fussnote_der_Kostentafel_nennt_den_nicht_angesetzten_Leistungspreis()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            KennzahlenKatalog.Berechne(stamm);
+            KennzahlenKatalog.Berechne(variante);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+
+            // Das Merkmal an der Gruppenzahl: Satz und Träger; die Zahl ohne Leistungspreis.
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal("60,00 €/(kW·a)", stamm.Gruppenzahl.LeistungspreisSatz);
+            Assert.Equal("Elektrische Energie", stamm.Gruppenzahl.LeistungspreisTraeger);
+            double gruppenzahl = GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS;
+            Assert.Equal(gruppenzahl, stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 2);
+            Assert.Null(stamm.LeistungspreisNichtAngesetztSatz);       // der Stand bleibt unberührt
+            Assert.Null(stamm.LeistungspreisNichtAngesetztTraeger);
+            Assert.Null(variante.Gruppenzahl);
+
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            string satzKosten = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
+            const string leistungspreis =
+                "Den Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ setzt die " +
+                "Gruppenregel nicht an.";
+            Assert.EndsWith(" " + leistungspreis, satzKosten, StringComparison.Ordinal);
+            Assert.Contains(gruppenzahl.ToString("N0", de) + " €/a", satzKosten);
+
+            // Ohne das Merkmal ist die Fußzeile genau die bisherige — der Satz ist nur angehängt.
+            string satzOhne;
+            string satzEmission;
+            {
+                string lpSatz = stamm.Gruppenzahl.LeistungspreisSatz;
+                string lpTraeger = stamm.Gruppenzahl.LeistungspreisTraeger;
+                satzEmission = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_EMISSION);
+                stamm.Gruppenzahl.LeistungspreisSatz = null;
+                stamm.Gruppenzahl.LeistungspreisTraeger = null;
+                satzOhne = stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_KOSTEN);
+                Assert.Equal(satzEmission, stamm.StromGruppenregelFussnote(de, KennzahlenKatalog.GR_EMISSION));
+                stamm.Gruppenzahl.LeistungspreisSatz = lpSatz;
+                stamm.Gruppenzahl.LeistungspreisTraeger = lpTraeger;
+            }
+            Assert.Equal(satzOhne + " " + leistungspreis, satzKosten);
+            Assert.DoesNotContain("Leistungspreis", satzOhne);
+
+            // Die Emissionsfußzeile nennt ihn nicht.
+            Assert.DoesNotContain("Leistungspreis", satzEmission);
+
+            // Word: Gruppentafel und Gesamttafel; Excel: Blatt „Vergleich".
+            Assert.Equal(satzKosten, Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false, de).Hinweise));
+            Assert.Equal(satzEmission, Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de).Hinweise));
+            Assert.Contains(satzKosten, Berichtstabellen.Vergleichsgesamt(daten, false, de).Hinweise);
+            Assert.Contains(satzKosten, Berichtstabellen.Vergleichsliste(daten, de).Hinweise);
+
+            // Englisch aus der Ressource — die Emissionsfußzeile auch dort ohne Leistungspreis.
+            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            string englisch = Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
+            Assert.Contains("demand charge", englisch);
+            Assert.Contains("“Elektrische Energie”", englisch);
+            Assert.EndsWith("”.", englisch, StringComparison.Ordinal);
+            Assert.DoesNotContain("demand charge",
+                stamm.StromGruppenregelFussnote(en, KennzahlenKatalog.GR_EMISSION));
         }
 
         /// <summary>
