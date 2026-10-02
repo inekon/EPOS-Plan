@@ -206,10 +206,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("CASCADE", Convert.ToString(fk.Rows[0][0], CultureInfo.InvariantCulture));
             }
 
-            // Die Ergebnisspalten.
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
+            // Die Ergebnisspalten - die Messlatte steht auf dem Zielstand: dazu je vierzehn Spalten der
+            // Aufheizoptimierung (KP-S3, B24).
+            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_ZONE,
+            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE,
                          DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in KonditionierungVorlagenSchema.Ergebnistabellen)
             {
