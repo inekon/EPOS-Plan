@@ -51,6 +51,38 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
         set { if (Stand is SolarkollektorenEingaben s) s.Albedo = value; }
     }
 
+    // --- Solarkreis (Welle M2) ---------------------------------------------------------
+
+    public double? PumpenleistungW
+    {
+        get => Stand?.PumpenleistungW;
+        set { if (Stand is SolarkollektorenEingaben s) s.PumpenleistungW = value; }
+    }
+
+    public double? VerlusteProzent
+    {
+        get => Stand?.VerlusteProzent;
+        set { if (Stand is SolarkollektorenEingaben s) s.VerlusteProzent = value; }
+    }
+
+    public double? GraedigkeitK
+    {
+        get => Stand?.GraedigkeitK;
+        set { if (Stand is SolarkollektorenEingaben s) s.GraedigkeitK = value; }
+    }
+
+    public double? SpreizungK
+    {
+        get => Stand?.SpreizungK;
+        set { if (Stand is SolarkollektorenEingaben s) s.SpreizungK = value; }
+    }
+
+    public bool ArbeitstemperaturAusSpeicher
+    {
+        get => Stand?.ArbeitstemperaturAusSpeicher ?? false;
+        set { if (Stand is SolarkollektorenEingaben s) s.ArbeitstemperaturAusSpeicher = value; }
+    }
+
 
     /// <inheritdoc/>
     public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);

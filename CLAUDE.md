@@ -155,7 +155,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-02_R31_Rechenwegbefunde`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-02_R32_Solarthermie`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -163,7 +163,8 @@ Stromverbraucher-Zuordnung (über die ID, gehalten von `EPOS.Kern.Tests/Stromver
 Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
 gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, Projekt 1049 rechnet als
 Kopie von 1018 ein Kollektorfeld vor BHKW und Kessel, das direkt und über den Puffer deckt —
-mit der Nachrang-Vorgabe 30 % am Puffer, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
+mit der Nachrang-Vorgabe 30 % am Puffer und der Arbeitstemperatur aus der untersten Zone des
+Puffers, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
 1018 und 1049 rechnen ihr BHKW mit der unteren Grenzleistung ihres Anlagenfelds (Rangfolge Anlage,
 Katalog, Projekt, gehalten von `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests`),
 Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie,
@@ -207,7 +208,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines
   Referenzprojekts auf den Generator;
 - gesäte Solardaten des Referenzprojekts 1049: das Kollektorfeld (Kollektorsatz in
-  `Tab_Solarkollektoren`, Modulanzahl, Neigung, Azimut, Senken in `Z_AnlageSenke`), sein Puffer
+  `Tab_Solarkollektoren` samt `Kdfu` und `Bezugsflaeche`, Modulanzahl, Neigung, Azimut, Senken in
+  `Z_AnlageSenke`, die Felder des Solarkreises `Arbeitstemperatur_Weg`, `Uebertrager_Graedigkeit_K`,
+  `Kollektor_Spreizung_K`, `Solarkreisverluste_Prozent`, `Pumpenleistung_W`), sein Puffer
   (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, `Schwelle_Aus`, `Schwelle_Aus_Nachrang` leer),
   die Lade-Prioritäten der Erzeuger an diesem Puffer und die Kaskade (`Tool_1` bis `Tool_4`),
   dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie;

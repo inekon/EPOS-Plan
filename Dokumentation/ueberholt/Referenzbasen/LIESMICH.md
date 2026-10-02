@@ -1,9 +1,9 @@
-# Die Protokolle der 48 entfernten Referenzbasen
+# Die Protokolle der 49 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **48 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **49 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30 am 02.10.2026. **49 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30 und das von R31 am 02.10.2026. **50 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde`](../../../Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/);
+> [`Referenzlaeufe/2026-10-02_R32_Solarthermie`](../../../Referenzlaeufe/2026-10-02_R32_Solarthermie/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -76,6 +76,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-30_R28_Kesselbrennwert` | 30.09.2026 | Basis nach den Etappen E2b und E3 der Kesselkennlinie (Brennwertkennzeichen der Projektkessel, Schemaschritt 158; Brennwertkennlinie mit Rücklaufkette), auf Linux eingefroren; getragen bis zur Testdatenbank `5d59041f…` (Schemastand 158); sechzehn Projekte, 487 CSV, 2 984 Skalare — abgelöst durch R29 am 30.09.2026 | [`2026-09-30_R28_Kesselbrennwert/protokoll.txt`](2026-09-30_R28_Kesselbrennwert/protokoll.txt) |
 | `2026-09-30_R29_Kesseltakten` | 30.09.2026 | Basis nach der Etappe E4 der Kesselkennlinie (Takten des Heizkessels unter seiner Mindestleistung: Starts je Taktstunde, Anfahrverlust je Start, Normvorgaben für leere Taktfelder; `Kessel[i].Starts` zählt nach Konzept 4.2), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R30 am 30.09.2026 | [`2026-09-30_R29_Kesseltakten/protokoll.txt`](2026-09-30_R29_Kesseltakten/protokoll.txt) |
 | `2026-09-30_R30_Stromverbraucher` | 30.09.2026 | Basis nach SV1 (Zuordnung Projekt ↔ Stromverbraucher über die ID: gepflegte Jahressumme der Zuordnungszeile, Kopf- und Typsatz nur im eigenen Projekt), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158), getragen bis zur Fassung `a50f1f49…` (Schemastand 159); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R31 am 02.10.2026 | [`2026-09-30_R30_Stromverbraucher/protokoll.txt`](2026-09-30_R30_Stromverbraucher/protokoll.txt) |
+| `2026-10-02_R31_Rechenwegbefunde` | 02.10.2026 | Basis nach RB1 (untere Grenzleistung des BHKW aus dem Anlagenfeld vor Katalog vor Projekt, in allen drei Betriebsarten; Autarkie ohne Stromspeicher mit 0 kWh; Bedarfsprofil ohne Typbezug übersprungen), auf Linux eingefroren; Testdatenbank `a50f1f49…` (Schemastand 159), getragen bis zur Fassung `05783be1…` (Schemastand 162); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R32 am 02.10.2026 | [`2026-10-02_R31_Rechenwegbefunde/protokoll.txt`](2026-10-02_R31_Rechenwegbefunde/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -3914,5 +3915,154 @@ Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testd
 158); mit R30 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Takten des Heizkessels, Etappe E4) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R29 und
 R30 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg des Stromzweigs (SV1).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R31 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 02.10.2026 die Basis R31 beschrieben — den Anlass (drei Rechenwegbefunde aus dem
+Papier „Verbesserungen 29.09.2026“, Auftrag RB1), das A/B gegen R30 mit der Tafel für 1018 und 1049, die Nachträge zu den
+Schemaschritten 159 bis 162 —, darunter den Abschnitt zur Vorgängerbasis R30. Beides steht unten im Wortlaut; die
+Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R31 durch `2026-10-02_R32_Solarthermie`** (Welle M2 Solarthermie der Entscheidungsvorlage
+Modellgrenzen, ST1 bis ST6): Schemaschritt 163 mit den Feldern des Kollektorfelds und der Bezugsfläche der Kennwerte,
+Pumpenstrom, Solarkreisverluste als Feld, Diffus-IAM mit `K_dfu`, Arbeitstemperatur aus dem Speicher; das
+Kollektorfeld von 1049 rechnet seither seine Arbeitstemperatur aus der untersten Zone seines Puffers (Grädigkeit 5 K,
+Spreizung 10 K). A/B gegen R31: 15/16 PASS, 475/487 CSV byte-gleich — abgewichen ist allein 1049 mit zwölf Dateien
+(genutzte Solarwärme 10,73 → 9,38 MWh/a, Überschuss 27,13 → 19,73 MWh/a, mittlere Arbeitstemperatur 50 → 65,32 °C).
+Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-02_R31_Rechenwegbefunde/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **159**, 81 162 240 Byte, LFS-SHA-256
+`a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`). Die Testdatenbank trägt seither die Spalten
+der Aufheizoptimierung der Schemaschritte 160 und 161 (Nachtrag „Schemaschritte 160 und 161“ unten), Schalter
+überall 0, alles übrige leer, und die Einheitenspalte des Kessel-Bereitschaftsverlusts aus Schemaschritt 162
+(Nachtrag „Schemaschritt 162“ unten), überall `kW`: Schemastand **162**, 81 170 432 Byte, LFS-SHA-256
+`05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`. **Die Basis bleibt**, weil kein Rechenwert
+betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten, und die Vorgabe `kW`
+rechnet den Bereitschaftsverlust wie zuvor. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046 und `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: drei Rechenwegbefunde aus dem Papier „Verbesserungen 29.09.2026“** (Auftrag RB1, je ein
+> Anwenderentscheid). Eine Zahl der Basis verschiebt allein der erste.
+>
+> **(a) Die untere Grenzleistung des BHKW aus dem Anlagenfeld wirkt.** Das Feld „Untere Grenzleistung des
+> ausgewählten Moduls“ (`Tab_Energieanlagen.Grenzleistung`) gilt, sobald es gepflegt ist (> 0); sonst der
+> Katalogwert des Moduls (`Tab_BHKW.Grenzleistung`), sonst der Projektwert (`Tab_Einstellungen.Leistungsgrenze`).
+> Bis R30 überschrieb der Katalog- bzw. Projektwert das Anlagenfeld immer. Dieselbe Untergrenze gilt jetzt in allen
+> drei Betriebsarten — stromgeführt und ohne Einspeisung nahmen bis R30 nur den Projektwert. Ein Wert über 100 % ist
+> ungültig, wird im Simulationsprotokoll benannt und übersprungen (`SimulationBHKW.Grenzfaktor`).
+> In der Testdatenbank pflegen 1018 und 1049 im Anlagenfeld 35 % bei 30 % im Projekt und ohne Katalogwert — beide
+> rechnen jetzt mit 35 statt 30 %. 1017 und 1047 führen im Anlagenfeld 30 % wie im Projekt, 1030 und 1024 kein
+> Anlagenfeld (Katalog 15 % bzw. Projekt 10 %): byte-gleich. Alle BHKW-Referenzprojekte rechnen wärmegeführt
+> (`Betriebsart` 0 oder leer); die stromseitigen Fahrweisen verschieben keine Zahl der Basis.
+>
+> **(b) Die Autarkie-Analyse ohne Stromspeicher rechnet mit 0 kWh** statt mit einem angenommenen 5-kWh-Speicher.
+> Sie steht in keiner CSV der Basis (Hülle der Ergebnisseite); gehalten von
+> `EPOS.Kern.Tests/AutarkieOhneStromspeicherTests` (1045: Autarkie der PV 10,22 % → 8,77 %).
+>
+> **(c) Ein Bedarfsprofil ohne Typbezug wird übersprungen**, statt die Bedarfsart abzubrechen (Befund PW6). Kein
+> Referenzprojekt führt ein zugeordnetes Profil ohne Typ; gehalten von `EPOS.Kern.Tests/ProfilOhneTypTests`.
+>
+> **A/B gegen R30** (beide auf Linux): **14/16 PASS**, 477/487 CSV byte-gleich. Abgewichen sind allein 1018 und
+> 1049, je fünf Dateien (`aggregate.csv`, `bhkw_waerme.csv`, `bhkw_strom.csv`, `bhkw_restwaerme.csv`,
+> `kessel_leistung.csv`) und je 44 Skalare (BHKW, Heizkessel und ihre Emissionen).
+>
+> | Größe | 1018 R30 → R31 | 1049 R30 → R31 |
+> |---|---|---|
+> | BHKW-Wärme MWh/a (`BHKW.Waermeproduktion`) | 58,32 → 54,28 | 52,00 → 49,09 |
+> | BHKW-Strom MWh/a (`BHKW.Stromproduktion`) | 27,46 → 25,55 | 24,48 → 23,11 |
+> | Betriebsstunden des BHKW h/a | 1 893,62 → 1 762,37 | 1 688,33 → 1 593,84 |
+> | Wärmedeckung des BHKW % | 84,66 → 78,86 | 75,78 → 71,55 |
+> | Kesselwärme MWh/a (`Heizkessel.Waermeproduktion`) | 11,09 → 15,14 | 6,32 → 9,23 |
+> | Kesselstarts (`Kessel[0].Starts`) | 6 937 → 8 149 | 2 372 → 3 242 |
+> | Gasspitze des Kessels kW | 9,19 → 10,64 | 9,20 → 10,65 |
+> | CO₂ des BHKW t/a | 22,34 → 20,79 | 19,92 → 18,80 |
+> | CO₂ des Kessels t/a | 2,78 → 3,74 | 1,52 → 2,22 |
+>
+> **Plausibel:** Mit 35 statt 30 % bleibt das Modul in Stunden mit kleinem Wärmeraum (zwischen 30 und 35 % seiner
+> thermischen Nennleistung) aus; der Kessel deckt diese Stunden. **Gegenprobe:** Die Wärme von BHKW und Kessel bleibt
+> zusammen gleich (1018: 69,41 → 69,42 MWh/a, 1049: 58,32 → 58,32 MWh/a, Rundung der zweiten Stelle).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R30. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`RB1_Rechenwegbefunde_29-09_Protokoll.md`](../Protokolle/Simulation/RB1_Rechenwegbefunde_29-09_Protokoll.md).
+
+> **Nachtrag — Schemaschritt 159 (Änderungsstempel für Kosten, Preise und Kostenkatalog), Basis unverändert.**
+> Reines DDL aus `KostenStempelSchema` (Nummer `KesselBrennwertNachzug.SCHRITT + 1`): die nullbaren Spalten
+> `Tab_Projekt.Kosten_Geaendert` und `Tab_Applikation.Kostenkatalog_Geaendert` (TEXT) und 63 Trigger, die sie bei
+> jeder Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen (Liste in
+> [`BETRIEB_SQLITE.md`](../../aktuell/BETRIEB_SQLITE.md), Abschnitt 2b). Die Testdatenbank ist aus der
+> Fassung `c1a153dc…` (Schemastand 158 samt Laufvermerk `Lauf_Staende`, P641) mit `Werkzeuge/Testdatenbankschema`
+> auf **159** gezogen; ein zweiter Lauf
+> legt nichts an und setzt — auch über die erneut gefahrenen Schritte davor — keinen Stempel. Zeilenvergleich über
+> alle Tabellen: allein `Tab_Applikation` (`SchemaVersion` 158 → 159); das Schema wächst nur um die zwei Spalten und
+> die 63 Trigger (153 STRICT-Tabellen); die Stempel sind überall leer; `integrity_check` ok, `foreign_key_check`
+> leer. Neue Fassung **81 162 240 Byte, LFS-SHA-256
+> `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Stempel; die sechzehn Projekte rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich.
+> Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritte 160 und 161 (Aufheizoptimierung, Stufe KP3), Basis unverändert.** Reines DDL aus
+> `AufheizvorgabeSchema` (KP-S2, Nummer `KostenStempelSchema.SCHRITT + 1`) und `AufheizErgebnisSchema` (KP-S3,
+> Nummer `AufheizvorgabeSchema.SCHRITT + 1`), Spezifikation im
+> [Entwurf KP3](../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Abschnitt 4: an
+> `Tab_Einstellungen` der Schalter `Aufheizoptimierung` (0/1, Vorgabe 0) und die nullbaren `Aufheiz_Bemessung`,
+> `Aufheiz_Abzug_K`, `Aufheiz_Reserve`, `Aufheiz_Art` (32 → 37 Spalten); an `Tab_ErgebnisGebaeude` (26 → 40) und
+> `Tab_ErgebnisZone` (15 → 29) je vierzehn nullbare Ergebnisspalten, alle mit ihren Prüfklauseln. Die Testdatenbank
+> ist aus der Fassung `a50f1f49…` (Schemastand 159) mit `Werkzeuge/Testdatenbankschema` auf **161** gezogen; ein
+> zweiter Lauf legt nichts an. Zeilenvergleich über alle Tabellen: allein `Tab_Applikation` (`SchemaVersion`
+> 159 → 161); das Schema wächst nur um die 33 Spalten (153 STRICT-Tabellen, keine neue Tabelle, die Stempeltrigger
+> unberührt); der Schalter steht überall auf 0, alle übrigen neuen Spalten sind leer; `integrity_check` ok,
+> `foreign_key_check` leer. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `117f44f96b4530540348202ecb9cbd123128953ff0d7af0e77abb8cded9fe3dd`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Spalten, und der Referenzlauf liest die Ergebnistabellen der Gebäude und Zonen nicht; die sechzehn Projekte
+> rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 162 (Einheit des Kessel-Bereitschaftsverlusts), Basis unverändert.** Reines DDL aus
+> `KesselBereitschaftEinheitSchema` (Nummer `AufheizErgebnisSchema.SCHRITT + 1`): an `Tab_Heizkessel` und
+> `Tab_Heizkessel_STAMM` je die Spalte `Bereitschaft_Einheit TEXT NOT NULL DEFAULT 'kW' CHECK IN ('kW','%')`.
+> Die Testdatenbank ist aus der Fassung `117f44f9…` (Schemastand 161) mit `Werkzeuge/Testdatenbankschema` auf
+> **162** gezogen (2 Spalten, keine Tabelle); jede Zeile trägt `kW`, der Rechenweg liefert damit dieselbe
+> Bereitschaftsleistung wie vor dem Schritt. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf einer so gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine
+> Einfrierregel ist berührt.
+
+### Die Vorgängerbasis R30 `2026-09-30_R30_Stromverbraucher`
+
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
+158), getragen bis zur Fassung `a50f1f49…` (Schemastand 159); mit R31 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (Stromverbraucher-Zuordnung über die ID, SV1) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R30 und
+R31 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg der BHKW-Untergrenze (RB1).
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

@@ -125,6 +125,48 @@ namespace WindowsFormsApplication1
         /// <summary>Jahressumme des verworfenen Überschusses je Feld [kWh].</summary>
         private double[] _ueberFeld = new double[0];
 
+        /// <summary>In der laufenden Stunde genutzte Wärme je Feld (Deckung plus Ladung) [kWh] — die Betriebsbedingung des Pumpenstroms.</summary>
+        private double[] _abgabeStunde = new double[0];
+
+        /// <summary>Pumpenleistung je Feld [W]; <c>null</c> = nicht gepflegt (ST1).</summary>
+        private double?[] _pumpeW = new double?[0];
+
+        /// <summary><c>Hilfsenergie_Anteil</c> je Feld [%] — der Ersatzweg ohne Pumpenleistung (ST1).</summary>
+        private double?[] _hilfsAnteil = new double?[0];
+
+        /// <summary>Jahressumme des Pumpenstroms je Feld [kWh].</summary>
+        private double[] _pumpeFeld = new double[0];
+
+        /// <summary>Die Eingänge der Kennlinie je Feld (ST2); <c>null</c> = Potenzial steht vorab fest.</summary>
+        private Kollektorstunden[] _modell = new Kollektorstunden[0];
+
+        /// <summary>Ausgewertete Stunden je Feld (Zeilen der Klimadaten, höchstens 8760).</summary>
+        private int[] _stunden = new int[0];
+
+        /// <summary>Senkenpuffer je Feld, aus dessen unterster Zone die Arbeitstemperatur kommt (ST2); <c>null</c> = keiner.</summary>
+        private SimulationPufferspeicher[] _temperaturSpeicher = new SimulationPufferspeicher[0];
+
+        /// <summary>Mittlere Fluidtemperatur je Feld, gewichtet mit dem Potenzial [°C·kWh] — für den Ausweis.</summary>
+        private double[] _tMittelGewichtet = new double[0];
+
+        /// <summary>
+        /// Der gerechnete RÜCKLAUF des Heizkreises je Stunde [°C] (Anlagenkopplung AK1) — die
+        /// Eintrittsseite eines Felds mit Arbeitstemperatur aus dem Speicher, das keinen Puffer
+        /// lädt (ST2). <c>null</c> ohne gekoppeltes Gebäude. Gesetzt von <c>SimulationControl</c>.
+        /// </summary>
+        public double[] Heizkreisruecklauf;
+
+        /// <summary>
+        /// Pumpenstrom der Solarkreise je Stunde [kWh] (ST1): Pumpenleistung · 1 h in jeder Stunde,
+        /// in der ein Feld Wärme abgibt, hilfsweise der Hilfsenergieanteil auf die genutzte Wärme.
+        /// <c>SimulationControl</c> bucht die Reihe in den Strombedarf; ohne gepflegten Wert bleibt
+        /// sie 0.
+        /// </summary>
+        public double[] Pumpenstrom_stuendlich = new double[8760];
+
+        /// <summary>Jahressumme des Pumpenstroms [kWh].</summary>
+        public double PumpenstromGesamtKwh = 0;
+
         private readonly List<string> _feldName = new List<string>();
         private readonly List<double> _feldFlaeche = new List<double>();
         private readonly List<long> _feldAnzahl = new List<long>();
@@ -171,7 +213,11 @@ namespace WindowsFormsApplication1
             /// <summary>Tab_Energieanlagen.ID des Felds.</summary>
             public int ID_Anlage;
             public string Name = "";
-            /// <summary>Aperturfläche gesamt [m²] = Modulfläche · Anzahl.</summary>
+            /// <summary>
+            /// Rechnende Kollektorfläche gesamt [m²] = Bezugsfläche eines Moduls · Anzahl — die Fläche,
+            /// auf die η₀, a₁ und a₂ bezogen sind: Apertur (Vorgabe) oder Brutto (ST6,
+            /// <see cref="Solarkreis.Modulbezugsflaeche"/>).
+            /// </summary>
             public double Flaeche;
             public long Anzahl;
             /// <summary>Zahl der ausgewerteten Stunden (Zeilen der Klimadaten, höchstens 8760).</summary>
@@ -188,6 +234,47 @@ namespace WindowsFormsApplication1
             public Senkenliste Senke;
             /// <summary>true für das Feld der Solarthermieganglinie.</summary>
             public bool IstGanglinie;
+            /// <summary>Pumpenleistung [W]; <c>null</c> = nicht gepflegt (ST1).</summary>
+            public double? PumpenleistungW;
+            /// <summary><c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> [%]; Ersatzweg des Pumpenstroms.</summary>
+            public double? HilfsenergieAnteil;
+            /// <summary>
+            /// Die Eingänge der Kollektorkennlinie je Stunde (ST2): Strahlung, Außentemperatur,
+            /// Einfallswinkel und Kennwerte. <c>null</c> für die Ganglinie und die Testfelder — ihr
+            /// <see cref="Potenzial"/> steht vorab fest.
+            /// </summary>
+            public Kollektorstunden Modell;
+        }
+
+        /// <summary>
+        /// DIE EINGÄNGE DER KOLLEKTORKENNLINIE eines Felds — alles, was der Wirkungsgrad einer
+        /// Stunde braucht, außer der Arbeitstemperatur (ST2, Welle M2). Gelesen wird einmal vor der
+        /// Stundenschleife (<see cref="Kollektorfelder_Lesen"/>); die Formel selbst rechnet in
+        /// <see cref="Stunde_Start"/>, mit der Arbeitstemperatur der Stunde.
+        /// </summary>
+        private sealed class Kollektorstunden
+        {
+            /// <summary>Gesamtstrahlung auf die Kollektorebene je Stunde [W/m²] (<c>CalculateHourly</c>).</summary>
+            public readonly double[] Gesamt = new double[8760];
+            /// <summary>Direktanteil G_b je Stunde [W/m²] (ST5).</summary>
+            public readonly double[] Direkt = new double[8760];
+            /// <summary>Diffus- und Bodenreflexanteil G_dr je Stunde [W/m²] (ST5).</summary>
+            public readonly double[] DiffusReflex = new double[8760];
+            /// <summary>Außentemperatur je Stunde [°C].</summary>
+            public readonly double[] Aussen = new double[8760];
+            /// <summary>Kosinus des Einfallswinkels je Stunde.</summary>
+            public readonly double[] CosTheta = new double[8760];
+            public double H0, K1, K2, Kdir50, Kdfu;
+            /// <summary>Führt der Satz ein K_dfu (ST5)?</summary>
+            public bool MitKdfu;
+            /// <summary>Faktor nach den Verlusten des Solarkreises (ST3 Stufe 1).</summary>
+            public double Verlustfaktor;
+            /// <summary>Arbeitstemperatur aus dem Speicher (ST2) statt fest 50 °C?</summary>
+            public bool AusSpeicher;
+            /// <summary>Grädigkeit des Wärmeübertragers [K] (ST4).</summary>
+            public double GraedigkeitK;
+            /// <summary>Spreizung des Kollektorkreises [K] (ST2).</summary>
+            public double SpreizungK;
         }
 
         /// <summary>
@@ -228,10 +315,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Liest die Kollektorfelder des Projekts und rechnet ihr STÜNDLICHES POTENZIAL
-        /// für das ganze Jahr — die Schritte 1 und 2 des Kollektormodells (spezifische
-        /// Leistung, potenzielle Erzeugung), also alles, was NICHT vom Wärmebedarf und
-        /// nicht vom Speicherfüllstand abhängt.
+        /// Liest die Kollektorfelder des Projekts und die EINGÄNGE ihrer Kennlinie für das ganze
+        /// Jahr — Strahlung auf die Kollektorebene (getrennt nach Direkt- und Diffusanteil, ST5),
+        /// Außentemperatur, Einfallswinkel, Kennwerte, Fläche und Verluste. Die Schritte 1 und 2
+        /// des Kollektormodells (spezifische Leistung, potenzielle Erzeugung) rechnen seit der
+        /// Welle M2 je Stunde in <see cref="Stunde_Start"/>, weil die Arbeitstemperatur aus dem
+        /// Speicher vom Füllstand der Vorstunde abhängt (ST2).
         ///
         /// EINE Fassung (Paket-5-Nacharbeit, Befund N6): Bis dahin stand dieser Block
         /// zweimal im Modul — je einmal für den einkanaligen und den zweikanaligen Weg.
@@ -254,7 +343,16 @@ namespace WindowsFormsApplication1
 
                 SolarkollektorenCtrl ctrlsol = new SolarkollektorenCtrl();
                 ctrlsol.ReadSingle(nId);
-                double nFlaeche = ctrlsol.m_Aperturfläche;
+                // ST6: die Fläche, auf die die Kennwerte bezogen sind - Apertur (Vorgabe) oder
+                // Brutto (Modulfläche). Brutto ohne gepflegte Modulfläche rechnet mit der Apertur.
+                bool flaechenRueckfall;
+                double nFlaeche = Solarkreis.Modulbezugsflaeche(ctrlsol.m_Bezugsflaeche, ctrlsol.m_Aperturfläche,
+                                                                ctrlsol.m_Modulfläche, out flaechenRueckfall);
+                if (flaechenRueckfall)
+                    SimulationProtokoll.Aktuell.WarnungEinmal("solar-bezugsflaeche-" + nId,
+                        "Solarthermie: Die Kennwerte des Kollektors ‚" + ctrlsol.m_szKollektorname + "‘ sind auf " +
+                        "die Bruttofläche bezogen, der Satz führt aber keine Modulfläche - der Lauf rechnet " +
+                        "mit der Aperturfläche.");
 
                 // B1 (Paket A): der zentrale Ortszeit-Lesepfad. Bis dahin stand die
                 // Kollektorreihe im UTC-Raster und damit 1 bis 2 Stunden vor dem
@@ -268,8 +366,14 @@ namespace WindowsFormsApplication1
                 double k1 = ctrlsol.m_k1;
                 double k2 = ctrlsol.m_k2;
                 double kdir50 = ctrlsol.m_Kdir;
-                double tStorage = 50; // Annahme Speichertemperatur
-                double leitungsverluste = 0.92;
+                // ST5: Einfallswinkelkorrektur der Diffusstrahlung; 0 = nicht bekannt, dann gilt
+                // für die Diffusstrahlung der Faktor der Direktstrahlung (Rechnung wie zuvor).
+                double kdfu = ctrlsol.m_Kdfu;
+                bool mitKdfu = Solarkreis.KdfuGepflegt(kdfu);
+
+                // ST3 Stufe 1: die Verluste des Solarkreises aus dem Feld; leer = 8 % - der
+                // Faktor (100 - 8) / 100 ist bitgleich das frühere Literal 0,92.
+                double leitungsverluste = Solarkreis.Verlustfaktor(ctrl.items[n].Solarkreisverluste_Prozent);
 
                 SolarFeld f = new SolarFeld();
                 f.ID_Anlage = ctrl.items[n].ID;
@@ -278,6 +382,24 @@ namespace WindowsFormsApplication1
                 f.Flaeche = nFlaeche * nAnzahl;
                 f.Anzahl = nAnzahl;
                 f.Stunden = Math.Min(ctrldat.rows, 8760);
+                f.PumpenleistungW = ctrl.items[n].Pumpenleistung_W;
+                f.HilfsenergieAnteil = HilfsenergieAnteilLesen(f.ID_Anlage);
+
+                // ST2 (Welle M2): die Kennwerte und der Weg der Arbeitstemperatur; die Formel
+                // rechnet je Stunde in Stunde_Start.
+                Kollektorstunden m = new Kollektorstunden
+                {
+                    H0 = h0, K1 = k1, K2 = k2, Kdir50 = kdir50, Kdfu = kdfu, MitKdfu = mitKdfu,
+                    Verlustfaktor = leitungsverluste,
+                    AusSpeicher = Solarkreis.ArbeitstemperaturAusSpeicher(ctrl.items[n].Arbeitstemperatur_Weg),
+                    GraedigkeitK = Solarkreis.Graedigkeit(ctrl.items[n].Uebertrager_Graedigkeit_K),
+                    SpreizungK = Solarkreis.Spreizung(ctrl.items[n].Kollektor_Spreizung_K)
+                };
+                f.Modell = m;
+
+                // PV4: die Bodenalbedo der Anlagenzeile (leer = 0,2, bitgleich zur Vorgabe des
+                // Rechners) - dieselbe Leseregel wie in der Photovoltaik.
+                double albedo = Bodenalbedo.Wert(ctrl.items[n]);
 
                 for (int i = 0; i < f.Stunden; i++)
                 {
@@ -295,7 +417,8 @@ namespace WindowsFormsApplication1
                         zeile.Direktstrahlung,
                         zeile.Diffusstrahlung,
                         zeile.Außen_Temp,
-                        zeile.TagUtc, zeile.StundeUtc);
+                        zeile.TagUtc, zeile.StundeUtc,
+                        albedo);
 
                     double ta = zeile.Außen_Temp;
 
@@ -303,16 +426,42 @@ namespace WindowsFormsApplication1
                     // Wir nutzen hier den internen Wert aus dem Calculator
                     double currentCosTheta = SolarCalculator.lastCosTheta;
 
-                    // Schritt 1: spezifische Leistung [W/m²], Schritt 2: Bruttoertrag [kWh]
-                    double leistungProQm = CalculateThermalPower(gTilted, ta, tStorage, currentCosTheta,
-                                                                 h0, k1, k2, kdir50);
-                    f.Potenzial[i] = (leistungProQm * f.Flaeche * leitungsverluste) / 1000.0;
+                    // ST5 (EN ISO 9806): die Strahlung auf der Kollektorebene getrennt in den
+                    // Direktanteil G_b = DNI · cos θ - dieselbe Multiplikation wie in
+                    // SolarCalculator.CalculateHourly - und den Rest G_dr aus Diffus- und
+                    // Bodenreflexstrahlung. In einer Nachtstunde liefert CalculateHourly 0 und
+                    // lässt cos θ stehen; dann ist auch G_b 0.
+                    double gDirekt = gTilted > 0 ? zeile.Direktstrahlung * currentCosTheta : 0;
+                    double gDiffusReflex = gTilted - gDirekt;
+
+                    // ST2: Die Schritte 1 (spezifische Leistung) und 2 (Bruttoertrag) rechnen ab
+                    // der Welle M2 in der Stundenschleife (PotenzialStunde) - hier stehen nur ihre
+                    // Eingänge.
+                    m.Gesamt[i] = gTilted;
+                    m.Direkt[i] = gDirekt;
+                    m.DiffusReflex[i] = gDiffusReflex;
+                    m.Aussen[i] = ta;
+                    m.CosTheta[i] = currentCosTheta;
                 }
 
                 felder.Add(f);
             }
 
             return felder;
+        }
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> einer Anlagenzeile [%] — eine Fachspalte, die
+        /// das Anlagenmodell nicht trägt; <c>null</c> ohne Wert oder ohne Spalte.
+        /// </summary>
+        private static double? HilfsenergieAnteilLesen(int idAnlage)
+        {
+            if (idAnlage <= 0 || !DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN, "Hilfsenergie_Anteil"))
+                return null;
+            object v = StilleDb.Scalar("SELECT Hilfsenergie_Anteil FROM Tab_Energieanlagen WHERE ID = ?",
+                                       StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v, CultureInfo.InvariantCulture);
         }
 
         public void Init()
@@ -328,6 +477,10 @@ namespace WindowsFormsApplication1
             // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             SpeicherladungGesamtKwh = 0;
+
+            // ST1: der Pumpenstrom der Solarkreise.
+            Array.Clear(Pumpenstrom_stuendlich, 0, Pumpenstrom_stuendlich.Length);
+            PumpenstromGesamtKwh = 0;
             DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
 
@@ -407,20 +560,15 @@ namespace WindowsFormsApplication1
         // ===================================================================
 
         /// <summary>
-        /// Baut die Kollektorfelder des zweikanaligen Wegs auf und bestimmt ihr
-        /// STÜNDLICHES POTENZIAL für das ganze Jahr.
+        /// Baut die Kollektorfelder des zweikanaligen Wegs auf und liest die Eingänge ihrer
+        /// Kennlinie für das ganze Jahr.
         ///
-        /// Der Bruttoertrag eines Kollektorfelds hängt ausschließlich vom Wetter, von der
-        /// Ausrichtung und von den Kollektorkennwerten ab — nicht vom Wärmebedarf und
-        /// nicht vom Speicherfüllstand (siehe <see cref="BerechneSolarthermie"/>: die
-        /// Bilanzierung in Schritt 3 kappt nur, was Schritt 2 vorher unabhängig davon
-        /// gerechnet hat). Genau deshalb lässt sich die Solarthermie überhaupt in die
-        /// Stundenschleife der Kaskade einfügen: Ihr Potenzial steht vorab fest, die
-        /// Verwendung (Direktdeckung, Speicherladung, Verwurf) entscheidet sich erst in
-        /// der Stunde.
-        ///
-        /// Gerechnet wird mit denselben Aufrufen und in derselben Reihenfolge wie in
-        /// <see cref="Berechnung"/> — die Potenzialwerte sind damit dieselben Zahlen.
+        /// Der Bruttoertrag eines Kollektorfelds hängt vom Wetter, von der Ausrichtung, von den
+        /// Kollektorkennwerten und von der Arbeitstemperatur ab — nicht vom Wärmebedarf der Stunde.
+        /// Mit fester Arbeitstemperatur (Vorgabe) steht das Potenzial damit vorab fest; mit der
+        /// Arbeitstemperatur aus dem Speicher (ST2, Welle M2) folgt es dem Füllstand der Vorstunde.
+        /// In beiden Fällen bildet <see cref="Stunde_Start"/> das Potenzial der Stunde, bevor die
+        /// Verwendung (Direktdeckung, Speicherladung, Verwurf) entschieden wird.
         /// </summary>
         /// <param name="senken">Geordnete Senkenlisten des Projekts (Konzept 5.1).</param>
         public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenliste> senken)
@@ -463,6 +611,12 @@ namespace WindowsFormsApplication1
             _feldGanglinie.Clear();
 
             List<double[]> potenziale = new List<double[]>();
+            _pumpeW = new double?[felder.Count];
+            _hilfsAnteil = new double?[felder.Count];
+            _modell = new Kollektorstunden[felder.Count];
+            _stunden = new int[felder.Count];
+            _temperaturSpeicher = new SimulationPufferspeicher[felder.Count];
+            _tMittelGewichtet = new double[felder.Count];
 
             for (int n = 0; n < felder.Count; n++)
             {
@@ -475,12 +629,20 @@ namespace WindowsFormsApplication1
                 _feldAnzahl.Add(f.Anzahl);
                 _feldSenke.Add(f.Senke ?? SenkeZuAnlage(senken, f.ID_Anlage));
                 _feldGanglinie.Add(f.IstGanglinie);
+
+                // Die Ganglinie (Abschnitt 14) bleibt ohne Pumpenstrom: Sie ist ein gegebener Ertrag.
+                _pumpeW[n] = f.IstGanglinie ? null : f.PumpenleistungW;
+                _hilfsAnteil[n] = f.IstGanglinie ? null : f.HilfsenergieAnteil;
+                _modell[n] = f.IstGanglinie ? null : f.Modell;
+                _stunden[n] = f.Stunden;
             }
 
             _potenzialFeld = potenziale.ToArray();
             _restPotenzial = new double[_potenzialFeld.Length];
             _prodFeld = new double[_potenzialFeld.Length];
             _ueberFeld = new double[_potenzialFeld.Length];
+            _abgabeStunde = new double[_potenzialFeld.Length];
+            _pumpeFeld = new double[_potenzialFeld.Length];
         }
 
         /// <summary>
@@ -604,6 +766,91 @@ namespace WindowsFormsApplication1
             FelderUebernehmen(GanglinieEinsetzen(felder, Ganglinie), senken);
         }
 
+        /// <summary>Jahressumme des Bruttopotenzials eines Felds [kWh] — Prüfgröße der Tests.</summary>
+        internal double PotenzialSumme(int feld)
+            => feld >= 0 && feld < _potenzialFeld.Length ? _potenzialFeld[feld].Sum() : 0;
+
+        /// <summary>Bruttopotenzial eines Felds in einer Stunde [kWh] — Prüfgröße der Tests.</summary>
+        internal double Potenzial(int feld, int stunde)
+            => feld >= 0 && feld < _potenzialFeld.Length && stunde >= 0 && stunde < 8760 ? _potenzialFeld[feld][stunde] : 0;
+
+        /// <summary>Rechnende Kollektorfläche eines Felds [m²] — Prüfgröße der Tests.</summary>
+        internal double FeldFlaeche(int feld)
+            => feld >= 0 && feld < _feldFlaeche.Count ? _feldFlaeche[feld] : 0;
+
+        /// <summary>Ein Kollektorfeld für den Testeinstieg <see cref="Vorbereiten_Testfelder"/>.</summary>
+        internal sealed class Testfeld
+        {
+            /// <summary>Anlagen-ID des Felds (Schlüssel der Senkenliste).</summary>
+            public int ID_Anlage;
+            /// <summary>Bruttopotenzial je Stunde [kWh]; <c>null</c> = 0.</summary>
+            public double[] Potenzial;
+            /// <summary>Pumpenleistung [W]; <c>null</c> = nicht gepflegt.</summary>
+            public double? PumpenleistungW;
+            /// <summary>Hilfsenergieanteil [%]; <c>null</c> = nicht gepflegt.</summary>
+            public double? HilfsenergieAnteil;
+            /// <summary>
+            /// Mit Wert: das Feld rechnet über die Kennlinie (ST2) — konstante Gesamtstrahlung
+            /// [W/m², ganz direkt, senkrecht] je Stunde; <see cref="Potenzial"/> gilt dann nicht.
+            /// </summary>
+            public double? Strahlung;
+            /// <summary>Außentemperatur der Kennlinienstunden [°C].</summary>
+            public double Aussen = 10;
+            /// <summary>Kennwerte der Kennlinie.</summary>
+            public double H0 = 0.8, K1 = 3.0, K2 = 0.01, Kdir50 = 0.95;
+            /// <summary>Rechnende Fläche [m²].</summary>
+            public double Flaeche = 10;
+            /// <summary>Arbeitstemperatur aus dem Speicher (ST2)?</summary>
+            public bool AusSpeicher;
+            /// <summary>Grädigkeit und Spreizung [K]; <c>null</c> = Vorgabe.</summary>
+            public double? GraedigkeitK, SpreizungK;
+        }
+
+        /// <summary>
+        /// Testeinstieg ohne Datenbank für den Solarkreis (Welle M2): Felder mit vorgegebenem
+        /// Potenzial und Pumpenangaben, gerechnet über dieselben Stundenschritte wie im Lauf.
+        /// </summary>
+        internal void Vorbereiten_Testfelder(IList<Testfeld> testfelder, List<Senkenliste> senken)
+        {
+            Init();
+            Array.Clear(Waermebedarf, 0, Waermebedarf.Length);
+
+            List<SolarFeld> felder = new List<SolarFeld>();
+            foreach (Testfeld t in testfelder)
+            {
+                SolarFeld f = new SolarFeld { ID_Anlage = t.ID_Anlage, Name = "Feld " + t.ID_Anlage,
+                                              Anlagenname = "Anlage " + t.ID_Anlage, Stunden = 8760,
+                                              PumpenleistungW = t.PumpenleistungW,
+                                              HilfsenergieAnteil = t.HilfsenergieAnteil };
+                if (t.Potenzial != null) Array.Copy(t.Potenzial, f.Potenzial, Math.Min(8760, t.Potenzial.Length));
+                if (t.Strahlung.HasValue)
+                {
+                    var m = new Kollektorstunden
+                    {
+                        H0 = t.H0, K1 = t.K1, K2 = t.K2, Kdir50 = t.Kdir50,
+                        Verlustfaktor = Solarkreis.Verlustfaktor(null),
+                        AusSpeicher = t.AusSpeicher,
+                        GraedigkeitK = Solarkreis.Graedigkeit(t.GraedigkeitK),
+                        SpreizungK = Solarkreis.Spreizung(t.SpreizungK)
+                    };
+                    for (int h = 0; h < 8760; h++)
+                    {
+                        m.Gesamt[h] = t.Strahlung.Value;
+                        m.Direkt[h] = t.Strahlung.Value;
+                        m.Aussen[h] = t.Aussen;
+                        m.CosTheta[h] = 1.0;
+                    }
+                    f.Modell = m;
+                    f.Flaeche = t.Flaeche;
+                }
+                felder.Add(f);
+            }
+
+            Ganglinie = SolarganglinieWeiche.Keine();
+            RechnetGanglinie = false;
+            FelderUebernehmen(felder, senken);
+        }
+
         /// <summary>
         /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
         /// Heizkreis/Beides — dieselbe Regel wie beim Kontextaufbau der Wärmepumpe
@@ -633,12 +880,103 @@ namespace WindowsFormsApplication1
         public void Stunde_Start(int stunde, double[] rest)
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
+            {
+                // ST2 (Welle M2): das Potenzial der Stunde aus der Kennlinie, mit der
+                // Arbeitstemperatur dieser Stunde - fest 50 °C oder aus dem Speicherzustand der
+                // Vorstunde. Ganglinie und Testfelder bringen ihr Potenzial mit.
+                if (stunde >= 0 && stunde < 8760 && _modell[f] != null)
+                    _potenzialFeld[f][stunde] = PotenzialStunde(f, stunde);
+
                 _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
+                _abgabeStunde[f] = 0;
+            }
 
             double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = eingang;
         }
+
+        /// <summary>
+        /// DAS POTENZIAL EINER STUNDE [kWh] — Schritte 1 und 2 des Kollektormodells (ST2, Welle M2):
+        /// spezifische Leistung nach der Kennlinie (EN ISO 9806, mit getrennter Diffuskorrektur nach
+        /// ST5, wenn der Satz K_dfu führt) bei der Arbeitstemperatur der Stunde, mal rechnender
+        /// Fläche, mal Faktor nach den Verlusten des Solarkreises.
+        ///
+        /// <para><b>Fest 50 °C rechnet Anweisung für Anweisung wie der Jahresvorlauf vor der
+        /// Welle</b> (dieselbe Funktion, dieselben Operanden) — das Ergebnis ist byte-gleich.</para>
+        /// </summary>
+        private double PotenzialStunde(int f, int stunde)
+        {
+            Kollektorstunden m = _modell[f];
+            if (stunde >= _stunden[f]) return 0;
+
+            double tMittel = Arbeitstemperatur(f, stunde);
+
+            double leistungProQm = m.MitKdfu
+                ? Solarkreis.LeistungJeQm(m.Direkt[stunde], m.DiffusReflex[stunde], m.Aussen[stunde], tMittel,
+                                          m.CosTheta[stunde], m.H0, m.K1, m.K2, m.Kdir50, m.Kdfu)
+                : CalculateThermalPower(m.Gesamt[stunde], m.Aussen[stunde], tMittel, m.CosTheta[stunde],
+                                        m.H0, m.K1, m.K2, m.Kdir50);
+            double potenzial = (leistungProQm * _feldFlaeche[f] * m.Verlustfaktor) / 1000.0;
+
+            if (potenzial > 0) _tMittelGewichtet[f] += tMittel * potenzial;
+            return potenzial;
+        }
+
+        /// <summary>
+        /// DIE ARBEITSTEMPERATUR eines Felds in einer Stunde [°C] — die mittlere Fluidtemperatur
+        /// ϑ_m, auf die sich die Kennlinie bezieht (EN ISO 9806; EN 15316-4-3).
+        ///
+        /// <para><b>Fest</b> (Vorgabe): 50 °C für das ganze Jahr. <b>Aus dem Speicher</b> (ST2 mit
+        /// ST4): <c>ϑ_ein = ϑ_unten + ΔT_WT</c>, <c>ϑ_m = ϑ_ein + ΔT_Koll/2</c>. ϑ_unten ist die
+        /// Temperatur der untersten Zone des Senkenpuffers am Ende der Vorstunde
+        /// (<see cref="SimulationPufferspeicher.T_unten"/>; bei einer Zone
+        /// <c>ϑ_RL + SOC/Q_max · (ϑ_VL − ϑ_RL)</c>), ohne Puffer der gerechnete Rücklauf des
+        /// Heizkreises (Anlagenkopplung). Ohne beides rechnet das Feld fest und sagt es.</para>
+        /// </summary>
+        private double Arbeitstemperatur(int f, int stunde)
+        {
+            Kollektorstunden m = _modell[f];
+            if (m == null || !m.AusSpeicher) return Solarkreis.ARBEITSTEMPERATUR_FEST_C;
+
+            double unten = double.NaN;
+            SimulationPufferspeicher sp = _temperaturSpeicher[f];
+            if (sp != null) unten = sp.T_unten;
+            else if (Heizkreisruecklauf != null && stunde >= 0 && stunde < Heizkreisruecklauf.Length)
+                unten = Heizkreisruecklauf[stunde];
+
+            if (double.IsNaN(unten) || double.IsInfinity(unten))
+            {
+                SimulationProtokoll.Aktuell.HinweisEinmal("solar-arbeitstemperatur-fest-" + f,
+                    "Solarthermie: Das Kollektorfeld „" + _feldName[f] + "“ soll seine Arbeitstemperatur aus " +
+                    "dem Speicher bilden, lädt aber keinen Puffer und hat keinen gerechneten Heizkreisrücklauf - " +
+                    "es rechnet mit der festen Arbeitstemperatur " +
+                    Solarkreis.ARBEITSTEMPERATUR_FEST_C.ToString("0", CultureInfo.CurrentCulture) + " °C.");
+                return Solarkreis.ARBEITSTEMPERATUR_FEST_C;
+            }
+
+            return Solarkreis.MittlereFluidtemperatur(unten, m.GraedigkeitK, m.SpreizungK);
+        }
+
+        /// <summary>
+        /// Setzt den SENKENPUFFER eines Felds, aus dessen unterster Zone die Arbeitstemperatur kommt
+        /// (ST2) — aufgerufen von <c>SimulationControl</c>, sobald die Speicher-Registry offen ist.
+        /// Ohne Arbeitstemperatur aus dem Speicher wirkungslos.
+        /// </summary>
+        public void TemperaturSpeicherSetzen(int feld, SimulationPufferspeicher speicher)
+        {
+            if (feld < 0 || feld >= _temperaturSpeicher.Length) return;
+            if (_modell[feld] == null || !_modell[feld].AusSpeicher) return;
+            _temperaturSpeicher[feld] = speicher;
+        }
+
+        /// <summary>Bildet das Feld <paramref name="feld"/> seine Arbeitstemperatur aus dem Speicher (ST2)?</summary>
+        public bool ArbeitstemperaturAusSpeicher(int feld)
+            => feld >= 0 && feld < _modell.Length && _modell[feld] != null && _modell[feld].AusSpeicher;
+
+        /// <summary>Der Senkenpuffer, aus dem das Feld seine Arbeitstemperatur bildet; <c>null</c> = keiner.</summary>
+        public SimulationPufferspeicher TemperaturSpeicher(int feld)
+            => feld >= 0 && feld < _temperaturSpeicher.Length ? _temperaturSpeicher[feld] : null;
 
         /// <summary>
         /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Solarthermie: Die
@@ -687,6 +1025,7 @@ namespace WindowsFormsApplication1
 
                 _restPotenzial[f] -= prod;
                 _prodFeld[f] += prod;
+                _abgabeStunde[f] += prod;
                 DirektdeckungGesamtKwh += prod;
                 if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
             }
@@ -736,6 +1075,7 @@ namespace WindowsFormsApplication1
 
             _restPotenzial[f] -= ladung;
             _prodFeld[f] += ladung;
+            _abgabeStunde[f] += ladung;
             SpeicherladungGesamtKwh += ladung;
             if (stunde >= 0 && stunde < 8760)
             {
@@ -755,6 +1095,14 @@ namespace WindowsFormsApplication1
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
             {
+                // ST1: der Pumpenstrom der Stunde - nur, wenn das Feld Wärme abgegeben hat.
+                double pumpe = Solarkreis.PumpenstromKwh(_pumpeW[f], _hilfsAnteil[f], _abgabeStunde[f]);
+                if (pumpe > 0)
+                {
+                    _pumpeFeld[f] += pumpe;
+                    if (stunde >= 0 && stunde < 8760) Pumpenstrom_stuendlich[stunde] += pumpe;
+                }
+
                 double rest = _restPotenzial[f];
                 if (rest <= 0) continue;
 
@@ -762,6 +1110,17 @@ namespace WindowsFormsApplication1
                 if (stunde >= 0 && stunde < 8760) Ueberschuss[stunde] += rest;
                 _restPotenzial[f] = 0;
             }
+        }
+
+        /// <summary>
+        /// Die mittlere Arbeitstemperatur eines Felds über das Jahr, gewichtet mit dem Potenzial
+        /// der Stunden [°C]; NaN ohne Kennlinie oder ohne Potenzial.
+        /// </summary>
+        private double ArbeitstemperaturMittel(int f)
+        {
+            if (f >= _modell.Length || _modell[f] == null) return double.NaN;
+            double summe = _potenzialFeld[f].Sum();
+            return summe > 0 ? _tMittelGewichtet[f] / summe : double.NaN;
         }
 
         /// <summary>Jahressummen und Feldauflistung des zweikanaligen Wegs.</summary>
@@ -777,9 +1136,14 @@ namespace WindowsFormsApplication1
                     Anzahl = _feldAnzahl[f],
                     WaermeproduktionKwh = _prodFeld[f],
                     UeberschussKwh = _ueberFeld[f],
+                    PumpenstromKwh = _pumpeFeld[f],
+                    ArbeitstemperaturMittelC = ArbeitstemperaturMittel(f),
+                    ArbeitstemperaturAusSpeicher = ArbeitstemperaturAusSpeicher(f),
                     IstGanglinie = f < _feldGanglinie.Count && _feldGanglinie[f]
                 });
             }
+
+            PumpenstromGesamtKwh = Pumpenstrom_stuendlich.Sum();
 
             WaermebedarfGesamtKwh = Waermebedarf.Sum();
             Max_Waermebedarf = Waermebedarf.Max();
@@ -833,10 +1197,22 @@ namespace WindowsFormsApplication1
     public class SolarKollektorErgebnis
     {
         public string Name = "";
-        public double Flaeche;          // Aperturflaeche gesamt (m^2) = Modulflaeche * Anzahl
+        public double Flaeche;          // rechnende Kollektorflaeche gesamt (m^2) = Bezugsflaeche eines Moduls (Apertur oder Brutto) * Anzahl
         public long Anzahl;
         public double WaermeproduktionKwh; // kWh/a
         public double UeberschussKwh;      // kWh/a
+
+        /// <summary>Pumpenstrom des Solarkreises [kWh/a] (ST1); 0 ohne gepflegte Pumpe.</summary>
+        public double PumpenstromKwh;
+
+        /// <summary>
+        /// Mittlere Arbeitstemperatur des Felds [°C], gewichtet mit dem Potenzial der Stunden (ST2);
+        /// fest 50 °C, aus dem Speicher der Mittelwert des Laufs; NaN für die Ganglinie.
+        /// </summary>
+        public double ArbeitstemperaturMittelC = double.NaN;
+
+        /// <summary>Bildet das Feld seine Arbeitstemperatur aus dem Speicher (ST2)?</summary>
+        public bool ArbeitstemperaturAusSpeicher;
 
         /// <summary>
         /// true für die Zeile der Solarthermieganglinie (Folgeauftrag 4): Sie hat keine

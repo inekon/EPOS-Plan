@@ -85,6 +85,12 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// Die Welle M2 Solarthermie (Schemaschritt <c>SolarthermieFelderSchema.SCHRITT</c>) hat
+        /// die fuenf Felder des Kollektorfelds ergaenzt - <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>,
+        /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>. MODELLspalten: Der
+        /// Kollektordialog schreibt sie, <c>SimulationSolarthermie</c> liest sie. Alle nullbar,
+        /// NULL = Vorgabe.
         /// Schemaschritt <see cref="AlbedoSchema.SCHRITT"/> (Entscheidungsvorlage Modellgrenzen,
         /// PV4) hat <c>Albedo</c> ergaenzt - die Bodenalbedo der Photovoltaik- und
         /// Solarthermie-Anlage, nullbar, NULL = Vorgabe 0,2. Eine MODELLspalte: Die
@@ -119,6 +125,8 @@ namespace WindowsFormsApplication1
                          PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
                          PV_Wechselrichterweg,
                          Kuehl_ID_Carrier, Kuehl_EigenerZaehler,
+                         Pumpenleistung_W, Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K,
+                         Kollektor_Spreizung_K, Arbeitstemperatur_Weg,
                          Albedo)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
@@ -127,6 +135,8 @@ namespace WindowsFormsApplication1
                                 ?,?,
                                 ?,?,?,?,?,
                                 ?,
+                                ?,?,
+                                ?,?,?,
                                 ?,?,
                                 ?)";
 
@@ -264,6 +274,14 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@kuehlzaehler", DbParamTyp.Integer,
                             EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler)),
 
+                        // --- Kollektorfeld der Solarthermie (Welle M2) -------------------
+                        // Ausdruecklicher Typ wie bei den PV-Feldern: NULL ist der Regelfall
+                        // ("es gilt die Vorgabe").
+                        ProjektPuffer.Par("@solpumpe",   DbParamTyp.Double,   Wert(item.Pumpenleistung_W)),
+                        ProjektPuffer.Par("@solverl",    DbParamTyp.Double,   Wert(item.Solarkreisverluste_Prozent)),
+                        ProjektPuffer.Par("@solgraed",   DbParamTyp.Double,   Wert(item.Uebertrager_Graedigkeit_K)),
+                        ProjektPuffer.Par("@solspreiz",  DbParamTyp.Double,   Wert(item.Kollektor_Spreizung_K)),
+                        ProjektPuffer.Par("@solweg",     DbParamTyp.VarWChar, item.Arbeitstemperatur_Weg),
                         // --- Bodenalbedo (Schemaschritt AlbedoSchema.SCHRITT; PV4) ----------
                         // NULL = Vorgabe 0,2. Ein Wert ausserhalb 0..1 waere ein Verstoss gegen
                         // die Pruefklausel und liesse das INSERT nach dem DELETE scheitern -

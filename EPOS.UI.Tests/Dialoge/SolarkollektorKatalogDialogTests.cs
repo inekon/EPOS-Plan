@@ -80,6 +80,29 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Abbrechen", "Speichern" }, knopftexte);
     }
 
+    /// <summary>
+    /// Die Bezugsfläche der Kennwerte (Welle M2, ST6): eine Auswahl Apertur/Brutto, vorbelegt mit
+    /// dem Wert des Satzes; die Wahl schreibt den Persistenzwert in den Arbeitsstand.
+    /// </summary>
+    [Fact]
+    public void Die_Bezugsflaeche_ist_eine_Auswahl_im_Arbeitsstand()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        var wahl = cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!;
+        Assert.Equal("0", wahl.GetAttribute("value"));
+        Assert.Equal("apertur", daten.Bezugsflaeche);
+
+        wahl.Change("1");
+        Assert.Equal("brutto", daten.Bezugsflaeche);
+
+        var brutto = Voll();
+        brutto.Bezugsflaeche = "brutto";
+        var zweiter = Aufbauen(brutto);
+        Assert.Equal("1", zweiter.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!.GetAttribute("value"));
+    }
+
     [Fact]
     public void Die_Beschriftungen_kommen_aus_dem_Designer_nicht_aus_der_Karte()
     {

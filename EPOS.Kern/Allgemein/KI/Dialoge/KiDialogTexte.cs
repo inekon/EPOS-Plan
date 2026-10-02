@@ -417,6 +417,16 @@
         internal static string SkNeigungErl => MyResource.Resource.KI_DLG_SK_NEIGUNG_ERL;
         internal static string SkAzimutName => MyResource.Resource.SKV_LBL_AZIMUT;
         internal static string SkAzimutErl => MyResource.Resource.KI_DLG_SK_AZIMUT_ERL;
+        internal static string SkPumpeName => MyResource.Resource.SKV_LBL_PUMPENLEISTUNG;
+        internal static string SkPumpeErl => MyResource.Resource.KI_DLG_SK_PUMPE_ERL;
+        internal static string SkVerlusteName => MyResource.Resource.SKV_LBL_VERLUSTE;
+        internal static string SkVerlusteErl => MyResource.Resource.KI_DLG_SK_VERLUSTE_ERL;
+        internal static string SkArbeitstemperaturName => MyResource.Resource.SKV_LBL_ARBEITSTEMPERATUR;
+        internal static string SkArbeitstemperaturErl => MyResource.Resource.KI_DLG_SK_ARBEITSTEMPERATUR_ERL;
+        internal static string SkGraedigkeitName => MyResource.Resource.SKV_LBL_GRAEDIGKEIT;
+        internal static string SkGraedigkeitErl => MyResource.Resource.KI_DLG_SK_GRAEDIGKEIT_ERL;
+        internal static string SkSpreizungName => MyResource.Resource.SKV_LBL_SPREIZUNG;
+        internal static string SkSpreizungErl => MyResource.Resource.KI_DLG_SK_SPREIZUNG_ERL;
 
         // ------------------------------------------ Form_WP_Anlage (Waermepumpe)
 
@@ -2555,6 +2565,8 @@
         internal static string SkkKdirErl => MyResource.Resource.KI_DLG_SKK_KDIR_ERL;
         internal static string SkkKdiffName => MyResource.Resource.KI_DLG_SKK_KDIFF_NAME;
         internal static string SkkKdiffErl => MyResource.Resource.KI_DLG_SKK_KDIFF_ERL;
+        internal static string SkkBezugsflaecheName => MyResource.Resource.SKK_LBL_BEZUGSFLAECHE;
+        internal static string SkkBezugsflaecheErl => MyResource.Resource.KI_DLG_SKK_BEZUGSFLAECHE_ERL;
 
         // ---- Der Modulkatalog: Stromspeicher und PV-Modul
         internal static string ModkBezeichnerName => MyResource.Resource.MODK_LBL_BEZEICHNER;
@@ -3079,6 +3091,7 @@
                         case KatalogBrowserProfil.FeldK2: return SkkK2Erl;
                         case KatalogBrowserProfil.FeldKdir: return SkkKdirErl;
                         case KatalogBrowserProfil.FeldKdiff: return SkkKdiffErl;
+                        case KatalogBrowserProfil.FeldBezugsflaeche: return SkkBezugsflaecheErl;
                     }
                     return null;
 

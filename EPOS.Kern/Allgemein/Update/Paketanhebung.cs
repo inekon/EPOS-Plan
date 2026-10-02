@@ -236,6 +236,10 @@ namespace WindowsFormsApplication1
             // Die Spalten kommen leer an - ein Paketsatz ohne Temperaturpaar rechnet wie zuvor.
             new Stufe(ProzesswaermeTemperaturSchema.SCHRITT, Art.Ddl,
                       "Temperaturpaar je Prozesswärmesatz (Vorlauf, Rücklauf) und Katalog typischer Betriebsweisen"),
+            // Die Anlagenspalten kommen leer an (Vorgaben: kein Pumpenstrom, 8 % Verluste, feste
+            // Arbeitstemperatur), der Kollektorsatz mit der Vorgabe apertur - so, wie er rechnet.
+            new Stufe(SolarthermieFelderSchema.SCHRITT, Art.Ddl,
+                      "Felder des Kollektorfelds (Pumpe, Verluste, Grädigkeit, Spreizung, Arbeitstemperatur) und Bezugsfläche des Kollektorsatzes"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

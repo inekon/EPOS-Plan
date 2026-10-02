@@ -24,6 +24,13 @@ namespace WindowsFormsApplication1
         public double m_Kdfu;
         public double m_Kosten;
 
+        /// <summary>
+        /// Bezugsfläche der Kennwerte η₀, a₁, a₂ (ST6, Spalte <c>Bezugsflaeche</c>):
+        /// <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR"/> (Vorgabe) oder
+        /// <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO"/>.
+        /// </summary>
+        public string m_Bezugsflaeche;
+
         public SolarkollektorenModel()
         {
             rows = 0;
@@ -40,6 +47,7 @@ namespace WindowsFormsApplication1
             m_Kdir = 0;
             m_Kdfu = 0;
             m_Kosten = 0;
+            m_Bezugsflaeche = DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
         }
     }
 }
