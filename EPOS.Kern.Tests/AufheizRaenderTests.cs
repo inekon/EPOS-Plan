@@ -13,7 +13,8 @@ namespace EPOS.Kern.Tests
     /// (W2), Übergang aus „aus" (W4), Beginn der Heizperiode (W4, D ab 00:00), Bemessung innerhalb der
     /// Heizperiode, Deckel 48 am Montag nach dem Büro-Wochenende (D = 61), Kühlkappung an θ_K − 1 K,
     /// AK1-Gebäude (W5), gestufte Absenkung nach E58 F2 (b), Überlappung zweier Rampen, ΔT ≤ 0,01 K und
-    /// „fest" mit t_auf,max = 0.
+    /// „fest" mit t_auf,max = 0. <b>Mit Zonen</b> (Welle R3): AK1-Gebäude mit Zonen (W5) samt unbeheizter Zone
+    /// im selben Gebäude, Zone ohne Kalender (B5), beide Aufbauten der Zonen, Schalter aus, Determinismus.
     ///
     /// <para><b>Synthetisch:</b> der Prüfsatz des Hauses aus 1045 (<see cref="AufheizantwortTests.Pruefsatz"/>)
     /// mit Strahlungsanteil 0,3, Außenluft als einzige Randtemperatur (θ_eq = T_a, ohne Erdreich),
@@ -512,5 +513,202 @@ namespace EPOS.Kern.Tests
             Vorschrift(z, fest);
             Vorschrift(z, taeglich);
         }
+
+        // =====================================================================
+        //  N-AH10 mit Zonen (Welle R3)
+        // =====================================================================
+
+        private static int Stelle(IReadOnlyList<ZonenEingang> zonen, int id) => AufheizMehrzonenTests.Stelle(zonen, id);
+
+        private static void Bitgleich(Mehrzonenergebnis a, Mehrzonenergebnis b, string wo)
+        {
+            Assert.Equal(a.Zonen.Count, b.Zonen.Count);
+            AufheizGrenzfallTests.Bitgleich(a.Gebaeude, b.Gebaeude, wo + ", Gebäude");
+            for (int z = 0; z < a.Zonen.Count; z++)
+                AufheizGrenzfallTests.Bitgleich(a.Zonen[z], b.Zonen[z], wo + ", " + a.Eingaenge[z].Bezeichnung);
+        }
+
+        /// <summary>
+        /// <b>AK1-Gebäude mit Zonen (W5) und eine unbeheizte Zone im selben Gebäude:</b> Mit wirksamer Stufe
+        /// rechnen die Zonen als ideale Last (A4 (a)); die Planung liefert für jede beheizte Zone den Zustand
+        /// GEKOPPELT (keine Ablehnung, die Reihe bleibt dieselbe Instanz), für den Keller UNBEHEIZT; das
+        /// Gebäude ist GEKOPPELT, und der Lauf ist bitgleich zu „aus". Gegenprobe: ohne Stufe rampt dasselbe
+        /// Gebäude.
+        /// </summary>
+        [Fact]
+        public void N_AH10_Zonen_AK1_Gebaeude_und_unbeheizte_Zone_bleiben_unveraendert_W5()
+        {
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen();
+            g.Heizkreis_Aktiv = true;
+            g.Uebergabe_Art = DbWerte.UEBERGABE_RADIATOR;
+            g.Heizkurve_Aktiv = true;
+            GebaeudeKlima klima = AufheizMehrzonenTests.Klima();
+            Mehrzonenergebnis aus = Zonenrechnung.Rechnen(g, klima, false, DbWerte.ANLAGENKOPPLUNG_AK1, 0, g.ID_Gebaeude);
+            Mehrzonenergebnis an = Zonenrechnung.Rechnen(g, klima, false, DbWerte.ANLAGENKOPPLUNG_AK1, 0, g.ID_Gebaeude,
+                                                         aufheizvorgabe: An());
+            foreach (ZonenEingang z in an.Eingaenge)
+            {
+                Aufheizplan p = z.Aufheizplan;
+                Assert.NotNull(p);
+                Assert.False(p.Geaendert);
+                Assert.Null(p.Bemessung);
+                Assert.Null(p.Rampenmaske);
+                Assert.Same(z.Eingang.ThetaSoll, p.Reihe);
+                if (z.IstBeheizt)
+                {
+                    Assert.True(z.Eingang.KopplungAlsIdealeLast);
+                    Assert.False(z.Eingang.KopplungWirksam);
+                    Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, p.Zustand);
+                    Assert.True(p.Gekoppelt);
+                }
+                else
+                    Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, p.Zustand);
+            }
+            Aufheizgebaeude geb = an.Aufheizgebaeude;
+            Assert.True(geb.Gekoppelt);
+            Assert.Equal(2, geb.ZonenGekoppelt);
+            Assert.Equal(1, geb.ZonenUnbeheizt);
+            Assert.Null(geb.AufheizzeitMaxH);
+            Assert.Equal(0, geb.Aufheiztage);
+            Bitgleich(aus, an, "AK1 mit Zonen");
+
+            // Gegenprobe: ohne Stufe rampt dasselbe Gebäude.
+            Mehrzonenergebnis frei = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, aufheizvorgabe: An());
+            Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, frei.Aufheizgebaeude.Zustand);
+            Assert.True(frei.Aufheizgebaeude.Aufheiztage > 0);
+        }
+
+        /// <summary>Eine Woche, deren Werte die Funktion (Wochentag, Stunde) liefert.</summary>
+        private static Konditionierungskalender Wochenkalender(Konditionierungsgroesse g, Func<int, int, double> wert)
+        {
+            var woche = new double[Kalenderwoche.WOCHENWERTE];
+            for (int w = 0; w < 7; w++)
+                for (int st = 0; st < 24; st++)
+                    woche[Kalenderwoche.Stelle(w, st)] = wert(w, st);
+            return new Konditionierungskalender(g, Kalenderangabe.AusWoche(woche), null, null);
+        }
+
+        /// <summary>
+        /// <b>Zone ohne Kalender (B5):</b> θ_T,max der Zielleistung kommt aus der eigenen Reihe der Zone — die
+        /// Zone mit eigenem Tagwert 22 °C ohne Kalender bemisst mit 22 °C, obwohl ihre Auslegungsraumtemperatur
+        /// der Kopplung der Tagwert des Gebäudes (20 °C) bleibt; die Zone ohne eigenen Tagwert erbt 20 °C; eine
+        /// Zone mit Heizkalender nimmt dessen höchsten Wert der Nutzungszeit (23 °C), die Nachbarzone ohne
+        /// Kalender bleibt bei ihrem Wert.
+        /// </summary>
+        [Fact]
+        public void N_AH10_Zone_ohne_Kalender_bemisst_mit_ihrer_eigenen_Reihe_B5()
+        {
+            double f = 0.5 * Vdi6007Probe.Gebaeude().Nutzflaeche;
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen(
+                eins: new Zoneneingaben(Nutzflaeche: f, SollTag: 22.0, SollNacht: 16.0),
+                zwei: new Zoneneingaben(Nutzflaeche: f, SollNacht: 17.0));
+            Assert.Equal(20.0, g.Raumsolltemperatur_Tag);
+            GebaeudeKlima klima = AufheizMehrzonenTests.Klima();
+
+            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(g, klima, aufheizvorgabe: An());
+            ZonenEingang w1 = zonen[Stelle(zonen, AufheizMehrzonenTests.WOHNUNG_1)];
+            ZonenEingang w2 = zonen[Stelle(zonen, AufheizMehrzonenTests.WOHNUNG_2)];
+            Assert.Equal(22.0, w1.Aufheizplan.Bemessung.ThetaTMaxC);
+            Assert.Equal(20.0, w1.Eingang.AuslegungsraumtemperaturHeizC);   // B5: die Kopplung bleibt beim Gebäude
+            Assert.Equal(20.0, w2.Aufheizplan.Bemessung.ThetaTMaxC);
+            Assert.True(w1.Aufheizplan.Geaendert && w2.Aufheizplan.Geaendert);
+
+            // Wohnung 2 mit Heizkalender: 6–22 Uhr 23 °C, sonst 15 °C; Wohnung 1 ohne Kalender.
+            var satz = new Konditionierungssatz(GebaeudeModellEingang.WochentagDesErstenTags(Vdi6007Probe.Wochenende()), 2025);
+            satz.Setzen(Konditionierungsgroesse.Heizsoll,
+                        Wochenkalender(Konditionierungsgroesse.Heizsoll, (w, st) => st >= 6 && st < 22 ? 23.0 : 15.0));
+            IReadOnlyList<ZonenEingang> mitKalender = ZonenEingang.Bauen(g, klima, aufheizvorgabe: An(),
+                konditionierung: id => id == AufheizMehrzonenTests.WOHNUNG_2 ? satz : null);
+            Aufheizplan k1 = mitKalender[Stelle(mitKalender, AufheizMehrzonenTests.WOHNUNG_1)].Aufheizplan;
+            Aufheizplan k2 = mitKalender[Stelle(mitKalender, AufheizMehrzonenTests.WOHNUNG_2)].Aufheizplan;
+            Assert.Equal(22.0, k1.Bemessung.ThetaTMaxC);
+            Assert.Equal(23.0, k2.Bemessung.ThetaTMaxC);
+            Assert.All(k2.Spruenge, sp => Assert.Equal(15.0, sp.ThetaNC));
+            Assert.True(k2.Bemessung.AufheizleistungW > w2.Aufheizplan.Bemessung.AufheizleistungW);
+        }
+
+        /// <summary>
+        /// <b>Beide Aufbauten</b> (Festlegung 1): Der adiabate Vorlauf der 4-K-Regel (jede Zone für sich, ohne
+        /// Nachbarn) plant mit der Außenform, der gekoppelte Lauf mit der Nachbarform — beide setzen ihre
+        /// Rampen am Ende von <see cref="ZonenEingang.Bauen"/>. Mit der Trennwand nach der Regel läuft die
+        /// Zonenrechnung über beide Aufbauten durch.
+        /// </summary>
+        [Fact]
+        public void N_AH10_Zonen_planen_in_beiden_Aufbauten()
+        {
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen();
+            GebaeudeZonensatz w1 = g.Zonen[0];
+            var regel = w1.Bauteile.Select(b => b.Rand == Bauteilrand.Zone && b.IdNachbarzone == AufheizMehrzonenTests.WOHNUNG_2
+                                                    ? b.MitZuordnung(Trennflaechenzuordnung.Regel) : b).ToList();
+            g.Zonen = new[] { new GebaeudeZonensatz(w1.ZonenId, w1.Bezeichnung, regel, w1.Nutzflaeche_M2, w1.Eingaben, w1.Rang),
+                              g.Zonen[1], g.Zonen[2] };
+            GebaeudeKlima klima = AufheizMehrzonenTests.Klima();
+
+            IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(g, klima, adiabat: true, aufheizvorgabe: An());
+            foreach (ZonenEingang z in adiabat)
+            {
+                Assert.False(z.Gekoppelt);
+                Assert.Equal(z.IstBeheizt ? DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN : DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, z.Aufheizplan.Zustand);
+                Assert.Equal(z.IstBeheizt, z.Aufheizplan.Geaendert);
+            }
+
+            Mehrzonenergebnis m = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, aufheizvorgabe: An());
+            Assert.Single(m.Paare);
+            Assert.All(m.Eingaenge.Where(z => z.IstBeheizt), z => Assert.True(z.Gekoppelt && z.Aufheizplan.Geaendert));
+            Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, m.Aufheizgebaeude.Zustand);
+        }
+
+        /// <summary>
+        /// <b>Schalter aus = kein Aufruf</b> (Grundsatz 3) mit Zonen: Mit der Vorgabe „aus" trägt keine Zone einen
+        /// Plan, das Gebäude keine Aufheizwerte, und der Lauf ist bitgleich zum Lauf ohne Vorgabe.
+        /// </summary>
+        [Fact]
+        public void N_AH10_Zonen_Schalter_aus_ruft_nicht()
+        {
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen();
+            GebaeudeKlima klima = AufheizMehrzonenTests.Klima();
+            Mehrzonenergebnis ohne = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude);
+            Mehrzonenergebnis aus = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, aufheizvorgabe: Aufheizvorgabe.Aus);
+            Assert.Null(aus.Aufheizgebaeude);
+            Assert.All(aus.Eingaenge, z => Assert.Null(z.Aufheizplan));
+            Bitgleich(ohne, aus, "Schalter aus");
+        }
+
+        /// <summary>
+        /// <b>Determinismus mit Zonen:</b> Zwei Läufe des Dreizonengebäudes mit Wochenende und Aufheizplanung
+        /// geben je Zone dieselbe Reihe mit Rampe, dieselben Zähler und denselben Lauf, Bit für Bit, und
+        /// dieselben Gebäudewerte.
+        /// </summary>
+        [Fact]
+        public void N_AH10_Zonen_zwei_Laeufe_sind_bitgleich()
+        {
+            double f = 0.5 * Vdi6007Probe.Gebaeude().Nutzflaeche;
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen(
+                eins: new Zoneneingaben(Nutzflaeche: f, SollTag: 21.0, SollNacht: 16.0, SollWochenende: 15.0),
+                zwei: new Zoneneingaben(Nutzflaeche: f, SollTag: 20.0, SollNacht: 17.0, SollWochenende: 16.0));
+            var klima = new GebaeudeKlima(Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang), Vdi6007Probe.Wochenende(),
+                                          Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE);
+            Mehrzonenergebnis a = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, aufheizvorgabe: An());
+            Mehrzonenergebnis b = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, aufheizvorgabe: An());
+            Bitgleich(a, b, "Determinismus");
+            for (int z = 0; z < a.Eingaenge.Count; z++)
+            {
+                Aufheizplan p = a.Eingaenge[z].Aufheizplan, q = b.Eingaenge[z].Aufheizplan;
+                Assert.Equal(p.Zustand, q.Zustand);
+                AufheizGrenzfallTests.Bitgleich(p.Reihe, q.Reihe, "Reihe " + z);
+                Assert.Equal(p.Spruenge, q.Spruenge);
+                Assert.Equal(p.Rampenmaske, q.Rampenmaske);
+                Assert.Equal(p.Aufheiztage, q.Aufheiztage);
+                Assert.Equal(p.TageBegrenzt, q.TageBegrenzt);
+                Assert.Equal(p.SpruengeAus, q.SpruengeAus);
+                if (p.Bemessung != null) Assert.Equal(Bits(p.Bemessung.AufheizleistungW), Bits(q.Bemessung.AufheizleistungW));
+            }
+            Aufheizgebaeude x = a.Aufheizgebaeude, y = b.Aufheizgebaeude;
+            Assert.Equal(x with { Rampenmaske = null }, y with { Rampenmaske = null });
+            Assert.Equal(x.Rampenmaske, y.Rampenmaske);
+            Assert.True(x.Aufheiztage > 0);
+        }
+
+        private static long Bits(double x) => BitConverter.DoubleToInt64Bits(x);
     }
 }
