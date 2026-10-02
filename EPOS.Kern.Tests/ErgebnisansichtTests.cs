@@ -402,7 +402,9 @@ namespace EPOS.Kern.Tests
             // Satzes je Betriebskostenposition (Satz aus der Nutzungsdauertabelle).
             // E16 (V‑G3): alt 10, neu 11 — Fassung 11 trägt zusätzlich die Wiederholperiode
             // je Betriebskostenposition („alle n Jahre").
-            Assert.Equal(11, ErgebnisNachweisUmschlag.FASSUNG);
+            // Wärmegestehung/Energiekosten je Träger: alt 11, neu 12 — Fassung 12 trägt
+            // zusätzlich die Aufstellung „Menge × Preis" je Energieträger.
+            Assert.Equal(12, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(

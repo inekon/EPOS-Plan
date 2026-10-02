@@ -596,28 +596,35 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Prozesswärmezuordnungen.</summary>
+        /// <summary>
+        /// Die Prozesswärmezuordnungen.
+        ///
+        /// <para><b>Über die ID</b> (Auftrag SV2, wie <see cref="LadeStromverbraucher"/>): Der Name
+        /// je Zeile ist der der Projektkopie, auf die die Zeile per <c>ID_Prozesswaerme</c> zeigt
+        /// (<see cref="Z_ProjektProzesswaermeCtrl.LiesProjekt"/>, wie die Kachel der Startseite)
+        /// — nicht der Bezeichner der Zuordnungszeile, der ein anderer sein kann. Nur so trifft
+        /// das Sichern der Jahressumme (<see cref="Z_ProjektProzesswaermeCtrl.UpdateSumme"/>) die
+        /// Zeile, und das Speichern bleibt bei derselben Kopie
+        /// (<see cref="ProzesswaermeStammCtrl.GetProjektIdUeberId"/>).</para>
+        /// </summary>
         public void LadeProzess(string projekt)
         {
             if (string.IsNullOrEmpty(projekt)) return;
 
             ProjektCtrl projctrl = new ProjektCtrl();
-            Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
-
             projctrl.ReadSingle(projekt);
-            prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projctrl.m_ID);
 
             Prozess.Clear();
 
-            for (int n = 0; n < prozctrl.rows; n++)
+            foreach (Z_ProjektProzesswaermeModel zeile in Z_ProjektProzesswaermeCtrl.LiesProjekt(projctrl.m_ID))
             {
                 Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
 
-                item.ID_Z = prozctrl.items[n].ID_Z;
+                item.ID_Z = zeile.ID_Z;
                 item.ID_Projekt = projctrl.m_ID;
-                item.szProzessname = prozctrl.items[n].szProzessname;
-                item.ID_Prozesswaerme = prozctrl.items[n].ID_Prozesswaerme;
-                item.Summe = prozctrl.items[n].Summe;
+                item.szProzessname = zeile.szProzessname;
+                item.ID_Prozesswaerme = zeile.ID_Prozesswaerme;
+                item.Summe = zeile.Summe;
 
                 Prozess.Add(item);
             }

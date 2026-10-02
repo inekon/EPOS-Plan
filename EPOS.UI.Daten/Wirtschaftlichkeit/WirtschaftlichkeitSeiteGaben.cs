@@ -1052,8 +1052,10 @@ namespace WindowsFormsApplication1
             // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
             // KONZEPT § 2.9 und § 2.15: Die Zeilendefinition kennzeichnet die REFERENZ -
             // in Sicht 2 den Stand A, sonst die Referenz der Gruppe (idReferenz oben).
+            // Anwenderentscheid 30.09.2026: die Seite zeigt unter den Energiekosten je Träger die
+            // Herleitung „Menge × Preis" (mitHerleitung) — die Berichte rufen ohne sie.
             List<WirtZeile> definition = WirtschaftlichkeitZeilen.Sichtbare(
-                WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz), _ergebnisse);
+                WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz, true), _ergebnisse);
 
             // ETAPPE E5 Teil b (U2, V‑A): die KENNZAHLTAFEL im Erwartungsfall - dieselben
             // Zeilen der Definition, mit Label "nachrichtlich" und Zellwarnung.
@@ -1361,7 +1363,11 @@ namespace WindowsFormsApplication1
                 Zellen = zellen,
                 Abschnitt = abschnitt,
                 Kennzeichen = z.Nachrichtlich ? ValeriAusweis.NachrichtlichLabel() : "",
-                Zellwarnungen = warnungen
+                Zellwarnungen = warnungen,
+                // Der Kurztext der Kennzahl (Tooltip am Titel) und die leise Herleitungszeile
+                // kommen aus der Zeilendefinition des Kerns — die Seite urteilt nicht selbst.
+                Kurztext = z.Kurztext ?? "",
+                Leise = z.Herleitung
             };
         }
 

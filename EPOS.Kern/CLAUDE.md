@@ -234,12 +234,14 @@ wie im Lauf — und fällt nur für einen dem PROJEKT unbekannten Namen auf den 
 zurück (`ProfilQuelle.Rueckfall`, mit **Kopf UND Typprofil**, sonst erscheint eine fremde
 Monatsverteilung). **Eine Zahl der Vorschau wird am Lauf gemessen, nicht am Katalog.**
 
-**Die Zuordnung Projekt ↔ Stromverbraucher gilt über die ID, nicht über den Bezeichner.**
-`Z_Projekt_Stromverbraucher.ID_Stromverbraucher` zeigt auf die Projektkopie; Lauf (je
+**Die Zuordnung Projekt ↔ Bedarfsprofil gilt über die ID, nicht über den Bezeichner** — bei
+Brauchwasser, Prozesswärme und Stromverbraucher gleich. `ID_Brauchwasser`, `ID_Prozesswaerme`
+und `ID_Stromverbraucher` der Zuordnungstabellen zeigen auf die Projektkopie; Lauf (je
 Zuordnungszeile), Vorschau, Summensicherung, Assistent, Komponentenbestand und Speichern gehen
-darüber (`ProfilQuelle.ZuordnungIdSpalte`, `StromverbraucherStammCtrl.GetProjektIdUeberId`), und
+darüber (`ProfilQuelle.ZuordnungIdSpalte`, `GetProjektIdUeberId` der drei Stamm-Controller).
 Kopf- wie Typsatz werden nur im eigenen Projekt gelesen — nie die gleichnamige Kopie eines
-fremden Projekts.
+fremden Projekts —, und unter gleichnamigen Kopien desselben Projekts gilt die zugeordnete. Die
+Namenssichten `Abfrage_Monats*` liest der Kern nicht.
 
 ## Eine Auskunft ruft den Rechenweg des Laufs — sie schreibt ihn nicht ab
 

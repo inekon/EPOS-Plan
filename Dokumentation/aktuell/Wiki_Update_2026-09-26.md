@@ -170,7 +170,10 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Auf der Seite „Kosten“ rechnet „Neu berechnen“ die Wirtschaftlichkeit der Versionen im Vergleich neu. (#637)
 - In langen Dialogfenstern bleiben Kopfzeile und Knopfleiste beim Rollen stehen. (#638)
 - Die im Projekt gepflegte Jahressumme eines Stromverbrauchers gilt auch dann, wenn seine Projektkopie anders heißt als der Katalogeintrag. (#641)
-- Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#642; Version bestätigt der Anwender beim Upload)
+- Die Wärmegestehungskosten enthalten nur noch die Kosten der Wärmeerzeugung; Haushaltsstrom, Photovoltaik und Stromspeicher zählen nicht mehr mit. Unter den Energiekosten steht je Energieträger die Herleitung Menge × Preis. (#642)
+- Bei Unternehmen des produzierenden Gewerbes mindert die entgangene Entlastung nach § 9b StromStG die Stromgutschrift der Wärmegestehungskosten. (#642)
+- Brauchwasser- und Prozesswärmeprofile rechnen mit ihrer gepflegten Jahressumme auch dann, wenn ihre Projektkopie anders heißt als der Katalogeintrag. (#643)
+- Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#644; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

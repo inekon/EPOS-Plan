@@ -326,6 +326,16 @@ namespace WindowsFormsApplication1
             new List<EnergieAnlageNachweis>();
 
         /// <summary>
+        /// Die Energiekosten JE TRÄGER dieses Laufs (<see cref="EnergieTraegerNachweis"/>): Menge ×
+        /// Arbeitspreis, Grund- und Leistungspreis, dazu je Träger der Einsatz der Wärmeerzeuger und
+        /// der Verbrauch aller Verbraucher — aus denselben Mengen und Preisen wie
+        /// <see cref="Energiekosten"/>. Leer, solange <see cref="Energiekosten"/> nicht bestimmbar
+        /// ist.
+        /// </summary>
+        public List<EnergieTraegerNachweis> EnergiekostenJeTraeger =
+            new List<EnergieTraegerNachweis>();
+
+        /// <summary>
         /// <b>WARUM <see cref="Energiekosten"/> nicht bestimmbar ist</b> — im Klartext
         /// und mit dem Ausweg; <c>null</c>, solange die Zahl steht. Gesetzt von
         /// <see cref="KostenEmissionRechner"/> an genau der Stelle, an der er die

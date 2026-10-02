@@ -1,6 +1,6 @@
 # P641 — Laufvermerk je Ergebnis, Bezugsrolle bestätigt, Kohärenz am Rückfallträger als benannte Grenze (Protokoll, 02.10.2026)
 
-Statuszeile #642 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile #644 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P641_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P641_Auftrag_2026-10-02.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md`](P630_Rollentarif_Rueckfalltraeger_Haken_Protokoll.md)
 (#633). Zweig `p641` ab `d14b5bbf3` (Auftrag auf `4cfbf0171`, origin/ios_migration_september mit #640).
@@ -87,7 +87,7 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
   (Grenze am Rückfallträger), § 6.1 (Zeile P641; P630 auf #633), § 6.2 (Wachen), § 6.5 (vier Ergebnisspalten).
 - Register: EZ‑19 mit Wortlaut und den drei Punkten, Vermerk „bestätigt 02.10.2026" an EZ‑18 (dort #633 statt
   vorläufig), Quellenabsatz, Familientafel (R‑EZ 19), Kopf.
-- Statusdatei: Nach #633 (a), (b), (c) als erledigt mit #642; keine Statuszeile.
+- Statusdatei: Nach #633 (a), (b), (c) als erledigt mit #644; keine Statuszeile.
 - `Referenzlaeufe/LIESMICH.md`: nachgezogene Spalte, neue LFS-SHA und Bytezahl, Basis unverändert.
 - Wiki-Quelle `Programm Dokumentation - Wirtschaftlichkeit.wiki`, Anker `hinweisband`: das Band erscheint auch nach
   einem Wechsel der Seite und für eine Version aus einem älteren Lauf; Gegenlese mit dem Muster aus `CLAUDE.md` ohne
@@ -103,7 +103,7 @@ die Gegenprobe „anderer Vermerk ohne Wirkung auf die Regel → kein Band" steh
 
 ## Gate
 
-Gate #642 auf `f9aa90012` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün
+Gate #644 auf `f9aa90012` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün
 und gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 17 814 grün, 2 übersprungen, 0 rot (Kern 9 645,
 UI 7 207, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
 `2026-09-30_R30_Stromverbraucher` (5 180 240 Werte innerhalb der Toleranz, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp`
@@ -113,5 +113,5 @@ gegen den ungestörten Lauf PASS. Windows-Schale 0 Fehler (Agent, x64 Debug, `En
 
 Sechs Commits auf `p641` (`0e5fa2c3d` Kern, `f9b94c9f1` Hülle, `5a4fab7be` Tests, `9b022053c` Testdatenbank, `84b315ede` Papiere,
 `dfaa071f3` Protokoll) hinter dem Auftrag `d14b5bbf3`; Merge `f9aa90012` mit origin (#641 SV1, Basis R30; eigene Fundstellen von
-#641 auf #642 und von R29 auf R30 nachgezogen). Statuszeile #642 im Folgecommit; Push nach Zuruf, Nummer beim Push gegen origin
-geprüft; CI-Vermerk in Nach #642 (c).
+#641 auf #644 und von R29 auf R30 nachgezogen). Statuszeile #644 im Folgecommit; Push nach Zuruf, Nummer beim Push gegen origin
+geprüft; CI-Vermerk in Nach #644 (c).

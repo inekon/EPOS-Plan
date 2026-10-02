@@ -380,6 +380,54 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     // =====================================================================
+    //  Wärmegestehung (Anwenderentscheid 30.09.2026) — Kurztext und Herleitungszeile
+    // =====================================================================
+
+    /// <summary>
+    /// Die Wärmegestehungskosten sagen am Titel, was sie umfassen (Kurztext als Tooltip), und
+    /// unter den Energiekosten steht je Energieträger eine LEISE Herleitungszeile „Menge × Preis"
+    /// — beides kommt fertig aus der Hülle, die Seite zeichnet es nur.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahl_traegt_ihren_Kurztext_und_die_Herleitungszeile_ist_leise()
+    {
+        const string kurz = "Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich " +
+                            "ihrer Erlöse), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht";
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Kennzahltafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein", "BHKW" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Wärmegestehungskosten [€/kWh]", Abschnitt = MatrixZeile.ABSCHNITT_KENNZAHL,
+                                  Kurztext = kurz, Zellen = new[] { "0,120", "0,110", "0,130" } },
+                new MatrixZeile { Titel = "Kapitalwert gegenüber Stamm [€]", Abschnitt = MatrixZeile.ABSCHNITT_KENNZAHL,
+                                  Zellen = new[] { "(Referenz)", "12.300", "-4.100" } }
+            }
+        };
+        stand.Ansicht.Matrix = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein", "BHKW" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Energiekosten [€/a]", Zellen = new[] { "2.748", "3.100", "4.200" } },
+                new MatrixZeile { Titel = "    Strom: Menge × Preis", Leise = true,
+                                  Zellen = new[] { "7.850 kWh × 0,35 €/kWh", "—", "—" } }
+            }
+        };
+        var cut = Zeige(stand);
+
+        IReadOnlyList<IElement> kennzahlen = cut.Find(".epos-wirt-kennzahltafel").QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal(kurz, kennzahlen[0].QuerySelector("th")!.GetAttribute("title"));
+        Assert.False(kennzahlen[1].QuerySelector("th")!.HasAttribute("title"));   // ohne Kurztext kein Attribut
+
+        IReadOnlyList<IElement> gliederung = cut.Find(".epos-wirt-gliederung").QuerySelectorAll("tbody tr").ToList();
+        Assert.DoesNotContain("epos-wirt-herleitungszeile", gliederung[0].ClassList);
+        Assert.Contains("epos-wirt-herleitungszeile", gliederung[1].ClassList);
+        Assert.Equal("7.850 kWh × 0,35 €/kWh", gliederung[1].QuerySelectorAll("td")[0].TextContent.Trim());
+    }
+
+    // =====================================================================
     //  U4 — Bandbreite nebeneinander, Klappliste nur für die Tafeln darunter
     // =====================================================================
 
@@ -507,7 +555,12 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
             {
                 IElement? nominal = zellen[s].QuerySelector(".epos-wirt-nominal");
                 if (r == 0) Assert.Null(nominal);                               // Investition: Jahr 0
-                else Assert.StartsWith("nominal ", nominal!.TextContent);
+                else
+                {
+                    Assert.StartsWith("nominal ", nominal!.TextContent);
+                    // Anwenderentscheid 30.09.2026: der Kurztext an „nominal …".
+                    Assert.Equal("Summe der Zahlungen über 20 Jahre, nicht abgezinst", nominal.GetAttribute("title"));
+                }
                 Assert.False(string.IsNullOrWhiteSpace(Barwert(zellen[s])));
             }
             Assert.Null(zellen[3].QuerySelector(".epos-wirt-nominal"));         // Differenzspalte ohne
@@ -620,19 +673,24 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
                               Unterwerte = new[] { "", "", "", "" } },
             new MatrixZeile { Titel = "Betriebskosten",
                               Zellen = new[] { "−10.000", "−14.000", "−12.000", "−4.000" },
-                              Unterwerte = new[] { "nominal 12.000", "nominal 17.000", "nominal 15.000", "" } },
+                              Unterwerte = new[] { "nominal −12.000", "nominal −17.000", "nominal −15.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Energiekosten", Kennzeichen = "einschließlich CO₂-Abgabe",
                               Zellen = new[] { "−150.000", "−80.000", "−100.000", "+70.000" },
-                              Unterwerte = new[] { "nominal 190.000", "nominal 100.000", "nominal 125.000", "" } },
+                              Unterwerte = new[] { "nominal −190.000", "nominal −100.000", "nominal −125.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Erlöse", Kennzeichen = "zahlungswirksam — Block A",
                               Zellen = new[] { "0", "+3.000", "+20.000", "+3.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 4.000", "nominal 26.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +4.000", "nominal +26.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Ersatzbeschaffungen",
                               Zellen = new[] { "0", "−2.000", "−5.000", "−2.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 3.000", "nominal 8.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal −3.000", "nominal −8.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Restwert am Ende",
                               Zellen = new[] { "0", "+5.300", "+4.000", "+5.300" },
-                              Unterwerte = new[] { "nominal 0", "nominal 9.600", "nominal 7.200", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +9.600", "nominal +7.200", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Nettobarwert", IstSumme = true,
                               Zellen = new[] { "−160.000", "−147.700", "−183.000", "+12.300" } }
         }

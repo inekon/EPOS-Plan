@@ -350,7 +350,8 @@ namespace EPOS.Kern.Tests
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(e, out grund);
             Assert.Null(grund);
-            Assert.Equal(11, ErgebnisNachweisUmschlag.FASSUNG);
+            // Fassung 12 (Energiekosten je Träger) trägt die Periode unverändert weiter.
+            Assert.Equal(12, ErgebnisNachweisUmschlag.FASSUNG);
             Assert.Contains("\"Version\":" + ErgebnisNachweisUmschlag.FASSUNG, text);
             Assert.Single(text.Split(new[] { "\"Wiederholperiode\"" }, StringSplitOptions.None).Skip(1));
             Assert.Contains("\"Wiederholperiode\":2", text);
