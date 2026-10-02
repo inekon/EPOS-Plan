@@ -397,6 +397,10 @@ namespace WindowsFormsApplication1
                 };
                 f.Modell = m;
 
+                // PV4: die Bodenalbedo der Anlagenzeile (leer = 0,2, bitgleich zur Vorgabe des
+                // Rechners) - dieselbe Leseregel wie in der Photovoltaik.
+                double albedo = Bodenalbedo.Wert(ctrl.items[n]);
+
                 for (int i = 0; i < f.Stunden; i++)
                 {
                     SolardatenModel zeile = ctrldat.items[i];
@@ -413,7 +417,8 @@ namespace WindowsFormsApplication1
                         zeile.Direktstrahlung,
                         zeile.Diffusstrahlung,
                         zeile.Außen_Temp,
-                        zeile.TagUtc, zeile.StundeUtc);
+                        zeile.TagUtc, zeile.StundeUtc,
+                        albedo);
 
                     double ta = zeile.Außen_Temp;
 

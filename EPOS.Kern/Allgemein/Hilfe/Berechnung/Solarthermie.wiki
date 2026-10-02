@@ -86,7 +86,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>P_{\mathrm{P}}</math> || elektrische Leistung der Solarkreispumpe || W || Dialog „Solarkollektoren", Feld „Leistung Solarkreispumpe"; leer = kein Pumpenstrom oder, wo gepflegt, der Hilfsenergieanteil der Anlage
 |-
-| <math>\rho</math> || Boden-Albedo der isotropen Transposition || — || '''Konstante: 0,2''' — fest verdrahtet; es gibt hier keine Hay-Davies-Transposition
+| <math>\rho</math> || Boden-Albedo der isotropen Transposition || — || Dialog „Solarkollektoren", Feld „Albedo [-]"; leer = 0,2 (Gras). Es gibt hier keine Hay-Davies-Transposition
 |-
 | — || keine Stagnation, keine Kollektorabschaltung || — || '''fest verdrahtet''' — dafür gibt es keinen Parameter und keine Formel
 |-
@@ -97,7 +97,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 | <math>r</math> || Ladepriorität des Feldes in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 10''' — der erste Lader der Kaskade
 |}
 
-Die zwei Zeilen mit „fest verdrahtet" sind die '''Annahmen dieses Rechenwegs, die im Dialog nirgends stehen''': die isotrope Einstrahlung mit Albedo 0,2 und der Verzicht auf Stagnation. Wer die Zahlen der Seite nachrechnet, braucht sie — im Programm sieht er sie nicht. Alle übrigen Größen stehen im Dialog oder im Katalog; ein leeres Feld rechnet seine Vorgabe.
+Die Zeile mit „fest verdrahtet" ist die '''Annahme dieses Rechenwegs, die im Dialog nirgends steht''': der Verzicht auf Stagnation; dazu rechnet die Einstrahlung isotrop. Wer die Zahlen der Seite nachrechnet, braucht sie — im Programm sieht er sie nicht. Alle übrigen Größen stehen im Dialog oder im Katalog; ein leeres Feld rechnet seine Vorgabe.
 
 === Variablen ===
 
@@ -154,7 +154,7 @@ Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</mat
 
 === Schritt 1 — Einstrahlung auf die Kollektorebene ===
 
-Isotrop, mit dem Boden-Albedo <math>\rho = 0{,}2</math> — dieselbe Rechnung wie im einfachen PV-Modell. Der Direktanteil und der Rest aus Diffus- und Bodenreflexstrahlung bleiben getrennt, weil der Kollektor sie verschieden aufnimmt (Schritt 3):
+Isotrop, mit der Boden-Albedo <math>\rho</math> der Anlagenzeile (leer = 0,2) — dieselbe Rechnung wie im einfachen PV-Modell. Der Direktanteil und der Rest aus Diffus- und Bodenreflexstrahlung bleiben getrennt, weil der Kollektor sie verschieden aufnimmt (Schritt 3):
 
 : <math>\displaystyle G_{\mathrm{b}}(t) = \mathrm{DNI}(t) \cdot \cos\theta(t) \qquad G_{\mathrm{dr}}(t) = \mathrm{DHI}(t) \cdot \frac{1 + \cos\beta}{2} + \mathrm{GHI}(t) \cdot \rho \cdot \frac{1 - \cos\beta}{2} \qquad G_{\mathrm{t}}(t) = G_{\mathrm{b}}(t) + G_{\mathrm{dr}}(t)</math> &nbsp;&nbsp;(1)
 :: <math>G_{\mathrm{b}}(t)</math> – Direktstrahlung in der Kollektorebene [W/m²]
@@ -165,7 +165,7 @@ Isotrop, mit dem Boden-Albedo <math>\rho = 0{,}2</math> — dieselbe Rechnung wi
 :: <math>\mathrm{DHI}(t)</math> – Diffusstrahlung auf die Horizontale [W/m²]
 :: <math>\beta</math> – Neigung der Kollektorebene [°]
 :: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
-:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
+:: <math>\rho</math> – Boden-Albedo [–], Feld der Anlage, leer = 0,2
 
 Bei Nacht — Sonne unter dem Horizont — ist <math>G_{\mathrm{t}}(t) = 0</math>.
 
