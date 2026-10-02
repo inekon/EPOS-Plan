@@ -637,6 +637,188 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // Der Laufvermerk je Ergebnis (Anwenderentscheid 02.10.2026, EZ‑19)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Vermerk ist die aufsteigende Liste der Stände</b>, und die Läufe der gewählten
+        /// Stände ergeben sich aus ihm allein (<see cref="Laufvermerk"/>, ohne Datenbank): gleicher
+        /// Vermerk an allen gewählten Ständen ist EIN Lauf, ein Stand mit anderem Vermerk bringt
+        /// seinen Lauf dazu, eine Zeile ohne Vermerk zählt zum Lauf, den die Seite selbst kennt,
+        /// ein nicht gewählter Stand zählt nicht.
+        /// </summary>
+        [Fact]
+        public void Der_Laufvermerk_nennt_die_Staende_und_trennt_die_Laeufe_der_Wahl()
+        {
+            Assert.Equal("1030,1031,1033", Laufvermerk.Schreiben(new[] { 1033, 1030, 1031, 1030, 0, -4 }));
+            Assert.Equal("", Laufvermerk.Schreiben(null));
+            Assert.Equal(new[] { 1030, 1033 }, Laufvermerk.Lesen(" 1033, 1030,x,,1033"));
+            Assert.Empty(Laufvermerk.Lesen(null));
+            Assert.Empty(Laufvermerk.Lesen(""));
+
+            int[] wahl = { GRUPPE_STAMM, STAMM, VARIANTE };
+            string alle = Laufvermerk.Schreiben(wahl), ohneVariante = Laufvermerk.Schreiben(new[] { GRUPPE_STAMM, STAMM });
+            List<WirtschaftlichkeitErgebnis> Zeilen(string s, string k, string v) => new List<WirtschaftlichkeitErgebnis>
+            {
+                new WirtschaftlichkeitErgebnis { IdProjekt = GRUPPE_STAMM, LaufStaende = s },
+                new WirtschaftlichkeitErgebnis { IdProjekt = STAMM, LaufStaende = k },
+                new WirtschaftlichkeitErgebnis { IdProjekt = VARIANTE, LaufStaende = v },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 4711, LaufStaende = "4711" }   // nicht gewählt
+            };
+
+            // Gleicher Vermerk: ein Lauf.
+            List<List<int>> l = Laufvermerk.Laeufe(Zeilen(alle, alle, alle), wahl, null);
+            Assert.Single(l);
+            Assert.Equal(wahl.OrderBy(i => i), l[0]);
+
+            // Ein gewählter Stand aus einem älteren Lauf: zwei Läufe.
+            l = Laufvermerk.Laeufe(Zeilen(ohneVariante, ohneVariante, alle), wahl, null);
+            Assert.Equal(2, l.Count);
+            Assert.Equal(new[] { GRUPPE_STAMM, STAMM }, l[0]);
+
+            // Altbestand: der Lauf, den die Seite kennt — ohne ihn keiner.
+            l = Laufvermerk.Laeufe(Zeilen("", "", ""), wahl, new[] { STAMM, GRUPPE_STAMM });
+            Assert.Single(l);
+            Assert.Equal(new[] { GRUPPE_STAMM, STAMM }, l[0]);
+            Assert.Empty(Laufvermerk.Laeufe(Zeilen("", "", ""), wahl, null));
+            Assert.Empty(Laufvermerk.Laeufe(null, wahl, wahl));
+        }
+
+        /// <summary>
+        /// <b>Persistiere schreibt den Vermerk, LadeErgebnisse liest ihn</b> — an jeder Zeile jedes
+        /// Szenarios dieselben Stände des Laufs (Stamm 1027 und Variante 1029 des Prüfstands). Eine
+        /// Zeile mit NULL (Altbestand) liest als leer.
+        /// </summary>
+        [Fact]
+        public void Persistiere_schreibt_den_Laufvermerk_und_LadeErgebnisse_liest_ihn()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out _, out _);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            string vermerk = STAMM + "," + VARIANTE;
+            Assert.All(alle, e => Assert.Equal(vermerk, e.LaufStaende));
+
+            object roh = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " WHERE ID_Projekt IN (?, ?) AND " +
+                WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE + " = ?",
+                new DbParam("@a", STAMM), new DbParam("@b", VARIANTE), new DbParam("@v", vermerk));
+            Assert.Equal(alle.Count, Convert.ToInt32(roh));
+
+            List<WirtschaftlichkeitErgebnis> geladen = ctrl.LadeErgebnisse(new List<int> { STAMM, VARIANTE });
+            Assert.Null(ctrl.Ladefehler);
+            Assert.Equal(alle.Count, geladen.Count);
+            Assert.All(geladen, e => Assert.Equal(vermerk, e.LaufStaende));
+
+            DataRepository.ExecuteSQL(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET " + WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE +
+                " = NULL WHERE ID_Projekt = ?", new DbParam("@p", STAMM));
+            geladen = ctrl.LadeErgebnisse(new List<int> { STAMM, VARIANTE });
+            Assert.All(geladen.Where(e => e.IdProjekt == STAMM), e => Assert.Equal("", e.LaufStaende));
+            Assert.All(geladen.Where(e => e.IdProjekt == VARIANTE), e => Assert.Equal(vermerk, e.LaufStaende));
+        }
+
+        /// <summary>
+        /// <b>Die Prüfung über den Vermerk</b> (<see cref="Laufvermerk.GruppenregelVeraltet"/>),
+        /// Gruppe 1026 wie oben (allein „Erdwärme" verwendet Strom): Gleicher Vermerk an allen
+        /// gewählten Ständen — kein Band; ein gewählter Stand mit anderem Vermerk, dessen Lauf
+        /// eine andere Gruppenregel hatte — Band; alle ohne Vermerk mit der Wahl als bekanntem
+        /// Lauf — kein Band; ein anderer Vermerk ohne Wirkung auf die Gruppenregel — kein Band.
+        /// </summary>
+        [Fact]
+        public void Der_Laufvermerk_meldet_nur_eine_geaenderte_Gruppenregel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            OhneStromAnStammUndAndererWp();
+
+            int[] wahl = { GRUPPE_STAMM, STAMM, VARIANTE };
+            string alle = Laufvermerk.Schreiben(wahl);
+            string ohneErdwaerme = Laufvermerk.Schreiben(new[] { GRUPPE_STAMM, STAMM });
+            string ohneAndereWp = Laufvermerk.Schreiben(new[] { GRUPPE_STAMM, VARIANTE });
+            List<WirtschaftlichkeitErgebnis> Zeilen(string s, string k, string v) => new List<WirtschaftlichkeitErgebnis>
+            {
+                new WirtschaftlichkeitErgebnis { IdProjekt = GRUPPE_STAMM, LaufStaende = s },
+                new WirtschaftlichkeitErgebnis { IdProjekt = STAMM, LaufStaende = k },
+                new WirtschaftlichkeitErgebnis { IdProjekt = VARIANTE, LaufStaende = v }
+            };
+
+            Assert.False(Laufvermerk.GruppenregelVeraltet(Zeilen(alle, alle, alle), wahl, null));
+            Assert.True(Laufvermerk.GruppenregelVeraltet(Zeilen(ohneErdwaerme, ohneErdwaerme, alle), wahl, null));
+            Assert.False(Laufvermerk.GruppenregelVeraltet(Zeilen("", "", ""), wahl, wahl));
+            Assert.False(Laufvermerk.GruppenregelVeraltet(Zeilen(ohneAndereWp, alle, ohneAndereWp), wahl, null));
+            Assert.False(Laufvermerk.GruppenregelVeraltet(new List<WirtschaftlichkeitErgebnis>(), wahl, wahl));
+        }
+
+        /// <summary>
+        /// <b>Die Seite kennt den Lauf gespeicherter Ergebnisse auch nach einem Seitenwechsel</b>
+        /// (Nach #633 (b)). Jede neue Seite teilt die Vergleichswahl der vorigen, wie die drei
+        /// Seiten der Gruppe es tun. Altbestand ohne Vermerk: kein Band (die Wahl beim Laden gilt
+        /// als Lauf). Nach „Berechnen" der ganzen Gruppe und „Erdwärme" ab zeigt die NEUE Seite das
+        /// Band — vor dem Vermerk nahm sie die Wahl als Lauf und schwieg. Ein neu angehakter Stand
+        /// aus einem älteren Lauf bringt dessen Gruppenregel mit; „Berechnen" schreibt an alle
+        /// Zeilen den neuen Vermerk, und das Band ist weg.
+        /// </summary>
+        [Fact]
+        public async System.Threading.Tasks.Task Die_Seite_kennt_den_Lauf_der_gespeicherten_Ergebnisse_nach_dem_Seitenwechsel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            OhneStromAnStammUndAndererWp();
+            var vergleich = new Vergleichsauswahl();
+            int[] gruppe = { GRUPPE_STAMM, STAMM, VARIANTE };
+
+            WirtschaftlichkeitStand Laden(out IReadOnlyDictionary<string, object> g)
+            {
+                var seite = new WirtschaftlichkeitSeiteGaben(GRUPPE_STAMM, "Beispiel WP WG 1") { Vergleich = vergleich };
+                g = seite.Gaben();
+                return ((Func<WirtschaftlichkeitStand>)g["Laden"])();
+            }
+            System.Threading.Tasks.Task<LaufErgebnis> Rechne(IReadOnlyDictionary<string, object> g, params int[] varianten) =>
+                ((Func<IReadOnlyList<int>, Action<Laufschritt>, System.Threading.Tasks.Task<LaufErgebnis>>)g["Berechnen"])(
+                    varianten, s => { });
+
+            // Altbestand: keine Zeile trägt einen Vermerk — wie vor EZ‑19 kein Band.
+            vergleich.Setzen(new[] { GRUPPE_STAMM, STAMM }, gruppe, GRUPPE_STAMM);
+            WirtschaftlichkeitStand stand = Laden(out IReadOnlyDictionary<string, object> gaben);
+            Assert.True(stand.HatErgebnisse, "Die Gruppe 1026 führt keine gespeicherten Ergebnisse.");
+            Assert.False(stand.Ansicht.GruppenregelVeraltet);
+
+            // Die ganze Gruppe gerechnet; dann „Erdwärme" ab und die Seite gewechselt.
+            vergleich.Setzen(gruppe, gruppe, GRUPPE_STAMM);
+            stand = Laden(out gaben);
+            LaufErgebnis lauf = await Rechne(gaben, STAMM, VARIANTE);
+            Assert.True(lauf.Erfolg, lauf.Fehler);
+            Assert.All(new WirtschaftlichkeitCtrl().LadeErgebnisse(gruppe.ToList()),
+                       e => Assert.Equal(Laufvermerk.Schreiben(gruppe), e.LaufStaende));
+            vergleich.Setzen(new[] { GRUPPE_STAMM, STAMM }, gruppe, GRUPPE_STAMM);
+            Assert.True(Laden(out gaben).Ansicht.GruppenregelVeraltet);
+
+            // Mit gleicher Wahl wie der gespeicherte Lauf: kein Band.
+            vergleich.Setzen(gruppe, gruppe, GRUPPE_STAMM);
+            Assert.False(Laden(out gaben).Ansicht.GruppenregelVeraltet);
+
+            // Stamm und „Andere WP" neu gerechnet; „Erdwärme" stammt aus dem älteren Lauf und
+            // wird auf der nächsten Seite wieder angehakt — ihr Lauf hatte die Gruppenregel.
+            vergleich.Setzen(new[] { GRUPPE_STAMM, STAMM }, gruppe, GRUPPE_STAMM);
+            Laden(out gaben);
+            lauf = await Rechne(gaben, STAMM);
+            Assert.True(lauf.Erfolg, lauf.Fehler);
+            vergleich.Setzen(gruppe, gruppe, GRUPPE_STAMM);
+            Assert.True(Laden(out gaben).Ansicht.GruppenregelVeraltet);
+
+            // „Berechnen" der Wahl: alle Zeilen tragen den neuen Vermerk, das Band ist weg.
+            lauf = await Rechne(gaben, STAMM, VARIANTE);
+            Assert.True(lauf.Erfolg, lauf.Fehler);
+            Assert.All(new WirtschaftlichkeitCtrl().LadeErgebnisse(gruppe.ToList()),
+                       e => Assert.Equal(Laufvermerk.Schreiben(gruppe), e.LaufStaende));
+            Assert.False(Laden(out gaben).Ansicht.GruppenregelVeraltet);
+        }
+
+        // =================================================================
         // Der Leistungspreis nur bei Stromverwendung (Anwenderentscheid 29.09.2026, EZ‑17)
         // =================================================================
 
@@ -969,6 +1151,20 @@ namespace EPOS.Kern.Tests
         // =================================================================
         // Handgriffe
         // =================================================================
+
+        /// <summary>Gruppe 1026: Stamm und „Andere WP" (1027) ohne stromverwendenden Erzeuger,
+        /// allein „Erdwärme" (1029) verwendet Strom.</summary>
+        private static void OhneStromAnStammUndAndererWp()
+        {
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt IN (?, ?) AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@a", GRUPPE_STAMM), new DbParam("@b", STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(GRUPPE_STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(STAMM));
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(VARIANTE));
+        }
 
         /// <summary>1027 als reines Kesselprojekt, 1029 ohne Kostenpositionen, beide mit
         /// rundem Gaspreis, dazu der Katalogpreis des Auslieferungs-Stromträgers.</summary>
