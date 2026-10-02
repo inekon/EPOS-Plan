@@ -297,6 +297,6 @@ für CO₂ und die Menge.
   prüft den neuen Schlüssel. Messlatten der Berichte byte-gleich (`BerichtVorlagenMesslatteTests`).
 - **Papiere:** Wiki-Quelle „Wirtschaftlichkeit“ am Anker `bericht-gruppenregel`: Die Fußzeile nennt den Leistungspreis
   des Stromträgers und bei aktiver Tarifstruktur zusätzlich den abweichenden des Reststromtarifs (Monatspreis als Zahl,
-  Staffel als Modell). Der Logbuchsatz unter Version 1.2.0.6 ist neu gefasst (#644, #649, #652). Der
+  Staffel als Modell). Der Logbuchsatz unter Version 1.2.0.6 ist neu gefasst (#644, #649, #653). Der
   Wiki-Upload steht gebündelt aus.
 - **Gate:** siehe Statuszeile.
