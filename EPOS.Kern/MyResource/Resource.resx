@@ -41302,5 +41302,35 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
     <value>Modul „{0}": In {1} Stunden deckt es den Prozesskanal nicht – die Kennlinie am Prozessvorlauf ({2} °C) beginnt erst bei der Quelltemperatur {3:0.#} °C; darunter gibt es für diesen Vorlauf keinen Betriebspunkt.</value>
   </data>
+  <data name="PW_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf:</value>
+  </data>
+  <data name="PW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf:</value>
+  </data>
+  <data name="PW_GRP_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturniveau des Prozesses</value>
+  </data>
+  <data name="PW_LBL_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperaturniveau:</value>
+  </data>
+  <data name="PW_HINW_TEMPERATUR" xml:space="preserve">
+    <value>Leer = ohne Temperaturniveau, der Prozess rechnet als reine Wärmemenge. Mit Vorlauf und Rücklauf führt der Lauf je Stunde den höchsten geforderten Vorlauf des Prozesskanals; ein Erzeuger, der ihn nicht erreicht, deckt den Prozess in dieser Stunde nicht.</value>
+  </data>
+  <data name="PW_BTN_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturen übernehmen</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_UEBERNOMMEN" xml:space="preserve">
+    <value>Temperaturniveau übernommen; gespeichert wird mit OK.</value>
+  </data>
+  <data name="PW_TEMPERATUR_OHNE" xml:space="preserve">
+    <value>ohne</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur, die der Prozess verlangt, in °C (nur Prozesswärme); leer zusammen mit dem Rücklauf = ohne Temperaturniveau.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Die Rücklauftemperatur des Prozesses in °C (nur Prozesswärme); nicht über dem Vorlauf.</value>
+  </data>
 </root>
 

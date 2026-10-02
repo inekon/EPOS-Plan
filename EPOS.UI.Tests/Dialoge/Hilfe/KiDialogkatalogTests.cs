@@ -1157,7 +1157,7 @@ public class KiDialogkatalogTests : IDisposable
     /// </summary>
     [Theory]
     [InlineData(KiMaskennamen.TYPPROFIL, "wochenwerte", 168, 4)]
-    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 4)]
+    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 6)]   // dazu Vorlauf und Rücklauf der Prozesswärme (PW1 Stufe 1)
     [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 4)]
     [InlineData(KiMaskennamen.KOSTENPROFIL, "monatswerte", 12, 5)]
     [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]

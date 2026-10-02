@@ -52239,11 +52239,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Prozesses in °C (nur Prozesswärme); nicht über dem Vorlauf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ aus dem Typkatalog; er bringt das Wochen-Stundenprofil mit, nach dem die Monatswerte verteilt werden. ähnelt.
         /// </summary>
         public static string KI_DLG_TSTAMM_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TSTAMM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur, die der Prozess verlangt, in °C (nur Prozesswärme); leer zusammen mit dem Rücklauf = ohne Temperaturniveau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -76233,6 +76251,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturen übernehmen ähnelt.
+        /// </summary>
+        public static string PW_BTN_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_BTN_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau des Prozesses ähnelt.
+        /// </summary>
+        public static string PW_GRP_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_GRP_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = ohne Temperaturniveau, der Prozess rechnet als reine Wärmemenge. Mit Vorlauf und Rücklauf führt der Lauf je Stunde den höchsten geforderten Vorlauf des Prozesskanals; ein Erzeuger, der ihn nicht erreicht, deckt den Prozess in dieser Stunde nicht. ähnelt.
+        /// </summary>
+        public static string PW_HINW_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PW_HINW_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
+        /// </summary>
+        public static string PW_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("PW_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau: ähnelt.
+        /// </summary>
+        public static string PW_LBL_TEMPERATURNIVEAU {
+            get {
+                return ResourceManager.GetString("PW_LBL_TEMPERATURNIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
+        /// </summary>
+        public static string PW_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("PW_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf müssen zwischen 0 und 250 °C liegen. ähnelt.
         /// </summary>
         public static string PW_MSG_TEMPERATUR_BEREICH {
@@ -76256,6 +76328,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PW_MSG_TEMPERATUR_REIHENFOLGE {
             get {
                 return ResourceManager.GetString("PW_MSG_TEMPERATUR_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturniveau übernommen; gespeichert wird mit OK. ähnelt.
+        /// </summary>
+        public static string PW_MSG_TEMPERATUR_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PW_MSG_TEMPERATUR_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne ähnelt.
+        /// </summary>
+        public static string PW_TEMPERATUR_OHNE {
+            get {
+                return ResourceManager.GetString("PW_TEMPERATUR_OHNE", resourceCulture);
             }
         }
         

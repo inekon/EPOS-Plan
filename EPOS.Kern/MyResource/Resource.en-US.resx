@@ -41295,5 +41295,35 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
     <value>module "{0}": in {1} hours it does not cover the process channel – the characteristic curve at the process flow temperature ({2} °C) only starts at the source temperature {3:0.#} °C; below that there is no operating point for this flow temperature.</value>
   </data>
+  <data name="PW_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow temperature:</value>
+  </data>
+  <data name="PW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return temperature:</value>
+  </data>
+  <data name="PW_GRP_TEMPERATUR" xml:space="preserve">
+    <value>Temperature level of the process</value>
+  </data>
+  <data name="PW_LBL_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperature level:</value>
+  </data>
+  <data name="PW_HINW_TEMPERATUR" xml:space="preserve">
+    <value>Empty = no temperature level, the process is calculated as a pure quantity of heat. With flow and return temperature the run tracks the highest required flow temperature of the process channel per hour; a generator that does not reach it does not cover the process in that hour.</value>
+  </data>
+  <data name="PW_BTN_TEMPERATUR" xml:space="preserve">
+    <value>Apply temperatures</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_UEBERNOMMEN" xml:space="preserve">
+    <value>Temperature level applied; it is saved with OK.</value>
+  </data>
+  <data name="PW_TEMPERATUR_OHNE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature the process requires, in °C (process heat only); empty together with the return temperature = no temperature level.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
+    <value>The return temperature of the process in °C (process heat only); not above the flow temperature.</value>
+  </data>
 </root>
 

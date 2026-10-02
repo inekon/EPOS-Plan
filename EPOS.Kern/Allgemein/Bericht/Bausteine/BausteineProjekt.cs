@@ -83,6 +83,14 @@ namespace WindowsFormsApplication1
                 // Gesamtdeckungsgrad verdeckt: ob die Auslegung Warmwasser und Prozess
                 // ebenso trägt wie die Heizung. Ein Kanal ohne Bedarf erscheint als „—" —
                 // ein Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur, wenn ein Prozess ein
+                // Temperaturpaar trägt; sonst bleibt die Tafel, wie sie war.
+                if (stamm.Details != null && stamm.Details.ProzessVorlaufMax != null && stamm.Details.ProzessRuecklaufMin != null)
+                    k.Eigenschaften(
+                        "Temperaturniveau Prozesswärme",
+                        k.F(stamm.Details.ProzessVorlaufMax.Value, 0) + " / " +
+                        k.F(stamm.Details.ProzessRuecklaufMin.Value, 0) + " °C");
+
                 k.Ueberschrift2("Deckungsgrade je Bedarfsart");
                 k.Eigenschaften(
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),

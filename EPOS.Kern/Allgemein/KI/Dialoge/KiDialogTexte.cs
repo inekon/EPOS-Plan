@@ -1425,6 +1425,11 @@
         // Welle #458 Stufe 3b: die zwoelf Monatswerte als Zahlenreihe.
         internal static string TstammMonatswerteName => MyResource.Resource.BTYP_GRP_MONATE;
         internal static string TstammMonatswerteErl => MyResource.Resource.KI_DLG_TSTAMM_MONATSWERTE_ERL;
+        // PW1 Stufe 1: das Temperaturpaar der Prozesswärme.
+        internal static string TstammVorlaufName => MyResource.Resource.PW_LBL_VORLAUF;
+        internal static string TstammVorlaufErl => MyResource.Resource.KI_DLG_TSTAMM_VORLAUF_ERL;
+        internal static string TstammRuecklaufName => MyResource.Resource.PW_LBL_RUECKLAUF;
+        internal static string TstammRuecklaufErl => MyResource.Resource.KI_DLG_TSTAMM_RUECKLAUF_ERL;
 
         // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
 

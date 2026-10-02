@@ -297,19 +297,34 @@ namespace WindowsFormsApplication1
                                 t("KFLT_SP_MONAT") + " " + (i + 1).ToString(CultureInfo.InvariantCulture),
                                 "MWh", monat == null ? null : Text(monat[i])));
 
+            // PW1 Stufe 1: Vorlauf und Rücklauf der Prozesswärme - der Lauf liest sie
+            // (Prozesstemperatur), also Stufe Simulation wie die Monatswerte.
+            if (art == BedarfsArt.Prozesswaerme)
+            {
+                (double? vl, double? rl) = Temperaturpaar(art, bezeichner);
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_VORLAUF, t("PW_LBL_VORLAUF"), "°C", Grad(vl),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF, t("PW_LBL_RUECKLAUF"), "°C", Grad(rl),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+            }
+
             return liste;
         }
 
-        private static Parameterwert Zeile(string spalte, string anzeige, string einheit, string wert)
+        private static Parameterwert Zeile(string spalte, string anzeige, string einheit, string wert,
+                                           string fundstelle = "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)")
         {
             var eintrag = new ParameterEintrag(
                 spalte, anzeige, einheit,
                 new[] { Verwendung.Simulation },
-                "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)");
+                fundstelle);
 
             return new Parameterwert(eintrag,
                                      string.IsNullOrWhiteSpace(wert) ? ParameterVerwendung.LEER : wert);
         }
+
+        private static string Grad(double? wert)
+            => wert == null ? null : wert.Value.ToString("0.#", CultureInfo.CurrentCulture);
 
         private static string Text(double? wert)
         {
@@ -424,6 +439,25 @@ namespace WindowsFormsApplication1
         /// sonst ueber <c>Meldung.Hinweis</c>, und das waere in einer WebView ein modaler
         /// Kasten ueber dem Dialog statt eines Warnbanners darin.</para>
         /// </summary>
+        /// <summary>
+        /// Das Temperaturpaar eines Katalogsatzes (PW1 Stufe 1) — nur die Prozesswärme führt eines;
+        /// sonst und ohne Paar <c>(null, null)</c>.
+        /// </summary>
+        internal static (double? Vorlauf, double? Ruecklauf) Temperaturpaar(BedarfsArt art, string bezeichner)
+            => art == BedarfsArt.Prozesswaerme ? ProzesswaermeStammCtrl.Temperaturpaar(bezeichner) : (null, null);
+
+        /// <summary>
+        /// Schreibt den Kopf samt Temperaturpaar (PW1 Stufe 1) — das Paar nur bei der Prozesswärme;
+        /// die beiden anderen Ausprägungen schreiben wie <see cref="SaveHead(BedarfsArt, string, string, string, double[], bool)"/>.
+        /// </summary>
+        internal static bool SaveHead(BedarfsArt art, string bez, string typ, string beschr,
+                                      double[] monat, bool isNew, double? vorlauf, double? ruecklauf)
+        {
+            if (art == BedarfsArt.Prozesswaerme)
+                return new ProzesswaermeStammCtrl().SaveHead(bez, typ, beschr, monat, isNew, vorlauf, ruecklauf, true);
+            return SaveHead(art, bez, typ, beschr, monat, isNew);
+        }
+
         internal static bool SaveHead(BedarfsArt art, string bez, string typ, string beschr,
                                       double[] monat, bool isNew)
         {
