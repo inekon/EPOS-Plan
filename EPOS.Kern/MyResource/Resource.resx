@@ -41266,5 +41266,41 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
   </data>
+  <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
+    <value>Vorlauf und Rücklauf bitte beide angeben oder beide leer lassen.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_BEREICH" xml:space="preserve">
+    <value>Vorlauf und Rücklauf müssen zwischen 0 und 250 °C liegen.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_REIHENFOLGE" xml:space="preserve">
+    <value>Der Vorlauf darf nicht unter dem Rücklauf liegen.</value>
+  </data>
+  <data name="SIMENG_PROZESS_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperaturniveau aus {0} Profil(en) mit Temperaturpaar, Vorlauf bis {1:0.#} °C in {2} Stunden.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_KENNLINIE" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden rechnet die Kennlinie am Prozessvorlauf (bis {2:0.#} °C), weil der Prozesskanal eine höhere Temperatur verlangt als die Kennlinie der Stunde.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_NICHT_ERREICHT" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden deckt es den Prozesskanal nicht – gefordert bis {2:0.#} °C, die oberste Kennlinie liegt bei {3} °C und die Extrapolation ist nicht erlaubt.</value>
+  </data>
+  <data name="SIMENG_PROZESS_NICHT_ERREICHT" xml:space="preserve">
+    <value>„{0}": In {1} Stunden deckt der Kessel den Prozesskanal nicht – gefordert bis {2:0.#} °C, sein Vorlauf beträgt {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PROZESS_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>„{0}": In {1} Stunden geht der Prozessrücklauf (im Mittel {2:0.#} °C) anteilig in den Rücklauf der Brennwertkennlinie ein.</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_ZONE" xml:space="preserve">
+    <value>Pufferspeicher „{0}": In {1} Stunden entnimmt der Prozesskanal nur aus den Schichten, die den Prozessvorlauf halten (bis {2:0.#} °C).</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_GESPERRT" xml:space="preserve">
+    <value>Pufferspeicher „{0}": In {1} Stunden entnimmt der Prozesskanal nichts – gefordert bis {2:0.#} °C, der Speicher hält {3:0.#} °C.</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_PROZESS" xml:space="preserve">
+    <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem Prozessvorlauf {2} °C eines Prozesswärmeprofils. In Stunden mit diesem Bedarf deckt die Anlage den Prozesskanal nicht.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden deckt es den Prozesskanal nicht – die Kennlinie am Prozessvorlauf ({2} °C) beginnt erst bei der Quelltemperatur {3:0.#} °C; darunter gibt es für diesen Vorlauf keinen Betriebspunkt.</value>
+  </data>
 </root>
 

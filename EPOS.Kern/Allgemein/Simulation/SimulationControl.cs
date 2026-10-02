@@ -1319,6 +1319,9 @@ namespace WindowsFormsApplication1
                 // ANLAGENKOPPLUNG (AK1, 6.1): der gerechnete Vorlauf des Heizkreises für die
                 // Kennlinienwahl - null ohne gekoppeltes Gebäude, dann wie im Bestand.
                 simulation_wp.Heizkreisvorlauf = simulation_Waermebedarf?.Heizkreis?.VorlaufC;
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - null ohne Prozess mit
+                // Temperaturpaar, dann wie im Bestand.
+                simulation_wp.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
                 simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
                 simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
                 // Den Heizstab holt sich das Modul seit dem 16.09.2026 je Anlage selbst
@@ -1450,6 +1453,8 @@ namespace WindowsFormsApplication1
 
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
+            // PW1 Stufe 1 (d): die Entnahme des Prozesskanals aus den Speichern.
+            schleife.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
 
             // KU2 (Kühlkonzept 5.2, 5.5): die Wärmepumpen im Kühlbetrieb und die
             // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
@@ -1458,6 +1463,14 @@ namespace WindowsFormsApplication1
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
             m_bError = !schleife.Rechnen(kanaele);
+
+            // PW1 Stufe 1: was das Temperaturniveau des Prozesskanals am Kessel und an den
+            // Speichern bewirkt hat (die Wärmepumpe meldet selbst). Ohne Niveau still.
+            if (!m_bError)
+            {
+                if (_kesselInSchleife) simulation_spk.ProzessMelden();
+                schleife.ProzessMelden();
+            }
 
             // D5a: Der Zyklus-Guard der Rechenebenen bricht dialogfrei ab; sein Text
             // gehört in denselben Fehlerkanal wie die übrigen Abbrüche.
@@ -4145,6 +4158,10 @@ namespace WindowsFormsApplication1
         {
             simulation_spk.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
             simulation_spk.RuecklaufPaarLesen = KesselRuecklaufGepflegt;
+            // PW1 Stufe 1: das Temperaturniveau des Prozesskanals und der gepflegte Vorlauf des
+            // Kessels (dieselbe Kette Anlage -> Heizkessel) - gefragt nur mit Temperaturniveau.
+            simulation_spk.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
+            simulation_spk.VorlaufPaarLesen = KesselVorlaufGepflegt;
         }
 
         /// <summary>
@@ -4155,6 +4172,16 @@ namespace WindowsFormsApplication1
         private static double? KesselRuecklaufGepflegt(int idAnlage)
         {
             return KesselTemperaturpaarGepflegt(idAnlage, out _, out double ruecklauf) ? ruecklauf : (double?)null;
+        }
+
+        /// <summary>
+        /// Der Vorlauf des GEPFLEGTEN Paars einer Kesselanlage [°C] — für die Prüfung, ob der Kessel den
+        /// geforderten Prozessvorlauf erreicht (PW1 Stufe 1); dieselbe Kette wie
+        /// <see cref="KesselRuecklaufGepflegt"/>, <c>null</c> ohne vollständiges Paar.
+        /// </summary>
+        private static double? KesselVorlaufGepflegt(int idAnlage)
+        {
+            return KesselTemperaturpaarGepflegt(idAnlage, out double vorlauf, out _) ? vorlauf : (double?)null;
         }
 
         /// <summary>

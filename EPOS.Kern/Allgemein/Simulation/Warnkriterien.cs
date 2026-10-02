@@ -796,6 +796,23 @@ namespace WindowsFormsApplication1
                                          Z_AnlageSenkeModel senke, int rang,
                                          List<Warnbefund> befunde)
         {
+            // --- W3, Prozessvorlauf (PW1 Stufe 1) --------------------------------------
+            //
+            // Eine DIREKTSENKE Prozesswärme an einem Erzeuger, dessen gepflegter Vorlauf unter
+            // dem höchsten Prozessvorlauf des Projekts liegt: In Stunden mit diesem Bedarf deckt
+            // der Lauf den Prozesskanal an diesem Erzeuger nicht (Ausschluss). Die Wärmepumpe
+            // ist ausgenommen - sie wertet ihr Kennfeld am Prozessvorlauf aus, ihr projektierter
+            // Vorlauf ist keine Grenze. Ohne Prozess mit Temperaturpaar schlägt nichts an.
+            if (senke != null && string.Equals(senke.Ziel, WaermesenkeClass.ZIEL_PROZESSWAERME, StringComparison.Ordinal))
+            {
+                double tProzess = bild.ProzessVorlaufMax();
+                int vorlauf = bild.AnlagenVorlauf(idAnlage);
+                if (tProzess > 0 && vorlauf > 0 && vorlauf < tProzess && !bild.IstWaermepumpe(idAnlage))
+                    befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, 0,
+                        string.Format(MyResource.Resource.SIMWARN_W3_UNTER_PROZESS,
+                                      bild.Anlagenname(idAnlage), Grad(vorlauf), Grad(tProzess))));
+            }
+
             if (senke == null || senke.ID_Puffer <= 0) return;
 
             int[] kanaele = ZielKanaele(senke.Ziel);
@@ -1523,6 +1540,41 @@ namespace WindowsFormsApplication1
             public string Anlagenname(int idAnlage)
             {
                 return Bild.Name(idAnlage);
+            }
+
+            private double? _prozessVorlaufMax;
+
+            /// <summary>
+            /// Der höchste Vorlauf der Prozesswärmesätze des Projekts mit vollständigem Paar [°C]
+            /// (PW1 Stufe 1) — über die Zuordnungszeilen, die der Lauf rechnet; 0 ohne Paar. Still
+            /// gelesen: Vor dem Schemaschritt fehlen die Spalten, dann ist es 0.
+            /// </summary>
+            public double ProzessVorlaufMax()
+            {
+                if (_prozessVorlaufMax == null)
+                {
+                    object o = StilleDb.Scalar(
+                        "SELECT MAX(p.Vorlauf) FROM Tab_Prozesswaerme p INNER JOIN Z_Projekt_Prozesswaerme z " +
+                        "ON z.ID_Prozesswaerme = p.ID WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? " +
+                        "AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL",
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt),
+                        StilleDb.Par("@proj2", DbParamTyp.Integer, _idProjekt));
+                    double wert = 0;
+                    if (o != null && o != DBNull.Value)
+                    {
+                        try { wert = Convert.ToDouble(o, CultureInfo.InvariantCulture); }
+                        catch { wert = 0; }
+                    }
+                    _prozessVorlaufMax = wert;
+                }
+                return _prozessVorlaufMax.Value;
+            }
+
+            /// <summary>Ist die Anlage eine Wärmepumpe (<c>ID_Type</c> = <see cref="ProjektPuffer.TYP_WP"/>)?</summary>
+            public bool IstWaermepumpe(int idAnlage)
+            {
+                Hydraulikbild.AnlagenEintrag a;
+                return Bild.JeId.TryGetValue(idAnlage, out a) && a.ID_Type == ProjektPuffer.TYP_WP;
             }
 
             public int AnlagenVorlauf(int idAnlage)

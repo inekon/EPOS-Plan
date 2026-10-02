@@ -65,6 +65,32 @@ namespace WindowsFormsApplication1
         // Je Modul die Kennlinienwahl am gerechneten Vorlauf; null = fester Vorlauf (Bestand).
         private readonly List<Kennlinienwahl> wp_kennlinienwahl = new List<Kennlinienwahl>();
 
+        /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (PW1 Stufe 1) — gesetzt von
+        /// <c>SimulationControl</c> vor dem Modulaufbau; <c>null</c> = kein Prozess mit
+        /// Temperaturpaar, dann rechnet jedes Modul wie zuvor.
+        /// </summary>
+        internal Prozesstemperatur Prozesstemperatur { get; set; }
+
+        // Je Modul alle Kennlinien des Geräts für den Prozessanteil (PW1 Stufe 1); null ohne
+        // Temperaturniveau. Gelesen werden nur die Kurven - die Stundenzähler der Heizseite
+        // bleiben unberührt, auch wenn das Objekt mit wp_kennlinienwahl geteilt ist.
+        private readonly List<Kennlinienwahl> wp_prozesswahl = new List<Kennlinienwahl>();
+
+        // Je Modul: Stunden mit der Kennlinie am Prozessvorlauf und deren höchster Vorlauf;
+        // Stunden, in denen das Modul den Prozesskanal nicht deckt, weil keine Kennlinie den
+        // Prozessvorlauf erreicht, der höchste dabei geforderte Vorlauf und die oberste Stützstelle.
+        private readonly int[] _prozessKennlinieStunden = new int[MAX_WP];
+        private readonly double[] _prozessKennlinieMax = new double[MAX_WP];
+        private readonly int[] _prozessGesperrtStunden = new int[MAX_WP];
+        private readonly double[] _prozessGesperrtMax = new double[MAX_WP];
+        private readonly int[] _prozessGesperrtOberste = new int[MAX_WP];
+        // ... und davon die Stunden, in denen die Quelltemperatur unter der untersten Stützstelle der
+        // Kennlinie am Prozessvorlauf lag (Vorlauf und Grenze dieser Kennlinie).
+        private readonly int[] _prozessQuelleStunden = new int[MAX_WP];
+        private readonly int[] _prozessQuelleVorlauf = new int[MAX_WP];
+        private readonly double[] _prozessQuelleGrenze = new double[MAX_WP];
+
         // Quelltemperatur-Jahresprofil je WP-Modul (Wärmequelle):
         // Luft-Wasser = Außentemperatur; Sole-/Wasser-Wasser gemäß WQ_Typ
         // (Konstant, Pufferspeicher, Profil, CSV) - siehe WaermequelleClass.
@@ -656,6 +682,15 @@ namespace WindowsFormsApplication1
             wp_model.Clear();
             wp_kenndaten.Clear();
             wp_kennlinienwahl.Clear();
+            wp_prozesswahl.Clear();
+            Array.Clear(_prozessKennlinieStunden, 0, MAX_WP);
+            Array.Clear(_prozessKennlinieMax, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtStunden, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtMax, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtOberste, 0, MAX_WP);
+            Array.Clear(_prozessQuelleStunden, 0, MAX_WP);
+            Array.Clear(_prozessQuelleVorlauf, 0, MAX_WP);
+            Array.Clear(_prozessQuelleGrenze, 0, MAX_WP);
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
             wp_typ.Clear();
@@ -794,6 +829,12 @@ namespace WindowsFormsApplication1
                 wp_kennlinienwahl.Add(Heizkreisvorlauf != null && SenkeMitHeizung(wp_senke[i])
                     ? KennlinienwahlLaden(model.ID_WP, item)
                     : null);
+
+                // PW1 Stufe 1: Mit Temperaturniveau des Prozesskanals braucht der Prozessanteil alle
+                // Kennlinien des Geräts - die schon geladene Wahl der Heizseite oder eine eigene.
+                wp_prozesswahl.Add(Prozesstemperatur != null
+                    ? (wp_kennlinienwahl[i] ?? KennlinienwahlLaden(model.ID_WP, item))
+                    : null);
             }
 
             return true;
@@ -916,6 +957,63 @@ namespace WindowsFormsApplication1
             wahl.Stunden[stelle]++;
             return wahl.Kurven[stelle];
         }
+
+        /// <summary>
+        /// <b>Die Kennlinie für den Prozessanteil</b> (PW1 Stufe 1): die UNTERSTE Kennlinie des Geräts,
+        /// deren Vorlauf den geforderten Prozessvorlauf <paramref name="gefordert"/> erreicht — anders
+        /// als die Heizseite nicht die nächstgelegene, denn eine Kennlinie darunter liefert die
+        /// geforderte Temperatur nicht. Über der obersten Stützstelle gilt die Extrapolationsregel des
+        /// Projekts: erlaubt — die oberste Kennlinie (<paramref name="oberhalb"/>); verboten —
+        /// <c>null</c>, das Modul erreicht den Prozessvorlauf nicht und deckt den Prozesskanal in
+        /// dieser Stunde nicht. Ohne geladene Kennlinien zählt allein die feste Kennlinie
+        /// <paramref name="fest"/>.
+        /// </summary>
+        internal static _Kenndaten ProzessKennlinieWaehlen(_Kenndaten[] kurven, _Kenndaten fest, double gefordert,
+                                                          bool extrapolationErlaubt, out bool oberhalb)
+        {
+            oberhalb = false;
+            _Kenndaten[] k = (kurven != null && kurven.Length > 0) ? kurven : new[] { fest };
+            for (int i = 0; i < k.Length; i++)
+                if (k[i] != null && Rechenrand.SchwelleErreicht(k[i].Vorlauf, gefordert)) return k[i];
+            if (!extrapolationErlaubt) return null;
+            oberhalb = true;
+            return k[k.Length - 1];
+        }
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Modul, in wie vielen Stunden die Kennlinie am Prozessvorlauf
+        /// rechnete und in wie vielen das Modul den Prozesskanal nicht deckte (PW1 Stufe 1). Ohne
+        /// Temperaturniveau meldet sie nichts.
+        /// </summary>
+        private void ProzesswahlMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+            {
+                string bezeichner = wp_model[i]?.Bezeichner ?? "";
+                if (_prozessKennlinieStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_KENNLINIE,
+                        bezeichner, _prozessKennlinieStunden[i], _prozessKennlinieMax[i]));
+                int ohneKennlinie = _prozessGesperrtStunden[i] - _prozessQuelleStunden[i];
+                if (ohneKennlinie > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_NICHT_ERREICHT,
+                        bezeichner, ohneKennlinie, _prozessGesperrtMax[i], _prozessGesperrtOberste[i]));
+                if (_prozessQuelleStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_QUELLE,
+                        bezeichner, _prozessQuelleStunden[i], _prozessQuelleVorlauf[i], _prozessQuelleGrenze[i]));
+            }
+        }
+
+        /// <summary>Stunden, in denen Modul <paramref name="index"/> den Prozesskanal nicht deckte (PW1 Stufe 1).</summary>
+        internal int ProzessGesperrtStunden(int index)
+            => index >= 0 && index < MAX_WP ? _prozessGesperrtStunden[index] : 0;
+
+        /// <summary>Stunden, in denen Modul <paramref name="index"/> mit der Kennlinie am Prozessvorlauf rechnete (PW1 Stufe 1).</summary>
+        internal int ProzessKennlinieStunden(int index)
+            => index >= 0 && index < MAX_WP ? _prozessKennlinieStunden[index] : 0;
 
         /// <summary>Wo der gerechnete Vorlauf zu den Stützstellen liegt (F-A8).</summary>
         internal enum Vorlauflage
@@ -1343,6 +1441,9 @@ namespace WindowsFormsApplication1
                     // Ohne Kühlbetrieb ist die Bedingung falsch, und der Rumpf ist der bisherige.
                     bool heizkanalGesperrt = HeizkanalGesperrt(index, stunde);
                     double heizkanalZurueck = 0;
+                    // PW1 Stufe 1: Sperre des Prozesskanals, gesetzt nach der Kennlinienwahl.
+                    bool prozesskanalGesperrt = false;
+                    double prozesskanalZurueck = 0;
                     if (heizkanalGesperrt)
                     {
                         heizkanalZurueck = rest[Kanal.HEIZUNG];
@@ -1361,6 +1462,59 @@ namespace WindowsFormsApplication1
                     }
                     Senkenliste senken = kontext.SenkenlisteJeModul[index];
                     SimulationPufferspeicher quelle = wp_quellspeicher[index];
+
+                    // PW1 STUFE 1: das Temperaturniveau des Prozesskanals. Deckt das Modul den
+                    // Prozesskanal unmittelbar und steht dort Bedarf mit gefordertem Vorlauf über
+                    // dem der Kennlinie der Stunde, rechnet die Stunde mit der Kennlinie am
+                    // Prozessvorlauf (die höchste geforderte Temperatur); erreicht keine Kennlinie
+                    // ihn, ist der Prozesskanal für dieses Modul in dieser Stunde gesperrt - Muster
+                    // KU2, danach unverändert zurückgelegt. Ohne Temperaturniveau falsch.
+                    if (Prozesstemperatur != null && rest[Kanal.PROZESS] > 0 &&
+                        senken != null && senken.BedientProzessDirekt)
+                    {
+                        double gefordert = Prozesstemperatur.Vorlauf(stunde);
+                        if (!double.IsNaN(gefordert) && !Rechenrand.SchwelleErreicht(kenndaten.Vorlauf, gefordert))
+                        {
+                            Kennlinienwahl pw = index < wp_prozesswahl.Count ? wp_prozesswahl[index] : null;
+                            _Kenndaten kp = ProzessKennlinieWaehlen(pw?.Kurven, kenndaten, gefordert,
+                                                                     Extrapolation_Erlaubt, out bool _);
+
+                            // Die Kennlinie am Prozessvorlauf gilt nach unten nur bis zu ihrer
+                            // untersten Quelltemperatur: Darunter liefert der Hersteller für diesen
+                            // Vorlauf keinen Betriebspunkt, und eine lineare Verlängerung einer
+                            // Hochtemperaturkennlinie mit wenigen Stützstellen läuft auf eine
+                            // Arbeitszahl gegen null zu. Das Modul erreicht den Prozessvorlauf in
+                            // dieser Stunde dann nicht - weder Extrapolation noch Abbruch. Eine
+                            // gekoppelte Pufferquelle kappt ohnehin (F13) und bleibt außen vor.
+                            bool quelleZuKalt = kp != null && !QuelleGekoppelt(index) && kp.anz >= 2 &&
+                                                wp_quelltemp[index][stunde] < kp.dat[kp.anz - 1].Temperatur;
+                            if (quelleZuKalt)
+                            {
+                                _prozessQuelleStunden[index]++;
+                                _prozessQuelleVorlauf[index] = kp.Vorlauf;
+                                _prozessQuelleGrenze[index] = kp.dat[kp.anz - 1].Temperatur;
+                                kp = null;
+                            }
+
+                            if (kp == null)
+                            {
+                                prozesskanalGesperrt = true;
+                                prozesskanalZurueck = rest[Kanal.PROZESS];
+                                rest[Kanal.PROZESS] = 0;
+                                _prozessGesperrtStunden[index]++;
+                                if (gefordert > _prozessGesperrtMax[index]) _prozessGesperrtMax[index] = gefordert;
+                                _Kenndaten[] alle = pw?.Kurven;
+                                _prozessGesperrtOberste[index] = (alle != null && alle.Length > 0)
+                                    ? alle[alle.Length - 1].Vorlauf : kenndaten.Vorlauf;
+                            }
+                            else
+                            {
+                                kenndaten = kp;
+                                _prozessKennlinieStunden[index]++;
+                                if (gefordert > _prozessKennlinieMax[index]) _prozessKennlinieMax[index] = gefordert;
+                            }
+                        }
+                    }
 
                     double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index);
                     if (result[STATUS] == 0)
@@ -1570,6 +1724,7 @@ namespace WindowsFormsApplication1
                     finally
                     {
                         if (heizkanalGesperrt) rest[Kanal.HEIZUNG] = heizkanalZurueck;
+                        if (prozesskanalGesperrt) rest[Kanal.PROZESS] = prozesskanalZurueck;
                     }
 
                 } // end alle WP-Module
@@ -1627,6 +1782,9 @@ namespace WindowsFormsApplication1
 
             // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf.
             VorlaufwahlMelden();
+
+            // PW1 Stufe 1: die Kennlinie am Prozessvorlauf und die Stunden ohne Prozessdeckung.
+            ProzesswahlMelden();
 
             if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();

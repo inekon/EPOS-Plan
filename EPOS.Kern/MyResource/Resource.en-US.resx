@@ -41259,5 +41259,41 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
     <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
+  <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
+    <value>Please enter both flow and return temperature, or leave both empty.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_BEREICH" xml:space="preserve">
+    <value>Flow and return temperature must lie between 0 and 250 °C.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_REIHENFOLGE" xml:space="preserve">
+    <value>The flow temperature must not be below the return temperature.</value>
+  </data>
+  <data name="SIMENG_PROZESS_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>temperature level from {0} profile(s) with a temperature pair, flow temperature up to {1:0.#} °C in {2} hours.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_KENNLINIE" xml:space="preserve">
+    <value>module "{0}": in {1} hours the characteristic curve at the process flow temperature applies (up to {2:0.#} °C), because the process channel requires a higher temperature than the curve of the hour.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_NICHT_ERREICHT" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – up to {2:0.#} °C required, the highest characteristic curve is at {3} °C and extrapolation is not allowed.</value>
+  </data>
+  <data name="SIMENG_PROZESS_NICHT_ERREICHT" xml:space="preserve">
+    <value>"{0}": in {1} hours the boiler does not cover the process channel – up to {2:0.#} °C required, its flow temperature is {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PROZESS_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>"{0}": in {1} hours the process return temperature (on average {2:0.#} °C) enters the return temperature of the condensing curve proportionally.</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_ZONE" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel only draws from the layers that hold the process flow temperature (up to {2:0.#} °C).</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_GESPERRT" xml:space="preserve">
+    <value>Buffer storage "{0}": in {1} hours the process channel draws nothing – up to {2:0.#} °C required, the storage holds {3:0.#} °C.</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_PROZESS" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the process flow temperature of {2} °C of a process heat profile. In hours with this demand the unit does not cover the process channel.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
+    <value>module "{0}": in {1} hours it does not cover the process channel – the characteristic curve at the process flow temperature ({2} °C) only starts at the source temperature {3:0.#} °C; below that there is no operating point for this flow temperature.</value>
+  </data>
 </root>
 
