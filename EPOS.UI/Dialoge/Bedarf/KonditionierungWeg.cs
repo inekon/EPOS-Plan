@@ -171,6 +171,28 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<long, string, KonditionierungVorlageErgebnis>? VorlageDuplizieren { get; init; }
 
+    /// <summary>
+    /// <b>„Kopieren nach …"</b> (Vorlagenverwaltung, Teilkonzept 3.5, 7.4): legt aus einer Vorlage — auch einer
+    /// ausgelieferten — eine eigene Vorlage einer anderen Größe an: Geräte ↔ Personen unverändert, Heizen →
+    /// Kühlen mit Zeitstruktur und Aus-Zeiten, jede Zelle mit Sollwert auf dem Komfortsollwert. Erster
+    /// Parameter: die Id der Quelle. Schreibt sofort (Festlegung 13); ein Doppelname in der Zielliste kommt
+    /// mit <see cref="KonditionierungVorlageErgebnis.AmNamen"/>, ein ungültiger Komfortsollwert mit
+    /// <see cref="KonditionierungVorlageErgebnis.AmSollwert"/>.
+    /// <para>Kern: <c>KonditionierungsvorlageCtrl.KopierenNach</c> über die reine Regel
+    /// <c>Vorlagenkopierregel.Umsetzen</c>; Namensregel und Komfortsollwert vorher
+    /// (<c>NamePruefen</c>, <c>Vorlagenkopierregel.KomfortsollwertPruefen</c>).</para>
+    /// </summary>
+    public Func<long, KonditionierungVorlageKopie, KonditionierungVorlageErgebnis>? VorlageKopieren { get; init; }
+
+    /// <summary>
+    /// <b>Die erlaubten Ziele von „Kopieren nach …"</b> je Quellgröße — nur diese zeigt der Dialog; leer = die
+    /// Größe lässt sich in keine andere kopieren (Kühlen, Lüftung). Bei Heizen → Kühlen samt Vorgabe und
+    /// Grenzen des Komfortsollwerts.
+    /// <para>Kern: <c>Vorlagenkopierregel.Ziele</c>, <c>KOMFORTSOLLWERT_VORGABE</c>,
+    /// <c>KomfortsollwertMin</c>/<c>KomfortsollwertMax</c>.</para>
+    /// </summary>
+    public Func<KonditionierungGroesse, IReadOnlyList<KonditionierungKopierziel>>? Kopierziele { get; init; }
+
     // ------------------------------------------------------------------ Werkzeuge der Karte
 
     /// <summary>
@@ -324,7 +346,7 @@ public sealed class KonditionierungWeg
     /// <summary>
     /// <b>Bietet der Reiter den Knopf dieser Handlung an?</b> Nur, wenn ihr Delegat da ist und keine
     /// <see cref="Sperre"/> steht („kein Delegat, kein Knopf"). „Übernehmen" einer Vorlage braucht dazu
-    /// die Liste, aus der gewählt wird.
+    /// die Liste, aus der gewählt wird, „Kopieren nach …" die erlaubten Ziele.
     /// </summary>
     public bool Bietet(KonditionierungHandlung handlung)
     {
@@ -352,6 +374,7 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.RangVerschieben => RangVerschieben is not null,
             KonditionierungHandlung.PeriodeLoeschen => PeriodeLoeschen is not null,
             KonditionierungHandlung.SollwertprofilUebernehmen => SollwertprofilUebernehmen is not null,
+            KonditionierungHandlung.VorlageKopieren => VorlageKopieren is not null && Kopierziele is not null,
             _ => false
         };
     }

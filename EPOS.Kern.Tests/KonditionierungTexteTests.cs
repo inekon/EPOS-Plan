@@ -204,6 +204,8 @@ namespace EPOS.Kern.Tests
             ("KnopfUebernehmenAnpassen", "Vom Gebäude übernehmen und anpassen"),
             ("KnopfDuplizieren", "Duplizieren"),
             ("KnopfUmbenennen", "Umbenennen"),
+            ("KnopfKopierenNach", "Kopieren nach …"),
+            ("LabelKomfortsollwert", "Komfortsollwert"),
             ("KnopfZeitstruktur", "Zeitstruktur übernehmen"),
             ("LabelGrundangabe", "Grundangabe"),
             ("LabelStandardwoche", "Standardwoche"),

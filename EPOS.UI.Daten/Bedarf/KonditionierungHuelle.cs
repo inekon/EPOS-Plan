@@ -620,6 +620,9 @@ namespace WindowsFormsApplication1
                     KonditionierungCtrl.Ergebnis e = vorlagen.Duplizieren(id, name, out long neu);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
                 },
+                // „Kopieren nach …" (Teilkonzept 3.5, 7.4): die Ziele und die Kopie nach Vorlagenkopierregel.
+                Kopierziele = vorlagen == null ? null : g => Kopierzielliste(g),
+                VorlageKopieren = vorlagen == null ? null : (id, k) => Kopieren(vorlagen, id, k),
 
                 Grundangabe = (s, o, w) => Schritt(s, art, bezug, a => Konditionierungsarbeit.Grundangabe(
                     a, Ort(o), w.HasValue ? Skaliert(w.Value, Konditionierungsgroessen.HatNennwert(Kern(o.Groesse)), false) : (double?)null)),
@@ -700,6 +703,48 @@ namespace WindowsFormsApplication1
                 return new KonditionierungVorlageErgebnis(false, string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message), null);
             }
+        }
+
+        /// <summary>
+        /// Die erlaubten Ziele von „Kopieren nach …" für Vorlagen der Größe <paramref name="quelle"/>
+        /// (<see cref="Vorlagenkopierregel.Ziele"/>) — bei Heizen → Kühlen mit der Vorgabe des Komfortsollwerts
+        /// und den Grenzen der Kühlspalte.
+        /// </summary>
+        private static IReadOnlyList<KonditionierungKopierziel> Kopierzielliste(KonditionierungGroesse quelle)
+        {
+            Konditionierungsgroesse von = Kern(quelle);
+            return Vorlagenkopierregel.Ziele(von)
+                .Select(z => new KonditionierungKopierziel(
+                    Oberflaeche(z),
+                    Vorlagenkopierregel.MitKomfortsollwert(von, z) ? Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE : (double?)null,
+                    Vorlagenkopierregel.KomfortsollwertMin, Vorlagenkopierregel.KomfortsollwertMax))
+                .ToList();
+        }
+
+        /// <summary>
+        /// „Kopieren nach …" — die Kopie entsteht sofort (Festlegung 13). Die Richtung, die Namensregel in der
+        /// Zielliste und der Komfortsollwert laufen zuerst: Eine Ablehnung des Namens nennt der Dialog am
+        /// Namensfeld (<see cref="KonditionierungVorlageErgebnis.AmNamen"/>), eine des Komfortsollwerts am
+        /// Sollwertfeld (<see cref="KonditionierungVorlageErgebnis.AmSollwert"/>).
+        /// </summary>
+        private static KonditionierungVorlageErgebnis Kopieren(IKonditionierungsvorlagen vorlagen, long id,
+                                                               KonditionierungVorlageKopie kopie)
+        {
+            KonditionierungsvorlageCtrl.Vorlage quelle = vorlagen.Lesen(id);
+            if (quelle == null || kopie == null)
+                return new KonditionierungVorlageErgebnis(false, string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_VORLAGE_FEHLT, id.ToString(CultureInfo.InvariantCulture)), null);
+            Konditionierungsgroesse ziel = Kern(kopie.Ziel);
+            string richtung = Vorlagenkopierregel.Richtungspruefung(quelle.Groesse, ziel);
+            if (richtung != null) return new KonditionierungVorlageErgebnis(false, richtung, null);
+            string name = vorlagen.NamePruefen(ziel, kopie.Name, 0);
+            if (name != null) return new KonditionierungVorlageErgebnis(false, name, null) { AmNamen = true };
+            if (Vorlagenkopierregel.MitKomfortsollwert(quelle.Groesse, ziel)
+                && Vorlagenkopierregel.KomfortsollwertPruefen(kopie.Komfortsollwert) is string soll)
+                return new KonditionierungVorlageErgebnis(false, soll, null) { AmSollwert = true };
+
+            KonditionierungCtrl.Ergebnis e = vorlagen.KopierenNach(id, ziel, kopie.Name, kopie.Komfortsollwert, out long neu);
+            return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
         }
 
         /// <summary>

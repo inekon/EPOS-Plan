@@ -419,6 +419,17 @@ Gebäudes, einer Zone oder eines Katalogbaus — eine eigene Vorlage dieser Grö
 umbenennen und löschen, ausgelieferte nur duplizieren. Übernommen ist kopiert: Eine spätere Änderung der Vorlage
 erreicht kein Gebäude.
 
+**„Kopieren nach …"** legt aus einer Vorlage — auch einer ausgelieferten — eine eigene Vorlage einer **anderen** Größe
+an; die Quelle bleibt, wie sie ist. **Geräte ↔ Personen** reisen direkt: gleiche Einheit (Anteil 0 … 1), Vorgabezeilen,
+Standardwoche, Perioden und Feiertagsregeln unverändert. **Heizen → Kühlen** nimmt nur die Zeitstruktur —
+Standardwoche, Perioden, Feiertagsregeln, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten — und die Aus-Zeiten:
+Wo Heizen „aus" ist, ist Kühlen „aus"; jede Zelle, Wochenstunde und Periode mit Heizsollwert bekommt den
+**Komfortsollwert** (Vorgabe 26 °C, im Kopierdialog änderbar in den Grenzen der Kühlspalte). Andere Richtungen —
+Kühlen → Heizen, alles mit Lüftung — gibt es nicht; still umgerechnet wird nichts. Die Kopie trägt den Namen der Quelle
+als Vorschlag, ein Doppelname in der Zielliste wird benannt abgelehnt; die Beschreibung wird übernommen und um die
+Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernommen, `ReadOnly = 0`. Der Inhalt entsteht nur in
+der Zielgröße, ohne Nennwert und Saison (E54).
+
 **Ausgelieferte Vorlagen (F22)** — EPOS-Muster mit runden Werten, weder Norm- noch Messwerte. Die Tabelle liest sich
 spaltenweise: Jede belegte Zelle ist eine Vorlage in der Liste ihrer Größe, zusammen **14 Vorlagen in fünf Listen** —
 die Lüftungsliste führt kein „Wohnen". Leere Zellen bleiben beim Ziel; eine Heiz- oder Kühlperiode tragen die
@@ -990,6 +1001,13 @@ Karte, ein Doppelname in dieser Liste wird am Feld benannt abgelehnt. **„Vorla
 mit einem Umschalter der Größe; eigene Vorlagen lassen sich dort umbenennen und löschen, ausgelieferte duplizieren;
 Löschen fragt nach und nennt, dass kein Gebäude berührt wird. Wer alle fünf Größen nach einem Muster belegen will,
 wählt es in den fünf Karten — gleiche Namen stehen in jeder Liste an derselben Stelle.
+
+**„Kopieren nach …"** (3.5) steht in jeder Zeile der Verwaltung neben „Duplizieren". Eine kleine Überlagerung mit Titel
+und Kreuz zeigt nur die erlaubten Ziele der Quelle — Heizen → Kühlen, Geräte ↔ Personen —, den Namen der Quelle als
+Vorschlag und, nur bei Heizen → Kühlen, das Feld des Komfortsollwerts (Vorgabe 26 °C, Grenzen der Kühlspalte). An
+Kühl- und Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein
+Doppelname der Zielliste steht am Namensfeld, ein ungültiger Sollwert am Sollwertfeld. Danach zeigt die Verwaltung die
+Zielliste mit der neuen Vorlage gewählt.
 
 ### 7.5 Die Kalenderkarte
 

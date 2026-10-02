@@ -896,12 +896,12 @@ public sealed class KonditionierungBearbeitung
 
     /// <summary>
     /// Bietet der Weg die Vorlagenverwaltung? Mit der Liste und mindestens einer ihrer Handlungen
-    /// (Umbenennen, Löschen, Duplizieren) — „kein Delegat, kein Knopf".
+    /// (Umbenennen, Löschen, Duplizieren, Kopieren nach …) — „kein Delegat, kein Knopf".
     /// </summary>
     public bool MitVerwaltung
         => MitWeg && Weg.Vorlagen is not null
            && (Weg.Bietet(KonditionierungHandlung.VorlageUmbenennen) || Weg.Bietet(KonditionierungHandlung.VorlageLoeschen)
-               || Weg.Bietet(KonditionierungHandlung.VorlageDuplizieren));
+               || Weg.Bietet(KonditionierungHandlung.VorlageDuplizieren) || Weg.Bietet(KonditionierungHandlung.VorlageKopieren));
 
     /// <summary>Eine eigene Vorlage umbenennen — schreibt sofort; eine Ablehnung des Namens kommt mit <c>AmNamen</c>.</summary>
     public KonditionierungVorlageErgebnis VorlageUmbenennen(long id, string name)
@@ -914,6 +914,32 @@ public sealed class KonditionierungBearbeitung
     /// <summary>Eine Vorlage duplizieren — auch eine ausgelieferte; die Kopie heißt „Name (Kopie)", eindeutig.</summary>
     public KonditionierungVorlageErgebnis VorlageDuplizieren(long id)
         => Vorlagenhandlung(KonditionierungHandlung.VorlageDuplizieren, () => Weg.VorlageDuplizieren!(id, ""));
+
+    private static readonly IReadOnlyList<KonditionierungKopierziel> KEINE_ZIELE = Array.Empty<KonditionierungKopierziel>();
+
+    /// <summary>
+    /// Die erlaubten Ziele von „Kopieren nach …" für Vorlagen der Größe <paramref name="quelle"/> — der Kern
+    /// entscheidet sie (Heizen → Kühlen, Geräte ↔ Personen); leer = keine, auch ohne Weg.
+    /// </summary>
+    public IReadOnlyList<KonditionierungKopierziel> Kopierziele(KonditionierungGroesse quelle)
+    {
+        if (!Bietet(KonditionierungHandlung.VorlageKopieren)) return KEINE_ZIELE;
+        try
+        {
+            return Weg.Kopierziele!(quelle) ?? KEINE_ZIELE;
+        }
+        catch (Exception)
+        {
+            return KEINE_ZIELE;
+        }
+    }
+
+    /// <summary>
+    /// „Kopieren nach …" — eine Vorlage als eigene Vorlage einer anderen Größe; schreibt sofort. Eine Ablehnung
+    /// des Namens kommt mit <c>AmNamen</c>, eine des Komfortsollwerts mit <c>AmSollwert</c>.
+    /// </summary>
+    public KonditionierungVorlageErgebnis VorlageKopieren(long id, KonditionierungVorlageKopie kopie)
+        => Vorlagenhandlung(KonditionierungHandlung.VorlageKopieren, () => Weg.VorlageKopieren!(id, kopie));
 
     private KonditionierungVorlageErgebnis Vorlagenhandlung(KonditionierungHandlung h, Func<KonditionierungVorlageErgebnis> handlung)
     {

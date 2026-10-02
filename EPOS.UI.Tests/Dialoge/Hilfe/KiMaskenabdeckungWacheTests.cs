@@ -320,9 +320,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
             "Aktion von „Übernehmen“; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
             "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
-        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
-        new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
-            "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
+        // Zielgröße, Name und Komfortsollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4).
+        new("KonditionierungVorlagenverwaltung", 4, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name " +
+            "und Komfortsollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
+            "Einstellwert des Gebäudes"),
         // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
         // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
         new("KalenderkarteInhalt", 4, "die Grundangabe und die Standardwoche führt die Feldkarte als " +

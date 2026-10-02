@@ -41010,5 +41010,56 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
     <value>The week needs 168 values (Monday 00:00 to Sunday 23:00) or one value for the base value, separated by “;” and “off” for switched off – {0} were passed.</value>
   </data>
+  <data name="KOND_MSG_KOPIE_RICHTUNG" xml:space="preserve">
+    <value>A template of the quantity {0} cannot be copied to {1} — “Copy to …” only exists from heating to cooling and between equipment and people.</value>
+  </data>
+  <data name="KOND_MSG_KOMFORTSOLLWERT_FEHLT" xml:space="preserve">
+    <value>The comfort setpoint for the copy from heating to cooling is missing.</value>
+  </data>
+  <data name="KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB" xml:space="preserve">
+    <value>The comfort setpoint {0} °C lies outside the limits of the cooling column {1} … {2} °C.</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_HERKUNFT" xml:space="preserve">
+    <value>from template ‘{0}’ ({1})</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_BESCHREIBUNG" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_FREMDE_GROESSE" xml:space="preserve">
+    <value>The content of a template of the quantity {0} carries rows of the quantity {1} — a template belongs to exactly one quantity.</value>
+  </data>
+  <data name="KOND_BTN_KOPIEREN_NACH" xml:space="preserve">
+    <value>Copy to …</value>
+  </data>
+  <data name="KOND_BTN_KOPIEREN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="KOND_LBL_KOPIEREN_NACH" xml:space="preserve">
+    <value>Copy template “{0}” to …</value>
+  </data>
+  <data name="KOND_LBL_KOPIERZIEL" xml:space="preserve">
+    <value>Target quantity</value>
+  </data>
+  <data name="KOND_LBL_KOMFORTSOLLWERT" xml:space="preserve">
+    <value>Comfort setpoint</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_NACH" xml:space="preserve">
+    <value>Creates an own template of another quantity — the template itself stays as it is.</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_DIREKT" xml:space="preserve">
+    <value>Same unit: values and time structure go unchanged into the target quantity.</value>
+  </data>
+  <data name="KOND_TXT_KOPIEREN_ZEITSTRUKTUR" xml:space="preserve">
+    <value>The time structure – standard week, periods, public holidays, night, weekend and holiday rows with their times – and the off times are copied; every heating setpoint becomes the comfort setpoint.</value>
+  </data>
+  <data name="KOND_TXT_GRUND_KEIN_KOPIERZIEL" xml:space="preserve">
+    <value>A template of the quantity “{0}” cannot be copied to another quantity — “Copy to …” exists from heating to cooling and between equipment and people.</value>
+  </data>
+  <data name="KOND_TXT_VORLAGE_KOPIERT" xml:space="preserve">
+    <value>Template “{0}” created in the list “{1}” as a copy of “{2}” ({3}).</value>
+  </data>
+  <data name="KOND_TXT_MELDUNG_KOMFORTSOLLWERT" xml:space="preserve">
+    <value>The comfort setpoint is a number from {0} to {1} °C.</value>
+  </data>
 </root>
 
