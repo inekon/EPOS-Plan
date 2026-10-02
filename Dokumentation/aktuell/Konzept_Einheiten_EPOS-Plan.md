@@ -992,7 +992,7 @@ Erhoben am 07.09.2026 auf dem Stand von Commit `6839a7a`.
 | 3789 | Z | `? StromFoerderfaehigMWh * 1000.0 / PelFoerderfaehigKW : 0;` |
 | 4418 | Z | `return stromMWh * 1000.0 / pelKW;` |
 | 4719 | P | `return evMWh * 1000.0 * preis.Value;` |
-| 4899 | P | `erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);` |
+| 4899 | P | `erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);` — Formel bis 30.09.2026 (Kapitalwert des ganzen Projekts), heute § 3.1 des Wirtschaftlichkeitskonzepts: `Waermegestehung.Kennzahl`, dieselbe Einheitenrechnung mit dem Kapitalwert allein der Wärmeerzeugung |
 
 **`EPOS.Kern/Allgemein/Wirtschaftlichkeit/EndenergieAufloeser.cs`**
 

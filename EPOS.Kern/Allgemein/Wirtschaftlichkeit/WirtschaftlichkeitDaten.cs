@@ -1651,6 +1651,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Gestehungskosten;
 
+        /// <summary>
+        /// <c>true</c> = dieses Ergebnis ist geladen und trägt einen Nachweisumschlag vor der Fassung
+        /// <see cref="ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG"/> oder keinen: Seine
+        /// <see cref="Gestehungskosten"/> sind nach einer früheren Regel gerechnet (bis Fassung 11 mit dem
+        /// Kapitalwert des ganzen Projekts, Fassung 12 mit doppelter Stromsteuer im Modus ERLOES und dem
+        /// Wärmestrom zum Netzpreis). Die
+        /// Kennzahl sagt es (<c>WIRT_GESTEHUNG_ALTER_LAUF</c>), wie die Zeile „Menge × Preis" bei
+        /// einem Lauf ohne Aufstellung; die Zahl nur der Wärmeerzeugung liegt mit der nächsten
+        /// Rechnung vor. Ein frisch gerechnetes Ergebnis trägt immer <c>false</c>.
+        /// </summary>
+        public bool GestehungAlteFormel;
+
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
     }
@@ -1782,7 +1794,9 @@ namespace WindowsFormsApplication1
         public double VerbrauchGesamtMWh;
 
         /// <summary>Arbeitskosten der Wärmemenge [€/a] (beim Strom ohne Anrechnung von
-        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis).</summary>
+        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis; der Strom einer Anlage mit eigenem
+        /// Stromträger zu dessen Arbeitspreis, Register EZ‑6 —
+        /// <see cref="Waermegestehung.WaermestromArbeitEur"/>).</summary>
         public double WaermeArbeitEur;
 
         /// <summary>Energiekosten des Trägers [€/a] = Arbeit + Grundpreis + Leistungsanteil.</summary>

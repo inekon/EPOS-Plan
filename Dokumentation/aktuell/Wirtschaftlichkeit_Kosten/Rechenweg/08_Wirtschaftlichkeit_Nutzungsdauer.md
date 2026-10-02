@@ -105,11 +105,20 @@ Kennzahlen
   Wärmegestehungskosten = (−KW_Wärme × a(i,T)) / (Wärmebedarf [MWh/a] × 1000) [€/kWh];
   KW_Wärme = Kapitalwert allein der Wärmeerzeugung: Investition nach Zuschuss, Betrieb, Ersatz und
   Restwert der Wärmeanlagen und allgemeinen Wärmepositionen, Brennstoff samt CO₂-Abgabe, Strom von
-  Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis (Grund- und Leistungspreis eines geteilten
-  Trägers anteilig nach Jahresmenge), Erlöse der Wärmeerzeuger, BHKW-Eigenstrom als Gutschrift zum
-  Arbeitspreis (bei produzierendem Gewerbe abzüglich der entgangenen Entlastung nach § 9b StromStG);
+  Wärmepumpe, Heizstab und Elektrokessel zum Arbeitspreis des Stromträgers der Anlage (EZ‑6: ein
+  eigener Träger der Anlage, sonst der Träger, der den Netzbezug bepreist; Grund- und Leistungspreis
+  eines geteilten Trägers anteilig nach Jahresmenge), Erlöse der Wärmeerzeuger (KWK-Einspeisung,
+  KWKG-Zuschlag und Pauschale, Energiesteuer; nicht die Stromsteuer-Befreiung des Modus ERLOES — die
+  Gutschrift enthält die Stromsteuer schon), BHKW-Eigenstrom als Gutschrift zum Arbeitspreis des
+  Netzträgers (bei produzierendem Gewerbe abzüglich der entgangenen Entlastung nach § 9b StromStG);
   ohne Haushaltsstrom, Kühlung, Photovoltaik und Stromspeicher. Kapitalwert und übrige Kennzahlen
   bleiben projektweit.
+  Grenzen: Eine reversible Wärmepumpe geht mit Investition, Betrieb und Heizstrom ganz in die Wärme
+  ein, ihr Kältestrom nicht. Die Position „Stromeinspeisung" ohne Anlagenzuordnung zählt in einem
+  Projekt mit BHKW ganz, auch wenn daneben eine Photovoltaikanlage einspeist (einer PV-Anlage
+  zugeordnet zählt sie nicht). Die „Stromgutschrift" der Gestehung ist eine
+  Kostengutschrift und von der Stromgutschriftmethode der Emissionsbilanz (BilanzKonvention)
+  unabhängig.
 
 Szenarien — VALERI-Vorrang
   Szenariowert = Szenariospalte, falls ≠ 0 ; sonst eingegebener Wert
@@ -160,7 +169,7 @@ des Eigenverbrauchs.
 | Annuität der Differenz, a(3 %, 20 a) = 0,06722 | 111.592 €/a | 12.266 €/a | 123.858 €/a | — |
 | Dynamische Amortisation, ohne Restwert | 1,68 a | 8,64 a | 2,64 a | — |
 | Interner Zinsfuß, mit Restwert | 61,2 % | 11,5 % | 39,2 % | — |
-| Wärmegestehungskosten (1.953,9 MWh/a) | 21,47 ct/kWh | 26,56 ct/kWh | 20,85 ct/kWh | 27,19 ct/kWh |
+| Wärmegestehungskosten (1.953,9 MWh/a, nur Wärmeerzeugung; Herleitung `../Beispielprojekt.md` § 4c) | 1,85 ct/kWh | 7,56 ct/kWh | 1,85 ct/kWh | 7,56 ct/kWh |
 | Nettobarwert absolut | −6.242.507 € | −7.720.222 € | −6.060.017 € | −7.902.712 € |
 | Erlöse, Barwert (nominal) | 1.025.946 (1.339.380) | 552.977 (740.510) | 1.114.304 (1.455.297) | 464.618 (624.592) |
 

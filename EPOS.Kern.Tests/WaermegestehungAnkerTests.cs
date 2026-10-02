@@ -37,9 +37,11 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT_WP = 1019;
 
         private static WirtschaftlichkeitErgebnis Rechne(int idProjekt, out VariantenDaten v,
-                                                         out WirtschaftlichkeitParameter p)
+                                                         out WirtschaftlichkeitParameter p,
+                                                         Action<WirtschaftlichkeitParameter> anpassen = null)
         {
             p = new WirtschaftlichkeitCtrl().LadeParameter(idProjekt);
+            anpassen?.Invoke(p);
             v = new VariantenDaten
             {
                 IdProjekt = idProjekt,
@@ -118,6 +120,137 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.23978800641410303, Projektformel(e, v, p), 10);
             Assert.Equal(0.00684209053429058, e.Gestehungskosten.Value, 10);
             Assert.Equal(0.0, e.EnergiekostenJeTraeger.Single(t => t.Netzstrom).WaermeMengeMWh, 12);
+        }
+
+        /// <summary>
+        /// <b>Die Stromsteuer zählt einmal</b> (Register EZ‑21, Befund 1 der Nachlese P646): 1030 mit
+        /// den flachen Stundenreihen des Prüffalls B6 rechnet die Befreiung nach § 9 Abs. 1 Nr. 3
+        /// StromStG — 432,3 MWh KWK-Eigenstrom × 20,50 €/MWh Regelsatz = 8.862,15 €/a. Im Modus
+        /// ERLOES hebt die Reihe den Kapitalwert um ihren Barwert (8.862,15 € × RBF(3 %, 20) =
+        /// 131.846,41 €), die Wärmegestehungskosten nicht: Die Stromgutschrift (432,3 MWh ×
+        /// 0,25 €/kWh = 108.075 €/a) bewertet denselben Eigenstrom zum Arbeitspreis samt
+        /// Stromsteuer. Gestehung in beiden Modi 0,0068421 €/kWh. Nach der Regel der Welle #642
+        /// zählte die Reihe im Modus ERLOES zur Wärme — die Kennzahl lag um 8.862,15 € × RBF ×
+        /// a(3 %, 20) ÷ 6.137.560 kWh = 8.862,15 ÷ 6.137.560 = 0,0014439 €/kWh tiefer (0,0053982).
+        /// </summary>
+        [Fact]
+        public void Im_Modus_ERLOES_zaehlt_die_Stromsteuer_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitErgebnis ausweis = RechneMitStundenreihen(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS,
+                                                                        out VariantenDaten v, out WirtschaftlichkeitParameter p);
+            WirtschaftlichkeitErgebnis erloes = RechneMitStundenreihen(DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                                                       out _, out _);
+            Assert.NotNull(ausweis);
+            Assert.NotNull(erloes);
+            Assert.True(erloes.StromsteuerBefreiungAlsErloes);
+            Assert.Equal(432.3 * 20.50, erloes.StromsteuerBefreiungJahr1, 2);          // 8.862,15 €/a
+            Assert.Equal(432.3 * 1000.0 * 0.25, erloes.GestehungZerlegung.StromgutschriftJahr1, 2);
+
+            // Der Kapitalwert bucht die Reihe (unverändert): + Barwert der flachen Reihe.
+            double rbf = 1.0 / KapitalwertRechner.Annuitaet(p.Zinssatz / 100.0, p.Betrachtungszeitraum);
+            Assert.Equal(erloes.StromsteuerBefreiungJahr1 * rbf,
+                         erloes.Kapitalwert.Value - ausweis.Kapitalwert.Value, 2);     // 131.846,41 €
+
+            // Die Wärmegestehung nicht: dieselbe Zahl in beiden Modi.
+            Assert.Equal(ausweis.Gestehungskosten.Value, erloes.Gestehungskosten.Value, 12);
+            Assert.Equal(0.0068420905342943495, erloes.Gestehungskosten.Value, 10);
+
+            // Die Zahl nach der Regel der Welle #642 — die Befreiung ein zweites Mal als Erlös.
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(6137560.0, waermeKwh, 6);
+            Assert.Equal(0.0053982, erloes.Gestehungskosten.Value - erloes.StromsteuerBefreiungJahr1 / waermeKwh, 7);
+        }
+
+        /// <summary>
+        /// 1030 mit den flachen Stundenreihen des Prüffalls B6
+        /// (<see cref="StromsteuerBefreiungModusTests.Stundenreihen"/>) und den beiden Haken des
+        /// § 9 Abs. 1 Nr. 3 StromStG — der einzige Stand der Testdatenbank, an dem die Befreiung
+        /// einen Betrag ergibt; der Modus kommt aus dem Parametersatz.
+        /// </summary>
+        private static WirtschaftlichkeitErgebnis RechneMitStundenreihen(string modus, out VariantenDaten v,
+                                                                       out WirtschaftlichkeitParameter p)
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            p = ctrl.LadeParameter(1030);
+            p.StromsteuerBefreiungModus = modus;
+            p.HocheffizienzNachweis = true;
+            p.RaeumlicherZusammenhang = true;
+            ctrl.SpeichereParameter(p);
+            v = new VariantenDaten
+            {
+                IdProjekt = 1030,
+                IstStamm = true,
+                Projektname = "Wärmegestehung ERLOES",
+                Ergebnis = new ErgebnisCtrl().Load(1030),
+                Zeitreihen = StromsteuerBefreiungModusTests.Stundenreihen()
+            };
+            KostenEmissionRechner.Berechne(v);
+            var daten = new BerichtsDaten { IdStamm = 1030, Stammprojektname = v.Projektname };
+            daten.Varianten.Add(v);
+            return new WirtschaftlichkeitCtrl().Berechne(daten, p).FirstOrDefault(
+                x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.IdProjekt == 1030);
+        }
+
+        /// <summary>
+        /// <b>EZ‑6 gilt auch in der Wärmegestehung</b> (Register EZ‑21, Befund 2 der Nachlese P646):
+        /// Führt der Elektrokessel von 1024 einen eigenen Stromträger (0,30 €/kWh), zählt sein Strom
+        /// (52,99 MWh) zu dessen Arbeitspreis, der übrige Wärmestrom (Wärmepumpe 29,38 + Heizstab
+        /// 13,65 = 43,03 MWh) zum Arbeitspreis des Netzträgers (0,46746 €/kWh):
+        /// 43,03 MWh × 467,46 €/MWh + 52,99 MWh × 300 €/MWh = 20.114,80 + 15.897,00 = 36.011,80 €/a
+        /// statt 96,02 × 467,46 = 44.885,51 €/a. Δ = 52,99 × (300 − 467,46) = −8.873,71 €/a; ohne
+        /// Energiepreissteigerung (p_E = 0) ist das die Änderung der Energie-Annuität, je kWh
+        /// Wärmebedarf −8.873,71 ÷ 389.730 = −0,0227689 €/kWh: 0,0616162 → 0,0388473 €/kWh.
+        /// Kapitalwert, Energiekosten und die Stromgutschrift (zum Netzpreis, Entscheid
+        /// „Arbeitspreis bleibt") bleiben, wie sie sind.
+        /// </summary>
+        [Fact]
+        public void Waermegestehungskosten_1024_Elektrokessel_mit_eigenem_Stromtraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitErgebnis vorher = Rechne(1024, out _, out _);
+            EigenerStromtraeger();
+            WirtschaftlichkeitErgebnis e = Rechne(1024, out VariantenDaten v, out WirtschaftlichkeitParameter p);
+            Assert.NotNull(e);
+            Assert.Equal(0.0, p.PreissteigerungEnergie, 12);
+
+            EnergieTraegerNachweis strom = e.EnergiekostenJeTraeger.Single(t => t.Netzstrom);
+            Assert.Equal(60, strom.CarrierId);                                     // Netzträger bleibt 60
+            Assert.Equal(0.46746, strom.PreisJeEinheit, 10);
+            Assert.Equal(96.02, strom.WaermeMengeMWh, 2);
+            Assert.Equal(43.03 * 1000.0 * 0.46746 + 52.99 * 1000.0 * 0.30, strom.WaermeArbeitEur, 2);   // 36.011,80
+
+            Assert.Equal(vorher.Kapitalwert.Value, e.Kapitalwert.Value, 2);        // projektweit unberührt
+            Assert.Equal(vorher.EnergiekostenJahr.Value, e.EnergiekostenJahr.Value, 2);
+            Assert.Equal(34549.97, e.GestehungZerlegung.StromgutschriftJahr1, 2); // Gutschrift zum Netzpreis
+
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(-8873.71, e.GestehungZerlegung.EnergieEurJahr - vorher.GestehungZerlegung.EnergieEurJahr, 2);
+            Assert.Equal(0.06161616494867317 + 52.99 * 1000.0 * (0.30 - 0.46746) / waermeKwh,
+                         e.Gestehungskosten.Value, 10);
+            Assert.Equal(0.03884731112679649, e.Gestehungskosten.Value, 10);
+        }
+
+        /// <summary>
+        /// Gibt dem Elektrokessel „eloBLOCK VE 10" (Anlage 11255) des Projekts 1024 einen eigenen
+        /// Stromträger (58 „Elektrische Energie 2", dem Projekt zugeordnet mit 0,30 €/kWh) und der
+        /// Wärmepumpe (Anlage 11262) den Träger 60, der den Netzbezug ohnehin bepreist — so bleibt 60
+        /// der Netzträger (Rang 0 der Anlagenwahl), und nur der Elektrokessel weicht ab.
+        /// </summary>
+        private static void EigenerStromtraeger()
+        {
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO energy_project_settings (ID_Projekt, [ID_Energieträger], custom_hi, custom_price_work) " +
+                "VALUES (?, ?, 1, ?)",
+                new DbParam("@p", 1024), new DbParam("@c", 58), new DbParam("@w", 0.30));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", 58), new DbParam("@a", 11255));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", 60), new DbParam("@a", 11262));
         }
 
         /// <summary>Stellt die Unternehmensart eines Projekts der Arbeitskopie um.</summary>
