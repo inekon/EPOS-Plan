@@ -856,6 +856,10 @@ namespace EPOS.Kern.Tests
                 // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug; wiederholbar, KEIN DML.
                 SolarthermieFelderSchema.Ausfuehren(null);
+                // Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder von
+                // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                ErzeugerTeillastSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

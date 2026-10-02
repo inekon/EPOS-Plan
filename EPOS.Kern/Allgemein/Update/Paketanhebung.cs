@@ -240,6 +240,9 @@ namespace WindowsFormsApplication1
             // Arbeitstemperatur), der Kollektorsatz mit der Vorgabe apertur - so, wie er rechnet.
             new Stufe(SolarthermieFelderSchema.SCHRITT, Art.Ddl,
                       "Felder des Kollektorfelds (Pumpe, Verluste, Grädigkeit, Spreizung, Arbeitstemperatur) und Bezugsfläche des Kollektorsatzes"),
+            // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
+            new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
+                      "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
