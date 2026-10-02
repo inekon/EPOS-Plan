@@ -193,23 +193,45 @@
                 {
                     @TraegerwahlFeld
                 }
-                @* Das Feldpaar von Hand entfaellt - der Raster stellt zwei
-                   Feldpaare je Zeile (iU8-E-2 / W14a-E-7). *@
-                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
-                              Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
-                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
-                              Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
-                @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): die Zeile
-                   „Senken: …", FERTIG FORMULIERT von der Huelle (Kern:
-                   Senkenvorbelegung.Anzeigezeile) - die Zeilen einer gespeicherten
-                   Anlage, sonst was beim Speichern aus dem Bedarf entsteht. Leer (kein
-                   Waermeerzeuger, kein Projekt) = keine Zeile. Gepflegt werden die Senken
-                   in der Simulation (Senkendialog); die Zeile ist kein Feld und bekommt
-                   die volle Rasterbreite. *@
-                @if (!string.IsNullOrEmpty(_projektZeile.Senken))
-                {
-                    <Herleitungszeile Text="@_projektZeile.Senken" />
-                }
+
+                @* AUSLEGUNG FUER VERTEILUNG (Anwenderauftrag 30.09.2026: „Dialogfelder
+                   Vorlauf und Ruecklauftemperatur uebersichtlicher"). Vorher standen die
+                   beiden Felder nach dem Brennwert-Schalter in wechselnden Rasterzellen.
+                   Jetzt eine eigene Gruppe: Die Ueberschrift spannt ueber alle Spalten, also
+                   beginnen Vorlauf und Ruecklauf eine neue Zeile und stehen nebeneinander
+                   (zwei Feldpaare je Zeile). Darunter die Herkunft der Vorbelegung, dann
+                   die Senken - wohin die Waerme geht. Der Brennwert-Schalter bleibt bei den
+                   Katalogdaten oben. *@
+                <Formulargruppe Titel="@GruppeAuslegung">
+                    <KindInhalt>
+                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
+                                  Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
+                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
+                                  Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+
+                    @* DIE VORBELEGUNG (Kern: AnlagenTemperaturen.KesselPaar): War das Paar
+                       der Anlage unvollstaendig, hat die Huelle das Paar eingesetzt, mit dem
+                       die Simulation ohne Eintrag rechnet, und die Zeile sagt, woher es
+                       stammt. Mit OK wird es gespeichert. Eine Eingabe in eines der beiden
+                       Felder nimmt die Zeile weg - dann ist es das Paar des Anwenders. *@
+                    @if (!string.IsNullOrEmpty(_projektZeile.TemperaturHerleitung))
+                    {
+                        <Herleitungszeile Text="@_projektZeile.TemperaturHerleitung" />
+                    }
+
+                    @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): die Zeile
+                       „Senken: …", FERTIG FORMULIERT von der Huelle (Kern:
+                       Senkenvorbelegung.Anzeigezeile) - die Zeilen einer gespeicherten
+                       Anlage, sonst was beim Speichern aus dem Bedarf entsteht. Leer (kein
+                       Waermeerzeuger, kein Projekt) = keine Zeile. Gepflegt werden die Senken
+                       in der Simulation (Senkendialog); die Zeile ist kein Feld und bekommt
+                       die volle Rasterbreite. *@
+                    @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                    {
+                        <Herleitungszeile Text="@_projektZeile.Senken" />
+                    }
+                    </KindInhalt>
+                </Formulargruppe>
             }
             </KindInhalt>
         </Formularraster>
@@ -488,6 +510,13 @@
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff Variante:";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
+
+    /// <summary>
+    /// Die Überschrift der Gruppe aus Vorlauf, Rücklauf, Herkunft der Vorbelegung und
+    /// Senken (<c>HZK_GRP_AUSLEGUNG</c>) — derselbe Wortlaut wie im Wärmepumpendialog.
+    /// </summary>
+    [Parameter] public string GruppeAuslegung { get; set; } = "Auslegung für Verteilung";
+
     [Parameter] public string TraegerTitel { get; set; } = "Energieträger Variante";
     [Parameter] public string EditorTitel { get; set; } = "Administration Heizkessel";
     [Parameter] public string OkText { get; set; } = "OK";
@@ -976,10 +1005,15 @@
         _projektZeile.CarrierId = neu.Value;
     }
 
+    /// <summary>
+    /// Eine Eingabe macht das Paar zu dem des Anwenders — die Zeile „Vorgabe …" bzw. „Aus
+    /// dem Kesseldatensatz …" gilt dann nicht mehr und verschwindet.
+    /// </summary>
     private void BeiVorlauf(int? wert)
     {
         if (_projektZeile is null) return;
         _projektZeile.Vorlauf = wert;
+        _projektZeile.TemperaturHerleitung = "";
         Uebernehmen?.Invoke(_projektZeile);
     }
 
@@ -987,6 +1021,7 @@
     {
         if (_projektZeile is null) return;
         _projektZeile.Ruecklauf = wert;
+        _projektZeile.TemperaturHerleitung = "";
         Uebernehmen?.Invoke(_projektZeile);
     }
 

@@ -17,16 +17,15 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Opus 5.5 orchestriert und arbeitet:** Es plant, zerlegt Aufträge, prüft Ergebnisse,
-  führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen und die Zusammenführung
-  widersprüchlicher Stände übernimmt es selbst oder gibt sie an Agenten mit `model: opus`.
-  **Fable 5.1 nur, wenn Opus eine Aufgabe nachweislich nicht leisten kann** — dann als Agent
-  mit `model: fable` und mit der Begründung im Auftrag.
+- **Fable 5.1 orchestriert und übernimmt das Anspruchsvolle:** Es plant, zerlegt Aufträge,
+  prüft Ergebnisse, führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen, die
+  Fehlersuche im Rechenweg und die Zusammenführung widersprüchlicher Stände übernimmt es selbst
+  oder gibt sie an Agenten mit `model: fable`.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` für Konzeptpapiere, Nachzüge, Implementierung, Tests, Hüllen,
-  Konfliktauflösung und Fehlersuche; `model: sonnet` für Suchen, Dateilisten, kleine
-  Textpflege und Vorlagen; `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen.
-  Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
+  und Zeit: `model: opus` (Opus 5.5) für Implementierung, Tests, Hüllen, Nachzüge, Papiere und
+  Konfliktauflösung; `model: sonnet` für Suchen, Dateilisten, kleine Textpflege und Vorlagen;
+  `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen. Das Modell bei jedem
+  Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,
   Tests, Referenzlauf) und die Regeln dieser Datei, die gelten. Agenten arbeiten im eigenen
@@ -126,6 +125,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   zuschreibt. Quelltexte: `.cs`, `.csproj`, `.resx` UTF-8 **mit** BOM und CRLF; Markdown
   UTF-8 **ohne** BOM (`.editorconfig`). Ältere Dateien können noch Windows-1252 ohne BOM
   sein — vor dem Bearbeiten die Bytes messen und byte-erhaltend schreiben.
+- **Absturz der Windows-Anwendung ohne Meldung** (Ereignisanzeige: `KERNELBASE.dll`,
+  `0xc000041d`): Die Ursache steht im Ausnahmeprotokoll `Logs\Ausnahmen.txt` neben der
+  Datenbank — zuerst diese Datei anfordern; Vorgehen in
+  [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md) unter „Fallstricke“.
 - Die Python-Werkzeuge der Tabelle unten laufen auf Windows über den Starter `py` (`python3`
   gibt es dort nicht), mit `PYTHONIOENCODING=utf-8` davor, weil sie Unicode ausgeben.
   `Proben/ChartProben` und `EPOS.Referenzlauf` stehen **nicht** im Kern-Filter — wer sie mit
@@ -136,7 +139,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 | Werkzeug | Wofür | Aufruf |
 |---|---|---|
 | `Proben/ChartProben` | zeichnet alle Diagrammbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus, mit Gegenproben; rot, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
-| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
+| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht. Dazu `fensterprobe.mjs`: Kopf und Schlussleiste der Dialoge im eigenen Fenster (haften, Fokus, Überlagerung, Katalogdialog, mit Gegenprobe) — **vor jeder Änderung an Dialogkopf, Schlussleiste oder dem Abschnitt „Dialog im eigenen Fenster" des Hausblatts ziehen** | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
 | `EPOS.Referenzlauf` | plattformfreier Rechennachweis gegen die eingefrorene Basis (Linux, macOS, CI) | `dotnet run --project EPOS.Referenzlauf -- lauf …` / `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite (`lauf`, `projekt`, `vergleich`, `pruefen`, `liste`, `migration`) | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` aus der neutralen `.resx`; wiederholbar. **Nach jedem neuen Ressourcenschlüssel ziehen** | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
@@ -266,8 +269,8 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   unaufgelöst sind oder Konfliktmarker in den Änderungen stehen.
 - **Regeln für Claude:** kein Commit und kein Push ohne Auftrag; beauftragte Commits sofort,
   atomar und mit genauen Pfaden (`git add <pfad>`, nie `-A`); Betreff kurz (höchstens
-  72 Zeichen), Einzelheiten im Rumpf; Trailer mit dem arbeitenden Modell, gegenwärtig
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`;
+  72 Zeichen), Einzelheiten im Rumpf; Trailer mit dem arbeitenden Modell, etwa
+  `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` oder `… Claude Opus 5.5 …`;
   keine Pull Requests, kein Tag-Push. Reihenfolge einer Welle: **Merge → Gate → Statuszeile und Protokoll →
   Push (auf Zuruf) → iOS-Lauf (nur nach Rückfrage) → Nachweis.**
 - Nach Runden mit parallelen Sitzungen repoweit nach Konfliktmarkern suchen (`^<{7}`, `^={7}$`,

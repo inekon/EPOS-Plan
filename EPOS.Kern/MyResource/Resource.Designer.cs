@@ -2303,6 +2303,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Kesseldatensatz: {0}/{1} °C — so rechnet die Simulation ohne Eintrag. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_AUS_KESSEL {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_AUS_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturbezug „fest vorgegeben“: Bitte Vorlauf und Rücklauf eintragen — ohne Paar fällt die Simulation auf „berechnet“ zurück und meldet es. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_FEST_OHNE_PAAR {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_FEST_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0}/{1} °C — so rechnet die Simulation ohne Eintrag. ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_VORGABE_KESSEL {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_VORGABE_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf vorbelegt: Vorlauf {1} °C − {2} K = {0} °C (Rückfall-Spreizung). ähnelt.
+        /// </summary>
+        public static string ANL_TEMP_VORGABE_WP_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("ANL_TEMP_VORGABE_WP_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzladung [kWh] ähnelt.
         /// </summary>
         public static string ARB_CSV_LADUNG_NETZ {
@@ -8641,6 +8677,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_LOSE_TITEL {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_LOSE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Wirtschaftlichkeit der Versionen im Vergleich neu und speichert sie — derselbe Lauf wie „Neu berechnen“ im Reiter „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_NEU_BERECHNEN_TIPP {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_NEU_BERECHNEN_TIPP", resourceCulture);
             }
         }
         
@@ -33370,6 +33415,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung für Verteilung ähnelt.
+        /// </summary>
+        public static string HZK_GRP_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("HZK_GRP_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string HZK_GRP_MODUL {
@@ -52478,15 +52532,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_NENNLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_NENNLEISTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer dieser Anlage in Jahren; sie ist Pflichtangabe — ohne sie meldet der OK-Knopf. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WPA_NUTZUNGSDAUER_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WPA_NUTZUNGSDAUER_ERL", resourceCulture);
             }
         }
         
@@ -102584,15 +102629,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_BIVALENT {
             get {
                 return ResourceManager.GetString("WPA_LBL_BIVALENT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
-        /// </summary>
-        public static string WPA_LBL_NUTZUNGSZEIT {
-            get {
-                return ResourceManager.GetString("WPA_LBL_NUTZUNGSZEIT", resourceCulture);
             }
         }
         

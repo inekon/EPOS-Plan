@@ -44,6 +44,15 @@ public sealed class ErzeugerZeile
     /// <summary>Rücklauftemperatur [°C]; <c>null</c> = leeres Feld.</summary>
     public int? Ruecklauf { get; set; }
 
+    /// <summary>
+    /// Die HERKUNFT eines vorbelegten Paars (Anwenderauftrag 30.09.2026) — fertig formuliert
+    /// von der Hülle (Kern: <c>AnlagenTemperaturen.Herleitung</c>), etwa „Vorgabe 70/50 °C —
+    /// so rechnet die Simulation ohne Eintrag.". Leer = das Paar ist das der Anlage, nichts
+    /// wurde vorbelegt; eine Eingabe in Vorlauf oder Rücklauf leert es. Nur beim Heizkessel
+    /// belegt.
+    /// </summary>
+    public string TemperaturHerleitung { get; set; } = "";
+
     /// <summary>Untere Grenzleistung — nur beim BHKW belegt.</summary>
     public double? Grenzleistung { get; set; }
 

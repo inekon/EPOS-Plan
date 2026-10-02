@@ -151,7 +151,15 @@ namespace WindowsFormsApplication1
             // Der Parametersatz geht UNVERAENDERT durch (Wurzel.Gaben faengt ihn
             // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
             // weiterhin gegen T - nicht gegen die Verpackung.
-            _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Fensterwurzel<TKomponente>>("#app", parameter);
+
+            // DIE FENSTERMARKE (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest"): Die
+            // Fensterwurzel zeichnet hinter dem Dialog die Marke, die dem Stilblatt sagt,
+            // dass der Dialog in #app die Wurzel eines EIGENEN Fensters ist - dann haften
+            // Kopfzeile und Schlussleiste. KEINE ZWEITE WURZELKOMPONENTE: "body::after"
+            // belegt der BlazorWebView selbst (Nachladen der Stilblaetter mit den
+            // Entwicklerwerkzeugen); eine zweite Anmeldung warf in der Fensterprozedur und
+            // beendete den Prozess wortlos (0xc000041d). Wache: FensterrahmenTests.
             Controls.Add(_web);
 
             // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.

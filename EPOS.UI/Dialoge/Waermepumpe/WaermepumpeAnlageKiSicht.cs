@@ -69,8 +69,11 @@ public sealed class WaermepumpeAnlageKiSicht
     public string Bezeichner => D?.Bezeichner ?? "";
 
     public int? Vorlauf { get => D?.Vorlauf; set { if (D is { } d) d.Vorlauf = value; } }
-    public int? Ruecklauf { get => D?.Ruecklauf; set { if (D is { } d) d.Ruecklauf = value; } }
-    public int? Nutzungszeit { get => D?.Nutzungszeit; set { if (D is { } d) d.Nutzungszeit = value; } }
+    public int? Ruecklauf
+    {
+        get => D?.Ruecklauf;
+        set { if (D is { } d) { d.Ruecklauf = value; d.RuecklaufHerleitung = ""; } }
+    }
 
     // ---- Die Konfiguration ------------------------------------------------------
 

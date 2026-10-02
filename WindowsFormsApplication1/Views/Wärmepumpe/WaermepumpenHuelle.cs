@@ -96,6 +96,14 @@ namespace WindowsFormsApplication1
                 WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
 
                 WaermepumpeAnlageDaten daten = WaermepumpeAnlageHuelle.AusModell(m);
+
+                // Anwenderauftrag 30.09.2026: Einen vorbelegten Ruecklauf (AusModell) zeigt
+                // die Liste links fuer JEDE Zeile - also geht er auch in das Modell, sonst
+                // stuende er in der Liste und wuerde fuer eine nie markierte Zeile beim OK
+                // doch mit 0 gespeichert. Abbrechen verwirft die Liste des Aufrufers.
+                if (!string.IsNullOrEmpty(daten.RuecklaufHerleitung))
+                    m.Ruecklauf = daten.Ruecklauf ?? 0;
+
                 zeilen.Add(daten);
                 zuModell[daten] = m;
             }

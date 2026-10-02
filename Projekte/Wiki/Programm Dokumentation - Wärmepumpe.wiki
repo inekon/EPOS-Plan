@@ -137,7 +137,7 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 * '''Quelle unbemerkt Außenluft.''' So rechnen Luft-Wasser-Wärmepumpen immer, Sole- und Wasser-Wasser-Wärmepumpen ohne gewählte Quelle und solche mit einer ''CSV-Datei'', die beim Lauf fehlt oder keine 8&nbsp;760 Werte hat. Der Chip ''Quelle:'' zeigt, was eingestellt ist.
 * '''Kennlinie zu kurz.''' Unter dem untersten Stützpunkt verlängert der Lauf linear (Hinweis im Protokoll), über dem obersten gilt dessen Wert; eine Luft-Wasser-Kennlinie sollte bis zur tiefsten Außentemperatur der Klimaregion reichen. Ohne Kennlinie für den gewählten ''Vorlauf'' bricht der Lauf ab.
 * '''Betriebsstunden sind Vollbenutzungsstunden.''' Die Spalte ''Betriebsstunden [h/a]'' zählt Wärme geteilt durch Stundenleistung. Takten, Mindestlaufzeiten und Abtauverluste rechnet EPOS-Plan nicht; es gilt das Kennfeld.
-* '''Nicht gerechnet''' werden der ''Rücklauf'' der Wärmepumpe und die ''Nutzungsdauer'' der Zeile; zwischen zwei Vorlaufstufen wird nicht interpoliert.
+* '''Nicht gerechnet''' wird der ''Rücklauf'' der Wärmepumpe; zwischen zwei Vorlaufstufen wird nicht interpoliert.
 
 == Eingaben ==
 
@@ -158,8 +158,8 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 
 === Wärmepumpe des Projekts bearbeiten ===
 
-* {{Anker|auslegung-verteilung|vorlauftemperatur}}'''Auslegung für Verteilung: Vorlauf und Rücklauf''' – ''Vorlauf'' ist eine der Vorlaufstufen, für die das Gerät Kennlinien führt; mit dieser Kennlinie rechnet die Wärmepumpe, solange keine Anlagenkopplung den Vorlauf je Stunde vorgibt. Er bestimmt damit unmittelbar Leistung und Leistungszahl. Den ''Rücklauf'' tragen Sie in °C ein, die Zeile darunter nennt übliche Werte; in die Kennlinienwahl geht er nicht ein. Eine weitere Zeile nennt die Wärmesenken der Anlage; gepflegt werden sie in der Simulation.
-* {{Anker|nutzungsdauer}}'''Nutzungsdauer''' – in Jahren, ein Pflichtfeld der Zeile. Ersatzbeschaffung und Restwert rechnet die Wirtschaftlichkeit mit den Nutzungsdauern der Kostenpositionen ([[Programm Dokumentation/Kosten#nutzungsdauern|Kosten: Nutzungsdauern]]).
+* {{Anker|auslegung-verteilung|vorlauftemperatur}}'''Auslegung für Verteilung: Vorlauf und Rücklauf''' – ''Vorlauf'' ist eine der Vorlaufstufen, für die das Gerät Kennlinien führt; mit dieser Kennlinie rechnet die Wärmepumpe, solange keine Anlagenkopplung den Vorlauf je Stunde vorgibt. Er bestimmt damit unmittelbar Leistung und Leistungszahl. Den ''Rücklauf'' tragen Sie in °C ein; steht dort 0 oder nichts, ist er mit dem Vorlauf abzüglich 10 K vorbelegt, und eine Zeile nennt die Herleitung – solange Sie ihn nicht ändern, folgt er einem anderen Vorlauf. Die Zeile darunter nennt übliche Werte; in die Kennlinienwahl geht der Rücklauf nicht ein. Eine weitere Zeile nennt die Wärmesenken der Anlage; gepflegt werden sie in der Simulation.
+* {{Anker|nutzungsdauer}}'''Nutzungsdauer''' – steht nicht in diesem Dialog, sondern an den Investitionspositionen der Wärmepumpe: ''Investitionskosten…'' in der Knopfzeile der Kenndaten öffnet sie. Mit diesen Nutzungsdauern rechnet die Wirtschaftlichkeit Ersatzbeschaffung und Restwert ([[Programm Dokumentation/Kosten#nutzungsdauern|Kosten: Nutzungsdauern]]).
 
 === Konfiguration ===
 

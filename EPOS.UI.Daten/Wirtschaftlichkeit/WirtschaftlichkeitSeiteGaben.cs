@@ -1703,9 +1703,47 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void Abbrechen()
+        /// <summary>Bricht den laufenden Lauf ab — auch den, den der Kosten-Reiter gestartet hat.</summary>
+        internal void Abbrechen()
         {
             if (_cts != null) _cts.Cancel();
+        }
+
+        /// <summary>
+        /// Der Rechenweg des Knopfes „Neu berechnen" auf dem Kosten-Reiter derselben Gruppe:
+        /// DERSELBE Lauf wie <see cref="Berechnen"/> — dieselbe Sammlung, dieselbe Rechnung,
+        /// dasselbe Speichern, derselbe Kurzstand der Reiterzeile (<see cref="Geladen"/>) —, nur
+        /// mit den Ständen aus <see cref="MitReferenz"/>.
+        /// </summary>
+        internal Task<LaufErgebnis> BerechnenMitReferenz(IReadOnlyList<int> variantenIds,
+                                                          Action<Laufschritt> melder)
+        {
+            return Berechnen(MitReferenz(variantenIds), melder);
+        }
+
+        /// <summary>
+        /// Die Stände eines Laufs aus den gewählten Versionen der geteilten Vergleichswahl:
+        /// ohne Stamm (er rechnet immer mit), und die wirksame Referenz der Gruppe kommt dazu,
+        /// auch wenn sie abgewählt ist — sie ist die Unterlassensalternative und kann nicht aus
+        /// dem Vergleich fallen, gegen den sie gehalten wird (Konzept § 2.9). Dieselbe Regel, nach
+        /// der <see cref="Laden"/> die Referenz in die Wahl der Seite legt, aus der ihr Knopf
+        /// „Berechnen" die Stände nimmt; die Referenz löst <see cref="Referenzwahl.Bestimme(IEnumerable{int}, int, int, Func{int, string})"/>
+        /// gegen die frisch gelesene Gruppe auf.
+        /// </summary>
+        internal List<int> MitReferenz(IReadOnlyList<int> variantenIds)
+        {
+            var varianten = new List<int>();
+            if (variantenIds != null)
+                foreach (int id in variantenIds)
+                    if (id != _idStamm && !varianten.Contains(id)) varianten.Add(id);
+
+            var gruppe = new List<int>();
+            foreach (VariantenCtrl.VarianteInfo vi in new VariantenCtrl().LadeGruppe(_idStamm, _stammName))
+                gruppe.Add(vi.IdProjekt);
+            int referenz = Referenzwahl.Bestimme(gruppe, _idStamm, Gruppenreferenz(), null).IdReferenz;
+
+            if (referenz > 0 && referenz != _idStamm && !varianten.Contains(referenz)) varianten.Add(referenz);
+            return varianten;
         }
 
         // =====================================================================

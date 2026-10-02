@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pufferspeicher-Auslegung – Mockup</title>
+<!--
+  MOCKUP zur Abnahme: Pufferspeicher-Auslegung (Heizungspuffer) in EPOS-Plan.
+  Entwurf 30.09.2026; das Konzept Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md folgt.
+
+  EIGENSTÄNDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von außen. Seiten-Token,
+  Dark-Mode-Regel und Fensterbild wie Zapfprofilgenerator_Mockup.html (Kopfband #0F1F3D,
+  cremefarbene Knöpfe, Beschriftungsspalte 12 rem, Kurzfeld 8 em, Berührungsziel 44 px).
+  Das Fenster ist ein Bild der Anwendung und bleibt in beiden Farbmodi hell.
+
+  ALLE ZAHLEN SIND FIKTIV. Beispielprojekt „Wohnen und Büro“: Wärmepumpe 60 kW, Spitzenkessel
+  80 kW, Vorlauf/Rücklauf 55/45 °C, Wärmelastgang aus einer erfundenen Simulation. Die
+  Kriterienwerte gehen mit c = 1,163 Wh/(l·K) untereinander auf. Keine Hersteller- oder
+  Produktdaten, keine Normzahl.
+
+  BEDIENBAR: die Schrittleiste (1–4, Weiter/Zurück), die Vorlagenkarten in Schritt 1
+  (setzen die Beispielwerte um), der Umschalter Schnell · Standard · Experte, die
+  Kriterienschalter in Schritt 3. Die übrigen Felder sind Bilder.
+-->
+<style>
+<style>
+:root{
+  --papier:#F5F7FA;
+  --karte:#FFFFFF;
+  --tinte:#16202F;
+  --tinte-weich:#4A5769;
+  --tinte-blass:#7C8798;
+  --linie:#DDE3EC;
+  --linie-stark:#C3CCDA;
+  --marine:#0F1F3D;
+  --marine-hell:#1A3261;
+  --akzent:#1A3261;
+  --akzent-grund:#EDF3FB;
+  --erloes:#0B6B5B;
+  --erloes-grund:#E6F2EF;
+  --warn:#8A6100;
+  --warn-grund:#FFF6E0;
+  --warn-kante:#C88A00;
+  --ausweis:#5A6B85;
+  --ausweis-grund:#EDF1F7;
+  --band:#C3D4EA;
+  --code-grund:#F0F3F8;
+  --sicht-orange:#B85C00;
+  --rot:#B3261E;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  --schatten:0 1px 2px rgba(15,31,61,.06), 0 8px 24px rgba(15,31,61,.08);
+  --schatten-fenster:0 2px 4px rgba(15,31,61,.12), 0 18px 44px rgba(15,31,61,.18);
+
+  /* Bausteintoken aus epos-ui.css – nur im Fenster benutzt, dort hell in beiden Modi */
+  --epos-schrift:"Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-rahmen:#b4b2a9;
+  --epos-rahmen-leise:#d9d7cf;
+  --epos-text:#2c2c2a;
+  --epos-text-leise:#5f5e5a;
+  --epos-text-sehr-leise:#888780;
+  --epos-flaeche:#f5f4ef;
+  --epos-warn-rahmen:rgb(200,138,0);
+  --epos-warn-flaeche:rgb(255,246,224);
+  --epos-warn-text:rgb(138,91,0);
+  --epos-karte-rahmen:#D1D5DB;
+  --epos-karte-flaeche-hover:#EFF6FF;
+  --epos-karte-titel:#0F1F3D;
+  --epos-gruppenkopf-flaeche:#0F1F3D;
+  --epos-gruppenkopf-summe:#93C5FD;
+  --epos-gruppenkopf-hoehe:40px;
+  --epos-rand:10px;
+  --epos-ecke:6px;
+  --epos-touchziel:44px;
+  --epos-beschriftung-breite:12rem;
+  --epos-kurzfeld-breite:8em;
+  --epos-marke:#005aa0;
+  --epos-menue-flaeche:#f0f8ff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papier:#10151E;
+    --karte:#171E2A;
+    --tinte:#E4E9F1;
+    --tinte-weich:#A7B2C3;
+    --tinte-blass:#78849A;
+    --linie:#2A3444;
+    --linie-stark:#3B4759;
+    --marine:#0F1F3D;
+    --marine-hell:#1A3261;
+    --akzent:#9FBAE6;
+    --akzent-grund:#1B2940;
+    --erloes:#4FBFA6;
+    --erloes-grund:#12302B;
+    --warn:#E0AE3E;
+    --warn-grund:#33290F;
+    --warn-kante:#C88A00;
+    --ausweis:#93A2BA;
+    --ausweis-grund:#1D2532;
+    --band:#2A3F5E;
+    --code-grund:#121926;
+    --sicht-orange:#F0A050;
+    --rot:#F28B82;
+    --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --papier:#10151E;
+  --karte:#171E2A;
+  --tinte:#E4E9F1;
+  --tinte-weich:#A7B2C3;
+  --tinte-blass:#78849A;
+  --linie:#2A3444;
+  --linie-stark:#3B4759;
+  --marine:#0F1F3D;
+  --marine-hell:#1A3261;
+  --akzent:#9FBAE6;
+  --akzent-grund:#1B2940;
+  --erloes:#4FBFA6;
+  --erloes-grund:#12302B;
+  --warn:#E0AE3E;
+  --warn-grund:#33290F;
+  --warn-kante:#C88A00;
+  --ausweis:#93A2BA;
+  --ausweis-grund:#1D2532;
+  --band:#2A3F5E;
+  --code-grund:#121926;
+  --sicht-orange:#F0A050;
+  --rot:#F28B82;
+  --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--papier);
+  color:var(--tinte);
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:15px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;text-wrap:balance;margin:0}
+code,kbd,.mono{font-family:var(--mono)}
+code{font-size:.88em;background:var(--code-grund);border:1px solid var(--linie);border-radius:3px;padding:0 4px;overflow-wrap:anywhere}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Gerüst ---------- */
+.huelle{max-width:1180px;margin:0 auto;padding:0 16px 96px}
+@media (min-width:640px){.huelle{padding:0 24px 96px}}
+.kopf{padding:56px 0 34px;border-bottom:2px solid var(--tinte)}
+.kopf .augenbraue{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--tinte-blass);margin-bottom:14px}
+.kopf h1{font-size:clamp(28px,4.6vw,48px);font-weight:700;line-height:1.08;letter-spacing:-.015em}
+.kopf .unter{margin-top:16px;max-width:66ch;color:var(--tinte-weich);font-size:16.5px}
+.kennzeile{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:11.5px}
+.kennzeile span{background:var(--karte);border:1px solid var(--linie);border-radius:4px;padding:4px 9px;color:var(--tinte-weich);overflow-wrap:anywhere}
+.kennzeile span b{color:var(--tinte);font-weight:600}
+.leseweg{margin-top:18px;padding:12px 16px;border-left:3px solid var(--akzent);background:var(--code-grund);border-radius:0 6px 6px 0;font-size:13.5px;color:var(--tinte-weich);max-width:84ch}
+.leseweg b{color:var(--tinte)}
+
+/* ---------- Navigation ---------- */
+.rumpf{display:grid;grid-template-columns:200px minmax(0,1fr);gap:52px;align-items:start;margin-top:44px}
+nav{position:sticky;top:20px;font-size:13.5px;min-width:0}
+main{min-width:0}
+nav .navtitel{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--tinte-blass);padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--linie)}
+nav a{display:block;padding:6px 0 6px 12px;color:var(--tinte-weich);text-decoration:none;border-left:2px solid var(--linie);line-height:1.35}
+nav a:hover{color:var(--tinte);border-left-color:var(--akzent);background:linear-gradient(90deg,var(--code-grund),transparent)}
+nav a:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
+nav .navunter a{padding:3px 0 3px 22px;font-size:12px;color:var(--tinte-blass)}
+@media (max-width:900px){
+  .rumpf{grid-template-columns:minmax(0,1fr);gap:0}
+  nav{position:static;margin-bottom:28px}
+  nav .navliste{columns:2;gap:20px}
+  nav .navunter{break-inside:avoid-column}
+}
+
+/* ---------- Abschnitte ---------- */
+section.kat{padding-top:56px;scroll-margin-top:20px}
+section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
+.kat-kopf{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.kat-kopf h2{font-size:clamp(22px,3.2vw,28px);font-weight:700;letter-spacing:-.01em}
+.kat-marke{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--tinte-blass);border:1px solid var(--linie-stark);border-radius:3px;padding:2px 7px}
+.kat-lead{color:var(--tinte-weich);max-width:78ch;margin:8px 0 26px}
+.zone{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--tinte-blass);display:flex;align-items:center;gap:10px;margin:36px 0 14px;scroll-margin-top:20px}
+.zone::after{content:"";flex:1;height:1px;background:var(--linie)}
+p{margin:0 0 14px}
+p.eng{max-width:74ch}
+.bildtext{font-size:13.5px;color:var(--tinte-weich);max-width:84ch;margin:10px 0 0}
+.bildtext b{color:var(--tinte)}
+ul.liste,ol.liste{margin:0 0 16px;padding-left:22px;max-width:80ch}
+ul.liste li,ol.liste li{margin-bottom:7px}
+ul.liste li::marker,ol.liste li::marker{color:var(--tinte-blass)}
+a{color:var(--marine-hell)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) a{color:#9FBAE6}}
+:root[data-theme="dark"] a{color:#9FBAE6}
+
+/* ---------- Kacheln „Das Wichtigste" ---------- */
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:14px}
+.kachel{background:var(--karte);border:1px solid var(--linie);border-top:3px solid var(--akzent);border-radius:7px;padding:14px 16px 12px;box-shadow:var(--schatten)}
+.kachel.lehre{border-top-color:var(--warn-kante)}
+.kachel .k-marke{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinte-blass)}
+.kachel h3{font-size:16px;font-weight:600;margin:4px 0 8px;line-height:1.3}
+.kachel p{font-size:13.5px;line-height:1.55;color:var(--tinte-weich);margin:0}
+.kachel p + p{margin-top:6px}
+
+/* ---------- Tafeln ---------- */
+.tafel-huelle{overflow-x:auto;border:1px solid var(--linie);border-radius:7px;background:var(--karte);box-shadow:var(--schatten);max-width:100%}
+table.tafel{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tafel th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tinte-blass);padding:11px 14px;border-bottom:1px solid var(--linie-stark);white-space:nowrap}
+table.tafel td{padding:9px 14px;border-bottom:1px solid var(--linie);vertical-align:top}
+table.tafel tr:last-child td{border-bottom:0}
+table.tafel td.name{font-weight:600;white-space:nowrap}
+table.tafel td.quelle{color:var(--tinte-weich);font-size:12.5px;min-width:16rem}
+table.tafel td.r{text-align:right;white-space:nowrap}
+table.tafel tr.summe td{background:var(--code-grund);font-weight:600}
+table.tafel code{font-size:11.5px}
+
+/* ---------- Chips ---------- */
+.zk{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:500;padding:1px 7px;border-radius:9px;vertical-align:1px;white-space:nowrap}
+.zk.fiktiv{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante)}
+.zk.empf{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes)}
+.zk.erledigt{background:var(--ausweis-grund);color:var(--ausweis);border:1px solid var(--ausweis)}
+.zk.neu{background:var(--akzent-grund);color:var(--akzent);border:1px solid var(--akzent)}
+
+/* ---------- Diagrammkarten der Seite (themenfähig) ---------- */
+.chart-karte{border:1px solid var(--linie);border-radius:7px;background:var(--karte);padding:18px 20px 14px;box-shadow:var(--schatten);overflow-x:auto;margin:18px 0 0;max-width:100%}
+.chart-titel{font-weight:600;font-size:14px;margin-bottom:2px}
+.chart-unter{font-size:12.5px;color:var(--tinte-blass);margin-bottom:12px}
+.chart-karte > svg{width:100%;height:auto;display:block;min-width:760px}
+.sv-band{fill:var(--code-grund)}
+.sv-kasten{fill:var(--karte);stroke:var(--linie-stark);stroke-width:1.2}
+.sv-kasten--akzent{fill:var(--akzent-grund);stroke:var(--akzent);stroke-width:1.5}
+.sv-kasten--auslegung{fill:var(--ausweis-grund);stroke:var(--ausweis);stroke-width:1.5}
+.sv-kasten--kanal{fill:var(--marine);stroke:var(--akzent);stroke-width:1.5}
+.sv-gruppe{fill:none;stroke:var(--linie-stark);stroke-width:1.2;stroke-dasharray:6 4}
+.sv-marke{fill:var(--tinte-blass);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em}
+.sv-marke--hell{fill:#A9BDDF}
+.sv-titel{fill:var(--tinte);font-size:14px;font-weight:600}
+.sv-titel--hell{fill:#FFFFFF}
+.sv-text{fill:var(--tinte-weich);font-size:11.5px}
+.sv-text--hell{fill:#D5E0F2}
+.sv-pfeil{stroke:var(--tinte-weich);stroke-width:1.6;fill:none}
+.sv-spitze{fill:var(--tinte-weich)}
+.sv-pfeiltext{fill:var(--tinte-weich);font-size:11px;font-style:italic}
+.sv-sperre{stroke:var(--warn);stroke-width:1.8;stroke-dasharray:5 4;fill:none}
+.sv-sperre-x{stroke:var(--warn);stroke-width:2.4}
+.sv-sperre-text{fill:var(--warn);font-size:11.5px;font-weight:600}
+
+/* ---------- Formelkarte ---------- */
+.formel{background:var(--code-grund);border:1px solid var(--linie);border-left:3px solid var(--akzent);border-radius:0 7px 7px 0;padding:16px 18px;margin:18px 0 14px;max-width:100%;overflow-x:auto}
+.formel pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.72;white-space:pre;color:var(--tinte)}
+.formel pre .kom{color:var(--tinte-blass)}
+.normzeile{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.norm{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:12px;background:var(--karte);border:1px solid var(--linie-stark);color:var(--tinte-weich)}
+
+/* ---------- Merk- und Entscheidkarten ---------- */
+.merk{border:1px solid var(--linie);border-left:3px solid var(--akzent);background:var(--karte);border-radius:0 7px 7px 0;padding:14px 18px;margin:16px 0;box-shadow:var(--schatten)}
+.merk h3{font-size:15px;font-weight:600;color:var(--akzent);margin-bottom:6px}
+.merk p{margin:0;font-size:14px;color:var(--tinte-weich)}
+.zwei{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;margin-top:18px}
+.zwei .merk{margin:0}
+.merk ul{margin:4px 0 0;padding-left:18px;font-size:13.5px;color:var(--tinte-weich)}
+.merk ul li{margin-bottom:5px}
+.merk.nein{border-left-color:var(--warn-kante)}
+.merk.nein h3{color:var(--warn)}
+ol.entscheide{margin:0;padding-left:0;list-style:none;counter-reset:ent;max-width:none}
+ol.entscheide > li{counter-increment:ent;position:relative;background:var(--karte);border:1px solid var(--linie);border-radius:7px;padding:12px 16px 12px 52px;margin-bottom:10px;box-shadow:var(--schatten);font-size:14px}
+ol.entscheide > li::before{content:counter(ent);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--akzent-grund);border:1px solid var(--akzent);color:var(--akzent);font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+ol.entscheide > li.erledigt{opacity:.8}
+ol.entscheide .frage{color:var(--tinte-weich)}
+ol.entscheide .frage b{color:var(--tinte)}
+ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed var(--linie-stark);color:var(--tinte)}
+.abschluss{margin-top:64px;padding-top:26px;border-top:2px solid var(--tinte);font-size:13.5px;color:var(--tinte-weich)}
+
+/* ================= Fenster: Bild der Anwendung, hell in beiden Modi ================= */
+.fenster, .ueb{
+  --f-grund:#FAFBFC; --f-tinte:#1B1B1B; --f-weich:#5A5A5A; --f-linie:#D6DBE2;
+  --f-feld:#FFFFFF; --f-gesperrt:#EFF1F4;
+  /* Zeichenfarben der Diagramme im Fenster (Renderer: Profil #0000FF, Alpha 100/255) */
+  --zg-profil:#0000FF; --zg-profil-flaeche:rgba(0,0,255,.392);
+  --zg-orange:#D26A00; --zg-zirk:#5A6B85; --zg-versorgung:#0B6B5B;
+  --zg-gitter:#E3E7ED; --zg-achse:#8C97A8; --zg-text:#5A5A5A;
+  --zg-marke:#8A6100; --zg-ferien:rgba(200,138,0,.14);
+  font-family:var(--epos-schrift);font-size:13px;line-height:1.4;
+  background:var(--f-grund);color:var(--epos-text);
+  border:1px solid #9AA6B8;border-radius:7px;overflow-x:auto;
+  box-shadow:var(--schatten-fenster);max-width:100%;
+}
+.fenster{margin-top:8px}
+.f-band{background:var(--marine);color:#fff;padding:6px 8px 6px 14px;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+.f-band .f-sub{margin-left:auto;font-weight:400;font-size:11.5px;color:#A9BDDF;display:inline-flex;align-items:center;gap:6px}
+/* Schliesskreuz: rechts aussen im Kopf, quadratisch 44 px wie .epos-dialog-zu, wirkt wie Abbrechen/Esc */
+.f-kreuz{min-width:var(--epos-touchziel);width:var(--epos-touchziel);padding:0;font-size:16px}
+.f-band .f-info{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid #A9BDDF;border-radius:50%;font-size:12px;font-weight:700;color:#fff}
+.f-leib{padding:14px}
+.f-kontext{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:12px}
+.f-kontext .f-kontexttext{flex:1 1 26rem;font-weight:600;color:var(--epos-text)}
+.f-kontext .f-kontexttext span{font-weight:400;color:var(--epos-text-leise)}
+.f-spalten{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:14px;align-items:start}
+@media (max-width:1100px){.f-spalten{grid-template-columns:1fr}}
+.f-spalte{display:flex;flex-direction:column;gap:12px;min-width:0}
+.f-fuss{border-top:1px solid var(--f-linie);background:#F0F2F6;padding:9px 14px;display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap}
+/* SpeichernLeiste: Aktionen · Status (der Status ist der Füller) · Abbrechen · OK */
+.f-fuss .f-status,.ueb-fuss .f-status{flex:1 1 auto;min-width:8rem;color:var(--f-weich);font-size:11.5px}
+.f-fueller{flex:1 1 auto}
+
+/* Stufenumschalter: Auswahlpaar, als Umschalter gezeichnet, kein primärer Knopf */
+.zpg-stufen{display:inline-flex;border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);overflow:hidden;background:#fff}
+.zpg-stufen button{min-height:var(--epos-touchziel);padding:0 14px;font:inherit;color:var(--epos-text);background:#fff;border:0;border-left:1px solid var(--epos-rahmen);cursor:pointer}
+.zpg-stufen button:first-child{border-left:0}
+.zpg-stufen button[aria-checked="true"]{background:var(--epos-karte-flaeche-hover);color:var(--epos-karte-titel);font-weight:700;box-shadow:inset 0 -3px 0 var(--epos-marke)}
+.zpg-stufen button:focus-visible{outline:2px solid var(--epos-marke);outline-offset:-3px}
+.zpg-zaehler{font-size:12px;color:var(--epos-marke);font-weight:600}
+
+/* Gruppenkopf (epos-ui.css) */
+.epos-gruppenkopf{background:#fff}
+.epos-gruppenkopf-balken{display:flex;align-items:center;gap:8px;min-height:var(--epos-gruppenkopf-hoehe);padding:0 var(--epos-rand);background:var(--epos-gruppenkopf-flaeche);color:#fff}
+.epos-gruppenkopf-titel{flex:1 1 auto;margin:0;font-size:13px;font-weight:700}
+.epos-gruppenkopf-summe{flex:0 0 auto;color:var(--epos-gruppenkopf-summe);text-align:right;font-size:12.5px}
+.epos-gruppenkopf-stufe{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#A9BDDF;border:1px solid #3B5580;border-radius:3px;padding:0 5px}
+.epos-gruppenkopf-koerper{padding:var(--epos-rand);border:1px solid var(--epos-rahmen-leise);border-top:none}
+
+/* Felder */
+.zpg-feld{display:grid;grid-template-columns:var(--epos-beschriftung-breite) minmax(0,1fr);align-items:center;gap:2px 8px;padding:3px 0}
+.zpg-feld > .zpg-lab{color:var(--epos-text)}
+.zpg-wert{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.zpg-herkunft{grid-column:2;font-size:11.5px;color:var(--epos-text-leise);line-height:1.35;margin-bottom:2px}
+.zpg-herkunft--warn{color:var(--epos-warn-text)}
+@media (max-width:560px){.zpg-feld{grid-template-columns:1fr}.zpg-herkunft{grid-column:1}}
+.epos-eingabe{display:inline-flex;align-items:center;min-height:var(--epos-touchziel);padding:0 10px;min-width:0;background:#fff;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);color:var(--epos-text);font-variant-numeric:tabular-nums}
+.epos-eingabe--kurz{width:var(--epos-kurzfeld-breite);justify-content:flex-end}
+.epos-eingabe--breit{flex:1 1 12rem}
+.epos-eingabe--leer{color:var(--epos-text-sehr-leise);font-style:italic}
+.epos-auswahl{position:relative;padding-right:28px}
+.epos-auswahl::after{content:"▾";position:absolute;right:10px;color:var(--epos-text-leise);font-size:11px}
+.zpg-vorgabe{background:#F1F3F6;color:var(--epos-text-leise)}
+.zpg-ueberschrieben{border-left:4px solid var(--epos-marke)}
+.zpg-warnfeld{border-color:var(--epos-warn-rahmen);background:var(--epos-warn-flaeche);color:var(--epos-warn-text)}
+.epos-einheit{color:var(--epos-text-leise);font-size:12px}
+.zpg-optionen{display:flex;flex-wrap:wrap;gap:0 14px}
+.zpg-option{display:inline-flex;align-items:center;gap:7px;min-height:var(--epos-touchziel)}
+.zpg-option i{width:16px;height:16px;border:1px solid #8C97A8;border-radius:50%;background:#fff;display:inline-block;position:relative;flex:0 0 auto}
+.zpg-option.an i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--epos-karte-titel)}
+.zpg-option.box i{border-radius:3px}
+.zpg-option.box.an i{background:var(--epos-karte-titel);border-color:var(--epos-karte-titel)}
+.zpg-option.box.an i::after{inset:auto;left:5px;top:1px;width:4px;height:9px;border:solid #fff;border-width:0 2px 2px 0;border-radius:0;background:none;transform:rotate(42deg)}
+.zpg-leise{font-size:12px;color:var(--epos-text-leise);margin:6px 0 0}
+.zpg-untertitel{margin:10px 0 2px;font-weight:700;color:var(--epos-text-leise);font-size:12.5px}
+.epos-textknopf{min-height:var(--epos-touchziel);padding:0 4px;font:inherit;font-size:12.5px;color:var(--epos-marke);text-decoration:underline;background:none;border:none;cursor:pointer}
+.zpg-marke-ueber{font-size:11px;font-weight:600;color:var(--epos-marke);border:1px solid var(--epos-marke);border-radius:9px;padding:0 6px}
+.zpg-herkunft .zpg-marke-ueber{margin-right:4px}
+.zpg-herkunft--warn .zpg-marke-ueber{color:var(--epos-marke)}
+
+/* Knöpfe */
+.epos-leiste{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+.epos-knopf{min-height:var(--epos-touchziel);min-width:88px;padding:4px 12px;font:inherit;color:var(--epos-text);background:var(--epos-flaeche);border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);cursor:default;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+.epos-knopf--schmal{min-width:0}
+.epos-knopf--primaer{color:#fff;background:var(--epos-karte-titel);border-color:var(--epos-karte-titel);font-weight:600}
+.epos-knopf[aria-disabled="true"]{color:var(--epos-text-sehr-leise);border-color:var(--epos-rahmen-leise)}
+/* Nur-Lese-Feld im Katalogdialog: kein Vorgabe-Grau (das hiesse „überschreibbar“), gestrichelter Rahmen */
+.epos-eingabe--nurlesen{background:transparent;border-style:dashed;border-color:var(--epos-rahmen);color:var(--epos-text)}
+
+/* Raster */
+.epos-raster-huelle{width:100%;overflow:auto;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff}
+.epos-raster{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.epos-raster th,.epos-raster td{padding:0 8px;height:37px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--epos-rahmen-leise)}
+.epos-raster th{height:var(--epos-touchziel);background:var(--epos-flaeche);border-bottom:1px solid var(--epos-rahmen);font-weight:700}
+.epos-raster tr.gewaehlt td{background:var(--epos-karte-flaeche-hover)}
+.epos-raster tr.summe td{font-weight:700;border-top:1.5px solid var(--epos-rahmen);background:#FAFAF7}
+.epos-raster td.zahl,.epos-raster th.zahl{text-align:right}
+.epos-raster td.leise{color:var(--epos-text-leise)}
+.epos-raster tr:last-child td{border-bottom:0}
+
+/* Vorschau */
+.zpg-kurz{background:var(--marine-hell);color:#fff;border-radius:6px;padding:10px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px 14px;margin:8px 0 10px}
+.zpg-kurz div{display:flex;flex-direction:column}
+.zpg-kurz span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#A9BDDF}
+.zpg-kurz b{font-size:17px;font-variant-numeric:tabular-nums}
+.zpg-reiter{display:flex;flex-wrap:wrap;gap:2px;padding:6px 6px 0;background:var(--epos-menue-flaeche);border:1px solid var(--epos-karte-rahmen);border-bottom:none;border-radius:var(--epos-ecke) var(--epos-ecke) 0 0}
+.zpg-reiter button{min-height:var(--epos-touchziel);padding:0 9px;font:inherit;font-size:12px;color:var(--epos-text);background:var(--epos-flaeche);border:1px solid var(--epos-rahmen);border-bottom:none;border-radius:var(--epos-ecke) var(--epos-ecke) 0 0;cursor:pointer}
+.zpg-reiter button[aria-selected="true"]{background:#fff;font-weight:700;color:var(--epos-karte-titel);position:relative;top:1px}
+.zpg-reiter button:focus-visible{outline:2px solid var(--epos-marke);outline-offset:-3px}
+.zpg-blatt{border:1px solid var(--epos-karte-rahmen);border-radius:0 0 var(--epos-ecke) var(--epos-ecke);background:#fff;padding:10px}
+.zpg-blatt[hidden]{display:none}
+.zpg-blatt > svg{width:100%;height:auto;display:block}
+.zpg-bildzeile{font-size:11.5px;color:var(--f-weich);margin:6px 0 0;line-height:1.4}
+.zg-legende{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--f-weich);margin-top:6px}
+.zg-legende span{display:inline-flex;align-items:center;gap:5px}
+.zg-legende svg{width:20px;height:10px;flex:0 0 auto}
+.zg-legende i{display:inline-block;width:11px;height:11px;border-radius:2px}
+.sw-profil{background:var(--zg-profil-flaeche);border:1.5px solid var(--zg-profil)}
+.sw-zapf{background:var(--zg-orange)}
+.sw-zirk{background:var(--zg-zirk)}
+.sw-ferien{background:var(--zg-ferien);border:1px solid var(--epos-warn-rahmen)}
+.zg-gitter{stroke:var(--zg-gitter);stroke-width:1}
+.zg-achse{stroke:var(--zg-achse);stroke-width:1}
+.zg-leise{fill:var(--zg-text);font-size:10.5px;font-family:var(--epos-schrift)}
+.zg-flaeche{fill:var(--zg-profil-flaeche);stroke:none}
+.zg-linie{fill:none;stroke:var(--zg-profil);stroke-width:2;stroke-linejoin:round}
+.zg-linie--duenn{stroke-width:1.3}
+.zg-sa{fill:none;stroke:var(--zg-zirk);stroke-width:1.8;stroke-dasharray:5 3}
+.zg-so{fill:none;stroke:var(--zg-orange);stroke-width:2}
+.zg-zirk{fill:none;stroke:var(--zg-zirk);stroke-width:1.6;stroke-dasharray:2 3}
+.zg-saeule-zapf{fill:var(--zg-orange)}
+.zg-saeule-zirk{fill:var(--zg-zirk)}
+.zg-ferien{fill:var(--zg-ferien)}
+.zg-marke{stroke:var(--zg-marke);stroke-width:1.2;stroke-dasharray:3 2}
+.zg-marke-text{fill:var(--zg-marke);font-size:10.5px;font-weight:600;font-family:var(--epos-schrift)}
+.zg-hinweis{fill:#3A3A3A;font-size:11.5px;font-weight:600;font-family:var(--epos-schrift)}
+.zg-versorgung{fill:none;stroke:var(--zg-versorgung);stroke-width:2}
+.zg-punkt{fill:var(--epos-karte-titel);stroke:#fff;stroke-width:2}
+.zpg-scroll{overflow-x:auto;max-width:100%}
+.zpg-kz{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.zpg-kz th{text-align:left;font-weight:700;background:var(--epos-flaeche);padding:6px 8px;border-bottom:1px solid var(--epos-rahmen)}
+.zpg-kz td{padding:6px 8px;border-bottom:1px solid var(--epos-rahmen-leise);vertical-align:top}
+.zpg-kz td.r{text-align:right;white-space:nowrap;font-weight:600}
+.zpg-kz td.v{color:var(--epos-text-leise);font-size:11.5px}
+.zpg-kz tr.kopfzeile td{background:#F7F7F4;font-weight:700;color:var(--epos-karte-titel);font-size:12px}
+.zpg-kz tr.bilanzwert td{background:var(--epos-warn-flaeche)}
+.zpg-kz tr.bilanzwert td.v{color:var(--epos-warn-text);font-weight:600}
+.zpg-hinweis{background:var(--epos-warn-flaeche);border-left:4px solid var(--epos-warn-rahmen);color:var(--epos-warn-text);padding:7px 10px;font-size:12px;border-radius:0 4px 4px 0;margin-top:6px}
+.zpg-info{background:#EDF3FB;border-left:4px solid #1A3261;color:#1B1B1B;padding:7px 10px;font-size:12px;border-radius:0 4px 4px 0;margin-top:6px}
+
+/* Stufen ein- und ausblenden (die Stufe ist eine Anzeige, keine Rechenweiche) */
+.fenster[data-stufe="einfach"] .ab-erweitert,
+.fenster[data-stufe="einfach"] .ab-experte,
+.fenster[data-stufe="erweitert"] .ab-experte{display:none !important}
+.fenster:not([data-stufe="einfach"]) .nur-einfach{display:none !important}
+.fenster[data-stufe="experte"] .nicht-experte{display:none !important}
+
+/* Überlagerung im Fenster — Hausmuster: ein Titel mit Kreuz, der Inhalt ohne zweiten Kopf */
+.ueb-schleier{background:rgba(15,31,61,.45);padding:22px 14px;border-radius:7px;margin-top:8px;max-width:100%;overflow-x:auto}
+.ueb{max-width:1000px;margin:0 auto}
+.ueb-kopf{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--f-linie)}
+.ueb-titel{flex:1 1 auto;font-weight:700;font-size:14px;color:var(--marine)}
+.ueb-zu{width:var(--epos-touchziel);height:var(--epos-touchziel);border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);display:inline-flex;align-items:center;justify-content:center;color:var(--epos-text);background:var(--epos-flaeche);font:inherit;font-size:16px;padding:0;cursor:default}
+.ueb-leib{padding:14px}
+.ueb-fuss{border-top:1px solid var(--f-linie);background:#F0F2F6;padding:9px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ausl-parameter{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(350px,100%),1fr));gap:0 18px;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:6px 12px 8px;margin-bottom:12px}
+.ausl-parameter .zpg-untertitel,.ausl-parameter .ausl-breit{grid-column:1/-1}
+.ausl-parameter .zpg-untertitel{margin:2px 0 0}
+.ausl-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(236px,100%),1fr));gap:12px;align-items:start}
+.ausl-karte{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:10px 12px}
+.ausl-karte h4{font-size:13px;color:var(--epos-karte-titel);margin:0 0 2px}
+.ausl-karte .ausl-unter{font-size:11.5px;color:var(--f-weich);margin-bottom:6px}
+.ausl-karte > svg{width:100%;height:auto;display:block;margin-top:4px}
+.ausl-wert{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--epos-rahmen-leise);font-variant-numeric:tabular-nums;font-size:12.5px}
+.ausl-wert b{white-space:nowrap}
+.ausl-band{position:relative;height:14px;background:#EEF1F5;border-radius:7px;margin:4px 0 2px}
+.ausl-band span{position:absolute;top:0;bottom:0;background:rgba(0,0,255,.25);border-left:2px solid #0000FF;border-right:2px solid #0000FF}
+.ausl-empf{margin-top:12px;background:#EDF3FB;border:1px solid #C3D4EA;border-left:4px solid #1A3261;border-radius:0 6px 6px 0;padding:10px 12px;font-size:12.5px}
+.ausl-empf b{color:#0F1F3D}
+
+/* ---------- Statusabzeichen Normzahlen (Kopf, vom Skript gesetzt) ---------- */
+.nt-status{margin-top:12px;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;line-height:1.35;padding:5px 12px;border-radius:14px;border:1px solid var(--warn-kante);background:var(--warn-grund);color:var(--warn);max-width:100%}
+.nt-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.nt-status[data-zustand="geladen"]{border-color:var(--akzent);background:var(--akzent-grund);color:var(--akzent)}
+
+/* Verweise im Fenster bleiben in beiden Farbmodi in der Fensterfarbe */
+:root .fenster a,:root .ueb a{color:var(--epos-marke)}
+.fenster,.ueb{--zg-rot:#B3261E;--zg-ok:#0B6B5B}
+
+/* ---------- auto/manuell-Muster im Fenster (nach Vorlage TWW-Auslegung V4) ---------- */
+.am-block{border-top:1px dashed var(--epos-rahmen-leise);padding:8px 0 4px}
+.am-block + .am-block{margin-top:4px}
+.am-block[data-modus="auto"] .nur-manuell,.am-block[data-modus="manuell"] .nur-auto{display:none !important}
+.am-wahl button{padding:0 12px}
+.zpg-angesetzt{background:#EDF3FB;border-color:#1A3261;font-weight:700;color:#0F1F3D}
+.am-rechenweg{grid-column:2;font-size:12px;color:var(--epos-text-leise);margin:0 0 4px;min-width:0}
+.am-rechenweg summary{cursor:pointer;color:var(--epos-marke);padding:8px 0;font-weight:600}
+.am-rechenweg summary:focus-visible{outline:2px solid var(--epos-marke);outline-offset:1px}
+.am-rechenweg p{margin:0;line-height:1.45;color:var(--epos-text)}
+@media (max-width:560px){.am-rechenweg{grid-column:1}}
+.zpg-katalog{margin:4px 0 6px}
+.zpg-katalog .zpg-untertitel{margin-top:4px}
+
+/* ---------- Überlagerung „Tagesgang bearbeiten“ ---------- */
+.tg-kopf{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-bottom:8px}
+.tg-kopf .zpg-feld{flex:1 1 26rem;min-width:0}
+.tg-marken{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center}
+.tg-marken > span:first-child{font-size:11.5px;color:var(--epos-text-leise);margin-right:2px}
+.tg-marke{font-size:11px;font-weight:600;border:1px solid var(--epos-rahmen-leise);color:var(--epos-text-sehr-leise);border-radius:9px;padding:1px 8px}
+.tg-marke.an{border-color:var(--epos-marke);color:var(--epos-marke);background:#EFF6FF}
+.tg-gitter{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;align-items:start;margin-top:10px}
+@media (max-width:760px){.tg-gitter{grid-template-columns:minmax(0,1fr)}}
+.tg-raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.6rem,1fr));gap:6px}
+.tg-zelle,.tg-woche label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--epos-text-leise);min-width:0}
+.tg-zelle input,.tg-woche input{width:100%;min-width:0;min-height:var(--epos-touchziel);padding:0 6px;font:inherit;font-size:13px;text-align:right;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;color:var(--epos-text);font-variant-numeric:tabular-nums}
+.tg-zelle input:focus-visible,.tg-woche input:focus-visible{outline:2px solid var(--epos-marke);outline-offset:1px}
+.tg-woche{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:4px;max-width:40rem}
+@media (max-width:480px){.tg-woche{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tg-grafik{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:8px}
+.tg-grafik svg{width:100%;height:auto;display:block}
+.tg-kontrolle{font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:0 4px 4px 0;margin-top:8px}
+.tg-kontrolle.ok{color:var(--zg-ok);background:#E6F2EF;border-left:4px solid var(--zg-ok)}
+.tg-kontrolle.fehler{color:var(--zg-rot);background:#FCEBEA;border-left:4px solid var(--zg-rot)}
+.zg-balken{fill:var(--zg-profil-flaeche);stroke:var(--zg-profil);stroke-width:1}
+.epos-knopf.tg-aktiv{cursor:pointer}
+.epos-knopf.tg-aktiv:focus-visible{outline:2px solid var(--epos-marke);outline-offset:2px}
+
+/* ---------- Auslegung: Verfahrensvergleich und Warnliste (Anschlussverbraucher) ---------- */
+.vv-karte{margin-top:14px;border:1px solid var(--epos-karte-rahmen);border-top:3px solid var(--epos-karte-titel);border-radius:var(--epos-ecke);background:#fff;padding:10px 12px}
+.vv-karte h4{font-size:13.5px;color:var(--epos-karte-titel);margin:0 0 2px;line-height:1.35}
+.vv-marke{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--epos-karte-titel);border-radius:3px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.zpg-kz tr.vv-massgebend td{background:#EDF3FB}
+.zpg-kz tr.vv-massgebend td:first-child{box-shadow:inset 4px 0 0 #1A3261}
+.zpg-kz tr.vv-grau td,.zpg-kz tr.vv-grau td.r,.zpg-kz tr.vv-grau td.v{color:#8A8A8A;font-weight:400}
+.vv-kacheln{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:8px}
+.vv-kacheln > div{border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:8px 10px;background:#FAFAF7;font-size:11.5px;color:var(--f-weich);line-height:1.4}
+.vv-kacheln span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--f-weich)}
+.vv-kacheln b{display:block;font-size:15px;color:#0F1F3D;margin:2px 0}
+.vv-kacheln .vv-empf{background:#FFF6E0;border-color:#C88A00}
+.vv-satz{font-size:12.5px;margin:8px 0 0;line-height:1.5}
+.vv-woche{overflow-x:auto;margin-top:6px;border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:6px}
+.vv-woche svg{width:100%;height:auto;display:block;min-width:640px}
+.zg-defizit{fill:none;stroke:var(--zg-rot);stroke-width:2}
+.zg-fuell{fill:none;stroke:var(--zg-profil);stroke-width:1.8;stroke-dasharray:6 3}
+.warnliste{list-style:none;margin:6px 0 0;padding:0}
+.warnliste li{display:grid;grid-template-columns:5.8rem minmax(0,1fr);gap:4px 10px;padding:7px 0;border-bottom:1px solid var(--epos-rahmen-leise);font-size:12.5px;line-height:1.45}
+.warnliste li:last-child{border-bottom:0}
+.wl-stufe{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:3px;padding:2px 6px;align-self:start;text-align:center}
+.wl-ok{color:var(--zg-ok);background:#E6F2EF}
+.wl-hinweis{color:var(--epos-warn-text);background:var(--epos-warn-flaeche);border:1px solid var(--epos-warn-rahmen)}
+.wl-warnung{color:#fff;background:var(--zg-rot)}
+@media (max-width:480px){.warnliste li{grid-template-columns:minmax(0,1fr)}.wl-stufe{justify-self:start}}
+
+/* ---------- 3b Normtabellen als Testdaten (Seitenfarben, beide Modi) ---------- */
+.nt-platzhalter{border:2px dashed var(--linie-stark);border-radius:8px;padding:18px 20px;background:var(--karte);max-width:88ch}
+.nt-platzhalter h3{font-size:16px;margin-bottom:10px}
+.nt-platzhalter p{font-size:14px;color:var(--tinte-weich);margin-bottom:10px}
+.nt-platzhalter p:last-child{margin-bottom:0}
+.nt-quelle{font-size:12.5px;color:var(--tinte-blass);max-width:96ch;margin:0 0 10px;overflow-wrap:anywhere}
+.nt-steuer{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;margin:16px 0 6px}
+.nt-steuer label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--tinte-weich);min-width:0;max-width:100%}
+.nt-steuer select,.nt-steuer input{font:inherit;font-size:14px;font-weight:400;min-height:44px;padding:0 10px;background:var(--karte);color:var(--tinte);border:1px solid var(--linie-stark);border-radius:6px;max-width:100%}
+.nt-steuer input{width:9em;text-align:right;font-variant-numeric:tabular-nums}
+.nt-steuer select:focus-visible,.nt-steuer input:focus-visible{outline:2px solid var(--akzent);outline-offset:1px}
+.nt-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:0 14px}
+.nt-karte{border:1px solid var(--linie);border-radius:7px;background:var(--karte);padding:14px 16px 12px;box-shadow:var(--schatten);overflow-x:auto;margin-top:14px;min-width:0;max-width:100%}
+.nt-karte > svg{width:100%;height:auto;display:block;min-width:420px}
+.nt-achse{stroke:var(--linie-stark);stroke-width:1}
+.nt-gitter{stroke:var(--linie);stroke-width:1}
+.nt-text{fill:var(--tinte-blass);font-size:11px}
+.nt-wert{fill:var(--tinte-weich);font-size:10.5px}
+.nt-l1,.nt-l2,.nt-l3,.nt-l4{fill:none;stroke-width:2;stroke-linejoin:round}
+.nt-l1{stroke:var(--akzent)}
+.nt-l2{stroke:var(--sicht-orange);stroke-dasharray:6 3}
+.nt-l3{stroke:var(--erloes);stroke-dasharray:2 3}
+.nt-l4{stroke:var(--ausweis)}
+.nt-b1{fill:var(--akzent)}
+.nt-b2{fill:var(--sicht-orange)}
+.nt-ref{stroke:var(--tinte-blass);stroke-width:1;stroke-dasharray:3 3}
+.nt-legende{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--tinte-weich);margin-top:8px}
+.nt-legende span{display:inline-flex;align-items:center;gap:6px}
+.nt-legende svg{width:22px;height:10px;flex:0 0 auto}
+.nt-kontrolle{font-size:13px;margin:6px 0 0;font-weight:600}
+.nt-kontrolle.ok{color:var(--erloes)}
+.nt-kontrolle.fehler{color:var(--rot)}
+.tafel th.nt-wahl,.tafel td.nt-wahl{background:var(--akzent-grund)}
+#nt-inhalt .zwei .tafel-huelle{margin:0}
+.nt-karten .nt-karte > svg{max-width:640px;margin:0 auto}
+
+#tg-tagtyp{display:flex;flex-wrap:wrap;width:max-content;max-width:100%}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+
+/* ---------- Ergänzungen dieses Mockups ---------- */
+.schritte{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 12px}
+.schritt{display:flex;align-items:center;gap:8px;min-height:var(--epos-touchziel);padding:4px 10px;border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);background:#fff;font:inherit;color:var(--epos-text-leise);text-align:left;cursor:pointer}
+.schritt b{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--epos-rahmen);font-size:12.5px;flex:0 0 auto}
+.schritt[aria-current="step"]{background:var(--epos-karte-flaeche-hover);color:var(--epos-karte-titel);border-color:var(--epos-marke);font-weight:700}
+.schritt[aria-current="step"] b{background:var(--epos-karte-titel);color:#fff;border-color:var(--epos-karte-titel)}
+.schritt[data-fertig="1"] b{background:#E6F2EF;color:#0B6B5B;border-color:#0B6B5B}
+.schritt span small{display:block;font-weight:400;font-size:11px;color:var(--epos-text-sehr-leise)}
+@media (max-width:760px){.schritte{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.blatt{display:none}.blatt[data-aktiv="1"]{display:block}
+.erklaer{display:flex;gap:10px;align-items:flex-start;background:#F5F4EF;border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:9px 12px;margin:0 0 12px;font-size:12.5px;color:var(--epos-text-leise);line-height:1.45}
+.erklaer .ek-i{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--epos-karte-titel);color:#fff;font-weight:700;font-size:12px;flex:0 0 auto}
+.erklaer b{color:var(--epos-text)}
+/* Vorlagenkarten */
+.vorlagen{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:8px;margin:4px 0 8px}
+.vorlage{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:9px 11px;text-align:left;font:inherit;color:var(--epos-text);cursor:pointer;min-height:var(--epos-touchziel)}
+.vorlage:hover{background:var(--epos-karte-flaeche-hover)}
+.vorlage[aria-pressed="true"]{border-color:var(--epos-marke);box-shadow:inset 0 0 0 1px var(--epos-marke);background:var(--epos-karte-flaeche-hover)}
+.vorlage h4{font-size:13px;color:var(--epos-karte-titel);margin:0 0 3px}
+.vorlage p{font-size:11.5px;color:var(--epos-text-leise);margin:0;line-height:1.4}
+.vorlage .v-marke{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--epos-marke);margin-bottom:3px}
+/* Beispiel am Feld */
+.beispiel{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--epos-text-leise);border:1px dashed var(--epos-rahmen);border-radius:9px;padding:1px 8px;white-space:nowrap}
+.beispiel::before{content:"z. B.";font-weight:700;color:var(--epos-text-sehr-leise)}
+.herk{display:inline-block;font-size:10.5px;font-weight:600;border-radius:9px;padding:0 6px;border:1px solid;margin-right:4px;vertical-align:1px}
+.herk--projekt{color:#0B6B5B;border-color:#0B6B5B;background:#E6F2EF}
+.herk--vorgabe{color:var(--epos-text-leise);border-color:var(--epos-rahmen);background:#F5F4EF}
+.herk--ueber{color:var(--epos-marke);border-color:var(--epos-marke);background:#fff}
+.herk--vorlage{color:#5A6B85;border-color:#5A6B85;background:#EDF1F7}
+/* Kriterienzeilen */
+.krit{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:10px 12px;margin-bottom:8px}
+.krit-kopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.krit-kopf h4{font-size:13px;color:var(--epos-karte-titel);margin:0;flex:1 1 12rem}
+.krit-kopf .krit-wert{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.krit-kopf .krit-wert.aus{color:var(--epos-text-sehr-leise);font-weight:400;text-decoration:line-through}
+.krit .formel{margin:6px 0 4px}
+.krit .krit-quelle{font-size:11.5px;color:var(--epos-text-leise)}
+.krit[data-an="0"]{background:#FAFBFC;color:var(--epos-text-leise)}
+/* Ergebnis */
+.ergebnis-zeile{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr));gap:8px;margin:6px 0 10px}
+.kenn{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:8px 10px}
+.kenn small{display:block;font-size:11px;color:var(--epos-text-leise)}
+.kenn b{font-size:17px;font-variant-numeric:tabular-nums;color:var(--epos-karte-titel)}
+.kenn .vgl{font-size:11px;color:var(--epos-text-leise)}
+.raster{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}
+.raster span{font-size:11px;padding:2px 7px;border:1px solid var(--epos-rahmen-leise);border-radius:9px;color:var(--epos-text-leise);font-variant-numeric:tabular-nums}
+.raster span.gew{background:var(--epos-karte-titel);color:#fff;border-color:var(--epos-karte-titel);font-weight:700}
+.raster span.krit-m{border-color:var(--epos-marke);color:var(--epos-marke)}
+/* Einstiege (Bilder der Startseite und der Konfiguration) */
+.einstiege{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px;margin-top:8px}
+.startkachel{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:0;overflow:hidden;max-width:360px}
+.startkachel .sk-bild{height:64px;background:linear-gradient(135deg,#1A3261,#0F1F3D);display:flex;align-items:flex-end;padding:8px 12px;color:#fff;font-weight:700}
+.startkachel .sk-leib{padding:10px 12px;font-size:12.5px;color:var(--epos-text-leise)}
+.startkachel .sk-leib b{color:var(--epos-text);display:block;margin-bottom:4px}
+.spalte-speicher{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:10px 12px}
+.spalte-speicher h4{font-size:13px;color:var(--epos-karte-titel);margin:0 0 6px}
+.sp-kachel{border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:7px 10px;margin-bottom:6px;font-size:12.5px}
+.sp-kachel b{display:block;color:var(--epos-text)}
+.sp-kachel span{color:var(--epos-text-leise)}
+.neu{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--sicht-orange);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.ab-standard,.ab-experte{display:none}
+.fenster[data-stufe="standard"] .ab-standard,.fenster[data-stufe="experte"] .ab-standard,.fenster[data-stufe="experte"] .ab-experte{display:revert}
+.fenster[data-stufe="standard"] .nur-schnell,.fenster[data-stufe="experte"] .nur-schnell{display:none}
+.fenster[data-stufe="standard"] .zpg-feld.ab-standard,.fenster[data-stufe="experte"] .zpg-feld.ab-standard,.fenster[data-stufe="experte"] .zpg-feld.ab-experte{display:grid}
+.fragen li{margin-bottom:10px}
+.fragen b.f{color:var(--akzent)}
+.ausl-karte.aus{opacity:.55}
+.ausl-karte.gewinner{border-color:var(--epos-marke);box-shadow:inset 0 0 0 1px var(--epos-marke)}
+</style>
+</head>
+<body id="top">
+<div class="huelle">
+
+<header class="kopf">
+  <div class="augenbraue">EPOS-Plan · Pufferspeicher · Mockup zur Abnahme</div>
+  <h1>Pufferspeicher-Auslegung — geführter Dialog</h1>
+  <p class="unter">Entwurf zur Abnahme, Stand 30.09.2026. Aus dem Wärmelastgang der Simulation und den Erzeugerdaten des
+  Projekts entsteht in vier Schritten ein Vorschlag für das Puffervolumen — nach vier Kriterien, mit Betriebssimulation
+  und Übernahme in den Projektpuffer. Erreichbar über die Kachel <b>Pufferspeicher</b> der Startseite und über
+  <b>Simulation ① Konfiguration</b>.</p>
+  <div class="kennzeile">
+    <span>Konzept <b>Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md (folgt)</b></span>
+    <span>Vorbild <b>TWW-Speicherauslegung des Zapfprofilgenerators</b></span>
+    <span>Methode <b>Wärmespeicher-Tool (vier Kriterien)</b></span>
+    <span>Stand <b>30.09.2026</b></span>
+    <span>Status <b>Entwurf zur Abnahme</b></span>
+  </div>
+  <div class="leseweg">
+    <b>Leseweg.</b> Abschnitt 1 zeigt die beiden Einstiege, Abschnitt 2 den Dialog — die <b>Schrittleiste</b>, die
+    <b>Vorlagenkarten</b>, der Umschalter <b>Schnell · Standard · Experte</b> und die <b>Kriterienschalter</b> sind
+    bedienbar. Abschnitt 3 nennt, was zur Abnahme zu entscheiden ist. <span class="zk fiktiv">fiktiv</span> Alle Zahlen
+    stammen aus einem erfundenen Beispielprojekt (Wärmepumpe 60&nbsp;kW, Spitzenkessel 80&nbsp;kW, Vorlauf/Rücklauf
+    55/45&nbsp;°C) und gehen mit c&nbsp;=&nbsp;1,163&nbsp;Wh/(l·K) untereinander auf; keine ist ein Norm-, Mess- oder Produktwert.
+  </div>
+</header>
+
+<div class="rumpf">
+
+<nav aria-label="Abschnitte">
+  <div class="navtitel">Abschnitte</div>
+  <div class="navliste">
+    <a href="#einstiege">1 Die zwei Einstiege</a>
+    <a href="#dialog">2 Der Dialog</a>
+    <div class="navunter">
+      <a href="#dialog-fenster">Fenster Pufferspeicher-Auslegung</a>
+      <a href="#dialog-legende">Was er tut und was nicht</a>
+    </div>
+    <a href="#abnahme">3 Zur Abnahme</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ======================= 1 EINSTIEGE ======================= -->
+<section class="kat" id="einstiege">
+  <div class="kat-kopf"><h2>1 · Die zwei Einstiege</h2><span class="kat-marke">Startseite · ① Konfiguration</span></div>
+  <p class="kat-lead">Beide Wege öffnen dieselbe Ansicht als freie Ansicht der <code>AppWurzel</code> — wie die
+  Stromspeicher-Auslegung — und kehren dorthin zurück, wo sie geöffnet wurden. Aus ① Konfiguration liest die Spalte
+  „Speicher im Projekt“ nach der Rückkehr frisch; ein angezeigtes Simulationsergebnis gilt nach einer Übernahme als veraltet.</p>
+
+  <div class="einstiege">
+    <div>
+      <div class="zone">Einstieg A · Startseite, Kachel Pufferspeicher</div>
+      <div class="fenster" style="max-width:380px">
+        <div class="startkachel">
+          <div class="sk-bild">Pufferspeicher</div>
+          <div class="sk-leib"><b>Beispielprojekt Wohnen und Büro</b>Speicher 1 · 1 000 l · 55/45 °C
+            <div class="epos-leiste">
+              <button type="button" class="epos-knopf">Verwalten…</button>
+              <button type="button" class="epos-knopf epos-knopf--primaer">Auslegen…<span class="neu">neu</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="bildtext">Die Kachel behält „Verwalten…“ (Dialog „Verwaltung Pufferspeicher“) und bekommt daneben
+      „Auslegen…“. Ohne Puffer im Projekt steht dort „Auslegen…“ allein und der Vorschlag legt beim Übernehmen den
+      ersten Speicher an.</p>
+    </div>
+    <div>
+      <div class="zone">Einstieg B · Simulation ① Konfiguration, Spalte „Speicher im Projekt“</div>
+      <div class="fenster" style="max-width:420px">
+        <div class="spalte-speicher">
+          <h4>Speicher im Projekt</h4>
+          <div class="sp-kachel"><b>Speicher 1 · Pufferspeicher</b><span>1 000 l · 55/45 °C · 11,6 kWh · Schwellen 10 / 95 %</span></div>
+          <div class="sp-kachel"><b>Stromspeicher A</b><span>50 kWh · 25 kW · 1 Modul</span></div>
+          <div class="epos-leiste">
+            <button type="button" class="epos-knopf">Pufferspeicher anlegen / verwalten…</button>
+            <button type="button" class="epos-knopf epos-knopf--primaer">Pufferspeicher auslegen…<span class="neu">neu</span></button>
+          </div>
+          <div class="epos-leiste">
+            <button type="button" class="epos-knopf">Stromspeicher auslegen…</button>
+          </div>
+        </div>
+      </div>
+      <p class="bildtext">Der neue Knopf steht unter „Pufferspeicher anlegen / verwalten…“ und über „Stromspeicher
+      auslegen…“ — jede Speicherart hat ihr Anlegen und ihr Auslegen beieinander.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2 DER DIALOG ======================= -->
+<section class="kat" id="dialog">
+  <div class="kat-kopf"><h2>2 · Der Dialog</h2><span class="kat-marke">vier Schritte · Vorlagen · Beispiele · Übernahme</span></div>
+  <p class="kat-lead">Der Dialog führt in fester Reihenfolge: <b>Anlage und Erzeuger → Lastgang und Randbedingungen →
+  Kriterien → Ergebnis und Übernahme</b>. Je Schritt stehen nur die Angaben, die er braucht; jede Angabe trägt ihre
+  Herkunft (<span class="herk herk--projekt">Projekt</span> <span class="herk herk--vorlage">Vorlage</span>
+  <span class="herk herk--vorgabe">Vorgabe</span> <span class="herk herk--ueber">überschrieben</span>) und, wo der Anwender
+  etwas eingeben muss, ein Beispiel mit Einheit. Vorlagen je Anlagentyp befüllen Schritt 1 und 2 vor; der Umschalter
+  Schnell · Standard · Experte blendet Tiefe ein, nie Pflichtangaben aus.</p>
+
+  <div class="zone" id="dialog-fenster">Fenster Pufferspeicher-Auslegung</div>
+
+  <div class="fenster" id="pa-fenster" data-stufe="schnell">
+    <div class="f-band"><span class="f-titel">Pufferspeicher-Auslegung – Beispielprojekt Wohnen und Büro</span>
+      <span class="f-sub"><span class="f-info" title="Hilfe zur Bedienung">i</span> Bedienung&nbsp;&nbsp;<span class="f-info" title="Rechenweg">i</span> Rechenweg</span>
+      <button type="button" class="epos-knopf f-kreuz" title="Schließen ohne zu übernehmen" aria-label="Schließen ohne zu übernehmen">✕</button>
+    </div>
+    <div class="f-leib">
+      <div class="f-kontext">
+        <div class="f-kontexttext">Beispielprojekt Wohnen und Büro <span>· geöffnet aus ① Konfiguration · Simulationsergebnis vom
+        Beispiellauf (Raumwärme 182 MWh/a, Brauchwasser 39 MWh/a) · Speicher 1 vorhanden, 1 000 l</span></div>
+        <span class="zpg-zaehler" id="pa-zaehler">1 Wert überschrieben</span>
+        <div class="zpg-stufen" role="radiogroup" aria-label="Darstellungstiefe">
+          <button type="button" role="radio" aria-checked="true" data-stufe-wahl="schnell">Schnell</button>
+          <button type="button" role="radio" aria-checked="false" data-stufe-wahl="standard">Standard</button>
+          <button type="button" role="radio" aria-checked="false" data-stufe-wahl="experte">Experte</button>
+        </div>
+      </div>
+
+      <div class="schritte" role="tablist" aria-label="Schritte der Auslegung">
+        <button type="button" class="schritt" role="tab" data-schritt="1" aria-current="step" data-fertig="0"><b>1</b><span>Anlage und Erzeuger<small>Vorlage, Wärmepumpe, Kessel</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="2" data-fertig="0"><b>2</b><span>Lastgang und Randbedingungen<small>Simulation, Sperrzeit, Abtauung</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="3" data-fertig="0"><b>3</b><span>Kriterien<small>vier Verfahren, Formel und Beispiel</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="4" data-fertig="0"><b>4</b><span>Ergebnis und Übernahme<small>Vorschlag, Betriebsbild, Projektpuffer</small></span></button>
+      </div>
+
+      <!-- ================= Schritt 1 ================= -->
+      <div class="blatt" data-blatt="1" data-aktiv="1">
+        <div class="erklaer"><span class="ek-i">1</span><div><b>Wofür der Puffer da ist, entscheidet die Anlage.</b> Wählen Sie die Vorlage,
+        die Ihrer Anlage am nächsten kommt — sie befüllt die Erzeugerdaten und die Randbedingungen des nächsten Schritts. Was aus dem Projekt
+        bekannt ist (Erzeuger aus ① Konfiguration, Temperaturen des Speichers), steht schon drin.</div></div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorlage der Anlage</h3><span class="epos-gruppenkopf-summe" id="pa-vorlage-name">Wärmepumpe bivalent · Mehrfamilienhaus</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="vorlagen" role="group" aria-label="Vorlagen je Anlagentyp">
+              <button type="button" class="vorlage" data-vorlage="wp-mono" aria-pressed="false"><span class="v-marke">Wärmepumpe</span><h4>monovalent</h4><p>Die Wärmepumpe deckt allein. Puffer für Abtauung, Taktung und Sperrzeit — die Sperrzeit bemisst.</p></button>
+              <button type="button" class="vorlage" data-vorlage="wp-bi" aria-pressed="true"><span class="v-marke">Wärmepumpe</span><h4>bivalent mit Spitzenkessel</h4><p>Kessel deckt Spitzen und Sperrzeiten. Puffer für Abtauung und Taktung; Sperrzeit entfällt.</p></button>
+              <button type="button" class="vorlage" data-vorlage="bhkw" aria-pressed="false"><span class="v-marke">BHKW</span><h4>lange Laufzeiten</h4><p>Puffer nach Laufzeitziel je Start; Faustwert Liter je kW thermisch als Gegenprobe.</p></button>
+              <button type="button" class="vorlage" data-vorlage="kessel" aria-pressed="false"><span class="v-marke">Kessel</span><h4>mit Taktbegrenzung</h4><p>Mindestlaufzeit und Mindestleistung aus der Kesselkennlinie; kleiner Puffer gegen Takten.</p></button>
+              <button type="button" class="vorlage" data-vorlage="solar" aria-pressed="false"><span class="v-marke">Solarthermie</span><h4>Kollektorfeld am Puffer</h4><p>Volumen je m² Kollektor, Tagesspeicher; Ladung nachrangig nach dem Erzeuger.</p></button>
+            </div>
+            <div class="zpg-feld"><span class="zpg-lab">Gebäudeart</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option"><i></i>Einfamilienhaus</span><span class="zpg-option an"><i></i>Mehrfamilienhaus</span><span class="zpg-option"><i></i>Gewerbe / Büro</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Gebäuden des Projekts (Wohnen 20 WE, Büro) — bestimmt die Vorgaben der Vorlage, etwa Mindestlaufzeit und Sperrzeitprofil</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Erzeuger am Puffer</h3><span class="epos-gruppenkopf-summe">aus ① Konfiguration</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Bemessender Erzeuger</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-erzeuger">Wärmepumpe A · Luft/Wasser · 60 kW</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Rang 1 der Kaskade; der Puffer wird für den Erzeuger bemessen, der takten oder Sperrzeiten überbrücken muss</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Nennleistung thermisch</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-pnenn">60,0</span><span class="epos-einheit">kW</span><span class="beispiel">EFH 8–12 kW · MFH 40–80 kW</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Kennlinie am Normpunkt A2/W55</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Kleinste Dauerleistung</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-pmin">18,0</span><span class="epos-einheit">kW</span><span class="beispiel">30 % der Nennleistung bei Inverter, 100 % bei Ein/Aus</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Modulationsgrenze 30 %; ein Ein/Aus-Gerät taktet mit voller Leistung</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Mindestlaufzeit je Start</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-tmin">20</span><span class="epos-einheit">min</span><span class="beispiel">Wärmepumpe 15–30 min · BHKW 60–120 min</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Herstellerfreigabe der Anlage eintragen, wenn bekannt</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Zweiter Erzeuger</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-erz2">Heizkessel B · Gas · 80 kW · deckt Sperrzeiten</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Rang 2 der Kaskade; „deckt Sperrzeiten“ nimmt das Sperrzeitkriterium aus der Bemessung</span></div>
+            <div class="zpg-feld ab-standard"><span class="zpg-lab">Abtauung</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an" id="pa-abtau-an"><i></i>ja, Luft/Wasser</span><span class="zpg-option" id="pa-abtau-aus"><i></i>nein</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Luft/Wasser-Geräte tauen über den Heizkreis ab; Sole/Wasser nicht</span></div>
+            <p class="zpg-leise nur-schnell">Abtauung und Bezugstemperaturen stehen auf Vorgabe – Stufe Standard zeigt sie.</p>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf ab-standard">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Temperaturen am Puffer</h3><span class="epos-gruppenkopf-summe">ΔT 10 K → 11,63 kWh je 1 000 l</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Vorlauf / Rücklauf</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">55</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz">45</span><span class="epos-einheit">°C</span><span class="beispiel">Fußboden 35/28 · Heizkörper 55/45 · Alt 70/55</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Temperaturpaar des Speichers 1; die Spreizung bestimmt, wie viel Wärme ein Liter trägt</span></div>
+            <div class="zpg-feld ab-experte"><span class="zpg-lab">Nutzbarer Anteil</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">85</span><span class="epos-einheit">%</span><span class="beispiel">80–90 % (Mischzone, Totvolumen)</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>Auslieferungswert; das Sicherheitsband der Empfehlung</span></div>
+          </div>
+        </div>
+
+        <div class="epos-leiste"><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="2">Weiter zu 2 · Lastgang ›</button></div>
+      </div>
+
+      <!-- ================= Schritt 2 ================= -->
+      <div class="blatt" data-blatt="2">
+        <div class="erklaer"><span class="ek-i">2</span><div><b>Der Lastgang ist die Messlatte.</b> Bemessen wird gegen den stündlichen Wärmelastgang
+        des Projekts — am besten aus der letzten Simulation. Sperrzeiten und Abtauung sind die Randbedingungen, die der Puffer überbrücken muss.</div></div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Wärmelastgang</h3><span class="epos-gruppenkopf-summe">221 MWh/a · Spitze 96 kW</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Quelle</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>Simulationsergebnis</span><span class="zpg-option"><i></i>Beispiel-Lastgang</span><span class="zpg-option"><i></i>Messreihe (CSV)…</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Beispiellauf vom 30.09.2026 · Kanäle Raumwärme und Brauchwasser; ohne Ergebnis rechnet der Dialog mit dem Beispiel-Lastgang der Vorlage und sagt das im Ergebnis</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Kanäle am Puffer</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option box an"><i></i>Raumwärme</span><span class="zpg-option box an"><i></i>Brauchwasser</span><span class="zpg-option box"><i></i>Prozesswärme</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Senken des Erzeugers (Z_AnlageSenke); der Brauchwasserspeicher hat seine eigene Auslegung im Zapfprofil</span></div>
+            <div class="zpg-feld ab-standard"><span class="zpg-lab">Kennzahlen</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--nurlesen">Spitze 96 kW · P95 71 kW · Volllaststunden 2 300 h · kältester Tag 14. Januar</span></span>
+              <span class="zpg-herkunft">nur lesen — Dauerlinie und Wochenbild stehen im Ergebnis</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Sperrzeiten des Netzbetreibers</h3><span class="epos-gruppenkopf-summe" id="pa-sperr-summe">3 × 2 h je Tag · deckt der Kessel</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Sperrzeitprofil</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-sperr">Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Vorlagen: kein Sperrzeitprofil · 2 × 2 h · 3 × 2 h · eigenes Profil…</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Längste Sperre am Stück</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-sperrdauer">2,0</span><span class="epos-einheit">h</span><span class="beispiel">2 h; zwischen zwei Sperren mindestens die Sperrdauer frei</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>bemessend ist das höchste rollierende Mittel des Lastgangs über diese Dauer</span></div>
+            <div class="zpg-feld ab-standard"><span class="zpg-lab">Deckung in der Sperre</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option" id="pa-deck-puffer"><i></i>allein der Puffer</span><span class="zpg-option an" id="pa-deck-kessel"><i></i>der zweite Erzeuger</span><span class="zpg-option"><i></i>Puffer mit Gebäudeträgheit</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>„mit Gebäudeträgheit“ setzt den Lastgang in der Sperre auf einen Anteil herab (Experte: 50 %) — nur bei Fußbodenheizung oder schwerer Bauweise</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf ab-standard">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Betriebsziel</h3><span class="epos-gruppenkopf-summe">höchstens 6 Starts je Tag</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Starts je Tag, Ziel</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">6</span><span class="epos-einheit">je Tag</span><span class="beispiel">Wärmepumpe ≤ 6–8 · BHKW ≤ 3 · Kessel ≤ 12</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Ziel der Betriebssimulation; sie sucht das kleinste Volumen, das es im Jahresmittel hält</span></div>
+            <div class="zpg-feld ab-experte"><span class="zpg-lab">Schaltschwellen</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">10</span><span class="epos-einheit">% ein</span><span class="epos-eingabe epos-eingabe--kurz">95</span><span class="epos-einheit">% aus</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Schwellen des Speichers 1 — die Betriebssimulation rechnet mit denselben wie die Jahressimulation</span></div>
+          </div>
+        </div>
+        <p class="zpg-leise nur-schnell">Betriebsziel und Deckung in der Sperre stehen auf Vorgabe der Vorlage – Stufe Standard zeigt sie.</p>
+
+        <div class="epos-leiste"><button type="button" class="epos-knopf" data-weiter="1">‹ Zurück</button><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="3">Weiter zu 3 · Kriterien ›</button></div>
+      </div>
+
+      <!-- ================= Schritt 3 ================= -->
+      <div class="blatt" data-blatt="3">
+        <div class="erklaer"><span class="ek-i">3</span><div><b>Vier Kriterien, das größte gewinnt.</b> Jedes Kriterium bemisst den Puffer aus einer anderen Aufgabe.
+        Die Vorlage hat vorgewählt, was zu Ihrer Anlage passt; Sie können Kriterien zu- oder abschalten. Formel und ein
+        Beispiel stehen an jedem Kriterium — mit Ihren Werten aus Schritt 1 und 2.</div></div>
+
+        <div class="krit" data-krit="abtau" data-an="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="abtau"><i></i></span><h4>A · Abtauung</h4><span class="krit-wert" data-krit-wert="abtau">1 200 l</span></div>
+          <div class="formel">V<sub>Abtau</sub> = 20 l/kW · P<sub>Nenn</sub> = 20 · 60 kW = <b>1 200 l</b></div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Richtwert für Luft/Wasser-Wärmepumpen, die über den Heizkreis abtauen; entfällt bei Sole/Wasser und bei Abtauung aus dem Gerät. Stufe Experte: Liter je kW ändern.</div>
+        </div>
+        <div class="krit" data-krit="takt" data-an="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="takt"><i></i></span><h4>B · Taktung und Mindestlaufzeit</h4><span class="krit-wert" data-krit-wert="takt">520 l</span></div>
+          <div class="formel">V<sub>Takt</sub> = P<sub>min</sub> · t<sub>min</sub> / (1,163 · ΔT) = 18 kW · 0,333 h · 1 000 / (1,163 · 10 K) = <b>516 l</b></div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Der Puffer nimmt die kleinste Dauerleistung über die Mindestlaufzeit auf, wenn das Gebäude nichts abnimmt. Bei Ein/Aus-Geräten mit P<sub>min</sub> = P<sub>Nenn</sub>: 1 720 l.</div>
+        </div>
+        <div class="krit" data-krit="sperr" data-an="0">
+          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" aria-checked="false" data-krit-schalter="sperr"><i></i></span><h4>C · EVU-Sperrzeit</h4><span class="krit-wert aus" data-krit-wert="sperr">14 100 l</span></div>
+          <div class="formel">V<sub>Sperre</sub> = max<sub>2 h</sub>(Ø Last) · t<sub>Sperre</sub> / (1,163 · ΔT) = 82 kW · 2 h · 1 000 / (1,163 · 10 K) = <b>14 100 l</b></div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span><b>Abgeschaltet:</b> der Spitzenkessel deckt die Sperrzeiten (Schritt 2). Monovalent wäre dieses Kriterium bemessend — mit Gebäudeträgheit 50 % noch 7 050 l. Das höchste rollierende Mittel liegt am 14. Januar, 6–8 Uhr.</div>
+        </div>
+        <div class="krit" data-krit="sim" data-an="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="sim"><i></i></span><h4>D · Betriebssimulation über das Jahr</h4><span class="krit-wert" data-krit-wert="sim">1 800 l</span></div>
+          <div class="formel">kleinstes V, für das die Zweipunkt-Simulation (laden bis 95 %, entladen bis 10 %) im Jahresmittel <b>≤ 6 Starts je Tag</b> hält — Suche zwischen 200 und 10 000 l: <b>1 800 l</b></div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>8 760 Stunden gegen den Lastgang aus Schritt 2; liefert Starts je Tag, Laufzeit je Start und Unterdeckung. Ohne Puffer: 21 Starts je Tag.</div>
+        </div>
+        <div class="krit ab-standard" data-krit="faust" data-an="0">
+          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" aria-checked="false" data-krit-schalter="faust"><i></i></span><h4>E · Faustwert je kW (Gegenprobe)</h4><span class="krit-wert aus" data-krit-wert="faust">1 500 l</span></div>
+          <div class="formel">V = 25 l/kW · 60 kW = <b>1 500 l</b> <span class="zpg-leise" style="display:inline">(Wärmepumpe 20–30 l/kW · BHKW 60–100 l/kW<sub>th</sub> · Solar 50–70 l/m²)</span></div>
+          <div class="krit-quelle"><span class="herk herk--vorgabe">Vorgabe</span>nur nachrichtlich; bemisst nie allein. Erscheint im Ergebnis als Vergleichsbalken.</div>
+        </div>
+        <p class="zpg-leise nur-schnell">Die Gegenprobe E steht auf Vorgabe – Stufe Standard zeigt sie.</p>
+
+        <div class="epos-leiste"><button type="button" class="epos-knopf" data-weiter="2">‹ Zurück</button><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="4">Auslegen und Ergebnis zeigen ›</button></div>
+      </div>
+
+      <!-- ================= Schritt 4 ================= -->
+      <div class="blatt" data-blatt="4">
+        <div class="erklaer"><span class="ek-i">4</span><div><b>Vorschlag, Betriebsbild, Übernahme.</b> Der Vorschlag ist das größte aktive Kriterium,
+        durch den nutzbaren Anteil geteilt und auf das Raster marktüblicher Nenninhalte gerundet. Die Betriebssimulation zeigt, was der
+        Puffer bewirkt. „Übernehmen“ schreibt Volumen, Temperaturen und Schwellen in den Projektpuffer — nichts anderes.</div></div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorschlag</h3><span class="epos-gruppenkopf-summe" id="pa-vorschlag-kopf">2 000 l · 23,3 kWh nutzbar</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="ausl-karten" id="pa-karten">
+              <div class="ausl-karte" data-karte="abtau"><h4>A · Abtauung</h4><div class="ausl-unter">20 l/kW · 60 kW</div><div class="ausl-wert"><span>Volumen</span><b>1 200 l</b></div><div class="ausl-band"><span style="left:0;width:12%"></span></div></div>
+              <div class="ausl-karte" data-karte="takt"><h4>B · Taktung</h4><div class="ausl-unter">18 kW · 20 min · ΔT 10 K</div><div class="ausl-wert"><span>Volumen</span><b>520 l</b></div><div class="ausl-band"><span style="left:0;width:5.2%"></span></div></div>
+              <div class="ausl-karte aus" data-karte="sperr"><h4>C · Sperrzeit</h4><div class="ausl-unter">entfällt · Kessel deckt</div><div class="ausl-wert"><span>wäre</span><b>14 100 l</b></div><div class="ausl-band"><span style="left:0;width:100%;opacity:.35"></span></div></div>
+              <div class="ausl-karte gewinner" data-karte="sim"><h4>D · Betriebssimulation</h4><div class="ausl-unter">≤ 6 Starts je Tag</div><div class="ausl-wert"><span>Volumen</span><b>1 800 l</b></div><div class="ausl-band"><span style="left:0;width:18%"></span></div></div>
+            </div>
+            <div class="ausl-empf" id="pa-empf"><b>Empfehlung: 2 000 l</b> — bemessend ist D · Betriebssimulation (1 800 l), durch den nutzbaren Anteil 85 % = 2 120 l,
+            auf das Raster gerundet: <b>2 000 l</b> (nächste Stufe 3 000 l wäre +50 % Volumen für 0,4 Starts weniger). Speicherkapazität bei
+            55/45 °C: 23,3 kWh, davon 19,8 kWh nutzbar. Bereitschaftsverlust der Auslieferungsvorgabe: 3,5 kWh je 24 h.</div>
+            <div class="raster" aria-label="Raster marktüblicher Nenninhalte">
+              <span>100</span><span>150</span><span>200</span><span>300</span><span>400</span><span class="krit-m" title="B · Taktung 520 l">500</span><span>800</span><span title="A · Abtauung 1 200 l">1 000</span><span class="krit-m">1 500</span><span class="gew">2 000 l</span><span>3 000</span><span>5 000</span><span>8 000</span><span>10 000</span>
+            </div>
+            <p class="zpg-leise">Raster wie in der TWW-Speicherauslegung (Auslieferungswert, oberhalb 10 000 l auf volle 1 000 l). Markiert: gewählte Stufe und die Stufen der übrigen Kriterien.</p>
+          </div>
+        </div>
+
+        <div class="f-spalten">
+          <div class="f-spalte">
+            <div class="epos-gruppenkopf">
+              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Betriebsbild mit 2 000 l</h3><span class="epos-gruppenkopf-summe">Zweipunkt-Simulation · 8 760 h</span></div>
+              <div class="epos-gruppenkopf-koerper">
+                <div class="ergebnis-zeile">
+                  <div class="kenn"><small>Starts je Tag</small><b>5,4</b><div class="vgl">ohne Puffer 21 · mit 1 000 l 9,8</div></div>
+                  <div class="kenn"><small>Laufzeit je Start</small><b>2,6 h</b><div class="vgl">ohne Puffer 0,7 h</div></div>
+                  <div class="kenn"><small>Unterdeckung</small><b>0 h</b><div class="vgl">Kessel springt 312 h ein</div></div>
+                  <div class="kenn"><small>Vollzyklen</small><b>1 970</b><div class="vgl">je Jahr</div></div>
+                </div>
+                <svg viewBox="0 0 520 150" role="img" aria-label="Füllstandslinie einer Winterwoche, fiktiv" style="width:100%;height:auto;display:block">
+                  <rect x="0" y="0" width="520" height="150" fill="#fff"/>
+                  <line x1="40" y1="20" x2="40" y2="120" stroke="#8C97A8"/><line x1="40" y1="120" x2="510" y2="120" stroke="#8C97A8"/>
+                  <line x1="40" y1="25" x2="510" y2="25" stroke="#E3E7ED" stroke-dasharray="3 3"/><text x="44" y="23" font-size="9" fill="#5A5A5A">95 % aus</text>
+                  <line x1="40" y1="110" x2="510" y2="110" stroke="#E3E7ED" stroke-dasharray="3 3"/><text x="44" y="108" font-size="9" fill="#5A5A5A">10 % ein</text>
+                  <g fill="#F0F2F6"><rect x="100" y="20" width="14" height="100"/><rect x="240" y="20" width="14" height="100"/><rect x="380" y="20" width="14" height="100"/></g>
+                  <text x="102" y="135" font-size="8" fill="#8C97A8">Sperre</text><text x="242" y="135" font-size="8" fill="#8C97A8">Sperre</text><text x="382" y="135" font-size="8" fill="#8C97A8">Sperre</text>
+                  <polyline fill="none" stroke="#0000FF" stroke-width="1.5" points="40,110 60,30 90,60 100,70 114,100 130,28 165,55 200,26 240,64 254,96 280,30 320,58 350,27 380,62 394,98 420,30 460,56 500,28 510,40"/>
+                  <polyline fill="none" stroke="#D26A00" stroke-width="1" stroke-dasharray="4 2" points="40,80 60,78 90,84 130,79 165,82 200,86 240,80 280,78 320,83 350,80 380,84 420,79 460,82 510,80"/>
+                  <text x="40" y="146" font-size="9" fill="#5A5A5A">Mo</text><text x="200" y="146" font-size="9" fill="#5A5A5A">Do</text><text x="440" y="146" font-size="9" fill="#5A5A5A">So · Woche 3, Januar (fiktiv)</text>
+                  <text x="330" y="16" font-size="9" fill="#0000FF">— Füllstand</text><text x="400" y="16" font-size="9" fill="#D26A00">- - Last</text>
+                </svg>
+                <div class="epos-leiste"><button type="button" class="epos-knopf epos-knopf--schmal">Woche wählen…</button><button type="button" class="epos-knopf epos-knopf--schmal">Dauerlinie</button><button type="button" class="epos-knopf epos-knopf--schmal">Vergleich 1 000 / 2 000 / 3 000 l</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="f-spalte">
+            <div class="epos-gruppenkopf">
+              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Hinweise</h3><span class="epos-gruppenkopf-summe">1 Hinweis · 0 Warnungen</span></div>
+              <div class="epos-gruppenkopf-koerper">
+                <ul class="warnliste">
+                  <li><span class="wl-stufe wl-ok">ok</span><span>Vorschlag 2 000 l ersetzt den vorhandenen Speicher 1 (1 000 l): Starts je Tag von 9,8 auf 5,4.</span></li>
+                  <li><span class="wl-stufe wl-hinweis">Hinweis</span><span>Sperrzeit entfällt, weil der Kessel deckt. Monovalent bräuchte die Anlage 14 100 l — prüfen Sie, ob der Kessel in der Sperre wirklich freigegeben ist (Betriebsmodus Kessel B).</span></li>
+                  <li><span class="wl-stufe wl-ok">ok</span><span>Volumen unter der Praxisgrenze 100 m³; Aufstellfläche etwa 1,2 m² bei 2 000 l stehend.</span></li>
+                  <li class="ab-standard"><span class="wl-stufe wl-ok">ok</span><span>Der Lastgang stammt aus dem Simulationsergebnis; bei einem Beispiel-Lastgang stünde hier eine Warnung.</span></li>
+                </ul>
+              </div>
+            </div>
+            <div class="epos-gruppenkopf">
+              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Übernahme in den Projektpuffer</h3><span class="epos-gruppenkopf-summe">Speicher 1</span></div>
+              <div class="epos-gruppenkopf-koerper">
+                <div class="zpg-feld"><span class="zpg-lab">Ziel</span>
+                  <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>Speicher 1 ändern</span><span class="zpg-option"><i></i>neuen Speicher anlegen</span></span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Gesamtvolumen</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">2 000</span><span class="epos-einheit">l</span><span class="zpg-leise" style="margin:0">vorher 1 000 l</span></span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Vorlauf / Rücklauf</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">55</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">45</span><span class="epos-einheit">°C</span></span>
+                  <span class="zpg-herkunft">unverändert aus dem Projekt</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Schwellen ein / aus</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">10</span><span class="epos-einheit">%</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">95</span><span class="epos-einheit">%</span></span>
+                  <span class="zpg-herkunft">wie in der Betriebssimulation gerechnet</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Katalogsatz</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl">Speicher 2 000 l · Katalog Auslieferung</span></span>
+                  <span class="zpg-herkunft">Vorschlag aus dem Katalog mit dem nächsten Nenninhalt; Bereitschaftsverlust folgt dem Katalogsatz</span></div>
+                <p class="zpg-leise">Die Auslegung selbst bleibt am Projekt gespeichert (Eingaben, Kriterien, Ergebnis) und öffnet beim nächsten Mal mit diesem Stand. Ein neues Simulationsergebnis macht sie „veraltet“, nicht ungültig.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="epos-leiste"><button type="button" class="epos-knopf" data-weiter="3">‹ Zurück</button><button type="button" class="epos-knopf epos-knopf--schmal">Bericht…</button><span class="f-fueller"></span></div>
+      </div>
+    </div>
+
+    <div class="f-fuss">
+      <button type="button" class="epos-knopf">Auslegung speichern</button>
+      <button type="button" class="epos-knopf epos-knopf--schmal">Auf Vorlage zurücksetzen</button>
+      <span class="f-status" id="pa-status">Schritt 1 von 4 · Vorlage Wärmepumpe bivalent · 1 Wert überschrieben</span>
+      <button type="button" class="epos-knopf">‹ zurück zu ① Konfiguration</button>
+      <button type="button" class="epos-knopf epos-knopf--primaer">Übernehmen</button>
+    </div>
+  </div>
+
+  <div class="zone" id="dialog-legende">Was der Dialog tut und was nicht</div>
+  <div class="zwei">
+    <div class="merk">
+      <h3>Er tut</h3>
+      <ul>
+        <li><b>Führen:</b> vier Schritte in fester Folge; „Weiter“ erst, wenn der Schritt vollständig ist; die Schrittleiste zeigt Stand und Erledigtes.</li>
+        <li><b>Vorbelegen:</b> Erzeuger, Kaskade, Senken, Temperaturen und Schwellen aus dem Projekt; Lastgang aus dem Simulationsergebnis.</li>
+        <li><b>Vorlagen:</b> fünf Anlagentypen mit Auslieferungswerten im freien Paketteil — wie die Setzungen der TWW-Speicherauslegung; eigene Vorlagen speicherbar.</li>
+        <li><b>Beispiele:</b> an jedem Eingabefeld ein Beispiel mit Einheit; Formel und Beispielrechnung an jedem Kriterium.</li>
+        <li><b>Herkunft:</b> jede Zahl trägt Projekt · Vorlage · Vorgabe · überschrieben; der Zähler im Kopf nennt die Überschreibungen.</li>
+        <li><b>Rechnen:</b> vier Kriterien, Gegenprobe, Raster, Zweipunkt-Betriebssimulation über 8 760 h; deterministisch, im Kern, plattformfrei.</li>
+        <li><b>Übernehmen:</b> Volumen, Katalogsatz, Schwellen in den Projektpuffer; Rückkehr zum Einstieg mit frischer Speicherspalte.</li>
+      </ul>
+    </div>
+    <div class="merk nein">
+      <h3>Er tut nicht</h3>
+      <ul>
+        <li>Er ändert die <b>Jahressimulation</b> nicht — kein Rechenwegeingriff, keine neue Referenzbasis. Übernommen wird nur die Puffereingabe.</li>
+        <li>Er legt den <b>Brauchwasserspeicher</b> nicht aus — das ist die TWW-Speicherauslegung im Zapfprofil. Kombispeicher: offene Frage F3.</li>
+        <li>Er wählt keinen <b>Erzeuger</b> und keine Kaskade; ist keiner am Puffer, sagt er das benannt und bleibt in Schritt 1.</li>
+        <li>Er kennt keine <b>Hydraulik</b> im Detail (Trenn-, Reihen-, Parallelpuffer) — nur den nutzbaren Anteil als Sicherheitsband.</li>
+        <li>Er rechnet keine <b>Kosten</b>; der Katalogsatz trägt den Preis in die Wirtschaftlichkeit wie bisher.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3 ZUR ABNAHME ======================= -->
+<section class="kat" id="abnahme">
+  <div class="kat-kopf"><h2>3 · Zur Abnahme</h2><span class="kat-marke">Fragen F1–F7 mit Empfehlung</span></div>
+  <p class="kat-lead">Das Konzept übernimmt, was hier abgenommen wird; die Fragen sind so gestellt, dass „nach Empfehlung“ genügt.</p>
+  <ol class="liste fragen">
+    <li><b class="f">F1 · Schrittfolge.</b> Anlage → Lastgang → Kriterien → Ergebnis, mit Schrittleiste und „Weiter“-Sperre bis zur Vollständigkeit. <i>Empfehlung: so.</i></li>
+    <li><b class="f">F2 · Vorlagen.</b> Fünf Anlagentypen (Wärmepumpe monovalent, bivalent, BHKW, Kessel mit Taktbegrenzung, Solarthermie) × Gebäudeart (EFH, MFH, Gewerbe) als Auslieferungswerte; eigene Vorlagen speicherbar. <i>Empfehlung: so; Gebäudeart aus dem Projekt vorbelegen.</i></li>
+    <li><b class="f">F3 · Kombispeicher.</b> Heizungspuffer und Brauchwasserspeicher bleiben getrennte Auslegungen; ein Kombispeicher wird als Summe mit Hinweis angeboten. <i>Empfehlung: getrennt, Summe nur nachrichtlich.</i></li>
+    <li><b class="f">F4 · Empfehlung.</b> Größtes aktives Kriterium ÷ nutzbarer Anteil, aufs Raster gerundet; die Gegenprobe (Faustwert) bemisst nie. <i>Empfehlung: so; Raster wie TWW.</i></li>
+    <li><b class="f">F5 · Sperrzeit.</b> Bei zweitem Erzeuger, der Sperrzeiten deckt, entfällt Kriterium C mit Hinweis; monovalent bemisst es. Gebäudeträgheit nur als Experten-Anteil. <i>Empfehlung: so.</i></li>
+    <li><b class="f">F6 · Übernahme.</b> Übernommen werden Volumen, Katalogsatz und Schwellen; Temperaturen bleiben. Wahl „Speicher ändern“ oder „neu anlegen“. Die Auslegung bleibt am Projekt gespeichert und wird nach neuer Simulation „veraltet“. <i>Empfehlung: so.</i></li>
+    <li><b class="f">F7 · Tiefen.</b> Schnell zeigt nur Vorlage, Erzeuger, Lastgangquelle, Sperrzeitprofil und Ergebnis; Standard die Randbedingungen und die Gegenprobe; Experte Anteile und Liter je kW. <i>Empfehlung: so; Vorgabe Schnell.</i></li>
+  </ol>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  var f=document.getElementById('pa-fenster');
+  // Stufen
+  f.querySelectorAll('[data-stufe-wahl]').forEach(function(b){b.addEventListener('click',function(){
+    f.dataset.stufe=b.dataset.stufeWahl;
+    f.querySelectorAll('[data-stufe-wahl]').forEach(function(x){x.setAttribute('aria-checked',x===b?'true':'false');});
+  });});
+  // Schritte
+  function zeige(n){
+    f.querySelectorAll('.blatt').forEach(function(bl){bl.dataset.aktiv=bl.dataset.blatt==String(n)?'1':'0';});
+    f.querySelectorAll('.schritt').forEach(function(s){var k=+s.dataset.schritt;
+      if(k===n)s.setAttribute('aria-current','step');else s.removeAttribute('aria-current');
+      s.dataset.fertig=k<n?'1':'0';});
+    var st=document.getElementById('pa-status');
+    st.textContent='Schritt '+n+' von 4 · Vorlage '+vorlagen[aktuell].kurz+' · '+document.getElementById('pa-zaehler').textContent;
+    f.scrollIntoView({block:'start',behavior:'smooth'});
+  }
+  f.querySelectorAll('.schritt').forEach(function(s){s.addEventListener('click',function(){zeige(+s.dataset.schritt);});});
+  f.querySelectorAll('[data-weiter]').forEach(function(b){b.addEventListener('click',function(){zeige(+b.dataset.weiter);});});
+  // Vorlagen (fiktive Beispielwerte)
+  var vorlagen={
+    'wp-mono':{kurz:'Wärmepumpe monovalent',name:'Wärmepumpe monovalent · Mehrfamilienhaus',erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:'60,0',pmin:'18,0',tmin:'20',erz2:'— keiner —',sperr:'Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag',sperrsumme:'3 × 2 h je Tag · Puffer deckt',deckKessel:false,krit:{abtau:1,takt:1,sperr:1,sim:1},vorschlag:'15 000 l · 174 kWh nutzbar',empf:'<b>Empfehlung: 15 000 l</b> — bemessend ist C · Sperrzeit (14 100 l), durch 85 % = 16 600 l, auf volle 1 000 l: <b>15 000 l</b> mit Hinweis „Bivalenz oder Gebäudeträgheit prüfen“. Speicherkapazität 174 kWh.'},
+    'wp-bi':{kurz:'Wärmepumpe bivalent',name:'Wärmepumpe bivalent · Mehrfamilienhaus',erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:'60,0',pmin:'18,0',tmin:'20',erz2:'Heizkessel B · Gas · 80 kW · deckt Sperrzeiten',sperr:'Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag',sperrsumme:'3 × 2 h je Tag · deckt der Kessel',deckKessel:true,krit:{abtau:1,takt:1,sperr:0,sim:1},vorschlag:'2 000 l · 23,3 kWh nutzbar',empf:'<b>Empfehlung: 2 000 l</b> — bemessend ist D · Betriebssimulation (1 800 l), durch den nutzbaren Anteil 85 % = 2 120 l, auf das Raster gerundet: <b>2 000 l</b> (nächste Stufe 3 000 l wäre +50 % Volumen für 0,4 Starts weniger). Speicherkapazität bei 55/45 °C: 23,3 kWh, davon 19,8 kWh nutzbar. Bereitschaftsverlust der Auslieferungsvorgabe: 3,5 kWh je 24 h.'},
+    'bhkw':{kurz:'BHKW',name:'BHKW · Mehrfamilienhaus',erz:'BHKW C · 50 kW thermisch',pnenn:'50,0',pmin:'50,0',tmin:'90',erz2:'Heizkessel B · Gas · 80 kW · Spitzenlast',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:true,krit:{abtau:0,takt:1,sperr:0,sim:1},vorschlag:'5 000 l · 58,2 kWh nutzbar',empf:'<b>Empfehlung: 5 000 l</b> — bemessend ist D · Betriebssimulation mit Ziel ≤ 3 Starts je Tag (4 100 l), durch 85 % = 4 820 l, Raster: <b>5 000 l</b>. Gegenprobe 60–100 l/kW<sub>th</sub>: 3 000–5 000 l. B · Taktung: 50 kW · 1,5 h = 75 kWh → 6 450 l wäre mit Ein/Aus-Betrieb bemessend — das BHKW moduliert hier nicht, deshalb Hinweis.'},
+    'kessel':{kurz:'Kessel mit Taktbegrenzung',name:'Kessel mit Taktbegrenzung · Mehrfamilienhaus',erz:'Heizkessel B · Gas · 80 kW',pnenn:'80,0',pmin:'24,0',tmin:'10',erz2:'— keiner —',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:false,krit:{abtau:0,takt:1,sperr:0,sim:1},vorschlag:'500 l · 5,8 kWh nutzbar',empf:'<b>Empfehlung: 500 l</b> — bemessend ist B · Taktung (24 kW · 10 min = 4 kWh → 344 l), durch 85 % = 405 l, Raster: <b>500 l</b>. Die Betriebssimulation hält ≤ 12 Starts je Tag schon mit 300 l. Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie des Projekts.'},
+    'solar':{kurz:'Solarthermie',name:'Solarthermie · Mehrfamilienhaus',erz:'Kollektorfeld D · 40 m² · 28 kW Spitze',pnenn:'28,0',pmin:'—',tmin:'—',erz2:'Heizkessel B · Gas · 80 kW · nachrangig',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:true,krit:{abtau:0,takt:0,sperr:0,sim:1},vorschlag:'3 000 l · 34,9 kWh nutzbar',empf:'<b>Empfehlung: 3 000 l</b> — bemessend ist D · Betriebssimulation mit Ziel „Tagesertrag im Juni ohne Stagnation“ (2 400 l), durch 85 % = 2 820 l, Raster: <b>3 000 l</b>. Gegenprobe 50–70 l/m²: 2 000–2 800 l. Nachrang-Schwelle des Kessels aus dem Projekt (30 %).'}
+  };
+  var aktuell='wp-bi';
+  function setze(id,t){var e=document.getElementById(id);if(e)e.innerHTML=t;}
+  function wende(v){
+    aktuell=v;var d=vorlagen[v];
+    f.querySelectorAll('.vorlage').forEach(function(k){k.setAttribute('aria-pressed',k.dataset.vorlage===v?'true':'false');});
+    setze('pa-vorlage-name',d.name);setze('pa-erzeuger',d.erz);setze('pa-pnenn',d.pnenn);setze('pa-pmin',d.pmin);setze('pa-tmin',d.tmin);
+    setze('pa-erz2',d.erz2);setze('pa-sperr',d.sperr);setze('pa-sperr-summe',d.sperrsumme);
+    var dk=document.getElementById('pa-deck-kessel'),dp=document.getElementById('pa-deck-puffer');
+    if(dk&&dp){dk.classList.toggle('an',d.deckKessel);dp.classList.toggle('an',!d.deckKessel);}
+    Object.keys(d.krit).forEach(function(k){schalte(k,!!d.krit[k]);});
+    setze('pa-vorschlag-kopf',d.vorschlag);setze('pa-empf',d.empf);
+    var n=+document.querySelector('.schritt[aria-current]').dataset.schritt;zeige(n);
+  }
+  function schalte(k,an){
+    var z=f.querySelector('.krit[data-krit="'+k+'"]');if(!z)return;
+    z.dataset.an=an?'1':'0';
+    var s=z.querySelector('[data-krit-schalter]');s.classList.toggle('an',an);s.setAttribute('aria-checked',an?'true':'false');
+    var w=z.querySelector('[data-krit-wert]');w.classList.toggle('aus',!an);
+    var ka=f.querySelector('.ausl-karte[data-karte="'+k+'"]');if(ka)ka.classList.toggle('aus',!an);
+  }
+  f.querySelectorAll('.vorlage').forEach(function(k){k.addEventListener('click',function(){wende(k.dataset.vorlage);});});
+  f.querySelectorAll('[data-krit-schalter]').forEach(function(s){s.addEventListener('click',function(){
+    var k=s.dataset.kritSchalter;schalte(k,s.getAttribute('aria-checked')!=='true');
+  });});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Streamlit-Konfiguration des Wärmespeicher-Tools
+
+[theme]
+base = "light"
+primaryColor = "#c0392b"          # Akzent (Heizung)
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f2f5f8"
+textColor = "#1c2833"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+# headless bleibt aus: beim Start wird der Standardbrowser geöffnet.
+fileWatcherType = "auto"
+maxUploadSize = 200               # MB — große Lastgang-Dateien zulassen
+
+[client]
+showErrorDetails = "full"
+toolbarMode = "minimal"
