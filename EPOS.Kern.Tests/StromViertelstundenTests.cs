@@ -272,15 +272,15 @@ namespace EPOS.Kern.Tests
             Lauf a = Rechne(1045);
             ErgebnisPhotovoltaikModel p = a.Ergebnis.Photovoltaik;
             Assert.Equal(ANKER_1045_ERZEUGUNG, p.Stromproduktion, 3);
-            Assert.Equal(ANKER_1045_EINSPEISUNG, p.Ueberschuss, 3);         // R32: 0,78
-            Assert.Equal(ANKER_1045_RESTBEZUG, a.Sim.ReststromMwh, 3);     // R32: 28,7452
+            Assert.Equal(ANKER_1045_EINSPEISUNG, p.Ueberschuss, 3);         // R32: 0,782
+            Assert.Equal(ANKER_1045_RESTBEZUG, a.Sim.ReststromMwh, 3);     // R32: 28,745
             Assert.Equal(0.0, a.Sim.simulation_pv.AbregelungGesamtKwh);
 
             Lauf b = Rechne(1046);
             ErgebnisPhotovoltaikModel q = b.Ergebnis.Photovoltaik;
             Assert.Equal(ANKER_1046_ERZEUGUNG, q.Stromproduktion, 3);
-            Assert.Equal(ANKER_1046_EINSPEISUNG, q.Ueberschuss, 3);         // R32: 0,89
-            Assert.Equal(ANKER_1046_RESTBEZUG, b.Sim.ReststromMwh, 3);     // R32: 63,8961
+            Assert.Equal(ANKER_1046_EINSPEISUNG, q.Ueberschuss, 3);         // R32: 0,895
+            Assert.Equal(ANKER_1046_RESTBEZUG, b.Sim.ReststromMwh, 3);     // R32: 63,896
             Assert.NotNull(b.Sim.Speicherflottennetzbilanz);
             Assert.Equal(0.0, b.Sim.Speicherflottennetzbilanz.PvAbregelungKwh);
         }
@@ -377,12 +377,12 @@ namespace EPOS.Kern.Tests
         //  Anker (Basis R33)
         // -----------------------------------------------------------------------------
 
-        private const double ANKER_1045_ERZEUGUNG = 3.5455;     // R32: 3,5455 (Erzeugung unverändert)
-        private const double ANKER_1045_EINSPEISUNG = 0.7834;
-        private const double ANKER_1045_RESTBEZUG = 28.7470;
-        private const double ANKER_1046_ERZEUGUNG = 6.0143;     // R32: 6,0143 (Erzeugung unverändert)
-        private const double ANKER_1046_EINSPEISUNG = 0.8999;
-        private const double ANKER_1046_RESTBEZUG = 63.9011;
+        private const double ANKER_1045_ERZEUGUNG = 3.545;      // R32: 3,545 (Erzeugung unverändert)
+        private const double ANKER_1045_EINSPEISUNG = 0.783;
+        private const double ANKER_1045_RESTBEZUG = 28.747;
+        private const double ANKER_1046_ERZEUGUNG = 6.014;      // R32: 6,014 (Erzeugung unverändert)
+        private const double ANKER_1046_EINSPEISUNG = 0.900;
+        private const double ANKER_1046_RESTBEZUG = 63.901;
 
         // -----------------------------------------------------------------------------
         //  Hilfen

@@ -1213,10 +1213,12 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // SB1 (a) und PV3: Einspeisung und Abregelung je Viertelstunde nach der
-                // Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie SimulationRunner.
-                sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw);
-                e.UeberschussMwh = SimulationPV.ViertelstundenKwh(einspeisungKw) / 1000.0;
+                // Der Reiter zeigt den Überschuss VOR der Speicherladung (die Einspeisung mit
+                // Speicher steht im Reiter „Stromspeicher"). PV3: die Abregelung je Viertelstunde
+                // nach der Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie
+                // SimulationRunner.
+                e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
+                sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
                 e.AbregelungMwh = SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
             }
             e.AbregelungProzent = erzeugungKwh > 0 ? e.AbregelungMwh * 1000.0 / erzeugungKwh * 100.0 : 0.0;
