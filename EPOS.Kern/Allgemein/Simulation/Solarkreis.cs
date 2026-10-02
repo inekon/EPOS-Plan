@@ -94,6 +94,54 @@ namespace WindowsFormsApplication1
             return apertur;
         }
 
+        // =================================================================
+        // ST5 - Einfallswinkelkorrektur getrennt für Direkt- und Diffusstrahlung
+        // =================================================================
+
+        /// <summary>Führt der Kollektorsatz eine Einfallswinkelkorrektur der Diffusstrahlung (<c>K_dfu</c> &gt; 0)?</summary>
+        public static bool KdfuGepflegt(double kDfu) => kDfu > 0 && !double.IsNaN(kDfu);
+
+        /// <summary>
+        /// Einfallswinkelkorrektur der DIREKTstrahlung <c>K_b(θ)</c> nach der b₀-Näherung aus
+        /// <c>K_dir50</c> (EN ISO 9806): <c>b₀ = (1 − K_dir50)/(1/cos 50° − 1)</c>,
+        /// <c>K_b = 1 − b₀·(1/cos θ − 1)</c>, auf 0 … 1 geklemmt — Rechenschritt für Rechenschritt
+        /// die Korrektur in <c>SimulationSolarthermie.CalculateThermalPower</c>.
+        /// </summary>
+        public static double IamDirekt(double cosTheta, double kDir50)
+        {
+            double cos50 = Plattformrundung.Cos(50.0 * Math.PI / 180.0);
+            double b0 = (1.0 - kDir50) / (1.0 / cos50 - 1.0);
+            double cosThetaClamped = Math.Max(cosTheta, 0.001);
+            double iam = 1.0 - b0 * (1.0 / cosThetaClamped - 1.0);
+            return Math.Max(Math.Min(iam, 1.0), 0.0);
+        }
+
+        /// <summary>
+        /// Spezifische Kollektorleistung [W/m²] mit GETRENNTER Einfallswinkelkorrektur (ST5,
+        /// EN ISO 9806): <c>q = η₀·(K_b(θ)·G_b + K_d·G_dr) − a₁·ΔT − a₂·ΔT²</c>, nicht negativ, mit
+        /// <c>G_b</c> der Direktstrahlung auf die geneigte Fläche, <c>G_dr</c> der Diffus- und
+        /// Bodenreflexstrahlung, <c>K_d = K_dfu</c> und <c>ΔT = ϑ_m − ϑ_a</c>. Ohne <c>K_dfu</c>
+        /// gilt <c>K_d = K_b(θ)</c> — algebraisch die Rechnung vor der Welle.
+        /// </summary>
+        /// <param name="gDirekt">Direktstrahlung auf die Kollektorebene [W/m²].</param>
+        /// <param name="gDiffusReflex">Diffus- und Bodenreflexstrahlung auf die Kollektorebene [W/m²].</param>
+        /// <param name="tAussen">Außentemperatur [°C].</param>
+        /// <param name="tMittel">Mittlere Fluidtemperatur des Kollektors [°C].</param>
+        /// <param name="cosTheta">Kosinus des Einfallswinkels der Direktstrahlung.</param>
+        public static double LeistungJeQm(double gDirekt, double gDiffusReflex, double tAussen, double tMittel,
+                                          double cosTheta, double h0, double a1, double a2,
+                                          double kDir50, double kDfu)
+        {
+            double g = gDirekt + gDiffusReflex;
+            if (!(g > 0)) return 0;
+
+            double kb = IamDirekt(cosTheta, kDir50);
+            double kd = KdfuGepflegt(kDfu) ? kDfu : kb;
+            double dT = tMittel - tAussen;
+            double q = h0 * (kb * gDirekt + kd * gDiffusReflex) - a1 * dT - a2 * dT * dT;
+            return Math.Max(0, q);
+        }
+
         /// <summary>Rechnet das Feld überhaupt einen Pumpenstrom?</summary>
         public static bool RechnetPumpenstrom(double? pumpenleistungW, double? hilfsenergieAnteilProzent)
             => (pumpenleistungW.HasValue && pumpenleistungW.Value > 0) ||

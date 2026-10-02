@@ -549,10 +549,9 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle:</b> <c>Kdfu</c> (im Editor „Kdiff") wird
-        /// gepflegt, aber nirgends gerechnet — der Kollektorwirkungsgrad benutzt nur
-        /// <c>h0</c>, <c>k1</c>, <c>k2</c> und <c>Kdir</c>
-        /// (<c>SimulationSolarthermie.cs:242-245</c>). Und <c>Modulflaeche</c> ist die
+        /// <b>Der Befund dieser Tabelle:</b> Der Kollektorwirkungsgrad rechnet mit <c>h0</c>,
+        /// <c>k1</c>, <c>k2</c>, <c>Kdir</c> und — für die Diffus- und Bodenreflexstrahlung —
+        /// <c>Kdfu</c> (im Editor „Kdiff", Welle M2 ST5; 0 = Faktor der Direktstrahlung). Und <c>Modulflaeche</c> ist die
         /// Bruttoflaeche EINES Moduls; gerechnet wird mit der Flaeche, auf die die Kennwerte
         /// bezogen sind (<c>Bezugsflaeche</c>: Apertur als Vorgabe oder Brutto, Welle M2 ST6), mal
         /// <c>Tab_Energieanlagen.Kollektormodulanzahl</c>.
@@ -588,8 +587,9 @@ namespace WindowsFormsApplication1
                 E("k1", "k1:", "W/(m²*K)", SIM, "SimulationSolarthermie.cs:243"),
                 E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.cs:244"),
                 E("Kdir", "Kdir:", "", SIM, "SimulationSolarthermie.cs:245 (IAM, direkt)"),
-                E("Kdfu", "Kdiff:", "50°", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Kdiff) — kein Leser im Rechenweg"),
+                E("Kdfu", "Kdiff:", "", SIM,
+                  "Solarkreis.LeistungJeQm (K_d der Diffus- und Bodenreflexstrahlung, ST5; 0 = K_b(θ)); " +
+                  "SolarkollektorKatalogDialog.razor (Feld Kdiff)"),
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,

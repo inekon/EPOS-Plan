@@ -673,8 +673,8 @@ namespace WindowsFormsApplication1
                                                   hinweis: t("KBROW_HINT_BEZUGSFLAECHE")),
 
                             // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
-                            // Kdfu heisst im Editor „Kdiff" und hat im Rechenweg keinen
-                            // Leser (ParameterVerwendung); gepflegt wird er trotzdem.
+                            // Kdfu heisst im Editor „Kdiff" und korrigiert die Diffus- und
+                            // Bodenreflexstrahlung (Welle M2 ST5); 0 = Faktor der Direktstrahlung.
                             new BrowserDetailfeld(FeldH0,   "h0:",   "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldK1,   "k1:",   "W/(m²*K)",
@@ -683,7 +683,7 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldKdir, "Kdir:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "50°",
+                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
                                                   BrowserFeldArt.Zahl, editierbar: true)

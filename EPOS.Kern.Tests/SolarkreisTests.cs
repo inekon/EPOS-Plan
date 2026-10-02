@@ -159,6 +159,52 @@ namespace EPOS.Kern.Tests
             Assert.Equal("apertur", Solarkollektorenlmport.BezugBestimmen(2.35, 0, 0));
         }
 
+        // =================================================================
+        // ST5 - Diffus-IAM
+        // =================================================================
+
+        /// <summary>K_b(θ) ist die Korrektur des Bestands: CalculateThermalPower ohne Verluste ist η₀·K_b·G.</summary>
+        [Fact]
+        public void IamDirekt_ist_die_Korrektur_des_Bestands()
+        {
+            var st = new SimulationSolarthermie();
+            foreach (double cos in new[] { 1.0, 0.9, 0.64278760968653936, 0.5, 0.2, 0.0005 })
+                foreach (double kdir in new[] { 0.91, 0.98, 1.27 })
+                {
+                    double q = st.CalculateThermalPower(800, 20, 20, cos, 0.8, 0, 0, kdir);
+                    Assert.Equal(q, 800 * (0.8 * Solarkreis.IamDirekt(cos, kdir)), 10);
+                }
+            Assert.Equal(1.0, Solarkreis.IamDirekt(1.0, 0.91));
+            Assert.Equal(0.91, Solarkreis.IamDirekt(Math.Cos(50.0 * Math.PI / 180.0), 0.91), 12);
+        }
+
+        /// <summary>Gegen die Handrechnung: getrennte Korrektur mit K_dfu = 0,9 bei θ = 60°.</summary>
+        [Fact]
+        public void Leistung_mit_Kdfu_gegen_Handrechnung()
+        {
+            double b0 = (1 - 0.91) / (1 / Math.Cos(50 * Math.PI / 180) - 1);
+            double kb = 1 - b0 * (1 / 0.5 - 1);
+            double erwartet = 0.737 * (kb * 600 + 0.9 * 200) - 3.69 * 40 - 0.012 * 40 * 40;
+
+            double q = Solarkreis.LeistungJeQm(600, 200, 20, 60, 0.5, 0.737, 3.69, 0.012, 0.91, 0.9);
+            Assert.Equal(erwartet, q, 10);
+            Assert.InRange(q, 336.44, 336.45);
+
+            // Ohne K_dfu bekommt die Diffusstrahlung K_b(θ) - die Rechnung des Bestands.
+            var st = new SimulationSolarthermie();
+            double ohne = Solarkreis.LeistungJeQm(600, 200, 20, 60, 0.5, 0.737, 3.69, 0.012, 0.91, 0);
+            Assert.Equal(st.CalculateThermalPower(800, 20, 60, 0.5, 0.737, 3.69, 0.012, 0.91), ohne, 10);
+
+            // Bei tiefer Sonne (K_b klein) bekommt die Diffusstrahlung mit K_dfu MEHR, bei hoher Sonne
+            // (K_b = 1) weniger als zuvor.
+            Assert.True(q > ohne);
+            Assert.True(Solarkreis.LeistungJeQm(600, 200, 20, 60, 1.0, 0.737, 3.69, 0.012, 0.91, 0.9) <
+                        Solarkreis.LeistungJeQm(600, 200, 20, 60, 1.0, 0.737, 3.69, 0.012, 0.91, 0));
+
+            Assert.Equal(0.0, Solarkreis.LeistungJeQm(0, 0, 20, 60, 0.5, 0.737, 3.69, 0.012, 0.91, 0.9));
+            Assert.Equal(0.0, Solarkreis.LeistungJeQm(10, 5, -10, 80, 0.5, 0.737, 3.69, 0.012, 0.91, 0.9));
+        }
+
         /// <summary>Der Hilfsenergieanteil als Ersatzweg: Anteil der in der Stunde genutzten Wärme.</summary>
         [Fact]
         public void Pumpenstrom_aus_Hilfsenergieanteil()

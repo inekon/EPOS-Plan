@@ -308,6 +308,10 @@ namespace WindowsFormsApplication1
                 double k1 = ctrlsol.m_k1;
                 double k2 = ctrlsol.m_k2;
                 double kdir50 = ctrlsol.m_Kdir;
+                // ST5: Einfallswinkelkorrektur der Diffusstrahlung; 0 = nicht bekannt, dann gilt
+                // für die Diffusstrahlung der Faktor der Direktstrahlung (Rechnung wie zuvor).
+                double kdfu = ctrlsol.m_Kdfu;
+                bool mitKdfu = Solarkreis.KdfuGepflegt(kdfu);
                 double tStorage = 50; // Annahme Speichertemperatur
 
                 // ST3 Stufe 1: die Verluste des Solarkreises aus dem Feld; leer = 8 % - der
@@ -348,9 +352,22 @@ namespace WindowsFormsApplication1
                     // Wir nutzen hier den internen Wert aus dem Calculator
                     double currentCosTheta = SolarCalculator.lastCosTheta;
 
-                    // Schritt 1: spezifische Leistung [W/m²], Schritt 2: Bruttoertrag [kWh]
-                    double leistungProQm = CalculateThermalPower(gTilted, ta, tStorage, currentCosTheta,
-                                                                 h0, k1, k2, kdir50);
+                    // ST5 (EN ISO 9806): die Strahlung auf der Kollektorebene getrennt in den
+                    // Direktanteil G_b = DNI · cos θ - dieselbe Multiplikation wie in
+                    // SolarCalculator.CalculateHourly - und den Rest G_dr aus Diffus- und
+                    // Bodenreflexstrahlung. In einer Nachtstunde liefert CalculateHourly 0 und
+                    // lässt cos θ stehen; dann ist auch G_b 0.
+                    double gDirekt = gTilted > 0 ? zeile.Direktstrahlung * currentCosTheta : 0;
+                    double gDiffusReflex = gTilted - gDirekt;
+
+                    // Schritt 1: spezifische Leistung [W/m²], Schritt 2: Bruttoertrag [kWh].
+                    // Ohne K_dfu bleibt es bei der Rechnung, die die Gesamtstrahlung mit K_b(θ)
+                    // korrigiert - Anweisung für Anweisung, damit das Ergebnis byte-gleich bleibt.
+                    double leistungProQm = mitKdfu
+                        ? Solarkreis.LeistungJeQm(gDirekt, gDiffusReflex, ta, tStorage, currentCosTheta,
+                                                  h0, k1, k2, kdir50, kdfu)
+                        : CalculateThermalPower(gTilted, ta, tStorage, currentCosTheta,
+                                                h0, k1, k2, kdir50);
                     f.Potenzial[i] = (leistungProQm * f.Flaeche * leitungsverluste) / 1000.0;
                 }
 

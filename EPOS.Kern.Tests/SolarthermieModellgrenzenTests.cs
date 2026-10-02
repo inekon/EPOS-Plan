@@ -74,6 +74,31 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2.35 / 2.51, sumApertur / brutto.PotenzialSumme(0), 12);
         }
 
+        // =================================================================
+        // ST5 - Diffus-IAM
+        // =================================================================
+
+        /// <summary>
+        /// 1049 führt kein K_dfu (0): Das Potenzial bleibt das der Korrektur der Gesamtstrahlung mit
+        /// K_b(θ). Mit K_dfu = 0,9 ändert es sich — die Diffusstrahlung bekommt ihren eigenen Faktor.
+        /// </summary>
+        [Fact]
+        public void Kdfu_wirkt_nur_wenn_gepflegt()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(0.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Kdfu FROM Tab_Solarkollektoren WHERE ID = ?", new DbParam("@id", Kollektorsatz()))));
+            double ohne = Vorbereitet().PotenzialSumme(0);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Solarkollektoren SET Kdfu = 0.9 WHERE ID = ?",
+                                           new DbParam("@id", Kollektorsatz()));
+            double mit = Vorbereitet().PotenzialSumme(0);
+
+            Assert.NotEqual(ohne, mit);
+            Assert.InRange(mit / ohne, 0.9, 1.1);
+        }
+
         /// <summary>Die Projektkopie trägt die Bezugsfläche des Katalogsatzes.</summary>
         [Fact]
         public void Die_Projektkopie_uebernimmt_die_Bezugsflaeche()
