@@ -126,6 +126,13 @@ public sealed class StromspeicherAuslegungDienste
     public Func<Task<string>>? ProjektflotteDeaktivieren;
 
     /// <summary>
+    /// „Beste Variante übernehmen" (SP2): Der beste Rasterpunkt des Laufs wird die Flotte der
+    /// Auslegung und für den Projektlauf aktiviert; leer = Erfolg. Geschrieben wird kein
+    /// Simulationsergebnis.
+    /// </summary>
+    public Func<SpeicherFlottenErgebnis, Task<string>>? BesteVarianteUebernehmen;
+
+    /// <summary>
     /// Die VORPRÜFUNG vor dem Lauf (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.
     /// </summary>
     /// <remarks>

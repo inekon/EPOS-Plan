@@ -242,7 +242,8 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
     private IRenderedComponent<StromspeicherAuslegungSeite> Gerechnet(
         SpeicherFlottenErgebnis ergebnis,
         Func<SpeicherOptimierungEingaben, Task<string>>? speichern = null,
-        bool groessenOptimieren = true)
+        bool groessenOptimieren = true,
+        Func<SpeicherFlottenErgebnis, Task<string>>? beste = null)
     {
         var vorgaben = new SpeicherOptimierungVorgaben
         {
@@ -261,7 +262,8 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
             {
                 Vorgaben = () => vorgaben,
                 FlotteRechnen = (_, _) => Task.FromResult(ergebnis),
-                EinstellungenSpeichern = speichern
+                EinstellungenSpeichern = speichern,
+                BesteVarianteUebernehmen = beste
             })
             .Add(x => x.PlanerVerfuegbar, true));
 
@@ -273,6 +275,68 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
     /// Klickt „übernehmen" in der Kandidatenzeile mit dieser Kennung. Die Tabelle steht
     /// seit #273 in Schritt 5 — der Prüfstand wechselt vorher dorthin.
     /// </summary>
+    // =====================================================================
+    //  „Beste Variante übernehmen" (Entscheidungsvorlage Modellgrenzen, SP2)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Knopf steht unter dem Kasten „Bestes Ergebnis" und reicht das Laufergebnis an den
+    /// Kern; danach meldet die Seite den Erfolg, zeigt die Projektflotte als aktiv, bleibt auf
+    /// dem Ergebnis und führt in Schritt 1 die beste Flotte ohne Suchachsen.
+    /// </summary>
+    [Fact]
+    public void Beste_Variante_uebernehmen_reicht_das_Ergebnis_an_den_Kern()
+    {
+        SpeicherFlottenErgebnis ergebnis = MitBesterKonfiguration();
+        SpeicherFlottenErgebnis? gereicht = null;
+        var cut = Gerechnet(ergebnis, beste: e => { gereicht = e; return Task.FromResult(""); });
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Ergebnis);
+
+        IElement knopf = cut.Find(".epos-flotte-beste-uebernehmen");
+        Assert.Equal(Resource.FLOTTE_BESTE_BTN, knopf.TextContent.Trim());
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Same(ergebnis, gereicht);
+        Assert.Contains(Resource.FLOTTE_BESTE_MSG_UEBERNOMMEN, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_DLG_PROJEKT_AKTIV, cut.Markup, StringComparison.Ordinal);
+        Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
+    }
+
+    /// <summary>
+    /// Ohne Weg des Kerns kein Knopf; gewinnt die Nullvariante, auch nicht. Ein Grund des Kerns
+    /// erscheint als Fehler, und die Projektflotte gilt nicht als aktiv.
+    /// </summary>
+    [Fact]
+    public void Beste_Variante_ohne_Weg_oder_als_Nullvariante_ohne_Knopf_und_Grund_als_Fehler()
+    {
+        var ohneWeg = Gerechnet(MitBesterKonfiguration());
+        Auslegungshilfe.Schritt(ohneWeg, AuslegungSchritt.Ergebnis);
+        Assert.Empty(ohneWeg.FindAll(".epos-flotte-beste-uebernehmen"));
+
+        SpeicherFlottenErgebnis nullvariante = MitBesterKonfiguration();
+        nullvariante.Auslegung!.NullvarianteGewonnen = true;
+        var ohneSpeicher = Gerechnet(nullvariante, beste: _ => Task.FromResult(""));
+        Auslegungshilfe.Schritt(ohneSpeicher, AuslegungSchritt.Ergebnis);
+        Assert.Empty(ohneSpeicher.FindAll(".epos-flotte-beste-uebernehmen"));
+
+        var abgewiesen = Gerechnet(MitBesterKonfiguration(), beste: _ => Task.FromResult("Grund des Kerns"));
+        Auslegungshilfe.Schritt(abgewiesen, AuslegungSchritt.Ergebnis);
+        abgewiesen.Find(".epos-flotte-beste-uebernehmen").Click();
+        Assert.Contains("Grund des Kerns", abgewiesen.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_DLG_PROJEKT_AKTIV, abgewiesen.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Der Lauf mit Raster UND der Konfiguration des besten Rasterpunkts.</summary>
+    private static SpeicherFlottenErgebnis MitBesterKonfiguration()
+    {
+        SpeicherFlottenErgebnis e = MitAuslegung();
+        FlottenStudieKonfiguration beste = Flotte();
+        beste.Auslegung.Achsen.Clear();
+        e.Auslegung!.BesteKonfiguration = beste;
+        return e;
+    }
+
     private static void Uebernehmen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string kandidat)
     {
         if (cut.Instance.Schritt != AuslegungSchritt.Ergebnis)

@@ -18792,6 +18792,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_BTN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_ERKL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_KEINE_SUCHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_KEINE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_NULLVARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_NULLVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Batterieexport ins Netz erlauben ähnelt.
         /// </summary>
         public static string FLOTTE_BETRIEB_CHK_EXPORT {
