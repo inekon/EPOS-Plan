@@ -373,7 +373,10 @@ namespace EPOS.Kern.Tests
         /// <b>N-AH5:</b> Gitter T_a −20 … 10 °C, ΔT 0,5 … 6 K, P_auf/Φ_stat(θ_T, −20 °C) 1,01 … 2 bei fester
         /// P_auf: n wächst mit kälterer Luft, größerem ΔT und kleinerer P_auf; die Augenblicksform verlangt
         /// nie weniger Stufen als die Mittelform; die Bemessung (b) bei T_a − ΔT_K (0 … 10 K) nie weniger
-        /// als (a). Unerreichbar zählt als n_max + 1. „fest ≥ täglich" gehört zur Planung (R2).
+        /// als (a). Unerreichbar zählt als n_max + 1. <b>„fest ≥ täglich"</b> (Welle R2): je Gitterpunkt,
+        /// t_auf,max ∈ {0, 5, 47} und Absenkdauer D ∈ {2, 13, 61} ist die Stufenzahl der Art „fest" nie
+        /// kleiner als die der Art „täglich" (<see cref="Aufheizoptimierung.Stufenzahl"/>) — an den
+        /// synthetischen Sätzen, die Projektgebäude tragen dieselbe Formel und kosten nur Laufzeit.
         /// </summary>
         [Fact]
         public void N_AH5_Die_Stufenzahl_ist_monoton()
@@ -383,7 +386,7 @@ namespace EPOS.Kern.Tests
             double[] verhaeltnisse = { 1.01, 1.05, 1.2, 1.5, 2.0 };
             double[] abzuege = { 0.0, 2.0, 5.0, 10.0 };
             const int nMax = 48;
-            int punkte = 0, unerreichbar = 0;
+            int punkte = 0, unerreichbar = 0, festPunkte = 0;
             foreach (Fall f in Faelle())
             {
                 // Je Satz, Anteil und Zusatzleitwert einmal (die Außenluft läuft im Gitter).
@@ -433,10 +436,30 @@ namespace EPOS.Kern.Tests
                             Assert.True(nb >= n[t, 3, 2], string.Format(CultureInfo.InvariantCulture,
                                 "(b) < (a): {0}, {1}, T_a {2}, ΔT_K {3}", f, form, aussen[t], abzug));
                         }
+
+                    // fest ≥ täglich (R2): dieselbe Antwort, dieselbe Last, beide Arten der Planung.
+                    if (f.Name.StartsWith("Projekt", StringComparison.Ordinal)) continue;
+                    for (int t = 0; t < aussen.Length; t++)
+                        for (int d = 0; d < spruenge.Length; d++)
+                            for (int v = 0; v < verhaeltnisse.Length; v++)
+                                foreach (int tMax in new[] { 0, 5, 47 })
+                                    foreach (int dauer in new[] { 2, 13, 61 })
+                                    {
+                                        double p = verhaeltnisse[v] * statKalt;
+                                        Aufheizstufenzahl taeglich = Aufheizoptimierung.Stufenzahl(f.Antwort, stat[t], spruenge[d], p, form, tMax, dauer, false);
+                                        Aufheizstufenzahl fest = Aufheizoptimierung.Stufenzahl(f.Antwort, stat[t], spruenge[d], p, form, tMax, dauer, true);
+                                        Assert.True(fest.N >= taeglich.N, string.Format(CultureInfo.InvariantCulture,
+                                            "fest < täglich: {0}, {1}, T_a {2}, ΔT {3}, P/Φ {4}, t_max {5}, D {6}",
+                                            f, form, aussen[t], spruenge[d], verhaeltnisse[v], tMax, dauer));
+                                        Assert.True(taeglich.N <= Math.Min(Math.Min(tMax + 1, dauer + 1), nMax));
+                                        festPunkte++;
+                                    }
                 }
             }
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                "N-AH5: {0} Gitterpunkte, davon {1} unerreichbar (n_max = {2})", punkte, unerreichbar, nMax));
+                "N-AH5: {0} Gitterpunkte, davon {1} unerreichbar (n_max = {2}); fest ≥ täglich an {3} Punkten",
+                punkte, unerreichbar, nMax, festPunkte));
+            Assert.True(festPunkte > 0);
             Assert.True(punkte > 0);
         }
     }
