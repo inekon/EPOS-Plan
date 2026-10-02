@@ -543,9 +543,11 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `Kenndaten_Test.sqlite` (Schemastand **159**, 81 162 240 Byte, LFS-SHA-256
 `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`). Die Testdatenbank trägt seither die Spalten
 der Aufheizoptimierung der Schemaschritte 160 und 161 (Nachtrag „Schemaschritte 160 und 161“ unten), Schalter
-überall 0, alles übrige leer: Schemastand **161**, 81 170 432 Byte, LFS-SHA-256
-`117f44f96b4530540348202ecb9cbd123128953ff0d7af0e77abb8cded9fe3dd`. **Die Basis bleibt**, weil kein Rechenwert
-betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten. Gegen diese Basis hält
+überall 0, alles übrige leer, und die Einheitenspalte des Kessel-Bereitschaftsverlusts aus Schemaschritt 162
+(Nachtrag „Schemaschritt 162“ unten), überall `kW`: Schemastand **162**, 81 170 432 Byte, LFS-SHA-256
+`05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`. **Die Basis bleibt**, weil kein Rechenwert
+betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten, und die Vorgabe `kW`
+rechnet den Bereitschaftsverlust wie zuvor. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -646,6 +648,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `117f44f96b4530540348202ecb9cbd123128953ff0d7af0e77abb8cded9fe3dd`**. **Die Basis bleibt:** Kein Rechenweg liest
 > die Spalten, und der Referenzlauf liest die Ergebnistabellen der Gebäude und Zonen nicht; die sechzehn Projekte
 > rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 162 (Einheit des Kessel-Bereitschaftsverlusts), Basis unverändert.** Reines DDL aus
+> `KesselBereitschaftEinheitSchema` (Nummer `AufheizErgebnisSchema.SCHRITT + 1`): an `Tab_Heizkessel` und
+> `Tab_Heizkessel_STAMM` je die Spalte `Bereitschaft_Einheit TEXT NOT NULL DEFAULT 'kW' CHECK IN ('kW','%')`.
+> Die Testdatenbank ist aus der Fassung `117f44f9…` (Schemastand 161) mit `Werkzeuge/Testdatenbankschema` auf
+> **162** gezogen (2 Spalten, keine Tabelle); jede Zeile trägt `kW`, der Rechenweg liefert damit dieselbe
+> Bereitschaftsleistung wie vor dem Schritt. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf einer so gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine
+> Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R30 `2026-09-30_R30_Stromverbraucher`
 

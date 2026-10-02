@@ -41,6 +41,14 @@ namespace WindowsFormsApplication1
         public double CO;
         public double Staub;
         public double Betriebsbereitschaftverlust;
+
+        /// <summary>
+        /// Einheit von <see cref="Betriebsbereitschaftverlust"/> —
+        /// <see cref="DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW"/> (Vorgabe, Bestand und Import)
+        /// oder <see cref="DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_PROZENT"/> der Nennleistung.
+        /// Gerechnet wird in kW (<see cref="KesselBereitschaft.LeistungKw"/>).
+        /// </summary>
+        public string Bereitschaft_Einheit;
         public bool Brennwert;
         public int Vorlauf;
         public int Ruecklauf;
@@ -94,6 +102,7 @@ namespace WindowsFormsApplication1
             CO = 0;
             Staub = 0;
             Betriebsbereitschaftverlust = 0;
+            Bereitschaft_Einheit = DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW;
             Brennwert = false;
             Vorlauf = 0;
             Ruecklauf = 0;

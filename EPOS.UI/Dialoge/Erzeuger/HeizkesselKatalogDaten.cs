@@ -58,8 +58,17 @@ public sealed class HeizkesselKatalogDaten
     /// <summary>Wirkungsgrad Öl.</summary>
     public double? Wirkungsgrad_Oel { get; set; }
 
-    /// <summary>Betriebsbereitschaftsverluste [%].</summary>
+    /// <summary>
+    /// Betriebsbereitschaftsverluste in der gewählten Einheit — kW oder % der Nennleistung
+    /// (<see cref="BereitschaftProzent"/>).
+    /// </summary>
     public double? Betriebsbereitschaftverlust { get; set; }
+
+    /// <summary>
+    /// Steht <see cref="Betriebsbereitschaftverlust"/> in Prozent der Nennleistung? <c>false</c> =
+    /// kW (Vorgabe). Der Persistenzwert (<c>kW</c>/<c>%</c>) bleibt in der Hülle.
+    /// </summary>
+    public bool BereitschaftProzent { get; set; }
 
     /// <summary>
     /// Energieträger als <b>1-basierte</b> Nummer aus <c>Tab_Brennstoff_Stamm</c>.

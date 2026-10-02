@@ -32920,6 +32920,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
+        /// </summary>
+        public static string HZKK_BB_EINHEIT_KW {
+            get {
+                return ResourceManager.GetString("HZKK_BB_EINHEIT_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Nennleistung ähnelt.
+        /// </summary>
+        public static string HZKK_BB_EINHEIT_PROZENT {
+            get {
+                return ResourceManager.GetString("HZKK_BB_EINHEIT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Last [%] ähnelt.
         /// </summary>
         public static string HZKK_BILD_ACHSE_LAST {
@@ -33006,6 +33024,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZKK_FELD_BBVERLUST {
             get {
                 return ResourceManager.GetString("HZKK_FELD_BBVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit Bereitschaftsverlust ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_BB_EINHEIT {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_BB_EINHEIT", resourceCulture);
             }
         }
         
@@ -33159,6 +33186,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZKK_LBL_BBVERLUST {
             get {
                 return ResourceManager.GetString("HZKK_LBL_BBVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit Bereitschaftsverlust: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_BB_EINHEIT {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_BB_EINHEIT", resourceCulture);
             }
         }
         
@@ -36169,11 +36205,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHICHTDICKE_MM {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHICHTDICKE_MM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHICHT_DUENN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHICHT_DUENN", resourceCulture);
             }
         }
         
@@ -37695,6 +37749,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_GRUPPE_SOLAR {
             get {
                 return ResourceManager.GetString("KBROW_GRUPPE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW oder % (der Nennleistung) ähnelt.
+        /// </summary>
+        public static string KBROW_HINT_BB_EINHEIT {
+            get {
+                return ResourceManager.GetString("KBROW_HINT_BB_EINHEIT", resourceCulture);
             }
         }
         
@@ -46443,7 +46506,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = der Bereitschaftsverlust steht in Prozent der thermischen Leistung, Nein = in kW. Die Simulation rechnet einen Prozentwert mit der thermischen Leistung in kW um. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_BB_PROZENT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_BB_PROZENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust in % der Nennleistung ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_BB_PROZENT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_BB_PROZENT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung, die allein durch das Bereithalten des Kessels verloren geht, in der gewählten Einheit: kW oder Prozent der thermischen Leistung. Die Simulation rechnet sie in kW in jeder Stillstandsstunde als Brennstoffeinsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_BB_VERLUST_ERL {
             get {
@@ -46628,6 +46709,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_WG_OEL_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_WG_OEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „kW“ oder „%“: die Einheit des Bereitschaftsverlusts. Ein Prozentwert bezieht sich auf die thermische Leistung; die Simulation rechnet in kW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_BB_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_BB_EINHEIT_ERL", resourceCulture);
             }
         }
         

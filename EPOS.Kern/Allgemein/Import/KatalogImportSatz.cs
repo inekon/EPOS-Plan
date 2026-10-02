@@ -188,6 +188,9 @@ namespace WindowsFormsApplication1
                 model.Wirkungsgrad_Gas = model.Wirkungsgrad_Oel = 1;
 
             model.Betriebsbereitschaftverlust = ZahlText.NachDouble(_satz.m_szVerluste);
+            // VDI 3805 fuehrt die Bereitschaftsleistung in kW - die Einheit, die der Import liefert
+            // (Anwenderentscheid 02.10.2026: gespeichert werden Wert UND Einheit).
+            model.Bereitschaft_Einheit = DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW;
             model.NOx = ZahlText.NachDouble(_satz.m_szNOX);
             model.CO2 = ZahlText.NachDouble(_satz.m_szCO2);
             model.CO = ZahlText.NachDouble(_satz.m_szCO);
@@ -271,6 +274,7 @@ namespace WindowsFormsApplication1
                 { "CO", m.CO },
                 { "Staub", m.Staub },
                 { "Betriebsbereitschaftverlust", m.Betriebsbereitschaftverlust },
+                { KesselBereitschaftEinheitSchema.SPALTE, m.Bereitschaft_Einheit },
                 { "Brennwert", m.Brennwert },
                 { KesselKennlinieSchema.SPALTE_TEILLAST30, m.Wirkungsgrad_Teillast30 },
                 { KesselKennlinieSchema.SPALTE_MINDESTLEISTUNG, m.Mindestleistung }
@@ -302,6 +306,7 @@ namespace WindowsFormsApplication1
             stamm.CO = m.CO;
             stamm.Staub = m.Staub;
             stamm.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            stamm.Bereitschaft_Einheit = m.Bereitschaft_Einheit;
             stamm.Brennwert = m.Brennwert;
             stamm.Wirkungsgrad_Teillast30 = m.Wirkungsgrad_Teillast30;
             stamm.Mindestleistung = m.Mindestleistung;

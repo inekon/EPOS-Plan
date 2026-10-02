@@ -4815,6 +4815,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_AUFHEIZ_ERGEBNIS = AufheizErgebnisSchema.SCHRITT;
 
+        // ---- Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts des Heizkessels ----
+
+        /// <summary>
+        /// Schritt <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/> — <b>die Einheit des
+        /// Bereitschaftsverlusts</b> (Anwenderentscheid 02.10.2026: kW oder % der Nennleistung). Er
+        /// folgt auf <see cref="SCHRITT_AUFHEIZ_ERGEBNIS"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> die
+        /// Spalte <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %). Die
+        /// Anweisungen stehen bei <see cref="KesselBereitschaftEinheitSchema"/>, die Nummer allein
+        /// dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bekommt kW, die
+        /// Einheit, in der ihr Wert gerechnet wird; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6934,6 +6951,16 @@ namespace WindowsFormsApplication1
                         "Aufheizoptimierung haetten keinen Ort; Bedarfsdialog, Bericht und Vergleich koennten sie " +
                         "nicht zeigen. Die Spalten entstehen leer. KEIN Rechenergebnis aendert sich.",
                         Schritt_AufheizErgebnis),
+            // ANWENDERENTSCHEID 02.10.2026 - die Einheit des Bereitschaftsverlusts des Heizkessels:
+            // eine Spalte an Katalog und Projektkopie. REIN DDL; die Quelle ist
+            // KesselBereitschaftEinheitSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT,
+                        "Tab_Heizkessel_STAMM und Tab_Heizkessel: Einheit des Bereitschaftsverlusts " +
+                        "(Bereitschaft_Einheit, kW oder %)",
+                        "Der Bereitschaftsverlust liesse sich nur in kW erfassen; ein Datenblattwert in " +
+                        "Prozent der Nennleistung muesste von Hand umgerechnet werden. KEIN Rechenergebnis " +
+                        "aendert sich - jede Bestandszeile bekommt kW, die Einheit, in der sie rechnet.",
+                        Schritt_KesselBereitschaftEinheit),
         };
 
         /// <summary>
@@ -12260,6 +12287,48 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Ergebnisspalten der Aufheizoptimierung - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") + " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einheit des Bereitschaftsverlusts" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>, die Anweisungen bei
+        /// <see cref="KesselBereitschaftEinheitSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KesselBereitschaftEinheitSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine
+        /// der beiden Kesseltabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselBereitschaftEinheit(Lauf l)
+        {
+            string nr = KesselBereitschaftEinheitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KesselBereitschaftEinheitSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KesselBereitschaftEinheitSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KesselBereitschaftEinheitSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + KesselBereitschaftEinheitSchema.SPALTE + " an " +
+                                  KesselBereitschaftEinheitSchema.TAB_STAMM + " und " +
+                                  KesselBereitschaftEinheitSchema.TAB_PROJEKT +
+                                  " steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einheit des Bereitschaftsverlusts - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Vorgabe kW).") +
+                    " KEIN DML.");
             return true;
         }
 

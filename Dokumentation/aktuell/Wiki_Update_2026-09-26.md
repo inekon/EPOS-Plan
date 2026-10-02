@@ -255,6 +255,9 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Autarkie-Analyse rechnet ohne Stromspeicher im Projekt mit 0 kWh und sagt es. (#659)
 - Die untere Grenzleistung im Projekt-BHKW gilt vor Katalog- und Projektwert, in allen Betriebsarten. (#659)
 - Ein Bedarfsprofil ohne Typ wird mit Meldung übersprungen; die übrigen Profile werden vollständig gerechnet. (#659)
+- Die Simulationskonfiguration wählt die verbauten Wärmeerzeuger einer leeren Kaskade in der Folge Solarthermie, Wärmepumpe, BHKW, Heizkessel vor. (#661)
+- Der Bereitschaftsverlust eines Heizkessels lässt sich in kW oder in Prozent der Nennleistung angeben. (#661)
+- Der IFC-Import liest Schichtdicken, die ein CAD-Export in Millimetern schreibt, richtig ein und übergeht Folien ohne Wärmewirkung mit Hinweis. (#662)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

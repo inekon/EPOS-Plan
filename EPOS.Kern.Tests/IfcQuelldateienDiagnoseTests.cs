@@ -102,5 +102,48 @@ namespace EPOS.Kern.Tests
                 }
             }
         }
+
+        /// <summary>
+        /// <b>Die Anwenderdateien mit Schichtdicken in Millimetern</b> unter der Längeneinheit <c>METRE</c>:
+        /// Der Leser rechnet die Schichtsätze um und übergeht Folien, jede Schicht liegt danach im Band der
+        /// Schichtdicke, und der Bauteilvorschlag läuft mit und ohne Namensabgleich bis zum Ende — ein- und
+        /// mehrzonig. Fehlt die Datei (oder liegt nur ein LFS-Zeiger), endet der Fall ohne Prüfung.
+        /// </summary>
+        [Theory]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        public void Schichtdicken_in_Millimetern_laufen_bis_zum_Bauteilvorschlag(string datei)
+        {
+            string pfad = Quellen() == null ? null : Path.Combine(Quellen(), datei);
+            if (pfad == null || !File.Exists(pfad) || new FileInfo(pfad).Length < 1024) { _aus.WriteLine(datei + " fehlt — übersprungen."); return; }
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            Assert.True(a.Abbild != null && a.Abbild.Gebaeude.Count > 0, Text(a.Meldungen));
+            // Gebündelt: genau eine Warnung und genau ein Hinweis je Datei.
+            PruefMeldung mm = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
+            Assert.Equal(PruefStufe.Warnung, mm.Stufe);
+            PruefMeldung duenn = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN");
+            Assert.Equal(PruefStufe.Info, duenn.Stufe);
+            _aus.WriteLine(datei + ": " + Text(new[] { mm, duenn }));
+
+            var abgleich = new Baustoffabgleich(BaustoffabgleichDaten.AusSaat());
+            for (int gi = 0; gi < a.Abbild.Gebaeude.Count; gi++)
+            {
+                foreach (AbbildBauteil b in a.Abbild.Gebaeude[gi].Bauteile.Where(x => x.Aufbau != null))
+                    foreach (AbbildSchicht x in b.Aufbau.Schichten.Where(x => x.DickeM.HasValue))
+                        Assert.True(x.DickeM >= GebaeudeFestwerte.SCHICHT_DICKE_MIN_M && x.DickeM <= GebaeudeFestwerte.SCHICHT_DICKE_MAX_M,
+                                    b.Aufbau.Kennung + " " + x.Name + ": d = " + Z(x.DickeM) + " m");
+                foreach (Baustoffabgleich mit in new[] { null, abgleich })
+                {
+                    GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, gi, 'E', null, mit);
+                    GebaeudeBauteilvorschlag z = GebaeudeBauteilvorschlag.BildenMitZonen(a, gi, 'E', null, null, mit);
+                    Assert.False(v.Abgelehnt, Text(v.Meldungen));
+                    Assert.False(z.Abgelehnt, Text(z.Meldungen));
+                    _aus.WriteLine(datei + (mit == null ? " ohne" : " mit") + " Abgleich: " + v.Aufbauten.Count + " Aufbauten, "
+                                   + v.Zeilen.Count + " Zeilen; " + Text(v.Meldungen.Where(m => m.Stufe != PruefStufe.Info)));
+                }
+            }
+        }
     }
 }

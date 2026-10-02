@@ -417,11 +417,12 @@ public class KiDialogkatalogTests : IDisposable
             KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten),
                                      Wahlquellen(KiMaskennamen.HEIZKESSEL));
 
-        // SECHZEHN: die sechs Zahlen des Katalogeditors, die fuenf uebrigen Eingabefelder
-        // (Welle KI-F1b: Name, Hersteller, Beschreibung, Energietraeger, Brennwert) und die
-        // fuenf der Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1) - keines davon
-        // gibt es an PufferSpKatalogDaten.
-        Assert.Equal(16, fehlt.Count);
+        // SIEBZEHN: die sechs Zahlen des Katalogeditors, die fuenf uebrigen Eingabefelder
+        // (Welle KI-F1b: Name, Hersteller, Beschreibung, Energietraeger, Brennwert), die
+        // fuenf der Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1) und die Einheit
+        // des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) - keines davon gibt es an
+        // PufferSpKatalogDaten.
+        Assert.Equal(17, fehlt.Count);
         Assert.Contains("HeizkesselKatalogDaten.Ptherm", fehlt);
     }
 
@@ -656,8 +657,9 @@ public class KiDialogkatalogTests : IDisposable
         // (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
         //
         // GEWACHSEN ist er beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
-        // Kesselkennlinie, Etappe E1): von 11 auf 16.
-        Assert.Equal(16, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
+        // Kesselkennlinie, Etappe E1): von 11 auf 16, mit der Einheit des
+        // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) auf 17.
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
         Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
@@ -1433,6 +1435,8 @@ public class KiDialogkatalogTests : IDisposable
         {
             "th_leistung", "wirkungsgrad_gas", "wirkungsgrad_oel",
             "bereitschaftsverlust", "vorlauf", "ruecklauf",
+            // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+            "bereitschaftsverlust_prozent",
             // Welle KI-F1b: die uebrigen Eingabefelder derselben Maske.
             "name", "hersteller", "beschreibung", "energietraeger", "brennwert",
             // Konzept Kesselkennlinie, Etappe E1: die Gruppe „Kennlinie".

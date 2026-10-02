@@ -250,7 +250,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 1. Heizkessel — Tab_Heizkessel_STAMM (28 Spalten)
+        // 1. Heizkessel — Tab_Heizkessel_STAMM (29 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -312,8 +312,9 @@ namespace WindowsFormsApplication1
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
-                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW", SIM,
-                  "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde"),
+                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW / %", SIM,
+                  "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde, " +
+                  "in der Einheit Bereitschaft_Einheit (KesselBereitschaft.LeistungKw)"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", SIM_BER,
                   "AbweichungsErmittler.cs:100; SimulationSPK.Kesseldaten_Einlesen " +
                   "(Kesselkennlinie.Bauart: Brennwertkessel fuer die Normvorgabe von eta30)"),
@@ -345,7 +346,13 @@ namespace WindowsFormsApplication1
                   "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
                 E("Mindestlaufzeit_min", t("HZKK_LBL_MINDESTLAUFZEIT"), "min", SIM,
                   "SimulationSPK.TaktwerteBilden und Stunde_Abschluss (Kesselkennlinie.MindestlaufzeitWirksam, StartsImTakt; " +
-                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)")
+                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
+
+                // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026, Schemaschritt
+                // KesselBereitschaftEinheitSchema.SCHRITT) - in der Reihenfolge der Tabelle die letzte Spalte.
+                E(KesselBereitschaftEinheitSchema.SPALTE, t("HZKK_LBL_BB_EINHEIT"), "", SIM,
+                  "KesselBereitschaft.LeistungKw (kW oder % der Nennleistung); HeizkesselKatalogDialog.razor; " +
+                  "KatalogBrowserProfil (Heizkessel)")
             };
         }
 

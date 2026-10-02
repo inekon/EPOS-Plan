@@ -9298,7 +9298,16 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betriebsbereitschaftsverluste</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
+    <value>Leistung, die allein durch das Bereithalten des Kessels verloren geht, in der gewählten Einheit: kW oder Prozent der thermischen Leistung. Die Simulation rechnet sie in kW in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_NAME" xml:space="preserve">
+    <value>Bereitschaftsverlust in % der Nennleistung</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_ERL" xml:space="preserve">
+    <value>Ja = der Bereitschaftsverlust steht in Prozent der thermischen Leistung, Nein = in kW. Die Simulation rechnet einen Prozentwert mit der thermischen Leistung in kW um.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BB_EINHEIT_ERL" xml:space="preserve">
+    <value>„kW“ oder „%“: die Einheit des Bereitschaftsverlusts. Ein Prozentwert bezieht sich auf die thermische Leistung; die Simulation rechnet in kW.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
@@ -12193,6 +12202,21 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="HZKK_FELD_BBVERLUST" xml:space="preserve">
     <value>Betriebsbereitschaftsverluste</value>
+  </data>
+  <data name="HZKK_LBL_BB_EINHEIT" xml:space="preserve">
+    <value>Einheit Bereitschaftsverlust:</value>
+  </data>
+  <data name="HZKK_FELD_BB_EINHEIT" xml:space="preserve">
+    <value>Einheit Bereitschaftsverlust</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der Nennleistung</value>
+  </data>
+  <data name="KBROW_HINT_BB_EINHEIT" xml:space="preserve">
+    <value>kW oder % (der Nennleistung)</value>
   </data>
   <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
     <value>Brennwertkessel</value>
@@ -38916,6 +38940,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
     <value>{0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHTDICKE_MM" xml:space="preserve">
+    <value>Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
+    <value>{0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>

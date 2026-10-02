@@ -339,7 +339,8 @@ namespace EPOS.Kern.Tests
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                [KatalogBrowserArt.Heizkessel] = 26,
+                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
+                [KatalogBrowserArt.Heizkessel] = 27,
                 [KatalogBrowserArt.Bhkw] = 27,
                 [KatalogBrowserArt.Solarkollektoren] = 12,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -392,9 +393,10 @@ namespace EPOS.Kern.Tests
             // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
             // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
             // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 25 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
-            // Kennlinie (Konzept Kesselkennlinie, Etappe E1).
-            Assert.Equal(25, heiz.Detailfelder.Count(f => f.Editierbar));
+            // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
+            // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
+            // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+            Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
@@ -567,8 +569,9 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(26, satz.Count);
+            Assert.Equal(27, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
+            Assert.Equal("kW", satz[KatalogBrowserProfil.FeldBBEinheit]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
             Assert.Equal("22,00", satz[KatalogBrowserProfil.FeldPtherm]);
