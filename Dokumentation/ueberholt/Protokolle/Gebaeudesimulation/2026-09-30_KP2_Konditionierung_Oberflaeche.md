@@ -313,3 +313,17 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Wiki und Logbuch:** Die Quelle „Gebäude" („Speichern unter") ist hochgeladen (30.09.2026, Revision 725); die
   Bedienungsseiten der Konditionierung folgen mit KP4 (Teilkonzept 10.4). Die Logbuch-Sätze stehen in Abschnitt 7,
   die Versionsnummer beim Anwender.
+
+## 7. Logbuch-Entwurf
+
+Version <vom Anwender>, je wesentlicher, sichtbarer Änderung der Stufe ein Satz für die Seite „Update-Logbuch“ —
+veröffentlicht mit dem nächsten Sammel-Upload (Konzept Hilfesystem 13.3 und 13.4), gegengelesen mit dem Suchmuster aus
+`CLAUDE.md` (kein Treffer):
+
+| Welle | Satz |
+|---|---|
+| K1 | „Speichern unter“ lässt den Gebäudedialog offen; im Gebäudekatalog arbeitet er danach am neuen Satz weiter. |
+| U1 | Der Gebäudedialog hat den Reiter „Konditionierung“ mit einer Vorgabe-Matrix für Heizen, Kühlen, Lüftung, Geräte und Personen; Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur werden dort eingegeben. |
+| U2 | Für jede Größe der Konditionierung lässt sich eine Vorlage mit Vorschau übernehmen, eine eigene speichern und in der Vorlagenverwaltung pflegen; 14 Vorlagen werden mitgeliefert. |
+| U3, U4 | In jeder Kalenderkarte lassen sich Woche, Zeitfenster, Perioden, Feiertage und Zeitstruktur bearbeiten, das Jahr erscheint als Teppichbild; Zonen haben eine eigene Matrix, die Gebäudeverwaltung ein Blatt „Konditionierung“, und die Wärmeübergabe übernimmt ihr Sollwertprofil in den Heizkalender. |
+| U5 | „Gleichnamige Vorlage in allen Größen übernehmen“ in der Zeile „Vorlage“ belegt alle Größen nach einer Rückfrage in einem Schritt. |
