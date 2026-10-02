@@ -811,4 +811,16 @@ public sealed class KonditionierungTexte
     /// </summary>
     public string TextVorschauOhneAnteile { get; set; }
         = "Keine Woche: Die Spalte „{0}“ trägt keinen Anteil – ohne Anteil gilt der Nennwert in jeder Stunde bzw. steckt die Last in den inneren Wärmegewinnen. Ein Anteil in Tag, Nacht, Wochenende oder Ferien ergibt die Woche.";
+
+    // ------------------------------------------------------------ Die Abkürzung „alle Größen“ (E57, Welle U5)
+
+    /// <summary>
+    /// <c>KOND_LBL_VORLAGE_ALLE</c> — die Liste der Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…“ in
+    /// der Kopfzelle der Zeile „Vorlage“
+    /// </summary>
+    public string LabelVorlageAlle { get; set; } = "alle Größen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ALLE</c> — der Hinweis (title) der Liste „alle Größen“</summary>
+    public string HinweisVorlageAlle { get; set; }
+        = "Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt.";
 }
