@@ -356,6 +356,54 @@ namespace EPOS.Kern.Tests
                 10.0, 2500.0, 3, 2027, jahr => 20.0, jahr => 250.0));
         }
 
+        // ------------------------------------------------------------ § 9b: Deckelung (EZ‑22, § 6.3 Nr. 41)
+
+        /// <summary>
+        /// Der Deckel wirkt, wenn der Stromsteueranteil des Arbeitspreises unter dem § 9b-Satz liegt:
+        /// Anteil 1,00 ct/kWh = 10,00 €/MWh &lt; 20,00 €/MWh → 50 MWh × 10,00 = 500 €/a statt 1.000 €/a.
+        /// Mehr Stromsteuer, als die Gutschrift enthält, kann nicht entgehen. Ein Anteil 0 (Komponente
+        /// abgeschaltet) lässt nichts zu mindern.
+        /// </summary>
+        [Fact]
+        public void Der_Deckel_begrenzt_den_9b_Satz_auf_den_Stromsteueranteil()
+        {
+            Assert.Equal(500.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, 10.0), 9);
+            Assert.Equal(10.0, SteuerGutschriftRechner.Satz9bWirksam(20.0, 10.0));
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, 0.0));
+            Assert.Equal(0.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, -5.0));
+
+            // Sockel und Deckel zusammen: N = 5 MWh, s_eff = 10 €/MWh, S = 250 € →
+            // max(0, 55 × 10 − 250) − max(0, 5 × 10 − 250) = 300 − 0 = 300 €/a.
+            Assert.Equal(300.0, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 5.0, 250.0, 10.0), 9);
+
+            // Die Reihe nimmt den Deckel des Jahres; Deckel 0 → keine Reihe.
+            var steuer = new SteuerEingabe { Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE, NetzbezugMWh = 400.0 };
+            KapitalwertRechner.ErloesReihe r = Waermegestehung.Entgangene9bReihe(
+                steuer, 50.0, 12500.0, 2, 2027, jahr => 20.0, jahr => 250.0, jahr => jahr == 2027 ? 10.0 : 20.5);
+            Assert.Equal(-500.0, r.Wert(1), 9);
+            Assert.Equal(-1000.0, r.Wert(2), 9);
+            Assert.Null(Waermegestehung.Entgangene9bReihe(
+                steuer, 50.0, 12500.0, 2, 2027, jahr => 20.0, jahr => 250.0, jahr => 0.0));
+        }
+
+        /// <summary>
+        /// Ohne gepflegten Stromsteueranteil (Rückfallträger) ist die Obergrenze der Regelsatz der
+        /// Stromsteuer (20,50 €/MWh): Er liegt über dem § 9b-Satz (20,00 €/MWh), ein Deckel wirkt
+        /// nicht — Zeichen für Zeichen das Ergebnis ohne Deckel; ebenso ein gepflegter Anteil von
+        /// 2,05 ct/kWh, ein Deckel genau am Satz und gar keiner (<c>null</c>).
+        /// </summary>
+        [Fact]
+        public void Am_Rueckfalltraeger_ist_der_Regelsatz_die_Obergrenze_und_kein_Deckel()
+        {
+            double heute = 50.0 * 20.0;
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, 20.5));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, 20.0));
+            Assert.Equal(heute, Waermegestehung.Entgangene9bEntlastungEur(50.0, 20.0, 400.0, 250.0, null));
+            Assert.Equal(20.0, SteuerGutschriftRechner.Satz9bWirksam(20.0, 20.5));
+            Assert.Equal(20.0, SteuerGutschriftRechner.Satz9bWirksam(20.0, null));
+            Assert.Null(SteuerGutschriftRechner.Satz9bWirksam(null, 10.0));
+        }
+
         /// <summary>
         /// Der Rechenkern summiert eine negative Erlösreihe richtig: Kapitalwert und Barwert der
         /// Einnahmen sinken um ihren Barwert, die Gliederung bleibt stimmig. Die Zerlegung des

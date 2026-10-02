@@ -1411,19 +1411,29 @@ namespace WindowsFormsApplication1
         /// der vermiedenen Stromkosten — beide mit <see cref="Entlastung9bEur"/>, dem Weg der
         /// Entlastung des Projekts.
         ///
-        /// <para><b>Bitgleich, solange der Sockel nicht wirkt.</b> Trägt der Netzbezug den Sockel
-        /// schon (N × s &gt; S), ist die Differenz genau M × s und wird so gerechnet — Zeichen für
-        /// Zeichen das Ergebnis ohne Sockel. Ohne Sockel (S = 0 oder <c>null</c>) ebenso.</para>
+        /// <para><b>Gedeckelt</b> (§ 6.3 Nr. 41): s ist der wirksame Satz
+        /// <c>min(Satz, Deckel)</c> (<see cref="Satz9bWirksam"/>) — eine Entlastung über den
+        /// gezahlten Steueranteil hinaus gibt es nicht. Der Deckel ist der Stromsteueranteil des
+        /// Arbeitspreises, mit dem die ersetzte Menge bewertet ist; ohne gepflegten Anteil der
+        /// Regelsatz der Stromsteuer (dann wirkt er beim heutigen Satz nicht).</para>
+        ///
+        /// <para><b>Bitgleich, solange Sockel und Deckel nicht wirken.</b> Trägt der Netzbezug den
+        /// Sockel schon (N × s &gt; S), ist die Differenz genau M × s und wird so gerechnet — Zeichen
+        /// für Zeichen das Ergebnis ohne Sockel. Ohne Sockel (S = 0 oder <c>null</c>) ebenso; ein
+        /// Deckel ab dem Satz lässt s unberührt.</para>
         /// </summary>
         /// <param name="netzbezugMWh">N [MWh/a]; negativ zählt als 0.</param>
         /// <param name="ersetztMWh">M [MWh/a]; 0 = nichts entgangen.</param>
-        /// <param name="satzEurJeMWh">s [€/MWh]; <c>null</c> = nicht gepflegt.</param>
+        /// <param name="satzEurJeMWh">Der Entlastungssatz [€/MWh]; <c>null</c> = nicht gepflegt.</param>
         /// <param name="sockelEur">S [€/a]; <c>null</c> = nicht gepflegt (wie 0).</param>
+        /// <param name="deckelEurJeMWh">Die Obergrenze des Satzes [€/MWh]; <c>null</c> = keine.</param>
         internal static double Entgangene9bEur(double netzbezugMWh, double ersetztMWh,
-                                               double? satzEurJeMWh, double? sockelEur)
+                                               double? satzEurJeMWh, double? sockelEur,
+                                               double? deckelEurJeMWh = null)
         {
             if (!(ersetztMWh > 0) || !satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return 0.0;
-            double s = satzEurJeMWh.Value;
+            double s = Satz9bWirksam(satzEurJeMWh, deckelEurJeMWh).Value;
+            if (!(s > 0)) return 0.0;
             double sockel = sockelEur.HasValue && sockelEur.Value > 0 ? sockelEur.Value : 0.0;
             double netz = netzbezugMWh > 0 ? netzbezugMWh : 0.0;
 
@@ -1431,6 +1441,19 @@ namespace WindowsFormsApplication1
             if (Entlastung9bEur(netz, s, sockel) > 0 || sockel == 0.0) return ersetztMWh * s;
             // Sonst entsteht die Entlastung erst mit der ersetzten Menge — oder gar nicht.
             return Entlastung9bEur(netz + ersetztMWh, s, sockel);
+        }
+
+        /// <summary>
+        /// <b>Der wirksame Satz der entgangenen § 9b-Entlastung [€/MWh]</b>:
+        /// <c>min(Satz, Deckel)</c>, nie unter 0; ohne Deckel (<c>null</c>) der Satz selbst,
+        /// unverändert. <c>null</c> ohne Satz.
+        /// </summary>
+        internal static double? Satz9bWirksam(double? satzEurJeMWh, double? deckelEurJeMWh)
+        {
+            if (!satzEurJeMWh.HasValue) return null;
+            double s = satzEurJeMWh.Value;
+            if (deckelEurJeMWh.HasValue && deckelEurJeMWh.Value < s) s = Math.Max(0.0, deckelEurJeMWh.Value);
+            return s;
         }
 
         // =====================================================================

@@ -7010,16 +7010,60 @@ namespace WindowsFormsApplication1
             // Ausweises (gesamt.SteuerEingabe), der Satz jahresscharf aus dem Gesetzeskatalog wie
             // die Steuerreihen. Ohne Gewerbe, Gutschrift oder Satz entsteht keine Reihe (bitgleich).
             // Anwenderentscheid 02.10.2026 (EZ‑22): dieselben Regeln wie die Entlastung des Projekts
-            // — der Sockelbetrag des Jahres gegen den Netzbezug der Steuereingabe.
+            // — der Sockelbetrag des Jahres gegen den Netzbezug der Steuereingabe, der Satz gedeckelt
+            // auf den Stromsteueranteil des Arbeitspreises, mit dem die Gutschrift rechnet (Netzträger,
+            // § 3.9); ohne gepflegten Anteil der Regelsatz der Stromsteuer des Jahres. Der Anteil wird
+            // nur gelesen, wenn der Abzug greifen kann.
             if (_gesetze == null) _gesetze = new GesetzKatalog();
+            double? anteil9b = null;
+            if (gesamt.SteuerEingabe != null && SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
+                eigenstrom > 0 && stromgutschrift > 0)
+                anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, gesamt.EnergiekostenJeTraeger);
             entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
                 p.Betrachtungszeitraum, Foerderbeginn(p),
                 jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
-                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr));
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr),
+                jahr => anteil9b ?? _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr));
             if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;
             return w;
+        }
+
+        /// <summary>
+        /// <b>Der Stromsteueranteil des Netzträgers [€/MWh]</b> — der Deckel des § 9b-Abzugs der
+        /// Wärmegestehung (Konzept § 3.8, § 6.3 Nr. 41; Register EZ‑22). Der Träger ist der, dessen
+        /// Arbeitspreis die Stromgutschrift trägt: der Netzeintrag der Aufstellung je Träger, ohne
+        /// ihn der Projektträger samt Rückfall (<see cref="Kaeltestromabrechnung.Projekttraeger"/>,
+        /// dieselbe Wahl wie <see cref="StromArbeitspreisEurJeKwh(int, string)"/>). Der Anteil ist
+        /// der in „Strompreis Details" gepflegte Wert (§ 3.9, <see cref="StrompreisZerlegungCtrl.StromsteuerRoh"/>)
+        /// in ct/kWh × 10; eine abgeschaltete Komponente heißt „der Preis enthält keine Stromsteuer"
+        /// → 0.
+        ///
+        /// <para><c>null</c> = kein Anteil gepflegt (kein Wert, keine Zeile — wie am Rückfallträger,
+        /// der keinen führt); dann gilt der Regelsatz des Jahres als Obergrenze. Ein Lesefehler wird
+        /// benannt (Rechenstufe Energieträger) und zählt wie „nicht gepflegt".</para>
+        /// </summary>
+        private double? StromsteueranteilNetzEurJeMWh(int idProjekt, IList<EnergieTraegerNachweis> traeger)
+        {
+            try
+            {
+                int carrier = 0;
+                if (traeger != null)
+                    foreach (EnergieTraegerNachweis t in traeger)
+                        if (t != null && t.Netzstrom) { carrier = t.CarrierId; break; }
+                if (carrier <= 0) carrier = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+                if (carrier <= 0) return null;
+                double? roh = StrompreisZerlegungCtrl.StromsteuerRoh(idProjekt, carrier);
+                if (!roh.HasValue) return null;
+                bool aktiv = new StrompreisZerlegungCtrl().Read(idProjekt, carrier).Stromsteuer_Aktiv;
+                return aktiv ? Math.Max(0.0, roh.Value) * 10.0 : 0.0;
+            }
+            catch (Exception ex)
+            {
+                Stufenfehler(idProjekt, STUFE_TRAEGER, Fehlergrund.Text(ex));
+                return null;
+            }
         }
 
         /// <summary>Der Arbeitspreis [€/kWh] des Trägers, der den Netzbezug bepreist, aus der
