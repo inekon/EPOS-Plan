@@ -181,9 +181,11 @@ namespace EPOS.Kern.Tests
                 // § 9b auf die GANZE Menge — dieselbe Funktion wie im Kern (P651, EZ‑22): die
                 // Differenz der Entlastung ohne und mit der vermiedenen Menge, Sockel 250 €/a gegen
                 // den Restbezug. 250,0 MWh × 20,00 = 5.000 € > 250 € — der Restbezug trägt den
-                // Sockel, die Korrektur ist Zeichen für Zeichen Satz × Menge wie vor P651.
+                // Sockel, die Korrektur ist Zeichen für Zeichen Satz × Menge wie vor P651. Der Deckel
+                // (EZ‑23, P654) wirkt nicht: Der Netzträger führt 2,05 ct/kWh = 20,50 €/MWh
+                // Stromsteuer ≥ 20,00 €/MWh Satz.
                 VermiedenEntlastung9bJahr = SteuerGutschriftRechner.Entgangene9bEur(
-                    m.BezugGesamtMWh, r.VermiedenMengeMWh, SATZ_9B, 250.0)
+                    m.BezugGesamtMWh, r.VermiedenMengeMWh, SATZ_9B, 250.0, 20.50)
             };
             Assert.Equal(SATZ_9B * r.VermiedenMengeMWh, erg.VermiedenEntlastung9bJahr);
             Assert.Equal(23594.0, erg.VermiedenEntlastung9bJahr, 2);
