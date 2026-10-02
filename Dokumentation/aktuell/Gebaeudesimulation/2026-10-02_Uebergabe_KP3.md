@@ -49,7 +49,8 @@ Anwender>“), Entscheid P14 (ρ) nach der Messung in RP1.
    `kern.yml` für den Push lesen und als Vermerk in Zeile #669 nachtragen (Muster #664).
 2. D2 abnehmen (Abschnitt 2), Statuszeile, Push, CI-Vermerk.
 3. E59-Papiere durch einen Opus-Agenten im Worktree `kp3-e59` (Auftrag Abschnitt 5), abnehmen (Wachen, Gegenlesen), mergen, pushen.
-4. R5 (Rechenweg Aufschlag und manuelle Aufheizzeit, Schema, Testdatenbank, Export), dann O1b/O2, O3, RP1, RP2, A — je mit
+4. **IFC-Import, Befund aus der Sichtprobe des Anwenders (02.10.2026, Datei `MFH_mittel_1984.ifc`, IFC4, nicht im Repository):** Hinweis „führt keine Raumgrenzen“ (`IMP_IFC_PROT_KEINE_GRENZEN`, Σ Trennfläche 0 m², Z5 eine Zone), Gebäudename bleibt Vorgabe „Gebäude“, Baualtersklasse F (1969–1978) trotz „1984“ im Dateinamen, „18 Werte aus der Datei, 14 Vorgaben, 6 leer“. Auftrag: Ursache je Befund finden und Behebung prüfen (Opus-Agent im Worktree `ifc-befund`, Auftragsdatei `scratchpad/Auftrag_IFC_Befund.md`; Kern: Lesen von `IfcRelSpaceBoundary`/`2ndLevel` und Rückfallweg, Gebäudename aus `IfcBuilding.Name`/Dateiname, `Baujahrregel` gegen die IWU-Tabelle und E47, die sechs leeren Felder; minimale IFC4-Probe im Scratchpad; kleine Behebungen mit Tests committen, Größeres als Vorschlag). Vorher Wochennutzung erfragen; die Datei beim Anwender anfordern, wenn die Probe den Befund nicht nachstellt.
+5. R5 (Rechenweg Aufschlag und manuelle Aufheizzeit, Schema, Testdatenbank, Export), dann O1b/O2, O3, RP1, RP2, A — je mit
    Nachfrage zur Wochennutzung; Aufträge nach dem Muster der bisherigen (`Auftrag_KP3_R4.md`, `Auftrag_KP3_D2.md`: Regeln,
    Worktree, Spurenregel, Was zu bauen, Abnahme mit Gate, Bericht).
 
