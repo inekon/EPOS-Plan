@@ -236,6 +236,9 @@ namespace WindowsFormsApplication1
             // Die Spalten kommen leer an - ein Paketsatz ohne Temperaturpaar rechnet wie zuvor.
             new Stufe(ProzesswaermeTemperaturSchema.SCHRITT, Art.Ddl,
                       "Temperaturpaar je Prozesswärmesatz (Vorlauf, Rücklauf) und Katalog typischer Betriebsweisen"),
+            // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
+            new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
+                      "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

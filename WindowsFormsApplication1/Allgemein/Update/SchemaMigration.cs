@@ -4865,6 +4865,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT;
 
+        // ---- Welle M3b (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2): Bedarf ----
+
+        /// <summary>
+        /// Schritt <see cref="BedarfNetzKalenderSchema.SCHRITT"/> — <b>Netzverluste je Kanal,
+        /// Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile</b>. Er folgt auf
+        /// <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL:</b> die Tabelle <c>Tab_Betriebskalender</c>, acht nullbare Spalten an
+        /// <c>Tab_Einstellungen</c> und je Zuordnungstabelle die nullbare Spalte
+        /// <c>ID_Betriebskalender</c>. Die Anweisungen stehen bei
+        /// <see cref="BedarfNetzKalenderSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alles entsteht leer, und leer rechnet wie
+        /// zuvor; ein stehender Teil wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_BEDARF_NETZ_KALENDER = BedarfNetzKalenderSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7013,6 +7030,15 @@ namespace WindowsFormsApplication1
                         "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
                         "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
                         Schritt_ProzesswaermeTemperatur),
+            // WELLE M3b (BW4, PW2, BW2) - Netzverluste je Kanal, Zirkulation im Bestandsweg und
+            // Betriebskalender. Die Quelle ist BedarfNetzKalenderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BEDARF_NETZ_KALENDER,
+                        "Tab_Einstellungen, Tab_Betriebskalender und Zuordnungen der Bedarfsprofile: " +
+                        "Netzverluste je Kanal, Zirkulation, Betriebskalender",
+                        "Die Netzverluste gaelten nur als ein Projektwert, der Bestandsweg kennte keine " +
+                        "Zirkulation, und ein Wochenprofil liefe ohne Feiertage und Betriebsferien durch das " +
+                        "Jahr. KEIN Rechenergebnis aendert sich - alles entsteht leer und rechnet wie zuvor.",
+                        Schritt_BedarfNetzKalender),
         };
 
         /// <summary>
@@ -12499,6 +12525,47 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Temperaturpaar je Prozess - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Netzverluste je Kanal, Zirkulation, Betriebskalender" — Anlass und Wirkung
+        /// stehen bei <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/>, die Anweisungen bei
+        /// <see cref="BedarfNetzKalenderSchema"/>. <b>Wiederholbar</b>: die Anweisungen nennen nur
+        /// fehlende Teile. Fehlt eine der vier Bestandstabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_BedarfNetzKalender(Lauf l)
+        {
+            string nr = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            var tabellen = new List<string> { BedarfNetzKalenderSchema.TAB_EINSTELLUNGEN };
+            tabellen.AddRange(BedarfNetzKalenderSchema.ZUORDNUNGEN);
+            foreach (string tabelle in tabellen)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(BedarfNetzKalenderSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!BedarfNetzKalenderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabelle " + BedarfNetzKalenderSchema.TAB_KALENDER +
+                                  ", Netzverlustspalten oder Kalenderspalten stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Netzverluste je Kanal, Zirkulation, Betriebskalender - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e) (leer).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

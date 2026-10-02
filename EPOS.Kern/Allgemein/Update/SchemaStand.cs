@@ -769,11 +769,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
         /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
         /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
+        /// Danach, mit den NETZVERLUSTEN JE KANAL, der ZIRKULATION IM BESTANDSWEG und dem
+        /// BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2,
+        /// Welle M3b), steht das Ziel auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>: acht nullbare
+        /// Spalten an <c>Tab_Einstellungen</c>, die Tabelle <c>Tab_Betriebskalender</c> und je
+        /// Zuordnungstabelle die nullbare Spalte <c>ID_Betriebskalender</c>
+        /// (<see cref="BedarfNetzKalenderSchema"/>). <b>Ergebnisneutral:</b> Alles bleibt leer, und leer
+        /// rechnet wie zuvor. Die Nummer steht allein bei <see cref="BedarfNetzKalenderSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProzesswaermeTemperaturSchema.SCHRITT;
+        public const int Zielversion = BedarfNetzKalenderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

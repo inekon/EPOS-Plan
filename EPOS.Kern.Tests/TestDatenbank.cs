@@ -852,6 +852,11 @@ namespace EPOS.Kern.Tests
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 ProzesswaermeTemperaturSchema.Ausfuehren(null);
 
+                // Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste je
+                // Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die Kalenderspalte
+                // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
+                BedarfNetzKalenderSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
