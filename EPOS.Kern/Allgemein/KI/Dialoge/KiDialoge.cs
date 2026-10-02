@@ -7547,7 +7547,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung", "WaermepumpeStammDaten.Kuehlleistung",
                                      KiDialogTexte.WpKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpKuehlleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true)
+                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true),
+
+                    // ---- Welle M4 (WP1): der Taktverlust nach EN 14825 ---------------
+                    new KiDialogFeld("mindestleistung", "WaermepumpeStammDaten.MindestleistungKw",
+                                     KiDialogTexte.WpMindestleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpMindestleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("taktverlust_cd", "WaermepumpeStammDaten.TaktverlustfaktorCd",
+                                     KiDialogTexte.WpTaktverlustCdName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpTaktverlustCdErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8491,7 +8500,23 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ruecklauf", "BhkwKatalogDaten.Ruecklauf",
                                      KiDialogTexte.BhkkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkkRuecklaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ----------
+                    new KiDialogFeld("wirkungsgrad_el_teillast50", "BhkwKatalogDaten.WirkungsgradEl50",
+                                     KiDialogTexte.BhkkEtaEl50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaEl50Erl, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_th_teillast50", "BhkwKatalogDaten.WirkungsgradTh50",
+                                     KiDialogTexte.BhkkEtaTh50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaTh50Erl, leerErlaubt: true),
+                    new KiDialogFeld("anfahrverlust", "BhkwKatalogDaten.AnfahrverlustKwh",
+                                     KiDialogTexte.BhkkAnfahrverlustName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkAnfahrverlustErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("mindestlaufzeit", "BhkwKatalogDaten.MindestlaufzeitMin",
+                                     KiDialogTexte.BhkkMindestlaufzeitName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkkMindestlaufzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_MINUTE, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {

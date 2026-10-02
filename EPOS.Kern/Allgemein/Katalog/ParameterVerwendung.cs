@@ -357,7 +357,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 2. BHKW — Tab_BHKW_STAMM (29 Spalten)
+        // 2. BHKW — Tab_BHKW_STAMM (33 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -460,12 +460,27 @@ namespace WindowsFormsApplication1
                 E(BhkwWirkungsgrad.SPALTE_EL, t("BHKWK_LBL_WIRKUNGSGRAD_EL"), "", DLG,
                   "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads"),
                 E(BhkwWirkungsgrad.SPALTE_TH, t("BHKWK_LBL_WIRKUNGSGRAD_TH"), "", DLG,
-                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads")
+                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads"),
+
+                // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT), in der Spaltenfolge der
+                // Tabelle: Teillastkennlinie (BH1) und Takten (BH2) - leer rechnet das Modul wie zuvor.
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ETA_EL50, t("BHKWK_LBL_ETA_EL50"), "", SIM,
+                  "SimulationBHKW.Moduldaten_Einlesen und TeillastStundeAbschliessen (BhkwTeillast.EtaEl, " +
+                  "Stromkennzahl der Motorlaeufe; leer = wie Volllast); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ETA_TH50, t("BHKWK_LBL_ETA_TH50"), "", SIM,
+                  "SimulationBHKW.Moduldaten_Einlesen und Motorlaeufe (BhkwTeillast.EtaTh, WaermeAusStrom/" +
+                  "StromAusWaerme; leer = wie Volllast); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ANFAHRVERLUST, t("BHKWK_LBL_ANFAHRVERLUST"), "kWh", SIM,
+                  "SimulationBHKW.TeillastStundeAbschliessen (Starts mal Anfahrverlust, Takten unter der " +
+                  "Untergrenze); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min", SIM,
+                  "SimulationBHKW.TeillastStundeAbschliessen (BhkwTeillast.StartsImTakt, Kesselregel; mit " +
+                  "Anfahrverlust Schalter des Taktens); BhkwKatalogDialog (Gruppe Teillast und Takten)")
             };
         }
 
         // =================================================================
-        // 3. Waermepumpe — Tab_WP_STAMM (23 Spalten)
+        // 3. Waermepumpe — Tab_WP_STAMM (25 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -540,7 +555,16 @@ namespace WindowsFormsApplication1
                 // den Katalog).
                 E(KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB, t("WPS_LBL_KUEHLBETRIEB"), "", NIX),
                 E(KuehlungSchema.SPALTE_KUEHL_VORLAUF, t("WPS_LBL_KUEHL_VORLAUF"), "°C", NIX),
-                E(KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL, t("WPS_LBL_KUEHL_HILFSSTROM"), "", NIX)
+                E(KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL, t("WPS_LBL_KUEHL_HILFSSTROM"), "", NIX),
+
+                // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT): der Taktverlust nach EN 14825
+                // (WP1) - leer = keine Taktrechnung bzw. C_d = 0,9.
+                E(ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG, t("WPS_LBL_MINDESTLEISTUNG"), "kW", SIM,
+                  "SimulationWaermepumpe.TaktwerteLesen und TaktStundeAbschliessen (Waermepumpentakt.Taktet, " +
+                  "Mehrstrom, StartsImTakt); Kaeltekaskade (Mindestanteil im Kuehlbetrieb); WaermepumpeStammFelder"),
+                E(ErzeugerTeillastSchema.SPALTE_WP_CD, t("WPS_LBL_TAKTVERLUST_CD"), "", SIM,
+                  "SimulationWaermepumpe.TaktStundeAbschliessen (Waermepumpentakt.Teillastfaktor, leer = 0,9); " +
+                  "Kaeltekaskade; WaermepumpeStammFelder")
             };
         }
 

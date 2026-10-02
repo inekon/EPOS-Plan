@@ -55,8 +55,9 @@ public class WaermepumpeStammFelderTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // Name, Hersteller (Text), Nennleistung, Heizstab (Ganzzahl), Kuehlleistung (Zahl).
-        Assert.Equal(5, cut.FindAll("input").Count);
+        // Name, Hersteller (Text), Nennleistung, Heizstab (Ganzzahl), Kuehlleistung (Zahl),
+        // Mindestleistung und C_d (Zahl, Welle M4).
+        Assert.Equal(7, cut.FindAll("input").Count);
         Assert.Single(cut.FindAll("textarea"));
         // Vier Klapplisten: Typ, Leistungsstufen, Aufstellung, Baujahr.
         Assert.Equal(4, cut.FindAll("select").Count);
@@ -66,9 +67,28 @@ public class WaermepumpeStammFelderTests : EposBunitContext
                  {
                      "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
                      "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
-                     "Modulkosten"
+                     "Modulkosten", "Mindestleistung", "Teillastkoeffizient C_d"
                  })
             Assert.Contains(soll, texte);
+    }
+
+    /// <summary>
+    /// <b>Mindestleistung und C_d</b> (Welle M4, WP1): in der Katalogpflege bedienbar und leer
+    /// leer; im Anlagendialog (<c>TeillastAenderbar="false"</c>) nur lesend.
+    /// </summary>
+    [Fact]
+    public void Mindestleistung_und_Cd_folgen_dem_Wirt()
+    {
+        var daten = new WaermepumpeStammDaten { Name = "WP", MindestleistungKw = 3.5 };
+        var katalog = Render<WaermepumpeStammFelder>(p => p.Add(x => x.Daten, daten));
+        Assert.Equal(7, katalog.FindAll("input").Count);
+
+        var anlage = Render<WaermepumpeStammFelder>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.TeillastAenderbar, false));
+        Assert.Equal(katalog.FindAll("input").Count, anlage.FindAll("input").Count);
+        Assert.Equal(katalog.FindAll("input[disabled]").Count + 2, anlage.FindAll("input[disabled]").Count);
+        Assert.Null(daten.TaktverlustfaktorCd);
     }
 
     /// <summary>

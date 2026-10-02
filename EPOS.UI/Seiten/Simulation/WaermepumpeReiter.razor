@@ -152,6 +152,13 @@
                         <th scope="col">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
                         <th scope="col">@Resource.SIM_SPALTE_HEIZSTAB</th>
                         <th scope="col">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
+                        @* Welle M4 (WP1): Starts und Mehrstrom aus Taktverlust - nur, wenn ein
+                           Modul mit Mindestleistung rechnet; sonst bleibt die Tabelle, wie sie war. *@
+                        @if (MitTakt)
+                        {
+                            <th scope="col">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col">@Resource.SIM_SPALTE_TAKTSTROM</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -164,6 +171,11 @@
                             <td class="epos-simerg-zahl">@Zahl(m.StrombedarfMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.HeizstabMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.LaufzeitStunden)</td>
+                            @if (MitTakt)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitTakt ? m.Starts.ToString("N0", Kultur) : "—")</td>
+                                <td class="epos-simerg-zahl">@(m.MitTakt ? Zahl(m.TaktstromMwh) : "—")</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -420,6 +432,9 @@
     /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>Rechnet ein Modul den Taktverlust (Welle M4, WP1)? Dann stehen Starts und Mehrstrom in der Tabelle.</summary>
+    private bool MitTakt => Daten?.Module?.Any(m => m.MitTakt) == true;
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet

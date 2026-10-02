@@ -41515,5 +41515,107 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
     <value>Die Fläche, auf die h0, k1 und k2 bezogen sind: apertur (Vorgabe) oder brutto. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
   </data>
+  <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
+    <value>Teillast und Takten</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_EL50" xml:space="preserve">
+    <value>El. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_EL50" xml:space="preserve">
+    <value>elektrischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_EL50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,27)</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_TH50" xml:space="preserve">
+    <value>Th. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_TH50" xml:space="preserve">
+    <value>thermischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_TH50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,64)</value>
+  </data>
+  <data name="BHKWK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start:</value>
+  </data>
+  <data name="BHKWK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start</value>
+  </data>
+  <data name="BHKWK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit:</value>
+  </data>
+  <data name="BHKWK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_VOLLLAST" xml:space="preserve">
+    <value>wie Volllast</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_OHNE_TAKTEN" xml:space="preserve">
+    <value>kein Takten</value>
+  </data>
+  <data name="BHKWK_HINWEIS_TEILLAST" xml:space="preserve">
+    <value>Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben.</value>
+  </data>
+  <data name="BHKWK_BILD_KENNLINIE" xml:space="preserve">
+    <value>Wirkungsgrad über der elektrischen Last</value>
+  </data>
+  <data name="BHKWK_BILD_ACHSE_LAST" xml:space="preserve">
+    <value>Elektrische Last [%]</value>
+  </data>
+  <data name="BHKWK_BILD_ELEKTRISCH" xml:space="preserve">
+    <value>elektrisch</value>
+  </data>
+  <data name="BHKWK_BILD_THERMISCH" xml:space="preserve">
+    <value>thermisch</value>
+  </data>
+  <data name="WPS_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_HINT_TAKTVERLUST_CD" xml:space="preserve">
+    <value>(Vorgabe 0,9 nach EN 14825)</value>
+  </data>
+  <data name="WPS_PLATZHALTER_OHNE_TAKT" xml:space="preserve">
+    <value>keine Taktrechnung</value>
+  </data>
+  <data name="WPS_PLATZHALTER_CD_VORGABE" xml:space="preserve">
+    <value>0,9</value>
+  </data>
+  <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
+    <value>Mehrstrom Takten [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust [kWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF" xml:space="preserve">
+    <value>Mehrbrennstoff Teillast [kWh/a]</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_EL50_ERL" xml:space="preserve">
+    <value>Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,27). Mit ihm rechnet das Modul eine Teillastkennlinie: zwischen 50 % und Volllast linear, darunter der Wert bei 50 %. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_TH50_ERL" xml:space="preserve">
+    <value>Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,64). Zusammen mit dem elektrischen Wert bestimmt er die Stromkennzahl in Teillast. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Brennstoff je Start in kWh. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze statt auszubleiben; jeder Start kostet diesen Brennstoff. Leer = kein Takten (ohne Mindestlaufzeit) bzw. 0 kWh.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Start in Minuten (1 bis 60). Sie begrenzt die Starts einer Taktstunde auf 60 geteilt durch die Mindestlaufzeit. Leer = kein Takten (ohne Anfahrverlust) bzw. 10 min.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Kleinste Modulationsleistung der Wärmepumpe in kW. Unterhalb taktet das Gerät, und die Leistungszahl sinkt nach EN 14825. Leer = keine Taktrechnung.</value>
+  </data>
+  <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Teillastkoeffizient C_d nach EN 14825 (0 bis 1). Er bestimmt den Taktverlust: COP_takt = COP · CR / (C_d · CR + 1 − C_d). Leer = Vorgabe 0,9.</value>
+  </data>
 </root>
 

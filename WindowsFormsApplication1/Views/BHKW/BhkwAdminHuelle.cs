@@ -166,7 +166,13 @@ namespace WindowsFormsApplication1
                 WirkungsgradEl:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradEl),
                 WirkungsgradTh:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh));
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh),
+                // Teillast und Takten (Welle M4: BH1, BH2): als Text, denn leer heißt hier
+                // „nicht gepflegt" und wird als NULL geschrieben, nicht „unverändert".
+                WirkungsgradEl50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastEl50),
+                WirkungsgradTh50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastTh50),
+                AnfahrverlustKwh: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit));
 
             BHKWStammCtrl.SpeicherErgebnis e =
                 BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);

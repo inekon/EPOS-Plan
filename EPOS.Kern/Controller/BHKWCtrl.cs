@@ -474,8 +474,12 @@ namespace WindowsFormsApplication1
         /// Die fuenf Anzeigefelder eines BHKW - der Detailblock von
         /// <c>Form_BHKWEing.FillDetailControls</c> (Z. 350-359).
         /// </summary>
+        /// <param name="Teillast">
+        /// Welle M4 (BH1, BH2): die vier Teillastfelder des Satzes — der Detailblock zeigt die gepflegten.
+        /// </param>
         public sealed record BhkwDetail(string Bezeichner, string Firma, string Beschreibung,
-                                        double Ptherm, double Pel);
+                                        double Ptherm, double Pel,
+                                        ErzeugerTeillastWerte.BhkwFelder Teillast = default);
 
         /// <summary>
         /// Die Anzeigefelder der PROJEKTKOPIE ueber Bezeichner und Projekt; <c>null</c>,
@@ -489,8 +493,7 @@ namespace WindowsFormsApplication1
         public static BhkwDetail ProjektDetail(string szName, int idProjekt)
         {
             return AusZeile(DataRepository.GetDataTable(
-                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM Tab_BHKW " +
-                "WHERE Bezeichner = ? AND ID_Projekt = ?",
+                "SELECT * FROM Tab_BHKW WHERE Bezeichner = ? AND ID_Projekt = ?",
                 new DbParam("@name", szName ?? ""),
                 new DbParam("@idProj", idProjekt)));
         }
@@ -502,8 +505,7 @@ namespace WindowsFormsApplication1
         public static BhkwDetail StammDetail(string szName)
         {
             return AusZeile(DataRepository.GetDataTable(
-                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM " + BHKWStammCtrl.TABLE +
-                " WHERE Bezeichner = ? ORDER BY ID",
+                "SELECT * FROM " + BHKWStammCtrl.TABLE + " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@name", szName ?? "")));
         }
 
@@ -516,7 +518,8 @@ namespace WindowsFormsApplication1
                 r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
                 r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
                 r["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(r["Ptherm"]),
-                r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]));
+                r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]),
+                ErzeugerTeillastWerte.BhkwAusZeile(r));
         }
     }
 }

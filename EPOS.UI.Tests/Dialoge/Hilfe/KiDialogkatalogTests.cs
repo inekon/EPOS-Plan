@@ -635,7 +635,7 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_16_17_5_und_11_Felder()
+    public void Die_vier_Startmasken_fuehren_17_18_5_und_13_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -666,7 +666,8 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
-        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+        // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1): 13.
+        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
         // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
         // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
@@ -750,9 +751,10 @@ public class KiDialogkatalogTests : IDisposable
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_13_12_15_14_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_17_12_15_14_und_26_Felder()
     {
-        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
+        // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2).
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
         // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
         Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);

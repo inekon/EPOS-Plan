@@ -226,6 +226,9 @@ namespace WindowsFormsApplication1
                 Modulkosten = m.Modulkosten,
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): leer bleibt leer - keine Taktrechnung bzw. C_d = 0,9.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -317,7 +320,10 @@ namespace WindowsFormsApplication1
                 Regelung = daten.Regelung,
                 Modulkosten = daten.Modulkosten,
                 Bauart = daten.Bauart,
-                Kuehlleistung = daten.Kuehlleistung
+                Kuehlleistung = daten.Kuehlleistung,
+                // Welle M4 (WP1): NULL-treu, der Kern prüft das Band und schreibt.
+                MindestleistungKw = daten.MindestleistungKw,
+                TaktverlustfaktorCd = daten.TaktverlustfaktorCd
             };
 
             WPStammCtrl.SpeicherErgebnis ergebnis = ctrl.Speichern(modell, neu);
