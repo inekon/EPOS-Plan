@@ -3085,8 +3085,26 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_BHKW_MAX_UEBERSCHRITTEN" xml:space="preserve">
     <value>CHP unit: {0} CHP units are stored in the project, the simulation supports a maximum of {1}. The run was aborted so that no result is produced without the remaining modules.</value>
   </data>
+  <data name="SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>{0}: The lower power limit of {1} % ({2}) is invalid – at most 100 % is allowed. The value is ignored; a lower limit of {3} % applies.</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_MODUL" xml:space="preserve">
+    <value>CHP unit “{0}”</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_ALLE_MODULE" xml:space="preserve">
+    <value>CHP unit (all modules)</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_ANLAGE" xml:space="preserve">
+    <value>plant field</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_KATALOG" xml:space="preserve">
+    <value>module catalogue</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_PROJEKT" xml:space="preserve">
+    <value>simulation settings</value>
+  </data>
   <data name="SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Domestic hot water: the type of the entry '{0}' is not defined. The calculation was aborted; its share remains 0.</value>
+    <value>Domestic hot water: the type of the entry '{0}' is not defined. The entry is skipped and its share remains 0; the remaining entries are calculated in full.</value>
   </data>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Database access during the run: {0}</value>
@@ -3161,7 +3179,7 @@ Both point to {0} "{1}".</value>
     <value>{0}the weekly profile of type '{1}' (entry '{2}') contains only zero values. Distributing it over the year would be a division by 0; its calculation is skipped and its share remains 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Process heat: the type of the process '{0}' is not defined. The process heat calculation was aborted; its share remains 0.</value>
+    <value>Process heat: the type of the process '{0}' is not defined. The process is skipped and its share remains 0; the remaining processes are calculated in full.</value>
   </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation aborted: {0}</value>
@@ -3188,7 +3206,7 @@ Both point to {0} "{1}".</value>
     <value>Electricity demand: no record is stored for the electricity profile '{0}'. Its calculation is skipped; its share remains 0.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Electricity demand: the type of the electricity profile '{0}' is not defined. The calculation was aborted; its share remains 0.</value>
+    <value>Electricity demand: the type of the electricity profile '{0}' is not defined. The profile is skipped and its share remains 0; the remaining profiles are calculated in full.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
     <value>Electricity demand: no weekly profile is stored for type '{0}' of the electricity profile '{1}'. Its calculation is skipped; its share remains 0.</value>
@@ -14876,7 +14894,7 @@ Please check all entries!</value>
     <value>Lower power limit of the modules</value>
   </data>
   <data name="SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
-    <value>Applies to every module without a limit of its own. 0 = no lower limit, the CHP unit modulates down to 0.</value>
+    <value>Applies to every module without a limit of its own in the plant field or the catalogue. 0 = no lower limit, the CHP unit modulates down to 0.</value>
   </data>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Operating mode</value>
@@ -14950,6 +14968,9 @@ The CHP unit never generates more electricity than the current own demand. The u
   </data>
   <data name="SIMERG_LBL_KAPAZITAET_HINWEIS" xml:space="preserve">
     <value>This capacity is a what-if figure and is not saved.</value>
+  </data>
+  <data name="SIMERG_LBL_OHNE_STROMSPEICHER" xml:space="preserve">
+    <value>Calculated without battery storage (0 kWh). A capacity in the field shows what a storage could add.</value>
   </data>
   <data name="SIMERG_LBL_ERZEUGERAUSWAHL" xml:space="preserve">
     <value>Generators:</value>

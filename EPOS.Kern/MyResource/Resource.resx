@@ -3101,8 +3101,26 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_BHKW_MAX_UEBERSCHRITTEN" xml:space="preserve">
     <value>BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht.</value>
   </data>
+  <data name="SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>{0}: Die untere Grenzleistung von {1} % ({2}) ist ungültig – zulässig sind höchstens 100 %. Der Wert bleibt unberücksichtigt; es gilt eine Untergrenze von {3} %.</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_MODUL" xml:space="preserve">
+    <value>BHKW „{0}“</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_ALLE_MODULE" xml:space="preserve">
+    <value>BHKW (alle Module)</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_ANLAGE" xml:space="preserve">
+    <value>Anlagenfeld</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_KATALOG" xml:space="preserve">
+    <value>Modulkatalog</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_PROJEKT" xml:space="preserve">
+    <value>Simulationskonfiguration</value>
+  </data>
   <data name="SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Der Eintrag wird übersprungen, sein Anteil bleibt 0; die übrigen Einträge werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Datenbankzugriff während des Laufs: {0}</value>
@@ -3177,7 +3195,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}Das Wochenprofil des Typs '{1}' (Eintrag '{2}') enthält nur Nullwerte. Die Verteilung über das Jahr wäre eine Division durch 0; seine Rechnung entfällt und sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation abgebrochen: {0}</value>
@@ -3204,7 +3222,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>Strombedarf: Zum Stromprofil '{0}' ist kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Das Profil wird übersprungen, sein Anteil bleibt 0; die übrigen Profile werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
     <value>Strombedarf: Zum Typ '{0}' des Stromprofils '{1}' ist kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
@@ -14883,7 +14901,7 @@ Alle Eingaben überprüfen!</value>
     <value>Untere Leistungsgrenze der Module</value>
   </data>
   <data name="SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
-    <value>Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0.</value>
+    <value>Gilt für jedes Modul, das weder im Anlagenfeld noch im Katalog eine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0.</value>
   </data>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Betriebsart</value>
@@ -14957,6 +14975,9 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="SIMERG_LBL_KAPAZITAET_HINWEIS" xml:space="preserve">
     <value>Diese Kapazität ist eine Was-wäre-wenn-Größe und wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMERG_LBL_OHNE_STROMSPEICHER" xml:space="preserve">
+    <value>Ohne Stromspeicher gerechnet (0 kWh). Eine Kapazität im Feld zeigt, was ein Speicher bringen könnte.</value>
   </data>
   <data name="SIMERG_LBL_ERZEUGERAUSWAHL" xml:space="preserve">
     <value>Erzeuger:</value>

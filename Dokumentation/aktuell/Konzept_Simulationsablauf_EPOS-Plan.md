@@ -1013,4 +1013,4 @@ die Summe dieser Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennsto
 meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R30_Stromverbraucher` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R31_Rechenwegbefunde` (Größen `Kessel[i].*` in `aggregate.csv`).

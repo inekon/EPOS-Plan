@@ -27,14 +27,15 @@ gescheitert (etwa ohne `dotnet` im Pfad); Schritt 5 meldet das als „REFERENZLA
 
 | Basis | Lauf | erwartet |
 |---|---|---|
-| R30 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 16/16 PASS, 487/487 CSV byte-gleich |
-| R30 | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
+| R31 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 16/16 PASS, 487/487 CSV byte-gleich |
+| R31 | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
 
 Die Windows-Zeile ist die Gegenrichtung des gemessenen Plattformwechsels: Der Rechenweg der Basis R25 ergab
 auf Linux gegen die Windows-Basis R25 genau diese fünf Dateien (GESAMT PASS, 455/460), und die Kesselregel
 von R26 streicht auf beiden Plattformen dieselben Reststunden; Teil- und Brennwertkennlinie des Kessels sind
 lineare Arithmetik ohne Funktion der Plattformnaht, Brennwertbetrieb und Takten (Mindestleistung, Vielfache eines
-Mindestlaufs) entscheiden am Zahlenrand, die Jahressumme der Stromprofile ist eine Skalierung, und keine fügt eine
+Mindestlaufs) entscheiden am Zahlenrand, die Jahressumme der Stromprofile ist eine Skalierung, die Untergrenze des
+BHKW ist eine Schwelle am Zahlenrand, und keine fügt eine
 Plattformkante hinzu — der gestörte Lauf hält `aggregate.csv` aller sechzehn Projekte byte-gleich. Auf Windows
 nachgerechnet ist die Zeile noch nicht.
 `gate_windows.sh` rechnet den Referenzlauf nicht; die CI (`kern.yml`) rechnet auf ubuntu die sieben

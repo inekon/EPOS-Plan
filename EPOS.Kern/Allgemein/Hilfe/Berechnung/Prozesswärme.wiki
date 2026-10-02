@@ -83,7 +83,7 @@ Was die Rechnung selbst bildet:
 
 Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den '''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten, nicht mit denen des Katalogs.
 
-Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', bricht die Prozesswaermerechnung ab — ohne Typ gibt es keine Verteilung, und ein Vektor aus Nullen sieht aus wie ein Ergebnis.
+Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', gilt dasselbe: Ohne Typ gibt es keine Verteilung, das Profil geht mit '''Anteil 0''' ein, der Lauf meldet es mit seinem Namen, und die uebrigen Profile rechnen vollstaendig. Die Summe haengt damit nicht an der Reihenfolge der Profile.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
@@ -142,7 +142,7 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 * '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen. Schichtplaene, Betriebsferien und Sonderschichten bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab; ein Werk mit drei Wochen Sommerstillstand braucht dafuer einen kleinen Julimonatswert, nicht ein zweites Profil.
 * '''Die Monatsmenge ist unantastbar.''' Wegen (4) und (5) verschiebt der Kalender nur die Verteilung INNERHALB des Monats; wie viele Wochenenden ein Monat hat, aendert seine Menge nicht.
 * '''Kein Auslieferungskatalog.''' Anders als beim Brauchwasser liefert das Programm keine Normprofile fuer Prozesswaerme mit — Monatswerte und Wochenprofil sind Anwenderdaten. Das ist Absicht: Ein Prozess ist ein Einzelfall.
-* '''Abbruch statt Nullprofil.''' Ein fehlender Typbezug beendet die Prozesswaermerechnung, statt sie mit Nullen fortzusetzen.
+* '''Ueberspringen statt Abbruch.''' Ein Profil ohne Typbezug traegt nichts bei und wird gemeldet; die uebrigen Profile rechnen vollstaendig.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
@@ -150,7 +150,7 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 * '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile mit dem Jahresverbrauch, der im Dialog steht (auch vor dem Speichern); der Reiter „Grafik" zeigt die Monate als Balken und die Stundenreihe als Jahresverlauf sowie je Woche und Tag.
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Prozessanteil im Jahresbedarf.
 * '''Bericht''' — Bedarfsuebersicht.
-* '''Laufprotokoll''' — uebersprungene Profile und der Abbruchgrund „Typ nicht definiert".
+* '''Laufprotokoll''' — uebersprungene Profile, auch die ohne Typbezug („Typ nicht definiert").
 
 == Bezüge ==
 {{Anker|bezuege}}

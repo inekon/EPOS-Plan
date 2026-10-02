@@ -948,7 +948,7 @@ Zusätzlich für die '''Speicherflotte''':
 
 * '''Simulationsergebnis, Reiter „Stromspeicher"''' — der Verlauf <math>\mathrm{SOC}(k)</math>, Lade- und Entladeenergie, äquivalente Vollzyklen <math>z_{\mathrm{aeq}}</math>, Geldwert und die  Kennzahlen der Wirtschaftlichkeit.
 
-* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauchsquote und Autarkie mit Speicherwirkung.
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauchsquote und Autarkie mit Speicherwirkung. Die Autarkie-Analyse rechnet mit der Kapazität der Stromspeicher des Projekts; führt das Projekt keinen, rechnet sie mit 0&nbsp;kWh — ohne Stromspeicher — und sagt es unter dem Feld. Eine andere Kapazität im Feld ist eine Was-wäre-wenn-Rechnung und wird nicht gespeichert.
 
 * '''Variantenvergleich der Speicher''' — dieselben Kennzahlen je Variante nebeneinander.
 * '''Auslegungsoptimierung''' — Heatmap über Kapazität oder Leistung und C-Rate, Bestpunkt nach (23) und Kennzahlen je Rasterpunkt.

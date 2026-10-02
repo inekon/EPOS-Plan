@@ -540,9 +540,9 @@ namespace WindowsFormsApplication1
         /// FEHLERPFADE (V0-Stand, hier für alle drei Bedarfsarten gleich):
         ///  * kein Kopfsatz im Projektmodus → Protokollwarnung, Anteil 0, weiter mit dem
         ///    nächsten Profil (V0-3/V0-4: kein stiller Fremdwert aus einem anderen Projekt)
-        ///  * Typbezug leer → Protokollwarnung und ABBRUCH der Bedarfsart (Rückgabe false);
-        ///    ohne Typ gibt es keine Verteilung, und ein halb gerechneter Bedarf soll nicht
-        ///    wie ein vollständiger aussehen
+        ///  * Typbezug leer → Protokollwarnung, Anteil 0, weiter mit dem nächsten Profil
+        ///    (Rückgabe false); die übrigen Profile rechnen vollständig, und die Summe hängt
+        ///    nicht an der Reihenfolge der Profile (Befund PW6)
         ///  * kein Wochenprofil zum Typ → Warnung, Anteil 0, weiter (V0-3: mit dem genullten
         ///    Profil weiterzurechnen lieferte NaN aus der Monatsnormierung)
         ///  * Monatswerte summieren sich zu 0, obwohl eine Projekt-Jahressumme skaliert
@@ -562,7 +562,7 @@ namespace WindowsFormsApplication1
         /// <param name="ziel">Zielvektor [8760], wird AUFADDIERT.</param>
         /// <param name="monatssummen">optional [12]: Monatssummen des Zielvektors nach der Rechnung.</param>
         /// <param name="info">optional: Mitschrift für die Diagnose des Aufrufers.</param>
-        /// <returns>false, wenn die Bedarfsart abgebrochen wurde (Typbezug leer).</returns>
+        /// <returns>false, wenn mindestens ein Profil ohne Typbezug übersprungen wurde.</returns>
         public static bool Rechnen(ProfilQuelle quelle, int idProjekt, List<string> namen,
                                    int wochentagJan1, int[] moAnfang, int[] moEnde,
                                    double[] ziel, double[] monatssummen = null,
@@ -678,11 +678,15 @@ namespace WindowsFormsApplication1
                 object objTyp = kopf["Typ"];
                 if (DBNull.Value.Equals(objTyp) || objTyp == null)
                 {
-                    // Ohne Typbezug gibt es keine Verteilung. Wie im Bestand bricht die
-                    // ganze Bedarfsart ab (Protokollkanal statt MessageBox, Paket 8).
+                    // Ohne Typbezug gibt es keine Verteilung: DIESES Profil wird mit
+                    // benannter Warnung übersprungen (Anteil 0), die übrigen rechnen
+                    // vollständig - wie bei fehlendem Kopfsatz oder Wochenprofil. Ein
+                    // Abbruch der ganzen Bedarfsart ließe die schon aufaddierten Profile
+                    // davor stehen; die Summe hinge dann an der Reihenfolge (Befund PW6).
                     SimulationProtokoll.Aktuell.Warnung(string.Format(quelle.TextTypUndefiniert, name));
                     vollstaendig = false;
-                    break;
+                    if (info != null) info.Uebersprungen++;
+                    continue;
                 }
 
                 string typ = objTyp.ToString();
