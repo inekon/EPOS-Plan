@@ -933,20 +933,20 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
 Beim Nachlesen fiel auf (keine Modellfrage, sondern Pflege oder Fehler):
 
-1. **Hilfeseite Heizkessel veraltet:** `Berechnung/Heizkessel.wiki` Z. 311–317 nennt „kein
+1. ☑ umgesetzt — **Hilfeseite Heizkessel veraltet:** `Berechnung/Heizkessel.wiki` Z. 311–317 nennt „kein
    Teillastwirkungsgrad“, „keine Taktung“, „keine Brennwertrechnung als eigener Weg“ — gebaut mit
    #625–#635. Seite nachziehen (Wiki-Sammel-Upload).
-2. **Hilfeseite Strombedarf veraltet:** „Kein Projektfilter im Stromzweig“ (Z. 217) nach
+2. ☑ umgesetzt — **Hilfeseite Strombedarf veraltet:** „Kein Projektfilter im Stromzweig“ (Z. 217) nach
    #641/#643 nicht mehr zutreffend; „Die Peak-Shaving-Maske schreibt nicht“ (Z. 208, 219)
    übersieht den Knopf „in die Variante übernehmen“ (SB3).
 3. **PW6 ist ein Fehler:** Der Abbruch der Profilschleife hinterlässt eine reihenfolgeabhängige
    Teilsumme, die der Wärmezweig still weiterrechnet (`ProfilBedarf.cs:678-686`,
    `SimulationWaermebedarf.cs:1293`, `:1378`); die Hilfeseite beschreibt einen echten Abbruch.
-4. **Albedo als Literal:** `SolarPVGISCalculator.cs:455` und `:599` rechnen mit `0.2` statt
+4. ☑ umgesetzt — **Albedo als Literal:** `SolarPVGISCalculator.cs:455` und `:599` rechnen mit `0.2` statt
    `ALBEDO_BODEN` (`:333`) — bei PV4 mitziehen.
 5. **Bezugsfläche der Kollektorkennwerte ungeprüft** (ST6); der Kommentar
    `SimulationSolarthermie.cs:159` („Modulfläche · Anzahl“) widerspricht dem Code (`:232`).
-6. **Zusammengesetzte SQL-Texte** im PV-Zweig (`SimulationPV.cs:166`,
+6. ☑ umgesetzt — **Zusammengesetzte SQL-Texte** im PV-Zweig (`SimulationPV.cs:166`,
    `SimulationControl.cs:4705`) entgegen der Regel „`?`-Parameter“ der `CLAUDE.md` — bei der
    nächsten Arbeit an der Stelle umstellen.
 7. **BHKW-Grenzleistungen der Testdatenbank** von 468 bis 1 027 % (Folgeauftrag 6, Punkt 4) —
@@ -982,8 +982,8 @@ Umstellen eines Referenzprojekts.
 | ST1 Pumpenstrom Solarkreis | ja | S | nein (Option) | ☐ |
 | ST6 Bezugsfläche der Kennwerte | ja | S | nein (Option) | ☐ |
 | ST3 Stufe 1 Solarkreisverluste als Feld | ja | S | nein (Vorgabe 8 %) | ☐ |
-| PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☐ |
-| SP2 Beste Rastervariante übernehmen | ja | S | nein | ☐ |
+| PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☑ umgesetzt |
+| SP2 Beste Rastervariante übernehmen | ja | S | nein | ☑ umgesetzt |
 | BW3 Brauchwasser-Vorlauf je Erzeuger | später | M | nein (Option) | ☐ |
 | BW5 Thermische Desinfektion | später | M | nein (Option) | ☐ |
 | PW3 Wochenprofil je Monat oder Saison | später | M | nein (Option) | ☐ |

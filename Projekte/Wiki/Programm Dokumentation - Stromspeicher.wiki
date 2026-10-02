@@ -584,6 +584,9 @@ Nach dem Lauf steht der Kasten '''„Bestes Ergebnis"''' mit drei Karten:
 
 '''Der Kapitalwert ist das Ziel, die jährliche Ersparnis steht daneben.''' Wer aus einer Tabellenkalkulation kommt, sucht oft den Jahresüberschuss nach Kapitaldienst – der ist hier die zweite Zahl derselben Karte; optimiert wird gegen den Kapitalwert, weil er Laufzeit und Zins enthält.
 
+{{Anker|auslegung-beste-uebernehmen}}
+'''„Beste Variante übernehmen"''' steht unter dem Kasten, sobald die Suche einen besten Kandidaten mit Speicher gefunden hat. Der Knopf macht ihn in einem Schritt zur Flotte der Auslegung – als feste Bestückung ohne Suchbereiche, Suchmethode ''Nur bewerten'' – und aktiviert sie für die Projektsimulation, mit denselben Prüfungen wie ''„Als Projektflotte übernehmen"''. In das Simulationsergebnis schreibt er nichts: Die Ergebnisseite des Projekts zeigt weiter den letzten Projektlauf, bis Sie ihn neu rechnen. Gehört das Ergebnis nicht mehr zum eingestellten Stand oder läuft gerade eine Rechnung, ist der Knopf gesperrt und nennt den Grund.
+
 ===== Ergebnisse über der Speichergröße =====
 {{Anker|auslegung-groessen}}
 
