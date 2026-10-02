@@ -454,9 +454,17 @@ namespace EPOS.Kern.Tests
             {
                 Zahlungsbestandteil b = v.Bestandteil(Zahlungsgliederung.Reihenfolge[r]);
                 Assert.Equal(b.Barwert.ToString(ZahlungsreihenAnsicht.GELD, DE), m.Zeilen[r].Zellen[1]);
-                Assert.Equal("nominal " + Math.Abs(b.Nominal).ToString("N0", DE), m.Zeilen[r].Unterwert(1));
+                // Anwenderentscheid 30.09.2026: die Nominalsumme mit DEMSELBEN Vorzeichen und
+                // Format wie der Barwert darüber (Ausgaben negativ, echtes Minuszeichen), dazu
+                // der Kurztext „Summe der Zahlungen über T Jahre, nicht abgezinst".
+                Assert.Equal("nominal " + b.Nominal.ToString(ZahlungsreihenAnsicht.GELD, DE), m.Zeilen[r].Unterwert(1));
+                if (b.Barwert < -0.5) Assert.StartsWith("nominal −", m.Zeilen[r].Unterwert(1));
+                if (b.Barwert > 0.5) Assert.StartsWith("nominal +", m.Zeilen[r].Unterwert(1));
+                Assert.Equal("Summe der Zahlungen über " + v.Jahre.ToString(DE) + " Jahre, nicht abgezinst",
+                             m.Zeilen[r].TitelZuUnterwert(1));
                 Assert.StartsWith("nominal ", m.Zeilen[r].Unterwert(0));
                 Assert.Equal("", m.Zeilen[r].Unterwert(2));                   // die Differenzspalte ohne
+                Assert.Equal("", m.Zeilen[r].TitelZuUnterwert(2));
             }
 
             MatrixZeile netto = m.Zeilen[6];

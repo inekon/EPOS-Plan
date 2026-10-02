@@ -662,6 +662,14 @@ body {
     color: var(--epos-text-leise);
 }
 
+/* Die Herleitungszeile "Menge x Preis" je Energietraeger unter den Energiekosten: leise,
+   weil sie die Zahl darueber erklaert und selbst keinen Betrag traegt, der addiert wird. */
+.epos-wirt-herleitungszeile th,
+.epos-wirt-herleitungszeile td {
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
 /* Etappe E8a: die Summenzeilen einer Tafel (Summe nominal und Barwert unter den
    Zahlungsreihen, der Nettobarwert der Gliederung) - halbfett und mit Linie darueber
    abgesetzt, damit sie nicht als weiteres Jahr gelesen werden. */

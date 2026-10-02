@@ -4,30 +4,43 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Die Zuordnung Projekt ↔ Prozesswärme (<c>Z_Projekt_Prozesswaerme</c>). Gelesen wird sie
+    /// allein über <see cref="LiesProjekt"/> — der Name je Zeile ist der der Projektkopie, auf
+    /// die die Zeile per <c>ID_Prozesswaerme</c> zeigt (Auftrag SV2, wie SV1 beim
+    /// Stromverbraucher; die frühere Lesung <c>ReadAll(sql)</c> mit dem Bezeichner der
+    /// Zuordnungszeile ist entfallen).
+    /// </summary>
     class Z_ProjektProzesswaermeCtrl : Z_ProjektProzesswaermeModel
     {
-        private List<Z_ProjektProzesswaermeModel> _internalList = new List<Z_ProjektProzesswaermeModel>();
-        public int rows => _internalList.Count;
-        public new List<Z_ProjektProzesswaermeModel> items => _internalList;
-
         public Z_ProjektProzesswaermeCtrl()
         {
         }
 
+        /// <summary>
+        /// Setzt die Jahressumme der Zuordnungszeilen eines Projekts, deren Projektkopie
+        /// <paramref name="szBezeichner"/> heißt.
+        ///
+        /// <para><b>Über die ID</b> (Auftrag SV2): Gesucht wird die Kopie DIESES Projekts mit dem
+        /// Namen, den der Dialog zeigt (<see cref="LiesProjekt"/>), und geändert werden die
+        /// Zeilen, die per <c>ID_Prozesswaerme</c> auf sie zeigen. Der Bezeichner der
+        /// Zuordnungszeile selbst kann ein anderer sein — der Name, unter dem sie einmal angelegt
+        /// wurde; über ihn gesucht, traf die Änderung bei einer umbenannten Kopie keine Zeile.</para>
+        /// </summary>
         public bool UpdateSumme(double dSumme, string szBezeichner, int IDProjekt)
         {
             try
             {
                 // Parametrisierte Query: Verhindert SQL-Injections und regelt Nachkommastellen (Double) automatisch fehlerfrei
-                string sql = @"UPDATE Z_Projekt_Prozesswaerme 
-                               SET Summe = ? 
-                               WHERE Bezeichner = ? 
-                                 AND ID_Projekt = ?";
+                string sql = "UPDATE Z_Projekt_Prozesswaerme SET Summe = ? " +
+                             "WHERE ID_Projekt = ? AND ID_Prozesswaerme IN " +
+                             "(SELECT ID FROM Tab_Prozesswaerme WHERE ID_Projekt = ? AND Bezeichner = ?)";
 
                 DbParam[] ps = {
                     new DbParam("@summe", dSumme),
-                    new DbParam("@bez", szBezeichner ?? (object)DBNull.Value),
-                    new DbParam("@idProj", IDProjekt)
+                    new DbParam("@idProj", IDProjekt),
+                    new DbParam("@idProjKopie", IDProjekt),
+                    new DbParam("@bez", szBezeichner ?? (object)DBNull.Value)
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -47,7 +60,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die PROZESSWAERME-ZUORDNUNGEN eines Projekts (iU9-W9.0d) — der JOIN aus
         /// <c>Form_Start.pBox_Prozess_Click</c> (:213-229) und
-        /// <c>ProzesswaermeKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>.
+        /// <c>ProzesswaermeKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>. Der Name je
+        /// Zeile ist der der Projektkopie, auf die sie per ID zeigt; die Reihenfolge ist die der
+        /// Zuordnungs-ID — dieselbe, in der der Lauf rechnet (SV2).
         /// </summary>
         public static List<Z_ProjektProzesswaermeModel> LiesProjekt(int idProjekt)
         {
@@ -59,7 +74,8 @@ namespace WindowsFormsApplication1
                 "Z_Projekt_Prozesswaerme.Summe " +
                 "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
-                "WHERE Z_Projekt_Prozesswaerme.ID_Projekt = ?";
+                "WHERE Z_Projekt_Prozesswaerme.ID_Projekt = ? " +
+                "ORDER BY Z_Projekt_Prozesswaerme.ID";
 
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
             if (dt == null) return liste;
@@ -75,41 +91,6 @@ namespace WindowsFormsApplication1
                 liste.Add(item);
             }
             return liste;
-        }
-
-        public void ReadAll(string sql)
-        {
-            // Daten abrufen über das zentrale DataRepository
-            DataTable dt = DataRepository.GetDataTable(sql, null);
-
-            // Interne Liste vor dem erneuten Laden leeren
-            _internalList.Clear();
-
-            if (dt == null) return;
-
-            foreach (DataRow row in dt.Rows)
-            {
-                Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
-
-                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen statt numerischer Indizes
-                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
-                    item.ID_Z = Convert.ToInt32(row["ID"]);
-
-                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
-                    item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
-
-                if (dt.Columns.Contains("ID_Prozesswaerme") && row["ID_Prozesswaerme"] != DBNull.Value)
-                    item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
-
-                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
-                    item.szProzessname = row["Bezeichner"].ToString();
-
-                if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
-                    item.Summe = Convert.ToDouble(row["Summe"]);
-
-                // Das fertige Element der dynamischen Liste hinzufügen
-                _internalList.Add(item);
-            }
         }
     }
 }

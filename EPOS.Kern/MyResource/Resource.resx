@@ -6765,6 +6765,12 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_ZEILE_GESTEHUNGSKOSTEN" xml:space="preserve">
     <value>Wärmegestehungskosten [€/kWh]</value>
   </data>
+  <data name="WIRT_GESTEHUNG_KURZTEXT" xml:space="preserve">
+    <value>Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich ihrer Erlöse und der Stromgutschrift für BHKW-Eigenstrom zum Arbeitspreis, bei produzierendem Gewerbe gemindert um die entgangene Entlastung nach § 9b StromStG), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
+    <value>Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(Referenz)</value>
   </data>
@@ -17790,6 +17796,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="WIRT_GL_NOMINAL" xml:space="preserve">
     <value>nominal {0}</value>
   </data>
+  <data name="WIRT_GL_NOMINAL_TIPP" xml:space="preserve">
+    <value>Summe der Zahlungen über {0} Jahre, nicht abgezinst</value>
+  </data>
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Differenz {0} − {1}</value>
   </data>
@@ -21713,6 +21722,27 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
     <value>Netzbezug Strom</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ZEILE" xml:space="preserve">
+    <value>{0}: Menge × Preis</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ZEILE_ALLE" xml:space="preserve">
+    <value>Menge × Preis</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_ARBEIT" xml:space="preserve">
+    <value>{0} {1} × {2} €/{1}</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_GRUND" xml:space="preserve">
+    <value>+ {0} €/a Grundpreis</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_LEISTUNG" xml:space="preserve">
+    <value>+ {0} €/a Leistungspreis</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_CO2" xml:space="preserve">
+    <value>+ CO₂ {0} €/a</value>
+  </data>
+  <data name="WIRT_ENK_TRAEGER_FEHLT" xml:space="preserve">
+    <value>Menge × Preis liegt mit der nächsten Rechnung vor</value>
   </data>
   <data name="ETV_BLOCK_PREIS" xml:space="preserve">
     <value>Preis und Heizwert</value>

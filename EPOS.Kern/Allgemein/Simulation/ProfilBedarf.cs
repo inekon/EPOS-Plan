@@ -74,9 +74,6 @@ namespace WindowsFormsApplication1
         /// <summary>Quellmodus — Projektkopie oder Katalog (<see cref="ProfilQuellmodus"/>).</summary>
         public ProfilQuellmodus Modus = ProfilQuellmodus.Projektrechnung;
 
-        /// <summary>Abfrage/Tabelle, aus der die Namen der Profile eines Projekts stammen.</summary>
-        public string NamenAbfrage = "";
-
         /// <summary>Kopftabelle mit den zwölf Monatswerten und dem Typbezug.</summary>
         public string KopfTabelle = "";
 
@@ -114,17 +111,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Spalte in <see cref="ZuordnungTabelle"/>, die per ID auf den Kopfsatz der
-        /// PROJEKTKOPIE zeigt; <c>null</c> = die Zuordnung wird über den Bezeichner gelesen.
+        /// PROJEKTKOPIE zeigt — gesetzt bei allen drei Bedarfsarten (<c>ID_Brauchwasser</c>,
+        /// <c>ID_Prozesswaerme</c>, <c>ID_Stromverbraucher</c>). Die Zuordnung wird allein
+        /// über sie aufgelöst, nie über den Bezeichner der Zuordnungszeile.
         ///
-        /// <para><b>Gesetzt beim Stromverbraucher</b> (<c>ID_Stromverbraucher</c>, Auftrag SV1
-        /// vom 30.09.2026). Der Bezeichner der Zuordnungszeile ist dort der Name, unter dem
-        /// die Zeile einmal angelegt wurde — meist der KATALOGNAME —, die Projektkopie heißt
-        /// dagegen vielfach „… (P‹Projekt›)". Über den Namen gesucht, griff die gepflegte
-        /// Jahressumme nicht (Referenzprojekte 1017 und 1047: „EFH_3_Pers" mit Summe 15 gegen
-        /// die Kopie „EFH_3_Pers (P1017)", gerechnet wurde das volle Profil). Mit gesetzter
-        /// Spalte rechnet der Lauf JE ZUORDNUNGSZEILE: Kopfsatz über diese ID, Jahressumme aus
-        /// derselben Zeile; die Vorschau sucht die Jahressumme über die ID ihres
-        /// Kopfsatzes.</para>
+        /// <para><b>Warum die ID</b> (Aufträge SV1 vom 30.09.2026 und SV2 vom 02.10.2026). Der
+        /// Bezeichner der Zuordnungszeile ist der Name, unter dem die Zeile einmal angelegt
+        /// wurde — meist der KATALOGNAME —, die Projektkopie heißt dagegen vielfach
+        /// „… (P‹Projekt›)" oder ist umbenannt. Über den Namen gesucht, griff die gepflegte
+        /// Jahressumme nicht (Stromverbraucher 1017 und 1047: „EFH_3_Pers" mit Summe 15 gegen
+        /// die Kopie „EFH_3_Pers (P1017)", gerechnet wurde das volle Profil; beim Brauchwasser
+        /// ebenso), und bei der Prozesswärme fehlte dann der Kopfsatz ganz — ihre Namenssicht
+        /// <c>Abfrage_Monatswaerme_Prozesse</c> liefert den Bezeichner der Zuordnungszeile,
+        /// nicht den der Kopie. Der Lauf rechnet deshalb JE ZUORDNUNGSZEILE: Kopfsatz über
+        /// diese ID, Jahressumme aus derselben Zeile; die Vorschau sucht die Jahressumme über
+        /// die ID ihres Kopfsatzes. Die Namenssichten <c>Abfrage_Monats*</c> liest der
+        /// Rechenkern nicht mehr.</para>
         /// </summary>
         public string ZuordnungIdSpalte;
 
@@ -132,11 +134,12 @@ namespace WindowsFormsApplication1
         /// Spalte der Typtabelle, die per ID auf ihren Kopfsatz zeigt; <c>null</c> = das
         /// Wochenprofil wird allein über den Typnamen gesucht.
         ///
-        /// <para>Gesetzt beim Stromverbraucher auf den Projektkopien
-        /// (<c>Tab_Stromverbrauchertyp.ID_Stromverbraucher</c>, die ursprüngliche Beziehung;
-        /// <c>ID_Projekt</c> steht erst seit FK-1 daneben). Das Wochenprofil kommt dann aus
-        /// der Typzeile, die zu GENAU DIESEM Kopfsatz kopiert wurde; nur wo es sie nicht
-        /// gibt, gilt die Typzeile gleichen Namens aus demselben Projekt.</para>
+        /// <para>Gesetzt bei allen drei Bedarfsarten auf den Projektkopien
+        /// (<c>Tab_Brauchwassertyp.ID_Brauchwasser</c>, <c>Tab_Prozesstyp.ID_Prozesswaerme</c>,
+        /// <c>Tab_Stromverbrauchertyp.ID_Stromverbraucher</c> — die ursprüngliche Beziehung;
+        /// <c>ID_Projekt</c> steht erst seit FK-1 daneben), im Katalog nie. Das Wochenprofil
+        /// kommt dann aus der Typzeile, die zu GENAU DIESEM Kopfsatz kopiert wurde; nur wo es
+        /// sie nicht gibt, gilt die Typzeile gleichen Namens aus demselben Projekt.</para>
         /// </summary>
         public string TypKopfIdSpalte;
 
@@ -162,7 +165,16 @@ namespace WindowsFormsApplication1
         /// <summary>Meldung „Typ nicht definiert" (Abbruch) — Platzhalter {0} = Profilname.</summary>
         public string TextTypUndefiniert = "";
 
-        /// <summary>Brauchwasser (Konzept 4.2, Kanal <see cref="Kanal.BRAUCHWASSER"/>).</summary>
+        /// <summary>
+        /// Brauchwasser (Konzept 4.2, Kanal <see cref="Kanal.BRAUCHWASSER"/>).
+        ///
+        /// <para><b>Die Zuordnung wird über die ID aufgelöst</b> (Auftrag SV2,
+        /// <see cref="ZuordnungIdSpalte"/>, <see cref="TypKopfIdSpalte"/>) wie beim
+        /// Stromverbraucher: Kopfsatz, Jahressumme und Wochenprofil folgen
+        /// <c>Z_Projekt_Brauchwasser.ID_Brauchwasser</c>, nicht dem Bezeichner der
+        /// Zuordnungszeile. Weicht er vom Namen der Kopie ab, griff die gepflegte
+        /// Jahressumme bis dahin nicht.</para>
+        /// </summary>
         public static ProfilQuelle Brauchwasser(ProfilQuellmodus modus)
         {
             // W9-O-3c: STAMM-Tabellen liest allein die Katalogvorschau. Die
@@ -174,13 +186,14 @@ namespace WindowsFormsApplication1
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
                             ? Brauchwasser(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
-                NamenAbfrage = "Abfrage_Monatswaerme_Brauchwasser",
                 KopfTabelle = stamm ? "Tab_Brauchwasser_STAMM" : "Tab_Brauchwasser",
                 TypTabelle = stamm ? "Tab_Brauchwassertyp_STAMM" : "Tab_Brauchwassertyp",
                 TypSchluesselSpalte = stamm ? "Bezeichner" : "Typname",
                 ProjektfilterAktiv = !stamm,
                 ZuordnungTabelle = "Z_Projekt_Brauchwasser",
                 ZuordnungSummeSpalte = "Summe",
+                ZuordnungIdSpalte = "ID_Brauchwasser",
+                TypKopfIdSpalte = stamm ? null : "ID_Brauchwasser",
                 Praefix = MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER,
                 TextKopfFehlt = MyResource.Resource.SIMENG_BRAUCHWASSER_KOPF_FEHLT,
                 TextTypprofilFehlt = MyResource.Resource.SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT,
@@ -188,7 +201,16 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Prozesswärme (Konzept 4.2, Kanal <see cref="Kanal.PROZESS"/>).</summary>
+        /// <summary>
+        /// Prozesswärme (Konzept 4.2, Kanal <see cref="Kanal.PROZESS"/>).
+        ///
+        /// <para><b>Die Zuordnung wird über die ID aufgelöst</b> (Auftrag SV2,
+        /// <see cref="ZuordnungIdSpalte"/>, <see cref="TypKopfIdSpalte"/>) wie beim
+        /// Stromverbraucher: Kopfsatz, Jahressumme und Wochenprofil folgen
+        /// <c>Z_Projekt_Prozesswaerme.ID_Prozesswaerme</c>. Über den Namen gelesen, hing der
+        /// Lauf am Bezeichner der Zuordnungszeile — trug die Projektkopie einen anderen
+        /// Namen, fehlte ihr Kopfsatz, und das Profil entfiel mit einer Warnung.</para>
+        /// </summary>
         public static ProfilQuelle Prozesswaerme(ProfilQuellmodus modus)
         {
             // W9-O-3c: STAMM-Tabellen liest allein die Katalogvorschau. Die
@@ -200,13 +222,14 @@ namespace WindowsFormsApplication1
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
                             ? Prozesswaerme(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
-                NamenAbfrage = "Abfrage_Monatswaerme_Prozesse",
                 KopfTabelle = stamm ? "Tab_Prozesswaerme_STAMM" : "Tab_Prozesswaerme",
                 TypTabelle = stamm ? "Tab_Prozesstyp_STAMM" : "Tab_Prozesstyp",
                 TypSchluesselSpalte = stamm ? "Bezeichner" : "Typname",
                 ProjektfilterAktiv = !stamm,
                 ZuordnungTabelle = "Z_Projekt_Prozesswaerme",
                 ZuordnungSummeSpalte = "Summe",
+                ZuordnungIdSpalte = "ID_Prozesswaerme",
+                TypKopfIdSpalte = stamm ? null : "ID_Prozesswaerme",
                 Praefix = MyResource.Resource.SIMENG_PRAEFIX_PROZESSWAERME,
                 TextKopfFehlt = MyResource.Resource.SIMENG_PROZESSWAERME_KOPF_FEHLT,
                 TextTypprofilFehlt = MyResource.Resource.SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT,
@@ -258,7 +281,6 @@ namespace WindowsFormsApplication1
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
                             ? Strom(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
-                NamenAbfrage = "Abfrage_Monatsstrom",
                 KopfTabelle = stamm ? "Tab_Stromverbraucher_STAMM" : "Tab_Stromverbraucher",
                 TypTabelle = stamm ? "Tab_Stromverbrauchertyp_STAMM" : "Tab_Stromverbrauchertyp",
                 TypSchluesselSpalte = "Typname",
@@ -305,10 +327,11 @@ namespace WindowsFormsApplication1
     ///
     /// ABLAUF je Profil:
     ///  1. Kopfsatz lesen (Monat_1…Monat_12 und Typbezug) — im Projektmodus mit
-    ///     Pflichtfilter <c>ID_Projekt</c>; beim Stromverbraucher im Lauf über die ID aus
-    ///     der Zuordnungszeile (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>).
-    ///  2. Projekt-Jahressumme aus der Zuordnungstabelle; ist sie gesetzt (&gt; 0), werden
-    ///     die zwölf Monatswerte darauf skaliert (<c>pjv / jv</c>).
+    ///     Pflichtfilter <c>ID_Projekt</c>; im Lauf über die ID aus der Zuordnungszeile
+    ///     (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>, alle drei Bedarfsarten).
+    ///  2. Projekt-Jahressumme aus der Zuordnungstabelle — im Lauf aus derselben Zeile, in
+    ///     der Vorschau aus der Zeile, die per ID auf den Kopfsatz zeigt; ist sie gesetzt
+    ///     (&gt; 0), werden die zwölf Monatswerte darauf skaliert (<c>pjv / jv</c>).
     ///  3. Wochenprofil des Typs lesen (Spalten „1" … „168") — Puffer vor JEDEM Durchlauf
     ///     genullt (V0-3).
     ///  4. <see cref="WPPlan.Core.BhkwPlan.StromWocheToJahr"/> mit dem Wochentag des
@@ -453,32 +476,8 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Namensliste
+        // Die zu rechnenden Einträge
         // =================================================================================
-
-        /// <summary>
-        /// Die im Projekt hinterlegten Profilnamen einer Bedarfsart
-        /// (<see cref="ProfilQuelle.NamenAbfrage"/>, gefiltert auf <c>ID_Projekt</c>).
-        /// </summary>
-        public static List<string> NamenLesen(ProfilQuelle quelle, int idProjekt)
-        {
-            List<string> namen = new List<string>();
-            if (quelle == null) return namen;
-
-            // SELECT * wie im Bestand: Die Abfrage_*-Objekte sind gespeicherte
-            // Access-Abfragen; ein einzeln benannter Ausgabewert wäre eine zusätzliche
-            // Annahme über ihre Spaltenliste, die K1 nicht treffen muss.
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT * FROM " + quelle.NamenAbfrage + " WHERE ID_Projekt=?",
-                new DbParam("?", idProjekt));
-
-            if (dt == null || !dt.Columns.Contains("Bezeichner")) return namen;
-            foreach (DataRow row in dt.Rows)
-                if (row["Bezeichner"] != DBNull.Value)
-                    namen.Add(row["Bezeichner"].ToString());
-
-            return namen;
-        }
 
         /// <summary>
         /// Ein zu rechnender Eintrag: aus einer Namensliste nur der Name, aus einer
@@ -499,13 +498,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zuordnungszeilen eines Projekts, je Zeile ein Eintrag mit der ID ihres
-        /// Kopfsatzes und ihrer Jahressumme — der Projektlauf einer Bedarfsart, deren
-        /// Zuordnung über die ID aufgelöst wird (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>).
+        /// Kopfsatzes und ihrer Jahressumme — der Projektlauf aller drei Bedarfsarten
+        /// (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>).
         ///
         /// <para>Je ZEILE, nicht je Name: Zwei Zeilen auf dieselbe Kopie rechnen zweimal,
-        /// jede mit ihrer Summe — so, wie die Namensabfrage (ein Verbund über dieselbe
-        /// Zuordnungstabelle) sie zweimal lieferte. Die Reihenfolge ist die der
-        /// Zuordnungs-ID.</para>
+        /// jede mit ihrer Summe. Die Reihenfolge ist die der Zuordnungs-ID.</para>
         /// </summary>
         private static List<Profileintrag> ZuordnungenLesen(ProfilQuelle quelle, int idProjekt)
         {
@@ -557,8 +554,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="quelle">Tabellen-, Spalten- und Textbeschreibung der Bedarfsart.</param>
         /// <param name="idProjekt">Projekt; 0 = ohne Projektbezug (keine Jahressummen-Skalierung).</param>
-        /// <param name="namen">Zu rechnende Profile; <c>null</c> = die des Projekts (<see cref="NamenLesen"/>,
-        /// beim Stromverbraucher die Zuordnungszeilen über die ID).</param>
+        /// <param name="namen">Zu rechnende Profile (Vorschau); <c>null</c> = die Zuordnungszeilen des
+        /// Projekts, je Zeile über die ID (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>).</param>
         /// <param name="wochentagJan1">Wochentag des 1. Januar, Montag = 0 … Sonntag = 6 (F3).</param>
         /// <param name="moAnfang">Stundenindex des Monatsanfangs (12 Werte).</param>
         /// <param name="moEnde">Stundenindex des Monatsendes, inklusive (12 Werte).</param>
@@ -576,16 +573,18 @@ namespace WindowsFormsApplication1
 
             bool projektmodus = quelle.Modus == ProfilQuellmodus.Projektrechnung;
 
-            // SV1: Wird die Zuordnung über die ID aufgelöst, rechnet der Lauf JE
-            // ZUORDNUNGSZEILE (Kopfsatz über die ID, Summe aus derselben Zeile); sonst
-            // wie im Bestand je Name.
+            // SV1/SV2: Ohne Namensliste rechnet der Lauf JE ZUORDNUNGSZEILE (Kopfsatz über
+            // die ID, Summe aus derselben Zeile) - bei allen drei Bedarfsarten. Die Vorschau
+            // bringt ihre Namen mit. Ohne Namen und ohne Projektrechnung gibt es nichts zu
+            // rechnen: Der Katalog kennt keine Zuordnung (Vorschaumodus liefert ohne Liste
+            // stets die Projektrechnung).
             List<Profileintrag> liste;
             if (namen != null)
                 liste = Namenseintraege(namen);
-            else if (projektmodus && !string.IsNullOrEmpty(quelle.ZuordnungIdSpalte))
+            else if (projektmodus)
                 liste = ZuordnungenLesen(quelle, idProjekt);
             else
-                liste = Namenseintraege(NamenLesen(quelle, idProjekt));
+                liste = new List<Profileintrag>();
 
             // Rechenpuffer je Aufruf statt Klassenfelder (Konzept 4.2): Die alten
             // Zwischenspeicher monats_waerme/wochen_waerme/temp waren instanzweit und
@@ -643,14 +642,15 @@ namespace WindowsFormsApplication1
 
                 // Projekt-Jahressumme: skalieren, wenn der Anwender sie geändert hat.
                 // Die Vorgabe des offenen Dialogs geht der gespeicherten Zuordnung vor;
-                // eine Zuordnungszeile bringt ihre Summe selbst mit (SV1).
+                // eine Zuordnungszeile bringt ihre Summe selbst mit (SV1/SV2), die
+                // Vorschau sucht sie über die ID ihres Kopfsatzes.
                 double pjv = 0;
                 if (quelle.Jahressummen != null && quelle.Jahressummen.TryGetValue(name, out double vorgabe))
                     pjv = vorgabe;
                 else if (eintrag.Summe.HasValue)
                     pjv = eintrag.Summe.Value;
                 else if (idProjekt != 0)
-                    pjv = ProjektJahressumme(satzquelle, idProjekt, kopf, bezeichner);
+                    pjv = ProjektJahressumme(satzquelle, idProjekt, kopf);
 
                 double jv = 0;
                 for (int i = 0; i < MONATE; i++)
@@ -743,10 +743,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Kopfsatz eines Profils über den NAMEN; <c>null</c> = kein Treffer.
         ///
-        /// <para>Wird die Zuordnung über die ID aufgelöst
-        /// (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>, SV1), gilt unter gleichnamigen
-        /// Kopien DESSELBEN Projekts zuerst die, auf die eine Zuordnungszeile des Projekts
-        /// zeigt — mit genau der rechnet der Lauf. Erst danach irgendeine Kopie des Projekts
+        /// <para>Unter gleichnamigen Kopien DESSELBEN Projekts gilt zuerst die, auf die eine
+        /// Zuordnungszeile des Projekts per ID zeigt (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>,
+        /// SV1/SV2) — mit genau der rechnet der Lauf. Erst danach irgendeine Kopie des Projekts
         /// (sie übernimmt beim Speichern auch <c>CopyFromStamm</c>).</para>
         /// </summary>
         private static DataRow KopfLesen(ProfilQuelle quelle, int idProjekt, string name)
@@ -756,17 +755,14 @@ namespace WindowsFormsApplication1
 
             if (quelle.ProjektfilterAktiv)
             {
-                if (!string.IsNullOrEmpty(quelle.ZuordnungIdSpalte))
-                {
-                    dt = DataRepository.GetDataTable(
-                        "SELECT k.* FROM " + quelle.KopfTabelle + " k INNER JOIN " + quelle.ZuordnungTabelle +
-                        " z ON z." + quelle.ZuordnungIdSpalte + " = k.ID" +
-                        " WHERE k.Bezeichner=? AND k.ID_Projekt=? AND z.ID_Projekt=? ORDER BY z.ID",
-                        new DbParam("?", name),
-                        new DbParam("?", idProjekt),
-                        new DbParam("?", idProjekt));
-                    if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
-                }
+                dt = DataRepository.GetDataTable(
+                    "SELECT k.* FROM " + quelle.KopfTabelle + " k INNER JOIN " + quelle.ZuordnungTabelle +
+                    " z ON z." + quelle.ZuordnungIdSpalte + " = k.ID" +
+                    " WHERE k.Bezeichner=? AND k.ID_Projekt=? AND z.ID_Projekt=? ORDER BY z.ID",
+                    new DbParam("?", name),
+                    new DbParam("?", idProjekt),
+                    new DbParam("?", idProjekt));
+                if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
 
                 dt = DataRepository.GetDataTable(sql + " AND ID_Projekt=?",
                                                  new DbParam("?", name),
@@ -779,7 +775,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Kopfsatz über die ID aus einer Zuordnungszeile (SV1); <c>null</c> = kein Treffer.
+        /// Kopfsatz über die ID aus einer Zuordnungszeile (SV1/SV2); <c>null</c> = kein Treffer.
         /// Mit Projektfilter gilt nur die Kopie DIESES Projekts: Zeigt die Zeile auf die
         /// Kopie eines anderen Projekts, wird sie nicht gelesen.
         /// </summary>
@@ -799,40 +795,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Vom Anwender im Projekt hinterlegte Jahressumme des Profils; 0 = keine.
-        /// Ersetzt die drei <c>Z_Projekt*Ctrl</c>-Lesungen des Bestands durch EINE
-        /// parametrisierte Abfrage - gelesen wird wie dort die erste Trefferzeile.
+        /// Vom Anwender im Projekt hinterlegte Jahressumme des Profils; 0 = keine. EINE
+        /// parametrisierte Abfrage für alle drei Bedarfsarten — gelesen wird die erste
+        /// Trefferzeile.
         ///
-        /// <para><b>Über die ID</b>, wo die Quelle sie kennt
-        /// (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>, SV1): die Zuordnungszeile des
-        /// Projekts, die auf DIESEN Kopfsatz zeigt. Ein Katalogsatz (Rückfall der
-        /// Projektvorschau) hat keine Zuordnungszeile — dort gilt allein die Vorgabe des
-        /// Dialogs. Sonst wie im Bestand über den Bezeichner.</para>
+        /// <para><b>Über die ID</b> (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>, SV1/SV2): die
+        /// Zuordnungszeile des Projekts, die auf DIESEN Kopfsatz zeigt — nie über den
+        /// Bezeichner der Zeile. Ein Katalogsatz (Rückfall der Projektvorschau) hat keine
+        /// Zuordnungszeile — dort gilt allein die Vorgabe des Dialogs.</para>
         /// </summary>
-        private static double ProjektJahressumme(ProfilQuelle quelle, int idProjekt, DataRow kopf,
-                                                 string bezeichner)
+        private static double ProjektJahressumme(ProfilQuelle quelle, int idProjekt, DataRow kopf)
         {
-            object wert;
-            if (!string.IsNullOrEmpty(quelle.ZuordnungIdSpalte))
-            {
-                if (quelle.Modus == ProfilQuellmodus.Katalogvorschau) return 0;
-                int kopfId = KopfId(kopf);
-                if (kopfId <= 0) return 0;
+            if (quelle.Modus == ProfilQuellmodus.Katalogvorschau) return 0;
+            int kopfId = KopfId(kopf);
+            if (kopfId <= 0) return 0;
 
-                wert = DataRepository.ExecuteScalar(
-                    "SELECT " + quelle.ZuordnungSummeSpalte + " FROM " + quelle.ZuordnungTabelle +
-                    " WHERE ID_Projekt=? AND " + quelle.ZuordnungIdSpalte + "=? ORDER BY ID",
-                    new DbParam("?", idProjekt),
-                    new DbParam("?", kopfId));
-            }
-            else
-            {
-                wert = DataRepository.ExecuteScalar(
-                    "SELECT " + quelle.ZuordnungSummeSpalte + " FROM " + quelle.ZuordnungTabelle +
-                    " WHERE ID_Projekt=? AND Bezeichner=?",
-                    new DbParam("?", idProjekt),
-                    new DbParam("?", bezeichner));
-            }
+            object wert = DataRepository.ExecuteScalar(
+                "SELECT " + quelle.ZuordnungSummeSpalte + " FROM " + quelle.ZuordnungTabelle +
+                " WHERE ID_Projekt=? AND " + quelle.ZuordnungIdSpalte + "=? ORDER BY ID",
+                new DbParam("?", idProjekt),
+                new DbParam("?", kopfId));
 
             if (wert == null || wert == DBNull.Value) return 0;
             return (double)Convert.ToDouble(wert);
@@ -843,8 +825,9 @@ namespace WindowsFormsApplication1
         /// Rückgabe false = kein Typsatz gefunden (der Puffer bleibt unberührt).
         ///
         /// <para>Kennt die Typtabelle ihren Kopfsatz per ID
-        /// (<see cref="ProfilQuelle.TypKopfIdSpalte"/>, SV1), gilt zuerst die Typzeile, die
-        /// zu genau diesem Kopfsatz gehört; erst ohne sie die gleichnamige des Projekts.</para>
+        /// (<see cref="ProfilQuelle.TypKopfIdSpalte"/>, SV1/SV2: alle Projektkopien), gilt
+        /// zuerst die Typzeile, die zu genau diesem Kopfsatz gehört; erst ohne sie die
+        /// gleichnamige des Projekts.</para>
         /// </summary>
         private static bool WochenprofilLesen(ProfilQuelle quelle, int idProjekt, string typ,
                                               int kopfId, double[] wochenwerte)

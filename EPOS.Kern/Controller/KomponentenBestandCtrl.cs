@@ -225,16 +225,15 @@ namespace WindowsFormsApplication1
             wbctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
             for (int n = 0; n < wbctrl.rows; n++) Merken(WAERMEBEDARF, wbctrl.items[n].m_szBezeichner);
 
-            Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
-            prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < prozctrl.rows; n++) Merken(PROZESS, prozctrl.items[n].szProzessname);
+            // SV1/SV2: Prozesswaerme, Brauchwasser und Stromverbraucher nennen je Zeile die
+            // Projektkopie, auf die die Zeile per ID zeigt - wie die Kacheln der Startseite -,
+            // nicht den Bezeichner der Zuordnungszeile.
+            foreach (Z_ProjektProzesswaermeModel pw in Z_ProjektProzesswaermeCtrl.LiesProjekt(idProjekt))
+                Merken(PROZESS, pw.szProzessname);
 
-            Z_ProjektBrauchwasserCtrl bwctrl = new Z_ProjektBrauchwasserCtrl();
-            bwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < bwctrl.rows; n++) Merken(BRAUCHWASSER, bwctrl.items[n].szBezeichner);
+            foreach (Z_ProjektBrauchwasserModel bw in Z_ProjektBrauchwasserCtrl.LiesProjekt(idProjekt))
+                Merken(BRAUCHWASSER, bw.szBezeichner);
 
-            // SV1: der Name der Projektkopie, auf die die Zeile per ID zeigt - wie ihn die
-            // Kachel der Startseite zeigt -, nicht der Bezeichner der Zuordnungszeile.
             foreach (Z_ProjektStromverbraucherModel sv in Z_ProjektStromverbraucherCtrl.LiesProjekt(idProjekt))
                 Merken(STROMSTD, sv.m_szVerbraucher);
 

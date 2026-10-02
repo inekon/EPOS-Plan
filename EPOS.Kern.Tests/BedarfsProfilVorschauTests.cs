@@ -456,7 +456,9 @@ namespace EPOS.Kern.Tests
         /// Projekt 1041 führt die Prozesswärme „Hotel_1". Wird ihre Projektkopie
         /// umbenannt — genau das, was der Kopiervorgang mit „ (P‹Projekt›)" tut —,
         /// kennt der Katalog den Namen nicht mehr. Die Vorschau muss ihn dann in der
-        /// PROJEKTKOPIE finden statt zwölf Nullen zu zeigen.
+        /// PROJEKTKOPIE finden statt zwölf Nullen zu zeigen — und mit der gepflegten
+        /// Jahressumme der Zuordnung rechnen, die sie über die ID des Kopfsatzes findet
+        /// (SV2): 30 MWh/a, nicht die 365 MWh/a der zwölf Monatswerte.
         /// </summary>
         [Fact]
         public void Ein_nur_im_Projekt_bekanntes_Profil_wird_gerechnet()
@@ -483,6 +485,14 @@ namespace EPOS.Kern.Tests
             Assert.True(sim.Waermebedarf_Prozess > 0);
             Assert.All(sim.Waermebedarf_Prozess_Monat.Take(12),
                        m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-4)."));
+
+            // SV2 (02.10.2026): Die Zuordnungszeile heisst weiter "Hotel_1"; ihre Summe von
+            // 30 MWh/a gilt ueber die ID. Ueber den Namen der Kopie gesucht, skalierte hier
+            // nichts, und die Vorschau zeigte 365 MWh/a. Januar wie mit dem Katalognamen:
+            // 31 x 30 / 365 = 2,548 MWh.
+            Assert.Equal(30000.0, sim.prozesswerte.Sum(), 0);
+            Assert.Equal(30.0, sim.Waermebedarf_Prozess, 3);
+            Assert.Equal(2.548, sim.Waermebedarf_Prozess_Monat[0], 3);
         }
     }
 }

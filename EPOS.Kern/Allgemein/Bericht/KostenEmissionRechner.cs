@@ -343,6 +343,7 @@ namespace WindowsFormsApplication1
                 v.LeistungspreisNichtAngesetztSatz = null;
                 v.LeistungspreisNichtAngesetztTraeger = null;
                 KaeltestromZuruecksetzen(v);
+                v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
@@ -362,6 +363,13 @@ namespace WindowsFormsApplication1
             v.LeistungspreisNichtAngesetztSatz = null;
             v.LeistungspreisNichtAngesetztTraeger = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
+            v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
+
+            // DIE AUFSTELLUNG JE TRÄGER (Herleitungszeile „Menge × Preis" unter den Energiekosten,
+            // Wärmegestehungskosten): Sie entsteht NEBEN den Summen unten, aus denselben Mengen und
+            // Preisen, und rührt keine Summe an — Brennstoffe, dann der Netzbezug, dann die
+            // abweichenden Kühlträger.
+            var traegerListe = new List<EnergieTraegerNachweis>();
 
             // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
             // steht auch dann an der Variante, wenn kein Leistungspreis gepflegt ist —
@@ -501,6 +509,7 @@ namespace WindowsFormsApplication1
             {
                 // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen.
                 TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key, szenario);
+                EnergieTraegerNachweis brennstoffEintrag = null;   // Aufstellung je Träger
 
                 // L13: die MENGE biogener Träger — unabhängig davon, ob ein Faktor
                 // gepflegt ist. Die Konventionsfrage entscheidet der Aufrufer.
@@ -523,6 +532,30 @@ namespace WindowsFormsApplication1
                         kosten = kv.Value * 1000.0 * info.PreisArbeit.Value;   // €/kWh direkt
                     if (info.Grundpreis.HasValue) kosten += info.Grundpreis.Value;   // je Träger einmal p. a.
                     brennstoffKosten += kosten;
+
+                    // Die Aufstellung je Träger: dieselbe Menge, derselbe Preis. Den Brennstoff
+                    // setzen allein Wärmeerzeuger ein (Kessel, BHKW) — Wärmemenge = Verbrauch.
+                    bool ueberHi = info.EffHi.HasValue && info.EffHi.Value > 0;
+                    double mengeAbr = ueberHi ? kv.Value * 1000.0 / info.EffHi.Value : kv.Value * 1000.0;
+                    double arbeit = mengeAbr * info.PreisArbeit.Value;
+                    brennstoffEintrag = new EnergieTraegerNachweis
+                    {
+                        CarrierId = kv.Key,
+                        Traeger = TraegerName(kv.Key),
+                        MengeMWh = kv.Value,
+                        MengeAbrechnung = mengeAbr,
+                        Einheit = ueberHi ? info.Abrechnungseinheit : "kWh",
+                        PreisJeEinheit = info.PreisArbeit.Value,
+                        ArbeitEur = arbeit,
+                        GrundpreisEur = info.Grundpreis ?? 0.0,
+                        WaermeMengeMWh = kv.Value,
+                        VerbrauchGesamtMWh = kv.Value,
+                        WaermeArbeitEur = arbeit,
+                        BehgT = info.BehgPflichtig && info.CO2.HasValue && info.CO2.Value > 0
+                            ? kv.Value * info.CO2.Value / 1000.0 : 0.0,
+                        BiogenBehgMWh = info.BehgBiogen ? kv.Value : 0.0
+                    };
+                    traegerListe.Add(brennstoffEintrag);
                 }
                 else
                 {
@@ -565,6 +598,7 @@ namespace WindowsFormsApplication1
                         brennstoffKosten += anteil;
                         leistungsAnteil += anteil;
                         leistungGepflegt = true;
+                        if (brennstoffEintrag != null) brennstoffEintrag.LeistungEur += anteil;
                     }
                 }
 
@@ -678,6 +712,7 @@ namespace WindowsFormsApplication1
             // die CO₂-Seite den ZUGEORDNETEN (stromCarrier). Sind beide gleich — der
             // Regelfall —, wird auch nur EINMAL geladen. Ohne Verwendung gar nicht.
             double? projektArbeitspreis = null;   // KU2 Welle 3: für den Ausweis des Kältestroms
+            EnergieTraegerNachweis netzEintrag = null;   // Aufstellung je Träger
             if (!stromOhneVerwendung && stromCarrierKosten > 0)
             {
                 // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen
@@ -714,6 +749,27 @@ namespace WindowsFormsApplication1
                     // E34: ohne den Anteil der abweichenden Kühlträger (sonst der ganze Netzbezug).
                     stromKosten = netzbezugProjektMWh * 1000.0 * preistraeger.PreisArbeit.Value;
                     if (preistraeger.Grundpreis.HasValue) stromKosten += preistraeger.Grundpreis.Value;
+
+                    // Die Aufstellung je Träger: der Netzbezug des Projektträgers mit Arbeits- und
+                    // Grundpreis (der Leistungsanteil kommt unten dazu). Für die Wärmegestehung dazu
+                    // der Strom der Wärmeerzeuger — zum Arbeitspreis, ohne Anrechnung von
+                    // PV-Eigenverbrauch — und der Verbrauch aller Verbraucher des Anschlusses.
+                    netzEintrag = new EnergieTraegerNachweis
+                    {
+                        CarrierId = stromCarrierKosten,
+                        Traeger = stromPreisTraeger ?? "",
+                        Netzstrom = true,
+                        MengeMWh = netzbezugProjektMWh,
+                        MengeAbrechnung = netzbezugProjektMWh * 1000.0,
+                        Einheit = "kWh",
+                        PreisJeEinheit = preistraeger.PreisArbeit.Value,
+                        ArbeitEur = netzbezugProjektMWh * 1000.0 * preistraeger.PreisArbeit.Value,
+                        GrundpreisEur = preistraeger.Grundpreis ?? 0.0,
+                        WaermeMengeMWh = Waermegestehung.WaermestromMWh(m),
+                        VerbrauchGesamtMWh = Waermegestehung.StromverbrauchGesamtMWh(m)
+                    };
+                    netzEintrag.WaermeArbeitEur = netzEintrag.WaermeMengeMWh * 1000.0 * preistraeger.PreisArbeit.Value;
+                    traegerListe.Add(netzEintrag);
 
                     // ---- DER LEISTUNGSPREIS DES STROMTRÄGERS (Anwenderentscheid
                     // 17.09.2026, SP-E-1 a / Q1 Viertelstunde) ----
@@ -769,6 +825,7 @@ namespace WindowsFormsApplication1
                             if (spitze != null && spitze.JahrKW > 0)
                             {
                                 double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
+                                netzEintrag.LeistungEur = anteilStrom;
 
                                 stromKosten += anteilStrom;
                                 leistungsAnteil += anteilStrom;
@@ -847,7 +904,15 @@ namespace WindowsFormsApplication1
                 // E9a: im Szenariolauf mit dem wirksamen Szenariopreis des Kühlträgers - derselbe
                 // Leseweg wie für den Stromträger des Projekts.
                 TraegerInfo kt = LadeTraeger(v.IdProjekt, a.Traeger, szenario);
-                if (kt.PreisArbeit.HasValue) kuehlKosten += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                if (kt.PreisArbeit.HasValue)
+                {
+                    kuehlKosten += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                    // Aufstellung je Träger: Kältestrom — kein Einsatz eines Wärmeerzeugers.
+                    EnergieTraegerNachweis ke = KuehlEintrag(traegerListe, a.Traeger, kt.PreisArbeit.Value);
+                    ke.MengeMWh += a.MengeMwh;
+                    ke.MengeAbrechnung += a.MengeMwh * 1000.0;
+                    ke.ArbeitEur += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                }
                 else
                 {
                     string name = TraegerName(a.Traeger);
@@ -884,6 +949,7 @@ namespace WindowsFormsApplication1
                 if (kt.Grundpreis.HasValue && kt.Grundpreis.Value > 0)
                 {
                     kuehlKosten += kt.Grundpreis.Value;
+                    KuehlEintrag(traegerListe, z.Traeger, kt.PreisArbeit ?? 0.0).GrundpreisEur += kt.Grundpreis.Value;
                     zaehlerZeilen.Add(new EnergieAnlageNachweis
                     {
                         Anlage = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND, z.Anlage),
@@ -909,6 +975,7 @@ namespace WindowsFormsApplication1
                 kuehlKosten += anteil;
                 leistungsAnteil += anteil;
                 leistungGepflegt = true;
+                KuehlEintrag(traegerListe, z.Traeger, kt.PreisArbeit ?? 0.0).LeistungEur += anteil;
                 double basis = LeistungsbasisKW(kt, eigene);
                 zaehlerZeilen.Add(new EnergieAnlageNachweis
                 {
@@ -998,6 +1065,9 @@ namespace WindowsFormsApplication1
             if (energie.HasValue && (kuehlAnteile.Count > 0 || kuehlZaehler.Count > 0))
                 energie = kuehlOhnePreis.Count > 0 ? (double?)null : energie.Value + kuehlKosten;
             v.Energiekosten = energie;
+            // Die Aufstellung je Träger steht nur neben einer bestimmten Summe — eine Herleitung
+            // ohne Summe wäre eine halbe Rechnung.
+            if (energie.HasValue) v.EnergiekostenJeTraeger = traegerListe;
 
             // AUFTRAG #267 — KEIN STILLES NULL. Bleibt die Zahl aus, steht ab hier im
             // Klartext, WORAN es liegt und WAS zu tun ist. Die Reihenfolge ist die der
@@ -1182,6 +1252,28 @@ namespace WindowsFormsApplication1
             if (string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
                 return string.Format(k, T("WIRT_LP_SATZ_MONAT", "{0} €/(kW·Monat)"), wert.ToString("N2", k));
             return wert.ToString("N2", k) + " €/(kW·a)";
+        }
+
+        /// <summary>
+        /// Der Eintrag eines abweichenden Kühlträgers in der Aufstellung je Träger — je Träger
+        /// einer, angelegt beim ersten Bedarf (Kältestrom anteilig, eigener Zähler mit Grund- und
+        /// Leistungspreis). Kältestrom ist kein Einsatz eines Wärmeerzeugers: Wärmemenge 0.
+        /// </summary>
+        private static EnergieTraegerNachweis KuehlEintrag(List<EnergieTraegerNachweis> liste,
+                                                           int carrierId, double arbeitspreis)
+        {
+            foreach (EnergieTraegerNachweis t in liste)
+                if (t != null && !t.Netzstrom && t.CarrierId == carrierId && t.WaermeMengeMWh == 0.0)
+                    return t;
+            var neu = new EnergieTraegerNachweis
+            {
+                CarrierId = carrierId,
+                Traeger = TraegerName(carrierId),
+                Einheit = "kWh",
+                PreisJeEinheit = arbeitspreis
+            };
+            liste.Add(neu);
+            return neu;
         }
 
         private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,
