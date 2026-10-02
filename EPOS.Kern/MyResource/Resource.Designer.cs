@@ -50718,6 +50718,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fläche, auf die h0, k1 und k2 bezogen sind: apertur (Vorgabe) oder brutto. Die Simulation rechnet mit dieser Fläche mal Modulanzahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_BEZUGSFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_BEZUGSFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Kollektors; er dient der Wiedererkennung im Katalog. ähnelt.
         /// </summary>
         public static string KI_DLG_SKK_FIRMA_ERL {
@@ -50781,7 +50790,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, ein fester Wert unabhängig vom Einfallswinkel; 0 heißt unbekannt, dann gilt der Faktor der Direktstrahlung. ähnelt.
         /// </summary>
         public static string KI_DLG_SKK_KDIFF_ERL {
             get {
@@ -50853,6 +50862,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja: Die Arbeitstemperatur des Kollektors folgt je Stunde der untersten Zone des Senkenpuffers plus Grädigkeit und halber Spreizung. Nein: fest 50 Grad. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_ARBEITSTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_ARBEITSTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung der Kollektorfläche in Grad, 0 = Süden; negative Werte nach Osten, positive nach Westen. ähnelt.
         /// </summary>
         public static string KI_DLG_SK_AZIMUT_ERL {
@@ -50862,11 +50880,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit des Wärmeübertragers zum Speicher in Kelvin (0 bis 30); leer heißt 5 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_GRAEDIGKEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_GRAEDIGKEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neigung der Kollektorfläche gegen die Waagerechte in Grad, 0 bis 90 (0 = waagerecht). ähnelt.
         /// </summary>
         public static string KI_DLG_SK_NEIGUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SK_NEIGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Leistung der Solarkreispumpe in Watt. Sie zählt als Strombedarf in jeder Stunde, in der das Kollektorfeld Wärme abgibt; leer heißt kein Pumpenstrom. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_PUMPE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_PUMPE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung des Kollektorkreises, Austritt minus Eintritt, in Kelvin (0 bis 30); leer heißt 10 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_SPREIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_SPREIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeverluste des Solarkreises in Prozent des Kollektorertrags (0 bis 50); leer heißt 8 Prozent. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_VERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_VERLUSTE_ERL", resourceCulture);
             }
         }
         
@@ -86103,6 +86157,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Der Kollektor rechnet das ganze Jahr mit einer mittleren Fluidtemperatur von 50 °C. ähnelt.
+        /// </summary>
+        public static string SKV_HINT_ARBEITSTEMPERATUR_FEST {
+            get {
+                return ResourceManager.GetString("SKV_HINT_ARBEITSTEMPERATUR_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Speicher: Kollektoreintritt = unterste Zone des Senkenpuffers (ohne Puffer: Heizkreisrücklauf) plus Grädigkeit, mittlere Kollektortemperatur = Eintritt plus halbe Spreizung, je Stunde neu. ähnelt.
+        /// </summary>
+        public static string SKV_HINT_ARBEITSTEMPERATUR_SPEICHER {
+            get {
+                return ResourceManager.GetString("SKV_HINT_ARBEITSTEMPERATUR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit leer = 5 K (externer Plattenübertrager); innenliegendes Glattrohr etwa 10 K. Spreizung leer = 10 K. ähnelt.
+        /// </summary>
+        public static string SKV_HINT_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("SKV_HINT_GRAEDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pumpenleistung leer = kein Pumpenstrom (oder der Hilfsenergieanteil der Anlage); der Strom zählt in jeder Stunde, in der das Feld Wärme abgibt. Verluste leer = 8 %. ähnelt.
+        /// </summary>
+        public static string SKV_HINT_PUMPE {
+            get {
+                return ResourceManager.GetString("SKV_HINT_PUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Solarkollektoren ähnelt.
         /// </summary>
         public static string SKV_KOPFBAND {
@@ -86130,11 +86220,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitstemperatur: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_ARBEITSTEMPERATUR {
+            get {
+                return ResourceManager.GetString("SKV_LBL_ARBEITSTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Azimut [°]: ähnelt.
         /// </summary>
         public static string SKV_LBL_AZIMUT {
             get {
                 return ResourceManager.GetString("SKV_LBL_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit Wärmeübertrager [K]: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("SKV_LBL_GRAEDIGKEIT", resourceCulture);
             }
         }
         
@@ -86184,6 +86292,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung Solarkreispumpe [W]: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_PUMPENLEISTUNG {
+            get {
+                return ResourceManager.GetString("SKV_LBL_PUMPENLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung Kollektorkreis [K]: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_SPREIZUNG {
+            get {
+                return ResourceManager.GetString("SKV_LBL_SPREIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verluste Solarkreis [%]: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_VERLUSTE {
+            get {
+                return ResourceManager.GetString("SKV_LBL_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz konnte nicht in das Projekt übernommen werden. ähnelt.
         /// </summary>
         public static string SKV_MSG_KOPIE_FEHLER {
@@ -86207,6 +86342,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKV_MSG_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("SKV_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest 50 °C ähnelt.
+        /// </summary>
+        public static string SKV_OPT_ARBEITSTEMPERATUR_FEST {
+            get {
+                return ResourceManager.GetString("SKV_OPT_ARBEITSTEMPERATUR_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Speicher ähnelt.
+        /// </summary>
+        public static string SKV_OPT_ARBEITSTEMPERATUR_SPEICHER {
+            get {
+                return ResourceManager.GetString("SKV_OPT_ARBEITSTEMPERATUR_SPEICHER", resourceCulture);
             }
         }
         

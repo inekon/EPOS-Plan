@@ -74,6 +74,18 @@ public sealed class ErzeugerZeile
     /// <summary>Anzahl Module — nur bei der Photovoltaik belegt (im Modell ein <c>double</c>).</summary>
     public double? AnzahlModule { get; set; }
 
+    // --- Kollektorfeld der Solarthermie (Welle M2) — nur beim Solarkollektor belegt ----------
+    /// <summary>Leistung der Solarkreispumpe [W]; <c>null</c> = nicht gepflegt.</summary>
+    public double? SolarPumpenleistungW { get; set; }
+    /// <summary>Verluste des Solarkreises [%]; <c>null</c> = Vorgabe 8 %.</summary>
+    public double? SolarkreisverlusteProzent { get; set; }
+    /// <summary>Grädigkeit des Wärmeübertragers [K]; <c>null</c> = Vorgabe 5 K.</summary>
+    public double? SolarGraedigkeitK { get; set; }
+    /// <summary>Spreizung des Kollektorkreises [K]; <c>null</c> = Vorgabe 10 K.</summary>
+    public double? SolarSpreizungK { get; set; }
+    /// <summary>Arbeitstemperatur aus dem Speicher statt fest 50 °C.</summary>
+    public bool SolarArbeitstemperaturAusSpeicher { get; set; }
+
     // --- Photovoltaik, Paket A/B des PV-Ertragsmodells (Merge 5, aus Form_PV nachgezogen) ----
     /// <summary>Wechselrichter-Wirkungsgrad als Faktor; NULL = 0,95 (Bestand). Nur Modell EINFACH.</summary>
     public double? WrWirkungsgrad { get; set; }

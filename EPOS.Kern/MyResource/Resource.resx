@@ -24637,7 +24637,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Einfallswinkelkorrekturfaktor Kdir für die direkte Einstrahlung.</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
-    <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad.</value>
+    <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, ein fester Wert unabhängig vom Einfallswinkel; 0 heißt unbekannt, dann gilt der Faktor der Direktstrahlung.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>
@@ -41292,6 +41292,57 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SKK_HINT_BEZUGSFLAECHE" xml:space="preserve">
     <value>Die Fläche, auf die η₀, a₁ und a₂ im Datenblatt bezogen sind. Prüfberichte nach EN ISO 9806:2017 nennen meist die Bruttofläche, ältere Datenblätter nach EN 12975 die Aperturfläche. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
+  </data>
+  <data name="SKV_LBL_PUMPENLEISTUNG" xml:space="preserve">
+    <value>Leistung Solarkreispumpe [W]:</value>
+  </data>
+  <data name="SKV_LBL_VERLUSTE" xml:space="preserve">
+    <value>Verluste Solarkreis [%]:</value>
+  </data>
+  <data name="SKV_LBL_ARBEITSTEMPERATUR" xml:space="preserve">
+    <value>Arbeitstemperatur:</value>
+  </data>
+  <data name="SKV_LBL_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit Wärmeübertrager [K]:</value>
+  </data>
+  <data name="SKV_LBL_SPREIZUNG" xml:space="preserve">
+    <value>Spreizung Kollektorkreis [K]:</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>fest 50 °C</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>aus dem Speicher</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>Fest: Der Kollektor rechnet das ganze Jahr mit einer mittleren Fluidtemperatur von 50 °C.</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>Aus dem Speicher: Kollektoreintritt = unterste Zone des Senkenpuffers (ohne Puffer: Heizkreisrücklauf) plus Grädigkeit, mittlere Kollektortemperatur = Eintritt plus halbe Spreizung, je Stunde neu.</value>
+  </data>
+  <data name="SKV_HINT_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit leer = 5 K (externer Plattenübertrager); innenliegendes Glattrohr etwa 10 K. Spreizung leer = 10 K.</value>
+  </data>
+  <data name="SKV_HINT_PUMPE" xml:space="preserve">
+    <value>Pumpenleistung leer = kein Pumpenstrom (oder der Hilfsenergieanteil der Anlage); der Strom zählt in jeder Stunde, in der das Feld Wärme abgibt. Verluste leer = 8 %.</value>
+  </data>
+  <data name="KI_DLG_SK_PUMPE_ERL" xml:space="preserve">
+    <value>Elektrische Leistung der Solarkreispumpe in Watt. Sie zählt als Strombedarf in jeder Stunde, in der das Kollektorfeld Wärme abgibt; leer heißt kein Pumpenstrom.</value>
+  </data>
+  <data name="KI_DLG_SK_VERLUSTE_ERL" xml:space="preserve">
+    <value>Wärmeverluste des Solarkreises in Prozent des Kollektorertrags (0 bis 50); leer heißt 8 Prozent.</value>
+  </data>
+  <data name="KI_DLG_SK_ARBEITSTEMPERATUR_ERL" xml:space="preserve">
+    <value>Ja: Die Arbeitstemperatur des Kollektors folgt je Stunde der untersten Zone des Senkenpuffers plus Grädigkeit und halber Spreizung. Nein: fest 50 Grad.</value>
+  </data>
+  <data name="KI_DLG_SK_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Grädigkeit des Wärmeübertragers zum Speicher in Kelvin (0 bis 30); leer heißt 5 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher.</value>
+  </data>
+  <data name="KI_DLG_SK_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Spreizung des Kollektorkreises, Austritt minus Eintritt, in Kelvin (0 bis 30); leer heißt 10 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher.</value>
+  </data>
+  <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche, auf die h0, k1 und k2 bezogen sind: apertur (Vorgabe) oder brutto. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
   </data>
 </root>
 

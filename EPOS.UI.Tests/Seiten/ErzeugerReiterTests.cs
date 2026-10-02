@@ -662,6 +662,25 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Solarthermie);
     }
 
+    /// <summary>
+    /// Der Pumpenstrom der Solarkreise (Welle M2, ST1) steht nur mit Wert: ohne gepflegte Pumpe
+    /// keine Zeile, mit Pumpe der Jahreswert in MWh/a.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_zeigt_den_Pumpenstrom_nur_mit_Wert()
+    {
+        var ohne = SolarZeichnen();
+        Assert.DoesNotContain("Pumpenstrom Solarkreis:", ohne.Markup);
+
+        var e = Solar();
+        e.PumpenstromMwh = 0.123;
+        var mit = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+        var liste = mit.FindAll("dl.epos-simerg-werte")[0];
+        string[] titel = liste.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = liste.QuerySelectorAll("dd:not(.epos-simerg-einheit)").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("0,12", werte[Array.IndexOf(titel, "Pumpenstrom Solarkreis:")]);
+    }
+
     /// <summary>Ohne bekannten Bezug bleibt das Deckungsfeld LEER (woertlich :4603).</summary>
     [Fact]
     public void Solarthermie_laesst_die_Deckung_ohne_Bezug_leer()

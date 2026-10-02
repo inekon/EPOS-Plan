@@ -223,6 +223,34 @@
                               Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
                               Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
+                @* SOLARKREIS (Welle M2 der Entscheidungsvorlage Modellgrenzen, ST1 bis ST4):
+                   Pumpe, Verluste, Arbeitstemperatur mit Graedigkeit und Spreizung. Leer
+                   heisst Vorgabe - der Platzhalter nennt sie. *@
+                <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_PUMPENLEISTUNG" Feldname="@Resource.SKV_LBL_PUMPENLEISTUNG"
+                            Wert="@_eingaben.PumpenleistungW" Min="0" Max="10000" Platzhalter="0"
+                            WertChanged="w => { _eingaben.PumpenleistungW = w; }" />
+                <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_VERLUSTE" Feldname="@Resource.SKV_LBL_VERLUSTE"
+                            Wert="@_eingaben.VerlusteProzent" Min="0" Max="50" Platzhalter="8"
+                            WertChanged="w => { _eingaben.VerlusteProzent = w; }" />
+                <Auswahlfeld Bezeichnung="@Resource.SKV_LBL_ARBEITSTEMPERATUR" Eintraege="@ArbeitstemperaturWege"
+                             Auswahl="@(_eingaben.ArbeitstemperaturAusSpeicher ? 1 : 0)"
+                             AuswahlChanged="w => { _eingaben.ArbeitstemperaturAusSpeicher = w == 1; }" />
+                <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_GRAEDIGKEIT" Feldname="@Resource.SKV_LBL_GRAEDIGKEIT"
+                            Wert="@_eingaben.GraedigkeitK" Min="0" Max="30" Platzhalter="5"
+                            Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
+                            WertChanged="w => { _eingaben.GraedigkeitK = w; }" />
+                <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_SPREIZUNG" Feldname="@Resource.SKV_LBL_SPREIZUNG"
+                            Wert="@_eingaben.SpreizungK" Min="0" Max="30" Platzhalter="10"
+                            Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
+                            WertChanged="w => { _eingaben.SpreizungK = w; }" />
+                <Herleitungszeile Text="@(_eingaben.ArbeitstemperaturAusSpeicher
+                                          ? Resource.SKV_HINT_ARBEITSTEMPERATUR_SPEICHER
+                                          : Resource.SKV_HINT_ARBEITSTEMPERATUR_FEST)" />
+                @if (_eingaben.ArbeitstemperaturAusSpeicher)
+                {
+                    <Herleitungszeile Text="@Resource.SKV_HINT_GRAEDIGKEIT" />
+                }
+                <Herleitungszeile Text="@Resource.SKV_HINT_PUMPE" />
                 @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
                    HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile.
                    Bei der Solarthermie besonders wichtig: Ohne Senke fuer ihren Bedarf
@@ -658,7 +686,19 @@
         _eingaben.Anzahl = (int?)(zeile.AnzahlModule ?? 0);
         _eingaben.Neigung = zeile.Neigung ?? 0;
         _eingaben.Azimut = zeile.Azimut ?? 0;
+        _eingaben.PumpenleistungW = zeile.SolarPumpenleistungW;
+        _eingaben.VerlusteProzent = zeile.SolarkreisverlusteProzent;
+        _eingaben.GraedigkeitK = zeile.SolarGraedigkeitK;
+        _eingaben.SpreizungK = zeile.SolarSpreizungK;
+        _eingaben.ArbeitstemperaturAusSpeicher = zeile.SolarArbeitstemperaturAusSpeicher;
     }
+
+    /// <summary>Die zwei Wege der Arbeitstemperatur (ST2): 0 = fest 50 °C, 1 = aus dem Speicher.</summary>
+    private static IReadOnlyList<(int Id, string Text)> ArbeitstemperaturWege => new[]
+    {
+        (0, Resource.SKV_OPT_ARBEITSTEMPERATUR_FEST),
+        (1, Resource.SKV_OPT_ARBEITSTEMPERATUR_SPEICHER)
+    };
 
     /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
     private void KatalogZeileWaehlen(string bezeichner)
@@ -817,6 +857,11 @@
         _projektZeile.AnzahlModule = _eingaben.Anzahl ?? 0;
         _projektZeile.Neigung = _eingaben.Neigung ?? 0;
         _projektZeile.Azimut = _eingaben.Azimut ?? 0;
+        _projektZeile.SolarPumpenleistungW = _eingaben.PumpenleistungW;
+        _projektZeile.SolarkreisverlusteProzent = _eingaben.VerlusteProzent;
+        _projektZeile.SolarGraedigkeitK = _eingaben.GraedigkeitK;
+        _projektZeile.SolarSpreizungK = _eingaben.SpreizungK;
+        _projektZeile.SolarArbeitstemperaturAusSpeicher = _eingaben.ArbeitstemperaturAusSpeicher;
 
         Uebernehmen?.Invoke(_projektZeile);
 

@@ -6664,7 +6664,24 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    // Welle M2 (Modellgrenzen ST1 bis ST4): der Solarkreis des Felds.
+                    new KiDialogFeld("pumpenleistung", "SolarkollektorenKiSicht.PumpenleistungW",
+                                     KiDialogTexte.SkPumpeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkPumpeErl, leerErlaubt: true),
+                    new KiDialogFeld("solarkreisverluste", "SolarkollektorenKiSicht.VerlusteProzent",
+                                     KiDialogTexte.SkVerlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkVerlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("arbeitstemperatur_aus_speicher", "SolarkollektorenKiSicht.ArbeitstemperaturAusSpeicher",
+                                     KiDialogTexte.SkArbeitstemperaturName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SkArbeitstemperaturErl),
+                    new KiDialogFeld("graedigkeit", "SolarkollektorenKiSicht.GraedigkeitK",
+                                     KiDialogTexte.SkGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkGraedigkeitErl, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "SolarkollektorenKiSicht.SpreizungK",
+                                     KiDialogTexte.SkSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkSpreizungErl, leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -8519,8 +8536,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SkkKdirErl),
                     new KiDialogFeld("kdiff", "SolarkollektorKatalogDaten.Kdiff",
                                      KiDialogTexte.SkkKdiffName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.SkkKdiffErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD)
+                                     KiDialogTexte.SkkKdiffErl),
+                    // Welle M2 (ST6): die Bezugsfläche der Kennwerte - Persistenzwert apertur/brutto.
+                    new KiDialogFeld("bezugsflaeche", "SolarkollektorKatalogDaten.Bezugsflaeche",
+                                     KiDialogTexte.SkkBezugsflaecheName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkBezugsflaecheErl)
                 },
                 knoepfe: new[]
                 {

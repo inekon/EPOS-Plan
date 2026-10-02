@@ -27,4 +27,21 @@ public sealed class SolarkollektorenEingaben
 
     /// <summary>Azimut [°]; <c>null</c> = leeres Feld.</summary>
     public int? Azimut { get; set; }
+
+    // --- Solarkreis (Welle M2 der Entscheidungsvorlage Modellgrenzen) ---------------------
+
+    /// <summary>Leistung der Solarkreispumpe [W]; <c>null</c> = leer (kein Pumpenstrom).</summary>
+    public double? PumpenleistungW { get; set; }
+
+    /// <summary>Verluste des Solarkreises [%]; <c>null</c> = leer (Vorgabe 8 %).</summary>
+    public double? VerlusteProzent { get; set; }
+
+    /// <summary>Grädigkeit des Wärmeübertragers [K]; <c>null</c> = leer (Vorgabe 5 K).</summary>
+    public double? GraedigkeitK { get; set; }
+
+    /// <summary>Spreizung des Kollektorkreises [K]; <c>null</c> = leer (Vorgabe 10 K).</summary>
+    public double? SpreizungK { get; set; }
+
+    /// <summary>Arbeitstemperatur aus dem Speicher (<c>true</c>) statt fest 50 °C.</summary>
+    public bool ArbeitstemperaturAusSpeicher { get; set; }
 }

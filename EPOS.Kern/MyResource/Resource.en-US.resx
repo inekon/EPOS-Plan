@@ -24630,7 +24630,7 @@ Do you want to allow this?</value>
     <value>The incidence angle modifier Kdir for direct irradiation.</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
-    <value>The incidence angle modifier Kdiff for diffuse irradiation, given at fifty degrees.</value>
+    <value>The incidence angle modifier Kdiff for diffuse irradiation, a fixed value independent of the angle of incidence; 0 means unknown, then the factor of the direct irradiation applies.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>The identifier of the storage record; it is the key the record is written under and therefore read-only.</value>
@@ -41285,6 +41285,57 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SKK_HINT_BEZUGSFLAECHE" xml:space="preserve">
     <value>The area to which η₀, a₁ and a₂ refer in the data sheet. Test reports to EN ISO 9806:2017 usually state the gross area, older data sheets to EN 12975 the aperture area. The simulation calculates with this area times the number of modules.</value>
+  </data>
+  <data name="SKV_LBL_PUMPENLEISTUNG" xml:space="preserve">
+    <value>Solar loop pump power [W]:</value>
+  </data>
+  <data name="SKV_LBL_VERLUSTE" xml:space="preserve">
+    <value>Solar loop losses [%]:</value>
+  </data>
+  <data name="SKV_LBL_ARBEITSTEMPERATUR" xml:space="preserve">
+    <value>Operating temperature:</value>
+  </data>
+  <data name="SKV_LBL_GRAEDIGKEIT" xml:space="preserve">
+    <value>Heat exchanger temperature difference [K]:</value>
+  </data>
+  <data name="SKV_LBL_SPREIZUNG" xml:space="preserve">
+    <value>Collector loop temperature spread [K]:</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>fixed 50 °C</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>from the storage tank</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>Fixed: the collector calculates with a mean fluid temperature of 50 °C all year.</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>From the storage tank: collector inlet = lowest zone of the sink buffer (without buffer: heating circuit return) plus temperature difference of the heat exchanger, mean collector temperature = inlet plus half the spread, recalculated every hour.</value>
+  </data>
+  <data name="SKV_HINT_GRAEDIGKEIT" xml:space="preserve">
+    <value>Temperature difference empty = 5 K (external plate heat exchanger); internal smooth-tube coil about 10 K. Spread empty = 10 K.</value>
+  </data>
+  <data name="SKV_HINT_PUMPE" xml:space="preserve">
+    <value>Pump power empty = no pump electricity (or the auxiliary energy share of the plant); the electricity counts in every hour in which the field delivers heat. Losses empty = 8 %.</value>
+  </data>
+  <data name="KI_DLG_SK_PUMPE_ERL" xml:space="preserve">
+    <value>Electrical power of the solar loop pump in watts. It counts as electricity demand in every hour in which the collector field delivers heat; empty means no pump electricity.</value>
+  </data>
+  <data name="KI_DLG_SK_VERLUSTE_ERL" xml:space="preserve">
+    <value>Heat losses of the solar loop in percent of the collector yield (0 to 50); empty means 8 percent.</value>
+  </data>
+  <data name="KI_DLG_SK_ARBEITSTEMPERATUR_ERL" xml:space="preserve">
+    <value>Yes: the operating temperature of the collector follows the lowest zone of the sink buffer plus heat exchanger temperature difference and half the spread, every hour. No: fixed 50 degrees.</value>
+  </data>
+  <data name="KI_DLG_SK_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Temperature difference of the heat exchanger to the storage tank in kelvin (0 to 30); empty means 5 kelvin. Only effective with the operating temperature from the storage tank.</value>
+  </data>
+  <data name="KI_DLG_SK_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Temperature spread of the collector loop, outlet minus inlet, in kelvin (0 to 30); empty means 10 kelvin. Only effective with the operating temperature from the storage tank.</value>
+  </data>
+  <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
+    <value>The area to which h0, k1 and k2 refer: apertur (aperture, default) or brutto (gross). The simulation calculates with this area times the number of modules.</value>
   </data>
 </root>
 
