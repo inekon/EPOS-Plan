@@ -39925,6 +39925,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus.</value>
   </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.</value>
+  </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Konditionierung</value>
   </data>

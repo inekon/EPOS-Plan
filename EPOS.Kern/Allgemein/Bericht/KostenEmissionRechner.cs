@@ -340,6 +340,8 @@ namespace WindowsFormsApplication1
                 v.BezugsspitzeKW = null;
                 v.LeistungspreisOhneSpitze = null;
                 v.LeistungspreisNichtAngesetzt = null;
+                v.LeistungspreisNichtAngesetztSatz = null;
+                v.LeistungspreisNichtAngesetztTraeger = null;
                 KaeltestromZuruecksetzen(v);
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
@@ -357,6 +359,8 @@ namespace WindowsFormsApplication1
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
             v.LeistungspreisNichtAngesetzt = null;   // EZ‑17 (nur im Vergleich gesetzt)
+            v.LeistungspreisNichtAngesetztSatz = null;
+            v.LeistungspreisNichtAngesetztTraeger = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
 
             // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
@@ -1139,8 +1143,12 @@ namespace WindowsFormsApplication1
         {
             string name = TraegerName(carrierId);
             if (string.IsNullOrEmpty(name)) name = "?";
+            string satz = LeistungspreisSatz(t);
             v.LeistungspreisNichtAngesetzt = string.Format(BerichtTexte.Kultur,
-                HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, LeistungspreisSatz(t), name);
+                HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, satz, name);
+            // Satz und Träger auch einzeln — für die Fußzeile unter der Kostentafel des Berichts.
+            v.LeistungspreisNichtAngesetztSatz = satz;
+            v.LeistungspreisNichtAngesetztTraeger = name;
         }
 
         /// <summary>
