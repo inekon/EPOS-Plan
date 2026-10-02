@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportSatz satz = a.Zuordnen(0, null);
             Nah(100.0, satz.Zeile(GebaeudeZielfelder.NUTZFLAECHE).Wert);
             Nah(246.0, satz.Zeile(GebaeudeZielfelder.VOLUMEN).Wert);
-            Nah(30.0, satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert);
+            Nah(54.0, satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert);   // EG Süd 30 + Nord CAD 24 (IfcCadBauteileTests)
         }
 
         [Fact]

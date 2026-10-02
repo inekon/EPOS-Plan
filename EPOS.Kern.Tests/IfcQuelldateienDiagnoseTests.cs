@@ -78,9 +78,26 @@ namespace EPOS.Kern.Tests
                                    + Z(satz.Zeile(GebaeudeZielfelder.RAUMHOEHE).Wert) + " m, Außenwand "
                                    + Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert) + " m², Dach "
                                    + Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_DACH).Wert) + " m², Fenster "
-                                   + Z(satz.Zeile(GebaeudeZielfelder.FENSTER_GESAMT).Wert) + " m²");
+                                   + Z(satz.Zeile(GebaeudeZielfelder.FENSTER_GESAMT).Wert) + " m², Grund "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_GRUND).Wert) + " m², Sonstige "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert) + " m²");
+                    _aus.WriteLine("U-Werte: Außenwand " + Z(satz.Zeile(GebaeudeZielfelder.U_AUSSENWAND).Wert) + ", Dach "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.U_DACH).Wert) + ", Fenster "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.U_FENSTER).Wert) + ", Grund "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.U_GRUND).Wert) + ", Sonstige "
+                                   + Z(satz.Zeile(GebaeudeZielfelder.U_SONSTIGE).Wert) + " W/(m²K)");
 
                     GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, gi, null);
+                    // Je Gruppe (Summenfeld, Randbedingung): Zahl der Zeilen, Fläche und flächengewichteter U-Wert.
+                    foreach (var gr in v.Zeilen.GroupBy(z => (z.Summenfeld ?? "IW") + " " + (z.Bauteil.Randbedingung ?? "(innen)"))
+                                               .OrderBy(x => x.Key, StringComparer.Ordinal))
+                    {
+                        double flaeche = gr.Sum(z => z.Bauteil.Flaeche);
+                        double mitU = gr.Where(z => z.Bauteil.U_Wert.HasValue).Sum(z => z.Bauteil.Flaeche);
+                        double ua = gr.Where(z => z.Bauteil.U_Wert.HasValue).Sum(z => (z.Bauteil.Flaeche) * z.Bauteil.U_Wert.Value);
+                        _aus.WriteLine("  Gruppe " + gr.Key + ": " + gr.Count() + " Zeilen, " + Z(flaeche) + " m², U "
+                                       + Z(mitU > 0.0 ? ua / mitU : (double?)null) + " W/(m²K) über " + Z(mitU) + " m²");
+                    }
                     _aus.WriteLine("Vorschlag: " + Text(v.Meldungen));
                 }
             }
