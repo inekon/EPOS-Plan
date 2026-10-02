@@ -2058,7 +2058,12 @@ namespace WindowsFormsApplication1
                 // die Spalte steht nur, wenn der Lauf einen BHKW-Überschuss hat (Reihe
                 // BHKW_UEBERSCHUSS, Schwelle 0,5 kWh im ZeitreihenExtraktor).
                 spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_UEBERSCHUSS, "BHKW-Einspeisung"));
+                // PV3 (Welle M5): die Abregelung an der Einspeisegrenze - nur, wenn der Lauf eine
+                // hat (Reihe PV_ABREGELUNG, Schwelle 0,5 kWh im ZeitreihenExtraktor).
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_ABREGELUNG, "PV-Abregelung"));
             }
+            // SP1 (Welle M5): der Eigenverbrauch des Speichersystems - nur mit Reihe.
+            spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH, "Eigenverbrauch Speichersystem"));
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
             spalten = spalten.Where(s => z.Hat(s.Key)).ToList();
             if (spalten.Count == 0) return r;

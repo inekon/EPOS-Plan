@@ -1140,6 +1140,19 @@ namespace WindowsFormsApplication1
             public double GenutztMwh;
 
             public double UeberschussMwh;
+
+            /// <summary>
+            /// Abgeregelte PV-Energie [MWh/a] an der Einspeisegrenze (PV3) — nach der Speicherladung,
+            /// im Flottenpfad die Abregelung der Flotte. 0 ohne Grenze.
+            /// </summary>
+            public double AbregelungMwh;
+
+            /// <summary>Die Abregelung in % der Erzeugung der Module; 0 ohne Erzeugung.</summary>
+            public double AbregelungProzent;
+
+            /// <summary>Die Einspeisegrenze des Laufs [kW]; <c>null</c> = keine.</summary>
+            public double? EinspeisegrenzeKw;
+
             public double DeckungProzent;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
@@ -1186,14 +1199,27 @@ namespace WindowsFormsApplication1
             // am genutzten Anteil - das ist seine Definition.
             double erzeugungKwh = pv.Stromproduktion_Theoretisch.Sum();
             double genutztKwh = pv.Stromproduktion.Sum();
-            // E29 (#536, E29‑Q10 a): je Stunde geklemmt - wortgleich mit SimulationRunner.
-            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf_stuendlich).Sum();
+            // E29 (#536, E29‑Q10 a) mit SB1 (a): je Viertelstunde geklemmt - wortgleich mit
+            // SimulationRunner.
+            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf).Sum() / 4.0;
 
             e.StromproduktionMwh = erzeugungKwh / 1000.0;
             e.GenutztMwh = genutztKwh / 1000.0;
-            e.UeberschussMwh = sim.Speicherflottennetzbilanz != null
-                ? sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0
-                : pv.Ueberschuss.Sum() / 1000.0;
+            e.EinspeisegrenzeKw = pv.EinspeisegrenzeKw;
+            if (sim.Speicherflottennetzbilanz != null)
+            {
+                e.UeberschussMwh = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
+                e.AbregelungMwh = sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
+            }
+            else
+            {
+                // SB1 (a) und PV3: Einspeisung und Abregelung je Viertelstunde nach der
+                // Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie SimulationRunner.
+                sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw);
+                e.UeberschussMwh = SimulationPV.ViertelstundenKwh(einspeisungKw) / 1000.0;
+                e.AbregelungMwh = SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
+            }
+            e.AbregelungProzent = erzeugungKwh > 0 ? e.AbregelungMwh * 1000.0 / erzeugungKwh * 100.0 : 0.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             // E28 (#535, E28‑Q3 a): dieselbe Klemme wie die Ergebniszeile (SimulationRunner).
             e.StrombedarfMwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf).Sum() / 4000.0;

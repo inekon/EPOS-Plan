@@ -59,6 +59,16 @@ namespace WindowsFormsApplication1
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
         private static ErgebnisPhotovoltaikModel PV(VariantenDaten v) { return v?.Ergebnis?.Photovoltaik; }
 
+        /// <summary>Die abgeregelte PV-Energie des Laufs [MWh/a] aus den Zeitreihen; 0 ohne Reihe.</summary>
+        private static double AbregelungMwh(VariantenDaten v)
+        {
+            double[] r = v?.Zeitreihen?.Hole(ZeitreihenSatz.PV_ABREGELUNG);
+            if (r == null) return 0.0;
+            double summe = 0.0;
+            foreach (double w in r) summe += w;
+            return summe / 1000.0;
+        }
+
         // ------------------------------------------------------------------
         // PAKET E1 (Konzept 4.4) — die drei Bedarfskanäle im Bericht
         // ------------------------------------------------------------------
@@ -431,7 +441,9 @@ namespace WindowsFormsApplication1
                 {
                     var p = PV(v);
                     if (p == null || p.Stromproduktion <= 0) return null;
-                    return (p.Stromproduktion - p.Ueberschuss) / p.Stromproduktion * 100.0;
+                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Sie steht nur in den
+                    // Zeitreihen des Laufs (PV_ABREGELUNG); ohne Reihe ist sie 0.
+                    return (p.Stromproduktion - p.Ueberschuss - AbregelungMwh(v)) / p.Stromproduktion * 100.0;
                 }));
             // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie
             // beantworten, was Energiemengen nicht zeigen — ob der Vorrat auf dem

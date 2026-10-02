@@ -304,6 +304,18 @@ namespace WindowsFormsApplication1.Referenzlauf
                                 Zahl(sim.simulation_solarthermie.PumpenstromGesamtKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationBHKW", sim.bSimulationBHKW.ToString()));
             skalare.Add(Neu("Sim.bSimulationPV", sim.bSimulationPV.ToString()));
+            // PV3 (Welle M5): die Abregelung an der Einspeisegrenze [MWh/a] - nach der Speicherladung,
+            // im Flottenpfad die der Flotte. NUR bei > 0; ohne Einspeisegrenze kein Schluessel.
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+            {
+                SimulationErgebnisCtrl.PhotovoltaikErgebnis pvErg = SimulationErgebnisCtrl.Photovoltaik(sim);
+                if (pvErg != null && pvErg.AbregelungMwh > 0)
+                    skalare.Add(Neu("Photovoltaik.AbregelungMwh", Zahl(pvErg.AbregelungMwh)));
+            }
+            // SP1 (Welle M5): der Eigenverbrauch des Speichersystems (Standby) [MWh/a] - NUR bei > 0.
+            if (sim.bSimulationSSP && sim.SpeichersystemEigenverbrauchKwh > 0)
+                skalare.Add(Neu("Stromspeicher.EigenverbrauchSystemMwh",
+                                Zahl(sim.SpeichersystemEigenverbrauchKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationSSP", sim.bSimulationSSP.ToString()));
             skalare.Add(Neu("Sim.PufferWP_vorhanden", (sim.puffer_wp != null).ToString()));
             if (sim.puffer_wp != null)

@@ -20196,6 +20196,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINSPEISEGRENZE_PROJEKT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINSPEISEGRENZE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Horizont-Endbedingung: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ENDBEDINGUNG {
@@ -48423,6 +48432,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_SELBSTENTLADUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_SELBSTENTLADUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bereitschaftsleistung des Speichers im Ruhezustand. ähnelt.
         /// </summary>
         public static string KI_DLG_MODK_STANDBY_ERL {
@@ -50291,6 +50309,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_BETRIEBSMODUS_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Einspeisegrenze: kW am Netzanschluss oder % der installierten PV-Leistung (kWp). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste PV-Einspeisung am Netzanschluss in der gewählten Einheit; leer heißt keine Grenze. Darüber wird abgeregelt, nachdem ein Speicher geladen hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_EINSPEISEGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_EINSPEISEGRENZE_ERL", resourceCulture);
             }
         }
         
@@ -78762,6 +78798,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Ein Standby-Verbrauch außerhalb 0 … 1 000 W wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_STANDBY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_STANDBY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFILE_DIAGNOSE {
@@ -79543,11 +79588,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abregelung an der Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abregelung in % der Erzeugung ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_ABREGELUNG_ANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_ABREGELUNG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarfsdeckung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_PV_DECKUNG {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_PV_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -80488,11 +80560,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW am Netzanschluss ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_EINHEIT_KW {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_EINHEIT_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der installierten PV-Leistung ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisegrenze konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Grenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_GRP_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -80547,6 +80664,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste PV-Einspeisung am Netzanschluss, in kW oder in % der installierten PV-Leistung. Was der Speicher nicht lädt und darüber liegt, wird abgeregelt. Leer = keine Grenze. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -80610,6 +80736,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_LBL_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_LBL_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_EINSPEISEGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT", resourceCulture);
             }
         }
         
@@ -85169,6 +85313,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik: Einspeisegrenze {0:N1} kW - ohne Speicher abgeregelt {1:N0} kWh/a ({2:N1} % des Ertrags). Ein Stromspeicher lädt vor dem Abregeln. ähnelt.
+        /// </summary>
+        public static string SIM_PV_EINSPEISEGRENZE_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIM_PV_EINSPEISEGRENZE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik: Die Einspeisegrenze von {0:N1} % braucht die installierte PV-Leistung (kWp) als Bezug; das Projekt führt keine. Gerechnet wird ohne Einspeisegrenze. ähnelt.
+        /// </summary>
+        public static string SIM_PV_EINSPEISEGRENZE_OHNE_KWP {
+            get {
+                return ResourceManager.GetString("SIM_PV_EINSPEISEGRENZE_OHNE_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen. ähnelt.
         /// </summary>
         public static string SIM_PV_V1_BHKW_GETRENNT {
@@ -87381,6 +87543,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauch Speichersystem ähnelt.
+        /// </summary>
+        public static string SP_ERG_EIGENVERBRAUCH_SYSTEM {
+            get {
+                return ResourceManager.GetString("SP_ERG_EIGENVERBRAUCH_SYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus dem Netz ähnelt.
+        /// </summary>
+        public static string SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ {
+            get {
+                return ResourceManager.GetString("SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung mit Speicher ähnelt.
         /// </summary>
         public static string SP_ERG_EINSPEISUNG_MIT {
@@ -87786,6 +87966,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Selbstentladung ähnelt.
+        /// </summary>
+        public static string SP_ERG_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_SELBSTENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand Maximum ähnelt.
         /// </summary>
         public static string SP_ERG_SOC_MAX {
@@ -87854,6 +88043,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_ERG_TIP_DELTA_J {
             get {
                 return ResourceManager.GetString("SP_ERG_TIP_DELTA_J", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby-Verbrauch des Speichersystems: gedeckt aus PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM", resourceCulture);
             }
         }
         
@@ -88038,6 +88236,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust des Speicherinhalts je Monat, 0 … 20 %; leer = keine. ähnelt.
+        /// </summary>
+        public static string SP_HINWEIS_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_HINWEIS_SELBSTENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batteriemanagement und Wechselrichter im Leerlauf. Gedeckt aus PV-Überschuss, sonst aus dem Netz; leer = 0. ähnelt.
+        /// </summary>
+        public static string SP_HINWEIS_STANDBY {
+            get {
+                return ResourceManager.GetString("SP_HINWEIS_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher: {0} ähnelt.
         /// </summary>
         public static string SP_KONTEXT_EINZEL {
@@ -88124,6 +88340,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_LABEL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("SP_LABEL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Selbstentladung ähnelt.
+        /// </summary>
+        public static string SP_LABEL_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_LABEL_SELBSTENTLADUNG", resourceCulture);
             }
         }
         

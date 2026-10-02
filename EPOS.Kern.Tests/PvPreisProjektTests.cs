@@ -61,9 +61,11 @@ namespace EPOS.Kern.Tests
         // Kessel E4 (Takten): Der Kessel taktet unter der Mindestleistung (Normvorgabe) und zahlt
         // je Start den Anfahrverlust — mehr Brennstoff; vorher −235.093,77985765776 /
         // −202.123,0925563547 / −277.543,44727093074.
-        private const double KW_ERWARTET = -236955.12368351375;
-        private const double KW_BEST = -203836.20702448947;
-        private const double KW_WORST = -279649.33479979425;
+        // Welle M5 (SB1 a, Basis R33): die PV-Bilanz je Viertelstunde - weniger Direktverbrauch, mehr
+        // Einspeisung; vorher -236.955,12368351375 / -203.836,20702448947 / -279.649,33479979425.
+        private const double KW_ERWARTET = -237037.6798966473;
+        private const double KW_BEST = -203893.2343538603;
+        private const double KW_WORST = -279761.1716219004;
 
         /// <summary>Die kopierten Investitionszeilen der Vorlage 1040 (20 Zeilen, Erwartet).</summary>
         private const double INVEST_KOPIE = 54975.5;

@@ -1101,6 +1101,82 @@ namespace WindowsFormsApplication1
             return AufheizvorgabeSchreiben(idProjekt, vorgabe);
         }
 
+        // --- Projekteinstellung „Einspeisegrenze" (Schemaschritt StromViertelstundenSchema; Welle M5, PV3)
+
+        /// <summary>
+        /// Die Einspeisegrenze eines Projekts — DIALOGFREI und NULL-ERHALTEND gelesen, in EINER Abfrage der
+        /// zwei Spalten (<see cref="StromViertelstundenSchema"/>). <b>Fehlende Zeile, fehlende Spalte und ein
+        /// unlesbarer Satz heißen „keine Grenze"</b> (<see cref="Einspeisegrenze.Keine"/>).
+        /// </summary>
+        public static Einspeisegrenze EinspeisegrenzeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Einspeisegrenze.Keine;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_WERT + "], [" +
+                StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_EINHEIT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < 2)
+                return Einspeisegrenze.Keine;
+
+            DataRow r = dt.Rows[0];
+            return new Einspeisegrenze(HeizgrenzeOderLeer(r[0]), TextOderLeer(r[1]));
+        }
+
+        /// <summary>
+        /// Die Einspeisegrenze eines Projekts in kW (Welle M5, PV3) — in Prozent auf die installierte
+        /// PV-Leistung bezogen (<see cref="PhotovoltaikCtrl.KwpDesProjekts"/>). <c>null</c> ohne Grenze
+        /// oder bei Prozent ohne installierte Leistung. Für Auskünfte außerhalb des Laufs (Netzblock der
+        /// Speicherflotte); der Lauf löst dieselbe Regel in <c>SimulationPV.Berechnung</c> auf.
+        /// </summary>
+        public static double? EinspeisegrenzeKwLesen(int idProjekt)
+        {
+            Einspeisegrenze grenze = EinspeisegrenzeLesen(idProjekt);
+            if (!grenze.Gesetzt) return null;
+            return grenze.Kw(grenze.InProzent ? PhotovoltaikCtrl.KwpDesProjekts(idProjekt) : 0.0);
+        }
+
+        /// <summary>
+        /// Schreibt die Einspeisegrenze eines Projekts in EINEM, zielgenauen <c>UPDATE</c> der zwei Spalten
+        /// — aus demselben Grund wie <see cref="AufheizvorgabeSchreiben"/>. Geschrieben wird die normalisierte
+        /// Form (keine Grenze = zwei NULL, kW = NULL). Rückgabe <c>false</c>, wenn keine Zeile getroffen
+        /// wurde oder eine Spalte fehlt.
+        /// </summary>
+        public static bool EinspeisegrenzeSchreiben(int idProjekt, Einspeisegrenze grenze)
+        {
+            if (idProjekt <= 0 || grenze == null) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_WERT + "] = ?, [" +
+                StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_EINHEIT + "] = ? WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.Double, (object)grenze.Wert ?? DBNull.Value),
+                StilleDb.Par("@einheit", DbParamTyp.VarWChar, (object)grenze.Einheit ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Die Projekteinstellung „Einspeisegrenze"</b> — der Schreibweg der Oberfläche und des
+        /// Assistenten nach der Regel von <see cref="AufheizvorgabeSetzen"/>: Steht ein Einstellungssatz,
+        /// wird geschrieben; steht keiner, ist „keine Grenze" ohne Satz schon wahr, jede andere Einstellung
+        /// legt den Vormerksatz an.
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Grenze trägt.</returns>
+        public static bool EinspeisegrenzeSetzen(int idProjekt, Einspeisegrenze grenze)
+        {
+            if (idProjekt <= 0 || grenze == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (grenze.Equals(Einspeisegrenze.Keine)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return EinspeisegrenzeSchreiben(idProjekt, grenze);
+        }
+
         /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>
         private static bool SatzVorhanden(int idProjekt)
         {

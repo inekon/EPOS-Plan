@@ -835,8 +835,15 @@ namespace WindowsFormsApplication1
         public const string NETZEINSPEISUNG = "Netzeinspeisung";
         /// <summary>Davon direkt aus der Batterie; nicht als PV- oder BHKW-Einspeisung zählen.</summary>
         public const string BATTERIE_EINSPEISUNG = "Batterie_Einspeisung";
-        /// <summary>Von der aktivierten Flotte tatsächlich abgeregelte PV-Energie.</summary>
+        /// <summary>
+        /// Abgeregelte PV-Energie: von der aktivierten Flotte, sonst an der Einspeisegrenze der
+        /// Projekteinstellung nach der Speicherladung (Welle M5, PV3).
+        /// </summary>
         public const string PV_ABREGELUNG = "PV_Abregelung";
+        /// <summary>
+        /// Eigenverbrauch des Speichersystems (Standby, Welle M5, SP1) — nur, wenn der Lauf einen hat.
+        /// </summary>
+        public const string SPEICHER_EIGENVERBRAUCH = "Speicher_Eigenverbrauch";
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
