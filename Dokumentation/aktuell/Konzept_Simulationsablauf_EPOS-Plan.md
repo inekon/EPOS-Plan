@@ -1215,3 +1215,49 @@ Referenzskalar `Solarthermie.PumpenstromMwh`, beides nur, wenn er größer als n
 Gehalten von `EPOS.Kern.Tests/SolarkreisTests`, `SolarthermieModellgrenzenTests`,
 `SolarthermieFelderSchemaTests` und `SolarWaermeMonateTests` (Referenzprojekt 1049 mit `speicher`,
 Grädigkeit 5 K, Spreizung 10 K, ohne Pumpe und mit der Vorgabe der Verluste).
+
+## 19. Strom in Viertelstunden: PV-Bilanz, Einspeisegrenze, Standby
+
+Die Strombilanz der Photovoltaik und der Stromspeicher laufen auf den 35 040 Viertelstunden des
+Jahres; die Klimadaten bleiben stündlich. Schemaschritt `StromViertelstundenSchema`, alle neuen
+Spalten mit `CHECK`.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Einstellungen` | `Einspeisegrenze_Wert` | höchste PV-Einspeisung am Netzanschluss, ≥ 0 | keine Grenze |
+| `Tab_Einstellungen` | `Einspeisegrenze_Einheit` | `kW` oder `%` der installierten PV-Leistung | `kW` |
+| `Tab_Stromspeicher(_STAMM)` | `Standby_Verbrauch` | Standby des Speichersystems in W, 0 … 1 000 (im Code geprüft) | 0 |
+| `Tab_Stromspeicher(_STAMM)` | `Selbstentladung_Prozent_Monat` | Selbstentladung in %/Monat, 0 … 20 | 0 |
+
+**PV-Bilanz.** `SimulationPV.Bilanzieren` verteilt die Stundenerzeugung aller Anlagen auf die vier
+Viertel nach dem Kosinus des Zenitwinkels in der Mitte jeder Viertelstunde
+(`SolarPVGISCalculator.KosinusZenitwinkel`, Zeitachse der UTC-Stunde der Klimazeile):
+P_q = 4 · P_h · cos θ_z,q / Σ cos θ_z. Das Mittel der vier Viertel ist der Stundenwert; ohne Sonne
+in allen vier Vierteln tragen alle den Stundenwert. Direktverbrauch, Überschuss und Reststrom
+entstehen je Viertelstunde gegen `Rest_Strombedarf_viertelstuendlich`; die Stundenreihen sind die
+Mittel ihrer Viertel. Der Reiter „Photovoltaik" zeigt den Überschuss vor dem Speicher.
+
+**Einspeisegrenze.** P_grenz in kW, oder in % als Anteil der installierten Leistung (kWp). Je
+Viertelstunde: E_ein = min(Ü − Ladung − Standby aus PV, P_grenz), Abregelung = Rest. Der Speicher
+lädt vor dem Abregeln (`SimulationControl.PvEinspeisungAufteilen` nach der Speicherphase). Ohne
+Grenze ist die Abregelung null.
+Ausweis: Reiter „Photovoltaik" (Abregelung kWh/a und % der Erzeugung, Grenze kW), Zeitreihe
+`PV_ABREGELUNG`, Monatstafel des Berichts, Referenzskalar `Photovoltaik.AbregelungMwh` nur bei
+> 0, Kennzahl `pv_eigen` ohne Abregelung. Eine aktive Speicherflotte liest die Projekteinstellung
+als weiche Grenze (`PvEinspeisegrenzeWeichKw`): Sie lädt zuerst, darüber wird abgeregelt, die
+Variante bleibt zulässig. Eine neue Flotte belegt ihre harte Netzeinspeisegrenze mit dem Wert vor;
+der Netzblock nennt ihn.
+
+**Standby und Selbstentladung.** `SpeicherEngine.Speichersystem` zieht zu Beginn jedes Intervalls
+die Selbstentladung SoC · s/100 · Δt/730 h ab, höchstens bis SoC_min, und teilt den Standby
+(`StandbyBilanz`): aus dem PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.
+Der Netzanteil geht in den Rest-Strombedarf, der PV-Anteil fehlt in der Einspeisung; der Fahrplan
+bleibt unberührt. In der Flotte ist der Standby der Hilfsverbrauch der Einheit (Standortlast am
+Netzanschluss), die Selbstentladung ein Parameter der Einheit; beide übernimmt sie aus dem Katalog.
+Ausweis: Reiter „Stromspeicher" (Eigenverbrauch Speichersystem, Netzanteil, Selbstentladung),
+Zeitreihe `SPEICHER_EIGENVERBRAUCH`, Monatstafel des Berichts, Referenzskalar
+`Stromspeicher.EigenverbrauchSystemMwh` nur bei > 0.
+
+Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSchemaTests`,
+`PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
+Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.

@@ -108,7 +108,11 @@ public sealed class BerechnungsknopfTests
     private static readonly Dictionary<string, string> FassungImKopf =
         new(StringComparer.Ordinal)
         {
-            { "Stromspeicher", "Fassung 7" },
+            // Welle M5: Standby und Selbstentladung (Stromspeicher), Viertelstundenbilanz
+            // und Einspeisegrenze (Photovoltaik), Viertelstunden-Abzug (Strombedarf).
+            { "Stromspeicher", "Fassung 8" },
+            { "Photovoltaik", "Fassung 4" },
+            { "Strombedarf", "Fassung 4" },
             { "Solarthermie", "Fassung 4" }
         };
 
