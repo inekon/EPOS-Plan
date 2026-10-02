@@ -5,6 +5,7 @@ Auftragspapier in der Sitzung „EPOS Plan Wirtschaftlichkeit" (Aufträge A–C 
 02.10.2026). Dieses Protokoll ist **nachgetragen** mit der Nachlese P646
 ([`P646_Auftrag_2026-10-02.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P646_Auftrag_2026-10-02.md)); Quellen sind die
 Statuszeile #642, die Kommentare in `EPOS.Kern/Allgemein/Wirtschaftlichkeit/Waermegestehung.cs` und `git show --stat 3588ebb38`.
+Nachfolger: [`P646_Waermegestehung_Nachlese_Protokoll.md`](P646_Waermegestehung_Nachlese_Protokoll.md).
 
 ## Anlass und Entscheide
 
