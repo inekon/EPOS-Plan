@@ -39,9 +39,11 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter den Änderungsstempeln (<see cref="KostenStempelSchema"/>).
+        /// Schritt hinter den Ergebnisspalten der Aufheizoptimierung (<see cref="AufheizErgebnisSchema"/>).
+        /// Gebaut als 160 hinter den Änderungsstempeln, beim Zusammenführen mit KP3 (160 und 161)
+        /// auf 162 umnummeriert.
         /// </summary>
-        public const int SCHRITT = KostenStempelSchema.SCHRITT + 1;
+        public const int SCHRITT = AufheizErgebnisSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Auslieferung.</summary>
         public const string TAB_STAMM = SchemaKatalog.TAB_HEIZKESSEL_STAMM;

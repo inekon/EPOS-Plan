@@ -76719,6 +76719,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW (alle Module) ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_ALLE_MODULE {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_ALLE_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenfeld ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkatalog ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_KATALOG {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationskonfiguration ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_PROJEKT {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW „{0}“ ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_MODUL {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die untere Grenzleistung von {1} % ({2}) ist ungültig – zulässig sind höchstens 100 %. Der Wert bleibt unberücksichtigt; es gilt eine Untergrenze von {3} %. ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht. ähnelt.
         /// </summary>
         public static string SIMENG_BHKW_MAX_UEBERSCHRITTEN {
@@ -76755,7 +76809,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Der Eintrag wird übersprungen, sein Anteil bleibt 0; die übrigen Einträge werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT {
             get {
@@ -78015,7 +78069,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_PROZESSWAERME_TYP_UNDEFINIERT {
             get {
@@ -78303,7 +78357,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Das Profil wird übersprungen, sein Anteil bleibt 0; die übrigen Profile werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFIL_TYP_UNDEFINIERT {
             get {
@@ -78690,7 +78744,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Modul, das weder im Anlagenfeld noch im Katalog eine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0. ähnelt.
         /// </summary>
         public static string SIMERG_HRL_UNTERE_LEISTUNGSGRENZE {
             get {
@@ -79026,6 +79080,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZVERLUSTE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Stromspeicher gerechnet (0 kWh). Eine Kapazität im Feld zeigt, was ein Speicher bringen könnte. ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_OHNE_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_OHNE_STROMSPEICHER", resourceCulture);
             }
         }
         
@@ -101959,6 +102022,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_VERL_ZU_VIELE {
             get {
                 return ResourceManager.GetString("WIRT_VERL_ZU_VIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_DECKEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; die § 9b-Korrektur rechnet mit dem Regelsatz der Stromsteuer von {0} €/MWh statt {1} €/MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_REGELSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_REGELSATZ", resourceCulture);
             }
         }
         

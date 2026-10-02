@@ -95,8 +95,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Spalte_hat_Vorgabe_kW_und_Pruefklausel()
         {
-            Assert.Equal(KostenStempelSchema.SCHRITT + 1, KesselBereitschaftEinheitSchema.SCHRITT);
-            Assert.Equal(160, KesselBereitschaftEinheitSchema.SCHRITT);
+            Assert.Equal(AufheizErgebnisSchema.SCHRITT + 1, KesselBereitschaftEinheitSchema.SCHRITT);
+            Assert.Equal(162, KesselBereitschaftEinheitSchema.SCHRITT);
             Assert.Equal(KesselBereitschaftEinheitSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Equal(new[] { "Tab_Heizkessel_STAMM", "Tab_Heizkessel" }, KesselBereitschaftEinheitSchema.TABELLEN);
 
@@ -308,18 +308,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             Assert.True(werkzeug.IndexOf("KesselBereitschaftEinheitSchema.Ausfuehren(", StringComparison.Ordinal) >
-                        werkzeug.IndexOf("KostenStempelSchema.Ausfuehren(", StringComparison.Ordinal));
+                        werkzeug.IndexOf("AufheizErgebnisSchema.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT", migration);
             Assert.True(migration.IndexOf("new Schritt(SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT", StringComparison.Ordinal) >
-                        migration.IndexOf("new Schritt(SCHRITT_KOSTEN_STEMPEL", StringComparison.Ordinal));
+                        migration.IndexOf("new Schritt(SCHRITT_AUFHEIZ_ERGEBNIS", StringComparison.Ordinal));
             Assert.Contains("KesselBereitschaftEinheitSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.True(vorrichtung.IndexOf("KesselBereitschaftEinheitSchema.Ausfuehren(null)", StringComparison.Ordinal) >
-                        vorrichtung.IndexOf("KostenStempelSchema.Ausfuehren(null)", StringComparison.Ordinal));
+                        vorrichtung.IndexOf("AufheizErgebnisSchema.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
         // -----------------------------------------------------------------------------

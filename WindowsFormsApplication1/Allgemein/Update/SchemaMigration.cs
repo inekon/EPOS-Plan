@@ -4783,12 +4783,44 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KOSTEN_STEMPEL = KostenStempelSchema.SCHRITT;
 
+        // ---- Stufe KP3 (Entwurf KP3 Abschnitt 4, Festlegung 23): die Aufheizoptimierung --------
+
+        /// <summary>
+        /// Schritt <see cref="AufheizvorgabeSchema.SCHRITT"/> — <b>die Aufheizoptimierung als
+        /// Projekteinstellung</b> (KP-S2). Er folgt auf <see cref="SCHRITT_KOSTEN_STEMPEL"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> fünf Spalten an <c>Tab_Einstellungen</c> — der Schalter
+        /// <c>Aufheizoptimierung</c> (0/1, Vorgabe 0) und die nullbaren <c>Aufheiz_Bemessung</c>,
+        /// <c>Aufheiz_Abzug_K</c>, <c>Aufheiz_Reserve</c>, <c>Aufheiz_Art</c> mit ihren Prüfklauseln;
+        /// NULL heißt „die Vorgabe". Die Anweisungen stehen bei <see cref="AufheizvorgabeSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jedes Projekt steht danach auf „aus".</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_VORGABE = AufheizvorgabeSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="AufheizErgebnisSchema.SCHRITT"/> — <b>die Ergebnisspalten der
+        /// Aufheizoptimierung</b> (KP-S3). Er folgt auf <see cref="SCHRITT_AUFHEIZ_VORGABE"/> und braucht
+        /// die Tabellen <c>Tab_ErgebnisGebaeude</c> (Schritt 107) und <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Reines DDL:</b> je vierzehn nullbare Spalten an beiden Tabellen (Zustand, Zeiten,
+        /// T_a,B, P_auf samt Quelle, Tageszähler, Stunden, Sprünge aus „aus", Kappungsstunden; am
+        /// Gebäude die Bemessung, an der Zone die Sommerlüftungsstunden). Die Anweisungen stehen bei
+        /// <see cref="AufheizErgebnisSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede vorhandene Ergebniszeile ist eine
+        /// Zeile ohne Aufheizrechnung.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_ERGEBNIS = AufheizErgebnisSchema.SCHRITT;
+
         // ---- Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts des Heizkessels ----
 
         /// <summary>
         /// Schritt <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/> — <b>die Einheit des
         /// Bereitschaftsverlusts</b> (Anwenderentscheid 02.10.2026: kW oder % der Nennleistung). Er
-        /// folgt auf <see cref="SCHRITT_KOSTEN_STEMPEL"/> ohne Reihenfolgebedingung.
+        /// folgt auf <see cref="SCHRITT_AUFHEIZ_ERGEBNIS"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>Reines DDL:</b> an <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> die
         /// Spalte <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %). Die
@@ -6900,6 +6932,25 @@ namespace WindowsFormsApplication1
                         "am Kostenkatalog nach der Rechnung blieb ohne Hinweis. Die Datenbank stempelt solche " +
                         "Aenderungen jetzt selbst. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_KostenStempel),
+            // STUFE KP3 (Entwurf KP3 Abschnitt 4) - die Aufheizoptimierung als Projekteinstellung:
+            // fuenf Spalten an Tab_Einstellungen. REIN DDL; die Quelle ist AufheizvorgabeSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_VORGABE,
+                        "Tab_Einstellungen: Aufheizoptimierung (Aufheizoptimierung, Aufheiz_Bemessung, " +
+                        "Aufheiz_Abzug_K, Aufheiz_Reserve, Aufheiz_Art)",
+                        "Der Schalter der Aufheizoptimierung und ihre Bemessung haetten keinen Ort je Projekt. " +
+                        "Die Spalten entstehen mit dem Schalter aus und leer; leer rechnet die Vorgabe. KEIN " +
+                        "Rechenergebnis aendert sich.",
+                        Schritt_AufheizVorgabe),
+            // STUFE KP3 (Entwurf KP3 Abschnitt 4) - die Ergebnisspalten der Aufheizoptimierung: je
+            // vierzehn nullbare Spalten an Tab_ErgebnisGebaeude und Tab_ErgebnisZone. REIN DDL; die
+            // Quelle ist AufheizErgebnisSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_ERGEBNIS,
+                        "Tab_ErgebnisGebaeude und Tab_ErgebnisZone: Ergebnisspalten der Aufheizoptimierung",
+                        "Aufheizzeit, Aufheizleistung, Rampentage und Hinweiszaehler eines Laufs mit " +
+                        "Aufheizoptimierung haetten keinen Ort; Bedarfsdialog, Bericht und Vergleich koennten sie " +
+                        "nicht zeigen. Die Spalten entstehen leer. KEIN Rechenergebnis aendert sich.",
+                        Schritt_AufheizErgebnis),
             // ANWENDERENTSCHEID 02.10.2026 - die Einheit des Bereitschaftsverlusts des Heizkessels:
             // eine Spalte an Katalog und Projektkopie. REIN DDL; die Quelle ist
             // KesselBereitschaftEinheitSchema, die Nummer steht allein dort.
@@ -12160,6 +12211,82 @@ namespace WindowsFormsApplication1
                     " Spalte(n) und " + trigger.ToString(CultureInfo.InvariantCulture) + " von " +
                     KostenStempelSchema.Trigger.Count.ToString(CultureInfo.InvariantCulture) +
                     " Trigger(n) in diesem Lauf angelegt. KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Aufheizoptimierung als Projekteinstellung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_VORGABE"/>, die Anweisungen bei <see cref="AufheizvorgabeSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AufheizvorgabeSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// <c>Tab_Einstellungen</c>, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_AufheizVorgabe(Lauf l)
+        {
+            string nr = AufheizvorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(AufheizvorgabeSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + AufheizvorgabeSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AufheizvorgabeSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AufheizvorgabeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Aufheizoptimierung an " + AufheizvorgabeSchema.TABELLE +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aufheizoptimierung an " + AufheizvorgabeSchema.TABELLE + " - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Schalter 0, sonst leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisspalten der Aufheizoptimierung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_ERGEBNIS"/>, die Anweisungen bei <see cref="AufheizErgebnisSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AufheizErgebnisSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der beiden Ergebnistabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_AufheizErgebnis(Lauf l)
+        {
+            string nr = AufheizErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AufheizErgebnisSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AufheizErgebnisSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AufheizErgebnisSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Aufheizspalten an " + AufheizErgebnisSchema.TAB_GEBAEUDE + " und " +
+                                  AufheizErgebnisSchema.TAB_ZONE + " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisspalten der Aufheizoptimierung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") + " KEIN DML.");
             return true;
         }
 

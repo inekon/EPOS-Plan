@@ -2324,6 +2324,49 @@ namespace Testdatenbankschema
                                   "vollstaendig: " + KostenStempelSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AufheizvorgabeSchema.SCHRITT (KP-S2, Entwurf KP3 Abschnitt 4): die fuenf
+            //      Spalten der Aufheizoptimierung an Tab_Einstellungen - der Schalter (0/1, Vorgabe 0)
+            //      und Bemessung, Abzug, Reserve, Art (nullbar, NULL = Vorgabe). REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_AufheizVorgabe bedient
+            //      (AufheizvorgabeSchema), in EINEM Vorgang. Nach den Stempeln ohne Wirkung auf sie:
+            //      Tab_Einstellungen traegt keinen Stempeltrigger, und ADD COLUMN feuert keinen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jedes Projekt steht auf „aus".
+            string nrAufheizVorgabe = AufheizvorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizVorgabe + " - Aufheizoptimierung als Projekteinstellung: " +
+                              (AufheizvorgabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizVorgabe = new List<string>();
+                angelegt += AufheizvorgabeSchema.Ausfuehren(berichtAufheizVorgabe);
+                foreach (string zeile in berichtAufheizVorgabe)
+                    Console.WriteLine("Schritt " + nrAufheizVorgabe + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizVorgabe + " - vollstaendig: " +
+                                  AufheizvorgabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizErgebnisSchema.SCHRITT (KP-S3, Entwurf KP3 Abschnitt 4): je vierzehn
+            //      nullbare Ergebnisspalten der Aufheizoptimierung an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizErgebnis bedient (AufheizErgebnisSchema), in EINEM
+            //      Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Referenzlauf liest die Ergebnistabellen nicht.
+            string nrAufheizErgebnis = AufheizErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizErgebnis + " - Ergebnisspalten der Aufheizoptimierung: " +
+                              (AufheizErgebnisSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizErgebnis = new List<string>();
+                angelegt += AufheizErgebnisSchema.Ausfuehren(berichtAufheizErgebnis);
+                foreach (string zeile in berichtAufheizErgebnis)
+                    Console.WriteLine("Schritt " + nrAufheizErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizErgebnis + " - vollstaendig: " +
+                                  AufheizErgebnisSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
             //      Einheit des Bereitschaftsverlusts - Bereitschaft_Einheit (TEXT, Vorgabe kW, Pruefklausel
             //      kW oder %) an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN Quelle,

@@ -932,7 +932,7 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 | steht still und ist abgeschaltet | 0 |
 
 **Die Bereitschaftsleistung in ihrer Einheit.** Katalog und Projektkopie führen den Wert
-`Betriebsbereitschaftverlust` und seine Einheit `Bereitschaft_Einheit` (Schemaschritt 160,
+`Betriebsbereitschaftverlust` und seine Einheit `Bereitschaft_Einheit` (Schemaschritt 162,
 `KesselBereitschaftEinheitSchema`): `kW` — Vorgabe jeder Bestandszeile und die Einheit des Imports
 aus VDI 3805 — oder `%` der Nennleistung. Der Lauf rechnet in kW; die Umrechnung steht einmal in
 `KesselBereitschaft.LeistungKw` (bei `%`: Wert × `Ptherm` / 100, ohne Nennleistung 0), gerufen beim
@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R30_Stromverbraucher` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R31_Rechenwegbefunde` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 

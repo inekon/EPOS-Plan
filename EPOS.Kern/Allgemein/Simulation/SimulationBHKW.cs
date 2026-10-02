@@ -29,6 +29,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<int> bhkw_anlagen_ids = new List<int>();
 
+        /// <summary>
+        /// Das ANLAGENFELD „Untere Grenzleistung des ausgewählten Moduls"
+        /// (<c>Tab_Energieanlagen.Grenzleistung</c>) je BHKW in PROZENT, indexgleich zu
+        /// <see cref="bhkw_list"/>; 0 = nicht gepflegt. Es geht Katalog- und Projektwert
+        /// vor, sobald es gepflegt ist (<see cref="Grenzfaktor"/>).
+        /// </summary>
+        public List<double> bhkw_anlagen_grenzleistung = new List<double>();
+
+        /// <summary>
+        /// Die größte gültige untere Grenzleistung [%]. Darüber liefe ein Modul nie an —
+        /// ein solcher Wert ist ungültig, wird benannt und übersprungen.
+        /// </summary>
+        public const double GRENZLEISTUNG_MAX_PROZENT = 100.0;
+
         public int m_ID_Projekt = 0;
 
         public double[] waermebedarf = new double[8760];
@@ -269,14 +283,30 @@ namespace WindowsFormsApplication1
         /// hier IN PLACE durch 100 geteilt. Ein zweiter Aufruf auf derselben Instanz
         /// teilte erneut — deshalb ruft der Rechenweg diese Methode genau einmal.
         ///
-        /// <para><b>ZWEI EBENEN, seit W6‑E‑7 ohne stille dritte.</b> Der Katalogwert des
-        /// Moduls (<c>Tab_BHKW.Grenzleistung</c>) gilt, sobald er ungleich 0 ist; sonst
-        /// gilt der PROJEKTWERT (<c>Tab_Einstellungen.Leistungsgrenze</c>), und ist auch
-        /// der 0, dann gibt es keine Untergrenze. Der frühere Fallback auf 30 % ist
+        /// <para><b>DREI EBENEN, ohne stillen Rückfall.</b> Das Anlagenfeld
+        /// (<c>Tab_Energieanlagen.Grenzleistung</c>) gilt, sobald es gepflegt ist (&gt; 0);
+        /// sonst der Katalogwert des Moduls (<c>Tab_BHKW.Grenzleistung</c>, &gt; 0); sonst
+        /// der PROJEKTWERT (<c>Tab_Einstellungen.Leistungsgrenze</c>), und ist auch der 0,
+        /// dann gibt es keine Untergrenze. Werte über 100 % sind ungültig und werden benannt
+        /// übersprungen (<see cref="Grenzfaktor"/>). Der frühere Fallback auf 30 % ist
         /// gefallen — die Begründung steht im Rumpf.</para>
         /// </summary>
         private void Moduldaten_Einlesen(int anzahl)
         {
+            // Befund BHKW-Untergrenze (Papier „Verbesserungen 29.09.2026"): Ein Projektwert
+            // über 100 % ist ungültig - benannt, und er rechnet als „keine Untergrenze",
+            // statt das Modul still nie anlaufen zu lassen.
+            if (bhkwGrenzleistungAllgemein > GRENZLEISTUNG_MAX_PROZENT)
+            {
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "bhkw-grenze-projekt",
+                    string.Format(MyResource.Resource.SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG,
+                                  MyResource.Resource.SIMENG_BHKW_GRENZE_ALLE_MODULE,
+                                  Prozenttext(bhkwGrenzleistungAllgemein),
+                                  MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_PROJEKT,
+                                  Prozenttext(0.0)));
+                bhkwGrenzleistungAllgemein = 0.0;
+            }
             bhkwGrenzleistungAllgemein /= 100;
 
             // ANWENDERENTSCHEID W6-E-7 (07.09.2026): HIER STAND EIN STILLER FALLBACK,
@@ -332,29 +362,21 @@ namespace WindowsFormsApplication1
                 bhkwWirkungsgrad[i] = (double)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
                 bhkwSKZ[i] = bhkwStromLeistung[i] / bhkwWaermeLeistung[i];
 
-                if ((double)ctrl.m_Grenzleistung == 0)
-                    bhkwGrenzL[i] = bhkwGrenzleistungAllgemein; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
-                else
-                    // PAKET BHKW-REGULÄR — EINHEITEN-FIX. Hier stand der Katalogwert OHNE
-                    // Division: bhkwGrenzL[i] = (double)ctrl.m_Grenzleistung.
-                    //
-                    // DER BRUCH. bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast) - so
-                    // wird das Feld in allen drei Motorläufen benutzt
-                    // (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]). Der Anlagenwert aus
-                    // Tab_Energieanlagen.Grenzleistung wird deshalb beim Laden durch 100
-                    // geteilt (SimulationControl.BHKW_Liste_Laden), und die projektweite
-                    // Grenze ebenso (die Zeile am Methodenanfang). Der KATALOGWERT aus
-                    // Tab_BHKW.Grenzleistung wurde es nicht - er trägt aber dieselbe
-                    // Einheit, nämlich Prozent.
-                    //
-                    // DIE FOLGE war ein Faktor 100 zu viel: Ein Katalog-BHKW mit 50 %
-                    // Modulationsgrenze rechnete mit bhkwGrenzL = 50. Da der Katalogwert
-                    // den Anlagenwert überschreibt, sobald er ungleich 0 ist, betraf das
-                    // jedes Modul mit gepflegter Katalog-Grenzleistung. Die Bedingung
-                    // „bhkwWaermeLeistung * bhkwGrenzL <= Wärmeraum" war damit praktisch
-                    // nie erfüllt - der Teillastzweig fiel aus, das Modul lief nur noch
-                    // Volllast oder gar nicht.
-                    bhkwGrenzL[i] = (double)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
+                // DREI EBENEN (Befund BHKW-Untergrenze, Papier „Verbesserungen
+                // 29.09.2026", Anwenderentscheid): Das ANLAGENFELD gilt, sobald es gepflegt
+                // ist (> 0), sonst der KATALOGWERT des Moduls, sonst der PROJEKTWERT. Bis
+                // dahin überschrieb der Katalog- bzw. Projektwert das Anlagenfeld immer -
+                // es war wirkungslos. Die Untergrenze gilt in allen drei Betriebsarten
+                // (Motorlauf_Waermegefuehrt, _Stromgefuehrt, _OhneEinspeisung).
+                //
+                // bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast): Alle drei Ebenen tragen
+                // Prozent und werden durch 100 geteilt (EINHEITEN-FIX des Pakets
+                // BHKW-REGULÄR - der Katalogwert rechnete einmal mit 50 statt 0,5, und der
+                // Teillastzweig fiel aus).
+                double anlageProzent = i < bhkw_anlagen_grenzleistung.Count ? bhkw_anlagen_grenzleistung[i] : 0.0;
+                bhkwGrenzL[i] = Grenzfaktor(i < bhkw_list_Namen.Count ? bhkw_list_Namen[i] : "",
+                                            anlageProzent, (double)ctrl.m_Grenzleistung,
+                                            bhkwGrenzleistungAllgemein);
 
                 // ANWENDERENTSCHEID W14a-E-8-B1 (07.09.2026): HIER STANDEN DIE FUENF
                 // GERAETESPALTEN, und sie sind als Rechengroesse gefallen.
@@ -402,6 +424,61 @@ namespace WindowsFormsApplication1
                         "gepflegten Wert aus dem Emissionskatalog.");
             }
         }
+
+        /// <summary>
+        /// Die UNTERE GRENZLEISTUNG eines Moduls als Faktor der Nennleistung (0,3 = 30 %) —
+        /// eine Regel für alle drei Betriebsarten (Befund BHKW-Untergrenze, Papier
+        /// „Verbesserungen 29.09.2026", Anwenderentscheid).
+        ///
+        /// <para><b>Rangfolge:</b> das Anlagenfeld (<paramref name="anlageProzent"/>), sobald
+        /// es gepflegt ist (&gt; 0); sonst der Katalogwert des Moduls
+        /// (<paramref name="katalogProzent"/>, &gt; 0); sonst der Projektwert
+        /// (<paramref name="projektFaktor"/>, schon als Faktor), und ist auch der 0, gibt
+        /// es keine Untergrenze.</para>
+        ///
+        /// <para><b>Ungültig ist ein Wert über 100 %</b> — mit ihm liefe das Modul nie an
+        /// (die Testdatenbank führt im Auslieferungskatalog vier solche Zeilen). Er wird mit
+        /// benannter Warnung übersprungen; es gilt die nächste Ebene.</para>
+        ///
+        /// <para>Bitgleich zum Bestand, wo der Bestand schon galt: Katalog und Projekt
+        /// teilen dieselbe Prozentzahl durch 100 wie zuvor.</para>
+        /// </summary>
+        public static double Grenzfaktor(string modul, double anlageProzent, double katalogProzent,
+                                         double projektFaktor)
+        {
+            var ungueltig = new List<(double Prozent, string Ebene)>();
+            double faktor;
+
+            if (anlageProzent > GRENZLEISTUNG_MAX_PROZENT)
+                ungueltig.Add((anlageProzent, MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_ANLAGE));
+
+            if (anlageProzent > 0.0 && anlageProzent <= GRENZLEISTUNG_MAX_PROZENT)
+            {
+                faktor = anlageProzent / 100.0;
+            }
+            else
+            {
+                if (katalogProzent > GRENZLEISTUNG_MAX_PROZENT)
+                    ungueltig.Add((katalogProzent, MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_KATALOG));
+
+                faktor = katalogProzent > 0.0 && katalogProzent <= GRENZLEISTUNG_MAX_PROZENT
+                         ? katalogProzent / 100.0
+                         : (projektFaktor > 0.0 ? projektFaktor : 0.0);
+            }
+
+            foreach (var u in ungueltig)
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "bhkw-grenze-" + modul + "-" + u.Ebene,
+                    string.Format(MyResource.Resource.SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG,
+                                  string.Format(MyResource.Resource.SIMENG_BHKW_GRENZE_MODUL, modul),
+                                  Prozenttext(u.Prozent), u.Ebene, Prozenttext(faktor * 100.0)));
+
+            return faktor;
+        }
+
+        /// <summary>Eine Prozentzahl für eine Meldung, in der Kultur der Oberfläche.</summary>
+        private static string Prozenttext(double prozent)
+            => prozent.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
 
         /// <summary>
         /// Der Energieträger EINES Moduls aus <see cref="bhkw_carrier"/> (W14a-E-8-B1);
@@ -678,12 +755,17 @@ namespace WindowsFormsApplication1
         /// ihre Leistung nach dem Strombedarf, nicht nach dem Füllstand. Was an Wärme
         /// übrig bleibt, entscheidet erst der Aufrufer — <see cref="Fahrweise_Stunde"/>
         /// gibt es an die Ladephase C/D weiter (Konzept 6.3).
+        ///
+        /// <para><b>Die Untergrenze je Modul</b> (<paramref name="bhkwGrenzL"/>, aufgelöst in
+        /// <see cref="Grenzfaktor"/>) ist dieselbe wie wärmegeführt und ohne Einspeisung —
+        /// bis zum Befund BHKW-Untergrenze (Papier „Verbesserungen 29.09.2026") nahmen die
+        /// zwei stromseitigen Fahrweisen hier nur den Projektwert.</para>
         /// </summary>
         private void Motorlauf_Stromgefuehrt(
             int stunde, int anzahl,
             double[] stromproduktion, double[] waermeproduktion,
             double[] s_waerme, double[] s_strom,
-            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double[] bhkwGrenzL,
             ref double restStrom, ref double restWaerme)
         {
             for (int motor = 0; motor < anzahl; motor++)
@@ -719,7 +801,7 @@ namespace WindowsFormsApplication1
                 // Vergleich war schon geschlossen; der Rand aendert an der Gleichheit
                 // nichts und haelt nur die zwei Stufen derselben Weiche nach EINEM Mass.
                 else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                     bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                     bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                 {
                     stromproduktion[stunde] += restStrom;
 
@@ -758,7 +840,7 @@ namespace WindowsFormsApplication1
             int stunde, int anzahl,
             double[] stromproduktion, double[] waermeproduktion,
             double[] s_waerme, double[] s_strom,
-            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double[] bhkwGrenzL,
             double kapazitaetPendelspeicher,
             ref double speicher, ref double restWaerme, ref double restStrom)
         {
@@ -797,7 +879,7 @@ namespace WindowsFormsApplication1
                         // restStrom == P_el * x_min deckt die Mindestlast den Bedarf
                         // GENAU, es wird nichts eingespeist.
                         else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                             bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
                             wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
@@ -828,7 +910,7 @@ namespace WindowsFormsApplication1
                     // Waermeseite, WERT der Waermeraum - der Vergleich war geschlossen,
                     // die Gleichheit bleibt, wo sie war.
                     else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
-                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                     {
                         sLeistung = (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
 
@@ -844,7 +926,7 @@ namespace WindowsFormsApplication1
                         }
                         // Dieselbe Modulationsgrenze wie in W1, mit derselben Begründung.
                         else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                             bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
                             wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
@@ -908,7 +990,7 @@ namespace WindowsFormsApplication1
                     // zweite war streng; an der Gleichheit bucht S2 statt S3, und beide
                     // rechnen dort dieselbe Menge - nur ueber verschiedene Dreisaetze.
                     else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                                                         bhkwStromLeistung[motor] * bhkwGrenzL[motor]) &&
                              Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
                                                          restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]))
                     {
@@ -936,9 +1018,9 @@ namespace WindowsFormsApplication1
                     // Seite, auf der sie an der waermeseitigen Stufe W2 (dort <=) liegt:
                     // Ein Waermeraum GENAU auf der Mindestlast laesst das Modul laufen.
                     else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                                                         bhkwStromLeistung[motor] * bhkwGrenzL[motor]) &&
                              Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
-                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                     {
                         waermeproduktion[stunde] += (restSpeicher + restWaerme);
                         s_waerme[motor] += (restSpeicher + restWaerme);
@@ -1775,7 +1857,7 @@ namespace WindowsFormsApplication1
                 double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_Stromgefuehrt(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                         s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
-                                        bhkwGrenzleistungAllgemein, ref restStrom, ref restWaerme);
+                                        bhkwGrenzL, ref restStrom, ref restWaerme);
 
                 // Stromgeführt kennt keine Speichergrenze in der Zuschaltung: Was über den
                 // Bedarf hinaus entsteht, ist Koppelprodukt und geht in die Ladephase.
@@ -1790,7 +1872,7 @@ namespace WindowsFormsApplication1
                 double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_OhneEinspeisung(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                           s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
-                                          bhkwGrenzleistungAllgemein, kapazitaet,
+                                          bhkwGrenzL, kapazitaet,
                                           ref speicher, ref restWaerme, ref restStrom);
             }
             else

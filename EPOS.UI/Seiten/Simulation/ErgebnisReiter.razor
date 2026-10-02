@@ -106,6 +106,10 @@
                             <Zahlenfeld Bezeichnung="@Resource.SIM_DASH_SPEICHER_INFO"
                                         Wert="@Autarkie.SpeicherKwh" Einheit="kWh"
                                         WertChanged="KapazitaetGesetzt" />
+                            @if (Autarkie.OhneStromspeicher)
+                            {
+                                <p class="epos-simerg-hinweis">@Resource.SIMERG_LBL_OHNE_STROMSPEICHER</p>
+                            }
                             <p class="epos-simerg-hinweis">@Resource.SIMERG_LBL_KAPAZITAET_HINWEIS</p>
                         </div>
                     }

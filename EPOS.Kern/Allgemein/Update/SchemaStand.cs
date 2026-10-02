@@ -739,6 +739,16 @@ namespace WindowsFormsApplication1
         /// (<see cref="KostenStempelSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer,
         /// und kein Rechenweg liest sie. Die Nummer steht allein bei
         /// <see cref="KostenStempelSchema.SCHRITT"/>.
+        /// Danach, mit der AUFHEIZOPTIMIERUNG (Stufe KP3, Entwurf KP3 Abschnitt 4; zwei Schritte nach
+        /// Festlegung 23) steht das Ziel auf <see cref="AufheizErgebnisSchema.SCHRITT"/>: zuerst
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> (KP-S2) mit den fünf Projektspalten
+        /// <c>Tab_Einstellungen.Aufheizoptimierung</c> (0/1, Vorgabe 0), <c>Aufheiz_Bemessung</c>,
+        /// <c>Aufheiz_Abzug_K</c>, <c>Aufheiz_Reserve</c> und <c>Aufheiz_Art</c> (nullbar, NULL = Vorgabe),
+        /// dann KP-S3 mit je vierzehn nullbaren Ergebnisspalten an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>, reines DDL (<see cref="AufheizvorgabeSchema"/>,
+        /// <see cref="AufheizErgebnisSchema"/>). <b>Ergebnisneutral:</b> Der Schalter steht überall auf 0,
+        /// die übrigen Spalten auf NULL, und kein Rechenweg liest sie. Die Nummern stehen allein bei
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> und <see cref="AufheizErgebnisSchema.SCHRITT"/>.
         /// Danach, mit der EINHEIT DES BEREITSCHAFTSVERLUSTS (Anwenderentscheid vom 02.10.2026),
         /// steht das Ziel auf <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>: die Spalte
         /// <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %) an

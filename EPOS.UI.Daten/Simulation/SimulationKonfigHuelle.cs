@@ -1916,6 +1916,9 @@ namespace WindowsFormsApplication1
         /// <para><b>Ebenso die Kopplungsstufe „Anlagenkopplung"</b> (Schemaschritt 122,
         /// Anlagenkopplung 8.1): nullbar, ohne Vorgabe — nachgereicht wird ein gesetzter Wert,
         /// NULL („aus") bleibt NULL.</para>
+        ///
+        /// <para><b>Ebenso die Aufheizoptimierung</b> (Schemaschritt KP-S2): die fünf Spalten in
+        /// einem <c>UPDATE</c>, wenn VOR dem Delete etwas anderes als „aus und leer" stand.</para>
         /// </summary>
         private bool Speichern()
         {
@@ -1936,6 +1939,7 @@ namespace WindowsFormsApplication1
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
             string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
+            Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1955,6 +1959,13 @@ namespace WindowsFormsApplication1
             // VOR dem Delete in der Datenbank stand; NULL bleibt NULL.
             if (anlagenkopplung != null)
                 KonfigurationCtrl.AnlagenkopplungSchreiben(m_ID_Projekt, anlagenkopplung);
+
+            // DIE AUFHEIZOPTIMIERUNG REIST MIT (Schemaschritt KP-S2, Entwurf KP3): Die neue Zeile traegt
+            // den Schalter 0 und leere Spalten - nachgereicht wird der Stand VOR dem Delete, auch ein
+            // Schalter aus mit gepflegten Werten (Festlegung 24). Ohne Spalten liest sich „aus" und
+            // nichts ist zu schreiben.
+            if (!aufheizvorgabe.Equals(Aufheizvorgabe.Aus))
+                KonfigurationCtrl.AufheizvorgabeSchreiben(m_ID_Projekt, aufheizvorgabe);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

@@ -907,6 +907,73 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Projekteinstellung „Aufheizoptimierung" (Schemaschritt KP-S2; Entwurf KP3, Grundsatz 5)
+
+        /// <summary>
+        /// Die Aufheizoptimierung eines Projekts — DIALOGFREI und NULL-ERHALTEND gelesen, in EINER
+        /// Abfrage der fünf Spalten (<see cref="AufheizvorgabeSchema"/>). <b>Fehlende Zeile, fehlende
+        /// Spalte und ein unlesbarer Satz heißen „aus"</b> (<see cref="Aufheizvorgabe.Aus"/>); ein
+        /// Schalter auf 0 behält die übrigen Werte (Festlegung 24). Die Werte durchlaufen die
+        /// Normalisierung des Records.
+        /// </summary>
+        public static Aufheizvorgabe AufheizvorgabeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Aufheizvorgabe.Aus;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "], [" + AufheizvorgabeSchema.SPALTE_BEMESSUNG +
+                "], [" + AufheizvorgabeSchema.SPALTE_ABZUG + "], [" + AufheizvorgabeSchema.SPALTE_RESERVE +
+                "], [" + AufheizvorgabeSchema.SPALTE_ART + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < AufheizvorgabeSchema.SPALTEN.Count)
+                return Aufheizvorgabe.Aus;
+
+            DataRow r = dt.Rows[0];
+            return new Aufheizvorgabe(
+                WahrOderFalsch(r[0]),
+                TextOderLeer(r[1]),
+                HeizgrenzeOderLeer(r[2]),
+                HeizgrenzeOderLeer(r[3]),
+                TextOderLeer(r[4]));
+        }
+
+        /// <summary>
+        /// Schreibt die Aufheizoptimierung eines Projekts in EINEM, zielgenauen <c>UPDATE</c> der fünf
+        /// Spalten — wie bei <see cref="KuehlbetriebSchreiben"/> und aus demselben Grund: Die
+        /// Spaltenlisten von <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette.
+        /// Geschrieben wird die normalisierte Form des Records (Festlegung 24): der Schalter als 0/1,
+        /// (a) und „täglich" als NULL, ein leeres Zahlenfeld als NULL, ein getippter Wert, wie er ist.
+        /// Ein Wert außerhalb der Prüfklauseln scheitert an der Spalte und liefert <c>false</c>.
+        ///
+        /// Rückgabe <c>false</c> ohne Einstellung (<c>null</c>), wenn keine Zeile getroffen wurde oder
+        /// eine Spalte fehlt.
+        /// </summary>
+        public static bool AufheizvorgabeSchreiben(int idProjekt, Aufheizvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_BEMESSUNG + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ABZUG + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_RESERVE + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ART + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@an", DbParamTyp.Integer, vorgabe.An ? 1 : 0),
+                StilleDb.Par("@bemessung", DbParamTyp.VarWChar, (object)vorgabe.Bemessung ?? DBNull.Value),
+                StilleDb.Par("@abzug", DbParamTyp.Double, (object)vorgabe.AbzugK ?? DBNull.Value),
+                StilleDb.Par("@reserve", DbParamTyp.Double, (object)vorgabe.Reserve ?? DBNull.Value),
+                StilleDb.Par("@art", DbParamTyp.VarWChar, (object)vorgabe.Art ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>Ein gelesenes Textfeld: <c>null</c> und <c>DBNull</c> ergeben <c>null</c>.</summary>
+        private static string TextOderLeer(object feld)
+            => feld == null || feld == DBNull.Value
+                ? null
+                : Convert.ToString(feld, System.Globalization.CultureInfo.InvariantCulture);
+
         /// <summary>
         /// <b>DER ANFANGSWERT EINES NEUEN PROJEKTS</b> (Entscheid E27, K10; Kuehlkonzept 7.2)
         /// - die EINE Stelle, an der die Programmeinstellung „Neue Projekte mit Kuehlung

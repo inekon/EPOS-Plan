@@ -177,7 +177,8 @@ namespace EPOS.Kern.Tests
                                                             r.simulation_Strombedarf, r.sim);
             Assert.Equal(0.0, e.Photovoltaik.Strombedarf);
             Assert.Equal(0.0, SimulationErgebnisCtrl.Photovoltaik(r.sim).StrombedarfMwh);
-            Assert.Equal(27457.510347756746, r.sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27 457,510347756746 kWh.
+            Assert.Equal(25554.297666056369, r.sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
         }
 
         private static void Kopiere(string tabelle, string bedingung)

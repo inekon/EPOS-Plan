@@ -597,6 +597,13 @@ public sealed class AutarkieDaten
     public double SpeicherKwh;
 
     /// <summary>
+    /// Rechnet die Analyse OHNE Stromspeicher (Kapazität 0 kWh)? Ohne Speicher im Projekt ist
+    /// das die Vorbelegung — es wird kein Speicher angenommen, den das Projekt nicht hat; die
+    /// Seite sagt es in einer Zeile unter dem Feld.
+    /// </summary>
+    public bool OhneStromspeicher => SpeicherKwh <= 0.0;
+
+    /// <summary>
     /// Die Platzhalter der Kacheln und des Monatsstapels (Katalog v10, „ähnlich im Bericht“): Autarkie der
     /// Photovoltaik, solare Deckung, Strombilanz je Monat und die Monatswerte (nur Excel); leer = keine Marke.
     /// Die Hülle setzt sie nach dem Stand (Stamm → <c>stamm.*</c>, Variante → <c>stand.*</c>).
