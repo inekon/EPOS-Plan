@@ -12574,6 +12574,8 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Felder des Kollektorfelds - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. Vorgabe apertur).") +
                     " KEIN DML.");
+            return true;
+        }
 
         /// <summary>Eine Zählabfrage; 0, wenn sie nicht läuft (dann fasst der Schritt
         /// auch nichts an — dieselbe tolerante Haltung wie bei den übrigen DML-Schritten).</summary>
