@@ -380,7 +380,7 @@ namespace EPOS.Kern.Tests
                 new double[1], new double[1],           // stromproduktion, waermeproduktion
                 new double[1], new double[1],           // s_waerme, s_strom
                 new[] { P_TH }, new[] { P_EL },
-                X_MIN,
+                new[] { X_MIN },                       // Untergrenze je Modul (RB1)
                 restStrom,
                 1000.0                                  // restWaerme: reichlich
             };
@@ -404,7 +404,7 @@ namespace EPOS.Kern.Tests
                 new double[1], new double[1],
                 new double[1], new double[1],
                 new[] { P_TH }, new[] { P_EL },
-                X_MIN,
+                new[] { X_MIN },                       // Untergrenze je Modul (RB1)
                 kapazitaet,
                 kapazitaet,                              // speicher = voll => restSpeicher = 0
                 restWaerme,
@@ -438,7 +438,7 @@ namespace EPOS.Kern.Tests
                 new double[1], new double[1],
                 new double[1], new double[1],
                 new[] { P_TH }, new[] { P_EL },
-                X_MIN,
+                new[] { X_MIN },                       // Untergrenze je Modul (RB1)
                 raum,                                    // Kapazität …
                 0.0,                                     // … bei leerem Speicher => restSpeicher = raum
                 P_TH,                                    // restWaerme: genau eine Volllaststunde
