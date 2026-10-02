@@ -157,14 +157,15 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
   aus dem Speicher, nicht als Eingabe.
 - **Entscheidung des Anwenders: ☐ (nur Kenntnisnahme)**
 
-### ST8 Solarthermie-Ganglinien kein Rechenweg — entschieden
+### ST8 Solarthermie-Ganglinien kein Rechenweg — umgesetzt
 
-- **Stand heute:** Die zugeordnete Ganglinie wird gepflegt, aber nicht gerechnet (Befund im
-  Folgeauftrag 4 der
-  [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](Folgeauftraege_Technikdokumentation_EPOS-Plan.md)).
-- **Entscheid liegt vor:** Die Ganglinie wird eigener Rechenweg (Weg a: mit Senken, Pufferladung
-  und Kaskade wie das Kollektorfeld). Umsetzung über Folgeauftrag 4; hier kein neuer Vorschlag.
-- **Entscheidung des Anwenders: ☑ (entschieden)**
+- **Stand heute:** Die zugeordnete Ganglinie ist eigener Rechenweg (Weg a: mit Senken,
+  Pufferladung und Kaskade wie das Kollektorfeld), umgesetzt über Folgeauftrag 4 der
+  [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](Folgeauftraege_Technikdokumentation_EPOS-Plan.md).
+  Weiche, Einheit, Rückfälle und Bericht:
+  [Konzept Simulationsablauf, Abschnitt 14](Konzept_Simulationsablauf_EPOS-Plan.md). Kein
+  Referenzprojekt führt eine Ganglinie; die Referenzbasis bleibt.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ---
 
@@ -1010,7 +1011,7 @@ Umstellen eines Referenzprojekts.
 | SP9 Wärme und Strom gemeinsam optimieren | nein (Konzept vormerken) | L | — | ☐ |
 | WP2, BH3, PS3, SP4, HK2, HK3, SB3 | Erläuterung, nichts ändern | — | — | ☐ |
 | ST7, BW1, BW6, HK1, SB2 | erledigt | — | — | Kenntnis |
-| ST8 Solarthermie-Ganglinie als Rechenweg | entschieden (Folgeauftrag 4) | — | ja, falls 1049 betroffen | ☑ |
+| ST8 Solarthermie-Ganglinie als Rechenweg | umgesetzt (Folgeauftrag 4) | — | nein (kein Referenzprojekt führt eine Ganglinie) | ☑ |
 
 ---
 

@@ -1050,3 +1050,49 @@ nachgezogen. Gespeicherte Kaskaden — auch die der Referenzprojekte — rechnet
 
 Gehalten von `EPOS.Kern.Tests/KaskadeTests` (`Vorwaehlen_*`) und
 `EPOS.Kern.Tests/KuehlbetriebProgrammeinstellungTests.Die_Vorwahl_folgt_den_Ladeprioritaeten`.
+
+## 14. Solarthermie-Ganglinie als Rechenweg
+
+Die Solarthermie eines Projekts rechnet entweder über das **Kollektorfeld** (Klimadaten,
+Kollektorkennwerte, Ausrichtung — die Vorgabe) oder über eine zugeordnete **Solarthermieganglinie**
+mit 8 760 Stundenwerten (`Allgemein/Simulation/SolarganglinieWeiche.cs`, Rechenweg in
+`SimulationSolarthermie.GanglinieEinsetzen`).
+
+**Weiche.** Die Auswahl „Profil“/„Ganglinie“ der Startseiten-Kachel wählt nur den Dialog; sie wird
+nicht gespeichert. Maßgeblich ist der Datenstand: Die Weiche steht auf Ganglinie genau dann, wenn dem
+Projekt über `Z_ProjektSolarganglinie` eine Ganglinie zugeordnet ist, deren Projektkopie
+(`Tab_SolarganglinieDaten`, gelesen nach `ID`) **genau 8 760 endliche, nicht negative Werte** führt.
+Sonst rechnet das Kollektorfeld. Bei mehreren Zuordnungen rechnet die mit der kleinsten
+Zuordnungs-ID; die übrigen werden als Warnung gemeldet. Einen Schemaschritt braucht die Weiche nicht.
+
+**Einheit.** Ein Wert ist die Wärmeleistung der Stunde in kW und damit die Wärmemenge der Stunde in
+kWh — absolut, ohne Bezug auf eine Fläche. Die Ganglinie ist das stündliche Potenzial EINES Felds;
+was davon den Bedarf deckt, den Puffer lädt oder als Überschuss verfällt, entscheidet die Stunde.
+
+**Senken, Puffer, Kaskade.** Führt das Projekt eine Solarthermie-Anlagenzeile, ist die mit der
+kleinsten `Tab_Energieanlagen.ID` der Träger der Ganglinie: Die Ganglinie rechnet unter ihrer ID —
+mit ihren Senken (`Z_AnlageSenke`, sonst der Vorbelegung Heizkreis/Beides), ihrer Pufferladung samt
+Nachrang-Schwelle und an ihrem Kaskadenplatz. Weitere Kollektorfelder rechnen dann nicht (Hinweis im
+Protokoll). Ohne Anlagenzeile deckt die Ganglinie alle Wärmekanäle — Heizung, Brauchwasser,
+Prozesswärme — direkt und ohne Puffer (Hinweis im Protokoll). In beiden Fällen rechnet sie nur, wenn
+die Solarthermie einen Kaskadenplatz hat; die Vorwahl der Simulationskonfiguration zählt eine
+vollständige Ganglinie wie ein Kollektorfeld, und ohne Platz meldet der Lauf
+`SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ` (`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`).
+
+**Rückfälle.** Eine zugeordnete, aber unvollständige Ganglinie (zu wenige oder zu viele Werte, leere,
+negative oder nicht endliche Werte) ist eine Warnung mit dem benannten Mangel; der Lauf rechnet mit
+dem Kollektorfeld, ohne Kollektorfeld liefert die Solarthermie nichts. Der Statuspunkt der Kachel
+(`KomponentenBestandCtrl`) ist ohne Anlagenzeile nur mit vollständiger Ganglinie an.
+
+**Ergebnis und Bericht.** Die Ganglinie erscheint in `Kollektor_Ergebnisse` und damit in
+`Tab_ErgebnisSolarthermieModul`, im Ergebnisreiter und in den Erzeugertabellen des Berichts als eine
+Zeile „Solarthermie-Ganglinie ‚Bezeichner‘“ mit Jahresertrag (genutzt plus Überschuss), genutzter
+Wärme und Überschuss; Fläche und Anzahl stehen auf 0 und werden im Ergebnisreiter als „–“ gezeigt
+(`SolarKollektorErgebnis.IstGanglinie`, `JahresertragKwh`, `NutzanteilProzent`). Die
+Wirtschaftlichkeit kennt für die Ganglinie keine eigene Investition; ihre Wärmemenge steht in der
+Wärmemenge der Komponente Solarthermie. Eine Kostenposition, die an eine einzelne Anlage gebunden ist,
+findet die Ganglinienzeile nicht unter dem Anlagennamen und behält ihre gespeicherte Menge.
+
+Gehalten von `EPOS.Kern.Tests/SolarganglinieRechenwegTests` und
+`EPOS.UI.Tests/Seiten/ErzeugerReiterTests.Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl`.
+Kein Referenzprojekt führt eine Solarthermieganglinie.
