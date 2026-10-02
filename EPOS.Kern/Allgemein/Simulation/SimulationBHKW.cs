@@ -104,14 +104,14 @@ namespace WindowsFormsApplication1
         public BhkwTeillast Teillast(int index) => index >= 0 && index < MAX_BHKW ? _teillast[index] : null;
 
         /// <summary>Strom zur Wärme eines modulierenden Moduls — mit Kennlinie über die Stromkennzahl, sonst der Dreisatz des Bestands.</summary>
-        private double StromAusWaerme(int motor, double waerme)
+        private double StromAusWaerme(int motor, double waerme, double[] pth, double[] pel)
             => _teillast[motor] != null ? _teillast[motor].StromAusWaerme(waerme)
-                                        : waerme / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                                        : waerme / pth[motor] * pel[motor];
 
         /// <summary>Wärme zum Strom eines modulierenden Moduls — mit Kennlinie über die Stromkennzahl, sonst der Dreisatz des Bestands.</summary>
-        private double WaermeAusStrom(int motor, double strom)
+        private double WaermeAusStrom(int motor, double strom, double[] pth, double[] pel)
             => _teillast[motor] != null ? _teillast[motor].WaermeAusStrom(strom)
-                                        : strom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                                        : strom / pel[motor] * pth[motor];
 
         /// <summary>Taktet das Modul unter seiner Untergrenze (BH2)?</summary>
         private bool Taktfaehig(int motor) => _teillast[motor] != null && _teillast[motor].MitTakten;
@@ -843,7 +843,7 @@ namespace WindowsFormsApplication1
                 {
                     // Welle M4 (BH1): mit Teillastkennlinie über die Stromkennzahl an der
                     // Auslastung, sonst der Dreisatz des Bestands (StromAusWaerme).
-                    double stromModuliert = StromAusWaerme(motor, restWaerme + restSpeicher);
+                    double stromModuliert = StromAusWaerme(motor, restWaerme + restSpeicher, bhkwWaermeLeistung, bhkwStromLeistung);
                     waermeproduktion[stunde] += restWaerme + restSpeicher;
                     s_waerme[motor] += restWaerme + restSpeicher;
                     stromproduktion[stunde] += stromModuliert;
@@ -944,7 +944,7 @@ namespace WindowsFormsApplication1
 
                     // Anteilige Wärmeproduktion berechnen (Dreisatz über den elektrischen Wirkungsgrad;
                     // Welle M4, BH1: mit Teillastkennlinie über die Stromkennzahl an der Auslastung)
-                    double anteiligeWaerme = WaermeAusStrom(motor, restStrom);
+                    double anteiligeWaerme = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                     waermeproduktion[stunde] += anteiligeWaerme;
 
                     s_strom[motor] += restStrom;
@@ -1033,7 +1033,7 @@ namespace WindowsFormsApplication1
                                                              bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
-                            wLeistung = WaermeAusStrom(motor, restStrom);
+                            wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         }
                         // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
                         else if (Taktfaehig(motor) && restStrom >= Rechenrand.ABSOLUT)
@@ -1070,7 +1070,7 @@ namespace WindowsFormsApplication1
                     else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
                                                          bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                     {
-                        sLeistung = StromAusWaerme(motor, restWaerme + restSpeicher);
+                        sLeistung = StromAusWaerme(motor, restWaerme + restSpeicher, bhkwWaermeLeistung, bhkwStromLeistung);
 
                         // Alte Bauart: if (sLeistung < restStrom). SCHWELLE ist hier die
                         // AUSBEUTE des modulierten Laufs, WERT wieder der Reststrom -
@@ -1087,7 +1087,7 @@ namespace WindowsFormsApplication1
                                                              bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
-                            wLeistung = WaermeAusStrom(motor, restStrom);
+                            wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         }
                         // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
                         else if (Taktfaehig(motor) && restStrom >= Rechenrand.ABSOLUT)
@@ -1190,12 +1190,12 @@ namespace WindowsFormsApplication1
                     else if (Rechenrand.SchwelleErreicht(restStrom,
                                                          bhkwStromLeistung[motor] * bhkwGrenzL[motor]) &&
                              Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
-                                                         WaermeAusStrom(motor, restStrom)))
+                                                         WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung)))
                     {
                         stromproduktion[stunde] += restStrom;
                         s_strom[motor] += restStrom;
 
-                        double anteiligeWaerme = WaermeAusStrom(motor, restStrom);
+                        double anteiligeWaerme = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         waermeproduktion[stunde] += anteiligeWaerme;
                         s_waerme[motor] += anteiligeWaerme;
 
@@ -1223,7 +1223,7 @@ namespace WindowsFormsApplication1
                         waermeproduktion[stunde] += (restSpeicher + restWaerme);
                         s_waerme[motor] += (restSpeicher + restWaerme);
 
-                        double berechneterStrom = StromAusWaerme(motor, restSpeicher + restWaerme);
+                        double berechneterStrom = StromAusWaerme(motor, restSpeicher + restWaerme, bhkwWaermeLeistung, bhkwStromLeistung);
                         stromproduktion[stunde] += berechneterStrom;
                         s_strom[motor] += berechneterStrom;
 
