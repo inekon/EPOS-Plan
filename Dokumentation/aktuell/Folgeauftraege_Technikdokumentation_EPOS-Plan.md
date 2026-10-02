@@ -2,7 +2,7 @@
 
 Die Arbeit an der Technikdokumentation im Wiki (Statuszeile #611, Protokoll
 [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md))
-hat Befunde in Code, Oberflächentexten und einem Werkzeug aufgedeckt. Sie sind hier als zehn
+hat Befunde in Code, Oberflächentexten und einem Werkzeug aufgedeckt. Sie sind hier als zwölf
 Aufträge abgelegt. Jeder Auftrag läuft in einer eigenen Sitzung, frühestens ab dem 29.09.2026.
 
 Diese Liste liegt auf dem Zweig `claude/wiki-help-assistant-docs-jllq1r`. Jeder Auftrag steht so
@@ -50,6 +50,8 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 8 | Tww-Einspielskript Python-versionsfest machen — **erledigt** (#592) | – | – |
 | 9 | Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle | – | – |
 | 10 | Wache gegen harte Umbrüche und Formelzeichen außerhalb von `<math>` | – | – |
+| 11 | Kessel: Hinweistexte an das Kesselmodell, Stromganglinie des Elektrokessels | – | Heizkessel, Rechenweg Heizkessel |
+| 12 | Parameterverwendung: Kühlspalten der Wärmepumpe als gelesen führen | – | – |
 
 ## 1. Kühlkennlinie aus dem Katalog nachholbar machen
 
@@ -316,8 +318,51 @@ soll es künftig abfangen.
 
 **Abnahme:** gefilterte und volle Tests.
 
+## 11. Kessel: Hinweistexte an das Kesselmodell, Stromganglinie des Elektrokessels
+
+**Kurz:** Nach Kessel-Kennlinie E1–E5 (#616–#635) sagen zwei Oberflächentexte etwas anderes, als die
+Rechnung tut. Die Stromganglinie des Elektrokessels ist fachlich zu prüfen.
+
+**Befund** (aus der Arbeit an der Rechenwegseite Heizkessel, dort belegt):
+1. **Tooltip `SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS`** (`EPOS.Kern/MyResource/Resource.resx`, angezeigt
+   in `EPOS.UI/…/HeizkesselReiter.razor` um Z. 112):
+   - Er spricht von „Gaskesseln, Wärme/Wirkungsgrad“.
+   - Der Code zählt in die Gasspitze jeden Kessel, der nicht mit Heizöl rechnet, samt Anfahrverlust,
+     also auch Holz, Pellets, Rapsöl und Elektrokessel
+     (`EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs` um Z. 1816–1827, 2124).
+   - Entweder den Text oder die Zählung berichtigen. Dem Anwender vorlegen, welche Lesart gilt.
+2. **Hinweis `SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER`** (angezeigt in `HeizkesselReiter.razor`
+   um Z. 204):
+   - Er sagt „Brennstoffeinsatz = Wärmeproduktion“.
+   - Mit Kennlinie und Takten stimmt das nicht mehr: Beim Brennwertkessel mit Platzhalter η₁₀₀ = 1
+     greift die η₃₀-Vorgabe 1,06, dazu kommen Anfahr- und Bereitschaftsverlust.
+   - Text in beiden Sprachen berichtigen.
+3. **Stromganglinie des Elektrokessels:** Sie ist eine Kopie der Gesamtganglinie aller Kessel
+   (`SimulationSPK.cs` um Z. 849). Steht neben einem Elektrokessel ein Brennstoffkessel, landet dessen
+   Wärme in der Stromganglinie. Am Code bestätigen, dem Anwender vorlegen, mit Referenzlauf beheben.
+
+**Abnahme:** wie im Vorspann.
+
+## 12. Parameterverwendung: Kühlspalten der Wärmepumpe als gelesen führen
+
+**Kurz:** `EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs` (um Z. 530–536) führt die drei
+Kühlspalten der Wärmepumpe als „kein Leser“, obwohl der Kühlbetrieb sie liest.
+
+**Aufgabe:**
+1. Am Code bestätigen, wo der Kühlbetrieb die Spalten liest.
+2. Die Einstufung berichtigen.
+3. Prüfen, ob die Parameterübersicht der Oberfläche die Einstufung anzeigt; wenn ja, mit Test.
+
+**Abnahme:** wie im Vorspann.
+
 ## Weitere offene Punkte ohne eigenen Auftrag
 
+- **Gebäudeseiten und Konditionierung:**
+  - Die Seiten Gebäude, Gebäudemodell VDI 6007 und Mehrzonenmodell nennen noch Wege aus der Zeit vor
+    dem Reiter „Konditionierung“. Beispiele: „Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe
+    Kühlung“, der Reiter „Temperaturen und Ferien“, der Knopf „Hülle und Zonen…“.
+  - Laut Konzept Konditionierungsprofile 10.4 zieht die Welle KP3 sie nach.
+  - Die Seite Kühlung beschreibt den heutigen Weg schon.
 - **Wechselrichter:** Die Projektkopie eines Wechselrichters sieht spätere Ergänzungen im
   Katalog nicht. Soll es „aus dem Katalog erneuern“ geben?
 - **Pufferspeicher:** Projekte ohne Wärmepumpe sehen keine Jahreswerte des Puffers, denn die
@@ -331,4 +376,4 @@ soll es künftig abfangen.
 - Jede Sitzung schreibt ihre Statuszeile und ihr Protokoll nach der `CLAUDE.md`.
 - Die Dokumentationssitzung zieht die Seiten aus der Spalte „Wiki danach nachziehen“ nach. Die
   Routine vom 02.10.2026 prüft das. Hochgeladen wird mit dem nächsten Wochen-Upload.
-- Sind alle zehn Aufträge erledigt, wandert diese Liste nach `Dokumentation/ueberholt/`.
+- Sind alle zwölf Aufträge erledigt, wandert diese Liste nach `Dokumentation/ueberholt/`.

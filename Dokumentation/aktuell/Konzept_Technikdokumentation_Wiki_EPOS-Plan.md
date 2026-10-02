@@ -139,14 +139,14 @@ nachvollziehbar bleibt. Alle Werte sind rund und keinem Produkt zuzuordnen; Ger�
   - Wärmepumpe A: Vorlauf 55/45, Heizstab mitrechnen aus, bivalenter Betrieb aus. Betriebsmodus laufzeitoptimiert, Variante PV-optimiert.
   - Wärmesenke: Rang 1 Heizkreis (Beides), Rang 2 Pufferspeicher.
   - Speicher 1 (Puffer 1 000 l): Verwendung Heizung, 55/45 °C, Schwellen 10/95, nachrangig leer, Mindestfüllstand 10, Bereitschaftsverlust 2 kWh/24 h, Ladeprio 20.
-  - Kessel 1: Brennwert Erdgas, η 0,98, Bereitschaftsverlust 0,1 kW, nur Direktsenke.
+  - Kessel 1: Brennwert Erdgas, 50 kW, Wirkungsgrad Gas 0,97, bei 30 % Last 1,05 (Vorgabe wäre 1,03), Brennwertkennlinie an; Mindestleistung, Anfahrverlust und Mindestlaufzeit leer (Vorgaben 15 kW, 0,1 kWh, 10 min); Bereitschaftsverlust 0,1 kW; Auslegung für Verteilung 55/45 °C; Betriebsbereitschaft 0 h/a; Heizgrenze leer (15 °C); nur Direktsenke.
   - Kaskade: 1 Wärmepumpe, 2 Heizkessel. Der Kessel rechnet als eigene Stufe nach der Speicherstufe.
   - Anlagenkopplung aus.
   - PV 30 kWp: 75 × 400 W, Süd 30°, Modell Erweitert, Systemverluste 3 %. Variante mit Wechselrichter: 18 kWp Süd und 12 kWp West an einem Wechselrichter von 25 kW.
   - Stromspeicher 1: 20 kWh.
 - **B:**
   - BHKW 1: η 0,30/0,60, Erdgas, 80/50, wärmegeführt, untere Leistungsgrenze 30 %. Senken: Rang 1 Heizkreis, Rang 2 Speicher 1 mit Ladeprio 30, nachrangig bis 30 %.
-  - Kessel 1 und 2: nur Direktsenke.
+  - Kessel 1 und 2: je 150 kW, Brennwert Erdgas, Wirkungsgrad Gas 0,97, η₃₀ leer (Vorgabe 1,03), Brennwertkennlinie an; Taktwerte leer (Vorgaben 45 kW, 0,3 kWh, 10 min); Bereitschaftsverlust 0,3 kW; Auslegung für Verteilung 60/45 °C; nur Direktsenke.
   - Solarthermie: 20 × 2,5 m², 35°/Süd. Senken: Rang 1 Heizkreis (nur Warmwasser), Rang 2 Speicher 1 mit Ladeprio 10.
   - Speicher 1 (3 000 l): Verwendung Brauchwasser, 60/35 °C.
   - Kaskade: 1 Solarthermie, 2 BHKW, 3 Heizkessel.
