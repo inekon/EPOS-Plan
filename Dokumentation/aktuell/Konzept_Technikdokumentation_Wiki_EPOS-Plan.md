@@ -158,7 +158,8 @@ nachvollziehbar bleibt. Alle Werte sind rund und keinem Produkt zuzuordnen; Ger�
   - Stromspeicher 1: 10 kWh/5 kW, 10–90 %, lädt nur aus PV-Überschuss.
 - **D:**
   - Reversible Wärmepumpe A: Kühl-Vorlauf 18 °C, Hilfsstrom 5 %.
-  - Gebäude: Kühlsollwert 26 °C, Kühlübergabe mit AK1.
+  - Gebäude: Reiter „Konditionierung“, Spalte „Kühlen“, Zeile „Tag“ 26 °C; Kühlübergabe mit AK1.
+  - Variante „D mit Bürozeiten“: Vorlage „Büro“ — Tag 26 °C, Nacht 18 bis 7 Uhr, Wochenende und Ferien „aus“, Feiertage wie Sonntag.
   - Projektschalter „Kühlung rechnen“ an.
   - Kältebedarf 30 MWh/a.
 
