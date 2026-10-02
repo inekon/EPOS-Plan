@@ -757,9 +757,9 @@ namespace WindowsFormsApplication1
         /// Ohne Sonne und Gewinne.
         ///
         /// <para><b>Nur ohne Nachbarglieder:</b> Im Bauteilweg mit Nachbarzonen teilte die Außenform
-        /// durch die U·A-Summe samt Nachbargliedern, summierte aber nur die Außenglieder (B4); die
-        /// Nachbarform kommt mit der Welle R3. Bis dahin lehnt das Mitglied einen solchen Eingang
-        /// benannt ab.</para>
+        /// durch die U·A-Summe samt Nachbargliedern, summierte aber nur die Außenglieder (B4) — die
+        /// Nachbarn stünden bei 0 °C. Ein solcher Eingang nimmt die Nachbarform
+        /// <see cref="AequivalentN(int, double, ReadOnlySpan{double})"/>; hier lehnt das Mitglied benannt ab.</para>
         /// </summary>
         /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
         /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
@@ -769,12 +769,46 @@ namespace WindowsFormsApplication1
             if (_aequivalentN == null)
                 throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
             if (Nachbarglieder.Count > 0)
-                throw new InvalidOperationException(Bezeichnung + ": Die äquivalente Außentemperatur mit Nachbarzonen (Nachbarform) kommt mit der Welle R3.");
+                throw new InvalidOperationException(Bezeichnung + ": Die äquivalente Außentemperatur mit Nachbarzonen braucht die Temperaturen der Nachbarn (Nachbarform).");
             return _aequivalentN(tag, aussenC);
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt in der Nachbarform</b> [°C] (Entwurf
+        /// KP3, Befund B4, Festlegungen 12–14): der Zähler der Außenglieder wie in der Außenform
+        /// (Außenluft und Fenster bei <paramref name="aussenC"/> ohne Strahlung, Erdreich als
+        /// Tagesmittel des Tags <paramref name="tag"/>, unbeheizter Raum bei der Kellertemperatur),
+        /// dahinter Σ U·A_j·θ_j der Nachbarglieder mit den festen Lufttemperaturen
+        /// <paramref name="nachbarC"/> — geteilt durch dieselbe U·A-Summe samt Nachbargliedern.
+        /// Dieselbe Bildung und Reihenfolge wie <see cref="ZonenEingang.ThetaEq"/> (Gl. (41)/(42)):
+        /// Liegt die Stunde ohne Strahlung und ohne Erdreich, sind beide gleich (N-AH9).
+        /// Ohne Nachbarglieder ist das wörtlich die Außenform.
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <param name="nachbarC">Je Nachbarglied (<see cref="Nachbarglieder"/>, in deren Reihenfolge) die Lufttemperatur der Nachbarzone [°C].</param>
+        /// <exception cref="InvalidOperationException">ohne Bau.</exception>
+        /// <exception cref="ArgumentException">wenn die Zahl der Temperaturen nicht die der Nachbarglieder ist.</exception>
+        internal double AequivalentN(int tag, double aussenC, ReadOnlySpan<double> nachbarC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            IReadOnlyList<Nachbarglied> glieder = Nachbarglieder;
+            if (nachbarC.Length != glieder.Count)
+                throw new ArgumentException(Bezeichnung + ": " + nachbarC.Length.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbartemperaturen für " + glieder.Count.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbarglieder.", nameof(nachbarC));
+            if (glieder.Count == 0) return _aequivalentN(tag, aussenC);
+            double zaehler = _aequivalentZaehlerN(tag, aussenC);
+            for (int k = 0; k < glieder.Count; k++) zaehler += glieder[k].UA_WK * nachbarC[k];
+            return zaehler / UaSummeGewichtung_WK;
         }
 
         /// <summary>Die Außenform der äquivalenten Außentemperatur am Bemessungspunkt, gebildet im Bauen (B4).</summary>
         private Func<int, double, double> _aequivalentN;
+
+        /// <summary>Der Zähler der Außenglieder am Bemessungspunkt (Bauteilweg, B4); <c>null</c> im Klassenweg.</summary>
+        private Func<int, double, double> _aequivalentZaehlerN;
         /// <summary>Obere Regelgrenze je Stunde [°C]: der Kühlsollwert, ohne wirksame Kühlung +∞ (E32).</summary>
         internal double[] ThetaMax { get; private set; }
 
@@ -1412,8 +1446,10 @@ namespace WindowsFormsApplication1
 
             // 8.4: am Auslegungspunkt Außenluft und Fenster bei θ_out,N ohne Strahlung, das
             // Erdreich mit seinem Tagesmittel am Auslegungstag, der unbeheizte Raum bei der
-            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe.
-            return (tag, aN) =>
+            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe. Der Zähler der
+            // Außenglieder steht für sich (Entwurf KP3, B4): Die Nachbarform hängt die Nachbarglieder
+            // dahinter wie ZonenEingang.ThetaEq; die Außenform teilt ihn wie bisher.
+            Func<int, double, double> zaehlerN = (tag, aN) =>
             {
                 double summe = 0.0;
                 foreach (Glied g in glieder)
@@ -1435,8 +1471,10 @@ namespace WindowsFormsApplication1
                     }
                     summe += g.UA_WK * theta;
                 }
-                return uaSumme > 0.0 ? summe / uaSumme : aN;
+                return summe;
             };
+            _aequivalentZaehlerN = zaehlerN;
+            return (tag, aN) => uaSumme > 0.0 ? zaehlerN(tag, aN) / uaSumme : aN;
         }
 
         // =====================================================================

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -45,9 +46,16 @@ namespace WindowsFormsApplication1
     /// Gewinne) und dem unbedingten Zusatzleitwert der Sprungstunde. Jede Exponentialfunktion läuft über
     /// <see cref="Aufheizantwort.Bei"/>, jede Entscheidung über <see cref="Rechenrand"/> (Grundsatz 6).</para>
     ///
-    /// <para><b>Schalter aus = kein Aufruf</b> (Grundsatz 3): <see cref="Vdi6007Rechenweg"/> ruft
-    /// <see cref="Anwenden"/> nur mit eingeschalteter <see cref="Aufheizvorgabe"/>. P_auf = +∞ (Testnaht)
-    /// heißt n = 1 überall und kein Schreibzugriff (N-AH8).</para>
+    /// <para><b>Mehrzonen</b> (Welle R3, Festlegungen 1, 13, 14, 22, 25): <see cref="AnwendenZonen"/> am Ende
+    /// von <see cref="ZonenEingang.Bauen"/> plant jede Zone in der Nachbarform
+    /// (<see cref="Aufheizzone.AusZonen"/>) mit den Reihen ihrer Nachbarn ohne Rampe und setzt die Rampen
+    /// erst danach; unbeheizte Zonen bekommen den Zustand UNBEHEIZT, gekoppelte GEKOPPELT. Die
+    /// Gebäudewerte bildet <see cref="Gebaeudewerte"/>.</para>
+    ///
+    /// <para><b>Schalter aus = kein Aufruf</b> (Grundsatz 3): <see cref="Vdi6007Rechenweg"/> und
+    /// <see cref="ZonenEingang.Bauen"/> rufen <see cref="Anwenden"/> bzw. <see cref="AnwendenZonen"/> nur mit
+    /// eingeschalteter <see cref="Aufheizvorgabe"/>. P_auf = +∞ (Testnaht) heißt n = 1 überall und kein
+    /// Schreibzugriff (N-AH8).</para>
     /// </summary>
     internal static class Aufheizoptimierung
     {
@@ -75,7 +83,30 @@ namespace WindowsFormsApplication1
             if (zone == null) throw new ArgumentNullException(nameof(zone));
             Aufheizplan plan = Planen(Aufheizzone.Aus(zone), vorgabe, aufheizleistungTestW);
             if (plan.Geaendert) zone.Eingang.HeizsollwertMitRampeSetzen(plan.Reihe);
+            zone.AufheizplanSetzen(plan);
             return plan;
+        }
+
+        /// <summary>
+        /// <b>Plant alle Zonen eines Gebäudes und setzt danach ihre Rampen</b> (Welle R3, Festlegung 1: am
+        /// Ende von <see cref="ZonenEingang.Bauen"/>, in beiden Aufbauten). Jede Zone sieht die Reihen
+        /// ihrer Nachbarn OHNE Rampe (Festlegung 14) — geplant wird erst für alle, geschrieben danach.
+        /// Je Zone ein Plan an <see cref="ZonenEingang.Aufheizplan"/>, in der Rechenreihenfolge zurück.
+        /// </summary>
+        /// <param name="aufheizleistungTestW">Testnaht: P_auf jeder Zone statt der Bemessung [W]; NaN = keine (N-AH8: +∞).</param>
+        internal static IReadOnlyList<Aufheizplan> AnwendenZonen(IReadOnlyList<ZonenEingang> zonen, Aufheizvorgabe vorgabe,
+                                                                double aufheizleistungTestW = double.NaN)
+        {
+            if (vorgabe == null) throw new ArgumentNullException(nameof(vorgabe));
+            Aufheizzone[] eingaenge = Aufheizzone.AusZonen(zonen);
+            var plaene = new Aufheizplan[eingaenge.Length];
+            for (int i = 0; i < eingaenge.Length; i++) plaene[i] = Planen(eingaenge[i], vorgabe, aufheizleistungTestW);
+            for (int i = 0; i < plaene.Length; i++)
+            {
+                if (plaene[i].Geaendert) zonen[i].Eingang.HeizsollwertMitRampeSetzen(plaene[i].Reihe);
+                zonen[i].AufheizplanSetzen(plaene[i]);
+            }
+            return plaene;
         }
 
         /// <summary>Die Bemessung einer Zone ohne Lauf (Festlegung 3) — dieselbe Zahl wie im Lauf.</summary>
@@ -88,12 +119,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Aufheizplan einer Zone</b> — rein: Die Eingangsreihe bleibt unberührt, die Reihe mit Rampe
-        /// ist eine Kopie (oder die Eingangsreihe selbst, wenn nichts angehoben ist). Ein gekoppeltes
-        /// Gebäude wird benannt nicht optimiert (W5, F13).
+        /// ist eine Kopie (oder die Eingangsreihe selbst, wenn nichts angehoben ist). Eine unbeheizte Zone
+        /// bekommt keine Rampe (UNBEHEIZT), ein gekoppeltes Gebäude wird benannt nicht optimiert (W5, F13).
         /// </summary>
         internal static Aufheizplan Planen(Aufheizzone zone, Aufheizvorgabe vorgabe, double aufheizleistungTestW = double.NaN)
         {
             Pruefen(zone, vorgabe);
+            if (!zone.Beheizt)
+                return new Aufheizplan { Zustand = DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, Reihe = zone.Soll, Geaendert = false };
             if (zone.Gekoppelt)
                 return new Aufheizplan { Zustand = DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, Reihe = zone.Soll, Geaendert = false };
 
@@ -114,7 +147,10 @@ namespace WindowsFormsApplication1
             int stunden = 0, laengste = 0, kuerzesteD = int.MaxValue;
             var liste = new List<Aufheizsprung>();
 
-            List<(int Hs, int D)> spruenge = Spruenge(s, out int aus, out int ausHeizperiode);
+            var ausStunden = new List<int>();
+            var ausHeizperiodeStunden = new List<int>();
+            List<(int Hs, int D)> spruenge = Spruenge(s, ausStunden, ausHeizperiodeStunden);
+            int aus = ausStunden.Count, ausHeizperiode = ausHeizperiodeStunden.Count;
             foreach ((int hs, int d) in spruenge)
             {
                 double thetaT = s[hs];
@@ -122,8 +158,7 @@ namespace WindowsFormsApplication1
                 double thetaN = KleinsterSollwert(s, hs, fenster);
                 double ta = KaeltesteAussenluft(zone.Aussen, hs, fenster);
                 double zusatz = zone.Zusatzleitwert(hs);
-                double phiStat = zone.Modell.StationaereHeizlastW(thetaT, ta, zone.AequivalentN(hs / 24, ta),
-                                                                  zone.Strahlungsanteil, zusatz);
+                double phiStat = PhiStat(zone, thetaT, ta, hs / 24, zusatz, zone.MitNachbarn ? zone.NachbarnImSprung(hs) : null);
                 Aufheizantwort antwort = zone.Modell.Aufheizantwort(zone.Strahlungsanteil, zusatz);
                 double deltaT = thetaT - thetaN;
                 Aufheizstufenzahl st = Stufenzahl(antwort, phiStat, deltaT, pAuf, form, obergrenze, d, fest);
@@ -200,9 +235,23 @@ namespace WindowsFormsApplication1
                 TageBemessungBegrenzt = Zaehlen(tagBemessung),
                 SpruengeAus = aus,
                 SpruengeAusHeizperiode = ausHeizperiode,
+                SprungstundenAus = ausStunden,
+                SprungstundenAusHeizperiode = ausHeizperiodeStunden,
+                Kuehlkappmaske = gekappt,
                 KuehlgekappteStundenH = gekappteStunden,
             };
         }
+
+        /// <summary>
+        /// Φ_stat einer Zone am Bemessungspunkt (Festlegung 12): ohne Nachbarn
+        /// (<paramref name="nachbarn"/> <c>null</c>) wörtlich die Außenform der Welle R2; mit Nachbarn θ_eq
+        /// in der Nachbarform und die Zuluft θ_Lue an der Stelle der Außenluft (Festlegungen 13, 14).
+        /// </summary>
+        private static double PhiStat(Aufheizzone zone, double thetaT, double ta, int tag, double zusatz, double[] nachbarn)
+            => nachbarn == null
+                ? zone.Modell.StationaereHeizlastW(thetaT, ta, zone.AequivalentN(tag, ta), zone.Strahlungsanteil, zusatz)
+                : zone.Modell.StationaereHeizlastW(thetaT, zone.Zuluft(ta, zusatz, nachbarn),
+                                                   zone.AequivalentNachbarn(tag, ta, nachbarn), zone.Strahlungsanteil, zusatz);
 
         /// <summary>
         /// <b>Die Stufenzahl eines Sprungs</b> (Teilkonzept 4.6, Festlegungen 9, 17, 18) — rein, auf der
@@ -286,20 +335,16 @@ namespace WindowsFormsApplication1
 
             int kalt = -1;
             double taMin = double.NaN;
-            double thetaTMax = double.NegativeInfinity, thetaMaxAlle = double.NegativeInfinity;
             for (int h = 0; h < STUNDEN; h++)
             {
-                double w = s[h];
-                if (!Endlich(w)) continue;
+                if (!Endlich(s[h])) continue;
                 if (kalt < 0 || zone.Aussen[h] < taMin)
                 {
                     kalt = h;
                     taMin = zone.Aussen[h];
                 }
-                if (w > thetaMaxAlle) thetaMaxAlle = w;
-                if (zone.Nutzungszeit(h) && w > thetaTMax) thetaTMax = w;
             }
-            if (!Endlich(thetaTMax)) thetaTMax = thetaMaxAlle;
+            double thetaTMax = ThetaTMax(s, zone.Nutzungszeit);
 
             bool grenze = Endlich(zone.HeizleistungMaxW);
             double pAuf;
@@ -307,8 +352,8 @@ namespace WindowsFormsApplication1
                 pAuf = zone.HeizleistungMaxW;
             else if (kalt >= 0 && Endlich(thetaTMax))
             {
-                double phiZiel = zone.Modell.StationaereHeizlastW(thetaTMax, taMin, zone.AequivalentN(kalt / 24, taMin),
-                                                                  zone.Strahlungsanteil, zone.AuslegungZusatzleitwertWK);
+                double phiZiel = PhiStat(zone, thetaTMax, taMin, kalt / 24, zone.AuslegungZusatzleitwertWK,
+                                         zone.MitNachbarn ? zone.NachbarnInDerBemessung : null);
                 pAuf = (1.0 + vorgabe.ReserveWirksam) * phiZiel;
             }
             else
@@ -316,7 +361,7 @@ namespace WindowsFormsApplication1
             if (!double.IsNaN(aufheizleistungTestW)) pAuf = aufheizleistungTestW;
 
             Aufheizform form = Aufheizstufen.FormZurQuelle(grenze);
-            List<(int Hs, int D)> spruenge = Spruenge(s, out _, out _);
+            List<(int Hs, int D)> spruenge = Spruenge(s, null, null);
             Aufheizbemessungsfall a = Bemessungsfall(zone, spruenge, taMin, kalt, pAuf, form);
             Aufheizbemessungsfall b = Bemessungsfall(zone, spruenge, taMin - vorgabe.AbzugWirksamK, kalt, pAuf, form);
             bool mitAbzug = vorgabe.MitAbzug;
@@ -329,7 +374,7 @@ namespace WindowsFormsApplication1
                 QuelleGrenze = grenze,
                 AussenMinC = taMin,
                 StundeKalt = kalt,
-                ThetaTMaxC = Endlich(thetaTMax) ? thetaTMax : double.NaN,
+                ThetaTMaxC = thetaTMax,
                 VarianteA = a,
                 VarianteB = b,
                 MitAbzug = mitAbzug,
@@ -344,7 +389,10 @@ namespace WindowsFormsApplication1
                 return new Aufheizbemessungsfall { AussenC = taB, Erreichbar = true, AufheizzeitMaxH = 0 };
 
             int tag = kalt / 24;
-            double eqN = zone.AequivalentN(tag, taB);
+            // Mit Nachbarn (Festlegung 13): beheizte bei θ_T,max, unbeheizte beim Startwert - fest
+            // über alle Paare, also bleibt die Zusammenfassung gleicher Paare richtig.
+            double[] nachbarn = zone.MitNachbarn ? zone.NachbarnInDerBemessung : null;
+            double eqN = nachbarn == null ? zone.AequivalentN(tag, taB) : zone.AequivalentNachbarn(tag, taB, nachbarn);
             var gerechnet = new Dictionary<(long, long, long), Aufheizwahl>();
             int bestN = 0, bestHs = -1, unerreichbar = 0;
             double bestThetaN = double.NaN, bestThetaT = double.NaN, bestPhi = double.NaN, bestDelta = double.NegativeInfinity;
@@ -354,7 +402,8 @@ namespace WindowsFormsApplication1
                 double thetaT = zone.Soll[hs];
                 double thetaN = KleinsterSollwert(zone.Soll, hs, Math.Min(d, DECKEL));
                 double zusatz = zone.Zusatzleitwert(hs);
-                double phi = zone.Modell.StationaereHeizlastW(thetaT, taB, eqN, zone.Strahlungsanteil, zusatz);
+                double taRand = nachbarn == null ? taB : zone.Zuluft(taB, zusatz, nachbarn);
+                double phi = zone.Modell.StationaereHeizlastW(thetaT, taRand, eqN, zone.Strahlungsanteil, zusatz);
                 var schluessel = (BitConverter.DoubleToInt64Bits(thetaN), BitConverter.DoubleToInt64Bits(thetaT),
                                   BitConverter.DoubleToInt64Bits(zusatz));
                 if (!gerechnet.TryGetValue(schluessel, out Aufheizwahl wahl))
@@ -398,6 +447,158 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// <b>θ_T,max aus der eigenen Reihe</b> (Festlegung 13, B5): der höchste endliche Heizsollwert der
+        /// Nutzungszeit (nach der Nachtzeit, E55); ohne endliche Nutzungsstunde der höchste endliche
+        /// Wert; NaN ohne endlichen Wert. Eine Zone ohne Kalender trägt in ihrer Reihe ihren eigenen
+        /// Tagwert oder, ohne ihn, den geerbten des Gebäudes — nicht die Auslegungsraumtemperatur der
+        /// Kopplung (B5: die bleibt der Tagwert des Gebäudes und unberührt).
+        /// </summary>
+        internal static double ThetaTMax(double[] s, Func<int, bool> nutzungszeit)
+        {
+            double thetaTMax = double.NegativeInfinity, thetaMaxAlle = double.NegativeInfinity;
+            for (int h = 0; h < STUNDEN; h++)
+            {
+                double w = s[h];
+                if (!Endlich(w)) continue;
+                if (w > thetaMaxAlle) thetaMaxAlle = w;
+                if (nutzungszeit(h) && w > thetaTMax) thetaTMax = w;
+            }
+            if (!Endlich(thetaTMax)) thetaTMax = thetaMaxAlle;
+            return Endlich(thetaTMax) ? thetaTMax : double.NaN;
+        }
+
+        // =====================================================================
+        //  Gebäudewerte im Mehrzonenweg (Festlegung 22)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Aufheizwerte eines Gebäudes aus den Plänen seiner Zonen</b> (Welle R3, Festlegung 22; Muster
+        /// N1.56 Nr. 10) — ein reiner Aggregator: Tage und Stunden als Vereinigung über die geplanten
+        /// beheizten Zonen (aus den Sprunglisten, den Rampenfenstern und -masken), t_auf,max und längste
+        /// Rampe als Maximum, T_a,B als Minimum, P_auf als Summe, die Quelle GEMISCHT bei verschiedenen
+        /// Zonenquellen. Unbeheizte Zonen (UNBEHEIZT) zählen nicht; sind alle beheizten Zonen gekoppelt,
+        /// ist das Gebäude GEKOPPELT (W5). Mit einer einzigen geplanten Zone sind Tage, Zähler, Maske und
+        /// Bemessung die der Zone; die Rampenstunden sind die Vereinigung ihrer Rampenfenster (bei sich
+        /// überlappenden Rampen weniger als Σ (n − 1)).
+        /// </summary>
+        /// <exception cref="ArgumentException">ohne Plan oder ohne beheizte Zone.</exception>
+        internal static Aufheizgebaeude Gebaeudewerte(IReadOnlyList<Aufheizplan> plaene)
+        {
+            if (plaene == null || plaene.Count == 0) throw new ArgumentException("Die Pläne der Zonen fehlen.", nameof(plaene));
+            var geplant = new List<Aufheizplan>();
+            int beheizt = 0, gekoppelt = 0, unbeheizt = 0;
+            foreach (Aufheizplan p in plaene)
+            {
+                if (p == null) throw new ArgumentException("Eine Zone hat keinen Plan.", nameof(plaene));
+                if (p.Unbeheizt) { unbeheizt++; continue; }
+                beheizt++;
+                if (p.Gekoppelt) gekoppelt++;
+                else geplant.Add(p);
+            }
+            if (beheizt == 0) throw new ArgumentException("Das Gebäude hat keine beheizte Zone.", nameof(plaene));
+            if (geplant.Count == 0)
+                return new Aufheizgebaeude
+                {
+                    Zustand = DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT,
+                    ZonenBeheizt = beheizt, ZonenGekoppelt = gekoppelt, ZonenUnbeheizt = unbeheizt,
+                };
+
+            bool unerreichbar = geplant.Any(p => p.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR);
+            int? tAufMax = null;
+            double aussenB = double.NaN, pAuf = double.NaN;
+            int laengste = 0, kuerzeste = int.MaxValue;
+            var quellen = new SortedSet<string>(StringComparer.Ordinal);
+            var tagRampe = new bool[365];
+            var tagW1 = new bool[365];
+            var tagW1Stat = new bool[365];
+            var tagW2 = new bool[365];
+            var tagBemessung = new bool[365];
+            var fenster = new bool[STUNDEN];
+            var maske = new bool[STUNDEN];
+            var ausStunde = new bool[STUNDEN];
+            var ausHeizperiode = new bool[STUNDEN];
+            var kappung = new bool[STUNDEN];
+            foreach (Aufheizplan p in geplant)
+            {
+                Aufheizbemessung b = p.Bemessung;
+                if (!unerreichbar && b.Wirksam.AufheizzeitMaxH is int t && (tAufMax == null || t > tAufMax)) tAufMax = t;
+                double ab = b.Wirksam.AussenC;
+                if (!double.IsNaN(ab) && (double.IsNaN(aussenB) || ab < aussenB)) aussenB = ab;
+                if (!double.IsNaN(b.AufheizleistungW)) pAuf = double.IsNaN(pAuf) ? b.AufheizleistungW : pAuf + b.AufheizleistungW;
+                quellen.Add(b.Quelle);
+                if (p.LaengsteRampeH > laengste) laengste = p.LaengsteRampeH;
+                if (p.KuerzesteAbsenkdauerH is int d && d < kuerzeste) kuerzeste = d;
+                foreach (Aufheizsprung sp in p.Spruenge)
+                {
+                    int tag = sp.Sprungstunde / 24;
+                    if (sp.N > 1) tagRampe[tag] = true;
+                    if (sp.Unerreichbar) tagW1[tag] = true;
+                    if (sp.UnterStationaer) tagW1Stat[tag] = true;
+                    if (sp.Begrenzt) tagW2[tag] = true;
+                    if (sp.BemessungBegrenzt) tagBemessung[tag] = true;
+                    for (int j = 1; j < sp.N; j++) fenster[Ring(sp.Sprungstunde - sp.N + j)] = true;
+                }
+                Vereinigen(maske, p.Rampenmaske);
+                Vereinigen(kappung, p.Kuehlkappmaske);
+                foreach (int h in p.SprungstundenAus) ausStunde[h] = true;
+                foreach (int h in p.SprungstundenAusHeizperiode) ausHeizperiode[h] = true;
+            }
+
+            int maskenstunden = Zaehlen(maske);
+            return new Aufheizgebaeude
+            {
+                Zustand = unerreichbar ? DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR : DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN,
+                Bemessung = geplant[0].Bemessung.Bemessung,
+                AufheizzeitMaxH = unerreichbar ? null : tAufMax,
+                AussenBC = aussenB,
+                AufheizleistungW = pAuf,
+                Quelle = quellen.Count == 1 ? quellen.Min : DbWerte.AUFHEIZ_QUELLE_GEMISCHT,
+                Aufheiztage = Zaehlen(tagRampe),
+                TageUnerreichbar = Zaehlen(tagW1),
+                TageUnterStationaer = Zaehlen(tagW1Stat),
+                TageBegrenzt = Zaehlen(tagW2),
+                TageBemessungBegrenzt = Zaehlen(tagBemessung),
+                AufheizstundenH = Zaehlen(fenster),
+                Rampenmaske = maske,
+                MaskenstundenH = maskenstunden,
+                LaengsteRampeH = laengste,
+                KuerzesteAbsenkdauerH = kuerzeste == int.MaxValue ? (int?)null : kuerzeste,
+                SpruengeAus = Zaehlen(ausStunde),
+                SpruengeAusHeizperiode = Zaehlen(ausHeizperiode),
+                KuehlgekappteStundenH = Zaehlen(kappung),
+                ZonenBeheizt = beheizt,
+                ZonenGekoppelt = gekoppelt,
+                ZonenUnbeheizt = unbeheizt,
+            };
+        }
+
+        /// <summary>
+        /// <b>HeizleistungMax_H des Gebäudes</b> (Festlegung 22): Σ_h max_z Anteil — je Stunde der größte
+        /// Kappungsanteil über die Zonen, über das Jahr summiert [h]. Die Anteile liefert der Lauf (R4).
+        /// </summary>
+        internal static double HeizleistungMaxStundenH(IReadOnlyList<double[]> anteile)
+        {
+            if (anteile == null || anteile.Count == 0) throw new ArgumentException("Die Anteile der Zonen fehlen.", nameof(anteile));
+            foreach (double[] a in anteile)
+                if (a == null || a.Length != STUNDEN)
+                    throw new ArgumentException("Jede Anteilsreihe muss 8760 Stunden führen.", nameof(anteile));
+            double summe = 0.0;
+            for (int h = 0; h < STUNDEN; h++)
+            {
+                double max = 0.0;
+                foreach (double[] a in anteile) if (a[h] > max) max = a[h];
+                summe += max;
+            }
+            return summe;
+        }
+
+        private static void Vereinigen(bool[] ziel, bool[] quelle)
+        {
+            if (quelle == null) return;
+            for (int h = 0; h < STUNDEN; h++) if (quelle[h]) ziel[h] = true;
+        }
+
         // =====================================================================
         //  Sprünge, Fenster, Ring
         // =====================================================================
@@ -409,9 +610,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static List<(int Hs, int D)> Spruenge(double[] s, out int aus, out int ausHeizperiode)
         {
+            var ausStunden = new List<int>();
+            var heizperiode = new List<int>();
+            List<(int Hs, int D)> liste = Spruenge(s, ausStunden, heizperiode);
+            aus = ausStunden.Count;
+            ausHeizperiode = heizperiode.Count;
+            return liste;
+        }
+
+        /// <summary>Wie <see cref="Spruenge(double[], out int, out int)"/>, mit den Stunden der Übergänge aus „aus" (Listen dürfen <c>null</c> sein).</summary>
+        internal static List<(int Hs, int D)> Spruenge(double[] s, List<int> ausStunden, List<int> ausHeizperiodeStunden)
+        {
             var liste = new List<(int Hs, int D)>();
-            aus = 0;
-            ausHeizperiode = 0;
             for (int hs = 0; hs < STUNDEN; hs++)
             {
                 double ziel = s[hs];
@@ -419,8 +629,8 @@ namespace WindowsFormsApplication1
                 double vor = s[Ring(hs - 1)];
                 if (!Endlich(vor))
                 {
-                    aus++;
-                    if (hs % 24 == 0 && TagOhneSollwert(s, Ring(hs - 24))) ausHeizperiode++;
+                    ausStunden?.Add(hs);
+                    if (hs % 24 == 0 && TagOhneSollwert(s, Ring(hs - 24))) ausHeizperiodeStunden?.Add(hs);
                     continue;
                 }
                 if (!IstSprung(vor, ziel)) continue;

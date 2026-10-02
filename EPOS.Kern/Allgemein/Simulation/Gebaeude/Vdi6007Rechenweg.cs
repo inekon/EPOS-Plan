@@ -118,7 +118,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Aufheizplan der letzten Einzonenrechnung dieses Wegs (Welle R2); <c>null</c> ohne Schalter,
-        /// im Mehrzonenweg (R3) und bei einem Fehler. R4 übernimmt ihn in das Gebäudeergebnis.
+        /// im Mehrzonenweg und bei einem Fehler. Im Mehrzonenweg (Welle R3) stehen die Pläne je Zone an
+        /// <see cref="Mehrzonenergebnis.Eingaenge"/> (<see cref="ZonenEingang.Aufheizplan"/>) und die
+        /// Gebäudewerte in <see cref="Mehrzonenergebnis.Aufheizgebaeude"/> von <see cref="LetztesMehrzonenergebnis"/>.
+        /// R4 übernimmt sie in das Gebäudeergebnis.
         /// </summary>
         internal Aufheizplan LetzterAufheizplan { get; private set; }
 
@@ -231,10 +234,13 @@ namespace WindowsFormsApplication1
                 // (Konzept 3.4); das Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
                 bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
                 bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
+                // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
+                // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude,
                     idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone));
+                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone),
+                    Aufheizvorgabe != null && Aufheizvorgabe.An ? Aufheizvorgabe : null, AufheizleistungTestW);
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);

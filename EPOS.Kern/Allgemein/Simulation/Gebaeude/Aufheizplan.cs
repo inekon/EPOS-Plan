@@ -4,9 +4,18 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Die Eingänge der Aufheizplanung einer Zone</b> (Entwurf KP3, Grundsatz 1, Festlegungen 12 und 13)
+    /// <b>Die Eingänge der Aufheizplanung einer Zone</b> (Entwurf KP3, Grundsatz 1, Festlegungen 12–14)
     /// — Reihen und Physik, ohne Datenbank und ohne Kultur. Gebildet aus dem fertigen Eingang
-    /// (<see cref="Aus(ZonenEingang)"/>); die Proben setzen einzelne Reihen über <c>with</c>.
+    /// (<see cref="Aus(ZonenEingang)"/>, für alle Zonen eines Gebäudes <see cref="AusZonen"/>); die
+    /// Proben setzen einzelne Reihen über <c>with</c>.
+    ///
+    /// <para><b>Nachbarform</b> (Welle R3, Befund B4): Eine Zone mit Nachbargliedern oder Luftaustausch
+    /// rechnet Φ_stat mit festen Lufttemperaturen ihrer Nachbarn — im Sprung beheizte Nachbarn bei
+    /// s_k(h_s − 1) ohne Rampe, „aus" und unbeheizte beim Startwert nach N1.56 Nr. 7 (Festlegung 14);
+    /// in der Bemessung beheizte Nachbarn bei ihrem θ_T,max, unbeheizte beim Startwert (Festlegung 13).
+    /// θ_eq in der Nachbarform (<see cref="GebaeudeModellEingang.AequivalentN(int, double, ReadOnlySpan{double})"/>),
+    /// die Luftkopplungen als Zuluft θ_Lue an der Stelle der Außenluft (<see cref="ZonenEingang.ZuluftN"/>).
+    /// Die Antwort bleibt die der Zone: R_ext trägt Σ G_zj schon, die Nachbarn sind fester Rand.</para>
     /// </summary>
     internal sealed record Aufheizzone
     {
@@ -40,22 +49,145 @@ namespace WindowsFormsApplication1
         /// <summary>Ist die Stunde Nutzungszeit nach der Nachtzeit (E55)? Für θ_T,max der Zielleistung.</summary>
         internal Func<int, bool> Nutzungszeit { get; init; }
 
-        /// <summary>Rechnet die Zone mit wirksamer Anlagenkopplung (AK1)? Dann nicht optimiert (W5, F13).</summary>
+        /// <summary>
+        /// Rechnet die Zone mit wirksamer Anlagenkopplung (AK1)? Dann nicht optimiert (W5, F13). Im
+        /// Mehrzonenweg auch, wenn AK1 für das Gebäude wirkte und nur als ideale Last rechnet (A4 (a),
+        /// <see cref="GebaeudeModellEingang.KopplungAlsIdealeLast"/>, Heizseite) — Festlegung 25.
+        /// </summary>
         internal bool Gekoppelt { get; init; }
+
+        /// <summary>Wird die Zone beheizt? Eine unbeheizte Zone bekommt keine Rampe, Zustand UNBEHEIZT (Festlegungen 22, 25).</summary>
+        internal bool Beheizt { get; init; } = true;
+
+        /// <summary>
+        /// Nachbarform von θ_eq am Bemessungspunkt (Tag des Erdreichs, Außenluft, Lufttemperaturen aller
+        /// Zonen des Gebäudes nach <see cref="ZonenEingang.Index"/>) [°C]; <c>null</c> = Außenform
+        /// <see cref="AequivalentN"/> (Zone ohne Nachbarn).
+        /// </summary>
+        internal Func<int, double, double[], double> AequivalentNachbarn { get; init; }
+
+        /// <summary>
+        /// Die Zuluft am Bemessungspunkt θ_Lue (Außenluft, Zusatzleitwert, Lufttemperaturen aller Zonen) [°C]
+        /// — sie steht in Φ_stat an der Stelle der Außenluft; <c>null</c> = Außenluft.
+        /// </summary>
+        internal Func<double, double, double[], double> Zuluft { get; init; }
+
+        /// <summary>
+        /// Die festen Lufttemperaturen aller Zonen im Sprung <c>h_s</c> (Festlegung 14): beheizte bei
+        /// s_k(h_s − 1) ohne Rampe, „aus" und unbeheizte beim Startwert nach N1.56 Nr. 7. Der eigene
+        /// Eintrag wird nicht gelesen.
+        /// </summary>
+        internal Func<int, double[]> NachbarnImSprung { get; init; }
+
+        /// <summary>
+        /// Die festen Lufttemperaturen aller Zonen der Bemessung (Festlegung 13): beheizte bei ihrem
+        /// θ_T,max, unbeheizte (und beheizte ohne endlichen Sollwert) beim Startwert nach N1.56 Nr. 7.
+        /// </summary>
+        internal double[] NachbarnInDerBemessung { get; init; }
+
+        /// <summary>Rechnet die Zone in der Nachbarform?</summary>
+        internal bool MitNachbarn => AequivalentNachbarn != null;
 
         /// <summary>Das Zonenmodell des Parametersatzes — Φ_stat und Aufheizantwort, zustandsfrei gerufen.</summary>
         internal Zonenmodell2K Modell { get; init; }
 
         /// <summary>
-        /// Die Zone eines fertigen Eingangs (Festlegung 1: Einzone über <see cref="ZonenEingang.Einzeln"/>).
-        /// Eine Zone mit Nachbarn plant die Welle R3 (Nachbarform, B4) — hier benannt abgelehnt.
+        /// Die Zone eines fertigen Eingangs (Festlegung 1: Einzone über <see cref="ZonenEingang.Einzeln"/>,
+        /// Mehrzonen am Ende von <see cref="ZonenEingang.Bauen"/>) — mit den Nachbarn ihres Gebäudes
+        /// in der Nachbarform; eine gekoppelte oder unbeheizte Zone liefert ihren Zustand im Plan
+        /// (Festlegung 25), keine Ablehnung.
         /// </summary>
-        /// <exception cref="NotSupportedException">bei einer gekoppelten Zone (Nachbarn oder Luftaustausch).</exception>
         internal static Aufheizzone Aus(ZonenEingang zone)
         {
             if (zone == null) throw new ArgumentNullException(nameof(zone));
-            if (zone.Gekoppelt)
-                throw new NotSupportedException(zone.Bezeichnung + ": Die Aufheizplanung einer Zone mit Nachbarn kommt mit der Welle R3.");
+            return AusZonen(zone.Gebaeudezonen)[zone.Index];
+        }
+
+        /// <summary>
+        /// <b>Die Zonen eines Gebäudes</b> (Welle R3) — je Zone die Eingänge der Planung; die festen
+        /// Nachbarwerte aus den Reihen OHNE Rampe (gelesen, bevor eine Rampe gesetzt ist), die
+        /// Startwerte nach N1.56 Nr. 7 einmal für das Gebäude
+        /// (<see cref="Zonenschleife.StartwerteRechnen"/>, derselbe Ausdruck wie der Vorlauf).
+        /// </summary>
+        internal static Aufheizzone[] AusZonen(IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (zonen == null || zonen.Count == 0) throw new ArgumentException("Das Gebäude führt keine Zone.", nameof(zonen));
+            int n = zonen.Count;
+            bool mitNachbarn = false;
+            for (int i = 0; i < n; i++)
+            {
+                if (zonen[i] == null || zonen[i].Index != i)
+                    throw new ArgumentException("Die Zonen stehen nicht in ihrer Rechenreihenfolge.", nameof(zonen));
+                mitNachbarn |= zonen[i].Gekoppelt;
+            }
+
+            double[][] soll = null;
+            double[] startwert = null, bemessung = null;
+            if (mitNachbarn)
+            {
+                int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
+                double[] s0 = Zonenschleife.StartwerteRechnen(zonen, start);
+                soll = new double[n][];
+                startwert = new double[n];
+                bemessung = new double[n];
+                for (int k = 0; k < n; k++)
+                {
+                    GebaeudeModellEingang ek = zonen[k].Eingang;
+                    soll[k] = ek.ThetaSoll;
+                    // „aus" oder unbeheizt: die Regel der unbeheizten Zone (N1.56 Nr. 7). Startet die
+                    // Zone am Sollwert, ist das ein Jacobi-Schritt von den Startwerten aus.
+                    startwert[k] = Zonenschleife.MitStartsollwert(zonen, k) ? MittelThetaEq(zonen[k], start, s0) : s0[k];
+                    double thetaTMax = zonen[k].IstBeheizt ? Aufheizoptimierung.ThetaTMax(soll[k], ek.Nutzungszeit) : double.NaN;
+                    bemessung[k] = double.IsNaN(thetaTMax) ? startwert[k] : thetaTMax;
+                }
+            }
+
+            var ergebnis = new Aufheizzone[n];
+            for (int i = 0; i < n; i++)
+            {
+                ZonenEingang zone = zonen[i];
+                Aufheizzone a = Einzeln(zone);
+                if (zone.Gekoppelt)
+                {
+                    double[][] reihen = soll;
+                    double[] start = startwert;
+                    a = a with
+                    {
+                        AequivalentNachbarn = (tag, ta, luft) => zone.AequivalentN(tag, ta, luft),
+                        Zuluft = (ta, zusatz, luft) => zone.ZuluftN(ta, zusatz, luft),
+                        NachbarnImSprung = hs => ImSprung(reihen, start, hs),
+                        NachbarnInDerBemessung = bemessung,
+                    };
+                }
+                ergebnis[i] = a;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Die festen Lufttemperaturen im Sprung (Festlegung 14): s_k(h_s − 1), wenn endlich, sonst der Startwert.</summary>
+        private static double[] ImSprung(double[][] soll, double[] startwert, int hs)
+        {
+            int vor = ((hs - 1) % 8760 + 8760) % 8760;
+            var v = new double[soll.Length];
+            for (int k = 0; k < soll.Length; k++)
+            {
+                double w = soll[k][vor];
+                v[k] = double.IsNaN(w) || double.IsInfinity(w) ? startwert[k] : w;
+            }
+            return v;
+        }
+
+        /// <summary>Das Mittel von θ_eq der Zone über die Vorlaufstunden mit den Startwerten <paramref name="s0"/> (N1.56 Nr. 7).</summary>
+        private static double MittelThetaEq(ZonenEingang zone, int start, double[] s0)
+        {
+            double summe = 0.0;
+            for (int h = start; h < 8760; h++) summe += zone.ThetaEq(h, s0);
+            return summe / (8760 - start);
+        }
+
+        /// <summary>Die Zone ohne Nachbarform — die Außenform (Einzone, Welle R2).</summary>
+        private static Aufheizzone Einzeln(ZonenEingang zone)
+        {
             GebaeudeModellEingang e = zone.Eingang;
             return new Aufheizzone
             {
@@ -69,7 +201,10 @@ namespace WindowsFormsApplication1
                 Strahlungsanteil = e.HeizungStrahlungsanteil,
                 HeizleistungMaxW = e.HeizleistungMaxW,
                 Nutzungszeit = e.Nutzungszeit,
-                Gekoppelt = e.KopplungWirksam,
+                Gekoppelt = e.KopplungWirksam
+                            || (e.KopplungAlsIdealeLast
+                                && Waermeuebergabe.KopplungWirksamFuer(e.HeizkreisAktiv, e.UebergabeArt, e.AnlagenkopplungStufe)),
+                Beheizt = e.IstBeheizt,
                 Modell = new Zonenmodell2K(e.Parameter, e.Bezeichnung),
             };
         }
@@ -173,17 +308,17 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Der Aufheizplan einer Zone</b> (Entwurf KP3, Welle R2) — unveränderlich: die Reihe mit Rampe,
-    /// die Rampenmaske (Festlegung 10; die Wirkung auf <c>NutzungBei</c> kommt mit R4), die Zähler
+    /// <b>Der Aufheizplan einer Zone</b> (Entwurf KP3, Wellen R2 und R3) — unveränderlich: die Reihe mit
+    /// Rampe, die Rampenmaske (Festlegung 10; die Wirkung auf <c>NutzungBei</c> kommt mit R4), die Zähler
     /// W1/W2/W4/W5 (W3 zählt der Lauf, R4), die Bemessung beider Varianten, P_auf samt Quelle, T_a,B
-    /// und der Zustand nach Festlegung 25 (ohne Zonenfälle). Ohne Datenbank, ohne Kultur.
+    /// und der Zustand nach Festlegung 25. Ohne Datenbank, ohne Kultur.
     /// </summary>
     internal sealed record Aufheizplan
     {
-        /// <summary>Der Zustand (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>): BEMESSEN, UNERREICHBAR oder GEKOPPELT.</summary>
+        /// <summary>Der Zustand (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>): BEMESSEN, UNERREICHBAR, GEKOPPELT oder (nur Zone) UNBEHEIZT.</summary>
         internal string Zustand { get; init; }
 
-        /// <summary>Die Bemessung; <c>null</c> bei GEKOPPELT.</summary>
+        /// <summary>Die Bemessung; <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
         internal Aufheizbemessung Bemessung { get; init; }
 
         /// <summary>Die Heizsollwertreihe mit Rampe; dieselbe Instanz wie die Eingangsreihe, wenn keine Stunde angehoben ist.</summary>
@@ -192,7 +327,7 @@ namespace WindowsFormsApplication1
         /// <summary>Wurde mindestens eine Stunde angehoben (s'(h) &gt; s(h))?</summary>
         internal bool Geaendert { get; init; }
 
-        /// <summary>Die Rampenmaske: wahr, wo s'(h) &gt; s(h) (Festlegung 10); <c>null</c> bei GEKOPPELT.</summary>
+        /// <summary>Die Rampenmaske: wahr, wo s'(h) &gt; s(h) (Festlegung 10); <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
         internal bool[] Rampenmaske { get; init; }
 
         /// <summary>Die Sprünge mit endlichem Vor- und Zielwert, in der Reihenfolge der Sprungstunden.</summary>
@@ -231,10 +366,103 @@ namespace WindowsFormsApplication1
         /// <summary>W4, Unterzahl: davon am Beginn eines Tages nach einem Tag ganz ohne Heizsollwert (Beginn der Heizperiode).</summary>
         internal int SpruengeAusHeizperiode { get; init; }
 
+        /// <summary>Die Stunden der Übergänge aus „aus" (W4), aufsteigend — die Vereinigung über die Zonen (Festlegung 22).</summary>
+        internal IReadOnlyList<int> SprungstundenAus { get; init; } = Array.Empty<int>();
+
+        /// <summary>Davon die am Beginn der Heizperiode, aufsteigend.</summary>
+        internal IReadOnlyList<int> SprungstundenAusHeizperiode { get; init; } = Array.Empty<int>();
+
+        /// <summary>Wahr, wo ein Rampenwert an θ_K(h) − 1 K gekappt wurde; <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
+        internal bool[] Kuehlkappmaske { get; init; }
+
+        /// <summary>Unbeheizte Zone (Festlegung 25, nur Zone): keine Rampe.</summary>
+        internal bool Unbeheizt => Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT;
+
         /// <summary>W5: gekoppelt, nicht optimiert.</summary>
         internal bool Gekoppelt => Zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT;
 
         /// <summary>Stunden, deren Rampenwert an θ_K(h) − 1 K gekappt wurde (Festlegung 8, F17).</summary>
         internal int KuehlgekappteStundenH { get; init; }
+    }
+
+    /// <summary>
+    /// <b>Die Aufheizwerte eines Gebäudes im Mehrzonenweg</b> (Entwurf KP3, Welle R3, Festlegung 22) — ein
+    /// reiner Aggregator über die Pläne seiner Zonen (<see cref="Aufheizoptimierung.Gebaeudewerte"/>), den
+    /// R4 in <c>GebaeudeModellErgebnis</c> übernimmt: Tage und Stunden als Vereinigung über die beheizten
+    /// Zonen (Muster N1.56 Nr. 10), t_auf,max und längste Rampe als Maximum, T_a,B als Minimum, P_auf als
+    /// Summe, die Quelle <c>GEMISCHT</c> bei verschiedenen Zonenquellen; unbeheizte Zonen zählen nicht.
+    /// <c>HeizleistungMax_H</c> = Σ_h max_z Anteil bildet R4 aus dem Lauf
+    /// (<see cref="Aufheizoptimierung.HeizleistungMaxStundenH"/>).
+    /// </summary>
+    internal sealed record Aufheizgebaeude
+    {
+        /// <summary>Der Zustand: GEKOPPELT, wenn jede beheizte Zone gekoppelt ist; sonst UNERREICHBAR, wenn eine geplante Zone es ist; sonst BEMESSEN.</summary>
+        internal string Zustand { get; init; }
+
+        /// <summary>Die Bemessungsvariante (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>); <c>null</c> bei GEKOPPELT.</summary>
+        internal string Bemessung { get; init; }
+
+        /// <summary>t_auf,max [h] als Maximum über die Zonen; <c>null</c> bei UNERREICHBAR und GEKOPPELT.</summary>
+        internal int? AufheizzeitMaxH { get; init; }
+
+        /// <summary>T_a,B [°C] als Minimum über die Zonen; NaN bei GEKOPPELT.</summary>
+        internal double AussenBC { get; init; } = double.NaN;
+
+        /// <summary>P_auf [W] als Summe über die Zonen (unskaliert); NaN bei GEKOPPELT.</summary>
+        internal double AufheizleistungW { get; init; } = double.NaN;
+
+        /// <summary>Die Quelle: GRENZE, ZIEL oder GEMISCHT; <c>null</c> bei GEKOPPELT.</summary>
+        internal string Quelle { get; init; }
+
+        /// <summary>Tage mit einer Rampe in mindestens einer Zone.</summary>
+        internal int Aufheiztage { get; init; }
+
+        /// <summary>W1: Tage, an denen in mindestens einer Zone kein n ≤ 48 hält.</summary>
+        internal int TageUnerreichbar { get; init; }
+
+        /// <summary>W1, Unterzahl: Tage mit P_auf ≤ Φ_stat in mindestens einer Zone.</summary>
+        internal int TageUnterStationaer { get; init; }
+
+        /// <summary>W2: Tage, an denen in mindestens einer Zone die Absenkdauer die Rampe begrenzt hat.</summary>
+        internal int TageBegrenzt { get; init; }
+
+        /// <summary>Wache: Tage, an denen t_auf,max eine tägliche Rampe begrenzt hat (erwartet: nie).</summary>
+        internal int TageBemessungBegrenzt { get; init; }
+
+        /// <summary>Die Rampenstunden [h]: Stunden, die in mindestens einer Zone im Fenster einer Rampe liegen (h_s − n + 1 … h_s − 1).</summary>
+        internal int AufheizstundenH { get; init; }
+
+        /// <summary>Die Vereinigung der Rampenmasken; <c>null</c> bei GEKOPPELT.</summary>
+        internal bool[] Rampenmaske { get; init; }
+
+        /// <summary>Stunden der vereinigten Rampenmaske [h].</summary>
+        internal int MaskenstundenH { get; init; }
+
+        /// <summary>Die längste Rampe [h] als Maximum über die Zonen.</summary>
+        internal int LaengsteRampeH { get; init; }
+
+        /// <summary>Die kürzeste Absenkdauer der gerampten Sprünge [h] als Minimum; <c>null</c> ohne Rampe.</summary>
+        internal int? KuerzesteAbsenkdauerH { get; init; }
+
+        /// <summary>W4: Stunden mit einem Übergang aus „aus" in mindestens einer Zone.</summary>
+        internal int SpruengeAus { get; init; }
+
+        /// <summary>W4, Unterzahl: davon am Beginn der Heizperiode.</summary>
+        internal int SpruengeAusHeizperiode { get; init; }
+
+        /// <summary>Stunden mit einem an θ_K − 1 K gekappten Rampenwert in mindestens einer Zone.</summary>
+        internal int KuehlgekappteStundenH { get; init; }
+
+        /// <summary>Zahl der beheizten Zonen (geplant oder gekoppelt).</summary>
+        internal int ZonenBeheizt { get; init; }
+
+        /// <summary>Davon gekoppelt (W5).</summary>
+        internal int ZonenGekoppelt { get; init; }
+
+        /// <summary>Zahl der unbeheizten Zonen (UNBEHEIZT, ohne Rampe).</summary>
+        internal int ZonenUnbeheizt { get; init; }
+
+        /// <summary>W5: gekoppelt, nicht optimiert.</summary>
+        internal bool Gekoppelt => Zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT;
     }
 }
