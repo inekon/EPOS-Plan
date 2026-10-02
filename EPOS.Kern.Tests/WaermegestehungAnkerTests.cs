@@ -293,6 +293,56 @@ namespace EPOS.Kern.Tests
             Assert.Equal(34549.97, z.StromgutschriftJahr1, 2);
             Assert.Equal(1478.20, z.Entgangene9bJahr1, 2);
             Assert.Equal(e.Gestehungskosten.Value, z.ZaehlerEurJahr / z.WaermeKwh, 12);
+
+            // Sockel und Deckel (EZ‑22, P651) wirken hier NICHT — der Anker bleibt: Der Netzbezug
+            // trägt den Sockel (Entlastung des Projekts 7.492,40 = 387,12 MWh × 20,00 − 250 > 0, also
+            // N × s > S und der Abzug ist Zeichen für Zeichen E × s), und der Netzträger 60 führt
+            // den Stromsteueranteil 2,05 ct/kWh = 20,50 €/MWh ≥ 20,00 €/MWh. Der Nachweis schweigt.
+            Assert.True(e.StromsteuerEntlastungJahr1 > 0);
+            Assert.DoesNotContain("§ 9b-Abzug", e.Hinweis ?? "");
+        }
+
+        /// <summary>
+        /// Der Deckel (EZ‑22, § 6.3 Nr. 41) an 1024 mit produzierendem Gewerbe: Der Netzträger 60
+        /// führt den Stromsteueranteil 1,00 ct/kWh statt 2,05 — die Gutschrift enthält nur
+        /// 10,00 €/MWh Stromsteuer. Abzug 73,91 MWh × min(20,00; 10,00) €/MWh = 739,10 €/a statt
+        /// 1.478,20; Wärmegestehungskosten 0,06162 + 739,10 ÷ Wärmebedarf = 0,06352 €/kWh. Mit
+        /// abgeschalteter Komponente (der Preis enthält keine Stromsteuer) entfällt der Abzug — die
+        /// Kennzahl ist die ohne § 9b-Abzug. Kapitalwert und Entlastung des Projekts bleiben.
+        /// </summary>
+        [Fact]
+        public void Waermegestehungskosten_1024_Deckel_auf_den_Stromsteueranteil()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Unternehmensart(1024, DbWerte.UNTERNEHMENSART_PROD_GEWERBE);
+            Stromsteueranteil(1024, 60, 1.00, true);
+            WirtschaftlichkeitErgebnis e = Rechne(1024, out VariantenDaten v, out _);
+            Assert.NotNull(e);
+            Assert.Equal(-2784891.14, e.Kapitalwert.Value, 2);
+            Assert.Equal(7492.40, e.StromsteuerEntlastungJahr1, 2);
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(739.10, e.GestehungZerlegung.Entgangene9bJahr1, 2);
+            Assert.Equal(0.06161616494867317 + 73.91 * 10.0 / waermeKwh, e.Gestehungskosten.Value, 12);
+            Assert.Contains("Der § 9b-Abzug rechnet mit 10,00 €/MWh statt 20,00 €/MWh", e.Hinweis);
+
+            Stromsteueranteil(1024, 60, 1.00, false);
+            WirtschaftlichkeitErgebnis aus = Rechne(1024, out _, out _);
+            Assert.Equal(0.0, aus.GestehungZerlegung.Entgangene9bJahr1);
+            Assert.Equal(0.06161616494867317, aus.Gestehungskosten.Value, 12);
+            Assert.Contains("Der § 9b-Abzug rechnet mit 0,00 €/MWh statt 20,00 €/MWh", aus.Hinweis);
+            Assert.Equal(-2784891.14, aus.Kapitalwert.Value, 2);
+        }
+
+        /// <summary>Setzt den Stromsteueranteil eines Trägers im Projekt („Strompreis Details").</summary>
+        private static void Stromsteueranteil(int idProjekt, int carrier, double ctJeKwh, bool aktiv)
+        {
+            DataRepository.ExecuteNonQuery(
+                "UPDATE energy_project_settings SET Aufschlag_Stromsteuer = ?, Aufschlag_Stromsteuer_Aktiv = ? " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@w", ctJeKwh), new DbParam("@a", aktiv ? 1 : 0),
+                new DbParam("@p", idProjekt), new DbParam("@c", carrier));
         }
 
         /// <summary>
@@ -314,6 +364,14 @@ namespace EPOS.Kern.Tests
             double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
             Assert.Equal(0.00684209053429058 + 8646.0 / waermeKwh, e.Gestehungskosten.Value, 12);
             Assert.Equal(8646.0, e.GestehungZerlegung.Entgangene9bJahr1, 2);
+
+            // Sockel und Deckel (EZ‑22, P651) wirken hier NICHT — der Anker bleibt: Der Netzbezug
+            // trägt den Sockel (Entlastung des Projekts > 0), und der Netzträger 60 führt im Projekt
+            // keinen Stromsteueranteil — Obergrenze ist der Regelsatz 20,50 €/MWh ≥ 20,00 €/MWh. Der
+            // Nachweis benennt die Obergrenze.
+            Assert.True(e.StromsteuerEntlastungJahr1 > 0);
+            Assert.Contains("kein Stromsteueranteil gepflegt; der § 9b-Abzug rechnet mit höchstens dem " +
+                            "Regelsatz der Stromsteuer von 20,50 €/MWh", e.Hinweis);
         }
 
         /// <summary>
