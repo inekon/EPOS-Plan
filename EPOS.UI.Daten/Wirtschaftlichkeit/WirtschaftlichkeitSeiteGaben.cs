@@ -1345,7 +1345,7 @@ namespace WindowsFormsApplication1
         /// ETAPPE E5 Teil b: eine Zeile der Definition als Matrixzeile — Titel (mit
         /// Einzug), je Spalte die Anzeige („— ‹Grund›" ohne Wert, Q16), der Abschnitt, das
         /// Label „nachrichtlich" (V‑3) und je Zelle die Warnung (V‑A, mehrdeutiger
-        /// Zinsfuß; Wärmegestehungskosten eines gespeicherten Laufs vor Fassung 12, P646). Eine
+        /// Zinsfuß; Wärmegestehungskosten eines gespeicherten Laufs vor Fassung 13, P646). Eine
         /// Überschrift trägt leere Zellen, eine Spalte ohne Ergebnis „—". <c>internal</c> für die
         /// bUnit-Probe der Ergebnisansicht — dieselbe Abbildung, die die Seite bekommt.
         /// </summary>

@@ -30,10 +30,12 @@ steht in keiner CSV der Basis).
    der Arbeitspreis dieses Trägers im Szenario (`KostenEmissionRechner.ArbeitspreisJeKwh`). Ohne eigenen Träger Zeichen für
    Zeichen `Wärmestrom × 1.000 × p_Netz` (Netz- bzw. Rückfallträger); eigener Träger ohne Arbeitspreis → `p_Netz` (§ 6.3 Nr. 43).
    Menge, Preis des Netzeintrags und Stromgutschrift bleiben beim Netzträger („Arbeitspreis bleibt").
-3. **Vermerk alter Läufe.** `ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG = 12`; `Uebernimm` setzt
-   `WirtschaftlichkeitErgebnis.GestehungAlteFormel = Version < 12`, `LadeErgebnisse` ohne Umschlag ebenso. Die Zeile
-   `GESTEHUNGSKOSTEN` trägt dann den Warntext `WIRT_GESTEHUNG_ALTER_LAUF` („gespeicherter Lauf mit dem Kapitalwert des ganzen
-   Projekts — die Zahl nur der Wärmeerzeugung liegt mit der nächsten Rechnung vor"): Zeichen in der Zelle der Kennzahltafel,
+3. **Vermerk alter Läufe.** `ErgebnisNachweisUmschlag.FASSUNG = 13` und `FASSUNG_WAERMEGESTEHUNG = 13` (12 = Umfang nur
+   Wärmeerzeugung, #642; 13 = Stromsteuer einmal und eigener Träger, P646; Fassung 13 ohne neues Feld); `Uebernimm` setzt
+   `WirtschaftlichkeitErgebnis.GestehungAlteFormel = Version < 13`, `LadeErgebnisse` ohne Umschlag ebenso — damit auch Läufe
+   aus #642 (Nachtrag, Entscheid der Orchestrierung im Rahmen von Befund 6). Die Zeile `GESTEHUNGSKOSTEN` trägt dann den
+   Warntext `WIRT_GESTEHUNG_ALTER_LAUF` („gespeicherter Lauf nach einer früheren Regel der Wärmegestehungskosten — die Zahl nach
+   heutiger Regel liegt mit der nächsten Rechnung vor"): Zeichen in der Zelle der Kennzahltafel,
    Zeile unter der Tafel; Word und Excel über dieselbe Zellwarnung. Frisch gerechnet nie.
 
 ## Code
@@ -52,7 +54,7 @@ steht in keiner CSV der Basis).
 
 - `WaermegestehungTests` 43 → 46 Fälle (21 → 24 Methoden): Befreiungsreihe zählt nicht; Wärmestrom je Erzeugerzeile; Preis
   des eigenen Trägers, ohne Zuordnung Netz-/Rückfallpreis bitgleich, ohne Arbeitspreis Netzpreis, Menge gekappt; Vermerk
-  bei Fassung 11, nicht bei 12, nicht frisch, nicht ohne Zahl.
+  bei Fassung 11 und 12, nicht bei 13, nicht frisch, nicht ohne Zahl.
 - `WaermegestehungAnkerTests` 6 → 8: **ERLOES** — 1030 mit den flachen Stundenreihen des Prüffalls B6, Befreiung 432,3 MWh ×
   20,50 €/MWh = 8.862,15 €/a, Kapitalwert ERLOES − AUSWEIS = 8.862,15 × RBF(3 %, 20) = 131.846,41 €, Gestehung in beiden
   Modi 0,0068420905 €/kWh, nach #642 im Modus ERLOES 0,0068421 − 8.862,15 ÷ 6.137.560 = 0,0053982 €/kWh; **eigener Träger** —
@@ -62,7 +64,9 @@ steht in keiner CSV der Basis).
   unverändert** — kein Prüfstand rechnet im Modus ERLOES (Testdatenbank: `Stromst_Befreiung_Modus` leer bis auf 1048
   AUSWEIS), keiner führt einen abweichenden Stromträger (1019 und 1030 ohne `ID_Carrier` an Wärmeerzeugern, 1024 mit 0).
 - `ErgebnisansichtTests` (Wöhler ohne Umschlag: Vermerk; frisch gebucht 1040–1042: keiner), bUnit
-  `WirtschaftlichkeitErgebnisansichtTests` 31 → 32 (Fassung 11 zeigt Zeichen und Zeile, Fassung 12 nicht).
+  `WirtschaftlichkeitErgebnisansichtTests` 31 → 32 (Fassung 12 zeigt Zeichen und Zeile, Fassung 13 nicht); Fassungspins
+  12 → 13 in `ErgebnisansichtTests` und `WiederholperiodeTests`. Gegenprobe Nachtrag: Konstante zurück auf 12 — Kern- und
+  bUnit-Probe rot.
 - Gegenproben: Befreiungsreihe wieder eingehängt — Einheitstest und ERLOES-Anker rot; eigener Träger ausgehängt
   (`KostenEmissionRechner` ohne Liste, `WaermestromArbeitEur` ohne Schleife) — Einheitstest und Anker 1024 rot; Warntext
   ausgehängt — Kern- und bUnit-Probe rot. Je danach zurückgebaut.
@@ -93,8 +97,8 @@ steht in keiner CSV der Basis).
 - Punkt 6 „an der Kennzahl": als Zellwarnung der Kennzahl gebaut (Zeichen in der Zelle, Zeile unter der Tafel) — derselbe
   Weg wie die Warnung des Zinsfußes; der Vermerk erscheint damit auch in Word und Excel eines gespeicherten Laufs. Die
   Herleitungszeilen „Menge × Preis" stehen nur in der Gliederung, die Kennzahltafel führt keine leisen Zeilen.
-- Läufe der Fassung 12 aus #642, im Modus ERLOES oder mit eigenem Träger, tragen keinen Vermerk (Auftrag: Fassung 12 nicht);
-  benannt in § 6.3 Nr. 43.
+- Nachtrag der Orchestrierung: Auch Läufe der Fassung 12 aus #642 tragen den Vermerk — Umschlag auf Fassung 13, § 6.3 Nr. 43
+  (Teil Läufe aus #642) erledigt.
 - Der zweite Mockup `Ergebnis_Bandbreite_Herkunft.html` trug dieselben alten Zahlen (mit eigener PV-Variante) — gekennzeichnet,
   nicht nachgerechnet.
 

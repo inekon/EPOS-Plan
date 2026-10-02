@@ -98147,7 +98147,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die gespeicherter Lauf mit dem Kapitalwert des ganzen Projekts — die Zahl nur der Wärmeerzeugung liegt mit der nächsten Rechnung vor ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die gespeicherter Lauf nach einer früheren Regel der Wärmegestehungskosten — die Zahl nach heutiger Regel liegt mit der nächsten Rechnung vor ähnelt.
         /// </summary>
         public static string WIRT_GESTEHUNG_ALTER_LAUF {
             get {

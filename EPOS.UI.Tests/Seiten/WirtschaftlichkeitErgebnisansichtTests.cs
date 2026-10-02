@@ -428,22 +428,22 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     /// <summary>
-    /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag der Fassung 11 trägt die
-    /// Wärmegestehungskosten mit dem Kapitalwert des ganzen Projekts — die Kennzahl zeigt an seiner
-    /// Zelle den Vermerk „… mit der nächsten Rechnung" (Zeichen in der Zelle, Zeile unter der
-    /// Tafel); ein Lauf der Fassung 12 nicht. Die Zeile kommt aus der Zeilendefinition des Kerns
+    /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag der Fassung 12 (#642) trägt die
+    /// Wärmegestehungskosten nach einer früheren Regel — die Kennzahl zeigt an seiner Zelle den
+    /// Vermerk „… mit der nächsten Rechnung" (Zeichen in der Zelle, Zeile unter der Tafel); ein Lauf
+    /// der Fassung 13 nicht. Die Zeile kommt aus der Zeilendefinition des Kerns
     /// über dieselbe Abbildung der Hülle, die die Seite bekommt.
     /// </summary>
     [Fact]
-    public void Ein_Lauf_der_Fassung_11_zeigt_den_Vermerk_an_den_Waermegestehungskosten()
+    public void Ein_Lauf_der_Fassung_12_zeigt_den_Vermerk_an_den_Waermegestehungskosten()
     {
         var alt = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis
         {
             IdProjekt = STAMM, IstStamm = true, Gestehungskosten = 0.12
         };
-        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":11}")!.Uebernimm(alt);
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}")!.Uebernimm(alt);
         var neu = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis { IdProjekt = WP, Gestehungskosten = 0.11 };
-        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}")!.Uebernimm(neu);
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":13}")!.Uebernimm(neu);
         var spalten = new List<WindowsFormsApplication1.WirtschaftlichkeitErgebnis> { alt, neu };
 
         WindowsFormsApplication1.WirtZeile geste = WindowsFormsApplication1.WirtschaftlichkeitZeilen

@@ -1654,7 +1654,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <c>true</c> = dieses Ergebnis ist geladen und trägt einen Nachweisumschlag vor der Fassung
         /// <see cref="ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG"/> oder keinen: Seine
-        /// <see cref="Gestehungskosten"/> sind mit dem Kapitalwert des ganzen Projekts gerechnet. Die
+        /// <see cref="Gestehungskosten"/> sind nach einer früheren Regel gerechnet (bis Fassung 11 mit dem
+        /// Kapitalwert des ganzen Projekts, Fassung 12 mit doppelter Stromsteuer im Modus ERLOES und dem
+        /// Wärmestrom zum Netzpreis). Die
         /// Kennzahl sagt es (<c>WIRT_GESTEHUNG_ALTER_LAUF</c>), wie die Zeile „Menge × Preis" bei
         /// einem Lauf ohne Aufstellung; die Zahl nur der Wärmeerzeugung liegt mit der nächsten
         /// Rechnung vor. Ein frisch gerechnetes Ergebnis trägt immer <c>false</c>.
