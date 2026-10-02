@@ -17,7 +17,7 @@ Regeln: [`CLAUDE.md`](../../../CLAUDE.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.
 | R4 | Kappungsreihe, W3, Rampenmaske, `Aufheizergebnis`, Hinweise `SIMENG_AUFH_*` | gemergt, Gate 665 und Gate 668 grün; Statuszeile **#669** (origin hat #665–#668 vergeben) |
 | Merge origin | #665–#668 (Solarthermie-Ganglinie, M1a, M3a, **M2 mit Basis R32**, Testdatenbank 165) | gemergt (`8a73e236`); KP3 friert künftig als **R33** ein (`df81974b`) |
 | Gate 669 | volles Gate im Hauptbaum auf dem Merge-Stand | siehe Abschnitt 2 |
-| D2 | Kennzahlen je Gebäude und Zone, Sommerlüftung NULL, Export E32, Bedarfsergebnis, Auskunft, Herleitungszeile, Hinweis Verbrauchsangabe | Agent fertig gebaut (fünf Commits im Worktree `kp3-d2`, Zweig `kp3-d2` auf `4b4a84e2`), Gate 670 lief im Worktree; **Bericht und Abnahme offen** |
+| D2 | Kennzahlen je Gebäude und Zone, Sommerlüftung NULL, Export E32, Bedarfsergebnis, Auskunft, Herleitungszeile, Hinweis Verbrauchsangabe | Agent fertig gebaut (fünf Commits im Worktree `kp3-d2`, Zweig `kp3-d2` auf `4b4a84e2`), Gate 670 im Worktree grün (Abschnitt 6); **Abnahme offen** |
 | E59 | individuelle Rampe, Aufschlag (h und %), manuelle Aufheizzeit je Gebäude mit Vorschlägen | **entschieden 02.10.2026**, Papiere noch nicht geschrieben (Auftrag in Abschnitt 5), Welle R5/O1b vor RP1 |
 | O2, O3, RP1, RP2, A | Bedarfsdialog; Bericht; Referenzprojekt 1051 mit Messung ρ_min; Basis R33; Abschluss | offen |
 
@@ -77,3 +77,44 @@ Statusdatei Gebäudesimulation (Zeile E59, KP3-Zeile), `Status_iOS_Migration.md`
 (Abschnitte 1 und 7), Glossar (Aufschlag, Aufheizzeit manuell, Vorschlag). Abnahme: Wachen grün, Gegenlesen der Konzepttexte
 mit `seit (dem|der|W)|geändert|Entscheid|Befund|Stand:? *\d|bisher|früher|vorher` (Treffer nur in 9.9, N1.68, F9), Bericht mit
 Commits, Abschnitten, Festlegungsnummern, Alternativen.
+
+## 6. Bericht des D2-Agenten (eingegangen nach dem Anhalten; Abnahme am 03.10.)
+
+**Gate 670 im Worktree** auf `5ac9377e` gegen R31: Kern-Filter 0 Fehler, ChartProben JA (200), Kern 10 116 (1 übersprungen), UI 7 284,
+KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Wachen 35/35, Referenzlauf 16/16 PASS, 487/487 CSV byte-gleich,
+gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer ohne Abweichung, beide `.resx` je 13 688 Einträge ohne Dubletten,
+SqlDialektPruefer 2 151 Texte 0 Fundstellen. **Zwölf neue Schlüssel je Sprache:** elf `SIMKONF_AUFH_HRL_*`/`SIMKONF_AUFH_QUELLE_*` für die
+Herleitungszeile, `SIMENG_AUFH_VERBRAUCH`. Beim Merge in den Hauptbaum (Basis R32, 13 700 Einträge) die `.resx` wieder aus dem
+Hauptbaum-Stand plus diesen zwölf Schlüsseln bauen, `designer_neu.py schreiben`, Gate gegen R32.
+
+**Gebaut:** Ergebniszeile und Zonenzeile mit allen 14 Aufheizspalten und Sommerlüftung NULL (Festlegung 26, `GebaeudeKennzahlen.Aufheizwerte`
+als einzige Stelle der NULL-Regeln; `ErgebnisGebaeudeTests:260` und `GebaeudeBedarfNachtauskuehlungTests:98` nachgezogen); Export nach E32
+(Texte `Aufheizzustand`, `Aufheizbemessung`, `Aufheizleistungsquelle` hinter `Geb[n].Modell`, elf Zahlen nur bei Zustand, Zonenschlüssel
+`Geb[n].Zone[k].*`, `heizsollwert_<n>.csv` bei Heizkalender oder Aufheizung ≠ null, Nachtauskühlung nur gesetzt — in den 16 Projekten
+unverändert); `GebaeudeBedarfErgebnis.Ergebniszeile` und `GebaeudeBedarfZone.Ergebniszeile`; Auskunft der Aufheizbemessung ohne Jahreslauf
+**mit Konditionierungssatz** (= Lauf bitgleich an 17 VDI-Gebäuden, 1018 mit Faktor, Mehrzonen in drei Fällen, 10632 mit Heizkalender:
+14 h/182 Sprünge statt 5 h/365 ohne Satz — B14); Herleitungszeile in `SimulationErgebnisHuelle.ParameterGaben` (de/en, 16 Hüllenfälle,
+Beispiel „Hotel-G-136: t_auf,max 5 h bei -9,3 °C (kälteste Stunde) · P_auf 34,6 kW Zielleistung (Katalogbau 136,9 kW × Faktor 0,253)“);
+Hinweis `SIMENG_AUFH_VERBRAUCH` einmal je Gebäude nur bei geplantem Zustand mit Rampentag; N-AH7 für Zeile und Export (zwei Läufe,
+de-DE/en-US, gestörter Lauf: gleiche Zustände, Zähler, Schlüssel).
+
+**Abweichungen von der Spurenregel (zu bestätigen):** (1) Kennzeichen `SommerlueftungGesetzt` und `HeizkalenderWirksam` als
+init-Eigenschaften in `GebaeudeModellErgebnis`, gesetzt in `Vdi6007Rechenweg.Laufen`, `Zonenlauf.Ergebnis`, `Zonenrechnung.Gebaeudeergebnis`,
+von `Skaliert` getragen — reine Kennzeichen. (2) Auslagerungen für die Auskunft (Regel „Auskunft ruft den Rechenweg“): `Vdi6007Rechenweg.EingangBauen`,
+`ZonenBauen`, `Mehrzonenweg`, `Zonenklima`, `Zonenkonditionierung`; `Zonenrechnung.ZonenBauen`; der Lauf ruft dieselben Methoden,
+Referenzlauf byte-gleich. Vorläufige Bewertung der Orchestrierung: beides annehmbar, (1) ist Festlegung 26/28 geschuldet, (2) der Kern-Regel;
+beim Merge bestätigen und im Protokoll als Festlegung D2 führen.
+
+**Befunde:** `Tab_ErgebnisZone.Aufheiz_Zustand` kennt GEKOPPELT laut CHECK nicht, obwohl R3 eine Zone im Mehrzonenweg (AK1 als ideale
+Last, 1047) so setzt — D2 hält die Zonenzeile ohne Aufheizwerte, Zustand am Gebäude; **Schemanachtrag entscheiden** (Kandidat für den
+E59-Schemaschritt in R5). B14 bleibt für die Übergabe-Auskunft (H10) offen: `UebergabeEingang`/`KuehluebergabeEingang` bauen ohne
+Konditionierungssatz. Mehrzonen mit Regelpaaren: Auskunft braucht den adiabaten Vorlauf, also je Zone ein Jahr. B11: mit Verbrauchsangabe
+bleibt der Faktor bis zum Lauf offen (Herleitungszeile nennt P_auf am Katalogbau und „erst der Lauf“).
+
+**Festlegungen D2:** P_auf in Spalte und Export nur endlich und > 0 (+∞ der Testnaht und `Heizleistung_Max` = 0 werden NULL; die Auskunft
+behält +∞ roh); Faktor in der Auskunft: Flächenangabe wie der Lauf, Gebäude mit Zone 1, Verbrauchsangabe `null`; feste Nennleistung geht
+nicht ein; C_w nicht in der Herleitungszeile; je eine Zeile auch für Tagesbilanz-Gebäude und Fehler des Eingangsbauers.
+
+**Offen für O2:** Darstellung aus `Ergebniszeile` (Gebäude, Zonen), Sommerlüftung je Zone, „—“ für NULL, KI-Sicht. **O3:** Bericht und
+Vergleich lesen die Spalten, Abweichungsmerkmale B21, gekoppelte Zone ohne Zonenzeile. **RP1:** 1051 erzeugt `heizsollwert_<n>.csv` und
+die Aufheizschlüssel — erwartet, kein Befund.
