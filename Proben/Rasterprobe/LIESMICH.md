@@ -1,4 +1,4 @@
-﻿# Rasterprobe — die virtualisierte Katalogliste im echten Browser
+# Rasterprobe — die virtualisierte Katalogliste im echten Browser
 
 **Zweck.** `EPOS.UI/Bausteine/Katalogliste.razor` (über `EPOS.UI/Standards/Raster.razor`,
 QuickGrid 10.0.11 mit `Virtualize`) so zeigen, wie der Stromspeicherimport sie zeigt — und
@@ -796,14 +796,14 @@ Anwendung, geschrieben wird nur in die Ablage der Seite.
 | `…?fall=gesperrt` | Bearbeiten, ein ausgelieferter Satz: `Gesperrt` und `SperrGrund`, wie die Hülle sie für `ReadOnly` setzt |
 | `…?fall=neu` | Betriebsart Neu, der leere Satz der Hülle (Vorgabe) |
 | `…?fall=ohnetabellen` | Bearbeiten ohne die Tabellen der Konditionierung: der Reiter benannt gesperrt, nur die Bestandszellen |
-| `…?fall=vorlagen` | Bearbeiten, der volle Satz: die Vorlagen je Karte und die Vorlagenverwaltung (Welle U2) |
+| `…?fall=vorlagen` | Bearbeiten, der volle Satz mit Kühlung: die Vorlagen je Karte und die Vorlagenverwaltung (Welle U2), die Abkürzung „alle Größen“ in der Zeile „Vorlage“ (Welle U5) |
 | `…?fall=bausteine` | die Bausteine der Welle U0b in derselben Überlagerung: `Wochenraster` mit `MitAus` und `Umbrechend` (Sonntag 0–5 Uhr „aus“), zwei `Gemeinjahrdatum` (01.10., 30.04.) |
 | `…?fall=karte` | Bearbeiten, die Karte im Einzelnen (Welle U3): „Heizen“ über denselben Weg ohne Datenbank angelegt — Sommerferien aus der Matrix, die neun Feiertage als Regel, das Zeitfenster Mo–Fr 6–8 Uhr 22 °C und eine eigene Periode über den Jahreswechsel („aus“) |
 | `…?fall=verwaltung` | die Gebäudeverwaltung (`GebaeudeAdminDialog`, Welle U4) wie in ihrem eigenen Fenster, ohne Überlagerung: drei Katalogbauten (einer ausgeliefert), Stammblatt mit der Gruppe „Konditionierung“ und dem breiten Blatt über demselben Weg ohne Datenbank |
 | `…&kultur=de-DE` bzw. `en-US` | Kultur und Sprache wie bei `/gebaeudeimport` |
 
 ```bash
-node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--kultur de-DE]
+node konditionierungsprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--kultur de-DE|en-US]
 ```
 
 Gemessen je Fall bei 390 × 844, 820 × 1 180, 1 180 × 820 und 1 300 × 900, jeder Reiter angewählt: kein
@@ -960,6 +960,13 @@ Breite 405 Elemente, 354 davon mit Wert; am ersten Feld steht „Mi 01.01., 0–
 zwischen den Jahren (Zeitraum)“. Die übrigen acht Fälle messen wie im Ergebnis der Welle U4; der Reiter
 „Konditionierung“ steht in der neuen Reiterfolge an zweiter Stelle, Matrix und Karten wie dort. Die Fotos
 liegen außerhalb des Repositorys.
+
+**Welle U5 — die Abkürzung (E57).** Der Fall `vorlagen` misst zusätzlich die Liste „alle Größen“ in der
+Kopfzelle der Zeile „Vorlage“ (≥ 44 px, Platzhalter „—“, die Namen in der Reihenfolge des Kerns), die eine
+Rückfrage mit fünf Größenzeilen und der Vorgabe „Nein“, nach „Nein“ keine Herkunft, nach „Ja“ „Büro“ in allen
+fünf Karten und Zellen der Zeile und die Wahl wieder auf „—“; die Texte, an denen sie misst, liest die Probe
+je Kultur aus einer Tafel, sie läuft mit `--kultur de-DE` und `--kultur en-US` — am 02.10.2026 je 36 Läufe
+(9 Fälle × 4 Breiten) ohne Verstoß, Rückgabe 0, die Liste 102,5 × 44 px in allen vier Fenstern.
 
 ---
 
