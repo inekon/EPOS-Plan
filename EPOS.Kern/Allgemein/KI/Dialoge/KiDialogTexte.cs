@@ -745,6 +745,17 @@
         internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
         internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
         internal static string SimAnlagenkopplungErl => MyResource.Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_ERL;
+        // Die Aufheizoptimierung (Entwurf KP3, Welle O1): Namen = Beschriftungen des Abschnitts.
+        internal static string SimAufheizSchalterName => MyResource.Resource.SIMKONF_AUFH_LBL_SCHALTER;
+        internal static string SimAufheizSchalterErl => MyResource.Resource.KI_DLG_SIM_AUFH_SCHALTER_ERL;
+        internal static string SimAufheizBemessungName => MyResource.Resource.SIMKONF_AUFH_LBL_BEMESSUNG;
+        internal static string SimAufheizBemessungErl => MyResource.Resource.KI_DLG_SIM_AUFH_BEMESSUNG_ERL;
+        internal static string SimAufheizAbzugName => MyResource.Resource.SIMKONF_AUFH_LBL_ABZUG;
+        internal static string SimAufheizAbzugErl => MyResource.Resource.KI_DLG_SIM_AUFH_ABZUG_ERL;
+        internal static string SimAufheizReserveName => MyResource.Resource.SIMKONF_AUFH_LBL_RESERVE;
+        internal static string SimAufheizReserveErl => MyResource.Resource.KI_DLG_SIM_AUFH_RESERVE_ERL;
+        internal static string SimAufheizArtName => MyResource.Resource.SIMKONF_AUFH_LBL_ART;
+        internal static string SimAufheizArtErl => MyResource.Resource.KI_DLG_SIM_AUFH_ART_ERL;
         internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
         internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
         internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;

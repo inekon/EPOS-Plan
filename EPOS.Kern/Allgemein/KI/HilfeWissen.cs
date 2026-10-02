@@ -533,6 +533,26 @@ namespace WindowsFormsApplication1
                     "mit Nachtauskühlung zeigt der Bedarfsdialog des Gebäudes, wenn eine gesetzt ist. Sie wirkt im " +
                     "Rechenweg nach VDI 6007."),
 
+                // ---- Aufheizoptimierung (Entwurf KP3, Welle O1) ---------------------------------
+                // Die Projekteinstellung in der Simulationskonfiguration; Suchworte beider Sprachen im
+                // Titel, Inhalt auf Deutsch.
+                new WissensAbschnitt("Aufheizoptimierung einstellen (preheat optimisation, preheat reserve, preheat time)",
+                    KiChatKontext.B_SIM_KONFIG,
+                    "Die Aufheizoptimierung ist eine Projekteinstellung in der Simulationskonfiguration unter " +
+                    "'Weitere Einstellungen', neben Kühlung und Anlagenkopplung; Vorgabe ist aus. Eingeschaltet " +
+                    "rechnet der Lauf vor jedem Sprung des Heizsollwerts nach oben eine Aufheizrampe, damit die " +
+                    "Heizleistung nach dem Sprung die Aufheizleistung nicht übersteigt. Sie wirkt in Gebäuden nach " +
+                    "VDI 6007; ein Gebäude ohne Zonen mit der Anlagenkopplung 'Heizkreis (AK1)' wird nicht " +
+                    "optimiert, der Lauf nennt es. Bei Schalter an stehen vier Felder: 'Bemessung' - 'kälteste " +
+                    "Stunde' (Vorgabe) oder 'kälteste Stunde − ΔT_K', die kälter bemisst als das Klimajahr; 'Abzug " +
+                    "ΔT_K' nur bei dieser Bemessung, leer 2 K, 0 bis 10 K; 'Aufheizreserve ρ' in Prozent, der " +
+                    "Zuschlag auf die stationäre Last an der kältesten Stunde, wenn das Gebäude keine " +
+                    "Heizleistungsgrenze führt - leer 20 %, zulässig 1 bis 100 %; 'Art der Aufheizzeit' - " +
+                    "'täglich' (Vorgabe: jeder Tag nach seiner Außentemperatur, höchstens die längste " +
+                    "Aufheizzeit) oder 'fest' (jeder Tag so lange wie der Bemessungsfall). Jedes Feld wird sofort " +
+                    "gespeichert; ausschalten behält die übrigen Werte. Den Vergleich mit und ohne Rampe liefert " +
+                    "eine Projektvariante."),
+
                 // ---- Vorlagen der Konditionierung (Stufe KP2, Welle U2) ----------------------------
                 // Die drei Handlungen der Vorlagen an der Kalenderkarte: Übernehmen, Als Vorlage
                 // speichern, Verwalten. Suchworte beider Sprachen im Titel, Inhalt auf Deutsch.

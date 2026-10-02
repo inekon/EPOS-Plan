@@ -214,9 +214,12 @@ public class KiSimulationMaskeTests : IDisposable
     ///
     /// <para>Schemaschritt 154: achtundvierzig — die Heizgrenze der Kesselbereitschaft neben der
     /// Betriebsbereitschaft.</para>
+    ///
+    /// <para>KP3 O1: dreiundfünfzig — die Projekteinstellung „Aufheizoptimierung" mit Schalter,
+    /// Bemessung, ΔT_K, Aufheizreserve und Art.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_achtundvierzig_Felder_an()
+    public void Die_Ansicht_meldet_dreiundfuenfzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -225,7 +228,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(48, felder.Count);
+        Assert.Equal(53, felder.Count);
     }
 
     /// <summary>
@@ -410,7 +413,9 @@ public class KiSimulationMaskeTests : IDisposable
         {
             "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb", "anlagenkopplung", "quellanlage", "waermequelle",
+            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb", "anlagenkopplung",
+            "aufheizoptimierung", "aufheiz_bemessung", "aufheiz_abzug", "aufheiz_reserve", "aufheiz_art",
+            "quellanlage", "waermequelle",
             "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
             "autarkie_speicher", "lesepunkt_davor",
             "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",
@@ -782,6 +787,151 @@ public class KiSimulationMaskeTests : IDisposable
         wege.KuehlbetriebSchreiben = null;
         ex = Assert.Throws<InvalidOperationException>(() => sicht.Kuehlbetrieb = true);
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, ex.Message);
+    }
+
+    // =====================================================================
+    //  KP3 O1 — die Projekteinstellung „Aufheizoptimierung"
+    // =====================================================================
+
+    /// <summary>Eine Sicht über einen Stand mit Aufheizeinstellung und mitschreibendem Weg.</summary>
+    private static SimulationKiSicht AufheizSicht(Schreibprobe probe, WindowsFormsApplication1.Aufheizvorgabe stand,
+                                                  List<WindowsFormsApplication1.Aufheizvorgabe> geschrieben,
+                                                  bool antwort = true)
+    {
+        probe.Stand.Aufheizung = stand;
+        SimulationParameterDienste wege = probe.Wege();
+        wege.AufheizvorgabeSchreiben = v => { geschrieben.Add(v); return antwort; };
+        return new SimulationKiSicht(() => null, () => probe.Stand, () => wege, () => null, () => "", () => "");
+    }
+
+    /// <summary>
+    /// <b>Lesen:</b> die fünf Felder mit dem Stand — die Wahlfelder als wirksamer Steuerwert samt dem
+    /// Namen auf der Maske, die Reserve in Prozent, leere Zahlen leer.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizoptimierung_ist_lesbar()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht sicht = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, 0.25, null), geschrieben);
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        Assert.True(sicht.Aufheizoptimierung);
+        Assert.Equal("STUNDE_ABZUG", sicht.AufheizBemessung);
+        Assert.Null(sicht.AufheizAbzugK);
+        Assert.Equal(25.0, sicht.AufheizReserveProzent);
+        Assert.Equal("TAEGLICH", sicht.AufheizArt);
+
+        Dictionary<string, string> werte = Werte();
+        Assert.Equal("25", werte["aufheiz_reserve"]);
+        Assert.Equal("", werte["aufheiz_abzug"]);
+
+        KiFeldwert bemessung = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION).First(w => w.Name == "aufheiz_bemessung");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG, bemessung.Text);
+        Assert.Equal("STUNDE_ABZUG", bemessung.Schluessel);
+        Assert.Empty(geschrieben);
+
+        // Ohne Stand liest die Einstellung „aus" mit den wirksamen Vorgaben.
+        var leer = new SimulationKiSicht(() => null, () => null, () => null, () => null, () => "", () => "");
+        Assert.False(leer.Aufheizoptimierung);
+        Assert.Equal("STUNDE", leer.AufheizBemessung);
+        Assert.Equal("TAEGLICH", leer.AufheizArt);
+        Assert.Null(leer.AufheizReserveProzent);
+    }
+
+    /// <summary>
+    /// <b>Setzen:</b> jedes Feld schreibt sofort die ganze Einstellung über den Delegaten des
+    /// Abschnitts — die Wahl über den Namen auf der Maske oder den Steuerwert (gleich in Groß- und
+    /// Kleinschreibung), die Reserve in Prozent als Anteil; die Vorgaben werden NULL (Festlegung 24),
+    /// ein getippter Wert bleibt.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizoptimierung_ist_setzbar_und_normalisiert()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht sicht = AufheizSicht(probe, WindowsFormsApplication1.Aufheizvorgabe.Aus, geschrieben);
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheizoptimierung").Setzen(true);
+        Assert.True(probe.Stand.Aufheizung.An);
+
+        KiFeldzugang bemessung = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheiz_bemessung");
+        Assert.True(bemessung.IstWahl);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(bemessung, WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG);
+        Assert.True(u.Ok, u.Grund);
+        bemessung.Setzen(u.Wert);
+        Assert.Equal("STUNDE_ABZUG", probe.Stand.Aufheizung.Bemessung);
+
+        KiFeldzugang abzug = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheiz_abzug");
+        u = KiFeldwandler.Wandle(abzug, "2");
+        Assert.True(u.Ok, u.Grund);
+        abzug.Setzen(u.Wert);
+        Assert.Equal(2.0, probe.Stand.Aufheizung.AbzugK);   // getippt wie die Vorgabe - bleibt
+
+        KiFeldzugang reserve = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheiz_reserve");
+        Assert.False(KiFeldwandler.Wandle(reserve, "0").Ok);
+        Assert.False(KiFeldwandler.Wandle(reserve, "120").Ok);
+        u = KiFeldwandler.Wandle(reserve, "30");
+        Assert.True(u.Ok, u.Grund);
+        reserve.Setzen(u.Wert);
+        Assert.Equal(0.3, probe.Stand.Aufheizung.Reserve);
+
+        sicht.AufheizArt = "fest";
+        Assert.Equal("FEST", probe.Stand.Aufheizung.Art);
+        sicht.AufheizArt = "TAEGLICH";
+        Assert.Null(probe.Stand.Aufheizung.Art);
+        sicht.AufheizBemessung = "stunde";
+        Assert.Null(probe.Stand.Aufheizung.Bemessung);
+        sicht.AufheizReserveProzent = null;
+        Assert.Null(probe.Stand.Aufheizung.Reserve);
+
+        // Aus behält die übrigen Werte.
+        sicht.Aufheizoptimierung = false;
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false, null, 2.0, null, null), probe.Stand.Aufheizung);
+        Assert.Equal(9, geschrieben.Count);
+        Assert.Equal(probe.Stand.Aufheizung, geschrieben.Last());
+    }
+
+    /// <summary>
+    /// <b>Die Absagen</b> — benannt, der Stand bleibt: Werte bei Schalter aus (die Maske zeigt sie
+    /// nicht), ΔT_K bei der Bemessung „kälteste Stunde", ein fremder Steuerwert, ein Wert außerhalb
+    /// der Grenzen, ein gescheitertes Schreiben und ein fehlender Weg.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizoptimierung_lehnt_benannt_ab()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht aus = AufheizSicht(probe, WindowsFormsApplication1.Aufheizvorgabe.Aus, geschrieben);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => aus.AufheizBemessung = "STUNDE_ABZUG");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_AUFH_NICHT_AN, ex.Message);
+        Assert.Throws<InvalidOperationException>(() => aus.AufheizReserveProzent = 30);
+        Assert.Throws<InvalidOperationException>(() => aus.AufheizArt = "FEST");
+
+        SimulationKiSicht an = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(true, null, null, null, null), geschrieben);
+        ex = Assert.Throws<InvalidOperationException>(() => an.AufheizAbzugK = 3);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_AUFH_NUR_ABZUG, ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => an.AufheizArt = "MONATLICH");
+        Assert.Equal(string.Format(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_AUFH_UNBEKANNT,
+                                   "MONATLICH", "TAEGLICH, FEST"), ex.Message);
+
+        ex = Assert.Throws<InvalidOperationException>(() => an.AufheizReserveProzent = 0);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_RESERVE, ex.Message);
+        Assert.Empty(geschrieben);
+
+        SimulationKiSicht scheitert = AufheizSicht(probe, WindowsFormsApplication1.Aufheizvorgabe.Aus, geschrieben, antwort: false);
+        ex = Assert.Throws<InvalidOperationException>(() => scheitert.Aufheizoptimierung = true);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_MSG_FEHLER, ex.Message);
+        Assert.False(probe.Stand.Aufheizung.An);
+
+        var ohneWeg = new SimulationKiSicht(() => null, () => probe.Stand, () => probe.Wege(), () => null, () => "", () => "");
+        ex = Assert.Throws<InvalidOperationException>(() => ohneWeg.Aufheizoptimierung = true);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, ex.Message);
+        Assert.Single(geschrieben);
     }
 
     // =====================================================================

@@ -404,6 +404,154 @@ public sealed class SimulationKiSicht
                .Select(s => new KiWahleintrag(s, SimulationKonfigSeite.Kopplungsname(s)))
                .ToList();
 
+    // =====================================================================
+    //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
+    // =====================================================================
+    //
+    // Fünf Felder über EINEN Delegaten (AufheizvorgabeSchreiben): Jede Setzung schreibt die ganze
+    // Einstellung sofort, wie ein Feld des Abschnitts. Die Normalisierung macht der Record
+    // (Festlegung 24): „kälteste Stunde" und „täglich" werden NULL, ein leeres Zahlenfeld NULL, ein
+    // getippter Wert bleibt. Was die Maske nicht zeigt, lehnt die Sicht benannt ab: die vier
+    // Werte bei Schalter aus, ΔT_K bei der Bemessung „kälteste Stunde".
+
+    /// <summary>Der Projektschalter „Aufheizoptimierung rechnen"; aus behält die übrigen Werte.</summary>
+    public bool Aufheizoptimierung
+    {
+        get => Aufheizstand.An;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+        }
+    }
+
+    /// <summary>
+    /// Die Bemessung als Steuerwert (<c>DbWerte.AUFHEIZ_BEMESSUNG_*</c>): <c>STUNDE</c> (Vorgabe) oder
+    /// <c>STUNDE_ABZUG</c>; leer heißt die Vorgabe.
+    /// </summary>
+    public string AufheizBemessung
+    {
+        get => Aufheizstand.BemessungWirksam;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNGEN,
+                                     WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art));
+        }
+    }
+
+    /// <summary>Die zwei Bemessungen mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizBemessungWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE, Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG)
+    };
+
+    /// <summary>ΔT_K [K] der Bemessung „kälteste Stunde − ΔT_K"; <c>null</c> = leer (Vorgabe 2 K).</summary>
+    public double? AufheizAbzugK
+    {
+        get => Aufheizstand.AbzugK;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            if (!a.MitAbzug)
+                throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NUR_ABZUG);
+            Bereich(value, WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MIN_K,
+                    WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MAX_K, Resource.SIMKONF_AUFH_LBL_ABZUG);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art));
+        }
+    }
+
+    /// <summary>
+    /// Die Aufheizreserve ρ in Prozent, wie das Feld sie zeigt; gespeichert als Anteil (Festlegung 15).
+    /// <c>null</c> = leer (Vorgabe 20 %).
+    /// </summary>
+    public double? AufheizReserveProzent
+    {
+        get => Aufheizstand.Reserve is double r ? r * 100.0 : null;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 1.0, 100.0, Resource.SIMKONF_AUFH_LBL_RESERVE);
+            double? anteil = value is double p ? p / 100.0 : null;
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+        }
+    }
+
+    /// <summary>
+    /// Die Art der Aufheizzeit als Steuerwert (<c>DbWerte.AUFHEIZ_ART_*</c>): <c>TAEGLICH</c>
+    /// (Vorgabe) oder <c>FEST</c>; leer heißt die Vorgabe.
+    /// </summary>
+    public string AufheizArt
+    {
+        get => Aufheizstand.ArtWirksam;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_ARTEN,
+                                     WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert));
+        }
+    }
+
+    /// <summary>Die zwei Arten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizArtWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH, Resource.SIMKONF_AUFH_ART_TAEGLICH),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
+    };
+
+    /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe Aufheizstand
+        => Parameter?.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    /// <summary>Der Stand für einen Wert, den die Maske nur bei Schalter an zeigt — sonst benannt abgelehnt.</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe AufheizEingeschaltet()
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
+        if (!a.An) throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NICHT_AN);
+        return a;
+    }
+
+    /// <summary>
+    /// Ein Steuerwert der Wertliste (ohne Rücksicht auf Groß- und Kleinschreibung); leer heißt die
+    /// Vorgabe, ein fremder Wert wird benannt abgelehnt.
+    /// </summary>
+    private static string Steuerwert(string? roh, IReadOnlyList<string> liste, string vorgabe)
+    {
+        if (string.IsNullOrWhiteSpace(roh)) return vorgabe;
+        string t = roh.Trim();
+        foreach (string w in liste)
+            if (string.Equals(w, t, StringComparison.OrdinalIgnoreCase)) return w;
+        throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_AUFH_UNBEKANNT, t, string.Join(", ", liste)));
+    }
+
+    /// <summary>Prüft die Grenzen des Eingabefeldes; leer ist zulässig.</summary>
+    private static void Bereich(double? wert, double min, double max, string feld)
+    {
+        if (wert is not double w) return;
+        if (!double.IsNaN(w) && w >= min && w <= max) return;
+        CultureInfo k = CultureInfo.CurrentCulture;
+        throw new InvalidOperationException(string.Format(k, Resource.KI_FELD_BEREICH, feld, w.ToString(k),
+            string.Format(k, Resource.KI_FELD_BEREICH_VON_BIS, min.ToString(k), max.ToString(k))));
+    }
+
+    /// <summary>
+    /// Schreibt die ganze Einstellung über den Delegaten des Abschnitts und zieht den Stand erst nach,
+    /// wenn das Schreiben angekommen ist; ohne Weg und bei Fehlschlag benannt.
+    /// </summary>
+    private void AufheizSchreiben(WindowsFormsApplication1.Aufheizvorgabe neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Aufheizvorgabe, bool>? schreiben = Wege?.AufheizvorgabeSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        if (!schreiben(neu))
+            throw new InvalidOperationException(Resource.SIMKONF_AUFH_MSG_FEHLER);
+        p.Aufheizung = neu;
+    }
+
     /// <summary>
     /// Die gewählte Karte mit Quellenwahl (Wärmepumpe oder Heizkessel) als
     /// <c>ID_Anlage</c>; 0 = keine. Setzen wählt die Karte — derselbe Weg wie der Knopf an
