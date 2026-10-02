@@ -40975,5 +40975,38 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KI_WOCHE_FORMAT" xml:space="preserve">
     <value>Die Woche braucht 168 Werte (Montag 00:00 bis Sonntag 23:00) oder einen Wert für die Grundangabe, durch „;“ getrennt und „aus“ für abgeschaltet – übergeben sind {0}.</value>
   </data>
+  <data name="KOND_LBL_VORLAGE_ALLE" xml:space="preserve">
+    <value>alle Größen</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_VORLAGE_ALLE" xml:space="preserve">
+    <value>Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt.</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_TITEL" xml:space="preserve">
+    <value>Vorlage in allen Größen übernehmen</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE" xml:space="preserve">
+    <value>Die Vorlage „{0}“ in allen Größen übernehmen?</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>übernehmen</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_ERSETZT" xml:space="preserve">
+    <value>ersetzt wird: {0}; es bleibt: {1}</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN" xml:space="preserve">
+    <value>die Gesamtangabe {0} 1/h wird aufgeteilt (Infiltration {1}, Nutzerlüftung {2})</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_OHNE" xml:space="preserve">
+    <value>keine Vorlage dieses Namens — bleibt</value>
+  </data>
+  <data name="KOND_FRAGE_VORLAGE_ALLE_GESPERRT" xml:space="preserve">
+    <value>gesperrt — {0}</value>
+  </data>
+  <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
+    <value>Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens als Herkunft tragen; leer = keine gemeinsame.</value>
+  </data>
 </root>
 

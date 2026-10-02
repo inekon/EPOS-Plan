@@ -43,6 +43,12 @@ namespace WindowsFormsApplication1
     /// <c>infiltration</c>, <c>nutzerlueftung</c>, <c>gewinne</c>). Leer heißt an der Zone „wie
     /// Gebäude". Die Vorlage einer Größe führt die Zonenkarte nicht — die Karten der Zone bieten keine
     /// Vorlagen.</para>
+    /// <para><b>Die Abkürzung „alle Größen"</b> (E57; Stufe KP2, Welle U5): <c>kond_vorlage_alle</c> steht vor den
+    /// Spalten — die Liste in der Kopfzelle der Zeile „Vorlage", keine Zelle und keine Größe
+    /// (<see cref="Teil.VorlageAlle"/>, <see cref="Feld.Groessenplatz"/> −1). Eine WAHL aus jedem Namen, der in
+    /// mindestens einer der fünf Listen steht; Setzen stellt die EINE Rückfrage für alle Größen, die der Anwender
+    /// selbst beantwortet (wie bei <c>kond_&lt;größe&gt;_vorlage</c>), Lesen nennt die gemeinsame Herkunft. Am
+    /// Gebäude und Katalogbau, nicht an der Zone.</para>
     /// </remarks>
     public static class KiKonditionierungsfelder
     {
@@ -51,6 +57,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Typname der Sichtklasse des Zonendialogs, die die Zonenkarte als Feldtafel beantwortet.</summary>
         public const string ZONENSICHT = "ZonenKiSicht";
+
+        /// <summary>
+        /// Der Schlüssel der Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" (E57; Stufe KP2,
+        /// Welle U5) — die Liste „alle Größen" in der Kopfzelle der Zeile „Vorlage".
+        /// </summary>
+        public const string VORLAGE_ALLE = "kond_vorlage_alle";
 
         /// <summary>Was ein Feld an seiner Zelle trägt.</summary>
         public enum Teil
@@ -77,7 +89,13 @@ namespace WindowsFormsApplication1
             /// Die Woche des angelegten Kalenders der Größe als Text (Karte im Einzelnen, Welle U3; keine
             /// Zelle): 168 Werte oder ein Wert der Grundangabe.
             /// </summary>
-            Woche
+            Woche,
+
+            /// <summary>
+            /// Die gleichnamige Vorlage in allen Größen (Abkürzung nach E57, Welle U5): die Liste „alle Größen"
+            /// in der Kopfzelle der Zeile „Vorlage" — keine Zelle und keine Größe.
+            /// </summary>
+            VorlageAlle
         }
 
         /// <summary>Ein Feld der Karte: Schlüssel, Zelle (Größe, Zeile) und Teil.</summary>
@@ -95,11 +113,17 @@ namespace WindowsFormsApplication1
             /// <summary>Der Feldname des Katalogs und zugleich der Schlüssel der Tafel.</summary>
             public string Schluessel { get; }
 
-            /// <summary>Die Größe (Spalte der Matrix).</summary>
+            /// <summary>
+            /// Die Größe (Spalte der Matrix); an der Abkürzung „alle Größen" (<see cref="Teil.VorlageAlle"/>)
+            /// ohne Bedeutung — dort steht die erste, und <see cref="Groessenplatz"/> ist −1.
+            /// </summary>
             public Konditionierungsgroesse Groesse { get; }
 
-            /// <summary>Der Platz der Größe in <see cref="Konditionierungsgroessen.Alle"/> — die Spalte der Oberfläche.</summary>
-            public int Groessenplatz => IndexIn(Konditionierungsgroessen.Alle, Groesse);
+            /// <summary>
+            /// Der Platz der Größe in <see cref="Konditionierungsgroessen.Alle"/> — die Spalte der Oberfläche;
+            /// <c>-1</c> = keine Größe (<see cref="Teil.VorlageAlle"/>).
+            /// </summary>
+            public int Groessenplatz => Teil == Teil.VorlageAlle ? -1 : IndexIn(Konditionierungsgroessen.Alle, Groesse);
 
             /// <summary>
             /// Der Platz der Zeile in <see cref="DbWerte.KOND_ZEILEN"/> — die Zeile der Oberfläche; <c>-1</c> =
@@ -193,6 +217,11 @@ namespace WindowsFormsApplication1
         private static List<Feld> Bauen(bool zone)
         {
             var felder = new List<Feld>();
+
+            // Die Abkürzung „alle Größen" (E57, Welle U5) steht vor den Spalten: die Liste in der Kopfzelle der
+            // Zeile „Vorlage". An der Zone bietet die Karte keine Vorlagen - kein Knopf, also kein Feld.
+            if (!zone) felder.Add(new Feld(VORLAGE_ALLE, Konditionierungsgroessen.Alle[0], -1, Teil.VorlageAlle, false));
+
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
                 // An der Zone ist die Kuehlspalte gesperrt (Zonenregel, bis KU3).
@@ -280,6 +309,10 @@ namespace WindowsFormsApplication1
             string groesse = Groessenname(f.Groesse);
             string pfad = (zone ? ZONENSICHT : SICHT) + "." + f.Schluessel;
             CultureInfo c = CultureInfo.CurrentCulture;
+            if (f.Teil == Teil.VorlageAlle)
+                return new KiDialogFeld(f.Schluessel, pfad,
+                                        MyResource.Resource.KOND_LBL_ZEILE_VORLAGE + " · " + MyResource.Resource.KOND_LBL_VORLAGE_ALLE,
+                                        KiParameterTyp.Wahl, MyResource.Resource.KOND_TXT_KI_VORLAGE_ALLE);
             if (f.Teil == Teil.Vorlage)
                 return new KiDialogFeld(f.Schluessel, pfad, groesse + " · " + MyResource.Resource.KOND_LBL_ZEILE_VORLAGE,
                                         KiParameterTyp.Wahl, string.Format(c, MyResource.Resource.KOND_TXT_KI_VORLAGE, groesse));

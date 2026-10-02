@@ -379,9 +379,10 @@ public class KiDialogkatalogTests : IDisposable
         // KP2 U2: Die Vorlagenlisten der fünf Kalenderkarten kennt nur der Wirt (seine Bearbeitung
         // des Reiters); die Tafel der Sichtklasse hat keine Begleiteigenschaft, der Wirt meldet sie an.
         // KP2 U4: ebenso die Verwaltung - ihr Blatt „Konditionierung" trägt dieselben Karten
-        // (KonditionierungKiTafel.Vorlagenlisten).
+        // (KonditionierungKiTafel.Vorlagenlisten). KP2 U5 (E57): dazu die Liste „alle Größen" der Zeile
+        // „Vorlage" - jeder Name aus mindestens einer der fünf Listen.
         KiMaskennamen.GEBAEUDE_KATALOG or KiMaskennamen.GEBAEUDE_ADMIN
-                                           => new[] { "kond_heizen_vorlage", "kond_kuehlen_vorlage",
+                                           => new[] { "kond_vorlage_alle", "kond_heizen_vorlage", "kond_kuehlen_vorlage",
                                                       "kond_lueftung_vorlage", "kond_geraete_vorlage",
                                                       "kond_personen_vorlage" },
 
@@ -1226,9 +1227,9 @@ public class KiDialogkatalogTests : IDisposable
         // mit E47 der Energiestandard (Wahl nach der Verwendung); mit KP2 U1 die 36 Felder der
         // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse); mit KP2 U2
         // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen"); mit KP2 U3 je Größe die
-        // Woche als Text (Karte im Einzelnen).
-        Assert.Equal(88 + 46, d.Felder.Count);
-        Assert.Equal(46, KiKonditionierungsfelder.Alle.Count);
+        // Woche als Text (Karte im Einzelnen); mit KP2 U5 die Abkürzung „alle Größen" (kond_vorlage_alle, E57).
+        Assert.Equal(88 + 47, d.Felder.Count);
+        Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
             KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;
