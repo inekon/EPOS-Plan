@@ -4,7 +4,7 @@
 [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) — wortgetreu und in der
 Reihenfolge des Originals hierher ausgelagert. Dort stehen seither nur noch die Regeln, die
 Bedienung und die **aktuelle** Basis
-[`2026-09-30_R30_Stromverbraucher`](../../../Referenzlaeufe/2026-09-30_R30_Stromverbraucher/);
+[`2026-10-02_R31_Rechenwegbefunde`](../../../Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde/);
 hier steht, **welche Basis wann von welcher abgelöst wurde und warum**.
 
 **Was hier beschrieben wird, liegt nicht mehr im Arbeitsbaum.** Die Ordner der Basen sind am

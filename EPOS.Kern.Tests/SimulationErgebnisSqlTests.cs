@@ -291,24 +291,42 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <see cref="StromspeicherStammCtrl.KapazitaetJeProjekt"/> — der 5-kWh-Rueckfall
-        /// der Autarkiekachel. Er stand bis iU9-W11a.2 in der Navigationsklasse
-        /// (Befund W11-B45) und gilt fuer jedes Projekt ohne Speicher.
+        /// <see cref="StromspeicherStammCtrl.KapazitaetJeProjekt"/> — ohne Stromspeicher im
+        /// Projekt rechnet die Autarkie-Analyse mit 0 kWh (Anwenderentscheid „Ohne Speicher =
+        /// 0 kWh!", Papier „Verbesserungen 29.09.2026"); der angenommene 5-kWh-Speicher ist
+        /// gefallen.
         /// </summary>
         [Fact]
-        public void KapazitaetJeProjekt_faellt_ohne_Speicher_auf_fuenf_kWh()
+        public void KapazitaetJeProjekt_ist_ohne_Speicher_null_kWh()
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(StromspeicherStammCtrl.KAPAZITAET_RUECKFALL_KWH,
-                         StromspeicherStammCtrl.KapazitaetJeProjekt(999999));
+            Assert.Equal(0.0, StromspeicherStammCtrl.KAPAZITAET_OHNE_SPEICHER_KWH);
+            Assert.Equal(0.0, StromspeicherStammCtrl.KapazitaetJeProjekt(999999));
+            // Projekt 1018 (BHKW, Kessel, Puffer) fuehrt keinen Stromspeicher: alt 5 kWh, neu 0 kWh.
+            Assert.Equal(0.0, StromspeicherStammCtrl.KapazitaetJeProjekt(1018));
         }
 
         [Fact]
-        public void KapazitaetJeProjekt_ohne_Projekt_faellt_ebenfalls_zurueck()
+        public void KapazitaetJeProjekt_ohne_Projekt_ist_ebenfalls_null_kWh()
         {
-            Assert.Equal(StromspeicherStammCtrl.KAPAZITAET_RUECKFALL_KWH,
-                         StromspeicherStammCtrl.KapazitaetJeProjekt(0));
+            Assert.Equal(0.0, StromspeicherStammCtrl.KapazitaetJeProjekt(0));
+        }
+
+        /// <summary>Ein Projekt MIT Stromspeicher rechnet unverändert mit der Summe seiner Speicher.</summary>
+        [Fact]
+        public void KapazitaetJeProjekt_mit_Speicher_bleibt_die_Summe()
+        {
+            if (!_db.Vorhanden) return;
+
+            double summe = System.Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT IFNULL(SUM(sp.Energie), 0) FROM Tab_Energieanlagen AS a " +
+                "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                new DbParam("?", 1017), new DbParam("?", WizardItemClass.SP_TYP)),
+                System.Globalization.CultureInfo.InvariantCulture);
+
+            Assert.True(summe > 0.0, "Projekt 1017 führt einen Stromspeicher.");
+            Assert.Equal(summe, StromspeicherStammCtrl.KapazitaetJeProjekt(1017), 9);
         }
 
         /// <summary>
@@ -324,7 +342,7 @@ namespace EPOS.Kern.Tests
             double aggregat = StromspeicherStammCtrl.KapazitaetUndLeistung(PROJEKT).Kwh;
 
             if (aggregat > 0.0) Assert.Equal(aggregat, summe, 9);
-            else Assert.Equal(StromspeicherStammCtrl.KAPAZITAET_RUECKFALL_KWH, summe);
+            else Assert.Equal(StromspeicherStammCtrl.KAPAZITAET_OHNE_SPEICHER_KWH, summe);
         }
     }
 }

@@ -335,16 +335,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der RUECKFALL der Dashboard-Kachel, wenn das Projekt keinen Stromspeicher
-        /// fuehrt: 5 kWh (iU9-W11a.2).
+        /// Die Kapazitaet der Autarkie-Analyse, wenn das Projekt keinen Stromspeicher
+        /// fuehrt: 0 kWh — die Analyse rechnet dann OHNE Stromspeicher, und die Seite sagt
+        /// es (Anwenderentscheid „Ohne Speicher = 0 kWh!", Papier „Verbesserungen
+        /// 29.09.2026"). Ein angenommener Speicher, den das Projekt nicht hat, ist kein
+        /// Projektergebnis.
         ///
-        /// <para>Woertlich uebernommen aus <c>TabNavigationManager</c> Z. 154
-        /// (<c>if (speicherKWh == 0) dashForm.speicherKWh = 5;</c>). Der Wert ist eine
-        /// ANZEIGEvorgabe fuer das Was-waere-wenn-Feld der Autarkiekachel und geht
-        /// nirgends in die Datenbank (Befund W11-B32) — er darf deshalb hier stehen und
-        /// nicht in <c>DbWerte</c>.</para>
+        /// <para>Der Wert ist die VORBELEGUNG des Was-waere-wenn-Feldes der Autarkiekachel
+        /// und geht nirgends in die Datenbank (Befund W11-B32) — er darf deshalb hier
+        /// stehen und nicht in <c>DbWerte</c>.</para>
         /// </summary>
-        public const double KAPAZITAET_RUECKFALL_KWH = 5.0;
+        public const double KAPAZITAET_OHNE_SPEICHER_KWH = 0.0;
 
         /// <summary>
         /// Kapazitaet [kWh] und Lade-/Entladeleistung [kW] der Einheit, die auch
@@ -472,8 +473,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die SUMME der Speicherkapazitaeten eines Projekts [kWh], mit dem
-        /// 5-kWh-Rueckfall der Autarkiekachel (iU9-W11a.2, Befund W11-B45).
+        /// Die SUMME der Speicherkapazitaeten eines Projekts [kWh]; ohne Stromspeicher
+        /// <see cref="KAPAZITAET_OHNE_SPEICHER_KWH"/> (0 kWh, kein angenommener Speicher).
         ///
         /// <para><b>Woher sie kommt.</b> Bis hierher stand sie in der
         /// NAVIGATIONSklasse <c>TabNavigationManager</c> (Z. 142-154) — mit einem
@@ -492,7 +493,7 @@ namespace WindowsFormsApplication1
         public static double KapazitaetJeProjekt(int idProjekt)
         {
             double summe = 0.0;
-            if (idProjekt <= 0) return KAPAZITAET_RUECKFALL_KWH;
+            if (idProjekt <= 0) return KAPAZITAET_OHNE_SPEICHER_KWH;
 
             try
             {
@@ -512,7 +513,7 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Die Speicherkapazitaet des Projekts konnte nicht gelesen werden: " + ex.Message);
             }
 
-            return summe == 0.0 ? KAPAZITAET_RUECKFALL_KWH : summe;
+            return summe > 0.0 ? summe : KAPAZITAET_OHNE_SPEICHER_KWH;
         }
 
         // =================================================================================

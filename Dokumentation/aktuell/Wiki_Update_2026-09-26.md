@@ -251,6 +251,10 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Monatssäulen der Autarkie-Analyse folgen den Kalendermonaten. (#655)
 - Projekte mit zehn Wärmepumpen werden gerechnet, mehr werden mit einer Meldung abgelehnt; eine unbrauchbare CSV-Quelle meldet der Lauf als Warnung. (#655)
 - Der Gebäudedialog nennt den Grund, wenn sich kein Wärmebedarf berechnen lässt. (#655)
+- Der IFC-Import liest Räume, Geschosse und Bauteile auch aus CAD-Exporten, die sie über das Enthaltensein anhängen, und übernimmt Flächen, Volumen, U-Werte, Außen- und Innenlage und Himmelsrichtung ersatzweise aus den Eigenschaften der Datei; welcher Wert galt, steht im Importprotokoll. (#657)
+- Die Autarkie-Analyse rechnet ohne Stromspeicher im Projekt mit 0 kWh und sagt es. (#659)
+- Die untere Grenzleistung im Projekt-BHKW gilt vor Katalog- und Projektwert, in allen Betriebsarten. (#659)
+- Ein Bedarfsprofil ohne Typ wird mit Meldung übersprungen; die übrigen Profile werden vollständig gerechnet. (#659)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

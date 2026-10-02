@@ -253,7 +253,7 @@
                                            GruppeFerienEnde="@Beschriftungen.GruppeFerienEnde"
                                            Ferienzeitraeume="@Beschriftungen.Ferienzeitraeume"
                                            LabelTag="@Beschriftungen.LabelTag" LabelMonat="@Beschriftungen.LabelMonat"
-                                           JaText="@JaText" NeinText="@NeinText"
+                                           JaText="@JaText" NeinText="@NeinText" EntprellungMs="@EntprellungMs"
                                            Geaendert="Nachziehen" FehlerZustand="BeiFehlerzustand" />
                 </div>
             }
@@ -414,7 +414,7 @@
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
 
-    /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
+    /// <summary>Entprellung der Herleitung und der Kartenvorschau im Blatt „Konditionierung“ [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>Der Dialog ist zu Ende — immer <c>true</c>: Jede Aktion hat bereits geschrieben.</summary>

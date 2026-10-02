@@ -2528,6 +2528,67 @@ namespace WindowsFormsApplication1
         public const string ANLAGENKOPPLUNG_AK3 = "AK3";
 
         // =====================================================================
+        // Aufheizoptimierung, Stufe KP3 (Entwurf KP3 Abschnitt 4; Schemaschritte
+        //   KP-S2 an Tab_Einstellungen und KP-S3 an Tab_ErgebnisGebaeude und
+        //   Tab_ErgebnisZone). Persistenzwerte, eingefroren und ASCII (in SQL
+        //   verglichen, Quelle der CHECK-Klauseln). NULL heisst in der
+        //   Projekteinstellung „die Vorgabe", im Ergebnis „Schalter aus".
+        // =====================================================================
+
+        /// <summary>
+        /// Bemessung der Aufheizzeit (a): an der kältesten Stunde des Referenzjahres
+        /// (<c>Tab_Einstellungen.Aufheiz_Bemessung</c>). <b>Auch NULL bedeutet (a)</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE = "STUNDE";
+
+        /// <summary>Bemessung der Aufheizzeit (b): an der kältesten Stunde abzüglich ΔT_K (<c>Aufheiz_Abzug_K</c>).</summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE_ABZUG = "STUNDE_ABZUG";
+
+        /// <summary>Die zwei Bemessungsvarianten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_BEMESSUNGEN = new[]
+        {
+            AUFHEIZ_BEMESSUNG_STUNDE, AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+        };
+
+        /// <summary>
+        /// Art der Aufheizzeit: täglich neu aus der Außenluft des Tages
+        /// (<c>Tab_Einstellungen.Aufheiz_Art</c>). <b>Auch NULL bedeutet TAEGLICH</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_ART_TAEGLICH = "TAEGLICH";
+
+        /// <summary>Art der Aufheizzeit: fest, jeden Tag die bemessene Aufheizzeit.</summary>
+        public const string AUFHEIZ_ART_FEST = "FEST";
+
+        /// <summary>Die zwei Arten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST
+        };
+
+        /// <summary>Zustand der Aufheizrechnung im Ergebnis: bemessen (Festlegung 25).</summary>
+        public const string AUFHEIZ_ZUSTAND_BEMESSEN = "BEMESSEN";
+
+        /// <summary>Zustand: der Bemessungsfall ist mit keiner Rampe bis 48 h erreichbar (W1); t_auf,max bleibt NULL.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNERREICHBAR = "UNERREICHBAR";
+
+        /// <summary>Zustand: das Gebäude rechnet gekoppelt (W5) — nur am Gebäude.</summary>
+        public const string AUFHEIZ_ZUSTAND_GEKOPPELT = "GEKOPPELT";
+
+        /// <summary>Zustand: die Zone ist unbeheizt, ohne Rampe — nur an der Zone.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNBEHEIZT = "UNBEHEIZT";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Heizleistungsgrenze der Zone.</summary>
+        public const string AUFHEIZ_QUELLE_GRENZE = "GRENZE";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Zielleistung (1 + ρ)·Φ_stat.</summary>
+        public const string AUFHEIZ_QUELLE_ZIEL = "ZIEL";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: Zonen verschiedener Quelle — nur am Gebäude.</summary>
+        public const string AUFHEIZ_QUELLE_GEMISCHT = "GEMISCHT";
+
+        // =====================================================================
         // Anlagenkopplung, Kaelteseite (Entscheid E37, Konzept Anlagenkopplung
         //   8.1, KAK-S1). Persistenzwerte der Spalte
         //   Tab_Gebaeude(_STAMM).Kuehl_Uebergabe_Art, eingefroren und ASCII.

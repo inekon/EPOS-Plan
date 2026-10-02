@@ -113,7 +113,7 @@ Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|B
 
 '''Die Zuordnung gilt über die ID.''' Jede Zuordnungszeile des Projekts zeigt auf ihre Projektkopie — wie bei Brauchwasser und Prozesswaerme. Kopf- und Typsatz werden nur im eigenen Projekt gelesen, und die gepflegte Jahressumme der Zuordnungszeile skaliert genau diese Kopie; ein gleichnamiges Profil eines anderen Projekts rechnet nicht mit.
 
-'''Bricht die Profilrechnung ab''' — kein Typbezug, unlesbare Monats- oder Wochenfelder —, '''bricht der ganze Simulationslauf ab''': Ein Ergebnis mit leerem Stromprofil saehe vollstaendig aus und waere keines.
+Ein Profil '''ohne Typbezug''' geht mit '''Anteil 0''' ein und wird gemeldet; die uebrigen Profile rechnen vollstaendig. '''Bricht die Profilrechnung ab''' — unlesbare Monats- oder Wochenfelder —, '''bricht der ganze Simulationslauf ab''': Ein Ergebnis mit leerem Stromprofil saehe vollstaendig aus und waere keines.
 
 === 2. Von Stunden auf Viertelstunden ===
 

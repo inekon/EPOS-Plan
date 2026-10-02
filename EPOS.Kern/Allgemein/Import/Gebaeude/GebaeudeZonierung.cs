@@ -684,7 +684,8 @@ namespace WindowsFormsApplication1
                     seiten.Add(new Seite { Kennung = n.Kennung, Raum = n.Kennung, Zone = ZoneOderArt(n.Kennung), Lage = s.Randbedingung });
                 return seiten;
             }
-            if (s.HuelleOhneNachbar && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich))
+            if (s.HuelleOhneNachbar && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich
+                                        || s.Randbedingung == Randbedingung.Unbeheizt))
             {
                 // Ohne Raumgrenze: die Zone des Geschosses (Z4), sonst die erste beheizte Zone.
                 int zone = Zonen.FindIndex(z => z.IstBeheizt && s.GeschossKennung != null && z.Raeume.Any(r => r.GeschossKennung == s.GeschossKennung));
@@ -787,7 +788,9 @@ namespace WindowsFormsApplication1
             if (!unbekannt)
             {
                 // Das Gegenüber aus den Nachbarn des Bauteils (die Einordnung der Einzonen-Zuordnung).
-                ohne = !s.Nachbarn.Any(n => n.Kennung != x.Raum) && !s.Grenzen.Any(g => g.RaumKennung != null && g.RaumKennung != x.Raum);
+                // Ein Hüllbauteil ohne Nachbarraum gegen unbeheizt nennt sein Gegenüber durch die Angrenzung der Datei.
+                ohne = !s.HuelleOhneNachbar
+                       && !s.Nachbarn.Any(n => n.Kennung != x.Raum) && !s.Grenzen.Any(g => g.RaumKennung != null && g.RaumKennung != x.Raum);
             }
             teile.Add(new Zonenflaeche
             {

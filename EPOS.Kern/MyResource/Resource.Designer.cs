@@ -35728,6 +35728,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Außenbauteil an Außenluft übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_AUSSEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als erdberührtes Bauteil übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_ERDREICH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Innenbauteil übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_INNEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Bauteil gegen einen unbeheizten Raum übernommen (Kellerdecke als Boden, oberste Geschossdecke als Decke der Zone). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} ist keiner Angrenzung zugeordnet — es gilt die Vorgabe der Bauteilart (Dach außen, Bodenplatte erdberührt, sonst unbestimmt). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_AZIMUT_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_AZIMUT_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr aus „{0}“ gelesen: {1}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_TEXT {
@@ -35742,6 +35796,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_BAUJAHR_UNLESBAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL", resourceCulture);
             }
         }
         
@@ -35971,11 +36034,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_MENGE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_MENGE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_NETTOFLAECHE_NEGATIV {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_NETTOFLAECHE_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Raumgrenze tragen {1} = FALSE — sie zählen nicht zur Hüllfläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NICHT_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NICHT_HUELLE", resourceCulture);
             }
         }
         
@@ -35994,6 +36075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
             }
         }
         
@@ -36115,6 +36205,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Trennfläche zwischen {0} und {1} ist von beiden Seiten verschieden groß ({2} m² und {3} m²) — die größere zählt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH {
@@ -36174,6 +36273,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_UNBEHEIZT_NAME {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_UNBEHEIZT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile: {1}.{2} nennt die Einheit {3} statt W/(m²K) — der Wert gilt nicht als U-Wert; {4} davon bleiben ohne U-Wert aus der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UWERT_EINHEIT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UWERT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Pset_*Common.ThermalTransmittance — der U-Wert stammt aus {1}.{2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UWERT_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UWERT_RUECKFALL", resourceCulture);
             }
         }
         
@@ -76530,6 +76647,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW (alle Module) ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_ALLE_MODULE {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_ALLE_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenfeld ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkatalog ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_KATALOG {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationskonfiguration ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_EBENE_PROJEKT {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_EBENE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW „{0}“ ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZE_MODUL {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZE_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die untere Grenzleistung von {1} % ({2}) ist ungültig – zulässig sind höchstens 100 %. Der Wert bleibt unberücksichtigt; es gilt eine Untergrenze von {3} %. ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht. ähnelt.
         /// </summary>
         public static string SIMENG_BHKW_MAX_UEBERSCHRITTEN {
@@ -76566,7 +76737,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Der Eintrag wird übersprungen, sein Anteil bleibt 0; die übrigen Einträge werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT {
             get {
@@ -77826,7 +77997,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_PROZESSWAERME_TYP_UNDEFINIERT {
             get {
@@ -78114,7 +78285,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Das Profil wird übersprungen, sein Anteil bleibt 0; die übrigen Profile werden vollständig gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFIL_TYP_UNDEFINIERT {
             get {
@@ -78501,7 +78672,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Modul, das weder im Anlagenfeld noch im Katalog eine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0. ähnelt.
         /// </summary>
         public static string SIMERG_HRL_UNTERE_LEISTUNGSGRENZE {
             get {
@@ -78837,6 +79008,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZVERLUSTE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Stromspeicher gerechnet (0 kWh). Eine Kapazität im Feld zeigt, was ein Speicher bringen könnte. ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_OHNE_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_OHNE_STROMSPEICHER", resourceCulture);
             }
         }
         
@@ -101770,6 +101950,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_VERL_ZU_VIELE {
             get {
                 return ResourceManager.GetString("WIRT_VERL_ZU_VIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_DECKEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; die § 9b-Korrektur rechnet mit dem Regelsatz der Stromsteuer von {0} €/MWh statt {1} €/MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_VERMIEDEN_9B_REGELSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_VERMIEDEN_9B_REGELSATZ", resourceCulture);
             }
         }
         

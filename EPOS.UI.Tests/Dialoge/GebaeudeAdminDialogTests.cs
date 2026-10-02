@@ -165,6 +165,9 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             .Add(x => x.Katalogzeilen, () => Zeilen(pr.Katalog))
             .Add(x => x.Schloss, schloss)
             .Add(x => x.Konditionierung, konditionierung)
+            // Die Vorschau der Kalenderkarten sofort: Eine entprellte Vorschau rechnet nach 400 ms auf dem
+            // Dispatcher - unter Last mitten im Fall, und ein Klick des Falls läuft dann erst hinterher.
+            .Add(x => x.EntprellungMs, 0)
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Filterstandvorgabe, filterstand ?? new Katalogfilterstand())
             .Add(x => x.Satz, name =>

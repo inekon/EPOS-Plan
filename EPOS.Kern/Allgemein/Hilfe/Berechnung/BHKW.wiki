@@ -29,7 +29,9 @@ Der erzeugte Strom deckt zuerst den Strombedarf des Projekts; was darüber hinau
 |-
 | Gesamtwirkungsgrad (elektrisch + thermisch) || — bzw. % || BHKW-Katalog, Feld „Wirkungsgrad"
 |-
-| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; steht dort 0, gilt die projektweite Leistungsuntergrenze. Das Feld „Untere Grenzleistung des ausgewählten Moduls" der Projektzeile geht nicht in die Rechnung ein
+| Untere Grenzleistung des Moduls (Anlage) || % || Projektzeile des BHKW, Feld „Untere Grenzleistung des ausgewählten Moduls"; steht dort ein Wert über 0, gilt er vor Katalog und Projekt
+|-
+| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; gilt, wenn die Projektzeile keinen Wert führt; steht auch dort 0, gilt die projektweite Leistungsuntergrenze
 |-
 | Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Karte des BHKW, „Konfiguration…", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
 |-
@@ -61,6 +63,8 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 | <math>P_{\mathrm{el}}</math> || elektrische Nennleistung des Moduls || kW || BHKW-Katalog, Feld „P elektrisch"
 |-
 | <math>\eta</math> || Gesamtwirkungsgrad, elektrisch und thermisch zusammen || — || BHKW-Katalog, Feld „Wirkungsgrad"
+|-
+| <math>x_{\mathrm{Anl}}</math> || untere Grenzleistung des Moduls in der Projektzeile || % || Projektzeile des BHKW, Feld „Untere Grenzleistung des ausgewählten Moduls"
 |-
 | <math>x_{\mathrm{Kat}}</math> || Grenzleistung des Geräts (kleinste zulässige Teillast) || % || BHKW-Katalog, Feld „Grenzleistung"
 |-
@@ -141,19 +145,21 @@ Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad 
 :: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
 :: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
 
-Die '''Modulationsgrenze''' ist ein Faktor (0,5 = 50&nbsp;% Teillast). Sie kommt aus dem Katalog, sofern dort ein Wert steht; sonst gilt die projektweite Leistungsuntergrenze. Beide Werte werden als '''Prozentangaben''' gepflegt und durch 100 geteilt:
+Die '''Modulationsgrenze''' ist ein Faktor (0,5 = 50&nbsp;% Teillast). Sie kommt aus der Projektzeile des Moduls, sofern dort ein Wert steht; sonst aus dem Katalog; sonst gilt die projektweite Leistungsuntergrenze. Alle drei Werte werden als '''Prozentangaben''' gepflegt und durch 100 geteilt:
 
-: <math>\displaystyle x_{\mathrm{min}} = \begin{cases} \frac{x_{\mathrm{Kat}}}{100} & x_{\mathrm{Kat}} > 0 \\ \frac{x_{\mathrm{Proj}}}{100} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(2)
+: <math>\displaystyle x_{\mathrm{min}} = \begin{cases} \frac{x_{\mathrm{Anl}}}{100} & 0 < x_{\mathrm{Anl}} \le 100 \\ \frac{x_{\mathrm{Kat}}}{100} & \text{sonst, wenn } 0 < x_{\mathrm{Kat}} \le 100 \\ \frac{x_{\mathrm{Proj}}}{100} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(2)
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze als Faktor, 0,5 = 50&nbsp;% Teillast [–]
+:: <math>x_{\mathrm{Anl}}</math> – untere Grenzleistung des Moduls in der Projektzeile [%]
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze der Simulationskonfiguration [%]
 
-: <math>\displaystyle x_{\mathrm{Kat}} = 0 \;\text{und}\; x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = 0</math> &nbsp;&nbsp;(3)
+: <math>\displaystyle x_{\mathrm{Anl}} = 0 \;\text{und}\; x_{\mathrm{Kat}} = 0 \;\text{und}\; x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = 0</math> &nbsp;&nbsp;(3)
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze als Faktor [–]
+:: <math>x_{\mathrm{Anl}}</math> – untere Grenzleistung des Moduls in der Projektzeile [%]
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze [%]
 
-Gleichung (2) gilt je Modul in der '''wärmegeführten''' Fahrweise. '''Stromgeführt''' und '''ohne Einspeisung''' rechnen alle Module mit der projektweiten Grenze <math>x_{\mathrm{Proj}}/100</math>; der Katalogwert <math>x_{\mathrm{Kat}}</math> zählt dort nicht. Führt weder der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der '''sichtbare''' Wert: Ein neues Projekt startet mit <math>x_{\mathrm{Proj}} = 30</math>&nbsp;%. Eine ausdrücklich gepflegte 0 bleibt 0.
+Gleichung (2) gilt je Modul und in '''allen drei Fahrweisen''' — wärmegeführt, stromgeführt und ohne Einspeisung rechnen mit derselben Untergrenze. Ein Wert über 100&nbsp;% ist '''ungültig''' (mit ihm liefe das Modul nie an): Der Lauf meldet ihn im Simulationsprotokoll mit Modul, Wert und Herkunft und rechnet mit der nächsten Stufe von (2); ist die projektweite Grenze selbst ungültig, gibt es keine Untergrenze. Führt weder die Projektzeile noch der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der '''sichtbare''' Wert: Ein neues Projekt startet mit <math>x_{\mathrm{Proj}} = 30</math>&nbsp;%. Eine ausdrücklich gepflegte 0 bleibt 0.
 
 === Schritt 2 — Die drei Fahrweisen ===
 

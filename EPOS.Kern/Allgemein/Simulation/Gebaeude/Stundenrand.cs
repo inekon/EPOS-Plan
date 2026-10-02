@@ -170,7 +170,9 @@
     ///
     /// <para><b>Anlagenkopplung (AK1).</b> Mit Übergabe trägt die Stunde zusätzlich Vorlauf,
     /// Rücklauf zur GELIEFERTEN Leistung (H6), den überwiegenden Begrenzungsgrund und die
-    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null. Mit Kühlübergabe
+    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null — bis auf den
+    /// Kappungsanteil <see cref="HeizleistungMaxAnteil"/>, den jede Stunde trägt (Entwurf KP3,
+    /// Festlegung 20). Mit Kühlübergabe
     /// (Schritt K, E37) trägt sie dasselbe für die Kälteseite, je Seite getrennt.</para>
     /// </summary>
     internal readonly struct Stundenergebnis
@@ -278,7 +280,10 @@
         /// <summary>Zeitanteil der Stunde, in dem die Übergabe die Grenze war [–], 0 … 1.</summary>
         internal double UebergabeBegrenztAnteil { get; }
 
-        /// <summary>Zeitanteil der Stunde, in dem <c>Heizleistung_Max</c> gekappt hat [–].</summary>
+        /// <summary>
+        /// Zeitanteil der Stunde, in dem <c>Heizleistung_Max</c> gekappt hat [–], 0 … 1 — mit und ohne
+        /// Übergabe (Entwurf KP3, Befund B1, Festlegung 20).
+        /// </summary>
         internal double HeizleistungMaxAnteil { get; }
 
         /// <summary>Zeitanteil der Stunde an der Heizgrenze der Übergabe [–] (Heizkurve aus oder Vorlauf nicht über der Raumluft).</summary>

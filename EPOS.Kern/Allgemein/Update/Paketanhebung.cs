@@ -221,6 +221,12 @@ namespace WindowsFormsApplication1
             // stempelt im Ziel - dessen Trigger feuern beim Einfügen der Projektzeilen.
             new Stufe(KostenStempelSchema.SCHRITT, Art.Ddl,
                       "Änderungsstempel für Kosten, Preise und Kostenkatalog (zwei Spalten und ihre Trigger)"),
+            // KP-S2 und KP-S3 (Entwurf KP3 Abschnitt 4): reine Spalten. Ein Paket davor kommt mit dem
+            // Schalter 0 (Spaltenvorgabe) und leeren Aufheizspalten an - „aus", wie es gerechnet hat.
+            new Stufe(AufheizvorgabeSchema.SCHRITT, Art.Ddl,
+                      "Aufheizoptimierung als Projekteinstellung (Schalter, Bemessung, Abzug, Reserve, Art)"),
+            new Stufe(AufheizErgebnisSchema.SCHRITT, Art.Ddl,
+                      "Ergebnisspalten der Aufheizoptimierung je Gebäude und Zone"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
