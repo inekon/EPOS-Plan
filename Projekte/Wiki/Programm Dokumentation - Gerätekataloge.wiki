@@ -31,7 +31,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 * '''Thermische Leistung''' – in kW.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Wirkungsgrad Gas, Biogas, Holz und Sonstiges''' und '''Wirkungsgrad Öl''' – je als Faktor (z. B. 0,9).
-* '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt; die Simulation rechnet sie in jeder Stunde, in der der Kessel stillsteht und betriebsbereit ist, als Brennstoffeinsatz (siehe [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]).
+* '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt oder in Prozent der thermischen Leistung, je nach ''Einheit Bereitschaftsverlust''; die Simulation rechnet sie in kW in jeder Stunde, in der der Kessel stillsteht und betriebsbereit ist, als Brennstoffeinsatz (siehe [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]).
 * '''Brennwertkessel''' – ein Schalter.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 * Gruppe '''Kennlinie''' – die Daten einer Teillast- und Brennwertkennlinie. Ein leeres Feld heißt „Vorgabe“, nicht 0; der Platzhalter im Feld sagt es.

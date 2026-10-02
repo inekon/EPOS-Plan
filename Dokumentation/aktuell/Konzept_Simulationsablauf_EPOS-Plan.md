@@ -928,8 +928,17 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 | Zustand der Stunde | Brennstoffeinsatz |
 |---|---|
 | läuft (Abgabe ab dem Zahlenrand von 10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer; ein Rest darunter aus einer Vorstufe zählt nicht als Lauf) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
-| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust`, eine Leistung, kein Prozentwert) |
+| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust` in der Einheit `Bereitschaft_Einheit`, siehe unten) |
 | steht still und ist abgeschaltet | 0 |
+
+**Die Bereitschaftsleistung in ihrer Einheit.** Katalog und Projektkopie führen den Wert
+`Betriebsbereitschaftverlust` und seine Einheit `Bereitschaft_Einheit` (Schemaschritt 160,
+`KesselBereitschaftEinheitSchema`): `kW` — Vorgabe jeder Bestandszeile und die Einheit des Imports
+aus VDI 3805 — oder `%` der Nennleistung. Der Lauf rechnet in kW; die Umrechnung steht einmal in
+`KesselBereitschaft.LeistungKw` (bei `%`: Wert × `Ptherm` / 100, ohne Nennleistung 0), gerufen beim
+Einlesen des Kessels (`SimulationSPK.BereitschaftsleistungKw`). Die Prüfgrenzen je Einheit
+(`KesselBereitschaft.Verstoss`: kW 0 … Nennleistung, % 0 … 100) halten Katalogeditor und
+Katalogbrowser beim Speichern. Ein Import überschreibt mit seinem kW-Wert auch die Einheit.
 
 **Betriebsbereit** ist ein stillstehender Kessel (`SimulationSPK.IstBetriebsbereit`), wenn
 
@@ -1012,7 +1021,8 @@ höchste Stundenwert des Brennstoffs (Wärmeabgabe ÷ Wirkungsgrad plus Anfahrve
 die Summe dieser Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
-Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
+`EPOS.Kern.Tests/KesselKennlinieTests`,
 `EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R30_Stromverbraucher` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
