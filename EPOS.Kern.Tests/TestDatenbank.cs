@@ -843,6 +843,11 @@ namespace EPOS.Kern.Tests
                 // ALTER TABLE loest keinen Stempeltrigger aus.
                 KesselBereitschaftEinheitSchema.Ausfuehren(null);
 
+                // Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+                // Bodenalbedo an Tab_Energieanlagen, nullbar, leer = 0,2. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN DML.
+                AlbedoSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

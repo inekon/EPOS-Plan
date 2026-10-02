@@ -2388,6 +2388,27 @@ namespace Testdatenbankschema
                                   KesselBereitschaftEinheitSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+            //      Bodenalbedo je Anlage - Albedo (REAL, nullbar, Pruefklausel 0 bis 1) an
+            //      Tab_Energieanlagen. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Albedo bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt leer und rechnet mit 0,2.
+            string nrAlbedo = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAlbedo + " - Bodenalbedo je Anlage: " +
+                              (AlbedoSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAlbedo = new List<string>();
+                angelegt += AlbedoSchema.Ausfuehren(berichtAlbedo);
+                foreach (string zeile in berichtAlbedo)
+                    Console.WriteLine("Schritt " + nrAlbedo + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAlbedo + " - vollstaendig: " +
+                                  AlbedoSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

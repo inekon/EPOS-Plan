@@ -923,7 +923,7 @@ Ein '''Eingabefehler''' ist etwas anderes als ein Prüfhinweis: Ein Ladezustands
 
 * '''Netzladung und Netzverkauf''' werden in der Preissteuerung über die Freigaben der Variante gesteuert. Die Lastspitzenkappung kann den Speicher innerhalb ihres verfügbaren Leistungsspielraums aus dem Netz wieder aufladen.
 
-* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das Simulationsergebnis.
+* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das Simulationsergebnis. Ihr bester Rasterpunkt wird über ''„Beste Variante übernehmen"'' zur Flotte der Auslegung und für den Projektlauf aktiviert; gerechnet wird er erst im nächsten Projektlauf, damit das Simulationsergebnis immer das Ergebnis eines Laufs mit gespeicherten Eingaben bleibt.
 
 Zusätzlich für die '''Speicherflotte''':
 

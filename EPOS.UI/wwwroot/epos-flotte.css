@@ -769,6 +769,16 @@
     color: var(--epos-text-leise);
 }
 
+/* „BESTE VARIANTE UEBERNEHMEN“ unter dem Kasten (SP2): der Knopf und seine
+   leise Erklaerzeile nebeneinander, im schmalen Fenster untereinander. */
+.epos-flotte-bestes__handlung {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 0.75rem;
+}
+
 /* DIE PHASENMARKE am Kasten: aus welcher Phase der beste Kandidat stammt. */
 .epos-flotte-phasenmarke {
     margin-left: 0.5rem;

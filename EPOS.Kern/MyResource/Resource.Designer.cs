@@ -2198,6 +2198,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_HINWEIS_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_HINWEIS_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo [-]: ähnelt.
+        /// </summary>
+        public static string ANLAGE_LABEL_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_LABEL_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2. ähnelt.
+        /// </summary>
+        public static string ANLAGE_TIP_ALBEDO {
+            get {
+                return ResourceManager.GetString("ANLAGE_TIP_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -18761,6 +18788,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_BANNER_HINWEISE {
             get {
                 return ResourceManager.GetString("FLOTTE_BANNER_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_BTN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_ERKL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_KEINE_SUCHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_KEINE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_NULLVARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_NULLVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BESTE_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BESTE_MSG_UEBERNOMMEN", resourceCulture);
             }
         }
         
@@ -42956,6 +43037,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ADMSET_WIKI_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ADMSET_WIKI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALBEDO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALBEDO_ERL", resourceCulture);
             }
         }
         

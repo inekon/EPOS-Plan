@@ -281,6 +281,9 @@
         internal static string PvWrWirkungsgradErl => MyResource.Resource.KI_DLG_PV_WR_WIRKUNGSGRAD_ERL;
         internal static string PvSystemverlusteName => MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE;
         internal static string PvSystemverlusteErl => MyResource.Resource.KI_DLG_PV_SYSTEMVERLUSTE_ERL;
+        // Bodenalbedo der Anlage (PV4) - Photovoltaik und Solarthermie teilen Name und Erlaeuterung.
+        internal static string AlbedoName => MyResource.Resource.ANLAGE_LABEL_ALBEDO;
+        internal static string AlbedoErl => MyResource.Resource.KI_DLG_ALBEDO_ERL;
         internal static string PvMitWrName => MyResource.Resource.PVS_WAHL;
         internal static string PvMitWrErl => MyResource.Resource.KI_DLG_PV_MIT_WR_ERL;
 

@@ -358,7 +358,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         new("PufferSpProjektDialog", 20),
-        new("PvModellFelder", 3),
+        new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +

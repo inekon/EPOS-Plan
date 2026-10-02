@@ -140,6 +140,13 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
         set { if (Zeile is ErzeugerZeile z) z.Systemverluste = value; }
     }
 
+    /// <summary>Bodenalbedo vor der Anlage (0…1); <c>null</c> = 0,2.</summary>
+    public double? Albedo
+    {
+        get => Zeile?.Albedo;
+        set { if (Zeile is ErzeugerZeile z) z.Albedo = value; }
+    }
+
     // =====================================================================
     //  Wechselrichter und Stränge (PvStraengeFelder)
     // =====================================================================

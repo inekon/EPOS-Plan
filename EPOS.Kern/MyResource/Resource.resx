@@ -41347,5 +41347,35 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
     <value>Den Wert „{0}“ gibt es nicht; bekannt sind {1}.</value>
   </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Beste Variante übernehmen</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen.</value>
+  </data>
 </root>
 

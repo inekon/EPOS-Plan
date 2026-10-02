@@ -41340,5 +41340,35 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
     <value>The value “{0}” does not exist; known values are {1}.</value>
   </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1: the share of global irradiance the ground reflects onto the tilted surface. Empty means 0.2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Typical albedo: grass 0.2 · concrete 0.3 · light roof 0.5–0.6 · snow 0.7–0.8. Empty = 0.2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Ground albedo in front of the plant, 0 to 1; empty means 0.2 (grass). Typical values: concrete 0.3, light roof 0.5 to 0.6, snow 0.7 to 0.8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Adopt best variant</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>The best variant becomes the fleet of the design and is activated for the project simulation. The simulation result changes only with the next project run.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Best variant adopted: it is the fleet of the design and activated for the project simulation. Please recalculate the project simulation.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>There is no design search whose best variant could be adopted.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>The best variant is “without storage” — there is no fleet to adopt.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Locked: the result no longer matches the current settings, or a run is in progress. Recalculate first.</value>
+  </data>
 </root>
 

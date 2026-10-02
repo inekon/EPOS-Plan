@@ -4832,6 +4832,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT;
 
+        // ---- Entscheidungsvorlage Modellgrenzen, PV4: die Bodenalbedo je Anlage ----
+
+        /// <summary>
+        /// Schritt <see cref="AlbedoSchema.SCHRITT"/> — <b>die Bodenalbedo je Photovoltaik- und
+        /// Solarthermie-Anlage</b>. Er folgt auf <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Energieanlagen</c> die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1). Die Anweisung steht bei <see cref="AlbedoSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt NULL und
+        /// rechnet mit der Vorgabe 0,2; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_ALBEDO = AlbedoSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6961,6 +6977,15 @@ namespace WindowsFormsApplication1
                         "Prozent der Nennleistung muesste von Hand umgerechnet werden. KEIN Rechenergebnis " +
                         "aendert sich - jede Bestandszeile bekommt kW, die Einheit, in der sie rechnet.",
                         Schritt_KesselBereitschaftEinheit),
+            // ENTSCHEIDUNGSVORLAGE MODELLGRENZEN, PV4 - die Bodenalbedo je Anlage: eine nullbare
+            // Spalte an Tab_Energieanlagen. REIN DDL; die Quelle ist AlbedoSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_ALBEDO,
+                        "Tab_Energieanlagen: Bodenalbedo je Anlage (Albedo, 0 bis 1, leer = 0,2)",
+                        "Die Bodenalbedo vor einer Photovoltaik- oder Solarthermie-Anlage liesse sich " +
+                        "nicht pflegen; Fassaden, helle Daecher und Schnee rechneten mit 0,2. Die Spalte " +
+                        "entsteht leer. KEIN Rechenergebnis aendert sich - leer rechnet die Vorgabe 0,2.",
+                        Schritt_Albedo),
         };
 
         /// <summary>
@@ -12328,6 +12353,44 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Einheit des Bereitschaftsverlusts - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Vorgabe kW).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bodenalbedo je Anlage" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ALBEDO"/>, die Anweisung bei <see cref="AlbedoSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AlbedoSchema.Anweisungen</c> nennt nur die fehlende Spalte. Fehlt
+        /// die Anlagentabelle, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Albedo(Lauf l)
+        {
+            string nr = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(AlbedoSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + AlbedoSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AlbedoSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AlbedoSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + AlbedoSchema.SPALTE + " an " + AlbedoSchema.TABELLE +
+                                  " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Bodenalbedo je Anlage - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte angelegt (leer = 0,2).") +
                     " KEIN DML.");
             return true;
         }
