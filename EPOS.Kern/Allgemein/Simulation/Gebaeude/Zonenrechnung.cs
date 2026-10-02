@@ -163,12 +163,15 @@ namespace WindowsFormsApplication1
                 paare.Add(new Zonenpaarzuordnung(a, b, deltaVorlauf[(a, b)], zuordnung[(a, b)], d));
             }
 
-            GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude);
-            summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
-            // Stufe KP3 (Festlegung 22): die Gebaeudewerte aus den Plaenen der Zonen - nur mit Schalter.
+            // Stufe KP3 (Festlegung 22): die Gebaeudewerte aus den Plaenen der Zonen - nur mit Schalter; die
+            // Aufheizwerte des Gebaeudes (Welle R4) mit W3 und Kappung aus den Zonenlaeufen, vor dem Bau des
+            // Gebaeudeergebnisses, weil seine Nutzungszeit die vereinigte Rampenmaske ausnimmt (Festlegung 10).
             Aufheizgebaeude aufheiz = zonen[0].Aufheizplan == null
                 ? null
                 : Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
+            GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude,
+                                                            aufheiz == null ? null : Aufheizergebnis.Gebaeude(aufheiz, ergebnisse));
+            summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
                                          uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
@@ -178,8 +181,10 @@ namespace WindowsFormsApplication1
         /// Die Summe der Zonen als Ergebnis des Gebäudes (Klassenkopf, Festlegung 10): Heizlast und
         /// Kühlbedarf summiert, Temperaturen, Sollwert und θ_max flächengewichtet über die beheizten Zonen.
         /// </summary>
+        /// <param name="aufheizung">Die Aufheizwerte des Gebäudes (Entwurf KP3, Welle R4); <c>null</c> = Schalter aus.</param>
         internal static GebaeudeModellErgebnis Gebaeudeergebnis(IReadOnlyList<ZonenEingang> zonen, IReadOnlyList<GebaeudeModellErgebnis> ergebnisse,
-                                                              Zonenschleife schleife, int index, int idGebaeude)
+                                                              Zonenschleife schleife, int index, int idGebaeude,
+                                                              Aufheizergebnis aufheizung = null)
         {
             var heiz = new double[8760];
             var luft = new double[8760];
@@ -240,7 +245,7 @@ namespace WindowsFormsApplication1
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
                                               schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
-                                              Gebaeudenutzung(zonen));
+                                              Gebaeudenutzung(zonen), aufheizung: aufheizung);
         }
 
         /// <summary>

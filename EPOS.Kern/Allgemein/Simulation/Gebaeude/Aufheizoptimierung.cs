@@ -593,6 +593,54 @@ namespace WindowsFormsApplication1
             return summe;
         }
 
+        // =====================================================================
+        //  Nachweisband im Lauf (W3, Festlegung 19)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Tage des Nachweisbands</b> (W3; Teilkonzept 4.3, Festlegung 19, E58 F1 (b)) — aus dem Plan
+        /// und dem Lauf, rein: Je Sprung das Fenster [h_s − n + 1, h_s + 2], unten über den Ring (eine Rampe
+        /// am 1. Januar liegt in 8 758/8 759), oben bis Stunde 8 759; bei Quelle Grenze schlägt eine Stunde
+        /// mit Kappungsanteil &gt; 0 an, bei Zielleistung eine Stundenleistung &gt; 1,01·P_auf — beides über
+        /// <see cref="Rechenrand"/> (Grundsatz 6). Gezählt wird der Tag der Sprungstunde, nur an Tagen ohne
+        /// W1 und W2 (dort sagt die Formel die Überschreitung selbst voraus). Jeder Sprung zählt, auch mit
+        /// n = 1: Die Wahrheit ist der Lauf (Grundsatz 7). Ohne Bemessung (GEKOPPELT, UNBEHEIZT) 365-mal falsch.
+        /// </summary>
+        /// <param name="heizlastW">Die unskalierte Heizlast des Laufs [W] — P_auf gilt demselben Bau.</param>
+        /// <param name="kappungsanteil">Der Kappungsanteil von <c>Heizleistung_Max</c> je Stunde.</param>
+        internal static bool[] Nachweisbandtage(Aufheizplan plan, double[] heizlastW, double[] kappungsanteil)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            var tage = new bool[365];
+            if (plan.Bemessung == null) return tage;
+            if (heizlastW == null || heizlastW.Length != STUNDEN || kappungsanteil == null || kappungsanteil.Length != STUNDEN)
+                throw new ArgumentException("Heizlast und Kappungsanteil müssen 8760 Stunden führen.");
+
+            var w12 = new bool[365];
+            foreach (Aufheizsprung sp in plan.Spruenge)
+                if (sp.Unerreichbar || sp.Begrenzt) w12[sp.Sprungstunde / 24] = true;
+
+            bool grenze = plan.Bemessung.QuelleGrenze;
+            double band = Aufheizergebnis.NACHWEISBAND * plan.Bemessung.AufheizleistungW;
+            double randBand = Rechenrand.Zu(band), randNull = Rechenrand.Zu(0.0);
+            foreach (Aufheizsprung sp in plan.Spruenge)
+            {
+                int tag = sp.Sprungstunde / 24;
+                if (w12[tag] || tage[tag]) continue;
+                int bis = Math.Min(sp.Sprungstunde + 2, STUNDEN - 1);
+                for (int h = sp.Sprungstunde - sp.N + 1; h <= bis; h++)
+                {
+                    int r = Ring(h);
+                    if (grenze ? kappungsanteil[r] > randNull : heizlastW[r] - band > randBand)
+                    {
+                        tage[tag] = true;
+                        break;
+                    }
+                }
+            }
+            return tage;
+        }
+
         private static void Vereinigen(bool[] ziel, bool[] quelle)
         {
             if (quelle == null) return;

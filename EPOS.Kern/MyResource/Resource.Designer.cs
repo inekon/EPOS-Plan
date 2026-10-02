@@ -76809,6 +76809,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W1 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W2): An {0} Tagen begrenzt die Absenkdauer die Rampe — die Absenkung ist dort weitgehend wirkungslos. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W2 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W2): Die maximale Aufheizzeit von {0} h erreicht die kürzeste Absenkdauer der gerampten Sprünge ({1} h) — bei Bemessungswetter ist die Absenkung weitgehend wirkungslos. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W2_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W2_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W3): An {0} Tagen verlässt der Lauf das Nachweisband der Rampe (Kappung durch die Heizleistungsgrenze bzw. Stundenleistung über 1,01 · Aufheizleistung). Die Vorhersage kennt Vorgeschichte, Sonne, innere Gewinne und Lüftungswechsel nicht; der Lauf rechnet weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W3 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W4): {0} Übergänge aus „aus“ bekommen keine Rampe, davon {1} am Beginn der Heizperiode — der Anfangswert der frei schwingenden Zone ist vor dem Lauf unbekannt. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W4 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W5 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW (alle Module) ähnelt.
         /// </summary>
         public static string SIMENG_BHKW_GRENZE_ALLE_MODULE {
