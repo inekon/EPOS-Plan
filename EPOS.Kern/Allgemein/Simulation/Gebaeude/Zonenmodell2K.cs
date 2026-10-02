@@ -122,6 +122,12 @@ namespace WindowsFormsApplication1
     /// Kühlübergabe bleibt die Kühlung des Bestands wörtlich. Gründe und Zeitanteile stehen je
     /// Seite im Ergebnis.</para>
     ///
+    /// <para><b>Der Kappungsanteil</b> (Entwurf KP3, Befund B1, Festlegung 20): Jede Stunde trägt
+    /// den Zeitanteil, in dem <c>Heizleistung_Max</c> gekappt hat (Betriebsfall
+    /// <see cref="Betriebsfall.Heizgrenze"/>), in <see cref="Stundenergebnis.HeizleistungMaxAnteil"/> —
+    /// mit Übergabe wie gehabt aus den Begrenzungsgründen, ohne sie aus einem eigenen Akkumulator.
+    /// Ein neuer Ausgang, keine geänderte Zahl.</para>
+    ///
     /// <para>Ohne Datenbank, ohne Protokoll, ohne Statik, einfädig, durchgehend
     /// <c>double</c>.</para>
     /// </summary>
@@ -302,6 +308,9 @@ namespace WindowsFormsApplication1
             tauJeGrund.Clear();
             Span<double> tauJeGrundKuehl = stackalloc double[GRUENDE];
             tauJeGrundKuehl.Clear();
+            // Der Kappungsanteil von Heizleistung_Max [s] auch im idealen Fall (Entwurf KP3, Befund B1,
+            // Festlegung 20): ein eigener Akkumulator, nur geschrieben, nie in eine andere Summe gelesen.
+            double akkKappung = 0.0;
 
             while (t < STUNDE_S)
             {
@@ -377,6 +386,7 @@ namespace WindowsFormsApplication1
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
                 if (ab.Gekoppelt && ab.K.Seite == Uebergabeseite.Kuehlen) tauJeGrundKuehl[(int)ab.Grund] += tau;
                 else if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
                 // Spiegelbildlich zur Heizseite zählt ein ungekoppelter Abschnitt auf der Kälteseite
@@ -412,7 +422,8 @@ namespace WindowsFormsApplication1
                     akkM2 / STUNDE_S,
                     x.A,
                     x.B,
-                    abschnitte);
+                    abschnitte,
+                    heizleistungMaxAnteil: akkKappung / STUNDE_S);
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
@@ -450,7 +461,9 @@ namespace WindowsFormsApplication1
                 ruecklauf,
                 (Begrenzungsgrund)grund,
                 tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
-                tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
+                // Mit Übergabe wie gehabt aus den Gründen; eine Stunde nur mit Kühlübergabe heizt ideal
+                // und trägt den Anteil aus dem eigenen Akkumulator (Entwurf KP3, Festlegung 20).
+                r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S : akkKappung / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
                 kuehlVorlauf,
                 kuehlRuecklauf,
@@ -534,6 +547,7 @@ namespace WindowsFormsApplication1
             double t = 0.0;
             double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
+            double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
             for (int i = 0; i < n; i++)
             {
                 if (!(t < STUNDE_S))
@@ -580,6 +594,7 @@ namespace WindowsFormsApplication1
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
                 akkS2 += s2 * tau;
@@ -611,7 +626,8 @@ namespace WindowsFormsApplication1
                 akkM2 / STUNDE_S,
                 x.A,
                 x.B,
-                n);
+                n,
+                heizleistungMaxAnteil: akkKappung / STUNDE_S);
         }
 
         /// <summary>
