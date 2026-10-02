@@ -58,7 +58,10 @@ namespace EPOS.Kern.Tests
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.KWKG));
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE));
             Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.ENERGIESTEUER));
-            Assert.True(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG));
+            // Register EZ‑21: Die Befreiung nach § 9 Abs. 1 Nr. 3 StromStG (Modus ERLOES) steht schon in
+            // der Stromgutschrift — der Arbeitspreis, zu dem sie den Eigenstrom gutschreibt, enthält die
+            // Stromsteuer. Die Stromsteuer zählt einmal.
+            Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.PV_VERGUETUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG));
             Assert.False(Waermegestehung.ErloesReiheZaehlt(null));

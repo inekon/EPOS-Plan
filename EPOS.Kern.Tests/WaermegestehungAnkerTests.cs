@@ -37,9 +37,11 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT_WP = 1019;
 
         private static WirtschaftlichkeitErgebnis Rechne(int idProjekt, out VariantenDaten v,
-                                                         out WirtschaftlichkeitParameter p)
+                                                         out WirtschaftlichkeitParameter p,
+                                                         Action<WirtschaftlichkeitParameter> anpassen = null)
         {
             p = new WirtschaftlichkeitCtrl().LadeParameter(idProjekt);
+            anpassen?.Invoke(p);
             v = new VariantenDaten
             {
                 IdProjekt = idProjekt,
@@ -118,6 +120,78 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.23978800641410303, Projektformel(e, v, p), 10);
             Assert.Equal(0.00684209053429058, e.Gestehungskosten.Value, 10);
             Assert.Equal(0.0, e.EnergiekostenJeTraeger.Single(t => t.Netzstrom).WaermeMengeMWh, 12);
+        }
+
+        /// <summary>
+        /// <b>Die Stromsteuer zählt einmal</b> (Register EZ‑21, Befund 1 der Nachlese P646): 1030 mit
+        /// den flachen Stundenreihen des Prüffalls B6 rechnet die Befreiung nach § 9 Abs. 1 Nr. 3
+        /// StromStG — 432,3 MWh KWK-Eigenstrom × 20,50 €/MWh Regelsatz = 8.862,15 €/a. Im Modus
+        /// ERLOES hebt die Reihe den Kapitalwert um ihren Barwert (8.862,15 € × RBF(3 %, 20) =
+        /// 131.846,41 €), die Wärmegestehungskosten nicht: Die Stromgutschrift (432,3 MWh ×
+        /// 0,25 €/kWh = 108.075 €/a) bewertet denselben Eigenstrom zum Arbeitspreis samt
+        /// Stromsteuer. Gestehung in beiden Modi 0,0068421 €/kWh. Nach der Regel der Welle #642
+        /// zählte die Reihe im Modus ERLOES zur Wärme — die Kennzahl lag um 8.862,15 € × RBF ×
+        /// a(3 %, 20) ÷ 6.137.560 kWh = 8.862,15 ÷ 6.137.560 = 0,0014439 €/kWh tiefer (0,0053982).
+        /// </summary>
+        [Fact]
+        public void Im_Modus_ERLOES_zaehlt_die_Stromsteuer_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitErgebnis ausweis = RechneMitStundenreihen(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS,
+                                                                        out VariantenDaten v, out WirtschaftlichkeitParameter p);
+            WirtschaftlichkeitErgebnis erloes = RechneMitStundenreihen(DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                                                       out _, out _);
+            Assert.NotNull(ausweis);
+            Assert.NotNull(erloes);
+            Assert.True(erloes.StromsteuerBefreiungAlsErloes);
+            Assert.Equal(432.3 * 20.50, erloes.StromsteuerBefreiungJahr1, 2);          // 8.862,15 €/a
+            Assert.Equal(432.3 * 1000.0 * 0.25, erloes.GestehungZerlegung.StromgutschriftJahr1, 2);
+
+            // Der Kapitalwert bucht die Reihe (unverändert): + Barwert der flachen Reihe.
+            double rbf = 1.0 / KapitalwertRechner.Annuitaet(p.Zinssatz / 100.0, p.Betrachtungszeitraum);
+            Assert.Equal(erloes.StromsteuerBefreiungJahr1 * rbf,
+                         erloes.Kapitalwert.Value - ausweis.Kapitalwert.Value, 2);     // 131.846,41 €
+
+            // Die Wärmegestehung nicht: dieselbe Zahl in beiden Modi.
+            Assert.Equal(ausweis.Gestehungskosten.Value, erloes.Gestehungskosten.Value, 12);
+            Assert.Equal(0.0068420905342943495, erloes.Gestehungskosten.Value, 10);
+
+            // Die Zahl nach der Regel der Welle #642 — die Befreiung ein zweites Mal als Erlös.
+            double waermeKwh = v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt * 1000.0;
+            Assert.Equal(6137560.0, waermeKwh, 6);
+            Assert.Equal(0.0053982, erloes.Gestehungskosten.Value - erloes.StromsteuerBefreiungJahr1 / waermeKwh, 7);
+        }
+
+        /// <summary>
+        /// 1030 mit den flachen Stundenreihen des Prüffalls B6
+        /// (<see cref="StromsteuerBefreiungModusTests.Stundenreihen"/>) und den beiden Haken des
+        /// § 9 Abs. 1 Nr. 3 StromStG — der einzige Stand der Testdatenbank, an dem die Befreiung
+        /// einen Betrag ergibt; der Modus kommt aus dem Parametersatz.
+        /// </summary>
+        private static WirtschaftlichkeitErgebnis RechneMitStundenreihen(string modus, out VariantenDaten v,
+                                                                       out WirtschaftlichkeitParameter p)
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            p = ctrl.LadeParameter(1030);
+            p.StromsteuerBefreiungModus = modus;
+            p.HocheffizienzNachweis = true;
+            p.RaeumlicherZusammenhang = true;
+            ctrl.SpeichereParameter(p);
+            v = new VariantenDaten
+            {
+                IdProjekt = 1030,
+                IstStamm = true,
+                Projektname = "Wärmegestehung ERLOES",
+                Ergebnis = new ErgebnisCtrl().Load(1030),
+                Zeitreihen = StromsteuerBefreiungModusTests.Stundenreihen()
+            };
+            KostenEmissionRechner.Berechne(v);
+            var daten = new BerichtsDaten { IdStamm = 1030, Stammprojektname = v.Projektname };
+            daten.Varianten.Add(v);
+            return new WirtschaftlichkeitCtrl().Berechne(daten, p).FirstOrDefault(
+                x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.IdProjekt == 1030);
         }
 
         /// <summary>Stellt die Unternehmensart eines Projekts der Arbeitskopie um.</summary>

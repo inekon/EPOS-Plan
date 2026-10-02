@@ -27,7 +27,8 @@ namespace WindowsFormsApplication1
     ///     entgangene Entlastung nach § 9b StromStG diese Gutschrift
     ///     (<see cref="Entgangene9bReihe"/>).</description></item>
     ///   <item><description><b>Erlöse</b>: die Erlöse der Wärmeerzeuger — eingespeister BHKW-Strom
-    ///     und die Reihen aus <see cref="ErloesReiheZaehlt"/>.</description></item>
+    ///     und die Reihen aus <see cref="ErloesReiheZaehlt"/>. Die Stromsteuer-Befreiung des
+    ///     BHKW-Eigenstroms zählt nicht: Die Stromgutschrift enthält sie schon.</description></item>
     /// </list>
     /// <para><b>Draußen</b> bleiben Haushaltsstrom und Stromverbraucher, Kältestrom und Kühlung,
     /// Photovoltaik (Investition, Betrieb, Erlöse, Eigenverbrauch) und Stromspeicher. Der
@@ -110,19 +111,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Erlösreihen der Wärmeerzeuger</b>: KWK-Zuschlag und seine Pauschale,
-        /// Energiesteuer-Entlastung (§ 53/§ 53a/§ 54 EnergieStG — Brennstoff von BHKW und Kessel)
-        /// und die Stromsteuer-Befreiung des BHKW-Stroms (§ 9 Abs. 1 Nr. 3 StromStG). Nicht dabei:
-        /// die PV-Vergütung und die Stromsteuer-Entlastung nach § 9b StromStG, die am Netzbezug des
-        /// ganzen Anschlusses hängt — die Wärmeerzeugung trägt von ihr allein den Teil, der auf den
-        /// BHKW-Eigenstrom entgeht (<see cref="Entgangene9bReihe"/>).
+        /// <b>Die Erlösreihen der Wärmeerzeuger</b>: KWK-Zuschlag und seine Pauschale und die
+        /// Energiesteuer-Entlastung (§ 53/§ 53a/§ 54 EnergieStG — Brennstoff von BHKW und Kessel).
+        /// Nicht dabei: die PV-Vergütung; die Stromsteuer-Entlastung nach § 9b StromStG, die am
+        /// Netzbezug des ganzen Anschlusses hängt — die Wärmeerzeugung trägt von ihr allein den Teil,
+        /// der auf den BHKW-Eigenstrom entgeht (<see cref="Entgangene9bReihe"/>); und die
+        /// Stromsteuer-Befreiung des BHKW-Stroms (§ 9 Abs. 1 Nr. 3 StromStG, Reihe
+        /// <see cref="KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG"/>, nur im Modus ERLOES).
+        ///
+        /// <para><b>Warum die Befreiung nicht zählt</b> (Anwenderentscheid 02.10.2026, „Befunde wie
+        /// Empfehlung umsetzen", Register EZ‑21): Die Stromgutschrift
+        /// (<see cref="StromgutschriftEur"/>) schreibt den BHKW-Eigenstrom zum Arbeitspreis des
+        /// Netzträgers gut — und dieser Arbeitspreis enthält die Stromsteuer. Der Vorteil, dass auf
+        /// den Eigenstrom keine Stromsteuer anfällt, steht damit schon in der Gutschrift; die
+        /// Befreiungsreihe zählte ihn ein zweites Mal. Die Stromsteuer zählt deshalb einmal — in der
+        /// Gutschrift. Kapitalwert und übrige Kennzahlen buchen die Reihe im Modus ERLOES
+        /// unverändert.</para>
         /// </summary>
         internal static bool ErloesReiheZaehlt(string name)
         {
             return string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal) ||
                    string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE, StringComparison.Ordinal) ||
-                   string.Equals(name, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, StringComparison.Ordinal) ||
-                   string.Equals(name, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, StringComparison.Ordinal);
+                   string.Equals(name, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, StringComparison.Ordinal);
         }
 
         /// <summary>
