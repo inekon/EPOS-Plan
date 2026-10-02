@@ -24,7 +24,8 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Der Parametersatz des Bedarfsdialogs zu EINER Projektzeile — <c>null</c>, wenn
-        /// es dafür keine Zahl gibt: kein Projekt (Katalogverwaltung) oder keine Klimaregion.
+        /// es dafür keine Zahl gibt: kein Projekt, keine Klimaregion, kein Katalogsatz bzw. keine
+        /// Projektkopie, eine Importzeile mit Zone vor dem OK.
         /// Der Dialog MELDET das. Gerechnet wird aus dem ARBEITSSTAND der Zeile
         /// (<see cref="GebaeudeBedarfCtrl.Arbeitsstandgebaeude"/>) — auch eine eben übernommene
         /// Zeile ohne Projektkopie rechnet, vor dem OK und ohne dass etwas geschrieben wird.
@@ -45,7 +46,16 @@ namespace WindowsFormsApplication1
             GebaeudeProjektZeile zeile, int projektId, out string befund, bool zoneAusstehend = false)
         {
             befund = null;
-            if (zeile == null || projektId <= 0) return null;
+            if (zeile == null) return null;
+
+            // Jeder Fall ohne Zahl nennt seinen WIRKLICHEN Grund (Verbesserungen 29.09.2026, A1):
+            // Gerechnet wird aus dem Arbeitsstand, auch für eine ungespeicherte Zeile - ein
+            // pauschales „bitte speichern" träfe nur die Importzeile mit Zone.
+            if (projektId <= 0)
+            {
+                befund = MyResource.Resource.GEB_MSG_BEDARF_OHNE_PROJEKT;
+                return null;
+            }
 
             // Die vorläufige Id einer ungespeicherten Zeile ist keine Zuordnung - 0 heißt: aus dem
             // Katalogsatz, den der Speicherweg kopieren wird.
@@ -57,6 +67,14 @@ namespace WindowsFormsApplication1
             }
             int idZ = ungespeichert ? 0 : zeile.IdZ;
 
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(projektId);
+            if (projekt.m_ID_Klimaregion <= 0)
+            {
+                befund = MyResource.Resource.GEB_MSG_BEDARF_OHNE_KLIMAREGION;
+                return null;
+            }
+
             // Je Rechnung ein FRISCHES Modell - die Fassade setzt Rechenweg, Bewohner und
             // Bezugsfläche am Modell wie im Lauf.
             Func<ProjektGebaeudeModel> modell = () => GebaeudeBedarfCtrl.Arbeitsstandgebaeude(
@@ -66,13 +84,14 @@ namespace WindowsFormsApplication1
             ProjektGebaeudeModel gebaeude = modell();
             if (gebaeude == null)
             {
-                // Eine ungespeicherte Zeile ohne Katalogsatz: Erst das OK bildet ihre Projektkopie.
-                befund = ungespeichert ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null;
+                // Ungespeichert: Der Katalogsatz, aus dem der Arbeitsstand entsteht, fehlt.
+                // Gespeichert: Die Projektkopie hinter der Zuordnung fehlt.
+                befund = ungespeichert
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.GEB_MSG_BEDARF_OHNE_KATALOGSATZ, zeile.Name ?? "")
+                    : MyResource.Resource.GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE;
                 return null;
             }
-
-            var projekt = new ProjektCtrl();
-            projekt.ReadSingle(projektId);
 
             GebaeudeBedarfErgebnis ergebnis =
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, gebaeude);

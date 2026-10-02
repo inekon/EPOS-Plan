@@ -28288,11 +28288,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen. ähnelt.
         /// </summary>
-        public static string GEB_MSG_BEDARF_UNGESPEICHERT {
+        public static string GEB_MSG_BEDARF_OHNE_KATALOGSATZ {
             get {
-                return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_KATALOGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dem Projekt ist keine Klimaregion zugeordnet — bitte in den Projektdaten eine Klimaregion wählen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE", resourceCulture);
             }
         }
         
@@ -28333,7 +28360,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_KEIN_BEDARF {
             get {

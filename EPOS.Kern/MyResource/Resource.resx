@@ -14436,7 +14436,7 @@ Alle Eingaben überprüfen!</value>
     <value>Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
-    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen.</value>
+    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen.</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF_GRUND" xml:space="preserve">
     <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}</value>
@@ -33345,8 +33345,8 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
     <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
-  <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+  <data name="GEB_MSG_BEDARF_OHNE_KATALOGSATZ" xml:space="preserve">
+    <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
     <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
@@ -41124,6 +41124,15 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
     <value>Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
+    <value>die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_KLIMAREGION" xml:space="preserve">
+    <value>dem Projekt ist keine Klimaregion zugeordnet — bitte in den Projektdaten eine Klimaregion wählen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
+    <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
   </data>
 </root>
 
