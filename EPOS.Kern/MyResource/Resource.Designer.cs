@@ -77016,6 +77016,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter. ähnelt.
         /// </summary>
         public static string SIMENG_AUFH_W1 {

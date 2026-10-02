@@ -1234,10 +1234,28 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < 8760; h++) ziel[h] *= faktor;
             GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
             if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
+            if (!vorbereitung.IstFlaeche) HinweisAufheizungVerbrauch(item, ergebnis?.Aufheizung);
 
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis „Aufheizoptimierung bei Verbrauchsangabe"</b> (Entwurf KP3, B11; Befund R4) — einmal je
+        /// Gebäude, wenn die Rampe an einem Gebäude mit Verbrauchs-Rückrechnung wirkt (geplant, mit mindestens einem
+        /// Rampentag): Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Rampen in den Faktor
+        /// auf; die Jahreswärme bleibt der angegebene Verbrauch. Muster der übrigen Gebäudehinweise der Fassade.
+        /// </summary>
+        internal static void HinweisAufheizungVerbrauch(ProjektGebaeudeModel item, Aufheizergebnis a)
+        {
+            if (item == null || a == null || !a.Geplant || !(a.Aufheiztage > 0)) return;
+            System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+            string wer = (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "aufh-verbrauch-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(k, MyResource.Resource.SIMENG_AUFH_VERBRAUCH, a.Aufheiztage.Value.ToString(k)));
         }
 
         /// <summary>

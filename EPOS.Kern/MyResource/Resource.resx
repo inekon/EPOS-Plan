@@ -41494,5 +41494,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
     <value>Grenze und Zielleistung je Zone</value>
   </data>
+  <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
+    <value>Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe.</value>
+  </data>
 </root>
 

@@ -41487,5 +41487,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
     <value>limit and target power per zone</value>
   </data>
+  <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
+    <value>Preheat optimisation (consumption entry): the building is calculated from a consumption entry. Scaling back to the stated consumption absorbs the additional heat of the preheat ramps on {0} days into the scaling factor; the annual heat remains the stated consumption. Only a floor area entry shows the additional heat of the ramps.</value>
+  </data>
 </root>
 
