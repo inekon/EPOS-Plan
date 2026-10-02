@@ -756,11 +756,17 @@ namespace WindowsFormsApplication1
         /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
         /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
         /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
+        /// Danach, mit der BODENALBEDO JE ANLAGE (Entscheidungsvorlage Modellgrenzen, PV4), steht
+        /// das Ziel auf <see cref="AlbedoSchema.SCHRITT"/>: die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1) an <c>Tab_Energieanlagen</c>, reines DDL
+        /// (<see cref="AlbedoSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile bleibt NULL
+        /// und rechnet mit der Vorgabe 0,2. Die Nummer steht allein bei
+        /// <see cref="AlbedoSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselBereitschaftEinheitSchema.SCHRITT;
+        public const int Zielversion = AlbedoSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
