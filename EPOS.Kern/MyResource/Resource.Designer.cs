@@ -61315,6 +61315,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren nach … ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string KOND_BTN_LOESCHEN {
@@ -61549,6 +61567,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ in allen Größen übernehmen? ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gesamtangabe {0} 1/h wird aufgeteilt (Infiltration {1}, Nutzerlüftung {2}) ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ersetzt wird: {0}; es bleibt: {1} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_ERSETZT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gesperrt — {0} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Vorlage dieses Namens — bleibt ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_OHNE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage in allen Größen übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string KOND_FRAGE_VORLAGE_ALLE_ZEILE {
+            get {
+                return ResourceManager.GetString("KOND_FRAGE_VORLAGE_ALLE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ löschen? ähnelt.
         /// </summary>
         public static string KOND_FRAGE_VORLAGE_LOESCHEN {
@@ -61761,6 +61851,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_KATALOG_KALENDER {
             get {
                 return ResourceManager.GetString("KOND_LBL_KATALOG_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komfortsollwert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOMFORTSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOMFORTSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ kopieren nach … ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielgröße ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KOPIERZIEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KOPIERZIEL", resourceCulture);
             }
         }
         
@@ -62071,6 +62188,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Größen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ausgeliefert ähnelt.
         /// </summary>
         public static string KOND_LBL_VORLAGE_AUSGELIEFERT {
@@ -62368,6 +62494,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Komfortsollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Kopie von Heizen nach Kühlen fehlt der Komfortsollwert. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOMFORTSOLLWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOMFORTSOLLWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben. ähnelt.
         /// </summary>
         public static string KOND_MSG_KOPF_NICHT_ANGELEGT {
@@ -62377,11 +62521,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel der Konditionierungskopie sind derselbe Eigentümer — kopiert wird nichts. ähnelt.
         /// </summary>
         public static string KOND_MSG_KOPIE_GLEICHER_EIGNER {
             get {
                 return ResourceManager.GetString("KOND_MSG_KOPIE_GLEICHER_EIGNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Vorlage ‚{0}‘ ({1}) ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage der Größe {0} lässt sich nicht nach {1} kopieren — „Kopieren nach …“ gibt es nur von Heizen nach Kühlen und zwischen Geräten und Personen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KOPIE_RICHTUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KOPIE_RICHTUNG", resourceCulture);
             }
         }
         
@@ -62782,6 +62953,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Inhalt einer Vorlage der Größe {0} trägt Zeilen der Größe {1} — eine Vorlage gehört genau einer Größe. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_VORLAGE_FREMDE_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_VORLAGE_FREMDE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage {0} gehört zur Auslieferung (Schloss) — sie lässt sich nicht ändern. Legen Sie über „Duplizieren…“ eine eigene Vorlage an. ähnelt.
         /// </summary>
         public static string KOND_MSG_VORLAGE_GESPERRT {
@@ -63097,6 +63277,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage der Größe „{0}“ lässt sich in keine andere Größe kopieren — „Kopieren nach …“ gibt es von Heizen nach Kühlen und zwischen Geräten und Personen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_GRUND_KEIN_KOPIERZIEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_GRUND_KEIN_KOPIERZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keinen Schritt, den „Zurücknehmen“ zurücknehmen könnte. ähnelt.
         /// </summary>
         public static string KOND_TXT_GRUND_NICHTS_ZURUECK {
@@ -63331,6 +63520,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Auswahlliste der Vorlagen dieser Größe in ihrer Karte. ähnelt.
         /// </summary>
         public static string KOND_TXT_HINWEIS_VORLAGE_ZEILE {
@@ -63430,6 +63628,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KI_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KI_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Woche des angelegten Kalenders {0} in der Karte „Kalender im Einzelnen“: 168 Werte in {1} von Montag 00:00 bis Sonntag 23:00, durch „;“ getrennt, „aus“ für abgeschaltet; ein einzelner Wert (oder „aus“) ist die Grundangabe. Setzen wirkt wie das Wochenraster (ein Schritt für „Zurücknehmen“), leer verwirft die Woche zugunsten der Grundangabe. Nur an einem angelegten Kalender; Lesen nennt die Woche oder die Grundangabe, leer = nicht angelegt. ähnelt.
         /// </summary>
         public static string KOND_TXT_KI_WOCHE {
@@ -63484,6 +63691,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleiche Einheit: Werte und Zeitstruktur gehen unverändert in die Zielgröße. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_DIREKT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_NACH {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KOPIEREN_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KOPIEREN_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“. ähnelt.
         /// </summary>
         public static string KOND_TXT_KUEHLEN_GESPERRT {
@@ -63507,6 +63741,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_LEER {
             get {
                 return ResourceManager.GetString("KOND_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Komfortsollwert ist eine Zahl von {0} bis {1} °C. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_MELDUNG_KOMFORTSOLLWERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_MELDUNG_KOMFORTSOLLWERT", resourceCulture);
             }
         }
         
@@ -63759,6 +64002,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_VORLAGE_KEINE {
             get {
                 return ResourceManager.GetString("KOND_TXT_VORLAGE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ in der Liste „{1}“ als Kopie von „{2}“ ({3}) angelegt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_VORLAGE_KOPIERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_VORLAGE_KOPIERT", resourceCulture);
             }
         }
         
@@ -96590,6 +96842,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenkatalog (Energieträger, Emissionen, Gesetzesparameter, Nutzungsdauern) wurde nach der letzten Rechnung geändert — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der letzten Rechnung geändert — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN_KOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten. ähnelt.
         /// </summary>
         public static string WIRT_BAND_SIMULATION_VERALTET {
@@ -100510,6 +100780,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Der Kostenkatalog wurde nach der Rechnung geändert — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_VERALTET_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_VERALTET_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der Rechnung geändert — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_VERALTET_KOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_VERALTET_KOSTEN", resourceCulture);
             }
         }
         

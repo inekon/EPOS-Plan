@@ -21,7 +21,9 @@ namespace EPOS.UI.Tests.Dialoge;
 /// „Zurücknehmen" (eine Stufe), „Kalender anlegen", „Verwerfen" und „Matrix erneut anwenden…" mit
 /// Rückfrage VOR der Handlung (Vorgabe Nein, Posten und Zonen mit Namen), die Rückfrage „aufteilen"
 /// (F5 (a)) als ein Schritt, „Aus dem Katalog erneut übernehmen…" nur im Projekt — und kein Knopf ohne
-/// Delegat.</para>
+/// Delegat. Dazu die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…" (E57, Welle U5): die Liste
+/// „alle Größen" in der Kopfzelle der Zeile „Vorlage" (Einträge, Reihenfolge, wo sie fehlt), die EINE Rückfrage
+/// mit je Größe einer Zeile samt Sperre und Zonen, und der Fehler eines Schritts, der nichts schreibt.</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (deutsche Rückfalltexte und Zahlformat).</para>
 /// </summary>
@@ -509,5 +511,234 @@ public class KonditionierungMatrixTests : EposBunitContext
         Assert.Equal("Gesperrt, weil.", zweiter.Find("p.epos-kond-sperrzeile").TextContent.Trim());
         Assert.Empty(zweiter.FindAll("section.epos-kond-karte"));
         Assert.False(zweiter.FindAll("label.epos-feld .epos-feld-text").Any(t => t.TextContent.Trim() == "Geräte · Tag"));
+    }
+
+    // =================================================================================
+    // Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen…" (E57; Stufe KP2, Welle U5)
+    // =================================================================================
+
+    /// <summary>Die Liste „alle Größen" in der Kopfzelle der Zeile „Vorlage"; <c>null</c> = keine.</summary>
+    private static IElement? ListeAlle(IRenderedComponent<KonditionierungReiter> cut)
+        => cut.FindAll("table.epos-kond-matrix tr[data-zeile='vorlage'] > th[scope=row] .epos-kond-vorlage-alle select")
+              .FirstOrDefault();
+
+    /// <summary>Die Namen einer Auswahlliste ohne den leeren Eintrag.</summary>
+    private static List<string> Namen(IElement liste)
+        => liste.QuerySelectorAll("option").Where(o => o.GetAttribute("value") != "").Select(o => o.TextContent.Trim()).ToList();
+
+    /// <summary>
+    /// Wählt in der Liste „alle Größen" den Namen. Die Rückfrage zeichnet der Reiter; ihn zeichnet in der Anwendung
+    /// der Wirt über <c>Geaendert</c> neu - hier ohne Wirt von Hand, wie im Fall „aufteilen".
+    /// </summary>
+    private static void AlleWaehlen(IRenderedComponent<KonditionierungReiter> cut, string name)
+    {
+        IElement liste = ListeAlle(cut)!;
+        liste.Change(liste.QuerySelectorAll("option").First(o => o.TextContent.Trim() == name).GetAttribute("value")!);
+        cut.Render();
+    }
+
+    /// <summary>Die Zeilen der offenen Rückfrage.</summary>
+    private static string[] Fragezeilen(IRenderedComponent<KonditionierungReiter> cut)
+        => cut.Find(".epos-rueckfrage-text").TextContent.Trim().Split('\n').Select(z => z.Trim()).ToArray();
+
+    /// <summary>Der echte Weg der Hülle ohne Datenbank mit den 14 ausgelieferten Vorlagen.</summary>
+    private static KonditionierungWeg Saatweg() => KalenderkarteTests.Weg(Konditionierungsvorlagenablage.AusSaat());
+
+    [Fact]
+    public void Die_Kopfzelle_der_Zeile_Vorlage_traegt_die_Liste_alle_Groessen()
+    {
+        var cut = Aufbauen(KalenderkarteTests.Satz(), Saatweg());
+
+        IElement kopf = cut.Find("table.epos-kond-matrix tr[data-zeile='vorlage'] > th[scope=row]");
+        Assert.StartsWith("Vorlage", kopf.TextContent.Trim());
+        IElement gruppe = kopf.QuerySelector(".epos-vorlage-wahl.epos-kond-vorlage-alle")!;
+        Assert.Equal("group", gruppe.GetAttribute("role"));
+        Assert.Equal("Vorlage · alle Größen", gruppe.GetAttribute("aria-label"));
+        Assert.Equal("Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen " +
+                     "die Vorlage dieses Namens, wo es sie gibt.", gruppe.GetAttribute("title"));
+        Assert.Equal("alle Größen", gruppe.QuerySelector(".epos-feld-text")!.TextContent.Trim());
+
+        IElement liste = ListeAlle(cut)!;
+        Assert.Equal("Vorlage · alle Größen", liste.GetAttribute("aria-label"));
+        Assert.Equal("—", liste.QuerySelector("option[value='']")!.TextContent.Trim());
+        Assert.Equal("", liste.GetAttribute("value"));
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen" }, Namen(liste));   // „Wohnen" fehlt nur der Lüftung
+        Assert.Empty(gruppe.QuerySelectorAll(".epos-schloss"));              // ohne Wahl kein Schloss
+
+        // Die Kopfzelle hängt an keiner Spalte: Schmal steht sie bei jeder gewählten Größe.
+        cut.Find("button.epos-kond-groesse[data-groesse='4']").Click();
+        Assert.NotNull(ListeAlle(cut));
+        Assert.Null(cut.Find("tr[data-zeile='vorlage'] > th[scope=row]").GetAttribute("data-groesse"));
+    }
+
+    [Fact]
+    public void Die_Liste_fuehrt_jeden_Namen_aus_mindestens_einer_Liste_ohne_Dubletten_in_der_Reihenfolge_des_Kerns()
+    {
+        var ablage = Konditionierungsvorlagenablage.AusSaat();
+        Konditionierungsstand leer = Konditionierungsstand.Leer(Kalendereigentuemer.Vorlage, null);
+        ablage.Hinzufuegen(Konditionierungsgroesse.Personen, "Kontor", "", DbWerte.KOND_NUTZUNG_BUERO, ausgeliefert: false,
+                           leer.MitVorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(80)));
+        ablage.Hinzufuegen(Konditionierungsgroesse.Heizsoll, "Aula", "", DbWerte.KOND_NUTZUNG_SCHULE, ausgeliefert: false,
+                           leer.MitVorgabe(Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(19)));
+        // „ wohnen " als eigene der Lüftung: derselbe Name wie die ausgelieferte „Wohnen" der übrigen Listen
+        // (getrimmt, ohne Unterschied der Groß- und Kleinschreibung) - EIN Eintrag, mit Schloss.
+        ablage.Hinzufuegen(Konditionierungsgroesse.Lueftung, " wohnen ", "", DbWerte.KOND_NUTZUNG_WOHNEN, ausgeliefert: false,
+                           leer.MitVorgabe(Konditionierungsgroesse.Lueftung, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(0.4)));
+        var cut = Aufbauen(KalenderkarteTests.Satz(), KalenderkarteTests.Weg(ablage));
+
+        Assert.Equal(new[] { "Büro", "Schule", "Wohnen", "Aula", "Kontor" }, Namen(ListeAlle(cut)!));
+        Assert.Equal(new[] { true, true, true, false, false }, _bearbeitung.VorlagenAlle().Select(v => v.Ausgeliefert));
+        Assert.NotNull(_bearbeitung.VorlageGleichenNamens(KonditionierungGroesse.Lueftung, "WOHNEN"));
+        Assert.Null(_bearbeitung.VorlageGleichenNamens(KonditionierungGroesse.Kuehlen, "Kontor"));
+    }
+
+    [Fact]
+    public void Die_Liste_fehlt_im_Lesemodus_ohne_Vorlagen_ohne_Weg_auf_dem_Altweg_und_an_der_Zone()
+    {
+        Assert.Null(ListeAlle(Aufbauen(KalenderkarteTests.Satz(), Saatweg(), lesemodus: true)));
+        Assert.Null(ListeAlle(Aufbauen(KalenderkarteTests.Satz(), KalenderkarteTests.Weg(null))));
+        Assert.False(_bearbeitung.MitVorlageAlle);
+        Assert.Empty(_bearbeitung.VorlagenAlle());
+        Assert.Null(ListeAlle(Aufbauen(KalenderkarteTests.Satz(), Saatweg(), altweg: true)));
+        Assert.Null(ListeAlle(Aufbauen(Satz(), weg: null)));
+
+        // An einer Zone: die Karten der Zone bieten keine Vorlagen (Teilkonzept 3.4) - also keine Abkürzung.
+        var arbeit = new GebaeudeArbeitsstand();
+        arbeit.Laden(KalenderkarteTests.Satz(), neu: false);
+        var zone = new ZoneDaten { Id = 1, Bezeichner = "Wohnen EG", Nutzflaeche = 90, Konditionierung = new KonditionierungDaten() };
+        KonditionierungWeg weg = Saatweg();
+        var b = new KonditionierungBearbeitung(arbeit, zone, () => weg);
+        Assert.True(b.MitWeg);
+        Assert.False(b.MitVorlageAlle);
+        Assert.Empty(b.VorlagenAlle());
+        Assert.False(b.VorlageAlleWaehlen("Büro"));
+        Assert.Null(b.OffeneFrage);
+        var matrix = Render<KonditionierungMatrix>(p => p.Add(x => x.Bearbeitung, b));
+        Assert.NotEmpty(matrix.FindAll("tr[data-zeile='vorlage']"));
+        Assert.Empty(matrix.FindAll(".epos-kond-vorlage-alle"));
+    }
+
+    /// <summary>
+    /// Die EINE Rückfrage: Titel, Satz und je Größe eine Zeile; am angelegten Kalender, was ersetzt wird und was bleibt
+    /// (P12); eine Größe ohne gleichnamige Vorlage bleibt; Vorgabe „Nein" - und „Nein" lässt alles.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_stellt_eine_Rueckfrage_mit_je_Groesse_einer_Zeile()
+    {
+        var cut = Aufbauen(KalenderkarteTests.Satz(), Saatweg());
+        Assert.True(_bearbeitung.Anlegen(KonditionierungGroesse.Heizen));
+        cut.Render();
+        var fassung = _bearbeitung.Daten!.Fassung;
+
+        AlleWaehlen(cut, "Wohnen");
+        Assert.Equal("Vorlage in allen Größen übernehmen", _bearbeitung.OffeneFrage!.Titel);
+        Assert.True(_bearbeitung.OffeneFrage.VorgabeNein);
+        string[] zeilen = Fragezeilen(cut);
+        Assert.Equal("Die Vorlage „Wohnen“ in allen Größen übernehmen?", zeilen[0]);
+        Assert.Equal(6, zeilen.Length);
+        Assert.StartsWith("Heizen: ersetzt wird: ", zeilen[1]);
+        Assert.Contains("; es bleibt: ", zeilen[1]);
+        Assert.Equal("Kühlen: übernehmen", zeilen[2]);
+        Assert.Equal("Lüftung: keine Vorlage dieses Namens — bleibt", zeilen[3]);
+        Assert.Equal("Geräte: übernehmen", zeilen[4]);
+        Assert.Equal("Personen: übernehmen", zeilen[5]);
+        // Die Wahl steht mit Schloss, solange die Frage steht.
+        Assert.Equal("Wohnen", ListeAlle(cut)!.QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.NotNull(cut.Find(".epos-kond-vorlage-alle .epos-schloss"));
+
+        KalenderkarteTests.Antworten(cut, ja: false);
+        Assert.Null(_bearbeitung.OffeneFrage);
+        Assert.Equal("", ListeAlle(cut)!.GetAttribute("value"));
+        Assert.Equal(fassung, _bearbeitung.Daten!.Fassung);
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            Assert.Null(_bearbeitung.Herkunft(g));
+    }
+
+    /// <summary>
+    /// Ohne „Gebäude wird gekühlt" ist „Übernehmen" der Kühlkarte gesperrt — die Abkürzung übergeht Kühlen und nennt
+    /// in ihrer Zeile DENSELBEN Grund wie der Knopf der Karte.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kuehlung_nennt_die_Rueckfrage_Kuehlen_gesperrt_mit_dem_Grund_der_Karte_und_laesst_Kuehlen()
+    {
+        GebaeudeKatalogDaten satz = KalenderkarteTests.Satz();
+        satz.KuehlungAktiv = false;
+        string grund = new KonditionierungTexte().GrundKuehlenGesperrt;
+        var cut = Aufbauen(satz, Saatweg(), kuehlsperre: grund);
+        Assert.Equal(grund, _bearbeitung.Uebernehmensperre(KonditionierungGroesse.Kuehlen));
+        Assert.Null(_bearbeitung.Uebernehmensperre(KonditionierungGroesse.Heizen));
+
+        // Der Knopf „Übernehmen" der Kühlkarte trägt denselben Grund (die Sperre der Karte).
+        KalenderkarteTests.Waehlen(cut, KonditionierungGroesse.Kuehlen, "Büro");
+        Assert.Equal(grund, KalenderkarteTests.Uebernehmen(cut, KonditionierungGroesse.Kuehlen).GetAttribute("title"));
+        KalenderkarteTests.Waehlen(cut, KonditionierungGroesse.Kuehlen, "keine Vorlage gewählt");
+
+        AlleWaehlen(cut, "Büro");
+        Assert.Equal("Kühlen: gesperrt — " + grund, Fragezeilen(cut)[2]);
+        KalenderkarteTests.Antworten(cut, ja: true);
+
+        Assert.Null(_bearbeitung.Herkunft(KonditionierungGroesse.Kuehlen));
+        Assert.False(_bearbeitung.Angelegt(KonditionierungGroesse.Kuehlen));
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle.Where(g => g != KonditionierungGroesse.Kuehlen))
+            Assert.Equal("Büro", _bearbeitung.Herkunft(g));
+        Assert.Equal("Büro", _bearbeitung.HerkunftAlle());   // gemeinsam über die ungesperrten Größen
+    }
+
+    /// <summary>Die betroffenen Zonen nennt die Rückfrage EINMAL, mit Namen, aus den Befunden aller Größen.</summary>
+    [Fact]
+    public void Die_Rueckfrage_nennt_die_Zonen_aus_den_Befunden_aller_Groessen()
+    {
+        KonditionierungWeg basis = Saatweg();
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Vorlagen = basis.Vorlagen,
+            VorlageUebernehmen = basis.VorlageUebernehmen, LuftwechselAufteilen = basis.LuftwechselAufteilen,
+            Rueckfrage = (_, o, _) => new KonditionierungRueckfrage(Array.Empty<KonditionierungPosten>(),
+                                                                   Array.Empty<KonditionierungPosten>(),
+                                                                   o.Groesse == KonditionierungGroesse.Personen
+                                                                       ? new[] { "Büro OG", "Wohnen EG" }
+                                                                       : new[] { "Wohnen EG" })
+        };
+        var cut = Aufbauen(KalenderkarteTests.Satz(), weg);
+
+        AlleWaehlen(cut, "Büro");
+        string[] zeilen = Fragezeilen(cut);
+        Assert.Equal(7, zeilen.Length);
+        Assert.Equal("Betroffene Zonen: Wohnen EG, Büro OG.", zeilen[6]);
+        Assert.Equal("Heizen: übernehmen", zeilen[1]);   // ohne angelegten Kalender ersetzt die Abkürzung nichts Angelegtes
+    }
+
+    /// <summary>
+    /// Der Fehler eines Schritts bricht „Ja" ab und meldet: Der Arbeitsstand bleibt der von davor — auch die Größen
+    /// vor dem Fehler sind nicht übernommen, und es gibt nichts zurückzunehmen.
+    /// </summary>
+    [Fact]
+    public void Der_Fehler_eines_Schritts_bricht_ab_und_der_Arbeitsstand_bleibt()
+    {
+        KonditionierungWeg basis = Saatweg();
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Vorlagen = basis.Vorlagen,
+            LuftwechselAufteilen = basis.LuftwechselAufteilen, Rueckfrage = basis.Rueckfrage,
+            VorlageUebernehmen = (s, o, id) => o.Groesse == KonditionierungGroesse.Geraete
+                ? KonditionierungErgebnis.Fehler("Probe: Geräte abgelehnt")
+                : basis.VorlageUebernehmen!(s, o, id)
+        };
+        var cut = Aufbauen(KalenderkarteTests.Satz(), weg);
+        var fassung = _bearbeitung.Daten!.Fassung;
+        double? sollTag = _bearbeitung.Stand.SollTag;
+
+        AlleWaehlen(cut, "Büro");
+        KalenderkarteTests.Antworten(cut, ja: true);
+
+        Assert.Contains("Probe: Geräte abgelehnt", _meldungen);
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            Assert.Null(_bearbeitung.Herkunft(g));
+            Assert.False(_bearbeitung.Angelegt(g));
+        }
+        Assert.Equal(fassung, _bearbeitung.Daten!.Fassung);
+        Assert.Equal(sollTag, _bearbeitung.Stand.SollTag);
+        Assert.False(_bearbeitung.KannZuruecknehmen);
     }
 }

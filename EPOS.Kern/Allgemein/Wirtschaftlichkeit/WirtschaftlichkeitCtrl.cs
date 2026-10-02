@@ -8891,6 +8891,17 @@ namespace WindowsFormsApplication1
             var projektIds = new HashSet<int>();
             foreach (WirtschaftlichkeitErgebnis e in ergebnisse) projektIds.Add(e.IdProjekt);
 
+            // DER ZEITSTEMPEL DES LAUFS ENTSTEHT HIER, AM ENDE DER RECHNUNG - nach jedem
+            // Schreibvorgang, den die Rechnung selbst auslöst (die Katalogsaat in
+            // StelleTabellenSicher stempelt Tab_Gesetzesparameter). Bis dahin trug jede Zeile die
+            // Zeit, zu der ihr Ergebnisobjekt entstand; gegen die Änderungsstempel gehalten
+            // (KostenAenderungsstempel) hätte sich eine Rechnung damit selbst als veraltet
+            // gestempelt. Alle Zeilen eines Laufs tragen dieselbe Sekunde - die Auflösung, in der
+            // die Datei Zeitpunkte führt.
+            DateTime ende = KostenAenderungsstempel.Sekunde(DateTime.Now);
+            foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
+                if (e != null) e.Zeitstempel = ende;
+
             try
             {
                 using (DbVorgang v = DataRepository.Vorgang())
@@ -9368,21 +9379,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// true, wenn ein gespeichertes Ergebnis zum aktuellen Simulationslauf passt.
+        /// true, wenn ein gespeichertes Ergebnis noch gilt: Es passt zum jüngsten
+        /// Simulationslauf seines Projekts, und seit seiner Rechnung hat sich an Kosten,
+        /// Preisen, Wirtschaftlichkeitsparametern der Gruppe und am Kostenkatalog nichts
+        /// geändert. Die Regel steht EINMAL in <see cref="Veraltung"/>; jeder Aufrufer —
+        /// Kosten- und Wirtschaftlichkeitsseite, Reiterzeile, Berichte, KI — bekommt
+        /// dieselbe Antwort.
         ///
-        /// <para><b>Die Frage ist NUR der Simulationsstand</b> (Anwenderbefund
+        /// <para><b>Die Frage ist NICHT, ob eine Kennzahl steht</b> (Anwenderbefund
         /// 22.09.2026). Bis dahin stand hier zusätzlich <c>Fehlgrund == null</c> — eine
         /// Zeile mit Fehlgrund galt damit als „veraltet“ und wurde von jedem Aufrufer,
         /// der beides zugleich prüfte, wieder herausgefiltert: Die Statuszeile
         /// „Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand“ erschien für
         /// solche Zeilen NIE. Ob eine Kennzahl fehlt, sagt der Fehlgrund; ob das
-        /// Ergebnis zum Lauf passt, sagt diese Methode. Wer beides braucht, fragt
+        /// Ergebnis noch gilt, sagt diese Methode. Wer beides braucht, fragt
         /// beides — die zwei Berichtsstellen tun das unverändert.</para>
         /// </summary>
         public bool ErgebnisAktuell(WirtschaftlichkeitErgebnis e)
         {
-            return e != null &&
-                   e.IdErgebnis > 0 && e.IdErgebnis == LiesErgebnisId(e.IdProjekt);
+            return e != null && Veraltung(e) == Ergebnisveraltung.Keine;
+        }
+
+        /// <summary>
+        /// <b>Warum</b> ein gespeichertes Ergebnis nicht mehr gilt — die Regel hinter
+        /// <see cref="ErgebnisAktuell"/>, nach Vorrang: Passt es nicht zum jüngsten
+        /// Simulationslauf seines Projekts, ist es <see cref="Ergebnisveraltung.Simulation"/>;
+        /// sonst urteilen die Änderungsstempel der Datenbank
+        /// (<see cref="KostenAenderungsstempel.Pruefe"/>: Kosten der Vergleichsgruppe, dann der
+        /// Kostenkatalog). Ohne Ergebnis <see cref="Ergebnisveraltung.Keine"/> — es fehlt, veraltet
+        /// ist nichts; <see cref="ErgebnisAktuell"/> bleibt dafür <c>false</c>.
+        /// </summary>
+        public Ergebnisveraltung Veraltung(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null) return Ergebnisveraltung.Keine;
+            if (e.IdErgebnis <= 0 || e.IdErgebnis != LiesErgebnisId(e.IdProjekt))
+                return Ergebnisveraltung.Simulation;
+            return KostenAenderungsstempel.Pruefe(e.IdProjekt, e.Zeitstempel);
         }
 
         // ------------------------------------------------------------- Hilfen

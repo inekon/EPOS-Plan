@@ -25,7 +25,14 @@
 
    ANORDNUNG. Breit (Container ab 900 px, epos-kond) steht die ganze Tabelle; schmal nur die Spalte
    der gewaehlten Groesse (AktiveGroesse; die fuenf Reiter zeichnet der Wirt) - die Zellen der
-   anderen Spalten traegt dasselbe Markup, das Stilblatt blendet sie aus. *@
+   anderen Spalten traegt dasselbe Markup, das Stilblatt blendet sie aus.
+
+   DIE ABKUERZUNG NACH E57 (Welle U5): In der Kopfzelle der Zeile "Vorlage" steht die Liste "alle
+   Groessen" - jeder Name aus mindestens einer der fuenf Listen. Die Wahl stellt sofort EINE
+   Rueckfrage fuer alle Groessen (der Wirt zeichnet sie aus Bearbeitung.OffeneFrage); "Ja" uebernimmt
+   die gleichnamige Vorlage in jeder Groesse, die sie fuehrt, als EIN Schritt. Die Kopfzelle steht in
+   beiden Anordnungen; nicht im Lesemodus, nicht an einer Zone, nicht ohne Weg. Kein Satzbegriff (P11):
+   die Vorlagen bleiben je Groesse, der Weg je Karte unveraendert. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -49,7 +56,31 @@
         @if (Bearbeitung.MitWeg && !Altweg)
         {
             <tr class="epos-kond-herkunftzeile" data-zeile="vorlage">
-                <th scope="row">@Texte.ZeileVorlage</th>
+                <th scope="row">
+                    @Texte.ZeileVorlage
+                    @if (MitVorlageAlle)
+                    {
+                        @* Die Abkuerzung "alle Groessen" (E57): der Flexkasten IN der Zelle (Hausregel), die Liste
+                           nimmt die Breite der Kopfspalte. Sie zeigt ihre Wahl nur, solange deren Rueckfrage steht -
+                           danach wieder "-"; das Schloss steht wie an der Karte neben einer ausgelieferten. *@
+                        IReadOnlyList<KonditionierungBearbeitung.VorlagennameAlle> namen = Bearbeitung.VorlagenAlle();
+                        string? alle = Bearbeitung.GewaehlteVorlageAlle;
+                        int platz = alle is null ? -1 : AllePlatz(namen, alle);
+                        <div class="epos-vorlage-wahl epos-kond-vorlage-alle" role="group" title="@Texte.HinweisVorlageAlle"
+                             aria-label="@(Texte.ZeileVorlage + " · " + Texte.LabelVorlageAlle)">
+                            <Auswahlfeld Bezeichnung="@Texte.LabelVorlageAlle"
+                                         Kurzname="@(Texte.ZeileVorlage + " · " + Texte.LabelVorlageAlle)"
+                                         Eintraege="@AlleEintraege(namen)" Auswahl="@(platz >= 0 ? platz + 1 : (int?)null)"
+                                         Platzhalter="@Texte.PlatzhalterLeer" AuswahlChanged="w => VorlageAlleWaehlen(namen, w)" />
+                            @if (platz >= 0 && namen[platz].Ausgeliefert)
+                            {
+                                <span class="epos-vorlage-schlossplatz">
+                                    <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
+                                </span>
+                            }
+                        </div>
+                    }
+                </th>
                 @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
                 {
                     string? herkunft = Bearbeitung.Herkunft(g);
@@ -134,6 +165,36 @@
     [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
 
     private string Spaltenklasse(KonditionierungGroesse g) => g == AktiveGroesse ? "epos-kond--aktiv" : "";
+
+    // ---- Die Abkürzung „alle Größen“ (E57; Stufe KP2, Welle U5) ----
+
+    /// <summary>
+    /// Steht die Liste „alle Größen“ in der Kopfzelle der Zeile „Vorlage“? Mit den Vorlagen der Karten, am
+    /// Gebäude und Katalogbau (<see cref="KonditionierungBearbeitung.MitVorlageAlle"/>), nicht im Lesemodus.
+    /// </summary>
+    private bool MitVorlageAlle => !Lesemodus && Bearbeitung.MitVorlageAlle;
+
+    /// <summary>Die Einträge der Liste „alle Größen“: der Platz ab 1 und der Name (ein Datenwert, nicht übersetzt).</summary>
+    private static IReadOnlyList<(int Id, string Text)> AlleEintraege(IReadOnlyList<KonditionierungBearbeitung.VorlagennameAlle> namen)
+        => namen.Select((n, i) => (i + 1, n.Name)).ToList();
+
+    /// <summary>Der Platz des Namens in der Liste „alle Größen“; <c>-1</c> = nicht darin.</summary>
+    private static int AllePlatz(IReadOnlyList<KonditionierungBearbeitung.VorlagennameAlle> namen, string name)
+    {
+        for (int i = 0; i < namen.Count; i++)
+            if (string.Equals(namen[i].Name, name, StringComparison.Ordinal)) return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// Die Wahl der Liste „alle Größen“ — sie stellt die EINE Rückfrage für alle Größen (der Wirt zeichnet sie)
+    /// und ändert den Arbeitsstand nicht; „—“ wählt nichts.
+    /// </summary>
+    private async Task VorlageAlleWaehlen(IReadOnlyList<KonditionierungBearbeitung.VorlagennameAlle> namen, int? platz)
+    {
+        if (platz is int p && p >= 1 && p <= namen.Count) Bearbeitung.VorlageAlleWaehlen(namen[p - 1].Name);
+        await Geaendert.InvokeAsync();
+    }
 
     private string Spaltenkopf(KonditionierungGroesse g) => g switch
     {

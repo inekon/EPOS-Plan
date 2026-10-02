@@ -23,13 +23,20 @@
 > Schemaschritt 152 (`KP-S1v`) trägt 5.7 samt Fremdschlüssel `ID_Vorlage`, Teilindizes und `Nachtauskuehlstunden_H` (5.4).
 
 > **Fortgeschrieben am 29.09.2026 mit E56** (Leitkonzept N1.65, 9.6): Für KP2 liegt der
-> [Entwurf](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) vor; entschieden sind die Saat der 14 Vorlagen samt Feiertagen (3.5), das Folgen
+> [Entwurf](../ueberholt/2026-09-29_Entwurf_KP2.md) vor; entschieden sind die Saat der 14 Vorlagen samt Feiertagen (3.5), das Folgen
 > eines unveränderten angelegten Kalenders (3.3, 7.2), die Altfelder (7.1), der Ort der Vorlagenverwaltung (7.4) und die
 > Aufteilung der Gesamtangabe des Luftwechsels (3.1); der Entwurf veranschlagt KP2 mit 19–22 PT (8).
 
-**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 bis E56 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+> **Fortgeschrieben am 02.10.2026 — KP2 abgeschlossen** (Leitkonzept N1.66, 9.7): Die elf Wellen der Stufe stehen im
+> [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), ihre Festlegungen im
+> Leitkonzept N1.66. Mit **E57** trägt die Zeile „Vorlage" der Matrix die Abkürzung „alle Größen": eine gleichnamige
+> Vorlage in allen Größen nach einer Rückfrage für alle Größen, kein Satzbegriff, P11 bleibt (7.2, 7.4, 9.7, R16);
+> nachgezogen sind 8, 10.5 und 12.
+
+**Stand:** 02.10.2026. **Fassung:** Rev. 3 mit E54 bis E57 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
-Fragen des KP2-Entwurfs entschieden (E56); KP0 und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
+Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
+(E57); KP0 bis KP2 sind umgesetzt, KP3 und KP4 folgen auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
 Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
@@ -419,6 +426,17 @@ Gebäudes, einer Zone oder eines Katalogbaus — eine eigene Vorlage dieser Grö
 umbenennen und löschen, ausgelieferte nur duplizieren. Übernommen ist kopiert: Eine spätere Änderung der Vorlage
 erreicht kein Gebäude.
 
+**„Kopieren nach …"** legt aus einer Vorlage — auch einer ausgelieferten — eine eigene Vorlage einer **anderen** Größe
+an; die Quelle bleibt, wie sie ist. **Geräte ↔ Personen** reisen direkt: gleiche Einheit (Anteil 0 … 1), Vorgabezeilen,
+Standardwoche, Perioden und Feiertagsregeln unverändert. **Heizen → Kühlen** nimmt nur die Zeitstruktur —
+Standardwoche, Perioden, Feiertagsregeln, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten — und die Aus-Zeiten:
+Wo Heizen „aus" ist, ist Kühlen „aus"; jede Zelle, Wochenstunde und Periode mit Heizsollwert bekommt den
+**Komfortsollwert** (Vorgabe 26 °C, im Kopierdialog änderbar in den Grenzen der Kühlspalte). Andere Richtungen —
+Kühlen → Heizen, alles mit Lüftung — gibt es nicht; still umgerechnet wird nichts. Die Kopie trägt den Namen der Quelle
+als Vorschlag, ein Doppelname in der Zielliste wird benannt abgelehnt; die Beschreibung wird übernommen und um die
+Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernommen, `ReadOnly = 0`. Der Inhalt entsteht nur in
+der Zielgröße, ohne Nennwert und Saison (E54).
+
 **Ausgelieferte Vorlagen (F22)** — EPOS-Muster mit runden Werten, weder Norm- noch Messwerte. Die Tabelle liest sich
 spaltenweise: Jede belegte Zelle ist eine Vorlage in der Liste ihrer Größe, zusammen **14 Vorlagen in fünf Listen** —
 die Lüftungsliste führt kein „Wohnen". Leere Zellen bleiben beim Ziel; eine Heiz- oder Kühlperiode tragen die
@@ -430,7 +448,7 @@ ausgelieferten Vorlagen nicht, sie hängt vom Ort ab.
 | Büro | Mo–Fr 7–18 Uhr 20 °C, sonst 16 °C, Wochenende und Ferien 16 °C | Tag 26 °C, sonst „aus" | Nacht (18–7 Uhr) und Wochenende 0,1 1/h | Tag 100 %, sonst 10 % | Mo–Fr 8–17 Uhr 100 %, sonst 0 % |
 | Schule | Mo–Fr 7–15 Uhr 20 °C, sonst 16 °C, Ferien 16 °C | Tag 26 °C, sonst „aus" | wie Büro | wie Büro | Mo–Fr 8–14 Uhr 100 %, sonst 0 % |
 
-**Saat (E56):** Ausgeliefert wird die vervollständigte Tabelle des [Entwurfs KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md)
+**Saat (E56):** Ausgeliefert wird die vervollständigte Tabelle des [Entwurfs KP2](../ueberholt/2026-09-29_Entwurf_KP2.md)
 (Abschnitt 4, 46 Vorgabezeilen): „sonst" heißt Nacht, Wochenende und Ferien; Schule mit eigenen Zeiten (Heizen 7–15,
 Personen 8–14 Uhr) statt „wie Büro"; Nachtfenster ausdrücklich. Büro und Schule tragen dazu die neun
 bundeseinheitlichen Feiertage „wie Sonntag" als Regeln ohne eigene Woche.
@@ -951,7 +969,9 @@ unter „Abbildung der heutigen Felder" festhält.
   Heizen und Kühlen (P2). Nachtzeiten stehen in der Zelle als „von–bis", leer = die Zeiten der Heizspalte (F19). Die
   Heizspalte zeigt die heutigen Felder: Ein Wochenendwert bis 5 °C und ein Ferienwert unter 1 °C sind unwirksam und
   erscheinen wie im Dialog als „keine" (in der Skizze „—"). Die Zeile **Vorlage** nennt je Spalte die zuletzt
-  übernommene Vorlage, ein Klick öffnet die Auswahlliste der Karte (7.4); die **Saison** nimmt Heiz- und Kühlperiode mit
+  übernommene Vorlage, ein Klick öffnet die Auswahlliste der Karte (7.4); ihre Kopfzelle trägt die Liste **„alle
+  Größen"**, die eine gleichnamige Vorlage nach einer Rückfrage in allen Größen übernimmt (E57, 7.4); die **Saison**
+  nimmt Heiz- und Kühlperiode mit
   Datum für Start und Ende, leer = ganzjährig (E53). Ob eine Zelle in ihrer Bestandsspalte oder in der Vorgabetabelle
   liegt (P10), sieht der Anwender nicht.
 - **Lasten:** Nennwert mit Herleitungszeile (P1: Geräte = Gesamtwert − Personenmittel; Personen = Zahl × 70 W) und
@@ -989,7 +1009,20 @@ Karte, ein Doppelname in dieser Liste wird am Feld benannt abgelehnt. **„Vorla
 (E56) — zeigt die fünf Listen
 mit einem Umschalter der Größe; eigene Vorlagen lassen sich dort umbenennen und löschen, ausgelieferte duplizieren;
 Löschen fragt nach und nennt, dass kein Gebäude berührt wird. Wer alle fünf Größen nach einem Muster belegen will,
-wählt es in den fünf Karten — gleiche Namen stehen in jeder Liste an derselben Stelle.
+wählt es in der Kopfzelle der Zeile „Vorlage" unter **„alle Größen"** (E57): Die Liste führt jeden Namen, der in
+mindestens einer der fünf Listen steht, einmal und in derselben Reihenfolge. **Eine** Rückfrage nennt vor dem Schreiben
+je Größe, was geschieht — übernehmen, nach P12 ersetzen und behalten, die Gesamtangabe der Lüftung aufteilen (F5), keine
+Vorlage dieses Namens (die Größe bleibt) oder gesperrt mit Grund —, die betroffenen Zonen mit Namen; „Ja" übernimmt in
+einem Schritt, den „Zurücknehmen" ganz zurücknimmt. Die Abkürzung führt keinen Satzbegriff ein: Vorlagen bleiben je
+Größe (P11), die Übernahme je Karte bleibt, gleiche Namen stehen in jeder Liste an derselben Stelle (Zählfall KN6: 3
+statt 11 bis 16 Handgriffe).
+
+**„Kopieren nach …"** (3.5) steht in jeder Zeile der Verwaltung neben „Duplizieren". Eine kleine Überlagerung mit Titel
+und Kreuz zeigt nur die erlaubten Ziele der Quelle — Heizen → Kühlen, Geräte ↔ Personen —, den Namen der Quelle als
+Vorschlag und, nur bei Heizen → Kühlen, das Feld des Komfortsollwerts (Vorgabe 26 °C, Grenzen der Kühlspalte). An
+Kühl- und Lüftungsvorlagen ist der Knopf weich gesperrt, der Grund steht am Knopf. „Kopieren" schreibt sofort; ein
+Doppelname der Zielliste steht am Namensfeld, ein ungültiger Sollwert am Sollwertfeld. Danach zeigt die Verwaltung die
+Zielliste mit der neuen Vorlage gewählt.
 
 ### 7.5 Die Kalenderkarte
 
@@ -1034,7 +1067,7 @@ je Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizperiode 1.10.�
 |---|---|---|---|---|---|
 | **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
-| **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 14–18; Entwurf: 19–22 (E56) |
+| **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) — abgeschlossen 02.10.2026 in elf Wellen samt der Abkürzung „alle Größen" (E57; [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept N1.66) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich — erfüllt bis auf die Sichtabnahme SA1, die beim Anwender aussteht (Referenzlauf byte-gleich gegen R29) | nein | 14–18; Entwurf: 19–22 (E56) |
 | **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9 |
 | **KP4** | Papiere nachziehen (Rechenschritte mit neuen Schritten „Aufheizrampe" und „Nachtauskühlung", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
 | **Summe** | | | | | **35–49** (mit dem Entwurf KP2: 40–53) |
@@ -1141,7 +1174,7 @@ Festlegung N1.63 Nr. 12 der Umsetzung KP1b, zur Bestätigung vorgelegt. Der Ents
 
 ### 9.6 Entscheide des Anwenders (E56, 29.09.2026)
 
-Fünf Fragen aus dem [Entwurf KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) (Abschnitt 6), per Auswahl entschieden, alle nach
+Fünf Fragen aus dem [Entwurf KP2](../ueberholt/2026-09-29_Entwurf_KP2.md) (Abschnitt 6), per Auswahl entschieden, alle nach
 Empfehlung. Der Entscheid steht als Nachtrag N1.65 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
 
 | Frage | Entscheid | Folgen |
@@ -1151,6 +1184,17 @@ Empfehlung. Der Entscheid steht als Nachtrag N1.65 im [Leitkonzept](Konzept_Geba
 | F3 Wo stehen die Altfelder (Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung, Maximalraumtemperatur)? | **Nur im Reiter „Konditionierung"**, Reiter 1 zeigt eine Herleitungszeile | 7.1; eine Eingabestelle je Wert |
 | F4 Wo liegt die Vorlagenverwaltung? | **In jeder Kalenderkarte** als Blatt im Katalogeditor, auf beiden Plattformen | 7.4; kein Menüpunkt, iOS-Hülle unverändert |
 | F5 Wie wird die Gesamtangabe `Luftwechselrate` aufgeteilt, sobald die Lüftung eine Vorgabe bekommt? | **Aufteilen, die Summe bleibt:** Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = der Rest, nach einer Rückfrage | 3.1 (F15) |
+
+### 9.7 Entscheid des Anwenders (E57, 30.09.2026)
+
+Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" hatte der [Entwurf KP2](../ueberholt/2026-09-29_Entwurf_KP2.md) (Abschnitt 6)
+nicht gefragt, sondern an die gezählten Handgriffe gebunden; vorgelegt mit dem Zählfall KN6 der Welle U2, per Auswahl
+entschieden. Der Entscheid und die Festlegungen seiner Umsetzung stehen im Nachtrag N1.66 des
+[Leitkonzepts](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
+
+| Frage | Entscheid | Folgen |
+|---|---|---|
+| Bekommt die Matrix eine Abkürzung „gleichnamige Vorlage in allen Größen übernehmen"? Gezählt (KN6, „Büro" in allen fünf Größen): 11 Handgriffe breit, 12 an der Gesamtangabe der Lüftung, 16 mit fünf angelegten Kalendern, 15 schmal | **Aufnehmen** (Wortlaut „nehme auf") — ein Eintrag in der Zeile „Vorlage", eine Rückfrage für alle Größen, kein Satzbegriff; P11 bleibt | 7.2, 7.4; umgesetzt mit der Welle U5 (N1.66 Nr. 25–30): 3 Handgriffe in allen vier Fällen; R16 entschärft |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
@@ -1212,6 +1256,8 @@ Ein Satz, veröffentlicht mit dem gebündelten Upload; die Versionsnummer ist be
 > Kalender, die eine Vorgabe-Matrix oder je Größe eine Vorlage belegt, mit Heiz- und Kühlperiode und Nachtauskühlung,
 > und die Aufheizoptimierung ersetzt den Sollwertsprung nach einer Absenkung durch eine berechnete Aufheizrampe."
 
+Die Sätze der Oberfläche aus KP2 stehen im [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Abschnitt 7.
+
 ## 11. Risiken
 
 | Nr | Risiko | Herkunft | Prüfweg | Stand |
@@ -1237,12 +1283,12 @@ Ein Satz, veröffentlicht mit dem gebündelten Upload; die Versionsnummer ist be
 | R13 | Vorlagen mit Doppelnamen oder Produktnamen, mit Inhalt einer fremden Größe, oder eigene Vorlagen gehen in die Auslieferung | Rev. 2, P11 (E53) | `UNIQUE (Groesse, Bezeichner)` ohne Groß-/Kleinschreibung, Größengleichheit im Controller mit Datenbankfall, `KonditionierungsvorlagenWacheTests`, Katalogbereinigung `--kataloge readonly` im Vorlagenlauf | offen |
 | R14 | `Kuehl_Sollwert_Nacht` wird wirksam, wo sie in Anwenderdatenbanken heute gefüllt ist | Rev. 2, P13 (E53) | Testdatenbank: 0 Fälle; der erste Lauf nach KP1 nennt Gebäude mit Kühl-Nachtwert im Protokoll | offen |
 | R15 | Die Heizperiode schneidet Heizbedarf ab: Untertemperatur außerhalb bleibt unbemerkt, oder ein Erzeuger ohne Warmwasser und Prozesswärme steht außerhalb still, ohne dass es auffällt | E53 (Heizperiode) | Hinweis mit Zähler (3.6); Kaskadenprobe: Gebäudewärme außerhalb 0, Warmwasser und Prozesswärme unverändert (6) | offen |
-| R16 | Vorlagen je Größe kosten fünf Griffe statt einem (KN6) | P11 (E53) | Sichtabnahme mit Schrittzählung; gleiche Namen an derselben Stelle jeder Liste, Zeile „Vorlage" der Matrix (7.2) | offen |
+| R16 | Vorlagen je Größe kosten fünf Griffe statt einem (KN6) | P11 (E53) | Sichtabnahme mit Schrittzählung; gleiche Namen an derselben Stelle jeder Liste, Zeile „Vorlage" der Matrix (7.2); Zählfall KN6 als bunit-Probe | entschärft mit E57 — 3 Handgriffe über „alle Größen" (7.4) |
 
 ## 12. Verweise
 
 **Papiere.** [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4.4–4.6, 5.6, 15, N1.32, N1.37, N1.48,
-N1.55, N1.56, N1.59, N1.60); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Kapitel 10, K11);
+N1.55, N1.56, N1.59–N1.66); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Kapitel 10, K11);
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
 (3.4, 7.1, 11); [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (1.3, 3.4, 3.7, 4.3, 4.4, 8.4,
 8.6, 9.2, 10.1); [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.6, 2.9);
@@ -1254,12 +1300,14 @@ N1.55, N1.56, N1.59, N1.60); [Register](Offene_Entscheide_Gebaeudesimulation_EPO
 [BETRIEB_SQLITE](BETRIEB_SQLITE.md) § 6; [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13;
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md);
 [Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md);
+[Entwurf KP2](../ueberholt/2026-09-29_Entwurf_KP2.md); [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md);
 [Statusdatei der Migration](Status_iOS_Migration.md) #571 (Beleg der Sitzung „Dialoge und Korrekturen" zur
 Semantik der Sollwerte, Feldnamen und Wiki-Anker).
 
 **Entscheide und Registerpunkte.** E8 (Skalierung), E27 mit K11 (Zeitprofil der Kühlung, mit E52 geändert), E28 mit U4
 (Glossar vor den Übersetzungen), E30 (Ergebnistabelle), E32 (freier Lauf ohne Kühlung), E36 (Rechenzeit der Kopplung),
 E43 (Nachtzeit je Gebäude, Vorgaben), E49 mit A4 (a) (Kühlwerte vom Gebäude), E52 (P1–P8), E53 (P9–P13, Heizperiode),
+E54 bis E57 (9.4–9.7),
 N1.56 Festlegungen 1, 2, 7 und 10; F-K1 (Kühlsollwert leer = aus), F-P4 (Sommerlüftung); H5, H7, H8, H10 und H-F10 der
 Anlagenkopplung; U3 (Platzhalter), U7 (Ortszeit-Kalender); A11 (Schrittnummern bei Beauftragung); K5 (Feuchte).
 

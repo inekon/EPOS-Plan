@@ -1765,7 +1765,8 @@ Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere
 Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, Vorlagen je Größe, eine Nachtauskühlung
 und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
-P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
+P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
+N1.66), KP3 und KP4 auf Auftrag; kein Bestandteil der Stufen G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -4828,8 +4829,8 @@ Anwenderentscheid gelesen wird. Widerspruch ist möglich und wäre ein eigener E
 `KonditionierungVorlageTests`) halten die Festlegungen; jede Welle ist gegen ihren Ausgangsstand byte-gleich, der
 Referenzlauf der fünfzehn Projekte gegen die Basis R24 ebenfalls.
 
-**Offen (KP2, KP3):** siehe [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md)
-Abschnitt 7.
+**Offen (KP3):** siehe [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md)
+Abschnitt 7; die dort für KP2 genannten Punkte sind mit KP2 gebaut (N1.66).
 
 ### N1.64 Entscheid E55 — Nutzungszeit der Auslegung und der Prüfung F21
 
@@ -4855,7 +4856,7 @@ berührt.
 ### N1.65 Entscheid E56 — Konditionierungsprofile: Saat, Folgen der Matrix, Altfelder, Vorlagenverwaltung, Luftwechsel
 
 **Anlass.** Der Entwurf der Stufe KP2
-([`Gebaeudesimulation/2026-09-29_Entwurf_KP2.md`](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md)) — zwei Leser, zwei
+([`ueberholt/2026-09-29_Entwurf_KP2.md`](../ueberholt/2026-09-29_Entwurf_KP2.md)) — zwei Leser, zwei
 unabhängige Entwürfe, eine Gegenprüfung — legt fünf Fragen vor; alles Übrige benennt er als Festlegungen der Umsetzung,
 die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 29.09.2026 alle fünf per Auswahl, nach
 Empfehlung.
@@ -4870,4 +4871,70 @@ Empfehlung.
 
 **Folgen.** Teilkonzept Konditionierungsprofile 3.1, 3.3, 3.5, 7.1, 7.2, 7.4 und 8 fortgeschrieben, Entscheide in 9.6. Der
 Entwurf veranschlagt KP2 mit 19–22 PT (Konzept 14–18), weil die Oberfläche einen Arbeitsstand im Kern braucht, den das
-Konzept nicht veranschlagt hatte; die Umsetzung folgt auf Auftrag.
+Konzept nicht veranschlagt hatte. Umgesetzt mit KP2; die Festlegungen der Umsetzung stehen in N1.66.
+
+### N1.66 Festlegungen der Umsetzung KP2 (E56, E57) — Konditionierungsprofile: Oberfläche und erste Kernwellen
+
+**Anlass.** Die Stufe KP2 ist gebaut und abgeschlossen (02.10.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md),
+[Entwurf](../ueberholt/2026-09-29_Entwurf_KP2.md)): elf Wellen in zwei Spuren — K1 bis K4 für Kern und Daten, U0a bis U5
+für die Oberfläche; der Entwurf hatte zehn geplant, U0 ist in Glossar und Texte (U0a) und Grundlagen (U0b) geteilt —,
+Schemaschritt 157 mit der Saat der 14 Vorlagen, der Reiter „Konditionierung" in allen Modi des Gebäudeeditors samt
+Vorlagen je Karte und Vorlagenverwaltung, die Zonenmatrix, die Konditionierung in der Gebäudeverwaltung, die
+Kalenderkarte im Einzelnen und mit der letzten Welle die Abkürzung nach E57. Der Entwurf hatte seine Festlegungen
+benannt (Abschnitt 5) und für diesen Nachtrag vorgesehen; die Liste nennt sie, wie sie gebaut sind, dazu die
+Festlegungen der Wellen und der Abkürzung, damit nichts davon als Anwenderentscheid gelesen wird. Widerspruch ist möglich
+und wäre ein eigener Entscheid.
+
+**Entscheid E57.** Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" hatte der Entwurf nicht gefragt,
+sondern an die gezählten Handgriffe gebunden. Gezählt im Zählfall KN6 („Büro" in allen fünf Größen) waren ohne
+Abkürzung 11 Handgriffe breit, 12 an der Gesamtangabe der Lüftung, 16 mit fünf angelegten Kalendern und 15 schmal. Der
+Anwender entscheidet am 30.09.2026 an diesen Zahlen, vor der Sichtabnahme SA1 (Wortlaut „nehme auf"): **aufnehmen** —
+ein Eintrag in der Zeile „Vorlage", eine Rückfrage für alle Größen, kein Satzbegriff; P11 bleibt (Teilkonzept 9.7).
+
+| # | Festlegung | Wo |
+|---|---|---|
+| | **Entwurf KP2, Abschnitt 5 — wie gebaut** | |
+| 1 | **Arbeitsstand und OK-Weg:** Jede Handlung des Reiters wirkt auf einen reinen Arbeitsstand im Kern (`Konditionierungsstand`, `Konditionierungsarbeit`); jeder Schritt liefert einen neuen Stand und einen benannten Befund, „Zurücknehmen" ist der vorige Stand. Geschrieben wird nur mit OK und an einer Stelle: Katalog neu, bearbeiten und „Speichern unter" in einem Vorgang, im Projekt Gebäude und Zonen mit Id-Zuordnung — ein zweites OK schreibt nichts doppelt | 7.2 |
+| 2 | **„Speichern unter"** schließt nicht (E27) und meldet den angelegten Satz; im Katalogmodus arbeitet der Dialog danach am neuen Satz (das nächste OK trifft nicht das Original, das Schloss gilt ihm nicht), im Projektmodus bleibt der Projektzustand unberührt. Die Konditionierung des neuen Satzes kommt aus dem Arbeitsstand, ohne Konditionierungstabellen die Kopie des Ursprungssatzes | 5.5, 7.3 |
+| 3 | **Rückfragen** entstehen vor dem Schreiben aus dem Befund des Arbeitsstands und nennen Zonen mit Namen, eine Frage je Handlung; „Speichern unter" im Projekt fragt einmal für Zonen, Bauteile und Konditionierung | 7.2, 7.3 |
+| 4 | **„Aus dem Katalog erneut übernehmen…"** steht im Reiterkopf (nur Projekt, Vorgabe „Nein", eigener Text) und ersetzt die ganze Gebäudeebene samt Bestandszellen, Nachtzeiten und Ferienzeiträumen; die Zonen bleiben | 7.3 |
+| 5 | **Heiz-Nachtzeiten** stehen an Gebäude und Katalogbau in `Nachtabsenkung_Beginn/_Ende`, an einer Zone macht eine eigene Heiz-Nachtzeile die Spalte wirksam; **Anlegen** am Gebäude legt die Kalender der Zonen mit eigenen Zellen mit an; P1 gilt beim Übergang der Personenspalte; Merker folgen jedem Schreibweg; `Bemerkung` = Herkunft · letzter Werkzeugvermerk | 3.4, 5.6 |
+| 6 | **Orte:** der Reiter in allen Modi des Gebäudeeditors (Projekt, Katalog neu und bearbeiten); in der Gebäudeverwaltung eine Stammblattgruppe mit fünf Zustandszeilen und ein breites Blatt am selben Arbeitsstand; ein gesperrter Satz steht im Lesemodus mit Grund, „Speichern unter" bleibt frei; ohne Konditionierungstabellen ist der Reiter benannt gesperrt; `Modus.Admin` entfällt | 7.1, 7.3 |
+| 7 | **Layout:** breite Überlagerung; der Reiter bricht am Behälter bei 900 px um (breit Matrix und fünf Karten, schmal fünf Reiter je Größe); `Wochenraster` mit abschaltbaren Zusätzen („aus"; 4 × 6, ab 600 px 2 × 12, ab 1 150 px 7 × 24), ohne Zusätze das Markup des Bestands; der Zonendialog ist ein Blatt; Vorschau und Teppichbild sind entprellt | 7.2, 7.5 |
+| 8 | **Teppichbild:** `Kalenderteppich` mit Rohreihe (NaN für „aus" bei jeder Größe) und Quelle je Tag, dieselbe Entscheidung wie der Lauf; der Renderer zeichnet höchstens 2 000 Elemente, darüber benannt gröber; „aus" als eigene Rolle; Bezugsjahr im Projekt das des Laufs, im Katalog 2025; drei neue ChartProben-Bilder in einer neuen Messlatte-Datei | 7.5 |
+| 9 | **gbXML `SollHeizenC`** mit Heizkalender (Zone vor Gebäude): der häufigste endliche Wert der Standardwoche Mo–Fr außerhalb der Nachtzeit (E55), bei Gleichstand der höhere; „Kalender" in der Verlustliste; ohne Kalender der Bestand | 5.5 |
+| 10 | **Ferien des Zapfprofils** mit Heizkalender des gebundenen Gebäudes: dessen FERIEN-Perioden, höchstens vier nach Rang, mehr mit Vorhinweis; sonst der Bestandszweig (Projekt 1045 unverändert) | 5.5 |
+| 11 | **„Zeitstruktur übernehmen":** „wie Heizung" = Stunden mit endlichem Wert ≥ Tagwert der Heizspalte, „wie Anwesenheit" = Anteil > 0; diese Stunden bekommen den Tagwert des Ziels, die übrigen dessen Nachtwert; ersetzt wird nur die Standardwoche | 3.5 |
+| 12 | **B13:** Ferien im Gemeinjahr über `Feiertage.Gemeinjahrestag/Datum`; der 29.02. ist eine Fehleingabe | 3.2 |
+| 13 | **„Als Vorlage speichern…" und die Vorlagenverwaltung** schreiben sofort mit eigenem OK, eine Zeile unter dem Knopf sagt es; die Verwaltung steht als Blatt im Katalogeditor (E56 F4) und ist von U4 nach U2 gewandert, damit nur eine Welle die Karte anfasst | 7.4 |
+| 14 | **Assistent und Texte:** Feldtafel je Zelle (`KiKonditionierungsfelder`), die Woche als Text, je Wirt über `KonditionierungKiTafel` (Editor, Verwaltung, Zone); eine ersetzende Handlung stellt auch für den Assistenten ihre Rückfrage, beantwortet wird sie vom Anwender; Glossar § 13 vor den Ressourcen, Vorlagennamen bleiben deutsch (Glossar § 10) | 7.7 |
+| 15 | **Periodenliste:** der Matrixbereich nur lesbar, neue Perioden ZEITRAUM oder FEIERTAG im Eigenband 310–899, Rang nur dort verschiebbar, das Feiertagsband 100–108 weich gesperrt; unter 600 px ohne die Spalten „Art" und „Von–Bis"; die Spalte „Kalender" der Katalogauswahl und der Verwaltung zählt angelegte Kalender | 7.3, 7.5 |
+| | **Festlegungen der Wellen** | |
+| 16 | **Saat als Schemaschritt 157** (156 hat die Kessel-Kennlinie belegt), reines DML, Schlüssel (Größe, Name) ohne Groß-/Kleinschreibung; angelegt wird nur, was fehlt, eine eigene gleichnamige Vorlage bleibt und steht im Bericht | 3.5, 5.4 |
+| 17 | **Feiertagsregeln einer Vorlage** stehen beim Übernehmen im Feiertagsband 100–108 unter den Ferien; ein belegter Rang wird benannt | 3.2, 3.5 |
+| 18 | **Die Kette nach 3.4 wörtlich:** Unter einem angelegten Gebäudekalender wirken Zonenzelle und Heiz-Nachtzeile der Zone erst, wenn die Zone einen eigenen Kalender führt („vom Gebäude übernehmen und anpassen"); bis dahin steht die Spalte „vom Gebäude" mit Grund | 3.4, 7.3 |
+| 19 | **Tagesbilanz-Weg:** Die Matrix zeigt nur die Altweg-Felder (2.2), der Kühlsollwert ist dort nicht bearbeitbar | 2.2, 7.2 |
+| 20 | **Kühlspalte:** gesperrt allein über „Kühlung aktiv"; der Projektbezug (Referenzjahr, Kühlbetrieb, Anlagenkopplung aus dem Projekt) schließt den Kühlbetrieb ein wie die Rechnung; an der Zone bis KU3 gesperrt | 7.2, 7.3 |
+| 21 | **Aktionswissen deutsch,** die englischen Suchwörter in den Titeln; die Setzer des Assistenten für die Bestandsfelder laufen im Editor über den Weg | 7.7 |
+| 22 | **Zone:** Personen-Nennwert als eigener Wert oder Flächenanteil statt des vollen Gebäudewerts; die Zone rechnet in Vorschau und Lauf auf ihrem aufgelösten Bestand (`Konditionierungseingang.ZonenBestand`); „aufteilen" an der Zone benannt abgelehnt; die Karten der Zone bieten keine Vorlagen an (die Zone erbt oder kopiert den Gebäudekalender) | 3.4, 7.3 |
+| 23 | **Verwaltung:** „Speichern" schreibt das Blatt mit (die Fassung zählt als Abweichung), „Verwerfen" nimmt alles zurück; eine Regel an Matrix, Nachtzeit oder Ferien öffnet das Blatt; die Altfelder stehen nur im Blatt (F3 a) | 7.1, 7.3 |
+| 24 | **Karte:** Grundangabe und Standardwoche schließen sich aus, „Standardwoche verwerfen" übernimmt den häufigsten Wert; die Werkzeuge greifen nur am angelegten Kalender, sonst weich gesperrt mit Grund; „In den Kalender übernehmen" an der Wärmeübergabe mit Rückfrage am angelegten Kalender und einem Schritt Zurücknehmen; Geräte und Personen ohne Anteile zeigen einen benannten Leerzustand | 7.5 |
+| | **Die Abkürzung nach E57** | |
+| 25 | **Ort:** eine Liste „alle Größen" in der Kopfzelle der Zeile „Vorlage", Platzhalter „—", Hinweis am Element, Bedienziel ≥ 44 px, breit und schmal; nur mit Vorlagen, nicht im Lesemodus, nicht an der Zone, nicht ohne Weg und nicht auf dem Tagesbilanz-Weg | 7.2, 7.4 |
+| 26 | **Einträge:** jeder Name, der in mindestens einer der fünf Listen steht, einmal, in der Reihenfolge des Kerns (ausgelieferte zuerst) und nach der Namensregel der Vorlagen (getrimmt, ohne Groß-/Kleinschreibung); ein Schloss, wenn eine Vorlage dieses Namens ausgeliefert ist; die Wahl ändert den Arbeitsstand nicht und steht nur, solange ihre Rückfrage steht | 7.4 |
+| 27 | **Eine Rückfrage, immer,** Vorgabe „Nein", aus den Befunden aller Größen vor dem Schreiben: je Größe eine Zeile — „übernehmen"; am angelegten Kalender, was nach P12 ersetzt wird und was bleibt; an der Gesamtangabe der Lüftung die Aufteilung (F5); „keine Vorlage dieses Namens — bleibt"; „gesperrt" mit dem Grund der Karte (Kühlen ohne Kühlung); die betroffenen Zonen einmal mit Namen. „Nein" und Abbrechen lassen alles | 7.4 |
+| 28 | **Ein Schritt:** „Ja" übernimmt Heizen bis Personen über den Kernschritt der Karte, teilt die Gesamtangabe vorher ohne zweite Frage auf und übergeht Größen ohne gleichnamige Vorlage und gesperrte; ein Fehler bricht ab, wird gemeldet und lässt den Arbeitsstand; „Zurücknehmen" nimmt alle Größen in einem Schritt zurück; danach nennen Karten und Zeile „Vorlage" die Herkunft, die Liste steht wieder auf „—"; ohne übernommene Größe entsteht kein Schritt | 7.4 |
+| 29 | **Assistent:** das Feld `kond_vorlage_alle` als Wahl vor den Spalten an Editor und Verwaltung, nicht an der Zone; Lesen nennt die gemeinsame Herkunft, Setzen stellt die eine Rückfrage; Aktionswissen „Konditionierung: Vorlage übernehmen" ergänzt | 7.7 |
+| 30 | **Zählfall KN6 mit Abkürzung:** 3 Handgriffe in allen vier Fällen (Reiter, Wahl, „Ja") statt 11 bis 16; die Übernahme je Karte bleibt unverändert (P11) | 7.4, R16 |
+
+**Nachweise.** Die Proben der elf Wellen halten die Festlegungen — darunter `KonditionierungsarbeitTests`,
+`KonditionierungsvorlagenWacheTests`, `KonditionierungMatrixTests`, `KonditionierungKn6Tests`, `PeriodenlisteTests`,
+`KiKonditionierungsfelderTests`, `KiMaskenabdeckungWacheTests` und die ChartProben des Teppichbilds —, dazu die
+Konditionierungsprobe in vier Fensterbreiten und, mit der Abkürzung, in beiden Kulturen. Jede Welle ist mit Gate
+abgenommen; der Referenzlauf blieb byte-gleich gegen die jeweils geltende Basis, zuletzt 487/487 CSV der sechzehn
+Projekte gegen R29.
+
+**Folgen.** Teilkonzept Konditionierungsprofile im Kopf und in 7.2, 7.4, 8, 9.7, 10.5, 11 (R16) und 12 fortgeschrieben;
+Entwurf KP2 und die zwei Übergaben der Sitzung liegen unter `ueberholt/`. Offen beim Anwender: die Sichtabnahme SA1 unter Windows, die SA2
+weitgehend mit abdeckt, samt der Bestätigung von Nr. 27 („eine Rückfrage, immer"). KP3, KP4 und KU3 folgen auf Auftrag.

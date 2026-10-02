@@ -305,11 +305,13 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
         // KP2 U1: die Vorgabe-Matrix - ein Zahlenfeld je Zelle (in der Schleife EIN Tag), das
-        // Nachtfenster je Spalte, ΔT der Nachtauskühlung und Start/Ende der Saison.
-        new("KonditionierungMatrix", 5, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
+        // Nachtfenster je Spalte, ΔT der Nachtauskühlung und Start/Ende der Saison. KP2 U5 (E57): dazu
+        // die Liste „alle Größen“ in der Kopfzelle der Zeile „Vorlage“ (kond_vorlage_alle): 5 → 6.
+        new("KonditionierungMatrix", 6, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
             "nachtabsenkung, nacht_beginn/nacht_ende, wochenendabsenkung, soll_ferien, kuehl_sollwert, " +
             "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne); die übrigen Zellen, „aus“, " +
-            "Nachtfenster, ΔT und Saison die Felder kond_* aus dem Profil KiKonditionierungsfelder (Feldtafel)"),
+            "Nachtfenster, ΔT und Saison die Felder kond_* aus dem Profil KiKonditionierungsfelder (Feldtafel); " +
+            "die Liste „alle Größen“ das Feld kond_vorlage_alle mit der Aktion der einen Rückfrage"),
         // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),
@@ -320,9 +322,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
             "Aktion von „Übernehmen“; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
             "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
-        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung.
-        new("KonditionierungVorlagenverwaltung", 1, "der neue Name gehört zur Handlung „Umbenennen“, die mit " +
-            "eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
+        // Zielgröße, Name und Komfortsollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4).
+        new("KonditionierungVorlagenverwaltung", 4, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name " +
+            "und Komfortsollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
+            "Einstellwert des Gebäudes"),
         // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
         // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
         new("KalenderkarteInhalt", 4, "die Grundangabe und die Standardwoche führt die Feldkarte als " +

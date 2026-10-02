@@ -424,8 +424,15 @@ namespace WindowsFormsApplication1
             // eine Kennzahl“ nichts zu tun. Solange beide hier zusammenhingen, blieb die
             // Statuszeile bei genau den Zeilen stumm, bei denen der Anwender am ehesten
             // neu rechnen muss.
-            bool veraltet = _ergebnisse.Count > 0 &&
-                            _ergebnisse.Any(x => !_ctrl.ErgebnisAktuell(x));
+            //
+            // UND DER GRUND (Folge von #637): Veraltung ist die Regel hinter ErgebnisAktuell -
+            // jüngerer Simulationslauf, geänderte Kosten der Gruppe, geänderter Kostenkatalog.
+            // Über alle gespeicherten Zeilen gilt der gewichtigste; Statuszeile und Band nennen ihn.
+            Ergebnisveraltung grund = Ergebnisveraltung.Keine;
+            foreach (WirtschaftlichkeitErgebnis x in _ergebnisse)
+                grund = KostenAenderungsstempel.Vorrang(grund, _ctrl.Veraltung(x));
+            bool veraltet = grund != Ergebnisveraltung.Keine;
+            stand.NachrechnenGrund = grund;
             BilanzenAuffrischen();
             stand.Ansicht = Ansicht(0);
 
@@ -435,7 +442,7 @@ namespace WindowsFormsApplication1
             stand.Statuszeile = _ergebnisse.Count == 0
                 ? T("WIRT_STATUS_KEINE", "Noch keine Wirtschaftlichkeitsberechnung gespeichert — bitte „Berechnen“.")
                 : veraltet
-                    ? T("WIRT_STATUS_VERALTET", "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.")
+                    ? StatusVeraltet(grund)
                     : string.Format(T("WIRT_STATUS_STAND", "Gespeicherte Ergebnisse vom {0}."),
                                     _ergebnisse[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
 
@@ -1859,6 +1866,26 @@ namespace WindowsFormsApplication1
         private static string Strich(string grund)
         {
             return string.IsNullOrEmpty(grund) ? "—" : "— " + grund;
+        }
+
+        /// <summary>
+        /// Die Statuszeile veralteter Ergebnisse nach ihrem Grund. Jede beginnt mit dem
+        /// Warnzeichen — an ihm erkennt die Seite, dass das Band mit dem Rechenknopf steht.
+        /// </summary>
+        private static string StatusVeraltet(Ergebnisveraltung grund)
+        {
+            switch (grund)
+            {
+                case Ergebnisveraltung.Kosten:
+                    return T("WIRT_STATUS_VERALTET_KOSTEN",
+                             "⚠ Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der Rechnung geändert — bitte „Berechnen“.");
+                case Ergebnisveraltung.Katalog:
+                    return T("WIRT_STATUS_VERALTET_KATALOG",
+                             "⚠ Der Kostenkatalog wurde nach der Rechnung geändert — bitte „Berechnen“.");
+                default:
+                    return T("WIRT_STATUS_VERALTET",
+                             "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.");
+            }
         }
 
         private static string T(string schluessel, string rueckfall)

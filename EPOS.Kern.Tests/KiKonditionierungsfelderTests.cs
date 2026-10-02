@@ -13,12 +13,12 @@ namespace EPOS.Kern.Tests
     /// <b>Die Feldkarte der Vorgabe-Matrix</b> (<see cref="KiKonditionierungsfelder"/>; Stufe KP2, Welle
     /// U1): EIN Profil für den Dialogkatalog und die Feldtafel der Sichtklasse.
     ///
-    /// <para><b>Was geprüft wird:</b> die 41 Schlüssel nach ihrem Muster, eindeutig und gültig; die
+    /// <para><b>Was geprüft wird:</b> die 47 Schlüssel nach ihrem Muster, eindeutig und gültig; die
     /// Bestandszellen genau die des Kerns (<see cref="Matrixzellenort"/>) unter ihren Katalognamen, und
     /// nur der Kühlsollwert der Nacht kommt neu dazu; die Zellen, die es gibt, dieselben wie im Reiter
     /// (<see cref="KonditionierungBearbeitung.Gibt"/>); Spalte und Zeile auf den Plätzen der Oberfläche;
-    /// Typ, Einheit und Grenzen der Katalogfelder; je Größe die Vorlage als Wahl (Welle U2) und das
-    /// Aktionswissen der Vorlagen.</para>
+    /// Typ, Einheit und Grenzen der Katalogfelder; je Größe die Vorlage als Wahl (Welle U2), vor den Spalten
+    /// die Abkürzung „alle Größen" (E57, Welle U5) und das Aktionswissen der Vorlagen.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class KiKonditionierungsfelderTests : IDisposable
@@ -28,14 +28,15 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _kultur.Dispose();
 
         private static readonly Regex MUSTER = new(
-            "^kond_(heizen|kuehlen|lueftung|geraete|personen)_((nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?|vorlage|woche)$");
+            "^kond_((heizen|kuehlen|lueftung|geraete|personen)_((nennwert|tag|nacht|wochenende|ferien|saison)(_aus|_von|_bis|_dt)?|vorlage|woche)|vorlage_alle)$");
 
         [Fact]
-        public void Die_Karte_fuehrt_46_Felder_nach_ihrem_Muster()
+        public void Die_Karte_fuehrt_47_Felder_nach_ihrem_Muster()
         {
-            // 41 Felder der Matrix und der Vorlagen (Wellen U1, U2), dazu je Größe die Woche (Welle U3).
+            // 41 Felder der Matrix und der Vorlagen (Wellen U1, U2), dazu je Größe die Woche (Welle U3) und vor
+            // den Spalten die Abkürzung „alle Größen" (E57, Welle U5).
             IReadOnlyList<KiKonditionierungsfelder.Feld> alle = KiKonditionierungsfelder.Alle;
-            Assert.Equal(46, alle.Count);
+            Assert.Equal(47, alle.Count);
             Assert.Equal(alle.Count, alle.Select(f => f.Schluessel).Distinct(StringComparer.Ordinal).Count());
 
             foreach (KiKonditionierungsfelder.Feld f in alle)
@@ -85,7 +86,8 @@ namespace EPOS.Kern.Tests
         {
             foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
             {
-                if (f.Teil is KiKonditionierungsfelder.Teil.Vorlage or KiKonditionierungsfelder.Teil.Woche) continue;   // keine Zelle
+                if (f.Teil is KiKonditionierungsfelder.Teil.Vorlage or KiKonditionierungsfelder.Teil.Woche
+                    or KiKonditionierungsfelder.Teil.VorlageAlle) continue;   // keine Zelle
                 var g = (KonditionierungGroesse)f.Groessenplatz;
                 var z = (KonditionierungZeile)f.Zeilenplatz;
                 Assert.True(KonditionierungBearbeitung.Gibt(g, z), f.Schluessel);
@@ -115,7 +117,7 @@ namespace EPOS.Kern.Tests
         {
             Dictionary<string, KiDialogFeld> felder = KiKonditionierungsfelder.Dialogfelder()
                 .ToDictionary(f => f.Name, StringComparer.Ordinal);
-            Assert.Equal(46, felder.Count);
+            Assert.Equal(47, felder.Count);
 
             KiDialogFeld geraete = felder["kond_geraete_tag"];
             Assert.Equal(KiParameterTyp.Zahl, geraete.Typ);
@@ -159,15 +161,18 @@ namespace EPOS.Kern.Tests
         public void Die_Zonenkarte_fuehrt_die_Matrix_ohne_Kuehlspalte_mit_dem_Heiz_Nachtfenster()
         {
             IReadOnlyList<KiKonditionierungsfelder.Feld> zone = KiKonditionierungsfelder.Zonenfelder;
-            // Ohne Kühlspalte, ohne die Vorlagen und die Wochen (die Karten der Zone bieten keine), dazu das
-            // Heiz-Nachtfenster.
+            // Ohne Kühlspalte, ohne die Vorlagen, die Abkürzung „alle Größen" und die Wochen (die Karten der Zone
+            // bieten keine), dazu das Heiz-Nachtfenster.
             int ohneKuehlen = KiKonditionierungsfelder.Alle.Count(f => f.Groesse != Konditionierungsgroesse.Kuehlsoll
                                                                         && f.Teil != KiKonditionierungsfelder.Teil.Vorlage
+                                                                        && f.Teil != KiKonditionierungsfelder.Teil.VorlageAlle
                                                                         && f.Teil != KiKonditionierungsfelder.Teil.Woche);
             Assert.Equal(ohneKuehlen + 2, zone.Count);
             Assert.Equal(27, zone.Count);
             Assert.DoesNotContain(zone, f => f.Teil == KiKonditionierungsfelder.Teil.Vorlage);
+            Assert.DoesNotContain(zone, f => f.Teil == KiKonditionierungsfelder.Teil.VorlageAlle);
             Assert.Null(KiKonditionierungsfelder.FindeZone("kond_heizen_vorlage"));
+            Assert.Null(KiKonditionierungsfelder.FindeZone(KiKonditionierungsfelder.VORLAGE_ALLE));
             Assert.DoesNotContain(zone, f => f.Groesse == Konditionierungsgroesse.Kuehlsoll);
             Assert.DoesNotContain(zone, f => f.Bestandszelle && f.Teil == KiKonditionierungsfelder.Teil.Wert);
 
@@ -224,6 +229,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal("GebaeudeKatalogKiSicht.kond_heizen_vorlage", heizen.Eigenschaftspfad);
             Assert.Contains("„Übernehmen“", heizen.Erlaeuterung);
             Assert.Contains("Heizen", heizen.Erlaeuterung);
+        }
+
+        /// <summary>
+        /// <b>Die Abkürzung „alle Größen"</b> (E57; Stufe KP2, Welle U5): <c>kond_vorlage_alle</c> steht VOR den
+        /// Spalten — die Liste in der Kopfzelle der Zeile „Vorlage", keine Zelle und keine Größe (Platz −1). Eine
+        /// WAHL mit der Aktion der einen Rückfrage für alle Größen, nicht leer setzbar; die Zonenkarte führt sie
+        /// nicht (die Karten der Zone bieten keine Vorlagen).
+        /// </summary>
+        [Fact]
+        public void Die_Abkuerzung_alle_Groessen_ist_eine_Wahl_vor_den_Spalten()
+        {
+            KiKonditionierungsfelder.Feld f = KiKonditionierungsfelder.Finde(KiKonditionierungsfelder.VORLAGE_ALLE);
+            Assert.NotNull(f);
+            Assert.Equal("kond_vorlage_alle", f.Schluessel);
+            Assert.Equal(KiKonditionierungsfelder.Teil.VorlageAlle, f.Teil);
+            Assert.Equal(-1, f.Groessenplatz);
+            Assert.Equal(-1, f.Zeilenplatz);
+            Assert.Null(f.Zeile);
+            Assert.False(f.Bestandszelle);
+            Assert.Same(f, KiKonditionierungsfelder.Alle[0]);
+            Assert.Single(KiKonditionierungsfelder.Alle, x => x.Teil == KiKonditionierungsfelder.Teil.VorlageAlle);
+            Assert.Null(KiKonditionierungsfelder.FindeZone(f.Schluessel));
+
+            KiDialogFeld feld = KiKonditionierungsfelder.Dialogfelder().Single(x => x.Name == "kond_vorlage_alle");
+            Assert.Equal(KiParameterTyp.Wahl, feld.Typ);
+            Assert.True(feld.IstWahl);
+            Assert.False(feld.LeerErlaubt);
+            Assert.False(feld.NurLesen);
+            Assert.Equal("Vorlage · alle Größen", feld.Anzeigename);
+            Assert.Equal("GebaeudeKatalogKiSicht.kond_vorlage_alle", feld.Eigenschaftspfad);
+            Assert.Contains("EINE Rückfrage", feld.Erlaeuterung);
+            Assert.Contains("„Zurücknehmen“", feld.Erlaeuterung);
+            Assert.Contains("gleichnamige Vorlage", feld.Erlaeuterung);
+            using (new Kulturvorrichtung("en-US"))
+            {
+                KiDialogFeld en = KiKonditionierungsfelder.Dialogfelder().Single(x => x.Name == "kond_vorlage_alle");
+                Assert.Equal("Template · all quantities", en.Anzeigename);
+                Assert.Contains("ONE question", en.Erlaeuterung);
+            }
         }
 
         /// <summary>
@@ -290,6 +334,8 @@ namespace EPOS.Kern.Tests
                 ("Vorlagen verwalten", "Konditionierung: Vorlagen verwalten (manage templates)"),
                 ("apply template", "Konditionierung: Vorlage übernehmen (apply template)"),
                 ("manage templates", "Konditionierung: Vorlagen verwalten (manage templates)"),
+                // Die Abkürzung nach E57 (Welle U5) steht im Abschnitt „Vorlage übernehmen".
+                ("gleichnamige Vorlage in allen Größen", "Konditionierung: Vorlage übernehmen (apply template)"),
             };
             foreach ((string frage, string titel) in faelle)
             {
@@ -297,6 +343,14 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(KiChatKontext.B_GEBAEUDE, a.Bereich);
                 Assert.Contains(HilfeWissen.Suchen(frage, KiChatKontext.B_GEBAEUDE, 4, ""), x => x.Titel == titel);
             }
+
+            // Die Abkürzung im Wortlaut: die Zeile „Vorlage", EINE Rückfrage, Größen ohne gleichnamige Vorlage bleiben.
+            WissensAbschnitt uebernehmen = Assert.Single(HilfeWissen.Abschnitte,
+                                                         x => x.Titel == "Konditionierung: Vorlage übernehmen (apply template)");
+            Assert.Contains("'Gleichnamige Vorlage in allen Größen übernehmen'", uebernehmen.Inhalt);
+            Assert.Contains("Zeile 'Vorlage'", uebernehmen.Inhalt);
+            Assert.Contains("EINE Rückfrage", uebernehmen.Inhalt);
+            Assert.Contains("Größen ohne gleichnamige Vorlage bleiben", uebernehmen.Inhalt);
         }
     }
 }

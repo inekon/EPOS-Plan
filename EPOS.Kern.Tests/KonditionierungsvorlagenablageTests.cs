@@ -125,6 +125,44 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(fehlt);
         }
 
+        /// <summary>
+        /// <b>„Kopieren nach …" in Datenbank und Ablage gleich</b>: Kopf (Größe, Name, Beschreibung mit Herkunft,
+        /// Nutzung, eigen) und Inhalt jeder erlaubten Richtung, und dieselben Ablehnungen.
+        /// </summary>
+        [Fact]
+        public void Kopieren_nach_gibt_in_Datenbank_und_Ablage_dieselbe_Vorlage()
+        {
+            if (!Bereit()) return;
+            var ctrl = new KonditionierungsvorlageCtrl();
+            Konditionierungsvorlagenablage ablage = Konditionierungsvorlagenablage.AusSaat();
+            foreach ((Konditionierungsgroesse von, Konditionierungsgroesse nach, double? komfort) in new (Konditionierungsgroesse, Konditionierungsgroesse, double?)[]
+                     {
+                         (Konditionierungsgroesse.Heizsoll, Konditionierungsgroesse.Kuehlsoll, 24.5),
+                         (Konditionierungsgroesse.Geraete, Konditionierungsgroesse.Personen, null),
+                         (Konditionierungsgroesse.Personen, Konditionierungsgroesse.Geraete, null),
+                     })
+                for (int i = 0; i < 3; i++)
+                {
+                    KonditionierungsvorlageCtrl.Vorlage a = ctrl.Liste(von)[i], b = ablage.Liste(von)[i];
+                    Assert.Equal(a.Bezeichner, b.Bezeichner);
+                    string name = a.Bezeichner + " kopiert";
+
+                    // Der Name der Quelle steht in der Zielliste schon - beide lehnen ab.
+                    Assert.False(ctrl.KopierenNach(a.Id, nach, a.Bezeichner, komfort, out _).Ok);
+                    Assert.False(ablage.KopierenNach(b.Id, nach, b.Bezeichner, komfort, out _).Ok);
+
+                    Assert.True(ctrl.KopierenNach(a.Id, nach, name, komfort, out long ka).Ok);
+                    Assert.True(ablage.KopierenNach(b.Id, nach, name, komfort, out long kb).Ok);
+                    KonditionierungsvorlageCtrl.Vorlage x = ctrl.Lesen(ka), y = ablage.Lesen(kb);
+                    Assert.Equal((x.Groesse, x.Bezeichner, x.Beschreibung, x.Nutzung, x.Ausgeliefert),
+                                 (y.Groesse, y.Bezeichner, y.Beschreibung, y.Nutzung, y.Ausgeliefert));
+                    Assert.True(ctrl.Inhalt(ka, out string m1).Inhalt.Gleich(ablage.Inhalt(kb, out string m2).Inhalt, mitBestand: false),
+                                von + " -> " + nach + "/" + a.Bezeichner + ": Inhalt verschieden");
+                    Assert.Null(m1);
+                    Assert.Null(m2);
+                }
+        }
+
         [Fact]
         public void Die_Kopie_heisst_in_Datenbank_und_Ablage_gleich()
         {

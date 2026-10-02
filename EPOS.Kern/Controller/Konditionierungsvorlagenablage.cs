@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// <b>Die Vorlagen der Konditionierung als Weg</b> (Stufe KP2, Welle U2; Teilkonzept
     /// Konditionierungsprofile 3.5, 7.4) — was die Kalenderkarte und die Vorlagenverwaltung von den
     /// Vorlagen brauchen: die Liste je Größe, ein Kopf, der Inhalt für „Übernehmen", „Als Vorlage
-    /// speichern…", Umbenennen, Löschen, Duplizieren und die Namensregel.
+    /// speichern…", Umbenennen, Löschen, Duplizieren, „Kopieren nach …" und die Namensregel.
     /// </summary>
     /// <remarks>
     /// Zwei Träger mit DENSELBEN Regeln: die Datenbank (<see cref="KonditionierungsvorlageCtrl"/>) und
@@ -42,6 +42,14 @@ namespace WindowsFormsApplication1
         KonditionierungCtrl.Ergebnis Duplizieren(long id, string bezeichner, out long neueId);
 
         /// <summary>
+        /// „Kopieren nach …": eine Vorlage — auch eine ausgelieferte — als eigene Vorlage einer anderen Größe
+        /// (<see cref="Vorlagenkopierregel"/>); der Name gilt in der Zielliste, ein Doppelname wird benannt
+        /// abgelehnt; der Komfortsollwert [°C] nur bei Heizen → Kühlen.
+        /// </summary>
+        KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
+                                                  double? komfortsollwert, out long neueId);
+
+        /// <summary>
         /// Die Namensregel (getrimmt, 1 … 80 Zeichen, je Größe eindeutig ohne Unterschied der
         /// Schreibweise) ohne zu schreiben; <paramref name="ausser"/> = die eigene Id beim Umbenennen.
         /// <c>null</c> = der Name ist frei, sonst die benannte Ablehnung.
@@ -52,7 +60,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die Vorlagen ohne Datenbank</b> (Stufe KP2, Welle U2) — eine Ablage im Speicher mit denselben
     /// Regeln wie <see cref="KonditionierungsvorlageCtrl"/>: Reihenfolge der Liste, Namensregel,
-    /// Nutzung, Schloss der ausgelieferten, „Name (Kopie)" beim Duplizieren. Sie schreibt nichts;
+    /// Nutzung, Größenregel, Schloss der ausgelieferten, „Name (Kopie)" beim Duplizieren, die Kopierregel
+    /// von „Kopieren nach …" (<see cref="Vorlagenkopierregel"/>). Sie schreibt nichts;
     /// ihr Stand lebt so lange wie die Instanz.
     /// </summary>
     /// <remarks>
@@ -166,6 +175,8 @@ namespace WindowsFormsApplication1
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
             string wert = KonditionierungsvorlageCtrl.Nutzungspruefung(nutzung, out meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            meldung = KonditionierungsvorlageCtrl.Groessenregel(inhalt, groesse);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
             id = Hinzufuegen(groesse, name, beschreibung, wert, ausgeliefert: false, inhalt);
             return KonditionierungCtrl.Ergebnis.Gut;
         }
@@ -205,6 +216,26 @@ namespace WindowsFormsApplication1
             name = KonditionierungsvorlageCtrl.Namensregel(e.Kopf.Groesse, name, Namen(e.Kopf.Groesse, 0), out string meldung);
             if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
             neueId = Hinzufuegen(e.Kopf.Groesse, name, e.Kopf.Beschreibung, e.Kopf.Nutzung, ausgeliefert: false, e.Inhalt);
+            return KonditionierungCtrl.Ergebnis.Gut;
+        }
+
+        /// <inheritdoc/>
+        public KonditionierungCtrl.Ergebnis KopierenNach(long id, Konditionierungsgroesse ziel, string bezeichner,
+                                                         double? komfortsollwert, out long neueId)
+        {
+            neueId = 0;
+            Eintrag e = Finde(id);
+            if (e == null) return KonditionierungCtrl.Ergebnis.Fehler(Fehlt(id));
+            string meldung = Vorlagenkopierregel.Pruefen(e.Kopf.Groesse, ziel, komfortsollwert);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            string name = KonditionierungsvorlageCtrl.Namensregel(ziel, bezeichner, Namen(ziel, 0), out meldung);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            Ebenenergebnis inhalt = Vorlagenkopierregel.Umsetzen(e.Inhalt, e.Kopf.Groesse, ziel, komfortsollwert);
+            if (!inhalt.Ok) return KonditionierungCtrl.Ergebnis.Fehler(inhalt.Meldung);
+            meldung = KonditionierungsvorlageCtrl.Groessenregel(inhalt.Stand, ziel);
+            if (meldung != null) return KonditionierungCtrl.Ergebnis.Fehler(meldung);
+            neueId = Hinzufuegen(ziel, name, Vorlagenkopierregel.Beschreibung(e.Kopf.Beschreibung, e.Kopf.Bezeichner, e.Kopf.Groesse),
+                                 e.Kopf.Nutzung, ausgeliefert: false, inhalt.Stand);
             return KonditionierungCtrl.Ergebnis.Gut;
         }
 

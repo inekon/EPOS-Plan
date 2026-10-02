@@ -1,20 +1,23 @@
 # Protokoll KP2 — Konditionierungsprofile, Oberfläche und erste Kernwellen
 
-**Datum** 29.09.2026 ff. · **Sitzung** Gebäudesimulation in der Cloud, Arbeitszweig `claude/inspiring-bell-b8wq90` ·
+**Datum** 29.09. bis 02.10.2026 — **KP2 abgeschlossen am 02.10.2026** · **Sitzung** Gebäudesimulation in der Cloud,
+Arbeitszweig `claude/inspiring-bell-b8wq90`, die Welle U5 auf dem anderen Konto ·
 **Stufe** KP2 der [Konditionierungsprofile](../../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) ·
-**Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../../aktuell/Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) ·
-**Entscheid** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) · **Festlegungen der
-Umsetzung** Entwurf Abschnitt 5, nach dem Abschluss als N1.66 · **Statuszeilen** #618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1), #626 (U2), #634 (U4, U3)
+**Entwurf** [`2026-09-29_Entwurf_KP2.md`](../../2026-09-29_Entwurf_KP2.md) ·
+**Entscheide** E56 ([N1.65](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) und E57 (Teilkonzept 9.7) ·
+**Festlegungen der Umsetzung** im Leitkonzept N1.66 (Entwurf Abschnitt 5, die Wellen, die Abkürzung) · **Statuszeilen**
+#618 (K1, U0a, U0b), #619 (K3), #621 (K2, K4), #623 (U1), #626 (U2), #634 (U4, U3), #646 (U5)
 
 Vorausgegangen: [Protokoll KP1b](2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md) (Schemaschritt 152, Kopierwege,
-Vorlagen, Nachtauskühlung). Das Protokoll wächst mit jeder Welle; jede Welle bekommt einen Abschnitt unter 2 und eine
-Zeile unter 5.
+Vorlagen, Nachtauskühlung). Das Protokoll ist mit jeder Welle gewachsen; jede Welle hat einen Abschnitt unter 2 und eine
+Zeile unter 5. Mit U5 ist es abgeschlossen.
 
 ## 1. Verfahren
 
 Entwurf vor Bau wie bei KP1b: zwei Leser (Sonnet), zwei unabhängige Entwürfe — vom Arbeitsablauf des Anwenders her und
 von den Lücken in Kern und Daten her — und eine Gegenprüfung (Opus); die Synthese steht im Entwurfspapier, der Entscheid
-E56 beantwortet dessen fünf Fragen (alle nach Empfehlung). Umsetzung in zehn Wellen, zwei Spuren: **K** = Kern und
+E56 beantwortet dessen fünf Fragen (alle nach Empfehlung). Umsetzung in zehn geplanten und elf gebauten Wellen (U0 ist in
+U0a und U0b geteilt), zwei Spuren: **K** = Kern und
 Daten, **U** = Oberfläche. Jede Welle arbeitet ein Agent im eigenen Worktree ab (K und U0b Opus 5, U0a Sonnet), mit
 Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 
@@ -187,6 +190,34 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 - **Assistent:** `kond_<größe>_woche` (168 Werte oder die Grundangabe), Aktionswissen „Zeitfenster", „Periodenliste",
   „Feiertage", „Teppichbild".
 
+### U5 — Abkürzung nach E57 und Abschluss
+
+- **Liste „alle Größen"** in der Kopfzelle der Zeile „Vorlage" (E57): jeder Name aus mindestens einer der fünf Listen
+  einmal, in der Reihenfolge des Kerns und nach der Namensregel der Vorlagen, mit Schloss, wenn eine Vorlage dieses
+  Namens ausgeliefert ist; Platzhalter „—", Hinweis am Element, 44 px, breit und schmal. Keine Liste im Lesemodus, an
+  der Zone, ohne Vorlagen, ohne Weg und auf dem Altweg. Die Wahl ändert den Arbeitsstand nicht.
+- **Eine Rückfrage, immer** (Vorgabe „Nein"), vor dem Schreiben aus den Befunden aller Größen: je Größe eine Zeile —
+  „übernehmen", am angelegten Kalender was nach P12 ersetzt wird und was bleibt, an der Gesamtangabe der Lüftung die
+  Aufteilung (F5), „keine Vorlage dieses Namens — bleibt" oder „gesperrt" mit dem Grund der Karte; die betroffenen
+  Zonen einmal mit Namen. „Nein" und Abbrechen lassen alles, die Liste steht wieder auf „—".
+- **Ein Schritt:** „Ja" übernimmt Heizen bis Personen über den Kernschritt der Karte, teilt die Gesamtangabe vorher ohne
+  zweite Frage auf und übergeht Größen ohne gleichnamige Vorlage und gesperrte; ein Fehler bricht ab, wird gemeldet und
+  lässt den Arbeitsstand; „Zurücknehmen" nimmt alle Größen in einem Schritt zurück. Karten und Zeile nennen danach die
+  Herkunft.
+- **Zählfall KN6** (`KonditionierungKn6Tests`): die vier Fälle je Karte bleiben (breit 11, Gesamtangabe 12, fünf
+  angelegte Kalender 16, schmal 15 Handgriffe); mit der Abkürzung sind es in allen vier Fällen 3 (Reiter, Wahl, „Ja").
+  Dazu „Nein", „Zurücknehmen", eine Größe ohne gleichnamige Vorlage und der Assistent; in `KonditionierungMatrixTests`
+  Kopfzelle, Einträge, Fehlen der Liste, Rückfrage, Kühlsperre, Zonen und der Abbruch bei einem Fehler.
+- **Assistent:** Feld `kond_vorlage_alle` (Editor und Verwaltung, nicht an der Zone), Wahl vor den Spalten; Lesen nennt
+  die gemeinsame Herkunft, Setzen stellt die eine Rückfrage, beantwortet wird sie vom Anwender; Aktionswissen
+  „Konditionierung: Vorlage übernehmen" ergänzt; die Feldkarte der Konditionierung zählt 47 Felder (Editor und Verwaltung).
+- **Texte:** elf Schlüssel `KOND_*_VORLAGE_ALLE*` in beiden Sprachen, Glossar § 13 „Vorlage in allen Größen übernehmen"
+  → „apply template to all quantities".
+- **Konditionierungsprobe:** Der Fall `vorlagen` ist gekühlt und misst Liste, Rückfrage, „Nein" und „Ja"; die Probe
+  liest ihre Texte je Kultur aus einer Tafel und läuft in beiden Kulturen — je 36 Läufe ohne Verstoß.
+- **Abschluss:** Festlegungen als N1.66 im Leitkonzept; Teilkonzept 7.2, 7.4, 8, 9.7, 10.5, 11 und 12; Entwurf KP2 und
+  die zwei Übergaben unter `ueberholt/`; Statuszeile #646.
+
 ## 3. Schemaschritte
 
 **157** (K3, `KonditionierungsvorlagenSaatSchema`): reines DML, die 14 Vorlagen samt Feiertagskalendern; Nummer als `KesselKennlinieSchema.SCHRITT + 1` — 156 hat die Kessel-Kennlinie (#616) belegt.
@@ -220,6 +251,17 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
   Verwaltung las ihre Zeilen noch ohne sie (K4 durfte ihre Hülle neben K2 nicht anfassen) — nachgezogen beim Merge.
 - **Nebenbefunde für U1:** Hilfepille 28 × 26 px (unter 44 px); Deckel der `.epos-dialog` bei 1 160 px, Vorbild
   `.epos-wp-anlage`; `Zahlen.ZahlParsen` nimmt „NaN" und „Infinity" an (neun Aufrufer).
+- **Die Konditionierungsprobe war nicht kulturfest (U5):** Sie fand Reiter, Knöpfe und Zustände über deutsche Texte;
+  unter `--kultur en-US` brach sie im ersten Fall mit einem Aufbaufehler ab und suchte die Herleitungszeile des
+  Luftwechsels mit „0,60", die en-US „0.60" schreibt — die Felder zeigen Zahlen immer mit Komma, die Herleitungszeilen
+  im Zahlformat der Kultur. Behoben mit einer Texttafel je Kultur; was die Struktur trägt (Zelle der Matrix, Reihenfolge
+  der Knöpfe einer Rückfrage), sucht die Probe über die Struktur.
+- **Kühlsperre an einer Stelle (U5):** „Übernehmen" an der Kühlkarte sperren die Wirte über ihren eigenen Stand; die
+  Abkürzung und der Assistent fragen dieselbe Regel über `KonditionierungBearbeitung.Uebernehmensperre`, mit dem Grund
+  der Karte. Damit die Abkürzung in der Probe alle fünf Größen übernimmt, ist der Fall `vorlagen` gekühlt.
+- **Rückfrage im Reiter ohne Wirt (bunit, U5):** Die Matrix reicht `Geaendert` an den Wirt weiter; eine Probe, die nur
+  den Reiter zeichnet, sieht die Rückfrage erst nach einem Neuzeichnen und zeichnet deshalb nach der Wahl neu, wie der
+  Fall „aufteilen". In beiden Wirten der Anwendung zeichnet der Wirt — KN6 läuft im ganzen Dialog.
 
 ## 5. Nachweise
 
@@ -241,6 +283,9 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 | Gate KP2f nach dem Merge `origin` #629/#630 (`dde818b6`) | KP2f auf `dde818b6` (U4 mit `origin` bis #630, **gegen R29**): Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (194), Tests Kern 9 538, UI 7 141, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R29**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 145 Texte); Windows-Schale 0 Fehler. Davor KP2e auf `c00d37fe` gegen R28 grün (Kern 9 496, UI 7 138). Nach den Merges `origin` #630–#633 (`281200f7`) und U3 (`22c04ad1`) gezielt: UI 7 143 bzw. 7 175, Kern 2 903 bzw. 2 316 grün, Referenzlauf je 487/487 byte-gleich gegen R29, Windows-Schale 0. U3 im Worktree gegen R29: Kern 9 556, UI 7 173, Referenzlauf 487/487, gestörter Lauf PASS. |
 | Abnahme U3 im Worktree gegen R29 (`75180194`) | Kern 9 556, UI 7 173, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf 16/16 PASS, 487/487 byte-gleich, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 36 Läufe ohne Verstoß |
 | Nach den Merges `origin` #630–#633 (`281200f7`) und U3 | Kern-Filter 0 Fehler; UI 7 175; Kern 2 316 gezielt (Konditionierung, Kalender, Gebäude, Zone, KI, Wachen, Wärmeübergabe) grün; Referenzlauf 16/16 PASS, 487/487 byte-gleich gegen R29; Windows-Schale 0 Fehler |
+| Abnahme U5 im Worktree (`485dbfc9`, Gate #646, auf `4cfbf017`) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 634, UI 7 221, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R29**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer ohne Abweichung außer den Zeilenenden; Konditionierungsprobe je 36 Läufe ohne Verstoß in de-DE und en-US |
+| Gate im Hauptbaum nach dem Merge U5 × `origin` #641–#643 (`c13b2acd`, Basis R30 statt R29) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 704, UI 7 222, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R30**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer-Prüflauf 13 536 Blöcke gleich; Konditionierungsprobe unverändert aus der Abnahme im Worktree |
+| Gate im Hauptbaum nach dem zweiten Merge mit `origin` #644–#645 (`ea98d028`, Testdatenbank mit `Lauf_Staende`, Basis R30) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (200), Tests Kern 9 710, UI 7 223, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R30**, gestörter Lauf PASS; Windows-Schale 0 Fehler; Designer-Prüflauf 13 537 Blöcke gleich |
 | Kern-Lauf auf `2d8dbde2` (#626) | grün (36689699460, Arbeitszweig) |
 | Abnahme U2 im Worktree (`12b9b6f1`) | Kern 9 379, UI 7 110, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 grün; Wachen 35/35; ChartProben gleich der Messlatte; Referenzlauf GESAMT PASS, 460/460 byte-gleich gegen R26, gestörter Lauf PASS; Windows-Schale 0; Konditionierungsprobe 28 Läufe ohne Verstoß |
 | Gate KP2d auf U2 mit `origin` #624/#625 (`57901bba`) | Kern-Filter 0 Fehler, ChartProben gleich `Messlatte_2026-09-30` (194), Tests Kern 9 446, UI 7 115, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (2 übersprungen) — alle grün; Wachen 35/35; Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R27**, gestörter Lauf PASS; `SqlDialektPruefer` 0 Fundstellen (2 142 Texte); Windows-Schale 0 Fehler; Auslieferungsvorlage 44/44. Abnahme im Worktree auf `12b9b6f1`: Kern 9 379, UI 7 110, Referenzlauf 460/460 gegen R26, Konditionierungsprobe 28 Läufe ohne Verstoß. |
@@ -253,9 +298,34 @@ Abnahme im Worktree und einem Gate der Orchestrierung nach dem Merge.
 
 ## 6. Offen
 
-- **Wellen** **SA1** nach U2,
-  **U5** (Abschluss, SA2).
-- **Windows-Sichtprobe** der schon sichtbaren Änderungen, mit SA1: „Speichern unter" bleibt offen (Katalog und Projekt),
-  breite Überlagerung des Katalogeditors, Grundzeile und weich gesperrtes OK an einem ausgelieferten Satz.
-- **Wiki:** Quelle „Gebäude" nachgezogen („Speichern unter"); Upload mit dem nächsten Sammel-Upload, Logbuch-Satz in der
-  Statuszeile.
+- **Sichtabnahme SA1 unter Windows beim Anwender** (Entwurf Abschnitt 7, 100 % und 125 %, rund 30 Minuten); da alle
+  Oberflächenwellen stehen, deckt sie SA2 weitgehend mit ab. Dazu aus den Blöcken der Statusdatei: „Speichern unter"
+  bleibt offen (Katalog und Projekt), breite Überlagerung, Grundzeile und weich gesperrtes OK an einem ausgelieferten
+  Satz; Reiter breit und schmal in der WebView2, Herleitungszeile auf Reiter 1, Rückfrage „aufteilen", Lesemodus eines
+  ausgelieferten Satzes, Zeile „Stunden mit Nachtauskühlung", die Hilfepille mit 44 px in allen Dialogen („Nach #623"
+  (a)); Vorlagen je Karte mit Vorschau und Verwaltung („Nach #626" (a)); Zonendialog als Blatt („vom Gebäude",
+  „übernehmen und anpassen"), Gebäudeverwaltung mit Gruppe und Blatt „Konditionierung", Altfelder nicht mehr im
+  Stammblatt („Nach #634" (a)); Kalenderkarte samt Teppichbild, „In den Kalender übernehmen" an der Wärmeübergabe; die
+  Abkürzung „alle Größen" — und mit ihr die Festlegung „eine Rückfrage, immer" (N1.66 Nr. 27) zur Bestätigung.
+- **Kleine offene Punkte:** Der Rückknopf des Verwaltungsblatts trägt den Dialogtitel („‹ Gebäudedaten: Flächen,
+  U-Werte") statt „Gebäude in DB ändern…"; die „eigene Woche" einer Periode wird nur angezeigt; Zonenkarten ohne
+  Einzelheiten; die Beschriftung des Teppichbilds ist bei 390 px sehr klein; die Windows-Messliste der ChartProben ist
+  um die neun Zeilen der drei Teppichbilder nachzuziehen.
+- **Stufen** KP3, KP4 und KU3 je auf Auftrag.
+- **Wiki und Logbuch:** Die Quelle „Gebäude" („Speichern unter") ist hochgeladen (30.09.2026, Revision 725); die
+  Bedienungsseiten der Konditionierung folgen mit KP4 (Teilkonzept 10.4). Die Logbuch-Sätze stehen in Abschnitt 7,
+  die Versionsnummer beim Anwender.
+
+## 7. Logbuch-Entwurf
+
+Version <vom Anwender>, je wesentlicher, sichtbarer Änderung der Stufe ein Satz für die Seite „Update-Logbuch“ —
+veröffentlicht mit dem nächsten Sammel-Upload (Konzept Hilfesystem 13.3 und 13.4), gegengelesen mit dem Suchmuster aus
+`CLAUDE.md` (kein Treffer):
+
+| Welle | Satz |
+|---|---|
+| K1 | „Speichern unter“ lässt den Gebäudedialog offen; im Gebäudekatalog arbeitet er danach am neuen Satz weiter. |
+| U1 | Der Gebäudedialog hat den Reiter „Konditionierung“ mit einer Vorgabe-Matrix für Heizen, Kühlen, Lüftung, Geräte und Personen; Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur werden dort eingegeben. |
+| U2 | Für jede Größe der Konditionierung lässt sich eine Vorlage mit Vorschau übernehmen, eine eigene speichern und in der Vorlagenverwaltung pflegen; 14 Vorlagen werden mitgeliefert. |
+| U3, U4 | In jeder Kalenderkarte lassen sich Woche, Zeitfenster, Perioden, Feiertage und Zeitstruktur bearbeiten, das Jahr erscheint als Teppichbild; Zonen haben eine eigene Matrix, die Gebäudeverwaltung ein Blatt „Konditionierung“, und die Wärmeübergabe übernimmt ihr Sollwertprofil in den Heizkalender. |
+| U5 | „Gleichnamige Vorlage in allen Größen übernehmen“ in der Zeile „Vorlage“ belegt alle Größen nach einer Rückfrage in einem Schritt. |

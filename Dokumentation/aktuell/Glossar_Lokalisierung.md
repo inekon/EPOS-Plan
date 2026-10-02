@@ -401,7 +401,7 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 
 Die Begriffe des Reiters „Konditionierung" im Gebäude-Katalogeditor: Vorgabe-Matrix, Kalender, Vorlagen und
 Aufheizoptimierung (Konzept [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.7, Entwurf
-[KP2](Gebaeudesimulation/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
+[KP2](../ueberholt/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
 **vor** den englischen Ressourcenwerten fest (Entscheid E28 zu U4, wie oben). Was in dieser Tafel schon steht, gilt
 unverändert weiter: Infiltration, Nutzerlüftung, Sommerlüftung, Heizsollwert, obere Raumtemperatur, Überhitzungsstunden,
 Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg. Die Vorlagennamen („Wohnen", „Büro",
@@ -460,6 +460,7 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Zurücknehmen | undo | nimmt den letzten Schritt des Arbeitsstands zurück |
 | Vorlage | template | vorbefüllter Kalender einer Größe, ausgeliefert oder eigen; Auswahlliste je Kalenderkarte, Zeile „Vorlage" der Matrix |
 | Vorlage übernehmen | apply template | wirkt auf Gebäude, Zone oder Katalogbau und nur auf eine Größe (Übernehmen → Apply, § 8); Nennwert und Saison des Ziels bleiben |
+| Vorlage in allen Größen übernehmen | apply template to all quantities | Abkürzung in der Kopfzelle der Zeile „Vorlage" (E57): die Liste „alle Größen" → „all quantities" führt jeden Namen aus mindestens einer Liste; eine Rückfrage für alle Größen, eine Größe ohne gleichnamige Vorlage bleibt; kein Satzbegriff |
 | Als Vorlage speichern | save as template | Knopf der Karte: Name, Beschreibung, Nutzung; ohne Nennwert und Saison; wird sofort gespeichert |
 | Vorlagen verwalten | manage templates | Blatt im Katalogeditor, aus jeder Kalenderkarte; fünf Listen mit Umschalter der Größe |
 | Nutzung (einer Vorlage) | type of use | Wohnen, Büro, Schule, Sonstige → residential, office, school, other; Anzeigewerte, die Persistenzwerte `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE` bleiben deutsch (§ 10); vgl. Nutzungsart (§ 14) |
@@ -468,6 +469,8 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Speichern unter | save as | legt eine bearbeitbare Kopie unter neuem Namen an; Bestand `GEBK_HINWEIS_SPEICHERN_UNTER` |
 | Duplizieren | duplicate | Kopie einer ausgelieferten Vorlage oder eines Katalogsatzes; Kernmeldungen „Duplicate…" |
 | Umbenennen | rename | eigene Vorlagen in der Verwaltung |
+| Kopieren nach … | copy to … | Handlung der Vorlagenverwaltung: eine Vorlage als eigene Vorlage einer anderen Größe — Heizen → Kühlen, Geräte ↔ Personen |
+| Komfortsollwert | comfort setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in jede Zelle mit Heizsollwert setzt (Vorgabe 26 °C) |
 | Katalogbau | catalogue building | ein Gebäude des Gebäudekatalogs, Träger von Matrix und Kalendern; „Katalogsatz" (oben) ist der allgemeine Begriff |
 | Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
 | erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |

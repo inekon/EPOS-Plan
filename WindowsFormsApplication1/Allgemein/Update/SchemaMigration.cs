@@ -4766,6 +4766,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_BRENNWERT_NACHZUG = KesselBrennwertNachzug.SCHRITT;
 
+        // ---- Folge von #637: die Änderungsstempel für Kosten, Preise und Kostenkatalog ----------
+
+        /// <summary>
+        /// Schritt <see cref="KostenStempelSchema.SCHRITT"/> — <b>die Änderungsstempel für Kosten,
+        /// Preise und Kostenkatalog</b>. Er folgt auf <see cref="SCHRITT_KESSEL_BRENNWERT_NACHZUG"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> die nullbaren Spalten <c>Tab_Projekt.Kosten_Geaendert</c> und
+        /// <c>Tab_Applikation.Kostenkatalog_Geaendert</c> (TEXT) und die Trigger, die sie bei jeder
+        /// Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen.
+        /// Liste und Grenzen stehen bei <see cref="KostenStempelSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar:</b> Eine stehende Spalte und ein stehender Trigger werden
+        /// übergangen; die Spalten entstehen leer, kein gespeichertes Ergebnis wird veraltet.</para>
+        /// </summary>
+        public const int SCHRITT_KOSTEN_STEMPEL = KostenStempelSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6856,6 +6873,16 @@ namespace WindowsFormsApplication1
                         "nach der Bauart der Projektkopie. Mit dem Kennzeichen rechnet er mit der Vorgabe des " +
                         "Brennwertkessels - das Rechenergebnis solcher Projekte aendert sich gewollt.",
                         Schritt_KesselBrennwertNachzug),
+            // FOLGE VON #637 - die Aenderungsstempel fuer Kosten, Preise und Kostenkatalog: zwei
+            // nullbare Spalten und ihre Trigger. REIN DDL; die Quelle ist KostenStempelSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_KOSTEN_STEMPEL,
+                        "Tab_Projekt, Tab_Applikation: Aenderungsstempel fuer Kosten, Preise und Kostenkatalog",
+                        "Das Band \"bitte neu berechnen\" der Wirtschaftlichkeit erkannte nur einen juengeren " +
+                        "Simulationslauf; eine Aenderung an Kosten, Preisen, Wirtschaftlichkeitsparametern oder " +
+                        "am Kostenkatalog nach der Rechnung blieb ohne Hinweis. Die Datenbank stempelt solche " +
+                        "Aenderungen jetzt selbst. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_KostenStempel),
         };
 
         /// <summary>
@@ -12051,6 +12078,61 @@ namespace WindowsFormsApplication1
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Brennwertkennzeichen der Projektkessel - gekennzeichnete Brennstoffkessel ohne " +
                     "eigenes eta30 rechnen ab dem naechsten Lauf mit der Normvorgabe des Brennwertkessels.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Änderungsstempel für Kosten, Preise und Kostenkatalog" — Anlass und Wirkung
+        /// stehen bei <see cref="SCHRITT_KOSTEN_STEMPEL"/>, die Anweisungen bei
+        /// <see cref="KostenStempelSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KostenStempelSchema.Anweisungen</c> nennt nur, was fehlt. Fehlt eine der Tabellen, an
+        /// denen ein Trigger hängt oder auf die er schreibt, ist das ein Fehler des Schritts; die
+        /// Nachprobe fragt <see cref="KostenStempelSchema.Vollstaendig"/>. Ins Protokoll geht eine
+        /// Zeile je Spalte und eine Summe der Trigger.
+        /// </summary>
+        private static bool Schritt_KostenStempel(Lauf l)
+        {
+            string nr = KostenStempelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in KostenStempelSchema.Tabellen())
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            int spalten = 0, trigger = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KostenStempelSchema.Anweisungen))
+            {
+                bool istTrigger = KostenStempelSchema.IstTriggeranweisung(a);
+                // Je Spalte eine Zeile im Protokoll; die Trigger zaehlen nur - ein Fehler steht
+                // trotzdem benannt da (SqliteAusfuehren notiert ihn ueber den Lauf).
+                if (!SqliteAusfuehren(istTrigger ? null : l, a.Value, a.Key, "angelegt"))
+                {
+                    if (istTrigger)
+                    {
+                        string text = "Der Trigger liess sich nicht anlegen (" + a.Key + ").";
+                        l.LetzterFehler = text;
+                        l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    }
+                    return false;
+                }
+                if (istTrigger) trigger++; else spalten++;
+            }
+
+            if (!KostenStempelSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach dem Schritt fehlen Stempelspalten oder Trigger (" +
+                                  string.Join(", ", KostenStempelSchema.FehlendeTrigger()) + ").";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aenderungsstempel - " + spalten.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) und " + trigger.ToString(CultureInfo.InvariantCulture) + " von " +
+                    KostenStempelSchema.Trigger.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Trigger(n) in diesem Lauf angelegt. KEIN DML.");
             return true;
         }
 

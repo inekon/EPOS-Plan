@@ -21,7 +21,8 @@ namespace EPOS.Kern.Tests
     /// nur die eigene Größe, der E54-Filter (kein Nennwert, keine Saison) und gültige, ausdrückliche
     /// Nachtfenster; der Stand der Testdatenbank; dass der Schritt nur anlegt, was fehlt, eine eigene
     /// gleichnamige Vorlage stehen lässt, wiederholbar ist und aus dem Stand davor alle 14 anlegt;
-    /// dass jede Vorlage, auf ein Probegebäude übernommen, einen gültigen Kalender ergibt; die
+    /// dass jede Vorlage, auf ein Probegebäude übernommen, einen gültigen Kalender ergibt; dass jede
+    /// Vorlage mit Ziel sich „nach …" kopieren lässt und ihr Inhalt dabei nur in der Zielgröße entsteht; die
     /// Verdrahtung in Werkzeug, Migration, Testkopie und Repo-Datei.</para>
     ///
     /// <para><b>Eigene Arbeitskopie je Fall</b> — mehrere Fälle schreiben. Die Kultur ist auf de-DE
@@ -351,6 +352,81 @@ namespace EPOS.Kern.Tests
                 Assert.False(_vorlagen.Lesen(kopie).Ausgeliefert);
                 Assert.Equal(Inhalt(id), Inhalt(kopie));
             }
+        }
+
+        /// <summary>
+        /// <b>„Kopieren nach …" mit jeder ausgelieferten Vorlage, die ein Ziel hat</b> (Konzept 3.5, 7.4):
+        /// Geräte ↔ Personen tragen denselben Inhalt in die andere Liste, Heizen → Kühlen Zeitstruktur und
+        /// Nachtzeiten mit dem Komfortsollwert in jeder Zelle; die Kopie ist eigen, die Quelle bleibt Zeichen
+        /// für Zeichen. Danach hält der Datenbankfall wie oben: <b>Inhalt nur in der eigenen Größe</b>, kein
+        /// Nennwert, keine Saison, keine Matrixperiode (E54).
+        /// </summary>
+        [Fact]
+        public void Jede_Vorlage_mit_Ziel_laesst_sich_kopieren_und_ihr_Inhalt_bleibt_in_der_Zielgroesse()
+        {
+            if (!Bereit()) return;
+            int kopien = 0;
+            foreach (KonditionierungsvorlagenSaat s in KonditionierungsvorlagenSaatSchema.Saat)
+            {
+                long id = Vorlagenid(s);
+                string vorher = Inhalt(id);
+                foreach (Konditionierungsgroesse ziel in Vorlagenkopierregel.Ziele(s.Groesse))
+                {
+                    string zielwort = Konditionierungsgroessen.Kennwort(ziel);
+                    KonditionierungCtrl.Ergebnis e = _vorlagen.KopierenNach(id, ziel, s.Bezeichner + " (" + s.Kennwort + ")",
+                                                                            Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, out long kopie);
+                    Assert.True(e.Ok, s + " -> " + zielwort + ": " + e.Meldung);
+                    kopien++;
+                    KonditionierungsvorlageCtrl.Vorlage kopf = _vorlagen.Lesen(kopie);
+                    Assert.Equal((ziel, false, s.Nutzung), (kopf.Groesse, kopf.Ausgeliefert, kopf.Nutzung));
+
+                    if (Vorlagenkopierregel.Weg(s.Groesse, ziel) == Vorlagenkopierweg.Direkt)
+                    {
+                        // Derselbe Inhalt, nur in der anderen Liste.
+                        Assert.Equal(vorher.Replace(s.Kennwort + ";", zielwort + ";"), Inhalt(kopie));
+                        continue;
+                    }
+
+                    // Heizen -> Kühlen: jede Zeile der Saat mit ihren Zeiten, der Wert der Komfortsollwert.
+                    List<Vorgabezeile> zeilen = _kond.Vorgaben(KonditionierungCtrl.Eigner.Vorlage(kopie));
+                    Assert.Equal(s.Zeilen.Count, zeilen.Count);
+                    foreach (KonditionierungsvorlagenSaatzeile z in s.Zeilen)
+                    {
+                        Vorgabezeile ist = Assert.Single(zeilen, x => x.Zeile == z.Zeile);
+                        Assert.Equal(zielwort, ist.Groesse);
+                        Assert.Equal(z.Aus, ist.Aus);
+                        Assert.Equal(z.Aus ? (double?)null : Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, ist.Wert);
+                        Assert.Equal((z.Von, z.Bis), (ist.Von, ist.Bis));
+                    }
+                    Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender =
+                        _kond.Kalender(KonditionierungCtrl.Eigner.Vorlage(kopie), out string meldung);
+                    Assert.Null(meldung);
+                    Assert.Equal(s.Feiertage ? 1 : 0, kalender.Count);
+                    if (!s.Feiertage) continue;
+                    Konditionierungskalender k = kalender[ziel];
+                    Assert.Equal(Vorlagenkopierregel.KOMFORTSOLLWERT_VORGABE, k.Grundangabe.Wert);
+                    Assert.Equal(9, k.Perioden.Count);
+                    Assert.All(k.Perioden, r => Assert.Equal(KonditionierungsvorlagenSaattabelle.WIE_WOCHENTAG, r.Angabe.WieWochentag));
+                }
+                Assert.Equal(vorher, Inhalt(id));
+            }
+            Assert.Equal(9, kopien);                                   // drei aus Heizen, je drei aus Geräten und Personen
+
+            // Der Datenbankfall: nur die eigene Groesse, kein Nennwert, keine Saison, keine Matrixperiode (E54).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" t JOIN \"Tab_Konditionierungsvorlage_STAMM\" v " +
+                                  "ON v.\"ID\" = t.\"ID_Vorlage\" WHERE t.\"Groesse\" <> v.\"Groesse\""));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungskalender\" t JOIN \"Tab_Konditionierungsvorlage_STAMM\" v " +
+                                  "ON v.\"ID\" = t.\"ID_Vorlage\" WHERE t.\"Groesse\" <> v.\"Groesse\""));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Vorlage\" IS NOT NULL AND " +
+                                  "(\"Zeile\" IN ('NENNWERT', 'SAISON') OR \"Bedingt_K\" IS NOT NULL)"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungskalender\" WHERE \"ID_Vorlage\" IS NOT NULL AND " +
+                                  "\"Nennwert\" IS NOT NULL"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsperiode\" p JOIN \"Tab_Konditionierungskalender\" k " +
+                                  "ON k.\"ID\" = p.\"ID_Kalender\" WHERE k.\"ID_Vorlage\" IS NOT NULL AND p.\"Art\" <> 'FEIERTAG'"));
+            Assert.Equal(KonditionierungsvorlagenSaattabelle.VORLAGEN + 9,
+                         Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorlage_STAMM\""));
+            Assert.Equal(KonditionierungsvorlagenSaattabelle.VORLAGEN,
+                         Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorlage_STAMM\" WHERE \"ReadOnly\" = 1"));
         }
 
         /// <summary>
