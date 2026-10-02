@@ -32,7 +32,7 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
 1049 rechnet ein Kollektorfeld; jede Änderung am Ertrag friert dessen Basis neu ein
 (Einfrierregel „gesäte Solardaten des Referenzprojekts 1049“).
 
-### ST1 Solarkreispumpe und Hilfsenergie
+### ST1 Solarkreispumpe und Hilfsenergie — umgesetzt
 
 - **Stand heute:** Der Lauf rechnet keinen Pumpenstrom. Das Potenzial ist
   `leistungProQm · f.Flaeche · leitungsverluste / 1000` (`SimulationSolarthermie.cs:283`); ein
@@ -52,9 +52,13 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
 - **Empfehlung: ja**, Aufwand S. Der Posten ist klein (meist wenige Prozent des Ertrags), gehört
   aber in eine ehrliche Strom- und CO₂-Bilanz und ist mit einem Feld erledigt. Vorgabe 0 → Basis
   unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2):** Feld `Tab_Energieanlagen.Pumpenleistung_W` am Kollektorfeld (leer =
+  kein Pumpenstrom); die Reihe geht in den Rest-Strombedarf und in den Reiter „Solarthermie“.
+  Ohne gepflegte Leistung gilt der `Hilfsenergie_Anteil` des Felds bezogen auf die
+  genutzte Wärme (Deckung plus Ladung). [Konzept Simulationsablauf, Abschnitt 16](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### ST2 Feste Arbeitstemperatur 50 °C
+### ST2 Feste Arbeitstemperatur 50 °C — umgesetzt
 
 - **Stand heute:** `double tStorage = 50; // Annahme Speichertemperatur`
   (`SimulationSolarthermie.cs:246`), eingesetzt in den Kollektorwirkungsgrad
@@ -77,9 +81,14 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
 - **Empfehlung: ja**, Aufwand M. Größter fachlicher Hebel der Solarthermie: Vorwärmanlagen
   gewinnen, Anlagen an hohem Rücklauf verlieren Ertrag — beides heute unsichtbar. Basis neu für
   1049; als Option mit Vorgabe „fest 50 °C“ einführbar, dann erst mit Umstellen von 1049 neu.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2):** Feld `Arbeitstemperatur_Weg` (`fest`/`speicher`, leer = fest) am
+  Kollektorfeld; das Potenzial wird je Stunde mit dem Speicherstand vom Stundenbeginn gebildet.
+  Ohne Puffer gilt der Heizkreisrücklauf der Anlagenkopplung, sonst 50 °C mit Hinweis — das
+  Temperaturpaar der Senke wird nicht herangezogen. Referenzprojekt 1049 rechnet mit `speicher`,
+  Basis `2026-10-02_R32_Solarthermie`.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### ST3 Leitungsverluste pauschal 8 %
+### ST3 Leitungsverluste pauschal 8 % — Stufe 1 umgesetzt
 
 - **Stand heute:** `double leitungsverluste = 0.92;` (`SimulationSolarthermie.cs:247`),
   Faktor auf das Potenzial (`:283`). Ein Feld gibt es nicht; die 8 % sind ein Erfahrungswert
@@ -92,9 +101,11 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
   Wohnhauses und lange Freiflächenleitungen unterscheiden sich um ein Vielfaches.
 - **Empfehlung: Stufe 1 ja** (S, Vorgabe 8 → Basis unberührt); **Stufe 2 später**, zusammen mit
   ST2, weil sie dieselbe mittlere Temperatur braucht.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2), Stufe 1:** Feld `Solarkreisverluste_Prozent` (0–50 %, leer = 8 %,
+  bitgleich 0,92). Stufe 2 bleibt offen.
+- **Entscheidung des Anwenders: ☑ Stufe 1 (entschieden, umgesetzt); Stufe 2 ☐**
 
-### ST4 Kein Wärmeübertrager zum Speicher
+### ST4 Kein Wärmeübertrager zum Speicher — umgesetzt
 
 - **Stand heute:** Die Übertragung ist verlustfrei bis auf den Faktor 0,92
   (`SimulationSolarthermie.cs:247`).
@@ -104,9 +115,11 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
   Glattrohr) — sie hebt nach ST2 die Kollektortemperatur und senkt so den Ertrag. Mehr braucht
   eine Energiebilanzrechnung nicht.
 - **Empfehlung: ja, als Teil von ST2**, kein eigener Aufwand. Ohne ST2 wirkungslos.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2):** Felder `Uebertrager_Graedigkeit_K` (leer = 5 K) und
+  `Kollektor_Spreizung_K` (leer = 10 K), wirksam nur mit `speicher`.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### ST5 „K_dfu/K_diff rechnet nicht mit“
+### ST5 „K_dfu/K_diff rechnet nicht mit“ — umgesetzt
 
 - **Stand heute:** Die Einfallswinkelkorrektur (IAM) wird aus `K_dir50` gebildet
   (`b₀ = (1 − K_dir50)/(1/cos 50° − 1)`, `SimulationSolarthermie.cs:360-365`) und auf die
@@ -128,9 +141,12 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
   `K_d = K_b(θ)` wie heute.
 - **Empfehlung: ja**, Aufwand S. Die Daten liegen schon im Katalog, der Fehler ist systematisch
   und normwidrig. Basis neu für 1049 (sofern dessen Kollektor `K_dfu` führt).
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2):** `G_b = DNI · cos θ`, `G_dr = G_t − G_b` im Kollektorweg
+  (`Solarkreis.LeistungJeQm`); ohne `K_dfu` der alte Weg, bitgleich. Der Kollektor von 1049 führt
+  `K_dfu = 0` — keine Basiswirkung.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### ST6 Modulfläche nur Anzeige, Aperturfläche rechnet
+### ST6 Modulfläche nur Anzeige, Aperturfläche rechnet — umgesetzt
 
 - **Stand heute:** `double nFlaeche = ctrlsol.m_Aperturfläche;` (`SimulationSolarthermie.cs:232`),
   Gesamtfläche = Apertur × Anzahl. (Der Kommentar an `:159` sagt „Modulfläche · Anzahl“ und ist
@@ -144,7 +160,11 @@ Quelle des Rechenwegs: `EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs
   Fläche; der Import nach VDI 3805 setzt sie, wo die Quelle sie nennt.
 - **Empfehlung: ja**, Aufwand S. Vorgabe Apertur → Basis unberührt. Vorher prüfen, worauf die
   Kennwerte der ausgelieferten Kollektorsätze bezogen sind (siehe „Fragliches“).
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M2):** Katalogspalte `Bezugsflaeche` (`apertur`/`brutto`, Vorgabe apertur)
+  an `Tab_Solarkollektoren(_STAMM)`, Auswahl im Katalogdialog; `brutto` rechnet mit der
+  Modulfläche, ohne sie mit der Apertur und einer Warnung. Der VDI-3805-Import setzt `brutto`
+  nur, wenn die Bezugsfläche der Datei der Bruttofläche gleicht und von der Apertur abweicht.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### ST7 Vor- und Rücklauf des Kollektorfelds — erledigt
 
@@ -945,8 +965,13 @@ Beim Nachlesen fiel auf (keine Modellfrage, sondern Pflege oder Fehler):
    `SimulationWaermebedarf.cs:1293`, `:1378`); die Hilfeseite beschreibt einen echten Abbruch.
 4. **Albedo als Literal:** `SolarPVGISCalculator.cs:455` und `:599` rechnen mit `0.2` statt
    `ALBEDO_BODEN` (`:333`) — bei PV4 mitziehen.
-5. **Bezugsfläche der Kollektorkennwerte ungeprüft** (ST6); der Kommentar
-   `SimulationSolarthermie.cs:159` („Modulfläche · Anzahl“) widerspricht dem Code (`:232`).
+5. **Bezugsfläche der Kollektorkennwerte — geprüft (Welle M2):** Die Kollektorsätze der
+   Testdatenbank führen keine Modulfläche (nur ein Prüfsatz); ihre Kennwerte beziehen sich auf die
+   Aperturfläche (VDI-3805-Feld 11). In den VDI-Quellen unter `VDI-3805-Daten/` nennen zwei
+   Hersteller Feld 11 als Apertur, einer als Absorberfläche (zwischen Apertur und Brutto, als
+   Apertur behandelt); keine Quelle bezieht auf die Bruttofläche. Apertur/Brutto bei
+   Flachkollektoren 0,86–0,94, bei Röhren bis 0,38. Der Kommentar in `SimulationSolarthermie`
+   ist berichtigt.
 6. **Zusammengesetzte SQL-Texte** im PV-Zweig (`SimulationPV.cs:166`,
    `SimulationControl.cs:4705`) entgegen der Regel „`?`-Parameter“ der `CLAUDE.md` — bei der
    nächsten Arbeit an der Stelle umstellen.
@@ -964,7 +989,7 @@ Umstellen eines Referenzprojekts.
 
 | Punkt | Empfehlung | Aufwand | Basis betroffen | Entscheidung |
 |---|---|---|---|---|
-| ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | ja | M | ja, 1049 (als Option erst beim Umstellen) | ☐ |
+| ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | umgesetzt (M2) | M | ja, 1049 (R32) | ☑ |
 | PW1 Temperaturniveau je Prozess (Stufe 1) | ja | M | nein (Option) | ☐ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | ja | M | nein (Option) | ☐ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
@@ -974,15 +999,15 @@ Umstellen eines Referenzprojekts.
 | BH1 BHKW-Teillastkennlinie | ja | M | nein (Option) | ☐ |
 | BH2 BHKW-Takten mit Folgeauftrag 6 | ja | M | ja, wenn die Untergrenze in Referenzprojekten wirksam wird | ☐ |
 | PV3 Einspeisebegrenzung mit Abregelung | ja | M | nein (Option) | ☐ |
-| ST5 Diffus-IAM mit K_dfu | ja | S | ja, 1049 | ☐ |
+| ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
 | PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
 | PW5 Katalog typischer Betriebsweisen | ja | S | nein | ☐ |
 | SP1 Standby des Speichersystems | ja | S–M | nein (Option) | ☐ |
 | EQ1 Erdreichprüfung speichern | ja | S–M | nein | ☐ |
-| ST1 Pumpenstrom Solarkreis | ja | S | nein (Option) | ☐ |
-| ST6 Bezugsfläche der Kennwerte | ja | S | nein (Option) | ☐ |
-| ST3 Stufe 1 Solarkreisverluste als Feld | ja | S | nein (Vorgabe 8 %) | ☐ |
+| ST1 Pumpenstrom Solarkreis | umgesetzt (M2) | S | nein (Option) | ☑ |
+| ST6 Bezugsfläche der Kennwerte | umgesetzt (M2) | S | nein (Option) | ☑ |
+| ST3 Stufe 1 Solarkreisverluste als Feld | umgesetzt (M2) | S | nein (Vorgabe 8 %) | ☑ |
 | PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☐ |
 | SP2 Beste Rastervariante übernehmen | ja | S | nein | ☐ |
 | BW3 Brauchwasser-Vorlauf je Erzeuger | später | M | nein (Option) | ☐ |

@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R31_Rechenwegbefunde` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R32_Solarthermie` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 
@@ -1096,3 +1096,55 @@ findet die Ganglinienzeile nicht unter dem Anlagennamen und behält ihre gespeic
 Gehalten von `EPOS.Kern.Tests/SolarganglinieRechenwegTests` und
 `EPOS.UI.Tests/Seiten/ErzeugerReiterTests.Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl`.
 Kein Referenzprojekt führt eine Solarthermieganglinie.
+
+## 16. Solarthermie: Arbeitstemperatur, Diffus-IAM, Solarkreis
+
+Das Kollektorfeld rechnet je Stunde die Leistung je Quadratmeter Bezugsfläche nach EN ISO 9806
+(`Allgemein/Simulation/Solarkreis.cs`, Rechenweg in `SimulationSolarthermie`). Die Eingaben stehen an
+der Anlagenzeile des Felds in `Tab_Energieanlagen` (neben Modulanzahl, Neigung und Azimut), die
+Bezugsfläche am Kollektorsatz (`Tab_Solarkollektoren(_STAMM).Bezugsflaeche`); Schemaschritt
+`SolarthermieFelderSchema`, alle Spalten mit `CHECK`.
+
+| Spalte | Bedeutung | leer |
+|---|---|---|
+| `Pumpenleistung_W` | elektrische Leistung der Solarkreispumpe | `Hilfsenergie_Anteil` der Zeile auf die genutzte Wärme, sonst kein Pumpenstrom |
+| `Solarkreisverluste_Prozent` | Verluste von Leitung und Übertrager, 0 … 50 % | 8 % |
+| `Arbeitstemperatur_Weg` | `fest` oder `speicher` | `fest` |
+| `Uebertrager_Graedigkeit_K` | Grädigkeit des Wärmeübertragers (nur `speicher`) | 5 K |
+| `Kollektor_Spreizung_K` | Spreizung des Kollektorkreises (nur `speicher`) | 10 K |
+| `Bezugsflaeche` (Katalog) | `apertur` oder `brutto` | `apertur` |
+
+**Arbeitstemperatur.** `fest` rechnet gegen 50 °C. `speicher` rechnet die mittlere Fluidtemperatur
+ϑ_m = ϑ_Speicher,unten + Grädigkeit + Spreizung/2 in jeder Stunde neu, mit dem Speicherstand vom
+Beginn der Stunde (`Stunde_Start`, vor Bedarf und Ladung): ϑ_Speicher,unten ist die unterste Zone des
+Puffers, den das Feld lädt (`T_unten`, bei einer Zone Rücklauf + SOC/Q_max · (Vorlauf − Rücklauf)).
+Das Feld nimmt den ersten Puffer seiner Ladefolge aus dem Speicherregister
+(`SolarTemperaturSpeicherSetzen` nach dem Rücklaufspeicher des Kessels); das Protokoll nennt ihn.
+Ohne Puffer gilt der Heizkreisrücklauf der Stunde, wenn die Anlagenkopplung ihn rechnet, sonst 50 °C
+mit einem Hinweis. Die Leistung des Kollektors bestimmt so den Speicher und der Speicher die
+Leistung der nächsten Stunde; eine Iteration innerhalb der Stunde gibt es nicht. Das Ergebnis führt
+die mittlere Arbeitstemperatur je Feld (`ArbeitstemperaturMittelC`, Referenzskalar nur bei
+`speicher`).
+
+**Einfallswinkel.** Die Strahlung auf die geneigte Fläche teilt sich in den Direktanteil
+G_b = DNI · cos θ und den Rest G_dr = G_t − G_b (Diffus und Reflexion). Die Leistung ist
+q = η_0 · (K_b(θ) · G_b + K_d · G_dr) − a_1 · Δϑ − a_2 · Δϑ², Δϑ = ϑ_m − ϑ_a. K_d ist der gepflegte
+Katalogwert `Kdfu`; ohne ihn rechnet die Diffusstrahlung mit K_b(θ) wie die Direktstrahlung — der
+alte Rechenweg, bitgleich.
+
+**Bezugsfläche.** Die Kennwerte η_0, a_1, a_2 gelten für die Fläche, auf die das Datenblatt sie
+bezieht: `apertur` multipliziert mit der Aperturfläche, `brutto` mit der Modulfläche. Fehlt bei
+`brutto` die Modulfläche, rechnet das Feld mit der Aperturfläche und meldet es. Der VDI-3805-Import
+setzt `brutto` nur, wenn die Bezugsfläche der Datei der Bruttofläche gleicht und von der
+Aperturfläche abweicht; Absorberflächen bleiben `apertur`.
+
+**Solarkreis.** Die Verluste kürzen die abgegebene Wärme um den Faktor (100 − p)/100 — bei 8 %
+bitgleich 0,92. Die Pumpe läuft in jeder Stunde, in der das Feld Wärme abgibt (Senke oder Puffer),
+und geht mit Leistung · 1 h (ohne Leistung: `Hilfsenergie_Anteil` × genutzte Wärme der Stunde)
+in den Rest-Strombedarf (`Rest_Strombedarf_viertelstuendlich`, je
+Viertelstunde gleich verteilt); das Ergebnis zeigt den Pumpenstrom im Reiter Solarthermie und als
+Referenzskalar `Solarthermie.PumpenstromMwh`, beides nur, wenn er größer als null ist.
+
+Gehalten von `EPOS.Kern.Tests/SolarkreisTests`, `SolarthermieModellgrenzenTests`,
+`SolarthermieFelderSchemaTests` und `SolarWaermeMonateTests` (Referenzprojekt 1049 mit `speicher`,
+Grädigkeit 5 K, Spreizung 10 K, ohne Pumpe und mit der Vorgabe der Verluste).
