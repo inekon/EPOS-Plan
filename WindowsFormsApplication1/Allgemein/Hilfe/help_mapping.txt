@@ -802,3 +802,8 @@ Form_WP_Kuehlung.Grundlagen       = /wiki/Grundlagen/Kühlung
 # (GebaeudeKuehluebergabeFelder, in Katalogeditor und Verwaltung).
 Form_Simulation_Config_Kuehlung.btn_Help = Kühlung#einschalten
 Form_Gebaeude_Kuehluebergabe.btn_Help    = Gebäudemodell VDI 6007#kuehluebergabe
+
+# Die Projekteinstellung "Aufheizoptimierung" der Simulationskonfiguration
+# (SimulationKonfigSeite, Entwurf KP3 Welle O1): bis der Abschnitt der Anwendungsseite
+# mit seinem Anker steht, auf Seitenebene.
+Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007
