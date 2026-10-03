@@ -43329,5 +43329,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
     <value>According to the file, slab "{0}" adjoins an unheated space, but space "{1}" on that side is considered heated. The file's declaration applies: the slab stays part of the envelope and is no separating slab — please check the heating of the space.</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH" xml:space="preserve">
+    <value>The file states {0}, the file name {1}; the year of construction in the file applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR" xml:space="preserve">
+    <value>{0} spaces heated and {1} unheated according to their room temperature ({2}): above 12 °C heated, otherwise unheated; the temperature is not adopted as a set point — {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
+    <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
+  </data>
 </root>
 

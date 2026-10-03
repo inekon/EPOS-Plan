@@ -43336,5 +43336,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
     <value>Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen.</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH" xml:space="preserve">
+    <value>Die Datei nennt {0}, der Dateiname {1}; es gilt das Baujahr der Datei.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR" xml:space="preserve">
+    <value>{0} Räume beheizt und {1} unbeheizt nach ihrer Raumtemperatur ({2}): über 12 °C beheizt, sonst unbeheizt; die Temperatur wird nicht als Sollwert übernommen — {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
+    <value>Aufbau „{0}“: {1} Schichten tragen Dichte und Wärmeleitfähigkeit, aber keine spezifische Wärmekapazität; c [J/(kg·K)] kommt aus dem Baustoffkatalog bzw. nach DIN EN ISO 10456 — {2}.</value>
+  </data>
 </root>
 

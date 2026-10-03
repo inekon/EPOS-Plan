@@ -36727,6 +36727,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt {0}, der Dateiname {1}; es gilt das Baujahr der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL {
@@ -36777,6 +36786,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_BEHEIZUNGSART_OFFEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_BEHEIZUNGSART_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume beheizt und {1} unbeheizt nach ihrer Raumtemperatur ({2}): über 12 °C beheizt, sonst unbeheizt; die Temperatur wird nicht als Sollwert übernommen — {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR", resourceCulture);
             }
         }
         
@@ -37317,6 +37335,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_UWERT_RUECKFALL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_UWERT_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau „{0}“: {1} Schichten tragen Dichte und Wärmeleitfähigkeit, aber keine spezifische Wärmekapazität; c [J/(kg·K)] kommt aus dem Baustoffkatalog bzw. nach DIN EN ISO 10456 — {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL", resourceCulture);
             }
         }
         
