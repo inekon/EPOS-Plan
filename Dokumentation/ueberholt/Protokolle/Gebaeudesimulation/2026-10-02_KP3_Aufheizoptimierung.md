@@ -1,7 +1,8 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
 **Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4 gebaut; die Basis heißt R34, weil R31 und R34 am 02.10.2026 für die Rechenwegbefunde und die Solarthermie vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
-(zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.68), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
+(zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.69), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
+Entscheide E59 und E60 (Leitkonzept N1.68, Teilkonzept 9.9),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate
 (`Werkzeuge/Gate/gate_linux.sh`), Merge durch die Orchestrierung, Gate über den gemeinsamen Stand, Statuszeile, Push.
 
@@ -10,6 +11,16 @@
 Wie bei KP2: Auftrag als Datei, Agent im eigenen Worktree (`model: opus`), Abnahme mit vollem Gate im Worktree, danach
 Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachweis. Bis RP1 gilt die Basis R30 (16 Projekte,
 487 CSV byte-gleich), ab RP2 die Basis R34 mit 17 Projekten.
+
+**Zweiter Entscheid E59 (02.10.2026)** — nach E58 eine Vorgabe des Anwenders mit drei Rückfragen: die Rampe je Gebäude
+(rechnet der Rechenweg schon), ein Aufschlag je Projekt in Stunden und Prozent (es gilt das Maximum), eine manuelle
+Aufheizzeit je Gebäude mit Vorschlägen; Umsetzung nach D2, vor RP1. Die Papiere schrieb ein Agent im Worktree `kp3-e59`
+(kein Code): Entwurf KP3 (Wellen R5 und O1b, Schritt KP-S4 mit Platzhalter 171, Festlegungen 34–43, F9, N-AH11 und
+N-AH12, 16,75–21,75 PT), Teilkonzept 9.9, Leitkonzept N1.68 — die Festlegungen der Wellen werden damit **N1.69** —,
+Register (P15–P17), Statusdateien, Glossar. **E60 (03.10.2026)** aus dem
+[Konzept Heizlastspitzen](../../../aktuell/Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md):
+Auslegungsgröße stationäre Auslegungsheizlast plus P_auf, in O2 und O3 neben ideale Spitze und Tagesmittel gestellt, kein
+Filter im Rechenweg; in denselben Papieren eingetragen.
 
 ## 2. Was gebaut ist
 
@@ -179,7 +190,7 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 - **W3 schlägt am Bürogebäude nie an (R4),** auch nicht bei Grenze 1,02·Φ_stat und ρ 2 %: die Formel liegt wegen Sonne und
   Gewinnen auf der sicheren Seite; erst ein Kälteeinbruch in den zwei Stunden nach dem Sprung löst W3 aus (sechs Einbruchstage).
 
-## 5. Festlegungen der Wellen (für N1.68)
+## 5. Festlegungen der Wellen (für N1.69)
 
 - R1: Index 1 der schnelle, Index 2 der langsame Modus (Teilkonzept 4.2); im zusammenfallenden Zweig r_k, C_k NaN, τ₁ = τ₂ =
   −1/μ, C_w endlich; erste Ordnung als `double` (mindestens 1, +∞ bei P ≤ Φ_stat); unerreichbar = N = 0 mit der Leistung bei
@@ -251,6 +262,19 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
   als Σ der Anteile aus R4), Festlegung 25/26, Export nach E32.
 - ~~O1~~ erledigt; offen: `AufheizHerleitung` in `SimulationErgebnisHuelle.ParameterGaben` nach D2 belegen; Wiki-Anker `#aufheizoptimierung` und `help_mapping.txt` mit KP4.
 - **Abschluss A:** Teilkonzept 4.3 (n = 37 bei a = 0,3 in der Augenblicksform), 10.3 „elfte“ Einfrierregel, 5.3 `GEMISCHT`,
-  4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.68.
+  4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.69.
 - **RP1:** ρ_min (P14) an allen 17 VDI-Gebäuden messen; 1051 im gestörten Lauf (Ladekopie-Muster aus `AufheizDeterminismusTests`); Bauwahl mit B11: knappe `Heizleistung_Max` im Rahmen des Katalogbaus.
-- Beim Anwender: P14 (ρ nach der Messung in RP1), SA1 der KP2-Oberfläche, SA-KP3 am Ende.
+- **R5 (E59, nach D2, vor RP1):** Schemaschritt `AufheizManuellSchema` (Nummer spät gegen origin, Platzhalter 171; drei
+  Spalten, Neubau von `Tab_ErgebnisGebaeude` für `MANUELL` im `CHECK`, Sicht `Abfrage_Projektgebaeude`; Alternativen A1
+  neue Spalte `Aufheiz_Art` ohne Neubau, A2 `GEKOPPELT` im Zonen-`CHECK` mitnehmen), Testdatenbank anheben, Aufschlag nach
+  Festlegung 35 (P16 vorher klären), Art „manuell“ samt Vererbung und Kopierwegen (Festlegungen 37, 38), Ergebniszeile und
+  Export (Festlegung 39), N-AH11, N-AH12.
+- **O1b (E59):** zwei Aufschlagfelder in der Projekteinstellung, `SIMKONF_AUFH_AUFSCHLAG_*`, zwei KI-Felder, Glossar.
+- **O2 erweitert (E59, E60):** Feld „Aufheizzeit manuell (h)“ im Reiter „Konditionierung“ des Gebäudedialogs mit Vorschlägen
+  (bemessene Zeit, Spanne nach Bauart — P15) und weicher Sperre; Auslegungsgröße: ideale Spitze, Tagesmittel und P_auf
+  mit Quelle nebeneinander (P17).
+- **O3 erweitert (E59, E60):** Abweichungsmerkmale „Aufheizzeit manuell (h)“, „Aufschlag (h)“, „Aufschlag (%)“;
+  Auslegungsgröße in der Gebäudetafel.
+- Reihenfolge der offenen Wellen: D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A (Alternative: RP1/RP2 nach R5 parallel zu O1b–O3).
+- Beim Anwender: P14 (ρ nach der Messung in RP1), P15 (Spanne nach Bauart, vor O2), P16 (Aufschlag an Sprüngen ohne
+  Rampe, vor R5), P17 (Lesart der Auslegungsgröße, vor O2), SA1 der KP2-Oberfläche, SA-KP3 am Ende.
