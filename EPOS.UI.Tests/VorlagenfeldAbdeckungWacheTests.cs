@@ -33,6 +33,8 @@ public class VorlagenfeldAbdeckungWacheTests
         // ---- Simulation › Ergebnis (die Erzeuger- und Bedarfsbilder tragen seit Katalog v10 stand.bild.*) ----
         ("Simulation/ErgebnisReiter.razor", "simerg-waermemonate", 1,
          "Wärme-Autarkie der Solarthermie je Monat: Direktdeckung und Speicheranteil führt der Zeitreihensatz des Berichts nicht"),
+        ("Simulation/BhkwReiter.razor", "simerg-bhkw-strom", 1,
+         "Stromlast des BHKW: der Katalog führt am BHKW nur die Wärmelast (stand.bild.bhkw), kein Stromlastbild"),
         ("Simulation/KaeltegangReiter.razor", "simerg-kaeltegang", 1,
          "Kälteproduktion je Kälteerzeuger: kein Kältebild im Katalog, der Bericht zeigt die Kältedeckung als Kennzahlen"),
         ("Simulation/ErgebnisReiter.razor", "Resource.SIM_ERGEBNIS", 1,
