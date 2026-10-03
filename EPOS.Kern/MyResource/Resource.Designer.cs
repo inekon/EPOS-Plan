@@ -74141,6 +74141,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasservorrang: Unter {0} l fehlt Abtaureserve für die Heizung. ähnelt.
+        /// </summary>
+        public static string PA_ABTAU_VORRANG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_ABTAU_VORRANG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ausgewählt ähnelt.
         /// </summary>
         public static string PA_AUSGEWAEHLT {
@@ -74159,11 +74168,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone ({0} l) liegt über dem Band {1}–{2} l. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UEBER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BAND_UEBER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone liegt unter dem Plausibilitätsband der Übergabeart. ähnelt.
         /// </summary>
         public static string PA_BAND_UNTER {
             get {
                 return ResourceManager.GetString("PA_BAND_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone ({0} l) liegt unter dem Band {1}–{2} l. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UNTER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BAND_UNTER_TEXT", resourceCulture);
             }
         }
         
@@ -74177,11 +74204,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brauchwasserzone ({0} l) übersteigt das {1}-fache des Tagesbedarfs ({2} l). ähnelt.
+        /// </summary>
+        public static string PA_BW_UEBERDIMENSIONIERT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BW_UEBERDIMENSIONIERT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust ist über den Geltungsbereich der Klasse-C-Grenze hinaus extrapoliert. ähnelt.
         /// </summary>
         public static string PA_EXTRAPOLATION {
             get {
                 return ResourceManager.GetString("PA_EXTRAPOLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust über {0} l aus der Klasse-C-Grenze extrapoliert. ähnelt.
+        /// </summary>
+        public static string PA_EXTRAPOLATION_TEXT {
+            get {
+                return ResourceManager.GetString("PA_EXTRAPOLATION_TEXT", resourceCulture);
             }
         }
         
@@ -74195,11 +74240,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer. ähnelt.
+        /// </summary>
+        public static string PA_HEIZSTAB_GESPERRT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HEIZSTAB_GESPERRT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz. ähnelt.
         /// </summary>
         public static string PA_HYGIENE_TEMPERATUR {
             get {
                 return ResourceManager.GetString("PA_HYGIENE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer oben {0} °C: Für die Frischwasserbereitung mindestens {1} °C Vorlauf; periodisches Aufheizen ist kein Ersatz. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_TEMPERATUR_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_TEMPERATUR_TEXT", resourceCulture);
             }
         }
         
@@ -74213,11 +74276,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasserspeicher über {0} l: Anforderungen an Großanlagen beachten. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_W551_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_W551_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Bedarfsreihe ist leer: Die Kriterien auf dem Lastgang entfallen für diese Zone. ähnelt.
         /// </summary>
         public static string PA_KEINE_REIHE {
             get {
                 return ResourceManager.GetString("PA_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_BW_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_BW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prozessreihe ist leer: Die Prozesszone bleibt leer. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_PROZESS_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_PROZESS_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizreihe ist leer: Lastgang-Kriterien (K4e, D1, D2) entfallen. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_TEXT", resourceCulture);
             }
         }
         
@@ -74231,6 +74330,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich. ähnelt.
+        /// </summary>
+        public static string PA_KEIN_PUFFER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEIN_PUFFER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt. ähnelt.
         /// </summary>
         public static string PA_OHNE_PUFFER_GEREGELT {
@@ -74240,11 +74348,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt. ähnelt.
+        /// </summary>
+        public static string PA_OHNE_PUFFER_GEREGELT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_OHNE_PUFFER_GEREGELT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Praxisgrenze ist erreicht: Ein Ziel ist mit dem größten Puffer nicht zu halten, oder die Summe ist ein Saisonalspeicher. ähnelt.
         /// </summary>
         public static string PA_PRAXISGRENZE {
             get {
                 return ResourceManager.GetString("PA_PRAXISGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Deckungsziel {0} ist auch mit {1} l nicht erreichbar: Die Erzeugerleistung ist zu klein; die Deckung bemisst nicht. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_DECKUNG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_DECKUNG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Startziel {0} je Tag ist auch mit {1} l nicht zu halten; das Taktziel bemisst nicht. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_START_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_START_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe der Zonen ({0} l) überschreitet die Praxisgrenze {1} l: Das ist ein Saisonalspeicher, keine Pufferauslegung. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_TEXT", resourceCulture);
             }
         }
         
@@ -74267,11 +74411,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Starts je Heizperiode über {1}. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_JAHR_TEXT {
+            get {
+                return ResourceManager.GetString("PA_STARTS_JAHR_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Starts je Tag liegen über der Warnschwelle. ähnelt.
         /// </summary>
         public static string PA_STARTS_TAG {
             get {
                 return ResourceManager.GetString("PA_STARTS_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Starts je Tag über der Warnschwelle {1}. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_TAG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_STARTS_TAG_TEXT", resourceCulture);
             }
         }
         
@@ -74285,11 +74447,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau). ähnelt.
+        /// </summary>
+        public static string PA_TANK_IM_TANK_TEXT {
+            get {
+                return ResourceManager.GetString("PA_TANK_IM_TANK_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung. ähnelt.
         /// </summary>
         public static string PA_UEBERGABE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("PA_UEBERGABE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung. ähnelt.
+        /// </summary>
+        public static string PA_UEBERGABE_UNBEKANNT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_UEBERGABE_UNBEKANNT_TEXT", resourceCulture);
             }
         }
         
@@ -74308,6 +74488,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PA_ZWEITERZEUGER_FREI {
             get {
                 return ResourceManager.GetString("PA_ZWEITERZEUGER_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht. ähnelt.
+        /// </summary>
+        public static string PA_ZWEITERZEUGER_FREI_TEXT {
+            get {
+                return ResourceManager.GetString("PA_ZWEITERZEUGER_FREI_TEXT", resourceCulture);
             }
         }
         

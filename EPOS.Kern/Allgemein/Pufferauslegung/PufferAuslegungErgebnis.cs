@@ -69,8 +69,24 @@ namespace WindowsFormsApplication1
         {
         }
 
+        /// <summary>Eine Warnung mit dem Klartext als <see cref="Textbaustein"/> (Schlüssel <c>PA_&lt;CODE&gt;_TEXT</c>, Zahlen als Argumente).</summary>
+        public PufferWarnung(string code, PufferStufe stufe, Textbaustein text, Textbaustein herkunft, PufferZone? zone)
+            : this(code, stufe, text?.Klartext ?? "", herkunft, zone)
+        {
+            TextBaustein = text;
+        }
+
         /// <summary>Der Ressourcenschlüssel des Texts: <c>PA-KEIN-PUFFER</c> → <c>PA_KEIN_PUFFER</c>.</summary>
         public string Ressourcenschluessel => Code.Replace('-', '_');
+
+        /// <summary>
+        /// Der Klartext mit Zahlen als <see cref="Textbaustein"/> (<c>PA_&lt;CODE&gt;_TEXT</c>); die Auflösung formatiert
+        /// die Zahlen in der Sprache der Ansicht bzw. des Berichts. Ohne Baustein: <see cref="Text"/> als Klartext.
+        /// </summary>
+        public Textbaustein TextBaustein { get; init; }
+
+        /// <summary>Der Klartext als Baustein — <see cref="TextBaustein"/> oder <see cref="Text"/> als Klartext.</summary>
+        public Textbaustein KlartextBaustein => TextBaustein ?? Textbaustein.Klar(Text);
 
         /// <summary>Die Herkunft als deutscher Klartext.</summary>
         public string Herkunft => HerkunftBaustein?.Klartext ?? "";

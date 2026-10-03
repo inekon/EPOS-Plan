@@ -64,8 +64,7 @@ namespace WindowsFormsApplication1
                 praxis = true;
                 empfehlung = g.PraxisgrenzeL;
                 g.Warnung(PufferWarncode.PRAXISGRENZE, PufferStufe.Warnung,
-                          "Die Summe der Zonen (" + PufferRechengroessen.Zahl(summe) + " l) überschreitet die Praxisgrenze " +
-                          PufferRechengroessen.Zahl(g.PraxisgrenzeL) + " l: Das ist ein Saisonalspeicher, keine Pufferauslegung.",
+                          Textbaustein.T("PA_PRAXISGRENZE_TEXT", "Die Summe der Zonen ({0} l) überschreitet die Praxisgrenze {1} l: Das ist ein Saisonalspeicher, keine Pufferauslegung.", (double)summe, (double)g.PraxisgrenzeL),
                           PufferAuslegungVorgaben.Quellentext(p.Quelle(PufferAuslegungVorgaben.PRAXISGRENZE)), null);
             }
 
@@ -78,7 +77,7 @@ namespace WindowsFormsApplication1
                       eingang.Vorlage == PufferVorlage.WP_BIVALENT;
             if (kombi && wp && eingang.Zapfprofil?.Topologie == PufferBwTopologie.Speicher)
                 g.Warnung(PufferWarncode.TANK_IM_TANK, PufferStufe.Hinweis,
-                          "Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau).",
+                          Textbaustein.T("PA_TANK_IM_TANK_TEXT", "Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau)."),
                           Textbaustein.T("PAUS_HERK_VDI_782", "VDI 4645 E 2026-03, 7.8.2"), null);
 
             // ---- Katalogvorschlag (Platzhalter-Schnittstelle bis W3) ----
@@ -95,8 +94,7 @@ namespace WindowsFormsApplication1
                                                                eingang.VorlaufC, eingang.RuecklaufC, p);
                 if (verlust.Extrapoliert)
                     g.Warnung(PufferWarncode.EXTRAPOLATION, PufferStufe.Hinweis,
-                              "Bereitschaftsverlust über " + PufferRechengroessen.Zahl(p.Wert(PufferAuslegungVorgaben.BEREIT_EXTRAPOLATION)) +
-                              " l aus der Klasse-C-Grenze extrapoliert.", HeizzoneRechner.HERKUNFT_K11, null);
+                              Textbaustein.T("PA_EXTRAPOLATION_TEXT", "Bereitschaftsverlust über {0} l aus der Klasse-C-Grenze extrapoliert.", p.Wert(PufferAuslegungVorgaben.BEREIT_EXTRAPOLATION)), HeizzoneRechner.HERKUNFT_K11, null);
             }
 
             // ---- Kennzahlen ----

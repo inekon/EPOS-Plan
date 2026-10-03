@@ -98,7 +98,7 @@ namespace WindowsFormsApplication1
             if (zp == null)
             {
                 g.Warnung(PufferWarncode.KEINE_REIHE, PufferStufe.Warnung,
-                          "Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer.", HERKUNFT_SPEICHER, ZONE);
+                          Textbaustein.T("PA_KEINE_REIHE_BW_TEXT", "Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer."), HERKUNFT_SPEICHER, ZONE);
                 return HeizzoneRechner.Bemessen(ZONE, k, false);
             }
 
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
                     });
                     if (zp.NenninhaltL.Value > W551_GROSSANLAGE_L)
                         g.Warnung(PufferWarncode.HYGIENE_W551, PufferStufe.Hinweis,
-                                  "Trinkwasserspeicher über " + Z(W551_GROSSANLAGE_L) + " l: Anforderungen an Großanlagen beachten.", HERKUNFT_W551, ZONE);
+                                  Textbaustein.T("PA_HYGIENE_W551_TEXT", "Trinkwasserspeicher über {0} l: Anforderungen an Großanlagen beachten.", (double)W551_GROSSANLAGE_L), HERKUNFT_W551, ZONE);
                     break;
 
                 case PufferBwTopologie.Durchfluss:
@@ -164,8 +164,7 @@ namespace WindowsFormsApplication1
                     });
                     if (tOben < HYGIENE_VORLAUF_C)
                         g.Warnung(PufferWarncode.HYGIENE_TEMPERATUR, PufferStufe.Warnung,
-                                  "Puffer oben " + Z(tOben) + " °C: Für die Frischwasserbereitung mindestens " + Z(HYGIENE_VORLAUF_C) +
-                                  " °C Vorlauf; periodisches Aufheizen ist kein Ersatz.", HERKUNFT_IEA, ZONE);
+                                  Textbaustein.T("PA_HYGIENE_TEMPERATUR_TEXT", "Puffer oben {0} °C: Für die Frischwasserbereitung mindestens {1} °C Vorlauf; periodisches Aufheizen ist kein Ersatz.", (double)tOben, (double)HYGIENE_VORLAUF_C), HERKUNFT_IEA, ZONE);
                     break;
                 }
             }
@@ -183,8 +182,7 @@ namespace WindowsFormsApplication1
                 double grenze = p.Wert(PufferAuslegungVorgaben.BW_UEBER) * zp.TagesbedarfL.Value;
                 if (zone.VolumenL > grenze)
                     g.Warnung(PufferWarncode.BW_UEBERDIMENSIONIERT, PufferStufe.Hinweis,
-                              "Die Brauchwasserzone (" + Z(zone.VolumenL) + " l) übersteigt das " +
-                              Z(p.Wert(PufferAuslegungVorgaben.BW_UEBER)) + "-fache des Tagesbedarfs (" + Z(zp.TagesbedarfL.Value) + " l).",
+                              Textbaustein.T("PA_BW_UEBERDIMENSIONIERT_TEXT", "Die Brauchwasserzone ({0} l) übersteigt das {1}-fache des Tagesbedarfs ({2} l).", (double)zone.VolumenL, p.Wert(PufferAuslegungVorgaben.BW_UEBER), (double)zp.TagesbedarfL.Value),
                               HERKUNFT_IEA, ZONE);
             }
             return zone;

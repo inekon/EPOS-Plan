@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
             if (!HeizzoneRechner.HatReihe(g.E.ReiheProzess))
             {
                 g.Warnung(PufferWarncode.KEINE_REIHE, PufferStufe.Warnung,
-                          "Die Prozessreihe ist leer: Die Prozesszone bleibt leer.", HeizzoneRechner.HERKUNFT_D1, ZONE);
+                          Textbaustein.T("PA_KEINE_REIHE_PROZESS_TEXT", "Die Prozessreihe ist leer: Die Prozesszone bleibt leer."), HeizzoneRechner.HERKUNFT_D1, ZONE);
                 return HeizzoneRechner.Bemessen(ZONE, k, false);
             }
             k.AddRange(HeizzoneRechner.Simulationskriterien(g, g.E.ReiheProzess, z, true, true, ZONE));

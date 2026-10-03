@@ -751,7 +751,10 @@ namespace WindowsFormsApplication1
                     foreach (PufferWarnung w in g.Warnungen)
                         k.HinweisRoh("• " + (w.Stufe == PufferStufe.Warnung ? MyResource.Resource.PAUS_STUFE_WARNUNG
                                                                             : MyResource.Resource.PAUS_STUFE_HINWEIS) +
-                                     ": " + Pauskey("", w.Ressourcenschluessel, w.Text));
+                                     // Der Klartext mit Zahlen in der Berichtssprache (PA_<CODE>_TEXT); ohne Baustein der
+                                     // Kurztext des Codes, Rückfall der Klartext.
+                                     ": " + (w.TextBaustein != null ? w.TextBaustein.Aufloesen(k.Kultur)
+                                                                     : Pauskey("", w.Ressourcenschluessel, w.Text)));
             }
         }
 

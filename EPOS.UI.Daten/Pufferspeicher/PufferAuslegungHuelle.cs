@@ -683,7 +683,7 @@ namespace WindowsFormsApplication1
                 },
                 Warnungen = r.Warnungen.Select(w => new PufferWarnungDaten(
                     w.Code, w.Stufe == PufferStufe.Warnung,
-                    Ressource(w.Ressourcenschluessel, w.Text), w.Text ?? "", Textbaustein.Aufloesen(w.HerkunftBaustein),
+                    Ressource(w.Ressourcenschluessel, w.Text), Textbaustein.Aufloesen(w.KlartextBaustein), Textbaustein.Aufloesen(w.HerkunftBaustein),
                     w.Zone.HasValue ? PufferAuslegungTexte.Nach("PAUS_ZONE_", w.Zone.Value.ToString()) : "")).ToList()
             };
         }

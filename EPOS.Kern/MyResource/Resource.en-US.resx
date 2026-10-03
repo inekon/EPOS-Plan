@@ -43887,5 +43887,68 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PSP_HERKUNFT_KATALOG" xml:space="preserve">
     <value>from catalogue: {0}</value>
   </data>
+  <data name="PA_KEINE_REIHE_BW_TEXT" xml:space="preserve">
+    <value>No draw-off profile result: the domestic hot water zone remains empty.</value>
+  </data>
+  <data name="PA_HYGIENE_W551_TEXT" xml:space="preserve">
+    <value>Potable water store above {0} l: observe the requirements for large systems.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR_TEXT" xml:space="preserve">
+    <value>Buffer top {0} °C: fresh water heating needs a flow of at least {1} °C; periodic heating up is no substitute.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT_TEXT" xml:space="preserve">
+    <value>The domestic hot water zone ({0} l) exceeds {1} times the daily demand ({2} l).</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_TEXT" xml:space="preserve">
+    <value>The sum of the zones ({0} l) exceeds the practical limit of {1} l: this is a seasonal store, not a buffer design.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK_TEXT" xml:space="preserve">
+    <value>Tank-in-tank combination stores are less suitable for heat pumps (high temperature level).</value>
+  </data>
+  <data name="PA_EXTRAPOLATION_TEXT" xml:space="preserve">
+    <value>Standby loss above {0} l extrapolated from the class C limit.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT_TEXT" xml:space="preserve">
+    <value>No emitter type at the building: the heating zone is calculated as surface heating.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_TEXT" xml:space="preserve">
+    <value>The heating series is empty: the load profile criteria (K4e, D1, D2) are omitted.</value>
+  </data>
+  <data name="PA_KEIN_PUFFER_TEXT" xml:space="preserve">
+    <value>The non-isolatable system volume is sufficient: no heating buffer required.</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT_TEXT" xml:space="preserve">
+    <value>Without a buffer only with a modulating heat pump: the unit is fixed-speed, the buffer stays.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI_TEXT" xml:space="preserve">
+    <value>The second generator is released during the lock-out: the lock-out time does not size the buffer.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT_TEXT" xml:space="preserve">
+    <value>The immersion heater counts as locked out too: the lock-out time sizes the buffer.</value>
+  </data>
+  <data name="PA_BAND_UNTER_TEXT" xml:space="preserve">
+    <value>The heating zone volume ({0} l) is below the range {1}–{2} l.</value>
+  </data>
+  <data name="PA_BAND_UEBER_TEXT" xml:space="preserve">
+    <value>The heating zone volume ({0} l) is above the range {1}–{2} l.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG_TEXT" xml:space="preserve">
+    <value>Hot water priority: below {0} l there is no defrost reserve for space heating.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_DECKUNG_TEXT" xml:space="preserve">
+    <value>The coverage target {0} cannot be reached even with {1} l: the generator output is too small; coverage does not size the buffer.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_START_TEXT" xml:space="preserve">
+    <value>The start target of {0} per day cannot be kept even with {1} l; the cycling target does not size the buffer.</value>
+  </data>
+  <data name="PA_STARTS_TAG_TEXT" xml:space="preserve">
+    <value>{0} starts per day above the warning threshold of {1}.</value>
+  </data>
+  <data name="PA_STARTS_JAHR_TEXT" xml:space="preserve">
+    <value>{0} starts per heating season above {1}.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_PROZESS_TEXT" xml:space="preserve">
+    <value>The process series is empty: the process zone remains empty.</value>
+  </data>
 </root>
 
