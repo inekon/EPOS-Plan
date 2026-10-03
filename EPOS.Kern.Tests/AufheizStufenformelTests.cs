@@ -340,7 +340,7 @@ namespace EPOS.Kern.Tests
             double[] verhaeltnisse = { 1.005, 1.01, 1.02, 1.05, 1.1, 1.2, 1.5, 2.0, 3.0 };
             double[] spruenge = { 0.5, 2.0, 4.0, 6.0 };
             const int nMax = 2000;
-            int proben = 0, knapp = 0;
+            int proben = 0, knapp = 0, jenseits = 0;
             foreach (Fall f in Faelle())
             {
                 foreach (double dT in spruenge)
@@ -352,7 +352,15 @@ namespace EPOS.Kern.Tests
                         Aufheizwahl augenblick = Aufheizstufen.Waehlen(f.Antwort, f.StatW, dT, p, Aufheizform.Augenblick, nMax);
                         double nfMittel = Aufheizstufen.ErsteOrdnungMittel(f.Antwort, f.StatW, dT, p);
                         double nfAugenblick = Aufheizstufen.ErsteOrdnungAugenblick(f.Antwort, f.StatW, dT, p);
-                        Assert.True(mittel.Erreichbar && augenblick.Erreichbar, "unerreichbar: " + f);
+                        // Jenseits von n_max (ein schwerer, gut gedämmter Bau bei P knapp über Φ_stat, etwa das
+                        // Gebäude von 1051, KP3) hält die Schranke als n_F > n_max.
+                        if (!mittel.Erreichbar || !augenblick.Erreichbar)
+                        {
+                            Assert.True(mittel.Erreichbar || nfMittel > nMax, "unerreichbar ohne n_F > n_max (Mittel): " + f);
+                            Assert.True(augenblick.Erreichbar || nfAugenblick > nMax, "unerreichbar ohne n_F > n_max (Augenblick): " + f);
+                            jenseits++;
+                            continue;
+                        }
                         Assert.True(nfMittel >= mittel.N, string.Format(CultureInfo.InvariantCulture,
                             "N-AH4 Mittel {0}, ΔT {1}, P/Φ_stat {2}: n_F {3} < n {4}", f, dT, v, nfMittel, mittel.N));
                         Assert.True(nfAugenblick >= augenblick.N, string.Format(CultureInfo.InvariantCulture,
@@ -362,7 +370,7 @@ namespace EPOS.Kern.Tests
                     }
                 }
             }
-            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "N-AH4: {0} Proben je Form, {1} mit n_F = n", proben, knapp));
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "N-AH4: {0} Proben je Form, {1} mit n_F = n, {2} jenseits n_max", proben, knapp, jenseits));
         }
 
         // =====================================================================

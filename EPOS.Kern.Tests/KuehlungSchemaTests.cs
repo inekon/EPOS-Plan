@@ -174,7 +174,8 @@ namespace EPOS.Kern.Tests
                             string.Join(", ", REFERENZEN_MIT_KUEHLUNG.Select(r => r.Gebaeude.ToString(CultureInfo.InvariantCulture))) + "))";
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehlspalten)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name +
-                                      "] IS NOT NULL AND [" + s.Name + "] <> 0" + string.Format(ausser, s.Tabelle)));
+                                      "] IS NOT NULL AND [" + s.Name + "] <> 0" + string.Format(ausser, s.Tabelle) +
+                                      Konditionierungsbestand.Ausser(s.Tabelle)));   // 1051: Kuehlung_Aktiv bei Kühlbetrieb aus (KP3, RP1)
             foreach ((int projekt, int gebaeude) in REFERENZEN_MIT_KUEHLUNG)
             {
                 DataRow g = DataRepository.GetDataTable(

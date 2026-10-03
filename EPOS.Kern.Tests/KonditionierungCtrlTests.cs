@@ -53,7 +53,7 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar(
                    "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" NOT IN " +
                    "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
-                   "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ")"),    // ohne die Zonenkalender von 1052 (G6d)
+                   "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"),    // ohne die Zonenkalender von 1052 (G6d) und die Kalender von 1051 (KP3, RP1)
                                CultureInfo.InvariantCulture);
 
         /// <summary>Die Matrix eines Probegebäudes mit Wochenendwert und Heizperiode.</summary>
