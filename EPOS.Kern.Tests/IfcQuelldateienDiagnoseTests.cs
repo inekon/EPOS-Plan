@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -34,6 +38,13 @@ namespace EPOS.Kern.Tests
             while (o != null && !File.Exists(Path.Combine(o, "WP-Plan.Kern.slnf")))
                 o = Path.GetDirectoryName(o);
             return o == null ? null : Path.Combine(o, "Quellen");
+        }
+
+        /// <summary>Der Pfad einer Anwenderdatei unter <c>Quellen/</c>; <c>null</c>, wenn sie fehlt (oder nur ein LFS-Zeiger liegt).</summary>
+        internal static string Pfad(string datei)
+        {
+            string pfad = Quellen() == null ? null : Path.Combine(Quellen(), datei);
+            return pfad == null || !File.Exists(pfad) || new FileInfo(pfad).Length < 1024 ? null : pfad;
         }
 
         private static string Z(double? w) => w.HasValue ? w.Value.ToString("0.##", CultureInfo.InvariantCulture) : "—";
@@ -128,15 +139,240 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // ==================================================================
+        //  Kennzahlen je Anwenderdatei
+        // ==================================================================
+
+        /// <summary>Die Kennzahlen des Imports einer Anwenderdatei, als Texte gefasst (Zahlen auf zwei Stellen).</summary>
+        internal sealed class Kennzahlen
+        {
+            /// <summary>„Werte/Vorgaben/leer" des Kopfs (wie <see cref="GebaeudeZuordnungsModell.KopfText"/> gezählt).</summary>
+            public string Kopf;
+            public string Baujahr;
+            public string Klasse;
+            public string Vorschlagsname;
+            /// <summary>„Räume/beheizt/beheizte Fläche".</summary>
+            public string Raeume;
+            /// <summary>Die Vorgabe der Zonierung samt Zahl ihrer Zonen, etwa „Z4 3".</summary>
+            public string Vorgabe;
+            /// <summary>Die Zonen unter Z4: „Name Fläche" je Zone.</summary>
+            public string ZonenZ4;
+            /// <summary>Die Trennungen unter Z4: „A|B|Fläche".</summary>
+            public string TrennungenZ4;
+            /// <summary>Die geschätzten Trenndecken: „Unten/Oben geschätzt (referenziert)".</summary>
+            public string Geschaetzt;
+            public string Innenflaechenfaktor;
+            /// <summary>Die Hülle des Einzonenwegs: Fläche und U-Wert von Außenwand, Dach, Grund, Fenster.</summary>
+            public string Huelle;
+            /// <summary>Beheizungsart der Datei: „beheizt/unbeheizt/offen".</summary>
+            public string Beheizungsart;
+            /// <summary>Die Hinweise „Erklärung vor Bezug": „Bauteil|Raum".</summary>
+            public string ErklaerungVorBezug;
+            /// <summary>Räume, die nach Lage bzw. Name unbeheizt sind: „Lage/Name".</summary>
+            public string Unbeheizt;
+            /// <summary>Fehler des Bauteilvorschlags mit der Vorgabe und unter Z4 (leer = keiner).</summary>
+            public string Fehler;
+
+            public override string ToString()
+                => "Kopf " + Kopf + ", Baujahr " + Baujahr + ", Klasse " + Klasse + ", Name „" + Vorschlagsname + "“, Räume " + Raeume
+                   + ", Vorgabe " + Vorgabe + ", Z4 [" + ZonenZ4 + "], Trennungen [" + TrennungenZ4 + "], geschätzt [" + Geschaetzt
+                   + "], f_IW " + Innenflaechenfaktor + ", Hülle [" + Huelle + "], Beheizungsart " + Beheizungsart + ", Erklärung ["
+                   + ErklaerungVorBezug + "], unbeheizt Lage/Name " + Unbeheizt + ", Fehler [" + Fehler + "]";
+        }
+
+        /// <summary>Misst die Kennzahlen einer gelesenen Anwenderdatei (Gebäude 0).</summary>
+        internal static Kennzahlen Messen(GebaeudeImportAblauf a)
+        {
+            AbbildGebaeude g = a.Abbild.Gebaeude[0];
+            GebaeudeImportSatz satz = a.Zuordnen(0, null);
+            int ausDatei = 0, vorgabe = 0, leer = 0;
+            foreach (GebaeudeFeldzeile z in satz.Zeilen)
+            {
+                if (z.Herkunft == Importherkunft.GbXml || z.Herkunft == Importherkunft.Ifc) ausDatei++;
+                else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)) vorgabe++;
+                else if (!z.HatWert) leer++;
+            }
+            string Feld(string f, string u) => Z(satz.Zeile(f).Wert) + " U " + Z(satz.Zeile(u).Wert);
+            GebaeudeZonierung zv = GebaeudeZonierung.Bilden(a.Abbild, 0);
+            GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            GebaeudeBauteilvorschlag vv = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null);
+            GebaeudeBauteilvorschlag v4 = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, IfcImportProfil.ZONENREGEL_Z4);
+            List<AbbildRaum> beheizt = g.Raeume.Where(r => r.Beheizt).ToList();
+            PruefMeldung art = g.Meldungen.FirstOrDefault(m => m.Schluessel == "IMP_IFC_PROT_BEHEIZUNGSART");
+            return new Kennzahlen
+            {
+                Kopf = ausDatei + "/" + vorgabe + "/" + leer,
+                Baujahr = Z(satz.Zeile(GebaeudeZielfelder.BAUJAHR).Wert),
+                Klasse = satz.Baualtersklasse?.ToString() ?? "—",
+                Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
+                Raeume = g.Raeume.Count + "/" + beheizt.Count + "/" + Z(beheizt.Sum(r => r.FlaecheM2 ?? 0.0)),
+                Vorgabe = zv.Vorgabe + " " + zv.Zonen.Count,
+                ZonenZ4 = string.Join(", ", z4.Zonen.Select(z => z.Name + " " + Z(z.FlaecheM2))),
+                TrennungenZ4 = string.Join(", ", z4.Trennungen.Select(t => z4.Zonen[t.ZoneA].Name + "|" + z4.Zonen[t.ZoneB].Name + "|"
+                                                                      + Z(Math.Max(t.FlaecheA, t.FlaecheB)))),
+                Geschaetzt = string.Join(", ", g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GESCHAETZT")
+                                                          .Select(m => m.Werte[0] + "/" + m.Werte[1] + " " + m.Werte[2] + " (" + m.Werte[3] + ")")),
+                Innenflaechenfaktor = Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert),
+                Huelle = "AW " + Feld(GebaeudeZielfelder.FLAECHE_AUSSENWAND, GebaeudeZielfelder.U_AUSSENWAND)
+                         + ", Dach " + Feld(GebaeudeZielfelder.FLAECHE_DACH, GebaeudeZielfelder.U_DACH)
+                         + ", Grund " + Feld(GebaeudeZielfelder.FLAECHE_GRUND, GebaeudeZielfelder.U_GRUND)
+                         + ", Fenster " + Feld(GebaeudeZielfelder.FENSTER_GESAMT, GebaeudeZielfelder.U_FENSTER),
+                Beheizungsart = art == null ? "—" : art.Werte[0] + "/" + art.Werte[1] + "/"
+                    + g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_BEHEIZUNGSART_OFFEN").Sum(m => int.Parse(m.Werte[0], CultureInfo.InvariantCulture)),
+                ErklaerungVorBezug = string.Join(", ", g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG")
+                                                                  .Select(m => m.Werte[0] + "|" + m.Werte[1])),
+                Unbeheizt = g.Raeume.Count(r => r.BeheiztQuelle == BeheiztQuelle.Lage) + "/" + g.Raeume.Count(r => r.BeheiztQuelle == BeheiztQuelle.Name),
+                Fehler = string.Join(" | ", vv.Meldungen.Concat(v4.Meldungen).Where(m => m.Stufe == PruefStufe.Fehler)
+                                              .Select(m => string.Join(";", m.Werte)).Distinct()),
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Erwartungen je Anwenderdatei</b> (HottCAD-Exporte, alle ohne Raumgrenzen, mit Raumbezügen, Gebäudename
+        /// „Gebäude", Baujahr im Satz <c>HSETU_GebäudeAllgemein</c>, Beheizungsart je Raum in <c>HSETU_RaumAllgemein</c>):
+        /// Kopf „Werte/Vorgaben/leer", Baujahr, Klasse, Vorschlagsname, Räume „alle/beheizt/beheizte Fläche", Vorgabe der
+        /// Zonierung mit Zahl der Zonen, Zonen und Trennungen unter Z4, geschätzte Trenndecken, Innenflächenfaktor, Hülle
+        /// des Einzonenwegs, Beheizungsart „beheizt/unbeheizt/offen", Erklärung vor Bezug, unbeheizt nach Lage/Name.
+        /// Der Bauteilvorschlag läuft mit der Vorgabe und unter Z4 ohne Fehler.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, Kennzahlen> ERWARTET = new Dictionary<string, Kennzahlen>(StringComparer.Ordinal)
+        {
+            ["MFH_mittel_1984.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "1984", Klasse = "H", Vorschlagsname = "MFH_mittel_1984", Raeume = "29/24/298.84",
+                Vorgabe = "Z5 1", ZonenZ4 = "DG2 29.43, DG1 104.11, EG 102.12, Keller 63.19",
+                TrennungenZ4 = "DG2|DG1|29.43, DG1|EG|102.12", Geschaetzt = "EG/DG1 102.12 (4.98), DG1/DG2 29.43 (8.01)",
+                Innenflaechenfaktor = "2.24", Huelle = "AW 235.21 U 0.49, Dach 135.28 U 0.46, Grund 121.91 U 3.89, Fenster 53.75 U 2.63",
+                Beheizungsart = "22/5/0", ErklaerungVorBezug = "Boden EG 002|Fitnessraum", Unbeheizt = "0/0", Fehler = "",
+            },
+            ["MFH-Klein-unsaniert-1964.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964", Raeume = "30/23/275.21",
+                Vorgabe = "Z4 7", ZonenZ4 = "DG2 48.78, DG1 98.15, OG1 88.53, OG1 (unbeheizt) 11.3, EG 88.53, EG (unbeheizt) 11.3, Keller 114.34",
+                TrennungenZ4 = "DG2|DG1|12.27, DG1|OG1|88.53, OG1|OG1 (unbeheizt)|12.08, OG1|EG|88.53, EG|EG (unbeheizt)|12.08, EG|Keller|11.84",
+                Geschaetzt = "EG/OG1 88.53 (23.75), OG1/DG1 88.53 (2.26)", Innenflaechenfaktor = "3.47",
+                Huelle = "AW 245.59 U 1.4, Dach 148.68 U 0.58, Grund 119.01 U 1, Fenster 41.86 U 1.32",
+                Beheizungsart = "18/2/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
+            },
+            ["Sportheim_1970_unsaniert.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "1995", Klasse = "I", Vorschlagsname = "Sportheim_1970_unsaniert", Raeume = "56/41/718.99",
+                Vorgabe = "Z5 1", ZonenZ4 = "OG 230.1, EG 450.78, UG (unbeheizt) 460.75, UG 38.11",
+                TrennungenZ4 = "OG|EG|230.1, EG|UG (unbeheizt)|65.95", Geschaetzt = "EG/OG 230.1 (1.26)", Innenflaechenfaktor = "2.3",
+                Huelle = "AW 743.53 U 0.27, Dach 698.24 U 0.16, Grund 503.84 U 0.53, Fenster 115.32 U 0.91",
+                Beheizungsart = "41/15/0", ErklaerungVorBezug = "Boden EG 005|Flur 003", Unbeheizt = "0/0", Fehler = "",
+            },
+            ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "1969", Klasse = "F", Vorschlagsname = "Verwaltung_mit_Montage-2969_vollsaniert_2014",
+                Raeume = "113/91/4343.08", Vorgabe = "Z5 1",
+                ZonenZ4 = "OG4 546.81, OG4 (unbeheizt) 20.8, OG3 649.47, OG3 (unbeheizt) 14.12, OG2 669.1, OG2 (unbeheizt) 11.5, OG1 493.9, "
+                          + "OG1 (unbeheizt) 11.5, EG 1003.67, EG (unbeheizt) 15.63, UG1 958.56, UG1 (unbeheizt) 59.07, UG2 21.57",
+                TrennungenZ4 = "OG4|OG4 (unbeheizt)|68.63, OG4|OG3|546.81, OG3|OG3 (unbeheizt)|62.47, OG3|OG2|649.47, OG2|OG2 (unbeheizt)|35.19, "
+                               + "OG1|OG1 (unbeheizt)|35.19, OG1|EG|493.9, EG|EG (unbeheizt)|60.41, EG|UG1|958.56, UG1|UG1 (unbeheizt)|91.08",
+                Geschaetzt = "UG1/EG 958.56 (15.54), EG/OG1 493.9 (8.42), OG2/OG3 649.47 (9.92), OG3/OG4 546.81 (84.79)",
+                Innenflaechenfaktor = "2.17", Huelle = "AW 2186.88 U 0.16, Dach 1103.9 U 0.19, Grund 1738.56 U 0.62, Fenster 975.68 U 1.11",
+                Beheizungsart = "78/4/0", ErklaerungVorBezug = "Boden UG1 002|Treppenraum", Unbeheizt = "0/0", Fehler = "",
+            },
+            ["WG-EH55_Poroton-GModG-2026.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "2026", Klasse = "M", Vorschlagsname = "WG-EH55_Poroton-GModG-2026", Raeume = "20/20/342.56",
+                Vorgabe = "Z4 3", ZonenZ4 = "DG 114.9, EG 120.26, Keller 107.4", TrennungenZ4 = "DG|EG|114.9, EG|Keller|107.4",
+                Geschaetzt = "Keller/EG 107.4 (3.27), EG/DG 114.9 (19.33)", Innenflaechenfaktor = "3.2",
+                Huelle = "AW 335.78 U 0.16, Dach 186.39 U 0.13, Grund 229.75 U 0.2, Fenster 97.56 U 0.87",
+                Beheizungsart = "20/0/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
+            },
+            ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = new Kennzahlen
+            {
+                Kopf = "21/14/4", Baujahr = "2026", Klasse = "M", Vorschlagsname = "Produktion_groß_mit_Verwaltung_EG55-2026",
+                Raeume = "49/48/18481.66", Vorgabe = "Z4 2", ZonenZ4 = "OG1 8794.25, EG 9687.41", TrennungenZ4 = "OG1|EG|8794.25",
+                Geschaetzt = "EG/OG1 8794.25 (31.8)", Innenflaechenfaktor = "1.47",
+                Huelle = "AW 4272.65 U 0.21, Dach 9798.65 U 0.23, Grund 9952.47 U 2.87, Fenster 1253.89 U 1.29",
+                Beheizungsart = "48/1/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
+            },
+        };
+
+        /// <summary>
+        /// <b>Je Anwenderdatei ein benannter Fall</b> mit den Erwartungen aus <see cref="ERWARTET"/>; die Kennzahlen stehen
+        /// zuerst im Protokoll. Fehlt die Datei (oder liegt nur ein LFS-Zeiger), endet der Fall ohne Prüfung.
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        [InlineData("Sportheim_1970_unsaniert.ifc")]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc")]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc")]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        public void Kennzahlen_der_Anwenderdatei(string datei)
+        {
+            GebaeudeImportAblauf a = Anwenderdatei(datei);
+            if (a == null) return;
+            Kennzahlen ist = Messen(a), soll = ERWARTET[datei];
+            _aus.WriteLine(datei + ": " + ist);
+            Assert.Equal(soll.Kopf, ist.Kopf);
+            Assert.Equal(soll.Baujahr, ist.Baujahr);
+            Assert.Equal(soll.Klasse, ist.Klasse);
+            Assert.Equal(soll.Vorschlagsname, ist.Vorschlagsname);
+            Assert.Equal(soll.Raeume, ist.Raeume);
+            Assert.Equal(soll.Vorgabe, ist.Vorgabe);
+            Assert.Equal(soll.ZonenZ4, ist.ZonenZ4);
+            Assert.Equal(soll.TrennungenZ4, ist.TrennungenZ4);
+            Assert.Equal(soll.Geschaetzt, ist.Geschaetzt);
+            Assert.Equal(soll.Innenflaechenfaktor, ist.Innenflaechenfaktor);
+            Assert.Equal(soll.Huelle, ist.Huelle);
+            Assert.Equal(soll.Beheizungsart, ist.Beheizungsart);
+            Assert.Equal(soll.ErklaerungVorBezug, ist.ErklaerungVorBezug);
+            Assert.Equal(soll.Unbeheizt, ist.Unbeheizt);
+            Assert.Equal(soll.Fehler, ist.Fehler);
+
+            // Allen gemeinsam: keine Raumgrenzen, Baujahr aus dem Satz des CAD-Exports, Platzhaltername → Dateiname, kein
+            // Jahreshinweis aus dem Dateinamen (die Datei führt ein Baujahr).
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal(0, g.ZahlGrenzen);
+            Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_RUECKFALL");
+            Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_NAME_PLATZHALTER");
+            Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_DATEINAME");
+        }
+
+        /// <summary>
+        /// <b>Die vier Befunde der Sichtprobe mit <c>MFH_mittel_1984.ifc</c></b> (Statuszeile #680): Die Datei führt keine
+        /// Raumgrenzen, aber Raumbezüge — die Trenndecken kommen aus ihnen; der Name „Gebäude" weicht dem Dateinamen; das
+        /// Baujahr 1984 steht im Satz des CAD-Exports und ergibt Klasse H (nicht F); der Kopf zählt 21 Werte, 14 Vorgaben,
+        /// 4 leer (statt 18/14/6). Die Beheizungsart der Datei macht die Praxisräume im Keller beheizt; die Decke über dem
+        /// Fitnessraum erklärt die Datei als Kellerdecke — der Widerspruch wird benannt, und die Vorgabe bleibt Z5.
+        /// </summary>
+        [Fact]
+        public void MFH_mittel_1984_die_Befunde_der_Sichtprobe()
+        {
+            GebaeudeImportAblauf a = Anwenderdatei("MFH_mittel_1984.ifc");
+            if (a == null) return;
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal(0, g.ZahlGrenzen);
+            Assert.Equal(2, g.ZahlTrenndeckenReferenz);
+            PruefMeldung jahr = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_RUECKFALL");
+            Assert.Equal(new[] { "HSETU_GebäudeAllgemein", "YearOfConstruction (Datum)", "01.01.1984 00:00:00", "1984" }, jahr.Werte);
+            GebaeudeImportSatz satz = a.Zuordnen(0, null);
+            Assert.Equal('H', satz.Baualtersklasse);
+            Assert.Equal("MFH_mittel_1984", GebaeudeZuordnungsModell.Vorschlagsname(satz));
+            Assert.Equal(new[] { "Fitnessraum", "Warte-R.", "Massage", "Bad/Dusche", "Flur", "Treppenraum" },
+                         g.Raeume.Where(r => r.GeschossKennung == g.Geschosse.Single(x => x.Anzeigename == "Keller").Kennung && r.Beheizt)
+                                 .Select(r => r.Name));
+            Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG");
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z5, z.Vorgabe);
+            Assert.Contains(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_KEINE_GRENZEN");
+        }
+
         /// <summary>
         /// <b>Die Raumbezüge der Anwenderdatei MFH 1964</b> (Mehrzonenkonzept 6.5): Die Datei führt keine Raumgrenzen,
-        /// aber je Raum ein <c>IfcRelReferencedInSpatialStructure</c>. Drei Decken trennen Geschosspaare (Keller/EG,
-        /// EG/OG1, OG1/DG1); die Datei referenziert je Geschossdecke nur das erste Deckenteil (23,75 bzw. 2,26 m²), die
-        /// Fläche kommt deshalb aus den Raummengen (96,42 m², die kleinere beheizte Grundfläche). Die Decke DG1/DG2 erklärt
-        /// die Datei als oberste Geschossdecke gegen unbeheizt, der Spitzboden „Wohnraum" gilt nach dem Namen als beheizt
-        /// — die Erklärung gilt, der Widerspruch wird benannt, und das beheizte DG2 bleibt ungekoppelt: Vorgabe Z5. 51
-        /// Innenwände liegen zwischen Räumen eines Geschosses, 19 (89,9 m²) zählen einseitig. Fehlt die Datei, endet der Fall
-        /// ohne Prüfung.
+        /// aber je Raum ein <c>IfcRelReferencedInSpatialStructure</c>. Vier Decken trennen Geschosspaare (Keller/EG,
+        /// EG/OG1, OG1/DG1, DG1/DG2); die Datei referenziert je Geschossdecke nur das erste Deckenteil (23,75 bzw. 2,26 m²),
+        /// die Fläche kommt deshalb aus den Raummengen (88,53 m², die kleinere beheizte Grundfläche; die Treppenräume mit
+        /// 10 °C sind „getrennt beheizt" und damit unbeheizt). Der Spitzboden
+        /// „Wohnraum" ist nach der Beheizungsart der Datei unbeheizt — die Decke DG1/DG2 trennt zur unbeheizten Zone, ohne
+        /// Widerspruch —, Keller und Spitzboden hängen über ihre Decken an, und die beheizten Geschosse sind gekoppelt:
+        /// Vorgabe Z4. 51 Innenwände liegen zwischen Räumen eines Geschosses, 19 (89,9 m²) zählen einseitig. Fehlt die
+        /// Datei, endet der Fall ohne Prüfung.
         /// </summary>
         [Fact]
         public void MFH_1964_Trenndecken_und_innere_Masse_aus_den_Raumbezuegen()
@@ -144,15 +380,17 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf a = Anwenderdatei("MFH-Klein-unsaniert-1964.ifc");
             if (a == null) return;
             AbbildGebaeude g = a.Abbild.Gebaeude.Single();
-            Assert.Equal(3, g.ZahlTrenndeckenReferenz);
-            Assert.False(g.GeschosseGekoppelt);
+            Assert.Equal(4, g.ZahlTrenndeckenReferenz);
+            Assert.True(g.GeschosseGekoppelt);
             PruefMeldung bezug = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_REFERENZ");
-            Assert.Equal(new[] { "Gebäude", "3", "Keller/EG, EG/OG1, OG1/DG1", "51" }, bezug.Werte);
-            Assert.Equal(new[] { "EG;OG1;96.42;23.75", "OG1;DG1;96.42;2.26" },
+            Assert.Equal(new[] { "Gebäude", "4", "Keller/EG, EG/OG1, OG1/DG1, DG1/DG2", "51" }, bezug.Werte);
+            Assert.Equal(new[] { "EG;OG1;88.53;23.75", "OG1;DG1;88.53;2.26" },
                          g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GESCHAETZT").Select(m => string.Join(";", m.Werte)));
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_KLEIN");
-            PruefMeldung erklaert = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG");
-            Assert.Equal(new[] { "Boden DG2", "Wohnraum" }, erklaert.Werte);
+            Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG");
+            AbbildRaum spitzboden = g.Raeume.Single(r => r.GeschossKennung == g.Geschosse.Single(x => x.Anzeigename == "DG2").Kennung);
+            Assert.False(spitzboden.Beheizt);
+            Assert.Equal("HSETU_RaumAllgemein.HeatingType = bhtUnHeated", spitzboden.Zustandsangabe);
             // Der Platzhaltername „Gebäude" weicht dem Dateinamen; das Baujahr führt die Datei, kein Jahreshinweis.
             Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_NAME_PLATZHALTER");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_DATEINAME");
@@ -160,26 +398,27 @@ namespace EPOS.Kern.Tests
             PruefMeldung einseitig = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_INNEN_EINSEITIG");
             Assert.Equal(new[] { "19", "89.9" }, einseitig.Werte);
 
-            // Die Hülle des Einzonenwegs bleibt; die Wände zu den Abstellräumen zählen gegen unbeheizt.
+            // Die Hülle des Einzonenwegs bleibt; die Wände zu Abstell- und Treppenräumen (10 °C) zählen gegen unbeheizt.
             GebaeudeImportSatz satz = a.Zuordnen(0, null);
             Assert.Equal("245.59", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert));
             Assert.Equal("148.68", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_DACH).Wert));
             Assert.Equal("119.01", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_GRUND).Wert));
-            Assert.Equal("14.78", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert));
-            Assert.Equal("2.91", Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert));
+            Assert.Equal("27.23", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert));
+            Assert.Equal("3.47", Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert));
             Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Herkunft);
 
             GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z5, vorgabe.Vorgabe);
-            GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
-            Assert.Contains(z4.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
-            Assert.Equal(new[] { "DG1|OG1|96.42", "OG1|OG1 (unbeheizt)|5.85", "OG1|EG|96.42", "EG|EG (unbeheizt)|5.85", "EG|Keller|11.84" },
-                         z4.Trennungen.Select(t => z4.Zonen[t.ZoneA].Name + "|" + z4.Zonen[t.ZoneB].Name + "|" + Z(Math.Max(t.FlaecheA, t.FlaecheB))));
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, vorgabe.Vorgabe);
+            Assert.DoesNotContain(vorgabe.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
+            Assert.Equal(new[] { "DG2|DG1|12.27", "DG1|OG1|88.53", "OG1|OG1 (unbeheizt)|12.08", "OG1|EG|88.53", "EG|EG (unbeheizt)|12.08", "EG|Keller|11.84" },
+                         vorgabe.Trennungen.Select(t => vorgabe.Zonen[t.ZoneA].Name + "|" + vorgabe.Zonen[t.ZoneB].Name + "|" + Z(Math.Max(t.FlaecheA, t.FlaecheB))));
         }
 
         /// <summary>
         /// <b>Die Raumbezüge der Produktionsdatei</b>: zwei referenzierte Deckenteile EG/OG1 (31,8 m²), die Fläche aus den
-        /// Raummengen (7 343,89 m², beheiztes OG1); das Paar koppelt alle beheizten Geschosse — Z4 ist die Vorgabe.
+        /// Raummengen (8 794,25 m², beheiztes OG1); das Paar koppelt alle beheizten Geschosse — Z4 ist die Vorgabe. Nach der
+        /// Beheizungsart der Datei ist allein der Entsorgungsraum unbeheizt; seine Zone hat weder Hülle noch Trennfläche und
+        /// entfällt benannt (sonst lehnte der Lauf die Zone ohne Bauteil ab).
         /// </summary>
         [Fact]
         public void Produktion_Trenndecke_aus_den_Raummengen_und_Z4_als_Vorgabe()
@@ -188,22 +427,61 @@ namespace EPOS.Kern.Tests
             if (a == null) return;
             AbbildGebaeude g = a.Abbild.Gebaeude.Single();
             Assert.True(g.GeschosseGekoppelt);
-            Assert.Equal(new[] { "EG;OG1;7343.89;31.8" },
+            Assert.Equal(new[] { "EG;OG1;8794.25;31.8" },
                          g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GESCHAETZT").Select(m => string.Join(";", m.Werte)));
+            Assert.Equal(new[] { "Entsorgungsraum" }, g.Raeume.Where(r => !r.Beheizt).Select(r => r.Name));
             Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_NAME_PLATZHALTER");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_DATEINAME");   // die Datei führt 2026
             GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
             Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, z.Vorgabe);
             Assert.DoesNotContain(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
-            Assert.Equal(new[] { "OG1|OG1 (unbeheizt)|396.49", "OG1|EG|7343.89", "EG|EG (unbeheizt)|378.53" },
+            PruefMeldung entfallen = Assert.Single(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ZONE_OHNE_FLAECHEN");
+            Assert.Equal(new[] { "EG (unbeheizt)", "130.54" }, entfallen.Werte);
+            Assert.Equal(new[] { "OG1|EG|8794.25" },
                          z.Trennungen.Select(t => z.Zonen[t.ZoneA].Name + "|" + z.Zonen[t.ZoneB].Name + "|" + Z(Math.Max(t.FlaecheA, t.FlaecheB))));
+        }
+
+        /// <summary>
+        /// <b>Die drei Nachzüge der Quellendiagnose je Anwenderdatei</b> (Mehrzonenkonzept 6.5): der Hinweis auf ein
+        /// abweichendes Jahr im Dateinamen, die Einstufung „getrennt beheizt" nach der Raumtemperatur und der Rückfall der
+        /// Wärmekapazität masseloser IFC4-Schichten. Erwartet: Hinweis „Datei/Name", Räume „beheizt/unbeheizt" nach der
+        /// Temperatur, Aufbauten „vollständig/masselos/unvollständig/ohne" (verschieden je Kennung) und Aufbauten mit Rückfall.
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc", "", "2/0", "67/0/0/0", 4)]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc", "", "5/5", "0/0/1/0", 0)]
+        [InlineData("Sportheim_1970_unsaniert.ifc", "1995/1970", "", "105/0/0/0", 11)]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc", "1969/2014", "13/18", "0/0/235/0", 0)]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc", "", "", "54/28/0/0", 5)]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc", "", "", "0/0/70/0", 0)]
+        public void Nachzuege_der_Quellendiagnose(string datei, string widerspruch, string temperatur, string aufbauten, int rueckfall)
+        {
+            GebaeudeImportAblauf a = Anwenderdatei(datei);
+            if (a == null) return;
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal(widerspruch, string.Join(";", g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH")
+                                                               .Select(m => m.Werte[0] + "/" + m.Werte[1])));
+            List<PruefMeldung> temp = g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR").ToList();
+            Assert.True(temp.Count <= 1);
+            foreach (PruefMeldung m in temp) _aus.WriteLine(datei + ": " + string.Join(" | ", m.Werte));
+            Assert.Equal(temperatur, string.Join(";", temp.Select(m => m.Werte[0] + "/" + m.Werte[1])));
+            List<AbbildAufbau> liste = g.Bauteile.Where(x => x.Aufbau != null).Select(x => x.Aufbau)
+                                        .GroupBy(x => x.Kennung).Select(x => x.First()).ToList();
+            string ist = string.Join("/", new[] { Aufbaustatus.Vollstaendig, Aufbaustatus.Masselos, Aufbaustatus.Unvollstaendig, Aufbaustatus.OhneAufbau }
+                                              .Select(st => liste.Count(x => x.Status == st)));
+            List<PruefMeldung> cp = a.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL").ToList();
+            foreach (PruefMeldung m in cp) _aus.WriteLine(datei + ": " + string.Join(" | ", m.Werte));
+            _aus.WriteLine(datei + ": Aufbauten " + ist + ", Rückfall " + cp.Count + ", beheizt " + Z(g.Raeume.Where(r => r.Beheizt).Sum(r => r.FlaecheM2 ?? 0.0)));
+            Assert.Equal(aufbauten, ist);
+            Assert.Equal(rueckfall, cp.Count);
+            Assert.All(cp, m => Assert.Equal(PruefStufe.Info, m.Stufe));
         }
 
         /// <summary>Eine Anwenderdatei unter <c>Quellen/</c>, gelesen; <c>null</c>, wenn sie fehlt (oder nur ein LFS-Zeiger liegt).</summary>
         private GebaeudeImportAblauf Anwenderdatei(string datei)
         {
-            string pfad = Quellen() == null ? null : Path.Combine(Quellen(), datei);
-            if (pfad == null || !File.Exists(pfad) || new FileInfo(pfad).Length < 1024) { _aus.WriteLine(datei + " fehlt — übersprungen."); return null; }
+            string pfad = Pfad(datei);
+            if (pfad == null) { _aus.WriteLine(datei + " fehlt — übersprungen."); return null; }
             var a = new GebaeudeImportAblauf();
             using (FileStream s = File.OpenRead(pfad))
                 a.Lesen(s, pfad, new IfcImportProfil());
@@ -262,6 +540,196 @@ namespace EPOS.Kern.Tests
                     _aus.WriteLine(datei + (mit == null ? " ohne" : " mit") + " Abgleich: " + v.Aufbauten.Count + " Aufbauten, "
                                    + v.Zeilen.Count + " Zeilen; " + Text(v.Meldungen.Where(m => m.Stufe != PruefStufe.Info)));
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Durchgang bis zur Rechnung</b> an den Anwenderdateien unter <c>Quellen/*.ifc</c> (Muster „Durchgang bis
+    /// zur Rechnung" aus G6c, Welle C): über die Programmwege des Gebäudedialogs — Lesen, Zuordnen mit der
+    /// Baualtersklasse der Datei und der Zonenregel, Übernehmen als Zone(n) mit Bauteilen, Editor, Speichern der
+    /// Gebäudeliste — in die Arbeitskopie der Testdatenbank (Projekt 1007), dann der Jahreslauf VDI 6007 über die
+    /// Fassade des Gebäudedialogs (<see cref="GebaeudeBedarfCtrl"/>). Je Datei mit der Vorgabe der Zonierung und zum
+    /// Vergleich mit der anderen Regel (Z4 ↔ Z5); die Auslegungsheizlast nach der Herleitung der Übergabe
+    /// (stationär, Anlagenkopplung 8.4) für die eine Zone (Z5) — mehrzonig gibt es sie nur gekoppelt nicht. Fehlt
+    /// die Datei oder die Testdatenbank, endet der Fall ohne Prüfung; die Zahlen stehen im Protokoll.
+    /// </summary>
+    [Collection("Testdatenbank")]
+    public sealed class IfcQuelldateienDurchgangTests : IDisposable
+    {
+        private const int PROJEKT = 1007;
+
+        private readonly TestDatenbank _db = new TestDatenbank();
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+        private readonly ITestOutputHelper _aus;
+
+        public IfcQuelldateienDurchgangTests(ITestOutputHelper aus) => _aus = aus;
+
+        public void Dispose()
+        {
+            _kultur.Dispose();
+            _db.Dispose();
+        }
+
+        private static IReadOnlyDictionary<string, bool> Keine => new Dictionary<string, bool>();
+
+        private static string Z(double? w) => w.HasValue ? w.Value.ToString("0.##", CultureInfo.InvariantCulture) : "—";
+
+        /// <summary>Das Ergebnis eines Durchgangs mit einer Zonenregel.</summary>
+        internal sealed record Rechnung(string Regel, int Zonen, double NutzflaecheM2, double HeizwaermeMwh, double MaxLastKw,
+                                        double? SpitzeTagesmittelKw, double? AuslegungsheizlastKw, IReadOnlyList<string> Hinweise,
+                                        double Sekunden, string Befund)
+        {
+            internal double SpezifischKwhM2 => NutzflaecheM2 > 0.0 ? HeizwaermeMwh * 1000.0 / NutzflaecheM2 : double.NaN;
+        }
+
+        /// <summary>
+        /// Ein Durchgang: Lesen, Zuordnen (Klasse der Datei, <paramref name="regel"/>), Übernehmen als Zone(n) mit Bauteilen,
+        /// Editor, Speichern der Gebäudeliste, Jahreslauf; <c>null</c>, wenn Datei oder Testdatenbank fehlen.
+        /// </summary>
+        private async Task<Rechnung> Durchgang(string pfad, string regel, string name)
+        {
+            var uhr = Stopwatch.StartNew();
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
+            GebaeudeImportweg weg = ((Func<GebaeudeImportweg>)gaben["ImportGaben"])();
+            var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)weg.Gaben["Lesen"];
+            GebaeudeLesestand gelesen = await lesen(pfad, null, CancellationToken.None);
+            Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+            var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
+            int? klasse = zuordnen(new GebaeudeZuordnungsanfrage(0, null, Keine, Zonenregel: regel)).KlasseDerDatei;
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine, Zonenregel: regel));
+            Assert.Equal(regel, stand.Zonierung!.Regel);
+            Assert.True(stand.Bauteile!.Moeglich, stand.Bauteile.Ablehnung);
+
+            var ergebnis = new GebaeudeImportErgebnis(0, klasse, name, Keine, stand.Zeilen.ToList(), AlsZone: true, Zonenregel: regel);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
+            Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
+            Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));
+
+            IReadOnlyDictionary<string, object> editor = weg.EditorGaben();
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden((GebaeudeKatalogDaten)editor["Daten"], neu: true);
+            GebaeudePruefbefund befund = arbeit.Pruefen(true, GebaeudeKatalogHuelle.Prueftexte(), GebaeudeKatalogHuelle.Texte());
+            Assert.True(befund == null, befund?.Meldung);
+            arbeit.Ableiten();
+            var speichern = (Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>)editor["Speichern"];
+            Assert.True(speichern(arbeit.Stand, true, arbeit.Stand.Name).Erfolg);
+            GebaeudeProjektZeile zeile = weg.Aufnehmen();
+            Assert.NotNull(zeile);
+            ((List<GebaeudeProjektZeile>)gaben["Zeilen"]).Add(zeile);
+            ((Action)gaben["Geaendert"])();
+            Z_ProjGebModel neu = modelle.Single(m => m.Gebaeudename == name);
+            (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
+            Assert.True(ok, meldung);
+
+            // Der Jahreslauf über die Fassade des Gebäudedialogs, auf dem VDI-Weg.
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(PROJEKT);
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(PROJEKT, projekt.m_ID_Klimaregion, neu.ID_Z, DbWerte.GEBAEUDE_MODELL_VDI6007);
+            string laufbefund = e.Erfolgreich && p.IstFehlerfrei ? null : e.Befund ?? string.Join(" | ", p.Fehler);
+
+            // Die Projektkopie: Fläche und Zonen; einzonig dazu die Auslegungsheizlast nach der Herleitung der Übergabe.
+            var gebaeude = new ProjektGebaeudeCtrl();
+            gebaeude.ReadAll(PROJEKT);
+            int kopie = Convert.ToInt32(DataRepository.ExecuteScalar("SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ? AND ID_Projekt = ?",
+                new DbParam("@z", neu.ID_Z), new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture);
+            ProjektGebaeudeModel item = gebaeude.items.Single(g => g.ID_Gebaeude == kopie);
+            List<ZoneModel> zonenmodelle = new GebaeudeZonenCtrl().LesenJeGebaeude(kopie).ToList();
+            int zonen = zonenmodelle.Count;
+            double flaeche = zonenmodelle.Where(z => z.IstBeheizt).Sum(z => z.Nutzflaeche ?? 0.0);
+            double? auslegung = null;
+            if (zonen <= 1 && laufbefund == null)
+            {
+                var sim = new SimulationWaermebedarf { m_ID_Projekt = PROJEKT };
+                sim.KlimakalenderLesen(projekt.m_ID_Klimaregion);
+                item.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
+                item.Heizkreis_Aktiv = true;
+                item.Uebergabe_Art = DbWerte.UEBERGABE_RADIATOR;
+                auslegung = sim.UebergabeEingang(item).AuslegungsheizlastW / 1000.0;
+            }
+            uhr.Stop();
+            return new Rechnung(regel, zonen, flaeche, e.HeizwaermeMwh, e.MaxLastKw, e.SpitzeTagesmittelKw, auslegung,
+                                p.Hinweise.Concat(p.Warnungen).Distinct().ToList(), uhr.Elapsed.TotalSeconds, laufbefund);
+        }
+
+        /// <summary>Beide Durchgänge einer Datei — Vorgabe zuerst, dann die andere Regel —, ins Protokoll geschrieben.</summary>
+        private async Task<(Rechnung Vorgabe, Rechnung Vergleich)> Beide(string datei)
+        {
+            if (!_db.Vorhanden) { _aus.WriteLine("Testdatenbank fehlt — übersprungen."); return (null, null); }
+            string pfad = IfcQuelldateienDiagnoseTests.Pfad(datei);
+            if (pfad == null) { _aus.WriteLine(datei + " fehlt — übersprungen."); return (null, null); }
+            string vorgabe;
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0).Vorgabe;
+            string andere = vorgabe == IfcImportProfil.ZONENREGEL_Z4 ? IfcImportProfil.ZONENREGEL_Z5 : IfcImportProfil.ZONENREGEL_Z4;
+            string stamm = Path.GetFileNameWithoutExtension(datei);
+            Rechnung r1 = await Durchgang(pfad, vorgabe, stamm + " " + vorgabe);
+            Rechnung r2 = await Durchgang(pfad, andere, stamm + " " + andere);
+            foreach (Rechnung r in new[] { r1, r2 })
+                _aus.WriteLine(datei + " " + r.Regel + (r == r1 ? " (Vorgabe)" : " (Vergleich)") + ": " + r.Zonen + " Zonen, A " + Z(r.NutzflaecheM2)
+                               + " m², Q " + Z(r.HeizwaermeMwh) + " MWh/a = " + Z(r.SpezifischKwhM2) + " kWh/(m²a), Spitze " + Z(r.MaxLastKw)
+                               + " kW, Tagesmittel " + Z(r.SpitzeTagesmittelKw) + " kW, Auslegungsheizlast " + Z(r.AuslegungsheizlastKw)
+                               + " kW, " + Z(r.Sekunden) + " s" + (r.Befund == null ? "" : "; BEFUND: " + r.Befund)
+                               + "; Hinweise: " + string.Join(" | ", r.Hinweise));
+            return (r1, r2);
+        }
+
+        /// <summary>Nah an einem gemessenen Wert (relativ).</summary>
+        private static void Nah(double erwartet, double ist, double relativ, string was)
+            => Assert.True(Math.Abs(ist - erwartet) <= relativ * Math.Abs(erwartet), was + ": erwartet " + Z(erwartet) + ", ist " + Z(ist));
+
+        /// <summary>
+        /// Die gemessenen Werte je Datei (VDI-Weg, Klimaregion des Projekts 1007): Vorgabe und Zonenzahl, Jahresheizwärme
+        /// [MWh/a], Spitze der idealen Last und Spitze als Tagesmittel [kW] mit der Vorgabe; Jahresheizwärme mit der anderen
+        /// Regel (<c>NaN</c> = der Lauf lehnt sie ab); Auslegungsheizlast der einen Zone (Z5) [kW].
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
+            = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
+            {
+                ["MFH_mittel_1984.ifc"] = ("Z5", 1, 59.67, 27.92, 18.62, 62.51, 22.29),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.39, 29.25, 16.96, 44.55, 20.73),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z5", 1, 67.45, 50.02, 28.32, 72.12, 37.18),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z5", 1, 260.06, 253.21, 138.11, 279.77, 193.84), // QVergleich gemessen mit Einstufung nach Raumtemperatur und innerer Umschaltung
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 18.42, 21.56, 9.95, 18.15, 14.33),
+                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 2, 4163.69, 1906.05, 1362.14, 3991.83, 1473.02),
+            };
+
+        /// <summary>
+        /// <b>Je Anwenderdatei der Durchgang mit der Vorgabe und mit der anderen Regel</b>: Die Vorgabe rechnet fehlerfrei,
+        /// mit den gemessenen Werten (relativ 1 %); der Vergleich rechnet ebenso, die Verwaltung unter Z4 mit der
+        /// Lastumkehr im Innern eines geregelten Abschnitts (Rechenbefund RB-Z4, <see cref="ZonenkopplungAbschnittsregelTests"/>).
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        [InlineData("Sportheim_1970_unsaniert.ifc")]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc")]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc")]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        public async Task Durchgang_bis_zur_Rechnung(string datei)
+        {
+            (Rechnung vorgabe, Rechnung vergleich) = await Beide(datei);
+            if (vorgabe == null) return;
+            var soll = SOLL[datei];
+            Assert.Null(vorgabe.Befund);
+            Assert.Equal(soll.Regel, vorgabe.Regel);
+            Assert.Equal(soll.Zonen, vorgabe.Zonen);
+            Nah(soll.Q, vorgabe.HeizwaermeMwh, 0.01, "Jahresheizwärme");
+            Nah(soll.Spitze, vorgabe.MaxLastKw, 0.01, "Spitze");
+            Nah(soll.Tagesmittel, vorgabe.SpitzeTagesmittelKw ?? double.NaN, 0.01, "Spitze als Tagesmittel");
+            Rechnung z5 = vorgabe.Regel == IfcImportProfil.ZONENREGEL_Z5 ? vorgabe : vergleich;
+            Assert.Null(z5.Befund);
+            Nah(soll.Auslegung, z5.AuslegungsheizlastKw ?? double.NaN, 0.01, "Auslegungsheizlast");
+            if (double.IsNaN(soll.QVergleich))
+                Assert.NotNull(vergleich.Befund);
+            else
+            {
+                Assert.Null(vergleich.Befund);
+                Nah(soll.QVergleich, vergleich.HeizwaermeMwh, 0.01, "Jahresheizwärme mit der anderen Regel");
             }
         }
     }

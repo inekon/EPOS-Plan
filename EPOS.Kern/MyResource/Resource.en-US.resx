@@ -38904,6 +38904,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
     <value>Zone "{0}" has no surface to outdoor air or ground.</value>
   </data>
+  <data name="IMP_IFC_PROT_ZONE_OHNE_FLAECHEN" xml:space="preserve">
+    <value>The unheated zone "{0}" ({1} m²) has neither envelope nor separating surface — it is dropped, its spaces stay outside the zones.</value>
+  </data>
   <data name="IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
     <value>The zoning yields {0} zones — the building calculates no more than {1}. Suggestion: rule {2} ({3} zones).</value>
   </data>
@@ -38952,6 +38955,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_UWERT_EINHEIT" xml:space="preserve">
     <value>{0} elements: {1}.{2} states the unit {3} instead of W/(m²K) — the value is not used as a U-value; {4} of them remain without a U-value from the file.</value>
   </data>
+  <data name="IMP_IFC_PROT_UWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>{0} elements: {1}.{2} = {3} is not a U-value (zero or less) — they keep no U-value from the file. Without a layer set they count as not rated (floor opening, auxiliary element) and do not separate storeys.</value>
+  </data>
   <data name="IMP_IFC_PROT_ANGRENZUNG_AUSSEN" xml:space="preserve">
     <value>{0} elements without IsExternal and without space boundary: {1} = {2} — imported as external element facing outdoor air.</value>
   </data>
@@ -38969,6 +38975,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_NICHT_HUELLE" xml:space="preserve">
     <value>{0} elements without space boundary carry {1} = FALSE — they do not count towards the thermal envelope.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART" xml:space="preserve">
+    <value>{0} spaces heated and {1} unheated according to the heating type in the file ({2}) — it takes precedence over the name rule and the storey position.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART_OFFEN" xml:space="preserve">
+    <value>{0} spaces carry {1} = {2} — the file does not state whether the space lies inside the thermal envelope; the name rule, the storey position and the default apply. Please check how these spaces are heated.</value>
   </data>
   <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
     <value>{0} external elements without space boundary: the orientation is taken from {1} as stated by the file at the element (0° = north, clockwise, without the model's north angle).</value>
@@ -39011,6 +39023,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_GBXML_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
     <value>Zone "{0}" has no surface to outdoor air or ground.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN" xml:space="preserve">
+    <value>The unheated zone "{0}" ({1} m²) has neither envelope nor separating surface — it is dropped, its spaces stay outside the zones.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
     <value>The zoning yields {0} zones — the building calculates no more than {1}. Suggestion: rule {2} ({3} zones).</value>
@@ -43781,6 +43796,15 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BER_PAUS_NACHRECHNUNG_FEHLT" xml:space="preserve">
     <value>Key figures and notes are missing, the recalculation was not possible: {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH" xml:space="preserve">
+    <value>The file states {0}, the file name {1}; the year of construction in the file applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR" xml:space="preserve">
+    <value>{0} spaces heated and {1} unheated according to their room temperature ({2}): above 12 °C heated, otherwise unheated; the temperature is not adopted as a set point — {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
+    <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
   </data>
 </root>
 

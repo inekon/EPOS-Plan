@@ -277,6 +277,107 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  Anwenderdateien eines CAD-Exports: Beheizungsart, Kopplung, nicht bewertete Platten
+        // ==================================================================
+
+        private static GebaeudeImportAblauf Abwandlung(string name, byte[] inhalt)
+        {
+            using (var s = new MemoryStream(inhalt))
+                return Lesen(s, name);
+        }
+
+        [Fact]
+        public void Die_Beheizungsart_des_CAD_Exports_gilt_vor_Namensregel_und_Lage()
+        {
+            GebaeudeImportAblauf a = Abwandlung("referenzen_beheizungsart.ifc", IfcProbenErzeuger.Referenzen(beheizungsart: true));
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            AbbildRaum keller = g.Raeume.Single(r => r.Name == "Keller");
+            Assert.False(keller.Beheizt);
+            Assert.Equal(BeheiztQuelle.Attribut, keller.BeheiztQuelle);
+            Assert.Equal("B3", keller.Beheizungsregel);
+            Assert.Equal("CAD_RaumAllgemein.HeatingType = bhtUnHeated", keller.Zustandsangabe);
+            AbbildRaum abstell = g.Raeume.Single(r => r.Name == "Abstellraum");
+            Assert.True(abstell.Beheizt);                                    // die Datei vor der Namensregel
+            Assert.Equal(BeheiztQuelle.Attribut, abstell.BeheiztQuelle);
+            AbbildRaum kind = g.Raeume.Single(r => r.Name == "Kind");
+            Assert.True(kind.Beheizt);                                       // getrennt beheizt entscheidet nicht: Annahme
+            Assert.Equal(BeheiztQuelle.Annahme, kind.BeheiztQuelle);
+            Assert.False(Hat(g.Meldungen, "UNBEHEIZT_NAME"));
+            Assert.False(Hat(g.Meldungen, "UNBEHEIZT_LAGE"));
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "BEHEIZUNGSART");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "2", "1", "CAD_RaumAllgemein.HeatingType" }, m.Werte);
+            PruefMeldung offen = Assert.Single(g.Meldungen, x => x.Schluessel == P + "BEHEIZUNGSART_OFFEN");
+            Assert.Equal(new[] { "1", "CAD_RaumAllgemein.HeatingType", "bhtSeparatelyHeated" }, offen.Werte);
+
+            // Ohne Beheizungsart bleiben Namensregel und Lage.
+            AbbildGebaeude ohne = Lesen(PROBE).Abbild.Gebaeude.Single();
+            Assert.False(ohne.Raeume.Single(r => r.Name == "Abstellraum").Beheizt);
+            Assert.False(Hat(ohne.Meldungen, "BEHEIZUNGSART"));
+        }
+
+        [Fact]
+        public void Eine_Decke_nur_zum_unbeheizten_Teil_eines_Geschosses_koppelt_nicht()
+        {
+            GebaeudeImportAblauf a = Abwandlung("referenzen_kellerteil.ifc", IfcProbenErzeuger.Referenzen(kellerTeil: true));
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.True(g.Raeume.Single(r => r.Name == "Hobbyraum").Beheizt);
+            Assert.False(g.Raeume.Single(r => r.Name == "Keller").Beheizt);
+            // Die Kellerdecke trennt KG und EG, grenzt aber nur an den unbeheizten Keller: Das beheizte KG bleibt ohne
+            // Verbindung, nicht geschätzt, und die Vorgabe ist Z5 — nicht Z4 mit entkoppelter Zone.
+            Assert.Equal(2, g.ZahlTrenndeckenReferenz);
+            Assert.False(g.GeschosseGekoppelt);
+            Assert.DoesNotContain(g.Meldungen, x => x.Schluessel == P + "TRENNDECKE_GESCHAETZT");
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
+            Assert.Equal("Z5", z.Vorgabe);
+            Assert.True(Hat(z.Meldungen, "KEINE_GRENZEN"));
+            Assert.True(Hat(GebaeudeZonierung.Bilden(a.Abbild, 0, "Z4").Meldungen, "GRENZEN_ENTKOPPELT"));
+
+            // Gegenprobe: Ohne den Hobbyraum hat das KG keinen beheizten Raum, und EG/OG koppeln wie bisher.
+            Assert.True(Lesen(PROBE).Abbild.Gebaeude.Single().GeschosseGekoppelt);
+        }
+
+        [Fact]
+        public void Eine_Platte_mit_U_Wert_null_und_ohne_Aufbau_trennt_keine_Geschosse()
+        {
+            GebaeudeImportAblauf a = Abwandlung("referenzen_bodenoeffnung.ifc", IfcProbenErzeuger.Referenzen(bodenoeffnung: true));
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            AbbildBauteil loch = Bauteil(a, "Bodenöffnung");
+            Assert.Null(loch.UWertWm2K);
+            Assert.Null(loch.Aufbau);
+            Assert.Empty(loch.Nachbarn);
+            Assert.False(loch.HuelleOhneNachbar);
+            Assert.Equal(2, g.ZahlTrenndeckenReferenz);                  // Kellerdecke und Decke EG/OG wie in der Probe
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "UWERT_NICHT_POSITIV");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "1", "CAD_Bauteilreferenzen", "UValue (W/(m² K))", "0" }, m.Werte);
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, "Z4");
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(x => x.Stufe == PruefStufe.Fehler)));
+            Assert.DoesNotContain(v.Zeilen, x => x.Bauteil.Bezeichner == "Bodenöffnung");
+            Assert.False(Hat(Lesen(PROBE).Meldungen, "UWERT_NICHT_POSITIV"));
+        }
+
+        [Fact]
+        public void Eine_unbeheizte_Zone_ohne_jede_Flaeche_entfaellt_benannt()
+        {
+            GebaeudeImportAblauf a = Abwandlung("referenzen_speicher.ifc", IfcProbenErzeuger.Referenzen(speicher: true));
+            Assert.False(a.Abbild.Gebaeude.Single().Raeume.Single(r => r.Name == "Speicher").Beheizt);
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0, "Z4");
+            Assert.DoesNotContain(z.Zonen, x => x.Raeume.Any(r => r.Name == "Speicher"));
+            PruefMeldung m = Assert.Single(z.Meldungen, x => x.Schluessel == P + "ZONE_OHNE_FLAECHEN");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "OG (unbeheizt)", "6" }, m.Werte);
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, "Z4");
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(x => x.Stufe == PruefStufe.Fehler)));
+            Assert.DoesNotContain(v.Zonen, x => x.Bezeichner == "OG (unbeheizt)");
+
+            // Die Zonen der Probe bleiben: Der unbeheizte Keller trägt die Kellerdecke als Trennfläche.
+            GebaeudeZonierung probe = GebaeudeZonierung.Bilden(Lesen(PROBE).Abbild, 0, "Z4");
+            Assert.False(Hat(probe.Meldungen, "ZONE_OHNE_FLAECHEN"));
+            Assert.Equal(z.Zonen.Select(x => x.Name), probe.Zonen.Select(x => x.Name));
+        }
+
+        // ==================================================================
         //  Dateiname: Platzhaltername und Jahr — nur Hinweise
         // ==================================================================
 
@@ -350,6 +451,108 @@ namespace EPOS.Kern.Tests
             Assert.False(Hat(e.Abbild.Gebaeude.Single().Meldungen, "BAUJAHR_DATEINAME"));
         }
 
+        /// <summary>
+        /// <b>Datei und Dateiname nennen verschiedene Jahre</b>: genau ein Hinweis „Datei/Name", es gilt das Baujahr der
+        /// Datei; nennt der Name dasselbe Jahr oder mehrere Jahre, schweigt das Protokoll.
+        /// </summary>
+        [Theory]
+        [InlineData("Haus_1990.ifc", "1984/1990")]
+        [InlineData("Haus_1984.ifc", "")]
+        [InlineData("Haus_1990_2014.ifc", "")]
+        [InlineData("Haus.ifc", "")]
+        public void Ein_abweichendes_Jahr_im_Dateinamen_wird_benannt_es_gilt_die_Datei(string datei, string erwartet)
+        {
+            GebaeudeImportAblauf e;
+            using (var s = new MemoryStream(File.ReadAllBytes(Path.Combine(IfcProbenTests.Ordner(), "ifc2x3_enthaltensein.ifc"))))
+                e = Lesen(s, datei);
+            AbbildGebaeude g = e.Abbild.Gebaeude.Single();
+            Assert.Equal(1984, g.Baujahr);
+            List<PruefMeldung> m = g.Meldungen.Where(x => x.Schluessel == P + "BAUJAHR_WIDERSPRUCH").ToList();
+            Assert.Equal(erwartet, string.Join(";", m.Select(x => x.Werte[0] + "/" + x.Werte[1])));
+            Assert.All(m, x => Assert.Equal(PruefStufe.Info, x.Stufe));
+            Assert.False(Hat(g.Meldungen, "BAUJAHR_DATEINAME"));
+            Assert.Equal("1984", e.Zuordnen(0, null).Zeile(GebaeudeZielfelder.BAUJAHR).Wert?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        // ==================================================================
+        //  „Getrennt beheizt" nach der Raumtemperatur, Wärmekapazität masseloser Schichten
+        // ==================================================================
+
+        /// <summary>
+        /// <b>„Getrennt beheizt" mit Raumtemperatur</b>: über 12 °C beheizt, sonst unbeheizt (Regel B3, Quelle Attribut),
+        /// benannt mit Raum und Temperatur; die Temperatur wird nicht als Sollwert übernommen, und der Raum ist nicht mehr offen.
+        /// </summary>
+        [Theory]
+        [InlineData(20.0, true)]
+        [InlineData(8.0, false)]
+        public void Getrennt_beheizt_entscheidet_die_Raumtemperatur_der_Datei(double temperatur, bool beheizt)
+        {
+            GebaeudeImportAblauf a = Abwandlung("referenzen_temperatur.ifc", IfcProbenErzeuger.Referenzen(beheizungsart: true, kindTemperatur: temperatur));
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            AbbildRaum kind = g.Raeume.Single(r => r.Name == "Kind");
+            Assert.Equal(beheizt, kind.Beheizt);
+            Assert.Equal(BeheiztQuelle.Attribut, kind.BeheiztQuelle);
+            Assert.Equal("B3", kind.Beheizungsregel);
+            Assert.Null(kind.SollHeizenC);
+            string grad = temperatur.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            Assert.Equal("CAD_RaumAllgemein.HeatingType = bhtSeparatelyHeated, CAD_RaumAllgemein.InsideTemperature (°C) = " + grad + " °C",
+                         kind.Zustandsangabe);
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "BEHEIZUNGSART_TEMPERATUR");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { beheizt ? "1" : "0", beheizt ? "0" : "1", "CAD_RaumAllgemein.HeatingType = bhtSeparatelyHeated", "Kind " + grad + " °C" },
+                         m.Werte);
+            Assert.False(Hat(g.Meldungen, "BEHEIZUNGSART_OFFEN"));
+            // Die übrigen Räume entscheidet die Beheizungsart wie ohne Temperatur.
+            Assert.Equal(new[] { "2", "1", "CAD_RaumAllgemein.HeatingType" },
+                         Assert.Single(g.Meldungen, x => x.Schluessel == P + "BEHEIZUNGSART").Werte);
+        }
+
+        /// <summary>
+        /// <b>Masselose IFC4-Schichten</b>: Putz und Mauerwerk führen Dichte und λ, aber keine Wärmekapazität — c kommt aus
+        /// dem Katalog der Auslieferung bzw. der Stofftabelle, die Aufbauten werden vollständig, je Aufbau eine Meldung.
+        /// Eine Schicht ohne Dichte bleibt masselos mit der bestehenden Meldung.
+        /// </summary>
+        [Fact]
+        public void Schichten_ohne_Waermekapazitaet_fallen_auf_Katalog_und_Stofftabelle_zurueck()
+        {
+            GebaeudeImportAblauf a = Abwandlung("ifc4_schichten_ohne_c.ifc",
+                IfcProbenErzeuger.Schichten(Xbim.Common.Step21.XbimSchemaVersion.Ifc4, "ifc4_schichten_ohne_c.ifc", nullwerte: false, ohneWaermekapazitaet: true));
+            List<PruefMeldung> m = a.Meldungen.Where(x => x.Schluessel == P + "WAERMEKAPAZITAET_RUECKFALL").ToList();
+            foreach (PruefMeldung x in m) _aus.WriteLine(string.Join(" | ", x.Werte));
+            Assert.Equal(new[] { "Außenwand außen zuerst", "Außenwand innen zuerst" }, m.Select(x => x.Werte[0]).OrderBy(x => x, StringComparer.Ordinal));
+            Assert.All(m, x => Assert.Equal(PruefStufe.Info, x.Stufe));
+            Assert.All(m, x => Assert.Equal("2", x.Werte[1]));
+            foreach (AbbildBauteil b in a.Abbild.Gebaeude.Single().Bauteile.Where(x => x.Aufbau != null))
+            {
+                Assert.Equal(Aufbaustatus.Vollstaendig, b.Aufbau.Status);
+                Assert.All(b.Aufbau.Schichten, x => Assert.True(x.CpJkgK >= 800.0 && x.CpJkgK <= 1700.0, x.Name + ": c = " + x.CpJkgK));
+            }
+
+            // Ohne Dichte bleibt die Schicht masselos, benannt wie bisher — kein Rückfall.
+            GebaeudeImportAblauf n = Lesen("ifc4_schichten_nullwerte.ifc");
+            Assert.True(Hat(n.Meldungen, "STOFFWERT_NULL"));
+            Assert.False(Hat(n.Meldungen, "WAERMEKAPAZITAET_RUECKFALL"));
+        }
+
+        /// <summary>Die Stofftabelle des Rückfalls: Stoffgruppe je Materialname, Dämmstoffe vor den mineralischen Gruppen.</summary>
+        [Theory]
+        [InlineData("Beton armiert mit 1% Stahl  (DIN 12524)", "Beton", 1000.0)]
+        [InlineData("Leichtbauplatten mit Mineralfaserschicht", "Dämmstoff (Mineralfaser)", 1030.0)]
+        [InlineData("Polystyrol PS -Extruderschaum  (WLG 040)", "Dämmstoff (Schaumkunststoff)", 1450.0)]
+        [InlineData("PUR/PIR-Hartschaum", "Dämmstoff (Schaumkunststoff)", 1450.0)]
+        [InlineData("Konstruktionsholz", "Holz", 1600.0)]
+        [InlineData("Gipskartonplatten  (DIN 18180)", "Gips", 1000.0)]
+        [InlineData("Normalmörtel NM", "Putz", 1000.0)]
+        [InlineData("Hochlochziegel Lochung A+B", "Mauerwerk", 1000.0)]
+        [InlineData("Fantasiestoff 7", null, 0.0)]
+        public void Die_Stofftabelle_ordnet_Materialnamen_einer_Gruppe_zu(string name, string gruppe, double cp)
+        {
+            Waermekapazitaetsrueckfall.Stoffgruppe g = Waermekapazitaetsrueckfall.Gruppe(name);
+            Assert.Equal(gruppe, g?.Name);
+            if (g != null) Assert.Equal(cp, g.CpJkgK);
+            Assert.Null(Waermekapazitaetsrueckfall.Bestimmen("Fantasiestoff 7", new Baustoffabgleich(BaustoffabgleichDaten.AusSaat())));
+        }
+
         [Fact]
         public void Gegenprobe_die_uebrigen_Proben_bleiben_ohne_die_neuen_Meldungen()
         {
@@ -368,6 +571,9 @@ namespace EPOS.Kern.Tests
                 Assert.False(Hat(alle, "ERKLAERUNG_VOR_BEZUG"), probe);
                 Assert.False(Hat(alle, "BAUJAHR_DATEINAME"), probe);
                 Assert.False(Hat(alle, "NAME_PLATZHALTER"), probe);
+                Assert.False(Hat(alle, "BAUJAHR_WIDERSPRUCH"), probe);
+                Assert.False(Hat(alle, "BEHEIZUNGSART_TEMPERATUR"), probe);
+                Assert.False(Hat(alle, "WAERMEKAPAZITAET_RUECKFALL"), probe);
                 if (a.Abbild == null) continue;
                 Assert.All(a.Abbild.Gebaeude, g => Assert.Equal(0, g.ZahlTrenndeckenReferenz));
                 // Die einseitige Innenwand trägt allein die CAD-Probe ohne Raumgrenzen („Innenwand CAD", 12 m²).

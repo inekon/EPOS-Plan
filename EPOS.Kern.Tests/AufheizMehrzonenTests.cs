@@ -22,13 +22,20 @@ namespace EPOS.Kern.Tests
     /// Stundenleistung jeder Zone unter 1,01·P_auf — „sicher" (Quelle Ziel, Stundenmittel).</item>
     /// <item><b>Unbeheizt ohne Rampe</b> (UNBEHEIZT), <b>Aggregation</b> nach Festlegung 22 (auch GEMISCHT).</item>
     /// </list>
-    /// Ohne Datenbank.
+    /// Ohne Datenbank — bis auf den Fall am Referenzprojekt 1052 (G6d), der dieselbe Formel an den Zonen der
+    /// Testdatenbank prüft (Arbeitskopie, deshalb die Sammlung „Testdatenbank").
     /// </summary>
-    public class AufheizMehrzonenTests
+    [Collection("Testdatenbank")]
+    public class AufheizMehrzonenTests : IClassFixture<TestDatenbank>
     {
         private readonly ITestOutputHelper _aus;
+        private readonly TestDatenbank _db;
 
-        public AufheizMehrzonenTests(ITestOutputHelper aus) { _aus = aus; }
+        public AufheizMehrzonenTests(TestDatenbank db, ITestOutputHelper aus)
+        {
+            _db = db;
+            _aus = aus;
+        }
 
         internal const int WOHNUNG_1 = 1, WOHNUNG_2 = 2, KELLER = 1000;
         private const int STUNDEN = 8760;
@@ -247,6 +254,113 @@ namespace EPOS.Kern.Tests
             Assert.False(keller.Aufheizplan.Geaendert);
             Assert.Same(keller.Eingang.ThetaSoll, keller.Aufheizplan.Reihe);
             Assert.All(keller.Eingang.ThetaSoll, w => Assert.True(double.IsNaN(w)));
+        }
+
+        /// <summary>
+        /// <b>N-AH9 am Referenzprojekt 1052</b> (G6d): dieselbe Probe wie
+        /// <see cref="N_AH9_Formel_je_Zone_haelt_in_der_vollen_Zonenschleife"/>, aber mit den Zonen der Testdatenbank —
+        /// Gästezimmer und Gastronomie mit Trennwand, Luftstrom und Kellerdecken über dem unbeheizten Keller, je Zone
+        /// ihr Heizkalender (Wohnen, Büro: Sprünge um 6 und um 7 Uhr) über den Datenweg der Konditionierung, die
+        /// Aufheizvorgabe des Projekts. Feste Ränder wie dort (konstante Außenluft, hier −15 °C, ohne Sonne, ohne
+        /// innere Gewinne des Gebäudes; das Erdreich unter dem Keller folgt seinem Jahresgang): Je beheizte Zone und je
+        /// <b>Rampe nach einer Absenkung bis 24 h</b> bleibt die Stundenleistung im Fenster [h_s − n + 1, h_s + 2]
+        /// unter 1,01·P_auf (gemessen 562 Fenster, größte 100,37 %); ohne Planung liegt die Sprungstunde darüber; der
+        /// Keller bleibt UNBEHEIZT; die beiden Zonen springen zu verschiedenen Stunden.
+        /// <para><b>Gemessen, nicht im Band (Befund G6d):</b> In der Gastronomie (Büro: Wochenende und Feiertage
+        /// 16 °C) überschreiten die Rampen nach <b>langer Absenkung</b> (Wochenende 61 h, Feiertag 37 h, Weihnachten
+        /// 109 h) das Band um bis zu 2,1 %: Die Planung rechnet die Nachbarn fest (den Keller beim Startwert), im Lauf
+        /// kühlt der über Kellerdecke und Erdreich gekoppelte Keller in der langen Absenkung weiter aus. Die
+        /// synthetische Probe oben kennt den Fall nicht (kleiner Keller). Bei −5 °C und wärmer füllen die Rampen der
+        /// Gästezimmer die ganze Absenkung von 8 h (W2, von D begrenzt) und liegen bis 5–24 % über P_auf — darum die
+        /// kältere Probe. Gehalten als Messlatte: lang ≤ 1,03·P_auf, begrenzt ≤ 1,06·P_auf (bei −15 °C keine).</para>
+        /// </summary>
+        /// <summary>Die feste Außenluft der Probe an 1052 [°C] — kalt genug, dass die Rampen der Gästezimmer (Absenkung 8 h) frei bleiben.</summary>
+        private const double AUSSEN_1052 = -15.0;
+
+        [Fact]
+        public void N_AH9_Formel_je_Zone_haelt_am_Referenzprojekt_1052()
+        {
+            if (!_db.Vorhanden) return;
+            const int PROJEKT = EPOS.Referenzlaeufe.Skripte.Zonenprojekt1052.NEU;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(PROJEKT);
+            Assert.Equal(1, ctrl.rows);
+            ProjektGebaeudeModel g = ctrl.items[0];
+            Assert.Equal(3, g.Zonen.Count);
+            g.Interne_Waermegewinne = 0.0;
+            GebaeudeKlima klima = Klima(AUSSEN_1052);
+            Func<long?, Konditionierungssatz> kond = z => Konditionierungdatenweg.Satz(
+                g, klima.Wochenende, Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE, false, false, z);
+            Aufheizvorgabe vorgabe = KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT);
+            Assert.True(vorgabe.An);
+            Mehrzonenergebnis ohne = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, kond);
+            Mehrzonenergebnis mit = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, kond, vorgabe);
+            Assert.Null(ohne.Aufheizgebaeude);
+            Assert.NotNull(mit.Aufheizgebaeude);
+
+            int fenster = 0, rampen = 0, beheizt = 0, begrenzt = 0, lang = 0;
+            double groesste = 0.0, ohneGroesste = 0.0, groessteBegrenzt = 0.0, groessteLang = 0.0;
+            var stunden = new List<HashSet<int>>();
+            for (int z = 0; z < mit.Eingaenge.Count; z++)
+            {
+                ZonenEingang ze = mit.Eingaenge[z];
+                Aufheizplan p = ze.Aufheizplan;
+                if (p.Unbeheizt)
+                {
+                    Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, p.Zustand);
+                    Assert.False(p.Geaendert);
+                    continue;
+                }
+                beheizt++;
+                Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, p.Zustand);
+                Assert.Equal(DbWerte.AUFHEIZ_QUELLE_ZIEL, p.Bemessung.Quelle);
+                Assert.True(p.Geaendert, "keine Rampe in " + ze.Bezeichnung);
+                double pAuf = p.Bemessung.AufheizleistungW;
+                double[] last = mit.Zonen[z].HeizlastW;
+                double[] lastOhne = ohne.Zonen[z].HeizlastW;
+                var sprungstunden = new HashSet<int>();
+                foreach (Aufheizsprung sp in p.Spruenge)
+                {
+                    sprungstunden.Add(sp.Sprungstunde % 24);
+                    if (sp.N <= 1) continue;
+                    rampen++;
+                    double max = 0.0;
+                    for (int h = sp.Sprungstunde - sp.N + 1; h <= sp.Sprungstunde + 2; h++) max = Math.Max(max, last[Ring(h)]);
+                    double quote = max / pAuf;
+                    ohneGroesste = Math.Max(ohneGroesste, lastOhne[sp.Sprungstunde] / pAuf);
+                    if (sp.Begrenzt)
+                    {
+                        begrenzt++;
+                        groessteBegrenzt = Math.Max(groessteBegrenzt, quote);
+                        continue;
+                    }
+                    if (sp.AbsenkdauerH > 24)
+                    {
+                        lang++;
+                        groessteLang = Math.Max(groessteLang, quote);
+                        continue;
+                    }
+                    groesste = Math.Max(groesste, quote);
+                    Assert.True(quote <= 1.01, string.Format(CultureInfo.InvariantCulture,
+                        "{0}, Sprung {1} (n = {2}, D = {3} h): {4:F1} W über 1,01·P_auf = {5:F1} W", ze.Bezeichnung, sp.Sprungstunde,
+                        sp.N, sp.AbsenkdauerH, max, 1.01 * pAuf));
+                    fenster++;
+                }
+                stunden.Add(sprungstunden);
+                _aus.WriteLine("1052, {0}: P_auf {1} kW, t_auf,max {2} h, Rampentage {3}, längste Rampe {4} h, Sprungstunden {5}",
+                               ze.Bezeichnung, F(pAuf / 1000.0, "F3"), p.Bemessung.Wirksam.AufheizzeitMaxH, p.Aufheiztage,
+                               p.LaengsteRampeH, string.Join("/", sprungstunden.OrderBy(x => x)));
+            }
+            _aus.WriteLine("N-AH9 an 1052: {0} Rampen, {1} Fenster im Band (größte Stundenleistung {2} % von P_auf); {3} von D begrenzt " +
+                           "(W2, größte {4} %), {5} nach Absenkung über 24 h (größte {6} %); ohne Planung in der Sprungstunde {7} %",
+                           rampen, fenster, F(100.0 * groesste, "F2"), begrenzt, F(100.0 * groessteBegrenzt, "F2"), lang,
+                           F(100.0 * groessteLang, "F2"), F(100.0 * ohneGroesste, "F2"));
+            Assert.Equal(2, beheizt);
+            Assert.True(fenster >= 100, "zu wenige Fenster im Band " + fenster);
+            Assert.True(groessteBegrenzt <= 1.06, "Messlatte der begrenzten Rampen überschritten: " + F(groessteBegrenzt, "F4"));
+            Assert.True(groessteLang <= 1.03, "Messlatte der Rampen nach langer Absenkung überschritten: " + F(groessteLang, "F4"));
+            Assert.True(ohneGroesste > 1.01, "Die Gegenprobe ohne Planung bleibt unter dem Band.");
+            Assert.False(stunden[0].SetEquals(stunden[1]), "Die Zonen springen zu denselben Stunden.");
         }
 
         // =====================================================================

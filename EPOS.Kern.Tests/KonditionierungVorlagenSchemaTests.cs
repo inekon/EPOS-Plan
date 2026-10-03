@@ -140,12 +140,13 @@ namespace EPOS.Kern.Tests
 
             // Die Messlatte traegt in den Tabellen der Konditionierung nur die Saat der ausgelieferten
             // Vorlagen (Schritt 156, KonditionierungsvorlagenWacheTests) - keine Zeile eines Gebaeudes,
-            // einer Zone oder eines Katalogbaus.
+            // einer Zone oder eines Katalogbaus, ausser den Zonenkalendern des Zonenprojekts 1052 (G6d).
             Assert.Equal(KonditionierungsvorlagenSaattabelle.VORLAGEN, (int)Zahl("SELECT COUNT(*) FROM \"" + VLG + "\""));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NULL"));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + VOR + "\" WHERE \"ID_Vorlage\" IS NULL"));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + VOR + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + PER + "\" WHERE \"ID_Kalender\" NOT IN " +
-                                 "(SELECT \"ID\" FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NOT NULL)"));
+                                 "(SELECT \"ID\" FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
+                                 "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ")"));
         }
 
         /// <summary>
@@ -157,6 +158,10 @@ namespace EPOS.Kern.Tests
         private static void OhneSaat()
         {
             DataRepository.ExecuteNonQuery("DELETE FROM \"" + VLG + "\"");
+            // Dazu die Zonenkalender des Zonenprojekts 1052 (G6d) samt Perioden und Vorgaben - die Regeln
+            // werden an leeren Tabellen gemessen.
+            DataRepository.ExecuteNonQuery("DELETE FROM \"" + VOR + "\"");
+            DataRepository.ExecuteNonQuery("DELETE FROM \"" + KAL + "\"");
             foreach (string t in new[] { KAL, PER, VOR, VLG })
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + t + "\""));
         }

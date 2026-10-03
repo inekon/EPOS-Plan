@@ -52,7 +52,8 @@ namespace EPOS.Kern.Tests
         private static long PeriodenOhneVorlagen()
             => Convert.ToInt64(DataRepository.ExecuteScalar(
                    "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" NOT IN " +
-                   "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL)"),
+                   "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
+                   "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ")"),    // ohne die Zonenkalender von 1052 (G6d)
                                CultureInfo.InvariantCulture);
 
         /// <summary>Die Matrix eines Probegebäudes mit Wochenendwert und Heizperiode.</summary>

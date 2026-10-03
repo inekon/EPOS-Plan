@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
         /// Süd und Nord falsch. Mit <paramref name="nullwerte"/> trägt die Dämmung ρ = 0 und c = 0
         /// (Befund P). Kein Nordwinkel (TrueNorth [0, 1]).
         /// </summary>
-        public static byte[] Schichten(XbimSchemaVersion schema, string dateiname, bool nullwerte)
+        public static byte[] Schichten(XbimSchemaVersion schema, string dateiname, bool nullwerte, bool ohneWaermekapazitaet = false)
         {
             using (var b = new Bau(schema, dateiname))
             {
@@ -232,8 +232,9 @@ namespace EPOS.Kern.Tests
                 IIfcSpace r = b.Raum(eg, "0.01", "Wohnen", 150, 150, 80, 2500, 200, beheizt: true);
                 IIfcWallType typ = b.Wandtyp("Außenwand Typ S", null);
 
-                IIfcMaterial putz = b.Baustoff("Putz", 0.7, 1400, 1000);
-                IIfcMaterial mauer = b.Baustoff("Mauerwerk", 0.5, 1200, 1000);
+                // Abwandlung „ohne Wärmekapazität" (nur im Speicher): Putz und Mauerwerk führen Dichte und λ, aber kein c.
+                IIfcMaterial putz = b.Baustoff("Putz", 0.7, 1400, ohneWaermekapazitaet ? double.NaN : 1000);
+                IIfcMaterial mauer = b.Baustoff("Mauerwerk", 0.5, 1200, ohneWaermekapazitaet ? double.NaN : 1000);
                 IIfcMaterial daemm = nullwerte ? b.Baustoff("Dämmung", 0.04, 0, 0) : b.Baustoff("Dämmung", 0.04, 30, 1500, erweitert2x3: true);
                 IIfcMaterial beton = b.Baustoff("Beton", 2.0, 2400, 1000);
                 IIfcMaterialLayerSet innenZuerst = b.Schichtsatz("Außenwand innen zuerst", (putz, 15), (mauer, 240), (daemm, 100));
@@ -550,8 +551,22 @@ namespace EPOS.Kern.Tests
         /// <paramref name="spitzboden"/> — ein Geschoss DG (5200 mm) mit dem Raum „Spitzboden" (20 m², nach dem Namen
         /// beheizt), der die „Oberste Decke" mitreferenziert: Die Datei erklärt sie gegen unbeheizt, die Erklärung gilt vor
         /// dem Bezug und wird benannt.</para>
+        ///
+        /// <para>Drei weitere Abwandlungen nach den Anwenderdateien eines CAD-Exports (Mehrzonenkonzept 6.5):
+        /// <paramref name="beheizungsart"/> — die Beheizungsart <c>HeatingType</c> im Satz <c>CAD_RaumAllgemein</c>: Keller
+        /// <c>bhtUnHeated</c>, Wohnen und Abstellraum <c>bhtHeated</c>, Kind <c>bhtSeparatelyHeated</c>;
+        /// <paramref name="kellerTeil"/> — ein „Hobbyraum" im KG (15 m², <c>bhtHeated</c>), der nur die Kellerwand
+        /// referenziert: Das KG hat beheizte Räume, die Kellerdecke grenzt aber nur an den unbeheizten Keller;
+        /// <paramref name="bodenoeffnung"/> — eine „Bodenöffnung" (Platte, <c>btaHeated</c>, U 0, ohne Aufbau, 8 m²), die
+        /// Wohnen und Schlafen referenzieren; <paramref name="speicher"/> — ein „Speicher" im OG (6 m², <c>bhtUnHeated</c>)
+        /// ohne jeden Bezug: unter Z4 eine unbeheizte Zone ohne Fläche.</para>
+        ///
+        /// <para><paramref name="kindTemperatur"/> (nur mit <paramref name="beheizungsart"/>) — der getrennt beheizte Raum
+        /// „Kind" führt im selben Satz die Raumtemperatur <c>InsideTemperature (°C)</c>.</para>
         /// </summary>
-        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false)
+        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false, bool beheizungsart = false,
+                                        bool kellerTeil = false, bool bodenoeffnung = false, bool speicher = false,
+                                        double? kindTemperatur = null)
         {
             using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_referenzen.ifc"))
             {
@@ -593,6 +608,30 @@ namespace EPOS.Kern.Tests
                     IIfcBuildingStorey dg = b.GeschossEnthalten(g, "DG", 5200);
                     IIfcSpace sb = b.RaumEnthalten(dg, "Spitzboden", 150, 150, 20, 30, 1500, zerlegt: false);
                     b.Bezug(sb, oberste);
+                }
+                if (beheizungsart)
+                {
+                    b.Beheizungsart(keller, "bhtUnHeated");
+                    b.Beheizungsart(wohnen, "bhtHeated");
+                    b.Beheizungsart(abstell, "bhtHeated");
+                    b.Beheizungsart(kind, "bhtSeparatelyHeated", kindTemperatur);
+                }
+                if (kellerTeil)
+                {
+                    IIfcSpace hobby = b.RaumEnthalten(kg, "Hobbyraum", 6150, 150, 15, 37.5, 2500, zerlegt: false);
+                    b.Beheizungsart(hobby, "bhtHeated");
+                    b.Bezug(hobby, kellerwand);
+                }
+                if (speicher)
+                {
+                    IIfcSpace sp = b.RaumEnthalten(og, "Speicher", 6150, 4150, 6, 15, 2500, zerlegt: false);
+                    b.Beheizungsart(sp, "bhtUnHeated");
+                }
+                if (bodenoeffnung)
+                {
+                    IIfcSlab loch = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Bodenöffnung", "btaHeated", false, 0.0, null, null, 8, 8, null, null);
+                    b.Bezug(wohnen, loch);
+                    b.Bezug(schlafen, loch);
                 }
                 return b.Speichern();
             }
@@ -1004,6 +1043,14 @@ namespace EPOS.Kern.Tests
                 return f;
             }
 
+            /// <summary>Die Beheizungsart eines Raums nach dem Muster des CAD-Exports (<c>HeatingType</c>, Aufzählung).</summary>
+            public void Beheizungsart(IIfcSpace r, string wert, double? temperaturC = null)
+            {
+                var liste = new List<IIfcProperty> { Aufzaehlung("HeatingType", wert) };
+                if (temperaturC.HasValue) liste.Add(Einzel("InsideTemperature (°C)", new IfcReal(temperaturC.Value)));
+                SatzMit(r, "CAD_RaumAllgemein", liste);
+            }
+
             private void CadEigenschaften(IIfcElement e, string klasse, string angrenzung, bool huelle, double? u,
                                           double? uFalscheEinheit, double? orientierungGrad)
             {
@@ -1104,7 +1151,8 @@ namespace EPOS.Kern.Tests
                 thermisch.Name = new IfcIdentifier("Pset_MaterialThermal");
                 thermisch.Material = (Xbim.Ifc4.MaterialResource.IfcMaterialDefinition)m;
                 thermisch.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("ThermalConductivity", new IfcThermalConductivityMeasure(lambda)));
-                thermisch.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("SpecificHeatCapacity", new IfcSpecificHeatCapacityMeasure(cp)));
+                if (!double.IsNaN(cp))   // NaN = die Eigenschaft fehlt (masselose IFC4-Schicht)
+                    thermisch.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("SpecificHeatCapacity", new IfcSpecificHeatCapacityMeasure(cp)));
                 var allgemein = N<Xbim.Ifc4.MaterialResource.IfcMaterialProperties>("IfcMaterialProperties");
                 allgemein.Name = new IfcIdentifier("Pset_MaterialCommon");
                 allgemein.Material = (Xbim.Ifc4.MaterialResource.IfcMaterialDefinition)m;

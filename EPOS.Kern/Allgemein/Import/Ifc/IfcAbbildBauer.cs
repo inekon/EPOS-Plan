@@ -82,6 +82,12 @@ namespace WindowsFormsApplication1
         private readonly SortedSet<string> _stoffwertNull = new SortedSet<string>(StringComparer.Ordinal);
         private readonly SortedSet<string> _stoffwerteNichtGelesen = new SortedSet<string>(StringComparer.Ordinal);
 
+        // Rückfall der Wärmekapazität (Mehrzonenkonzept 6.5): je Baustoff das Ergebnis, je Aufbau die Meldungswerte.
+        private readonly Dictionary<int, (double CpJkgK, string Quelle)?> _cpRueckfall = new Dictionary<int, (double CpJkgK, string Quelle)?>();
+        private readonly List<(string Aufbau, List<string> Schichten)> _cpRueckfallAufbauten = new List<(string Aufbau, List<string> Schichten)>();
+        private Baustoffabgleich _abgleichSaat;
+        private readonly HashSet<string> _cpRueckfallSignaturen = new HashSet<string>(StringComparer.Ordinal);
+
         private readonly List<string> _ohneMengen = new List<string>();
         private readonly List<string> _seiteUnbestimmt = new List<string>();
         private readonly List<string> _ohneGebaeude = new List<string>();
@@ -127,6 +133,7 @@ namespace WindowsFormsApplication1
                 return;
             }
             for (int i = 0; i < gebaeude.Count; i++) Gebaeude(gebaeude[i], i);
+            BeheizungsartMelden();
             Melden(0.1);
 
             Raumgrenzen();
@@ -498,7 +505,8 @@ namespace WindowsFormsApplication1
         /// nach den Raumgrenzen, <see cref="Untergeschosse"/>): B1 <c>PredefinedType = EXTERNAL</c>, B2
         /// <c>Pset_SpaceCommon.IsExternal = TRUE</c>, B3 der Heizsollwert aus
         /// <c>Pset_SpaceThermalRequirements</c> — nur mit auflösbarer Temperatureinheit — über 12 °C
-        /// beheizt, sonst unbeheizt, B4 die Namensregel, B6 sonst beheizt. Die erste Regel, die trägt,
+        /// beheizt, sonst unbeheizt, ersatzweise die Beheizungsart eines CAD-Exports
+        /// (<see cref="Beheizungsart"/>), B4 die Namensregel, B6 sonst beheizt. Die erste Regel, die trägt,
         /// entscheidet.
         /// </summary>
         private void Beheizung(IIfcSpace s, AbbildRaum r, string langname, string name, AbbildGebaeude g)
@@ -523,6 +531,13 @@ namespace WindowsFormsApplication1
                        PSET_SOLLWERTE + " " + Zahl(Math.Round(r.SollHeizenC.Value, 2)) + " °C");
                 return;
             }
+            // B3, Rückfall eines CAD-Exports: die Beheizungsart des Raums aus einem beliebigen Satz.
+            bool? erklaert = Beheizungsart(s, g, langname ?? name);
+            if (erklaert.HasValue)
+            {
+                Setzen(r, erklaert.Value, BeheiztQuelle.Attribut, "B3", _beheizungsartBeleg);
+                return;
+            }
             string treffer = Raumnamenregel.Treffer(langname) ?? Raumnamenregel.Treffer(name);
             if (treffer != null)
             {
@@ -531,6 +546,142 @@ namespace WindowsFormsApplication1
                 return;
             }
             Setzen(r, true, BeheiztQuelle.Annahme, "B6", null);
+        }
+
+        /// <summary>Die Beheizungsart eines Raums, wenn der Standard fehlt (CAD-Export, <c>HSETU_RaumAllgemein</c>).</summary>
+        internal const string BEHEIZUNGSART = "HeatingType";
+
+        /// <summary>
+        /// <b>Die Abbildung der Beheizungsart</b> (Mehrzonenkonzept 6.5): Wert ohne das Präfix <c>bht</c>,
+        /// Groß-/Kleinschreibung egal → beheizt. Nur die eindeutigen Werte entscheiden; <c>SeparatelyHeated</c>
+        /// (getrennt beheizt) entscheidet nach der Raumtemperatur der Datei (<see cref="GETRENNT_BEHEIZT"/>), jeder
+        /// andere Wert — und <c>SeparatelyHeated</c> ohne Raumtemperatur — lässt die Entscheidung den Regeln B4 bis B6
+        /// (benannt).
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<string, bool> BEHEIZUNGSART_ABBILDUNG
+            = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Heated"] = true,
+                ["UnHeated"] = false,
+            };
+
+        /// <summary>Der Wert der Beheizungsart „getrennt beheizt" (ohne Präfix <c>bht</c>).</summary>
+        internal const string GETRENNT_BEHEIZT = "SeparatelyHeated";
+
+        /// <summary>Die Raumtemperatur eines CAD-Exports (<c>HSETU_RaumAllgemein</c>, Einheit im Namen: <c>InsideTemperature (°C)</c>).</summary>
+        internal const string RAUMTEMPERATUR = "InsideTemperature";
+
+        /// <summary>Das Band einer lesbaren Raumtemperatur [°C]; außerhalb gilt sie als nicht angegeben.</summary>
+        internal const double RAUMTEMPERATUR_MIN_C = -50.0, RAUMTEMPERATUR_MAX_C = 60.0;
+
+        /// <summary>Je Gebäude und Beleg „Satz.Name = Wert": die getrennt beheizten Räume mit Name, Temperatur und Einstufung.</summary>
+        private readonly Dictionary<AbbildGebaeude, SortedDictionary<string, List<(string Raum, double TemperaturC, bool Beheizt)>>> _beheizungsartTemperatur
+            = new Dictionary<AbbildGebaeude, SortedDictionary<string, List<(string Raum, double TemperaturC, bool Beheizt)>>>();
+
+        /// <summary>Der Beleg der zuletzt gelesenen Beheizungsart („Satz.Name = Wert").</summary>
+        private string _beheizungsartBeleg;
+
+        /// <summary>Je Gebäude und Beleg „Satz.Name": Räume beheizt bzw. unbeheizt nach der Beheizungsart der Datei.</summary>
+        private readonly Dictionary<AbbildGebaeude, SortedDictionary<string, int[]>> _beheizungsart
+            = new Dictionary<AbbildGebaeude, SortedDictionary<string, int[]>>();
+
+        /// <summary>Je Gebäude und „Satz.Name\u0001Wert": Räume, deren Beheizungsart nicht entscheidet.</summary>
+        private readonly Dictionary<AbbildGebaeude, SortedDictionary<string, int>> _beheizungsartOffen
+            = new Dictionary<AbbildGebaeude, SortedDictionary<string, int>>();
+
+        /// <summary>
+        /// <b>Die Beheizungsart eines CAD-Exports</b> (Rückfall zu B3, Mehrzonenkonzept 6.5): die Eigenschaft
+        /// <see cref="BEHEIZUNGSART"/> aus einem beliebigen Satz des Raums (Aufzählung oder Text, Präfix
+        /// <c>bht</c> ohne Belang), abgebildet nach <see cref="BEHEIZUNGSART_ABBILDUNG"/>; <c>null</c> = keine
+        /// Angabe oder ein Wert, der nicht entscheidet (gezählt, wenn eine Angabe da ist).
+        /// <para><b>„Getrennt beheizt"</b> (<see cref="GETRENNT_BEHEIZT"/>) entscheidet nach der Raumtemperatur der Datei
+        /// (<see cref="Raumtemperatur"/>) wie Regel B3: über <see cref="B3_GRENZE_C"/> beheizt, sonst unbeheizt — benannt je
+        /// Gebäude (<c>IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR</c>). Die Temperatur stuft nur ein; als Sollwert wird sie
+        /// nicht übernommen. Ohne Raumtemperatur bleibt der Raum offen.</para>
+        /// </summary>
+        private bool? Beheizungsart(IIfcSpace s, AbbildGebaeude g, string raumname)
+        {
+            IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, s, new[] { BEHEIZUNGSART }).FirstOrDefault();
+            if (f == null) return null;
+            string wert = f.Eigenschaft is IIfcPropertyEnumeratedValue aufz
+                ? aufz.EnumerationValues?.Select(IfcEigenschaften.Textwert).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))
+                : f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+            wert = (wert ?? "").Trim();
+            string kern = wert.StartsWith("bht", StringComparison.OrdinalIgnoreCase) ? wert.Substring(3) : wert;
+            string ort = f.Satz + "." + f.Eigenschaft.Name;
+            if (BEHEIZUNGSART_ABBILDUNG.TryGetValue(kern, out bool warm))
+            {
+                if (!_beheizungsart.TryGetValue(g, out SortedDictionary<string, int[]> z))
+                    _beheizungsart[g] = z = new SortedDictionary<string, int[]>(StringComparer.Ordinal);
+                if (!z.TryGetValue(ort, out int[] n)) z[ort] = n = new int[2];
+                n[warm ? 0 : 1]++;
+                _beheizungsartBeleg = ort + " = " + wert;
+                return warm;
+            }
+            if (string.Equals(kern, GETRENNT_BEHEIZT, StringComparison.OrdinalIgnoreCase))
+            {
+                (double TemperaturC, string Ort)? t = Raumtemperatur(s);
+                if (t.HasValue)
+                {
+                    bool beheizt = t.Value.TemperaturC > B3_GRENZE_C;
+                    string beleg = ort + " = " + wert;
+                    if (!_beheizungsartTemperatur.TryGetValue(g, out SortedDictionary<string, List<(string, double, bool)>> z))
+                        _beheizungsartTemperatur[g] = z = new SortedDictionary<string, List<(string, double, bool)>>(StringComparer.Ordinal);
+                    if (!z.TryGetValue(beleg, out List<(string, double, bool)> liste)) z[beleg] = liste = new List<(string, double, bool)>();
+                    liste.Add((string.IsNullOrWhiteSpace(raumname) ? s.GlobalId.ToString() : raumname.Trim(), t.Value.TemperaturC, beheizt));
+                    _beheizungsartBeleg = beleg + ", " + t.Value.Ort + " = " + Zahl(Math.Round(t.Value.TemperaturC, 2)) + " °C";
+                    return beheizt;
+                }
+            }
+            if (!_beheizungsartOffen.TryGetValue(g, out SortedDictionary<string, int> offen))
+                _beheizungsartOffen[g] = offen = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            Zaehlen(offen, ort + "\u0001" + (wert.Length == 0 ? "—" : wert));
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Die Raumtemperatur eines CAD-Exports</b>: die Eigenschaft <see cref="RAUMTEMPERATUR"/> aus einem beliebigen
+        /// Satz des Raums, nur mit der Einheit °C im Namen (<c>InsideTemperature (°C)</c>) und im Band
+        /// [<see cref="RAUMTEMPERATUR_MIN_C"/>; <see cref="RAUMTEMPERATUR_MAX_C"/>]; sonst <c>null</c> — eine Zahl ohne
+        /// Einheit könnte Kelvin sein.
+        /// </summary>
+        private (double TemperaturC, string Ort)? Raumtemperatur(IIfcSpace s)
+        {
+            foreach (IfcFund f in IfcEigenschaften.AlleMitNamen(_bezuege, s, new[] { RAUMTEMPERATUR }))
+            {
+                if (!(f.Eigenschaft is IIfcPropertySingleValue einzel)) continue;
+                IfcEigenschaften.NameOhneEinheit(einzel.Name.ToString(), out string einheit);
+                string e = (einheit ?? "").Replace(" ", "");
+                if (!string.Equals(e, "°C", StringComparison.OrdinalIgnoreCase) && !string.Equals(e, "degC", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                double? t = IfcEigenschaften.Zahl(einzel.NominalValue);
+                if (t.HasValue && t.Value >= RAUMTEMPERATUR_MIN_C && t.Value <= RAUMTEMPERATUR_MAX_C)
+                    return (t.Value, f.Satz + "." + einzel.Name);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Die Sammelmeldungen der Beheizungsart je Gebäude: Räume beheizt und unbeheizt nach der Datei (I),
+        /// getrennt beheizte Räume nach ihrer Raumtemperatur (I, je Beleg, mit Raum und Temperatur) und Räume,
+        /// deren Beheizungsart nicht entscheidet (I, je Wert).
+        /// </summary>
+        private void BeheizungsartMelden()
+        {
+            foreach (KeyValuePair<AbbildGebaeude, SortedDictionary<string, int[]>> g in _beheizungsart)
+                foreach (KeyValuePair<string, int[]> m in g.Value)
+                    g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BEHEIZUNGSART", Ganz(m.Value[0]), Ganz(m.Value[1]), m.Key));
+            foreach (KeyValuePair<AbbildGebaeude, SortedDictionary<string, List<(string Raum, double TemperaturC, bool Beheizt)>>> g in _beheizungsartTemperatur)
+                foreach (KeyValuePair<string, List<(string Raum, double TemperaturC, bool Beheizt)>> m in g.Value)
+                    g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BEHEIZUNGSART_TEMPERATUR",
+                        Ganz(m.Value.Count(x => x.Beheizt)), Ganz(m.Value.Count(x => !x.Beheizt)), m.Key,
+                        string.Join(", ", m.Value.Select(x => x.Raum + " " + Zahl(Math.Round(x.TemperaturC, 2)) + " °C"))));
+            foreach (KeyValuePair<AbbildGebaeude, SortedDictionary<string, int>> g in _beheizungsartOffen)
+                foreach (KeyValuePair<string, int> m in g.Value)
+                {
+                    string[] t = m.Key.Split('\u0001');
+                    g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BEHEIZUNGSART_OFFEN", Ganz(m.Value), t[0], t[1]));
+                }
         }
 
         private static void Setzen(AbbildRaum r, bool beheizt, BeheiztQuelle quelle, string regel, string angabe)
@@ -880,6 +1031,7 @@ namespace WindowsFormsApplication1
         private readonly SortedDictionary<string, int> _bauteilMengenRueckfall = new SortedDictionary<string, int>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, int> _uRueckfall = new SortedDictionary<string, int>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, int[]> _uEinheit = new SortedDictionary<string, int[]>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, int> _uNichtPositiv = new SortedDictionary<string, int>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, int> _angrenzung = new SortedDictionary<string, int>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, int> _nichtHuelle = new SortedDictionary<string, int>(StringComparer.Ordinal);
 
@@ -951,7 +1103,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Sammelmeldungen der Bauteil-Rückfälle: Mengen aus fremden Sätzen (W), U-Werte unter fremdem
         /// Namen (I), U-Werte mit abweichender Einheit (W, wenn ein Bauteil dadurch ohne U-Wert bleibt, sonst
-        /// I), die Angrenzung ohne <c>IsExternal</c> (I, unbestimmt W) und Bauteile, die nach der Hüllkennung
+        /// I), U-Werte null oder kleiner (I), die Angrenzung ohne <c>IsExternal</c> (I, unbestimmt W) und Bauteile, die nach der Hüllkennung
         /// nicht zur Hülle zählen (I).
         /// </summary>
         private void BauteilRueckfaelleMelden()
@@ -971,6 +1123,11 @@ namespace WindowsFormsApplication1
                 string[] t = m.Key.Split('\u0001');
                 _abbild.Meldungen.Add(new PruefMeldung(m.Value[1] > 0 ? PruefStufe.Warnung : PruefStufe.Info, P + "UWERT_EINHEIT",
                     Ganz(m.Value[0]), t[0], t[1], t[2], Ganz(m.Value[1])));
+            }
+            foreach (KeyValuePair<string, int> m in _uNichtPositiv)
+            {
+                string[] t = m.Key.Split('\u0001');
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UWERT_NICHT_POSITIV", Ganz(m.Value), t[0], t[1], t[2]));
             }
             foreach (KeyValuePair<string, int> m in _angrenzung)
             {
@@ -1036,12 +1193,15 @@ namespace WindowsFormsApplication1
                 b.NettoflaecheM2 = FlaecheRueckfall(e, RUECKFALL_BAUTEIL_NETTO, "NetArea");
             if (!b.BruttoflaecheM2.HasValue) _ohneMengen.Add(b.Kennung);
 
-            UWert(e, satz, b);
+            bool uNichtPositiv = UWert(e, satz, b);
             b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
 
             // Ohne Raumgrenzen im ganzen Gebäude: die Raumbezüge (IfcRelReferencedInSpatialStructure, Mehrzonenkonzept 6.5).
+            // Ein Bauteil mit U-Wert null oder kleiner und ohne Aufbau bewertet die Datei nicht (eine Bodenöffnung, ein
+            // Hilfsbauteil): Es bekommt keine Nachbarn aus den Bezügen und trennt keine Geschosse.
             bool ohneGrenzen = grenzen.Count == 0 && gi >= 0 && _abbild.Gebaeude[gi].ZahlGrenzen == 0;
-            if (!ohneGrenzen || !ReferenzNachbarn(e, b, rand, gi, platte != null || e is IIfcRoof, angrenzung?.Zonenboden))
+            bool unbewertet = uNichtPositiv && b.Aufbau == null;
+            if (!ohneGrenzen || unbewertet || !ReferenzNachbarn(e, b, rand, gi, platte != null || e is IIfcRoof, angrenzung?.Zonenboden))
                 Nachbarn(b, rand, grenzen, gi, platte != null || e is IIfcRoof);
             bool huelle = rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich
                           || (rand == Randbedingung.Unbeheizt && angrenzung.HasValue);
@@ -1355,7 +1515,8 @@ namespace WindowsFormsApplication1
         /// in einem der Geschosse wird nicht geschätzt.</item>
         /// <item>Der Kopplungswächter: Ein Paar unter <see cref="TRENNDECKE_ANTEIL_MIN"/> der Grundfläche des kleineren
         /// Geschosses koppelt nicht (<c>IMP_IFC_PROT_TRENNDECKE_KLEIN</c>, W); nach der Schätzung greift er nur, wenn ein
-        /// Paar keine Grundfläche zum Schätzen hat.</item>
+        /// Paar keine Grundfläche zum Schätzen hat. Grenzt jedes Deckenteil eines Paars an einen unbeheizten Raum eines
+        /// Geschosses, das auch beheizte Räume hat, verbindet das Paar diese nicht: Es wird weder geschätzt noch trägt es.</item>
         /// <item>Je Platte, deren Erklärung gegen unbeheizt vor dem Bezug gilt, obwohl der Raum der unbeheizten Seite als
         /// beheizt gilt, ein Hinweis (<c>IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG</c>, W).</item>
         /// <item>Dateiweit die Innenwände, die einseitig als innere Masse zählen (<c>IMP_IFC_PROT_INNEN_EINSEITIG</c>, I).</item>
@@ -1388,9 +1549,18 @@ namespace WindowsFormsApplication1
                 var warm = g.Raeume.Where(r => r.Beheizt && r.GeschossKennung != null)
                                    .GroupBy(r => r.GeschossKennung, StringComparer.Ordinal)
                                    .ToDictionary(x => x.Key, x => x.Sum(r => r.FlaecheM2 ?? 0.0), StringComparer.Ordinal);
+                // Grenzt jedes Deckenteil eines Paars auf einer Seite an einen unbeheizten Raum eines Geschosses MIT beheizten
+                // Räumen, liegt die Decke unter Z4 an der unbeheizten Gruppe dieses Geschosses, und seine beheizten Räume
+                // bleiben ohne Verbindung: Das Paar wird weder geschätzt noch trägt es. Ein Geschoss ganz ohne beheizten Raum
+                // verbindet weiter (eine Zone).
+                var raumGeschoss = g.Raeume.GroupBy(r => r.Kennung, StringComparer.Ordinal)
+                                           .ToDictionary(x => x.Key, x => x.First(), StringComparer.Ordinal);
+                bool Verbindet(AbbildNachbar n) => raumGeschoss.TryGetValue(n.Kennung, out AbbildRaum r)
+                                                   && (r.Beheizt || r.GeschossKennung == null || !warm.ContainsKey(r.GeschossKennung));
                 var tragend = new List<(string Unten, string Oben)>();
                 foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> p in geordnet)
                 {
+                    if (!p.Value.Any(t => t.Nachbarn.Count == 2 && t.Nachbarn.All(Verbindet))) continue;
                     double kleiner = Math.Min(warm.TryGetValue(p.Key.Unten, out double u) ? u : 0.0, warm.TryGetValue(p.Key.Oben, out double o) ? o : 0.0);
                     double referenziert = p.Value.Sum(t => t.BruttoflaecheM2 ?? 0.0);
                     double flaeche = referenziert;
@@ -1609,12 +1779,16 @@ namespace WindowsFormsApplication1
         /// Typ). Fehlt er, gilt jede Eigenschaft <see cref="UWERT_NAMEN"/> eines beliebigen Satzes
         /// (Mehrzonenkonzept 6.5) — benannt (<c>IMP_IFC_PROT_UWERT_RUECKFALL</c>). Verglichen wird der Name ohne
         /// angehängte Einheit; nennt der Name eine andere Einheit als W/(m²K) (etwa <c>W/(m K)</c>), gilt der
-        /// Wert nicht als U-Wert, sondern wird benannt übergangen (<c>IMP_IFC_PROT_UWERT_EINHEIT</c>).
+        /// Wert nicht als U-Wert, sondern wird benannt übergangen (<c>IMP_IFC_PROT_UWERT_EINHEIT</c>). Ein Wert null
+        /// oder kleiner ist kein U-Wert (ein CAD-Export schreibt 0 oder −1 an Bauteile ohne energetische Bewertung):
+        /// übergangen; bleibt das Bauteil dadurch ohne U-Wert, benannt (<c>IMP_IFC_PROT_UWERT_NICHT_POSITIV</c>).
         /// </summary>
-        private void UWert(IIfcElement e, string satz, AbbildBauteil b)
+        /// <returns>Bleibt das Bauteil ohne U-Wert, weil die Datei ihn null oder kleiner angibt?</returns>
+        private bool UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
             IfcFund gewaehlt = null;
             double? u = null;
+            string nichtPositiv = null;
             var abweichend = new List<string>();
             List<IfcFund> kandidaten = IfcEigenschaften.AlleMitNamen(_bezuege, e, UWERT_NAMEN).ToList();
             // Der Standardsatz zuerst (Vorkommnis vor Typ), dann alle übrigen in Dateireihenfolge.
@@ -1631,6 +1805,13 @@ namespace WindowsFormsApplication1
                 }
                 u = Zahl(f);
                 if (!u.HasValue) continue;
+                if (!(u.Value > 0.0))
+                {
+                    // Ein CAD-Export schreibt 0 oder −1 an Bauteile ohne energetische Bewertung: kein U-Wert.
+                    nichtPositiv = nichtPositiv ?? f.Satz + "\u0001" + f.Eigenschaft.Name + "\u0001" + Zahl(u.Value);
+                    u = null;
+                    continue;
+                }
                 gewaehlt = f;
                 break;
             }
@@ -1640,13 +1821,15 @@ namespace WindowsFormsApplication1
                 z[0]++;
                 if (gewaehlt == null) z[1]++;
             }
-            if (gewaehlt == null) return;
+            if (gewaehlt == null && nichtPositiv != null) Zaehlen(_uNichtPositiv, nichtPositiv);
+            if (gewaehlt == null) return nichtPositiv != null;
             if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
                       .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
                 Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
             _abbild.ZahlUWerte++;
             b.UWertWm2K = u;
             b.UWertQuelle = gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
+            return false;
         }
 
         private static bool IstStandardname(IfcFund f)
@@ -1728,6 +1911,7 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < dicken.Length; i++) dicken[i] /= 1000.0;
                 _schichtMillimeter[satz.EntityLabel] = (a.Kennung, a.Name, groesste);
             }
+            List<string> rueckfall = null;
             for (int i = 0; i < schichten.Count; i++)
             {
                 IIfcMaterial stoff = schichten[i]?.Material;
@@ -1738,6 +1922,15 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 (double? lambda, double? rho, double? cp) = Stoffwerte(stoff);
+                if (!cp.HasValue && lambda > 0.0 && rho > 0.0)
+                {
+                    (double CpJkgK, string Quelle)? r = CpRueckfall(stoff);
+                    if (r.HasValue)
+                    {
+                        cp = r.Value.CpJkgK;
+                        if (zaehlen) (rueckfall ??= new List<string>()).Add(stoff.Name.ToString() + " = " + Zahl(r.Value.CpJkgK) + " (" + r.Value.Quelle + ")");
+                    }
+                }
                 a.Schichten.Add(new AbbildSchicht
                 {
                     BaustoffKennung = stoff?.Name.ToString() ?? "",
@@ -1748,6 +1941,9 @@ namespace WindowsFormsApplication1
                     CpJkgK = cp,
                 });
             }
+            // Eine Meldung je Aufbau: Autorensysteme schreiben je Bauteil einen eigenen Schichtsatz gleichen Namens und Inhalts.
+            if (rueckfall != null && _cpRueckfallSignaturen.Add((a.Name ?? a.Kennung) + "\u0001" + string.Join("\u0001", rueckfall)))
+                _cpRueckfallAufbauten.Add((a.Name ?? a.Kennung, rueckfall));
             a.Status = a.Schichten.Count == 0 ? Aufbaustatus.OhneAufbau
                      : a.Schichten.All(s => s.Vollstaendig) ? Aufbaustatus.Vollstaendig
                      : a.Schichten.All(s => s.HatWiderstand) ? Aufbaustatus.Masselos
@@ -1837,6 +2033,21 @@ namespace WindowsFormsApplication1
             }
             _stoffe[stoff.EntityLabel] = werte;
             return werte;
+        }
+
+        /// <summary>
+        /// <b>Die Wärmekapazität eines Baustoffs ohne <c>SpecificHeatCapacity</c></b>, aber mit Dichte und
+        /// Wärmeleitfähigkeit (Mehrzonenkonzept 6.5): Katalog der Auslieferung über den Namensabgleich, sonst die
+        /// Stofftabelle (<see cref="Waermekapazitaetsrueckfall"/>); einmal je Baustoff, benannt je Aufbau
+        /// (<c>IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL</c>). <c>null</c> = kein Treffer, die Schicht bleibt masselos.
+        /// </summary>
+        private (double CpJkgK, string Quelle)? CpRueckfall(IIfcMaterial stoff)
+        {
+            if (_cpRueckfall.TryGetValue(stoff.EntityLabel, out (double CpJkgK, string Quelle)? bekannt)) return bekannt;
+            _abgleichSaat ??= new Baustoffabgleich(BaustoffabgleichDaten.AusSaat());
+            (double CpJkgK, string Quelle)? r = Waermekapazitaetsrueckfall.Bestimmen(stoff.Name.ToString(), _abgleichSaat);
+            _cpRueckfall[stoff.EntityLabel] = r;
+            return r;
         }
 
         /// <summary>
@@ -2054,6 +2265,9 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "STOFFWERTE_NICHT_GELESEN",
                     _abbild.Schemastand ?? _abbild.SchemaStand.ToString(), Ganz(_stoffwerteNichtGelesen.Count),
                     Beispiele(_stoffwerteNichtGelesen.ToList())));
+            foreach ((string aufbau, List<string> schichten) in _cpRueckfallAufbauten)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "WAERMEKAPAZITAET_RUECKFALL",
+                    aufbau, Ganz(schichten.Count), string.Join(", ", schichten)));
 
             var angenommen = new List<string>();
             foreach (AbbildGebaeude g in _abbild.Gebaeude)

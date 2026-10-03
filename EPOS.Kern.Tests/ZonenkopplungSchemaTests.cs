@@ -193,7 +193,7 @@ namespace EPOS.Kern.Tests
             // Das Gebäude fällt mit allen Zonen in EINER Anweisung; NO ACTION prüft erst an ihrem Ende.
             Assert.True(new WizardCtrl().Del_Projekt_ZuordungGebäude(PROJEKT, GEBAEUDE));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID IN (?, ?)", new DbParam("@a", eg), new DbParam("@b", og)));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));
+            Assert.Equal(0L, Zahl(Zonenbestand.LUFTSTROEME));
         }
 
         [Fact]
@@ -329,7 +329,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_FREMD, 4711), e.Meldung);
 
             Assert.Equal(vorher, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));
+            Assert.Equal(0L, Zahl(Zonenbestand.LUFTSTROEME));
         }
 
         /// <summary>
@@ -499,7 +499,7 @@ namespace EPOS.Kern.Tests
             int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " G6b");
             Assert.True(kopie > 0);
             Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone"));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));    // die Kopie trägt den Luftstrom
+            Assert.Equal(2L, Zahl(Zonenbestand.LUFTSTROEME));    // die Kopie trägt den Luftstrom
 
             string ordner = Path.Combine(Path.GetTempPath(), "epos-g6b-transfer-" + Guid.NewGuid().ToString("N").Substring(0, 8));
             Directory.CreateDirectory(ordner);
