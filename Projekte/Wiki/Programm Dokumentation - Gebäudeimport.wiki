@@ -43,7 +43,7 @@ Nach dem Lesen nennt der Abschnitt ''Quelle'' Datei, Format, Schema, Größe und
 {{Anker|schon-importiert}}
 Stammt ein Gebäude des offenen Projekts schon aus derselben Datei, steht unter der Quelle ein leiser Hinweis mit dem Namen dieses Gebäudes und dem Zeitpunkt des Imports. Als dieselbe Datei gilt eine Datei mit gleichem Inhalt, unabhängig von ihrem Namen. Der Import bleibt trotzdem möglich.
 
-Enthält die Datei mehrere Gebäude, wählen Sie unter ''Gebäude der Datei'' eines aus; je Import wird ein Gebäude übernommen. Der ''Name des neuen Gebäudes'' ist mit dem Namen aus der Datei vorbelegt. Unter diesem Namen entsteht der Katalogsatz; ein Name, den der Gebäudekatalog schon führt, hält den Dialog beim ''OK'' mit einer Meldung offen.
+Enthält die Datei mehrere Gebäude, wählen Sie unter ''Gebäude der Datei'' eines aus; je Import wird ein Gebäude übernommen. Der ''Name des neuen Gebäudes'' ist mit dem Namen aus der Datei vorbelegt, ohne einen solchen mit dem Dateinamen ohne Endung. Unter diesem Namen entsteht der Katalogsatz; ein Name, den der Gebäudekatalog schon führt, hält den Dialog beim ''OK'' mit einer Meldung offen.
 
 === Räume ===
 {{Anker|raeume}}

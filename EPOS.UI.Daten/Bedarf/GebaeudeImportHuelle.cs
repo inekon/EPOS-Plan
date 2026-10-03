@@ -407,7 +407,7 @@ namespace WindowsFormsApplication1
             return new GebaeudeImportStand
             {
                 Kopftext = GebaeudeZuordnungsModell.KopfText(satz),
-                Vorschlagsname = string.IsNullOrWhiteSpace(satz.Gebaeudename) ? satz.Gebaeudekennung : satz.Gebaeudename,
+                Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
                 Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),

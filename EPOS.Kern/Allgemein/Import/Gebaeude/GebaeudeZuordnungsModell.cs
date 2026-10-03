@@ -207,6 +207,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der vorgeschlagene Name des neuen Gebäudes</b>: der Name aus der Datei (IFC: <c>IfcBuilding.Name</c>,
+        /// sonst <c>LongName</c>; gbXML: <c>Building/Name</c>); trägt die Datei keinen, der Dateiname ohne
+        /// Endung — eine Kennung wie die <c>GlobalId</c> taugt nicht als Katalogname; ohne Datei die Kennung.
+        /// Der Anwender kann ihn im Dialog ändern.
+        /// </summary>
+        public static string Vorschlagsname(GebaeudeImportSatz satz)
+        {
+            if (satz == null) return "";
+            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename)) return satz.Gebaeudename.Trim();
+            string datei = satz.Quelle?.Dateiname;
+            string ohneEndung = string.IsNullOrWhiteSpace(datei) ? null : System.IO.Path.GetFileNameWithoutExtension(datei.Trim());
+            return string.IsNullOrWhiteSpace(ohneEndung) ? satz.Gebaeudekennung ?? "" : ohneEndung.Trim();
+        }
+
+        /// <summary>
         /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
         /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt. Das Baujahr führt (E47): Der Dialog
         /// zeigt diese Klasse in der Klappliste und sperrt die Wahl; die Aggregation rechnet mit ihr.
