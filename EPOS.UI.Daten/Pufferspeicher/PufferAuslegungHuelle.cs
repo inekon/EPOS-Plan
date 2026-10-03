@@ -245,6 +245,9 @@ namespace WindowsFormsApplication1
             PufferAuslegungEingang e = _vorbelegung.Eingang;
             PufferAuslegungParameter p = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
             d.Eingabe = EingabeAus(e);
+            // Die gespeicherten Sitzungseingaben (Welle P4c): abweichende Kriterienschalter und Anzeigestufe.
+            d.Eingabe.Kriterien = new Dictionary<string, bool>(_vorbelegung.Kriterien, StringComparer.Ordinal);
+            d.Eingabe.Anzeigestufe = _vorbelegung.Anzeigestufe ?? "";
             d.Herkunft = _vorbelegung.Herkunft
                 .Select(z => new PufferHerkunftDaten(z.Feld, z.Quelle, Marke(z.Quelle), Textbaustein.Aufloesen(z.Baustein))).ToList();
             d.Gespeichert = _vorbelegung.Gespeichert;
@@ -434,21 +437,9 @@ namespace WindowsFormsApplication1
                 TPufferObenC = d.TPufferObenC,
                 ZirkulationWeg = zw,
                 Wohneinheiten = d.Wohneinheiten,
-                Parameter = ParameterMit(b.Parameter, vorlage, d.Kriterien)
+                // Grundlage ist der Satz VOR den gespeicherten Schaltern - ein zurückgestellter Schalter gilt wieder.
+                Parameter = PufferAuslegungCtrl.ParameterMitKriterien(_vorbelegung.KriterienBasis ?? b.Parameter, vorlage, d.Kriterien)
             };
-        }
-
-        /// <summary>Der Parametersatz mit den abweichenden Kriterienschaltern der Vorlage.</summary>
-        private static PufferAuslegungParameter ParameterMit(PufferAuslegungParameter p, PufferVorlage vorlage,
-                                                             IReadOnlyDictionary<string, bool> kriterien)
-        {
-            p ??= PufferAuslegungParameter.Vorgabe();
-            if (kriterien == null || kriterien.Count == 0) return p;
-            var werte = new Dictionary<string, double>(p.Werte, StringComparer.Ordinal);
-            foreach (KeyValuePair<string, bool> k in kriterien)
-                if (PufferAuslegungVorgaben.VORLAGE_SCHALTER.Contains(k.Key))
-                    werte[PufferAuslegungVorgaben.VorlageSchluessel(vorlage.ToString(), k.Key)] = k.Value ? 1 : 0;
-            return PufferAuslegungParameter.Mit(werte);
         }
 
         // =================================================================
@@ -567,6 +558,10 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Die Anzeigestufe des Arbeitsstands als Wert der Spalte; <c>null</c> = keine Angabe.</summary>
+        private static string Stufe(PufferAuslegungEingabeDaten d) =>
+            string.IsNullOrEmpty(d?.Anzeigestufe) ? null : d.Anzeigestufe.ToUpperInvariant();
+
         /// <summary>Speichert Eingaben und Ergebnis in <c>Tab_PufferAuslegung</c>; <c>null</c> = gespeichert.</summary>
         internal string Speichern(PufferAuslegungEingabeDaten d)
         {
@@ -575,7 +570,7 @@ namespace WindowsFormsApplication1
             {
                 PufferAuslegungEingang e = EingangAus(d);
                 PufferAuslegungErgebnis r = _reihen.Vorhanden ? PufferAuslegungCtrl.Rechnen(e) : null;
-                int id = PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, _idPuffer, e, r);
+                int id = PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, _idPuffer, e, r, Stufe(d));
                 return id > 0 ? null : MyResource.Resource.PAUS_GRUND_SPEICHERN;
             }
             catch (ArgumentException ex)
@@ -612,7 +607,7 @@ namespace WindowsFormsApplication1
             bool neu = u == null || u.Neu || !_idPuffer.HasValue;
             int? ziel = neu ? (int?)null : _idPuffer;
             string name = neu ? (u?.Bezeichner ?? "").Trim() : "";
-            PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r);
+            PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r, Stufe(d));
             int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name);
             if (id <= 0)
                 return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, 0);

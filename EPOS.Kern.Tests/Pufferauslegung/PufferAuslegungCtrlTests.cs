@@ -540,5 +540,75 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             // Das Referenzprojekt bleibt unberührt.
             Assert.Null(PufferAuslegungCtrl.Vorbelegen(P_BHKW, PUFFER_1030).Eingang.MindestlaufzeitMin);
         }
+
+        // =============================================================================
+        //  Sitzungseingaben (Welle P4c)
+        // =============================================================================
+
+        /// <summary>
+        /// Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten und Anzeigestufe: speichern, neu
+        /// vorbelegen, gleich; die Vorgabe steht als NULL. Der Bericht rechnet mit den gespeicherten Schaltern.
+        /// </summary>
+        [Fact]
+        public void Sitzungseingaben_speichern_vorbelegen_gleich()
+        {
+            if (!_db.Vorhanden) return;
+            PufferAuslegungVorbelegung v = PufferAuslegungCtrl.Vorbelegen(P_ZAPF, PUFFER_1045_HEIZUNG);
+            PufferAuslegungEingang e = v.Eingang;
+            string typ = e.Vorlage.ToString();
+            PufferAuslegungParameter p = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
+            // Zwei Schalter umgedreht: K2 und KV.
+            var kriterien = new System.Collections.Generic.Dictionary<string, bool>(StringComparer.Ordinal)
+            {
+                ["K2"] = !p.VorlageAn(typ, "K2"),
+                ["KV"] = !p.VorlageAn(typ, "KV")
+            };
+            PufferAuslegungEingang geaendert = e with
+            {
+                Parameter = PufferAuslegungCtrl.ParameterMitKriterien(p, e.Vorlage, kriterien),
+                SperrzeitExpertenweg = !e.SperrzeitExpertenweg,
+                AuslegungsheizlastKw = 17.5,
+                Wohneinheiten = 6
+            };
+            int id = PufferAuslegungCtrl.Speichern(P_ZAPF, PUFFER_1045_HEIZUNG, geaendert, null, "EXPERTE");
+            Assert.True(id > 0);
+            Assert.Equal((long)PufferAuslegungCtrl.KriterienMaske(geaendert.Parameter, e.Vorlage),
+                         Convert.ToInt64(Wert("SELECT Kriterien_Aktiv FROM " + PufferAuslegungSchema.TAB + " WHERE ID = ?", id)));
+            Assert.Equal(6L, Convert.ToInt64(Wert("SELECT Wohneinheiten FROM " + PufferAuslegungSchema.TAB + " WHERE ID = ?", id)));
+            Assert.Equal("EXPERTE", Wert("SELECT Anzeigestufe FROM " + PufferAuslegungSchema.TAB + " WHERE ID = ?", id));
+
+            PufferAuslegungVorbelegung w = PufferAuslegungCtrl.Vorbelegen(P_ZAPF, PUFFER_1045_HEIZUNG);
+            Assert.Equal(kriterien.OrderBy(k => k.Key), w.Kriterien.OrderBy(k => k.Key));
+            foreach (string k in PufferAuslegungVorgaben.VORLAGE_SCHALTER)
+                Assert.Equal(geaendert.Parameter.VorlageAn(typ, k), w.Eingang.Parameter.VorlageAn(typ, k));
+            Assert.Equal(p.VorlageAn(typ, "K2"), w.KriterienBasis.VorlageAn(typ, "K2"));
+            Assert.Equal(geaendert.SperrzeitExpertenweg, w.Eingang.SperrzeitExpertenweg);
+            Assert.Equal(17.5, w.Eingang.AuslegungsheizlastKw);
+            Assert.Equal(6.0, w.Eingang.Wohneinheiten);
+            Assert.Equal("EXPERTE", w.Anzeigestufe);
+            Assert.Equal(PufferHerkunftsquelle.GESPEICHERT, w.Quelle("Kriterien"));
+
+            // Der Bericht rechnet mit den gespeicherten Schaltern nach.
+            PufferAuslegungGespeichert g = PufferAuslegungCtrl.Gespeichert(P_ZAPF).Single(x => x.IdZeile == id);
+            PufferAuslegungErgebnis r = PufferAuslegungCtrl.Rechnen(w.Eingang);
+            Assert.Equal(r.EmpfehlungL, g.NachgerechnetL);
+
+            // Zurück auf die Vorgabe: jede Spalte NULL, keine Abweichung mehr.
+            Assert.Equal(id, PufferAuslegungCtrl.Speichern(P_ZAPF, PUFFER_1045_HEIZUNG, e, null));
+            foreach (string sp in new[] { "Kriterien_Aktiv", "Sperrzeit_Expertenweg", "Auslegungsheizlast_kW", "Wohneinheiten", "Anzeigestufe" })
+                Assert.True(Leer(Wert("SELECT " + sp + " FROM " + PufferAuslegungSchema.TAB + " WHERE ID = ?", id)), sp);
+            Assert.Empty(PufferAuslegungCtrl.Vorbelegen(P_ZAPF, PUFFER_1045_HEIZUNG).Kriterien);
+        }
+
+        [Fact]
+        public void Kriterienmaske_hin_und_zurueck()
+        {
+            for (int m = 0; m <= PufferAuslegungErgaenzungSchema.MASKE_MAX; m += 37)
+            {
+                var p = PufferAuslegungCtrl.ParameterMitKriterien(PufferAuslegungParameter.Vorgabe(), PufferVorlage.BHKW,
+                                                                  PufferAuslegungCtrl.KriterienAusMaske(m));
+                Assert.Equal(m, PufferAuslegungCtrl.KriterienMaske(p, PufferVorlage.BHKW));
+            }
+        }
     }
 }

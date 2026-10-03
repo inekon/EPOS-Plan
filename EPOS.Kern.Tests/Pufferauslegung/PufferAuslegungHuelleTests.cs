@@ -287,5 +287,42 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Contains(d.Ergebnis!.Zonen, z => z.Zone == "Brauchwasser");
             Assert.Contains("Zapfprofil", d.Einstieg);
         }
+
+        // =============================================================================
+        //  Sitzungseingaben (Welle P4c)
+        // =============================================================================
+
+        /// <summary>
+        /// Die Hülle speichert Kriterienschalter, Anzeigestufe, Heizlast und Wohneinheiten; eine neue Hülle
+        /// startet mit denselben Eingaben. Ein zurückgestellter Schalter gilt wieder als Vorlage.
+        /// </summary>
+        [Fact]
+        public void Sitzungseingaben_speichern_neu_oeffnen_gleich()
+        {
+            if (!_db.Vorhanden) return;
+            PufferAuslegungHuelle h = Huelle(P_ZAPF, PUFFER_1045_KOMBI);
+            PufferAuslegungStartDaten d = h.Start();
+            PufferAuslegungEingabeDaten e = d.Eingabe.Kopie();
+            PufferVorlageDaten vorlage = d.Vorlagen.Single(v => v.Schluessel == e.Vorlage);
+            e.Kriterien["K3"] = !vorlage.Kriterien["K3"];
+            e.Anzeigestufe = "SCHNELL";
+            e.AuslegungsheizlastKw = 22;
+            e.Wohneinheiten = 4;
+            Assert.Null(h.Speichern(e));
+
+            PufferAuslegungStartDaten d2 = Huelle(P_ZAPF, PUFFER_1045_KOMBI).Start();
+            Assert.True(d2.Gespeichert);
+            Assert.Equal(e.Kriterien.OrderBy(k => k.Key), d2.Eingabe.Kriterien.OrderBy(k => k.Key));
+            Assert.Equal("SCHNELL", d2.Eingabe.Anzeigestufe);
+            Assert.Equal(22, d2.Eingabe.AuslegungsheizlastKw);
+            Assert.Equal(4, d2.Eingabe.Wohneinheiten);
+
+            // Zurückgestellt: der Schalter folgt wieder der Vorlage, die Spalte wird NULL.
+            PufferAuslegungHuelle h2 = Huelle(P_ZAPF, PUFFER_1045_KOMBI);
+            PufferAuslegungEingabeDaten e2 = h2.Start().Eingabe.Kopie();
+            e2.Kriterien.Clear();
+            Assert.Null(h2.Speichern(e2));
+            Assert.Empty(Huelle(P_ZAPF, PUFFER_1045_KOMBI).Start().Eingabe.Kriterien);
+        }
     }
 }

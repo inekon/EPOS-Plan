@@ -116,6 +116,9 @@ public sealed class PufferAuslegungEingabeDaten
     /// </summary>
     public Dictionary<string, bool> Kriterien { get; set; } = new(StringComparer.Ordinal);
 
+    /// <summary>Die Anzeigestufe (<c>SCHNELL</c>, <c>STANDARD</c>, <c>EXPERTE</c>); leer = Vorgabe (Standard).</summary>
+    public string Anzeigestufe { get; set; } = "";
+
     /// <summary>Eine tiefe Kopie — der Arbeitsstand ist entkoppelt vom Startstand.</summary>
     public PufferAuslegungEingabeDaten Kopie()
     {

@@ -166,6 +166,9 @@
     protected override void OnInitialized()
     {
         _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
+        // Die gespeicherte Anzeigestufe (Welle P4c); leer = Standard.
+        if (Enum.TryParse(_eingabe.Anzeigestufe ?? "", true, out PufferAuslegungStufe gespeichert) &&
+            Enum.IsDefined(typeof(PufferAuslegungStufe), gespeichert)) _stufe = gespeichert;
         _ergebnis = Daten.Ergebnis;
         _probelauf = Daten.Probelauf;
         _idPuffer = Daten.IdPuffer;
@@ -233,7 +236,11 @@
 
     private void StufeGewaehlt(int? id)
     {
-        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i)) _stufe = (PufferAuslegungStufe)i;
+        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i))
+        {
+            _stufe = (PufferAuslegungStufe)i;
+            _eingabe.Anzeigestufe = _stufe.ToString().ToUpperInvariant();
+        }
     }
 
     private bool AbStandard => _stufe != PufferAuslegungStufe.Schnell;

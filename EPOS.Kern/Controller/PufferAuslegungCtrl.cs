@@ -75,6 +75,15 @@ namespace WindowsFormsApplication1
         public bool Gespeichert { get; init; }
         /// <summary>Die ID der gespeicherten Zeile; <c>null</c> = keine.</summary>
         public int? IdZeile { get; init; }
+        /// <summary>
+        /// Die gespeicherten Kriterienschalter, die von der Vorlage ABWEICHEN (Kennung → an/aus); leer = die
+        /// Vorlage gilt. Sie stehen schon im Parametersatz des Eingangs.
+        /// </summary>
+        public IReadOnlyDictionary<string, bool> Kriterien { get; init; } = new Dictionary<string, bool>(StringComparer.Ordinal);
+        /// <summary>Der Parametersatz VOR den gespeicherten Kriterienschaltern — Grundlage jeder neuen Überschreibung.</summary>
+        public PufferAuslegungParameter KriterienBasis { get; init; }
+        /// <summary>Die gespeicherte Anzeigestufe (<c>SCHNELL</c>, <c>STANDARD</c>, <c>EXPERTE</c>); <c>null</c> = Vorgabe.</summary>
+        public string Anzeigestufe { get; init; }
 
         /// <summary>Die Quelle des Felds (letzter Eintrag gewinnt); <c>null</c>, wenn das Feld keinen trägt.</summary>
         public string Quelle(string feld)
@@ -231,6 +240,9 @@ namespace WindowsFormsApplication1
             "Sperrprofil = ?, Sperrdauer_h = ?, Sperrbeginn_h = ?, Startziel_je_Tag = ?, Deckungsziel = ?, " +
             "DeltaT_B_K = ?, T_Puffer_Oben_C = ?, Zirkulation_Weg = ?, BHKW_Verschiebedauer_h = ?, Volumen_H_l = ?, " +
             "Volumen_B_l = ?, Volumen_P_l = ?, Volumen_Empfehlung_l = ?, Bemessend = ?, Berechnet_am = ? WHERE ID = ?";
+        internal const string SQL_ZEILE_ERGAENZUNG =
+            "UPDATE " + PufferAuslegungSchema.TAB + " SET Kriterien_Aktiv = ?, Sperrzeit_Expertenweg = ?, " +
+            "Auslegungsheizlast_kW = ?, Wohneinheiten = ?, Anzeigestufe = ? WHERE ID = ?";
         internal const string SQL_ZEILE_UMHAENGEN =
             "UPDATE " + PufferAuslegungSchema.TAB + " SET ID_Pufferspeicher = ? WHERE ID_Projekt = ? AND ID_Pufferspeicher IS NULL";
         internal const string SQL_PUFFER_STAMMWERTE =
@@ -995,7 +1007,75 @@ namespace WindowsFormsApplication1
                 e = e with { Sperrfenster = PufferSperrprofil.Fenster(sp, ZahlOderNull(z, "Sperrbeginn_h"), ZahlOderNull(z, "Sperrdauer_h")) };
                 H(nameof(e.Sperrfenster), "Sperrprofil");
             }
-            return basis with { Eingang = e, Herkunft = h.AsReadOnly(), Gespeichert = true, IdZeile = (int)Zahl(z["ID"]) };
+
+            // Die Sitzungseingaben (Welle P4c) - nur, wenn die Spalten stehen.
+            bool Hat(string spalte) => z.Table.Columns.Contains(spalte);
+            PufferAuslegungParameter kb = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
+            var kriterien = new Dictionary<string, bool>(StringComparer.Ordinal);
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN)).HasValue)
+            {
+                foreach (KeyValuePair<string, bool> k in KriterienAusMaske((int)v.Value))
+                    if (k.Value != kb.VorlageAn(e.Vorlage.ToString(), k.Key)) kriterien[k.Key] = k.Value;
+                e = e with { Parameter = ParameterMitKriterien(kb, e.Vorlage, kriterien) };
+                H("Kriterien", PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN);
+            }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG)).HasValue)
+            { e = e with { SperrzeitExpertenweg = v.Value != 0 }; H(nameof(e.SperrzeitExpertenweg), PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG); }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST)).HasValue)
+            { e = e with { AuslegungsheizlastKw = v }; H(nameof(e.AuslegungsheizlastKw), PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST); }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN)).HasValue)
+            { e = e with { Wohneinheiten = v }; H(nameof(e.Wohneinheiten), PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN); }
+            string stufe = Hat(PufferAuslegungErgaenzungSchema.SPALTE_ANZEIGESTUFE)
+                ? Text(z, PufferAuslegungErgaenzungSchema.SPALTE_ANZEIGESTUFE) : null;
+
+            return basis with
+            {
+                Eingang = e, Herkunft = h.AsReadOnly(), Gespeichert = true, IdZeile = (int)Zahl(z["ID"]),
+                Kriterien = kriterien, KriterienBasis = kb, Anzeigestufe = stufe
+            };
+        }
+
+        // =================================================================================
+        //  Kriterienschalter (Welle P4c)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Bitmaske der Kriterienschalter einer Vorlage im Parametersatz: Bit i = Schalter i in der
+        /// Reihenfolge von <see cref="PufferAuslegungVorgaben.VORLAGE_SCHALTER"/> (Bit 0 = K1).
+        /// </summary>
+        public static int KriterienMaske(PufferAuslegungParameter p, PufferVorlage vorlage)
+        {
+            p ??= PufferAuslegungParameter.Vorgabe();
+            int m = 0;
+            for (int i = 0; i < PufferAuslegungVorgaben.VORLAGE_SCHALTER.Count; i++)
+                if (p.VorlageAn(vorlage.ToString(), PufferAuslegungVorgaben.VORLAGE_SCHALTER[i])) m |= 1 << i;
+            return m;
+        }
+
+        /// <summary>Die Schalter einer Bitmaske (Kennung → an/aus), alle neun.</summary>
+        public static IReadOnlyDictionary<string, bool> KriterienAusMaske(int maske)
+        {
+            var d = new Dictionary<string, bool>(StringComparer.Ordinal);
+            for (int i = 0; i < PufferAuslegungVorgaben.VORLAGE_SCHALTER.Count; i++)
+                d[PufferAuslegungVorgaben.VORLAGE_SCHALTER[i]] = (maske & (1 << i)) != 0;
+            return d;
+        }
+
+        /// <summary>Der Parametersatz mit den abweichenden Kriterienschaltern der Vorlage.</summary>
+        public static PufferAuslegungParameter ParameterMitKriterien(PufferAuslegungParameter p, PufferVorlage vorlage,
+                                                                     IReadOnlyDictionary<string, bool> kriterien)
+        {
+            p ??= PufferAuslegungParameter.Vorgabe();
+            if (kriterien == null || kriterien.Count == 0) return p;
+            var werte = new Dictionary<string, double>(p.Werte, StringComparer.Ordinal);
+            foreach (KeyValuePair<string, bool> k in kriterien)
+                if (PufferAuslegungVorgaben.VORLAGE_SCHALTER.Contains(k.Key))
+                    werte[PufferAuslegungVorgaben.VorlageSchluessel(vorlage.ToString(), k.Key)] = k.Value ? 1 : 0;
+            return PufferAuslegungParameter.Mit(werte);
         }
 
         // =================================================================================
@@ -1079,9 +1159,12 @@ namespace WindowsFormsApplication1
         /// Speichert Eingang und Ergebnis in <c>Tab_PufferAuslegung</c> (eine Zeile je Projekt und
         /// Puffer, <c>null</c> = „neu anlegen“): die Klassen immer, jede übrige Eingabespalte nur, wenn
         /// sie von der Vorbelegung abweicht (sonst NULL = Vorgabe), dazu die Zonenvolumina, die
-        /// Empfehlung, das bemessende Kriterium und den Zeitpunkt. Liefert die ID der Zeile; -1 bei Fehler.
+        /// Empfehlung, das bemessende Kriterium und den Zeitpunkt. Dazu die Sitzungseingaben (Welle P4c):
+        /// Kriterienschalter als Bitmaske, Expertenweg, Heizlast und Wohneinheiten nur bei Abweichung,
+        /// die <paramref name="anzeigestufe"/> wie übergeben. Liefert die ID der Zeile; -1 bei Fehler.
         /// </summary>
-        public static int Speichern(int idProjekt, int? idPuffer, PufferAuslegungEingang eingang, PufferAuslegungErgebnis ergebnis)
+        public static int Speichern(int idProjekt, int? idPuffer, PufferAuslegungEingang eingang, PufferAuslegungErgebnis ergebnis,
+                                    string anzeigestufe = null)
         {
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
             if (!DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB)) return -1;
@@ -1127,16 +1210,44 @@ namespace WindowsFormsApplication1
                                                                   : DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture))
             };
 
+            int zeile;
             DataRow vorhanden = ZeileLesen(idProjekt, idPuffer);
             if (vorhanden != null)
             {
-                int id = (int)Zahl(vorhanden["ID"]);
-                werte.Add(P("@id", id));
-                return DataRepository.ExecuteNonQuery(SQL_ZEILE_AENDERN, werte.ToArray()) >= 0 ? id : -1;
+                zeile = (int)Zahl(vorhanden["ID"]);
+                werte.Add(P("@id", zeile));
+                if (DataRepository.ExecuteNonQuery(SQL_ZEILE_AENDERN, werte.ToArray()) < 0) return -1;
             }
-            if (DataRepository.ExecuteNonQuery(SQL_ZEILE_EINFUEGEN, werte.ToArray()) < 0) return -1;
-            DataRow neu = ZeileLesen(idProjekt, idPuffer);
-            return neu == null ? -1 : (int)Zahl(neu["ID"]);
+            else
+            {
+                if (DataRepository.ExecuteNonQuery(SQL_ZEILE_EINFUEGEN, werte.ToArray()) < 0) return -1;
+                DataRow neu = ZeileLesen(idProjekt, idPuffer);
+                if (neu == null) return -1;
+                zeile = (int)Zahl(neu["ID"]);
+            }
+            return ErgaenzungSchreiben(zeile, eingang, b, anzeigestufe) ? zeile : -1;
+        }
+
+        /// <summary>
+        /// Schreibt die Sitzungseingaben (Welle P4c) an die Zeile: NULL = Vorgabe. Ohne die Spalten (älterer
+        /// Schemastand) bleibt es beim Bisherigen.
+        /// </summary>
+        private static bool ErgaenzungSchreiben(int zeile, PufferAuslegungEingang eingang, PufferAuslegungEingang b, string anzeigestufe)
+        {
+            if (!PufferAuslegungErgaenzungSchema.Vorhanden(PufferAuslegungSchema.TAB, PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN))
+                return true;
+            int maske = KriterienMaske(eingang.Parameter, eingang.Vorlage);
+            int basis = KriterienMaske(b.Parameter, eingang.Vorlage);
+            double? we = eingang.Wohneinheiten.HasValue ? Math.Round(eingang.Wohneinheiten.Value, MidpointRounding.AwayFromZero) : null;
+            double? wb = b.Wohneinheiten.HasValue ? Math.Round(b.Wohneinheiten.Value, MidpointRounding.AwayFromZero) : null;
+            string stufe = anzeigestufe != null && PufferAuslegungErgaenzungSchema.ANZEIGESTUFEN.Contains(anzeigestufe) ? anzeigestufe : null;
+            return DataRepository.ExecuteNonQuery(SQL_ZEILE_ERGAENZUNG,
+                PObj("@kriterien", DbParamTyp.Integer, maske != basis ? maske : (object)DBNull.Value),
+                PObj("@experte", DbParamTyp.Integer, Abw(eingang.SperrzeitExpertenweg, b.SperrzeitExpertenweg)),
+                PObj("@heizlast", DbParamTyp.Double, Abw(eingang.AuslegungsheizlastKw, b.AuslegungsheizlastKw)),
+                PObj("@we", DbParamTyp.Integer, we.HasValue && we != wb ? (long)we.Value : (object)DBNull.Value),
+                PObj("@stufe", DbParamTyp.VarWChar, (object)stufe ?? DBNull.Value),
+                P("@id", zeile)) >= 0;
         }
 
         // =================================================================================
