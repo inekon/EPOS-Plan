@@ -38,11 +38,14 @@ namespace EPOS.Kern.Tests
     ///
     /// <para><b>Ausgabe</b>: eine CSV nach <c>EPOS_MESSUNG_ZIEL</c> (Vorgabe <c>/tmp/rp1_rho/rho_min.csv</c>),
     /// Trennzeichen „;", Zahlen invariant, eine Zeile je Einheit und Bemessung:
-    /// <c>Projekt;Gebaeude;Zone;Bemessung;rho_min_Prozent;W1_20;W3_20;t_auf_max_h;Rampentage;W2;Spitze_mit_kW;Spitze_ohne_kW;Waerme_mit_MWh;Waerme_ohne_MWh;Laeufe</c>
+    /// <c>Projekt;Gebaeude;Zone;Bemessung;rho_min_Prozent;W1_20;W3_20;t_auf_max_h;Rampentage;W2;Spitze_mit_kW;Spitze_ohne_kW;Waerme_mit_MWh;Waerme_ohne_MWh;Zustand;rho_bem_Prozent;t_auf_max_bem_h;Laeufe</c>
     /// — <c>Zone</c> „–" für ein Einzonengebäude; <c>rho_min_Prozent</c> leer, wenn auch 100 % nicht reichen;
     /// <c>W1_20</c>/<c>W3_20</c> die Zähler bei der Vorgabe 20 %; <c>t_auf_max_h</c>, <c>Rampentage</c>, <c>W2</c>,
     /// Spitze und Jahreswärme „mit" bei ρ_min (ohne Treffer bei 100 %), „ohne" mit ausgeschalteter Optimierung;
-    /// <c>Laeufe</c> die Zahl der gerechneten ρ.</para>
+    /// <c>Zustand</c> der Aufheizzustand bei ρ_min (UNERREICHBAR: der Bemessungsfall der gewählten Bemessung
+    /// ist bei ρ_min nicht erreichbar, t_auf,max bleibt dann leer); <c>rho_bem_Prozent</c> die kleinste Reserve,
+    /// bei der zusätzlich der Bemessungsfall erreichbar ist (Zustand nicht UNERREICHBAR), und
+    /// <c>t_auf_max_bem_h</c> t_auf,max dort; <c>Laeufe</c> die Zahl der gerechneten ρ.</para>
     ///
     /// Aufruf: <c>EPOS_MESSUNG=1 dotnet test EPOS.Kern.Tests -c Release --filter "FullyQualifiedName~AufheizReserveMessung"</c>.
     /// </summary>
@@ -53,7 +56,7 @@ namespace EPOS.Kern.Tests
         internal const string ZIEL_VARIABLE = "EPOS_MESSUNG_ZIEL";
         internal const string ZIEL_VORGABE = "/tmp/rp1_rho/rho_min.csv";
         internal const string KOPF = "Projekt;Gebaeude;Zone;Bemessung;rho_min_Prozent;W1_20;W3_20;t_auf_max_h;Rampentage;W2;" +
-                                     "Spitze_mit_kW;Spitze_ohne_kW;Waerme_mit_MWh;Waerme_ohne_MWh;Laeufe";
+                                     "Spitze_mit_kW;Spitze_ohne_kW;Waerme_mit_MWh;Waerme_ohne_MWh;Zustand;rho_bem_Prozent;t_auf_max_bem_h;Laeufe";
 
         private readonly TestDatenbank _db;
         private readonly ITestOutputHelper _aus;
@@ -65,15 +68,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Die Messwerte einer Einheit (Gebäude oder Zone) in einem Lauf.</summary>
-        private sealed record Wert(string Zone, int W1, int W2, int W3, int? TaufMaxH, int Rampentage, double SpitzeKw, double WaermeMwh)
+        private sealed record Wert(string Zone, int W1, int W2, int W3, int? TaufMaxH, int Rampentage, double SpitzeKw, double WaermeMwh,
+                                   string Zustand)
         {
             internal bool Haelt => W1 == 0 && W3 == 0;
+
+            /// <summary>Dazu ist der Bemessungsfall der gewählten Bemessung erreichbar.</summary>
+            internal bool HaeltBemessen => Haelt && Zustand != DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR;
         }
 
         private static IEnumerable<int> Projekte()
             => AufheizLauf.Referenzprojekte.Append(Konditionierungsprojekt1051.NEU).Append(Zonenprojekt1052.NEU);
 
-        /// <summary>Ein Lauf eines Gebäudes; je beheizter Einheit die Werte (Einzone: eine, Zonen: je beheizter Zone).</summary>
+        /// <summary>Ein Lauf eines Gebäudes; je Einheit die Werte (Einzone: eine, Zonen: je Zone ohne die unbeheizten).</summary>
         private static List<Wert> Rechnen(int projekt, int gebaeude, Aufheizvorgabe v)
         {
             AufheizLauf.Gebaeudelauf l = AufheizLauf.Projekt(projekt, v, double.NaN, g => g.ID_Gebaeude == gebaeude).Single();
@@ -86,7 +93,8 @@ namespace EPOS.Kern.Tests
             }
             for (int i = 0; i < l.Mehrzonen.Zonen.Count; i++)
             {
-                if (l.Mehrzonen.Eingaenge[i].Aufheizplan?.Unbeheizt ?? true) continue;
+                // Ohne Optimierung trägt keine Zone einen Plan: dann alle Zonen (zugeordnet wird über den Namen).
+                if (l.Mehrzonen.Eingaenge[i].Aufheizplan?.Unbeheizt ?? false) continue;
                 w.Add(Messen(l.Mehrzonen.Eingaenge[i].Bezeichnung, l.Mehrzonen.Zonen[i]));
             }
             return w;
@@ -96,10 +104,38 @@ namespace EPOS.Kern.Tests
         {
             Aufheizergebnis a = e.Aufheizung;
             return new Wert(zone, a?.AufheiztageUnerreichbar ?? 0, a?.AufheiztageBegrenzt ?? 0, a?.AufheiztageNachweisband ?? 0,
-                            a?.AufheizzeitMaxH, a?.Aufheiztage ?? 0, e.HeizlastW.Max() / 1000.0, e.HeizlastW.Sum() / 1e6);
+                            a?.AufheizzeitMaxH, a?.Aufheiztage ?? 0, e.HeizlastW.Max() / 1000.0, e.HeizlastW.Sum() / 1e6,
+                            a?.AufheizZustand);
         }
 
         private static string Z(double x, string f) => x.ToString(f, CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Die kleinste Reserve, bei der <paramref name="haelt"/> gilt: Raster 0, 5 … 100 % aufsteigend bis zum ersten
+        /// Treffer, dann Halbierung zwischen letztem Fehlschlag und Treffer bis zur Lücke ≤ 1 %; <c>null</c> = auch 100 % nicht.
+        /// </summary>
+        private static double? Suchen(Func<double, bool> haelt)
+        {
+            double vorher = double.NaN;
+            for (int k = 0; k <= 20; k++)
+            {
+                double rho = k * 0.05;
+                if (!haelt(rho))
+                {
+                    vorher = rho;
+                    continue;
+                }
+                if (double.IsNaN(vorher)) return rho;
+                double lo = vorher, hi = rho;
+                while (hi - lo > 0.01 + 1e-12)
+                {
+                    double mitte = 0.5 * (lo + hi);
+                    if (haelt(mitte)) hi = mitte; else lo = mitte;
+                }
+                return hi;
+            }
+            return null;
+        }
 
         [MessungFact]
         public void Rho_min_je_Gebaeude_und_Bemessung()
@@ -141,25 +177,9 @@ namespace EPOS.Kern.Tests
                         List<Wert> vorgabe = Bei(0.2);
                         for (int ei = 0; ei < vorgabe.Count; ei++)
                         {
-                            bool Haelt(double rho) => Bei(rho)[ei].Haelt;
-                            double? min = null;
-                            double vorher = double.NaN;
-                            for (int k = 0; k <= 20; k++)
-                            {
-                                double rho = k * 0.05;
-                                if (Haelt(rho)) { min = rho; break; }
-                                vorher = rho;
-                            }
-                            if (min.HasValue && !double.IsNaN(vorher))
-                            {
-                                double lo = vorher, hi = min.Value;
-                                while (hi - lo > 0.01 + 1e-12)
-                                {
-                                    double mitte = 0.5 * (lo + hi);
-                                    if (Haelt(mitte)) hi = mitte; else lo = mitte;
-                                }
-                                min = hi;
-                            }
+                            int e = ei;
+                            double? min = Suchen(rho => Bei(rho)[e].Haelt);
+                            double? bem = Suchen(rho => Bei(rho)[e].HaeltBemessen);
                             Wert bei = Bei(min ?? 1.0)[ei];
                             Wert o = ohne.Single(x => x.Zone == bei.Zone);
                             csv.Append(string.Join(";", projekt.ToString(CultureInfo.InvariantCulture), id.ToString(CultureInfo.InvariantCulture),
@@ -167,7 +187,10 @@ namespace EPOS.Kern.Tests
                                 vorgabe[ei].W1.ToString(CultureInfo.InvariantCulture), vorgabe[ei].W3.ToString(CultureInfo.InvariantCulture),
                                 bei.TaufMaxH?.ToString(CultureInfo.InvariantCulture) ?? "", bei.Rampentage.ToString(CultureInfo.InvariantCulture),
                                 bei.W2.ToString(CultureInfo.InvariantCulture), Z(bei.SpitzeKw, "0.000"), Z(o.SpitzeKw, "0.000"),
-                                Z(bei.WaermeMwh, "0.0000"), Z(o.WaermeMwh, "0.0000"), cache.Count.ToString(CultureInfo.InvariantCulture))).Append('\n');
+                                Z(bei.WaermeMwh, "0.0000"), Z(o.WaermeMwh, "0.0000"), bei.Zustand ?? "",
+                                bem.HasValue ? Z(100.0 * bem.Value, "0.###") : "",
+                                bem.HasValue ? Bei(bem.Value)[ei].TaufMaxH?.ToString(CultureInfo.InvariantCulture) ?? "" : "",
+                                cache.Count.ToString(CultureInfo.InvariantCulture))).Append('\n');
                         }
                         laeufeGesamt += cache.Count;
                         _aus.WriteLine("{0}/{1} ({2}): {3} Läufe, {4:0} s", projekt, id, name, cache.Count, uhr.Elapsed.TotalSeconds);
