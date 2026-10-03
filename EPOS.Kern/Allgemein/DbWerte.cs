@@ -420,6 +420,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Einspeisegrenze steht in Prozent der installierten PV-Leistung (kWp).</summary>
         public const string EINSPEISEGRENZE_PROZENT = "%";
 
+        // =====================================================================
+        // Bereitschaftsweg des Pufferspeichers (Welle M7, PS1 (c))
+        //   Tab_Pufferspeicher.Bereitschaft_Weg
+        //   (Schemaschritt PufferOptionenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Bereitschaftsverlust als Tageswert anteilig zum Füllstand — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string PSP_BEREITSCHAFT_TAG = "tag";
+
+        /// <summary>Bereitschaftsverlust je Zone aus dem Verlustkoeffizienten und der Übertemperatur gegen den Aufstellraum.</summary>
+        public const string PSP_BEREITSCHAFT_TEMPERATUR = "temperatur";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim

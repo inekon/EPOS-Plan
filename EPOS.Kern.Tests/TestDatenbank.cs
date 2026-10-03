@@ -869,6 +869,11 @@ namespace EPOS.Kern.Tests
                 // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
                 // wiederholbar, KEIN DML.
                 StromViertelstundenSchema.Ausfuehren(null);
+                // Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+                // Pufferspeichers an Tab_Pufferspeicher und die thermische Desinfektion an
+                // Tab_Einstellungen, leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                PufferOptionenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

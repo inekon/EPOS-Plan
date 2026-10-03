@@ -250,6 +250,10 @@ namespace WindowsFormsApplication1
             // rechnet wie zuvor.
             new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
                       "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
+            // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
+            // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
+            new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
+                      "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
