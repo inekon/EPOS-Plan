@@ -26,7 +26,7 @@ Zweig `g6d`, ab `f5c8bb42`:
 | `2fd619ed5` | Testdatenbank: 1052 mit Zonen gesät (Schemastand 175), 82 329 600 Byte, LFS-OID `d33766677c…`, `integrity_check` ok, `foreign_key_check` leer |
 | `f9af6d957` | LIESMICH-Nachtrag auf Fassung 175 |
 
-Nachzug „Stammverweis einer Variante beim Duplizieren nicht versetzt“ (Befund 1): `<<FIX>>`.
+Nachzug „Stammverweis einer Variante beim Duplizieren nicht versetzt“ (Befund 1): ``2a207ce7e``.
 
 ## 2 Zonenschnitt
 
@@ -124,7 +124,7 @@ flächengewichtet 17,2 bis 20 °C. Zonenwerte stehen in `aggregate.csv`; eine ei
 byte-gleich; Auslieferungsvorlage.Tests 47/47 grün (die Vorlage liefert 1052 nicht aus, sie löscht alle
 Projektdaten, `Tab_Zone` dort 0); SqlDialektPruefer 0 Fundstellen; Windows-Schale 0 Fehler.
 
-**Nachweis im Hauptbaum:** Merge `<<MERGE>>`; Gate `<<GATE>>`.
+**Nachweis im Hauptbaum:** Merge ``2a207ce7e` (Fast-Forward)`; Gate `Kern-Filter 0 Fehler, ChartProben JA (200), Kern 10 469 (1 übersprungen), UI 7 367, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R33**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer ohne Abweichung, Markdown ohne BOM, keine Konfliktmarker (auf `3ee6cf57d`, Gate 690; ein erster Durchlauf brach an der vollen Platte ab)`.
 
 ## 8 Befunde
 
@@ -133,7 +133,7 @@ Projektdaten, `Tab_Zone` dort 0); SqlDialektPruefer 0 Fundstellen; Windows-Schal
    ihr Stamm würde 1051; fehlt 1051, scheitert die Kopie mit „FOREIGN KEY constraint failed“, sonst zeigt
    sie still auf ein falsches Projekt. Derselbe Fehler steckt in der Testdatenbank: 1050 steht als „Variante
    Test1 von 1046“ statt von 1019. Behebung: Stammverweis beim Kopieren nicht versetzen (Festlegung der
-   Orchestrierung, dem Anwender vorgelegt), Nachzug `<<FIX>>`; die Zelle von 1050 wird in RP2 behandelt.
+   Orchestrierung, dem Anwender vorgelegt), Nachzug ``2a207ce7e``; die Zelle von 1050 wird in RP2 behandelt.
    Der Test `KostenProjektPositionenCtrlTests.Eine_Kopie_erbt_keinen_Geraeteanker_ohne_Anlage` bleibt bis
    zum Nachzug rot.
 2. **Herkunftstext in Anzeigesprache.** `Tab_Konditionierungskalender.Bemerkung` speichert die Herkunft in
