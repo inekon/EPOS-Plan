@@ -102,7 +102,8 @@ Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solar
 Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
 #563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
-Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611),
+Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611;
+#699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
@@ -118,7 +119,8 @@ mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „W
 Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; hochgeladen 28.09.2026 mit #611),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
-mit derselben Vorlage und Prüfung),
+mit derselben Vorlage und Prüfung; #698: Platzhalter der Bilder Stromlast-Jahresganglinie des BHKW und
+Kälteproduktion im Absatz „Platzhalter in der App“, ausstehend),
 Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
 Bereich Bericht, erzeugt wird dort mit „Erstellen“),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
