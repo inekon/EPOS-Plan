@@ -266,6 +266,9 @@ namespace WindowsFormsApplication1
             // zeigt sie nach dem nächsten Lauf.
             new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
                       "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
+            // Dieselben Katalogspalten an den übrigen Katalogen; ein Paket führt keine Kataloge.
+            new Stufe(KatalogfassungStufe2Schema.SCHRITT, Art.Katalog,
+                      "Katalogfassung der übrigen Kataloge (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

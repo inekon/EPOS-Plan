@@ -891,6 +891,10 @@ namespace EPOS.Kern.Tests
                 // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 KatalogfassungSchema.Ausfuehren(null);
+                // Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+                // den uebrigen Katalogen samt Saat. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungStufe2Schema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

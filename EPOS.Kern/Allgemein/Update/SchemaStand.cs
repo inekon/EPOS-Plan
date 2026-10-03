@@ -832,11 +832,18 @@ namespace WindowsFormsApplication1
         /// und Prüfsumme der ausgelieferten Sätze (<see cref="KatalogfassungSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
         /// allein bei <see cref="KatalogfassungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG DER ÜBRIGEN KATALOGE (Entscheidungsvorlage Modellgrenzen KU1
+        /// Stufe 2), steht das Ziel auf <see cref="KatalogfassungStufe2Schema.SCHRITT"/>: an den sechzehn
+        /// Katalogtabellen der Stufe 2 (<see cref="Katalogfassung.Stufe2"/>) dieselben drei Katalogspalten
+        /// samt Teilindex und die Saat von Schlüssel und Prüfsumme ihrer ausgelieferten Sätze; Klima- und
+        /// Zapfprofilkatalog bleiben benannt ausgenommen (<see cref="Katalogfassung.Ausgenommen"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungStufe2Schema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KatalogfassungSchema.SCHRITT;
+        public const int Zielversion = KatalogfassungStufe2Schema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
