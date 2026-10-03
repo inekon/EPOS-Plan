@@ -1,9 +1,9 @@
 # Protokoll P4c — Pufferspeicher-Auslegung: Sitzungseingaben, Katalogverweis, Warntexte, Berichtsplatzhalter (Schemaschritt 179, 03.10.2026)
 
-> **Berichtigung (03.10.2026, Anwenderentscheid):** Der in P4c gebaute Verweis `Tab_Gebaeude.ID_Konditionierungsvorlage` ist mit `30a9c31f` wieder entfernt; Schritt 179 trägt sechs Spalten, die Nutzung kommt allein aus `Tab_Konditionierungskalender.Nutzung` (Schritt 176). Testdatenbank neu aus 176 (`6d0b5d3c`). Einzelheiten im Protokoll P4d (#703), Abschnitt 3; die Angaben unten beschreiben den Stand des Agentenberichts.
+> **Berichtigung (03.10.2026, Anwenderentscheid):** Der in P4c gebaute Verweis `Tab_Gebaeude.ID_Konditionierungsvorlage` ist mit `30a9c31f` wieder entfernt; Schritt 179 trägt sechs Spalten, die Nutzung kommt allein aus `Tab_Konditionierungskalender.Nutzung` (Schritt 176). Testdatenbank neu aus 176 (`6d0b5d3c`). Einzelheiten im Protokoll P4d (#704), Abschnitt 3; die Angaben unten beschreiben den Stand des Agentenberichts.
 
 Anwenderauftrag 03.10.2026 (Folgeaufträge 5 bis 8). Opus-Agent im Worktree, Zweig `claude/p4c-pufferauslegung` auf
-`4793d349`; Merge `96f84243`, Kette `46178493`, Testdatenbank `a4d555a9`, Nachzüge `3766779a`. Statuszeile **#702**.
+`4793d349`; Merge `96f84243`, Kette `46178493`, Testdatenbank `a4d555a9`, Nachzüge `3766779a`. Statuszeile **#703**.
 
 ## 1 Was gebaut ist
 

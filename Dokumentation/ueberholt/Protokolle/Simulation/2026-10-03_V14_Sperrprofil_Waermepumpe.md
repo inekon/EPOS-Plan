@@ -2,7 +2,7 @@
 
 Anwenderentscheid 03.10.2026: „V14 Sperrprofil im Kern: nur für Wärmepumpe“, ohne Dimmung und Rechtsbezug (E-P12).
 Opus-Agent im Worktree, Zweig `claude/v14-sperrprofil` auf `d9b37b11`; Merge `c13c263e`; Kette umgehängt in
-`46178493`. Statuszeile **#700**.
+`46178493`. Statuszeile **#701**.
 
 ## 1 Was gebaut ist
 
