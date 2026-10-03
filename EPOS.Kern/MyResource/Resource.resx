@@ -43546,6 +43546,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_HERK_TYP_SOLAR" xml:space="preserve">
     <value>Solarthermie</value>
   </data>
+  <data name="PAUS_QUELLE_TEILLAST" xml:space="preserve">
+    <value>Teillastfeld der Anlage</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_WP_MINDEST" xml:space="preserve">
+    <value>Teillastfeld der Anlage: {0}.{1} = {2} kW</value>
+  </data>
+  <data name="PAUS_HERK_KATALOG_WP_MINDEST" xml:space="preserve">
+    <value>Katalog: {0}.{1} = {2} kW (Katalogsatz {3})</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_BHKW_LAUFZEIT" xml:space="preserve">
+    <value>Teillastfeld der Anlage: {0}.{1} = {2} min</value>
+  </data>
   <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
     <value>ein Pufferspeicher wurde aus der Auslegung übernommen</value>
   </data>

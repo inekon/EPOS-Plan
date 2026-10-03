@@ -347,6 +347,7 @@ namespace WindowsFormsApplication1
                 case PufferHerkunftsquelle.ZAPFPROFIL: return MyResource.Resource.PAUS_QUELLE_ZAPFPROFIL;
                 case PufferHerkunftsquelle.REIHE: return MyResource.Resource.PAUS_QUELLE_REIHE;
                 case PufferHerkunftsquelle.KATALOG: return MyResource.Resource.PAUS_QUELLE_KATALOG;
+                case PufferHerkunftsquelle.TEILLAST: return MyResource.Resource.PAUS_QUELLE_TEILLAST;
                 case PufferHerkunftsquelle.PARAMETER: return MyResource.Resource.PAUS_QUELLE_PARAMETER;
                 case PufferHerkunftsquelle.GESPEICHERT: return MyResource.Resource.PAUS_QUELLE_GESPEICHERT;
                 case QUELLE_UEBERGEBEN: return MyResource.Resource.PAUS_QUELLE_UEBERGEBEN;

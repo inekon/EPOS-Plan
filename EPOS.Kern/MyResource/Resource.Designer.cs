@@ -71144,6 +71144,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog: {0}.{1} = {2} kW (Katalogsatz {3}) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KATALOG_WP_MINDEST {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KATALOG_WP_MINDEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die neuer Puffer: Heizung ähnelt.
         /// </summary>
         public static string PAUS_HERK_KLASSEN_NEU {
@@ -71626,6 +71635,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_SPERRE_KEINE {
             get {
                 return ResourceManager.GetString("PAUS_HERK_SPERRE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage: {0}.{1} = {2} min ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEILLAST_BHKW_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEILLAST_BHKW_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage: {0}.{1} = {2} kW ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEILLAST_WP_MINDEST {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEILLAST_WP_MINDEST", resourceCulture);
             }
         }
         
@@ -72526,6 +72553,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_QUELLE_REIHE {
             get {
                 return ResourceManager.GetString("PAUS_QUELLE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_TEILLAST {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_TEILLAST", resourceCulture);
             }
         }
         

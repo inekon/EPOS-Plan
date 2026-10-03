@@ -43539,6 +43539,18 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_HERK_TYP_SOLAR" xml:space="preserve">
     <value>Solar thermal</value>
   </data>
+  <data name="PAUS_QUELLE_TEILLAST" xml:space="preserve">
+    <value>Part-load field of the system</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_WP_MINDEST" xml:space="preserve">
+    <value>Part-load field of the system: {0}.{1} = {2} kW</value>
+  </data>
+  <data name="PAUS_HERK_KATALOG_WP_MINDEST" xml:space="preserve">
+    <value>Catalogue: {0}.{1} = {2} kW (catalogue record {3})</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_BHKW_LAUFZEIT" xml:space="preserve">
+    <value>Part-load field of the system: {0}.{1} = {2} min</value>
+  </data>
   <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
     <value>a buffer storage was transferred from the sizing</value>
   </data>

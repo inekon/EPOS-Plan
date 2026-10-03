@@ -411,5 +411,134 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Equal(12, tag, 12);
             Assert.Equal((0.0, 0.0), PufferAuslegungCtrl.DmaxTag(new double[24]));
         }
+
+        // =============================================================================
+        //  Vorbelegung aus den Teillastfeldern (Welle M4, Stufe P4a)
+        // =============================================================================
+
+        private static int Ausfuehren(string sql, params object[] p) =>
+            DataRepository.ExecuteNonQuery(sql, p.Select((w, i) => new DbParam("@p" + i, w)).ToArray());
+
+        /// <summary>Die Wärmepumpe (Projektgerät <c>Tab_WP</c>) an der Anlage einer Projektkopie.</summary>
+        private static int WpDerKopie(int idKopie) =>
+            Convert.ToInt32(Wert("SELECT ID_WP FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = 1", idKopie));
+
+        private static PufferAuslegungHerkunft Teillastzeile(PufferAuslegungVorbelegung v, string quelle) =>
+            v.Herkunft.LastOrDefault(h => h.Quelle == quelle && h.Baustein?.Schluessel != null &&
+                                          h.Baustein.Schluessel.Contains("_WP_MINDEST", StringComparison.Ordinal));
+
+        [Fact]
+        public void Teillastfeld_der_Waermepumpe_belegt_Mindestleistung_und_Regelung_vor()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(P_ZAPF);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Teillast WP");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            int wp = WpDerKopie(kopie);
+            Assert.True(wp > 0);
+            Assert.Equal(0, Convert.ToInt32(Wert("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_WP = ? AND ID_Projekt <> ?", wp, kopie)));
+            double nenn = Zahl("SELECT Nennleistung FROM Tab_WP WHERE ID = ?", wp);
+
+            // Ein/Aus-Gerät ohne Teillastfeld: wie bisher — keine Mindestleistung, nicht geregelt, keine Teillastzeile.
+            Ausfuehren("UPDATE Tab_WP SET Regelung = 'Ein/Aus', Mindestleistung_kW = NULL WHERE ID = ?", wp);
+            PufferAuslegungVorbelegung leer = PufferAuslegungCtrl.Vorbelegen(kopie, null);
+            Assert.Null(leer.Eingang.Erzeuger.MindestleistungKw);
+            Assert.False(leer.Eingang.Erzeuger.Geregelt);
+            Assert.DoesNotContain(leer.Herkunft, h => h.Quelle == PufferHerkunftsquelle.TEILLAST);
+
+            // Teillastfeld der Anlage (Projektgerät): Wert übernommen, unter der Nennleistung → geregelt, Herkunft benannt.
+            double pmin = Math.Round(nenn * 0.3, 1);
+            Ausfuehren("UPDATE Tab_WP SET Mindestleistung_kW = ? WHERE ID = ?", pmin, wp);
+            PufferAuslegungVorbelegung v = PufferAuslegungCtrl.Vorbelegen(kopie, null);
+            Assert.Equal(pmin, v.Eingang.Erzeuger.MindestleistungKw.Value, 9);
+            Assert.True(v.Eingang.Erzeuger.Geregelt);
+            PufferAuslegungHerkunft h = Teillastzeile(v, PufferHerkunftsquelle.TEILLAST);
+            Assert.NotNull(h);
+            Assert.Equal(nameof(PufferAuslegungEingang.Erzeuger), h.Feld);
+            Assert.Equal("PAUS_HERK_TEILLAST_WP_MINDEST", h.Baustein.Schluessel);
+            Assert.Contains("Mindestleistung_kW", h.Text);
+            Assert.Equal(PufferHerkunftsquelle.TEILLAST, v.Quelle(nameof(PufferAuslegungEingang.Erzeuger)));
+
+            // Mindestleistung = Nennleistung: übernommen, aber kein Modulationsbereich → nicht geregelt.
+            Ausfuehren("UPDATE Tab_WP SET Mindestleistung_kW = ? WHERE ID = ?", nenn, wp);
+            PufferAuslegungVorbelegung voll = PufferAuslegungCtrl.Vorbelegen(kopie, null);
+            Assert.Equal(nenn, voll.Eingang.Erzeuger.MindestleistungKw.Value, 9);
+            Assert.False(voll.Eingang.Erzeuger.Geregelt);
+
+            // Das Referenzprojekt bleibt unberührt.
+            Assert.True(Leer(Wert("SELECT w.Mindestleistung_kW FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                                  "WHERE a.ID_Projekt = ? AND a.ID_Type = 1", P_ZAPF)));
+            Assert.Null(PufferAuslegungCtrl.Vorbelegen(P_ZAPF, null).Eingang.Erzeuger.MindestleistungKw);
+        }
+
+        [Fact]
+        public void Katalogsatz_der_Waermepumpe_ist_der_Rueckfall_des_Teillastfelds()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(P_ZAPF);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Teillast Katalog");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            int wp = WpDerKopie(kopie);
+            double nenn = Zahl("SELECT Nennleistung FROM Tab_WP WHERE ID = ?", wp);
+
+            // Ein Katalogsatz, auf den kein Projektgerät verweist — nur die Kopie wird auf ihn umgehängt.
+            int stamm = Convert.ToInt32(Wert("SELECT MIN(s.ID) FROM Tab_WP_STAMM s WHERE NOT EXISTS " +
+                                             "(SELECT 1 FROM Tab_WP w WHERE w.ID_Stamm = s.ID)"));
+            Assert.True(stamm > 0);
+            double pmin = Math.Round(nenn * 0.25, 1);
+            Ausfuehren("UPDATE Tab_WP_STAMM SET Mindestleistung_kW = ? WHERE ID = ?", pmin, stamm);
+            Ausfuehren("UPDATE Tab_WP SET ID_Stamm = ?, Mindestleistung_kW = NULL, Regelung = 'Ein/Aus' WHERE ID = ?", stamm, wp);
+
+            PufferAuslegungVorbelegung v = PufferAuslegungCtrl.Vorbelegen(kopie, null);
+            Assert.Equal(pmin, v.Eingang.Erzeuger.MindestleistungKw.Value, 9);
+            Assert.True(v.Eingang.Erzeuger.Geregelt);
+            PufferAuslegungHerkunft h = Teillastzeile(v, PufferHerkunftsquelle.KATALOG);
+            Assert.NotNull(h);
+            Assert.Equal("PAUS_HERK_KATALOG_WP_MINDEST", h.Baustein.Schluessel);
+            Assert.Contains("Tab_WP_STAMM", h.Text);
+
+            // Das Projektgerät schlägt den Katalog.
+            Ausfuehren("UPDATE Tab_WP SET Mindestleistung_kW = ? WHERE ID = ?", pmin * 2, wp);
+            PufferAuslegungVorbelegung g = PufferAuslegungCtrl.Vorbelegen(kopie, null);
+            Assert.Equal(pmin * 2, g.Eingang.Erzeuger.MindestleistungKw.Value, 9);
+            Assert.NotNull(Teillastzeile(g, PufferHerkunftsquelle.TEILLAST));
+            Assert.Null(Teillastzeile(g, PufferHerkunftsquelle.KATALOG));
+        }
+
+        [Fact]
+        public void Mindestlaufzeit_des_BHKW_aus_dem_Teillastfeld()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(P_BHKW);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Teillast BHKW");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            int puffer = PufferDerKopie(kopie, PUFFER_1030);
+
+            // Leer: wie bisher — die Mindestlaufzeit bleibt offen, K3 rechnet mit der Vorlage BHKW.
+            PufferAuslegungVorbelegung leer = PufferAuslegungCtrl.Vorbelegen(kopie, puffer);
+            Assert.Equal(PufferVorlage.BHKW, leer.Eingang.Vorlage);
+            Assert.Null(leer.Eingang.MindestlaufzeitMin);
+            Assert.Null(leer.Quelle(nameof(PufferAuslegungEingang.MindestlaufzeitMin)));
+            Assert.Null(leer.Eingang.Erzeuger.MindestleistungKw);
+
+            Assert.True(Ausfuehren("UPDATE Tab_BHKW SET Mindestlaufzeit_min = 20 WHERE ID IN " +
+                                   "(SELECT ID_BHKW FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = 11)", kopie) > 0);
+            PufferAuslegungVorbelegung v = PufferAuslegungCtrl.Vorbelegen(kopie, puffer);
+            Assert.Equal(20, v.Eingang.MindestlaufzeitMin);
+            Assert.Equal(PufferHerkunftsquelle.TEILLAST, v.Quelle(nameof(PufferAuslegungEingang.MindestlaufzeitMin)));
+            PufferAuslegungHerkunft h = v.Herkunft.Last(x => x.Feld == nameof(PufferAuslegungEingang.MindestlaufzeitMin));
+            Assert.Equal("PAUS_HERK_TEILLAST_BHKW_LAUFZEIT", h.Baustein.Schluessel);
+            Assert.Contains("Tab_BHKW.Mindestlaufzeit_min = 20 min", h.Text);
+            Assert.Null(v.Eingang.Erzeuger.MindestleistungKw);       // ein BHKW-Teillastfeld der Mindestleistung gibt es nicht
+
+            // K3 rechnet mit der Mindestlaufzeit des Teillastfelds.
+            PufferKriterium k3 = PufferAuslegungCtrl.Rechnen(v.Eingang with { ReiheHeizung = PufferAuslegungCtrl.Reihen(kopie).Heizung })
+                                                    .Zone(PufferZone.Heizung).Kriterium(PufferKriteriumKennung.K3);
+            Assert.NotNull(k3);
+            Assert.Contains(" · 20 min / ", k3.Rechenweg);
+
+            // Das Referenzprojekt bleibt unberührt.
+            Assert.Null(PufferAuslegungCtrl.Vorbelegen(P_BHKW, PUFFER_1030).Eingang.MindestlaufzeitMin);
+        }
     }
 }

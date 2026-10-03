@@ -27,6 +27,8 @@ namespace WindowsFormsApplication1
         public const string ZAPFPROFIL = "Zapfprofil";
         public const string REIHE = "Bedarfsreihe";
         public const string KATALOG = "Katalog";
+        /// <summary>Ein Teillastfeld des Projektgeräts der Anlage (Welle M4: <c>Tab_WP.Mindestleistung_kW</c>, <c>Tab_BHKW.Mindestlaufzeit_min</c>).</summary>
+        public const string TEILLAST = "Teillastfeld der Anlage";
         public const string PARAMETER = "Vorgabetabelle";
         public const string VORGABE = "Vorgabe";
         public const string GESPEICHERT = "Gespeicherte Auslegung";
@@ -173,6 +175,8 @@ namespace WindowsFormsApplication1
         internal const string SQL_WP = "SELECT * FROM Tab_WP WHERE ID = ?";
         internal const string SQL_KESSEL = "SELECT * FROM Tab_Heizkessel WHERE ID = ?";
         internal const string SQL_BHKW = "SELECT * FROM Tab_BHKW WHERE ID = ?";
+        /// <summary>Der Katalogsatz einer Wärmepumpe (über <c>Tab_WP.ID_Stamm</c>) — Rückfall der Teillastfelder.</summary>
+        internal const string SQL_WP_STAMM = "SELECT * FROM Tab_WP_STAMM WHERE ID = ?";
         internal const string SQL_SOLAR = "SELECT * FROM Tab_Solarkollektoren WHERE ID = ?";
 
         /// <summary>Der Name eines Brennstoffs im Projekt — aus der Projektkopie (<see cref="ProjektBrennstoffe.Sicht"/>).</summary>
@@ -553,6 +557,35 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Mindestleistung einer Wärmepumpe aus den Teillastfeldern der Welle M4 — Rangfolge
+        /// <b>Projektgerät der Anlage</b> (<c>Tab_WP.Mindestleistung_kW</c>, die Zeile, die die Simulation liest)
+        /// → <b>Katalog</b> (<c>Tab_WP_STAMM</c> über <c>Tab_WP.ID_Stamm</c>) → <c>null</c> (Vorgabe:
+        /// Anteil der Nennleistung bzw. Fixed-Speed). Leer und 0 gelten als „nicht gepflegt".
+        /// </summary>
+        private static double? WpMindestleistung(DataRow geraet, out string quelle, out Textbaustein text)
+        {
+            quelle = null;
+            text = Textbaustein.Leer;
+            double? p = ZahlOderNull(geraet, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG);
+            if (p > 0)
+            {
+                quelle = PufferHerkunftsquelle.TEILLAST;
+                text = T("PAUS_HERK_TEILLAST_WP_MINDEST", "Teillastfeld der Anlage: {0}.{1} = {2} kW",
+                         ErzeugerTeillastSchema.TAB_WP, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG, p.Value);
+                return p;
+            }
+            double? idStamm = ZahlOderNull(geraet, "ID_Stamm");
+            if (!(idStamm > 0)) return null;
+            DataRow stamm = ErsteZeile(SQL_WP_STAMM, P("@id", (int)idStamm.Value));
+            p = ZahlOderNull(stamm, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG);
+            if (!(p > 0)) return null;
+            quelle = PufferHerkunftsquelle.KATALOG;
+            text = T("PAUS_HERK_KATALOG_WP_MINDEST", "Katalog: {0}.{1} = {2} kW (Katalogsatz {3})",
+                     ErzeugerTeillastSchema.TAB_WP_STAMM, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG, p.Value, (int)idStamm.Value);
+            return p;
+        }
+
         /// <summary>Ist der Brennstoff (Bezeichner) ein Festbrennstoff? Liefert die Art für K9.</summary>
         internal static PufferBrennstoff BrennstoffAus(string bezeichner)
         {
@@ -576,6 +609,7 @@ namespace WindowsFormsApplication1
 
             double nenn = 0, zweit = 0, heizstabKw = 0, kollektor = 0;
             double? mindest = null;
+            var teillast = new List<PufferAuslegungHerkunft>();
             bool geregelt = false, heizstab = false, roehre = false;
             PufferBrennstoff brennstoff = PufferBrennstoff.Keiner;
             int n1 = 0;
@@ -602,8 +636,26 @@ namespace WindowsFormsApplication1
                     {
                         string regelung = Text(g, "Regelung") ?? "";
                         if (regelung.Equals("stetig", StringComparison.OrdinalIgnoreCase)) geregelt = true;
+                        double? pmin = WpMindestleistung(g, out string quelle, out Textbaustein text);
+                        if (pmin > 0)
+                        {
+                            mindest = (mindest ?? 0) + pmin.Value;
+                            if (pmin.Value < kw) geregelt = true;
+                            teillast.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Erzeuger), quelle, text));
+                        }
                         if (a.Heizstab) { heizstab = true; heizstabKw += ZahlOderNull(g, "Heizung") ?? 0; }
                         if (a.Bivalent) bivalent = true;
+                    }
+                    else if (a.Typ == TYP_BHKW)
+                    {
+                        double? lz = ZahlOderNull(g, ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT);
+                        if (lz > 0)
+                        {
+                            mindestlaufzeit = Math.Max(mindestlaufzeit ?? 0, lz.Value);
+                            teillast.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.MindestlaufzeitMin), PufferHerkunftsquelle.TEILLAST,
+                                T("PAUS_HERK_TEILLAST_BHKW_LAUFZEIT", "Teillastfeld der Anlage: {0}.{1} = {2} min",
+                                  ErzeugerTeillastSchema.TAB_BHKW, ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT, lz.Value)));
+                        }
                     }
                     else if (a.Typ == TYP_KESSEL)
                     {
@@ -641,6 +693,7 @@ namespace WindowsFormsApplication1
                     nurHeizstab ? T("PAUS_HERK_ERZEUGER_HEIZSTAB", " (Heizstab)") : Leer));
             if (kollektor > 0)
                 H(T("PAUS_HERK_KOLLEKTOR", "Kollektorfläche {0} m² (Bezugsfläche × Modulanzahl)", kollektor));
+            h.AddRange(teillast);
             return new PufferErzeuger
             {
                 NennleistungKw = nenn,
