@@ -2403,7 +2403,7 @@ abweichend von der Empfehlung.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.4 und 9.8;
   [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) B26, F7 und Abschnitt 7.
 
-### P15 — Spanne der Aufheizzeit nach Bauart als Vorschlag
+### P15 — Vorschlagsspanne der manuellen Aufheizzeit
 
 **Entschieden: (b), abweichend von der Empfehlung (03.10.2026, Konzept N1.68)** — die Spanne kommt aus τ₂ des Gebäudes
 (langsame Zeitkonstante des Zweikapazitätenmodells, `Zonenmodell2K.Aufheizantwort`), nicht aus einer festen
