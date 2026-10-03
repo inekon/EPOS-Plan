@@ -279,6 +279,17 @@ namespace WindowsFormsApplication1
         /// <summary>Verschiebedauer des BHKW [h]; <c>null</c> = <c>BHKW.Verschiebedauer_h</c>.</summary>
         public double? BhkwVerschiebedauerH { get; init; }
 
+        // ---- Aufheizkriterium K12 (V30, KP3) ----
+
+        /// <summary>K12 ein/aus; <c>null</c> = Vorlagenschalter des Nutzungsprofils (<c>Aufheiz.Nutzungsprofil.*</c>).</summary>
+        public bool? AufheizKriterium { get; init; }
+
+        /// <summary>Aufheizleistung Φ_n [kW] aus der KP3-Bemessung, Summe über die Projektgebäude; <c>null</c> = keine Bemessung.</summary>
+        public double? AufheizleistungKw { get; init; }
+
+        /// <summary>Aufheizdauer n [h] aus der KP3-Rampe; <c>null</c> = Vorgabe <c>Aufheiz.Dauer_h</c>.</summary>
+        public double? AufheizdauerH { get; init; }
+
         // ---- Brauchwasserzone ----
 
         /// <summary>Das Zapfprofil-Ergebnis; <c>null</c> = keines.</summary>

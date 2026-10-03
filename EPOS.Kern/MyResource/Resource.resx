@@ -44146,5 +44146,41 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_BERICHT_NA_ZEILE" xml:space="preserve">
     <value>Stufe {0} l: Deckung {1}, {2} Starts je Tag, Verlust {3} kWh/a</value>
   </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG" xml:space="preserve">
+    <value>Keine Aufheizbemessung</value>
+  </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT" xml:space="preserve">
+    <value>Das Aufheizkriterium ist eingeschaltet, aber keine Aufheizbemessung der Gebäude liegt vor: Es bemisst nicht. Erst die Simulation mit Aufheizoptimierung liefert Φ_n.</value>
+  </data>
+  <data name="PAUS_KRIT_K12" xml:space="preserve">
+    <value>Aufheizen nach Absenkung</value>
+  </data>
+  <data name="PAUS_HERK_K12" xml:space="preserve">
+    <value>Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude)</value>
+  </data>
+  <data name="PAUS_HERK_Q_V30" xml:space="preserve">
+    <value>Konzept Pufferauslegung V30 / KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12" xml:space="preserve">
+    <value>({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_KP3" xml:space="preserve">
+    <value>Aufheizdauer aus KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_VORGABE" xml:space="preserve">
+    <value>Vorgabe Aufheiz.Dauer_h</value>
+  </data>
+  <data name="PAUS_WEG_K12_KEINE" xml:space="preserve">
+    <value>keine KP3-Aufheizbemessung der Gebäude</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KP3" xml:space="preserve">
+    <value>Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KEINE" xml:space="preserve">
+    <value>keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)</value>
+  </data>
+  <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
+    <value>Vorlage des Nutzungsprofils: an bei Büro/Schule</value>
+  </data>
 </root>
 

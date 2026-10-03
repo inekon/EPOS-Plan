@@ -184,6 +184,12 @@ public sealed class PufferAuslegungStartDaten
     public IReadOnlyList<string> Erzeuger { get; set; } = Array.Empty<string>();
     public bool IstWaermepumpe { get; set; }
 
+    // ---- Aufheizkriterium K12 (V30) ----
+    /// <summary>Der Vorlagenschalter von K12 für das Nutzungsprofil (an bei Büro/Schule).</summary>
+    public bool AufheizVorlageAn { get; set; }
+    /// <summary>Φ_n [kW] aus der KP3-Bemessung; <c>null</c> = keine Bemessung.</summary>
+    public double? AufheizleistungKw { get; set; }
+
     // ---- Puffer ----
     public double VorlaufC { get; set; }
     public double RuecklaufC { get; set; }

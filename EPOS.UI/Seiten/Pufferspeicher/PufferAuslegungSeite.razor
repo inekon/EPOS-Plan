@@ -763,7 +763,12 @@
 
     /// <summary>Der Schalter der Vorlage für das Kriterium (ohne Abweichung des Anwenders).</summary>
     private bool VorlageAn(string kennung)
-        => GewaehlteVorlage?.Kriterien is { } k && k.TryGetValue(kennung, out bool an) && an;
+        => kennung == KENNUNG_AUFHEIZ
+            ? Daten.AufheizVorlageAn
+            : GewaehlteVorlage?.Kriterien is { } k && k.TryGetValue(kennung, out bool an) && an;
+
+    /// <summary>Das Aufheizkriterium (V30): sein Schalter folgt dem Nutzungsprofil, nicht der Vorlage.</summary>
+    private const string KENNUNG_AUFHEIZ = "K12";
 
     /// <summary>Gilt das Kriterium — Abweichung des Anwenders vor dem Schalter der Vorlage?</summary>
     private bool KriteriumAn(string kennung)
@@ -781,6 +786,7 @@
     /// <summary>Die Karten in der Reihenfolge der Vorlage; Schnell zeigt nur die eingeschalteten.</summary>
     private IEnumerable<string> Karten
         => (GewaehlteVorlage?.Kriterien.Keys ?? Enumerable.Empty<string>())
+           .Concat(_eingabe.KlasseHeizung ? new[] { KENNUNG_AUFHEIZ } : Array.Empty<string>())
            .Where(k => AbStandard || KriteriumAn(k));
 
     private string Kriteriumswert(PufferKriteriumDaten? k)

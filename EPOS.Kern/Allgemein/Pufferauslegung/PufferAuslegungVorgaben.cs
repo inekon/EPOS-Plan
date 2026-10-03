@@ -77,6 +77,7 @@ namespace WindowsFormsApplication1
         private const string Q_V39 = "Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39";
         private const string Q_PUFFER = "EPOS-Plan Vorgabe des Projektpuffers (Schwellen)";
         private const string Q_VORLAGE = "Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6";
+        private const string Q_V30 = "Konzept Pufferauslegung V30 / KP3";
 
         /// <summary>Die Ressourcenschlüssel der Quellen (Zitate) — <see cref="Quellentext"/>.</summary>
         private static readonly Dictionary<string, string> QUELLENSCHLUESSEL = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -111,6 +112,7 @@ namespace WindowsFormsApplication1
             [Q_V39] = "PAUS_HERK_Q_V39",
             [Q_PUFFER] = "PAUS_HERK_Q_PUFFER",
             [Q_VORLAGE] = "PAUS_HERK_Q_VORLAGE",
+            [Q_V30] = "PAUS_HERK_Q_V30",
         };
 
         /// <summary>
@@ -166,6 +168,8 @@ namespace WindowsFormsApplication1
         public const string SCHWELLE_EIN = "Puffer.Schwelle_Ein";
         public const string SCHWELLE_AUS = "Puffer.Schwelle_Aus";
         public const string VORLAGE = "Vorlage.";                               // + <Typ>.<Glied>
+        public const string AUFHEIZ_DAUER = "Aufheiz.Dauer_h";
+        public const string AUFHEIZ_NUTZUNG = "Aufheiz.Nutzungsprofil.";       // + <Nutzungsprofil>, Schalter 0/1
 
         /// <summary>Die sieben Vorlagen-Typen in Anlegereihenfolge (Spalte <c>Vorlage</c>).</summary>
         public static readonly IReadOnlyList<string> VORLAGEN = new[]
@@ -196,6 +200,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Liste aller Vorgaben — Saat und Rückfall.</summary>
         public static readonly IReadOnlyList<PufferVorgabe> EINTRAEGE = Bauen();
+
+        /// <summary>
+        /// Vorgaben NUR als Rückfall, noch ohne Saatzeile (Welle P4d ohne Schemaschritt): das Aufheizkriterium K12.
+        /// Mit dem nächsten Schemaschritt wandern sie in <see cref="EINTRAEGE"/> und damit in die Saat.
+        /// </summary>
+        public static readonly IReadOnlyList<PufferVorgabe> NACHTRAG = new[]
+        {
+            V(AUFHEIZ_DAUER, 2, "h", Q_V30, PufferHerkunftsart.SETZUNG),
+            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.WOHNEN), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
+            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BEHERBERGUNG), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
+            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.PFLEGE), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
+            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BUERO_SCHULE), 1, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
+            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.GEWERBE), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
+        };
 
         private static List<PufferVorgabe> Bauen()
         {

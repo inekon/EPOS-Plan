@@ -49,6 +49,8 @@ namespace WindowsFormsApplication1
         public const string STARTS_ABWEICHUNG = "PA-STARTS-ABWEICHUNG";
         /// <summary>Der Prozessvorlauf liegt über 95 °C oder über dem Vorlauf aller Erzeuger an der Kaskade.</summary>
         public const string PROZESS_TEMPERATUR = "PA-PROZESS-TEMPERATUR";
+        /// <summary>Das Aufheizkriterium K12 ist eingeschaltet, aber keine KP3-Bemessung der Gebäude liegt vor.</summary>
+        public const string AUFHEIZ_KEINE_BEMESSUNG = "PA-AUFHEIZ-KEINE-BEMESSUNG";
 
         /// <summary>Alle Codes der Liste.</summary>
         public static readonly IReadOnlyList<string> ALLE = new[]
@@ -56,7 +58,7 @@ namespace WindowsFormsApplication1
             KEIN_PUFFER, BAND_UNTER, BAND_UEBER, ABTAU_VORRANG, STARTS_TAG, STARTS_JAHR, PRAXISGRENZE,
             EXTRAPOLATION, TANK_IM_TANK, OHNE_PUFFER_GEREGELT, HYGIENE_W551, HYGIENE_TEMPERATUR,
             BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE,
-            PROZESS_TEMPERATUR
+            PROZESS_TEMPERATUR, AUFHEIZ_KEINE_BEMESSUNG
         };
     }
 
@@ -110,6 +112,8 @@ namespace WindowsFormsApplication1
         public const string K10 = "K10";
         /// <summary>Verschiebedauer des BHKW (Schlüssel <c>BHKW.Verschiebedauer_h</c>).</summary>
         public const string KV = "KV";
+        /// <summary>Aufheizen nach Absenkung (V30, KP3): Puffer deckt Φ_n − P_gen über die Aufheizdauer.</summary>
+        public const string K12 = "K12";
         /// <summary>Brauchwasserzone aus dem Zapfprofil (Nenninhalt des Trinkwasserspeichers).</summary>
         public const string B_SPEICHER = "B-Speicher";
         /// <summary>Brauchwasserzone für Frischwasser-/Wohnungsstation (Konzept 3.2).</summary>

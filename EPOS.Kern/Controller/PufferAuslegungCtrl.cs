@@ -232,6 +232,16 @@ namespace WindowsFormsApplication1
         internal const string SQL_KONDITIONIERUNG_VERWEIS =
             "SELECT g.ID, v.Nutzung FROM Tab_Gebaeude g JOIN " + KonditionierungVorlagenSchema.TAB_VORLAGE + " v " +
             "ON v.ID = g." + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + " WHERE g.ID_Projekt = ? ORDER BY g.ID";
+        /// <summary>
+        /// Die KP3-Aufheizbemessung des jüngsten Laufs mit Gebäudeergebnis (V30): Zahl der bemessenen Gebäude,
+        /// Summe der Aufheizleistung Φ_n und längste Aufheizzeit t_auf,max.
+        /// </summary>
+        internal const string SQL_AUFHEIZ =
+            "SELECT COUNT(g." + AufheizErgebnisSchema.SPALTE_LEISTUNG + ") AS Anzahl, SUM(g." + AufheizErgebnisSchema.SPALTE_LEISTUNG +
+            ") AS Leistung, MAX(g." + AufheizErgebnisSchema.SPALTE_ZEIT_MAX + ") AS Dauer FROM " + AufheizErgebnisSchema.TAB_GEBAEUDE +
+            " g WHERE g.ID_Ergebnis = (SELECT MAX(e.ID) FROM Tab_Ergebnis e WHERE e.ID_Projekt = ? AND EXISTS (SELECT 1 FROM " +
+            AufheizErgebnisSchema.TAB_GEBAEUDE + " x WHERE x.ID_Ergebnis = e.ID)) AND g." + AufheizErgebnisSchema.SPALTE_LEISTUNG + " > 0";
+
         internal const string SQL_KATALOG =
             "SELECT ID, Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM Tab_Pufferspeicher_STAMM " +
             "WHERE Gesamtvolumen > 0 ORDER BY Gesamtvolumen, ID";
@@ -461,6 +471,12 @@ namespace WindowsFormsApplication1
                 NutzungsprofilZuordnung.Lesen());
             H(nameof(PufferAuslegungEingang.Nutzungsprofil), np.Vorgabe ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.PROJEKT, np.HerkunftBaustein);
 
+            // ---- Aufheizbemessung KP3 (Kriterium K12, V30) ----
+            var (aufheizKw, aufheizH, aufheizGebaeude) = Aufheizbemessung(idProjekt);
+            H(nameof(PufferAuslegungEingang.AufheizleistungKw), aufheizKw.HasValue ? PufferHerkunftsquelle.GEBAEUDE : PufferHerkunftsquelle.VORGABE,
+              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
+                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)"));
+
             if (reihen != null)
                 H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden
                     ? T("PAUS_HERK_REIHEN", "Bedarfsreihen aus KanaeleDrei()")
@@ -488,6 +504,8 @@ namespace WindowsFormsApplication1
                 HeizgrenzeC = heizgrenze,
                 Sperrfenster = sperre,
                 MindestlaufzeitMin = mindestlaufzeit,
+                AufheizleistungKw = aufheizKw,
+                AufheizdauerH = aufheizH,
                 Zapfprofil = zp,
                 ZirkulationProjektKw = zirkKw,
                 ZirkulationLaufzeitHd = zirkH,
@@ -503,6 +521,21 @@ namespace WindowsFormsApplication1
                 Herkunft = h.AsReadOnly(),
                 Nutzungsprofil = np
             };
+        }
+
+        /// <summary>
+        /// Φ_n [kW] und n [h] aus der KP3-Aufheizbemessung des jüngsten Laufs mit Gebäudeergebnis; ohne Bemessung
+        /// beide <c>null</c>. Eine Aufheizzeit 0 h zählt als „keine Rampe“ (Vorgabe <c>Aufheiz.Dauer_h</c>).
+        /// </summary>
+        public static (double? LeistungKw, double? DauerH, int Gebaeude) Aufheizbemessung(int idProjekt)
+        {
+            if (!DataRepository.TabelleVorhanden(AufheizErgebnisSchema.TAB_GEBAEUDE)) return (null, null, 0);
+            DataRow r = ErsteZeile(SQL_AUFHEIZ, P("@p", idProjekt));
+            if (r == null || r["Anzahl"] == DBNull.Value) return (null, null, 0);
+            int anzahl = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
+            if (anzahl <= 0 || r["Leistung"] == DBNull.Value) return (null, null, 0);
+            double? dauer = r["Dauer"] == DBNull.Value ? (double?)null : Zahl(r["Dauer"]);
+            return (Zahl(r["Leistung"]), dauer > 0 ? dauer : null, anzahl);
         }
 
         // ---- Anlagen und Erzeuger ----

@@ -101,6 +101,7 @@ namespace WindowsFormsApplication1
         public static readonly Textbaustein HERKUNFT_ANHANG_F = T("PAUS_HERK_VDI_ANHANG_F", "VDI 4645 E 2026-03, Anhang F");
         public static readonly Textbaustein HERKUNFT_VDI_88 = T("PAUS_HERK_VDI_88", "VDI 4645 E 2026-03, 8.8");
         public static readonly Textbaustein HERKUNFT_WHITEPAPER = T("PAUS_HERK_WHITEPAPER", "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen");
+        public static readonly Textbaustein HERKUNFT_K12 = T("PAUS_HERK_K12", "Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude)");
 
         /// <summary>Faktor der DIN-EN-303-5-Formel [l/kWh] (Zitat der Formel, Konzept K9).</summary>
         public const double DIN_EN_303_5_FAKTOR = 15.0;
@@ -178,6 +179,13 @@ namespace WindowsFormsApplication1
         /// <summary>K4e (Tool): V = Q̄_sperr · t_sperr · 1000 / (c · Δϑ · η_s).</summary>
         public static double K4Experte(double qMittelKw, double tSperrH, double c, double deltaT, double eta) =>
             Volumen(Math.Max(qMittelKw, 0) * Math.Max(tSperrH, 0), c, deltaT, eta);
+
+        /// <summary>
+        /// K12 Aufheizen nach Absenkung (V30): V_auf = (Φ_n − P_gen) · n · h / (c · ΔT · η_s), h = 1 h (kW · h → kWh);
+        /// Φ_n ≤ P_gen ergibt 0.
+        /// </summary>
+        public static double K12Aufheizen(double phiNKw, double pGenKw, double nH, double c, double deltaT, double eta) =>
+            Volumen(Math.Max(phiNKw - pGenKw, 0) * Math.Max(nH, 0), c, deltaT, eta);
 
         /// <summary>K9 Faustwert: Scheitholz 55, Pellets/Hackschnitzel 30 (BEG, ≥ gesetzlich 20), sonst gesetzlich 20 l/kW.</summary>
         public static double K9Faustwert(PufferBrennstoff b, double leistungKw, PufferAuslegungParameter p)
@@ -421,6 +429,41 @@ namespace WindowsFormsApplication1
                     VolumenL = Volumen(nenn * t, g.C, g.DeltaT, g.Eta), Aktiv = t > 0, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_KV,
                     RechenwegBaustein = T("PAUS_WEG_KV", "{0} kW · {1} h / ({2} · {3} K · {4})", nenn, t, g.C, g.DeltaT, g.Eta)
                 });
+            }
+
+            // ---- K12 Aufheizen nach Absenkung (V30, KP3) ----
+            bool aufheizAn = e.AufheizKriterium ?? p.AufheizAn(e.Nutzungsprofil);
+            bool bemessung = e.AufheizleistungKw.HasValue && e.AufheizleistungKw.Value > 0;
+            if (aufheizAn || bemessung)
+            {
+                if (bemessung)
+                {
+                    double phi = e.AufheizleistungKw.Value;
+                    double n = e.AufheizdauerH ?? p.Wert(PufferAuslegungVorgaben.AUFHEIZ_DAUER);
+                    k.Add(new PufferKriterium
+                    {
+                        Kennung = PufferKriteriumKennung.K12, Bezeichnung = "Aufheizen nach Absenkung",
+                        VolumenL = K12Aufheizen(phi, nenn, n, g.C, g.DeltaT, g.Eta), Aktiv = aufheizAn, EnthaeltNutzanteil = true,
+                        HerkunftBaustein = HERKUNFT_K12,
+                        RechenwegBaustein = T("PAUS_WEG_K12", "({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})",
+                                              phi, nenn, n,
+                                              e.AufheizdauerH.HasValue ? T("PAUS_WEG_K12_DAUER_KP3", "Aufheizdauer aus KP3")
+                                                                       : T("PAUS_WEG_K12_DAUER_VORGABE", "Vorgabe Aufheiz.Dauer_h"),
+                                              g.C, g.DeltaT, g.Eta)
+                    });
+                }
+                else
+                {
+                    k.Add(new PufferKriterium
+                    {
+                        Kennung = PufferKriteriumKennung.K12, Bezeichnung = "Aufheizen nach Absenkung", VolumenL = null,
+                        Aktiv = false, Gueltig = false, HerkunftBaustein = HERKUNFT_K12,
+                        RechenwegBaustein = T("PAUS_WEG_K12_KEINE", "keine KP3-Aufheizbemessung der Gebäude")
+                    });
+                    g.Warnung(PufferWarncode.AUFHEIZ_KEINE_BEMESSUNG, PufferStufe.Hinweis,
+                              Textbaustein.T("PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT", "Das Aufheizkriterium ist eingeschaltet, aber keine Aufheizbemessung der Gebäude liegt vor: Es bemisst nicht. Erst die Simulation mit Aufheizoptimierung liefert Φ_n."),
+                              HERKUNFT_K12, ZONE);
+                }
             }
 
             // ---- K9 Festbrennstoff ----

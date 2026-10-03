@@ -71063,6 +71063,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_AUFHEIZ_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_AUFHEIZ_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_AUFHEIZ_KP3 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_AUFHEIZ_KP3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450 ähnelt.
         /// </summary>
         public static string PAUS_HERK_BAND {
@@ -71212,6 +71230,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_K11_KATALOG {
             get {
                 return ResourceManager.GetString("PAUS_HERK_K11_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K12", resourceCulture);
             }
         }
         
@@ -71599,6 +71626,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_Q_TOOL {
             get {
                 return ResourceManager.GetString("PAUS_HERK_Q_TOOL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_V30 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_V30", resourceCulture);
             }
         }
         
@@ -72161,6 +72197,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage des Nutzungsprofils: an bei Büro/Schule ähnelt.
+        /// </summary>
+        public static string PAUS_K12_SCHALTER_VORLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_K12_SCHALTER_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz als Herkunft am Puffer merken ähnelt.
         /// </summary>
         public static string PAUS_KATALOGSATZ_UEBERNEHMEN {
@@ -72364,6 +72409,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_KRIT_K10 {
             get {
                 return ResourceManager.GetString("PAUS_KRIT_K10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizen nach Absenkung ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K12", resourceCulture);
             }
         }
         
@@ -74078,6 +74132,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus KP3 ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_DAUER_KP3 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_DAUER_KP3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheiz.Dauer_h ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_DAUER_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_DAUER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine KP3-Aufheizbemessung der Gebäude ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift für K1 ähnelt.
         /// </summary>
         public static string PAUS_WEG_K1_EINZELRAUM {
@@ -74488,6 +74578,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PA_ABTAU_VORRANG_TEXT {
             get {
                 return ResourceManager.GetString("PA_ABTAU_VORRANG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Aufheizbemessung ähnelt.
+        /// </summary>
+        public static string PA_AUFHEIZ_KEINE_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("PA_AUFHEIZ_KEINE_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Aufheizkriterium ist eingeschaltet, aber keine Aufheizbemessung der Gebäude liegt vor: Es bemisst nicht. Erst die Simulation mit Aufheizoptimierung liefert Φ_n. ähnelt.
+        /// </summary>
+        public static string PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT", resourceCulture);
             }
         }
         

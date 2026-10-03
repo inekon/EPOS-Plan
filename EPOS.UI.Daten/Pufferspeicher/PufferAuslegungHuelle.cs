@@ -298,6 +298,8 @@ namespace WindowsFormsApplication1
                 .ToList();
             if (erz.NennleistungKw <= 0 && erz.KollektorflaecheM2 <= 0) d.Erzeuger = Array.Empty<string>();
 
+            d.AufheizVorlageAn = p.AufheizAn(e.Nutzungsprofil);
+            d.AufheizleistungKw = e.AufheizleistungKw;
             d.VorlaufC = e.VorlaufC;
             d.RuecklaufC = e.RuecklaufC;
             d.SchwelleEin = e.SchwelleEin ?? p.WertOder(PufferAuslegungVorgaben.SCHWELLE_EIN, ProjektPuffer.SCHWELLE_EIN_DEFAULT / 100.0);
@@ -438,6 +440,8 @@ namespace WindowsFormsApplication1
                 TPufferObenC = d.TPufferObenC,
                 ZirkulationWeg = zw,
                 Wohneinheiten = d.Wohneinheiten,
+                // K12 (V30): ein Schalter des Anwenders geht vor den Vorlagenschalter des Nutzungsprofils.
+                AufheizKriterium = d.Kriterien != null && d.Kriterien.TryGetValue(PufferKriteriumKennung.K12, out bool aufheiz) ? aufheiz : (bool?)null,
                 // Grundlage ist der Satz VOR den gespeicherten Schaltern - ein zurückgestellter Schalter gilt wieder.
                 Parameter = PufferAuslegungCtrl.ParameterMitKriterien(_vorbelegung.KriterienBasis ?? b.Parameter, vorlage, d.Kriterien)
             };

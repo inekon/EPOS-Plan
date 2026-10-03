@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Data;
 using System.Globalization;
 
@@ -44,7 +45,7 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, double>(StringComparer.Ordinal);
             var quellen = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (PufferVorgabe v in PufferAuslegungVorgaben.EINTRAEGE)
+            foreach (PufferVorgabe v in PufferAuslegungVorgaben.EINTRAEGE.Concat(PufferAuslegungVorgaben.NACHTRAG))
             {
                 werte[v.Schluessel] = v.Wert;
                 quellen[v.Schluessel] = v.Quelle;
@@ -134,6 +135,10 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Kriterienschalter der Vorlage (<c>Vorlage.&lt;Typ&gt;.&lt;Kriterium&gt;</c>); fehlt er: aus.</summary>
         public bool VorlageAn(string typ, string kriterium) =>
             WertOder(PufferAuslegungVorgaben.VorlageSchluessel(typ, kriterium), 0) >= 0.5;
+
+        /// <summary>Der Vorlagenschalter des Aufheizkriteriums K12 für das Nutzungsprofil; ohne Profil oder Schlüssel: aus.</summary>
+        public bool AufheizAn(PufferNutzungsprofil? profil) =>
+            profil.HasValue && WertOder(PufferAuslegungVorgaben.AUFHEIZ_NUTZUNG + profil.Value, 0) >= 0.5;
 
         /// <summary>Ein Beispielwert der Vorlage; fehlt er: <paramref name="ersatz"/>.</summary>
         public double VorlageWert(string typ, string glied, double ersatz) =>

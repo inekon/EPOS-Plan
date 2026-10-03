@@ -44139,5 +44139,41 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_BERICHT_NA_ZEILE" xml:space="preserve">
     <value>Size {0} l: coverage {1}, {2} starts per day, loss {3} kWh/a</value>
   </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG" xml:space="preserve">
+    <value>No warm-up sizing</value>
+  </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT" xml:space="preserve">
+    <value>The warm-up criterion is switched on, but no warm-up sizing of the buildings is available: it does not size the tank. Only a simulation with warm-up optimisation provides Φ_n.</value>
+  </data>
+  <data name="PAUS_KRIT_K12" xml:space="preserve">
+    <value>Warm-up after setback</value>
+  </data>
+  <data name="PAUS_HERK_K12" xml:space="preserve">
+    <value>Buffer sizing concept V30 / KP3 (warm-up sizing of the buildings)</value>
+  </data>
+  <data name="PAUS_HERK_Q_V30" xml:space="preserve">
+    <value>Buffer sizing concept V30 / KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12" xml:space="preserve">
+    <value>({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_KP3" xml:space="preserve">
+    <value>warm-up duration from KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_VORGABE" xml:space="preserve">
+    <value>default Aufheiz.Dauer_h</value>
+  </data>
+  <data name="PAUS_WEG_K12_KEINE" xml:space="preserve">
+    <value>no KP3 warm-up sizing of the buildings</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KP3" xml:space="preserve">
+    <value>KP3 warm-up sizing of the last run: sum of Aufheiz_Leistung_Kw over {0} buildings, longest warm-up time</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KEINE" xml:space="preserve">
+    <value>no warm-up sizing in the last run (criterion K12 does not size)</value>
+  </data>
+  <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
+    <value>Template of the usage profile: on for office/school</value>
+  </data>
 </root>
 
