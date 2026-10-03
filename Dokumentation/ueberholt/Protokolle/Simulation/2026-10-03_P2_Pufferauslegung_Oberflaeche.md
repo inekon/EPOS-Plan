@@ -4,7 +4,7 @@ Fortsetzung von [`2026-10-03_P1_Pufferauslegung.md`](2026-10-03_P1_Pufferauslegu
 Oberfläche“ (Anwender, 03.10.2026). Grundlage: Konzept
 [`Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md`](../../../aktuell/Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md)
 Abschnitt 6 und das Mockup `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html`. Bau durch einen
-Opus-Agenten im Worktree, Zweig `claude/p2-pufferauslegung` auf `333528be`. Statuszeile **#679**.
+Opus-Agenten im Worktree, Zweig `claude/p2-pufferauslegung` auf `333528be`. Statuszeile **#682**.
 
 ## 1 Was gebaut ist
 
@@ -41,6 +41,8 @@ KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen); Windows-Sc
 Prüfmodus sauber; SQL-Prüfer 2 211 Texte, 0 Fundstellen; Referenzlauf CI-Sieben 7/7 PASS gegen R33.
 
 Gate auf dem Merge-Stand (``558123c9``, Schemastand 172): Kern-Filter 0 Fehler; Tests Kern 10 305 (1 übersprungen), UI 7 341, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), alle grün; Windows-Schale auf Linux 0 Fehler; Referenzlauf 16/16 PASS gegen R33, 487/487 CSV byte-gleich; SQL-Prüfer 2 231 Texte, 0 Fundstellen; ResourceDesigner unverändert.
+
+Nachtest nach dem zweiten Merge (origin #679–#681): Kern-Filter 0 Fehler; Tests Kern 10 333 (1 übersprungen), UI 7 357, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen); Windows-Schale 0 Fehler; Referenzlauf 16/16 PASS gegen R33, 487/487 byte-gleich; SQL-Prüfer 2 231 Texte 0 Fundstellen; ResourceDesigner unverändert.
 
 ## 4 Offen (P3)
 

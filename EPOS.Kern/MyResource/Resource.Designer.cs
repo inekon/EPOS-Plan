@@ -36682,6 +36682,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr aus „{0}“ gelesen: {1}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_TEXT {
@@ -81165,6 +81174,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter. ähnelt.
         /// </summary>
         public static string SIMENG_AUFH_W1 {
@@ -84718,6 +84736,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Katalogbau {0} kW × Faktor {1}) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_FAKTOR {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Eingabe {0} kW gilt dem Katalogbau, × Faktor {1}) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_FAKTOR_GRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_FAKTOR_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (am Katalogbau; den Faktor der Verbrauchsangabe bestimmt erst der Lauf) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_FAKTOR_LAUF {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_FAKTOR_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe. ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_GEKOPPELT {
@@ -84732,6 +84777,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_HRL_RESERVE {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_HRL_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5} ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: keine Bemessung — {1} ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Tagesbilanz — ohne Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4} ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR", resourceCulture);
             }
         }
         
@@ -84786,6 +84876,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_MSG_FEHLER {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenze und Zielleistung je Zone ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_QUELLE_GEMISCHT {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_QUELLE_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistungsgrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_QUELLE_GRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_QUELLE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielleistung ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_QUELLE_ZIEL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_QUELLE_ZIEL", resourceCulture);
             }
         }
         

@@ -1405,6 +1405,12 @@ Geometrierechnung (ADR-003):
   Zahl oder Text mit Dezimalkomma in [0°, 360°], 0° = Nord, im Uhrzeigersinn, als geografische
   Richtung ohne Nordwinkel des Modells (`IMP_IFC_PROT_AZIMUT_RUECKFALL`, I); der Platzhalter
   −987654321,99 liegt außerhalb und bleibt unbestimmt (`SEITE_UNBESTIMMT`).
+- **Baujahr:** Fehlt `Pset_BuildingCommon.YearOfConstruction` am Gebäude, gilt `YearOfConstruction` aus
+  einem beliebigen Satz (Name ohne angehängte Einheit, der Export schreibt `YearOfConstruction (Datum)`
+  mit einem Datum als Text), sonst `Constructed` (Ganzzahl); es zählt der erste Wert, aus dem sich ein
+  Jahr lesen lässt (`Baujahrregel`), benannt mit Satz, Name und Text (`IMP_IFC_PROT_BAUJAHR_RUECKFALL`, I).
+  Ein unlesbarer Standardwert fällt nicht zurück. Das Baujahr führt dann die Baualtersklasse wie jedes
+  andere (E47).
 - **Dachfenster:** Fenster und Türen, die über `IfcRelAggregates` Teil eines Bauteils sind statt eine
   Öffnung zu füllen, werden Öffnungen dieses Bauteils (`IMP_IFC_PROT_OEFFNUNG_TEIL`, I); für die Regel
   „Dach oder seine Platten“ zählen sie nicht als Platten.

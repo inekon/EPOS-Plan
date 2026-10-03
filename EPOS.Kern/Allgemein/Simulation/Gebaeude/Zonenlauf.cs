@@ -228,7 +228,12 @@ namespace WindowsFormsApplication1
                                                   ? (double?)eingang.KuehlSollwert : null,
                                               heizkreis, kuehlkreis, eingang.Nachtzeit,
                                               eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null,
-                                              eingang.Nutzungsmaske, _kappung, _kappungH, aufheizung);
+                                              eingang.Nutzungsmaske, _kappung, _kappungH, aufheizung)
+            {
+                // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
+                SommerlueftungGesetzt = eingang.Sommerlueftung,
+                HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+            };
         }
 
         /// <summary>

@@ -115,6 +115,38 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(zonen.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.KEINE_BEHEIZTEN_RAEUME);
         }
 
+        /// <summary>
+        /// <b>Der Baujahr-Rückfall</b> (Mehrzonenkonzept 6.5): Ohne <c>Pset_BuildingCommon.YearOfConstruction</c>
+        /// liest der Leser das Baujahr aus einem fremden Satz — der Standardname (auch mit angehängter Einheit)
+        /// geht <c>Constructed</c> vor —, benennt den Rückfall, und das Baujahr führt die Klasse (E47): Die
+        /// gewählte Klasse F weicht der Klasse H aus dem Jahr 1984. Die Gegenprobe mit Standardsatz bleibt
+        /// ohne Rückfallmeldung.
+        /// </summary>
+        [Fact]
+        public void Das_Baujahr_faellt_auf_einen_fremden_Satz_zurueck_und_fuehrt_die_Klasse()
+        {
+            GebaeudeImportAblauf a = Lesen(PROBE);
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal(1984, g.Baujahr);
+            Assert.Equal("01.01.1984 00:00:00", g.BaujahrText);
+            PruefMeldung m = Assert.Single(Meldungen(g, "BAUJAHR_RUECKFALL"));
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "CAD_GebaeudeAllgemein", "YearOfConstruction (Datum)", "01.01.1984 00:00:00", "1984" }, m.Werte);
+            Assert.Empty(Meldungen(g, "BAUJAHR_TEXT"));
+            Assert.Contains("CAD_GebaeudeAllgemein.YearOfConstruction (Datum)", GebaeudeZuordnungsModell.MeldungText(m));
+
+            GebaeudeImportSatz satz = a.Zuordnen(0, 'F');
+            Assert.Equal('H', satz.Baualtersklasse);
+            Assert.Equal(1984, satz.Baujahr);
+            Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.BAUJAHR).Herkunft);
+            Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+
+            AbbildGebaeude standard = Lesen("ifc4_haus.ifc").Abbild.Gebaeude.Single();
+            Assert.Equal(1965, standard.Baujahr);
+            Assert.Empty(Meldungen(standard, "BAUJAHR_RUECKFALL"));
+            Assert.Single(Meldungen(standard, "BAUJAHR_TEXT"));
+        }
+
         [Fact]
         public void Gegenprobe_der_Weg_der_Zerlegung_bleibt_ohne_die_neuen_Meldungen()
         {

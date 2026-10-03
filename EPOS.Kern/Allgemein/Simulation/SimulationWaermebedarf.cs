@@ -1098,23 +1098,7 @@ namespace WindowsFormsApplication1
             KlimakalenderGemeinsam gemeinsam = vorbereitung.Klimakalender.Gemeinsam;
             double verbrauchAltKwh;
 
-            // KÜHLUNG (KU1, K11): Der VDI-Weg regelt auf Kühlsollwert und Kühlleistungsgrenze
-            // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
-            // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
-            _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
-            _vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt;
-
-            // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
-            // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
-            // Anlagendaten. Ohne Stufe rechnet jedes Gebäude wie bisher.
-            string stufe = AnlagenkopplungProjekt;
-            _vdi6007.Anlagenkopplung = stufe;
-            _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
-            // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
-            _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
-                ? KuehlVorlaufAnlageC : double.NaN;
-            _vdi6007.NennleistungSkalierung = 1.0;
-            _vdi6007.Probelauf = false;
+            VdiWegEinstellen();
 
             // STUFE G3 (Konzept 4.7, E8): Ein Gebäude mit Zone trägt seine echte Hülle - ein
             // Lauf, keine Nachmultiplikation, keine Verbrauchs-Rückrechnung. Ohne Zone bleibt
@@ -1168,6 +1152,104 @@ namespace WindowsFormsApplication1
             // 4. Der Lauf auf der Bezugsfläche des Gebäudes.
             return weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh);
         }
+
+        /// <summary>
+        /// Die Projektschalter an den VDI-Weg — vor jeder Gebäuderechnung und vor der Auskunft der
+        /// Aufheizbemessung (<see cref="AufheizbemessungEinesGebaeudes"/>), damit beide denselben Weg sehen.
+        /// </summary>
+        private void VdiWegEinstellen()
+        {
+            // KÜHLUNG (KU1, K11): Der VDI-Weg regelt auf Kühlsollwert und Kühlleistungsgrenze
+            // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
+            // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
+            _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
+            _vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt;
+
+            // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
+            // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
+            // Anlagendaten. Ohne Stufe rechnet jedes Gebäude wie bisher.
+            string stufe = AnlagenkopplungProjekt;
+            _vdi6007.Anlagenkopplung = stufe;
+            _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
+            // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
+            _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
+                ? KuehlVorlaufAnlageC : double.NaN;
+            _vdi6007.NennleistungSkalierung = 1.0;
+            _vdi6007.Probelauf = false;
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizbemessung EINES Gebäudes ohne Jahreslauf</b> (Entwurf KP3, Welle D2; Grundsatz 3,
+        /// Festlegung 3: eine Bemessung, zwei Verwendungen; B14) — die Auskunft der Herleitungszeile. Gebaut wird
+        /// wie im Lauf: dieselben Schalter (<see cref="VdiWegEinstellen"/>), derselbe Eingang mit dem
+        /// Konditionierungssatz (<see cref="Vdi6007Rechenweg.EingangBauen"/>; <see cref="UebergabeEingang"/> baut
+        /// ohne Satz und zeigte mit Heizkalender eine andere Rampe) bzw. dieselben Zonen samt 4-K-Regel
+        /// (<see cref="Vdi6007Rechenweg.ZonenBauen"/>), dieselbe Planung (<see cref="Aufheizoptimierung.Planen"/>,
+        /// sie ruft <see cref="Aufheizoptimierung.Bemessen"/>) mit der Projektvorgabe und der Testnaht des Wegs,
+        /// im Mehrzonenweg dieselben Gebäudewerte (<see cref="Aufheizoptimierung.Gebaeudewerte"/>, Festlegung 22).
+        /// Damit ist jede Zahl bitgleich zur Ergebniszeile des Laufs (<c>AufheizAuskunftTests</c>).
+        ///
+        /// <para><b>Faktor</b> (Festlegung 16, B11): bei Flächenangabe dieselbe Division wie der Lauf
+        /// (<c>Z_AuswahlWohnflaeche / Nutzflaeche</c>), mit Zone 1, mit Verbrauchsangabe offen — die
+        /// Rückrechnung braucht den Jahreslauf. Eine fest eingetragene Nennleistung der Übergabe geht nicht ein:
+        /// Ein gekoppeltes Gebäude wird nicht optimiert (GEKOPPELT), die Kälteseite bemisst nicht mit.</para>
+        ///
+        /// <para>Voraussetzung ist <see cref="KlimakalenderLesen"/>; liest die Projektvorgabe, schreibt nichts
+        /// und rechnet kein Jahr des Gebäudes (im Mehrzonenweg mit Regelpaaren nur den adiabaten Vorlauf der
+        /// 4-K-Regel, den die Zonen des Laufs ebenso brauchen).</para>
+        /// </summary>
+        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            var leer = new Aufheizauskunft { ID_Gebaeude = item.ID_Gebaeude, Gebaeudename = item.Gebaeudename ?? "" };
+            if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007)) return leer with { Tagesbilanz = true };
+
+            VdiWegEinstellen();
+            Aufheizvorgabe vorgabe = _vdi6007.Aufheizvorgabe;
+            if (vorgabe == null || !vorgabe.An) return leer;
+            KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
+            try
+            {
+                if (Vdi6007Rechenweg.Mehrzonenweg(item))
+                {
+                    IReadOnlyList<ZonenEingang> zonen = _vdi6007.ZonenBauen(item, gemeinsam, 0);
+                    Aufheizgebaeude g = Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
+                    double? p = Endlich(g.AufheizleistungW / 1000.0);
+                    // Ein Gebäude mit Zonen trägt seine echte Hülle: Faktor 1, P_auf unskaliert wie im Lauf.
+                    return leer with
+                    {
+                        Zustand = g.Zustand, Bemessung = g.Bemessung, AufheizzeitMaxH = g.AufheizzeitMaxH,
+                        AussenC = Endlich(g.AussenBC), LeistungUnskaliertKw = p, Skalierungsfaktor = 1.0, LeistungKw = p,
+                        Quelle = g.Quelle,
+                    };
+                }
+
+                GebaeudeModellEingang eingang = _vdi6007.EingangBauen(item, gemeinsam);
+                Aufheizplan plan = Aufheizoptimierung.Planen(Aufheizzone.Aus(ZonenEingang.Einzeln(eingang)), vorgabe,
+                                                            _vdi6007.AufheizleistungTestW);
+                Aufheizbemessung b = plan.Bemessung;
+                if (b == null) return leer with { Zustand = plan.Zustand };
+
+                // Derselbe Faktor wie der Lauf (EinLaufMitNachmultiplikation bzw. EinLaufMitZone).
+                double? faktor = GebaeudeZonensatz.HatZonen(item) ? 1.0
+                    : GebaeudeVorbereitung.Bilden(_kalender, item).IstFlaeche ? item.Z_AuswahlWohnflaeche / item.Nutzflaeche
+                    : (double?)null;
+                double? unskaliert = Endlich(b.AufheizleistungW / 1000.0);
+                return leer with
+                {
+                    Zustand = plan.Zustand, Bemessung = b.Bemessung, AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
+                    AussenC = Endlich(b.Wirksam.AussenC), LeistungUnskaliertKw = unskaliert, Skalierungsfaktor = faktor,
+                    LeistungKw = faktor.HasValue ? unskaliert * faktor.Value : null, Quelle = b.Quelle,
+                };
+            }
+            catch (GebaeudeModellException ex)
+            {
+                return leer with { Befund = ex.Message };
+            }
+        }
+
+        /// <summary>NaN wird <c>null</c> — wie <c>Aufheizergebnis</c>; ±∞ (Testnaht) bleibt.</summary>
+        private static double? Endlich(double x) => double.IsNaN(x) ? (double?)null : x;
 
         /// <summary>
         /// <b>Der Zweig des VDI-Wegs in der Fassade</b> (Rechenschritte 8.3, Umsetzungskonzept
@@ -1268,10 +1350,28 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < 8760; h++) ziel[h] *= faktor;
             GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
             if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
+            if (!vorbereitung.IstFlaeche) HinweisAufheizungVerbrauch(item, ergebnis?.Aufheizung);
 
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis „Aufheizoptimierung bei Verbrauchsangabe"</b> (Entwurf KP3, B11; Befund R4) — einmal je
+        /// Gebäude, wenn die Rampe an einem Gebäude mit Verbrauchs-Rückrechnung wirkt (geplant, mit mindestens einem
+        /// Rampentag): Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Rampen in den Faktor
+        /// auf; die Jahreswärme bleibt der angegebene Verbrauch. Muster der übrigen Gebäudehinweise der Fassade.
+        /// </summary>
+        internal static void HinweisAufheizungVerbrauch(ProjektGebaeudeModel item, Aufheizergebnis a)
+        {
+            if (item == null || a == null || !a.Geplant || !(a.Aufheiztage > 0)) return;
+            System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+            string wer = (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "aufh-verbrauch-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(k, MyResource.Resource.SIMENG_AUFH_VERBRAUCH, a.Aufheiztage.Value.ToString(k)));
         }
 
         /// <summary>

@@ -315,6 +315,22 @@ namespace WindowsFormsApplication1
         internal int StundenMitSommerlueftung { get; }
 
         /// <summary>
+        /// <b>Ist eine Sommerlüftung gesetzt?</b> (Entwurf KP3, Festlegung 26, B17) — der Schalter
+        /// <c>Sommerlueftung</c> des Eingangs, am Mehrzonengebäude einer seiner Zonen. Das Modell behält seine
+        /// Zahl <see cref="StundenMitSommerlueftung"/> (ohne Schalter 0); NULL in der Ergebniszeile und kein
+        /// Exportschlüssel entstehen daraus in <c>GebaeudeKennzahlen</c> bzw. <c>GebaeudeErgebnisexport</c> —
+        /// das Muster der Nachtauskühlstunden (E30). Ein Kennzeichen, keine Rechengröße.
+        /// </summary>
+        internal bool SommerlueftungGesetzt { get; init; }
+
+        /// <summary>
+        /// <b>Gilt ein Heizkalender?</b> (Stufe KP1b; Entwurf KP3, Festlegung 28) — am Mehrzonengebäude in einer
+        /// beheizten Zone. Mit ihm (oder mit wirksamer Aufheizoptimierung) schreibt der Ergebnisexport die
+        /// Sollwertreihe <see cref="Heizsollwert"/>. Ein Kennzeichen, keine Rechengröße.
+        /// </summary>
+        internal bool HeizkalenderWirksam { get; init; }
+
+        /// <summary>
         /// <b>Stunden des Jahres mit wirksamer Nachtauskühlung</b> [h] (Stufe KP1b, Konzept 3.7):
         /// die Regel war an <em>und</em> die Stunde trug einen bedingten Anteil — gleich, welcher
         /// Luftwechsel gewann. <c>null</c> heißt: <b>keine Nachtauskühlung gesetzt</b> (Muster E30);
@@ -373,7 +389,11 @@ namespace WindowsFormsApplication1
                                               Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
                                               Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit,
                                               StundenMitNachtauskuehlung, Nutzungsmaske,
-                                              HeizleistungMaxAnteil, HeizleistungMaxStundenH, Aufheizung?.Skaliert(faktor));
+                                              HeizleistungMaxAnteil, HeizleistungMaxStundenH, Aufheizung?.Skaliert(faktor))
+            {
+                SommerlueftungGesetzt = SommerlueftungGesetzt,
+                HeizkalenderWirksam = HeizkalenderWirksam,
+            };
         }
     }
 

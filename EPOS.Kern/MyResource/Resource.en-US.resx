@@ -42330,6 +42330,45 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PARV_LBL_KATALOG_AUSGELAUFEN" xml:space="preserve">
     <value>Discontinued:</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction is missing; year of construction read from "{0}.{1}" = "{2}": {3}.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
+    <value>{0}: longest preheat time {1} h at {2} °C ({3}) · preheat power {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
+    <value>{0}: The preheat power is insufficient — at {1} °C ({2}) no ramp of up to 48 h holds · preheat power {3} kW {4}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
+    <value>{0}: heating circuit coupled (AK1) — not optimised</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
+    <value>{0}: daily balance — no preheat optimisation</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0}: no design — {1}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_GRENZE" xml:space="preserve">
+    <value>(input {0} kW applies to the catalogue building, × factor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR" xml:space="preserve">
+    <value>(catalogue building {0} kW × factor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>(catalogue building; the factor of the consumption entry is set by the run)</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GRENZE" xml:space="preserve">
+    <value>heating power limit</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_ZIEL" xml:space="preserve">
+    <value>target power</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>limit and target power per zone</value>
+  </data>
+  <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
+    <value>Preheat optimisation (consumption entry): the building is calculated from a consumption entry. Scaling back to the stated consumption absorbs the additional heat of the preheat ramps on {0} days into the scaling factor; the annual heat remains the stated consumption. Only a floor area entry shows the additional heat of the ramps.</value>
+  </data>
   <data name="PAUS_TITEL" xml:space="preserve">
     <value>Buffer storage sizing</value>
   </data>
