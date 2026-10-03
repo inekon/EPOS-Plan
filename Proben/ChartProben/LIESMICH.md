@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **242 Bilder**; **206** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **244 Bilder**; **208** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-03.sha256` nennt alle 206 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-03.sha256` nennt alle 208 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -562,3 +562,20 @@ Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und eine
 sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-03.sha256`, dazu die sechs
 neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen
 neu, alle übrigen gleich.
+
+## Kälteproduktion (Ergebnisreiter „Kälte Produktion Chart“)
+
+`KaelteProduktionBild` (Datei `EPOS.Kern/Allgemein/Bericht/KaelteProduktionBild.cs`) zeichnet die Jahresganglinie der
+Kälteerzeugung, 1 240 × 560, über `ChartRenderer.ErzeugerStapelModell`: je Kälteerzeuger seine gedeckte Kälte als Säule
+(erster Erzeuger in `WAERME_WP`), darauf die ungedeckte Kälte in `REST`, darüber der Kältebedarf als Linie in `BEDARF`.
+Die synthetischen Reihen stehen in `Program.cs` (`KaelteProduktionSatz`): ein Bedarf mit Sommerspitze, die Wärmepumpe
+deckt bis 30 kW.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kaelte_produktion` | Wärmepumpe, ungedeckte Kälte und Kältebedarf in ihren Rollenfarben |
+| Maßprobe | `kaelte_produktion_ohne_erzeuger` | ohne Kälteerzeuger ist der ganze Bedarf ungedeckt: Rest und Bedarfslinie |
+
+Das sind **2 neue Bilder**. Kein Bild von vorher ändert sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert
+in `Messlatte_2026-10-03.sha256`, dazu die zwei neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`)
+ist auf Windows nachzuziehen: zwei Zeilen neu, alle übrigen gleich.

@@ -16497,6 +16497,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungedeckte Kälte ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kesselwärme ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_KESSELWAERME {
@@ -16736,6 +16754,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_KAELTELAST_JAHRESGANGLINIE {
             get {
                 return ResourceManager.GetString("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteproduktion Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -91779,6 +91806,18 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_NAV_AUTARKIE_ANALYSE {
             get {
                 return ResourceManager.GetString("SIM_NAV_AUTARKIE_ANALYSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ❄️ 
+        ///Kälte
+        ///Produktion
+        ///Chart ähnelt.
+        /// </summary>
+        public static string SIM_NAV_KAELTEPRODUKTION_CHART {
+            get {
+                return ResourceManager.GetString("SIM_NAV_KAELTEPRODUKTION_CHART", resourceCulture);
             }
         }
         

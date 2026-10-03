@@ -43821,5 +43821,20 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="SIM_NAV_KAELTEPRODUKTION_CHART" xml:space="preserve">
+    <value>❄️ 
+Cooling
+generation
+chart</value>
+  </data>
+  <data name="CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Cooling generation, annual load profile</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Uncovered cooling</value>
+  </data>
 </root>
 

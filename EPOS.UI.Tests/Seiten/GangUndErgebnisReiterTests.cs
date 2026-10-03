@@ -792,4 +792,95 @@ public class GangUndErgebnisReiterTests : EposBunitContext
 
         Assert.Equal(new[] { "simerg-monate" }, Kennungen(seite));
     }
+
+    // =====================================================================
+    // Kaelte Produktion Chart und die Folge der Blaetter
+    // =====================================================================
+
+    private readonly Ganglinienstand _kaelteStand = new Ganglinienstand();
+
+    private IRenderedComponent<ErgebnisReiter> ErgebnisMitKaelteZeichnen()
+        => Render<ErgebnisReiter>(p =>
+        {
+            p.Add(x => x.Autarkie, Autarkie());
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.WaermegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>wg</i>")));
+            p.Add(x => x.StromgangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>sg</i>")));
+            p.Add(x => x.KaeltegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>kg</i>")));
+        });
+
+    private static List<string> Blattfolge<T>(IRenderedComponent<T> seite) where T : IComponent
+        => seite.FindAll("button[role='tab']").Select(b => b.Id ?? "").ToList();
+
+    /// <summary>
+    /// <b>Die Folge der Blaetter:</b> Waerme, Strom, ganz rechts die Autarkie-Analyse —
+    /// und sie bleibt das Blatt, das beim Oeffnen aktiv ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kaelte_steht_die_Autarkie_rechts_und_ist_aktiv()
+    {
+        var seite = ErgebnisZeichnen(Autarkie());
+
+        Assert.Equal(new[] { "reiter-WAERMEGANG", "reiter-STROMGANG", "reiter-AUTARKIE" }, Blattfolge(seite));
+        Assert.Equal("AUTARKIE", seite.Instance.AktivesBlatt);
+        Assert.DoesNotContain("reiter-KAELTEGANG", seite.Markup);
+    }
+
+    /// <summary>
+    /// <b>Mit Kaelte vier Blaetter:</b> Waerme, Strom, Kaelte, Autarkie-Analyse; aktiv
+    /// bleibt die Autarkie, und das Kaelteblatt zeigt den Inhalt des Wirts.
+    /// </summary>
+    [Fact]
+    public void Mit_Kaelte_steht_der_Kaeltereiter_vor_der_Autarkie()
+    {
+        var seite = ErgebnisMitKaelteZeichnen();
+
+        Assert.Equal(new[] { "reiter-WAERMEGANG", "reiter-STROMGANG", "reiter-KAELTEGANG", "reiter-AUTARKIE" },
+                     Blattfolge(seite));
+        Assert.Equal("AUTARKIE", seite.Instance.AktivesBlatt);
+
+        seite.Find("button[role='tab'][id='reiter-KAELTEGANG']").Click();
+        Assert.Equal("KAELTEGANG", seite.Instance.AktivesBlatt);
+        Assert.Contains("<i>kg</i>", seite.Markup);
+    }
+
+    private IRenderedComponent<KaeltegangReiter> KaelteZeichnen()
+        => Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+        });
+
+    /// <summary>
+    /// <b>Der Bildauftrag des Kaeltebilds:</b> Bild <c>KAELTEGANG</c>, ohne Reihenwahl,
+    /// im SVG-Baustein unter <c>simerg-kaeltegang</c>; „sortiert" schaltet die Dauerlinie.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_meldet_seinen_Bildauftrag_und_schaltet_sortiert()
+    {
+        var seite = KaelteZeichnen();
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && !a.Sortiert && a.Reihen is null);
+        Assert.Equal(new[] { "simerg-kaeltegang" },
+                     seite.FindComponents<DiagrammSvg>().Select(k => k.Instance.Kennung).ToArray());
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && a.Sortiert);
+        Assert.True(_kaelteStand.Sortiert);
+    }
+
+    /// <summary>„sortiert" uebersteht den Neuaufbau des Blatts (Sitzungsgedaechtnis).</summary>
+    [Fact]
+    public void Kaeltegang_liest_sortiert_aus_dem_Gedaechtnis()
+    {
+        _kaelteStand.Merken(-1, true, false, null);
+
+        var seite = KaelteZeichnen();
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && a.Sortiert);
+    }
 }
