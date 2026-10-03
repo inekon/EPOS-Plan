@@ -378,6 +378,14 @@ namespace Testdatenbankschema
 
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten (spaeterer Schritt) ist der Nachtrag
+                // gegenstandslos - melden statt eine Abfrage auf eine entfallene Spalte zu fahren.
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                      ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
                 long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
                 Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +

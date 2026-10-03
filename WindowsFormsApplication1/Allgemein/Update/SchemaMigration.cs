@@ -9039,6 +9039,13 @@ namespace WindowsFormsApplication1
             int gesamt = 0;
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten gegenstandslos - keine Abfrage auf eine
+                // entfallene Spalte (KwkAnlagenwahrheit.Anwendbar).
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    l.Notiz("89: " + paar.Anlage + " aus " + paar.Projekt + ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 int offen = Anzahl(KwkAnlagenwahrheit.Zaehlung(paar));
                 if (offen <= 0) continue;
                 if (!SqliteDml(l, KwkAnlagenwahrheit.Uebertragung(paar),
