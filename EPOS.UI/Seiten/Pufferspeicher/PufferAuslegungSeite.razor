@@ -167,6 +167,7 @@
     {
         _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
         _ergebnis = Daten.Ergebnis;
+        _probelauf = Daten.Probelauf;
         _idPuffer = Daten.IdPuffer;
         _pufferName = Daten.PufferBezeichner ?? "";
         _ziel = _idPuffer.HasValue ? 0 : 1;
@@ -891,6 +892,38 @@
         }
     }
 
+    // ---- Probelauf der Jahressimulation (Welle P4b) ----
+    private PufferProbelaufDaten? _probelauf;
+    private bool _probelaufLaeuft;
+
+    /// <summary>Der letzte Probelauf (bunit).</summary>
+    public PufferProbelaufDaten? Probelauf => _probelauf;
+
+    private PufferProbelaufStartsDaten? ProbelaufRang1 => _probelauf is { Erfolg: true } p ? p.Rang1 : null;
+
+    /// <summary>„kein Lauf", solange kein erfolgreicher Probelauf vorliegt.</summary>
+    private string ProbelaufLeer => _probelauf is { Erfolg: true } ? "—" : Texte.ProbelaufKeinLauf;
+
+    /// <summary>Startet den Probelauf mit der Empfehlung — nichts wird gespeichert oder übernommen.</summary>
+    public async Task ProbelaufStarten()
+    {
+        if (Dienste?.Probelauf is null || _probelaufLaeuft) return;
+        if (_veraltet || _ergebnis is null) NeuRechnen();
+        _probelaufLaeuft = true;
+        try
+        {
+            _probelauf = await Dienste.Probelauf(_eingabe.Kopie());
+        }
+        catch (Exception ex)
+        {
+            _probelauf = PufferProbelaufDaten.MitFehler(Format(Texte.ProbelaufFehler, ex.Message));
+        }
+        finally
+        {
+            _probelaufLaeuft = false;
+        }
+    }
+
     private bool Neuanlage => !_idPuffer.HasValue || _ziel == 1;
 
     private bool UebernahmeFrei => _ergebnis is { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 } && !_veraltet;
@@ -1046,6 +1079,116 @@
                     @if (kz.BandWpMinL is double wmin && kz.BandWpMaxL is double wmax)
                     {
                         <Herleitungszeile Text="@Format(Texte.BandWp, Z(wmin), Z(wmax))" />
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <Gruppenkopf Titel="@Texte.ProbelaufGruppe">
+                <KindInhalt>
+                    <table class="epos-raster epos-pausl-probelauf">
+                        <thead>
+                            <tr>
+                                <th>@Texte.ProbelaufSpalteGroesse</th>
+                                <th>@Texte.ProbelaufSpalteAuslegung</th>
+                                <th>@Texte.ProbelaufSpalteLauf</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="epos-pausl-probelauf-tag">
+                                <td>@Texte.KzStartsTag</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bt ? Z(bt.StartsJeTag, "N1") : "—")</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rt ? Z(rt.StartsJeTag, "N1") : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-heizperiode">
+                                <td>@Texte.KzStartsJahr</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bh ? Z(bh.StartsHeizperiode) : "—")</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rh ? Z(rh.StartsHeizperiode) : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-jahr">
+                                <td>@Texte.ProbelaufStartsJahr</td>
+                                <td>—</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rj ? Z(rj.StartsJahr) : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-deckung">
+                                <td>@Texte.ProbelaufDeckung</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bd ? Z(bd.Deckungsgrad * 100) + " %" : "—")</td>
+                                <td>@(_probelauf is { Erfolg: true, Deckung: double dk } ? Z(dk * 100) + " %" : ProbelaufLeer)</td>
+                            </tr>
+                            @if (_probelauf is { Erfolg: true } pl)
+                            {
+                                @foreach (PufferProbelaufStartsDaten s in pl.Starts.Where(s => !s.Rang1))
+                                {
+                                    <tr class="epos-pausl-probelauf-weitere">
+                                        <td>@(s.Erzeuger + ": " + Texte.ProbelaufStartsJahr)</td>
+                                        <td>—</td>
+                                        <td>@Z(s.StartsJahr)</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    @if (_probelauf is { Erfolg: true } stand)
+                    {
+                        <p class="epos-leisezeile epos-pausl-probelauf-stand">@Format(Texte.ProbelaufStand, stand.Zeitpunkt.ToString("g", CultureInfo.CurrentCulture), Z(stand.VolumenL), Z(stand.DauerSekunden, "N1"))</p>
+                        @if (stand.Rang1 is { AusReihe: true })
+                        {
+                            <p class="epos-leisezeile epos-pausl-probelauf-ausreihe">@Texte.ProbelaufAusReihe</p>
+                        }
+                        @if (stand.Abweichung)
+                        {
+                            <p class="epos-pausl-probelauf-abweichung" data-code="PA-STARTS-ABWEICHUNG">@stand.AbweichungText</p>
+                        }
+                        @if (stand.Monate.Count > 0)
+                        {
+                            <table class="epos-raster epos-pausl-probelauf-monate">
+                                <caption>@Texte.ProbelaufFuellstand</caption>
+                                <thead>
+                                    <tr>
+                                        <th>@Texte.ProbelaufMonat</th>
+                                        <th>@Texte.ProbelaufMin</th>
+                                        <th>@Texte.ProbelaufMittel</th>
+                                        <th>@Texte.ProbelaufMax</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (PufferFuellstandMonatDaten m in stand.Monate)
+                                    {
+                                        <tr>
+                                            <td>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m.Monat)</td>
+                                            <td>@(Z(m.Min * 100) + " %")</td>
+                                            <td>@(Z(m.Mittel * 100) + " %")</td>
+                                            <td>@(Z(m.Max * 100) + " %")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            @if (stand.KaeltesteWocheTag > 0 && stand.WocheMin is double wmin2 && stand.WocheMittel is double wmit && stand.WocheMax is double wmax2)
+                            {
+                                <Herleitungszeile Text="@Format(Texte.ProbelaufWoche, stand.KaeltesteWocheTag, Z(wmin2 * 100), Z(wmit * 100), Z(wmax2 * 100))" />
+                            }
+                        }
+                        else
+                        {
+                            <p class="epos-leisezeile">@Texte.ProbelaufOhneFuellstand</p>
+                        }
+                    }
+                    else if (_probelauf is { Erfolg: false } fehl)
+                    {
+                        <p class="epos-pausl-probelauf-fehler">@fehl.Fehler</p>
+                    }
+                    @if (Dienste?.Probelauf is not null)
+                    {
+                        <p class="epos-leisezeile">@Texte.ProbelaufErklaerung</p>
+                        <div class="epos-pausl-probelauf-knoepfe">
+                            @if (_probelaufLaeuft)
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-probelauf-knopf" aria-disabled="true" aria-busy="true">@Texte.ProbelaufLaeuft</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-probelauf-knopf" @onclick="ProbelaufStarten">@Texte.ProbelaufKnopf</button>
+                            }
+                        </div>
                     }
                 </KindInhalt>
             </Gruppenkopf>

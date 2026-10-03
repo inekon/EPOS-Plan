@@ -486,6 +486,116 @@ public class PufferAuslegungSeiteTests : EposBunitContext
         Assert.Contains("gehört nicht zum Projekt", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-ablaufleiste"));
     }
+
+    // =============================================================================
+    //  Abgleich mit der Jahressimulation (Probelauf, Welle P4b)
+    // =============================================================================
+
+    private static PufferProbelaufDaten Lauf(double startsJeTag, bool abweichung) => new()
+    {
+        Erfolg = true,
+        Zeitpunkt = new DateTime(2026, 10, 3, 14, 30, 0),
+        DauerSekunden = 12.4,
+        VolumenL = 3000,
+        Starts = new[]
+        {
+            new PufferProbelaufStartsDaten("Wärmepumpe", 1800, 1500, startsJeTag, true),
+            new PufferProbelaufStartsDaten("Heizkessel", 40, 38, 0.2, false)
+        },
+        Deckung = 0.97,
+        Monate = Enumerable.Range(1, 12).Select(m => new PufferFuellstandMonatDaten(m, 0.1, 0.5, 0.95)).ToList(),
+        KaeltesteWocheTag = 18, WocheMin = 0.1, WocheMittel = 0.4, WocheMax = 0.9,
+        AuslegungStartsJeTag = 5.3,
+        Abweichung = abweichung,
+        AbweichungText = abweichung ? "Die Jahressimulation zählt 8,0 Starts je Tag, die Auslegung schätzt 5,3 – Abweichung über 30 %." : ""
+    };
+
+    private IRenderedComponent<PufferAuslegungSeite> ZeigeMitProbelauf(Pruefstand stand, Func<PufferAuslegungEingabeDaten, PufferProbelaufDaten> lauf,
+                                                                      PufferAuslegungStartDaten? daten = null)
+        => Render<PufferAuslegungSeite>(p => p
+            .Add(x => x.Daten, daten ?? Start(stand))
+            .Add(x => x.Dienste, stand.Dienste() with { Probelauf = e => System.Threading.Tasks.Task.FromResult(lauf(e)) })
+            .Add(x => x.Geschlossen, () => _geschlossen++));
+
+    [Fact]
+    public void Schritt_4_zeigt_Auslegung_und_Probelauf_nebeneinander_und_ohne_Lauf_kein_Lauf()
+    {
+        var stand = new Pruefstand();
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(5.5, false));
+        Schritt(cut, 4);
+        var kopf = cut.FindAll(".epos-pausl-probelauf thead th").Select(t => t.TextContent).ToList();
+        Assert.Equal(new[] { Resource.PAUS_PROBELAUF_SPALTE_GROESSE, "Auslegung", "Probelauf (Empfehlung)" }, kopf);
+        var tag = cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td").Select(t => t.TextContent).ToList();
+        Assert.Equal("5,3", tag[1]);
+        Assert.Equal("kein Lauf", tag[2]);
+        Assert.Equal("Mit Jahressimulation nachrechnen", cut.Find(".epos-pausl-probelauf-knopf").TextContent);
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-abweichung"));
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-monate"));
+    }
+
+    [Fact]
+    public void Ohne_Probelauf_Dienst_fehlt_der_Knopf()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 4);
+        Assert.Single(cut.FindAll(".epos-pausl-probelauf"));
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-knopf"));
+    }
+
+    [Fact]
+    public void Der_Knopf_rechnet_den_Probelauf_zeigt_Starts_Fuellstand_Dauer_und_den_Hinweis_ueber_30_Prozent()
+    {
+        var stand = new Pruefstand();
+        var gerufen = new List<PufferAuslegungEingabeDaten>();
+        var cut = ZeigeMitProbelauf(stand, e => { gerufen.Add(e); return Lauf(8.0, true); });
+        Schritt(cut, 4);
+        int gespeichert = stand.Gespeichert.Count, uebernommen = stand.Uebernommen.Count;
+        cut.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Single(gerufen);
+        var tag = cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td").Select(t => t.TextContent).ToList();
+        Assert.Equal("8,0", tag[2]);
+        Assert.Equal("1.500", cut.Find(".epos-pausl-probelauf-heizperiode").QuerySelectorAll("td")[2].TextContent);
+        Assert.Equal("1.800", cut.Find(".epos-pausl-probelauf-jahr").QuerySelectorAll("td")[2].TextContent);
+        Assert.Equal("97 %", cut.Find(".epos-pausl-probelauf-deckung").QuerySelectorAll("td")[2].TextContent);
+        Assert.Contains("Heizkessel", cut.Find(".epos-pausl-probelauf-weitere").TextContent);
+        Assert.Equal("PA-STARTS-ABWEICHUNG", cut.Find(".epos-pausl-probelauf-abweichung").GetAttribute("data-code"));
+        Assert.Contains("Abweichung über 30 %", cut.Find(".epos-pausl-probelauf-abweichung").TextContent);
+        Assert.Equal(12, cut.FindAll(".epos-pausl-probelauf-monate tbody tr").Count);
+        string standzeile = cut.Find(".epos-pausl-probelauf-stand").TextContent;
+        Assert.Contains("3.000 l", standzeile);
+        Assert.Contains("12,4 s", standzeile);
+        // Nichts gespeichert, nichts übernommen.
+        Assert.Equal(gespeichert, stand.Gespeichert.Count);
+        Assert.Equal(uebernommen, stand.Uebernommen.Count);
+    }
+
+    [Fact]
+    public void Ohne_Abweichung_kein_Hinweis_und_ein_abgelehnter_Lauf_nennt_den_Grund()
+    {
+        var stand = new Pruefstand();
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(6.0, false));
+        Schritt(cut, 4);
+        cut.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-abweichung"));
+
+        var cut2 = ZeigeMitProbelauf(stand, _ => PufferProbelaufDaten.MitFehler("Probelauf nicht möglich: Bitte eine Klimaregion wählen."));
+        Schritt(cut2, 4);
+        cut2.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Contains("Klimaregion", cut2.Find(".epos-pausl-probelauf-fehler").TextContent);
+        Assert.Equal("kein Lauf", cut2.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td")[2].TextContent);
+    }
+
+    [Fact]
+    public void Ein_Lauf_der_Sitzung_steht_beim_Oeffnen_schon_da()
+    {
+        var stand = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(stand);
+        d.Probelauf = Lauf(5.0, false);
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(5.0, false), d);
+        Schritt(cut, 4);
+        Assert.Equal("5,0", cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td")[2].TextContent);
+    }
 }
 
 /// <summary>Dieselbe Ansicht unter en-US: Titel, Schritte und Marken aus <c>Resource.en-US</c>.</summary>

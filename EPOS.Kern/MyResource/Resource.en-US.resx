@@ -43806,5 +43806,80 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="PA_STARTS_ABWEICHUNG" xml:space="preserve">
+    <value>The annual simulation counts {1} starts per day, the design estimates {0} – deviation above 30 %.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_NEU" xml:space="preserve">
+    <value>The trial run needs a buffer in the project; apply a new buffer first.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_EMPFEHLUNG" xml:space="preserve">
+    <value>No trial run without a recommendation.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_PUFFER_FEHLT" xml:space="preserve">
+    <value>The buffer does not belong to the project.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_GRUPPE" xml:space="preserve">
+    <value>Check against the annual simulation</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KNOPF" xml:space="preserve">
+    <value>Recalculate with annual simulation</value>
+  </data>
+  <data name="PAUS_PROBELAUF_LAEUFT" xml:space="preserve">
+    <value>The annual simulation is running …</value>
+  </data>
+  <data name="PAUS_PROBELAUF_ERKLAERUNG" xml:space="preserve">
+    <value>Calculates the project once with the recommended volume of the selected buffer. Nothing is saved or applied.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_GROESSE" xml:space="preserve">
+    <value>Figure</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_AUSLEGUNG" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_LAUF" xml:space="preserve">
+    <value>Trial run (recommendation)</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KEIN_LAUF" xml:space="preserve">
+    <value>no run</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STARTS_JAHR" xml:space="preserve">
+    <value>Starts per year</value>
+  </data>
+  <data name="PAUS_PROBELAUF_DECKUNG" xml:space="preserve">
+    <value>Heat demand coverage</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STAND" xml:space="preserve">
+    <value>Trial run of {0} with {1} l, duration {2} s</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FUELLSTAND" xml:space="preserve">
+    <value>Buffer charge level per month</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MIN" xml:space="preserve">
+    <value>min.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MITTEL" xml:space="preserve">
+    <value>Mean</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MAX" xml:space="preserve">
+    <value>max.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_WOCHE" xml:space="preserve">
+    <value>Coldest week from day {0}: charge level min. {1} %, mean {2} %, max. {3} %</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FEHLER" xml:space="preserve">
+    <value>Trial run not possible: {0}</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_FUELLSTAND" xml:space="preserve">
+    <value>The buffer was not part of the calculation path; no charge level.</value>
+  </data>
+  <data name="BER_PAUS_STARTS_PROBELAUF" xml:space="preserve">
+    <value>Starts per day (annual simulation {0})</value>
+  </data>
+  <data name="PAUS_PROBELAUF_AUS_REIHE" xml:space="preserve">
+    <value>Starts from the hourly heat (switch-on edges): the unit has no minimum output, the run counts no cycles.</value>
+  </data>
 </root>
 

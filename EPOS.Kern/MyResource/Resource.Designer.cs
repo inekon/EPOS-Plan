@@ -4175,6 +4175,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Tag (Jahressimulation {0}) ähnelt.
+        /// </summary>
+        public static string BER_PAUS_STARTS_PROBELAUF {
+            get {
+                return ResourceManager.GetString("BER_PAUS_STARTS_PROBELAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
         /// </summary>
         public static string BER_PAUS_VORLAGE {
@@ -72557,6 +72566,213 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts aus der stündlichen Wärme (Einschaltflanken): Das Gerät hat keine Mindestleistung, der Lauf zählt keine Takte. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_AUS_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_AUS_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung des Wärmebedarfs ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_DECKUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet das Projekt einmal mit dem empfohlenen Volumen des gewählten Puffers. Es wird nichts gespeichert und nichts übernommen. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_FEHLER {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand des Puffers je Monat ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleich mit der Jahressimulation ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_GRUPPE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Lauf ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_KEIN_LAUF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_KEIN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Jahressimulation nachrechnen ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_KNOPF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation rechnet … ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_LAEUFT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MAX {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die min. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MIN {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MONAT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Probelauf braucht einen Puffer im Projekt; einen neuen Puffer zuerst übernehmen. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_NEU {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Empfehlung gibt es keinen Probelauf. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_OHNE_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_OHNE_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Puffer stand im Lauf nicht im Rechenpfad; kein Füllstand. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_OHNE_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_OHNE_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Puffer gehört nicht zum Projekt. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_PUFFER_FEHLT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_PUFFER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_GROESSE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf (Empfehlung) ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_LAUF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf vom {0} mit {1} l, Dauer {2} s ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_STAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Jahr ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_STARTS_JAHR {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_STARTS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteste Woche ab Tag {0}: Füllstand min. {1} %, Mittel {2} %, max. {3} % ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_WOCHE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
         /// </summary>
         public static string PAUS_QUELLE_GEBAEUDE {
@@ -74020,6 +74236,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PA_PRAXISGRENZE {
             get {
                 return ResourceManager.GetString("PA_PRAXISGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation zählt {1} Starts je Tag, die Auslegung schätzt {0} – Abweichung über 30 %. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("PA_STARTS_ABWEICHUNG", resourceCulture);
             }
         }
         

@@ -215,7 +215,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = Start(),
-                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen),
+                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen, ProbelaufImHintergrund),
                 ["Texte"] = new PufferAuslegungTexte(),
                 ["HilfeSchluessel"] = HILFE
             };
@@ -310,6 +310,8 @@ namespace WindowsFormsApplication1
             }
 
             d.Ergebnis = Rechnen(d.Eingabe);
+            PufferProbelaufErgebnis letzter = PufferProbelaufCtrl.Letzter(_auftrag.IdProjekt, _idPuffer);
+            if (letzter != null) d.Probelauf = Abbilden(letzter, AuslegungStartsJeTag(d.Ergebnis));
             return d;
         }
 
@@ -467,6 +469,101 @@ namespace WindowsFormsApplication1
             catch (ArgumentException ex)
             {
                 return PufferAuslegungErgebnisDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message));
+            }
+        }
+
+        // =================================================================
+        //  Probelauf der Jahressimulation (Welle P4b)
+        // =================================================================
+
+        /// <summary>Der Probelauf außerhalb des Oberflächenfadens — die Jahressimulation dauert Sekunden.</summary>
+        internal Task<PufferProbelaufDaten> ProbelaufImHintergrund(PufferAuslegungEingabeDaten d) => Task.Run(() => Probelauf(d));
+
+        /// <summary>
+        /// Rechnet die Auslegung des Arbeitsstands und fährt mit ihrer Empfehlung einen Probelauf der
+        /// Jahressimulation (<see cref="PufferProbelaufCtrl.Probelauf"/>). Nichts wird gespeichert, nichts
+        /// übernommen; was nicht geht, kommt benannt zurück (Lesemodus, Konfiguration, Klimaregion, neuer Puffer).
+        /// </summary>
+        internal PufferProbelaufDaten Probelauf(PufferAuslegungEingabeDaten d)
+        {
+            if (_vorbelegung == null) return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_START, _fehler));
+            if (!_reihen.Vorhanden)
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_REIHEN_FEHLER, _reihen.Fehlertext ?? ""));
+            PufferAuslegungEingang e;
+            PufferAuslegungErgebnis r;
+            try
+            {
+                e = EingangAus(d);
+                r = PufferAuslegungCtrl.Rechnen(e);
+            }
+            catch (ArgumentException ex)
+            {
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message));
+            }
+            if (!(r.EmpfehlungL > 0)) return PufferProbelaufDaten.MitFehler(MyResource.Resource.PAUS_GRUND_KEINE_EMPFEHLUNG);
+
+            PufferProbelaufErgebnis p;
+            try
+            {
+                p = PufferProbelaufCtrl.Probelauf(_auftrag.IdProjekt, _idPuffer, r.EmpfehlungL, _reihen.Heizung,
+                                                  PufferProbelaufCtrl.Rang1Typ(e.Vorlage));
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Benannt, nie still: Der Lauf ist eine Fremdrechnung, jeder Abbruch erreicht die Ansicht.
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_PROBELAUF_FEHLER, ex.Message));
+            }
+            PufferBetriebsbild bild = r.Zone(PufferZone.Heizung)?.Betriebsbild ?? r.Zone(PufferZone.Prozess)?.Betriebsbild;
+            return Abbilden(p, bild?.StartsJeTag);
+        }
+
+        /// <summary>Die Starts je Tag der Auslegung (D2) aus dem angezeigten Ergebnis; <c>null</c> = keine.</summary>
+        private static double? AuslegungStartsJeTag(PufferAuslegungErgebnisDaten r)
+            => (r?.Zonen.FirstOrDefault(z => z.Zone == nameof(PufferZone.Heizung))?.Betriebsbild
+                ?? r?.Zonen.FirstOrDefault(z => z.Zone == nameof(PufferZone.Prozess))?.Betriebsbild)?.StartsJeTag;
+
+        /// <summary>Der Probelauf des Kerns als Anzeige, gehalten gegen die Starts je Tag der Auslegung.</summary>
+        internal static PufferProbelaufDaten Abbilden(PufferProbelaufErgebnis p, double? auslegungJeTag)
+        {
+            if (p == null) return null;
+            if (!p.Erfolgreich)
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_PROBELAUF_FEHLER, p.Fehlertext));
+            var d = new PufferProbelaufDaten
+            {
+                Erfolg = true,
+                Zeitpunkt = p.Zeitpunkt,
+                DauerSekunden = p.Dauer.TotalSeconds,
+                VolumenL = p.VolumenL,
+                Starts = p.Starts.Select(s => new PufferProbelaufStartsDaten(Erzeugername(s.Typ), s.StartsJahr,
+                                                                            s.StartsHeizperiode, s.StartsJeTag, s.Rang1,
+                                                                            s.AusReihe)).ToList(),
+                Deckung = p.Deckung,
+                Monate = p.Monate.Select(m => new PufferFuellstandMonatDaten(m.Monat, m.Min, m.Mittel, m.Max)).ToList(),
+                AuslegungStartsJeTag = auslegungJeTag
+            };
+            if (p.Fuellstand != null && p.KaeltesteWocheAb >= 0)
+            {
+                IEnumerable<double> woche = p.Fuellstand.Skip(p.KaeltesteWocheAb).Take(168);
+                d.KaeltesteWocheTag = p.KaeltesteWocheAb / 24 + 1;
+                d.WocheMin = woche.Min();
+                d.WocheMittel = woche.Average();
+                d.WocheMax = woche.Max();
+            }
+            double? lauf = p.Rang1?.StartsJeTag;
+            d.Abweichung = PufferProbelaufCtrl.Abweichung(auslegungJeTag, lauf);
+            if (d.Abweichung)
+                d.AbweichungText = Textbaustein.Aufloesen(PufferProbelaufCtrl.AbweichungText(auslegungJeTag.Value, lauf.Value));
+            return d;
+        }
+
+        private static string Erzeugername(int typ)
+        {
+            switch (typ)
+            {
+                case ProjektPuffer.TYP_WP: return MyResource.Resource.PAUS_HERK_TYP_WP;
+                case ProjektPuffer.TYP_BHKW: return MyResource.Resource.PAUS_HERK_TYP_BHKW;
+                case ProjektPuffer.TYP_KESSEL: return MyResource.Resource.PAUS_HERK_TYP_KESSEL;
+                default: return typ.ToString(CultureInfo.InvariantCulture);
             }
         }
 
