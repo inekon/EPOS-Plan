@@ -32363,6 +32363,12 @@ Do you want to allow this?</value>
   <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
     <value>Effect {0}: {1}</value>
   </data>
+  <data name="WIRT_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note (click)</value>
+  </data>
+  <data name="WIRT_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes (click)</value>
+  </data>
   <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
     <value>DIN EN 17463 requires every assessment to state what cannot be expressed in euros (6.1, 8.2): for each effect its category, its duration (short, medium, long) and its effect on the organisation, employees and environment (none to strong). The assessment is duration × strongest effect (0 to 9). The effects belong to the measure as a whole, appear in the report and do not enter the net present value.</value>
   </data>
