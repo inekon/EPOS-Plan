@@ -106808,6 +106808,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT {
