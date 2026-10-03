@@ -400,8 +400,10 @@ namespace WindowsFormsApplication1
         // Plausibilitätsband der Stoffwerte (Mehrzonenkonzept 3.5): außerhalb ist ein Stoffwert
         // „nicht geliefert" — der Kern bricht benannt ab, statt ihn zu übernehmen.
 
-        /// <summary>Kleinste Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
-        internal const double SCHICHT_DICKE_MIN_M = 0.001;
+        /// <summary>Kleinste Schichtdicke [m] (Mehrzonenkonzept 3.5). Bleche ab 0,5 mm (etwa das
+        /// Deckblech eines Sandwichelements, rund 7 kg/m²) tragen Masse in die Speicherbilanz und werden
+        /// gehalten; Folien und Anstriche darunter tragen weder Widerstand noch Masse nennenswert.</summary>
+        internal const double SCHICHT_DICKE_MIN_M = 0.0005;
 
         /// <summary>Größte Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
         internal const double SCHICHT_DICKE_MAX_M = 1.0;

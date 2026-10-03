@@ -262,7 +262,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Das Millimeterhaus</b> (Rückfall „Schichtdicke in Millimetern"): Längeneinheit <c>METRE</c> ohne
         /// Präfix, aber die Schichtdicken der Außenwand in Millimetern geschrieben, wie CAD-Exporte es tun —
-        /// Folie 0.2, Dämmung 160., Beton 200.; das Dach dagegen in Metern (Beton 0.2, Dämmung 0.016), die
+        /// Folie 0.2, Blech 0.9, Dämmung 160., Beton 200.; das Dach dagegen in Metern (Beton 0.2, Dämmung 0.016), die
         /// Gegenprobe. Ein beheizter Raum (80 m², 2,5 m, 200 m³), Südwand 25 m², Dach 80 m², ohne U-Werte.
         /// </summary>
         public static byte[] SchichtdickenMillimeter()
@@ -276,9 +276,10 @@ namespace EPOS.Kern.Tests
                 IIfcWallType typ = b.Wandtyp("Außenwand Typ M", null);
 
                 IIfcMaterial folie = b.Baustoff("Folie", 0.2, 900, 1800);
+                IIfcMaterial blech = b.Baustoff("Blech", 50, 7800, 500);
                 IIfcMaterial daemm = b.Baustoff("Dämmung", 0.04, 30, 1500);
                 IIfcMaterial beton = b.Baustoff("Beton", 2.0, 2400, 1000);
-                IIfcMaterialLayerSet wand = b.Schichtsatz("Außenwand Millimeter", (folie, 0.2), (daemm, 160), (beton, 200));
+                IIfcMaterialLayerSet wand = b.Schichtsatz("Außenwand Millimeter", (folie, 0.2), (blech, 0.9), (daemm, 160), (beton, 200));
                 IIfcMaterialLayerSet dach = b.Schichtsatz("Dach Meter", (beton, 0.2), (daemm, 0.016));
 
                 IIfcWall w = b.Wand(eg, Wandlage.Sued.Name, Wandlage.Sued, typ, null, "BaseQuantities", 25.0, null, null, new[] { r });

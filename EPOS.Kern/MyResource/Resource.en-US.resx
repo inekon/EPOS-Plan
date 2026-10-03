@@ -23547,7 +23547,7 @@ Do you want to allow this?</value>
     <value>The building material of the layer (its key is its id; empty = free entry). Choosing it copies λ, ρ and c_p of the material; they can be overwritten afterwards.</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_DICKE_ERL" xml:space="preserve">
-    <value>The thickness of the layer in mm, permitted 1 to 1,000 (an unventilated air layer up to 300).</value>
+    <value>The thickness of the layer in mm, permitted 0.5 to 1,000 (an unventilated air layer up to 300).</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_LAMBDA_ERL" xml:space="preserve">
     <value>The thermal conductivity λ of the layer in W/(mK); empty only for an unventilated air layer.</value>
@@ -38977,7 +38977,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Layer thicknesses in {0} layer sets read as millimetres (length unit of the file: metre); largest thickness {1} m in set {2} “{3}” — all thicknesses of these sets are divided by 1000.</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
-    <value>{0} layers below 1 mm skipped: {1} — they carry no thermal effect.</value>
+    <value>{0} layers below 0.5 mm skipped: {1} — they carry no thermal effect.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>

@@ -23554,7 +23554,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Baustoff der Schicht (Schlüssel ist seine Id; leer = freie Eingabe). Die Wahl übernimmt λ, ρ und c_p des Stoffes als Kopie; danach sind sie überschreibbar.</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_DICKE_ERL" xml:space="preserve">
-    <value>Die Dicke der Schicht in mm, zulässig 1 bis 1 000 (eine ruhende Luftschicht bis 300).</value>
+    <value>Die Dicke der Schicht in mm, zulässig 0,5 bis 1 000 (eine ruhende Luftschicht bis 300).</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_LAMBDA_ERL" xml:space="preserve">
     <value>Die Wärmeleitfähigkeit λ der Schicht in W/(mK); leer nur bei einer ruhenden Luftschicht.</value>
@@ -38984,7 +38984,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt.</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
-    <value>{0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung.</value>
+    <value>{0} Schichten unter 0,5 mm übergangen: {1} — sie tragen keine Wärmewirkung.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
