@@ -907,6 +907,9 @@ namespace EPOS.Kern.Tests
                 // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 ProjektkopienKatalogeSchema.Ausfuehren(null);
+                // Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile und die
+                // Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                ProzessNutzungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

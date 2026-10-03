@@ -275,6 +275,10 @@ namespace WindowsFormsApplication1
             // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
             new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
                       "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
+            // Ein älteres Paket bringt die Zuordnung der Nutzungsprofile nicht mit; die Auslegung fällt auf
+            // die Vorgabe im Code zurück, bis die Datenbank des Ziels den Schritt trägt.
+            new Stufe(ProzessNutzungSchema.SCHRITT, Art.Ddl,
+                      "Zuordnung der Nutzungsprofile über IDs, Zapf-Nutzungsarten Büro, Schule und Gewerbe"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

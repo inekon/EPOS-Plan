@@ -855,11 +855,16 @@ namespace WindowsFormsApplication1
         /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
         /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
         /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit der NUTZUNGSPROFIL-ZUORDNUNG ÜBER IDs und den Zapf-Nutzungsarten Büro, Schule,
+        /// Gewerbe (V31/V32), steht das Ziel auf <see cref="ProzessNutzungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_Nutzungsprofil_STAMM</c> und <c>Z_Nutzungsprofil</c> samt Saat und der Nachtrag der drei
+        /// Nutzungsarten in einen versionierten Zapfkatalog. <b>Ergebnisneutral.</b> Die Nummer steht allein
+        /// bei <see cref="ProzessNutzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
+        public const int Zielversion = ProzessNutzungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

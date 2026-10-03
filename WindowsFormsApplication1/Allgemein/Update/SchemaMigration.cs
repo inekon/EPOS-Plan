@@ -5054,6 +5054,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ProzessNutzungSchema.SCHRITT"/> — <b>die Zuordnung der Nutzungsprofile über IDs
+        /// und die Zapf-Nutzungsarten Büro, Schule, Gewerbe</b> (V31/V32). DDL <c>Tab_Nutzungsprofil_STAMM</c>
+        /// und <c>Z_Nutzungsprofil</c> (STRICT), Saat per INSERT OR IGNORE, Nachtrag der drei Nutzungsarten in
+        /// einen versionierten Zapfkatalog. Wiederholbar, ergebnisneutral.
+        /// </summary>
+        public const int SCHRITT_PROZESS_NUTZUNG = ProzessNutzungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7306,6 +7314,13 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // ZUORDNUNG DER NUTZUNGSPROFILE über IDs und Zapf-Nutzungsarten Büro/Schule/Gewerbe (V31/V32). Die
+            // Quelle ist ProzessNutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROZESS_NUTZUNG,
+                        "Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil, Zapf-Nutzungsarten Buero/Schule/Gewerbe",
+                        "Die Pufferauslegung leitete ihr Nutzungsprofil ueber die Vorgabe im Code ab; die Nutzungsarten " +
+                        "Buero, Schule und Gewerbe fehlten im Zapfkatalog. KEIN Rechenergebnis aendert sich.",
+                        Schritt_ProzessNutzung),
         };
 
         /// <summary>
@@ -13398,6 +13413,62 @@ namespace WindowsFormsApplication1
 
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        private static bool Schritt_ProzessNutzung(Lauf l)
+        {
+            string nr = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzessNutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzessNutzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzessNutzungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Tabellen der Nutzungsprofil-Zuordnung stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern.
+            var zeilen = new List<string>();
+            try
+            {
+                ProzessNutzungSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!ProzessNutzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach der Saat fehlen Nutzungsprofile oder Zuordnungen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

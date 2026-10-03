@@ -2674,6 +2674,26 @@ namespace Testdatenbankschema
                                   ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile ueber IDs und
+            //      die Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProzessNutzung bedient. Danach tww_testkatalog_fiktiv.py nachlaufen
+            //      lassen: es fuehrt die nachgetragenen Nutzungsarten nach der Regel der Testdatenbank (EIGEN).
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt benutzt die neuen Zeilen.
+            string nrNutzung = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNutzung + " - Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten: " +
+                              (ProzessNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNutzung = new List<string>();
+                tabellen += ProzessNutzungSchema.Ausfuehren(berichtNutzung);
+                foreach (string zeile in berichtNutzung)
+                    Console.WriteLine("Schritt " + nrNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNutzung + " - vollstaendig: " +
+                                  ProzessNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
