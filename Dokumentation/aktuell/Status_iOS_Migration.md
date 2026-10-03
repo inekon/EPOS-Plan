@@ -18,6 +18,8 @@ Wer eine Basis neu einfriert, nimmt die nächste freie Nummer nach der angemelde
 **Schemaschritt angemeldet:** **173 — Sitzung Dialoge und Korrekturen, Welle KU1 Stufe 2 (Katalogabgleich übrige Kataloge), 03.10.2026 08:45 UTC** (zuletzt vergeben: 172 `KatalogfassungSchema`,
 
 **Schemaschritt angemeldet (zweite Kette):** **174 — Sitzung Gebäudesimulation, Welle KP3 R5 (`AufheizManuellSchema`), 03.10.2026 09:02 UTC** — hängt an 173 (KU1 Stufe 2), sobald es auf origin liegt.
+
+**Schemaschritt angemeldet (dritte Kette):** **175 — Sitzung Dialoge und Korrekturen, Welle Projektkopien für Brennstoffe, Konditionierungsvorlagen und Pufferauslegungs-Vorgaben (Anwenderentscheid 03.10.2026), 03.10.2026 10:45 UTC** — hängt an 174 (KP3 R5), sobald es auf origin liegt.
 Sitzung Dialoge und Korrekturen, Welle M6; 171 `PufferOptionenSchema`, Welle M7, #677). Wer eine
 Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
 „<Nr> — <Sitzung>, <Welle>, <Datum, Uhrzeit UTC>" ein und pusht allein diese Zeile sofort (`git fetch`,
