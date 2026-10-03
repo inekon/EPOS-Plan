@@ -55074,6 +55074,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrfenster der Wärmepumpe als Liste „Beginn-Ende“ in Stunden, getrennt durch Semikolon (z. B. „11-13; 17-19“); jeden Tag, Heizstab mitgesperrt. Ein Fenster über Mitternacht („22-2“) läuft in den Folgetag; leer = keine Sperrzeiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SPERRFENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SPERRFENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sperrt der Energieversorger die Wärmepumpe zeitweise? Ja macht die beiden Sperrzeiten wirksam. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_SPERRUNG_ERL {
@@ -72440,6 +72449,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil an die Wärmepumpe schreiben ähnelt.
+        /// </summary>
+        public static string PAUS_LBL_SPERRPROFIL_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("PAUS_LBL_SPERRPROFIL_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
         /// </summary>
         public static string PAUS_LEER_VORGABE {
@@ -85283,6 +85301,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_SPEICHER_STANDBY_AUSSERHALB {
             get {
                 return ResourceManager.GetString("SIMENG_SPEICHER_STANDBY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil {0}: {1} Fenster, {2} gesperrte Stunden ähnelt.
+        /// </summary>
+        public static string SIMENG_SPERRPROFIL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMENG_SPERRPROFIL_ZEILE", resourceCulture);
             }
         }
         
@@ -111138,6 +111165,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2 × 2 h ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_2X2 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_2X2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 3 × 2 h ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_3X2 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_3X2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster hinzufügen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_HINZU {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_KEINE {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
@@ -111152,6 +111224,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_CHK_SPERRZEIT {
             get {
                 return ResourceManager.GetString("WPA_CHK_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
+        /// </summary>
+        public static string WPA_EINHEIT_STUNDEN {
+            get {
+                return ResourceManager.GetString("WPA_EINHEIT_STUNDEN", resourceCulture);
             }
         }
         
@@ -111210,6 +111291,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeiten ähnelt.
+        /// </summary>
+        public static string WPA_GRP_SPERRZEITEN {
+            get {
+                return ResourceManager.GetString("WPA_GRP_SPERRZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien. ähnelt.
         /// </summary>
         public static string WPA_HERLEITUNG_KATALOG {
@@ -111251,6 +111341,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_HINWEIS_HEIZSTAB_LEER {
             get {
                 return ResourceManager.GetString("WPA_HINWEIS_HEIZSTAB_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_SPERR_LEER {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_SPERR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_SPERR_UEBERTRAG {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_SPERR_UEBERTRAG", resourceCulture);
             }
         }
         
@@ -111323,6 +111431,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERRZEIT {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauer ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_DAUER {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitgesperrt ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_VON {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage: ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_VORLAGE {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_VORLAGE", resourceCulture);
             }
         }
         
@@ -111476,6 +111620,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_UEB_TITEL {
             get {
                 return ResourceManager.GetString("WPA_UEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Di ähnelt.
+        /// </summary>
+        public static string WPA_WT_DI {
+            get {
+                return ResourceManager.GetString("WPA_WT_DI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Do ähnelt.
+        /// </summary>
+        public static string WPA_WT_DO {
+            get {
+                return ResourceManager.GetString("WPA_WT_DO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fr ähnelt.
+        /// </summary>
+        public static string WPA_WT_FR {
+            get {
+                return ResourceManager.GetString("WPA_WT_FR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mi ähnelt.
+        /// </summary>
+        public static string WPA_WT_MI {
+            get {
+                return ResourceManager.GetString("WPA_WT_MI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo ähnelt.
+        /// </summary>
+        public static string WPA_WT_MO {
+            get {
+                return ResourceManager.GetString("WPA_WT_MO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sa ähnelt.
+        /// </summary>
+        public static string WPA_WT_SA {
+            get {
+                return ResourceManager.GetString("WPA_WT_SA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die So ähnelt.
+        /// </summary>
+        public static string WPA_WT_SO {
+            get {
+                return ResourceManager.GetString("WPA_WT_SO", resourceCulture);
             }
         }
         

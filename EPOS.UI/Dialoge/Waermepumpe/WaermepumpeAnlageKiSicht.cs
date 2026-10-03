@@ -81,6 +81,46 @@ public sealed class WaermepumpeAnlageKiSicht
     public bool Sperrung { get => D?.Sperrung ?? false; set { if (D is { } d) d.Sperrung = value; } }
     public int? SperrzeitVon { get => D?.SperrzeitVon; set { if (D is { } d) d.SperrzeitVon = value; } }
     public int? SperrzeitBis { get => D?.SperrzeitBis; set { if (D is { } d) d.SperrzeitBis = value; } }
+
+    /// <summary>
+    /// Die Sperrfenster (Welle V14) als Text „Beginn-Ende; …“ in Stunden (invariant). Gesetzt wird
+    /// jedes Fenster für alle Tage mit mitgesperrtem Heizstab; ein Text, der sich nicht lesen
+    /// lässt, ändert nichts. Leer = keine Fenster.
+    /// </summary>
+    public string Sperrfenster
+    {
+        get => SperrfensterText(D?.Sperrfenster);
+        set { if (D is { } d && SperrfensterLesen(value) is { } l) d.Sperrfenster = l; }
+    }
+
+    /// <summary>Die Liste als Text „11-13; 17-19“.</summary>
+    public static string SperrfensterText(IEnumerable<SperrfensterZeile>? zeilen)
+    {
+        if (zeilen is null) return "";
+        var ci = System.Globalization.CultureInfo.InvariantCulture;
+        return string.Join("; ", zeilen.Where(z => z.VonH.HasValue && z.DauerH.HasValue)
+            .Select(z => z.VonH!.Value.ToString(ci) + "-" + ((z.VonH.Value + z.DauerH!.Value) % 24).ToString(ci)));
+    }
+
+    /// <summary>Liest „11-13; 17-19“; <c>null</c>, wenn ein Teil sich nicht lesen lässt.</summary>
+    public static List<SperrfensterZeile>? SperrfensterLesen(string? text)
+    {
+        var l = new List<SperrfensterZeile>();
+        if (string.IsNullOrWhiteSpace(text)) return l;
+        var ci = System.Globalization.CultureInfo.InvariantCulture;
+        foreach (string teil in text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            string[] g = teil.Split('-', StringSplitOptions.TrimEntries);
+            if (g.Length != 2 ||
+                !double.TryParse(g[0], System.Globalization.NumberStyles.Float, ci, out double von) ||
+                !double.TryParse(g[1], System.Globalization.NumberStyles.Float, ci, out double bis) ||
+                von < 0 || von > 24 || bis < 0 || bis > 24) return null;
+            double dauer = bis > von ? bis - von : bis + 24 - von;
+            if (dauer <= 0 || dauer > 24) return null;
+            l.Add(new SperrfensterZeile { VonH = von, DauerH = dauer });
+        }
+        return l;
+    }
     public bool BivalenterBetrieb { get => D?.BivalenterBetrieb ?? false; set { if (D is { } d) d.BivalenterBetrieb = value; } }
     public int CarrierId { get => D?.CarrierId ?? 0; set { if (D is { } d) d.CarrierId = value; } }
     public string Betriebsart { get => D?.Betriebsart ?? ""; set { if (D is { } d) d.Betriebsart = value ?? ""; } }

@@ -272,7 +272,11 @@ namespace WindowsFormsApplication1
                 double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
                                 e.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
                     ? simulation_wp.Heizzeitanteil_stuendlich[e.Modulindex] : null;
-                e.Zeitanteil = Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis);
+                // V14: das Sperrprofil des Moduls (ohne Tab_Sperrfenster genau das Altfenster).
+                Sperrprofil sperre = simulation_wp.SperrprofilDesModuls(e.Modulindex);
+                e.Zeitanteil = sperre != null
+                    ? Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, sperre.Verdichter)
+                    : Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis);
             }
 
             // Deckungsprobe, dritte Aussage: die Wärmekanäle vor der Kältekaskade festhalten.

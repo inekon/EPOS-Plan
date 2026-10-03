@@ -550,6 +550,8 @@ namespace WindowsFormsApplication1
                 Sperrung = m.Sperrung,
                 SperrzeitVon = m.Sperrzeit_von,
                 SperrzeitBis = m.Sperrzeit_bis,
+                // V14: die Sperrfenster samt aktivem Altfenster als erste Zeile.
+                Sperrfenster = SperrfensterAbbildung.Lesen(m.ID, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis),
                 // Die Nutzungsdauer (Tab_Energieanlagen.Nutzungszeit) fuehrt der Feldsatz
                 // nicht mehr (Anwenderauftrag 30.09.2026) - der Wert bleibt am Modell, wie
                 // er gelesen wurde, und reist mit Loeschen + Neuanlegen unveraendert mit.
@@ -627,6 +629,8 @@ namespace WindowsFormsApplication1
             m.Sperrung = d.Sperrung;
             m.Sperrzeit_bis = d.SperrzeitBis ?? 0;
             m.Sperrzeit_von = d.SperrzeitVon ?? 0;
+            // V14: die Liste der Sperrfenster - sie ueberfuehrt das Altfenster (Sperrung = 0).
+            SperrfensterAbbildung.NachModell(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;

@@ -6727,6 +6727,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    // V14: die Sperrfenster als Liste „Beginn-Ende; …“ (Tab_Sperrfenster).
+                    new KiDialogFeld("sperrfenster", "WaermepumpeAnlageKiSicht.Sperrfenster",
+                                     KiDialogTexte.WpaSperrfensterName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaSperrfensterErl, leerErlaubt: true),
                     new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaBivalentErl),

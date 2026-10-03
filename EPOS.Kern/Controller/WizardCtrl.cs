@@ -119,6 +119,8 @@ namespace WindowsFormsApplication1
             // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
             // Loeschweitergabe an der Anlagenzeile (Block ueber StraengeSichern).
             StraengeSichern(projektID);
+            // V14: Tab_Sperrfenster haengt ebenso mit Loeschweitergabe an der Anlagenzeile.
+            SperrfensterSichern(projektID);
             FachspaltenSichern(projektID, TYP_ALLE);
 
             // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
@@ -156,6 +158,7 @@ namespace WindowsFormsApplication1
             // ST1: Die Stranglisten werden AUCH im typgefilterten Weg gesichert -
             // wortgleiche Begruendung wie bei den Senken eine Zeile hoeher.
             StraengeSichern(projektID);
+            SperrfensterSichern(projektID);
 
             FachspaltenSichern(projektID, nType);
 
@@ -1582,6 +1585,96 @@ namespace WindowsFormsApplication1
         // sagt deshalb der ZEITPUNKT ihres Anlegens, nicht ihr Inhalt - eine kuenftige
         // Fachspalte mit Vorgabe aendert daran nichts.
 
+        // =============================================================================
+        //  V14: Die Sperrfenster der Waermepumpe (Tab_Sperrfenster) - dieselbe Rettung wie
+        //  die Stranglisten (ST1): Sie haengen mit ON DELETE CASCADE an der Anlagenzeile,
+        //  das Loeschen + Neuanlegen nimmt sie mit. Gesichert wird im Arbeitsspeicher,
+        //  wiedererkannt ueber (ID_Type, Bezeichner); was der Dialog geschrieben hat, bleibt.
+        // =============================================================================
+
+        private sealed class SperrSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public List<Sperrfenster> Fenster = new List<Sperrfenster>();
+            public bool Verbraucht;
+        }
+
+        private List<SperrSicherung> m_SperrSicherung;
+        private int m_SperrProjekt;
+
+        /// <summary>Sichert die Sperrfenster des Projekts - nur im Arbeitsspeicher; ohne Tabelle nichts.</summary>
+        private void SperrfensterSichern(int projektID)
+        {
+            m_SperrSicherung = null;
+            m_SperrProjekt = 0;
+            if (projektID <= 0 || !SperrfensterCtrl.TabelleVorhanden()) return;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.ID, a.ID_Type, a.Bezeichner FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ? " +
+                    "AND EXISTS (SELECT 1 FROM " + WaermepumpeSperrprofilSchema.TAB + " s WHERE s.ID_Energieanlage = a.ID) " +
+                    "ORDER BY a.ID",
+                    new DbParam("@pID", projektID));
+                if (dt == null || dt.Rows.Count == 0) return;
+                var l = new List<SperrSicherung>();
+                foreach (DataRow r in dt.Rows)
+                    l.Add(new SperrSicherung
+                    {
+                        ID_Type = SpZahl(r, "ID_Type"),
+                        Bezeichner = SpText(r, "Bezeichner"),
+                        Fenster = SperrfensterCtrl.Lesen(SpZahl(r, "ID"))
+                    });
+                m_SperrSicherung = l;
+                m_SperrProjekt = projektID;
+            }
+            catch (Exception ex)
+            {
+                m_SperrSicherung = null;
+                m_SperrProjekt = 0;
+                Console.WriteLine("Die Sperrfenster konnten vor dem Loeschen nicht gesichert werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Traegt die gesicherten Sperrfenster auf die Anlagen des Projekts zurueck, die keine fuehren und
+        /// fuer die der Dialog nicht geschrieben hat. <b>Best effort</b>, wie die Strangrettung.
+        /// </summary>
+        private void SperrfensterWiederherstellen(int projektID, HashSet<int> vomDialogGeschrieben)
+        {
+            List<SperrSicherung> sicherung = m_SperrSicherung;
+            int projektDerSicherung = m_SperrProjekt;
+            m_SperrSicherung = null;
+            m_SperrProjekt = 0;
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0 || projektDerSicherung != projektID) return;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.ID, a.ID_Type, a.Bezeichner FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ? " +
+                    "AND NOT EXISTS (SELECT 1 FROM " + WaermepumpeSperrprofilSchema.TAB + " s WHERE s.ID_Energieanlage = a.ID) " +
+                    "ORDER BY a.ID",
+                    new DbParam("@pID", projektID));
+                if (dt == null) return;
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0 || (vomDialogGeschrieben != null && vomDialogGeschrieben.Contains(idAnlage))) continue;
+                    int typ = SpZahl(r, "ID_Type");
+                    string bez = SpText(r, "Bezeichner");
+                    SperrSicherung treffer = sicherung.Find(s => !s.Verbraucht && s.ID_Type == typ &&
+                                                                 string.Equals(s.Bezeichner, bez, StringComparison.Ordinal));
+                    if (treffer == null) continue;
+                    treffer.Verbraucht = true;
+                    if (!SperrfensterCtrl.Schreiben(idAnlage, treffer.Fenster, false))
+                        Console.WriteLine("Sperrfenster-Rettung: \"" + bez + "\" (ID " + idAnlage + ") nicht zurueckgeschrieben.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Sperrfenster konnten nicht wiederhergestellt werden: " + ex.Message);
+            }
+        }
+
         /// <summary>Eine gesicherte Anlagenzeile: Wiedererkennungsmerkmal + ihre Fachspalten.</summary>
         private sealed class FachspaltenSicherung
         {
@@ -1873,6 +1966,9 @@ namespace WindowsFormsApplication1
                 // bekommt ihn unten als Argument, nicht als Feld (Begruendung dort).
                 HashSet<int> strangGeschrieben = new HashSet<int>();
 
+                // V14: Fuer welche Anlagen der Dialog die Sperrfenster geschrieben hat - wie ST1.
+                HashSet<int> sperrGeschrieben = new HashSet<int>();
+
                 // FS1: Die Anlagenzeilen, die DIESER Lauf anlegt - nur auf sie schreibt
                 // FachspaltenWiederherstellen die gesicherten Fachspalten zurueck. Wie
                 // strangGeschrieben gehoert die Menge dem LAUF und geht als Argument.
@@ -2149,6 +2245,25 @@ namespace WindowsFormsApplication1
                         strangGeschrieben.Add(item.ID);
                     }
 
+                    // V14: Die im Waermepumpen-Dialog bearbeiteten Sperrfenster - dieselbe Bauart
+                    // wie ST1 darueber: NULL = nicht angefasst (die Rettung unten traegt den Bestand
+                    // ein), eine gesetzte Liste ist die neue Wahrheit, auch leer; ein Fehlschlag
+                    // nimmt den Lauf zurueck.
+                    if (item.WP_Sperrfenster != null && item.ID > 0)
+                    {
+                        if (!SperrfensterCtrl.Schreiben(item.ID, item.WP_Sperrfenster))
+                        {
+                            string grund = "die Sperrfenster des Waermepumpen-Dialogs sind nicht geschrieben worden";
+                            SpVariantenVerwerfen(grund);
+                            FachspaltenVerwerfen(grund);
+                            Console.WriteLine("Die Sperrfenster der Anlage \"" + item.Bezeichner +
+                                              "\" konnten nicht gespeichert werden - das Speichern " +
+                                              "wird zurueckgenommen.");
+                            return false;
+                        }
+                        sperrGeschrieben.Add(item.ID);
+                    }
+
                     // S2: Eine Waermeerzeugeranlage, die es vor dem Loeschen nicht gab, ist
                     // NEU - sie bekommt unten ihre Senken aus dem Bedarf. item.ID traegt ab
                     // hier die frische Anlagen-Id (Ä24 oben); ist sie nicht nachgezogen,
@@ -2251,6 +2366,7 @@ namespace WindowsFormsApplication1
                 // die der Block ST1 oben geschrieben hat - auch die, deren Dialogliste
                 // LEER war.
                 StraengeWiederherstellen(projektID, strangGeschrieben);
+                SperrfensterWiederherstellen(projektID, sperrGeschrieben);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
                 // Quell-Einstellungen) auf die Anlagenzeilen zurueck, die dieser Lauf

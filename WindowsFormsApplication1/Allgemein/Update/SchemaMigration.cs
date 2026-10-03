@@ -5054,6 +5054,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/> — <b>das Sperrprofil der Wärmepumpe</b>
+        /// (Anwenderentscheid 03.10.2026): die Tabelle <c>Tab_Sperrfenster</c> (STRICT, je Anlagenzeile).
+        ///
+        /// <para><b>Nur DDL, wiederholbar, ergebnisneutral:</b> Die Tabelle kommt leer an; das Altfenster an
+        /// <c>Tab_Energieanlagen</c> bleibt gültig.</para>
+        /// </summary>
+        public const int SCHRITT_WAERMEPUMPE_SPERRPROFIL = WaermepumpeSperrprofilSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7306,6 +7315,13 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // SPERRPROFIL der Waermepumpe: die Tabelle der Sperrfenster. Die Quelle ist
+            // WaermepumpeSperrprofilSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_WAERMEPUMPE_SPERRPROFIL,
+                        "Tab_Sperrfenster (Sperrfenster der Waermepumpe)",
+                        "Ein Sperrprofil mit mehreren Fenstern und Wochentagen haette keinen Ort. KEIN Rechenergebnis " +
+                        "aendert sich - die Tabelle entsteht leer.",
+                        Schritt_WaermepumpeSperrprofil),
         };
 
         /// <summary>
@@ -13399,6 +13415,42 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Sperrprofil der Wärmepumpe" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_WAERMEPUMPE_SPERRPROFIL"/>, die Anweisungen bei
+        /// <see cref="WaermepumpeSperrprofilSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_WaermepumpeSperrprofil(Lauf l)
+        {
+            string nr = WaermepumpeSperrprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN))
+            {
+                l.LetzterFehler = "Die Tabelle " + SchemaKatalog.TAB_ENERGIEANLAGEN + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(WaermepumpeSperrprofilSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!WaermepumpeSperrprofilSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Tabelle " + WaermepumpeSperrprofilSchema.TAB + " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Sperrfenster der Waermepumpe - " +
+                    (angelegt == 0 ? "Tabelle stand bereits." : "Tabelle angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

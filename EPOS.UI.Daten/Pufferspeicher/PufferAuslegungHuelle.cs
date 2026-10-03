@@ -618,6 +618,10 @@ namespace WindowsFormsApplication1
                 return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, 0);
 
             _idPuffer = id;
+            // V14: das Sperrprofil der Auslegung an die Wärmepumpe - nur auf Zuruf.
+            if (u?.SperrprofilSchreiben == true &&
+                PufferAuslegungCtrl.SperrprofilSchreiben(_auftrag.IdProjekt, e.Sperrfenster) < 0)
+                return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, id);
             _auftrag.Nachzug?.Invoke();
             string anzeige = Puffername(id);
             return new PufferUebernahmeErgebnis(true,

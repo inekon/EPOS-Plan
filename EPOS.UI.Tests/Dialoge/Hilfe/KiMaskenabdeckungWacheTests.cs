@@ -370,7 +370,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
         // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
         // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
-        new("PufferAuslegungSeite", 26, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme und " +
+        new("PufferAuslegungSeite", 27, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme (samt Schalter " +
+            "„Sperrprofil an die Wärmepumpe schreiben“) und " +
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
@@ -436,8 +437,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
         // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
         new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 14, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
-            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld"),
+        new("WaermepumpeKonfiguration", 18, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; die vier Felder je Sperrfenster (Beginn, Dauer, " +
+            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“"),
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.

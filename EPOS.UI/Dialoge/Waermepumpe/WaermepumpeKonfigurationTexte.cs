@@ -72,6 +72,30 @@ public sealed class WaermepumpeKonfigurationTexte
     public string LabelSperrzeitSchalter { get; set; } = T("WPA_CHK_SPERRZEIT",
         "Sperrzeit durch Energieversorger");
 
+    // --- Sperrzeiten (Welle V14) -------------------------------------------------
+
+    public string GruppeSperrzeiten { get; set; } = T("WPA_GRP_SPERRZEITEN", "Sperrzeiten");
+    public string LabelSperrVorlage { get; set; } = T("WPA_LBL_SPERR_VORLAGE", "Vorlage:");
+    public string SperrVorlageKeine { get; set; } = T("WPA_BTN_SPERR_KEINE", "keine");
+    public string SperrVorlage2x2 { get; set; } = T("WPA_BTN_SPERR_2X2", "2 × 2 h");
+    public string SperrVorlage3x2 { get; set; } = T("WPA_BTN_SPERR_3X2", "3 × 2 h");
+    public string LabelSperrVon { get; set; } = T("WPA_LBL_SPERR_VON", "Beginn");
+    public string LabelSperrDauer { get; set; } = T("WPA_LBL_SPERR_DAUER", "Dauer");
+    public string LabelSperrHeizstab { get; set; } = T("WPA_LBL_SPERR_HEIZSTAB", "Heizstab mitgesperrt");
+    public string SperrHinzufuegen { get; set; } = T("WPA_BTN_SPERR_HINZU", "Fenster hinzufügen");
+    public string SperrEntfernen { get; set; } = T("WPA_BTN_SPERR_ENTFERNEN", "Entfernen");
+    public string HinweisSperrLeer { get; set; } = T("WPA_HINWEIS_SPERR_LEER", "Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen.");
+    public string HinweisSperrUebertrag { get; set; } = T("WPA_HINWEIS_SPERR_UEBERTRAG",
+        "Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt.");
+    public string EinheitStunden { get; set; } = T("WPA_EINHEIT_STUNDEN", "h");
+
+    /// <summary>Die Kurznamen der Wochentage, Montag zuerst.</summary>
+    public IReadOnlyList<string> Wochentage { get; set; } = new[]
+    {
+        T("WPA_WT_MO", "Mo"), T("WPA_WT_DI", "Di"), T("WPA_WT_MI", "Mi"), T("WPA_WT_DO", "Do"),
+        T("WPA_WT_FR", "Fr"), T("WPA_WT_SA", "Sa"), T("WPA_WT_SO", "So")
+    };
+
     /// <summary>WPA_LBL_VON</summary>
     public string LabelVon { get; set; } = T("WPA_LBL_VON", "Sperrzeit von");
 

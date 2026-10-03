@@ -134,7 +134,8 @@ namespace WindowsFormsApplication1
                 idAnlage, idProjekt,
                 new WErzeugerCtrl.KonfigurationFelder(
                     Heizstab: daten.Heizstab,
-                    Sperrung: daten.Sperrung,
+                    // V14: Mit Fensterliste ist das Altfenster in die Liste ueberfuehrt.
+                    Sperrung: daten.Sperrfenster is null && daten.Sperrung,
                     SperrzeitVon: daten.SperrzeitVon ?? 0,
                     SperrzeitBis: daten.SperrzeitBis ?? 0,
                     BivalenterBetrieb: daten.BivalenterBetrieb,
@@ -153,6 +154,12 @@ namespace WindowsFormsApplication1
             // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
             // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
             if (e.Ok) ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, daten.CarrierId);
+
+            // V14: die Sperrfenster der Anlage - die Liste ersetzt den Bestand.
+            if (e.Ok && daten.Sperrfenster is not null &&
+                !SperrfensterCtrl.Schreiben(idAnlage, SperrfensterAbbildung.Fenster(daten.Sperrfenster)))
+                return new AnlagenkonfigErgebnis(false, Text_("ANL_KONFIG_MSG_FEHLER",
+                    "Die Konfiguration der Anlage konnte nicht gespeichert werden."));
 
             // KU2 Welle 3 (Kuehlkonzept 8.2): die drei Geraetefelder des Kuehlbetriebs in die
             // Projektkopie - ueber den einen Schreibweg des Kerns samt Sperrgruenden, nur wenn
