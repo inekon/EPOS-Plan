@@ -241,6 +241,30 @@
                          FarbwahlErlaubt="@Farbwahl"
                          FarbeGewaehlt="FarbeUebernehmen"
                          FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+            @* DIE STROMLAST darunter - dieselbe Bauform wie die Waermelast: die vier
+               Reihen in der Reihenfolge des Bildes, dann das Bild mit eigenem Zoom und
+               eigener clipPath-Kennung. „sortiert" oben gilt fuer BEIDE Bilder: ein
+               Schalter je Darstellungsart, wie ein Reiter mit einem Bild ihn fuehrt, und
+               ein eindeutiger Name fuer den Hilfe-Assistenten. *@
+            <div class="epos-simerg-schalter epos-simerg-bhkw-strom">
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION"
+                          Wert="@_stromproduktion" WertChanged="@(w => _stromproduktion = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_EINSPEISUNG"
+                          Wert="@_einspeisung" WertChanged="@(w => _einspeisung = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_RESTSTROM"
+                          Wert="@_reststrom" WertChanged="@(w => _reststrom = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_STROMBEDARF"
+                          Wert="@_strombedarf" WertChanged="@(w => _strombedarf = w)" />
+            </div>
+
+            <DiagrammSvg Modell="@ModellBhkwStrom" Kennung="simerg-bhkw-strom"
+                         Bezeichnung="@Resource.SIMDET_BHKW_TITEL_STROMLAST"
+                         Einheit="kW"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
         }
     }
 
@@ -295,6 +319,26 @@
     private bool _restwaerme = true;
     private bool _bedarf = true;
 
+    // Das Strombild: vier Reihen, alle vorbelegt an; „sortiert" teilt es mit der Waermelast.
+    private bool _stromproduktion = true;
+    private bool _einspeisung = true;
+    private bool _reststrom = true;
+    private bool _strombedarf = true;
+
+    /// <summary>Die eingeschalteten Reihen des Strombilds (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteStromreihen => Stromreihen();
+
+    /// <summary>Die Serienschluessel des Strombilds - dieselbe Regel wie <see cref="Reihen"/>.</summary>
+    private IReadOnlyList<string> Stromreihen()
+    {
+        var liste = new List<string>();
+        if (_stromproduktion) liste.Add("STROMPRODUKTION");
+        if (_einspeisung) liste.Add("EINSPEISUNG");
+        if (_reststrom) liste.Add("RESTSTROM");
+        if (_strombedarf) liste.Add("STROMBEDARF");
+        return liste;
+    }
+
     /// <summary>
     /// Die Serienschluessel des Bildes - sprachneutral, die Beschriftung setzt
     /// die Huelle. Eine LEERE Liste heisst „keine Reihe" und nicht „alle": Der
@@ -323,6 +367,9 @@
 
     private Zeichenmodell? ModellBhkw =>
         Modell?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen()));
+
+    private Zeichenmodell? ModellBhkwStrom =>
+        Modell?.Invoke(new Bildauftrag(Bilder.BhkwStrom, _sortiert, -1, Stromreihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -359,7 +406,7 @@
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
     // =====================================================================
 
-    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Bild steht.</summary>
+    /// <summary>Die neun Schalter über den zwei Bildern — nur, solange die Bilder stehen.</summary>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
         => Daten is null || !Praesent
             ? Array.Empty<Anzeigeschalter>()
@@ -370,6 +417,11 @@
                 Umschalter(Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG, () => _speicherladung,
                            w => _speicherladung = w),
                 Umschalter(Resource.CHART_SEGMENT_RESTWAERME, () => _restwaerme, w => _restwaerme = w),
-                Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _bedarf, w => _bedarf = w)
+                Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _bedarf, w => _bedarf = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION, () => _stromproduktion,
+                           w => _stromproduktion = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_EINSPEISUNG, () => _einspeisung, w => _einspeisung = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_RESTSTROM, () => _reststrom, w => _reststrom = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_STROMBEDARF, () => _strombedarf, w => _strombedarf = w)
             };
 }

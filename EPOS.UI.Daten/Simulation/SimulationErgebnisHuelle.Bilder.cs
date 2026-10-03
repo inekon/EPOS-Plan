@@ -124,6 +124,7 @@ namespace WindowsFormsApplication1
                     case Bilder.Heizkessel: return ModellKessel(a);
                     case Bilder.Solarthermie: return ModellSolar(a);
                     case Bilder.Bhkw: return ModellBhkw(a);
+                    case Bilder.BhkwStrom: return ModellBhkwStrom(a);
                     case Bilder.Photovoltaik: return ModellPv(a);
                     case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
                     case Bilder.AutarkieMonate: return ModellAutarkie(a.Zahl);
@@ -659,6 +660,47 @@ namespace WindowsFormsApplication1
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, linien, null, MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert);
+        }
+
+        /// <summary>
+        /// Die „Stromlast Jahresganglinie“ des BHKW — das Gegenstück zur Wärmelast
+        /// (<see cref="ModellBhkw"/>) mit denselben Regeln: die Stromproduktion als Säule
+        /// unten, Einspeisung, Reststrombedarf und Strombedarf als Linien darüber; jede Reihe
+        /// abwählbar (<c>null</c> heißt „alle“, eine LEERE Liste „keine“), „sortiert“ zeichnet
+        /// die Dauerlinie über Jahresstunden. Die Reihen bildet der Kern
+        /// (<see cref="SimulationErgebnisCtrl.BhkwStromStunden"/>) aus den Reihen des Laufs —
+        /// keine Rechnung in der Hülle. Die Farben folgen dem Stromgang: BHKW-Strom, Überschuss,
+        /// Rest, Bedarf.
+        /// </summary>
+        private Zeichenmodell ModellBhkwStrom(Bildauftrag a)
+        {
+            SimulationErgebnisCtrl.BhkwStromreihen r = SimulationErgebnisCtrl.BhkwStromStunden(sim);
+            if (r == null) return null;
+            bool sortiert = a != null && a.Sortiert;
+            bool alle = Alle(a);
+
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "STROMPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION, r.Stromproduktion,
+                                 Farbrolle.STROM_BHKW, ChartRenderer.Stapelart.Saeule,
+                                 sortiert ? 4f : 0f));
+
+            var linien = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "EINSPEISUNG"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_EINSPEISUNG, r.Einspeisung,
+                                 Farbrolle.UEBERSCHUSS));
+            if (Gewaehlt(a, alle, "RESTSTROM"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_RESTSTROM, r.Reststrombedarf,
+                                 Farbrolle.REST));
+            if (Gewaehlt(a, alle, "STROMBEDARF"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMBEDARF, r.Strombedarf,
+                                 Farbrolle.BEDARF));
+
+            return ChartRenderer.ErzeugerStapelModell(
+                MyResource.Resource.SIMDET_BHKW_TITEL_STROMLAST,
+                stapel, linien, null, MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 sortiert);
         }
