@@ -801,11 +801,24 @@ namespace WindowsFormsApplication1
         /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
         /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
         /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
+        /// Danach, mit der PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle
+        /// W1), steht das Ziel auf <see cref="PufferAuslegungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_PufferAuslegung</c> und <c>Tab_PufferAuslegungParameter_STAMM</c> samt Saat der
+        /// Vorgabewerte (<see cref="PufferAuslegungSchema"/>). <b>Ergebnisneutral:</b> Die Auslegung
+        /// rechnet und schreibt nur auf Zuruf. Die Nummer steht allein bei
+        /// <see cref="PufferAuslegungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGEMPFEHLUNG DER HILFSENERGIE AUF WEG B (Auftrag P671, Register
+        /// E30‑Q12, EZ‑24), steht das Ziel auf <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>: die
+        /// Empfehlungsspannen der Pflichtzeilen „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und
+        /// „Hilfsenergiekosten (Strom)“ (Heizkessel, 4–8 % → 1–2 %) in den Auslieferungsvorlagen,
+        /// reines DML (<see cref="HilfsenergieEmpfehlungNachzug"/>). <b>Ergebnisneutral:</b> Die
+        /// Empfehlung ist Hinweis am Satzfeld, kein Rechenwert; Projektzeilen bleiben unberührt. Die
+        /// Nummer steht allein bei <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = StromViertelstundenSchema.SCHRITT;
+        public const int Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

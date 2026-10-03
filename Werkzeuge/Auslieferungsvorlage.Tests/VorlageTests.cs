@@ -198,7 +198,18 @@ namespace Auslieferungsvorlage.Tests
             // 153 seit KP1b der Gebaeudesimulation (Schemaschritt 152, KonditionierungVorlagenSchema):
             // Tab_Konditionierungsvorlage_STAMM, STRICT von ihrer ersten Zeile an; Kalender- und
             // Vorgabetabelle bleiben nach ihrem Neubau STRICT (der Zieltext traegt ") STRICT" weiter).
-            Assert.Equal(153, befund.Strict);
+            //
+            // 154 seit der Welle M3b (Schemaschritt 166, BedarfNetzKalenderSchema): Tab_Betriebskalender,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER; die Kalenderspalten der drei
+            // Zuordnungstabellen sind ADD COLUMN und aendern die Zahl nicht. Die Schritte 167
+            // (ErzeugerTeillastSchema) und 168 (StromViertelstundenSchema) sind ADD COLUMN und aendern
+            // die Zahl nicht.
+            //
+            // 156 seit der Pufferauslegung P1 (Schemaschritt 169, PufferAuslegungSchema):
+            // Tab_PufferAuslegung (LEER) und Tab_PufferAuslegungParameter_STAMM (mit Saat), beide STRICT
+            // von ihrer ersten Zeile an. Schritt 170 (HilfsenergieEmpfehlungNachzug) ist reines DML und
+            // laesst die Zahl stehen.
+            Assert.Equal(156, befund.Strict);
         }
 
         // =============================================================================

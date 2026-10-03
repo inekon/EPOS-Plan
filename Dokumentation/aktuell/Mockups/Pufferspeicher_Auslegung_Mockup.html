@@ -5,24 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pufferspeicher-Auslegung – Mockup</title>
 <!--
-  MOCKUP zur Abnahme: Pufferspeicher-Auslegung (Heizungspuffer) in EPOS-Plan.
-  Entwurf 30.09.2026; das Konzept Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md folgt.
+  MOCKUP zur Abnahme: Pufferspeicher-Auslegung in EPOS-Plan (Heizungs-, Brauchwasser-, Kombi-
+  und Prozesspuffer). Entwurf 30.09.2026, nachgezogen am 03.10.2026 auf die vier Recherchepapiere
+  unter Dokumentation/aktuell/Pufferspeicher/ (Runden 1 bis 4 vom 01.10.2026); das Konzept
+  Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md folgt.
 
   EIGENSTÄNDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von außen. Seiten-Token,
   Dark-Mode-Regel und Fensterbild wie Zapfprofilgenerator_Mockup.html (Kopfband #0F1F3D,
   cremefarbene Knöpfe, Beschriftungsspalte 12 rem, Kurzfeld 8 em, Berührungsziel 44 px).
   Das Fenster ist ein Bild der Anwendung und bleibt in beiden Farbmodi hell.
 
-  ALLE ZAHLEN SIND FIKTIV. Beispielprojekt „Wohnen und Büro“: Wärmepumpe 60 kW, Spitzenkessel
-  80 kW, Vorlauf/Rücklauf 55/45 °C, Wärmelastgang aus einer erfundenen Simulation. Die
-  Kriterienwerte gehen mit c = 1,163 Wh/(l·K) untereinander auf. Keine Hersteller- oder
-  Produktdaten, keine Normzahl.
+  ALLE ZAHLEN SIND FIKTIV. Beispielprojekt „Wohnen und Büro“: Luft/Wasser-Wärmepumpe 60 kW,
+  Spitzenkessel 80 kW, Auslegungsheizlast 82 kW, Heizkörper, Heizgrenze 15 °C, Puffer 55/45 °C
+  mit Schwellen 10/95 %, 20 Wohneinheiten mit 40 Personen und Frischwasserstation 65/25 °C.
+  Gerechnet wird mit c = 1,16 Wh/(l·K) wie im Kern (11,6 kWh je 1 000 l und 10 K). Normen sind
+  nur mit Abschnitt, Gleichung oder Tabelle zitiert; keine Hersteller- oder Produktdaten.
 
-  BEDIENBAR: die Schrittleiste (1–4, Weiter/Zurück), die Vorlagenkarten in Schritt 1
-  (setzen die Beispielwerte um), der Umschalter Schnell · Standard · Experte, die
-  Kriterienschalter in Schritt 3. Die übrigen Felder sind Bilder.
+  BEDIENBAR: die Schrittleiste (1–4, Weiter/Zurück), die Speicherklasse und die sieben
+  Vorlagenkarten in Schritt 1, die Schalter Gerätetyp und Sperre der Wärmepumpen-Vorlagen,
+  der Umschalter Schnell · Standard · Experte, die Kriterienschalter in Schritt 3. Zonen,
+  Empfehlung, Nutzen-Aufwand-Zeile, Hinweise und Übernahme rechnet das Skript aus den
+  Vorlagenwerten (Objekt „vorlagen“). Die übrigen Felder sind Bilder.
 -->
-<style>
 <style>
 :root{
   --papier:#F5F7FA;
@@ -564,8 +568,6 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 #tg-tagtyp{display:flex;flex-wrap:wrap;width:max-content;max-width:100%}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-</style>
-
 
 /* ---------- Ergänzungen dieses Mockups ---------- */
 .schritte{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 12px}
@@ -635,6 +637,27 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 .fragen b.f{color:var(--akzent)}
 .ausl-karte.aus{opacity:.55}
 .ausl-karte.gewinner{border-color:var(--epos-marke);box-shadow:inset 0 0 0 1px var(--epos-marke)}
+/* ---------- Nachzug 03.10.2026: Klassen, Zonen, Schalter, Einstiege ---------- */
+.zpg-option[data-klasse],.zpg-option[data-geraet],.zpg-option[data-sperrwahl],.krit .zpg-option[data-krit-schalter]{cursor:pointer}
+.zpg-option[data-klasse]:focus-visible,.zpg-option[data-geraet]:focus-visible,.zpg-option[data-sperrwahl]:focus-visible,.zpg-option[data-krit-schalter]:focus-visible{outline:2px solid var(--epos-marke);outline-offset:2px}
+.krit[data-gilt="0"]{background:#FAFBFC;color:var(--epos-text-sehr-leise)}
+.krit[data-gilt="0"] .zpg-option{opacity:.45;cursor:default}
+.krit .krit-zeile{font-size:12px;color:var(--epos-text-leise);margin:2px 0 0;line-height:1.45}
+.krit .krit-zeile b{color:var(--epos-text)}
+.krit-status{font-size:11.5px;font-weight:600;color:var(--epos-marke);margin-top:4px}
+.zonenbalken{display:flex;height:22px;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);overflow:hidden;margin:8px 0 4px;background:#F5F4EF}
+.zonenbalken span{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden}
+.zb-h{background:#1A3261}.zb-b{background:#D26A00}.zb-p{background:#0B6B5B}.zb-r{background:#C3CCDA;color:#1B1B1B !important}
+.hcode{font-family:var(--mono);font-size:10.5px;color:var(--epos-text-leise);display:block;margin-top:2px}
+.pfeil-einstieg{font-size:12px;color:var(--epos-text-leise);margin:6px 0}
+.p2-marke{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#5A6B85;border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.knopf-p2{border-style:dashed}
+.entscheid-liste{margin:8px 0 0;padding-left:0;list-style:none;max-width:none}
+.entscheid-liste li{display:grid;grid-template-columns:4.6rem minmax(0,1fr);gap:2px 12px;padding:6px 0;border-bottom:1px solid var(--linie);font-size:13.5px}
+.entscheid-liste li b{font-family:var(--mono);font-size:12px;color:var(--akzent)}
+.entscheid-liste li i{color:var(--tinte-weich)}
+@media (max-width:480px){.entscheid-liste li{grid-template-columns:minmax(0,1fr)}}
+.fragen .stand{display:inline-block;margin-left:6px}
 </style>
 </head>
 <body id="top">
@@ -643,23 +666,27 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <header class="kopf">
   <div class="augenbraue">EPOS-Plan · Pufferspeicher · Mockup zur Abnahme</div>
   <h1>Pufferspeicher-Auslegung — geführter Dialog</h1>
-  <p class="unter">Entwurf zur Abnahme, Stand 30.09.2026. Aus dem Wärmelastgang der Simulation und den Erzeugerdaten des
-  Projekts entsteht in vier Schritten ein Vorschlag für das Puffervolumen — nach vier Kriterien, mit Betriebssimulation
-  und Übernahme in den Projektpuffer. Erreichbar über die Kachel <b>Pufferspeicher</b> der Startseite und über
-  <b>Simulation ① Konfiguration</b>.</p>
+  <p class="unter">Entwurf zur Abnahme, Stand 30.09.2026, nachgezogen am 03.10.2026 auf die vier Recherchepapiere vom
+  01.10.2026. Aus den Bedarfsreihen der Simulation, dem Zapfprofil und den Erzeugerdaten des Projekts entsteht in vier
+  Schritten ein Vorschlag für das Puffervolumen — je Zone (Heizung, Brauchwasser, Prozess), nach den Kriterien A bis E, mit
+  Betriebsbild und Übernahme in den Projektpuffer. Erreichbar über den Knopf <b>Auslegen…</b> im Pufferspeicher-Dialog der
+  Kachel <b>Pufferspeicher</b>, über <b>Simulation ① Konfiguration</b> und — mit P2 — aus dem Zapfprofil-Auslegungsdialog.</p>
   <div class="kennzeile">
     <span>Konzept <b>Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md (folgt)</b></span>
     <span>Vorbild <b>TWW-Speicherauslegung des Zapfprofilgenerators</b></span>
-    <span>Methode <b>Wärmespeicher-Tool (vier Kriterien)</b></span>
-    <span>Stand <b>30.09.2026</b></span>
+    <span>Methode <b>Wärmespeicher-Tool · VDI 4645 E 2026-03</b></span>
+    <span>Recherche <b>Runden 1–4 vom 01.10.2026</b></span>
+    <span>Stand <b>30.09.2026 · nachgezogen 03.10.2026</b></span>
     <span>Status <b>Entwurf zur Abnahme</b></span>
   </div>
   <div class="leseweg">
-    <b>Leseweg.</b> Abschnitt 1 zeigt die beiden Einstiege, Abschnitt 2 den Dialog — die <b>Schrittleiste</b>, die
-    <b>Vorlagenkarten</b>, der Umschalter <b>Schnell · Standard · Experte</b> und die <b>Kriterienschalter</b> sind
-    bedienbar. Abschnitt 3 nennt, was zur Abnahme zu entscheiden ist. <span class="zk fiktiv">fiktiv</span> Alle Zahlen
-    stammen aus einem erfundenen Beispielprojekt (Wärmepumpe 60&nbsp;kW, Spitzenkessel 80&nbsp;kW, Vorlauf/Rücklauf
-    55/45&nbsp;°C) und gehen mit c&nbsp;=&nbsp;1,163&nbsp;Wh/(l·K) untereinander auf; keine ist ein Norm-, Mess- oder Produktwert.
+    <b>Leseweg.</b> Abschnitt 1 zeigt die drei Einstiege, Abschnitt 2 den Dialog — die <b>Schrittleiste</b>, die
+    <b>Speicherklasse</b>, die sieben <b>Vorlagenkarten</b> mit den Schaltern <b>Gerätetyp</b> und <b>Sperre</b>, der Umschalter
+    <b>Schnell · Standard · Experte</b> und die <b>Kriterienschalter</b> sind bedienbar; Zonen, Empfehlung und Hinweise rechnen
+    mit. Abschnitt 3 nennt den Stand der Fragen F1–F7 und die Entscheide E-P18 bis E-P32. <span class="zk fiktiv">fiktiv</span>
+    Alle Zahlen stammen aus einem erfundenen Beispielprojekt (Wärmepumpe 60&nbsp;kW, Spitzenkessel 80&nbsp;kW, Heizlast
+    82&nbsp;kW, Puffer 55/45&nbsp;°C, 40 Personen) und gehen mit c&nbsp;=&nbsp;1,16&nbsp;Wh/(l·K) des Kerns untereinander auf;
+    Normen sind nur mit Abschnitt, Gleichung oder Tabelle zitiert, keine Zahl ist ein Mess- oder Produktwert.
   </div>
 </header>
 
@@ -668,13 +695,17 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <nav aria-label="Abschnitte">
   <div class="navtitel">Abschnitte</div>
   <div class="navliste">
-    <a href="#einstiege">1 Die zwei Einstiege</a>
+    <a href="#einstiege">1 Die drei Einstiege</a>
     <a href="#dialog">2 Der Dialog</a>
     <div class="navunter">
       <a href="#dialog-fenster">Fenster Pufferspeicher-Auslegung</a>
       <a href="#dialog-legende">Was er tut und was nicht</a>
     </div>
     <a href="#abnahme">3 Zur Abnahme</a>
+    <div class="navunter">
+      <a href="#abnahme-fragen">Fragen F1–F7</a>
+      <a href="#abnahme-entscheide">Entscheide E-P18–E-P32</a>
+    </div>
   </div>
 </nav>
 
@@ -682,28 +713,32 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 
 <!-- ======================= 1 EINSTIEGE ======================= -->
 <section class="kat" id="einstiege">
-  <div class="kat-kopf"><h2>1 · Die zwei Einstiege</h2><span class="kat-marke">Startseite · ① Konfiguration</span></div>
-  <p class="kat-lead">Beide Wege öffnen dieselbe Ansicht als freie Ansicht der <code>AppWurzel</code> — wie die
-  Stromspeicher-Auslegung — und kehren dorthin zurück, wo sie geöffnet wurden. Aus ① Konfiguration liest die Spalte
+  <div class="kat-kopf"><h2>1 · Die drei Einstiege</h2><span class="kat-marke">Pufferspeicher-Dialog · ① Konfiguration · Zapfprofil (P2)</span></div>
+  <p class="kat-lead">Alle Wege öffnen dieselbe Ansicht als freie Ansicht der <code>AppWurzel</code> — wie die
+  Stromspeicher-Auslegung — und kehren dorthin zurück, wo sie geöffnet wurden („← zurück“). Aus ① Konfiguration liest die Spalte
   „Speicher im Projekt“ nach der Rückkehr frisch; ein angezeigtes Simulationsergebnis gilt nach einer Übernahme als veraltet.</p>
 
   <div class="einstiege">
     <div>
-      <div class="zone">Einstieg A · Startseite, Kachel Pufferspeicher</div>
+      <div class="zone">Einstieg A · Kachel Pufferspeicher → Pufferspeicher-Dialog</div>
       <div class="fenster" style="max-width:380px">
         <div class="startkachel">
           <div class="sk-bild">Pufferspeicher</div>
-          <div class="sk-leib"><b>Beispielprojekt Wohnen und Büro</b>Speicher 1 · 1 000 l · 55/45 °C
-            <div class="epos-leiste">
-              <button type="button" class="epos-knopf">Verwalten…</button>
-              <button type="button" class="epos-knopf epos-knopf--primaer">Auslegen…<span class="neu">neu</span></button>
-            </div>
+          <div class="sk-leib"><b>Beispielprojekt Wohnen und Büro</b>Speicher 1 · 1 000 l · 55/45 °C · Heizung, Brauchwasser</div>
+        </div>
+        <p class="pfeil-einstieg" style="padding:0 12px">↓ ein Klick auf die Kachel öffnet wie heute den Pufferspeicher-Dialog</p>
+        <div class="spalte-speicher" style="margin:0 10px 10px">
+          <h4>Pufferspeicher · Projektliste und Katalog</h4>
+          <div class="sp-kachel"><b>Speicher 1</b><span>1 000 l · 55/45 °C · Schwellen 10 / 95 %</span></div>
+          <div class="epos-leiste">
+            <button type="button" class="epos-knopf">Bearbeiten…</button>
+            <button type="button" class="epos-knopf epos-knopf--primaer">Auslegen…<span class="neu">neu</span></button>
           </div>
         </div>
       </div>
-      <p class="bildtext">Die Kachel behält „Verwalten…“ (Dialog „Verwaltung Pufferspeicher“) und bekommt daneben
-      „Auslegen…“. Ohne Puffer im Projekt steht dort „Auslegen…“ allein und der Vorschlag legt beim Übernehmen den
-      ersten Speicher an.</p>
+      <p class="bildtext">Die Kachel behält ihre eine Klickwirkung; der Knopf <b>„Auslegen…“</b> steht im Pufferspeicher-Dialog,
+      den sie öffnet (Variante b, E-P13) — kein neuer Kachelbaustein, auf beiden Plattformen gleich. Ohne Puffer im Projekt legt
+      die Übernahme den ersten Speicher an.</p>
     </div>
     <div>
       <div class="zone">Einstieg B · Simulation ① Konfiguration, Spalte „Speicher im Projekt“</div>
@@ -721,21 +756,38 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
           </div>
         </div>
       </div>
-      <p class="bildtext">Der neue Knopf steht unter „Pufferspeicher anlegen / verwalten…“ und über „Stromspeicher
-      auslegen…“ — jede Speicherart hat ihr Anlegen und ihr Auslegen beieinander.</p>
+      <p class="bildtext">Nach dem Muster <b>„Stromspeicher auslegen…“</b>: sichtbar nur, wenn die Plattform den Delegaten belegt
+      (kein Delegat, kein Knopf), Öffnen über <code>Navigationsziel.OeffneMaske</code>, Rückweg über den Stapel der
+      <code>AppWurzel</code>. Jede Speicherart hat ihr Anlegen und ihr Auslegen beieinander.</p>
+    </div>
+    <div>
+      <div class="zone">Einstieg C · Zapfprofil-Auslegungsdialog <span class="p2-marke">P2</span></div>
+      <div class="fenster" style="max-width:420px">
+        <div class="spalte-speicher">
+          <h4>TWW-Speicherauslegung · Ergebnis</h4>
+          <div class="sp-kachel"><b>Frischwasserstation · Pufferteil</b><span>D<sub>max</sub> 24,0 kWh · Ladeleistung 26 kW · Tagesbedarf 1 600 l bei 60 °C</span></div>
+          <div class="epos-leiste">
+            <button type="button" class="epos-knopf">Übernehmen</button>
+            <button type="button" class="epos-knopf knopf-p2" aria-disabled="true">An Speicherauslegung übergeben…<span class="p2-marke">P2</span></button>
+          </div>
+        </div>
+      </div>
+      <p class="bildtext"><b>Bild, Stufe P2</b> (E-P24): der vorhandene, heute inaktive Knopf öffnet die Pufferauslegung mit
+      vorgewählter Klasse <b>Brauchwasser</b> bzw. <b>Heizung + Brauchwasser</b> und übergibt D<sub>max</sub> und Ladeleistung.
+      Das Zapfprofil selbst bleibt unverändert.</p>
     </div>
   </div>
 </section>
 
 <!-- ======================= 2 DER DIALOG ======================= -->
 <section class="kat" id="dialog">
-  <div class="kat-kopf"><h2>2 · Der Dialog</h2><span class="kat-marke">vier Schritte · Vorlagen · Beispiele · Übernahme</span></div>
-  <p class="kat-lead">Der Dialog führt in fester Reihenfolge: <b>Anlage und Erzeuger → Lastgang und Randbedingungen →
+  <div class="kat-kopf"><h2>2 · Der Dialog</h2><span class="kat-marke">vier Schritte · Klasse · sieben Vorlagen · Zonen · Übernahme</span></div>
+  <p class="kat-lead">Der Dialog führt in fester Reihenfolge: <b>Klasse, Vorlage und Erzeuger → Bedarfsreihen und Randbedingungen →
   Kriterien → Ergebnis und Übernahme</b>. Je Schritt stehen nur die Angaben, die er braucht; jede Angabe trägt ihre
   Herkunft (<span class="herk herk--projekt">Projekt</span> <span class="herk herk--vorlage">Vorlage</span>
   <span class="herk herk--vorgabe">Vorgabe</span> <span class="herk herk--ueber">überschrieben</span>) und, wo der Anwender
-  etwas eingeben muss, ein Beispiel mit Einheit. Vorlagen je Anlagentyp befüllen Schritt 1 und 2 vor; der Umschalter
-  Schnell · Standard · Experte blendet Tiefe ein, nie Pflichtangaben aus.</p>
+  etwas eingeben muss, ein Beispiel mit Einheit. Die Speicherklasse wählt die Zonen und ihr Verfahren; Vorlagen je Anlagentyp
+  befüllen die Heizzone vor; der Umschalter Schnell · Standard · Experte blendet Tiefe ein, nie Pflichtangaben aus.</p>
 
   <div class="zone" id="dialog-fenster">Fenster Pufferspeicher-Auslegung</div>
 
@@ -746,8 +798,8 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
     </div>
     <div class="f-leib">
       <div class="f-kontext">
-        <div class="f-kontexttext">Beispielprojekt Wohnen und Büro <span>· geöffnet aus ① Konfiguration · Simulationsergebnis vom
-        Beispiellauf (Raumwärme 182 MWh/a, Brauchwasser 39 MWh/a) · Speicher 1 vorhanden, 1 000 l</span></div>
+        <div class="f-kontexttext">Beispielprojekt Wohnen und Büro <span>· geöffnet aus ① Konfiguration · Bedarfsreihen vom
+        Beispiellauf (Raumwärme 182 MWh/a, Brauchwasser 39 MWh/a) · Speicher 1 vorhanden, 1 000 l, Heizung + Brauchwasser</span></div>
         <span class="zpg-zaehler" id="pa-zaehler">1 Wert überschrieben</span>
         <div class="zpg-stufen" role="radiogroup" aria-label="Darstellungstiefe">
           <button type="button" role="radio" aria-checked="true" data-stufe-wahl="schnell">Schnell</button>
@@ -757,31 +809,61 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
       </div>
 
       <div class="schritte" role="tablist" aria-label="Schritte der Auslegung">
-        <button type="button" class="schritt" role="tab" data-schritt="1" aria-current="step" data-fertig="0"><b>1</b><span>Anlage und Erzeuger<small>Vorlage, Wärmepumpe, Kessel</small></span></button>
-        <button type="button" class="schritt" role="tab" data-schritt="2" data-fertig="0"><b>2</b><span>Lastgang und Randbedingungen<small>Simulation, Sperrzeit, Abtauung</small></span></button>
-        <button type="button" class="schritt" role="tab" data-schritt="3" data-fertig="0"><b>3</b><span>Kriterien<small>vier Verfahren, Formel und Beispiel</small></span></button>
-        <button type="button" class="schritt" role="tab" data-schritt="4" data-fertig="0"><b>4</b><span>Ergebnis und Übernahme<small>Vorschlag, Betriebsbild, Projektpuffer</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="1" aria-current="step" data-fertig="0"><b>1</b><span>Klasse und Erzeuger<small>Speicherklasse, Vorlage, Erzeuger</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="2" data-fertig="0"><b>2</b><span>Bedarf und Randbedingungen<small>Bedarfsreihen, Zapfprofil, Sperrzeit</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="3" data-fertig="0"><b>3</b><span>Kriterien<small>A–E, Formel und Beispiel</small></span></button>
+        <button type="button" class="schritt" role="tab" data-schritt="4" data-fertig="0"><b>4</b><span>Ergebnis und Übernahme<small>Zonen, Betriebsbild, Projektpuffer</small></span></button>
       </div>
 
       <!-- ================= Schritt 1 ================= -->
       <div class="blatt" data-blatt="1" data-aktiv="1">
-        <div class="erklaer"><span class="ek-i">1</span><div><b>Wofür der Puffer da ist, entscheidet die Anlage.</b> Wählen Sie die Vorlage,
-        die Ihrer Anlage am nächsten kommt — sie befüllt die Erzeugerdaten und die Randbedingungen des nächsten Schritts. Was aus dem Projekt
-        bekannt ist (Erzeuger aus ① Konfiguration, Temperaturen des Speichers), steht schon drin.</div></div>
+        <div class="erklaer"><span class="ek-i">1</span><div><b>Wofür der Puffer da ist, entscheiden Klasse und Anlage.</b> Die
+        Speicherklasse legt fest, welche Zonen der Behälter trägt; die Vorlage befüllt die Erzeugerdaten der Heizzone und die
+        Randbedingungen des nächsten Schritts. Was aus dem Projekt bekannt ist (Nutzung des Speichers, Erzeuger aus ① Konfiguration,
+        Temperaturen und Schwellen), steht schon drin.</div></div>
 
         <div class="epos-gruppenkopf">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorlage der Anlage</h3><span class="epos-gruppenkopf-summe" id="pa-vorlage-name">Wärmepumpe bivalent · Mehrfamilienhaus</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Speicherklasse und Nutzung</h3><span class="epos-gruppenkopf-summe" id="pa-klasse-summe">Kombi · Heizung + Brauchwasser</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Speicherklasse</span>
+              <span class="zpg-wert zpg-optionen" role="group" aria-label="Speicherklasse">
+                <span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-klasse="H"><i></i>Heizung</span>
+                <span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-klasse="B"><i></i>Brauchwasser</span>
+                <span class="zpg-option box" role="checkbox" tabindex="0" aria-checked="false" data-klasse="P"><i></i>Prozess</span>
+              </span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus <code>Nutzung_*</code> des Speichers 1, änderbar; Kombi = Heizung + Brauchwasser. Je Klasse eine Zone mit eigenem Verfahren: Heizzone nach den Kriterien A–E, Brauchwasserzone aus dem Zapfprofil, Prozesszone auf der Prozessreihe</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Nutzungsprofil</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">Wohnen · daneben Büro/Schule</span>
+                <span class="tg-marken"><span class="tg-marke an">Wohnen</span><span class="tg-marke">Beherbergung</span><span class="tg-marke">Pflege/Krankenhaus</span><span class="tg-marke an">Büro/Schule</span><span class="tg-marke">Gewerbe/Prozess</span></span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>abgeleitet, nur Anzeige: Zapf-Nutzungsart Mehrfamilienhaus (20 WE, 40 Personen), Konditionierung WOHNEN und BUERO, keine Prozesswärme. Das Profil prägt die Bedarfsreihen, aus denen bemessen wird — es ist keine eigene Vorgabenzeile. Ohne Zapfprofil und Kalender gilt die Vorgabe der Vorlage mit Hinweis</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorlage der Anlage</h3><span class="epos-gruppenkopf-summe" id="pa-vorlage-name">Wärmepumpe bivalent · leistungsgeregelt</span></div>
           <div class="epos-gruppenkopf-koerper">
             <div class="vorlagen" role="group" aria-label="Vorlagen je Anlagentyp">
-              <button type="button" class="vorlage" data-vorlage="wp-mono" aria-pressed="false"><span class="v-marke">Wärmepumpe</span><h4>monovalent</h4><p>Die Wärmepumpe deckt allein. Puffer für Abtauung, Taktung und Sperrzeit — die Sperrzeit bemisst.</p></button>
-              <button type="button" class="vorlage" data-vorlage="wp-bi" aria-pressed="true"><span class="v-marke">Wärmepumpe</span><h4>bivalent mit Spitzenkessel</h4><p>Kessel deckt Spitzen und Sperrzeiten. Puffer für Abtauung und Taktung; Sperrzeit entfällt.</p></button>
-              <button type="button" class="vorlage" data-vorlage="bhkw" aria-pressed="false"><span class="v-marke">BHKW</span><h4>lange Laufzeiten</h4><p>Puffer nach Laufzeitziel je Start; Faustwert Liter je kW thermisch als Gegenprobe.</p></button>
-              <button type="button" class="vorlage" data-vorlage="kessel" aria-pressed="false"><span class="v-marke">Kessel</span><h4>mit Taktbegrenzung</h4><p>Mindestlaufzeit und Mindestleistung aus der Kesselkennlinie; kleiner Puffer gegen Takten.</p></button>
-              <button type="button" class="vorlage" data-vorlage="solar" aria-pressed="false"><span class="v-marke">Solarthermie</span><h4>Kollektorfeld am Puffer</h4><p>Volumen je m² Kollektor, Tagesspeicher; Ladung nachrangig nach dem Erzeuger.</p></button>
+              <button type="button" class="vorlage" data-vorlage="wp-mono" aria-pressed="false"><span class="v-marke">Wärmepumpe</span><h4>monovalent</h4><p>Die Wärmepumpe deckt allein. Gerätetyp und Mindestlaufzeit, Sperrzeit nach VDI-Weg, Taktziel.</p></button>
+              <button type="button" class="vorlage" data-vorlage="wp-bi" aria-pressed="true"><span class="v-marke">Wärmepumpe</span><h4>bivalent</h4><p>Zweiterzeuger frei in der Sperre: Sperrzeit entfällt. Heizstab: mitgesperrt, Sperrzeit bemisst.</p></button>
+              <button type="button" class="vorlage" data-vorlage="bhkw" aria-pressed="false"><span class="v-marke">BHKW</span><h4>lange Laufzeiten</h4><p>Mindestlaufzeit 60 min, Startziel 2 je Tag; Faustwert 60 l/kW<sub>th</sub> als Gegenprobe.</p></button>
+              <button type="button" class="vorlage" data-vorlage="kessel" aria-pressed="false"><span class="v-marke">Kessel</span><h4>Gas/Öl</h4><p>Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie; kleiner Puffer gegen Takten.</p></button>
+              <button type="button" class="vorlage" data-vorlage="fest" aria-pressed="false"><span class="v-marke">Festbrennstoff</span><h4>Scheitholz, Pellets</h4><p>Mindestvolumen nach Vorschrift aus dem Brennstoff des Kessels — bemessend.</p></button>
+              <button type="button" class="vorlage" data-vorlage="solar" aria-pressed="false"><span class="v-marke">Solarthermie</span><h4>Kollektorfeld am Puffer</h4><p>Volumen je m² Aperturfläche, Tagesspeicher; Ladung nachrangig nach dem Erzeuger.</p></button>
+              <button type="button" class="vorlage" data-vorlage="prozess" aria-pressed="false"><span class="v-marke">Prozess</span><h4>Prozesspuffer</h4><p>Deckung und Taktziel auf der Prozessreihe, Spreizung aus dem Puffer; Temperaturniveau prüfen.</p></button>
             </div>
-            <div class="zpg-feld"><span class="zpg-lab">Gebäudeart</span>
-              <span class="zpg-wert zpg-optionen"><span class="zpg-option"><i></i>Einfamilienhaus</span><span class="zpg-option an"><i></i>Mehrfamilienhaus</span><span class="zpg-option"><i></i>Gewerbe / Büro</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Gebäuden des Projekts (Wohnen 20 WE, Büro) — bestimmt die Vorgaben der Vorlage, etwa Mindestlaufzeit und Sperrzeitprofil</span></div>
+            <div class="zpg-feld nur-wp"><span class="zpg-lab">Gerätetyp</span>
+              <span class="zpg-wert zpg-optionen" role="radiogroup" aria-label="Gerätetyp der Wärmepumpe">
+                <span class="zpg-option" role="radio" tabindex="0" aria-checked="false" data-geraet="fix"><i></i>Fixed-Speed</span>
+                <span class="zpg-option an" role="radio" tabindex="0" aria-checked="true" data-geraet="geregelt"><i></i>leistungsgeregelt</span>
+              </span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>VDI 4645 E 2026-03, 7.8.1 und 7.8.4: Fixed-Speed → Faustwert 20 l/kW, Mindestlaufzeit führend; leistungsgeregelt → 3 l/kW, Mindestleistung führend, Betriebsbild im Modulationsmodus</span></div>
+            <div class="zpg-feld nur-bi"><span class="zpg-lab">Zweiterzeuger in der Sperre</span>
+              <span class="zpg-wert zpg-optionen" role="radiogroup" aria-label="Zweiterzeuger in der Sperre">
+                <span class="zpg-option an" role="radio" tabindex="0" aria-checked="true" data-sperrwahl="frei"><i></i>Zweiterzeuger frei in der Sperre</span>
+                <span class="zpg-option" role="radio" tabindex="0" aria-checked="false" data-sperrwahl="heizstab"><i></i>Heizstab (gesperrt)</span>
+              </span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>nur ein in der Sperre freigegebener Zweiterzeuger lässt Kriterium C entfallen; ein Heizstab ist mitgesperrt (VDI 4645 E 2026-03, 7.12; VDI-Whitepaper RWTH)</span></div>
+            <p class="zpg-leise">Die Brauchwasserzone hat keine Vorlage — sie kommt aus dem Zapfprofil (Schritt 2). Die Prozesszone hat die Vorlage Prozesspuffer.</p>
           </div>
         </div>
 
@@ -793,160 +875,234 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
               <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Rang 1 der Kaskade; der Puffer wird für den Erzeuger bemessen, der takten oder Sperrzeiten überbrücken muss</span></div>
             <div class="zpg-feld"><span class="zpg-lab">Nennleistung thermisch</span>
               <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-pnenn">60,0</span><span class="epos-einheit">kW</span><span class="beispiel">EFH 8–12 kW · MFH 40–80 kW</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Kennlinie am Normpunkt A2/W55</span></div>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Kennlinie am Normpunkt; Anlaufleistung = Nennleistung, wenn das Kennfeld nichts anderes hergibt</span></div>
             <div class="zpg-feld"><span class="zpg-lab">Kleinste Dauerleistung</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-pmin">18,0</span><span class="epos-einheit">kW</span><span class="beispiel">30 % der Nennleistung bei Inverter, 100 % bei Ein/Aus</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Modulationsgrenze 30 %; ein Ein/Aus-Gerät taktet mit voller Leistung</span></div>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-pmin">18,0</span><span class="epos-einheit">kW</span><span class="beispiel">leistungsgeregelt 30 % · Fixed-Speed 100 %</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span><span id="pa-pmin-herk">Mindestleistung, Vorgabe 30 % der Nennleistung (die Wärmepumpe führt heute keine Mindestleistung)</span></span></div>
             <div class="zpg-feld"><span class="zpg-lab">Mindestlaufzeit je Start</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-tmin">20</span><span class="epos-einheit">min</span><span class="beispiel">Wärmepumpe 15–30 min · BHKW 60–120 min</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Herstellerfreigabe der Anlage eintragen, wenn bekannt</span></div>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-tmin">10</span><span class="epos-einheit">min</span><span class="beispiel">Wärmepumpe 3–10 min nach Herstellerangabe · BHKW 60 min · Kessel 10 min</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>VDI 4645 E 2026-03, Gl. 22: Mindestlaufzeit des Herstellers, Vorgabe 10 min; Herstellerfreigabe eintragen, wenn bekannt</span></div>
             <div class="zpg-feld"><span class="zpg-lab">Zweiter Erzeuger</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-erz2">Heizkessel B · Gas · 80 kW · deckt Sperrzeiten</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Rang 2 der Kaskade; „deckt Sperrzeiten“ nimmt das Sperrzeitkriterium aus der Bemessung</span></div>
-            <div class="zpg-feld ab-standard"><span class="zpg-lab">Abtauung</span>
-              <span class="zpg-wert zpg-optionen"><span class="zpg-option an" id="pa-abtau-an"><i></i>ja, Luft/Wasser</span><span class="zpg-option" id="pa-abtau-aus"><i></i>nein</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Luft/Wasser-Geräte tauen über den Heizkreis ab; Sole/Wasser nicht</span></div>
-            <p class="zpg-leise nur-schnell">Abtauung und Bezugstemperaturen stehen auf Vorgabe – Stufe Standard zeigt sie.</p>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-erz2">Heizkessel B · Gas · 80 kW · in der Sperre frei</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Rang 2 der Kaskade; nur „in der Sperre frei“ nimmt das Sperrzeitkriterium aus der Bemessung</span></div>
+            <div class="zpg-feld ab-standard nur-wp"><span class="zpg-lab">Abtauung</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>ja, Luft/Wasser</span><span class="zpg-option"><i></i>nein, Sole/Wasser oder Wasser/Wasser</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Luft/Wasser-Geräte tauen über den Heizkreis ab — die Vorprüfung A allein genügt dann nicht</span></div>
+            <p class="zpg-leise nur-schnell">Abtauung, Temperaturen, Schwellen und Einbindung stehen auf Projekt bzw. Vorgabe – Stufe Standard zeigt sie.</p>
           </div>
         </div>
 
         <div class="epos-gruppenkopf ab-standard">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Temperaturen am Puffer</h3><span class="epos-gruppenkopf-summe">ΔT 10 K → 11,63 kWh je 1 000 l</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Temperaturen und Schwellen am Puffer</h3><span class="epos-gruppenkopf-summe">ΔT 10 K → 11,6 kWh je 1 000 l</span></div>
           <div class="epos-gruppenkopf-koerper">
             <div class="zpg-feld"><span class="zpg-lab">Vorlauf / Rücklauf</span>
               <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">55</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz">45</span><span class="epos-einheit">°C</span><span class="beispiel">Fußboden 35/28 · Heizkörper 55/45 · Alt 70/55</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Temperaturpaar des Speichers 1; die Spreizung bestimmt, wie viel Wärme ein Liter trägt</span></div>
-            <div class="zpg-feld ab-experte"><span class="zpg-lab">Nutzbarer Anteil</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">85</span><span class="epos-einheit">%</span><span class="beispiel">80–90 % (Mischzone, Totvolumen)</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>Auslieferungswert; das Sicherheitsband der Empfehlung</span></div>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Temperaturpaar des Speichers 1; Kapazität = V · 1,16 Wh/(l·K) · ΔT wie in der Jahressimulation</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Schwellen ein / aus</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">10</span><span class="epos-einheit">%</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">95</span><span class="epos-einheit">%</span><span class="epos-einheit">→ nutzbarer Anteil <b>85 %</b></span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>nutzbarer Anteil = <code>Schwelle_Aus</code> − <code>Schwelle_Ein</code> — kein eigener Parameter; die Betriebssimulation schaltet mit denselben Schwellen wie die Jahressimulation</span></div>
+            <div class="zpg-feld ab-experte"><span class="zpg-lab">Einbindung</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>parallel (Trennspeicher)</span><span class="zpg-option"><i></i>Reihe im Rücklauf</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>parallel entkoppelt; Reihe im Rücklauf nutzt nur etwa die Hysterese (≈ 5 K) und entkoppelt nicht — Hinweis zu Mischverlusten und Vorlaufanhebung</span></div>
           </div>
         </div>
 
-        <div class="epos-leiste"><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="2">Weiter zu 2 · Lastgang ›</button></div>
+        <div class="epos-leiste"><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="2">Weiter zu 2 · Bedarf ›</button></div>
       </div>
 
       <!-- ================= Schritt 2 ================= -->
       <div class="blatt" data-blatt="2">
-        <div class="erklaer"><span class="ek-i">2</span><div><b>Der Lastgang ist die Messlatte.</b> Bemessen wird gegen den stündlichen Wärmelastgang
-        des Projekts — am besten aus der letzten Simulation. Sperrzeiten und Abtauung sind die Randbedingungen, die der Puffer überbrücken muss.</div></div>
+        <div class="erklaer"><span class="ek-i">2</span><div><b>Die Bedarfsreihen sind die Messlatte.</b> Bemessen wird je Zone gegen die
+        stündlichen Bedarfsreihen des Projekts — ohne neuen Simulationslauf. Übergabe, Heizgrenze und Anlagenvolumen bestimmen den
+        Sperrzeit-Weg nach VDI 4645; die Brauchwasserzone kommt aus der TWW-Speicherauslegung des Zapfprofils.</div></div>
 
         <div class="epos-gruppenkopf">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Wärmelastgang</h3><span class="epos-gruppenkopf-summe">221 MWh/a · Spitze 96 kW</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Bedarfsreihen</h3><span class="epos-gruppenkopf-summe">Raumwärme 182 MWh/a · Spitze 88 kW</span></div>
           <div class="epos-gruppenkopf-koerper">
             <div class="zpg-feld"><span class="zpg-lab">Quelle</span>
-              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>Simulationsergebnis</span><span class="zpg-option"><i></i>Beispiel-Lastgang</span><span class="zpg-option"><i></i>Messreihe (CSV)…</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Beispiellauf vom 30.09.2026 · Kanäle Raumwärme und Brauchwasser; ohne Ergebnis rechnet der Dialog mit dem Beispiel-Lastgang der Vorlage und sagt das im Ergebnis</span></div>
-            <div class="zpg-feld"><span class="zpg-lab">Kanäle am Puffer</span>
-              <span class="zpg-wert zpg-optionen"><span class="zpg-option box an"><i></i>Raumwärme</span><span class="zpg-option box an"><i></i>Brauchwasser</span><span class="zpg-option box"><i></i>Prozesswärme</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Senken des Erzeugers (Z_AnlageSenke); der Brauchwasserspeicher hat seine eigene Auslegung im Zapfprofil</span></div>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>Bedarf je Kanal (Projekt)</span><span class="zpg-option"><i></i>Beispiel-Lastgang</span><span class="zpg-option"><i></i>Messreihe (CSV)…</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Bedarfsreihen je Kanal (8 760 h) aus der Bedarfsrechnung des Projekts; der Beispiel-Lastgang ist nur Rückfall und steht dann als Warnung im Ergebnis</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Reihe je Zone</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">Heizzone ← Raumwärme · Brauchwasserzone ← Zapfprofil · Prozesszone ← Prozesswärme (im Projekt keine)</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Senken des Erzeugers (<code>Z_AnlageSenke</code>) und der Speicherklasse aus Schritt 1</span></div>
             <div class="zpg-feld ab-standard"><span class="zpg-lab">Kennzahlen</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--nurlesen">Spitze 96 kW · P95 71 kW · Volllaststunden 2 300 h · kältester Tag 14. Januar</span></span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--nurlesen">Spitze 88 kW · P95 71 kW · höchstes 2-h-Mittel 82 kW am 14. Januar · Volllaststunden 2 070 h</span></span>
               <span class="zpg-herkunft">nur lesen — Dauerlinie und Wochenbild stehen im Ergebnis</span></div>
           </div>
         </div>
 
         <div class="epos-gruppenkopf">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Sperrzeiten des Netzbetreibers</h3><span class="epos-gruppenkopf-summe" id="pa-sperr-summe">3 × 2 h je Tag · deckt der Kessel</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Übergabe und Anlage</h3><span class="epos-gruppenkopf-summe">Heizkörper · Heizgrenze 15 °C</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Auslegungsheizlast</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">82,0</span><span class="epos-einheit">kW</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Heizlast des Projekts, sonst Maximum der Raumwärmereihe; Bezugsgröße der Sperrzeit und des Plausibilitätsbands</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Übergabeart · Heizgrenze</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">Heizkörper · 15 °C (bei mehreren Gebäuden der kleinste Wert)</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>je Gebäude geführt; wählt Stillstandzeit (Tabelle 14) und Übergabe-Untergrenze (Tabelle 15) der VDI 4645 E 2026-03</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Anlagenvolumen, nicht absperrbar</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-ueberschrieben">400</span><span class="epos-einheit">l</span><span class="beispiel">Plattenheizkörper 10 l je 1,16 kW · Fußboden 150 l je 100 m²</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--ueber">überschrieben</span>Vorgabe 0 l (vorsichtig); nur der dauerhaft durchströmte Teil zählt — Übergabeeinrichtungen gelten als absperrbar (VDI 4645 E 2026-03, 7.8.3)</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf" data-zone-gruppe="B">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Brauchwasserzone aus dem Zapfprofil</h3><span class="epos-gruppenkopf-summe">TwwSpeicherauslegung · Frischwasserstation</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-feld"><span class="zpg-lab">Topologie · D<sub>max</sub></span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">Frischwasserstation · D<sub>max</sub> 24,0 kWh · Ladeleistung 26 kW</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span><code>TwwSpeicherauslegung</code> des Zapfprofils (Summenlinie, unverändert) — die Schnittstelle ist konstantenfrei, erst die Umrechnung in Liter benutzt 1,16 und die Schwellen des Puffers</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Puffer oben / Rücklauf Frischwasser</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">65</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">25</span><span class="epos-einheit">°C</span><span class="epos-einheit">→ ΔT<sub>B</sub> 40 K</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>Frischwasserstation 65/25 °C mit Reserve für 60 °C am Austritt (E-P22); Expertenfeld</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Durchmischungszuschlag</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">15</span><span class="epos-einheit">%</span><span class="beispiel">f<sub>TWE</sub> = 1,15</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>VDI 4645 E 2026-03, Anhang I1 (Zuschlag für Durchmischung); deckt sich mit 15–20 % der Verbandsliteratur</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Tagesbedarf · Personen</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">1 600</span><span class="epos-einheit">l bei 60 °C</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">40</span><span class="epos-einheit">Personen</span><span class="beispiel">28–50 l je Person bei 60 °C</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>aus den Zapf-Zonen; Kennzahl je Person im Ergebnis als Gegenprobe gegen das Band 28–50 l (IEA Annex 46) — keine Vorgabe (E-P31)</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Zirkulation</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>in der Zapfprofil-Auslegung enthalten</span><span class="zpg-option"><i></i>Anteil 35 % des Tagesbedarfs</span><span class="zpg-option ab-experte"><i></i>100 W je Wohneinheit</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>ein Zuschlag nur, wenn die Zapfprofil-Auslegung die Zirkulation nicht trägt: 35 % des Tagesbedarfs (Vorgabe) oder 100 W je WE (Experte; 20 WE → 2,0 kW → 48 kWh/d)</span></div>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf nur-sperre">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Sperrzeiten des Netzbetreibers</h3><span class="epos-gruppenkopf-summe" id="pa-sperr-summe">2 × 2 h je Tag · Zweiterzeuger frei</span></div>
           <div class="epos-gruppenkopf-koerper">
             <div class="zpg-feld"><span class="zpg-lab">Sperrzeitprofil</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-sperr">Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Vorlagen: kein Sperrzeitprofil · 2 × 2 h · 3 × 2 h · eigenes Profil…</span></div>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-sperr">2 × 2 h · 6–8 Uhr und 17–19 Uhr</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Profile: keine · 2 × 2 h · 3 × 2 h · eigenes… — neutrale Eingabe der Sperrdauer und ihrer Lage je Tag</span></div>
             <div class="zpg-feld"><span class="zpg-lab">Längste Sperre am Stück</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-sperrdauer">2,0</span><span class="epos-einheit">h</span><span class="beispiel">2 h; zwischen zwei Sperren mindestens die Sperrdauer frei</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>bemessend ist das höchste rollierende Mittel des Lastgangs über diese Dauer</span></div>
-            <div class="zpg-feld ab-standard"><span class="zpg-lab">Deckung in der Sperre</span>
-              <span class="zpg-wert zpg-optionen"><span class="zpg-option" id="pa-deck-puffer"><i></i>allein der Puffer</span><span class="zpg-option an" id="pa-deck-kessel"><i></i>der zweite Erzeuger</span><span class="zpg-option"><i></i>Puffer mit Gebäudeträgheit</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>„mit Gebäudeträgheit“ setzt den Lastgang in der Sperre auf einen Anteil herab (Experte: 50 %) — nur bei Fußbodenheizung oder schwerer Bauweise</span></div>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">2,0</span><span class="epos-einheit">h</span><span class="beispiel">2 h; zwischen zwei Sperren mindestens die Sperrdauer frei</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Sperrdauer t<sub>WP,aus</sub> der Gleichung 23</span></div>
+            <div class="zpg-info">Ein Fenster über Mitternacht (etwa 23–1 Uhr) zählt als <b>eine</b> Sperre am Stück (Mitternachtsübertrag). Die
+            Jahressimulation rechnet ein Sperrfenster je Wärmepumpe ohne Übertrag; das Ergebnis nennt die Abweichung, die Übernahme schreibt die Sperrannahme nicht mit.</div>
+            <div class="zpg-feld"><span class="zpg-lab">Deckung in der Sperre</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen" id="pa-sperr-deck">Zweiterzeuger frei in der Sperre → Kriterium C entfällt</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>folgt der Wahl in Schritt 1; ein Heizstab gilt als mitgesperrt</span></div>
+            <div class="zpg-feld ab-experte"><span class="zpg-lab">Stillstandzeit · Untergrenze · Überladung</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">1,0</span><span class="epos-einheit">h</span><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">15</span><span class="epos-einheit">K</span><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">5</span><span class="epos-einheit">K</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>VDI 4645 E 2026-03, Tabelle 14 (Heizkörper, Heizgrenze 15 °C), Tabelle 15 (Heizkörper) und Überladung dT<sub>SP</sub> bis 5 K über der Heizkurve</span></div>
           </div>
         </div>
 
         <div class="epos-gruppenkopf ab-standard">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Betriebsziel</h3><span class="epos-gruppenkopf-summe">höchstens 6 Starts je Tag</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Betriebsziel</h3><span class="epos-gruppenkopf-summe" id="pa-ziel-summe">höchstens 6 Starts je Tag · Deckung 100 %</span></div>
           <div class="epos-gruppenkopf-koerper">
-            <div class="zpg-feld"><span class="zpg-lab">Starts je Tag, Ziel</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">6</span><span class="epos-einheit">je Tag</span><span class="beispiel">Wärmepumpe ≤ 6–8 · BHKW ≤ 3 · Kessel ≤ 12</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Ziel der Betriebssimulation; sie sucht das kleinste Volumen, das es im Jahresmittel hält</span></div>
-            <div class="zpg-feld ab-experte"><span class="zpg-lab">Schaltschwellen</span>
-              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">10</span><span class="epos-einheit">% ein</span><span class="epos-eingabe epos-eingabe--kurz">95</span><span class="epos-einheit">% aus</span></span>
-              <span class="zpg-herkunft"><span class="herk herk--projekt">Projekt</span>Schwellen des Speichers 1 — die Betriebssimulation rechnet mit denselben wie die Jahressimulation</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Startziel · Warnschwelle</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-startziel">6</span><span class="epos-einheit">je Tag</span><span class="epos-eingabe epos-eingabe--kurz">15</span><span class="epos-einheit">je Tag</span><span class="beispiel">Wärmepumpe 6 · BHKW 2 · Kessel 12</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>Startziel aus dem Feldtest Fraunhofer ISE WP-QS 2025, Warnschwelle 15 je Tag; VDI 4645 gibt keine Schalthäufigkeit vor. Experte: Portalband 10–15 je Tag als Beispielhilfe (Sekundärquelle)</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Starts je Heizperiode</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">3 000</span><span class="epos-einheit">Hinweisschwelle</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>Lebensdauer-Maß der Hersteller (2 000–3 000 je Heizperiode, Sekundärquelle); nur Hinweis</span></div>
+            <div class="zpg-feld"><span class="zpg-lab">Ziel-Deckungsgrad</span>
+              <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">100</span><span class="epos-einheit">%</span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorgabe">Vorgabe</span>Ziel der Durchlauf-Bilanz D1; nicht erreichbar → D1 bemisst nicht, Hinweis</span></div>
+            <div class="zpg-feld ab-experte nur-wp"><span class="zpg-lab">Modulationsmodus</span>
+              <span class="zpg-wert zpg-optionen"><span class="zpg-option an" id="pa-modmodus"><i></i>an — laden mit Last plus Rest, mindestens P<sub>min</sub></span></span>
+              <span class="zpg-herkunft"><span class="herk herk--vorlage">Vorlage</span>nur leistungsgeregelt; Fixed-Speed lädt im Zweipunkt mit voller Leistung</span></div>
           </div>
         </div>
-        <p class="zpg-leise nur-schnell">Betriebsziel und Deckung in der Sperre stehen auf Vorgabe der Vorlage – Stufe Standard zeigt sie.</p>
+        <p class="zpg-leise nur-schnell">Betriebsziel, Kennzahlen und Zweipunktschwellen stehen auf Vorgabe der Vorlage – Stufe Standard zeigt sie.</p>
 
         <div class="epos-leiste"><button type="button" class="epos-knopf" data-weiter="1">‹ Zurück</button><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="3">Weiter zu 3 · Kriterien ›</button></div>
       </div>
 
       <!-- ================= Schritt 3 ================= -->
       <div class="blatt" data-blatt="3">
-        <div class="erklaer"><span class="ek-i">3</span><div><b>Vier Kriterien, das größte gewinnt.</b> Jedes Kriterium bemisst den Puffer aus einer anderen Aufgabe.
-        Die Vorlage hat vorgewählt, was zu Ihrer Anlage passt; Sie können Kriterien zu- oder abschalten. Formel und ein
-        Beispiel stehen an jedem Kriterium — mit Ihren Werten aus Schritt 1 und 2.</div></div>
+        <div class="erklaer"><span class="ek-i">3</span><div><b>Je Zone gewinnt das größte bemessende Kriterium.</b> Die Kriterien A–E
+        gelten der Heizzone (bei der Vorlage Prozesspuffer der Prozesszone); die Brauchwasserzone rechnet die TWW-Speicherauslegung.
+        Die Vorlage hat vorgewählt, was zur Anlage passt; Kriterien lassen sich zu- oder abschalten. Formel und Beispiel stehen an
+        jedem Kriterium — mit den Werten aus Schritt 1 und 2. Liter ohne Zusatz sind Nutzvolumen; „gesamt“ heißt nach Teilung
+        durch den nutzbaren Anteil 85 %.</div></div>
 
-        <div class="krit" data-krit="abtau" data-an="1">
-          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="abtau"><i></i></span><h4>A · Abtauung</h4><span class="krit-wert" data-krit-wert="abtau">1 200 l</span></div>
-          <div class="formel">V<sub>Abtau</sub> = 20 l/kW · P<sub>Nenn</sub> = 20 · 60 kW = <b>1 200 l</b></div>
-          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Richtwert für Luft/Wasser-Wärmepumpen, die über den Heizkreis abtauen; entfällt bei Sole/Wasser und bei Abtauung aus dem Gerät. Stufe Experte: Liter je kW ändern.</div>
+        <div class="krit" data-krit="vor" data-an="1" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-krit-schalter="vor"><i></i></span><h4>A · Vorprüfung Anlagenvolumen</h4><span class="krit-wert" data-krit-wert="vor">bemisst nicht</span></div>
+          <div class="formel" id="pa-a-formel">V<sub>Anlage,min</sub> = 3 l/kW · 60 kW = 180 l ≤ 400 l nicht absperrbar → <b>erfüllt</b></div>
+          <div class="krit-quelle"><span class="herk herk--vorgabe">Vorgabe</span>VDI 4645 E 2026-03, 7.8.3: genügt für Sole/Wasser und Wasser/Wasser ohne Herstellerangabe — dann lautet das Ergebnis „kein Puffer erforderlich“ (<code>KEIN_PUFFER_NOETIG</code>). <span id="pa-a-text">Hier Luft/Wasser: die Abtaureserve fehlt, der Puffer bleibt.</span></div>
         </div>
-        <div class="krit" data-krit="takt" data-an="1">
-          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="takt"><i></i></span><h4>B · Taktung und Mindestlaufzeit</h4><span class="krit-wert" data-krit-wert="takt">520 l</span></div>
-          <div class="formel">V<sub>Takt</sub> = P<sub>min</sub> · t<sub>min</sub> / (1,163 · ΔT) = 18 kW · 0,333 h · 1 000 / (1,163 · 10 K) = <b>516 l</b></div>
-          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Der Puffer nimmt die kleinste Dauerleistung über die Mindestlaufzeit auf, wenn das Gebäude nichts abnimmt. Bei Ein/Aus-Geräten mit P<sub>min</sub> = P<sub>Nenn</sub>: 1 720 l.</div>
+        <div class="krit" data-krit="typ" data-an="1" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-krit-schalter="typ"><i></i></span><h4 id="pa-b-titel">B · Gerätetyp und Mindestlaufzeit</h4><span class="krit-wert" data-krit-wert="typ">304 l gesamt</span></div>
+          <div class="formel" id="pa-b-formel">…</div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span><span id="pa-b-quelle">…</span></div>
         </div>
-        <div class="krit" data-krit="sperr" data-an="0">
-          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" aria-checked="false" data-krit-schalter="sperr"><i></i></span><h4>C · EVU-Sperrzeit</h4><span class="krit-wert aus" data-krit-wert="sperr">14 100 l</span></div>
-          <div class="formel">V<sub>Sperre</sub> = max<sub>2 h</sub>(Ø Last) · t<sub>Sperre</sub> / (1,163 · ΔT) = 82 kW · 2 h · 1 000 / (1,163 · 10 K) = <b>14 100 l</b></div>
-          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span><b>Abgeschaltet:</b> der Spitzenkessel deckt die Sperrzeiten (Schritt 2). Monovalent wäre dieses Kriterium bemessend — mit Gebäudeträgheit 50 % noch 7 050 l. Das höchste rollierende Mittel liegt am 14. Januar, 6–8 Uhr.</div>
+        <div class="krit" data-krit="sperr" data-an="0" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" tabindex="0" aria-checked="false" data-krit-schalter="sperr"><i></i></span><h4>C · Sperrzeit</h4><span class="krit-wert aus" data-krit-wert="sperr">2 428 l</span></div>
+          <div class="formel">V<sub>Sperre</sub> = Q̇<sub>Ausl</sub> · (t<sub>Sperre</sub> − t<sub>aus,max</sub>) · 1 000 / (1,16 · ((ϑ<sub>VL</sub> + dT<sub>SP</sub>) − (ϑ<sub>R</sub> + dT<sub>Wü,min</sub>))) − V<sub>Anlage</sub><br>= 82 kW · (2 h − 1 h) · 1 000 / (1,16 · ((55 + 5) − (20 + 15)) K) − 400 l = 2 828 l − 400 l = <b>2 428 l</b></div>
+          <div class="krit-zeile ab-experte"><b>Expertenzeile · Tool-Weg aus dem Lastgang:</b> max<sub>2 h</sub>(Ø Last) · t<sub>Sperre</sub> / (1,16 · ΔT · 85 %) = 82 kW · 2 h · 1 000 / (1,16 · 10 K · 0,85) = <b>16 630 l gesamt</b> — zur Gegenüberstellung; bemisst nur auf ausdrückliche Wahl.</div>
+          <div class="krit-quelle"><span class="herk herk--vorgabe">Vorgabe</span>VDI 4645 E 2026-03, Gl. 23 mit Tabelle 14 (akzeptable Stillstandzeit nach Heizgrenze und Übergabe) und Tabelle 15 (Übergabe-Untergrenze), Überladung 5 K, Abzug des Anlagenvolumens; ϑ<sub>R</sub> Raumtemperatur. Die Spreizung der Gleichung ist schon die nutzbare — keine Teilung durch 85 %. Entfällt nur bei freigegebenem Zweiterzeuger; ein Heizstab gilt als mitgesperrt.</div>
+          <div class="krit-status" id="pa-c-status">entfällt: Zweiterzeuger in der Sperre frei</div>
         </div>
-        <div class="krit" data-krit="sim" data-an="1">
-          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" aria-checked="true" data-krit-schalter="sim"><i></i></span><h4>D · Betriebssimulation über das Jahr</h4><span class="krit-wert" data-krit-wert="sim">1 800 l</span></div>
-          <div class="formel">kleinstes V, für das die Zweipunkt-Simulation (laden bis 95 %, entladen bis 10 %) im Jahresmittel <b>≤ 6 Starts je Tag</b> hält — Suche zwischen 200 und 10 000 l: <b>1 800 l</b></div>
-          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>8 760 Stunden gegen den Lastgang aus Schritt 2; liefert Starts je Tag, Laufzeit je Start und Unterdeckung. Ohne Puffer: 21 Starts je Tag.</div>
+        <div class="krit" data-krit="deck" data-an="1" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-krit-schalter="deck"><i></i></span><h4>D1 · Deckungsgrad</h4><span class="krit-wert" data-krit-wert="deck">bemisst nicht</span></div>
+          <div class="formel">Durchlauf-Bilanz SOC(t+1) = clip(SOC + (P<sub>Erzeuger</sub> − Q) · Δt, 0, C) über 8 760 h, Sperrmaske ohne freien Zweiterzeuger; Bisektion auf den <b>Ziel-Deckungsgrad 100 %</b> (Toleranz 1 kWh)</div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Wärmespeicher-Tool, Kriterium 4 (validiert); bemisst nur, wenn die Erzeuger zusammen unter der Spitze liegen oder eine Sperre ohne freien Zweiterzeuger wirkt. Reicht selbst die Obergrenze nicht, bemisst D1 nicht und meldet <code>P_GEN_UNTER_SPITZE</code>.</div>
+          <div class="krit-status" id="pa-d1-status">…</div>
         </div>
-        <div class="krit ab-standard" data-krit="faust" data-an="0">
-          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" aria-checked="false" data-krit-schalter="faust"><i></i></span><h4>E · Faustwert je kW (Gegenprobe)</h4><span class="krit-wert aus" data-krit-wert="faust">1 500 l</span></div>
-          <div class="formel">V = 25 l/kW · 60 kW = <b>1 500 l</b> <span class="zpg-leise" style="display:inline">(Wärmepumpe 20–30 l/kW · BHKW 60–100 l/kW<sub>th</sub> · Solar 50–70 l/m²)</span></div>
-          <div class="krit-quelle"><span class="herk herk--vorgabe">Vorgabe</span>nur nachrichtlich; bemisst nie allein. Erscheint im Ergebnis als Vergleichsbalken.</div>
+        <div class="krit" data-krit="takt" data-an="1" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box an" role="checkbox" tabindex="0" aria-checked="true" data-krit-schalter="takt"><i></i></span><h4>D2 · Taktziel</h4><span class="krit-wert" data-krit-wert="takt">1 941 l gesamt</span></div>
+          <div class="formel" id="pa-d2-formel">…</div>
+          <div class="krit-quelle"><span class="herk herk--vorlage">Vorlage</span>Zweipunkt-Betriebssimulation mit den Schwellen des Puffers (laden bis 95 %, entladen bis 10 %); Startziel und Warnschwelle aus Schritt 2. Das Taktziel ist ein Komfort- und Verschleißkriterium, kein Wirtschaftlichkeitsnachweis.</div>
+          <div class="krit-status" id="pa-d2-status">…</div>
         </div>
-        <p class="zpg-leise nur-schnell">Die Gegenprobe E steht auf Vorgabe – Stufe Standard zeigt sie.</p>
+        <div class="krit ab-standard" data-krit="faust" data-an="0" data-gilt="1">
+          <div class="krit-kopf"><span class="zpg-option box" role="checkbox" tabindex="0" aria-checked="false" data-krit-schalter="faust"><i></i></span><h4>E · Faustwert (Gegenprobe)</h4><span class="krit-wert aus" data-krit-wert="faust">1 500 l</span></div>
+          <div class="formel" id="pa-e-formel">…</div>
+          <div class="krit-quelle"><span class="herk herk--vorgabe">Vorgabe</span><span id="pa-e-quelle">…</span> Nur nachrichtlich; bemisst nie allein.</div>
+        </div>
+        <p class="zpg-leise nur-schnell">Die Gegenprobe E und die Expertenzeile zu C stehen auf Vorgabe – Stufe Standard bzw. Experte zeigt sie.</p>
 
         <div class="epos-leiste"><button type="button" class="epos-knopf" data-weiter="2">‹ Zurück</button><span class="f-fueller"></span><button type="button" class="epos-knopf epos-knopf--primaer" data-weiter="4">Auslegen und Ergebnis zeigen ›</button></div>
       </div>
 
       <!-- ================= Schritt 4 ================= -->
       <div class="blatt" data-blatt="4">
-        <div class="erklaer"><span class="ek-i">4</span><div><b>Vorschlag, Betriebsbild, Übernahme.</b> Der Vorschlag ist das größte aktive Kriterium,
-        durch den nutzbaren Anteil geteilt und auf das Raster marktüblicher Nenninhalte gerundet. Die Betriebssimulation zeigt, was der
-        Puffer bewirkt. „Übernehmen“ schreibt Volumen, Temperaturen und Schwellen in den Projektpuffer — nichts anderes.</div></div>
+        <div class="erklaer"><span class="ek-i">4</span><div><b>Zonen, Vorschlag, Betriebsbild, Übernahme.</b> Je Zone bemisst das größte
+        aktive Kriterium; was über den Füllstand rechnet (B-Mindestlaufzeit, D1, D2, Brauchwasser- und Prozesszone), geht durch den
+        nutzbaren Anteil 85 % aus den Schwellen, Faustwerte und Gleichung 23 gehen als Gesamtvolumen ein. Die Zonen werden addiert,
+        auf das Raster gerundet und gegen die Praxisgrenze geprüft. „Übernehmen“ schreibt in den Projektpuffer, was unten steht — nichts anderes.</div></div>
 
         <div class="epos-gruppenkopf">
-          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorschlag</h3><span class="epos-gruppenkopf-summe" id="pa-vorschlag-kopf">2 000 l · 23,3 kWh nutzbar</span></div>
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Vorschlag je Zone</h3><span class="epos-gruppenkopf-summe" id="pa-vorschlag-kopf">3 000 l · 29,6 kWh nutzbar</span></div>
           <div class="epos-gruppenkopf-koerper">
-            <div class="ausl-karten" id="pa-karten">
-              <div class="ausl-karte" data-karte="abtau"><h4>A · Abtauung</h4><div class="ausl-unter">20 l/kW · 60 kW</div><div class="ausl-wert"><span>Volumen</span><b>1 200 l</b></div><div class="ausl-band"><span style="left:0;width:12%"></span></div></div>
-              <div class="ausl-karte" data-karte="takt"><h4>B · Taktung</h4><div class="ausl-unter">18 kW · 20 min · ΔT 10 K</div><div class="ausl-wert"><span>Volumen</span><b>520 l</b></div><div class="ausl-band"><span style="left:0;width:5.2%"></span></div></div>
-              <div class="ausl-karte aus" data-karte="sperr"><h4>C · Sperrzeit</h4><div class="ausl-unter">entfällt · Kessel deckt</div><div class="ausl-wert"><span>wäre</span><b>14 100 l</b></div><div class="ausl-band"><span style="left:0;width:100%;opacity:.35"></span></div></div>
-              <div class="ausl-karte gewinner" data-karte="sim"><h4>D · Betriebssimulation</h4><div class="ausl-unter">≤ 6 Starts je Tag</div><div class="ausl-wert"><span>Volumen</span><b>1 800 l</b></div><div class="ausl-band"><span style="left:0;width:18%"></span></div></div>
+            <div class="zpg-scroll">
+              <table class="zpg-kz" id="pa-zonen">
+                <thead><tr><th>Zone</th><th>bemessend</th><th>Rechnung</th><th>Volumen</th></tr></thead>
+                <tbody><tr><td colspan="4">…</td></tr></tbody>
+              </table>
             </div>
-            <div class="ausl-empf" id="pa-empf"><b>Empfehlung: 2 000 l</b> — bemessend ist D · Betriebssimulation (1 800 l), durch den nutzbaren Anteil 85 % = 2 120 l,
-            auf das Raster gerundet: <b>2 000 l</b> (nächste Stufe 3 000 l wäre +50 % Volumen für 0,4 Starts weniger). Speicherkapazität bei
-            55/45 °C: 23,3 kWh, davon 19,8 kWh nutzbar. Bereitschaftsverlust der Auslieferungsvorgabe: 3,5 kWh je 24 h.</div>
-            <div class="raster" aria-label="Raster marktüblicher Nenninhalte">
-              <span>100</span><span>150</span><span>200</span><span>300</span><span>400</span><span class="krit-m" title="B · Taktung 520 l">500</span><span>800</span><span title="A · Abtauung 1 200 l">1 000</span><span class="krit-m">1 500</span><span class="gew">2 000 l</span><span>3 000</span><span>5 000</span><span>8 000</span><span>10 000</span>
+            <div class="zonenbalken" id="pa-zonenbalken" aria-label="Zonen im Behälter"></div>
+            <div class="ausl-empf" id="pa-empf">…</div>
+            <div class="raster" id="pa-raster" aria-label="Raster marktüblicher Nenninhalte"></div>
+            <p class="zpg-leise">Raster wie in der TWW-Speicherauslegung (dieselben Schlüssel <code>Speicherauslegung.Nenninhalt.*</code>, oberhalb 10 000 l auf volle 1 000 l); Praxisgrenze 100 000 l. Markiert: gewählte Stufe.</p>
+            <p class="zpg-leise" id="pa-verlust">…</p>
+          </div>
+        </div>
+
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Nutzen und Aufwand</h3><span class="epos-gruppenkopf-summe">nachrichtlich · keine Wirtschaftlichkeitsrechnung</span></div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="zpg-scroll">
+              <table class="zpg-kz" id="pa-nutzen"><tbody><tr><td>…</td></tr></tbody></table>
             </div>
-            <p class="zpg-leise">Raster wie in der TWW-Speicherauslegung (Auslieferungswert, oberhalb 10 000 l auf volle 1 000 l). Markiert: gewählte Stufe und die Stufen der übrigen Kriterien.</p>
+            <div class="zpg-info">Mehrvolumen senkt die Starts, erhöht den Bereitschaftsverlust und <b>senkt die Jahresarbeitszahl</b> der Wärmepumpe
+            (Speicherverluste, häufigerer Zusatzerzeuger; VDI-Whitepaper RWTH). Bereitschaftsverlust als Prüfwert „kWh/d bei 45 K“ und als
+            W/K nach EN 15316-5, Formel 3; Betriebsverlust mit dem Puffermittel (55 + 45)/2 = 50 °C gegen 15 °C Aufstellraum (Vorgabe).
+            Die Mehrinvestition aus dem Katalog folgt mit P2.</div>
           </div>
         </div>
 
         <div class="f-spalten">
           <div class="f-spalte">
             <div class="epos-gruppenkopf">
-              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Betriebsbild mit 2 000 l</h3><span class="epos-gruppenkopf-summe">Zweipunkt-Simulation · 8 760 h</span></div>
+              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel" id="pa-bild-titel">Betriebsbild mit 3 000 l</h3><span class="epos-gruppenkopf-summe">Zweipunkt-Simulation · 8 760 h</span></div>
               <div class="epos-gruppenkopf-koerper">
                 <div class="ergebnis-zeile">
-                  <div class="kenn"><small>Starts je Tag</small><b>5,4</b><div class="vgl">ohne Puffer 21 · mit 1 000 l 9,8</div></div>
-                  <div class="kenn"><small>Laufzeit je Start</small><b>2,6 h</b><div class="vgl">ohne Puffer 0,7 h</div></div>
-                  <div class="kenn"><small>Unterdeckung</small><b>0 h</b><div class="vgl">Kessel springt 312 h ein</div></div>
-                  <div class="kenn"><small>Vollzyklen</small><b>1 970</b><div class="vgl">je Jahr</div></div>
+                  <div class="kenn"><small>Starts je Tag</small><b id="pa-k-tag">5,3</b><div class="vgl" id="pa-k-tag-vgl">Ziel 6 · Warnschwelle 15 · ohne Puffer 21</div></div>
+                  <div class="kenn"><small>Starts je Heizperiode</small><b id="pa-k-periode">1 219</b><div class="vgl" id="pa-k-periode-vgl">Hinweisschwelle 3 000 · 230 Heiztage</div></div>
+                  <div class="kenn"><small>Unterdeckung</small><b>0 h</b><div class="vgl" id="pa-k-unter">Zweiterzeuger springt 312 h ein</div></div>
+                  <div class="kenn"><small>Heizzone je kW</small><b id="pa-k-band">28,0 l</b><div class="vgl">je kW Heizlast</div></div>
                 </div>
                 <svg viewBox="0 0 520 150" role="img" aria-label="Füllstandslinie einer Winterwoche, fiktiv" style="width:100%;height:auto;display:block">
                   <rect x="0" y="0" width="520" height="150" fill="#fff"/>
@@ -960,20 +1116,16 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                   <text x="40" y="146" font-size="9" fill="#5A5A5A">Mo</text><text x="200" y="146" font-size="9" fill="#5A5A5A">Do</text><text x="440" y="146" font-size="9" fill="#5A5A5A">So · Woche 3, Januar (fiktiv)</text>
                   <text x="330" y="16" font-size="9" fill="#0000FF">— Füllstand</text><text x="400" y="16" font-size="9" fill="#D26A00">- - Last</text>
                 </svg>
-                <div class="epos-leiste"><button type="button" class="epos-knopf epos-knopf--schmal">Woche wählen…</button><button type="button" class="epos-knopf epos-knopf--schmal">Dauerlinie</button><button type="button" class="epos-knopf epos-knopf--schmal">Vergleich 1 000 / 2 000 / 3 000 l</button></div>
+                <div class="zpg-hinweis" id="pa-band">…</div>
+                <div class="epos-leiste"><button type="button" class="epos-knopf epos-knopf--schmal">Woche wählen…</button><button type="button" class="epos-knopf epos-knopf--schmal">Dauerlinie</button><button type="button" class="epos-knopf epos-knopf--schmal">Vergleich der Nachbarstufen</button></div>
               </div>
             </div>
           </div>
           <div class="f-spalte">
             <div class="epos-gruppenkopf">
-              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Hinweise</h3><span class="epos-gruppenkopf-summe">1 Hinweis · 0 Warnungen</span></div>
+              <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Hinweise</h3><span class="epos-gruppenkopf-summe" id="pa-hinweis-summe">…</span></div>
               <div class="epos-gruppenkopf-koerper">
-                <ul class="warnliste">
-                  <li><span class="wl-stufe wl-ok">ok</span><span>Vorschlag 2 000 l ersetzt den vorhandenen Speicher 1 (1 000 l): Starts je Tag von 9,8 auf 5,4.</span></li>
-                  <li><span class="wl-stufe wl-hinweis">Hinweis</span><span>Sperrzeit entfällt, weil der Kessel deckt. Monovalent bräuchte die Anlage 14 100 l — prüfen Sie, ob der Kessel in der Sperre wirklich freigegeben ist (Betriebsmodus Kessel B).</span></li>
-                  <li><span class="wl-stufe wl-ok">ok</span><span>Volumen unter der Praxisgrenze 100 m³; Aufstellfläche etwa 1,2 m² bei 2 000 l stehend.</span></li>
-                  <li class="ab-standard"><span class="wl-stufe wl-ok">ok</span><span>Der Lastgang stammt aus dem Simulationsergebnis; bei einem Beispiel-Lastgang stünde hier eine Warnung.</span></li>
-                </ul>
+                <ul class="warnliste" id="pa-warnliste"></ul>
               </div>
             </div>
             <div class="epos-gruppenkopf">
@@ -982,17 +1134,27 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 <div class="zpg-feld"><span class="zpg-lab">Ziel</span>
                   <span class="zpg-wert zpg-optionen"><span class="zpg-option an"><i></i>Speicher 1 ändern</span><span class="zpg-option"><i></i>neuen Speicher anlegen</span></span></div>
                 <div class="zpg-feld"><span class="zpg-lab">Gesamtvolumen</span>
-                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">2 000</span><span class="epos-einheit">l</span><span class="zpg-leise" style="margin:0">vorher 1 000 l</span></span></div>
-                <div class="zpg-feld"><span class="zpg-lab">Vorlauf / Rücklauf</span>
-                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">55</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">45</span><span class="epos-einheit">°C</span></span>
-                  <span class="zpg-herkunft">unverändert aus dem Projekt</span></div>
-                <div class="zpg-feld"><span class="zpg-lab">Schwellen ein / aus</span>
-                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">10</span><span class="epos-einheit">%</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">95</span><span class="epos-einheit">%</span></span>
-                  <span class="zpg-herkunft">wie in der Betriebssimulation gerechnet</span></div>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-ue-vol">3 000</span><span class="epos-einheit">l</span><span class="zpg-leise" style="margin:0">vorher 1 000 l</span></span></div>
                 <div class="zpg-feld"><span class="zpg-lab">Katalogsatz</span>
-                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl">Speicher 2 000 l · Katalog Auslieferung</span></span>
-                  <span class="zpg-herkunft">Vorschlag aus dem Katalog mit dem nächsten Nenninhalt; Bereitschaftsverlust folgt dem Katalogsatz</span></div>
-                <p class="zpg-leise">Die Auslegung selbst bleibt am Projekt gespeichert (Eingaben, Kriterien, Ergebnis) und öffnet beim nächsten Mal mit diesem Stand. Ein neues Simulationsergebnis macht sie „veraltet“, nicht ungültig.</p>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl" id="pa-ue-katalog">Speicher 3 000 l · Katalog Auslieferung</span></span>
+                  <span class="zpg-herkunft">Vorschlag mit dem nächsten Nenninhalt; Bauform nach Klasse (Puffer- oder Kombispeicher)</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Bereitschaftsverlust</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit" id="pa-ue-verlust">5,32 kWh/d bei 45 K · 4,92 W/K</span></span>
+                  <span class="zpg-herkunft" id="pa-ue-verlust-herk">Katalogsatz vor Vorgabe; ohne Verlustangabe die Ökodesign-Grenze Klasse C (814/2013), Prüfbedingung 45 K (EN 15332, 5.3)</span></div>
+                <div class="zpg-feld"><span class="zpg-lab"><code>Nutzung_*</code></span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen" id="pa-ue-nutzung">Heizung · Brauchwasser</span></span></div>
+                <div class="zpg-feld"><span class="zpg-lab"><code>T_Nutz_BW</code></span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-ue-tnutz">65</span><span class="epos-einheit">°C</span></span>
+                  <span class="zpg-herkunft">Puffer oben der Frischwasserstation; mindestens die W-551-Temperatur bei Großanlagen</span></div>
+                <div class="zpg-feld"><span class="zpg-lab"><code>Schichten_Anzahl</code></span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz" id="pa-ue-schichten">2</span><span class="epos-einheit" id="pa-ue-schichten-text">Kombi: mindestens 2, sonst wirkt die Bereitschaftszone nicht</span></span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Entnahmeanteile</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit" id="pa-ue-entnahme">Brauchwasser oben 0,27 · Heizung 0,73 (Zonenanteile)</span></span>
+                  <span class="zpg-herkunft">aus den Zonen V<sub>H</sub>/(V<sub>H</sub> + V<sub>B</sub>); wo keine Zonen gerechnet wurden, die Vorgabehilfe 0,10 / 0,16 / 0,37 / 0,37 von oben (EN 15316-5, Anhang B) mit Herkunft „Vorgabe“</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Vorlauf / Rücklauf · Schwellen</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">55 / 45</span><span class="epos-einheit">°C</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">10 / 95</span><span class="epos-einheit">%</span></span>
+                  <span class="zpg-herkunft">unverändert aus dem Projekt — die Auslegung hat mit ihnen gerechnet</span></div>
+                <p class="zpg-leise">Nicht übernommen: die Sperrannahme (die Jahressimulation kennt ein Sperrfenster je Wärmepumpe; Sperrprofil im Kern ist Folgeauftrag). Die Auslegung bleibt am Projekt gespeichert (Eingaben, Kriterien, Ergebnis) und öffnet beim nächsten Mal mit diesem Stand; neue Bedarfsreihen machen sie „veraltet“, nicht ungültig.</p>
               </div>
             </div>
           </div>
@@ -1017,22 +1179,24 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
       <h3>Er tut</h3>
       <ul>
         <li><b>Führen:</b> vier Schritte in fester Folge; „Weiter“ erst, wenn der Schritt vollständig ist; die Schrittleiste zeigt Stand und Erledigtes.</li>
-        <li><b>Vorbelegen:</b> Erzeuger, Kaskade, Senken, Temperaturen und Schwellen aus dem Projekt; Lastgang aus dem Simulationsergebnis.</li>
-        <li><b>Vorlagen:</b> fünf Anlagentypen mit Auslieferungswerten im freien Paketteil — wie die Setzungen der TWW-Speicherauslegung; eigene Vorlagen speicherbar.</li>
-        <li><b>Beispiele:</b> an jedem Eingabefeld ein Beispiel mit Einheit; Formel und Beispielrechnung an jedem Kriterium.</li>
-        <li><b>Herkunft:</b> jede Zahl trägt Projekt · Vorlage · Vorgabe · überschrieben; der Zähler im Kopf nennt die Überschreibungen.</li>
-        <li><b>Rechnen:</b> vier Kriterien, Gegenprobe, Raster, Zweipunkt-Betriebssimulation über 8 760 h; deterministisch, im Kern, plattformfrei.</li>
-        <li><b>Übernehmen:</b> Volumen, Katalogsatz, Schwellen in den Projektpuffer; Rückkehr zum Einstieg mit frischer Speicherspalte.</li>
+        <li><b>Klassen:</b> Heizung, Brauchwasser, Prozess als Set — Kombi = Heizung + Brauchwasser; je Klasse eine Zone mit eigenem Verfahren, Zonen addiert und bemessend.</li>
+        <li><b>Vorbelegen:</b> Klasse aus <code>Nutzung_*</code>, Erzeuger, Kaskade, Senken, Temperaturen und Schwellen aus dem Projekt; Bedarfsreihen je Kanal ohne neuen Simulationslauf; Nutzungsprofil als Herkunftsanzeige.</li>
+        <li><b>Vorlagen:</b> sieben Anlagentypen mit Auslieferungswerten im freien Paketteil (Schlüssel <code>Pufferauslegung.*</code>) — wie die Setzungen der TWW-Speicherauslegung; eigene Vorlagen speicherbar.</li>
+        <li><b>Zapfprofil:</b> die Brauchwasserzone aus der TWW-Speicherauslegung (D<sub>max</sub>, Durchmischungszuschlag 15 %), mit Gegenprobe je Person.</li>
+        <li><b>Herkunft:</b> jede Zahl trägt Projekt · Vorlage · Vorgabe · überschrieben; Normwerte mit Abschnitt, Gleichung oder Tabelle.</li>
+        <li><b>Rechnen:</b> Kriterien A–E, D1 Durchlauf und D2 Zweipunkt über 8 760 h, Raster, Praxisgrenze; deterministisch, im Kern, plattformfrei, mit c = 1,16 Wh/(l·K) des Kerns.</li>
+        <li><b>Übernehmen:</b> Volumen, Katalogsatz, Bereitschaftsverlust, Nutzung, <code>T_Nutz_BW</code>, Schichten und Entnahmeanteile; Rückkehr zum Einstieg mit frischer Speicherspalte.</li>
       </ul>
     </div>
     <div class="merk nein">
       <h3>Er tut nicht</h3>
       <ul>
-        <li>Er ändert die <b>Jahressimulation</b> nicht — kein Rechenwegeingriff, keine neue Referenzbasis. Übernommen wird nur die Puffereingabe.</li>
-        <li>Er legt den <b>Brauchwasserspeicher</b> nicht aus — das ist die TWW-Speicherauslegung im Zapfprofil. Kombispeicher: offene Frage F3.</li>
+        <li>Er ändert die <b>Jahressimulation</b> nicht — kein Rechenwegeingriff, keine neue Referenzbasis. Übernommen wird nur die Puffereingabe; Schwellen und Temperaturpaar bleiben.</li>
+        <li>Er bemisst den <b>Brauchwasserspeicher</b> nicht neu — er ruft das Verfahren des Zapfprofils und übernimmt dessen Ergebnis als Zone.</li>
         <li>Er wählt keinen <b>Erzeuger</b> und keine Kaskade; ist keiner am Puffer, sagt er das benannt und bleibt in Schritt 1.</li>
-        <li>Er kennt keine <b>Hydraulik</b> im Detail (Trenn-, Reihen-, Parallelpuffer) — nur den nutzbaren Anteil als Sicherheitsband.</li>
-        <li>Er rechnet keine <b>Kosten</b>; der Katalogsatz trägt den Preis in die Wirtschaftlichkeit wie bisher.</li>
+        <li>Er schreibt keine <b>Sperrzeit</b> in die Wärmepumpe; das Sperrprofil im Kern ist ein eigener Folgeauftrag.</li>
+        <li>Er kennt keine <b>Prozesstemperatur</b> — die Spreizung kommt aus dem Puffer, der Hinweis bittet um Prüfung.</li>
+        <li>Er rechnet keine <b>Kosten</b>; die Nutzen-Aufwand-Zeile ist nachrichtlich, der Katalogsatz trägt den Preis in die Wirtschaftlichkeit.</li>
       </ul>
     </div>
   </div>
@@ -1040,17 +1204,40 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 
 <!-- ======================= 3 ZUR ABNAHME ======================= -->
 <section class="kat" id="abnahme">
-  <div class="kat-kopf"><h2>3 · Zur Abnahme</h2><span class="kat-marke">Fragen F1–F7 mit Empfehlung</span></div>
-  <p class="kat-lead">Das Konzept übernimmt, was hier abgenommen wird; die Fragen sind so gestellt, dass „nach Empfehlung“ genügt.</p>
+  <div class="kat-kopf"><h2>3 · Zur Abnahme</h2><span class="kat-marke">Fragen F1–F7 · Entscheide E-P18–E-P32</span></div>
+  <p class="kat-lead">Das Konzept übernimmt, was hier abgenommen wird. Die Fragen sind so gestellt, dass „nach Empfehlung“ genügt;
+  jede trägt den Stand nach den vier Recherchepapieren (<span class="zk empf">nach Empfehlung</span> oder <span class="zk erledigt">entschieden</span>).</p>
+
+  <div class="zone" id="abnahme-fragen">Fragen F1–F7</div>
   <ol class="liste fragen">
-    <li><b class="f">F1 · Schrittfolge.</b> Anlage → Lastgang → Kriterien → Ergebnis, mit Schrittleiste und „Weiter“-Sperre bis zur Vollständigkeit. <i>Empfehlung: so.</i></li>
-    <li><b class="f">F2 · Vorlagen.</b> Fünf Anlagentypen (Wärmepumpe monovalent, bivalent, BHKW, Kessel mit Taktbegrenzung, Solarthermie) × Gebäudeart (EFH, MFH, Gewerbe) als Auslieferungswerte; eigene Vorlagen speicherbar. <i>Empfehlung: so; Gebäudeart aus dem Projekt vorbelegen.</i></li>
-    <li><b class="f">F3 · Kombispeicher.</b> Heizungspuffer und Brauchwasserspeicher bleiben getrennte Auslegungen; ein Kombispeicher wird als Summe mit Hinweis angeboten. <i>Empfehlung: getrennt, Summe nur nachrichtlich.</i></li>
-    <li><b class="f">F4 · Empfehlung.</b> Größtes aktives Kriterium ÷ nutzbarer Anteil, aufs Raster gerundet; die Gegenprobe (Faustwert) bemisst nie. <i>Empfehlung: so; Raster wie TWW.</i></li>
-    <li><b class="f">F5 · Sperrzeit.</b> Bei zweitem Erzeuger, der Sperrzeiten deckt, entfällt Kriterium C mit Hinweis; monovalent bemisst es. Gebäudeträgheit nur als Experten-Anteil. <i>Empfehlung: so.</i></li>
-    <li><b class="f">F6 · Übernahme.</b> Übernommen werden Volumen, Katalogsatz und Schwellen; Temperaturen bleiben. Wahl „Speicher ändern“ oder „neu anlegen“. Die Auslegung bleibt am Projekt gespeichert und wird nach neuer Simulation „veraltet“. <i>Empfehlung: so.</i></li>
-    <li><b class="f">F7 · Tiefen.</b> Schnell zeigt nur Vorlage, Erzeuger, Lastgangquelle, Sperrzeitprofil und Ergebnis; Standard die Randbedingungen und die Gegenprobe; Experte Anteile und Liter je kW. <i>Empfehlung: so; Vorgabe Schnell.</i></li>
+    <li><b class="f">F1 · Schrittfolge und Einstiege.</b> Klasse und Erzeuger → Bedarf → Kriterien → Ergebnis, mit Schrittleiste und „Weiter“-Sperre bis zur Vollständigkeit; Einstiege über den Knopf „Auslegen…“ im Pufferspeicher-Dialog (Variante b, E-P13), über ① Konfiguration und mit P2 aus dem Zapfprofil (E-P24). <i>Empfehlung: so.</i> <span class="zk empf stand">nach Empfehlung</span></li>
+    <li><b class="f">F2 · Vorlagen.</b> Sieben Anlagentypen (Wärmepumpe monovalent, bivalent, BHKW, Kessel Gas/Öl, Festbrennstoffkessel, Solarthermie, Prozesspuffer) als Auslieferungswerte; Wärmepumpen mit Schalter Fixed-Speed / leistungsgeregelt (V39), bivalent mit der Wahl Zweiterzeuger frei / Heizstab gesperrt (E-P30). Die Gebäudeart entfällt; das Nutzungsprofil ist Herkunftsanzeige (E-P20 ersetzt E-P11). <i>Empfehlung: so.</i> <span class="zk empf stand">nach Empfehlung</span></li>
+    <li><b class="f">F3 · Kombispeicher.</b> Kombi = Heizzone + Brauchwasserzone, als Summe bemessend; die Brauchwasserzone rechnet die TWW-Speicherauslegung des Zapfprofils (E-P18, E-P19), mit Frischwasserstation 65/25 °C (E-P22) und 15 % Durchmischungszuschlag. <i>Empfehlung: so — ersetzt „getrennt, Summe nur nachrichtlich“.</i> <span class="zk empf stand">nach Empfehlung</span></li>
+    <li><b class="f">F4 · Empfehlung.</b> Größtes bemessendes Kriterium je Zone ÷ nutzbarer Anteil aus den Schwellen (E-P9), Zonen addiert, Raster wie TWW, Praxisgrenze; Konstante 1,16 des Kerns (E-P10); D geteilt in D1 Deckungsgrad und D2 Taktziel (E-P8); die Gegenprobe bemisst nie; Vorprüfung „kein Puffer erforderlich“ zugelassen (E-P14). <i>Empfehlung: so.</i> <span class="zk empf stand">nach Empfehlung</span></li>
+    <li><b class="f">F5 · Sperrzeit.</b> Standardweg VDI 4645 Gl. 23 mit Tabellen 14 und 15, Tool-Weg als Expertenzeile (E-P28); C entfällt nur bei freigegebenem Zweiterzeuger, ein Heizstab ist mitgesperrt (E-P30); neutrale Profile „keine“, „2 × 2 h“, „3 × 2 h“, „eigenes“. <i>Empfehlung: so.</i> § 14a EnWG ist für den Wärmepuffer nicht relevant (E-P12). <span class="zk erledigt stand">entschieden</span></li>
+    <li><b class="f">F6 · Übernahme.</b> Übernommen werden Volumen, Katalogsatz (nächster Nenninhalt), Bereitschaftsverlust, <code>Nutzung_*</code>, <code>T_Nutz_BW</code>, <code>Schichten_Anzahl</code> ≥ 2 beim Kombi und Entnahmeanteile (Zonenanteile, sonst Vorgabehilfe nach EN 15316-5, E-P27); Schwellen und Temperaturpaar bleiben. Wahl „Speicher ändern“ oder „neu anlegen“; Startzähler und Sperrprofil im Kern sind Folgeaufträge (E-P15). <i>Empfehlung: so.</i> <span class="zk empf stand">nach Empfehlung</span></li>
+    <li><b class="f">F7 · Tiefen.</b> Schnell zeigt Klasse, Vorlage, Erzeuger, Bedarfsquelle, Sperrzeitprofil und Ergebnis; Standard die Randbedingungen, Temperaturen, Schwellen und die Gegenprobe; Experte Einbindung, Tabellenwerte der Sperrzeit, Tool-Weg, Modulationsmodus und Zirkulation je Wohneinheit. <i>Empfehlung: so; Vorgabe Schnell.</i> <span class="zk empf stand">nach Empfehlung</span></li>
   </ol>
+  <p class="bildtext"><b>Entschieden außerdem:</b> E-P17 — die Normdateien unter <code>Quellen/Waermespeicher-Tool/</code> bleiben für Konzeption und Umsetzung im Repositorium und werden danach entfernt; E-P31 — internationale Werte nur als Gegenprobe und Beispielhilfe, Vorgaben bleiben EN 12831-3, VDI und W 551; E-P32 — die Speicher-gegen-Leistung-Kurve der Brauchwasserzone folgt nach P2.</p>
+
+  <div class="zone" id="abnahme-entscheide">Entscheide E-P18–E-P32 mit Empfehlung</div>
+  <ul class="entscheid-liste">
+    <li><b>E-P18</b><span>Brauchwasser- und Kombizone über die TWW-Speicherauslegung des Zapfprofils, Zapfprofil unverändert. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P19</b><span>Kombipuffer = Summe der Zonen, bemessend; Zonenanteile und <code>T_Nutz_BW</code> in den Puffer schreiben. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P20</b><span>Nutzungsprofil (Wohnen, Beherbergung, Pflege/Krankenhaus, Büro/Schule, Gewerbe/Prozess) aus dem Projekt ableiten statt Gebäudeart. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P21</b><span>Prozesstemperatur als Schemaschritt und Wiki-Seite Prozesswärme als eigener Folgeauftrag. <i>Empfehlung: ja, nach P2.</i></span></li>
+    <li><b>E-P22</b><span>Frischwasserstation als Topologie mit Vorgabe 65/25 °C. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P23</b><span>Verschiebedauer des stromgeführten BHKW 2 h als Expertenvorgabe. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P24</b><span>Dritter Einstieg aus dem Zapfprofil-Auslegungsdialog mit P2. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P25</b><span>Zapf-Nutzungsarten Büro/Schule/Gewerbe und ID-Zuordnung der Nutzungen als Folgeaufträge. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P26</b><span>Verlustmodell der Simulation umgebungsbezogen — Folgeauftrag mit neuer Referenzbasis, nicht P1. <i>Empfehlung: ja, nach P2.</i></span></li>
+    <li><b>E-P27</b><span>Standardaufteilung 0,10/0,16/0,37/0,37 (EN 15316-5) als Vorgabehilfe der Kombi-Zonen, Schichtmodell des Kerns unverändert. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P28</b><span>Sperrzeit nach VDI 4645 Gl. 23 als Standardweg, Tool-Weg als Expertenvariante. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P29</b><span>VDI-Whitepaper „Thermische Speicher in Wärmepumpensystemen“ gegenlesen. <i>Erledigt: Band nach Übergabeart, Bivalenz, Abtauhinweis aufgenommen.</i></span></li>
+    <li><b>E-P30</b><span>Vorlage Wärmepumpe bivalent mit der Wahl „Zweiterzeuger frei in der Sperre“ / „Heizstab (gesperrt)“. <i>Empfehlung: ja.</i></span></li>
+    <li><b>E-P31</b><span>Internationale Werte nur als Gegenprobe und Beispielhilfe. <i>Entschieden: ja.</i></span></li>
+    <li><b>E-P32</b><span>Speicher-gegen-Leistung-Kurve der Brauchwasserzone als Folgeauftrag nach P2. <i>Entschieden: ja.</i></span></li>
+  </ul>
 </section>
 
 </main>
@@ -1060,55 +1247,309 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <script>
 (function(){
   var f=document.getElementById('pa-fenster');
+  // Grundwerte des Beispielprojekts (fiktiv)
+  var C=1.16, DT=10, ANTEIL=0.85, HEIZLAST=82, HEIZTAGE=230, VB_NUTZ=24*1.15*1000/(C*40), VB=VB_NUTZ/ANTEIL;
+  var RASTER=[100,150,200,300,400,500,800,1000,1500,2000,3000,5000,8000,10000], PRAXIS=100000;
+  function rund(v){return Math.round(v);}
+  function tsd(n){return String(rund(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+  function dez(n,k){return n.toFixed(k).replace('.',',');}
+  function aufRaster(v){for(var i=0;i<RASTER.length;i++){if(RASTER[i]>=v)return RASTER[i];}return Math.ceil(v/1000)*1000;}
+  function verlust(v){var s=16.66+8.33*Math.pow(v,0.4);var kd=s*24/1000;return{w:s,kd:kd,wk:s/45,ka:kd*(50-15)/45*365};}
+  function setze(id,t){var e=document.getElementById(id);if(e)e.innerHTML=t;}
+
+  // Vorlagen (fiktive Beispielwerte; Nutzvolumen in Litern ohne Teilung durch den nutzbaren Anteil)
+  var vorlagen={
+    'wp-mono':{kurz:'Wärmepumpe monovalent',wp:true,bi:false,sperre:true,erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:60,tmin:10,erz2:'— keiner —',pgen:60,
+      d2:{geregelt:1650,fix:2400},s0:21,ziel:6,unter:'kein Zweiterzeuger',
+      faust:{f:'V = 25 l/kW · 60 kW = <b>1 500 l</b>',q:'Verbandsleitfaden Hydraulik 2016: 20–25 l/kW für die Laufzeit.'},
+      krit:{vor:1,typ:1,sperr:1,deck:1,takt:1,faust:0}},
+    'wp-bi':{kurz:'Wärmepumpe bivalent',wp:true,bi:true,sperre:true,erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:60,tmin:10,
+      erz2frei:'Heizkessel B · Gas · 80 kW · in der Sperre frei',erz2stab:'Heizstab E · 18 kW · in der Sperre mitgesperrt',pgenfrei:140,pgenstab:78,
+      d2:{geregelt:1650,fix:2400},s0:21,ziel:6,unter:'Zweiterzeuger springt 312 h ein',
+      faust:{f:'V = 25 l/kW · 60 kW = <b>1 500 l</b>',q:'Verbandsleitfaden Hydraulik 2016: 20–25 l/kW für die Laufzeit.'},
+      krit:{vor:1,typ:1,sperr:1,deck:1,takt:1,faust:0}},
+    'bhkw':{kurz:'BHKW',wp:false,bi:false,sperre:false,erz:'BHKW C · 50 kW thermisch · Grenzleistung 50 %',pnenn:50,pmin:25,tmin:60,erz2:'Heizkessel B · Gas · 80 kW · Spitzenlast',pgen:130,
+      d2:2300,s0:9,ziel:2,unter:'Kessel springt 540 h ein',
+      b:{titel:'B · Mindestlaufzeit (Laufzeitziel)',q:'VDI 4645 E 2026-03, Gl. 22 sinngemäß; Mindestlaufzeit BHKW 60 min, P<sub>min</sub> = Grenzleistung. Stromgeführt (Experte): Verschiebedauer 2 h → 50 kW · 2 h · 1 000 / (1,16 · 10 K · 0,85) = 10 142 l — hier wärmegeführt, entfällt.'},
+      faust:{f:'V = 60 l/kW<sub>th</sub> · 50 kW = <b>3 000 l</b>',q:'Förderrichtlinie Mini-KWK 2015: 60 l je kW<sub>th</sub>; Feldanlagen 24–99 l/kW<sub>th</sub>.'},
+      krit:{vor:0,typ:1,sperr:0,deck:1,takt:1,faust:0}},
+    'kessel':{kurz:'Kessel Gas/Öl',wp:false,bi:false,sperre:false,erz:'Heizkessel G · Gas-Brennwert · 90 kW',pnenn:90,pmin:27,tmin:10,erz2:'— keiner —',pgen:90,
+      d2:250,s0:30,ziel:12,unter:'kein Zweiterzeuger',
+      b:{titel:'B · Mindestlaufzeit und Mindestleistung',q:'Kesselkennlinie des Projekts: Mindestleistung 0,3 · P<sub>Nenn</sub> (Gas-Brennwert), Mindestlaufzeit 10 min; ein modulierender Kessel braucht meist keinen Puffer.'},
+      faust:{f:'V = 30 l/kW · 90 kW = <b>2 700 l</b>',q:'Sekundärquellen: 30–50 l/kW für nicht modulierende Kessel.'},
+      krit:{vor:0,typ:1,sperr:0,deck:1,takt:1,faust:0}},
+    'fest':{kurz:'Festbrennstoffkessel',wp:false,bi:false,sperre:false,erz:'Scheitholzkessel F · 60 kW · handbeschickt',pnenn:60,tmin:0,erz2:'— keiner —',pgen:60,
+      d2:null,s0:null,ziel:null,unter:'—',fest:55,
+      b:{titel:'B · Mindestvolumen nach Vorschrift',q:'1. BImSchV § 5 Abs. 4: 55 l/kW handbeschickt, 20 l/kW automatisch beschickt; Förderung BEG EM: 30 l/kW Pellets/Hackschnitzel, 55 l/kW Scheitholz — aus dem Brennstoff des Projektkessels. Experte: zweiter Weg nach DIN EN 303-5 mit Abbrandperiode (Vorgabe 4 h) und kleinster Kesselleistung.'},
+      faust:{f:'V = 35–75 l/kW · 60 kW = <b>2 100–4 500 l</b>',q:'Richtwert für Holzheizungen (Sekundärquelle).'},
+      krit:{vor:0,typ:1,sperr:0,deck:0,takt:0,faust:0}},
+    'solar':{kurz:'Solarthermie',wp:false,bi:false,sperre:false,erz:'Kollektorfeld D · 40 m² Aperturfläche',pnenn:28,tmin:0,erz2:'Heizkessel B · Gas · 80 kW · nachrangig (Schwelle 30 %)',pgen:108,
+      d2:null,s0:null,ziel:null,unter:'—',solar:50,flaeche:40,
+      b:{titel:'B · Volumen je m² Kollektor',q:'Tagesspeicher; 50 l/m² Flachkollektor, 60–70 l/m² Röhrenkollektor (Sekundärquellen, Normbezug DIN EN 12977); Aperturfläche × Modulanzahl und Nachrang-Schwelle aus dem Projekt.'},
+      faust:{f:'50–70 l/m² · 40 m² = <b>2 000–2 800 l</b>',q:'Sekundärquellen zur Solarthermie.'},
+      krit:{vor:0,typ:1,sperr:0,deck:0,takt:0,faust:0}},
+    'prozess':{kurz:'Prozesspuffer',wp:false,bi:false,sperre:false,prozess:true,erz:'Heizkessel B · Gas · 80 kW · Prozessreihe',pnenn:80,pmin:24,tmin:10,erz2:'— keiner —',pgen:80,
+      d1:3400,d2:900,s0:30,ziel:12,unter:'Prozessspitze 120 kW über 80 kW Erzeugerleistung',tage:250,
+      b:{titel:'B · Mindestlaufzeit und Mindestleistung',q:'Kesselkennlinie des Projekts; Spreizung aus dem Temperaturpaar des Puffers, weil das Projekt keine Prozesstemperatur kennt.'},
+      faust:{f:'kein Faustwert — die Prozessreihe trägt',q:'Prozesswärme kennt keinen belastbaren Richtwert (dena 2024).'},
+      krit:{vor:0,typ:1,sperr:0,deck:1,takt:1,faust:0}}
+  };
+  var zustand={vorlage:'wp-bi',geraet:'geregelt',sperrwahl:'frei',klasse:{H:1,B:1,P:0},krit:{}};
+
   // Stufen
   f.querySelectorAll('[data-stufe-wahl]').forEach(function(b){b.addEventListener('click',function(){
     f.dataset.stufe=b.dataset.stufeWahl;
     f.querySelectorAll('[data-stufe-wahl]').forEach(function(x){x.setAttribute('aria-checked',x===b?'true':'false');});
   });});
   // Schritte
-  function zeige(n){
+  function aktSchritt(){var s=f.querySelector('.schritt[aria-current]');return s?+s.dataset.schritt:1;}
+  function zeige(n,rollen){
     f.querySelectorAll('.blatt').forEach(function(bl){bl.dataset.aktiv=bl.dataset.blatt==String(n)?'1':'0';});
     f.querySelectorAll('.schritt').forEach(function(s){var k=+s.dataset.schritt;
       if(k===n)s.setAttribute('aria-current','step');else s.removeAttribute('aria-current');
       s.dataset.fertig=k<n?'1':'0';});
-    var st=document.getElementById('pa-status');
-    st.textContent='Schritt '+n+' von 4 · Vorlage '+vorlagen[aktuell].kurz+' · '+document.getElementById('pa-zaehler').textContent;
-    f.scrollIntoView({block:'start',behavior:'smooth'});
+    statuszeile(n);
+    if(rollen)f.scrollIntoView({block:'start',behavior:'smooth'});
   }
-  f.querySelectorAll('.schritt').forEach(function(s){s.addEventListener('click',function(){zeige(+s.dataset.schritt);});});
-  f.querySelectorAll('[data-weiter]').forEach(function(b){b.addEventListener('click',function(){zeige(+b.dataset.weiter);});});
-  // Vorlagen (fiktive Beispielwerte)
-  var vorlagen={
-    'wp-mono':{kurz:'Wärmepumpe monovalent',name:'Wärmepumpe monovalent · Mehrfamilienhaus',erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:'60,0',pmin:'18,0',tmin:'20',erz2:'— keiner —',sperr:'Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag',sperrsumme:'3 × 2 h je Tag · Puffer deckt',deckKessel:false,krit:{abtau:1,takt:1,sperr:1,sim:1},vorschlag:'15 000 l · 174 kWh nutzbar',empf:'<b>Empfehlung: 15 000 l</b> — bemessend ist C · Sperrzeit (14 100 l), durch 85 % = 16 600 l, auf volle 1 000 l: <b>15 000 l</b> mit Hinweis „Bivalenz oder Gebäudeträgheit prüfen“. Speicherkapazität 174 kWh.'},
-    'wp-bi':{kurz:'Wärmepumpe bivalent',name:'Wärmepumpe bivalent · Mehrfamilienhaus',erz:'Wärmepumpe A · Luft/Wasser · 60 kW',pnenn:'60,0',pmin:'18,0',tmin:'20',erz2:'Heizkessel B · Gas · 80 kW · deckt Sperrzeiten',sperr:'Wärmepumpentarif · 3 × 2 h, höchstens 6 h je Tag',sperrsumme:'3 × 2 h je Tag · deckt der Kessel',deckKessel:true,krit:{abtau:1,takt:1,sperr:0,sim:1},vorschlag:'2 000 l · 23,3 kWh nutzbar',empf:'<b>Empfehlung: 2 000 l</b> — bemessend ist D · Betriebssimulation (1 800 l), durch den nutzbaren Anteil 85 % = 2 120 l, auf das Raster gerundet: <b>2 000 l</b> (nächste Stufe 3 000 l wäre +50 % Volumen für 0,4 Starts weniger). Speicherkapazität bei 55/45 °C: 23,3 kWh, davon 19,8 kWh nutzbar. Bereitschaftsverlust der Auslieferungsvorgabe: 3,5 kWh je 24 h.'},
-    'bhkw':{kurz:'BHKW',name:'BHKW · Mehrfamilienhaus',erz:'BHKW C · 50 kW thermisch',pnenn:'50,0',pmin:'50,0',tmin:'90',erz2:'Heizkessel B · Gas · 80 kW · Spitzenlast',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:true,krit:{abtau:0,takt:1,sperr:0,sim:1},vorschlag:'5 000 l · 58,2 kWh nutzbar',empf:'<b>Empfehlung: 5 000 l</b> — bemessend ist D · Betriebssimulation mit Ziel ≤ 3 Starts je Tag (4 100 l), durch 85 % = 4 820 l, Raster: <b>5 000 l</b>. Gegenprobe 60–100 l/kW<sub>th</sub>: 3 000–5 000 l. B · Taktung: 50 kW · 1,5 h = 75 kWh → 6 450 l wäre mit Ein/Aus-Betrieb bemessend — das BHKW moduliert hier nicht, deshalb Hinweis.'},
-    'kessel':{kurz:'Kessel mit Taktbegrenzung',name:'Kessel mit Taktbegrenzung · Mehrfamilienhaus',erz:'Heizkessel B · Gas · 80 kW',pnenn:'80,0',pmin:'24,0',tmin:'10',erz2:'— keiner —',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:false,krit:{abtau:0,takt:1,sperr:0,sim:1},vorschlag:'500 l · 5,8 kWh nutzbar',empf:'<b>Empfehlung: 500 l</b> — bemessend ist B · Taktung (24 kW · 10 min = 4 kWh → 344 l), durch 85 % = 405 l, Raster: <b>500 l</b>. Die Betriebssimulation hält ≤ 12 Starts je Tag schon mit 300 l. Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie des Projekts.'},
-    'solar':{kurz:'Solarthermie',name:'Solarthermie · Mehrfamilienhaus',erz:'Kollektorfeld D · 40 m² · 28 kW Spitze',pnenn:'28,0',pmin:'—',tmin:'—',erz2:'Heizkessel B · Gas · 80 kW · nachrangig',sperr:'kein Sperrzeitprofil',sperrsumme:'keine Sperrzeit',deckKessel:true,krit:{abtau:0,takt:0,sperr:0,sim:1},vorschlag:'3 000 l · 34,9 kWh nutzbar',empf:'<b>Empfehlung: 3 000 l</b> — bemessend ist D · Betriebssimulation mit Ziel „Tagesertrag im Juni ohne Stagnation“ (2 400 l), durch 85 % = 2 820 l, Raster: <b>3 000 l</b>. Gegenprobe 50–70 l/m²: 2 000–2 800 l. Nachrang-Schwelle des Kessels aus dem Projekt (30 %).'}
-  };
-  var aktuell='wp-bi';
-  function setze(id,t){var e=document.getElementById(id);if(e)e.innerHTML=t;}
+  function klassenText(){var k=zustand.klasse,t=[];if(k.H)t.push('Heizung');if(k.B)t.push('Brauchwasser');if(k.P)t.push('Prozess');
+    if(!t.length)return 'keine Klasse';return (k.H&&k.B&&!k.P?'Kombi · ':'')+t.join(' + ');}
+  function statuszeile(n){
+    setze('pa-status','Schritt '+n+' von 4 · Vorlage '+vorlagen[zustand.vorlage].kurz+' · '+klassenText()+' · '+document.getElementById('pa-zaehler').textContent);
+  }
+  f.querySelectorAll('.schritt').forEach(function(s){s.addEventListener('click',function(){zeige(+s.dataset.schritt,true);});});
+  f.querySelectorAll('[data-weiter]').forEach(function(b){b.addEventListener('click',function(){zeige(+b.dataset.weiter,true);});});
+
+  function zeigeWenn(sel,an){f.querySelectorAll(sel).forEach(function(e){e.style.display=an?'':'none';});}
+  function wahl(sel,attr,wert){f.querySelectorAll(sel).forEach(function(e){var an=e.getAttribute(attr)===wert;e.classList.toggle('an',an);e.setAttribute('aria-checked',an?'true':'false');});}
+
+  // Kriterien je Vorlage und Schalterstand; Rückgabe in Litern gesamt (nach Teilung, wo sie gilt)
+  function kriterien(){
+    var d=vorlagen[zustand.vorlage],g=zustand.geraet,r={};
+    var pgen=d.bi?(zustand.sperrwahl==='frei'?d.pgenfrei:d.pgenstab):d.pgen;
+    // A Vorprüfung
+    r.vor={gilt:!!d.wp,wert:null};
+    // B
+    if(d.wp){
+      var fw=(g==='fix'?20:3), pmin=(g==='fix'?d.pnenn:0.3*d.pnenn);
+      var faust=fw*d.pnenn, gl22=pmin*d.tmin/60*1000/(C*DT), ges22=gl22/ANTEIL, b=Math.max(faust,ges22);
+      r.typ={gilt:true,wert:b,titel:'B · Gerätetyp und Mindestlaufzeit',
+        formel:'Faustwert '+(g==='fix'?'Fixed-Speed':'leistungsgeregelt')+': '+fw+' l/kW · '+d.pnenn+' kW = '+tsd(faust)+' l<br>Mindestlaufzeit, Gl. 22: '+dez(pmin,0)+' kW · '+d.tmin+' min / 60 · 1 000 / (1,16 · 10 K) = '+tsd(gl22)+' l → ÷ 85 % = '+tsd(ges22)+' l gesamt<br>bemessend: <b>'+tsd(b)+' l gesamt</b> ('+(b===faust?'Faustwert':'Mindestlaufzeit')+') · Abtau-Gegenprobe 20 l/kW · '+d.pnenn+' kW = '+tsd(20*d.pnenn)+' l, bemisst nicht',
+        quelle:'VDI 4645 E 2026-03, 7.8.4 (Faustwert nach Gerätetyp, abweichende Herstellerangaben gehen vor) und Gl. 22 (Mindestlaufzeit mit '+d.tmin+' min); das Volumen der Gl. 22 deckt die Abtauenergie mit, die Abtaurechnung bleibt Gegenprobe. '+(g==='fix'?'Fixed-Speed: P<sub>min</sub> = P<sub>Nenn</sub>, Mindestlaufzeit führend.':'Leistungsgeregelt: Mindestleistung 30 % führend.')};
+    } else if(d.fest){
+      var vf=d.fest*d.pnenn;
+      r.typ={gilt:true,wert:vf,titel:d.b.titel,formel:'V = '+d.fest+' l/kW · '+d.pnenn+' kW = <b>'+tsd(vf)+' l</b> (Gesamtvolumen, keine Teilung)',quelle:d.b.q};
+    } else if(d.solar){
+      var vs=d.solar*d.flaeche;
+      r.typ={gilt:true,wert:vs,titel:d.b.titel,formel:'V = '+d.solar+' l/m² · '+d.flaeche+' m² = <b>'+tsd(vs)+' l</b> (Gesamtvolumen, keine Teilung)',quelle:d.b.q};
+    } else {
+      var g22=d.pmin*d.tmin/60*1000/(C*DT);
+      r.typ={gilt:true,wert:g22/ANTEIL,titel:d.b.titel,formel:'V = P<sub>min</sub> · t<sub>min</sub> / (1,16 · ΔT) = '+d.pmin+' kW · '+d.tmin+' min / 60 · 1 000 / (1,16 · 10 K) = '+tsd(g22)+' l → ÷ 85 % = <b>'+tsd(g22/ANTEIL)+' l gesamt</b>',quelle:d.b.q};
+    }
+    // C Sperrzeit (nur Wärmepumpe)
+    var cWert=HEIZLAST*(2-1)*1000/(C*((55+5)-(20+15)))-400;
+    if(!d.sperre)r.sperr={gilt:false,wert:null,status:'entfällt: kein Sperrzeitprofil bei dieser Vorlage'};
+    else if(d.bi&&zustand.sperrwahl==='frei')r.sperr={gilt:true,frei:true,wert:null,status:'entfällt: Zweiterzeuger in der Sperre frei — wäre 2 428 l (Tool-Weg 16 630 l)'};
+    else r.sperr={gilt:true,wert:cWert,status:'bemisst: '+(d.bi?'Heizstab in der Sperre mitgesperrt':'monovalent, kein Zweiterzeuger')+' — 2 428 l nach Gl. 23'};
+    // D1 Deckungsgrad
+    if(d.prozess)r.deck={gilt:true,wert:d.d1/ANTEIL,status:'bemisst: Prozessspitze 120 kW über 80 kW — Bisektion '+tsd(d.d1)+' l → ÷ 85 % = '+tsd(d.d1/ANTEIL)+' l gesamt'};
+    else if(pgen<HEIZLAST)r.deck={gilt:true,wert:null,unerreichbar:true,pgen:pgen,status:'bemisst nicht: Erzeuger zusammen '+pgen+' kW unter der Auslegungsheizlast 82 kW — 100 % bis zur Obergrenze unerreichbar (P_GEN_UNTER_SPITZE)'};
+    else r.deck={gilt:true,wert:null,status:'bemisst nicht: Erzeuger zusammen '+pgen+' kW über der Spitze 88 kW'+(d.sperre&&!(d.bi&&zustand.sperrwahl==='frei')?'':', keine wirksame Sperre')};
+    // D2 Taktziel
+    if(d.d2===null)r.takt={gilt:false,wert:null,status:'entfällt bei dieser Vorlage'};
+    else{var d2=d.wp?d.d2[g]:d.d2;r.takt={gilt:true,wert:d2/ANTEIL,nutz:d2,
+      formel:'kleinstes V, mit dem die Zweipunkt-Simulation'+(d.wp&&g==='geregelt'?' im Modulationsmodus':'')+' im Jahresmittel <b>≤ '+d.ziel+' Starts je Tag</b> hält — Bisektion zwischen 100 und 10 000 l: '+tsd(d2)+' l → ÷ 85 % = <b>'+tsd(d2/ANTEIL)+' l gesamt</b>',
+      status:'ohne Puffer '+d.s0+' Starts je Tag'+(d.s0>15?' — über der Warnschwelle 15':'')}; }
+    r.faust={gilt:true,wert:null};
+    r.pgen=pgen;
+    return r;
+  }
+
+  function rechne(){
+    var d=vorlagen[zustand.vorlage],k=kriterien(),z=zustand.klasse;
+    // Kriterienkarten
+    ['vor','typ','sperr','deck','takt','faust'].forEach(function(key){
+      var el=f.querySelector('.krit[data-krit="'+key+'"]');if(!el)return;
+      var gilt=k[key].gilt, an=gilt&&!!zustand.krit[key];
+      el.dataset.gilt=gilt?'1':'0';el.dataset.an=an?'1':'0';
+      var s=el.querySelector('[data-krit-schalter]');s.classList.toggle('an',an);s.setAttribute('aria-checked',an?'true':'false');
+      var w=el.querySelector('[data-krit-wert]');
+      var txt;
+      if(key==='vor')txt=gilt?'bemisst nicht':'entfällt';
+      else if(key==='faust')txt='Gegenprobe';
+      else if(!gilt)txt='entfällt';
+      else if(k[key].wert===null)txt=(key==='sperr'&&k.sperr.frei)?'entfällt':'bemisst nicht';
+      else txt=tsd(k[key].wert)+' l'+((key==='sperr'||(key==='typ'&&(d.fest||d.solar)))?'':' gesamt');
+      w.textContent=txt;w.classList.toggle('aus',!an||k[key].wert===null);
+    });
+    setze('pa-a-text',d.wp?'Hier Luft/Wasser: die Abtaureserve fehlt, der Puffer bleibt.':'Gilt nur für Wärmepumpen — bei dieser Vorlage entfällt die Vorprüfung.');
+    setze('pa-b-titel',k.typ.titel);setze('pa-b-formel',k.typ.formel);setze('pa-b-quelle',k.typ.quelle);
+    setze('pa-c-status',k.sperr.status);setze('pa-d1-status',k.deck.status);
+    setze('pa-d2-formel',k.takt.formel||'Zweipunkt-Simulation entfällt bei dieser Vorlage — der Puffer ist kein Taktpuffer.');
+    setze('pa-d2-status',k.takt.status);
+    setze('pa-e-formel',d.faust.f);setze('pa-e-quelle',d.faust.q);
+    var fw=document.querySelector('.krit[data-krit="faust"] [data-krit-wert]');if(fw){var m=d.faust.f.match(/= <b>(.*)<\/b>$/);fw.textContent=m?m[1]:'—';}
+
+    // Zonen
+    function bemessend(){var best=null;['typ','sperr','deck','takt'].forEach(function(key){
+      if(k[key].gilt&&zustand.krit[key]&&k[key].wert!==null&&(!best||k[key].wert>best.wert))best={key:key,wert:k[key].wert};});return best;}
+    var namen={typ:k.typ.titel.split(' · ')[0]+' · '+k.typ.titel.split(' · ')[1],sperr:'C · Sperrzeit',deck:'D1 · Deckungsgrad',takt:'D2 · Taktziel'};
+    var zonen=[],vH=0,vB=0,vP=0,best=bemessend();
+    if(z.H){
+      if(d.prozess)zonen.push(['Heizzone','—','die Vorlage Prozesspuffer bemisst die Prozesszone; für die Heizzone eine Anlagenvorlage wählen','—']);
+      else if(best){vH=best.wert;zonen.push(['Heizzone',namen[best.key],'größtes aktives Kriterium (Raumwärme)',tsd(vH)+' l']);}
+      else zonen.push(['Heizzone','—','kein Kriterium aktiv','—']);
+    }
+    if(z.B){vB=VB;zonen.push(['Brauchwasserzone','Zapfprofil','D<sub>max</sub> 24,0 kWh · 1,15 · 1 000 / (1,16 · 40 K) = '+tsd(VB_NUTZ)+' l → ÷ 85 % = '+tsd(VB)+' l',tsd(vB)+' l']);}
+    if(z.P){
+      if(d.prozess&&best){vP=best.wert;zonen.push(['Prozesszone',namen[best.key],'größtes aktives Kriterium (Prozessreihe)',tsd(vP)+' l']);}
+      else zonen.push(['Prozesszone','—','keine Prozessreihe im Projekt — Vorlage Prozesspuffer wählen','—']);
+    }
+    var summe=vH+vB+vP, V=summe>0?aufRaster(summe):0;
+    var rows=zonen.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td class="v">'+r[2]+'</td><td class="r">'+r[3]+'</td></tr>';}).join('');
+    rows+='<tr class="kopfzeile"><td>Summe der Zonen</td><td></td><td class="v">'+(summe>0?'auf das Raster gerundet':'')+'</td><td class="r">'+(summe>0?tsd(summe)+' l → '+tsd(V)+' l':'—')+'</td></tr>';
+    f.querySelector('#pa-zonen tbody').innerHTML=rows;
+    // Zonenbalken
+    var zb='';if(V>0){var rest=V-summe;
+      if(vB)zb+='<span class="zb-b" style="width:'+(vB/V*100)+'%">Brauchwasser '+tsd(vB)+'</span>';
+      if(vH)zb+='<span class="zb-h" style="width:'+(vH/V*100)+'%">Heizung '+tsd(vH)+'</span>';
+      if(vP)zb+='<span class="zb-p" style="width:'+(vP/V*100)+'%">Prozess '+tsd(vP)+'</span>';
+      if(rest>0.5)zb+='<span class="zb-r" style="width:'+(rest/V*100)+'%">Raster +'+tsd(rest)+'</span>';}
+    setze('pa-zonenbalken',zb);
+    // Raster
+    var ra='';RASTER.forEach(function(r){ra+='<span'+(r===V?' class="gew"':'')+'>'+tsd(r)+(r===V?' l':'')+'</span>';});
+    if(V>10000)ra+='<span class="gew">'+tsd(V)+' l</span>';setze('pa-raster',ra);
+    // Empfehlung, Kapazität, Verlust
+    var vl=verlust(V||1),kap=V*C*DT/1000;
+    if(V===0){setze('pa-vorschlag-kopf','kein Vorschlag');setze('pa-empf','<b>Kein Vorschlag</b> — keine Zone mit bemessendem Kriterium. Klasse oder Vorlage wählen.');setze('pa-verlust','');}
+    else{
+      setze('pa-vorschlag-kopf',tsd(V)+' l · '+dez(kap*ANTEIL,1)+' kWh nutzbar');
+      var teile=[];if(vH)teile.push('Heizzone '+tsd(vH)+' l ('+namen[best.key]+')');if(vB)teile.push('Brauchwasserzone '+tsd(vB)+' l (Zapfprofil)');if(vP)teile.push('Prozesszone '+tsd(vP)+' l ('+namen[best.key]+')');
+      setze('pa-empf','<b>Empfehlung: '+tsd(V)+' l</b> — '+teile.join(' + ')+' = '+tsd(summe)+' l, auf das Raster gerundet: <b>'+tsd(V)+' l</b>'+(V>PRAXIS?' — über der Praxisgrenze 100 000 l, Auswege prüfen':'')+'. Speicherkapazität bei 55/45 °C: '+dez(kap,1)+' kWh, davon '+dez(kap*ANTEIL,1)+' kWh nutzbar (Schwellen 10/95 %).');
+      setze('pa-verlust','Bereitschaftsverlust (Vorgabe Ökodesign Klasse C, 814/2013): <b>'+dez(vl.kd,2)+' kWh/d bei 45 K</b> = '+dez(vl.wk,2)+' W/K (EN 15316-5, Formel 3); Betriebsverlust '+tsd(vl.ka)+' kWh/a bei 15 °C Aufstellraum'+(V>2000?' — <b>Bereitschaftsverlust extrapoliert</b> (Deklaration nur bis 2 000 l)':'')+'. Ein Katalogsatz mit Verlustangabe geht vor.');
+    }
+    // Starts-Modell (fiktiv): s(V) = s0 / (1 + V/k), k aus dem Taktziel
+    var zonenV=d.prozess?vP:vH, hatTakt=k.takt.gilt&&d.s0;
+    var kk=hatTakt?k.takt.wert/(d.s0/d.ziel-1):0;
+    function starts(vz){return hatTakt?d.s0/(1+Math.max(vz,0)/kk):null;}
+    function zoneBei(Vges){return d.prozess?Vges-vH-vB:Vges-vB-vP;}
+    var tage=d.tage||HEIZTAGE;
+    // Nutzen-Aufwand
+    if(V>0){
+      var i=RASTER.indexOf(V),stufen=[];
+      if(i>0)stufen.push(RASTER[i-1]);stufen.push(V);if(i>=0&&i<RASTER.length-1)stufen.push(RASTER[i+1]);
+      var kopf='<tr><th>Nenninhalt</th>'+stufen.map(function(s){return '<th class="r">'+tsd(s)+' l'+(s===V?' ·&nbsp;Vorschlag':'')+'</th>';}).join('')+'</tr>';
+      function zeile(t,fn){return '<tr><td>'+t+'</td>'+stufen.map(function(s){return '<td class="r">'+fn(s)+'</td>';}).join('')+'</tr>';}
+      var html=kopf+zeile('Starts je Tag',function(s){var x=starts(zoneBei(s));return x===null?'—':dez(x,1)+(x>d.ziel?' (über Ziel)':'');})
+        +zeile('Starts je '+(d.prozess?'Jahr':'Heizperiode'),function(s){var x=starts(zoneBei(s));return x===null?'—':tsd(x*tage);})
+        +zeile('Bereitschaftsverlust kWh/d bei 45 K',function(s){return dez(verlust(s).kd,2)+(s>2000?'*':'');})
+        +zeile('Verlustkoeffizient W/K',function(s){return dez(verlust(s).wk,2);})
+        +zeile('Betriebsverlust kWh/a',function(s){return tsd(verlust(s).ka);});
+      f.querySelector('#pa-nutzen tbody').innerHTML=html+'<tr><td colspan="'+(stufen.length+1)+'" class="v">* über 2 000 l extrapoliert</td></tr>';
+    } else f.querySelector('#pa-nutzen tbody').innerHTML='<tr><td class="v">kein Vorschlag</td></tr>';
+    // Betriebsbild
+    setze('pa-bild-titel','Betriebsbild mit '+tsd(V)+' l');
+    var sV=starts(zoneBei(V));
+    setze('pa-k-tag',sV===null?'—':dez(sV,1));
+    setze('pa-k-tag-vgl',hatTakt?'Ziel '+d.ziel+' · Warnschwelle 15 · ohne Puffer '+d.s0:'kein Taktpuffer');
+    setze('pa-k-periode',sV===null?'—':tsd(sV*tage));
+    setze('pa-k-periode-vgl','Hinweisschwelle 3 000 · '+tage+(d.prozess?' Betriebstage':' Heiztage'));
+    setze('pa-k-unter',d.unter);
+    var vHr=(z.H&&vH>0)?V-vB-vP:0;
+    setze('pa-k-band',vHr>0?dez(vHr/HEIZLAST,1)+' l':'—');
+    // Plausibilitätsband nach Übergabeart
+    var band='',hin=[];
+    if(vHr>0){
+      var jeHL=vHr/HEIZLAST, codeU=jeHL<25?'BAND_UNTER':(jeHL>45?'BAND_UEBER':'BAND_OK');
+      band='Plausibilitätsband Heizkörper 25–45 l je kW Heizlast (VDI-Whitepaper RWTH): Heizzone '+tsd(vHr)+' l = '+dez(jeHL,1)+' l/kW — '+(codeU==='BAND_OK'?'im Band':(codeU==='BAND_UNTER'?'unter dem Band: Schaltzahl und Abtaureserve prüfen':'über dem Band: JAZ-Verlust wahrscheinlich'))+' <span class="hcode">'+codeU+'</span>';
+      if(d.wp){var jeWP=vHr/d.pnenn,codeD=jeWP<12?'BAND_DIN_UNTER':(jeWP>35?'BAND_DIN_UEBER':'BAND_DIN_OK');
+        band+='<br>Herstellerband 12–35 l je kW Wärmepumpenleistung (DIN EN 15450): '+dez(jeWP,1)+' l/kW — '+(codeD==='BAND_DIN_OK'?'im Band':(codeD==='BAND_DIN_UNTER'?'unter dem Band: Schaltzahl und Abtaureserve prüfen':'über dem Band: JAZ-Verlust wahrscheinlich'))+' <span class="hcode">'+codeD+'</span>';
+        if(codeD!=='BAND_DIN_OK')hin.push(['hinweis','Herstellerband: Heizzone '+dez(jeWP,1)+' l je kW Wärmepumpenleistung liegt '+(codeD==='BAND_DIN_UEBER'?'über 35 — Mehrvolumen senkt die JAZ, Rasterstufe prüfen':'unter 12 — Schaltzahl und Abtaureserve prüfen')+' (DIN EN 15450).',codeD]);}
+      if(codeU!=='BAND_OK')hin.push(['hinweis','Plausibilitätsband nach Übergabeart: '+dez(jeHL,1)+' l je kW Heizlast '+(codeU==='BAND_UNTER'?'unter 25':'über 45')+' (VDI-Whitepaper RWTH).',codeU]);
+    } else band='Plausibilitätsband nach Übergabeart: ohne Heizzone nicht anwendbar.';
+    setze('pa-band',band);
+
+    // Hinweise (Codes wie Auslegungshinweis des Zapfprofils)
+    var liste=[];
+    if(V>0)liste.push(['ok','Vorschlag '+tsd(V)+' l ersetzt den vorhandenen Speicher 1 (1 000 l)'+(sV!==null?'; Starts je Tag '+dez(starts(zoneBei(1000)),1)+' → '+dez(sV,1):'')+'.','VORSCHLAG']);
+    if(d.wp&&k.sperr.frei)liste.push(['hinweis','Sperrzeit entfällt, weil der Zweiterzeuger in der Sperre freigegeben ist; mit Heizstab wäre C bemessend (2 428 l). Prüfen Sie die Freigabe des Kessels in der Sperre.','SPERRE_VOM_ZWEITERZEUGER_GEDECKT']);
+    if(d.bi&&!k.sperr.frei)liste.push(['hinweis','Heizstab ist in der Sperre mitgesperrt — C bemisst; nach dem VDI-Whitepaper braucht die bivalent-monoenergetische Anlage eher mehr Vorrat als die monovalente.','HEIZSTAB_GESPERRT']);
+    if(k.deck.unerreichbar&&zustand.krit.deck)liste.push(['warnung','Erzeuger zusammen '+k.pgen+' kW unter der Auslegungsheizlast 82 kW: D1 erreicht 100 % Deckung nicht. Größere Wärmepumpe oder in der Sperre freier Zweiterzeuger.','P_GEN_UNTER_SPITZE']);
+    if(sV!==null&&sV>15)liste.push(['warnung','Starts je Tag über der Warnschwelle 15.','STARTS_UEBER_WARNSCHWELLE']);
+    if(sV!==null&&sV*tage>3000)liste.push(['hinweis','Starts über der Hinweisschwelle 3 000 je '+(d.prozess?'Jahr':'Heizperiode')+'.','STARTS_HEIZPERIODE']);
+    hin.forEach(function(h){liste.push(h);});
+    if(d.wp){
+      liste.push([zustand.geraet==='fix'?'warnung':'hinweis','Ohne Puffer nur mit leistungsgeregelter Wärmepumpe und ausreichender Speichermasse für die Abtauung (VDI 4645 E 2026-03, Anhang F)'+(zustand.geraet==='fix'?' — Fixed-Speed braucht den Puffer.':'.'),'OHNE_PUFFER_NUR_GEREGELT']);
+      if(vHr>0)liste.push([vHr<20*HEIZLAST?'hinweis':'ok','Abtauung mit Trinkwasservorrang: Heizzone '+dez(vHr/HEIZLAST,1)+' l je kW Heizlast '+(vHr<20*HEIZLAST?'unter':'über')+' der Reserve 20 l/kW (VDI-Whitepaper RWTH).','ABTAU_TWW_VORRANG']);
+      if(z.H&&z.B)liste.push(['hinweis','Kombispeicher als Tank-im-Tank ist für Wärmepumpen weniger geeignet (das ganze Heizwasser auf Trinkwassertemperatur); Frischwasserstation oder getrennte Speicher bevorzugen. Puffer oben 65 °C erreicht die Wärmepumpe allein nicht — Kessel oder Heizstab lädt die Bereitschaftszone.','TANK_IM_TANK_WP']);
+    }
+    if(z.B){
+      liste.push(['hinweis','Hygiene: Großanlage (über 400 l Trinkwasser oder über 3 l Leitungsinhalt) → mindestens 60 °C am Austritt des Trinkwassererwärmers, 55 °C in der Zirkulation (DVGW W 551). Ergänzend IEA Annex 46: über 52 °C am Speicheraustritt, mindestens 55 °C Vorlauf; periodisches Aufheizen ersetzt keine dauerhaft ausreichende Temperatur.','HYGIENE_GROSSANLAGE']);
+      liste.push(['ok','Tagesbedarf 40 l je Person bei 60 °C — im Band 28–50 l (IEA Annex 46); Gegenprobe, keine Vorgabe.','BEDARF_JE_PERSON']);
+      liste.push([vB>2*1600?'hinweis':'ok','Brauchwasserzone '+tsd(vB)+' l '+(vB>2*1600?'über':'unter')+' dem Doppelten des Tagesbedarfs (3 200 l)'+(vB>2*1600?': Überdimensionierung, Bereitschaftsverluste steigen.':'.'),'BW_UEBERDIMENSIONIERT']);
+    }
+    if(d.prozess)liste.push(['hinweis','Temperaturniveau des Prozesses prüfen — das Projekt kennt keine Prozesstemperatur; gerechnet mit der Spreizung des Puffers (55/45 °C).','PROZESS_TEMPERATUR']);
+    if(d.sperre&&!k.sperr.frei)liste.push(['hinweis','Die Jahressimulation rechnet ein Sperrfenster je Wärmepumpe ohne Mitternachtsübertrag; die Auslegung rechnet das Profil 2 × 2 h.','SPERRFENSTER_SIMULATION']);
+    if(V>2000)liste.push(['hinweis','Bereitschaftsverlust über 2 000 l extrapoliert (Ökodesign-Deklaration nur bis 2 000 l).','VERLUST_EXTRAPOLIERT']);
+    liste.push([V>PRAXIS?'warnung':'ok','Volumen '+(V>PRAXIS?'über':'unter')+' der Praxisgrenze 100 m³.','PRAXISGRENZE']);
+    liste.push(['ok','Einbindung parallel (Trennspeicher); Reihe im Rücklauf entkoppelt nicht und nutzt nur die Hysterese. Schichtung und Einbindung wiegen mehr als das Volumen.','REIHENPUFFER_DELTA_T']);
+    var nh=0,nw=0;
+    setze('pa-warnliste',liste.map(function(l){if(l[0]==='hinweis')nh++;if(l[0]==='warnung')nw++;
+      return '<li><span class="wl-stufe wl-'+l[0]+'">'+(l[0]==='ok'?'ok':(l[0]==='hinweis'?'Hinweis':'Warnung'))+'</span><span>'+l[1]+'<span class="hcode">'+l[2]+'</span></span></li>';}).join(''));
+    setze('pa-hinweis-summe',nh+(nh===1?' Hinweis':' Hinweise')+' · '+nw+(nw===1?' Warnung':' Warnungen'));
+
+    // Übernahme
+    setze('pa-ue-vol',V>0?tsd(V):'—');
+    setze('pa-ue-katalog',V>0?(z.H&&z.B?'Kombispeicher ':'Speicher ')+tsd(V)+' l · Katalog Auslieferung':'—');
+    setze('pa-ue-verlust',V>0?dez(vl.kd,2)+' kWh/d bei 45 K · '+dez(vl.wk,2)+' W/K'+(V>2000?' · extrapoliert':''):'—');
+    var nu=[];if(z.H)nu.push('Heizung');if(z.B)nu.push('Brauchwasser');if(z.P)nu.push('Prozess');setze('pa-ue-nutzung',nu.join(' · ')||'—');
+    setze('pa-ue-tnutz',z.B?'65':'—');
+    var mehr=(z.H?1:0)+(z.B?1:0)+(z.P?1:0)>1;
+    setze('pa-ue-schichten',mehr?'2':'1');
+    setze('pa-ue-schichten-text',mehr?'mehrere Zonen: mindestens 2, sonst wirkt die Bereitschaftszone nicht':'eine Zone: unverändert');
+    var sz=vH+vB+vP;
+    setze('pa-ue-entnahme',(mehr&&sz>0)?((vB?'Brauchwasser oben '+dez(vB/sz,2)+' · ':'')+(vH?'Heizung '+dez(vH/sz,2):'')+(vP?' · Prozess '+dez(vP/sz,2):'')+' (Zonenanteile)'):(mehr?'Vorgabehilfe 0,10 / 0,16 / 0,37 / 0,37 von oben':'1,0 (eine Zone)'));
+    statuszeile(aktSchritt());
+  }
+
   function wende(v){
-    aktuell=v;var d=vorlagen[v];
+    zustand.vorlage=v;var d=vorlagen[v];
+    zustand.krit={};Object.keys(d.krit).forEach(function(k){zustand.krit[k]=d.krit[k];});
+    if(d.prozess){zustand.klasse={H:0,B:0,P:1};}
+    else if(zustand.klasse.P&&!zustand.klasse.H&&!zustand.klasse.B){zustand.klasse={H:1,B:1,P:0};}
     f.querySelectorAll('.vorlage').forEach(function(k){k.setAttribute('aria-pressed',k.dataset.vorlage===v?'true':'false');});
-    setze('pa-vorlage-name',d.name);setze('pa-erzeuger',d.erz);setze('pa-pnenn',d.pnenn);setze('pa-pmin',d.pmin);setze('pa-tmin',d.tmin);
-    setze('pa-erz2',d.erz2);setze('pa-sperr',d.sperr);setze('pa-sperr-summe',d.sperrsumme);
-    var dk=document.getElementById('pa-deck-kessel'),dp=document.getElementById('pa-deck-puffer');
-    if(dk&&dp){dk.classList.toggle('an',d.deckKessel);dp.classList.toggle('an',!d.deckKessel);}
-    Object.keys(d.krit).forEach(function(k){schalte(k,!!d.krit[k]);});
-    setze('pa-vorschlag-kopf',d.vorschlag);setze('pa-empf',d.empf);
-    var n=+document.querySelector('.schritt[aria-current]').dataset.schritt;zeige(n);
+    oberflaeche();rechne();
   }
-  function schalte(k,an){
-    var z=f.querySelector('.krit[data-krit="'+k+'"]');if(!z)return;
-    z.dataset.an=an?'1':'0';
-    var s=z.querySelector('[data-krit-schalter]');s.classList.toggle('an',an);s.setAttribute('aria-checked',an?'true':'false');
-    var w=z.querySelector('[data-krit-wert]');w.classList.toggle('aus',!an);
-    var ka=f.querySelector('.ausl-karte[data-karte="'+k+'"]');if(ka)ka.classList.toggle('aus',!an);
+  function oberflaeche(){
+    var d=vorlagen[zustand.vorlage],g=zustand.geraet,z=zustand.klasse;
+    var pmin=d.wp?(g==='fix'?d.pnenn:0.3*d.pnenn):d.pmin;
+    setze('pa-vorlage-name',d.kurz+(d.wp?' · '+(g==='fix'?'Fixed-Speed':'leistungsgeregelt'):'')+(d.bi?' · '+(zustand.sperrwahl==='frei'?'Zweiterzeuger frei':'Heizstab gesperrt'):''));
+    setze('pa-erzeuger',d.erz);setze('pa-pnenn',dez(d.pnenn,1));
+    setze('pa-pmin',pmin===undefined?'—':dez(pmin,1));
+    setze('pa-pmin-herk',d.wp?(g==='fix'?'Fixed-Speed taktet mit voller Leistung: P<sub>min</sub> = P<sub>Nenn</sub>; Mindestlaufzeit führend':'Mindestleistung, Vorgabe 30 % der Nennleistung (die Wärmepumpe führt heute keine Mindestleistung)'):(pmin===undefined?'bei dieser Vorlage ohne Bedeutung':'aus der Kennlinie des Erzeugers (Mindestleistung bzw. Grenzleistung)'));
+    setze('pa-tmin',d.tmin?String(d.tmin):'—');
+    setze('pa-erz2',d.bi?(zustand.sperrwahl==='frei'?d.erz2frei:d.erz2stab):d.erz2);
+    setze('pa-startziel',d.ziel?String(d.ziel):'—');
+    setze('pa-ziel-summe',d.ziel?'höchstens '+d.ziel+' Starts je Tag · Deckung 100 %':'kein Taktziel · Deckung 100 %');
+    setze('pa-sperr-summe',!d.sperre?'keine Sperrzeit':(d.bi&&zustand.sperrwahl==='frei'?'2 × 2 h je Tag · Zweiterzeuger frei':'2 × 2 h je Tag · Puffer überbrückt'));
+    setze('pa-sperr',d.sperre?'2 × 2 h · 6–8 Uhr und 17–19 Uhr':'keine');
+    setze('pa-sperr-deck',!d.sperre?'keine Sperre':(d.bi&&zustand.sperrwahl==='frei'?'Zweiterzeuger frei in der Sperre → Kriterium C entfällt':(d.bi?'Heizstab mitgesperrt → Kriterium C bemisst':'monovalent → Kriterium C bemisst')));
+    zeigeWenn('.nur-wp',!!d.wp);zeigeWenn('.nur-bi',!!d.bi);zeigeWenn('.nur-sperre',!!d.sperre);
+    zeigeWenn('[data-zone-gruppe="B"]',!!z.B);
+    wahl('[data-geraet]','data-geraet',g);wahl('[data-sperrwahl]','data-sperrwahl',zustand.sperrwahl);
+    var mm=document.getElementById('pa-modmodus');if(mm)mm.classList.toggle('an',g==='geregelt');
+    f.querySelectorAll('[data-klasse]').forEach(function(e){var an=!!z[e.dataset.klasse];e.classList.toggle('an',an);e.setAttribute('aria-checked',an?'true':'false');});
+    setze('pa-klasse-summe',klassenText());
   }
+  function aktiviere(el,fn){el.addEventListener('click',fn);el.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();fn();}});}
   f.querySelectorAll('.vorlage').forEach(function(k){k.addEventListener('click',function(){wende(k.dataset.vorlage);});});
-  f.querySelectorAll('[data-krit-schalter]').forEach(function(s){s.addEventListener('click',function(){
-    var k=s.dataset.kritSchalter;schalte(k,s.getAttribute('aria-checked')!=='true');
-  });});
+  f.querySelectorAll('[data-geraet]').forEach(function(e){aktiviere(e,function(){zustand.geraet=e.dataset.geraet;oberflaeche();rechne();});});
+  f.querySelectorAll('[data-sperrwahl]').forEach(function(e){aktiviere(e,function(){zustand.sperrwahl=e.dataset.sperrwahl;oberflaeche();rechne();});});
+  f.querySelectorAll('[data-klasse]').forEach(function(e){aktiviere(e,function(){var c=e.dataset.klasse;zustand.klasse[c]=zustand.klasse[c]?0:1;oberflaeche();rechne();});});
+  f.querySelectorAll('[data-krit-schalter]').forEach(function(s){aktiviere(s,function(){
+    var key=s.dataset.kritSchalter,el=s.closest('.krit');if(el&&el.dataset.gilt==='0')return;
+    zustand.krit[key]=zustand.krit[key]?0:1;rechne();});});
+  wende('wp-bi');
+  zeige(1,false);
 })();
 </script>
 </body>

@@ -870,6 +870,17 @@ namespace EPOS.Kern.Tests
                 // wiederholbar, KEIN DML.
                 StromViertelstundenSchema.Ausfuehren(null);
 
+                // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+                // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                PufferAuslegungSchema.Ausfuehren(null);
+
+                // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
+                // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den
+                // Auslieferungsvorlagen auf Weg B. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // reines DML, wiederholbar, Projektzeilen unberuehrt.
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

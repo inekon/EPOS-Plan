@@ -1,4 +1,4 @@
-# Übergabe der Sitzung „EPOS Plan Wirtschaftlichkeit" — Stand 02.10.2026 (fortgeschrieben aus den Fassungen vom 27.09. und 30.09.2026)
+# Übergabe der Sitzung „EPOS Plan Wirtschaftlichkeit" — Stand 03.10.2026 (fortgeschrieben aus den Fassungen vom 27.09., 30.09. und 02.10.2026)
 
 Diese Datei ist der Einstieg für die Fortführung in einer neuen Sitzung, gleich ob Cloud (claude.ai/code), Desktop-App oder ein
 anderes Claude-Konto. Sie ersetzt das maschinenlokale Gedächtnis der bisherigen Sitzung; alles Fachliche steht in Statusdatei,
@@ -16,24 +16,26 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
   Hilfsfunktion `SteuerGutschriftRechner.Entgangene9bEur`; EZ‑22) und **#656** (P654: Deckel auch im § 9b-Ausweis der vermiedenen
   Stromkosten; EZ‑23). Alle vier mit grünem Gate, Referenzlauf 16/16 gegen R30 und CI-Vermerk (grüne Kern-Läufe auf fremden Zweigen
   mit demselben Stand, weil Läufe auf dem Arbeitszweig fortlaufend durch Pushes abgebrochen werden).
-- **Letzter eigener Push:** `258bee90c` (02.10.2026, 10:15 UTC) auf `ios_migration_september` — CI-Vermerk zu #656. `main` steht
+- **Letzter eigener Push:** Statuszeile #676 (03.10.2026, P671: Katalogempfehlung der Hilfsenergie, Schritt 170) auf `ios_migration_september`; davor `258bee90c` (02.10.2026, CI-Vermerk zu #656). `main` steht
   weiter auf `8692ab40` (29.09.); ein Fast-Forward nur nach Gate auf dem Zweigstand und auf Zuruf.
-- **Nummern und Basis:** Statuszeilen bis #668 vergeben (Stand 02.10.2026, 19:45 UTC), vor jeder Vergabe `git fetch` und die Statusdatei auf origin
+- **Nummern und Basis:** Statuszeilen bis #676 vergeben (gemessen 03.10.2026 auf origin: #673 die Welle M4 Teillast, #674 die Welle M5 Strom in Viertelstunden, #675 die Pufferauslegung P1), #676 für P671 (die
+  Orchestrierung prüft beim Push); vor jeder Vergabe `git fetch` und die Statusdatei auf origin
   messen; am 02.10. wanderte jede eigene Nummer zwei- bis dreimal (Nachbarn: KP2/KP3 Gebäudesimulation, Dialogsitzung, Berichterstellung,
-  Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R32_Solarthermie` (Nachbarn; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
-  Schemastand 165 (fremde Schritte bis 165, Kostenstempel 159; LFS-Zeiger `7debfd8a…`), `SchemaStand.Zielversion = SolarthermieFelderSchema.SCHRITT`;
-  Basis und Schemastand wandern täglich, vor jeder Welle neu messen. Die Wirtschaftlichkeit hat
-  keinen Rechenweg der Simulation und keinen nummerierten Schemaschritt berührt; Ergebnisspalten von `Tab_ErgebnisWirtschaftlichkeit`
+  Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R33_Viertelstunden` (Nachbarn; keine neue Basis durch P671; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
+  Schemastand 170 (fremde Schritte bis 169, Kostenstempel 159, 167 die Teillastfelder der Welle M4, 168 Einspeisegrenze und Selbstentladung der Welle M5, 169 die Pufferauslegung P1; 170 die Katalogempfehlung der Hilfsenergie aus P671; LFS-Zeiger
+  `bd624ace…`), `SchemaStand.Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT`; Basis und Schemastand wandern täglich, vor
+  jeder Welle neu messen. Die Wirtschaftlichkeit hat keinen Rechenweg der Simulation berührt; ihr einziger nummerierter
+  Schemaschritt seit den Etappen ist der Katalogschritt 170 (P671, reines DML an den Auslieferungsvorlagen); Ergebnisspalten von `Tab_ErgebnisWirtschaftlichkeit`
   laufen additiv über `SpalteSicher` und `Werkzeuge/Testdatenbankschema` (kein Schritt, Hausmuster).
 - **Messlatten:** Linux-Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256` (200 Hashes, `kern.yml` auf ubuntu); Windows-Messlatte
   des lokalen Gates beim Anwender; die sechs Bericht-Messlatten `EPOS.Kern.Tests/Messlatten/Bericht_*` byte-gleich zu halten. Gate in
   der Cloud: `Werkzeuge/Gate/gate_linux.sh <Nr> <Worktree>` (rund 25 Minuten, `dotnet` unter `/root/.dotnet`, SDK 10.0.400 per
   `dotnet-install.sh`; in einer neuen Cloud-Sitzung erneut zu installieren).
-- **Offene Anwenderpunkte** (Wortlaut in den Nach-Blöcken): Wiki-Sammel-Upload am 05.10.2026 mit 24 Logbuchsätzen aller Sitzungen unter
+- **Offene Anwenderpunkte** (Wortlaut in den Nach-Blöcken): Wiki-Sammel-Upload am 05.10.2026 mit 25 Logbuchsätzen aller Sitzungen unter
   1.2.0.6 (Nach #633 (d), #645 (a), #650 (a), #653 (a), #656 (a)); Windows-Proben am 05.10. (Nach #633 (e), #645 (b), #650 (b),
   #653 (b) und (d) Hinweiszeile „Obergrenze Regelsatz", #656 (b)); Unterrichtung der Nachbarsitzung Wärmegestehung (Zweige
   `wirt-gestehung`, `wirt-merge`) über Nachlese, EZ‑20 bis EZ‑23 und die fachliche Führung (Nach #650 (d)); ferner § 6.3 Nr. 37
-  (Vorlagenweg, 5–6 %), die E30-Reste (je 3–4 %), Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18 (macOS-Läufer, nur nach Rückfrage).
+  (Vorlagenweg, 5–6 %), die E30-Reste E30‑Q5 (Emission und Stromsteuer des Hilfsstroms) und N11 (Flotten-Netzeinspeisung) — Katalogempfehlung und Satzfeld sind mit P671 (#676, EZ‑24) erledigt —, Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18 (macOS-Läufer, nur nach Rückfrage).
 - **Nutzung:** Anwenderangabe 02.10.2026 „unter 40 %" vor den Wellen P651 und P654; Erfahrungswerte des Tages: Welle mit Code und
   Gate 6–9 %, kleine Welle 3–5 %, jeder zusätzliche Merge mit Nachtest etwa 1 %, volles Gate wiederholt etwa 1 %.
 - **Lehren des Tages:** (1) Ein Skriptabbruch in einer Befehlskette darf den Commit nicht mitnehmen — Papieränderungen vor dem Commit

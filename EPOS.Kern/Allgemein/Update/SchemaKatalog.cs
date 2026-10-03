@@ -3140,8 +3140,13 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Personalkosten", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                // Empfehlung in Weg B (Anteil des Endenergiebedarfs, bewertet mit dem
+                // Strompreis): 0,5-1,5 % - Eigenbedarf 1-3 % der elektrischen Arbeit, auf den
+                // Brennstoffeinsatz bezogen 0,4-1 %, dazu Pumpen. Die Spanne 2-4 % galt fuer
+                // Weg A (Anteil der Brennstoffkosten); Nachzug im Bestand und Herleitung:
+                // HilfsenergieEmpfehlungNachzug.
                 new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PENDBED,
-                                         2.0, 4.0, PFLICHT),
+                                         0.5, 1.5, PFLICHT),
                 new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
@@ -3152,8 +3157,12 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_PINV, 1.5, 2.5, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                // Empfehlung in Weg B: 1-2 % des Brennstoffeinsatzes (Brenner, Geblaese,
+                // Regelung, Kesselkreispumpe; VDI 2067 Blatt 1, rund 1 % bei Geblaesekesseln,
+                // bis 2 % bei Festbrennstoff). Die Spanne 4-8 % galt fuer Weg A; Nachzug im
+                // Bestand und Herleitung: HilfsenergieEmpfehlungNachzug.
                 new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PENDBED,
-                                         4.0, 8.0, PFLICHT),
+                                         1.0, 2.0, PFLICHT),
                 new VorlagenPositionSeed("Schornsteinfeger / Messung", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
