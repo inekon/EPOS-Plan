@@ -16,7 +16,7 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
   Hilfsfunktion `SteuerGutschriftRechner.Entgangene9bEur`; EZ‑22) und **#656** (P654: Deckel auch im § 9b-Ausweis der vermiedenen
   Stromkosten; EZ‑23). Alle vier mit grünem Gate, Referenzlauf 16/16 gegen R30 und CI-Vermerk (grüne Kern-Läufe auf fremden Zweigen
   mit demselben Stand, weil Läufe auf dem Arbeitszweig fortlaufend durch Pushes abgebrochen werden).
-- **Letzter eigener Push:** `258bee90c` (02.10.2026, 10:15 UTC) auf `ios_migration_september` — CI-Vermerk zu #656. `main` steht
+- **Letzter eigener Push:** Statuszeile #674 (03.10.2026, P671: Katalogempfehlung der Hilfsenergie, Schritt 168) auf `ios_migration_september`; davor `258bee90c` (02.10.2026, CI-Vermerk zu #656). `main` steht
   weiter auf `8692ab40` (29.09.); ein Fast-Forward nur nach Gate auf dem Zweigstand und auf Zuruf.
 - **Nummern und Basis:** Statuszeilen bis #674 vergeben (gemessen 03.10.2026 auf origin: #673 die Welle M4 Teillast), #674 für P671 (die
   Orchestrierung prüft beim Push); vor jeder Vergabe `git fetch` und die Statusdatei auf origin

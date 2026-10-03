@@ -96,9 +96,11 @@ Paketanhebung, Schemastand, Kosten, Wirtschaftlichkeit, Bemessung, Wachen) 1 387
 SpeicherPlanung 2); `Auslieferungsvorlage.Tests` 44/44; Windows-Schale 0 Fehler; Testdatenbank 167 → 168 mit `--trocken` danach 0
 offen, SqlDialektPruefer 2 176 Texte, 0 Fundstellen.
 
+Gate #674 auf `7746cd850` (zweites volles Gate nach dem Merge mit M4, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 444 grün, 2 übersprungen, 0 rot (Kern 10 183, UI 7 299, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen R32 (5 180 241 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44. Windows-Schale 0 Fehler (Agent).
+
 ## Commit
 
 Fünf Commits auf `p671` hinter dem Auftrag `bd5811bf9` (`f257d60fb`, `718451eef`, `e360a892d`, `abcc77a43`, `b80b5562e`); Merge mit
 origin (#671, #672 der KP3-Sitzung; Schritt 167 dort frei) und `0983d8102` (eigene Nummer #673 statt #671). Zweiter Merge mit origin (#673 der Welle M4, Teillastfelder als Schemaschritt 167):
 der Katalogschritt hängt sich als 168 an (`ErzeugerTeillastSchema.SCHRITT + 1`), Statuszeile #674, Testdatenbank 167 → 168.
-Statuszeile #674 im Folgecommit; Push nach Freigabe des Anwenders; CI-Vermerk in Nach #674 (d).
+Statuszeile #674 in `cc8f11a64` vor dem zweiten Merge, Gate-Nachtrag im Folgecommit; Push mit Freigabe des Anwenders vom 03.10.2026; CI-Vermerk in Nach #674 (d).
