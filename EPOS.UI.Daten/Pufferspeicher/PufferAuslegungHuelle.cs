@@ -246,14 +246,14 @@ namespace WindowsFormsApplication1
             PufferAuslegungParameter p = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
             d.Eingabe = EingabeAus(e);
             d.Herkunft = _vorbelegung.Herkunft
-                .Select(z => new PufferHerkunftDaten(z.Feld, z.Quelle, Marke(z.Quelle), z.Text ?? "")).ToList();
+                .Select(z => new PufferHerkunftDaten(z.Feld, z.Quelle, Marke(z.Quelle), Textbaustein.Aufloesen(z.Baustein))).ToList();
             d.Gespeichert = _vorbelegung.Gespeichert;
 
             PufferNutzungsprofilAbleitung np = _vorbelegung.Nutzungsprofil;
             if (np != null)
             {
                 d.Nutzungsprofil = PufferAuslegungTexte.Nach("PAUS_NP_", np.Profil.ToString(), np.Profil.ToString());
-                d.NutzungsprofilHerkunft = np.Herkunft ?? "";
+                d.NutzungsprofilHerkunft = Textbaustein.Aufloesen(np.HerkunftBaustein);
                 d.NutzungsprofilVorgabe = np.Vorgabe;
             }
 
@@ -289,7 +289,8 @@ namespace WindowsFormsApplication1
             d.IstWaermepumpe = erz.IstWaermepumpe;
             d.Erzeuger = _vorbelegung.Herkunft
                 .Where(z => z.Feld == nameof(PufferAuslegungEingang.Erzeuger) && z.Quelle != PufferHerkunftsquelle.GESPEICHERT)
-                .Select(z => z.Text ?? "").Where(t => t.Length > 0 && !t.StartsWith("kein Wärmeerzeuger", StringComparison.Ordinal))
+                .Where(z => z.Baustein?.Schluessel != PufferAuslegungCtrl.SCHLUESSEL_KEIN_ERZEUGER)
+                .Select(z => Textbaustein.Aufloesen(z.Baustein)).Where(t => t.Length > 0)
                 .ToList();
             if (erz.NennleistungKw <= 0 && erz.KollektorflaecheM2 <= 0) d.Erzeuger = Array.Empty<string>();
 
@@ -543,7 +544,7 @@ namespace WindowsFormsApplication1
                 z.KeinPuffer,
                 z.Kriterien.Select(k => new PufferKriteriumDaten(
                     k.Kennung, PufferAuslegungTexte.Nach("PAUS_KRIT_", k.Kennung, k.Bezeichnung), k.VolumenL,
-                    k.Aktiv, k.Gueltig, k.Herkunft ?? "", k.Rechenweg ?? "")).ToList(),
+                    k.Aktiv, k.Gueltig, Textbaustein.Aufloesen(k.HerkunftBaustein), Textbaustein.Aufloesen(k.RechenwegBaustein))).ToList(),
                 z.Betriebsbild == null ? null : new PufferBetriebsbildDaten(
                     z.Betriebsbild.VolumenL, z.Betriebsbild.StartsJeTag, z.Betriebsbild.StartsHeizperiode,
                     z.Betriebsbild.Heizstunden, z.Betriebsbild.Deckungsgrad, z.Betriebsbild.MittlereLaufzeitH))).ToList();
@@ -589,7 +590,7 @@ namespace WindowsFormsApplication1
                 },
                 Warnungen = r.Warnungen.Select(w => new PufferWarnungDaten(
                     w.Code, w.Stufe == PufferStufe.Warnung,
-                    Ressource(w.Ressourcenschluessel, w.Text), w.Text ?? "", w.Herkunft ?? "",
+                    Ressource(w.Ressourcenschluessel, w.Text), w.Text ?? "", Textbaustein.Aufloesen(w.HerkunftBaustein),
                     w.Zone.HasValue ? PufferAuslegungTexte.Nach("PAUS_ZONE_", w.Zone.Value.ToString()) : "")).ToList()
             };
         }

@@ -274,7 +274,8 @@ namespace WindowsFormsApplication1
             string text;
             try
             {
-                zp = PufferAuslegungCtrl.ZapfprofilAus(r, out text);
+                zp = PufferAuslegungCtrl.ZapfprofilAus(r, out Textbaustein baustein);
+                text = baustein.Aufloesen();
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using static WindowsFormsApplication1.Textbaustein;
 
 namespace WindowsFormsApplication1
 {
@@ -31,8 +32,20 @@ namespace WindowsFormsApplication1
         public const string GESPEICHERT = "Gespeicherte Auslegung";
     }
 
-    /// <summary>Eine Zeile der Herkunftsliste: Feld des Eingangs, Quelle und Klartext.</summary>
-    public sealed record PufferAuslegungHerkunft(string Feld, string Quelle, string Text);
+    /// <summary>
+    /// Eine Zeile der Herkunftsliste: Feld des Eingangs, Quelle und Text als <see cref="Textbaustein"/>
+    /// (Ressourcenschlüssel <c>PAUS_HERK_*</c> mit Argumenten; Oberfläche und Bericht lösen ihn auf).
+    /// </summary>
+    public sealed record PufferAuslegungHerkunft(string Feld, string Quelle, Textbaustein Baustein)
+    {
+        /// <summary>Eine Zeile mit einem Klartext ohne Ressourcenschlüssel.</summary>
+        public PufferAuslegungHerkunft(string feld, string quelle, string text) : this(feld, quelle, Textbaustein.Klar(text))
+        {
+        }
+
+        /// <summary>Der Text als deutscher Klartext.</summary>
+        public string Text => Baustein?.Klartext ?? "";
+    }
 
     /// <summary>
     /// Die drei Bedarfsreihen des Projekts [kWh/h, 8 760] aus <c>KanaeleDrei()</c> — oder der
@@ -99,8 +112,8 @@ namespace WindowsFormsApplication1
         public PufferVorlage? Vorlage { get; init; }
         /// <summary>Das wirksame Nutzungsprofil (gespeichert, sonst abgeleitet).</summary>
         public PufferNutzungsprofil? Nutzungsprofil { get; init; }
-        /// <summary>Die Herkunft des abgeleiteten Nutzungsprofils (Klartext des Kerns).</summary>
-        public string NutzungsprofilHerkunft { get; init; }
+        /// <summary>Die Herkunft des abgeleiteten Nutzungsprofils; <c>null</c> = keine (gespeichertes Profil).</summary>
+        public Textbaustein NutzungsprofilHerkunft { get; init; }
         public double? VolumenHeizungL { get; init; }
         public double? VolumenBrauchwasserL { get; init; }
         public double? VolumenProzessL { get; init; }
@@ -108,7 +121,7 @@ namespace WindowsFormsApplication1
         /// <summary>Zone und Kriterium, die bemessen (z. B. „Heizung: K4“), wie gespeichert.</summary>
         public string Bemessend { get; init; }
         /// <summary>Die Herkunft des bemessenden Kriteriums aus der Nachrechnung; <c>null</c> = unbekannt.</summary>
-        public string BemessendHerkunft { get; init; }
+        public Textbaustein BemessendHerkunft { get; init; }
         public DateTime? BerechnetAm { get; init; }
         /// <summary>Die Empfehlung der Nachrechnung [l]; <c>null</c> = keine Nachrechnung.</summary>
         public double? NachgerechnetL { get; init; }
@@ -241,15 +254,16 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0) throw new ArgumentException("Kein Projekt angegeben.", nameof(idProjekt));
             var h = new List<PufferAuslegungHerkunft>();
-            void H(string feld, string quelle, string text) => h.Add(new PufferAuslegungHerkunft(feld, quelle, text));
+            void H(string feld, string quelle, Textbaustein text) => h.Add(new PufferAuslegungHerkunft(feld, quelle, text));
 
             PufferAuslegungParameter p = PufferAuslegungParameter.Lesen(idProjekt);
             H(nameof(PufferAuslegungEingang.Parameter), PufferHerkunftsquelle.PARAMETER,
               ProjektPufferparameter.HatKopie(idProjekt)
-                  ? ProjektPufferparameter.TAB + " (Projektkopie), fehlende Schlüssel aus " + PufferAuslegungSchema.TAB_PARAMETER
+                  ? T("PAUS_HERK_PARAMETER_KOPIE", "{0} (Projektkopie), fehlende Schlüssel aus {1}",
+                      ProjektPufferparameter.TAB, PufferAuslegungSchema.TAB_PARAMETER)
                   : DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB_PARAMETER)
-                      ? PufferAuslegungSchema.TAB_PARAMETER + ", fehlende Schlüssel aus den eingebauten Vorgaben"
-                      : "eingebaute Vorgaben (Vorgabetabelle fehlt)");
+                      ? T("PAUS_HERK_PARAMETER_TABELLE", "{0}, fehlende Schlüssel aus den eingebauten Vorgaben", PufferAuslegungSchema.TAB_PARAMETER)
+                      : T("PAUS_HERK_PARAMETER_EINGEBAUT", "eingebaute Vorgaben (Vorgabetabelle fehlt)"));
 
             // ---- Puffer und Klassen-Set ----
             DataRow pz = null;
@@ -267,12 +281,14 @@ namespace WindowsFormsApplication1
                 PufferSpCtrl.KlassenSet ks = PufferSpCtrl.KlassenSetAusZeile(pz);
                 kH = ks.Heizung; kB = ks.Brauchwasser; kP = ks.Prozess;
                 if (!kH && !kB && !kP) kH = true;
-                H("Klassen", PufferHerkunftsquelle.PUFFER, "Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)");
+                H("Klassen", PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)"));
             }
             else
             {
                 kH = true; kB = false; kP = prozessVorhanden;
-                H("Klassen", PufferHerkunftsquelle.VORGABE, "neuer Puffer: Heizung" + (kP ? " und Prozesswärme (Projekt trägt Prozesswärme)" : ""));
+                H("Klassen", PufferHerkunftsquelle.VORGABE, kP
+                    ? T("PAUS_HERK_KLASSEN_NEU_PROZESS", "neuer Puffer: Heizung und Prozesswärme (Projekt trägt Prozesswärme)")
+                    : T("PAUS_HERK_KLASSEN_NEU", "neuer Puffer: Heizung"));
             }
 
             // ---- Temperaturpaar ----
@@ -281,7 +297,7 @@ namespace WindowsFormsApplication1
             if (pv > 0 && pr > 0 && pv > pr)
             {
                 vl = pv.Value; rl = pr.Value;
-                H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.PUFFER, "Temperaturpaar des Puffers");
+                H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_TEMPERATUR_PUFFER", "Temperaturpaar des Puffers"));
             }
             else
             {
@@ -289,12 +305,13 @@ namespace WindowsFormsApplication1
                 if (sv > 0 && sr > 0 && sv > sr)
                 {
                     vl = sv.Value; rl = sr.Value;
-                    H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.KASKADE, "Systemtemperaturen der Erzeuger (kleinster Vorlauf, größter Rücklauf)");
+                    H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.KASKADE,
+                      T("PAUS_HERK_TEMPERATUR_KASKADE", "Systemtemperaturen der Erzeuger (kleinster Vorlauf, größter Rücklauf)"));
                 }
                 else
                 {
                     vl = SimulationControl.KESSEL_VORLAUF_RUECKFALL; rl = SimulationControl.KESSEL_RUECKLAUF_RUECKFALL;
-                    H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.VORGABE, "Rückfall-Temperaturpaar des Rechenkerns");
+                    H(nameof(PufferAuslegungEingang.VorlaufC), PufferHerkunftsquelle.VORGABE, T("PAUS_HERK_TEMPERATUR_RUECKFALL", "Rückfall-Temperaturpaar des Rechenkerns"));
                 }
             }
 
@@ -303,55 +320,61 @@ namespace WindowsFormsApplication1
             double? schwelleEin = sEin > 0 ? sEin / 100.0 : null;
             double? schwelleAus = sAus > 0 ? sAus / 100.0 : null;
             H(nameof(PufferAuslegungEingang.SchwelleEin), schwelleEin.HasValue ? PufferHerkunftsquelle.PUFFER : PufferHerkunftsquelle.VORGABE,
-              schwelleEin.HasValue ? "Einschaltschwelle des Puffers" : "Vorgabe Puffer.Schwelle_Ein");
+              schwelleEin.HasValue ? T("PAUS_HERK_SCHWELLE_EIN_PUFFER", "Einschaltschwelle des Puffers")
+                                   : T("PAUS_HERK_SCHWELLE_VORGABE", "Vorgabe {0}", PufferAuslegungVorgaben.SCHWELLE_EIN));
             H(nameof(PufferAuslegungEingang.SchwelleAus), schwelleAus.HasValue ? PufferHerkunftsquelle.PUFFER : PufferHerkunftsquelle.VORGABE,
-              schwelleAus.HasValue ? "Ausschaltschwelle des Puffers" : "Vorgabe Puffer.Schwelle_Aus");
+              schwelleAus.HasValue ? T("PAUS_HERK_SCHWELLE_AUS_PUFFER", "Ausschaltschwelle des Puffers")
+                                   : T("PAUS_HERK_SCHWELLE_VORGABE", "Vorgabe {0}", PufferAuslegungVorgaben.SCHWELLE_AUS));
 
             // ---- Einstellungen ----
             DataRow einst = ErsteZeile(SQL_EINSTELLUNGEN, P("@projekt", idProjekt));
             double? heizgrenze = ZahlOderNull(einst, "Kessel_Heizgrenze");
             H(nameof(PufferAuslegungEingang.HeizgrenzeC), heizgrenze.HasValue ? PufferHerkunftsquelle.PROJEKT : PufferHerkunftsquelle.VORGABE,
-              heizgrenze.HasValue ? "Tab_Einstellungen.Kessel_Heizgrenze" : "leer: " + PufferAuslegungVorgaben.Text(SimulationSPK.HEIZGRENZE_VORGABE_C) + " °C");
+              heizgrenze.HasValue ? Klar("Tab_Einstellungen.Kessel_Heizgrenze")
+                                  : T("PAUS_HERK_HEIZGRENZE_LEER", "leer: {0} °C", (double)SimulationSPK.HEIZGRENZE_VORGABE_C));
             heizgrenze ??= SimulationSPK.HEIZGRENZE_VORGABE_C;
             double? zirkKw = ZahlOderNull(einst, "Zirkulation_Leistung_kW");
             double? zirkH = ZahlOderNull(einst, "Zirkulation_Laufzeit_h_d");
             if (zirkKw.HasValue)
-                H(nameof(PufferAuslegungEingang.ZirkulationProjektKw), PufferHerkunftsquelle.PROJEKT, "Tab_Einstellungen.Zirkulation_Leistung_kW");
+                H(nameof(PufferAuslegungEingang.ZirkulationProjektKw), PufferHerkunftsquelle.PROJEKT, Klar("Tab_Einstellungen.Zirkulation_Leistung_kW"));
 
             // ---- Kaskade und Erzeuger ----
             List<Anlage> anlagen = AnlagenLesen(idProjekt);
-            int rang1 = Rang1(einst, anlagen, out string rangText);
+            int rang1 = Rang1(einst, anlagen, out Textbaustein rangText);
             H(nameof(PufferAuslegungEingang.Erzeuger), PufferHerkunftsquelle.KASKADE, rangText);
             PufferErzeuger erz = ErzeugerBauen(idProjekt, rang1, anlagen, h, out bool festbrennstoff, out bool bivalent,
                                                out IReadOnlyList<PufferSperrfenster> sperre, out double? mindestlaufzeit);
 
             // ---- Vorlage ----
             PufferVorlage vorlage;
-            string vText;
-            if (kP && !kH && !kB) { vorlage = PufferVorlage.PROZESS; vText = "nur Prozesswärme"; }
+            Textbaustein vText;
+            if (kP && !kH && !kB) { vorlage = PufferVorlage.PROZESS; vText = T("PAUS_HERK_VORLAGE_PROZESS", "nur Prozesswärme"); }
             else
                 switch (rang1)
                 {
-                    case TYP_SOLAR: vorlage = PufferVorlage.SOLAR; vText = "Solarthermie an Rang 1"; break;
+                    case TYP_SOLAR: vorlage = PufferVorlage.SOLAR; vText = T("PAUS_HERK_VORLAGE_SOLAR", "Solarthermie an Rang 1"); break;
                     case TYP_WP:
                         vorlage = bivalent ? PufferVorlage.WP_BIVALENT : PufferVorlage.WP_MONO;
-                        vText = bivalent ? "Wärmepumpe mit Zweiterzeuger (Kessel, Heizstab oder bivalenter Betrieb)" : "Wärmepumpe ohne Zweiterzeuger";
+                        vText = bivalent
+                            ? T("PAUS_HERK_VORLAGE_WP_BIVALENT", "Wärmepumpe mit Zweiterzeuger (Kessel, Heizstab oder bivalenter Betrieb)")
+                            : T("PAUS_HERK_VORLAGE_WP_MONO", "Wärmepumpe ohne Zweiterzeuger");
                         break;
-                    case TYP_BHKW: vorlage = PufferVorlage.BHKW; vText = "BHKW an Rang 1"; break;
+                    case TYP_BHKW: vorlage = PufferVorlage.BHKW; vText = T("PAUS_HERK_VORLAGE_BHKW", "BHKW an Rang 1"); break;
                     case TYP_KESSEL:
                         vorlage = festbrennstoff ? PufferVorlage.FESTBRENNSTOFF : PufferVorlage.KESSEL;
-                        vText = festbrennstoff ? "Festbrennstoffkessel an Rang 1" : "Kessel an Rang 1";
+                        vText = festbrennstoff ? T("PAUS_HERK_VORLAGE_FESTBRENNSTOFF", "Festbrennstoffkessel an Rang 1")
+                                               : T("PAUS_HERK_VORLAGE_KESSEL", "Kessel an Rang 1");
                         break;
                     default:
                         vorlage = kP ? PufferVorlage.PROZESS : PufferVorlage.WP_MONO;
-                        vText = "kein Wärmeerzeuger im Projekt: Vorgabe";
+                        vText = T("PAUS_HERK_VORLAGE_KEIN_ERZEUGER", "kein Wärmeerzeuger im Projekt: Vorgabe");
                         break;
                 }
             H(nameof(PufferAuslegungEingang.Vorlage), rang1 == 0 && !(kP && !kH && !kB) ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.KASKADE, vText);
             if (sperre.Count > 0)
-                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, "Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)");
+                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, T("PAUS_HERK_SPERRE_ANLAGE", "Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)"));
             else
-                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.VORGABE, "keine Sperrzeit gepflegt");
+                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.VORGABE, T("PAUS_HERK_SPERRE_KEINE", "keine Sperrzeit gepflegt"));
 
             // ---- Übergabeart (häufigste über die Gebäude) ----
             string uebergabe = null;
@@ -360,10 +383,12 @@ namespace WindowsFormsApplication1
             int gebaeude = (int)Zahl(DataRepository.ExecuteScalar(SQL_GEBAEUDE_ANZAHL, P("@projekt", idProjekt)));
             H(nameof(PufferAuslegungEingang.Uebergabeart), uebergabe != null ? PufferHerkunftsquelle.GEBAEUDE : PufferHerkunftsquelle.VORGABE,
               uebergabe != null
-                  ? "häufigste Übergabeart über " + gebaeude + " Gebäude"
-                  : "keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis " + PufferWarncode.UEBERGABE_UNBEKANNT + ")");
-            H(nameof(PufferAuslegungEingang.AnlagenvolumenL), PufferHerkunftsquelle.VORGABE, "Übergabeart × Auslegungsheizlast (Anlagenvolumen.<Übergabe>_l_kW)");
-            H(nameof(PufferAuslegungEingang.AuslegungsheizlastKw), PufferHerkunftsquelle.REIHE, "Maximum der Heizreihe");
+                  ? T("PAUS_HERK_UEBERGABE_GEBAEUDE", "häufigste Übergabeart über {0} Gebäude", gebaeude)
+                  : T("PAUS_HERK_UEBERGABE_KEINE", "keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0})",
+                      PufferWarncode.UEBERGABE_UNBEKANNT));
+            H(nameof(PufferAuslegungEingang.AnlagenvolumenL), PufferHerkunftsquelle.VORGABE,
+              T("PAUS_HERK_ANLAGENVOLUMEN", "Übergabeart × Auslegungsheizlast (Anlagenvolumen.<Übergabe>_l_kW)"));
+            H(nameof(PufferAuslegungEingang.AuslegungsheizlastKw), PufferHerkunftsquelle.REIHE, T("PAUS_HERK_HEIZLAST_REIHE", "Maximum der Heizreihe"));
 
             // ---- Zapfprofil ----
             PufferZapfprofil zp = mitZapfprofil ? Zapfprofil(idProjekt, reihen, h) : null;
@@ -371,15 +396,18 @@ namespace WindowsFormsApplication1
             // ---- Nenninhalte und Katalog ----
             IReadOnlyList<double> nenn = Nenninhalte(h);
             IReadOnlyList<PufferKatalogsatz> katalog = Katalog();
-            H(nameof(PufferAuslegungEingang.Katalog), PufferHerkunftsquelle.KATALOG, katalog.Count + " Katalogpuffer aus Tab_Pufferspeicher_STAMM");
+            H(nameof(PufferAuslegungEingang.Katalog), PufferHerkunftsquelle.KATALOG,
+              T("PAUS_HERK_KATALOG_PUFFER", "{0} Katalogpuffer aus Tab_Pufferspeicher_STAMM", katalog.Count));
 
             // ---- Nutzungsprofil ----
             PufferNutzungsprofilAbleitung np = global::WindowsFormsApplication1.Nutzungsprofil.Ableiten(
                 Zapfnutzungen(idProjekt), prozessVorhanden, Konditionierungsnutzungen(idProjekt));
-            H(nameof(PufferAuslegungEingang.Nutzungsprofil), np.Vorgabe ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.PROJEKT, np.Herkunft);
+            H(nameof(PufferAuslegungEingang.Nutzungsprofil), np.Vorgabe ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.PROJEKT, np.HerkunftBaustein);
 
             if (reihen != null)
-                H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden ? "Bedarfsreihen aus KanaeleDrei()" : "keine Reihen: " + reihen.Fehlertext);
+                H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden
+                    ? T("PAUS_HERK_REIHEN", "Bedarfsreihen aus KanaeleDrei()")
+                    : T("PAUS_HERK_REIHEN_KEINE", "keine Reihen: {0}", reihen.Fehlertext));
 
             var e = new PufferAuslegungEingang
             {
@@ -464,8 +492,24 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Der Schlüssel der Herkunftszeile „kein Wärmeerzeuger im Projekt“ (die Oberfläche blendet sie aus).</summary>
+        public const string SCHLUESSEL_KEIN_ERZEUGER = "PAUS_HERK_RANG1_KEINER";
+
+        /// <summary>Der Kaskadeneintrag als Baustein (Ressource je Erzeugertyp, Rückfall der Eintrag selbst).</summary>
+        private static Textbaustein Erzeugertext(int typ, string eintrag)
+        {
+            switch (typ)
+            {
+                case TYP_WP: return T("PAUS_HERK_TYP_WP", eintrag);
+                case TYP_BHKW: return T("PAUS_HERK_TYP_BHKW", eintrag);
+                case TYP_KESSEL: return T("PAUS_HERK_TYP_KESSEL", eintrag);
+                case TYP_SOLAR: return T("PAUS_HERK_TYP_SOLAR", eintrag);
+                default: return Klar(eintrag);
+            }
+        }
+
         /// <summary>Der Typ an Rang 1: der erste Kaskadeneintrag mit vorhandener Anlage, sonst die feste Rangfolge.</summary>
-        private static int Rang1(DataRow einst, List<Anlage> anlagen, out string text)
+        private static int Rang1(DataRow einst, List<Anlage> anlagen, out Textbaustein text)
         {
             for (int i = 1; i <= 4; i++)
             {
@@ -473,17 +517,17 @@ namespace WindowsFormsApplication1
                 int typ = TypAusKaskade(eintrag);
                 if (typ != 0 && anlagen.Any(a => a.Typ == typ))
                 {
-                    text = "Rang 1 der Kaskade: " + eintrag + " (Tab_Einstellungen.Tool_" + i + ")";
+                    text = T("PAUS_HERK_RANG1_KASKADE", "Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1})", Erzeugertext(typ, eintrag), i);
                     return typ;
                 }
             }
             foreach (int typ in RANG_RUECKFALL)
                 if (anlagen.Any(a => a.Typ == typ))
                 {
-                    text = "Kaskade ohne vorhandenen Erzeuger: erster Erzeuger in der Rangfolge WP, BHKW, Kessel, Solar";
+                    text = T("PAUS_HERK_RANG1_RUECKFALL", "Kaskade ohne vorhandenen Erzeuger: erster Erzeuger in der Rangfolge WP, BHKW, Kessel, Solar");
                     return typ;
                 }
-            text = "kein Wärmeerzeuger im Projekt";
+            text = T(SCHLUESSEL_KEIN_ERZEUGER, "kein Wärmeerzeuger im Projekt");
             return 0;
         }
 
@@ -528,7 +572,7 @@ namespace WindowsFormsApplication1
             bivalent = false;
             sperre = Array.Empty<PufferSperrfenster>();
             mindestlaufzeit = null;
-            void H(string text) => h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Erzeuger), PufferHerkunftsquelle.KASKADE, text));
+            void H(Textbaustein text) => h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Erzeuger), PufferHerkunftsquelle.KASKADE, text));
 
             double nenn = 0, zweit = 0, heizstabKw = 0, kollektor = 0;
             double? mindest = null;
@@ -589,11 +633,14 @@ namespace WindowsFormsApplication1
             if (nurHeizstab) zweit = heizstabKw;
 
             if (rang1 != 0 && rang1 != TYP_SOLAR)
-                H("Nennleistung " + PufferAuslegungVorgaben.Text(nenn) + " kW" + (n1 > 1 ? " (Summe aus " + n1 + " Anlagen)" : "") +
-                  (geregelt ? ", leistungsgeregelt" : "") + "; Zweiterzeuger " + PufferAuslegungVorgaben.Text(zweit) + " kW" +
-                  (nurHeizstab ? " (Heizstab)" : ""));
+                H(T("PAUS_HERK_ERZEUGER", "Nennleistung {0} kW{1}{2}; Zweiterzeuger {3} kW{4}",
+                    nenn,
+                    n1 > 1 ? T("PAUS_HERK_ERZEUGER_SUMME", " (Summe aus {0} Anlagen)", n1) : Leer,
+                    geregelt ? T("PAUS_HERK_ERZEUGER_GEREGELT", ", leistungsgeregelt") : Leer,
+                    zweit,
+                    nurHeizstab ? T("PAUS_HERK_ERZEUGER_HEIZSTAB", " (Heizstab)") : Leer));
             if (kollektor > 0)
-                H("Kollektorfläche " + PufferAuslegungVorgaben.Text(kollektor) + " m² (Bezugsfläche × Modulanzahl)");
+                H(T("PAUS_HERK_KOLLEKTOR", "Kollektorfläche {0} m² (Bezugsfläche × Modulanzahl)", kollektor));
             return new PufferErzeuger
             {
                 NennleistungKw = nenn,
@@ -650,22 +697,22 @@ namespace WindowsFormsApplication1
 
         private static PufferZapfprofil Zapfprofil(int idProjekt, PufferAuslegungReihen reihen, List<PufferAuslegungHerkunft> h)
         {
-            void H(string quelle, string text) => h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Zapfprofil), quelle, text));
+            void H(string quelle, Textbaustein text) => h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Zapfprofil), quelle, text));
             PufferZapfprofil zp = null;
             bool generator = false;
             try { generator = ZapfprofilCtrl.Weg(idProjekt) == BrauchwasserWeg.Generator; }
-            catch (Exception ex) { H(PufferHerkunftsquelle.ZAPFPROFIL, "Weg nicht lesbar: " + ex.Message); }
+            catch (Exception ex) { H(PufferHerkunftsquelle.ZAPFPROFIL, T("PAUS_HERK_ZAPF_WEG_FEHLT", "Weg nicht lesbar: {0}", ex.Message)); }
 
             if (generator)
             {
                 try
                 {
-                    zp = AusGenerator(idProjekt, out string text);
+                    zp = AusGenerator(idProjekt, out Textbaustein text);
                     H(PufferHerkunftsquelle.ZAPFPROFIL, text);
                 }
                 catch (Exception ex)
                 {
-                    H(PufferHerkunftsquelle.ZAPFPROFIL, "Zapfprofil-Auslegung nicht rechenbar: " + ex.Message);
+                    H(PufferHerkunftsquelle.ZAPFPROFIL, T("PAUS_HERK_ZAPF_NICHT_RECHENBAR", "Zapfprofil-Auslegung nicht rechenbar: {0}", ex.Message));
                 }
             }
 
@@ -679,17 +726,17 @@ namespace WindowsFormsApplication1
                     zp = zp == null
                         ? new PufferZapfprofil { Topologie = PufferBwTopologie.Frischwasser, DmaxKwh = dmax, TagesbedarfKwh = tagKwh }
                         : zp with { DmaxKwh = dmax, TagesbedarfKwh = zp.TagesbedarfKwh ?? tagKwh, NenninhaltL = null };
-                    H(PufferHerkunftsquelle.REIHE, "D_max " + PufferAuslegungVorgaben.Text(dmax) + " kWh als Tagesmaximum der Brauchwasserreihe" +
-                      (generator ? "" : " (Bestandsweg: Trinkwasser über den Puffer)"));
+                    H(PufferHerkunftsquelle.REIHE, T("PAUS_HERK_ZAPF_REIHE", "D_max {0} kWh als Tagesmaximum der Brauchwasserreihe{1}", dmax,
+                                                     generator ? Leer : T("PAUS_HERK_ZAPF_BESTANDSWEG", " (Bestandsweg: Trinkwasser über den Puffer)")));
                 }
             }
             else if (brauchtReihe && !generator)
-                H(PufferHerkunftsquelle.VORGABE, "Bestandsweg: D_max erst mit den Bedarfsreihen");
+                H(PufferHerkunftsquelle.VORGABE, T("PAUS_HERK_ZAPF_OHNE_REIHE", "Bestandsweg: D_max erst mit den Bedarfsreihen"));
             return zp;
         }
 
         /// <summary>Das Zapfprofil-Ergebnis aus <c>ZapfprofilCtrl.Auslegung</c>, über die Topologiegruppen summiert.</summary>
-        private static PufferZapfprofil AusGenerator(int idProjekt, out string text)
+        private static PufferZapfprofil AusGenerator(int idProjekt, out Textbaustein text)
         {
             if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
                 throw new InvalidOperationException("Kein Klimakalender für das Projekt.");
@@ -704,7 +751,7 @@ namespace WindowsFormsApplication1
         /// den Arbeitsstand, den der Zapfprofil-Auslegungsdialog mit „An Speicherauslegung übergeben…"
         /// herüberreicht (Stufe P2). Ohne Topologiegruppe wird benannt abgelehnt.
         /// </summary>
-        internal static PufferZapfprofil ZapfprofilAus(Auslegungsrechnung r, out string text)
+        internal static PufferZapfprofil ZapfprofilAus(Auslegungsrechnung r, out Textbaustein text)
         {
             if (r?.Ergebnis == null) throw new ArgumentNullException(nameof(r));
             IReadOnlyList<Auslegungsgruppe> gruppen = r.Ergebnis.Gruppen;
@@ -747,10 +794,25 @@ namespace WindowsFormsApplication1
                 TagesbedarfL = tag > 0 ? tag * 1000.0 / (c * (BrauchwasserzoneRechner.ZAPF_C - BrauchwasserzoneRechner.KALT_C)) : (double?)null,
                 ZirkulationKwhD = zirkDa ? zirk : (double?)null
             };
-            text = "Zapfprofil-Auslegung (" + gruppen.Count + " Topologiegruppe" + (gruppen.Count > 1 ? "n" : "") + ", " + topo +
-                   (zp.NenninhaltL.HasValue ? ", Nenninhalt " + PufferAuslegungVorgaben.Text(zp.NenninhaltL.Value) + " l" : "") +
-                   ", D_max " + PufferAuslegungVorgaben.Text(dmax) + " kWh)";
+            text = T("PAUS_HERK_ZAPF_AUSLEGUNG", "Zapfprofil-Auslegung ({0}, {1}{2}, D_max {3} kWh)",
+                     gruppen.Count > 1 ? T("PAUS_HERK_ZAPF_GRUPPEN", "{0} Topologiegruppen", gruppen.Count)
+                                       : T("PAUS_HERK_ZAPF_GRUPPE", "{0} Topologiegruppe", gruppen.Count),
+                     Topologietext(topo),
+                     zp.NenninhaltL.HasValue ? T("PAUS_HERK_ZAPF_NENNINHALT", ", Nenninhalt {0} l", zp.NenninhaltL.Value) : Leer,
+                     dmax);
             return zp;
+        }
+
+        /// <summary>Die Topologie der Brauchwasserzone als Baustein (Schlüssel <c>PAUS_TOPO_*</c> der Oberfläche).</summary>
+        private static Textbaustein Topologietext(PufferBwTopologie t)
+        {
+            switch (t)
+            {
+                case PufferBwTopologie.Speicher: return T("PAUS_TOPO_SPEICHER", "Trinkwasserspeicher");
+                case PufferBwTopologie.Frischwasser: return T("PAUS_TOPO_FRISCHWASSER", "Frischwasserstation");
+                case PufferBwTopologie.Wohnungsstation: return T("PAUS_TOPO_WOHNUNGSSTATION", "Wohnungsstationen");
+                default: return T("PAUS_TOPO_DURCHFLUSS", "Durchfluss ohne Speicher");
+            }
         }
 
         // ---- Nenninhalte, Katalog, Nutzungen ----
@@ -763,7 +825,7 @@ namespace WindowsFormsApplication1
                 if (w.Liste != null)
                 {
                     h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
-                                                      "Speicherauslegung.Nenninhalt.* (" + w.Quelle + ")"));
+                                                      T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
                     return w.Liste.WerteL;
                 }
             }
@@ -772,7 +834,7 @@ namespace WindowsFormsApplication1
                 // ohne Katalogversion der Tww-Parameter: die feste Liste des Rechenkerns
             }
             h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.VORGABE,
-                                              "feste Liste 100 … 10 000 l, darüber Raster 1 000 l"));
+                                              T("PAUS_HERK_NENNINHALTE_VORGABE", "feste Liste 100 … 10 000 l, darüber Raster 1 000 l")));
             return null;
         }
 
@@ -838,7 +900,7 @@ namespace WindowsFormsApplication1
             PufferAuslegungEingang e = basis.Eingang;
             PufferErzeuger erz = e.Erzeuger ?? new PufferErzeuger();
             var h = new List<PufferAuslegungHerkunft>(basis.Herkunft);
-            void H(string feld, string spalte) => h.Add(new PufferAuslegungHerkunft(feld, PufferHerkunftsquelle.GESPEICHERT, PufferAuslegungSchema.TAB + "." + spalte));
+            void H(string feld, string spalte) => h.Add(new PufferAuslegungHerkunft(feld, PufferHerkunftsquelle.GESPEICHERT, Klar(PufferAuslegungSchema.TAB + "." + spalte)));
 
             e = e with
             {
@@ -1087,7 +1149,7 @@ namespace WindowsFormsApplication1
             {
                 Vorlage = v.Eingang.Vorlage,
                 Nutzungsprofil = v.Eingang.Nutzungsprofil ?? v.Nutzungsprofil?.Profil,
-                NutzungsprofilHerkunft = g.Nutzungsprofil.HasValue ? null : v.Nutzungsprofil?.Herkunft
+                NutzungsprofilHerkunft = g.Nutzungsprofil.HasValue ? null : v.Nutzungsprofil?.HerkunftBaustein
             };
             if (reihen == null || !reihen.Vorhanden) return g with { Fehlertext = reihen?.Fehlertext ?? "" };
 
@@ -1100,7 +1162,7 @@ namespace WindowsFormsApplication1
             PufferBetriebsbild bild = r.Zone(PufferZone.Heizung)?.Betriebsbild ?? r.Zone(PufferZone.Prozess)?.Betriebsbild;
             return g with
             {
-                BemessendHerkunft = string.IsNullOrWhiteSpace(k?.Herkunft) ? null : k.Herkunft,
+                BemessendHerkunft = string.IsNullOrWhiteSpace(k?.Herkunft) ? null : k.HerkunftBaustein,
                 NachgerechnetL = r.EmpfehlungL,
                 StartsJeTag = bild?.StartsJeTag,
                 VerlustKwhJeTag = r.Kennzahlen?.Verlust?.KwhJeTag,
