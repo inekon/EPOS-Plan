@@ -1,0 +1,174 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Pufferspeicher auslegen
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Pufferspeicher-Auslegung''' schlägt das Volumen eines Pufferspeichers vor. Sie bemisst Heizungs-, Kombi-, Brauchwasser- und Prozesswärmepuffer aus den stündlichen Bedarfsreihen und den Erzeugern des Projekts – nach VDI 4645 und mit einer Betriebssimulation über das Jahr – und übernimmt den Vorschlag auf Wunsch in den Projektpuffer.
+
+Wie Sie einen Speicher anlegen und mit den Erzeugern verschalten, steht unter [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]]; warum ein Puffer Erzeugung und Bedarf entkoppelt und welche Kriterien seine Größe bestimmen, unter [[Grundlagen/Pufferspeicher#auslegung|Grundlagen: Pufferspeicher]].
+
+== Einstiege ==
+{{Anker|einstiege|erreichbarkeit}}
+
+Die Auslegung ist eine '''eigene Ansicht'''. Sie füllt das Programmfenster und kehrt mit ''← zurück'' dorthin zurück, woher Sie kamen. Drei Wege führen hinein:
+
+# {{Anker|einstieg-konfiguration}}'''Simulation Konfiguration''' – in '''① Konfiguration''', Spalte ''Speicher im Projekt'', steht ''Pufferspeicher auslegen…'' unter ''Pufferspeicher anlegen / verwalten…''. Führt das Projekt genau einen Pufferspeicher, legt die Auslegung ihn aus; sonst rechnet sie für einen neuen Speicher, dessen Klasse sie aus dem Projekt ableitet.
+# {{Anker|einstieg-verwaltung}}'''Pufferverwaltung''' – ''Auslegen…'' im Dialog ''Pufferspeicher im Projekt'' und im Dialog ''Verwaltung Pufferspeicher'' der Kachel öffnet die Auslegung für den markierten Speicher. Der Dialog schließt dabei wie mit ''Abbrechen''; was Sie dort eingetippt und nicht mit ''OK'' gespeichert haben, gilt nicht. Die Zeile unter dem Knopf sagt das.
+# {{Anker|einstieg-zapfprofil}}'''Zapfprofil''' – ''An Speicherauslegung übergeben…'' in der Überlagerung ''Auslegung Brauchwasser'' des [[Programm Dokumentation/Brauchwasser-Zapfprofil#auslegung|Brauchwasser-Zapfprofils]] öffnet die Auslegung in einem eigenen Fenster und übergibt ihr die Brauchwasserauslegung des Arbeitsstands. Ziel ist der Puffer mit der Nutzung Brauchwasser; ohne ihn ein Heizungspuffer als Kombipuffer, wenn das Zapfprofil eine Frischwasserstation versorgt, sonst ein neuer Brauchwasserpuffer.
+
+Der Kopf der Ansicht nennt Projekt und Speicher („Projekt „Beispiel A“ · Speicher „Speicher 1““ oder „neuer Pufferspeicher“) und den Einstieg. Trägt der Speicher eine gespeicherte Auslegung, wird sie geladen, und eine Zeile sagt es.
+
+== Ablauf ==
+{{Anker|ablauf|schritte}}
+
+Die Ablaufleiste führt durch vier Schritte; jeder ist auch direkt anklickbar:
+
+  1 Klasse und Erzeuger · 2 Bedarf und Randbedingungen · 3 Kriterien · 4 Ergebnis und Übernahme
+
+''Weiter ›'' und ''‹ Zurück'' blättern. ''Auf Vorbelegung zurücksetzen'' verwirft die Eingaben der Ansicht und stellt die Vorbelegung samt gespeicherter Auslegung wieder her.
+
+{{Anker|herkunft|marken}}'''Jeder Wert trägt seine Herkunft.''' Eine Marke neben dem Feld nennt, woher er stammt: ''Projekt'', ''Puffer'', ''Kaskade'', ''Gebäude'', ''Zapfprofil'', ''Bedarfsreihe'', ''Katalog'', ''Vorgabetabelle'', ''Vorgabe'', ''Vorlage'', ''übergeben'', ''gespeichert'' – oder ''überschrieben'', sobald Sie den Wert selbst eintragen. Ein leeres Zahlenfeld rechnet mit der Vorgabe, die als Platzhalter darin steht.
+
+=== Tiefe: Schnell, Standard, Experte ===
+{{Anker|stufen|tiefe}}
+
+Der Umschalter ''Tiefe'' oben blendet Felder ein, nie Pflichtangaben aus:
+
+{| class="wikitable"
+! Tiefe !! Was zu sehen ist
+|-
+| '''Schnell''' || die Pflichtangaben und nur die Kriterien, die die Vorlage einschaltet
+|-
+| '''Standard''' || dazu alle Kriterienkarten mit ihrem Rechenweg, die Temperaturen und Schwellen am Puffer und die Gruppe ''Betriebsziel''
+|-
+| '''Experte''' || dazu die Expertenfelder: Sperrzeit aus dem Lastgang, kleinste Dauerleistung, eigenes Sperrfenster, Spreizung und Temperatur des Brauchwassers, Zirkulationszuschlag und Wohneinheiten
+|}
+
+=== Schritt 1 — Klasse und Erzeuger ===
+{{Anker|schritt-1|speicherklasse|vorlage}}
+
+* {{Anker|klasse}}'''Speicherklasse und Nutzung''' – die Häkchen ''Heizung'', ''Brauchwasser'' und ''Prozess''. Je Klasse bemisst die Auslegung eine '''Zone''' mit eigenem Verfahren und zählt die Zonen zusammen: die Heizzone nach den Kriterien, die Brauchwasserzone aus dem Zapfprofil, die Prozesszone auf der Prozessreihe. Ein Kombipuffer ist Heizung + Brauchwasser. Vorbelegt ist das Klassen-Set des Speichers; ein neuer Speicher beginnt mit Heizung, dazu Prozess, wenn das Projekt Prozesswärme führt.
+* {{Anker|nutzungsprofil}}'''Nutzungsprofil''' – Wohnen, Beherbergung, Pflege/Krankenhaus, Büro/Schule oder Gewerbe/Prozess. Es wird aus dem Projekt abgeleitet – aus den Nutzungsarten des Zapfprofils, aus vorhandener Prozesswärme oder aus der Nutzung der Konditionierung – und nennt diese Herkunft. Es ist eine Anzeige: Das Profil prägt die Bedarfsreihen, aus denen bemessen wird, und belegt Beispielwerte, es geht aber in keine Formel ein. Ohne Anhaltspunkt steht ''Wohnen'' als Vorgabe da.
+* {{Anker|vorlagen}}'''Vorlage der Anlage''' – sieben Karten: ''Wärmepumpe monovalent'', ''Wärmepumpe bivalent'', ''BHKW'', ''Kessel'' (Gas/Öl), ''Festbrennstoff'', ''Solarthermie'' und ''Prozess''. Die Vorlage schaltet die Kriterien der Heizzone und belegt Beispielwerte wie Mindestlaufzeit, Startziel und Faustwert; die Brauchwasserzone hat keine Vorlage. Vorgewählt ist die Vorlage zum Erzeuger an erster Stelle der Kaskade.
+* {{Anker|geraetetyp|bivalenz}}'''Gerätetyp und Zweiterzeuger''' – bei den Wärmepumpen-Vorlagen: ''Fixed-Speed'' oder ''leistungsgeregelt'' (vorbelegt aus der Regelung der Wärmepumpe) und bei ''bivalent'' der ''Zweiterzeuger in der Sperre'': ''Zweiterzeuger frei in der Sperre'' – dann bemisst die Sperrzeit den Puffer nicht – oder ''Heizstab (gesperrt)'' – dann gilt der Heizstab als mitgesperrt, und die Sperrzeit bemisst.
+* {{Anker|erzeuger}}'''Erzeuger am Puffer''' – die Erzeuger, mit denen die Auslegung rechnet, aus der Kaskade des Projekts. Mehrere Anlagen desselben Typs an erster Stelle zählen mit ihrer Nennleistung zusammen, die übrigen Erzeuger gelten als Zweiterzeuger. Ohne Wärmeerzeuger im Projekt rechnet die Vorlage mit ihren Beispielwerten.
+* {{Anker|temperaturen-schwellen}}'''Temperaturen und Schwellen am Puffer''' (ab Standard) – Vorlauf/Rücklauf und die Schwellen ein/aus des Speichers, daraus der '''nutzbare Anteil''' (Abschaltschwelle minus Einschaltschwelle, mit den Vorgaben 10 % und 95 % also 85 %). Die Auslegung liest diese Werte und ändert sie nicht; ändern Sie sie im Dialog ''Pufferspeicher im Projekt''.
+
+=== Schritt 2 — Bedarf und Randbedingungen ===
+{{Anker|schritt-2|bedarf|randbedingungen}}
+
+* {{Anker|bedarfsreihen}}'''Bedarfsreihen''' – je Kanal Heizung, Brauchwasser und Prozess die Spitze und die Jahressumme der stündlichen Reihe. Die Reihen entstehen auf demselben Weg wie im Simulationslauf, ohne einen Lauf zu starten. Lassen sie sich nicht bilden – etwa ohne Konfiguration oder Klimaregion –, nennt ein Hinweis den Grund, und die Kriterien auf dem Lastgang entfallen.
+* {{Anker|uebergabe}}'''Übergabe und Anlage''' – ''Übergabeart'' (Heizkörper, Flächenheizung, Konvektor, Lüfter; vorbelegt mit der häufigsten Übergabeart der Gebäude, ohne Angabe rechnet sie wie Flächenheizung), ''Heizgrenze'' (aus dem Projekt, leer 15 °C), ''Auslegungsheizlast'' (leer = Maximum der Heizreihe) und ''Anlagenvolumen, nicht absperrbar'' (leer = Übergabeart × Heizlast, etwa 10 l je kW bei Heizkörpern).
+* {{Anker|sperrzeiten}}'''Sperrzeiten''' – ''Sperrprofil'': ''keine'', ''2 × 2 h (11–13 und 17–19 Uhr)'', ''3 × 2 h (6–8, 11–13 und 17–19 Uhr)'' oder ''eigenes Fenster'' mit ''Beginn der Sperre'' und ''Dauer der Sperre''. Vorbelegt ist die Sperrzeit der Anlage an erster Stelle, wenn sie gesperrt wird. Die Sperre ist eine neutrale Annahme der Auslegung; die Übernahme schreibt sie nicht in die Wärmepumpe.
+* {{Anker|betriebsziel}}'''Betriebsziel''' (ab Standard) – ''Mindestlaufzeit je Start'', ''Startziel'' je Tag, ''Ziel-Deckungsgrad'' und in der Tiefe Experte die ''Kleinste Dauerleistung'' eines leistungsgeregelten Erzeugers.
+* {{Anker|brauchwasserzone}}'''Brauchwasserzone aus dem Zapfprofil''' – die Topologie (Trinkwasserspeicher, Frischwasserstation, Wohnungsstationen, Durchfluss ohne Speicher), das größte Defizit <math>D_{\mathrm{max}}</math>, Personen und Tagesbedarf bei 60 °C. Sie kommen aus der gespeicherten Zapfprofil-Auslegung des Projekts oder – über den dritten Einstieg – aus der übergebenen. Ohne Zapfprofil-Ergebnis bleibt die Brauchwasserzone leer. In der Tiefe Experte stehen ''Zirkulationszuschlag'' (automatisch, aus dem Zapfprofil, aus der Zirkulationsleistung des Projekts, als Anteil am Tagesbedarf oder je Wohneinheit), ''Wohneinheiten'', ''Spreizung Brauchwasser ΔT_B'' (Vorgabe 40 K) und ''Temperatur oben im Puffer''.
+
+=== Schritt 3 — Kriterien ===
+{{Anker|schritt-3|kriterien}}
+
+Je Kriterium eine Karte mit Schalter, Volumen, Herkunft und – ab Standard – dem Rechenweg mit den eingesetzten Zahlen. Je Zone '''bemisst das größte eingeschaltete Kriterium'''; seine Karte trägt die Marke ''bemessend''. ''nicht erreichbar'' heißt: Das Ziel des Kriteriums ist auch mit dem größten Puffer nicht zu halten, es bemisst dann nicht.
+
+{| class="wikitable"
+! Kriterium !! Was es sichert !! Wie es rechnet !! Bezug
+|-
+| {{Anker|k1}}''Vorprüfung Anlagenvolumen'' || ob das Heizungsnetz selbst genug Wasser führt || Anlagenvolumen ≥ 3 l je kW Wärmepumpenleistung: Mit leistungsgeregelter Wärmepumpe ist kein Heizungspuffer erforderlich; mit Fixed-Speed bleibt er, und ein Hinweis sagt es || VDI 4645
+|-
+| {{Anker|k2}}''Faustwert nach Gerätetyp'' || einen Mindestinhalt je kW Wärmepumpenleistung || Fixed-Speed 20 l/kW, leistungsgeregelt 3 l/kW (Vorgaben) || VDI 4645
+|-
+| {{Anker|k3}}''Mindestlaufzeit'' || dass der Erzeuger je Start lange genug läuft || Nennleistung × Mindestlaufzeit ÷ (1,16 Wh/(l·K) × Spreizung × nutzbarer Anteil); leistungsgeregelt mit der kleinsten Dauerleistung || VDI 4645, Gleichung 22
+|-
+| {{Anker|k4}}''Sperrzeit'' || dass die Heizung eine Sperre des Erzeugers überbrückt || Heizlast × (Sperrdauer − zulässige Auskühlzeit) ÷ (1,16 × nutzbare Temperaturdifferenz) − Anlagenvolumen; Auskühlzeit und Mindestabstand nach Heizgrenze und Übergabeart; entfällt mit ''Zweiterzeuger frei in der Sperre'' || VDI 4645, Gleichung 23 mit Tabellen 14 und 15
+|-
+| {{Anker|k4e}}''Sperrzeit aus dem Lastgang'' (Experte) || dasselbe aus der tatsächlichen Last || mittlere Heizlast des ungünstigsten Sperrfensters im Jahr × Sperrdauer; der Schalter ''Sperrzeit aus dem Lastgang bemessen (Expertenweg)'' macht sie bemessend || Betriebssimulation
+|-
+| {{Anker|d1}}''Deckungsgrad'' || dass Erzeuger und Puffer den Bedarf zum Ziel-Deckungsgrad decken || Stundensimulation über das Jahr: Überschuss lädt, Defizit entlädt; gesucht wird das kleinste Volumen, das das Ziel erreicht || Betriebssimulation
+|-
+| {{Anker|d2}}''Taktziel'' || wenige Starts je Tag || Stundensimulation mit den Schwellen des Puffers: laden bis zur Abschaltschwelle, entladen bis zur Einschaltschwelle; ein leistungsgeregelter Erzeuger moduliert bis zur kleinsten Dauerleistung; gesucht wird das kleinste Volumen für das Startziel (Vorgabe 6 je Tag) || Betriebssimulation
+|-
+| {{Anker|kv}}''Verschiebedauer BHKW'' || dass das BHKW seine Laufzeit verschieben kann || Nennleistung × Verschiebedauer ÷ (1,16 × Spreizung × nutzbarer Anteil) || Vorlage BHKW
+|-
+| {{Anker|k9}}''Festbrennstoff'' || das vorgeschriebene Mindestvolumen hinter einem Festbrennstoffkessel || Liter je kW nach Brennstoff (Scheitholz, Pellets, Hackschnitzel); in der Tiefe Experte als zweiter Weg die Formel nach Nennleistung, Brenndauer und kleinster Wärmeleistung || 1. BImSchV; DIN EN 303-5
+|-
+| {{Anker|k10}}''Solarthermie'' || einen Tagesspeicher für das Kollektorfeld || Liter je m² Aperturfläche (Vorgabe 50 l/m², Vakuumröhren mehr) || DIN EN 12977
+|-
+| {{Anker|brauchwasser-kriterium}}''Trinkwasserspeicher aus dem Zapfprofil'' / ''Brauchwasser am Puffer (Station)'' || die Brauchwasserzone || Topologie Trinkwasserspeicher: der Nenninhalt der Zapfprofil-Auslegung; Frischwasser- oder Wohnungsstation: <math>D_{\mathrm{max}}</math> mit 15 % Durchmischungszuschlag ÷ (1,16 × ΔT_B × nutzbarer Anteil) || VDI 4645 Anhang I
+|}
+
+{{Anker|bemessung|nutzbarer-anteil}}'''So entsteht das Volumen.''' Kriterien aus einer Energiemenge – Mindestlaufzeit, Sperrzeit aus dem Lastgang, Verschiebedauer, Deckungsgrad, Brauchwasser am Puffer – enthalten den nutzbaren Anteil schon; Faustwerte, Festbrennstoff, Solarthermie und die Sperrzeit nach Gleichung 23 stehen als Volumen da. Die Zonen werden addiert, die Summe auf den nächsten Nenninhalt der Liste gerundet und bei 100 000 l gestoppt.
+
+{{Anker|beispiel}}'''Beispiel.''' Speicher 1 der Beispielanlage A, Wärmepumpe A mit 25 kW (Fixed-Speed) und Kessel 1, Heizkörper 55/45 °C, Schwellen 10 und 95 %: Der Faustwert ergibt 20 l/kW × 25 kW = 500 l, die Mindestlaufzeit von 10 min ergibt 25 kW × 10/60 h ÷ (1,16 × 10 K × 0,85) = 423 l. Ist Kessel 1 in der Sperre frei, entfällt die Sperrzeit. Liegt das Taktziel darunter, bemisst der Faustwert mit 500 l.
+
+=== Schritt 4 — Ergebnis und Übernahme ===
+{{Anker|schritt-4|ergebnis}}
+
+'''Wann gerechnet wird.''' Schalter wie Speicherklasse, Vorlage oder ein Kriterium rechnen sofort. Ein Zahlenfeld kennzeichnet das Ergebnis als ''veraltet''; gerechnet wird beim Wechsel in Schritt 4 oder mit ''Neu rechnen''. Vor der ersten Rechnung steht ''Auslegen und Ergebnis zeigen''.
+
+* {{Anker|zonen}}'''Vorschlag je Zone''' – Zone, bemessendes Kriterium und Volumen, darunter die ''Summe der Zonen''.
+* {{Anker|empfehlung}}'''Empfehlung''' – der Nenninhalt in Litern mit der nutzbaren Kapazität in kWh, oder ''kein Puffer erforderlich''. Liegt die Summe über dem Ende der Nenninhaltsliste, wird auf das Raster gerundet; an der Praxisgrenze steht der Vermerk ''an der Praxisgrenze gestoppt''. Der ''Katalogvorschlag'' nennt den kleinsten Katalogpuffer, der die Summe fasst (beim Kombipuffer einen Kombispeicher).
+* {{Anker|kennzahlen}}'''Kennzahlen''' – ''Starts je Tag'' und ''Starts je Heizperiode'' aus der Betriebssimulation, ''Bereitschaftsverlust bei 45 K'' in kWh/d, ''Wärmeverlustrate'' in W/K und ''Betriebsverlust'' im Jahr (aus dem Katalogsatz oder nach der Grenze der Klasse C; ein Speicher mit 1 000 l verliert danach 3,57 kWh/d, 3,30 W/K), ''Nutzbare Kapazität'', ''Nutzbarer Anteil'', beim Kombipuffer ''Zonenanteil Heizung'' und ''Schichten mindestens'', bei Brauchwasser der ''Tagesbedarf je Person bei 60 °C'' und ab Standard der ''Faustwert der Vorlage'' als Gegenprobe. Dazu das '''Plausibilitätsband''' nach Übergabeart (Flächenheizung 10–20 l, Heizkörper und Konvektor 25–45 l je kW Heizlast) und nach Wärmepumpenleistung (12–35 l je kW, DIN EN 15450).
+
+=== Hinweise ===
+{{Anker|hinweise|warncodes}}
+
+Die Auslegung sperrt nichts. Was auffällt, steht in der Tabelle ''Hinweise'' mit Code, Stufe (''Hinweis'' oder ''Warnung''), Text und Herkunft; der Text mit den eingesetzten Zahlen steht im Kurzhinweis der Zeile.
+
+{| class="wikitable"
+! Code !! Bedeutung !! Was Sie tun können
+|-
+| <code>PA-KEIN-PUFFER</code> || Das nicht absperrbare Anlagenvolumen reicht; kein Heizungspuffer erforderlich. || Anlagenvolumen prüfen; Brauchwasser- und Prozesszone rechnen weiter.
+|-
+| <code>PA-OHNE-PUFFER-GEREGELT</code> || Ohne Puffer ginge es nur mit leistungsgeregelter Wärmepumpe; das Gerät ist Fixed-Speed. || Gerätetyp prüfen.
+|-
+| <code>PA-BAND-UNTER</code>, <code>PA-BAND-UEBER</code> || Das Volumen der Heizzone liegt unter oder über dem Plausibilitätsband der Übergabeart. || Übergabeart, Heizlast und bemessendes Kriterium prüfen.
+|-
+| <code>PA-ABTAU-VORRANG</code> || Bei Trinkwasservorrang fehlt Abtaureserve für die Heizung. || Faustwert nach Heizlast als Reserve bedenken.
+|-
+| <code>PA-STARTS-TAG</code>, <code>PA-STARTS-JAHR</code> || Die Starts liegen über der Warnschwelle je Tag (15) oder über der Hinweisschwelle je Heizperiode (3 000). || Startziel oder Mindestlaufzeit prüfen, größeres Volumen erwägen.
+|-
+| <code>PA-PRAXISGRENZE</code> || Ein Ziel ist auch mit dem größten Puffer nicht zu halten, oder die Summe wäre ein Saisonalspeicher. || Ziel-Deckungsgrad und Erzeugerleistung prüfen.
+|-
+| <code>PA-EXTRAPOLATION</code> || Der Bereitschaftsverlust ist über 2 000 l hinaus nach der Grenze der Klasse C extrapoliert (EN 15332). || Verlust aus dem Datenblatt eintragen.
+|-
+| <code>PA-TANK-IM-TANK</code> || Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet. || Frischwasserstation erwägen.
+|-
+| <code>PA-HYGIENE-W551</code> || Trinkwasserspeicher einer Großanlage über 400 l. || Anforderungen nach DVGW W 551 beachten.
+|-
+| <code>PA-HYGIENE-TEMPERATUR</code> || Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz. || Temperatur oben im Puffer mindestens 55 °C.
+|-
+| <code>PA-BW-UEBERDIMENSIONIERT</code> || Die Brauchwasserzone übersteigt ein Vielfaches des Tagesbedarfs. || Zapfprofil und Topologie prüfen.
+|-
+| <code>PA-UEBERGABE-UNBEKANNT</code> || Kein Gebäude nennt eine Übergabeart; die Heizzone rechnet wie Flächenheizung. || Übergabeart am Gebäude oder in Schritt 2 setzen.
+|-
+| <code>PA-ZWEITERZEUGER-FREI</code>, <code>PA-HEIZSTAB-GESPERRT</code> || Die Sperrzeit bemisst den Puffer nicht (Zweiterzeuger frei) bzw. bemisst ihn (Heizstab mitgesperrt). || Wahl in Schritt 1 prüfen.
+|-
+| <code>PA-KEINE-REIHE</code> || Eine Bedarfsreihe ist leer; die Kriterien auf dem Lastgang entfallen für diese Zone. || Bedarf des Kanals im Projekt prüfen.
+|}
+
+=== Übernehmen und speichern ===
+{{Anker|uebernahme|speichern}}
+
+Die Gruppe ''Übernahme in den Projektpuffer'' bietet als ''Ziel'' den ausgelegten Speicher („„Speicher 1“ ändern“) oder ''neuen Pufferspeicher anlegen''; ein neuer Speicher braucht eine ''Bezeichnung'' (Vorschlag „Pufferspeicher 1 000 l“).
+
+* {{Anker|uebernehmen}}'''Übernehmen''' schreibt die Empfehlung in den Projektpuffer: das Volumen, den Bereitschaftsverlust (aus dem Katalogvorschlag, sonst aus der Kennzahl) und die Nutzung aus den gerechneten Zonen, beim Kombipuffer mindestens zwei Schichten und den Zonenanteil als Entnahmehöhe. '''Schwellen und Temperaturpaar bleiben''', ebenso Hersteller, Speichertyp und Kosten; die Sperrannahme wird nicht übernommen. Ein gültiges Simulationsergebnis gilt danach als veraltet. Empfiehlt die Auslegung keinen Puffer, gibt es nichts zu übernehmen.
+* {{Anker|auslegung-speichern}}'''Auslegung speichern''' legt Eingaben und Ergebnis zum Speicher ab: Speicherklasse, Vorlage und Nutzungsprofil, die Werte, die Sie von der Vorbelegung abweichend eingetragen haben, die Zonenvolumina, die Empfehlung, das bemessende Kriterium und den Zeitpunkt. ''Übernehmen'' speichert die Auslegung mit. Beim nächsten Öffnen wird sie geladen; Projektduplikat und Projekttransfer nehmen sie mit.
+* {{Anker|bericht}}'''Im Bericht''' führt die Projektbeschreibung je gespeicherter Auslegung den Abschnitt ''Pufferspeicher-Auslegung'': Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium mit Herkunft, Empfehlung und gewähltes Volumen, Starts je Tag, Bereitschaftsverlust und Wärmeverlustrate, die Hinweise und das Berechnungsdatum. Kennzahlen und Hinweise rechnet der Bericht mit der gespeicherten Eingabe und dem aktuellen Projekt nach; empfiehlt diese Nachrechnung ein anderes Volumen, sagt eine Zeile, dass die Auslegung neu zu rechnen ist. Ohne gespeicherte Auslegung entfällt der Abschnitt.
+
+Beim Verlassen fragt die Ansicht nicht nach: Was nicht gespeichert oder übernommen ist, gilt nicht.
+
+== Grenzen ==
+{{Anker|grenzen|fallstricke}}
+
+* '''Zahlenfelder rechnen auf Zuruf.''' Nach einer Eingabe in ein Zahlenfeld zeigt Schritt 4 bis ''Neu rechnen'' das Ergebnis des vorigen Werts, gekennzeichnet als ''veraltet''.
+* '''Nicht alles wird gespeichert.''' Kriterienschalter, die Sperrzeit aus dem Lastgang, die Auslegungsheizlast und die Wohneinheiten wirken nur, solange die Ansicht offen ist.
+* '''Herkunfts- und Rechenwegtexte''' stehen auch bei englischer Oberfläche auf Deutsch.
+* '''Stundenraster.''' Deckungsgrad und Taktziel rechnen mit Stundenwerten; Starts innerhalb einer Stunde und Anlaufverluste sieht die Betriebssimulation nicht. Die Jahressimulation des Projekts rechnet unabhängig davon mit dem Volumen, das im Projektpuffer steht.
+* '''Nutzungsprofil.''' Es ist Herkunft und Beispielhilfe, kein Rechenwert; ein anderes Profil ändert das Volumen nicht.
+* {{Anker|ipad}}'''Auf dem iPad''' führen ''Pufferspeicher auslegen…'' in ① Konfiguration und ''Auslegen…'' in ''Pufferspeicher im Projekt'' in die Auslegung. Die Übergabe aus dem Zapfprofil braucht ein eigenes Fenster und ist dort gesperrt; ihr Hinweis nennt den Weg über ① Konfiguration.
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Speicher anlegen, Schwellen, Schichtung und Zuordnung zu den Erzeugern
+* [[Grundlagen/Pufferspeicher#auslegung|Grundlagen: Pufferspeicher]] – die Kriterien der Auslegung und ihre Normbezüge
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil#auslegung|Brauchwasser-Zapfprofil]] – die Brauchwasserauslegung, aus der die Brauchwasserzone stammt
+* [[Programm Dokumentation/Simulation|Simulation]] – ① Konfiguration mit dem Einstieg in die Auslegung
+* [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher-Auslegung]] – die Auslegung des Batteriespeichers
+
+[[Kategorie:Programm Dokumentation]]
