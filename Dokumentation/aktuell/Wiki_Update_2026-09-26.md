@@ -274,6 +274,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Pufferspeicher rechnet seinen Bereitschaftsverlust wahlweise aus der Zonentemperatur, kennt wählbare Zonenanteile und ein Frischwassermodul; eine thermische Desinfektion des Brauchwassers lässt sich als Projektvorgabe mit Intervall, Uhrzeit und Zieltemperatur rechnen. (#677)
 - Ein Programmupdate gleicht die Gerätekataloge mit dem Auslieferungsstand ab: neue Sätze kommen hinzu, unveränderte werden aktualisiert, eigene Anpassungen bleiben. (#678)
 - Die Prüfung der Wärmequelle Erdreich bleibt mit dem Simulationsergebnis gespeichert. (#678)
+- Der Katalogabgleich beim Programmupdate umfasst alle Gerätekataloge, Baustoffe und Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher und Ganglinien; Klimadaten und der Zapfprofilkatalog behalten ihre eigenen Importwege. (#685)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

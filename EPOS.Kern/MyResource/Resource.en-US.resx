@@ -43308,5 +43308,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PBRS_MSG_NICHT_ZURUECKGESETZT" xml:space="preserve">
     <value>The fuel is no longer in the catalogue; the project values remain.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GESCHAETZT" xml:space="preserve">
+    <value>Separating slab {0}/{1}: the file does not reference all slab parts — area estimated from the space quantities: {2} m² (smaller heated floor area of the two storeys) instead of {3} m² referenced; U-value and construction from the referenced parts.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
+    <value>According to the file, slab "{0}" adjoins an unheated space, but space "{1}" on that side is considered heated. The file's declaration applies: the slab stays part of the envelope and is no separating slab — please check the heating of the space.</value>
+  </data>
 </root>
 

@@ -1362,15 +1362,27 @@ nicht je Raumpaar (ADR-003):
   gegen unbeheizt (`btaCellarCeiling`, `btaUppermostStorey`), liegen aber beiderseits beheizte Räume (ein
   Spitzboden, der nach seinem Namen als beheizt gilt), gilt die Erklärung der Datei, nicht der Bezug —
   sonst fiele die oberste Geschossdecke aus der Hülle, während die Datei die Dachfläche darüber nicht zur
-  Hülle zählt.
+  Hülle zählt (bestätigt mit dem Anwenderentscheid 03.10.2026). Der Widerspruch wird benannt
+  (`IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG`, W, mit Bauteil und dem Raum der Seite, die die Datei unbeheizt
+  nennt, und dem Rat, die Beheizung des Raums zu prüfen).
+- **Fläche aus den Raummengen** (Anwenderentscheid 03.10.2026): Bleibt die Summe der referenzierten
+  Deckenteile eines Geschosspaars unter der kleineren beheizten Grundfläche der beiden Geschosse (Summe
+  der Raumflächen aus den Raummengen), referenziert die Datei nicht alle Deckenteile. Dann gilt diese
+  Grundfläche als Trenndeckenfläche, im Verhältnis ihrer Flächen auf die referenzierten Teile verteilt
+  (ohne Flächen zu gleichen Teilen); U-Wert und Aufbau bleiben die der referenzierten Teile, über die
+  Fläche gewichtet (`IMP_IFC_PROT_TRENNDECKE_GESCHAETZT`, I, mit geschätzter und referenzierter Fläche).
+  Ohne beheizten Raum in einem der beiden Geschosse (Keller) wird nicht geschätzt; ohne referenziertes
+  Deckenteil gibt es keine Trenndecke. Auch das ist keine Geometrierechnung (ADR-003): Es zählen Mengen.
 - **Innenwand zwischen Räumen:** Eine Wand innen oder ohne Angabe, die zwei bis vier Räume desselben
   Geschosses referenzieren, liegt zwischen zweien davon — zwei beheizten, wenn es sie gibt (innere Masse,
   beidseitig), sonst einem beheizten und einem unbeheizten (Hülle gegen unbeheizt bzw. Trennfläche zur
   unbeheizten Zone des Geschosses).
 - **Kopplung:** Ein Geschosspaar trägt, wenn die Fläche seiner Trenndecken mindestens die Hälfte der
-  beheizten Grundfläche des kleineren Geschosses erreicht; darunter referenziert die Datei nicht alle
-  Deckenteile, und das Paar wird benannt (`IMP_IFC_PROT_TRENNDECKE_KLEIN`, W, mit Fläche, Grundfläche und
-  Anteil). Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
+  beheizten Grundfläche des kleineren Geschosses erreicht; darunter wird das Paar benannt
+  (`IMP_IFC_PROT_TRENNDECKE_KLEIN`, W, mit Fläche, Grundfläche und Anteil). Der Wächter bleibt (bestätigt
+  mit dem Anwenderentscheid 03.10.2026); nach der Schätzung aus den Raummengen erreicht jedes Paar mit
+  referenziertem Deckenteil und beheizten Räumen auf beiden Seiten die Hälfte — er wirkt nur noch, wo kein
+  Deckenteil referenziert ist und deshalb keine Trenndecke entsteht. Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
   Geschoss), ist **Z4 die Vorgabe** ohne `KEINE_GRENZEN` und ohne `GRENZEN_ENTKOPPELT`; ist unter Z4
   dennoch eine beheizte Zone ohne Verbindung (etwa nach den Haken der Raumliste), warnt
   `GRENZEN_ENTKOPPELT`. Sonst bleibt Z5 die Vorgabe mit dem bisherigen Hinweis.
@@ -1392,12 +1404,15 @@ Protokoll das Jahr (`IMP_IFC_PROT_BAUJAHR_DATEINAME`, I) — **übernommen wird 
 „…EG55-2026" nennt das Planungsjahr, nicht das Baujahr.
 
 **Gemessen an der Anwenderdatei MFH 1964** (IFC2X3, 30 Räume, keine Raumgrenzen, 30 Raumbezüge): drei
-Trenndecken (Keller/EG 11,84 m², EG/OG1 23,75 m², OG1/DG1 2,26 m²); die Decke DG1/DG2 bleibt als
-oberste Geschossdecke Hülle. Die Datei referenziert je Geschossdecke nur das erste Deckenteil (die
-übrigen 46 Teile „Boden OG1-2" … tragen keinen Bezug): EG/OG1 erreicht 25 %, OG1/DG1 2 % der Grundfläche
-von 96,42 m² — beide benannt, die Vorgabe bleibt Z5. 51 Innenwände liegen zwischen zwei Räumen, 19
-(89,9 m²) zählen einseitig; der Innenflächenfaktor ist 1,95 statt leer. Die Produktionsdatei
-(EG55-2026) zeigt dasselbe Bild (EG/OG1 31,8 m² bei 7 343,89 m²).
+Trenndecken. Die Datei referenziert je Geschossdecke nur das erste Deckenteil (die übrigen 46 Teile
+„Boden OG1-2" … tragen keinen Bezug): EG/OG1 23,75 m² und OG1/DG1 2,26 m² werden aus den Raummengen auf
+je 96,42 m² geschätzt, Keller/EG bleibt 11,84 m² (der Keller ist unbeheizt; die übrigen Kellerdeckenteile
+zählen als Hülle gegen unbeheizt). Die Decke DG1/DG2 („Boden DG2") bleibt als oberste Geschossdecke
+Hülle, der Widerspruch zum Spitzboden „Wohnraum" wird benannt; das beheizte DG2 bleibt damit ungekoppelt,
+und die Vorgabe bleibt Z5 (unter Z4 mit `GRENZEN_ENTKOPPELT`). 51 Innenwände liegen zwischen zwei Räumen,
+19 (89,9 m²) zählen einseitig; der Innenflächenfaktor ist 2,91 statt leer. Die Produktionsdatei
+(EG55-2026): EG/OG1 aus 31,8 m² referenziert auf 7 343,89 m² geschätzt, die Geschosse sind gekoppelt —
+**Vorgabe Z4**; Innenflächenfaktor 1,34.
 
 **Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
 `IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
@@ -1507,6 +1522,7 @@ Protokoll ist die Meldungsliste in Reihenfolge und wird nicht geschrieben (Befun
 |---|---|---|---|
 | keine Raumgrenzen / nur 1. Ebene | `BoundedBy` leer bzw. keine 2ndLevel-Entität und kein `'2nd'` in Name/Description | Z5 vorgeben, Flächen aus Quantities | `IMP_IFC_PROT_KEINE_GRENZEN`, `…_NUR_1STLEVEL` (W) |
 | Trenndecke aus Raumbezügen zu klein | ohne Raumgrenzen: Σ Trenndecke eines Geschosspaars < 50 % der beheizten Grundfläche des kleineren Geschosses | Paar koppelt nicht, Vorgabe nach der Kopplung der übrigen Paare | `IMP_IFC_PROT_TRENNDECKE_KLEIN` (W) |
+| Erklärung gegen unbeheizt, Raum beheizt | ohne Raumgrenzen: Platte `btaCellarCeiling`/`btaUppermostStorey` zwischen Räumen zweier Geschosse, beide beheizt | Erklärung der Datei gilt, keine Trenndecke | `IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG` (W) |
 | Fläche ohne Gegenstück | `INTERNAL`, Rekonstruktion mehrdeutig | Randbedingung `UNBEHEIZT`, Zeile rot | `IMP_IFC_PROT_OHNE_GEGENSTUECK` (W) |
 | Bilanzlücke | Σ Trennfläche A→B ≠ B→A (> 2 %) | beide zeigen, größere nehmen | `IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH` (W) |
 | Überlappung | Innenränder **und** Kindgrenzen auf derselben Fläche | nur einmal abziehen | `IMP_IFC_PROT_UEBERLAPPUNG` (W) |
