@@ -297,12 +297,12 @@ namespace EPOS.Kern.Tests
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND upper(name) LIKE '%\\_STAMM' ESCAPE '\\' ORDER BY name");
             var stamm = dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0])).ToList();
-            Assert.Equal(43, stamm.Count);
+            Assert.Equal(44, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
             Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
-            Assert.Equal(11, Katalogfassung.Ausgenommen.Count);
+            Assert.Equal(12, Katalogfassung.Ausgenommen.Count);
         }
 
         /// <summary>

@@ -370,8 +370,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
         // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
         // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
-        new("PufferAuslegungSeite", 27, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme (samt Schalter " +
-            "„Sperrprofil an die Wärmepumpe schreiben“) und " +
+        new("PufferAuslegungSeite", 28, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme (samt Schaltern " +
+            "„Sperrprofil an die Wärmepumpe schreiben“ und „Katalogsatz als Herkunft merken“) und " +
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),

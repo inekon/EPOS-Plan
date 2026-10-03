@@ -643,11 +643,11 @@ namespace EPOS.Kern.Tests.Pufferauslegung
         }
 
         /// <summary>
-        /// Die Nutzungsprofil-Ableitung liest zuerst den Verweis <c>ID_Konditionierungsvorlage</c> am Gebäude
-        /// (Büro → Büro/Schule), ohne ihn wie bisher die Bemerkung der Kalender. Auf einer Projektkopie von 1007.
+        /// Die Nutzungsprofil-Ableitung liest den Verweis <c>ID_Konditionierungsvorlage</c> am Gebäude
+        /// (Büro → Büro/Schule), wenn die Kalender des Gebäudes keine Nutzung tragen. Auf einer Projektkopie von 1007.
         /// </summary>
         [Fact]
-        public void Nutzungsprofil_liest_zuerst_die_Konditionierungsvorlage_am_Gebaeude()
+        public void Nutzungsprofil_liest_die_Konditionierungsvorlage_am_Gebaeude()
         {
             if (!_db.Vorhanden) return;
             string name = Projektname(1007);

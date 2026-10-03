@@ -222,7 +222,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Nutzung an den Kalendern der Projektgebäude und ihrer Zonen (am Zonenkalender ist
         /// <c>ID_Gebaeude</c> das Gebäude der Zone) — die Kopie trägt sie selbst
-        /// (<see cref="KonditionierungNutzungSchema"/>); gelesen für Gebäude ohne Verweis <c>ID_Konditionierungsvorlage</c>.
+        /// (<see cref="KonditionierungNutzungSchema"/>); sie geht dem Verweis <c>ID_Konditionierungsvorlage</c> vor.
         /// </summary>
         internal const string SQL_KONDITIONIERUNG =
             "SELECT k.ID_Gebaeude, k.Nutzung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
@@ -981,16 +981,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierung der Projektgebäude: zuerst über den Verweis
-        /// <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Schemaschritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>),
-        /// für ein Gebäude ohne Verweis aus der Kopie an seinen Kalendern und denen seiner Zonen
-        /// (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt <see cref="KonditionierungNutzungSchema.SCHRITT"/>).
-        /// Umbenennen einer Vorlage ändert die Vorbelegung nicht; der Verweis geht über die ID.
+        /// Die Nutzung der Konditionierung der Projektgebäude: zuerst aus der Kopie an den Kalendern des
+        /// Gebäudes und seiner Zonen (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>); für ein Gebäude, dessen Kalender keine Nutzung
+        /// tragen, über den Verweis <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Schemaschritt
+        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>). Umbenennen, Löschen oder Katalogabgleich einer
+        /// Vorlage ändern die Vorbelegung eines Gebäudes mit gefüllter Kopie nicht.
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            var mitVerweis = new HashSet<long>();
+            var mitKopie = new HashSet<long>();
+            if (KonditionierungNutzungSchema.SchemaVollstaendig())
+            {
+                DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
+                if (t != null)
+                    foreach (DataRow r in t.Rows)
+                    {
+                        string n = Text(r, "Nutzung");
+                        if (string.IsNullOrEmpty(n)) continue;
+                        l.Add(n);
+                        if (r["ID_Gebaeude"] != DBNull.Value)
+                            mitKopie.Add(Convert.ToInt64(r["ID_Gebaeude"], CultureInfo.InvariantCulture));
+                    }
+            }
             if (DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE) &&
                 DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE))
             {
@@ -998,20 +1012,10 @@ namespace WindowsFormsApplication1
                 if (tv != null)
                     foreach (DataRow r in tv.Rows)
                     {
-                        mitVerweis.Add(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture));
+                        if (mitKopie.Contains(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture))) continue;
                         string n = Text(r, "Nutzung");
-                        if (n != null) l.Add(n);
+                        if (!string.IsNullOrEmpty(n)) l.Add(n);
                     }
-            }
-            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return l;
-            DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
-            if (t == null) return l;
-            foreach (DataRow r in t.Rows)
-            {
-                if (r["ID_Gebaeude"] != DBNull.Value && mitVerweis.Contains(Convert.ToInt64(r["ID_Gebaeude"], CultureInfo.InvariantCulture)))
-                    continue;
-                string n = Text(r, "Nutzung");
-                if (!string.IsNullOrEmpty(n)) l.Add(n);
             }
             return l;
         }

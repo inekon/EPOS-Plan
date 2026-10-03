@@ -467,8 +467,8 @@ namespace WindowsFormsApplication1
         //  Probelauf der Jahressimulation (Welle P4b)
         // =================================================================
 
-        /// <summary>Der Probelauf außerhalb des Oberflächenfadens — die Jahressimulation dauert Sekunden.</summary>
-        internal Task<PufferProbelaufDaten> ProbelaufImHintergrund(PufferAuslegungEingabeDaten d) => Task.Run(() => Probelauf(d));
+        /// <summary>Der Probelauf außerhalb des Oberflächenfadens — die Jahressimulation dauert Sekunden; der Faden erbt die Kultur.</summary>
+        internal Task<PufferProbelaufDaten> ProbelaufImHintergrund(PufferAuslegungEingabeDaten d) => SpeicherEngine.Kulturweitergabe.Starten(() => Probelauf(d));
 
         /// <summary>
         /// Rechnet die Auslegung des Arbeitsstands und fährt mit ihrer Empfehlung einen Probelauf der
