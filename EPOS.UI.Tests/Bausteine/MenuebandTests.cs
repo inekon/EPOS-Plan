@@ -192,7 +192,11 @@ public class MenuebandTests : EposBunitContext
         // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): „Daten &
         // Import" fuehrt hinter der Dublettenpruefung „Katalog aktualisieren…" - ein
         // neuer Weg. Also 65 Punkte und 51 Handlungen.
-        Assert.Equal(65, Punkte.Count);
+        //
+        // BRENNSTOFFE DES PROJEKTS (Anwenderentscheid 03.10.2026): „Kosten" fuehrt hinter den
+        // Energietraegern die Projektkopie des Brennstoffkatalogs - ein neuer Weg. Also 66 Punkte
+        // und 52 Handlungen.
+        Assert.Equal(66, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -885,6 +889,8 @@ public class MenuebandTests : EposBunitContext
             // "Kostenverwaltung". Kein aelteres Ziel ist entfallen.
             Seitenschluessel.NutzungsdauerVerwaltung,
             Seitenschluessel.PeakShaving,
+            // Anwenderentscheid 03.10.2026: das NEUE Ziel „Brennstoffe des Projekts…".
+            Seitenschluessel.ProjektBrennstoffe,
             Seitenschluessel.ProzesswaermeAdmin,
             Seitenschluessel.PufferSpAdmin,
             Seitenschluessel.PufferSpImport,
@@ -973,6 +979,9 @@ public class MenuebandTests : EposBunitContext
         {
             "MenuItem_Kostenvorlagen",
             "MenuItem_Energietraeger",
+            // Anwenderentscheid 03.10.2026: die Projektkopie des Brennstoffkatalogs hinter den
+            // Energietraegern; die gesetzlichen Parameter bleiben das letzte Blatt.
+            "MenuItem_ProjektBrennstoffe",
             "MenuItem_Nutzungsdauer",
             "MenuItem_Gesetzesparameter",
         }, Kinder(kosten));
@@ -1240,7 +1249,9 @@ public class MenuebandTests : EposBunitContext
         //
         // „Katalog aktualisieren…" (KU1 Stufe 1) ist ein echter Weg (50 -> 51).
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(51, Punkte.Count(p => !p.Klappt));
+        //
+        // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
+        Assert.Equal(52, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

@@ -331,6 +331,12 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.EnergietraegerVerwaltung:
                     return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
 
+                // Anwenderentscheid 03.10.2026: die Brennstoffe des Projekts (Projektkopie des
+                // Brennstoffkatalogs) - die Datenseite liegt plattformfrei in
+                // ProjektBrennstoffeHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.ProjektBrennstoffe:
+                    return () => ProjektBrennstoffeFenster.Oeffnen(_besitzer?.Invoke());
+
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026): die Nutzungsdauern (AfA) als
                 // dritter Punkt der Rubrik Kostenverwaltung. Der Adapter ist duenn -
                 // Fenster und Parametersatz -, die Datenseite liegt plattformfrei in
