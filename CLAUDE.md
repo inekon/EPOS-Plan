@@ -34,6 +34,13 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
   Dateiabzüge.
 - Unabhängige Agenten und Werkzeugaufrufe parallel starten; Ergebnisse abnehmen, indem alle
   plausiblen Schreiborte geprüft werden (Hauptbaum, Worktree, Commits — auch Sync-Commits).
+- **Aufwand nach Aufgabe:** Die Kosten einer Welle wachsen mit Runden × Kontextgröße. Deshalb
+  die Agentendefinitionen unter `.claude/agents/` nutzen (`opus-umsetzung` mittlerer, `sonnet-mechanik`
+  und `haiku-pruefung` niedriger Denkaufwand), einen Auftrag so schneiden, dass ein Agent mit
+  höchstens rund 150 Werkzeugaufrufen auskommt (sonst in Teilaufträge mit frischem Kontext zerlegen),
+  Agenten kein vollständiges Gate fahren lassen — sie bauen, prüfen den SQL-Dialekt und laufen die
+  betroffenen Tests mit `--filter`; das Gate fährt die Orchestrierung einmal nach dem Merge —, und
+  lange Läufe mit genau einem wartenden Befehl im Hintergrund abwarten statt das Protokoll wiederholt zu lesen.
 - **Vor Agentenarbeit im Hauptbaum** die Datei `AGENT_LAEUFT` in der Repowurzel anlegen
   (Auftrag, Sitzung, Beginn; sie steht in `.gitignore`) und **nach der Abnahme löschen**.
   `GitHub_Sync.bat` bricht ab, solange sie liegt — so wandert kein halbfertiger Stand in
