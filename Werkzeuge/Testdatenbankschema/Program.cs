@@ -2473,6 +2473,26 @@ namespace Testdatenbankschema
                                   BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+            //      Auslegungstabelle je Projektpuffer und die Vorgabetabelle samt Saat (INSERT OR
+            //      IGNORE). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegung
+            //      bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Auslegung rechnet und schreibt nur auf Zuruf.
+            string nrPuffer = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPuffer + " - Pufferspeicher-Auslegung: " +
+                              (PufferAuslegungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPuffer = new List<string>();
+                angelegt += PufferAuslegungSchema.Ausfuehren(berichtPuffer);
+                foreach (string zeile in berichtPuffer)
+                    Console.WriteLine("Schritt " + nrPuffer + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPuffer + " - vollstaendig: " +
+                                  PufferAuslegungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

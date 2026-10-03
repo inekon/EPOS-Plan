@@ -4901,6 +4901,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BEDARF_NETZ_KALENDER = BedarfNetzKalenderSchema.SCHRITT;
 
+        // ---- Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle W1) ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferAuslegungSchema.SCHRITT"/> — <b>Pufferspeicher-Auslegung</b>. Er
+        /// folgt auf <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> die STRICT-Tabellen <c>Tab_PufferAuslegung</c> (je
+        /// Projektpuffer, NULL = Vorgabe) und <c>Tab_PufferAuslegungParameter_STAMM</c>, dazu die
+        /// Vorgabewerte per <c>INSERT OR IGNORE</c>. Die Anweisungen stehen bei
+        /// <see cref="PufferAuslegungSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Bestandszeile wird angefasst; die
+        /// Auslegung rechnet und schreibt nur auf Zuruf.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_AUSLEGUNG = PufferAuslegungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7070,6 +7086,15 @@ namespace WindowsFormsApplication1
                         "Zirkulation, und ein Wochenprofil liefe ohne Feiertage und Betriebsferien durch das " +
                         "Jahr. KEIN Rechenergebnis aendert sich - alles entsteht leer und rechnet wie zuvor.",
                         Schritt_BedarfNetzKalender),
+            // PUFFERSPEICHER-AUSLEGUNG (P1, W1) - Auslegungstabelle und Vorgabetabelle samt Saat.
+            // Die Quelle ist PufferAuslegungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_AUSLEGUNG,
+                        "Tab_PufferAuslegung und Tab_PufferAuslegungParameter_STAMM: Pufferspeicher-Auslegung " +
+                        "je Projektpuffer und ihre Vorgabewerte",
+                        "Die Pufferspeicher-Auslegung haette keinen Ort fuer Eingaben, Ergebnis und Vorgabewerte. " +
+                        "KEIN Rechenergebnis aendert sich - die Auslegungstabelle entsteht leer, die Vorgaben " +
+                        "werden nur gesaet.",
+                        Schritt_PufferAuslegung),
         };
 
         /// <summary>
@@ -12639,6 +12664,63 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Netzverluste je Kanal, Zirkulation, Betriebskalender - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e) (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Pufferspeicher-Auslegung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG"/>, Anweisungen und Saat bei
+        /// <see cref="PufferAuslegungSchema"/>. <b>Wiederholbar</b>: angelegt wird nur, was fehlt,
+        /// gesät nur, was nicht steht. Fehlen Tab_Projekt oder Tab_Pufferspeicher, ist das ein Fehler.
+        /// </summary>
+        private static bool Schritt_PufferAuslegung(Lauf l)
+        {
+            string nr = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in new[] { SchemaKatalog.TAB_PROJEKT, SchemaKatalog.TAB_PUFFERSPEICHER })
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PufferAuslegungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!PufferAuslegungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabelle " + PufferAuslegungSchema.TAB + ", " + PufferAuslegungSchema.TAB_PARAMETER +
+                                  " oder ihre Saat stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferspeicher-Auslegung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e) (Tabellen und Saat).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

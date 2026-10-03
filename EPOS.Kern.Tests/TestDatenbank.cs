@@ -862,6 +862,11 @@ namespace EPOS.Kern.Tests
                 // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
                 BedarfNetzKalenderSchema.Ausfuehren(null);
 
+                // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+                // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                PufferAuslegungSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

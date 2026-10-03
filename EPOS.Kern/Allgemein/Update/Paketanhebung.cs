@@ -243,6 +243,10 @@ namespace WindowsFormsApplication1
             // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
             new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
                       "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
+            // Die Auslegungstabelle kommt leer an, die Vorgabetabelle mit ihrer Saat - die Auslegung
+            // rechnet nur auf Zuruf, der Paketstand rechnet wie zuvor.
+            new Stufe(PufferAuslegungSchema.SCHRITT, Art.Ddl,
+                      "Pufferspeicher-Auslegung: Auslegungstabelle je Projektpuffer und Vorgabewerte"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

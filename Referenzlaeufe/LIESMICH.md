@@ -548,10 +548,12 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
 Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
 Betriebsweisen (Schemaschritt 164) und die Felder für Netzverluste je Kanal, Zirkulation und Betriebskalender
-(Schemaschritt 166, Nachtrag „Schemaschritt 166“ unten) — Schemastand **166**, 81 195 008 Byte, LFS-SHA-256
-`58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693` (Nachtrag „Testdatenbank“ unten). **Die Basis
+(Schemaschritt 166, Nachtrag „Schemaschritt 166“ unten) und die Tabellen der Pufferspeicher-Auslegung samt Saat ihrer
+Vorgabewerte (Schemaschritt 167, Nachtrag „Schemaschritt 167“ unten) — Schemastand **167**, 81 240 064 Byte, LFS-SHA-256
+`0d71d7d34aeb20507c87788e417fea87f582ded5abf6365f6ad6d9888ab875cc` (Nachtrag „Testdatenbank“ unten). **Die Basis
 bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
-gesäten Prozesssatz zu, trägt ein Temperaturpaar, Kanal-Netzverluste, eine Zirkulation oder einen Betriebskalender. Gegen diese Basis hält
+gesäten Prozesssatz zu, trägt ein Temperaturpaar, Kanal-Netzverluste, eine Zirkulation oder einen Betriebskalender,
+und die Pufferspeicher-Auslegung rechnet und schreibt nur auf Zuruf. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -657,6 +659,15 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > neuen Zellen leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256 `58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693`**.
 > **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R32 GESAMT PASS mit 487/487
 > CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 167 (Pufferspeicher-Auslegung), Basis unverändert.**
+> `PufferAuslegungSchema` (Nummer `BedarfNetzKalenderSchema.SCHRITT + 1`): die Tabelle `Tab_PufferAuslegung` (STRICT,
+> leer; `ID_Projekt` mit `ON DELETE CASCADE`, `ID_Pufferspeicher` mit `ON DELETE SET NULL`) und die Vorgabetabelle
+> `Tab_PufferAuslegungParameter_STAMM` (STRICT) mit 148 gesäten Vorgabewerten `Pufferauslegung.*` aus
+> `PufferAuslegungVorgaben`. Die Testdatenbank ist aus der Fassung `58d9ba47…` (166) mit `Werkzeuge/Testdatenbankschema`
+> auf **167** gezogen. Neue Fassung **81 240 064 Byte, LFS-SHA-256
+> `0d71d7d34aeb20507c87788e417fea87f582ded5abf6365f6ad6d9888ab875cc`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> neuen Tabellen; die Auslegung rechnet und schreibt nur auf Zuruf. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
 
