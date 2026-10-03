@@ -92,6 +92,13 @@ namespace WindowsFormsApplication1
                     (a, abbruch) => Kulturweitergabe.Starten(() => Auslegung(idProjekt, zonen, a, basis, stufe, abbruch), abbruch)),
                 ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
+                // Stufe P2 der Pufferspeicher-Auslegung: „An Speicherauslegung übergeben…". Das
+                // Zapfprofil steht selbst in einem Fenster; die Auslegung oeffnet deshalb in einem
+                // EIGENEN (Naht Pufferauslegungswege.Fenster). Ohne diesen Weg (iOS) fehlt der
+                // Delegat, und der Knopf bleibt weich gesperrt mit dem Grund.
+                ["Uebergeben"] = Pufferauslegungswege.Fenster == null ? null
+                    : new Func<ZapfprofilAuslegungEingabeDaten, Task<string>>(
+                        a => Uebergeben(idProjekt, zonen, a, basis, stufe)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_AUSLEGUNG_RECHENWEG
             };
@@ -224,6 +231,71 @@ namespace WindowsFormsApplication1
                                                            ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
                                                            ZapfprofilStufe stufe, CancellationToken abbruch)
         {
+            ZapfprofilAuslegungDaten ohne = Rechnung(idProjekt, eingabe, ref auslegung, basis, stufe, abbruch,
+                                                     out Auslegungsrechnung r, out ProjektStand rechenprojekt);
+            if (ohne != null) return ohne;
+
+            try
+            {
+                ZapfprofilAuslegungDaten d = AlsAuslegung(r, stufe, auslegung);
+                if (d.Stochastisch)
+                {
+                    // Derselbe Seed und dasselbe Perzentil wie im Eingang der Rechnung.
+                    ProjektStand p = rechenprojekt ?? ZapfprofilCtrl.ProjektVorgabe();
+                    d.Status = Format(Text_("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH",
+                                            "Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}"),
+                                      p?.Perzentil ?? 0, p?.Seed ?? 0);
+                }
+                return d;
+            }
+            catch (Exception ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
+                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// „An Speicherauslegung übergeben…" (Konzept Pufferspeicher-Auslegung, Stufe P2): rechnet
+        /// die Auslegung zum Arbeitsstand deterministisch, bildet sie über den Weg des Kerns
+        /// (<c>PufferAuslegungCtrl.ZapfprofilAus</c>) auf die Brauchwasserzone ab und öffnet die
+        /// Pufferspeicher-Auslegung mit Klasse {B} bzw. {H,B} in einem eigenen Fenster. Liefert
+        /// <c>null</c>, wenn sie offen war, sonst den Grund — benannt, nie still.
+        /// </summary>
+        internal static Task<string> Uebergeben(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                ZapfprofilStufe stufe)
+        {
+            ZapfprofilAuslegungEingabeDaten a = Deterministisch(auslegung);
+            ZapfprofilAuslegungDaten ohne = Rechnung(idProjekt, eingabe, ref a, basis, stufe, CancellationToken.None,
+                                                     out Auslegungsrechnung r, out _);
+            if (ohne != null) return Task.FromResult(ohne.Grund);
+            PufferZapfprofil zp;
+            string text;
+            try
+            {
+                zp = PufferAuslegungCtrl.ZapfprofilAus(r, out text);
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(Format(MyResource.Resource.PAUS_FEHLER_START, ex.Message));
+            }
+            return PufferAuslegungHuelle.ImFensterOeffnen(PufferAuslegungHuelle.AusZapfprofil(idProjekt, zp, text));
+        }
+
+        /// <summary>
+        /// Die RECHNUNG der Auslegung zu den Zonen und Eingaben — der gemeinsame Teil von
+        /// <see cref="Auslegung(int, ZapfprofilEingabeDaten, ZapfprofilAuslegungEingabeDaten, ZapfprofilStand, ZapfprofilStufe, CancellationToken)"/>
+        /// und <see cref="Uebergeben"/>. <c>null</c> = gerechnet (<paramref name="r"/> trägt das
+        /// Ergebnis), sonst das DTO mit dem benannten Grund.
+        /// </summary>
+        private static ZapfprofilAuslegungDaten Rechnung(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                        ref ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                        ZapfprofilStufe stufe, CancellationToken abbruch,
+                                                        out Auslegungsrechnung r, out ProjektStand rechenprojekt)
+        {
+            r = null;
+            rechenprojekt = null;
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
                     Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist keine Zone angelegt — ohne Zone keine Auslegung."), "");
@@ -242,8 +314,6 @@ namespace WindowsFormsApplication1
             // In der Überlagerung gelten ihre Eingaben: Die geteilten gebäudeweiten Größen (Ladeleistung,
             // Ladefenster, Speichertemperatur) nehmen den Stand der Überlagerung an, die übrigen bleiben.
             mit.Gebaeude?.AusAuslegung(auslegung);
-            Auslegungsrechnung r;
-            ProjektStand rechenprojekt;
             try
             {
                 // Der übernommene Punkt (Arbeitsstand oder gespeichert) bleibt draußen: Er ist das
@@ -268,25 +338,7 @@ namespace WindowsFormsApplication1
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
                     Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
             }
-
-            try
-            {
-                ZapfprofilAuslegungDaten d = AlsAuslegung(r, stufe, auslegung);
-                if (d.Stochastisch)
-                {
-                    // Derselbe Seed und dasselbe Perzentil wie im Eingang der Rechnung.
-                    ProjektStand p = rechenprojekt ?? ZapfprofilCtrl.ProjektVorgabe();
-                    d.Status = Format(Text_("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH",
-                                            "Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}"),
-                                      p?.Perzentil ?? 0, p?.Seed ?? 0);
-                }
-                return d;
-            }
-            catch (Exception ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
-                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
-            }
+            return null;
         }
 
         /// <summary>Die Eingaben ohne „Stochastisch rechnen" — der Weg im Zeichenlauf zieht nie ein Ensemble.</summary>

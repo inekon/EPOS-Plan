@@ -83,6 +83,16 @@ namespace WindowsFormsApplication1
         /// diesen Weg dort ein. Der Ergebnisreiter „Stromspeicher" hat dafür keinen Knopf
         /// mehr — er zeigt nur noch, womit gerechnet wurde.</para>
         /// </remarks>
+        /// <summary>
+        /// Eine Übernahme aus der Pufferspeicher-Auslegung (Stufe P2) hat einen Projektpuffer
+        /// geändert oder angelegt: Ein gültiger Lauf gilt danach als veraltet.
+        /// </summary>
+        internal void PufferAuslegungUebernommen()
+        {
+            if (_ergebniszustand == ErgebnisZustand.Gueltig)
+                ZustandSetzen(ErgebnisZustand.Veraltet, MyResource.Resource.SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG);
+        }
+
         internal void AuslegungOeffnen()
         {
             StromspeicherAuslegungHuelle.Anmelden(Auslegung(), () =>
