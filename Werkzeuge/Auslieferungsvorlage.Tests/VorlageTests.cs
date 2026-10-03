@@ -202,9 +202,14 @@ namespace Auslieferungsvorlage.Tests
             // 154 seit der Welle M3b (Schemaschritt 166, BedarfNetzKalenderSchema): Tab_Betriebskalender,
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER; die Kalenderspalten der drei
             // Zuordnungstabellen sind ADD COLUMN und aendern die Zahl nicht. Die Schritte 167
-            // (ErzeugerTeillastSchema) und 168 (StromViertelstundenSchema) sind ADD COLUMN, Schritt 169
-            // (HilfsenergieEmpfehlungNachzug) reines DML - alle drei lassen sie stehen.
-            Assert.Equal(154, befund.Strict);
+            // (ErzeugerTeillastSchema) und 168 (StromViertelstundenSchema) sind ADD COLUMN und aendern
+            // die Zahl nicht.
+            //
+            // 156 seit der Pufferauslegung P1 (Schemaschritt 169, PufferAuslegungSchema):
+            // Tab_PufferAuslegung (LEER) und Tab_PufferAuslegungParameter_STAMM (mit Saat), beide STRICT
+            // von ihrer ersten Zeile an. Schritt 170 (HilfsenergieEmpfehlungNachzug) ist reines DML und
+            // laesst die Zahl stehen.
+            Assert.Equal(156, befund.Strict);
         }
 
         // =============================================================================

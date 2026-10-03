@@ -53,16 +53,17 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// 169: die nächste freie Nummer hinter <see cref="StromViertelstundenSchema.SCHRITT"/> (168,
-        /// Welle M5) — und der Zielstand des Schemas. Die Teillastfelder (167, Welle M4) und die
-        /// Einspeisegrenze mit Selbstentladung (168, Welle M5) haben ihre Nummern zeitgleich belegt
-        /// und standen zuerst auf dem Arbeitszweig; dieser Katalogschritt hängt sich dahinter.
+        /// 170: die nächste freie Nummer hinter <see cref="PufferAuslegungSchema.SCHRITT"/> (169,
+        /// Pufferauslegung P1) — und der Zielstand des Schemas. Die Teillastfelder (167, Welle M4), die
+        /// Einspeisegrenze mit Selbstentladung (168, Welle M5) und die Pufferauslegung (169, P1) haben
+        /// ihre Nummern zeitgleich belegt und standen zuerst auf dem Arbeitszweig; dieser
+        /// Katalogschritt hängt sich dahinter.
         /// </summary>
         [Fact]
-        public void Die_Nummer_folgt_lueckenlos_auf_die_Viertelstundenfelder_und_ist_das_Ziel()
+        public void Die_Nummer_folgt_lueckenlos_auf_die_Pufferauslegung_und_ist_das_Ziel()
         {
-            Assert.Equal(StromViertelstundenSchema.SCHRITT + 1, HilfsenergieEmpfehlungNachzug.SCHRITT);
-            Assert.Equal(169, HilfsenergieEmpfehlungNachzug.SCHRITT);
+            Assert.Equal(PufferAuslegungSchema.SCHRITT + 1, HilfsenergieEmpfehlungNachzug.SCHRITT);
+            Assert.Equal(170, HilfsenergieEmpfehlungNachzug.SCHRITT);
             Assert.Equal(HilfsenergieEmpfehlungNachzug.SCHRITT, SchemaStand.Zielversion);
         }
 

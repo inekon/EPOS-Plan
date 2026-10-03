@@ -79,7 +79,11 @@ rechnet ihn aus dem Modell statt aus einer Tabelle.
    senken will, schaltet die Aufheizoptimierung ein oder trägt `Heizleistung_Max` ein — beides ist geschlossen geregelt und wird im
    Ergebnis ausgewiesen (W1–W5).
 
-## 5. Offene Entscheide
+## 5. Entscheid
 
-- **E60:** Soll die Kennzahl „Spitze als n-h-Mittel“ mit wählbarer Dauer kommen (Vorschlag 2), oder genügen `SpitzeTagesmittelKw`
+- **E60 (entschieden 03.10.2026): Vorschlag 1.** Auslegungsgröße ist die stationäre Auslegungsheizlast plus die Aufheizleistung aus der
+  KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3) weisen ideale Spitze, Tagesmittel und P_auf nebeneinander aus. Kein Filter im
+  Rechenweg; Vorschlag 2 (Kennzahl „Spitze als n-h-Mittel“) nicht beauftragt. Nachzug in Register, Statusdatei, Teilkonzept und Entwurf
+  KP3 (Wellen O2/O3) mit den E59-Papieren.
+- Die ursprüngliche Frage: Soll die Kennzahl „Spitze als n-h-Mittel“ mit wählbarer Dauer kommen (Vorschlag 2), oder genügen `SpitzeTagesmittelKw`
   und die Aufheizleistung aus KP3? Empfehlung: Vorschlag 1 sofort mit O2/O3, Vorschlag 2 nur auf Wunsch als kleine Welle nach KP3.

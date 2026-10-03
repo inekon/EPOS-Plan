@@ -1,6 +1,6 @@
 # P671 — Katalogempfehlung der Hilfsenergie auf Weg B, Satzfeld im Kostenraster (Protokoll, 03.10.2026)
 
-Statuszeile #675 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile #676 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push; mit dieser Welle keine Statuszeile); Auftrag
 [`P671_Auftrag_2026-10-03.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P671_Auftrag_2026-10-03.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P654_Ausweis_9b_Deckel_Protokoll.md`](P654_Ausweis_9b_Deckel_Protokoll.md) (#656). Zweig
@@ -14,7 +14,7 @@ Katalogempfehlung der Hilfsenergie von BHKW (2–4 %) und Heizkessel (4–8 %) s
 die Pflichtzeilen rechnen aber seit Schritt 94 nach Weg B (Anteil des Endenergiebedarfs als Strommenge) — am Kessel von
 1030 ergäbe die Spanne 54.000–108.000 €/a. Anwenderentscheid 03.10.2026 (**EZ‑24**): „Setze jetzt fort" nach der
 Empfehlung der Wirtschaftlichkeit; N11 (Flotten-Netzeinspeisung) und E30‑Q5 (Emission und Stromsteuer des Hilfsstroms)
-bleiben benannt. Ein Katalogschritt (169), kein Rechenweg der Simulation, keine neue Basis durch P671 (aktuelle Basis R33 der Nachbarn).
+bleiben benannt. Ein Katalogschritt (170), kein Rechenweg der Simulation, keine neue Basis durch P671 (aktuelle Basis R33 der Nachbarn).
 
 ## Regeln
 
@@ -24,7 +24,7 @@ bleiben benannt. Ein Katalogschritt (169), kein Rechenweg der Simulation, keine 
    Gegenprobe als Umrechnung der alten Spanne mit Brennstoffpreis ÷ Strompreis (8 ÷ 30 ct/kWh): Kessel 1,07–2,13 %, BHKW
    0,53–1,07 %; Untergrenze und Mitte liegen in der neuen Spanne, die Obergrenze am Kessel um die Rundung darüber.
 2. **Eine Quelle.** Die Werte stehen in der Saat `SchemaKatalog.Schritt39_Vorlagen`; der Schritt liest seine Zielwerte dort.
-3. **Katalogschritt 169** (`HilfsenergieEmpfehlungNachzug`, Nummer `StromViertelstundenSchema.SCHRITT + 1`, `Art.Katalog` in
+3. **Katalogschritt 170** (`HilfsenergieEmpfehlungNachzug`, Nummer `PufferAuslegungSchema.SCHRITT + 1`, `Art.Katalog` in
    der Paketanhebung): `UPDATE Tab_KostenVorlagePosition SET Empfehlung_von, Empfehlung_bis` nur an Zeilen mit der
    Bezeichnung der Pflichtzeile, Bemessung `PROZENT_ENDENERGIEBEDARF` und noch der alten Spanne, deren Vorlage
    `ReadOnly = 1`, Kategorie Betrieb und Komponente BHKW bzw. Heizkessel ist. Projektzeilen (`Tab_ProjektWerte` führt keine
@@ -37,16 +37,16 @@ bleiben benannt. Ein Katalogschritt (169), kein Rechenweg der Simulation, keine 
 ## Code
 
 - `EPOS.Kern/Allgemein/Update/HilfsenergieEmpfehlungNachzug.cs` (neu), `SchemaKatalog.cs` (Saat), `SchemaStand.cs`
-  (`Zielversion`), `Paketanhebung.cs` (Stufe 169), `EPOS.Kern/Allgemein/DbWerte.cs` (Kommentare beider Wege).
+  (`Zielversion`), `Paketanhebung.cs` (Stufe 170), `EPOS.Kern/Allgemein/DbWerte.cs` (Kommentare beider Wege).
 - `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`: `SCHRITT_HILFSENERGIE_EMPFEHLUNG`, Registereintrag hinter
-  168 (Einspeisegrenze und Selbstentladung, Welle M5), `Schritt_HilfsenergieEmpfehlung` nach dem Muster von 158.
-- `EPOS.Kern.Tests/TestDatenbank.cs`, `Werkzeuge/Testdatenbankschema/Program.cs`: der Schritt hinter 168.
+  169 (Pufferauslegung P1), `Schritt_HilfsenergieEmpfehlung` nach dem Muster von 158.
+- `EPOS.Kern.Tests/TestDatenbank.cs`, `Werkzeuge/Testdatenbankschema/Program.cs`: der Schritt hinter 169.
 - `EPOS.Kern/Controller/KostenProjektPositionenCtrl.cs` (`SatzAusAnlagenanteil`, `SatzAusAnteilUebernehmen`),
   `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs`, `EPOS.UI/Dialoge/Kosten/KostenKomponenteDaten.cs`, `VorlagenZeile.razor`,
   `KostenKomponenteDialog.razor`.
-- Testdatenbank mit dem Werkzeug aus der Fassung `6e5d24aa…` der Welle M5 (168) auf 169 (Zeilen 62 und 68), `--trocken`
+- Testdatenbank mit dem Werkzeug aus der Fassung `5fdc093e…` der Pufferauslegung P1 (169) auf 170 (Zeilen 62 und 68), `--trocken`
   danach 0 offen, `integrity_check` ok, `foreign_key_check` leer; LFS-SHA-256
-  `e4c31671e8422db908f25415c787f9235a6e9256f04042332b67d668303e4f33`, 81 195 008 Byte.
+  `bd624ace4a02fb3f146c688018594af03020ed67023cf351afed14d09b4b70c2`, 81 240 064 Byte.
 - Fremder Befund: `Werkzeuge/Auslieferungsvorlage.Tests/VorlageTests.cs` STRICT-Pin 153 → 154 (Schritt 166,
   `Tab_Betriebskalender`); origin hatte ihn nicht nachgezogen.
 
@@ -85,7 +85,7 @@ Kopf), Übergabepapier, `Referenzlaeufe/LIESMICH.md`, Wiki-Quelle `Programm Doku
 
 ## Gate
 
-Gate #675 auf `0983d8102` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+Gate #676 auf `0983d8102` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
 gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 402 grün, 2 übersprungen, 0 rot (Kern 10 145, UI 7 295,
 KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
 `2026-10-02_R32_Solarthermie` (5 180 241 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS; Werkzeugtest
@@ -96,14 +96,14 @@ Paketanhebung, Schemastand, Kosten, Wirtschaftlichkeit, Bemessung, Wachen) 1 387
 SpeicherPlanung 2); `Auslieferungsvorlage.Tests` 44/44; Windows-Schale 0 Fehler; Testdatenbank 167 → 168 mit `--trocken` danach 0
 offen, SqlDialektPruefer 2 176 Texte, 0 Fundstellen.
 
-Gate #675 auf `7746cd850` (zweites volles Gate nach dem Merge mit M4, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 444 grün, 2 übersprungen, 0 rot (Kern 10 183, UI 7 299, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen R32 (5 180 241 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44. Windows-Schale 0 Fehler (Agent).
+Gate #676 auf `7746cd850` (zweites volles Gate nach dem Merge mit M4, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 444 grün, 2 übersprungen, 0 rot (Kern 10 183, UI 7 299, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen R32 (5 180 241 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44. Windows-Schale 0 Fehler (Agent).
 
 Prüfung nach dem Merge mit der Welle M5 (Linux): Kern-Filter Debug 0 Fehler; gefilterte Tests (eigene Klassen, Teillast,
 Viertelstunden und die übrigen von M5 berührten Klassen, Wachen) 2 403 grün, 0 rot (Kern 1 072, UI 1 278, SpeicherEngine 51,
 SpeicherPlanung 2); `Auslieferungsvorlage.Tests` 44/44; Windows-Schale 0 Fehler; Testdatenbank 168 → 169 mit `--trocken` danach 0
 offen, SqlDialektPruefer 2 179 Texte, 0 Fundstellen.
 
-Gate #675 auf `527cad53b` (drittes volles Gate nach den Merges mit M5 und KP3, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 477 grün, 2 übersprungen, 0 rot (Kern 10 200, UI 7 304, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen `2026-10-02_R33_Viertelstunden` (5 180 242 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44.
+Gate #676 auf `527cad53b` (drittes volles Gate nach den Merges mit M5 und KP3, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 477 grün, 2 übersprungen, 0 rot (Kern 10 200, UI 7 304, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen `2026-10-02_R33_Viertelstunden` (5 180 242 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44.
 
 ## Commit
 
@@ -112,5 +112,7 @@ origin (#671, #672 der KP3-Sitzung; Schritt 167 dort frei) und `0983d8102` (eige
 der Katalogschritt hängt sich als 168 an (`ErzeugerTeillastSchema.SCHRITT + 1`), Statuszeile #674, Testdatenbank 167 → 168.
 Statuszeile #674 in `cc8f11a64` vor dem zweiten Merge, Gate-Nachtrag im Folgecommit. Dritter Merge mit origin (#674 der Welle M5,
 Einspeisegrenze und Selbstentladung als Schemaschritt 168, neue Basis R33): der Katalogschritt hängt sich als 169 an
-(`StromViertelstundenSchema.SCHRITT + 1`), Statuszeile #675, Testdatenbank 168 → 169. Push mit Freigabe des Anwenders vom
-03.10.2026; CI-Vermerk in Nach #675 (d).
+(`StromViertelstundenSchema.SCHRITT + 1`), Statuszeile #675, Testdatenbank 168 → 169. Vierter Merge mit origin (#675 der
+Pufferauslegung P1 als Schemaschritt 169, E60 Heizlastspitzen; Basis R33 unverändert): der Katalogschritt hängt sich als 170 an
+(`PufferAuslegungSchema.SCHRITT + 1`), Statuszeile #676, Testdatenbank 169 → 170. Push mit Freigabe des Anwenders vom
+03.10.2026; CI-Vermerk in Nach #676 (d).

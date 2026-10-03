@@ -55,11 +55,12 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Sie folgt
-        /// lückenlos auf <see cref="StromViertelstundenSchema.SCHRITT"/> (168, Welle M5, zeitgleich
-        /// gebaut und zuerst auf dem Arbeitszweig; davor 167 die Teillastfelder der Welle M4); wird der
-        /// Schritt beim Zusammenführen umnummeriert, ändert sich nur diese Zeile.
+        /// lückenlos auf <see cref="PufferAuslegungSchema.SCHRITT"/> (169, Pufferauslegung P1, zeitgleich
+        /// gebaut und zuerst auf dem Arbeitszweig; davor 167 die Teillastfelder der Welle M4 und 168
+        /// Einspeisegrenze und Selbstentladung der Welle M5); wird der Schritt beim Zusammenführen
+        /// umnummeriert, ändert sich nur diese Zeile.
         /// </summary>
-        public const int SCHRITT = StromViertelstundenSchema.SCHRITT + 1;
+        public const int SCHRITT = PufferAuslegungSchema.SCHRITT + 1;
 
         /// <summary>Die Positionen der Kostenvorlagen — nur sie fasst der Schritt an.</summary>
         public const string TABELLE = SchemaKatalog.TAB_KOSTENVORLAGEPOSITION;
