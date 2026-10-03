@@ -1310,6 +1310,10 @@ namespace ChartProben
             // Last je Ruecklauf: Mass-, Gegen- und SVG-Proben in Program.Kesselkennlinie.cs.
             KesselkennlinieProben(ziel);
 
+            // DIE STROMLAST DES BHKW - das zweite Bild des BHKW-Reiters unter der Waermelast:
+            // Mass-, Gegen- und SVG-Proben in Program.BhkwStrom.cs.
+            BhkwStromProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

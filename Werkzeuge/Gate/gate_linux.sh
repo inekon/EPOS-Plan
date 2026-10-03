@@ -1,7 +1,7 @@
 #!/bin/bash
 # Gate für Linux/Cloud-Sitzungen (Auftrag #584-Übergabe, 27.09.2026): gate_linux.sh <Statusnummer> [Repo-Wurzel]
 # Schritte wie gate_windows.sh, aber ohne tasklist-Wartezeit (keine fremden testhosts in der Cloud) und mit der
-# jüngsten Linux-Bildmesslatte Proben/ChartProben/Messlatte_*.sha256 (es liegt genau eine: Messlatte_2026-09-30.sha256) statt der Windows-Liste; zusätzlich der Referenzlauf
+# jüngsten Linux-Bildmesslatte Proben/ChartProben/Messlatte_*.sha256 (es liegt genau eine: Messlatte_2026-10-03.sha256) statt der Windows-Liste; zusätzlich der Referenzlauf
 # gegen die aktuelle Basis aus Referenzlaeufe/LIESMICH.md (EPOS.Referenzlauf wird eigens gebaut — es liegt nicht in der slnf).
 set -u
 NR="${1:?Statusnummer}"; WT="${2:-$(git rev-parse --show-toplevel)}"; cd "$WT" || exit 1
