@@ -38888,10 +38888,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_GRENZEN" xml:space="preserve">
-    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude.</value>
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen mit Trennflächen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene (IfcRelSpaceBoundary2ndLevel) erneut ausgeben.</value>
   </data>
   <data name="IMP_IFC_PROT_NUR_1STLEVEL" xml:space="preserve">
-    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude.</value>
+    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene erneut ausgeben.</value>
   </data>
   <data name="IMP_IFC_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
     <value>Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind.</value>
