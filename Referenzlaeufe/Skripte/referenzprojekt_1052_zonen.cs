@@ -5,8 +5,8 @@
 #:property WarningLevel=0
 
 // Legt in der Testdatenbank das Referenzprojekt 1052 "Referenzprojekt Zonen" an - das einzige
-// Referenzprojekt mit Zonen (Mehrzonenkonzept 9, Stufe G6d; Entscheid M11 dort: ein neues Projekt
-// statt einer Umstellung, damit die Basis der sechzehn Projekte byte-gleich bleibt).
+// Referenzprojekt mit Zonen (Mehrzonenkonzept 9, Stufe G6d): ein eigenes Projekt neben den sechzehn
+// der Basis R33 (Frage M11 dort), damit deren Zahlen byte-gleich bleiben.
 //
 // WOZU. Die Testdatenbank fuehrt ohne 1052 keine Zeile in Tab_Zone: Zonenschleife, Trennflaechen
 // (Tab_Bauteil.ID_Nachbarzone), Zonenluftstrom (Tab_Zonenluftstrom), Zonenkalender und die
