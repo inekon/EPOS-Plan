@@ -1036,6 +1036,9 @@ public static class Bilder
     public const string Heizkessel = "HEIZKESSEL";
     public const string Solarthermie = "SOLARTHERMIE";
     public const string Bhkw = "BHKW";
+
+    /// <summary>Die Stromlast des BHKW — das zweite Bild des BHKW-Reiters, unter der Wärmelast.</summary>
+    public const string BhkwStrom = "BHKW_STROM";
     public const string Photovoltaik = "PHOTOVOLTAIK";
     public const string SpeicherBetrieb = "SPEICHER_BETRIEB";
     public const string AutarkieMonate = "AUTARKIE_MONATE";
@@ -1044,6 +1047,9 @@ public static class Bilder
     public const string WaermeAutarkieMonate = "WAERME_AUTARKIE_MONATE";
     public const string Waermegang = "WAERMEGANG";
     public const string Stromgang = "STROMGANG";
+
+    /// <summary>Die Kälteproduktion des Ergebnisreiters — nur, wenn das Projekt Kälte rechnet.</summary>
+    public const string Kaeltegang = "KAELTEGANG";
 }
 
 // Das Ergebnis eines Schreib- oder Rechenwegs meldet der Datensatz

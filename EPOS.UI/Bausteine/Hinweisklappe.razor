@@ -1,0 +1,132 @@
+﻿@* Die Klappzeile einer Hinweisliste: eine Zeile mit dem Zeichen der Schwere, der ZAHL
+   als Abzeichen, „n Hinweise (anklicken)" und rechts „anzeigen ▾" bzw. „ausblenden ▴";
+   aufgeklappt steht darunter die vollstaendige Liste (ChildContent).
+
+   EIN Baustein fuer alle Seiten mit Hinweisliste - Simulation, Bericht,
+   Wirtschaftlichkeit - im selben Baustil (.epos-simerg-laufband).
+
+   ZWEI ARTEN:
+   - an Ort und Stelle (Vorgabe): der Klick klappt die Liste auf und zu;
+   - mit Oeffnen: der Klick ruft den Rueckruf (die Simulationsseite zeigt den
+     Volltext im Dialog); die Zeile bleibt dann immer „anzeigen ▾".
+
+   ANFANGSSTELLUNG: eingeklappt, sobald mehr als ein Hinweis vorliegt; ein einzelner
+   Hinweis steht offen (abschaltbar mit EinzelnOffen=false).
+
+   STELLUNG IN DER SITZUNG: Ohne Schluessel lebt sie so lange wie die Komponente. Mit
+   Schluessel steht sie im Sitzungsgedaechtnis (Vorgabe: prozessweit, keine Datenbank)
+   und uebersteht Neuzeichnen und Seitenwechsel; vor dem ersten Klick gilt die
+   Anfangsregel. *@
+
+@if (Anzahl > 0)
+{
+    <button type="button" class="epos-simerg-laufband epos-hinweisklappe @Klasse"
+            aria-expanded="@(IstOffen ? "true" : "false")"
+            @onclick="Klicken">
+        @if (Stufe is { } stufe)
+        {
+            <span class="epos-hinweisklappe-symbol epos-hinweisklappe-symbol--@StufenKlasse(stufe)"
+                  aria-hidden="true">@Zeichen(stufe)</span>
+        }
+        <span class="epos-simerg-laufband-zahl">@Anzahl</span>
+        <span class="epos-simerg-laufband-text">@Beschriftung</span>
+        <span class="epos-simerg-laufband-pfeil">@(IstOffen ? AusblendenText + " ▴" : AnzeigenText + " ▾")</span>
+    </button>
+    @if (IstOffen && ChildContent is not null)
+    {
+        @ChildContent
+    }
+}
+
+@code {
+    /// <summary>Das prozessweite Sitzungsgedaechtnis (Schluessel der Seite → offen).</summary>
+    public static readonly Dictionary<string, bool> Sitzung = new(StringComparer.Ordinal);
+
+    /// <summary>Zahl der Hinweise; bei 0 zeichnet der Baustein nichts.</summary>
+    [Parameter] public int Anzahl { get; set; }
+
+    /// <summary>Text bei genau einem Hinweis.</summary>
+    [Parameter] public string TextEiner { get; set; } = "";
+
+    /// <summary>Text bei mehreren Hinweisen; {0} ist die Zahl.</summary>
+    [Parameter] public string TextMehrere { get; set; } = "";
+
+    /// <summary>Schwere der Liste; ohne Angabe kein Zeichen vor der Zahl.</summary>
+    [Parameter] public WarnStufe? Stufe { get; set; }
+
+    /// <summary>Zusaetzliche Klasse am Band (seitenbezogener Pruefanker).</summary>
+    [Parameter] public string Klasse { get; set; } = "";
+
+    /// <summary>Beschriftung rechts im eingeklappten Zustand.</summary>
+    [Parameter] public string AnzeigenText { get; set; } = Resource.BK_BER_ERG_ANZEIGEN;
+
+    /// <summary>Beschriftung rechts im aufgeklappten Zustand.</summary>
+    [Parameter] public string AusblendenText { get; set; } = Resource.BK_BER_ERG_AUSBLENDEN;
+
+    /// <summary>Ein einzelner Hinweis steht anfangs offen (Vorgabe ja).</summary>
+    [Parameter] public bool EinzelnOffen { get; set; } = true;
+
+    /// <summary>Schluessel der Seite im Sitzungsgedaechtnis; ohne ihn lebt die Stellung
+    /// so lange wie die Komponente.</summary>
+    [Parameter] public string? Schluessel { get; set; }
+
+    /// <summary>Das Sitzungsgedaechtnis; ohne Angabe <see cref="Sitzung"/>.</summary>
+    [Parameter] public IDictionary<string, bool>? Gedaechtnis { get; set; }
+
+    /// <summary>Statt Aufklappen: der Klick ruft diesen Rueckruf (Dialogweg).</summary>
+    [Parameter] public EventCallback Oeffnen { get; set; }
+
+    /// <summary>Die vollstaendige Liste, gezeigt im aufgeklappten Zustand.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Steht die Liste offen? (Pruefhilfe)</summary>
+    public bool IstOffen => !Oeffnen.HasDelegate && (GemerkteStellung() ?? _eigeneStellung ?? Anfangsstellung);
+
+    private bool? _eigeneStellung;
+
+    private IDictionary<string, bool> Speicher => Gedaechtnis ?? Sitzung;
+
+    private bool Anfangsstellung => EinzelnOffen && Anzahl == 1;
+
+    private string Beschriftung => Anzahl == 1
+        ? TextEiner
+        : string.Format(System.Globalization.CultureInfo.CurrentCulture, TextMehrere, Anzahl);
+
+    private bool? GemerkteStellung()
+    {
+        if (string.IsNullOrEmpty(Schluessel)) return null;
+        lock (Speicher)
+            return Speicher.TryGetValue(Schluessel, out bool offen) ? offen : null;
+    }
+
+    private async Task Klicken()
+    {
+        if (Oeffnen.HasDelegate)
+        {
+            await Oeffnen.InvokeAsync();
+            return;
+        }
+        bool neu = !IstOffen;
+        _eigeneStellung = neu;
+        if (!string.IsNullOrEmpty(Schluessel))
+            lock (Speicher)
+                Speicher[Schluessel] = neu;
+    }
+
+    private static string StufenKlasse(WarnStufe stufe) => stufe switch
+    {
+        WarnStufe.Hinweis => "hinweis",
+        WarnStufe.Fehler => "fehler",
+        WarnStufe.Erfolg => "erfolg",
+        _ => "warnung"
+    };
+
+    /// <summary>Dieselben Zeichen wie der Warnbanner.</summary>
+    private static string Zeichen(WarnStufe stufe) => stufe switch
+    {
+        WarnStufe.Hinweis => "i",
+        WarnStufe.Fehler => "✕",
+        WarnStufe.Erfolg => "✔",
+        _ => "!"
+    };
+}

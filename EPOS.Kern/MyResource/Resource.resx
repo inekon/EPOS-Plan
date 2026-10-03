@@ -15054,6 +15054,21 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
     <value>Speicherladung</value>
   </data>
+  <data name="SIMDET_BHKW_TITEL_STROMLAST" xml:space="preserve">
+    <value>Stromlast Jahresganglinie</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMPRODUKTION" xml:space="preserve">
+    <value>Stromproduktion</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_EINSPEISUNG" xml:space="preserve">
+    <value>Stromeinspeisung</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_RESTSTROM" xml:space="preserve">
+    <value>Reststrombedarf</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Stromverbrauch:</value>
   </data>
@@ -32370,6 +32385,12 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
     <value>Wirkung {0}: {1}</value>
   </data>
+  <data name="WIRT_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis (anklicken)</value>
+  </data>
+  <data name="WIRT_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise (anklicken)</value>
+  </data>
   <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
     <value>DIN EN 17463 verlangt zu jeder Bewertung, was sich nicht in Euro fassen lässt (6.1, 8.2): je Wirkung die Kategorie, die Dauer (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark). Die Beurteilung ist Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen gehören zur Maßnahme als Ganzes, stehen im Bericht und fließen nicht in den Kapitalwert.</value>
   </data>
@@ -44181,6 +44202,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
     <value>Vorlage des Nutzungsprofils: an bei Büro/Schule</value>
+  </data>
+  <data name="SIM_NAV_KAELTEPRODUKTION_CHART" xml:space="preserve">
+    <value>❄️ 
+Kälte
+Produktion
+Chart</value>
+  </data>
+  <data name="CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Kälteproduktion Jahresganglinie</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Ungedeckte Kälte</value>
   </data>
 </root>
 
