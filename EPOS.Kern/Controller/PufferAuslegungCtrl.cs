@@ -128,6 +128,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Empfehlung der Nachrechnung [l]; <c>null</c> = keine Nachrechnung.</summary>
         public double? NachgerechnetL { get; init; }
         public double? StartsJeTag { get; init; }
+        /// <summary>Starts je Tag des Rang-1-Erzeugers im letzten Probelauf dieser Sitzung; <c>null</c> = kein Lauf.</summary>
+        public double? ProbelaufStartsJeTag { get; init; }
+        /// <summary>Zeitpunkt des letzten Probelaufs; <c>null</c> = kein Lauf.</summary>
+        public DateTime? ProbelaufAm { get; init; }
         public double? VerlustKwhJeTag { get; init; }
         public double? VerlustWJeK { get; init; }
         public IReadOnlyList<PufferWarnung> Warnungen { get; init; } = Array.Empty<PufferWarnung>();
@@ -1218,6 +1222,8 @@ namespace WindowsFormsApplication1
                 BemessendHerkunft = string.IsNullOrWhiteSpace(k?.Herkunft) ? null : k.HerkunftBaustein,
                 NachgerechnetL = r.EmpfehlungL,
                 StartsJeTag = bild?.StartsJeTag,
+                ProbelaufStartsJeTag = PufferProbelaufCtrl.Letzter(idProjekt, g.IdPuffer)?.Rang1?.StartsJeTag,
+                ProbelaufAm = PufferProbelaufCtrl.Letzter(idProjekt, g.IdPuffer)?.Zeitpunkt,
                 VerlustKwhJeTag = r.Kennzahlen?.Verlust?.KwhJeTag,
                 VerlustWJeK = r.Kennzahlen?.Verlust?.WJeK,
                 Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>()

@@ -105,6 +105,15 @@ namespace WindowsFormsApplication1
             return _aktuell;
         }
 
+        /// <summary>
+        /// Setzt den Kanal auf <paramref name="vorher"/> zurück — der Probelauf der Pufferauslegung
+        /// rechnet mit eigenem Kanal und lässt danach das Protokoll des letzten echten Laufs stehen.
+        /// </summary>
+        internal static void Wiederherstellen(SimulationProtokoll vorher)
+        {
+            if (vorher != null) _aktuell = vorher;
+        }
+
         // =================================================================================
         // Lesen
         // =================================================================================

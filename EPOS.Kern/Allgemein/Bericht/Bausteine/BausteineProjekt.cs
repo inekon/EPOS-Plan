@@ -721,6 +721,13 @@ namespace WindowsFormsApplication1
                 paare.Add(Liter(k, g.GewaehltL));
                 paare.Add(MyResource.Resource.PAUS_KZ_STARTS_TAG);
                 paare.Add(Wert(k, g.StartsJeTag, 1, "1/d"));
+                if (g.ProbelaufStartsJeTag.HasValue && g.ProbelaufAm.HasValue)
+                {
+                    // Welle P4b: die Gegenprobe der Jahressimulation, wenn in der Sitzung ein Probelauf lief.
+                    paare.Add(string.Format(k.Kultur, MyResource.Resource.BER_PAUS_STARTS_PROBELAUF,
+                                            g.ProbelaufAm.Value.ToString("dd.MM.yyyy HH:mm", k.Kultur)));
+                    paare.Add(Wert(k, g.ProbelaufStartsJeTag, 1, "1/d"));
+                }
                 paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_TAG);
                 paare.Add(Wert(k, g.VerlustKwhJeTag, 2, "kWh/d"));
                 paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_WK);

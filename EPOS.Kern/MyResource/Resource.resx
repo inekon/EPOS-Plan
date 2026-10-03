@@ -43813,5 +43813,77 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Aufbau „{0}“: {1} Schichten tragen Dichte und Wärmeleitfähigkeit, aber keine spezifische Wärmekapazität; c [J/(kg·K)] kommt aus dem Baustoffkatalog bzw. nach DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="PA_STARTS_ABWEICHUNG" xml:space="preserve">
+    <value>Die Jahressimulation zählt {1:N1} Starts je Tag, die Auslegung schätzt {0:N1} – Abweichung über 30 %.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_NEU" xml:space="preserve">
+    <value>Der Probelauf braucht einen Puffer im Projekt; einen neuen Puffer zuerst übernehmen.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_EMPFEHLUNG" xml:space="preserve">
+    <value>Ohne Empfehlung gibt es keinen Probelauf.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_PUFFER_FEHLT" xml:space="preserve">
+    <value>Der Puffer gehört nicht zum Projekt.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_GRUPPE" xml:space="preserve">
+    <value>Abgleich mit der Jahressimulation</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KNOPF" xml:space="preserve">
+    <value>Mit Jahressimulation nachrechnen</value>
+  </data>
+  <data name="PAUS_PROBELAUF_LAEUFT" xml:space="preserve">
+    <value>Die Jahressimulation rechnet …</value>
+  </data>
+  <data name="PAUS_PROBELAUF_ERKLAERUNG" xml:space="preserve">
+    <value>Rechnet das Projekt einmal mit dem empfohlenen Volumen des gewählten Puffers. Es wird nichts gespeichert und nichts übernommen.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_GROESSE" xml:space="preserve">
+    <value>Kennzahl</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_LAUF" xml:space="preserve">
+    <value>Probelauf (Empfehlung)</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KEIN_LAUF" xml:space="preserve">
+    <value>kein Lauf</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STARTS_JAHR" xml:space="preserve">
+    <value>Starts je Jahr</value>
+  </data>
+  <data name="PAUS_PROBELAUF_DECKUNG" xml:space="preserve">
+    <value>Deckung des Wärmebedarfs</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STAND" xml:space="preserve">
+    <value>Probelauf vom {0} mit {1} l, Dauer {2} s</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FUELLSTAND" xml:space="preserve">
+    <value>Füllstand des Puffers je Monat</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MIN" xml:space="preserve">
+    <value>min.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MITTEL" xml:space="preserve">
+    <value>Mittel</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MAX" xml:space="preserve">
+    <value>max.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_WOCHE" xml:space="preserve">
+    <value>Kälteste Woche ab Tag {0}: Füllstand min. {1} %, Mittel {2} %, max. {3} %</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FEHLER" xml:space="preserve">
+    <value>Probelauf nicht möglich: {0}</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_FUELLSTAND" xml:space="preserve">
+    <value>Der Puffer stand im Lauf nicht im Rechenpfad; kein Füllstand.</value>
+  </data>
+  <data name="BER_PAUS_STARTS_PROBELAUF" xml:space="preserve">
+    <value>Starts je Tag (Jahressimulation {0})</value>
+  </data>
 </root>
 

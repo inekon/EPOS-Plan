@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
         public const string ZWEITERZEUGER_FREI = "PA-ZWEITERZEUGER-FREI";
         public const string HEIZSTAB_GESPERRT = "PA-HEIZSTAB-GESPERRT";
         public const string KEINE_REIHE = "PA-KEINE-REIHE";
+        /// <summary>
+        /// Hinweis des Abgleichs mit der Jahressimulation (Welle P4b): Die Starts je Tag des Probelaufs
+        /// weichen um mehr als 30 % von der Zweipunktschätzung D2 ab. Kein Code der Auslegungsliste
+        /// (<see cref="ALLE"/>) — er entsteht erst mit einem Lauf.
+        /// </summary>
+        public const string STARTS_ABWEICHUNG = "PA-STARTS-ABWEICHUNG";
 
         /// <summary>Alle Codes der Liste.</summary>
         public static readonly IReadOnlyList<string> ALLE = new[]

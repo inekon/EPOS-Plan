@@ -129,6 +129,8 @@ namespace WindowsFormsApplication1
                 if (!bw && verwendung != DbWerte.PSP_VERWENDUNG_BRAUCHWASSER && verwendung != DbWerte.PSP_VERWENDUNG_KOMBI)
                     continue;
                 double v = StilleDb.Kommazahl(StilleDb.Feld(r, "Gesamtvolumen"), 0);
+                int idPuffer = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                v = WaermesenkeClass.ProbelaufVolumenOder(idPuffer, v);
                 if (v > 0) { summe += v; gefunden = true; }
             }
             return gefunden ? summe : (double?)null;
