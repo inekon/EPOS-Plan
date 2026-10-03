@@ -87,8 +87,9 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Eine Fläche innerer Masse</b> — beide Nachbarn beheizt. Die Einzonen-Zuordnung übergeht
-    /// sie (keine Hülle); der Bauteilvorschlag führt sie als Innenbauteil (Gruppe IW).
+    /// <b>Eine Fläche innerer Masse</b> — beide Nachbarn beheizt, oder eine Innenwand ohne Nachbarraum
+    /// (<see cref="AbbildBauteil.InnenEinseitig"/>, beide Stellen −1), die einseitig zählt. Die Einzonen-Zuordnung
+    /// übergeht sie (keine Hülle); der Bauteilvorschlag führt sie als Innenbauteil (Gruppe IW).
     /// </summary>
     internal sealed class Innenposten
     {
@@ -103,7 +104,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Bauteil des Abbilds.</summary>
         internal AbbildBauteil Bauteil { get; }
 
-        /// <summary>Stelle des beheizten Raums DIESES Gebäudes in <see cref="AbbildBauteil.Nachbarn"/> — Seite A.</summary>
+        /// <summary>Stelle des beheizten Raums DIESES Gebäudes in <see cref="AbbildBauteil.Nachbarn"/> — Seite A; −1 = ohne Nachbarraum (einseitig).</summary>
         internal int PosA { get; }
 
         /// <summary>Stelle des zweiten beheizten Raums — Seite B; −1, wenn er in einem anderen Gebäude liegt (dann zählt nur Seite A).</summary>
@@ -172,7 +173,8 @@ namespace WindowsFormsApplication1
     ///
     /// <list type="bullet">
     /// <item><b>Hülle:</b> ein Bauteil mit einem beheizten Nachbarn DIESES Gebäudes; zwei beheizte
-    /// Nachbarn = innere Masse. Ein Hüllbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
+    /// Nachbarn = innere Masse, eine Innenwand ohne Nachbarraum (<see cref="AbbildBauteil.InnenEinseitig"/>)
+    /// einseitig innere Masse. Ein Hüllbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
     /// zählt nach seiner Randbedingung — Außenluft, Erdreich oder unbeheizt; gegen unbeheizt sagt
     /// <see cref="BodenOhneNachbar"/>, ob es Boden oder Decke ist.</item>
     /// <item><b>Seite:</b> ohne zweiten Nachbarn nach der Randbedingung der Art (Außenluft, Erdreich,
@@ -224,7 +226,12 @@ namespace WindowsFormsApplication1
             bool ohneNachbar = hPos < 0 && s.HuelleOhneNachbar && s.Nachbarn.Count == 0
                                && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich
                                    || s.Randbedingung == Randbedingung.Unbeheizt);
-            if (hPos < 0 && !ohneNachbar) return;
+            if (hPos < 0 && !ohneNachbar)
+            {
+                // Eine Innenwand ohne Nachbarraum (IFC ohne Raumgrenzen): einseitig innere Masse (Mehrzonenkonzept 6.5).
+                if (s.InnenEinseitig && s.Nachbarn.Count == 0) ergebnis.Innen.Add(new Innenposten(s, -1, -1));
+                return;
+            }
 
             int aPos = -1;
             for (int i = 0; i < s.Nachbarn.Count; i++)

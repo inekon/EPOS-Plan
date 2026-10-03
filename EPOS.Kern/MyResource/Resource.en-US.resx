@@ -42369,6 +42369,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
     <value>Preheat optimisation (consumption entry): the building is calculated from a consumption entry. Scaling back to the stated consumption absorbs the additional heat of the preheat ramps on {0} days into the scaling factor; the annual heat remains the stated consumption. Only a floor area entry shows the additional heat of the ramps.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_REFERENZ" xml:space="preserve">
+    <value>Building "{0}" has no space boundaries but spatial references of its elements (IfcRelReferencedInSpatialStructure): {1} slabs separate the storeys {2} and couple their zones (rule Z4); {3} interior walls between spaces of one storey count as internal mass. Areas come from the element quantities, per pair of storeys, not per space.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
+    <value>The separating slab between {0} and {1} carries only {2} m² from the spatial references against {3} m² heated floor area of the smaller storey ({4} %) — the file does not reference all slab parts. The pair of storeys is not considered coupled; please check the separating area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
+    <value>{0} interior walls without an adjacent space (interior by IsExternal or adjacency) count one-sided as internal mass: {1} m² gross area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NAME_PLATZHALTER" xml:space="preserve">
+    <value>The building is named "{0}" in the file — a placeholder; the file name "{1}" is suggested as name.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
+    <value>The file name mentions {0}; the file carries no year of construction. The year is not adopted — please check the year of construction or age class yourself.</value>
+  </data>
   <data name="PAUS_TITEL" xml:space="preserve">
     <value>Buffer storage sizing</value>
   </data>

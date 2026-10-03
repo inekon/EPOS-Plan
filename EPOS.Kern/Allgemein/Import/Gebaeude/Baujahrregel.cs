@@ -51,6 +51,32 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// <b>Das Jahr im Dateinamen</b> — nur als Hinweis, nie als Baujahr übernommen (ein Dateiname wie
+        /// „…EG55-2026" nennt das Planungsjahr, nicht das Baujahr): Steht im Namen (ohne Pfad und Endung) GENAU eine
+        /// Folge aus vier Ziffern im Bereich 1500…2100, die nicht Teil einer längeren Ziffernfolge ist, ist sie es;
+        /// sonst — keine oder mehrere — <c>null</c>.
+        /// </summary>
+        public static int? JahrImDateinamen(string dateiname)
+        {
+            if (string.IsNullOrWhiteSpace(dateiname)) return null;
+            string text = System.IO.Path.GetFileNameWithoutExtension(GebaeudeQuelle.NurName(dateiname.Trim()));
+            int? fund = null;
+            int zahl = 0, i = 0;
+            while (i < text.Length)
+            {
+                if (!IstZiffer(text[i])) { i++; continue; }
+                int anfang = i;
+                while (i < text.Length && IstZiffer(text[i])) i++;
+                if (i - anfang != 4) continue;
+                int jahr = int.Parse(text.Substring(anfang, 4), NumberStyles.None, CultureInfo.InvariantCulture);
+                if (jahr < JAHR_MIN || jahr > JAHR_MAX) continue;
+                fund = jahr;
+                zahl++;
+            }
+            return zahl == 1 ? fund : null;
+        }
+
         /// <summary>Die Baualtersklasse A…M zu einem Baujahr; <c>null</c> außerhalb 1500…2100.</summary>
         public static char? Klasse(int jahr)
         {

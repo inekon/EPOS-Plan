@@ -207,15 +207,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Gebäudenamen, die ein CAD-Export als Platzhalter schreibt (ohne Groß-/Kleinschreibung, ohne
+        /// Leerraum am Rand verglichen): Sie weichen im Namensvorschlag eines IFC-Imports dem Dateinamen.
+        /// </summary>
+        public static readonly IReadOnlyList<string> PLATZHALTERNAMEN = new[] { "Gebäude", "Gebaeude", "Building", "Default Building", "Haus" };
+
+        /// <summary>Ist der Name ein Platzhalter (<see cref="PLATZHALTERNAMEN"/>)?</summary>
+        public static bool IstPlatzhaltername(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            string n = name.Trim();
+            foreach (string p in PLATZHALTERNAMEN)
+                if (string.Equals(p, n, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        /// <summary>
         /// <b>Der vorgeschlagene Name des neuen Gebäudes</b>: der Name aus der Datei (IFC: <c>IfcBuilding.Name</c>,
-        /// sonst <c>LongName</c>; gbXML: <c>Building/Name</c>); trägt die Datei keinen, der Dateiname ohne
-        /// Endung — eine Kennung wie die <c>GlobalId</c> taugt nicht als Katalogname; ohne Datei die Kennung.
-        /// Der Anwender kann ihn im Dialog ändern.
+        /// sonst <c>LongName</c>; gbXML: <c>Building/Name</c>); trägt die Datei keinen — bei IFC auch, wenn er ein
+        /// Platzhalter ist (<see cref="PLATZHALTERNAMEN"/>, Protokoll <c>IMP_IFC_PROT_NAME_PLATZHALTER</c>) —, der
+        /// Dateiname ohne Endung; eine Kennung wie die <c>GlobalId</c> taugt nicht als Katalogname; ohne Datei die
+        /// Kennung. Der Anwender kann ihn im Dialog ändern.
         /// </summary>
         public static string Vorschlagsname(GebaeudeImportSatz satz)
         {
             if (satz == null) return "";
-            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename)) return satz.Gebaeudename.Trim();
+            bool platzhalter = string.Equals(satz.Quelle?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
+                               && IstPlatzhaltername(satz.Gebaeudename);
+            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename) && !platzhalter) return satz.Gebaeudename.Trim();
             string datei = satz.Quelle?.Dateiname;
             string ohneEndung = string.IsNullOrWhiteSpace(datei) ? null : System.IO.Path.GetFileNameWithoutExtension(datei.Trim());
             return string.IsNullOrWhiteSpace(ohneEndung) ? satz.Gebaeudekennung ?? "" : ohneEndung.Trim();
