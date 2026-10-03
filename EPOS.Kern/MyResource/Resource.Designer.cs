@@ -38356,6 +38356,501 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktualisiert ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_AKTUALISIERT {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_AKTUALISIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgelaufen ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_AUSGELAUFEN {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_AUSGELAUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die behalten ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_BEHALTEN {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleich ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_BERICHT {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neu ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_EINGEFUEGT {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_EINGEFUEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Paket ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_KEIN_PAKET {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wiederhergestellt ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_WIEDERHERGESTELLT {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_WIEDERHERGESTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog steht bereits auf Fassung {0}. ähnelt.
+        /// </summary>
+        public static string KABG_BEREITS {
+            get {
+                return ResourceManager.GetString("KABG_BEREITS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} neu, {1} aktualisiert, {2} behalten, {3} ausgelaufen ähnelt.
+        /// </summary>
+        public static string KABG_BERICHT {
+            get {
+                return ResourceManager.GetString("KABG_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleichen… ähnelt.
+        /// </summary>
+        public static string KABG_BTN_ABGLEICHEN {
+            get {
+                return ResourceManager.GetString("KABG_BTN_ABGLEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur prüfen ähnelt.
+        /// </summary>
+        public static string KABG_BTN_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KABG_BTN_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KABG_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KABG_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsstand wiederherstellen… ähnelt.
+        /// </summary>
+        public static string KABG_BTN_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("KABG_BTN_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleicht die Gerätekataloge (Wärmepumpen, Heizkessel, BHKW, PV-Module, Brauchwasser- und Prozesswärmeprofile) mit dem Katalogpaket der Auslieferung ab. Eigene Sätze und alle Projekte bleiben unberührt; ein Satz, den Sie geändert oder entsperrt haben, wird nicht überschrieben. ähnelt.
+        /// </summary>
+        public static string KABG_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("KABG_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassung der Datenbank ähnelt.
+        /// </summary>
+        public static string KABG_FASSUNG_DB {
+            get {
+                return ResourceManager.GetString("KABG_FASSUNG_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassung des Pakets ähnelt.
+        /// </summary>
+        public static string KABG_FASSUNG_PAKET {
+            get {
+                return ResourceManager.GetString("KABG_FASSUNG_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Katalog jetzt mit dem Paket abgleichen? Vorher wird eine Sicherung der Datenbank angelegt. ähnelt.
+        /// </summary>
+        public static string KABG_FRAGE_ABGLEICHEN {
+            get {
+                return ResourceManager.GetString("KABG_FRAGE_ABGLEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Satz „{0}“ auf den Auslieferungsstand zurücksetzen? Ihre Anpassung geht dabei verloren. ähnelt.
+        /// </summary>
+        public static string KABG_FRAGE_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("KABG_FRAGE_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_AUSGELAUFEN {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_AUSGELAUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz ist entsperrt. Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_BEHALTEN_ENTSPERRT {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_BEHALTEN_ENTSPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_BEHALTEN_GEAENDERT {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_BEHALTEN_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein eigener Satz trägt den Namen „{0}“; der Auslieferungssatz wurde nicht eingefügt. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BHKW {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BW {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BWT {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BWT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KESSEL {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Module ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PV {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärmeprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PW {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PWT {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PWT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_WP {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog entspricht dem Paket — nichts zu tun. ähnelt.
+        /// </summary>
+        public static string KABG_KEINE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KABG_KEINE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Katalogpaket gefunden ({0}) — der Katalog wurde nicht abgeglichen. ähnelt.
+        /// </summary>
+        public static string KABG_KEIN_PAKET {
+            get {
+                return ResourceManager.GetString("KABG_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Paket ähnelt.
+        /// </summary>
+        public static string KABG_KEIN_PAKET_KURZ {
+            get {
+                return ResourceManager.GetString("KABG_KEIN_PAKET_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch nicht geprüft. ähnelt.
+        /// </summary>
+        public static string KABG_LEER {
+            get {
+                return ResourceManager.GetString("KABG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog aktualisieren… ähnelt.
+        /// </summary>
+        public static string KABG_MENUE {
+            get {
+                return ResourceManager.GetString("KABG_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank ist für den Katalogabgleich noch nicht eingerichtet; der Schemaschritt fehlt. ähnelt.
+        /// </summary>
+        public static string KABG_NICHT_BEREIT {
+            get {
+                return ResourceManager.GetString("KABG_NICHT_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nie abgeglichen ähnelt.
+        /// </summary>
+        public static string KABG_NIE {
+            get {
+                return ResourceManager.GetString("KABG_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur geprüft — nichts geschrieben. ähnelt.
+        /// </summary>
+        public static string KABG_NUR_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("KABG_NUR_GEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
+        /// </summary>
+        public static string KABG_OK {
+            get {
+                return ResourceManager.GetString("KABG_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpaket ähnelt.
+        /// </summary>
+        public static string KABG_PAKETORT {
+            get {
+                return ResourceManager.GetString("KABG_PAKETORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Katalogpaket ist nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string KABG_PAKET_FEHLER {
+            get {
+                return ResourceManager.GetString("KABG_PAKET_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
+        /// </summary>
+        public static string KABG_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("KABG_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz steht nicht im Katalogpaket. ähnelt.
+        /// </summary>
+        public static string KABG_SATZ_NICHT_IM_PAKET {
+            get {
+                return ResourceManager.GetString("KABG_SATZ_NICHT_IM_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherung vor dem Abgleich: {0} ähnelt.
+        /// </summary>
+        public static string KABG_SICHERUNG {
+            get {
+                return ResourceManager.GetString("KABG_SICHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sicherung vor dem Abgleich ist gescheitert — es wurde nichts abgeglichen: {0} ähnelt.
+        /// </summary>
+        public static string KABG_SICHERUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("KABG_SICHERUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
+        /// </summary>
+        public static string KABG_SPALTE_AKTION {
+            get {
+                return ResourceManager.GetString("KABG_SPALTE_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handlung ähnelt.
+        /// </summary>
+        public static string KABG_SPALTE_HANDLUNG {
+            get {
+                return ResourceManager.GetString("KABG_SPALTE_HANDLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string KABG_SPALTE_HINWEIS {
+            get {
+                return ResourceManager.GetString("KABG_SPALTE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string KABG_SPALTE_KATALOG {
+            get {
+                return ResourceManager.GetString("KABG_SPALTE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string KABG_SPALTE_SATZ {
+            get {
+                return ResourceManager.GetString("KABG_SPALTE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze, die Sie angepasst haben, bleiben unverändert. Unter Administration → Daten &amp; Import → Katalog aktualisieren… lassen sie sich mit dem neuen Auslieferungsstand vergleichen und auf Wunsch zurücksetzen. ähnelt.
+        /// </summary>
+        public static string KABG_START_BEHALTEN {
+            get {
+                return ResourceManager.GetString("KABG_START_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekataloge wurden mit dem Katalogpaket der Fassung {0} abgeglichen: {1}. ähnelt.
+        /// </summary>
+        public static string KABG_START_TEXT {
+            get {
+                return ResourceManager.GetString("KABG_START_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog aktualisiert ähnelt.
+        /// </summary>
+        public static string KABG_START_TITEL {
+            get {
+                return ResourceManager.GetString("KABG_START_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog aktualisieren ähnelt.
+        /// </summary>
+        public static string KABG_TITEL {
+            get {
+                return ResourceManager.GetString("KABG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslieferungsstand wurde wiederhergestellt. ähnelt.
+        /// </summary>
+        public static string KABG_WIEDERHERGESTELLT {
+            get {
+                return ResourceManager.GetString("KABG_WIEDERHERGESTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
         /// </summary>
         public static string KAELTE_GRENZE_FEUCHTE {
@@ -69299,6 +69794,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelaufen: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KATALOG_AUSGELAUFEN {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KATALOG_AUSGELAUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfsumme der Auslieferung: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KATALOG_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KATALOG_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogschlüssel: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KATALOG_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KATALOG_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. therm. Leistung: ähnelt.
         /// </summary>
         public static string PARV_LBL_MAXPTHERM {
@@ -82391,6 +82913,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_SPREIZUNG_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_SPREIZUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand des Laufs vom {0}. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_STAND_LAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_STAND_LAUF", resourceCulture);
             }
         }
         

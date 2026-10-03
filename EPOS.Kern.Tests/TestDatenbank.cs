@@ -864,6 +864,11 @@ namespace EPOS.Kern.Tests
                 // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
                 // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
                 ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1, EQ1): die Katalogspalten
+                // der Stufe-1-Kataloge samt Saat von Schluessel und Pruefsumme der ausgelieferten Saetze,
+                // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

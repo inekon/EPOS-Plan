@@ -46,9 +46,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public sealed record Kindtabelle(string Tabelle, string Fremdschluessel);
 
-        /// <summary>Die Spalten, die eine Kopie NICHT vom Original übernimmt.</summary>
+        /// <summary>
+        /// Die Spalten, die eine Kopie NICHT vom Original übernimmt — samt den drei Katalogspalten
+        /// (KU1): Eine Kopie ist ein Anwendersatz und trägt weder Schlüssel noch Prüfsumme.
+        /// </summary>
         private static readonly HashSet<string> KOPFSPALTEN =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ID", "Bezeichner", "ReadOnly" };
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "ID", "Bezeichner", "ReadOnly",
+                Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN
+            };
 
         /// <summary>
         /// <b>Der Name der Kopie</b>: „Name (Kopie)", ist der belegt, „Name (Kopie 2)",

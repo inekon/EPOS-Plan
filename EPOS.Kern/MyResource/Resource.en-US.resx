@@ -41901,5 +41901,182 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
     <value>Degradation coefficient C_d to EN 14825 (0 to 1). It sets the cycling loss: COP_cycl = COP · CR / (C_d · CR + 1 − C_d). Empty = default 0.9.</value>
   </data>
+  <data name="KABG_MENUE" xml:space="preserve">
+    <value>Update catalogue…</value>
+  </data>
+  <data name="KABG_TITEL" xml:space="preserve">
+    <value>Update catalogue</value>
+  </data>
+  <data name="KABG_EINLEITUNG" xml:space="preserve">
+    <value>Matches the equipment catalogues (heat pumps, boilers, CHP units, PV modules, hot-water and process-heat profiles) against the catalogue package of the installation. Your own entries and all projects remain untouched; an entry you have changed or unlocked is not overwritten.</value>
+  </data>
+  <data name="KABG_FASSUNG_DB" xml:space="preserve">
+    <value>Version of the database</value>
+  </data>
+  <data name="KABG_FASSUNG_PAKET" xml:space="preserve">
+    <value>Version of the package</value>
+  </data>
+  <data name="KABG_PAKETORT" xml:space="preserve">
+    <value>Catalogue package</value>
+  </data>
+  <data name="KABG_BTN_PRUEFEN" xml:space="preserve">
+    <value>Check only</value>
+  </data>
+  <data name="KABG_BTN_ABGLEICHEN" xml:space="preserve">
+    <value>Update…</value>
+  </data>
+  <data name="KABG_BTN_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Restore delivered state…</value>
+  </data>
+  <data name="KABG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KABG_SPALTE_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="KABG_SPALTE_SATZ" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="KABG_SPALTE_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="KABG_SPALTE_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="KABG_SPALTE_HANDLUNG" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="KABG_LEER" xml:space="preserve">
+    <value>Not checked yet.</value>
+  </data>
+  <data name="KABG_KEINE_AENDERUNG" xml:space="preserve">
+    <value>The catalogue matches the package — nothing to do.</value>
+  </data>
+  <data name="KABG_NUR_GEPRUEFT" xml:space="preserve">
+    <value>Checked only — nothing written.</value>
+  </data>
+  <data name="KABG_PROTOKOLL" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="KABG_FRAGE_ABGLEICHEN" xml:space="preserve">
+    <value>Update the catalogue from the package now? A backup of the database is created first.</value>
+  </data>
+  <data name="KABG_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Reset the entry “{0}” to its delivered state? Your changes will be lost.</value>
+  </data>
+  <data name="KABG_NIE" xml:space="preserve">
+    <value>never updated</value>
+  </data>
+  <data name="KABG_KEIN_PAKET" xml:space="preserve">
+    <value>No catalogue package found ({0}) — the catalogue was not updated.</value>
+  </data>
+  <data name="KABG_KEIN_PAKET_KURZ" xml:space="preserve">
+    <value>no package</value>
+  </data>
+  <data name="KABG_PAKET_FEHLER" xml:space="preserve">
+    <value>The catalogue package cannot be read: {0}</value>
+  </data>
+  <data name="KABG_NICHT_BEREIT" xml:space="preserve">
+    <value>The database is not yet prepared for catalogue updates; the schema step is missing.</value>
+  </data>
+  <data name="KABG_BEREITS" xml:space="preserve">
+    <value>The catalogue is already at version {0}.</value>
+  </data>
+  <data name="KABG_BERICHT" xml:space="preserve">
+    <value>{0} new, {1} updated, {2} kept, {3} discontinued</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
+    <value>Your changes are kept; the new delivered state is available for comparison.</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_ENTSPERRT" xml:space="preserve">
+    <value>The entry is unlocked. Your changes are kept; the new delivered state is available for comparison.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>An entry of your own is named “{0}”; the delivered entry was not added.</value>
+  </data>
+  <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
+    <value>The entry is no longer delivered; it stays in your catalogue.</value>
+  </data>
+  <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
+    <value>The entry is not part of the catalogue package.</value>
+  </data>
+  <data name="KABG_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>The delivered state has been restored.</value>
+  </data>
+  <data name="KABG_SICHERUNG" xml:space="preserve">
+    <value>Backup before the update: {0}</value>
+  </data>
+  <data name="KABG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>The backup before the update failed — nothing was updated: {0}</value>
+  </data>
+  <data name="KABG_START_TITEL" xml:space="preserve">
+    <value>Catalogue updated</value>
+  </data>
+  <data name="KABG_START_TEXT" xml:space="preserve">
+    <value>The equipment catalogues were updated from the catalogue package version {0}: {1}.</value>
+  </data>
+  <data name="KABG_START_BEHALTEN" xml:space="preserve">
+    <value>Entries you have changed remain as they are. Under Administration → Data &amp; import → Update catalogue… they can be compared with the new delivered state and reset if required.</value>
+  </data>
+  <data name="KABG_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KABG_AKTION_EINGEFUEGT" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="KABG_AKTION_AKTUALISIERT" xml:space="preserve">
+    <value>updated</value>
+  </data>
+  <data name="KABG_AKTION_BEHALTEN" xml:space="preserve">
+    <value>kept</value>
+  </data>
+  <data name="KABG_AKTION_AUSGELAUFEN" xml:space="preserve">
+    <value>discontinued</value>
+  </data>
+  <data name="KABG_AKTION_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>restored</value>
+  </data>
+  <data name="KABG_AKTION_KEIN_PAKET" xml:space="preserve">
+    <value>no package</value>
+  </data>
+  <data name="KABG_AKTION_BERICHT" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="KABG_KATALOG_WP" xml:space="preserve">
+    <value>Heat pumps</value>
+  </data>
+  <data name="KABG_KATALOG_KESSEL" xml:space="preserve">
+    <value>Boilers</value>
+  </data>
+  <data name="KABG_KATALOG_BHKW" xml:space="preserve">
+    <value>CHP units</value>
+  </data>
+  <data name="KABG_KATALOG_PV" xml:space="preserve">
+    <value>PV modules</value>
+  </data>
+  <data name="KABG_KATALOG_BW" xml:space="preserve">
+    <value>Hot-water profiles</value>
+  </data>
+  <data name="KABG_KATALOG_BWT" xml:space="preserve">
+    <value>Hot-water weekly profiles</value>
+  </data>
+  <data name="KABG_KATALOG_PW" xml:space="preserve">
+    <value>Process-heat profiles</value>
+  </data>
+  <data name="KABG_KATALOG_PWT" xml:space="preserve">
+    <value>Process-heat weekly profiles</value>
+  </data>
+  <data name="SIMQ_ERDREICH_STAND_LAUF" xml:space="preserve">
+    <value>Result of the run on {0}.</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_SCHLUESSEL" xml:space="preserve">
+    <value>Catalogue key:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_PRUEFSUMME" xml:space="preserve">
+    <value>Checksum of the delivered state:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_AUSGELAUFEN" xml:space="preserve">
+    <value>Discontinued:</value>
+  </data>
 </root>
 

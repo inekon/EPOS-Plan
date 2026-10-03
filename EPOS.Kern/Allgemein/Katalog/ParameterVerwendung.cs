@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
@@ -243,6 +244,21 @@ namespace WindowsFormsApplication1
         private static readonly Verwendung[] SIM_WIRT_BER =
             { Verwendung.Simulation, Verwendung.Wirtschaftlichkeit, Verwendung.Bericht };
 
+        /// <summary>
+        /// KU1 Stufe 1 (Schemaschritt <see cref="KatalogfassungSchema"/>): die drei Katalogspalten der
+        /// laufend gepflegten Kataloge, in der Reihenfolge der Tabelle die letzten. Kein Fachwert — die
+        /// Kennung des Auslieferungssatzes, die der Katalogabgleich liest und schreibt.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> Katalogspalten(Func<string, string> t) => new[]
+        {
+            E(Katalogfassung.SPALTE_SCHLUESSEL, t("PARV_LBL_KATALOG_SCHLUESSEL"), "", NIX,
+              "Katalogabgleich (stabile Kennung des Auslieferungssatzes; Anwendersatz leer)"),
+            E(Katalogfassung.SPALTE_PRUEFSUMME, t("PARV_LBL_KATALOG_PRUEFSUMME"), "", NIX,
+              "Katalogabgleich (Pruefsumme des ausgelieferten Stands: gleich = nicht angepasst)"),
+            E(Katalogfassung.SPALTE_AUSGELAUFEN, t("PARV_LBL_KATALOG_AUSGELAUFEN"), "", NIX,
+              "Katalogabgleich (Satz in einer spaeteren Auslieferung entfallen, bleibt stehen)"),
+        };
+
         private static ParameterEintrag E(string spalte, string anzeige, string einheit,
                                           Verwendung[] verwendung, string fundstelle = "")
         {
@@ -353,7 +369,7 @@ namespace WindowsFormsApplication1
                 E(KesselBereitschaftEinheitSchema.SPALTE, t("HZKK_LBL_BB_EINHEIT"), "", SIM,
                   "KesselBereitschaft.LeistungKw (kW oder % der Nennleistung); HeizkesselKatalogDialog.razor; " +
                   "KatalogBrowserProfil (Heizkessel)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -476,7 +492,7 @@ namespace WindowsFormsApplication1
                 E(ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min", SIM,
                   "SimulationBHKW.TeillastStundeAbschliessen (BhkwTeillast.StartsImTakt, Kesselregel; mit " +
                   "Anfahrverlust Schalter des Taktens); BhkwKatalogDialog (Gruppe Teillast und Takten)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -565,7 +581,7 @@ namespace WindowsFormsApplication1
                 E(ErzeugerTeillastSchema.SPALTE_WP_CD, t("WPS_LBL_TAKTVERLUST_CD"), "", SIM,
                   "SimulationWaermepumpe.TaktStundeAbschliessen (Waermepumpentakt.Teillastfaktor, leer = 0,9); " +
                   "Kaeltekaskade; WaermepumpeStammFelder")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -683,7 +699,7 @@ namespace WindowsFormsApplication1
                   "PhotovoltaikStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Technologie", t("PVM_MODUL_LABEL_TECHNOLOGIE"), "", SIM_BER,
                   "SimulationPV.cs:590 (Huld-Satz je Zelltechnologie); AbweichungsErmittler.cs:112")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================

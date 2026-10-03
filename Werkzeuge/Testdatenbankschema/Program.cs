@@ -2503,6 +2503,28 @@ namespace Testdatenbankschema
                                   ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1 und EQ1): an den acht
+            //      Katalogtabellen der Stufe 1 Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen
+            //      samt eindeutigem Teilindex, Tab_Applikation.Katalogfassung, die Tabellen
+            //      Tab_Katalogabgleich und Tab_ErgebnisErdreich (STRICT) und die Saat von Schluessel und
+            //      Pruefsumme der ausgelieferten Saetze (ReadOnly = 1). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Katalogfassung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog + " - Katalogfassung und Erdreichpruefung: " +
+                              (KatalogfassungSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog = new List<string>();
+                angelegt += KatalogfassungSchema.Ausfuehren(berichtKatalog);
+                foreach (string zeile in berichtKatalog)
+                    Console.WriteLine("Schritt " + nrKatalog + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog + " - vollstaendig: " +
+                                  KatalogfassungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

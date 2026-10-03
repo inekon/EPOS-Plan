@@ -4919,6 +4919,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT;
 
+        // ---- Welle M6: Katalog-Update (KU1 Stufe 1) und Erdreichpruefung im Ergebnis (EQ1) ----
+
+        /// <summary>
+        /// Schritt <see cref="KatalogfassungSchema.SCHRITT"/> — <b>die Katalogfassung und die
+        /// gespeicherte Erdreichprüfung</b> (Welle M6 der Entscheidungsvorlage Modellgrenzen). Er folgt
+        /// auf <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> an den acht Katalogtabellen der Stufe 1 <c>Katalog_Schluessel</c>,
+        /// <c>Katalog_Pruefsumme</c>, <c>Katalog_Ausgelaufen</c> samt eindeutigem Teilindex, an
+        /// <c>Tab_Applikation</c> die <c>Katalogfassung</c>, die Tabellen <c>Tab_Katalogabgleich</c> und
+        /// <c>Tab_ErgebnisErdreich</c>; danach belegt die Saat Schlüssel und Prüfsumme der ausgelieferten
+        /// Sätze (<c>ReadOnly = 1</c>). Die Anweisungen stehen bei <see cref="KatalogfassungSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich.
+        /// Den eigentlichen Abgleich mit dem Katalogpaket der Auslieferung macht nicht dieser Schritt,
+        /// sondern <c>Katalogabgleich.BeimStart</c> nach der Migration.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGFASSUNG = KatalogfassungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7096,6 +7116,16 @@ namespace WindowsFormsApplication1
                         "Taktverlust der Waermepumpe, Teillastkennlinie und Takten des BHKW haetten keinen Ort. " +
                         "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen wie zuvor.",
                         Schritt_ErzeugerTeillast),
+            // WELLE M6 - Katalogfassung (Schluessel, Pruefsumme, Auslaufkennzeichen, Protokoll) und
+            // gespeicherte Erdreichpruefung. Die Quelle ist KatalogfassungSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_KATALOGFASSUNG,
+                        "Katalogtabellen der Stufe 1: Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen; " +
+                        "Tab_Applikation.Katalogfassung; Tab_Katalogabgleich; Tab_ErgebnisErdreich",
+                        "Ein Update koennte den Katalog nicht abgleichen, ohne eigene Anpassungen zu ueberschreiben, " +
+                        "und die Erdreichpruefung ginge mit dem Programmende verloren. KEIN Rechenergebnis aendert " +
+                        "sich - die Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
+                        Schritt_Katalogfassung),
         };
 
         /// <summary>
@@ -12712,6 +12742,83 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Teillastfelder von Waermepumpe und BHKW - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfassung und Erdreichprüfung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGFASSUNG"/>, die Anweisungen bei <see cref="KatalogfassungSchema"/>.
+        /// <b>Wiederholbar</b>: <c>KatalogfassungSchema.Anweisungen</c> nennt nur Fehlendes, die Saat nur
+        /// ausgelieferte Sätze ohne Schlüssel. Fehlt eine vorausgesetzte Tabelle, ist das ein Fehler.
+        /// </summary>
+        private static bool Schritt_Katalogfassung(Lauf l)
+        {
+            string nr = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogfassungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KatalogfassungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KatalogfassungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Katalogspalten, Tab_Katalogabgleich oder Tab_ErgebnisErdreich stehen nach dem " +
+                                  "Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, still wie die Saat der Betriebsweisen - dieser
+            // Zweig laeuft vor dem ersten Fenster.
+            var zeilen = new List<string>();
+            int offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KatalogSchluesselSaat.Ausfuehren(zeilen);
+                    offen = KatalogSchluesselSaat.OffeneSaetze();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die belegten Schluessel bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || offen > 0)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : offen + " ausgelieferte(r) Satz/Saetze ohne Schluessel oder Pruefsumme nach dem Schritt.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogfassung und Erdreichpruefung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

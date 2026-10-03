@@ -246,6 +246,11 @@ namespace WindowsFormsApplication1
             // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
             new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
                       "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
+            // Katalogspalten und Saat betreffen nur Kataloge und globale Tabellen, die das Ziel schon
+            // führt; die Erdreichprüfung kommt mit einem Paket davor schlicht nicht mit - der Dialog
+            // zeigt sie nach dem nächsten Lauf.
+            new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
+                      "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

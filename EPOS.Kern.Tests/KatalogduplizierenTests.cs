@@ -23,8 +23,15 @@ namespace EPOS.Kern.Tests
     [Collection("Testdatenbank")]
     public class KatalogduplizierenTests
     {
-        /// <summary>Die Spalten, die eine Kopie NICHT übernimmt.</summary>
-        private static readonly string[] KOPF = { "ID", "Bezeichner", "ReadOnly" };
+        /// <summary>
+        /// Die Spalten, die eine Kopie NICHT übernimmt — samt den drei Katalogspalten (KU1 Stufe 1):
+        /// Die Kopie ist ein Anwendersatz, ohne Schlüssel, ohne Prüfsumme, nicht ausgelaufen.
+        /// </summary>
+        private static readonly string[] KOPF =
+        {
+            "ID", "Bezeichner", "ReadOnly",
+            Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN
+        };
 
         /// <summary>Der Weg je Tabelle — genau der Controller, den die Hülle ruft.</summary>
         private static Katalogkopie.Ergebnis Duplizieren(string tabelle, int id, string name) => tabelle switch
@@ -116,6 +123,13 @@ namespace EPOS.Kern.Tests
                     Assert.True(Equals(original[spalte.ColumnName], kopie[spalte.ColumnName]),
                                 tabelle + "." + spalte.ColumnName + ": " + original[spalte.ColumnName] +
                                 " gegen " + kopie[spalte.ColumnName]);
+                }
+
+                // Die Katalogspalten bleiben an der Kopie leer (KU1 Stufe 1).
+                if (kopie.Table.Columns.Contains(Katalogfassung.SPALTE_SCHLUESSEL))
+                {
+                    Assert.Equal(DBNull.Value, kopie[Katalogfassung.SPALTE_SCHLUESSEL]);
+                    Assert.Equal(DBNull.Value, kopie[Katalogfassung.SPALTE_PRUEFSUMME]);
                 }
 
                 // Das Original bleibt, wie es war - auch sein Schreibschutz.
