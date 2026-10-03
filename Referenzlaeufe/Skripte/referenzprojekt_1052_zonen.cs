@@ -73,9 +73,15 @@ foreach (string rest in new[] { datei + "-wal", datei + "-shm" })
         return 2;
     }
 
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+// Die Kultur des deutschen Anwenders, wie im Dialog: Die Programmwege schreiben Texte in der
+// Anzeigesprache - die Herkunft eines uebernommenen Kalenders steht als "aus Vorlage Wohnen" in
+// Tab_Konditionierungskalender.Bemerkung (unter en-US "from template Wohnen"). Die Wache geht die
+// Wege unter derselben Kultur nach.
+var kultur = new CultureInfo("de-DE");
+CultureInfo.DefaultThreadCurrentCulture = kultur;
+CultureInfo.DefaultThreadCurrentUICulture = kultur;
+CultureInfo.CurrentCulture = kultur;
+CultureInfo.CurrentUICulture = kultur;
 Schreibnaht.WerkzeugFreigabe("Referenzlaeufe/Skripte/referenzprojekt_1052_zonen.cs");
 
 // Der Stand ausserhalb von 1052, der sich nicht aendern darf: die Vorlage 1018 (Schluessel

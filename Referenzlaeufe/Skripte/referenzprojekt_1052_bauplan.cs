@@ -411,10 +411,13 @@ namespace EPOS.Referenzlaeufe.Skripte
             return l;
         }
 
-        /// <summary>Heisst die Spalte einen Schluessel (Primaer- oder Fremdschluessel, Projektspalte)?</summary>
+        /// <summary>
+        /// Heisst die Spalte einen Schluessel (Primaer- oder Fremdschluessel, Projektspalte)? Ein Namensteil
+        /// "ID" zwischen Unterstrichen (ID, ID_Projekt, WS_ID_Puffer, Gebaeude_ID) oder ProjektID.
+        /// </summary>
         private static bool Schluessel(string spalte)
-            => spalte.Equals("ID", StringComparison.OrdinalIgnoreCase) || spalte.StartsWith("ID_", StringComparison.OrdinalIgnoreCase)
-               || spalte.EndsWith("_ID", StringComparison.OrdinalIgnoreCase) || spalte.Equals("ProjektID", StringComparison.OrdinalIgnoreCase);
+            => spalte.Split('_').Any(t => t.Equals("ID", StringComparison.OrdinalIgnoreCase))
+               || spalte.Equals("ProjektID", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Der Abdruck eines Projekts ueber alle Projekttabellen samt Senken, Zonen, Bauteilen, Luftstroemen
