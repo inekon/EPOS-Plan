@@ -12,6 +12,9 @@ Datei hineinkopiert. Die vollständigen Statusblöcke bis zum 12.09.2026 (sie st
 Umsetzungskonzept) liegen in
 [`../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md).
 
+**Referenzbasis angemeldet:** **R34 — Sitzung Gebäudesimulation (KP3)**, Anwenderentscheid 03.10.2026; gegenwärtig gilt R33.
+Wer eine Basis neu einfriert, nimmt die nächste freie Nummer nach der angemeldeten (R35) und trägt sie hier ein.
+
 **Schemaschritt angemeldet:** **173 — frei** (zuletzt vergeben: 172 `KatalogfassungSchema`,
 Sitzung Dialoge und Korrekturen, Welle M6; 171 `PufferOptionenSchema`, Welle M7, #677). Wer eine
 Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
