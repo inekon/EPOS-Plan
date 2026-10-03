@@ -510,6 +510,13 @@ public sealed class FlottenEinheit
     /// <summary>Hilfsverbrauch A [kW AC] der Einheit; er zaehlt als zusaetzliche Standortlast und wird nicht nochmals im Wirkungsgrad gefuehrt.</summary>
     public double HilfsverbrauchKw { get; set; }
 
+    /// <summary>
+    /// Selbstentladung [% des Inhalts je Monat] (Welle M5, SP1), Standard 0. Je Intervall geht der
+    /// Anteil <c>s/100 · dt / 730 h</c> des Inhalts verloren, hoechstens bis zur unteren SoC-Marke
+    /// (<see cref="Speichersystem.Selbstentladung"/>). 0 rechnet Bit fuer Bit wie ohne das Feld.
+    /// </summary>
+    public double SelbstentladungProzentProMonat { get; set; }
+
     /// <summary>Grenzverschleiss [EUR je abgegebener AC-kWh] (Spezifikation 8.1). Er ist ein ENTSCHEIDUNGSpreis der Zielfunktion und wird nicht zusaetzlich als Auszahlung gebucht.</summary>
     public double GrenzverschleissEuroProKWhEntladung { get; set; }
 
@@ -826,6 +833,16 @@ public sealed class FlottenSimulationOptionen
 
     /// <summary>HARTE technische Einspeisegrenze [kW]; <c>null</c> = keine. Nicht abregelbare Erzeugung bleibt sichtbar statt fiktiv vernichtet zu werden.</summary>
     public double? NetzeinspeisungGrenzeKw { get; set; }
+
+    /// <summary>
+    /// WEICHE Einspeisegrenze der Photovoltaik [kW] (Welle M5, PV3): die Einspeisegrenze der
+    /// Projekteinstellung. PV-Einspeisung darueber wird abgeregelt, NACHDEM die Flotte geladen hat
+    /// (Laden vor Abregeln); die Variante bleibt zulaessig. <c>null</c> = keine. Gesetzt vom
+    /// Projektlauf, nicht serialisiert gepflegt - die harte Grenze
+    /// <see cref="NetzeinspeisungGrenzeKw"/> bleibt davon unberuehrt.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public double? PvEinspeisegrenzeWeichKw { get; set; }
 
     /// <summary>Laden aus dem Netz ist freigegeben. Ohne Freigabe darf nur verbleibender PV-Ueberschuss geladen werden.</summary>
     public bool NetzladungErlaubt { get; set; }
@@ -1144,6 +1161,9 @@ public sealed class FlottenSimulationErgebnis
 
     /// <summary>Abgeregelte PV-Energie [kWh] ueber den Rechenzeitraum.</summary>
     public double PvAbregelungKWh { get; set; }
+
+    /// <summary>Selbstentladung aller Einheiten [kWh] ueber den Rechenzeitraum (Welle M5, SP1).</summary>
+    public double SelbstentladungKWh { get; set; }
 
     /// <summary>Umwandlungsverluste [kWh] ueber den Rechenzeitraum; sie stecken bereits in der Netzrechnung und werden nicht nochmals bewertet.</summary>
     public double VerlusteKWh { get; set; }

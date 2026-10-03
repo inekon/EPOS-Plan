@@ -341,7 +341,8 @@ namespace EPOS.Kern.Tests
             {
                 // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
                 [KatalogBrowserArt.Heizkessel] = 27,
-                [KatalogBrowserArt.Bhkw] = 27,
+                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) 31.
+                [KatalogBrowserArt.Bhkw] = 31,
                 // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
                 [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -396,9 +397,10 @@ namespace EPOS.Kern.Tests
             // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
             // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
             // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
-            // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+            // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
+            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) 28.
             Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(28, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
@@ -1010,11 +1012,12 @@ namespace EPOS.Kern.Tests
             // W14a-E-10-Q7 (Migrationsschritt 68, 07.09.2026): Der Stromspeicher
             // bekommt sein Feld "Firma" - VIERZEHN statt dreizehn, davon acht im
             // Bestandsblock. Er war der einzige Modulkatalog ohne dieses Feld.
-            Assert.Equal(14, sp.Felder.Count);
+            // Welle M5 (SP1): dazu die Selbstentladung im Block Geraetetechnik - FUENFZEHN.
+            Assert.Equal(15, sp.Felder.Count);
             Assert.Equal(15, pv.Felder.Count);
 
             Assert.Equal(8, sp.Felder.Count(f => f.Gruppe == 0));
-            Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);
 

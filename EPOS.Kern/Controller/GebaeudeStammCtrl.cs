@@ -1313,6 +1313,211 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================
+        //  „In DB übernehmen": ein Projektgebäude als neuer Katalogsatz
+        // =================================================================
+
+        /// <summary>Warum <see cref="AusProjektUebernehmen"/> nichts geschrieben hat.</summary>
+        public enum Projektuebernahmeabsage
+        {
+            /// <summary>Keine Absage — der Satz steht im Katalog.</summary>
+            Keine,
+
+            /// <summary>Kein Projektgebäude gewählt, oder es hat (noch) keine Projektkopie.</summary>
+            KeinGebaeude,
+
+            /// <summary>Der Name ist leer.</summary>
+            NameLeer,
+
+            /// <summary>Ein Katalogsatz trägt den Namen schon.</summary>
+            NameVergeben,
+
+            /// <summary>Das Schreiben ist gescheitert; der Grund steht in der Meldung.</summary>
+            Fehler,
+        }
+
+        /// <summary>
+        /// Was „In DB übernehmen" ergeben hat: die Id und der Name des neuen Katalogsatzes, der
+        /// Kopierbefund der Konditionierung und die Zahl der Zonen und Bauteile, die im Projekt
+        /// bleiben (der Katalog führt keine Zonen) — oder die benannte Absage.
+        /// </summary>
+        public sealed record ProjektuebernahmeErgebnis(bool Ok, int Id, string Name, Projektuebernahmeabsage Absage,
+                                                       string Meldung, Konditionierungskopie.Befund Befund,
+                                                       int ZonenImProjekt, int BauteileImProjekt)
+        {
+            /// <summary>Steht die Absage am Namensfeld (leer oder vergeben)?</summary>
+            public bool AmNamen => Absage == Projektuebernahmeabsage.NameLeer || Absage == Projektuebernahmeabsage.NameVergeben;
+
+            /// <summary>Die benannte Absage — nichts ist geschrieben.</summary>
+            public static ProjektuebernahmeErgebnis Abgelehnt(Projektuebernahmeabsage absage, string meldung)
+                => new ProjektuebernahmeErgebnis(false, 0, "", absage, meldung ?? "", null, 0, 0);
+        }
+
+        /// <summary>
+        /// Die 94 Fachspalten des Gebäudemodells, die Projektkopie (<c>Tab_Gebaeude</c>) und Katalog
+        /// (<c>Tab_Gebaeude_STAMM</c>) gleich führen — alle Spalten des Katalogs außer <c>ID</c>,
+        /// <c>Bezeichner</c>, <c>Beschreibung</c> und <c>ReadOnly</c>. Dieselbe Liste wie die Anlage
+        /// <see cref="Insert(GebaeudeModel, out int)"/>, in derselben Reihenfolge.
+        /// </summary>
+        internal const string KOPFSPALTEN = "[Typ], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard]";
+
+        /// <summary>
+        /// Der Name, den „In DB übernehmen" für die Projektkopie des Projektgebäudes
+        /// <paramref name="idProjektGebaeude"/> (<c>Z_ProjektGebaeude.ID</c>) vorschlägt: ihr Name, und ist
+        /// er im Katalog vergeben, mit Zähler („… (2)", „… (3)" …). Leer, wenn es die Kopie nicht gibt.
+        /// </summary>
+        public static string NamensvorschlagAusProjekt(int idProjektGebaeude)
+        {
+            DataRow r = Projektkopiezeile(idProjektGebaeude);
+            if (r == null) return "";
+            string basis = Spaltentext(r, "Gebaeudename").Trim();
+            if (basis.Length == 0) return "";
+            if (!NameVergeben(basis)) return basis;
+            for (int n = 2; n < 10000; n++)
+            {
+                string kandidat = basis + " (" + n.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+                if (!NameVergeben(kandidat)) return kandidat;
+            }
+            return basis;
+        }
+
+        /// <summary>Trägt ein Katalogsatz den Namen <paramref name="name"/> schon (eindeutiger Index auf <c>Bezeichner</c>)?</summary>
+        public static bool NameVergeben(string name)
+        {
+            object n = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + TABLE + "] WHERE [Bezeichner] = ?",
+                new DbParam("@bez", name ?? ""));
+            return n != null && n != DBNull.Value && Convert.ToInt64(n, System.Globalization.CultureInfo.InvariantCulture) > 0;
+        }
+
+        /// <summary>
+        /// <b>„In DB übernehmen"</b> — die Projektkopie des Projektgebäudes
+        /// <paramref name="idProjektGebaeude"/> (<c>Z_ProjektGebaeude.ID</c>, die Zuordnung der Projektliste)
+        /// als NEUER Anwendersatz im Katalog unter <paramref name="name"/>: der Spiegel von
+        /// <see cref="CopyFromStamm(int?, string, int, int)"/>.
+        ///
+        /// <list type="bullet">
+        /// <item><b>Kopf:</b> alle 94 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
+        /// <c>Tab_Gebaeude</c> — NULL bleibt NULL, Schalter bleiben 0/1. Neue Id, <c>ReadOnly = 0</c>;
+        /// Projekt, Zuordnung und Katalogverweis der Kopie gehören nicht zum Katalog.</item>
+        /// <item><b>Beschreibung:</b> die der Kopie, darunter die Herkunft „aus Projekt …, Datum"
+        /// (<c>GEB_TEXT_HERKUNFT_PROJEKT</c>).</item>
+        /// <item><b>Konditionierung:</b> die Gebäudeebene (Vorgaben, Kalender samt Perioden) über
+        /// <see cref="Konditionierungskopie"/> — wie „Speichern unter".</item>
+        /// <item><b>Zonen und Bauteile</b> bleiben im Projekt: Der Katalog führt keine Zonen
+        /// (<c>Tab_Zone.ID_Gebaeude</c> zeigt nur auf Projektkopien). Ihre Zahl steht im Ergebnis.</item>
+        /// <item>Die Tagesverteilung hängt im Katalog am Gebäudetyp (<c>Typ</c>), der mitreist.</item>
+        /// </list>
+        ///
+        /// <para>Alles in EINEM Vorgang; das Projekt bleibt unberührt. Benannte Absagen: kein Gebäude
+        /// (oder keine Projektkopie), Name leer, Name vergeben.</para>
+        /// </summary>
+        public static ProjektuebernahmeErgebnis AusProjektUebernehmen(int idProjektGebaeude, string name,
+                                                                      DateTime? stichtag = null)
+        {
+            DataRow r = idProjektGebaeude > 0 ? Projektkopiezeile(idProjektGebaeude) : null;
+            if (r == null)
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.KeinGebaeude,
+                                                           MyResource.Resource.GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE);
+
+            string neuerName = (name ?? "").Trim();
+            if (neuerName.Length == 0)
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.NameLeer,
+                                                           MyResource.Resource.GEB_MSG_DB_UEBERNAHME_NAME_LEER);
+            if (NameVergeben(neuerName))
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.NameVergeben,
+                                                           MyResource.Resource.GEBK_MSG_NAME_VERGEBEN);
+
+            int idGebaeude = Convert.ToInt32(r["ID"], System.Globalization.CultureInfo.InvariantCulture);
+            string beschreibung = Herkunftsbeschreibung(Spaltentext(r, "Beschreibung"),
+                                                        Projektname(Ganzzahl(r, "ID_Projekt")),
+                                                        stichtag ?? DateTime.Today);
+            int zonen = Anzahl("SELECT COUNT(*) FROM [Tab_Zone] WHERE [ID_Gebaeude] = ?", idGebaeude);
+            int bauteile = Anzahl("SELECT COUNT(*) FROM [Tab_Bauteil] WHERE [ID_Zone] IN " +
+                                  "(SELECT [ID] FROM [Tab_Zone] WHERE [ID_Gebaeude] = ?)", idGebaeude);
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    int id = DataRepository.GetMaxID(TABLE) + 1;
+                    bool ok = DataRepository.ExecuteSQL(
+                        "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Beschreibung], [ReadOnly], " + KOPFSPALTEN + ") " +
+                        "SELECT ?, ?, ?, 0, " + KOPFSPALTEN + " FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                        new DbParam("@nid", DbParamTyp.Integer) { Wert = id },
+                        new DbParam("@nbez", DbParamTyp.VarWChar) { Wert = neuerName },
+                        new DbParam("@nbes", DbParamTyp.VarWChar) { Wert = beschreibung },
+                        new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
+                    if (!ok || !NameVergeben(neuerName))
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler,
+                                                                   MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                    }
+
+                    Konditionierungskopie.Befund befund = KonditionierungSchema.Lesbar()
+                        ? Konditionierungskopie.Kopieren(vorgang, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude),
+                                                         KonditionierungCtrl.Eigner.Katalogbau(id),
+                                                         Konditionierungskopie.Auswahl.Alles)
+                        : Konditionierungskopie.Befund.Nichts;
+                    if (!befund.Ok)
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, befund.Meldung);
+                    }
+
+                    vorgang.Commit();
+                    return new ProjektuebernahmeErgebnis(true, id, neuerName, Projektuebernahmeabsage.Keine, "",
+                                                         befund, zonen, bauteile);
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die Beschreibung des neuen Katalogsatzes: die der Projektkopie, darunter die Herkunft
+        /// (<c>GEB_TEXT_HERKUNFT_PROJEKT</c>: {0} Projekt, {1} Datum in der Kultur der Oberfläche).
+        /// </summary>
+        internal static string Herkunftsbeschreibung(string beschreibung, string projekt, DateTime stichtag)
+        {
+            string herkunft = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                            MyResource.Resource.GEB_TEXT_HERKUNFT_PROJEKT,
+                                            projekt ?? "", stichtag.ToString("d", System.Globalization.CultureInfo.CurrentCulture));
+            string vorher = (beschreibung ?? "").TrimEnd();
+            return vorher.Length == 0 ? herkunft : vorher + "\n" + herkunft;
+        }
+
+        /// <summary>Die Projektkopie (<c>Tab_Gebaeude</c>) einer Zuordnung der Projektliste; <c>null</c> = keine.</summary>
+        private static DataRow Projektkopiezeile(int idProjektGebaeude)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [ID], [ID_Projekt], [Gebaeudename], [Beschreibung] FROM [" + TABLE_PROJ + "] " +
+                "WHERE [ID_ProjektGebaeude] = ? ORDER BY [ID]",
+                new DbParam("@zid", idProjektGebaeude));
+            return dt == null || dt.Rows.Count == 0 ? null : dt.Rows[0];
+        }
+
+        /// <summary>Der Name eines Projekts; leer, wenn es ihn nicht gibt.</summary>
+        private static string Projektname(int? idProjekt)
+        {
+            if (!idProjekt.HasValue) return "";
+            object n = DataRepository.ExecuteScalar("SELECT [Projektname] FROM [Tab_Projekt] WHERE [ID] = ?",
+                                                    new DbParam("@pid", idProjekt.Value));
+            return n == null || n == DBNull.Value ? "" : Convert.ToString(n, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Eine Zählung mit einem Id-Parameter; 0 ohne Ergebnis.</summary>
+        private static int Anzahl(string sql, int id)
+        {
+            object n = DataRepository.ExecuteScalar(sql, new DbParam("@id", id));
+            return n == null || n == DBNull.Value ? 0 : Convert.ToInt32(n, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): schaltet das
         /// Auslieferungskennzeichen der Sätze <paramref name="ids"/> — nur den Kopfsatz, kein

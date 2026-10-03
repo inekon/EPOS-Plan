@@ -112,7 +112,8 @@ namespace WindowsFormsApplication1
                 m_Verschleisskosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldVerschleisskosten),
                 m_Leistungskosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLeistungskosten),
                 m_InvestitionFix = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldInvestitionFix),
-                m_StandbyVerbrauch = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldStandby)
+                m_StandbyVerbrauch = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldStandby),
+                m_Selbstentladung = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldSelbstentladung)
             };
 
             StromspeicherStammCtrl.SpeicherErgebnis e =

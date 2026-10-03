@@ -177,7 +177,10 @@ namespace EPOS.Kern.Tests
                          SimulationErgebnisCtrl.Photovoltaik(r.sim).DeckungProzent, 9);
         }
 
-        /// <summary>E29‑Q10 a an 1040 (keine negative Stunde): der Deckungsgrad bitgleich zur alten Formel.</summary>
+        /// <summary>
+        /// E29‑Q10 a an 1040 (keine negative Viertelstunde): der Deckungsgrad bitgleich zur ungeklemmten
+        /// Formel — seit SB1 (a) mit dem Viertelstundenbedarf als Nenner.
+        /// </summary>
         [Fact]
         public void Der_PV_Deckungsgrad_ohne_BHKW_Ueberschuss_bleibt_bitgleich()
         {
@@ -186,7 +189,7 @@ namespace EPOS.Kern.Tests
             var r = new SimulationRunner();
             Assert.True(r.Simuliere(1040, out string fehler), "Lauf gescheitert: " + fehler);
             SimulationPV pvs = r.sim.simulation_pv;
-            double alt = pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum();
+            double alt = pvs.Stromproduktion.Sum() * 100.0 / (pvs.Strombedarf.Sum() / 4.0);
 
             ErgebnisModel e = SimulationRunner.BaueErgebnis(1040, r.simulation_Waermebedarf,
                                                             r.simulation_Strombedarf, r.sim);

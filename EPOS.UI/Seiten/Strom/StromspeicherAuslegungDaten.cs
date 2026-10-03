@@ -158,6 +158,13 @@ public sealed class StromspeicherAuslegungDienste
     /// <summary>Der hergeleitete Vorschlag für das Peak-Ziel H₀ (SD‑Q3).</summary>
     public Func<SpeicherOptimierungEingaben, FlottenPeakZielVorschlag>? PeakZielVorschlag;
 
+    /// <summary>
+    /// Die Einspeisegrenze der Projekteinstellung in kW (Welle M5, PV3); <c>null</c> = keine. Der
+    /// Netzblock nennt sie an der harten Einspeisegrenze der Flotte — sie ist deren Vorbelegung und
+    /// wirkt im Projektlauf zusätzlich als weiche Grenze. Kein Delegat ist keine Zeile.
+    /// </summary>
+    public Func<double?>? ProjektEinspeisegrenzeKw;
+
     // =====================================================================
     //  „Speicher hinzufügen" — die drei Quellen (Auftrag #239)
     // =====================================================================

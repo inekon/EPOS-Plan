@@ -220,9 +220,11 @@ public class KiSimulationMaskeTests : IDisposable
     ///
     /// <para>Welle M3b (BW4): einundsechzig — Netzverluste je Kanal mit Einheit und die Zirkulation
     /// des Bestandswegs.</para>
+    ///
+    /// <para>Welle M5 (PV3): dreiundsechzig — die Einspeisegrenze mit Wert und Einheit.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_einundsechzig_Felder_an()
+    public void Die_Ansicht_meldet_dreiundsechzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -231,7 +233,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(61, felder.Count);
+        Assert.Equal(63, felder.Count);
     }
 
     /// <summary>
@@ -421,6 +423,7 @@ public class KiSimulationMaskeTests : IDisposable
             "netzverlust_brauchwasser_einheit", "netzverlust_prozess", "netzverlust_prozess_einheit",
             "zirkulation_leistung", "zirkulation_laufzeit", "anlagenkopplung",
             "aufheizoptimierung", "aufheiz_bemessung", "aufheiz_abzug", "aufheiz_reserve", "aufheiz_art",
+            "einspeisegrenze", "einspeisegrenze_einheit",
             "quellanlage", "waermequelle",
             "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
             "autarkie_speicher", "lesepunkt_davor",

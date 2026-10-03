@@ -2474,4 +2474,86 @@ public class SimulationKonfigSeiteTests : BunitContext
             .Add(x => x.StartProjekt, 1030));
         Assert.Empty(seite.FindAll("section.epos-simkonfig-netzkanaele"));
     }
+
+    // =====================================================================
+    //  Welle M5 (PV3) — die Projekteinstellung „Einspeisegrenze"
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Einspeisegrenze> _grenzeGeschrieben = new();
+
+    private bool _grenzeAntwort = true;
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Einspeisegrenze = stand;
+            return p;
+        };
+        wege.EinspeisegrenzeSchreiben = g =>
+        {
+            _grenzeGeschrieben.Add(g);
+            return _grenzeAntwort;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Grenzabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-einspeisegrenze");
+
+    /// <summary>
+    /// Ohne Grenze: das Feld leer mit dem Platzhalter „keine Grenze", die Einheit kW gewählt, die
+    /// Herleitungszeile darunter. Zeichnen schreibt nichts. Ohne Delegat gibt es den Abschnitt nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Einspeisegrenze_steht_leer_mit_Einheit_kW()
+    {
+        var seite = SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze.Keine);
+        IElement abschnitt = Grenzabschnitt(seite);
+
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_EINSPEISEGRENZE, abschnitt.GetAttribute("aria-label"));
+        IElement feld = abschnitt.QuerySelector("input[type=text]")!;
+        Assert.Equal("", feld.GetAttribute("value") ?? "");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_EINSPEISEGRENZE_LEER, feld.GetAttribute("placeholder"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW,
+                     Gewaehlt(abschnitt.QuerySelector("select")!));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_EINSPEISEGRENZE, abschnitt.TextContent);
+        Assert.Empty(_grenzeGeschrieben);
+
+        var ohne = Seite();
+        Assert.Empty(ohne.FindAll("section.epos-simkonfig-einspeisegrenze"));
+    }
+
+    /// <summary>
+    /// Wert und Einheit schreiben SOFORT die ganze Einstellung; die Einheit % zeigt „%" am Feld, ein
+    /// geleertes Feld schreibt „keine Grenze". Scheitert das Schreiben, bleibt der Stand.
+    /// </summary>
+    [Fact]
+    public void Wert_und_Einheit_der_Einspeisegrenze_schreiben_sofort()
+    {
+        var seite = SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze.Keine);
+
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("70");
+        Assert.Equal(new WindowsFormsApplication1.Einspeisegrenze(70, null), _grenzeGeschrieben.Last());
+
+        Grenzabschnitt(seite).QuerySelector("select")!.Change("1");
+        Assert.Equal(new WindowsFormsApplication1.Einspeisegrenze(70, WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT),
+                     _grenzeGeschrieben.Last());
+        Assert.Contains("%", Grenzabschnitt(seite).TextContent);
+        Assert.Equal(_grenzeGeschrieben.Last(), seite.Instance.Laufparameter.Einspeisegrenze);
+
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("");
+        Assert.False(_grenzeGeschrieben.Last().Gesetzt);
+
+        _grenzeAntwort = false;
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("5");
+        Assert.False(seite.Instance.Laufparameter.Einspeisegrenze.Gesetzt);
+        Assert.Equal(4, _grenzeGeschrieben.Count);
+    }
 }

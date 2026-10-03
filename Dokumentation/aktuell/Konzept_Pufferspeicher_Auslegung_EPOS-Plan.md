@@ -7,6 +7,8 @@
 > `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html`. Die Entscheide des Anwenders vom 01.10.2026
 > (E-P12, E-P17, E-P31, E-P32, Freigabe P1, Einstiege) stehen in 9; alle übrigen Entscheide der Recherche gelten nach
 > Empfehlung (E60).
+>
+> **Rev. 2 (03.10.2026, nach dem Bau P1).** Schemaschritt **169** statt 167 und Basis **R33** statt R32, weil der Arbeitszweig am selben Tag die Schritte 167 (Teillast WP/BHKW, M4) und 168 (Strom in Viertelstunden, M5) und die Basis R33 vergeben hat. P1 ist gebaut; Festlegungen beim Bau, Abweichungen und Nachweise stehen im Protokoll [`2026-10-03_P1_Pufferauslegung.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P1_Pufferauslegung.md), die Ergänzungen zu 4.1 in 10.
 
 
 ## 0. Das Ergebnis in zehn Punkten
@@ -34,14 +36,14 @@
 7. **Hinweise mit Codes statt Sperren:** Plausibilitätsband nach Übergabeart, Abtaureserve bei Trinkwasservorrang,
    Überdimensionierung des Brauchwassers, Extrapolation über 2 000 l, Hygiene nach W 551 und IEA Annex 46, Tank-im-Tank,
    „ohne Puffer nur leistungsgeregelt“ — jede Zeile mit Herkunft (F7).
-8. **Schemaschritt 167:** `Tab_PufferAuslegung` (STRICT, je Projektpuffer, NULL = Vorgabe) und die Vorgabetabelle
+8. **Schemaschritt 169:** `Tab_PufferAuslegung` (STRICT, je Projektpuffer, NULL = Vorgabe) und die Vorgabetabelle
    `Tab_PufferAuslegungParameter_STAMM` mit Saat im Schritt — eine eigene Tabelle, weil die Tww-Parametertabelle
    paketgebunden ist und neue Schlüssel bestehende Datenbanken nicht über das Nachladen erreichen (F8).
 9. **Drei Einstiege, eine Maske:** Knopf „Auslegen…“ im Pufferspeicher-Dialog (Kachel), „Pufferspeicher auslegen…“ in
    ① Simulation Konfiguration als freie Ansicht der `AppWurzel` nach dem Muster der Stromspeicher-Auslegung, und in P2
    „An Speicherauslegung übergeben…“ aus dem Zapfprofil; beide Plattformen über `EPOS.UI` (F9).
 10. **Stufen P0–P3 mit 13–18 PT:** P0 Konzept und Mockup (dieses Papier), **P1 Kern und Schema (heute, freigegeben)**,
-    P2 Oberfläche mit drei Einstiegen, P3 Bericht, Wiki und Logbuch. Die Referenzbasis R32 bleibt byte-gleich, weil die
+    P2 Oberfläche mit drei Einstiegen, P3 Bericht, Wiki und Logbuch. Die Referenzbasis R33 bleibt byte-gleich, weil die
     Auslegung nur rechnet und auf Zuruf schreibt; `SimulationPufferspeicher.cs`, `TwwSpeicherauslegung.cs` und das
     Zapfprofil bleiben unverändert (F10).
 
@@ -188,7 +190,7 @@ Herkunft.
 
 ## 4. Datenmodell und Schema
 
-### 4.1 Schemaschritt 167 (`PufferAuslegungSchema`, `SCHRITT = BedarfNetzKalenderSchema.SCHRITT + 1`)
+### 4.1 Schemaschritt 169 (`PufferAuslegungSchema`, `SCHRITT = BedarfNetzKalenderSchema.SCHRITT + 1`)
 
 **`Tab_PufferAuslegung`** (STRICT): `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `ID_Projekt` INTEGER NOT NULL REFERENCES
 `Tab_Projekt`(ID) ON DELETE CASCADE, `ID_Pufferspeicher` INTEGER REFERENCES `Tab_Pufferspeicher`(ID) ON DELETE SET
@@ -235,10 +237,10 @@ wiederholbar). Schlüssel (`Pufferauslegung.*`):
 ### 4.2 Einhängen
 
 `SchemaStand.Zielversion = PufferAuslegungSchema.SCHRITT`; `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`
-(Konstante, Eintrag, `Schritt_167`); `Paketanhebung.STUFEN` (`Art.Ddl`, die Saat läuft im DDL-Schritt);
+(Konstante, Eintrag, `Schritt_PufferAuslegung`); `Paketanhebung.STUFEN` (`Art.Ddl`, die Saat läuft im DDL-Schritt);
 `EPOS.Kern.Tests/TestDatenbank.SchemaNachziehen`; `Werkzeuge/Testdatenbankschema/Program.cs`; `ProjektDuplizierenCtrl.KINDER`
 braucht keinen Eintrag (eigene `ID_Projekt`), `ID_Pufferspeicher` wird beim Duplizieren über `FK_MAP` umgesetzt;
-Testdatenbank mit `Werkzeuge/Testdatenbankschema` auf 167, Nachtrag in `Referenzlaeufe/LIESMICH.md`. Export/Import
+Testdatenbank mit `Werkzeuge/Testdatenbankschema` auf 169, Nachtrag in `Referenzlaeufe/LIESMICH.md`. Export/Import
 des Projekts (XML) nimmt die Zeile mit, wenn der Projektexport Tabellen generisch führt; sonst Folgeauftrag P2.
 
 
@@ -285,7 +287,7 @@ Nutzen-Aufwand-Zeile mit JAZ-Hinweis, Warnliste, Übernahme als Ändern/Neuanleg
 | Stufe | Inhalt | Abnahme | PT |
 |---|---|---|---|
 | **P0** | Recherche (vier Runden), Mockup, dieses Konzept — abgeschlossen 03.10.2026 | Wachen grün | 3 |
-| **P1** | Schemaschritt 167 mit Vorgabetabelle und Saat, Rechenkern, Controller, Tests, Testdatenbank 167 — **heute** | Kern-Filter 0 Fehler, Tests grün, Referenzlauf 16/16 byte-gleich gegen R32, Windows-Schale 0 Fehler | 5–7 |
+| **P1** | Schemaschritt 169 mit Vorgabetabelle und Saat, Rechenkern, Controller, Tests, Testdatenbank 169 — **heute** | Kern-Filter 0 Fehler, Tests grün, Referenzlauf 16/16 byte-gleich gegen R33, Windows-Schale 0 Fehler | 5–7 |
 | **P2** | Oberfläche, drei Einstiege, Hülle, Texte, KI-Maske, bunit | UI-Tests, Sichtabnahme Windows, iOS nach Rückfrage | 4–6 |
 | **P3** | Bericht (Abschnitt Pufferauslegung), Wiki-Seite, Logbuch-Satz, Export/Import der Zeile | Wiki-Suchmuster, Berichtstests | 1–2 |
 | **Summe** | | | **13–18** |
@@ -332,8 +334,9 @@ Empfehlung.
   2,5 kWh/d → 2,315 W/K, Klasse C 1 000 l → 3,569 kWh/d → 3,304 W/K, Betriebsfaktor 0,667 → 608 kWh/a, 2 500 l →
   Extrapolation; Prozesszone am Testprojekt 1041; Nutzungsprofil je Testprojekt; Schemaschritt zweimal;
   `ProjektplanKinderWacheTests`; Paketanhebung.
+- **Nachtrag P1 (Rev. 2):** Die Vorgabetabelle trägt über 4.1 hinaus `Sperrzeit.Raumtemperatur_C` 20, `WP.Mindestleistung_Anteil` 0,3 und `Puffer.Schwelle_Ein`/`_Aus` 0,10/0,95; die Zonenschlüssel heißen `Zonen.Vorgabe_Oben/_MitteOben/_MitteUnten/_Unten`; Saat 148 Zeilen. K4 nach Gleichung 23 rechnet ohne η_s, K3, K4e, D1 und die Volumenkriterien mit η_s, D2 über die Schwellen. K11 Klasse C bei 1 000 l ergibt 3,568 kWh/d. Der Controller heißt `PufferAuslegungCtrl` mit `Vorbelegen`, `Reihen`, `Rechnen`, `Durchrechnen`, `Speichern`, `Uebernehmen`, `Vorlagen`, `Katalog`; Export/Import und Duplizieren tragen `Tab_PufferAuslegung` über den generischen Plan mit. Welle M4 (Schritt 167) liefert `Mindestleistung_kW` und Taktverlust der Wärmepumpe als künftige Vorbelegung (P2).
 - **Gate:** `WP-Plan.Kern.slnf` Release 0 Fehler, alle Testprojekte mit den xUnit-Schaltern, Windows-Schale auf Linux
-  0 Fehler, Referenzlauf 16/16 byte-gleich gegen `2026-10-02_R32_Solarthermie`, Wachen Dokumentation/Repository/Wiki.
+  0 Fehler, Referenzlauf 16/16 byte-gleich gegen `2026-10-02_R33_Viertelstunden`, Wachen Dokumentation/Repository/Wiki.
 - **Einfrierregel:** unberührt — die Auslegung schreibt nur auf Zuruf in `Tab_Pufferspeicher`; Tests übernehmen nie auf
   Referenzprojekte, sondern auf Kopien.
 - **Wiki (P3, gebündelt):** neue Seite „Pufferspeicher auslegen“ (Bedienung), Grundlagenseite Pufferspeicher ergänzt um

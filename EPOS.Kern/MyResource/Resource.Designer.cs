@@ -4103,11 +4103,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Last [%] ähnelt.
+        /// </summary>
+        public static string BHKWK_BILD_ACHSE_LAST {
+            get {
+                return ResourceManager.GetString("BHKWK_BILD_ACHSE_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrisch ähnelt.
+        /// </summary>
+        public static string BHKWK_BILD_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("BHKWK_BILD_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad über der elektrischen Last ähnelt.
+        /// </summary>
+        public static string BHKWK_BILD_KENNLINIE {
+            get {
+                return ResourceManager.GetString("BHKWK_BILD_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermisch ähnelt.
+        /// </summary>
+        public static string BHKWK_BILD_THERMISCH {
+            get {
+                return ResourceManager.GetString("BHKWK_BILD_THERMISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust je Start ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_ANFAHRVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrischer Wirkungsgrad bei 50 % Last ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_ETA_EL50 {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_ETA_EL50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermischer Wirkungsgrad bei 50 % Last ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_ETA_TH50 {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_ETA_TH50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die untere Grenzleistung ähnelt.
         /// </summary>
         public static string BHKWK_FELD_GRENZLEISTUNG {
             get {
                 return ResourceManager.GetString("BHKWK_FELD_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_MINDESTLAUFZEIT {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_MINDESTLAUFZEIT", resourceCulture);
             }
         }
         
@@ -4195,6 +4267,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillast und Takten ähnelt.
+        /// </summary>
+        public static string BHKWK_GRP_TEILLAST {
+            get {
+                return ResourceManager.GetString("BHKWK_GRP_TEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor, z. B. 0,27) ähnelt.
+        /// </summary>
+        public static string BHKWK_HINT_ETA_EL50 {
+            get {
+                return ResourceManager.GetString("BHKWK_HINT_ETA_EL50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor, z. B. 0,64) ähnelt.
+        /// </summary>
+        public static string BHKWK_HINT_ETA_TH50 {
+            get {
+                return ResourceManager.GetString("BHKWK_HINT_ETA_TH50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor, z. B. 0,30) ähnelt.
         /// </summary>
         public static string BHKWK_HINT_WIRKUNGSGRAD_EL {
@@ -4213,11 +4312,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben. ähnelt.
+        /// </summary>
+        public static string BHKWK_HINWEIS_TEILLAST {
+            get {
+                return ResourceManager.GetString("BHKWK_HINWEIS_TEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abgasreinigung, z. B. Kat: ähnelt.
         /// </summary>
         public static string BHKWK_LBL_ABGASREINIGUNG {
             get {
                 return ResourceManager.GetString("BHKWK_LBL_ABGASREINIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust je Start: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_ANFAHRVERLUST", resourceCulture);
             }
         }
         
@@ -4236,6 +4353,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_LBL_ENERGIETRAEGER {
             get {
                 return ResourceManager.GetString("BHKWK_LBL_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die El. Wirkungsgrad bei 50 % Last: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_ETA_EL50 {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_ETA_EL50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Th. Wirkungsgrad bei 50 % Last: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_ETA_TH50 {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_ETA_TH50", resourceCulture);
             }
         }
         
@@ -4272,6 +4407,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_LBL_LIEFERUNG {
             get {
                 return ResourceManager.GetString("BHKWK_LBL_LIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_MINDESTLAUFZEIT {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_MINDESTLAUFZEIT", resourceCulture);
             }
         }
         
@@ -4470,6 +4614,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_MSG_SCHUTZ {
             get {
                 return ResourceManager.GetString("BHKWK_MSG_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Takten ähnelt.
+        /// </summary>
+        public static string BHKWK_PLATZHALTER_OHNE_TAKTEN {
+            get {
+                return ResourceManager.GetString("BHKWK_PLATZHALTER_OHNE_TAKTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Volllast ähnelt.
+        /// </summary>
+        public static string BHKWK_PLATZHALTER_VOLLLAST {
+            get {
+                return ResourceManager.GetString("BHKWK_PLATZHALTER_VOLLLAST", resourceCulture);
             }
         }
         
@@ -20664,6 +20826,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINSPEISEGRENZE_PROJEKT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINSPEISEGRENZE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Horizont-Endbedingung: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ENDBEDINGUNG {
@@ -28612,6 +28783,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In DB übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -28810,6 +28999,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datenbank: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_IN_DB_NAME {
+            get {
+                return ResourceManager.GetString("GEB_LBL_IN_DB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB: ähnelt.
         /// </summary>
         public static string GEB_LBL_KATALOG {
@@ -28900,6 +29098,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt ist kein gespeichertes Gebäude gewählt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen eingeben. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_NAME_LEER {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
         /// </summary>
         public static string GEB_MSG_GELOESCHT {
@@ -28914,6 +29130,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_IMPORT_AUFGENOMMEN {
             get {
                 return ResourceManager.GetString("GEB_MSG_IMPORT_AUFGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_ZONEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_ZONEN", resourceCulture);
             }
         }
         
@@ -29026,11 +29260,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_IN_DB_NEUE_ZEILE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_IN_DB_NEUE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg ähnelt.
         /// </summary>
         public static string GEB_SP_RECHENWEG {
             get {
                 return ResourceManager.GetString("GEB_SP_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projekt {0}, {1} ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen. ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_IN_DB_REGEL {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_IN_DB_REGEL", resourceCulture);
             }
         }
         
@@ -29049,6 +29310,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TITEL {
             get {
                 return ResourceManager.GetString("GEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_TITEL_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_TITEL_IN_DB", resourceCulture);
             }
         }
         
@@ -43734,11 +44004,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff je Start in kWh. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze statt auszubleiben; jeder Start kostet diesen Brennstoff. Leer = kein Takten (ohne Mindestlaufzeit) bzw. 0 kWh. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_ANFAHRVERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_ANFAHRVERLUST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine mehrzeilige Notiz zum Modul; sie steht nur im Katalog und beeinflusst keine Rechnung. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKK_BESCHREIBUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BHKK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,27). Mit ihm rechnet das Modul eine Teillastkennlinie: zwischen 50 % und Volllast linear, darunter der Wert bei 50 %. Leer = wie Volllast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_ETA_EL50_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_ETA_EL50_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,64). Zusammen mit dem elektrischen Wert bestimmt er die Stromkennzahl in Teillast. Leer = wie Volllast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_ETA_TH50_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_ETA_TH50_ERL", resourceCulture);
             }
         }
         
@@ -43757,6 +44054,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BHKK_GRENZLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BHKK_GRENZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit je Start in Minuten (1 bis 60). Sie begrenzt die Starts einer Taktstunde auf 60 geteilt durch die Mindestlaufzeit. Leer = kein Takten (ohne Anfahrverlust) bzw. 10 min. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_MINDESTLAUFZEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_MINDESTLAUFZEIT_ERL", resourceCulture);
             }
         }
         
@@ -48927,6 +49233,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_SELBSTENTLADUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_SELBSTENTLADUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bereitschaftsleistung des Speichers im Ruhezustand. ähnelt.
         /// </summary>
         public static string KI_DLG_MODK_STANDBY_ERL {
@@ -50795,6 +51110,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_BETRIEBSMODUS_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Einspeisegrenze: kW am Netzanschluss oder % der installierten PV-Leistung (kWp). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste PV-Einspeisung am Netzanschluss in der gewählten Einheit; leer heißt keine Grenze. Darüber wird abgeregelt, nachdem ein Speicher geladen hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_EINSPEISEGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_EINSPEISEGRENZE_ERL", resourceCulture);
             }
         }
         
@@ -53922,6 +54255,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Modulationsleistung der Wärmepumpe in kW. Unterhalb taktet das Gerät, und die Leistungszahl sinkt nach EN 14825. Leer = keine Taktrechnung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_MINDESTLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_MINDESTLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung. ähnelt.
         /// </summary>
         public static string KI_DLG_WP_MODULKOSTEN_ERL {
@@ -53945,6 +54287,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_NAME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkoeffizient C_d nach EN 14825 (0 bis 1). Er bestimmt den Taktverlust: COP_takt = COP · CR / (C_d · CR + 1 − C_d). Leer = Vorgabe 0,9. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_TAKTVERLUST_CD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_TAKTVERLUST_CD_ERL", resourceCulture);
             }
         }
         
@@ -79419,6 +79770,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Ein Standby-Verbrauch außerhalb 0 … 1 000 W wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_STANDBY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_STANDBY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFILE_DIAGNOSE {
@@ -80209,11 +80569,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abregelung an der Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abregelung in % der Erzeugung ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_ABREGELUNG_ANTEIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_ABREGELUNG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarfsdeckung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_PV_DECKUNG {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_PV_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -81154,11 +81541,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW am Netzanschluss ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_EINHEIT_KW {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_EINHEIT_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der installierten PV-Leistung ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisegrenze konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Grenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_EINSPEISEGRENZE_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_EINSPEISEGRENZE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_GRP_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -81222,6 +81654,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste PV-Einspeisung am Netzanschluss, in kW oder in % der installierten PV-Leistung. Was der Speicher nicht lädt und darüber liegt, wird abgeregelt. Leer = keine Grenze. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_EINSPEISEGRENZE", resourceCulture);
             }
         }
         
@@ -81321,6 +81762,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_LBL_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_LBL_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_EINSPEISEGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Einspeisegrenze ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT", resourceCulture);
             }
         }
         
@@ -85943,6 +86402,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik: Einspeisegrenze {0:N1} kW - ohne Speicher abgeregelt {1:N0} kWh/a ({2:N1} % des Ertrags). Ein Stromspeicher lädt vor dem Abregeln. ähnelt.
+        /// </summary>
+        public static string SIM_PV_EINSPEISEGRENZE_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIM_PV_EINSPEISEGRENZE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik: Die Einspeisegrenze von {0:N1} % braucht die installierte PV-Leistung (kWp) als Bezug; das Projekt führt keine. Gerechnet wird ohne Einspeisegrenze. ähnelt.
+        /// </summary>
+        public static string SIM_PV_EINSPEISEGRENZE_OHNE_KWP {
+            get {
+                return ResourceManager.GetString("SIM_PV_EINSPEISEGRENZE_OHNE_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen. ähnelt.
         /// </summary>
         public static string SIM_PV_V1_BHKW_GETRENNT {
@@ -86249,6 +86726,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfahrverlust [kWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_ANFAHRVERLUST {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_ANFAHRVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
         /// </summary>
         public static string SIM_SPALTE_ANLAGE {
@@ -86506,6 +86992,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_STROMVERBRAUCH {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrstrom Takten [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_TAKTSTROM {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_TAKTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrbrennstoff Teillast [kWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF", resourceCulture);
             }
         }
         
@@ -88155,6 +88659,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauch Speichersystem ähnelt.
+        /// </summary>
+        public static string SP_ERG_EIGENVERBRAUCH_SYSTEM {
+            get {
+                return ResourceManager.GetString("SP_ERG_EIGENVERBRAUCH_SYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus dem Netz ähnelt.
+        /// </summary>
+        public static string SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ {
+            get {
+                return ResourceManager.GetString("SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung mit Speicher ähnelt.
         /// </summary>
         public static string SP_ERG_EINSPEISUNG_MIT {
@@ -88560,6 +89082,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Selbstentladung ähnelt.
+        /// </summary>
+        public static string SP_ERG_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_SELBSTENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand Maximum ähnelt.
         /// </summary>
         public static string SP_ERG_SOC_MAX {
@@ -88628,6 +89159,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_ERG_TIP_DELTA_J {
             get {
                 return ResourceManager.GetString("SP_ERG_TIP_DELTA_J", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby-Verbrauch des Speichersystems: gedeckt aus PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM", resourceCulture);
             }
         }
         
@@ -88812,6 +89352,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust des Speicherinhalts je Monat, 0 … 20 %; leer = keine. ähnelt.
+        /// </summary>
+        public static string SP_HINWEIS_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_HINWEIS_SELBSTENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batteriemanagement und Wechselrichter im Leerlauf. Gedeckt aus PV-Überschuss, sonst aus dem Netz; leer = 0. ähnelt.
+        /// </summary>
+        public static string SP_HINWEIS_STANDBY {
+            get {
+                return ResourceManager.GetString("SP_HINWEIS_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher: {0} ähnelt.
         /// </summary>
         public static string SP_KONTEXT_EINZEL {
@@ -88898,6 +89456,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_LABEL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("SP_LABEL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Selbstentladung ähnelt.
+        /// </summary>
+        public static string SP_LABEL_SELBSTENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_LABEL_SELBSTENTLADUNG", resourceCulture);
             }
         }
         
@@ -105864,6 +106431,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung ähnelt.
+        /// </summary>
+        public static string WPS_FELD_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("WPS_FELD_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkoeffizient C_d ähnelt.
+        /// </summary>
+        public static string WPS_FELD_TAKTVERLUST_CD {
+            get {
+                return ResourceManager.GetString("WPS_FELD_TAKTVERLUST_CD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich die Wärmepumpe löschen? ähnelt.
         /// </summary>
         public static string WPS_FRAGE_LOESCHEN {
@@ -105887,6 +106472,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_HERL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("WPS_HERL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Vorgabe 0,9 nach EN 14825) ähnelt.
+        /// </summary>
+        public static string WPS_HINT_TAKTVERLUST_CD {
+            get {
+                return ResourceManager.GetString("WPS_HINT_TAKTVERLUST_CD", resourceCulture);
             }
         }
         
@@ -106008,6 +106602,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("WPS_LBL_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
         /// </summary>
         public static string WPS_LBL_NAME {
@@ -106031,6 +106634,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_LBL_REGELUNG {
             get {
                 return ResourceManager.GetString("WPS_LBL_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkoeffizient C_d ähnelt.
+        /// </summary>
+        public static string WPS_LBL_TAKTVERLUST_CD {
+            get {
+                return ResourceManager.GetString("WPS_LBL_TAKTVERLUST_CD", resourceCulture);
             }
         }
         
@@ -106139,6 +106751,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_PLATZHALTER_BILD {
             get {
                 return ResourceManager.GetString("WPS_PLATZHALTER_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0,9 ähnelt.
+        /// </summary>
+        public static string WPS_PLATZHALTER_CD_VORGABE {
+            get {
+                return ResourceManager.GetString("WPS_PLATZHALTER_CD_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Taktrechnung ähnelt.
+        /// </summary>
+        public static string WPS_PLATZHALTER_OHNE_TAKT {
+            get {
+                return ResourceManager.GetString("WPS_PLATZHALTER_OHNE_TAKT", resourceCulture);
             }
         }
         

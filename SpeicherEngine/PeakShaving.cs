@@ -296,9 +296,21 @@ namespace SpeicherEngine
             double pNeuMax = double.NegativeInfinity;
             double preis = _ps.BezugspreisMittelCtKwh;
 
+            // SP1 (Welle M5): die Selbstentladung je Intervall - nur im energetischen Modus; 0 = keine,
+            // der Lauf bleibt bitgleich.
+            double selbstAnteil = kompatibel ? 0.0 : p.SelbstentladungJeIntervall;
+            double selbstentladung = 0.0;
+
             for (int i = 0; i < n; i++)
             {
                 double last = pAlt[i];
+
+                if (selbstAnteil > 0.0)
+                {
+                    double v = Speichersystem.Selbstentladung(stand, socMin, selbstAnteil);
+                    stand -= v;
+                    selbstentladung += v;
+                }
 
                 // Maximal moegliche Entladeleistung dieses Intervalls [kW].
                 double dMax = (stand - socMin) * etaDis / dt;
@@ -385,6 +397,7 @@ namespace SpeicherEngine
                 AequivalenteVollzyklen = vollzyklen,
                 VerschleisskostenEurProA = vollzyklen * p.CNomKwh * p.CVerEurProKwhZyklus,
                 SpeicherverlusteKwh = ladeenergie - entladeenergie - (stand - startSoC),
+                SelbstentladungKwh = selbstentladung,
                 LastKwh = lastKwh,
                 NetzbezugOhneSpeicherKwh = lastKwh,
                 NetzbezugMitSpeicherKwh = lastKwh + ladeenergie - entladeenergie

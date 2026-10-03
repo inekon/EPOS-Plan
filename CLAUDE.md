@@ -155,7 +155,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-02_R32_Solarthermie`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-02_R33_Viertelstunden`, sechzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -228,7 +228,10 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   und das Anlegen oder Entfernen einer solchen Zuordnung;
 - gesäte BHKW-Grenzleistungen der Referenzprojekte: das Anlagenfeld `Tab_Energieanlagen.Grenzleistung`
   ihrer BHKW-Zeilen, die Katalogspalte `Tab_BHKW.Grenzleistung` ihrer Projektmodule und der Projektwert
-  `Tab_Einstellungen.Leistungsgrenze`.
+  `Tab_Einstellungen.Leistungsgrenze`;
+- gesäte Stromfelder der Referenzprojekte: die Einspeisegrenze `Tab_Einstellungen.Einspeisegrenze_Wert` und
+  `Einspeisegrenze_Einheit`, an den Projektkopien ihrer Stromspeicher `Standby_Verbrauch` und
+  `Selbstentladung_Prozent_Monat`.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

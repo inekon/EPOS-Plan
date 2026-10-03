@@ -26,7 +26,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Register()
         {
-            Assert.Equal(BedarfNetzKalenderSchema.SCHRITT + 1, PufferAuslegungSchema.SCHRITT);
+            Assert.Equal(StromViertelstundenSchema.SCHRITT + 1, PufferAuslegungSchema.SCHRITT);
             Assert.Equal(PufferAuslegungSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == PufferAuslegungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

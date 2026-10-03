@@ -390,6 +390,11 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("WPS_MSG_NAME_BELEGT",
                     "Name existiert bereits!"), "");
 
+            // Welle M4 (WP1): Mindestleistung und C_d im Band - benannt, bevor etwas geschrieben wird.
+            string teillast = ErzeugerTeillastWerte.WpVerstoss(daten.MindestleistungKw, daten.TaktverlustfaktorCd,
+                                                               daten.Nennleistung);
+            if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
+
             // Der Controller IST das Modell (er erbt WPModel) - Update und Insert lesen
             // ihre Werte von sich selbst.
             ID = daten.ID;
@@ -408,7 +413,19 @@ namespace WindowsFormsApplication1
             Kuehlleistung = daten.Kuehlleistung;
 
             bool ok;
-            try { ok = neu ? Insert() : Update(); }
+            try
+            {
+                ok = neu ? Insert() : Update();
+
+                // Welle M4 (WP1): die Teillastfelder als eigener Schritt (nur mit den Spalten).
+                if (ok)
+                {
+                    int id = ID > 0 ? ID : DataRepository.GetIdByName(TABLE, "Bezeichner", name);
+                    ErzeugerTeillastWerte.WpSchreiben(TABLE, id, daten.MindestleistungKw, daten.TaktverlustfaktorCd);
+                    MindestleistungKw = daten.MindestleistungKw;
+                    TaktverlustfaktorCd = daten.TaktverlustfaktorCd;
+                }
+            }
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Speichern der Wärmepumpe: " + ex.Message);
@@ -1130,6 +1147,21 @@ namespace WindowsFormsApplication1
                         Console.WriteLine("Fehler bei der Übernahme in den Katalog: " + ex.Message);
                         return new SpeicherErgebnis(false, Text("WP_STAMM_UEBERNAHME_MSG_FEHLER",
                             "Die Übernahme in den Katalog ist fehlgeschlagen."), bezeichner);
+                    }
+                }
+
+                // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie reisen in den Katalogsatz -
+                // nach dem Festschreiben, als eigener Schritt (nur mit den Spalten).
+                if (katalogId > 0)
+                {
+                    var teillast = new WPModel();
+                    DataTable tz = DataRepository.GetDataTable(
+                        "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", idWp));
+                    if (tz != null && tz.Rows.Count > 0)
+                    {
+                        ErzeugerTeillastWerte.WpAusZeile(teillast, tz.Rows[0]);
+                        ErzeugerTeillastWerte.WpSchreiben(TABLE, katalogId, teillast.MindestleistungKw,
+                                                          teillast.TaktverlustfaktorCd);
                     }
                 }
 

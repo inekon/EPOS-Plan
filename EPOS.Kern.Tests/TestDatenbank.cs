@@ -856,11 +856,19 @@ namespace EPOS.Kern.Tests
                 // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug; wiederholbar, KEIN DML.
                 SolarthermieFelderSchema.Ausfuehren(null);
-
                 // Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste je
                 // Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die Kalenderspalte
                 // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
                 BedarfNetzKalenderSchema.Ausfuehren(null);
+                // Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder von
+                // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
 
                 // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
                 // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie

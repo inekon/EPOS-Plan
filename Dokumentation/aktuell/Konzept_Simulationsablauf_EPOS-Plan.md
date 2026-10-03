@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R32_Solarthermie` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R33_Viertelstunden` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 
@@ -1294,3 +1294,114 @@ Strom.
 Gehalten von `EPOS.Kern.Tests/BedarfNetzKalenderSchemaTests`, `NetzverlusteJeKanalTests`,
 `ZirkulationBestandswegTests` (Läufe auf Kopien von 1041 und 1045), `BetriebskalenderTests` und
 `EPOS.UI.Tests/Dialoge/BetriebskalenderDialogTests`.
+
+## 18. Erzeuger in Teillast: Wärmepumpe und BHKW
+
+Wärmepumpe und BHKW rechnen ihr Verhalten unter der Volllast aus Katalogfeldern; leer heißt
+„nicht gepflegt", und ohne gepflegten Wert rechnet ein Gerät bitgleich ohne diesen
+Abschnitt. Schemaschritt `ErzeugerTeillastSchema` (167), alle Spalten nullbar mit `CHECK`,
+in Katalog und Projektkopie gleich; die Projektkopie entsteht beim Übernehmen aus dem Katalog
+(`ErzeugerTeillastWerte`).
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_WP(_STAMM)` | `Mindestleistung_kW` (0 … 1000) | kleinste Modulationsleistung P_min | kein Takten |
+| `Tab_WP(_STAMM)` | `Taktverlustfaktor_Cd` (0 … 1) | Teillastkoeffizient C_d nach EN 14825 | 0,9 |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_el_Teillast50` (0 … 1) | η_el bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_th_Teillast50` (0 … 1) | η_th bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Anfahrverlust_kWh` (0 … 100) | Brennstoff je Start | 0 |
+| `Tab_BHKW(_STAMM)` | `Mindestlaufzeit_min` (0 … 60) | Mindestlaufzeit je Start | 10 min |
+
+**Wärmepumpe: Taktverlust (`Waermepumpentakt`).** Am Ende jeder Stunde
+(`Zweikanalig_StundeEnde`) sammelt der Lauf je Modul die Verdichterwärme Q und den
+Verdichterstrom P der Stunde aus Bedarfsdeckung und Ladung. Bei 0 < Q < P_min · 1 h taktet das
+Gerät: CR = Q / P_min, f = CR / (C_d · CR + 1 − C_d), COP_takt = f · COP; die Wärme bleibt, der
+Strom steigt um P · (1/f − 1) — in die Stundenreihe, die Modulsumme und den Jahresstrom, damit
+auch in die JAZ. Die Starts folgen der Kesselregel (`Kesselkennlinie.StartsImTakt`) mit fest
+10 min; außerhalb des Takts ist ein Start der Übergang aus einer Stillstandsstunde. Die
+Quellentnahme der Stunde wird nicht nachgezogen. Im Kühlbetrieb rechnet die Kältekaskade
+dasselbe mit der Mindestkühlleistung P_min / P_nenn · P_kühl(t) (`Kaeltekaskade.Mindestanteil`).
+
+**BHKW: Teillastkennlinie (`BhkwTeillast`).** η_el,100 und η_th,100 teilen den
+Gesamtwirkungsgrad im Verhältnis P_el : P_th, so dass Volllast unverändert bleibt. Zwischen
+β = 0,5 und 1 verlaufen beide Wirkungsgrade linear, darunter gilt der Wert bei 0,5. Die
+Motorläufe rechnen Wärme aus Strom über η_th(β)/η_el(β) mit β = P/P_el, Strom aus Wärme durch
+Intervallhalbierung über β; ohne Kennlinie bleibt es der Dreisatz des Bestands, bitgleich. Der
+Brennstoff einer Laufstunde ist P / η_el(β); die Abweichung gegen (Q + P)/η geht als
+Teillast-Mehrbrennstoff in den Brennstoffverbrauch und die Emissionen.
+
+**BHKW: Takten (`BhkwTeillast`, `SimulationBHKW.TeillastStundeAbschliessen`).** Nur mit
+Anfahrverlust oder Mindestlaufzeit und einer Untergrenze x_min > 0. Unter der Untergrenze bleibt
+das Modul nicht aus, sondern liefert in allen drei Fahrweisen den Wärmeraum, den Reststrom oder
+— ohne Einspeisung — das Kleinere von beiden mit der Stromkennzahl an x_min. Die Starts zählt
+die Kesselregel gegen die Wärme der Untergrenze Q_min = x_min · P_el · η_th(x_min)/η_el(x_min);
+je Start kommt der Anfahrverlust auf den Brennstoff. Der Brennstoff einer Taktstunde rechnet mit
+η_el(x_min). Getaktet wird nur, wenn der Wärmeraum der Stunde (offener Bedarf plus freier
+Pufferraum) mindestens einen Mindestlauf Q_min · t_min / 60 aufnimmt (t_min leer = 10 min;
+`BhkwTeillast.NimmtMindestlaufWaerme`); stromgeführt muss der Reststrom den Strom eines
+Mindestlaufs tragen, ohne Einspeisung beides — sonst bleibt das Modul aus. Der Heizkessel zählt
+sein Takten (`Kesselkennlinie.Taktet`) dagegen schon ab jeder Wärme über dem Zahlenrand, denn er
+deckt als letzter Erzeuger auch einen kleinen Rest.
+
+**Ergebnis.** Die Reiter Wärmepumpe und BHKW zeigen Starts, Mehrstrom, Anfahrverlust und
+Teillast-Mehrbrennstoff nur, wenn ein Modul sie rechnet; ebenso die Referenzskalare
+`Takt.Waermepumpe[i].*`, `Takt.Kaelte[k].*`, `Takt.Bhkw[i].*` und
+`Teillast.Bhkw[i].MehrbrennstoffKwh`, nur bei Werten größer null — die Basis bleibt damit
+unberührt, solange kein Referenzprojekt die Felder pflegt.
+
+**Pflege.** Der BHKW-Katalogeditor führt die Gruppe „Teillast und Takten" mit kleiner
+Kennlinie, die BHKW-Verwaltung dieselben vier Felder (leer schreibt NULL); der
+Wärmepumpenkatalog führt Mindestleistung und C_d mit dem Hinweis „Vorgabe 0,9 nach EN 14825",
+die Projektdialoge zeigen die Werte lesend. Der VDI-3805-Import (Blatt 22) setzt keine der
+Spalten: Die Lastangaben der Datei nennen einen Modulationsbereich, aber keine Mindestleistung
+in kW, und C_d steht nicht in der Datei; das BHKW hat keinen VDI-Import.
+
+Gehalten von `EPOS.Kern.Tests/ErzeugerTeillastTests` (Formeln ohne Datenbank, Rechnungen auf
+Kopien der Projekte 1039, 1017, 1018 und 1024), `ErzeugerTeillastSchemaTests`,
+`KatalogAufklapperTests` und den bunit-Fällen `BhkwKatalogDialogTests`,
+`WaermepumpeStammFelderTests`.
+## 19. Strom in Viertelstunden: PV-Bilanz, Einspeisegrenze, Standby
+
+Die Strombilanz der Photovoltaik und der Stromspeicher laufen auf den 35 040 Viertelstunden des
+Jahres; die Klimadaten bleiben stündlich. Schemaschritt `StromViertelstundenSchema`, alle neuen
+Spalten mit `CHECK`.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Einstellungen` | `Einspeisegrenze_Wert` | höchste PV-Einspeisung am Netzanschluss, ≥ 0 | keine Grenze |
+| `Tab_Einstellungen` | `Einspeisegrenze_Einheit` | `kW` oder `%` der installierten PV-Leistung | `kW` |
+| `Tab_Stromspeicher(_STAMM)` | `Standby_Verbrauch` | Standby des Speichersystems in W, 0 … 1 000 (im Code geprüft) | 0 |
+| `Tab_Stromspeicher(_STAMM)` | `Selbstentladung_Prozent_Monat` | Selbstentladung in %/Monat, 0 … 20 | 0 |
+
+**PV-Bilanz.** `SimulationPV.Bilanzieren` verteilt die Stundenerzeugung aller Anlagen auf die vier
+Viertel nach dem Kosinus des Zenitwinkels in der Mitte jeder Viertelstunde
+(`SolarPVGISCalculator.KosinusZenitwinkel`, Zeitachse der UTC-Stunde der Klimazeile):
+P_q = 4 · P_h · cos θ_z,q / Σ cos θ_z. Das Mittel der vier Viertel ist der Stundenwert; ohne Sonne
+in allen vier Vierteln tragen alle den Stundenwert. Direktverbrauch, Überschuss und Reststrom
+entstehen je Viertelstunde gegen `Rest_Strombedarf_viertelstuendlich`; die Stundenreihen sind die
+Mittel ihrer Viertel. Der Reiter „Photovoltaik" zeigt den Überschuss vor dem Speicher.
+
+**Einspeisegrenze.** P_grenz in kW, oder in % als Anteil der installierten Leistung (kWp). Je
+Viertelstunde: E_ein = min(Ü − Ladung − Standby aus PV, P_grenz), Abregelung = Rest. Der Speicher
+lädt vor dem Abregeln (`SimulationControl.PvEinspeisungAufteilen` nach der Speicherphase). Ohne
+Grenze ist die Abregelung null.
+Ausweis: Reiter „Photovoltaik" (Abregelung kWh/a und % der Erzeugung, Grenze kW), Zeitreihe
+`PV_ABREGELUNG`, Monatstafel des Berichts, Referenzskalar `Photovoltaik.AbregelungMwh` nur bei
+> 0, Kennzahl `pv_eigen` ohne Abregelung. Eine aktive Speicherflotte liest die Projekteinstellung
+als weiche Grenze (`PvEinspeisegrenzeWeichKw`): Sie lädt zuerst, darüber wird abgeregelt, die
+Variante bleibt zulässig. Eine neue Flotte belegt ihre harte Netzeinspeisegrenze mit dem Wert vor;
+der Netzblock nennt ihn.
+
+**Standby und Selbstentladung.** `SpeicherEngine.Speichersystem` zieht zu Beginn jedes Intervalls
+die Selbstentladung SoC · s/100 · Δt/730 h ab, höchstens bis SoC_min, und teilt den Standby
+(`StandbyBilanz`): aus dem PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.
+Der Netzanteil geht in den Rest-Strombedarf, der PV-Anteil fehlt in der Einspeisung; der Fahrplan
+bleibt unberührt. In der Flotte ist der Standby der Hilfsverbrauch der Einheit (Standortlast am
+Netzanschluss), die Selbstentladung ein Parameter der Einheit; beide übernimmt sie aus dem Katalog.
+Ausweis: Reiter „Stromspeicher" (Eigenverbrauch Speichersystem, Netzanteil, Selbstentladung),
+Zeitreihe `SPEICHER_EIGENVERBRAUCH`, Monatstafel des Berichts, Referenzskalar
+`Stromspeicher.EigenverbrauchSystemMwh` nur bei > 0.
+
+Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSchemaTests`,
+`PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
+Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.

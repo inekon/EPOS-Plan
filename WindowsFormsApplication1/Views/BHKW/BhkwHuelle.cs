@@ -134,6 +134,27 @@ namespace WindowsFormsApplication1
                 ["LabelRuecklauf"] = Text_("BHKWK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["FeldRuecklauf"] = Text_("BHKWK_FELD_RUECKLAUF", "Rücklauftemperatur"),
 
+                // Welle M4 (BH1, BH2): Teillast und Takten samt der kleinen Kurve - dieselbe Kennlinie
+                // wie der Lauf (BhkwKennlinienbild), zum Arbeitsstand des Dialogs.
+                ["GruppeTeillast"] = Text_("BHKWK_GRP_TEILLAST", "Teillast und Takten"),
+                ["LabelEtaEl50"] = Text_("BHKWK_LBL_ETA_EL50", "El. Wirkungsgrad bei 50 % Last:"),
+                ["FeldEtaEl50"] = Text_("BHKWK_FELD_ETA_EL50", "elektrischer Wirkungsgrad bei 50 % Last"),
+                ["HinweisEtaEl50"] = Text_("BHKWK_HINT_ETA_EL50", "(Faktor, z. B. 0,27)"),
+                ["LabelEtaTh50"] = Text_("BHKWK_LBL_ETA_TH50", "Th. Wirkungsgrad bei 50 % Last:"),
+                ["FeldEtaTh50"] = Text_("BHKWK_FELD_ETA_TH50", "thermischer Wirkungsgrad bei 50 % Last"),
+                ["HinweisEtaTh50"] = Text_("BHKWK_HINT_ETA_TH50", "(Faktor, z. B. 0,64)"),
+                ["LabelAnfahrverlust"] = Text_("BHKWK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                ["FeldAnfahrverlust"] = Text_("BHKWK_FELD_ANFAHRVERLUST", "Anfahrverlust je Start"),
+                ["LabelMindestlaufzeit"] = Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                ["FeldMindestlaufzeit"] = Text_("BHKWK_FELD_MINDESTLAUFZEIT", "Mindestlaufzeit"),
+                ["PlatzhalterVolllast"] = Text_("BHKWK_PLATZHALTER_VOLLLAST", "wie Volllast"),
+                ["PlatzhalterOhneTakten"] = Text_("BHKWK_PLATZHALTER_OHNE_TAKTEN", "kein Takten"),
+                ["HinweisTeillast"] = Text_("BHKWK_HINWEIS_TEILLAST",
+                    "Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben."),
+                ["Kennlinienbild"] = new Func<BhkwKatalogDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    BhkwKennlinienbild.Modell),
+                ["BildKennlinieText"] = Text_("BHKWK_BILD_KENNLINIE", "Wirkungsgrad über der elektrischen Last"),
+
                 // HIER STANDEN DIE TEXTE DER GRUPPEN "Kosten", "BEHG" und "Emissionen"
                 // (Anwenderentscheid 15.09.2026). Die Gruppen sind aus dem Katalogeditor
                 // ersatzlos entfallen, also fallen auch ihre Schlüssel — ein Schlüssel
@@ -203,6 +224,12 @@ namespace WindowsFormsApplication1
             d.Staub = m.m_Staub;
             d.Katalogsatz = m.m_bReadOnly;
 
+            // Welle M4 (BH1, BH2): leer bleibt leer - wie Volllast bzw. kein Takten.
+            d.WirkungsgradEl50 = m.m_Wirkungsgrad_el_Teillast50;
+            d.WirkungsgradTh50 = m.m_Wirkungsgrad_th_Teillast50;
+            d.AnfahrverlustKwh = m.m_Anfahrverlust_kWh;
+            d.MindestlaufzeitMin = m.m_Mindestlaufzeit_min;
+
             // SetControls liest 0-basiert zurueck: comboBox_Brennstoff.SelectedIndex =
             // brennstoff >= 1 ? brennstoff : 1. Der Vorlaeufer nahm die 1 auch fuer die
             // 0 - dieselbe Regel hier, damit die Anzeige gleich bleibt.
@@ -258,7 +285,13 @@ namespace WindowsFormsApplication1
                     BHKWKosten.Summe(modul, montage, lieferung, schall, abgas), pel),
 
                 // InitDatensatzUpdate: SelectedIndex OHNE + 1, ohne Wahl die 1.
-                m_Brennstoff = d.Brennstoff ?? 1
+                m_Brennstoff = d.Brennstoff ?? 1,
+
+                // Welle M4 (BH1, BH2): NULL-treu - leer heißt „nicht gepflegt", nie 0.
+                m_Wirkungsgrad_el_Teillast50 = d.WirkungsgradEl50,
+                m_Wirkungsgrad_th_Teillast50 = d.WirkungsgradTh50,
+                m_Anfahrverlust_kWh = d.AnfahrverlustKwh,
+                m_Mindestlaufzeit_min = d.MindestlaufzeitMin
             };
         }
 
@@ -751,6 +784,22 @@ namespace WindowsFormsApplication1
             felder.Add((Text_("BHKWV_LBL_HERSTELLER", "Hersteller:"), d.Firma));
             felder.Add((Text_("BHKWV_LBL_PTHERM", "thermische Leistung [kWth]:"), d.Ptherm.ToString()));
             felder.Add((Text_("BHKWV_LBL_PEL", "elektrische Leistung [kWel]:"), d.Pel.ToString()));
+
+            // Welle M4 (BH1, BH2): die gepflegten Teillastfelder des Moduls - nur zur Anzeige,
+            // gepflegt wird im Katalogeditor; leere Felder bleiben weg.
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            if (d.Teillast.EtaEl50.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ETA_EL50", "El. Wirkungsgrad bei 50 % Last:"),
+                            d.Teillast.EtaEl50.Value.ToString("0.###", k)));
+            if (d.Teillast.EtaTh50.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ETA_TH50", "Th. Wirkungsgrad bei 50 % Last:"),
+                            d.Teillast.EtaTh50.Value.ToString("0.###", k)));
+            if (d.Teillast.AnfahrverlustKwh.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                            d.Teillast.AnfahrverlustKwh.Value.ToString("0.###", k) + " kWh"));
+            if (d.Teillast.MindestlaufzeitMin.HasValue)
+                felder.Add((Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                            d.Teillast.MindestlaufzeitMin.Value.ToString(k) + " min"));
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
         }

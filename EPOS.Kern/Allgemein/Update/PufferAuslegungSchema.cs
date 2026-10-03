@@ -41,9 +41,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter den Netzverlusten je Kanal (<see cref="BedarfNetzKalenderSchema"/>).
+        /// Schritt hinter der Einspeisegrenze und Selbstentladung (<see cref="StromViertelstundenSchema"/>).
         /// </summary>
-        public const int SCHRITT = BedarfNetzKalenderSchema.SCHRITT + 1;
+        public const int SCHRITT = StromViertelstundenSchema.SCHRITT + 1;
 
         /// <summary>Die Auslegungstabelle (eine Zeile je Projektpuffer bzw. „neu anlegen“).</summary>
         public const string TAB = "Tab_PufferAuslegung";

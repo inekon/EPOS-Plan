@@ -266,6 +266,10 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Solarthermie rechnet die Kollektortemperatur wahlweise aus dem Speicherzustand mit Übertrager-Grädigkeit statt mit festen 50 °C, berücksichtigt die Diffus-Einfallswinkelkorrektur des Kollektors und führt Solarkreisverluste, Pumpenstrom und die Bezugsfläche der Kennwerte als Eingaben. (#668)
 - Die Netzverluste lassen sich je Kanal (Heizung, Brauchwasser, Prozesswärme) in Prozent oder kWh/a angeben; das Brauchwasser des Bestandswegs kennt eine Zirkulation mit fester Leistung und Laufzeit. (#670)
 - Ein Betriebskalender mit Feiertagen je Bundesland und Betriebsferien wirkt auf Brauchwasser-, Prozesswärme- und Stromprofile. (#670)
+- Ein Gebäude des Projekts lässt sich mit „In DB übernehmen“ als eigener Satz in die Gebäudedatenbank übernehmen. (#671)
+- Die Bauteilliste des IFC-Imports lässt sich durchsuchen, sortieren und je Spalte filtern. (#672)
+- Wärmepumpen rechnen unterhalb ihrer Mindestleistung einen Taktverlust nach EN 14825 samt Starts; BHKW rechnen mit einer Teillastkennlinie und takten unterhalb ihrer Untergrenze mit Anfahrverlust und Mindestlaufzeit. (#673)
+- Photovoltaik, Stromspeicher und Reststrom werden in derselben Viertelstundenauflösung bilanziert; eine Einspeisegrenze mit Abregelung und der Standby des Speichersystems lassen sich angeben. (#674)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

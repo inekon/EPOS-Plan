@@ -7631,7 +7631,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung", "WaermepumpeStammDaten.Kuehlleistung",
                                      KiDialogTexte.WpKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpKuehlleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true)
+                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true),
+
+                    // ---- Welle M4 (WP1): der Taktverlust nach EN 14825 ---------------
+                    new KiDialogFeld("mindestleistung", "WaermepumpeStammDaten.MindestleistungKw",
+                                     KiDialogTexte.WpMindestleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpMindestleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("taktverlust_cd", "WaermepumpeStammDaten.TaktverlustfaktorCd",
+                                     KiDialogTexte.WpTaktverlustCdName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpTaktverlustCdErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8313,6 +8322,18 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimAufheizArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimAufheizArtErl, leerErlaubt: true),
 
+                    // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
+                    //
+                    // Wie die Aufheizoptimierung SOFORT geschrieben - Wert und Einheit ueber
+                    // denselben Delegaten wie der Abschnitt (EinspeisegrenzeSchreiben). Leer heisst
+                    // keine Grenze.
+                    new KiDialogFeld("einspeisegrenze", "SimulationKiSicht.Einspeisegrenze",
+                                     KiDialogTexte.SimEinspeisegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimEinspeisegrenzeErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("einspeisegrenze_einheit", "SimulationKiSicht.EinspeisegrenzeEinheit",
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitErl, leerErlaubt: true),
+
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //
                     // Quelle, konstante Quelltemperatur, WP-Prioritaet und Betriebsmodus
@@ -8605,7 +8626,23 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ruecklauf", "BhkwKatalogDaten.Ruecklauf",
                                      KiDialogTexte.BhkkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkkRuecklaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ----------
+                    new KiDialogFeld("wirkungsgrad_el_teillast50", "BhkwKatalogDaten.WirkungsgradEl50",
+                                     KiDialogTexte.BhkkEtaEl50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaEl50Erl, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_th_teillast50", "BhkwKatalogDaten.WirkungsgradTh50",
+                                     KiDialogTexte.BhkkEtaTh50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaTh50Erl, leerErlaubt: true),
+                    new KiDialogFeld("anfahrverlust", "BhkwKatalogDaten.AnfahrverlustKwh",
+                                     KiDialogTexte.BhkkAnfahrverlustName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkAnfahrverlustErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("mindestlaufzeit", "BhkwKatalogDaten.MindestlaufzeitMin",
+                                     KiDialogTexte.BhkkMindestlaufzeitName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkkMindestlaufzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_MINUTE, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8891,7 +8928,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("standby", "ModulKatalogKiSicht.Standby",
                                      KiDialogTexte.ModkStandbyName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkStandbyErl,
-                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true, min: 0, max: 1000),
+                    // Welle M5 (SP1): die Selbstentladung des Speichers - leer heißt keine.
+                    new KiDialogFeld("selbstentladung", "ModulKatalogKiSicht.Selbstentladung",
+                                     KiDialogTexte.ModkSelbstentladungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkSelbstentladungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_MONAT, leerErlaubt: true, min: 0, max: 20)
                 },
                 knoepfe: Modulkatalogknoepfe());
         }
