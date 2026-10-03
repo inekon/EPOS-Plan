@@ -257,7 +257,12 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(DBNull.Value, r["Kuehlstunden_H"]);
                 Assert.Equal(vdi.MittlereRaumtemperaturHeizzeit, (double)r["MittlereRaumtemperatur_C"]);
                 Assert.Equal(vdi.Ueberhitzungsstunden, Convert.ToInt32(r["Ueberhitzungsstunden_H"]));
-                Assert.Equal(vdi.StundenMitSommerlueftung, Convert.ToInt32(r["Sommerlueftungsstunden_H"]));
+                // Entwurf KP3, Festlegung 26 (B17): Die Gebäude von 1039 tragen keine Sommerlüftung - das Modell
+                // behält seine Zahl (0), die Zelle bleibt NULL wie die der Nachtauskühlstunden (E30).
+                Assert.False(vdi.SommerlueftungGesetzt);
+                Assert.Equal(0, vdi.StundenMitSommerlueftung);
+                Assert.Null(m.SommerlueftungsstundenH);
+                Assert.Equal(DBNull.Value, r["Sommerlueftungsstunden_H"]);
                 Assert.Equal(vdi.ThetaMax, (double)r["ObereRaumtemperatur_C"]);
                 // Schritt 128: ohne Kopplung tragen die vier Spalten des Heizkreises NULL.
                 Assert.Null(vdi.Heizkreis);
