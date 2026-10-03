@@ -2,7 +2,7 @@
 
 Fortsetzung von [`2026-10-03_P1_Pufferauslegung.md`](2026-10-03_P1_Pufferauslegung.md) nach dem Auftrag „starte P2
 Oberfläche“ (Anwender, 03.10.2026). Grundlage: Konzept
-[`Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md`](../../../aktuell/Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md)
+[`Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md`](../../Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md)
 Abschnitt 6 und das Mockup `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html`. Bau durch einen
 Opus-Agenten im Worktree, Zweig `claude/p2-pufferauslegung` auf `333528be`. Statuszeile **#683**.
 

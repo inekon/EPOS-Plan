@@ -1,7 +1,7 @@
 # Protokoll P1 — Pufferspeicher-Auslegung: Schema, Rechenkern, Controller (03.10.2026)
 
 Auftrag des Anwenders vom 30.09./01.10.2026, ausgeführt über die Routine „Pufferspeicher-Auslegung: Konzept und Bau
-P1“ am 03.10.2026 ab 06:00 MESZ. Grundlage: [`Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md`](../../../aktuell/Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md)
+P1“ am 03.10.2026 ab 06:00 MESZ. Grundlage: [`Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md`](../../Konzept_Pufferspeicher_Auslegung_EPOS-Plan.md)
 (Rev. 1, Commit `81a5e4bc`) und die vier Recherchepapiere unter `Dokumentation/aktuell/Pufferspeicher/`. Das
 Mockup `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html` ist in derselben Welle auf die Recherche
 nachgezogen (`4c7ab4cc`). Statuszeile **#675**.

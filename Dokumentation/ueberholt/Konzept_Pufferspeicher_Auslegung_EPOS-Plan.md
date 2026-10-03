@@ -8,9 +8,11 @@
 > (E-P12, E-P17, E-P31, E-P32, Freigabe P1, Einstiege) stehen in 9; alle übrigen Entscheide der Recherche gelten nach
 > Empfehlung (E61).
 >
-> **Rev. 3 (03.10.2026, nach P2).** Die Oberfläche ist gebaut: `PufferAuslegungSeite` als freie Ansicht mit Hülle, drei Einstiege (Konfiguration, Pufferdialoge, Zapfprofil-Übergabe), KI-Maske `Form_PufferAuslegung`, 255 Ressourcenschlüssel de/en; Abweichungen von Abschnitt 6 (Rechnen auf Zuruf bei Zahlenfeldern, keine Nutzen-Aufwand-Zeile, Zapfprofil-Übergabe unter iOS gesperrt) im Protokoll [`2026-10-03_P2_Pufferauslegung_Oberflaeche.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P2_Pufferauslegung_Oberflaeche.md). Offen ist P3.
+> **Rev. 4 (03.10.2026, nach P3) — umgesetzt, nach `ueberholt/` gewandert.** Bericht, Wiki-Quellen und Hilfe sind gebaut (Protokoll [`2026-10-03_P3_Pufferauslegung_Bericht_Wiki.md`](Protokolle/Simulation/2026-10-03_P3_Pufferauslegung_Bericht_Wiki.md)); der gültige Stand steht im Code, in den Wiki-Quellen „Pufferspeicher auslegen“ und „Pufferspeicher“ und in `Referenzlaeufe/LIESMICH.md`. Offen bleiben die Folgeaufträge in Abschnitt 8 und der Wiki-Upload.
 >
-> **Rev. 2 (03.10.2026, nach dem Bau P1).** Schemaschritt **169** statt 167 und Basis **R33** statt R32, weil der Arbeitszweig am selben Tag die Schritte 167 (Teillast WP/BHKW, M4) und 168 (Strom in Viertelstunden, M5) und die Basis R33 vergeben hat. P1 ist gebaut; Festlegungen beim Bau, Abweichungen und Nachweise stehen im Protokoll [`2026-10-03_P1_Pufferauslegung.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P1_Pufferauslegung.md), die Ergänzungen zu 4.1 in 10.
+> **Rev. 3 (03.10.2026, nach P2).** Die Oberfläche ist gebaut: `PufferAuslegungSeite` als freie Ansicht mit Hülle, drei Einstiege (Konfiguration, Pufferdialoge, Zapfprofil-Übergabe), KI-Maske `Form_PufferAuslegung`, 255 Ressourcenschlüssel de/en; Abweichungen von Abschnitt 6 (Rechnen auf Zuruf bei Zahlenfeldern, keine Nutzen-Aufwand-Zeile, Zapfprofil-Übergabe unter iOS gesperrt) im Protokoll [`2026-10-03_P2_Pufferauslegung_Oberflaeche.md`](Protokolle/Simulation/2026-10-03_P2_Pufferauslegung_Oberflaeche.md). Offen ist P3.
+>
+> **Rev. 2 (03.10.2026, nach dem Bau P1).** Schemaschritt **169** statt 167 und Basis **R33** statt R32, weil der Arbeitszweig am selben Tag die Schritte 167 (Teillast WP/BHKW, M4) und 168 (Strom in Viertelstunden, M5) und die Basis R33 vergeben hat. P1 ist gebaut; Festlegungen beim Bau, Abweichungen und Nachweise stehen im Protokoll [`2026-10-03_P1_Pufferauslegung.md`](Protokolle/Simulation/2026-10-03_P1_Pufferauslegung.md), die Ergänzungen zu 4.1 in 10.
 
 
 ## 0. Das Ergebnis in zehn Punkten
@@ -70,13 +72,13 @@ Wärmepumpe hat ein Sperrfenster ohne Mitternachtsübertrag und keine Mindestlau
 (`Quellen/Waermespeicher-Tool/`, Python) rechnet vier Kriterien (Abtauung, Takt, Sperrzeit, Deckung mit Bisektion) und
 die Zweipunktsimulation; seine Tests sind die Vorlage der C#-Fälle.
 
-**Recherche:** Runde 1 [`2026-10-01_Recherche_Pufferspeicherauslegung.md`](Pufferspeicher/2026-10-01_Recherche_Pufferspeicherauslegung.md)
+**Recherche:** Runde 1 [`2026-10-01_Recherche_Pufferspeicherauslegung.md`](../aktuell/Pufferspeicher/2026-10-01_Recherche_Pufferspeicherauslegung.md)
 (Kriterientabelle K1–K16, Mockup-Prüfung, V1–V20), Runde 2
-[`2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md`](Pufferspeicher/2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md)
+[`2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md`](../aktuell/Pufferspeicher/2026-10-01_Recherche_Pufferoptimierung_Erzeuger_Nutzungen.md)
 (Speicherklassen, Zapfprofil-Kopplung, Nutzungsprofil, V21–V32), Runde 3
-[`2026-10-01_Recherche_Normen_Speichermodell.md`](Pufferspeicher/2026-10-01_Recherche_Normen_Speichermodell.md)
+[`2026-10-01_Recherche_Normen_Speichermodell.md`](../aktuell/Pufferspeicher/2026-10-01_Recherche_Normen_Speichermodell.md)
 (VDI 4645 Entwurf 2026-03, prEN 15316-5:2024, DIN EN 15332, VDI-Whitepaper, V33–V45), Runde 4
-[`2026-10-01_Recherche_International_Brauchwasserspeicher.md`](Pufferspeicher/2026-10-01_Recherche_International_Brauchwasserspeicher.md)
+[`2026-10-01_Recherche_International_Brauchwasserspeicher.md`](../aktuell/Pufferspeicher/2026-10-01_Recherche_International_Brauchwasserspeicher.md)
 (SIA, ASHRAE, Ecosizer, IEA Annex 46, V46–V49). Dieses Konzept wiederholt die Belege nicht; es legt fest.
 
 
@@ -291,7 +293,7 @@ Nutzen-Aufwand-Zeile mit JAZ-Hinweis, Warnliste, Übernahme als Ändern/Neuanleg
 | **P0** | Recherche (vier Runden), Mockup, dieses Konzept — abgeschlossen 03.10.2026 | Wachen grün | 3 |
 | **P1** | Schemaschritt 169 mit Vorgabetabelle und Saat, Rechenkern, Controller, Tests, Testdatenbank 169 — **heute** | Kern-Filter 0 Fehler, Tests grün, Referenzlauf 16/16 byte-gleich gegen R33, Windows-Schale 0 Fehler | 5–7 |
 | **P2** | Oberfläche, drei Einstiege, Hülle, Texte, KI-Maske, bunit — **gebaut 03.10.2026** (Protokoll P2) | UI-Tests grün, Sichtabnahme Windows und iOS-Lauf offen | 4–6 |
-| **P3** | Bericht (Abschnitt Pufferauslegung), Wiki-Seite, Logbuch-Satz, Export/Import der Zeile | Wiki-Suchmuster, Berichtstests | 1–2 |
+| **P3** | Bericht (Abschnitt Pufferauslegung), Wiki-Seite, Logbuch-Satz, Export/Import der Zeile — **gebaut 03.10.2026** (Protokoll P3) | Wiki-Suchmuster 0 Treffer, Berichtstests grün | 1–2 |
 | **Summe** | | | **13–18** |
 
 
@@ -350,6 +352,6 @@ Empfehlung.
 ## 11. Verweise
 
 Recherche Runde 1–4 (1), Mockup `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html`,
-[Konzept Simulationsablauf](Konzept_Simulationsablauf_EPOS-Plan.md), [Konzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md),
+[Konzept Simulationsablauf](../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), [Konzept Konditionierungsprofile](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
 [Referenzläufe](../../Referenzlaeufe/LIESMICH.md), Wärmespeicher-Tool `Quellen/Waermespeicher-Tool/`, Normdateien ebenda
 (zitiert nach E-P17).
