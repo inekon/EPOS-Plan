@@ -146,13 +146,14 @@ namespace EPOS.Kern.Tests
                     KonditionierungsvorlageCtrl.Vorlage a = ctrl.Liste(von)[i], b = ablage.Liste(von)[i];
                     Assert.Equal(a.Bezeichner, b.Bezeichner);
                     string name = a.Bezeichner + " kopiert";
+                    double? absenk = komfort.HasValue ? Vorlagenkopierregel.ABSENKSOLLWERT_VORGABE : null;
 
                     // Der Name der Quelle steht in der Zielliste schon - beide lehnen ab.
-                    Assert.False(ctrl.KopierenNach(a.Id, nach, a.Bezeichner, komfort, out _).Ok);
-                    Assert.False(ablage.KopierenNach(b.Id, nach, b.Bezeichner, komfort, out _).Ok);
+                    Assert.False(ctrl.KopierenNach(a.Id, nach, a.Bezeichner, komfort, absenk, out _).Ok);
+                    Assert.False(ablage.KopierenNach(b.Id, nach, b.Bezeichner, komfort, absenk, out _).Ok);
 
-                    Assert.True(ctrl.KopierenNach(a.Id, nach, name, komfort, out long ka).Ok);
-                    Assert.True(ablage.KopierenNach(b.Id, nach, name, komfort, out long kb).Ok);
+                    Assert.True(ctrl.KopierenNach(a.Id, nach, name, komfort, absenk, out long ka).Ok);
+                    Assert.True(ablage.KopierenNach(b.Id, nach, name, komfort, absenk, out long kb).Ok);
                     KonditionierungsvorlageCtrl.Vorlage x = ctrl.Lesen(ka), y = ablage.Lesen(kb);
                     Assert.Equal((x.Groesse, x.Bezeichner, x.Beschreibung, x.Nutzung, x.Ausgeliefert),
                                  (y.Groesse, y.Bezeichner, y.Beschreibung, y.Nutzung, y.Ausgeliefert));

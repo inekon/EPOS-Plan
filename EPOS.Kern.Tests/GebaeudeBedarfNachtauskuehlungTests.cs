@@ -95,7 +95,8 @@ namespace EPOS.Kern.Tests
             GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(PROJEKT, Klimaregion(PROJEKT), z.ID_Z);
             Assert.True(e.Erfolgreich, e.Befund);
             Assert.Null(e.NachtauskuehlstundenH);
-            Assert.NotNull(e.SommerlueftungsstundenH);
+            // Entwurf KP3, Festlegung 26 (B17): ohne Sommerlüftung auch diese Kennzahl null, nicht 0.
+            Assert.Null(e.SommerlueftungsstundenH);
             Assert.Null(Dialogdaten().NachtauskuehlstundenH);
             Assert.All(Dialogdaten().Zonen, zone => Assert.Null(zone.NachtauskuehlstundenH));
         }

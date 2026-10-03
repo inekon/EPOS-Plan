@@ -78,7 +78,9 @@ namespace EPOS.Kern.Tests
         {
             Assert.Contains("Kuehl_EigenerZaehler", AnlagenSql.SQL_ANLAGE_INSERT, StringComparison.Ordinal);
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
-            Assert.Equal(66, platzhalter);
+            // 72: 66 + die fuenf Felder des Kollektorfelds (Welle M2) + die Bodenalbedo der Anlage
+            // (AlbedoSchema.SCHRITT).
+            Assert.Equal(72, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
 
             Assert.Null(AnlagenSql.EigenerZaehlerOderNull(null));

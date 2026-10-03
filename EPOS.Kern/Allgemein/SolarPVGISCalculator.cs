@@ -326,9 +326,11 @@ namespace WindowsFormsApplication1
         public static double lastCosTheta;
 
         /// <summary>
-        /// Bodenalbedo beider Transpositionsmodelle. Der Wert stand als Literal 0,2 in
-        /// <see cref="CalculateHourly"/>; die Konstante benennt ihn, ohne die
-        /// Bestandszeile anzufassen (PAKET B, Stufe E2.5).
+        /// Bodenalbedo beider Transpositionsmodelle ohne gepflegten Anlagenwert — die eine
+        /// Quelle der Vorgabe für alle Stellen, die den bodenreflektierten Anteil rechnen. Jede
+        /// dieser Stellen nimmt die Albedo als Parameter mit dieser Vorgabe; eine Anlage mit
+        /// gepflegter Albedo (<c>Tab_Energieanlagen.Albedo</c>) reicht ihren Wert über
+        /// <see cref="Bodenalbedo.Wert(WErzeugerModel)"/> herein.
         /// </summary>
         public const double ALBEDO_BODEN = 0.2;
 
@@ -430,10 +432,32 @@ namespace WindowsFormsApplication1
             return Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour).Alpha * Rad2Deg;
         }
 
+        /// <summary>
+        /// Der KOSINUS DES ZENITWINKELS <c>cos θ_z = sin α</c> zu einem Zeitpunkt, bei Sonne unter dem
+        /// Horizont 0 — rein lesend, ohne statische Seitenwirkung (wie <see cref="Sonnenhoehe"/>).
+        ///
+        /// <para><b>Wozu (Welle M5, SB1 a).</b> Die PV-Bilanz verteilt den Stundenertrag
+        /// energieerhaltend auf die vier Viertelstunden der Stunde, gewichtet mit
+        /// <c>cos θ_z</c> in der Mitte jeder Viertelstunde (<c>SimulationPV.Viertelgewichte</c>).
+        /// Der Sinus läuft über <see cref="Plattformrundung"/>, damit die Gewichte auf jeder Plattform
+        /// dieselben Bits tragen.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <param name="hour">UTC-Stunde als Kommazahl (14,125 = 14:07:30 UTC).</param>
+        public static double KosinusZenitwinkel(double Lon, double Lat, int dayOfYear, double hour)
+        {
+            Sonnenstand s = Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour);
+            if (s.Nacht) return 0.0;
+            double c = Plattformrundung.Sin(s.Alpha);
+            return c > 0.0 ? c : 0.0;
+        }
+
         /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
         /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
         /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>
-        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour)
+        /// <param name="albedo">Bodenalbedo 0…1; Vorgabe <see cref="ALBEDO_BODEN"/>.</param>
+        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour,
+                                             double albedo = ALBEDO_BODEN)
         {
             // 1.-3. Sonnenstand und Einfallswinkel - seit Paket B in Sonnengeometrie,
             // Rechenschritt fuer Rechenschritt unveraendert (siehe dort).
@@ -452,7 +476,7 @@ namespace WindowsFormsApplication1
             double direct = dni * cosTheta;
             double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
             double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
-            double gTotal = direct + (dhi * skyView) + (ghi * 0.2 * groundView); // 0.2 = Albedo Boden
+            double gTotal = direct + (dhi * skyView) + (ghi * albedo * groundView);
 
 
             // 5. Temperaturkorrektur (Zelltemp)
@@ -481,7 +505,7 @@ namespace WindowsFormsApplication1
         /// R_b  = cosTheta / max(cosTheta_z, cos 85°)           Geometriefaktor mit Horizontklemme
         /// G_t  = DNI·cosTheta
         ///      + DHI·[A_i·R_b + (1 − A_i)·(1 + cos beta)/2]
-        ///      + GHI·rho·(1 − cos beta)/2                      rho = 0,2 wie im Bestand
+        ///      + GHI·rho·(1 − cos beta)/2                      rho = Albedo, Vorgabe 0,2
         /// </code>
         ///
         /// <para><b>Pruefkriterium (Konzept N2.5): bei DNI = 0 ist das Ergebnis EXAKT
@@ -499,10 +523,12 @@ namespace WindowsFormsApplication1
         /// Modell, das sie mitschreibt, koennte diese Kette nur stoeren.</para>
         /// </summary>
         /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <param name="albedo">Bodenalbedo 0…1; Vorgabe <see cref="ALBEDO_BODEN"/>.</param>
         public static double CalculateHourlyHayDavies(double Lon, double Lat, int Tilt, int Azimuth,
                                                       double ghi, double dni, double dhi,
-                                                      int dayOfYear, double hour)
-            => CalculateHourlyHayDavies(Lon, Lat, (double)Tilt, (double)Azimuth, ghi, dni, dhi, dayOfYear, hour);
+                                                      int dayOfYear, double hour,
+                                                      double albedo = ALBEDO_BODEN)
+            => CalculateHourlyHayDavies(Lon, Lat, (double)Tilt, (double)Azimuth, ghi, dni, dhi, dayOfYear, hour, albedo);
 
         /// <summary>
         /// <see cref="CalculateHourlyHayDavies(double, double, int, int, double, double, double, int, double)"/>
@@ -512,7 +538,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double CalculateHourlyHayDavies(double Lon, double Lat, double Tilt, double Azimuth,
                                                       double ghi, double dni, double dhi,
-                                                      int dayOfYear, double hour)
+                                                      int dayOfYear, double hour,
+                                                      double albedo = ALBEDO_BODEN)
         {
             Sonnenstand s = Sonnengeometrie(Lon, Lat, Tilt, Azimuth, dayOfYear, hour);
             if (s.Nacht) return 0;
@@ -534,7 +561,7 @@ namespace WindowsFormsApplication1
 
             double direct = dni * cosTheta;
             double diffus = dhi * (ai * rB + (1.0 - ai) * skyView);
-            double reflex = ghi * ALBEDO_BODEN * groundView;
+            double reflex = ghi * albedo * groundView;
 
             return direct + diffus + reflex;
         }
@@ -570,7 +597,8 @@ namespace WindowsFormsApplication1
             return value;
         }
 
-        public static double Calculate(double ghi, double dhi, double lat, double lon, int doy, double hour, double slope, double azTarget)
+        public static double Calculate(double ghi, double dhi, double lat, double lon, int doy, double hour, double slope, double azTarget,
+                                       double albedo = ALBEDO_BODEN)
         {
             if (ghi <= 0) return 0;
             double r = Math.PI / 180.0;
@@ -596,7 +624,7 @@ namespace WindowsFormsApplication1
             double zen = (Math.PI / 2.0) - el;
             double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Plattformrundung.Cos(zen));
             double diff = dhi * (1.0 + Plattformrundung.Cos(sR)) / 2.0;
-            double refl = ghi * 0.2 * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
+            double refl = ghi * albedo * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
 
             return Math.Max(0, beam + diff + refl);
         }

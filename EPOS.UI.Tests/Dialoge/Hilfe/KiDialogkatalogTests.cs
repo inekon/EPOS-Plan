@@ -230,6 +230,11 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht) },
         { KiMaskennamen.NUTZUNGSDAUER,
           typeof(EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht) },
+        { KiMaskennamen.BETRIEBSKALENDER,
+          typeof(EPOS.UI.Dialoge.Bedarf.BetriebskalenderKiSicht) },
+        // Pufferspeicher-Auslegung (Stufe P2): die freie Ansicht meldet eine Sichtklasse an.
+        { KiMaskennamen.PUFFER_AUSLEGUNG,
+          typeof(EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungKiSicht) },
         { KiMaskennamen.VORLAGENPOSITION,
           typeof(EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht) },
         { KiMaskennamen.CASE_EINGABE,
@@ -417,11 +422,12 @@ public class KiDialogkatalogTests : IDisposable
             KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten),
                                      Wahlquellen(KiMaskennamen.HEIZKESSEL));
 
-        // SECHZEHN: die sechs Zahlen des Katalogeditors, die fuenf uebrigen Eingabefelder
-        // (Welle KI-F1b: Name, Hersteller, Beschreibung, Energietraeger, Brennwert) und die
-        // fuenf der Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1) - keines davon
-        // gibt es an PufferSpKatalogDaten.
-        Assert.Equal(16, fehlt.Count);
+        // SIEBZEHN: die sechs Zahlen des Katalogeditors, die fuenf uebrigen Eingabefelder
+        // (Welle KI-F1b: Name, Hersteller, Beschreibung, Energietraeger, Brennwert), die
+        // fuenf der Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1) und die Einheit
+        // des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) - keines davon gibt es an
+        // PufferSpKatalogDaten.
+        Assert.Equal(17, fehlt.Count);
         Assert.Contains("HeizkesselKatalogDaten.Ptherm", fehlt);
     }
 
@@ -457,7 +463,9 @@ public class KiDialogkatalogTests : IDisposable
         // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
         // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors. Stufe G6b, Welle W2:
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
-        Assert.Equal(88, katalog.Anzahl);
+        // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
+        // Pufferspeicher-Auslegung: ihre Ansicht.
+        Assert.Equal(90, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -634,7 +642,7 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_16_17_5_und_11_Felder()
+    public void Die_vier_Startmasken_fuehren_17_18_5_und_13_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -656,12 +664,17 @@ public class KiDialogkatalogTests : IDisposable
         // (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
         //
         // GEWACHSEN ist er beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
-        // Kesselkennlinie, Etappe E1): von 11 auf 16.
-        Assert.Equal(16, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+        // Kesselkennlinie, Etappe E1): von 11 auf 16, mit der Einheit des
+        // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) auf 17.
+        //
+        // Die Photovoltaik fuehrt dazu die Bodenalbedo der Anlage (Entscheidungsvorlage
+        // Modellgrenzen, PV4): 18.
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
+        Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
-        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+        // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1): 13.
+        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
         // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
         // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
@@ -745,12 +758,15 @@ public class KiDialogkatalogTests : IDisposable
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_13_11_15_14_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_17_12_15_15_und_26_Felder()
     {
-        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
-        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
+        // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2).
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
+        // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
+        Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
-        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
+        // Stromspeicherkatalog: vierzehn plus die Selbstentladung (Welle M5, SP1).
+        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
     }
 
@@ -863,6 +879,10 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.BAUTEILAUFBAU_KATALOG);
         Assert.Equal(KiMaskenziele.BAUSTOFF_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUSTOFF_KATALOG));
         Assert.Equal(KiMaskenziele.BAUTEILAUFBAU_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUTEILAUFBAU));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
+        Assert.Equal(KiMaskenziele.BETRIEBSKALENDER, KiMaskenziele.Ziel(KiMaskennamen.BETRIEBSKALENDER));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.PufferAuslegung, KiMaskenziele.PUFFER_AUSLEGUNG);
+        Assert.Equal(KiMaskenziele.PUFFER_AUSLEGUNG, KiMaskenziele.Ziel(KiMaskennamen.PUFFER_AUSLEGUNG));
     }
 
     /// <summary>
@@ -1155,7 +1175,7 @@ public class KiDialogkatalogTests : IDisposable
     /// </summary>
     [Theory]
     [InlineData(KiMaskennamen.TYPPROFIL, "wochenwerte", 168, 4)]
-    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 4)]
+    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 6)]   // dazu Vorlauf und Rücklauf der Prozesswärme (PW1 Stufe 1)
     [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 4)]
     [InlineData(KiMaskennamen.KOSTENPROFIL, "monatswerte", 12, 5)]
     [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]
@@ -1433,6 +1453,8 @@ public class KiDialogkatalogTests : IDisposable
         {
             "th_leistung", "wirkungsgrad_gas", "wirkungsgrad_oel",
             "bereitschaftsverlust", "vorlauf", "ruecklauf",
+            // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+            "bereitschaftsverlust_prozent",
             // Welle KI-F1b: die uebrigen Eingabefelder derselben Maske.
             "name", "hersteller", "beschreibung", "energietraeger", "brennwert",
             // Konzept Kesselkennlinie, Etappe E1: die Gruppe „Kennlinie".
@@ -1686,6 +1708,12 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.NUTZUNGSDAUER] =
             "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
             "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
+        [KiMaskennamen.BETRIEBSKALENDER] =
+            "bindet über die Sichtklasse BetriebskalenderKiSicht auf den Arbeitsstand des " +
+            "gewählten Kalenders; Zeuge ist BetriebskalenderDialogTests",
+        [KiMaskennamen.PUFFER_AUSLEGUNG] =
+            "bindet über die Sichtklasse PufferAuslegungKiSicht auf den Arbeitsstand der " +
+            "Ansicht; Zeuge ist PufferAuslegungSeiteTests",
         [KiMaskennamen.VORLAGENPOSITION] =
             "bindet über die Sichtklasse VorlagenPositionKiSicht auf die neun " +
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",

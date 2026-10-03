@@ -622,8 +622,8 @@ public sealed record KonditionierungVorlageEingabe(string Name, string Beschreib
 
 /// <summary>
 /// Ein erlaubtes Ziel von „Kopieren nach …" (Teilkonzept 3.5, 7.4) — der Dialog zeigt nur diese. Wo die
-/// Richtung neue Sollwerte braucht (Heizen → Kühlen), tragen sie die Vorgabe des Komfortsollwerts und die
-/// Grenzen seines Feldes.
+/// Richtung neue Sollwerte braucht (Heizen → Kühlen), tragen sie die Vorgaben des Komfort- und des
+/// Absenksollwerts und die Grenzen beider Felder.
 /// </summary>
 /// <param name="Ziel">Die Zielgröße.</param>
 /// <param name="Komfortsollwert">
@@ -632,13 +632,31 @@ public sealed record KonditionierungVorlageEingabe(string Name, string Beschreib
 /// </param>
 /// <param name="Min">Der kleinste Komfortsollwert [°C] (die Grenzen der Kühlspalte); ohne Sollwertfeld ohne Bedeutung.</param>
 /// <param name="Max">Der größte Komfortsollwert [°C].</param>
-public sealed record KonditionierungKopierziel(KonditionierungGroesse Ziel, double? Komfortsollwert, double Min, double Max);
+public sealed record KonditionierungKopierziel(KonditionierungGroesse Ziel, double? Komfortsollwert, double Min, double Max)
+{
+    /// <summary>
+    /// Die Vorgabe des Absenksollwerts [°C] für die Absenkzeiten (Heizsollwert unter dem Tagwert der Vorlage);
+    /// <c>null</c> ohne Sollwertfeld. Grenzen wie beim Komfortsollwert (<see cref="Min"/>, <see cref="Max"/>);
+    /// im Feld wählbar ist dazu „aus".
+    /// </summary>
+    public double? Absenksollwert { get; init; }
+}
 
-/// <summary>Was „Kopieren nach …" erfragt (Teilkonzept 7.4): Zielgröße, Name der Kopie, bei Heizen → Kühlen den Komfortsollwert.</summary>
+/// <summary>
+/// Was „Kopieren nach …" erfragt (Teilkonzept 7.4): Zielgröße, Name der Kopie, bei Heizen → Kühlen den Komfort-
+/// und den Absenksollwert.
+/// </summary>
 /// <param name="Ziel">Die Zielgröße — eines der erlaubten Ziele der Quelle.</param>
 /// <param name="Name">Der Name der Kopie in der Liste der Zielgröße.</param>
 /// <param name="Komfortsollwert">Der Komfortsollwert [°C]; nur bei Heizen → Kühlen, sonst <c>null</c>.</param>
-public sealed record KonditionierungVorlageKopie(KonditionierungGroesse Ziel, string Name, double? Komfortsollwert);
+public sealed record KonditionierungVorlageKopie(KonditionierungGroesse Ziel, string Name, double? Komfortsollwert)
+{
+    /// <summary>
+    /// Der Absenksollwert [°C] der Absenkzeiten, <see cref="double.NaN"/> = „aus"; nur bei Heizen → Kühlen,
+    /// sonst <c>null</c>.
+    /// </summary>
+    public double? Absenksollwert { get; init; }
+}
 
 /// <summary>
 /// Was eine Handlung an einer Vorlage ergeben hat (speichern, umbenennen, löschen, duplizieren, kopieren
@@ -660,6 +678,12 @@ public sealed record KonditionierungVorlageErgebnis(bool Ok, string Meldung, Kon
     /// Kühlspalte)? Dann nennt der Dialog sie am Sollwertfeld.
     /// </summary>
     public bool AmSollwert { get; init; }
+
+    /// <summary>
+    /// Betrifft die Ablehnung den ABSENKSOLLWERT von „Kopieren nach …" (fehlt, außerhalb der Grenzen der
+    /// Kühlspalte, unter dem Komfortsollwert)? Dann nennt der Dialog sie am Absenkfeld.
+    /// </summary>
+    public bool AmAbsenkwert { get; init; }
 }
 
 /// <summary>Die Angaben des Werkzeugs „Zeitfenster eintragen" (Teilkonzept 3.5, 7.5).</summary>

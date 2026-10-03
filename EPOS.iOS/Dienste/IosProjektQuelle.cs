@@ -426,6 +426,17 @@ public sealed class IosProjektQuelle : IProjektQuelle
     // Ladeweg antwortet die Quelle null, und die Wurzel nennt den Grund im
     // Banner, statt vor einer leeren Flaeche zu stehen.
 
+    /// <summary>
+    /// Die Pufferspeicher-Auslegung (Stufe P2) - dieselbe plattformfreie Huelle wie unter Windows;
+    /// sie holt den Arbeitsgang ab, den Konfiguration oder Pufferverwaltung angemeldet haben. Ein
+    /// eigenes Fenster gibt es hier nicht: Die Uebergabe aus dem Zapfprofil lehnt benannt ab.
+    /// </summary>
+    public IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt)
+    {
+        try { return PufferAuslegungHuelle.AnsichtGaben(idProjekt); }
+        catch (Exception) { return null; }
+    }
+
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? KlimadatenGaben()
     {
@@ -571,6 +582,17 @@ public sealed class IosProjektQuelle : IProjektQuelle
     {
         try { return BauteilaufbauHuelle.Gaben(); }
         catch (Exception ex) { Console.WriteLine("Bauteilaufbauten: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Die Betriebskalender der Bedarfsprofile (Feiertage, Betriebsferien) als freie Ansicht
+    /// der Wurzel - dieselbe plattformfreie Hülle wie unter Windows.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? BetriebskalenderGaben()
+    {
+        try { return BetriebskalenderHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Betriebskalender: " + ex.Message); return null; }
     }
 
     /// <inheritdoc />

@@ -137,8 +137,8 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly, Bezugsflaeche)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -154,7 +154,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@kdir", model.m_Kdir),
                         new DbParam("@kdfu", model.m_Kdfu),
                         new DbParam("@inv", model.m_Kosten),
-                        new DbParam("@ro", false)
+                        new DbParam("@ro", false),
+                        new DbParam("@bezug", Solarkreis.Bezugsflaeche(model.m_Bezugsflaeche))
                     };
 
                     v.Ausfuehren(sql, ps);
@@ -178,8 +179,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly, Bezugsflaeche)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -195,7 +196,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
                 new DbParam("@inv", this.m_Kosten),
-                new DbParam("@ro", false)
+                new DbParam("@ro", false),
+                new DbParam("@bezug", Solarkreis.Bezugsflaeche(this.m_Bezugsflaeche))
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -219,7 +221,7 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Firma = ?, Beschreibung = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?, Bezugsflaeche = ?
                           WHERE Bezeichner = ?";
 
             DbParam[] ps = {
@@ -234,6 +236,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
                 new DbParam("@inv", this.m_Kosten),
+                new DbParam("@bezug", Solarkreis.Bezugsflaeche(this.m_Bezugsflaeche)),
                 new DbParam("@bez", this.m_szKollektorname ?? "")
             };
 
@@ -256,7 +259,7 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Firma = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Bezugsflaeche = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -269,6 +272,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@k2", this.m_k2),
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
+                new DbParam("@bezug", Solarkreis.Bezugsflaeche(this.m_Bezugsflaeche)),
                 new DbParam("@id", id)
             };
 
@@ -304,6 +308,7 @@ namespace WindowsFormsApplication1
             this.m_Kdir = m.m_Kdir;
             this.m_Kdfu = m.m_Kdfu;
             this.m_Kosten = m.m_Kosten;
+            this.m_Bezugsflaeche = Solarkreis.Bezugsflaeche(m.m_Bezugsflaeche);
         }
 
         private static bool ReadOnlyOf(DataRow row)
@@ -336,6 +341,7 @@ namespace WindowsFormsApplication1
             m.m_Kdir = D(row, "Kdir");
             m.m_Kdfu = D(row, "Kdfu");
             m.m_Kosten = D(row, "Investitionskosten");
+            m.m_Bezugsflaeche = SolarkollektorenCtrl.Bezugsflaeche(row);
         }
 
         private SolarkollektorenModel MapRowToModel(DataRow row)
@@ -520,6 +526,9 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldKdiff] = Feld(r, "Kdfu");
             werte[KatalogBrowserProfil.FeldInvestitionskosten] = Feld(r, "Investitionskosten");
 
+            // ST6: die Bezugsfläche der Kennwerte; ohne Spalte und bei NULL apertur.
+            werte[KatalogBrowserProfil.FeldBezugsflaeche] = SolarkollektorenCtrl.Bezugsflaeche(r);
+
             return werte;
         }
 
@@ -556,7 +565,8 @@ namespace WindowsFormsApplication1
                                                          double Aperturflaeche,
                                                          double H0, double K1, double K2,
                                                          double Kdir, double Kdiff,
-                                                         double Investitionskosten);
+                                                         double Investitionskosten,
+                                                         string Bezugsflaeche = null);
 
         /// <summary>
         /// Schreibt die Anzeigefelder in den Katalogsatz zurueck — der Weg des Knopfes
@@ -653,6 +663,14 @@ namespace WindowsFormsApplication1
                 KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldK1, f.K1),
                 KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldK2, f.K2));
             if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // ST6: die Bezugsfläche aus der Liste (apertur, brutto); leer oder nicht mitgegeben
+            // laesst den gelesenen Wert stehen.
+            string bezug;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBezugsflaeche, f.Bezugsflaeche,
+                                                 Solarkreis.BEZUGSFLAECHEN, out bezug);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+            if (!string.IsNullOrEmpty(bezug)) satz.m_Bezugsflaeche = bezug;
 
             satz.m_szKollektortyp = f.Kollektortyp ?? "";
             satz.m_szFirma = f.Firma ?? "";

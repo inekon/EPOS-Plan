@@ -161,12 +161,13 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // (21 / 27 / 14 / 6). Bis dahin waren es 8 / 8 / 8 / 6: der Detailblock der vier
     // Vorlaeufer-Masken. Beim BHKW kamen mit dem Entscheid vom 20.09.2026 die zwei
     // Wirkungsgradanteile dazu, beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
-    // Kesselkennlinie, Etappe E1) fuenf Felder: 21 -> 26. Die Quelle ist
+    // Kesselkennlinie, Etappe E1) fuenf Felder: 21 -> 26, mit der Einheit des
+    // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) 27. Die Quelle ist
     // KatalogBrowserProfil; hier steht nur die Zahl.
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 26)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 27)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 12)]
+    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 27)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 31)]   // mit Teillast und Takten (Welle M4)
+    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 13)]   // mit der Bezugsfläche (Welle M2)
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
         KatalogBrowserArt art, string titel, int felder)

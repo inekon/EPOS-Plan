@@ -108,10 +108,19 @@
                         Wert="@Daten.Wirkungsgrad_Oel" WertChanged="w => Daten.Wirkungsgrad_Oel = w"
                         FehlerZustand="BeiFehlerZustand" />
 
-            <Zahlenfeld Bezeichnung="@LabelBBVerlust" Einheit="kW" Feldname="@LabelBBVerlustKurz"
+            @* DER BEREITSCHAFTSVERLUST IN kW ODER % DER NENNLEISTUNG (Anwenderentscheid
+               02.10.2026): Wert und Einheit stehen nebeneinander, die Einheit hinter dem Feld
+               folgt der Wahl. Die Grenzen je Einheit (kW: 0 bis Nennleistung, %: 0 bis 100)
+               prueft der Kern beim Speichern und nennt sie in der Meldung - eine feste
+               Obergrenze im Feld veraltete mit jeder Aenderung von Leistung oder Einheit. *@
+            <Zahlenfeld Bezeichnung="@LabelBBVerlust" Einheit="@BBEinheitText"
+                        Feldname="@LabelBBVerlustKurz" Min="0"
                         Wert="@Daten.Betriebsbereitschaftverlust"
                         WertChanged="w => Daten.Betriebsbereitschaftverlust = w"
                         FehlerZustand="BeiFehlerZustand" />
+            <Auswahlfeld Bezeichnung="@LabelBBEinheit" Eintraege="@BBEinheiten"
+                         Auswahl="@(Daten.BereitschaftProzent ? BB_EINHEIT_PROZENT : BB_EINHEIT_KW)"
+                         AuswahlChanged="w => Daten.BereitschaftProzent = w == BB_EINHEIT_PROZENT" />
 
             <Schalter Bezeichnung="@LabelBrennwert" Wert="@Daten.Brennwert"
                       WertChanged="BeiBrennwert" />
@@ -286,6 +295,26 @@
     [Parameter] public string HinweisWirkungsgrad { get; set; } = "(z. B. 0,9)";
     [Parameter] public string LabelBBVerlust { get; set; } = "Betriebsbereitschaftsverluste:";
     [Parameter] public string LabelBBVerlustKurz { get; set; } = "Betriebsbereitschaftsverluste";
+
+    /// <summary>Beschriftung der Einheitenwahl des Bereitschaftsverlusts.</summary>
+    [Parameter] public string LabelBBEinheit { get; set; } = "Einheit Bereitschaftsverlust:";
+
+    /// <summary>
+    /// Die Einträge der Einheitenwahl: <see cref="BB_EINHEIT_KW"/> und
+    /// <see cref="BB_EINHEIT_PROZENT"/> mit ihrem Anzeigetext. Der Persistenzwert bleibt in der
+    /// Hülle (Drei-Schichten-Regel); der Dialog kennt nur die Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> BBEinheiten { get; set; } =
+        new (int, string)[] { (BB_EINHEIT_KW, "kW"), (BB_EINHEIT_PROZENT, "% der Nennleistung") };
+
+    /// <summary>Kennung der Wahl „kW" in <see cref="BBEinheiten"/>.</summary>
+    public const int BB_EINHEIT_KW = 1;
+
+    /// <summary>Kennung der Wahl „% der Nennleistung" in <see cref="BBEinheiten"/>.</summary>
+    public const int BB_EINHEIT_PROZENT = 2;
+
+    /// <summary>Die Einheit hinter dem Wertfeld — folgt der Wahl.</summary>
+    private string BBEinheitText => Daten.BereitschaftProzent ? "%" : "kW";
     [Parameter] public string LabelBrennwert { get; set; } = "Brennwertkessel";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
     [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";

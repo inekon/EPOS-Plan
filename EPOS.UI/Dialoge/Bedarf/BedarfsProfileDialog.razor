@@ -179,6 +179,10 @@
                 <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_infoName" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelTyp" Wert="@_infoTyp" NurLesen="true" />
+            @if (MitTemperatur)
+            {
+                <Textfeld Bezeichnung="@LabelTemperaturniveau" Wert="@_infoTemperatur" NurLesen="true" />
+            }
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_infoBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@Jahresverbrauch" NurLesen="true" />
@@ -206,6 +210,49 @@
                     @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
         </KindInhalt>
     </Gruppenkopf>
+
+    @* PW1 Stufe 1: das Temperaturpaar der gewaehlten PROJEKTZEILE. Uebernommen wird in den
+       Arbeitsstand; geschrieben wird mit OK, wie der Jahresverbrauch. Leer = ohne
+       Temperaturniveau. Die Pruefung kommt als Delegat aus der Huelle. *@
+    @if (MitTemperatur)
+    {
+        <Gruppenkopf Titel="@GruppeTemperatur">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                            Nachkommastellen="1" Wert="@_neuVorlauf" WertChanged="w => _neuVorlauf = w"
+                            Aktiv="@(_gewaehlt is not null)" />
+                <Zahlenfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                            Nachkommastellen="1" Wert="@_neuRuecklauf" WertChanged="w => _neuRuecklauf = w"
+                            Aktiv="@(_gewaehlt is not null)" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@HinweisTemperatur" />
+                <button type="button" class="epos-knopf"
+                        @onclick="BeiTemperaturUebernehmen">@BtnTemperaturText</button>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* PW2/BW2: der Betriebskalender der gewaehlten PROJEKTZEILE - Feiertage und Betriebsferien
+       auf ihrem Wochenprofil. Die Wahl geht in den Arbeitsstand der Zeile; geschrieben wird mit
+       OK, wie der Jahresverbrauch. Ohne Liste der Huelle steht die Gruppe nicht da. *@
+    @if (Betriebskalender is not null)
+    {
+        <Gruppenkopf Titel="@GruppeKalender">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelKalender" Eintraege="@KalenderWahlEintraege"
+                             Auswahl="@(_gewaehlt?.KalenderId ?? 0)" AuswahlChanged="KalenderGewaehlt"
+                             Aktiv="@(_gewaehlt is not null)" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@HinweisKalender" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiSimulation">@BtnSimulationText</button>
@@ -331,6 +378,54 @@
 
     /// <summary>Der Infoblock zu einem Profil.</summary>
     [Parameter] public Func<string, BedarfsProfilInfo?>? Info { get; set; }
+
+    /// <summary>
+    /// Prüft ein Temperaturpaar (PW1 Stufe 1) — <c>null</c> = zulässig, sonst der Grund. Nur bei
+    /// der Prozesswärme gereicht; ohne ihn zeigt der Dialog kein Temperaturniveau.
+    /// </summary>
+    [Parameter] public Func<double?, double?, string?>? TemperaturPruefen { get; set; }
+
+    /// <summary><c>PW_GRP_TEMPERATUR</c></summary>
+    [Parameter] public string GruppeTemperatur { get; set; } = Resource.PW_GRP_TEMPERATUR;
+
+    /// <summary><c>PW_LBL_TEMPERATURNIVEAU</c></summary>
+    [Parameter] public string LabelTemperaturniveau { get; set; } = Resource.PW_LBL_TEMPERATURNIVEAU;
+
+    /// <summary><c>PW_LBL_VORLAUF</c></summary>
+    [Parameter] public string LabelVorlauf { get; set; } = Resource.PW_LBL_VORLAUF;
+
+    /// <summary><c>PW_LBL_RUECKLAUF</c></summary>
+    [Parameter] public string LabelRuecklauf { get; set; } = Resource.PW_LBL_RUECKLAUF;
+
+    /// <summary><c>PW_HINW_TEMPERATUR</c></summary>
+    [Parameter] public string HinweisTemperatur { get; set; } = Resource.PW_HINW_TEMPERATUR;
+
+    /// <summary><c>PW_BTN_TEMPERATUR</c></summary>
+    [Parameter] public string BtnTemperaturText { get; set; } = Resource.PW_BTN_TEMPERATUR;
+
+    /// <summary><c>PW_MSG_TEMPERATUR_UEBERNOMMEN</c></summary>
+    [Parameter] public string MeldungTemperaturUebernommen { get; set; } = Resource.PW_MSG_TEMPERATUR_UEBERNOMMEN;
+
+    /// <summary>
+    /// Die Betriebskalender zur Wahl je Zuordnung (PW2/BW2) als (ID, Bezeichner); <c>null</c> = die
+    /// Hülle bietet die Wahl nicht an, dann steht die Gruppe nicht da.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)>? Betriebskalender { get; set; }
+
+    /// <summary><c>BPF_GRP_KALENDER</c></summary>
+    [Parameter] public string GruppeKalender { get; set; } = Resource.BPF_GRP_KALENDER;
+
+    /// <summary><c>BPF_LBL_KALENDER</c></summary>
+    [Parameter] public string LabelKalender { get; set; } = Resource.BPF_LBL_KALENDER;
+
+    /// <summary><c>BPF_KALENDER_KEINER</c> — der Eintrag „ohne Kalender".</summary>
+    [Parameter] public string TextOhneKalender { get; set; } = Resource.BPF_KALENDER_KEINER;
+
+    /// <summary><c>BPF_HINW_KALENDER</c></summary>
+    [Parameter] public string HinweisKalender { get; set; } = Resource.BPF_HINW_KALENDER;
+
+    /// <summary><c>PW_TEMPERATUR_OHNE</c> — die Anzeige ohne Temperaturpaar.</summary>
+    [Parameter] public string TextOhneTemperatur { get; set; } = Resource.PW_TEMPERATUR_OHNE;
 
     /// <summary>Die Summe der zwölf Monatswerte eines Katalogsatzes.</summary>
     [Parameter] public Func<string, double>? Jahressumme { get; set; }
@@ -555,6 +650,24 @@
     private string _infoName = "";
     private string _infoBeschreibung = "";
     private string _infoTyp = "";
+    private string _infoTemperatur = "";
+
+    // PW1 Stufe 1: die Eingabefelder des Temperaturpaars der gewählten Projektzeile.
+    private double? _neuVorlauf;
+    private double? _neuRuecklauf;
+
+    /// <summary>Zeigt der Dialog das Temperaturniveau? Nur Prozesswärme mit Prüfdelegat.</summary>
+    private bool MitTemperatur => Art == BedarfsArt.Prozesswaerme && TemperaturPruefen is not null;
+
+    /// <summary>Das Temperaturniveau im Infoblock — Prüfhilfe für die Tests.</summary>
+    public string InfoTemperatur => _infoTemperatur;
+
+    /// <summary>Ein Paar als Anzeigetext „90 / 60 °C"; ohne Paar <see cref="TextOhneTemperatur"/>.</summary>
+    private string TemperaturText(double? vorlauf, double? ruecklauf)
+        => vorlauf is null || ruecklauf is null
+            ? TextOhneTemperatur
+            : vorlauf.Value.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              ruecklauf.Value.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " °C";
 
     /// <summary>Der angezeigte Jahresverbrauch IN MWH; <c>null</c> = noch keiner.</summary>
     private double? _jahresverbrauchMWh;
@@ -700,7 +813,13 @@
             RechenwegLesen = () => MitRechenweg ? (int)_rechenweg : null,
             RechenwegSetzen = KiRechenweg,
             RechenwegEintraege = () => KiMaskenanmeldung.Eintraege(
-                Rechenwege, e => e.Id, e => e.Text)
+                Rechenwege, e => e.Id, e => e.Text),
+
+            // PW2/BW2: der Betriebskalender der markierten Zeile - derselbe Weg wie die Wahl.
+            KalenderLesen = () => Betriebskalender is null ? null : _gewaehlt?.KalenderId ?? 0,
+            KalenderSetzen = KalenderGewaehlt,
+            KalenderEintraege = () => KiMaskenanmeldung.Eintraege(
+                KalenderWahlEintraege, e => e.Id, e => e.Text)
         };
     }
 
@@ -837,6 +956,11 @@
         _katalogGewaehlt = "";
         _jahresverbrauchMWh = z.Summe;
         InfoSetzen(z.Name);
+
+        // PW1 Stufe 1: Die Projektzeile zeigt IHR Paar (die Projektkopie), nicht das des Katalogs.
+        _neuVorlauf = z.Vorlauf;
+        _neuRuecklauf = z.Ruecklauf;
+        _infoTemperatur = TemperaturText(z.Vorlauf, z.Ruecklauf);
     }
 
     /// <summary>
@@ -863,6 +987,61 @@
         _infoName = info.Name;
         _infoBeschreibung = info.Beschreibung;
         _infoTyp = info.Typ;
+        _infoTemperatur = TemperaturText(info.Vorlauf, info.Ruecklauf);
+    }
+
+    /// <summary>Die Wahl der Kalender: 0 = ohne, dann die Gaben der Hülle.</summary>
+    private IReadOnlyList<(int Id, string Text)> KalenderWahlEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, TextOhneKalender) };
+            if (Betriebskalender is not null) l.AddRange(Betriebskalender);
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Der Betriebskalender der gewählten Projektzeile (PW2/BW2) — in den Arbeitsstand; geschrieben
+    /// wird mit OK. Ohne gewählte Zeile meldet die Maske, statt still nichts zu tun.
+    /// </summary>
+    private void KalenderGewaehlt(int? id)
+    {
+        if (_gewaehlt is null)
+        {
+            Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
+            return;
+        }
+        int? neu = id is > 0 ? id : null;
+        if (_gewaehlt.KalenderId == neu) return;
+        _gewaehlt.KalenderId = neu;
+        Geaendert?.Invoke();
+    }
+
+    /// <summary>
+    /// „Temperaturen übernehmen" (PW1 Stufe 1): Projektzeile gewählt und ein zulässiges Paar —
+    /// dann geht es in den Arbeitsstand der Zeile; geschrieben wird mit OK.
+    /// </summary>
+    private void BeiTemperaturUebernehmen()
+    {
+        if (_gewaehlt is null)
+        {
+            Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
+            return;
+        }
+        string? grund = TemperaturPruefen?.Invoke(_neuVorlauf, _neuRuecklauf);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+
+        _gewaehlt.Vorlauf = _neuVorlauf;
+        _gewaehlt.Ruecklauf = _neuRuecklauf;
+        _gewaehlt.TemperaturGeaendert = true;
+        _infoTemperatur = TemperaturText(_neuVorlauf, _neuRuecklauf);
+        Geaendert?.Invoke();
+        Melden(MeldungTemperaturUebernommen, WarnStufe.Hinweis);
     }
 
     // =================================================================================

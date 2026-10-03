@@ -396,6 +396,9 @@ Setup/Vorlage/*.sqlite
 Setup/Vorlage/*.sqlite-wal
 Setup/Vorlage/*.sqlite-shm
 Setup/Vorlage/*.bericht.txt
+# Das Katalogpaket der Programmfassung (KU1 Stufe 1) entsteht mit der Vorlage und gehoert ebenso
+# wenig ins Repository; die kleine Probe der Tests liegt unter Referenzlaeufe/Importproben/.
+Setup/Vorlage/Katalogpaket.json
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe

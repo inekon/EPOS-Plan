@@ -281,8 +281,150 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 4 — Das Anlagenfeld wirkt, in allen drei Betriebsarten (Befund BHKW-Untergrenze,
+        //     Papier „Verbesserungen 29.09.2026", Anwenderentscheid)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Rangfolge Anlage → Katalog → Projekt.</b> Das Anlagenfeld gilt, sobald es
+        /// gepflegt ist; bis dahin überschrieb der Katalog- bzw. Projektwert es immer.
+        /// </summary>
+        [Theory]
+        [InlineData(35.0, 15.0, 0.3, 0.35)]   // Anlage schlägt Katalog
+        [InlineData(35.0, 0.0, 0.3, 0.35)]    // Anlage schlägt Projekt (Projekte 1018, 1049: alt 0,30 → neu 0,35)
+        [InlineData(0.0, 15.0, 0.3, 0.15)]    // ohne Anlagenwert: Katalog (Projekt 1030, unverändert)
+        [InlineData(0.0, 0.0, 0.3, 0.3)]      // ohne beides: Projekt (Projekte 1017, 1047, unverändert)
+        [InlineData(0.0, 0.0, 0.0, 0.0)]      // keine Untergrenze
+        [InlineData(100.0, 15.0, 0.3, 1.0)]   // 100 % ist noch gültig
+        public void Die_Untergrenze_folgt_der_Rangfolge_Anlage_Katalog_Projekt(
+            double anlage, double katalog, double projektFaktor, double erwartet)
+        {
+            SimulationProtokoll protokoll = SimulationProtokoll.NeuStarten();
+
+            Assert.Equal(erwartet, SimulationBHKW.Grenzfaktor("Probe", anlage, katalog, projektFaktor), 12);
+            Assert.Empty(protokoll.Warnungen);
+        }
+
+        /// <summary>
+        /// <b>Über 100 % ist ungültig</b> — das Modul liefe nie an. Der Wert wird benannt
+        /// übersprungen, es gilt die nächste Ebene; kein Projekt steht still.
+        /// </summary>
+        [Theory]
+        [InlineData(150.0, 15.0, 0.3, 0.15, 1)]   // Anlage ungültig → Katalog
+        [InlineData(0.0, 620.0, 0.3, 0.3, 1)]     // Katalog ungültig → Projekt (Agenitor-Zeilen des Auslieferungskatalogs)
+        [InlineData(468.0, 1027.0, 0.1, 0.1, 2)]  // beide ungültig → Projekt
+        [InlineData(770.0, 0.0, 0.0, 0.0, 1)]     // Anlage ungültig, nichts gepflegt → keine Untergrenze
+        public void Eine_Grenzleistung_ueber_100_Prozent_wird_benannt_uebersprungen(
+            double anlage, double katalog, double projektFaktor, double erwartet, int warnungen)
+        {
+            SimulationProtokoll protokoll = SimulationProtokoll.NeuStarten();
+
+            Assert.Equal(erwartet, SimulationBHKW.Grenzfaktor("Probe", anlage, katalog, projektFaktor), 12);
+            Assert.Equal(warnungen, protokoll.Warnungen.Count);
+            Assert.All(protokoll.Warnungen, w => Assert.Contains("Probe", w));
+        }
+
+        /// <summary>Ein Projektwert über 100 % rechnet als „keine Untergrenze" — mit Warnung.</summary>
+        [Fact]
+        public void Ein_Projektwert_ueber_100_Prozent_wird_benannt_zu_null()
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationProtokoll protokoll = SimulationProtokoll.NeuStarten();
+            Assert.Equal(0.0, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 250));
+            Assert.Single(protokoll.Warnungen);
+        }
+
+        /// <summary>Das Anlagenfeld überstimmt den Katalogwert auch im Lauf (über <c>Vorbereiten_Zweikanalig</c>).</summary>
+        [Fact]
+        public void Das_Anlagenfeld_ueberstimmt_im_Lauf_den_Katalogwert()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(0.35, Vorbereitet(MODUL_MIT_EIGENEM_WERT, projektwertProzent: 30, anlageProzent: 35).bhkwGrenzL[0], 12);
+            Assert.Equal(EIGENER_WERT_PROZENT / 100.0,
+                         Vorbereitet(MODUL_MIT_EIGENEM_WERT, projektwertProzent: 30, anlageProzent: 0).bhkwGrenzL[0], 12);
+        }
+
+        /// <summary>
+        /// <b>Stromgeführt und ohne Einspeisung gilt dieselbe Untergrenze je Modul.</b> Der
+        /// Projektwert ist 0, das Anlagenfeld 30 %: Bei 2 kW Strombedarf (unter 30 % von
+        /// 10 kW) bleibt der Motor aus. Bis zum Befund nahmen die zwei stromseitigen
+        /// Fahrweisen nur den Projektwert — der Motor moduliert dann auf 2 kW herunter.
+        /// Wärmegeführt hält dieselbe Grenze gegen den Wärmeraum.
+        /// </summary>
+        [Theory]
+        [InlineData(1)]   // stromgefuehrt
+        [InlineData(2)]   // ohne Einspeisung
+        public void Stromseitig_gilt_die_Untergrenze_des_Moduls(int betriebsart)
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationBHKW mitAnlage = EineStunde(betriebsart, projektwertProzent: 0, anlageProzent: 30);
+            SimulationBHKW ohneAnlage = EineStunde(betriebsart, projektwertProzent: 0, anlageProzent: 0);
+
+            Assert.Equal(0.0, mitAnlage.stromproduktion[0]);
+            Assert.Equal(KLEINER_STROMBEDARF, ohneAnlage.stromproduktion[0], 3);
+        }
+
+        /// <summary>
+        /// Wärmegeführt: Unter der Untergrenze bleibt das Modul aus (stündliche Rechnung,
+        /// kein Takten innerhalb der Stunde). Wärmeraum 4 kWh bei 19 kW thermisch: mit 30 %
+        /// (5,7 kW) aus, ohne Untergrenze moduliert es auf 4 kWh.
+        /// </summary>
+        [Fact]
+        public void Waermegefuehrt_bleibt_das_Modul_unter_der_Untergrenze_aus()
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationBHKW mitAnlage = EineStunde(0, projektwertProzent: 0, anlageProzent: 30, waermeraum: 4.0);
+            SimulationBHKW ohneAnlage = EineStunde(0, projektwertProzent: 0, anlageProzent: 0, waermeraum: 4.0);
+
+            Assert.Equal(0.0, mitAnlage.waermeproduktion[0]);
+            Assert.True(ohneAnlage.waermeproduktion[0] > 0.0);
+        }
+
+        /// <summary>
+        /// Der Auslieferungskatalog der Testdatenbank führt Zeilen mit einer Grenzleistung
+        /// über 100 % (Prüfgrenze des Befunds: 4 von 79, 468 bis 1 027 %) — sie bleiben
+        /// unverändert; der Lauf überspringt sie benannt.
+        /// </summary>
+        [Fact]
+        public void Katalogzeilen_ueber_100_Prozent_fallen_auf_den_Projektwert()
+        {
+            if (!_db.Vorhanden) return;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Grenzleistung FROM Tab_BHKW_STAMM WHERE Grenzleistung > ?",
+                new DbParam("?", SimulationBHKW.GRENZLEISTUNG_MAX_PROZENT));
+            Assert.NotNull(dt);
+            Assert.Equal(4, dt.Rows.Count);
+            foreach (DataRow r in dt.Rows)
+                Assert.Equal(0.3, SimulationBHKW.Grenzfaktor("Katalog", 0.0,
+                    Convert.ToDouble(r["Grenzleistung"], CultureInfo.InvariantCulture), 0.3), 12);
+        }
+
+        // =================================================================================
         // Hilfsmittel
         // =================================================================================
+
+        /// <summary>Eine Stunde in der gewählten Betriebsart mit Anlagenfeld und kleinem Bedarf.</summary>
+        private static SimulationBHKW EineStunde(int betriebsart, int projektwertProzent, double anlageProzent,
+                                                 double waermeraum = 50.0)
+        {
+            SimulationBHKW sim = Vorbereitet(MODUL_OHNE_EIGENEN_WERT, projektwertProzent, anlageProzent);
+            sim.modeBHKW = betriebsart;
+            sim.strombedarf[0] = KLEINER_STROMBEDARF;
+
+            double[] rest = new double[Kanal.ANZAHL];
+            // Der Wärmeraum auf alle Kanäle verteilt - die Stufe sieht höchstens ihn.
+            for (int k = 0; k < rest.Length; k++) rest[k] = waermeraum / rest.Length;
+
+            sim.Stunde_Start(0, rest);
+            sim.Stunde_Bedarf(0, false, rest);
+            sim.Stunde_Ende(0, 0.0);
+            return sim;
+        }
 
         /// <summary>
         /// Fährt <c>Moduldaten_Einlesen</c> über den einzigen öffentlichen Weg dorthin
@@ -313,11 +455,12 @@ namespace EPOS.Kern.Tests
             return sim;
         }
 
-        private static SimulationBHKW Vorbereitet(int idModul, int projektwertProzent)
+        private static SimulationBHKW Vorbereitet(int idModul, int projektwertProzent, double anlageProzent = 0.0)
         {
             var sim = new SimulationBHKW();
             sim.bhkw_list.Add(idModul);
             sim.bhkw_list_Namen.Add("Probe");
+            sim.bhkw_anlagen_grenzleistung.Add(anlageProzent);
             sim.bhkwGrenzleistungAllgemein = projektwertProzent;
 
             Assert.True(sim.Vorbereiten_Zweikanalig(0, new List<Senkenzuordnung>()),

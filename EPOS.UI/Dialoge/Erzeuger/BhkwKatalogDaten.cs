@@ -83,6 +83,26 @@ public sealed class BhkwKatalogDaten
     /// <summary>Rücklauftemperatur [°C], ganzzahlig.</summary>
     public int? Ruecklauf { get; set; }
 
+    // --- Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ---------------------
+
+    /// <summary>
+    /// Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (BH1). <c>null</c> = wie
+    /// Volllast; mit Wert rechnet das Modul die Teillastkennlinie.
+    /// </summary>
+    public double? WirkungsgradEl50 { get; set; }
+
+    /// <summary>Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+    public double? WirkungsgradTh50 { get; set; }
+
+    /// <summary>Anfahrverlust je Start [kWh Brennstoff] (BH2); <c>null</c> = nicht gepflegt.</summary>
+    public double? AnfahrverlustKwh { get; set; }
+
+    /// <summary>
+    /// Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt. Mit Anfahrverlust oder
+    /// Mindestlaufzeit taktet das Modul unter seiner Untergrenze, sonst bleibt es dort aus.
+    /// </summary>
+    public int? MindestlaufzeitMin { get; set; }
+
     // --- Gruppe 3: Kosten ------------------------------------------------------
 
     /// <summary>Kosten des Moduls [€].</summary>

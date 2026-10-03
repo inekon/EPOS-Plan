@@ -31,7 +31,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 * '''Thermische Leistung''' – in kW.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Wirkungsgrad Gas, Biogas, Holz und Sonstiges''' und '''Wirkungsgrad Öl''' – je als Faktor (z. B. 0,9).
-* '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt; die Simulation rechnet sie in jeder Stunde, in der der Kessel stillsteht und betriebsbereit ist, als Brennstoffeinsatz (siehe [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]).
+* '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt oder in Prozent der thermischen Leistung, je nach ''Einheit Bereitschaftsverlust''; die Simulation rechnet sie in kW in jeder Stunde, in der der Kessel stillsteht und betriebsbereit ist, als Brennstoffeinsatz (siehe [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]).
 * '''Brennwertkessel''' – ein Schalter.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 * Gruppe '''Kennlinie''' – die Daten einer Teillast- und Brennwertkennlinie. Ein leeres Feld heißt „Vorgabe“, nicht 0; der Platzhalter im Feld sagt es.
@@ -39,7 +39,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 ** '''Brennwertkennlinie''' – ein Schalter; nur bei einem Brennwertkessel bedienbar. Das Kennzeichen '''Brennwertkessel''' allein beschreibt und filtert den Katalog.
 ** '''Mindestleistung''' – in kW, die kleinste Leistung, bis zu der der Brenner moduliert; höchstens die thermische Leistung.
 ** '''Anfahrverlust je Start''' – in kWh; '''Mindestlaufzeit''' – in Minuten, 1 bis 60.
-: Die Simulation rechnet den Heizkessel mit dem festen Wirkungsgrad aus ''Wirkungsgrad Gas…'' bzw. ''Wirkungsgrad Öl''; die Felder der Kennlinie verwendet sie nicht.
+: Die Simulation rechnet mit dieser Kennlinie: Der Wirkungsgrad einer Laufstunde folgt der Laststufe zwischen dem Wert bei 30&nbsp;% Last und dem Volllastwert aus ''Wirkungsgrad Gas…'' bzw. ''Wirkungsgrad Öl'', beim Brennwertkessel mit Brennwertkennlinie zusätzlich dem Rücklauf der Stunde. Unter der Mindestleistung taktet der Kessel, und je Start kommt der Anfahrverlust auf den Brennstoff. Ein leeres Feld rechnet mit der Vorgabe ([[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]]).
 
 Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt die Felder der Kennlinie ebenfalls und zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, ''Nutzungsdauer (Gerätedaten)'' in Jahren und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers. Auch die Nutzungsdauer rechnet nicht; für Ersatzbeschaffung und Restwert der Wirtschaftlichkeit maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]], und der Kurztext am Feld sagt es. Ein neuer Kessel mit der Wartungseinheit %/a übernimmt den Wartungssatz dieser Tabelle, wenn sie für den Heizkessel einen führt.
 
@@ -58,6 +58,11 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 * '''Untere Grenzleistung''' – in Prozent der Nennleistung.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+* {{Anker|bhkw-teillast}}Gruppe '''Teillast und Takten''' – alle Felder dürfen leer bleiben:
+** '''El. Wirkungsgrad bei 50 % Last''' und '''Th. Wirkungsgrad bei 50 % Last''' – je als Faktor zwischen 0 und 1 wie die Volllastwerte; leer = wie Volllast. Eine kleine Kurve daneben zeigt beide Wirkungsgrade über der Last.
+** '''Anfahrverlust je Start''' – in kWh Brennstoff; leer = kein Anfahrverlust.
+** '''Mindestlaufzeit''' – in Minuten, ganzzahlig, höchstens 60; leer = 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
+: Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben, sobald der Wärmeraum der Stunde einen Mindestlauf aufnimmt ([[Programm Dokumentation/BHKW#teillast|BHKW: Teillast und Takten]]). Dieselben vier Felder stehen im Aufklapper ''Alle Daten anzeigen''; ein dort geleertes Feld wird als „nicht gepflegt" gespeichert.
 
 Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg). Auch die Nutzungsdauer rechnet nicht; maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]].
 
@@ -99,6 +104,8 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
 * '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
+* {{Anker|wp-mindestleistung}}'''Mindestleistung''' – in kW, die kleinste Leistung, auf die das Gerät herunterregelt; leer = es moduliert bis null. Unter ihr taktet das Gerät, und die Simulation rechnet den Taktverlust ([[Programm Dokumentation/Wärmepumpe#takten|Wärmepumpe: Takten]]).
+* '''Teillastkoeffizient C_d''' – Faktor zwischen 0 und 1 für den Taktverlust nach EN 14825; leer gilt die Vorgabe 0,9 der Norm. In den Projektdialogen stehen beide Werte nur lesend.
 * '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
 
 ''Kennliniendaten Ansicht/Bearbeiten…'' zeigt die Heizkennlinie und, wenn zur gewählten Pumpe Kühlkenndaten vorliegen, über einen Umschalter auch die Kühlkennlinie, als Diagramm. ''Modul-Katalog…'' öffnet eine durchsuchbare Auswahl aus dem Stammkatalog: eine Suchzeile über alle Spalten, dazu die Spalten Hersteller, Quelle, Nennleistung, Vorlauf minimal und maximal sowie Zuheizung; Bauart, Auslegung, Aufstellung und Regelung stehen im Kenndatenblock der gewählten Pumpe statt als eigene Spalte.
@@ -163,7 +170,7 @@ Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, d
 
 {{Anker|import-heizkessel}}Beim Heizkessel liest der Import aus dem Leistungssatz 710.01 den Wirkungsgrad bei Nennlast, den Wirkungsgrad bei 30 % Last und die kleinste Leistung, jeweils vom Temperaturpaar mit dem niedrigsten Rücklauf; führt der Satz keinen Nennlastwert, gilt der Wirkungsgrad des Gerätesatzes 700. Prozentangaben werden zu Faktoren, ein unplausibler Teillastwert bleibt leer. Die Bauart „Brennwert…“ setzt den Schalter '''Brennwertkessel'''; die '''Brennwertkennlinie''' bleibt aus, Anfahrverlust und Mindestlaufzeit bleiben leer.
 
-{{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
+{{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. ''Mindestleistung'' und ''Teillastkoeffizient C_d'' setzt der Import nicht: Die Datei nennt einen Modulationsbereich in Prozent, aber keine Mindestleistung in kW und keinen Teillastkoeffizienten. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
 
 Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme sind die neuen Sätze in der Liste gewählt — mehrere über ihre Kästchen, sodass ''Vergleichen'', ''Schloss setzen…'' oder ''Löschen'' gleich auf sie wirken —, der erste steht im Stammblatt, und die Statuszeile nennt die Zahl der übernommenen Sätze.
 
@@ -177,7 +184,7 @@ Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erz
 
 Sätze der Auslieferung tragen ein Schloss, stehen in der Liste gedimmt und sind nur lesbar; solange das Schloss steht, lässt keine Verwaltung sie speichern, löschen oder umbenennen. ''Duplizieren…'' legt aus einem solchen Satz einen eigenen, frei bearbeitbaren Satz an (bei der Wärmepumpe samt Kennlinien) und wählt ihn gleich aus.
 
-''Schloss aufheben…'' macht die gewählten Auslieferungssätze nach einer Rückfrage selbst zu eigenen Sätzen: Sie lassen sich danach ändern und löschen, und ihr Stammblatt weist darauf hin, dass Ihre Änderungen als eigene Werte gelten. Ein Programm-Update ändert solche Sätze nicht und stellt die ausgelieferten Werte nicht wieder her — die gibt es danach nur noch in einer Datenbanksicherung. Umgekehrt sperrt ''Schloss setzen…'' die gewählten eigenen Sätze nach einer Rückfrage als Auslieferungssätze; ihre Werte bleiben dabei, wie sie sind. Die Beschriftung richtet sich nach der Auswahl: Sind gesperrte Sätze darunter, heißt die Handlung ''Schloss aufheben…'' und wirkt nur auf diese. Im Lesemodus der Lizenz ist sie gesperrt.
+''Schloss aufheben…'' macht die gewählten Auslieferungssätze nach einer Rückfrage selbst zu eigenen Sätzen: Sie lassen sich danach ändern und löschen, und ihr Stammblatt weist darauf hin, dass Ihre Änderungen als eigene Werte gelten. Ein Programm-Update ändert solche Sätze nicht. ''Katalog aktualisieren…'' stellt den ausgelieferten Stand eines Satzes auf Wunsch wieder her (siehe „Katalog aktualisieren“); bei Klimadaten und Zapfprofilkatalog gibt es ihn nur über deren eigenen Import oder in einer Datenbanksicherung. Umgekehrt sperrt ''Schloss setzen…'' die gewählten eigenen Sätze nach einer Rückfrage als Auslieferungssätze; ihre Werte bleiben dabei, wie sie sind. Die Beschriftung richtet sich nach der Auswahl: Sind gesperrte Sätze darunter, heißt die Handlung ''Schloss aufheben…'' und wirkt nur auf diese. Im Lesemodus der Lizenz ist sie gesperrt.
 
 ''Löschen'' fragt zuerst nach und nennt den oder die Bezeichner der gewählten Sätze; über die Kästchen der Liste lassen sich mehrere Sätze auf einmal wählen und gemeinsam löschen.
 
@@ -185,6 +192,24 @@ Sätze der Auslieferung tragen ein Schloss, stehen in der Liste gedimmt und sind
 {{Anker|dubletten}}
 
 ''Katalog-Dubletten prüfen…'' sucht über alle Kataloge der Datenbank nach Sätzen, die dieselbe Sache doppelt führen — nicht nur bei den acht Gerätekatalogen. Sie wählen einen einzelnen Katalog oder ''(alle Kataloge)''; ''Prüfen'' baut das Ergebnis als Baum aus Katalog, Ast und Gruppe, ein markierter Satz zeigt seine Werte gegenübergestellt im Detailfeld. Vier Aktionen: ''Leere Kopien bereinigen'' fasst eine Gruppe leerer Kopien zusammen, ''Satz löschen…'' und ''Satz umbenennen…'' wirken auf den markierten Satz, ''Protokoll speichern…'' schreibt das ganze Ergebnis in eine Datei. Wird ein Satz noch verwendet, fragt das Löschen ausdrücklich nach; ein Satz der Auslieferung lässt sich hier weder löschen noch umbenennen.
+
+== Katalog aktualisieren ==
+{{Anker|katalog-aktualisieren}}
+
+Jede Programmfassung bringt neben der Vorlagendatenbank ein '''Katalogpaket''' mit: alle ausgelieferten Sätze der Kataloge — Wärmepumpen samt Kennlinien und Kühlkennlinien, Heizkessel, BHKW, PV-Module, Brauchwasser- und Prozesswärmeprofile samt Wochenprofilen, Baustoffe, Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude und Konditionierungsvorlagen samt ihren Kalendern, Pufferspeicher und die Vorgaben der Pufferauslegung, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien, Stromspeicher, Stromverbraucherprofile samt Wochenprofilen und Wechselrichter. Jeder ausgelieferte Satz trägt dazu eine feste Kennung und eine Prüfsumme seiner ausgelieferten Werte.
+
+Zwei Kataloge gehen eigene Wege und gehören nicht zum Katalogpaket: Die '''Klimadaten''' kommen über den Klimaimport, der '''Zapfprofilkatalog''' über sein eigenes Paket mit Katalogversion (siehe die Seite zum Zapfprofilgenerator).
+
+Beim ersten Start einer neuen Programmfassung gleicht EPOS-Plan die Kataloge mit dem Paket ab, nachdem es eine Sicherung der Datenbank im Ordner ''DB-Backup'' angelegt hat:
+
+* Ein Satz, den die Datenbank noch nicht führt, kommt '''neu''' hinzu, gesperrt wie jeder Auslieferungssatz.
+* Ein ausgelieferter Satz, den Sie nicht angepasst haben, wird auf den neuen Stand '''aktualisiert'''.
+* Ein Satz, den Sie angepasst oder dessen Schloss Sie aufgehoben haben, wird '''behalten''': Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.
+* Ein Satz, den die neue Auslieferung nicht mehr führt, wird nicht gelöscht, sondern als '''ausgelaufen''' gekennzeichnet.
+
+Eigene Sätze und alle Projekte bleiben unberührt — ein Projekt rechnet mit seiner eigenen Kopie unverändert weiter. Ausnahme sind Brennstoffe, Konditionierungsvorlagen und die Vorgaben der Pufferauslegung: Davon führt ein Projekt keine eigene Kopie, es rechnet nach dem Abgleich mit dem neuen Auslieferungsstand. Soll ein solcher Satz bleiben, wie er ist, heben Sie vor dem Update sein Schloss auf. Ein Fenster nennt nach dem Start, was geschehen ist („n neu, m aktualisiert, k behalten, a ausgelaufen“), und jede Aktion steht im Protokoll des Abgleichs.
+
+'''Administration → Daten & Import → Katalog aktualisieren…''' zeigt die Fassung der Datenbank und die des Pakets. ''Nur prüfen'' listet, was ein Abgleich täte, ohne etwas zu schreiben; ''Abgleichen…'' gleicht nach einer Rückfrage und einer Sicherung ab. Bei einem behaltenen Satz setzt ''Auslieferungsstand wiederherstellen…'' nach einer Rückfrage die ausgelieferten Werte wieder ein und sperrt den Satz; Ihre Anpassung an diesem Satz geht dabei verloren. Ohne Katalogpaket bleibt der Katalog, wie er ist, und das Protokoll nennt den Grund.
 
 == Siehe auch ==
 

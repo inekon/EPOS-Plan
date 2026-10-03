@@ -112,6 +112,9 @@
         /// <summary>Einheit einer Waermeleistung in Watt (Welle KI-F3).</summary>
         internal const string EINHEIT_W = "W";
 
+        /// <summary>Prozent je Monat — die Selbstentladung eines Stromspeichers (Welle M5, SP1).</summary>
+        internal const string EINHEIT_PROZENT_MONAT = "%/Monat";
+
         /// <summary>Einheit eines Waermedurchgangskoeffizienten (Welle KI-F3).</summary>
         internal const string EINHEIT_W_M2K = "W/(m²·K)";
 
@@ -221,6 +224,8 @@
         internal static string HkWgOelErl => MyResource.Resource.KI_DLG_HK_WG_OEL_ERL;
         internal static string HkBbVerlustName => MyResource.Resource.KI_DLG_HK_BB_VERLUST_NAME;
         internal static string HkBbVerlustErl => MyResource.Resource.KI_DLG_HK_BB_VERLUST_ERL;
+        internal static string HkBbProzentName => MyResource.Resource.KI_DLG_HK_BB_PROZENT_NAME;
+        internal static string HkBbProzentErl => MyResource.Resource.KI_DLG_HK_BB_PROZENT_ERL;
 
         // HIER STANDEN DIE TEXTE der Felder Investition, Wartung, Raumbedarf,
         // Nutzungsdauer und der fuenf Emissionsfaktoren. Der Heizkessel-Katalogeditor
@@ -279,6 +284,9 @@
         internal static string PvWrWirkungsgradErl => MyResource.Resource.KI_DLG_PV_WR_WIRKUNGSGRAD_ERL;
         internal static string PvSystemverlusteName => MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE;
         internal static string PvSystemverlusteErl => MyResource.Resource.KI_DLG_PV_SYSTEMVERLUSTE_ERL;
+        // Bodenalbedo der Anlage (PV4) - Photovoltaik und Solarthermie teilen Name und Erlaeuterung.
+        internal static string AlbedoName => MyResource.Resource.ANLAGE_LABEL_ALBEDO;
+        internal static string AlbedoErl => MyResource.Resource.KI_DLG_ALBEDO_ERL;
         internal static string PvMitWrName => MyResource.Resource.PVS_WAHL;
         internal static string PvMitWrErl => MyResource.Resource.KI_DLG_PV_MIT_WR_ERL;
 
@@ -353,6 +361,12 @@
         internal static string WpKuehlleistungName => MyResource.Resource.WPS_LBL_KUEHLLEISTUNG;
         internal static string WpKuehlleistungErl => MyResource.Resource.KI_DLG_WP_KUEHLLEISTUNG_ERL;
 
+        // ---- Welle M4 (WP1): Taktverlust nach EN 14825 in der Wärmepumpenpflege
+        internal static string WpMindestleistungName => MyResource.Resource.WPS_LBL_MINDESTLEISTUNG;
+        internal static string WpMindestleistungErl => MyResource.Resource.KI_DLG_WP_MINDESTLEISTUNG_ERL;
+        internal static string WpTaktverlustCdName => MyResource.Resource.WPS_LBL_TAKTVERLUST_CD;
+        internal static string WpTaktverlustCdErl => MyResource.Resource.KI_DLG_WP_TAKTVERLUST_CD_ERL;
+
         // ========================================= Welle KI-F1: Erzeuger im Projekt
         //
         // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:
@@ -412,6 +426,16 @@
         internal static string SkNeigungErl => MyResource.Resource.KI_DLG_SK_NEIGUNG_ERL;
         internal static string SkAzimutName => MyResource.Resource.SKV_LBL_AZIMUT;
         internal static string SkAzimutErl => MyResource.Resource.KI_DLG_SK_AZIMUT_ERL;
+        internal static string SkPumpeName => MyResource.Resource.SKV_LBL_PUMPENLEISTUNG;
+        internal static string SkPumpeErl => MyResource.Resource.KI_DLG_SK_PUMPE_ERL;
+        internal static string SkVerlusteName => MyResource.Resource.SKV_LBL_VERLUSTE;
+        internal static string SkVerlusteErl => MyResource.Resource.KI_DLG_SK_VERLUSTE_ERL;
+        internal static string SkArbeitstemperaturName => MyResource.Resource.SKV_LBL_ARBEITSTEMPERATUR;
+        internal static string SkArbeitstemperaturErl => MyResource.Resource.KI_DLG_SK_ARBEITSTEMPERATUR_ERL;
+        internal static string SkGraedigkeitName => MyResource.Resource.SKV_LBL_GRAEDIGKEIT;
+        internal static string SkGraedigkeitErl => MyResource.Resource.KI_DLG_SK_GRAEDIGKEIT_ERL;
+        internal static string SkSpreizungName => MyResource.Resource.SKV_LBL_SPREIZUNG;
+        internal static string SkSpreizungErl => MyResource.Resource.KI_DLG_SK_SPREIZUNG_ERL;
 
         // ------------------------------------------ Form_WP_Anlage (Waermepumpe)
 
@@ -745,6 +769,22 @@
         internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
         internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
         internal static string SimAnlagenkopplungErl => MyResource.Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_ERL;
+        // Die Aufheizoptimierung (Entwurf KP3, Welle O1): Namen = Beschriftungen des Abschnitts.
+        internal static string SimAufheizSchalterName => MyResource.Resource.SIMKONF_AUFH_LBL_SCHALTER;
+        internal static string SimAufheizSchalterErl => MyResource.Resource.KI_DLG_SIM_AUFH_SCHALTER_ERL;
+        internal static string SimAufheizBemessungName => MyResource.Resource.SIMKONF_AUFH_LBL_BEMESSUNG;
+        internal static string SimAufheizBemessungErl => MyResource.Resource.KI_DLG_SIM_AUFH_BEMESSUNG_ERL;
+        internal static string SimAufheizAbzugName => MyResource.Resource.SIMKONF_AUFH_LBL_ABZUG;
+        internal static string SimAufheizAbzugErl => MyResource.Resource.KI_DLG_SIM_AUFH_ABZUG_ERL;
+        internal static string SimAufheizReserveName => MyResource.Resource.SIMKONF_AUFH_LBL_RESERVE;
+        internal static string SimAufheizReserveErl => MyResource.Resource.KI_DLG_SIM_AUFH_RESERVE_ERL;
+        internal static string SimAufheizArtName => MyResource.Resource.SIMKONF_AUFH_LBL_ART;
+        internal static string SimAufheizArtErl => MyResource.Resource.KI_DLG_SIM_AUFH_ART_ERL;
+        // Die Einspeisegrenze (Welle M5, PV3): Namen = Beschriftungen des Abschnitts.
+        internal static string SimEinspeisegrenzeName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE;
+        internal static string SimEinspeisegrenzeErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_ERL;
+        internal static string SimEinspeisegrenzeEinheitName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT;
+        internal static string SimEinspeisegrenzeEinheitErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL;
         internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
         internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
         internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
@@ -838,6 +878,26 @@
         internal static string PspvEntladeleistungErl => MyResource.Resource.KI_DLG_PSPV_ENTLADELEISTUNG_ERL;
         internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
         internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
+        internal static string SimDesinfektionName => MyResource.Resource.SIMKONF_LBL_DESINFEKTION;
+        internal static string SimDesinfektionErl => MyResource.Resource.KI_SIM_DESINFEKTION_ERL;
+        internal static string SimDesinfIntervallName => MyResource.Resource.SIMKONF_LBL_DESINF_INTERVALL;
+        internal static string SimDesinfIntervallErl => MyResource.Resource.KI_SIM_DESINF_INTERVALL_ERL;
+        internal static string SimDesinfStundeName => MyResource.Resource.SIMKONF_LBL_DESINF_STUNDE;
+        internal static string SimDesinfStundeErl => MyResource.Resource.KI_SIM_DESINF_STUNDE_ERL;
+        internal static string SimDesinfZielName => MyResource.Resource.SIMKONF_LBL_DESINF_ZIEL;
+        internal static string SimDesinfZielErl => MyResource.Resource.KI_SIM_DESINF_ZIEL_ERL;
+        internal static string SimDesinfVolumenName => MyResource.Resource.SIMKONF_LBL_DESINF_VOLUMEN;
+        internal static string SimDesinfVolumenErl => MyResource.Resource.KI_SIM_DESINF_VOLUMEN_ERL;
+        internal static string PspvBereitschaftTemperaturName => MyResource.Resource.PSP_BEREITSCHAFT_TEMPERATUR;
+        internal static string PspvBereitschaftTemperaturErl => MyResource.Resource.KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL;
+        internal static string PspvAufstellraumName => MyResource.Resource.PSP_LABEL_AUFSTELLRAUM;
+        internal static string PspvAufstellraumErl => MyResource.Resource.KI_DLG_PSPV_AUFSTELLRAUM_ERL;
+        internal static string PspvAnteileName => MyResource.Resource.PSP_LABEL_SCHICHT_ANTEILE;
+        internal static string PspvAnteileErl => MyResource.Resource.KI_DLG_PSPV_ANTEILE_ERL;
+        internal static string PspvFwmName => MyResource.Resource.PSP_LABEL_FRISCHWASSERMODUL;
+        internal static string PspvFwmErl => MyResource.Resource.KI_DLG_PSPV_FWM_ERL;
+        internal static string PspvFwmGraedigkeitName => MyResource.Resource.PSP_LABEL_FWM_GRAEDIGKEIT;
+        internal static string PspvFwmGraedigkeitErl => MyResource.Resource.KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL;
 
         // Die NUTZUNG ist auf der Maske EINE Mehrfachwahl; im Katalog sind es drei
         // Wahrheitswerte, denn ein Katalogfeld traegt EINEN Wert. Ihre Anzeigenamen
@@ -1423,6 +1483,11 @@
         // Welle #458 Stufe 3b: die zwoelf Monatswerte als Zahlenreihe.
         internal static string TstammMonatswerteName => MyResource.Resource.BTYP_GRP_MONATE;
         internal static string TstammMonatswerteErl => MyResource.Resource.KI_DLG_TSTAMM_MONATSWERTE_ERL;
+        // PW1 Stufe 1: das Temperaturpaar der Prozesswärme.
+        internal static string TstammVorlaufName => MyResource.Resource.PW_LBL_VORLAUF;
+        internal static string TstammVorlaufErl => MyResource.Resource.KI_DLG_TSTAMM_VORLAUF_ERL;
+        internal static string TstammRuecklaufName => MyResource.Resource.PW_LBL_RUECKLAUF;
+        internal static string TstammRuecklaufErl => MyResource.Resource.KI_DLG_TSTAMM_RUECKLAUF_ERL;
 
         // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
 
@@ -1462,6 +1527,17 @@
 
         /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" (Welle #458, Stufe 3a).</summary>
         internal static string BpfRechenwegName => MyResource.Resource.BPF_LBL_RECHENWEG_BW;
+
+        // ---- Netzverluste je Kanal und Zirkulation (Simulationskonfiguration, BW4) ----
+        internal static string SimNvHeizungName => MyResource.Resource.SIMKONF_LBL_NV_HEIZUNG;
+        internal static string SimNvBrauchwasserName => MyResource.Resource.SIMKONF_LBL_NV_BRAUCHWASSER;
+        internal static string SimNvProzessName => MyResource.Resource.SIMKONF_LBL_NV_PROZESS;
+        internal static string SimNvKanalErl => MyResource.Resource.KI_DLG_SIM_NV_KANAL_ERL;
+        internal static string SimNvEinheitName => MyResource.Resource.SIMKONF_LBL_NV_EINHEIT;
+        internal static string SimNvEinheitErl => MyResource.Resource.KI_DLG_SIM_NV_EINHEIT_ERL;
+        internal static string SimZirkLeistungName => MyResource.Resource.SIMKONF_LBL_ZIRK_LEISTUNG;
+        internal static string SimZirkLaufzeitName => MyResource.Resource.SIMKONF_LBL_ZIRK_LAUFZEIT;
+        internal static string SimZirkErl => MyResource.Resource.KI_DLG_SIM_ZIRK_ERL;
         internal static string BpfRechenwegErl => MyResource.Resource.KI_DLG_BPF_RECHENWEG_ERL;
 
         // =========== Brauchwasser-Zapfprofil und seine Ueberlagerungen (Welle #458, Stufe 3a)
@@ -2083,6 +2159,53 @@
 
         // ---- Form_Nutzungsdauer
         internal static string MaskeNutzungsdauer => MyResource.Resource.KI_DLG_MASKE_NUD;
+
+        // ---- Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P2) ----
+        internal static string MaskePufferAuslegung => MyResource.Resource.PAUS_TITEL;
+        internal static string PausKlasseHeizungName => MyResource.Resource.PAUS_KLASSE_HEIZUNG;
+        internal static string PausKlasseBrauchwasserName => MyResource.Resource.PAUS_KLASSE_BRAUCHWASSER;
+        internal static string PausKlasseProzessName => MyResource.Resource.PAUS_KLASSE_PROZESS;
+        internal static string PausKlasseErl => MyResource.Resource.KI_DLG_PAUS_KLASSE_ERL;
+        internal static string PausVorlageName => MyResource.Resource.PAUS_GRUPPE_VORLAGE;
+        internal static string PausVorlageErl => MyResource.Resource.KI_DLG_PAUS_VORLAGE_ERL;
+        internal static string PausGeregeltName => MyResource.Resource.PAUS_GEREGELT;
+        internal static string PausGeregeltErl => MyResource.Resource.KI_DLG_PAUS_GEREGELT_ERL;
+        internal static string PausZweitName => MyResource.Resource.PAUS_ZWEIT_FREI;
+        internal static string PausZweitErl => MyResource.Resource.KI_DLG_PAUS_ZWEIT_ERL;
+        internal static string PausUebergabeName => MyResource.Resource.PAUS_UEBERGABEART;
+        internal static string PausUebergabeErl => MyResource.Resource.KI_DLG_PAUS_UEBERGABE_ERL;
+        internal static string PausHeizgrenzeName => MyResource.Resource.PAUS_HEIZGRENZE;
+        internal static string PausHeizgrenzeErl => MyResource.Resource.KI_DLG_PAUS_HEIZGRENZE_ERL;
+        internal static string PausAnlagenvolumenName => MyResource.Resource.PAUS_ANLAGENVOLUMEN;
+        internal static string PausAnlagenvolumenErl => MyResource.Resource.KI_DLG_PAUS_ANLAGENVOLUMEN_ERL;
+        internal static string PausSperrprofilName => MyResource.Resource.PAUS_SPERRPROFIL;
+        internal static string PausSperrprofilErl => MyResource.Resource.KI_DLG_PAUS_SPERRPROFIL_ERL;
+        internal static string PausMindestlaufzeitName => MyResource.Resource.PAUS_MINDESTLAUFZEIT;
+        internal static string PausMindestlaufzeitErl => MyResource.Resource.KI_DLG_PAUS_MINDESTLAUFZEIT_ERL;
+        internal static string PausStartzielName => MyResource.Resource.PAUS_STARTZIEL;
+        internal static string PausStartzielErl => MyResource.Resource.KI_DLG_PAUS_STARTZIEL_ERL;
+        internal static string PausDeckungszielName => MyResource.Resource.PAUS_DECKUNGSZIEL;
+        internal static string PausDeckungErl => MyResource.Resource.KI_DLG_PAUS_DECKUNG_ERL;
+
+        // ---- Betriebskalender (PW2, BW2) ----
+        internal static string MaskeBetriebskalender => MyResource.Resource.BKAL_TITEL;
+        internal static string BkalKalenderName => MyResource.Resource.BKAL_LBL_LISTE;
+        internal static string BkalKalenderErl => MyResource.Resource.KI_DLG_BKAL_KALENDER_ERL;
+        internal static string BkalBezeichnungName => MyResource.Resource.BKAL_LBL_BEZEICHNER;
+        internal static string BkalBezeichnungErl => MyResource.Resource.KI_DLG_BKAL_BEZEICHNUNG_ERL;
+        internal static string BkalBundeslandName => MyResource.Resource.BKAL_LBL_BUNDESLAND;
+        internal static string BkalBundeslandErl => MyResource.Resource.KI_DLG_BKAL_BUNDESLAND_ERL;
+        internal static string BkalFeiertagName => MyResource.Resource.BKAL_LBL_FEIERTAG;
+        internal static string BkalFeiertagErl => MyResource.Resource.BKAL_HRL_FEIERTAG;
+        internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
+        internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
+        internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;
+        internal static string BkalFaktorName => MyResource.Resource.BKAL_LBL_FAKTOR;
+        internal static string BkalFaktorErl => MyResource.Resource.BKAL_HRL_FAKTOR;
+        internal static string BkalKuerzenName => MyResource.Resource.BKAL_LBL_KUERZEN;
+        internal static string BkalKuerzenErl => MyResource.Resource.BKAL_HRL_KUERZEN;
+        internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
+        internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;
@@ -2511,6 +2634,16 @@
         internal static string BhkkRuecklaufName => MyResource.Resource.BHKWK_LBL_RUECKLAUF;
         internal static string BhkkRuecklaufErl => MyResource.Resource.KI_DLG_BHKK_RUECKLAUF_ERL;
 
+        // ---- Welle M4 (BH1, BH2): Teillast und Takten im BHKW-Katalogeditor
+        internal static string BhkkEtaEl50Name => MyResource.Resource.BHKWK_LBL_ETA_EL50;
+        internal static string BhkkEtaEl50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_EL50_ERL;
+        internal static string BhkkEtaTh50Name => MyResource.Resource.BHKWK_LBL_ETA_TH50;
+        internal static string BhkkEtaTh50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_TH50_ERL;
+        internal static string BhkkAnfahrverlustName => MyResource.Resource.BHKWK_LBL_ANFAHRVERLUST;
+        internal static string BhkkAnfahrverlustErl => MyResource.Resource.KI_DLG_BHKK_ANFAHRVERLUST_ERL;
+        internal static string BhkkMindestlaufzeitName => MyResource.Resource.BHKWK_LBL_MINDESTLAUFZEIT;
+        internal static string BhkkMindestlaufzeitErl => MyResource.Resource.KI_DLG_BHKK_MINDESTLAUFZEIT_ERL;
+
         // ---- Der Solarkollektor-Katalogeditor (Form_SolarDB)
         internal static string SkkNameName => MyResource.Resource.SKK_LBL_NAME;
         internal static string SkkNameErl => MyResource.Resource.KI_DLG_SKK_NAME_ERL;
@@ -2534,6 +2667,8 @@
         internal static string SkkKdirErl => MyResource.Resource.KI_DLG_SKK_KDIR_ERL;
         internal static string SkkKdiffName => MyResource.Resource.KI_DLG_SKK_KDIFF_NAME;
         internal static string SkkKdiffErl => MyResource.Resource.KI_DLG_SKK_KDIFF_ERL;
+        internal static string SkkBezugsflaecheName => MyResource.Resource.SKK_LBL_BEZUGSFLAECHE;
+        internal static string SkkBezugsflaecheErl => MyResource.Resource.KI_DLG_SKK_BEZUGSFLAECHE_ERL;
 
         // ---- Der Modulkatalog: Stromspeicher und PV-Modul
         internal static string ModkBezeichnerName => MyResource.Resource.MODK_LBL_BEZEICHNER;
@@ -2568,6 +2703,9 @@
         internal static string ModkInvestFixErl => MyResource.Resource.KI_DLG_MODK_INVEST_FIX_ERL;
         internal static string ModkStandbyName => MyResource.Resource.SP_LABEL_STANDBY;
         internal static string ModkStandbyErl => MyResource.Resource.KI_DLG_MODK_STANDBY_ERL;
+        // Welle M5 (SP1): Name = Beschriftung des Katalogfelds.
+        internal static string ModkSelbstentladungName => MyResource.Resource.SP_LABEL_SELBSTENTLADUNG;
+        internal static string ModkSelbstentladungErl => MyResource.Resource.KI_DLG_MODK_SELBSTENTLADUNG_ERL;
         internal static string ModkPmaxName => MyResource.Resource.MODK_LBL_PMAX;
         internal static string ModkPmaxErl => MyResource.Resource.KI_DLG_MODK_PMAX_ERL;
         internal static string ModkWirkungsgradName => MyResource.Resource.MODK_LBL_WIRKUNGSGRAD;
@@ -3009,6 +3147,8 @@
                         case KatalogBrowserProfil.FeldWirkungsgradGas: return HkWgGasErl;
                         case KatalogBrowserProfil.FeldWirkungsgradOel: return HkWgOelErl;
                         case KatalogBrowserProfil.FeldBBVerlust: return HkBbVerlustErl;
+                        case KatalogBrowserProfil.FeldBBEinheit:
+                            return MyResource.Resource.KI_DLG_KBROW_BB_EINHEIT_ERL;
                         case KatalogBrowserProfil.FeldTeillast30: return HkTeillast30Erl;
                         case KatalogBrowserProfil.FeldKennlinieBrennwert: return HkKennlinieBrennwertErl;
                         case KatalogBrowserProfil.FeldMindestleistung: return HkMindestleistungErl;
@@ -3036,6 +3176,10 @@
                         case KatalogBrowserProfil.FeldWirkungsgradEl: return BhkkWgElErl;
                         case KatalogBrowserProfil.FeldWirkungsgradTh: return BhkkWgThErl;
                         case KatalogBrowserProfil.FeldWirkungsgrad: return BhkkWgGesamtErl;
+                        case KatalogBrowserProfil.FeldTeillastEl50: return BhkkEtaEl50Erl;
+                        case KatalogBrowserProfil.FeldTeillastTh50: return BhkkEtaTh50Erl;
+                        case KatalogBrowserProfil.FeldAnfahrverlust: return BhkkAnfahrverlustErl;
+                        case KatalogBrowserProfil.FeldMindestlaufzeit: return BhkkMindestlaufzeitErl;
                         case KatalogBrowserProfil.FeldInvestitionJeKwel:
                             return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
                         case KatalogBrowserProfil.FeldWartungJeKwhel:
@@ -3056,6 +3200,7 @@
                         case KatalogBrowserProfil.FeldK2: return SkkK2Erl;
                         case KatalogBrowserProfil.FeldKdir: return SkkKdirErl;
                         case KatalogBrowserProfil.FeldKdiff: return SkkKdiffErl;
+                        case KatalogBrowserProfil.FeldBezugsflaeche: return SkkBezugsflaecheErl;
                     }
                     return null;
 

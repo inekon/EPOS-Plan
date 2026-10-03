@@ -131,8 +131,10 @@ namespace EPOS.Kern.Tests
         {
             Assert.Contains("Kuehl_ID_Carrier", AnlagenSql.SQL_ANLAGE_INSERT, StringComparison.Ordinal);
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
-            // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben.
-            Assert.Equal(66, platzhalter);
+            // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben;
+            // 67 mit der Bodenalbedo (AlbedoSchema), 72 mit den fünf Feldern des Kollektorfelds
+            // (SolarthermieFelderSchema).
+            Assert.Equal(72, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
         }
 

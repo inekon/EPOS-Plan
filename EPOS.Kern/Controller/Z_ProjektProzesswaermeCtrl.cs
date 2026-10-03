@@ -79,6 +79,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
             if (dt == null) return liste;
+            // PW2/BW2: der Betriebskalender je Zuordnungszeile (spaltentolerant).
+            Dictionary<int, int?> kalender = BetriebskalenderCtrl.KalenderDerZuordnungen("Z_Projekt_Prozesswaerme", idProjekt);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -88,6 +90,9 @@ namespace WindowsFormsApplication1
                 item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
                 item.szProzessname = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
                 item.Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                // PW1 Stufe 1: das Temperaturpaar der Projektkopie (spaltentolerant).
+                (item.Vorlauf, item.Ruecklauf) = ProzesswaermeStammCtrl.ProjektTemperaturpaar(item.ID_Prozesswaerme);
+                item.ID_Betriebskalender = kalender.TryGetValue(item.ID_Z, out int? k) ? k : null;
                 liste.Add(item);
             }
             return liste;

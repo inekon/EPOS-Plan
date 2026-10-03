@@ -3238,6 +3238,17 @@ namespace WindowsFormsApplication1
                 }
                 item.ID_Prozesswaerme = projPwId;
 
+                // PW1 Stufe 1: Ein im Dialog geändertes Temperaturpaar geht in DIESE Projektkopie; ohne
+                // Änderung bleibt die Kopie, wie sie ist (eine neue trägt die Vorbelegung des Katalogs).
+                if (item.TemperaturGeaendert &&
+                    !ProzesswaermeStammCtrl.ProjektTemperaturSetzen(projPwId, item.Vorlauf, item.Ruecklauf))
+                {
+                    DataRepository.FehlerMelden(
+                        "Das Temperaturpaar der Prozesswaerme \"" + (item.szProzessname ?? "") + "\" konnte nicht " +
+                        "gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;
@@ -3250,6 +3261,9 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Prozesswaerme", idZ, item.ID_Betriebskalender))
+                    return false;
 
                 Z_ProjektProzesswaermeModel zeile = item;
                 nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
@@ -3315,6 +3329,9 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Stromverbraucher", idZ, item.ID_Betriebskalender))
+                    return false;
 
                 Z_ProjektStromverbraucherModel zeile = item;
                 nachzug?.Merken(() => { zeile.m_ID_Z = idZ; zeile.m_ID_Projekt = projektID; });
@@ -3440,8 +3457,9 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
+                int idZ = nextID++;
                 DbParam[] ps = {
-                    new DbParam("@id", nextID++),
+                    new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@bwID", item.ID_Brauchwasser),
                     new DbParam("@bez", item.szBezeichner ?? ""),
@@ -3449,6 +3467,10 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Brauchwasser", idZ, item.ID_Betriebskalender))
+                    return false;
             }
             return true;
         }

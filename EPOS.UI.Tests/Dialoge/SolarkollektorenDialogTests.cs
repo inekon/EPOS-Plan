@@ -207,8 +207,11 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
 
         // Anzahl, Neigung, Azimut plus die gerechnete Flaeche - Vor- und Ruecklauf fuehrt
-        // die Gruppe nicht, sie haetten beim Kollektor keinen Rechenweg.
-        Assert.Equal(3, kollektor.QuerySelectorAll("input:not([readonly])").Length);
+        // die Gruppe nicht, sie haetten beim Kollektor keinen Rechenweg. Dazu der Solarkreis
+        // (Welle M2): Pumpe, Verluste, Graedigkeit, Spreizung und die Wahl der Arbeitstemperatur;
+        // dazu die Albedo (PV4).
+        Assert.Equal(8, kollektor.QuerySelectorAll("input:not([readonly])").Length);
+        Assert.Single(kollektor.QuerySelectorAll("select"));
         Assert.DoesNotContain("Vorlauf", kollektor.TextContent, StringComparison.Ordinal);
         Assert.DoesNotContain("Rücklauf", kollektor.TextContent, StringComparison.Ordinal);
         Assert.Single(kollektor.QuerySelectorAll("input[readonly]"));
@@ -265,12 +268,14 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var werte = cut.FindAll(".epos-gruppenkopf-koerper")[1]
                        .QuerySelectorAll("input").Select(e => e.GetAttribute("value")).ToList();
 
-        // Reihenfolge: Anzahl, Aperturflaeche (gerechnet), Neigung, Azimut.
-        Assert.Equal(4, werte.Count);
+        // Reihenfolge: Anzahl, Aperturflaeche (gerechnet), Neigung, Azimut, Albedo (leer = 0,2),
+        // dann der Solarkreis (Pumpe, Verluste, Graedigkeit, Spreizung) - leer = Vorgabe.
+        Assert.Equal(9, werte.Count);
         Assert.Equal("4", werte[0]);
         Assert.Equal("10", werte[1]);            // 2,5 m² x 4
         Assert.Equal("30", werte[2]);
         Assert.Equal("0", werte[3]);
+        Assert.All(werte.Skip(4), w => Assert.True(string.IsNullOrEmpty(w)));
     }
 
     /// <summary>
@@ -401,6 +406,36 @@ public class SolarkollektorenDialogTests : EposBunitContext
 
         // A-24: Der 500-ms-Bildblitz mit Thread.Sleep wird ein Hinweis.
         Assert.Contains("übernommen", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Der Solarkreis (Welle M2): „Übernehmen" trägt Pumpe, Verluste, Arbeitstemperatur aus dem
+    /// Speicher, Grädigkeit und Spreizung in die Zeile; Grädigkeit und Spreizung sind nur mit der
+    /// Arbeitstemperatur aus dem Speicher frei.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_schreibt_den_Solarkreis()
+    {
+        var zeile = Zeile(1, "Vitosol 200");
+        var cut = Aufbauen(new List<ErzeugerZeile> { zeile });
+
+        var kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        // input[4] ist die Albedo (PV4), dahinter der Solarkreis.
+        Assert.True(kollektor.QuerySelectorAll("input")[7].HasAttribute("disabled"));   // Grädigkeit gesperrt
+        kollektor.QuerySelectorAll("input")[5].Input("75");     // Pumpe
+        kollektor.QuerySelectorAll("input")[6].Input("6");      // Verluste
+        cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!.Change("1");
+
+        kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        Assert.False(kollektor.QuerySelectorAll("input")[7].HasAttribute("disabled"));
+        kollektor.QuerySelectorAll("input")[7].Input("10");     // Grädigkeit
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.Equal(75.0, zeile.SolarPumpenleistungW);
+        Assert.Equal(6.0, zeile.SolarkreisverlusteProzent);
+        Assert.True(zeile.SolarArbeitstemperaturAusSpeicher);
+        Assert.Equal(10.0, zeile.SolarGraedigkeitK);
+        Assert.Null(zeile.SolarSpreizungK);
     }
 
     [Fact]
@@ -1108,5 +1143,34 @@ public class SolarkollektorenDialogTests : EposBunitContext
 
         Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
                               e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+    }
+
+    // =================================================================================
+    // Bodenalbedo (Entscheidungsvorlage Modellgrenzen, PV4) - nur das Feld
+    // =================================================================================
+
+    /// <summary>
+    /// Die Kollektorgruppe trägt die Albedo samt Auswahlhilfe; „Übernehmen" schreibt einen Wert
+    /// von 0 bis 1 in die Zeile, einen Wert außerhalb als leer (= 0,2).
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_schreibt_die_Albedo()
+    {
+        var zeile = Zeile(1, "Vitosol 200");
+        var cut = Aufbauen(new List<ErzeugerZeile> { zeile }, uebernehmen: _ => { });
+
+        var kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        Assert.Contains("Schnee", kollektor.TextContent, StringComparison.Ordinal);
+        kollektor.QuerySelectorAll("input")[4].Input("0.6");
+        Knopf(cut, "Übernehmen").Click();
+        Assert.Equal(0.6, zeile.Albedo);
+
+        // Außerhalb 0 … 1 färbt das Feld und wird nicht übernommen; leer heißt 0,2.
+        cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input")[4].Input("1.5");
+        Knopf(cut, "Übernehmen").Click();
+        Assert.Equal(0.6, zeile.Albedo);
+        cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input")[4].Input("");
+        Knopf(cut, "Übernehmen").Click();
+        Assert.Null(zeile.Albedo);
     }
 }

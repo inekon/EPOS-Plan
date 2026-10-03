@@ -43,9 +43,9 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 1 | Kühlkennlinie aus dem Katalog nachholbar machen | – | Kühlung, Gerätekataloge |
 | 2 | PV-Dialog: Hinweistexte an den Rechenweg angleichen | nur zur Beschriftung „Standby-Verbrauch“ | Photovoltaik, Wechselrichter |
 | 3 | Drei Nebenbefunde im PV-Rechenweg beheben | nur die Frage zum 5-kWh-Speicher | Simulationsergebnisse (Monatsbild) |
-| 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
-| 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
-| 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
+| 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja — Weg (a), umgesetzt | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
+| 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja — Variante (a), umgesetzt | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
+| 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1), vollständig umgesetzt | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
 | 8 | Tww-Einspielskript Python-versionsfest machen | – | – |
 | 9 | Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle | – | – |
@@ -137,6 +137,16 @@ und 492–514). Soll das so bleiben?
 
 ## 4. Solarthermieganglinie: in die Rechnung oder entfernen
 
+**Umgesetzt:** Weg (a) nach dem Entscheid ST8 der
+[Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md) — die
+Ganglinie ist eigener Rechenweg mit Senken, Pufferladung und Kaskade des Kollektorfelds; Weiche über
+den Datenstand (vollständige zugeordnete Ganglinie), Werte absolut in kW je Stunde, Rückfall auf das
+Kollektorfeld mit Warnung. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 14](Konzept_Simulationsablauf_EPOS-Plan.md). Der KI-Erklärtext
+`KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL` beschreibt die Nachrang-Schwelle in beiden Sprachen bereits als
+Obergrenze, bis zu der nachrangige Erzeuger laden; er blieb unverändert. Die Wiki-Quelle
+Solarthermie ist nachgezogen.
+
 **Kurz:** Die Kachel Solarthermie bietet „Ganglinie“ an, und ihr Statuspunkt wird grün. Die
 Simulation liest die Ganglinie aber nicht.
 
@@ -163,6 +173,12 @@ Simulation liest die Ganglinie aber nicht.
    und 518–590). In beiden Sprachen richtigstellen.
 
 ## 5. Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe
+
+**Umgesetzt:** Variante (a) nach dem Anwenderentscheid vom 29.09.2026 — Vorwahl in der Folge
+Solarthermie, Wärmepumpe, BHKW, Heizkessel (`Kaskade.Vorwaehlen`); Umordnen in der
+Konfiguration mit den Pfeilen der Erzeugerkarte. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 13](Konzept_Simulationsablauf_EPOS-Plan.md). Die Wiki-Quellen
+Simulation, Wärmepumpe, Heizkessel, BHKW und Solarthermie sind nachgezogen.
 
 **Kurz:** Neue Projekte bekommen die Kaskade BHKW, Heizkessel, Solarthermie, Wärmepumpe
 vorgeschlagen. Wer ohne Umordnen speichert, lässt in einer bivalenten Anlage den Kessel vor der
@@ -197,6 +213,17 @@ auf den Seiten Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simu
 Kühlung.
 
 ## 6. BHKW-Untergrenze wirkungslos, Einheit und Tippfehler
+
+**Vollständig umgesetzt:** (1) Die Untergrenze wirkt in allen drei Betriebsarten je Modul, in der
+Rangfolge Anlagenfeld, Katalogwert, Projektwert; Werte über 100 % werden mit Protokollwarnung
+übergangen (Statuszeile #659). Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
+Mindestlaufzeit (BH2 der
+[Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md), Welle M4),
+sonst bleibt es in der Stunde aus. (2) Der Bereitschaftsverlust des Kessels steht im
+Katalogbrowser in kW oder % nach seiner gepflegten Einheit. (3) `SIMERG_INFO_BHKW` ist in beiden
+Sprachen berichtigt. (4) Die Grenzleistungen über 100 % stehen nur an Katalogsätzen
+(`Tab_BHKW_STAMM`), an keinem Projektmodul; der Lauf übergeht sie mit Warnung. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 **Aufgabe:**
 1. **Das Feld „Untere Grenzleistung des ausgewählten Moduls“ wirkt nicht.**

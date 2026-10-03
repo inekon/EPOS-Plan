@@ -196,4 +196,16 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt)
         => Auslegung;
+
+    /// <summary>Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2).</summary>
+    internal IReadOnlyDictionary<string, object>? PufferAuslegung { get; set; }
+
+    /// <summary>Für welches Projekt die Wurzel zuletzt die Pufferspeicher-Auslegung erfragte.</summary>
+    internal int? PufferAuslegungRuf { get; private set; }
+
+    public IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt)
+    {
+        PufferAuslegungRuf = idProjekt;
+        return PufferAuslegung;
+    }
 }

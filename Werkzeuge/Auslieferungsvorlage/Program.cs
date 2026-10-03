@@ -218,6 +218,31 @@ namespace Auslieferungsvorlage
                 return FACHLICH;
             }
 
+            // ---- Schritt 4b: das Katalogpaket der Programmfassung (KU1 Stufe 1 und 2) 
+            //      Die Vorlage bekommt den Auslieferungsstand festgeschrieben (Schluessel,
+            //      Pruefsumme, Katalogfassung), das Paket entsteht aus genau diesem Stand und
+            //      liegt spaeter neben der Vorlage. Geschrieben wird es erst mit der Vorlage.
+            bericht.Abschnitt("Schritt 4b — Katalogpaket (Fassung " +
+                              arg.Katalogfassung.ToString(CultureInfo.InvariantCulture) + ")");
+            var paketbericht = new List<string>();
+            Katalogpaket paket = Katalogpaket.Festschreiben(arg.Katalogfassung, paketbericht);
+            foreach (string zeile in paketbericht) bericht.Zeile(zeile);
+            foreach (Katalogpakettabelle pt in paket.Tabellen)
+                bericht.Zeile(pt.Tabelle.PadRight(34) + " " + pt.Saetze.Count.ToString(CultureInfo.InvariantCulture) +
+                              " ausgelieferte(r) Satz/Saetze");
+            if (paket.Tabellen.Count == 0)
+                bericht.Zeile("WARNUNG Die Quelle fuehrt die Katalogspalten nicht (Schemastand vor der Katalogfassung) - " +
+                              "das Paket bleibt leer.");
+            // KU1 Stufe 2: Kataloge ausserhalb des Registers stehen benannt im Bericht.
+            foreach (var grund in Katalogfassung.Ausgenommen.GroupBy(kv => kv.Value))
+                bericht.Zeile("ausgenommen " + string.Join(", ", grund.Select(kv => kv.Key)) + " - " + grund.Key);
+            byte[] paketBytes = paket.Bytes();
+            bericht.Zeile("Paketgroesse " + Vorlagenbau.Mb(paketBytes.Length) +
+                          (paketBytes.Length > Katalogpaket.GROESSE_WARNUNG
+                              ? "   WARNUNG ueber " + Vorlagenbau.Mb(Katalogpaket.GROESSE_WARNUNG) +
+                                " - die Reihen (Ganglinien) waeren benannt auszunehmen"
+                              : ""));
+
             // ---- Schritt 5: verdichten und pruefen ---------------------------------
             bau.Verdichten();
 
@@ -282,6 +307,13 @@ namespace Auslieferungsvorlage
                 if (File.Exists(alt)) File.Delete(alt);
             File.Move(kopie, arg.Ziel);
             kopie = null;
+
+            // Das Katalogpaket neben die Vorlage (Katalogpaket.Pfad - derselbe Ort, an dem die
+            // Anwendung es neben {app}\Vorlage\Kenndaten.sqlite sucht).
+            string paketdatei = Katalogpaket.Pfad(arg.Ziel);
+            File.WriteAllBytes(paketdatei, paketBytes);
+            bericht.Zeile("Paket:       " + paketdatei + "   (" + paket.Satzzahl.ToString(CultureInfo.InvariantCulture) +
+                          " Saetze, Fassung " + paket.Fassung.ToString(CultureInfo.InvariantCulture) + ")");
 
             string berichtsdatei = arg.Ziel + ".bericht.txt";
             bericht.Zeile("Vorlage:     " + arg.Ziel + "   (" + Vorlagenbau.Mb(new FileInfo(arg.Ziel).Length) + ")");

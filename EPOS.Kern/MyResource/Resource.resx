@@ -3101,8 +3101,26 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_BHKW_MAX_UEBERSCHRITTEN" xml:space="preserve">
     <value>BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht.</value>
   </data>
+  <data name="SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>{0}: Die untere Grenzleistung von {1} % ({2}) ist ungültig – zulässig sind höchstens 100 %. Der Wert bleibt unberücksichtigt; es gilt eine Untergrenze von {3} %.</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_MODUL" xml:space="preserve">
+    <value>BHKW „{0}“</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_ALLE_MODULE" xml:space="preserve">
+    <value>BHKW (alle Module)</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_ANLAGE" xml:space="preserve">
+    <value>Anlagenfeld</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_KATALOG" xml:space="preserve">
+    <value>Modulkatalog</value>
+  </data>
+  <data name="SIMENG_BHKW_GRENZE_EBENE_PROJEKT" xml:space="preserve">
+    <value>Simulationskonfiguration</value>
+  </data>
   <data name="SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Der Eintrag wird übersprungen, sein Anteil bleibt 0; die übrigen Einträge werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Datenbankzugriff während des Laufs: {0}</value>
@@ -3177,7 +3195,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}Das Wochenprofil des Typs '{1}' (Eintrag '{2}') enthält nur Nullwerte. Die Verteilung über das Jahr wäre eine Division durch 0; seine Rechnung entfällt und sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation abgebrochen: {0}</value>
@@ -3204,7 +3222,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>Strombedarf: Zum Stromprofil '{0}' ist kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
-    <value>Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+    <value>Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Das Profil wird übersprungen, sein Anteil bleibt 0; die übrigen Profile werden vollständig gerechnet.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
     <value>Strombedarf: Zum Typ '{0}' des Stromprofils '{1}' ist kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
@@ -3617,7 +3635,7 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
 WP-Typ: {0}
 
 Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.</value>
+Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
@@ -3817,7 +3835,7 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
     <value>Pufferspeicher</value>
   </data>
   <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
-    <value>Quellprofil (Monatswerte)</value>
+    <value>Quellprofil (Monats-, Tages- oder Stundenwerte)</value>
   </data>
   <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
     <value> Achtung: Sondenzahl bzw. λ liegen außerhalb des kodierten Tabellenbereichs (B2-Auszug); der Grenzwert wurde auf die Randstützstelle geklemmt. Auf der Sondenzahl-Achse ist das nicht konservativ - größere Sondenfelder brauchen kleinere spezifische Entzugsleistungen, als der Randwert zulässt.</value>
@@ -6774,6 +6792,21 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>Wärmegestehungskosten ohne Stromgutschrift: Für {0} MWh/a im Projekt verbrauchten BHKW-Strom ist kein Arbeitspreis des Stromträgers gepflegt.</value>
   </data>
+  <data name="WIRT_GESTEHUNG_9B_DECKEL" xml:space="preserve">
+    <value>Wärmegestehungskosten: Der § 9b-Abzug rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_REGELSATZ" xml:space="preserve">
+    <value>Wärmegestehungskosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; der § 9b-Abzug rechnet mit höchstens dem Regelsatz der Stromsteuer von {0} €/MWh.</value>
+  </data>
+  <data name="WIRT_GESTEHUNG_9B_SOCKEL" xml:space="preserve">
+    <value>Wärmegestehungskosten: Der § 9b-Abzug beträgt {0} €/a statt {1} €/a — der Netzbezug von {2} MWh/a trägt den Sockelbetrag von {3} €/a nicht ganz.</value>
+  </data>
+  <data name="WIRT_VERMIEDEN_9B_DECKEL" xml:space="preserve">
+    <value>Vermiedene Stromkosten: Die § 9b-Korrektur rechnet mit {0} €/MWh statt {1} €/MWh — gedeckelt auf den Stromsteueranteil des Arbeitspreises des Netzstromträgers.</value>
+  </data>
+  <data name="WIRT_VERMIEDEN_9B_REGELSATZ" xml:space="preserve">
+    <value>Vermiedene Stromkosten: Für den Netzstromträger ist kein Stromsteueranteil gepflegt; die § 9b-Korrektur rechnet mit dem Regelsatz der Stromsteuer von {0} €/MWh statt {1} €/MWh.</value>
+  </data>
   <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
     <value>(Referenz)</value>
   </data>
@@ -9265,7 +9298,16 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betriebsbereitschaftsverluste</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
+    <value>Leistung, die allein durch das Bereithalten des Kessels verloren geht, in der gewählten Einheit: kW oder Prozent der thermischen Leistung. Die Simulation rechnet sie in kW in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_NAME" xml:space="preserve">
+    <value>Bereitschaftsverlust in % der Nennleistung</value>
+  </data>
+  <data name="KI_DLG_HK_BB_PROZENT_ERL" xml:space="preserve">
+    <value>Ja = der Bereitschaftsverlust steht in Prozent der thermischen Leistung, Nein = in kW. Die Simulation rechnet einen Prozentwert mit der thermischen Leistung in kW um.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BB_EINHEIT_ERL" xml:space="preserve">
+    <value>„kW“ oder „%“: die Einheit des Bereitschaftsverlusts. Ein Prozentwert bezieht sich auf die thermische Leistung; die Simulation rechnet in kW.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
@@ -9824,7 +9866,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Energieträgerverwaltung…</value>
   </data>
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
-    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1).</value>
+    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen.</value>
   </data>
   <data name="PVW_51A" xml:space="preserve">
     <value>§ 51a-Kompensation (Laufzeitverlängerung)</value>
@@ -10455,7 +10497,7 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
 Der Speicher ist zugeordnet:
   • {3}
 
-Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet — gesperrt sind sie nicht mehr.
 Nutzung trotzdem ändern?</value>
   </data>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
@@ -10539,7 +10581,7 @@ Nutzung trotzdem ändern?</value>
   <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
     <value>Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
 
-Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt.
 
 Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen.</value>
   </data>
@@ -11685,7 +11727,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Preisstand (gültig ab):</value>
   </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
-    <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
+    <value>Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
@@ -12160,6 +12202,21 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="HZKK_FELD_BBVERLUST" xml:space="preserve">
     <value>Betriebsbereitschaftsverluste</value>
+  </data>
+  <data name="HZKK_LBL_BB_EINHEIT" xml:space="preserve">
+    <value>Einheit Bereitschaftsverlust:</value>
+  </data>
+  <data name="HZKK_FELD_BB_EINHEIT" xml:space="preserve">
+    <value>Einheit Bereitschaftsverlust</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="HZKK_BB_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der Nennleistung</value>
+  </data>
+  <data name="KBROW_HINT_BB_EINHEIT" xml:space="preserve">
+    <value>kW oder % (der Nennleistung)</value>
   </data>
   <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
     <value>Brennwertkessel</value>
@@ -14439,7 +14496,7 @@ Alle Eingaben überprüfen!</value>
     <value>Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
-    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen.</value>
+    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen.</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF_GRUND" xml:space="preserve">
     <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}</value>
@@ -14576,6 +14633,39 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
   </data>
+  <data name="GEB_BTN_IN_DB" xml:space="preserve">
+    <value>In DB übernehmen</value>
+  </data>
+  <data name="GEB_BTN_IN_DB_HINWEIS" xml:space="preserve">
+    <value>Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_TITEL_IN_DB" xml:space="preserve">
+    <value>Gebäude in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_LBL_IN_DB_NAME" xml:space="preserve">
+    <value>Name in der Datenbank:</value>
+  </data>
+  <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
+    <value>Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Im Projekt ist kein gespeichertes Gebäude gewählt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Namen eingeben.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
+  </data>
+  <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>aus Projekt {0}, {1}</value>
+  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Gebäude: Verbrauch</value>
   </data>
@@ -14691,7 +14781,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärme-/Strombedarf</value>
   </data>
   <data name="SIMERG_TAB_WP_PRODUKTION" xml:space="preserve">
-    <value>Wärmproduktion</value>
+    <value>Wärmeproduktion</value>
   </data>
   <data name="SIMERG_TAB_WP_STROM" xml:space="preserve">
     <value>Stromverbrauch</value>
@@ -14868,7 +14958,7 @@ Alle Eingaben überprüfen!</value>
     <value>Untere Leistungsgrenze der Module</value>
   </data>
   <data name="SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
-    <value>Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0.</value>
+    <value>Gilt für jedes Modul, das weder im Anlagenfeld noch im Katalog eine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0.</value>
   </data>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Betriebsart</value>
@@ -14920,7 +15010,7 @@ Alle Eingaben überprüfen!</value>
 Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
 
 Stromgeführt (Wirtschaftlich)
-Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
+Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im Speicher gepuffert, solange Speicherkapazität verfügbar ist; darüber hinaus wird überschüssige Wärme weggekühlt.
 
 Ohne Einspeisung (Zero-Export)
 Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
@@ -14942,6 +15032,9 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="SIMERG_LBL_KAPAZITAET_HINWEIS" xml:space="preserve">
     <value>Diese Kapazität ist eine Was-wäre-wenn-Größe und wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMERG_LBL_OHNE_STROMSPEICHER" xml:space="preserve">
+    <value>Ohne Stromspeicher gerechnet (0 kWh). Eine Kapazität im Feld zeigt, was ein Speicher bringen könnte.</value>
   </data>
   <data name="SIMERG_LBL_ERZEUGERAUSWAHL" xml:space="preserve">
     <value>Erzeuger:</value>
@@ -16168,7 +16261,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Tipp</value>
   </data>
   <data name="START_E_TIPP" xml:space="preserve">
-    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.</value>
+    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus. Solarthermie: Ist dem Projekt eine vollständige Ganglinie zugeordnet (8 760 Stundenwerte in kW), rechnet die Simulation die Ganglinie statt des Kollektorfelds.</value>
   </data>
   <data name="START_E_PROFIL" xml:space="preserve">
     <value>Profil</value>
@@ -17173,7 +17266,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</value>
   </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
-    <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
+    <value>Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
     <value>Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken.</value>
@@ -17320,7 +17413,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Temperaturkoeffizient beta_OC des Moduls</value>
   </data>
   <data name="PVS_PFLEGEWEG" xml:space="preserve">
-    <value>Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“</value>
+    <value>Pflege: αSC und βOC kommen nur über den Modulimport — Administration → Daten &amp; Import → Photovoltaik → „PV Module (CEC, PAN)…“ (Neuimport aus „CEC Modules.csv“ oder einer PAN-Datei); Leerlauf- und MPP-Spannung, Kurzschlussstrom und T_NOCT lassen sich auch unter Administration → Energiesysteme → Photovoltaik → PV Module eintragen.</value>
   </data>
   <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
     <value>– nicht gepflegt</value>
@@ -18017,6 +18110,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in der Kaskade — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>Dem Projekt ist die Solarthermie-Ganglinie „{0}“ zugeordnet, aber die Solarthermie steht nicht in der Kaskade — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_SOLARGANGLINIE_FELDNAME" xml:space="preserve">
+    <value>Solarthermie-Ganglinie ‚{0}‘</value>
   </data>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
@@ -19537,7 +19636,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Adaptiv (kausal): Die Schwelle startet auf dem Startwert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann — sie kann nur steigen. Damit bleibt der Speicher für die große Spitze geladen, statt an kleineren leerzulaufen (Spezifikation 5.1.1).</value>
   </data>
   <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
-    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026).</value>
+    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze.</value>
   </data>
   <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
     <value>Grundlast als Startwert übernehmen</value>
@@ -22777,7 +22876,7 @@ Möchten Sie das zulassen?</value>
     <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
+    <value>Abschaltschwelle für nachrangige Erzeuger in Prozent: Bis zu diesem Füllstand laden nachrangige Erzeuger den Speicher; darüber lädt nur noch der vorrangige Erzeuger, bis zur Abschaltschwelle. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>
@@ -24571,7 +24670,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Einfallswinkelkorrekturfaktor Kdir für die direkte Einstrahlung.</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
-    <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad.</value>
+    <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, ein fester Wert unabhängig vom Einfallswinkel; 0 heißt unbekannt, dann gilt der Faktor der Direktstrahlung.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>
@@ -26731,7 +26830,7 @@ Möchten Sie das zulassen?</value>
     <value>An Speicherauslegung übergeben…</value>
   </data>
   <data name="ZPG_AUS_GRUND_UEBERGEBEN" xml:space="preserve">
-    <value>Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.</value>
+    <value>Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.</value>
   </data>
   <data name="ZPG_AUS_WARNLISTE" xml:space="preserve">
     <value>Hinweise und Warnungen der Auslegung</value>
@@ -33348,8 +33447,8 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
     <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
-  <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+  <data name="GEB_MSG_BEDARF_OHNE_KATALOGSATZ" xml:space="preserve">
+    <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
     <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
@@ -38842,6 +38941,51 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
   </data>
+  <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
+    <value>Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MENGE_RUECKFALL" xml:space="preserve">
+    <value>Gebäude {0}: {1} Räume ohne Qto_SpaceBaseQuantities.{2} — der Wert stammt aus der Menge {4} im Mengensatz {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_TEIL" xml:space="preserve">
+    <value>{0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL" xml:space="preserve">
+    <value>{0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_RUECKFALL" xml:space="preserve">
+    <value>{0} Bauteile ohne Pset_*Common.ThermalTransmittance — der U-Wert stammt aus {1}.{2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UWERT_EINHEIT" xml:space="preserve">
+    <value>{0} Bauteile: {1}.{2} nennt die Einheit {3} statt W/(m²K) — der Wert gilt nicht als U-Wert; {4} davon bleiben ohne U-Wert aus der Datei.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_AUSSEN" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Außenbauteil an Außenluft übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_ERDREICH" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als erdberührtes Bauteil übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_INNEN" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Innenbauteil übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBEHEIZT" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Bauteil gegen einen unbeheizten Raum übernommen (Kellerdecke als Boden, oberste Geschossdecke als Decke der Zone).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ANGRENZUNG_UNBESTIMMT" xml:space="preserve">
+    <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} ist keiner Angrenzung zugeordnet — es gilt die Vorgabe der Bauteilart (Dach außen, Bodenplatte erdberührt, sonst unbestimmt).</value>
+  </data>
+  <data name="IMP_IFC_PROT_NICHT_HUELLE" xml:space="preserve">
+    <value>{0} Bauteile ohne Raumgrenze tragen {1} = FALSE — sie zählen nicht zur Hüllfläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
+    <value>{0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHTDICKE_MM" xml:space="preserve">
+    <value>Schichtdicken in {0} Schichtsätzen als Millimeter gelesen (Längeneinheit der Datei: Meter); größte Dicke {1} m in Satz {2} „{3}“ — alle Dicken dieser Sätze werden durch 1000 geteilt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
+    <value>{0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>
@@ -39976,6 +40120,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF" xml:space="preserve">
     <value>Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.</value>
   </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT" xml:space="preserve">
+    <value>Den Leistungspreis des Reststromtarifs von {0} €/(kW·Monat) setzt die Gruppenregel nicht an.</value>
+  </data>
   <data name="KOND_LBL_REITER" xml:space="preserve">
     <value>Konditionierung</value>
   </data>
@@ -41035,6 +41182,15 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_MSG_KOMFORTSOLLWERT_AUSSERHALB" xml:space="preserve">
     <value>Der Komfortsollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C.</value>
   </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_FEHLT" xml:space="preserve">
+    <value>Für die Kopie von Heizen nach Kühlen fehlt der Absenksollwert – eine Zahl oder „aus“.</value>
+  </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_AUSSERHALB" xml:space="preserve">
+    <value>Der Absenksollwert {0} °C liegt außerhalb der Grenzen der Kühlspalte {1} … {2} °C.</value>
+  </data>
+  <data name="KOND_MSG_ABSENKSOLLWERT_UNTER_KOMFORT" xml:space="preserve">
+    <value>Der Absenksollwert {0} °C liegt unter dem Komfortsollwert {1} °C – beim Kühlen ist die Absenkung ein höherer Sollwert oder „aus“.</value>
+  </data>
   <data name="KOND_MSG_KOPIE_HERKUNFT" xml:space="preserve">
     <value>aus Vorlage ‚{0}‘ ({1})</value>
   </data>
@@ -41059,6 +41215,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_LBL_KOMFORTSOLLWERT" xml:space="preserve">
     <value>Komfortsollwert</value>
   </data>
+  <data name="KOND_LBL_ABSENKSOLLWERT" xml:space="preserve">
+    <value>Absenksollwert</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_ABSENKSOLLWERT" xml:space="preserve">
+    <value>Gilt in den Absenkzeiten – überall, wo der Heizsollwert unter dem Tagwert der Vorlage liegt. „aus“ schaltet die Kühlung dort ab.</value>
+  </data>
   <data name="KOND_TXT_KOPIEREN_NACH" xml:space="preserve">
     <value>Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist.</value>
   </data>
@@ -41066,7 +41228,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Gleiche Einheit: Werte und Zeitstruktur gehen unverändert in die Zielgröße.</value>
   </data>
   <data name="KOND_TXT_KOPIEREN_ZEITSTRUKTUR" xml:space="preserve">
-    <value>Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert.</value>
+    <value>Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert in Höhe des Tagwerts wird der Komfortsollwert, jeder niedrigere (Absenkzeit) der Absenksollwert oder „aus“.</value>
   </data>
   <data name="KOND_TXT_GRUND_KEIN_KOPIERZIEL" xml:space="preserve">
     <value>Eine Vorlage der Größe „{0}“ lässt sich in keine andere Größe kopieren — „Kopieren nach …“ gibt es von Heizen nach Kühlen und zwischen Geräten und Personen.</value>
@@ -41076,6 +41238,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_TXT_MELDUNG_KOMFORTSOLLWERT" xml:space="preserve">
     <value>Der Komfortsollwert ist eine Zahl von {0} bis {1} °C.</value>
+  </data>
+  <data name="KOND_TXT_MELDUNG_ABSENKSOLLWERT" xml:space="preserve">
+    <value>Der Absenksollwert ist eine Zahl von {0} bis {1} °C oder „{2}“.</value>
   </data>
   <data name="KOND_LBL_VORLAGE_ALLE" xml:space="preserve">
     <value>alle Größen</value>
@@ -41109,6 +41274,1941 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_TXT_KI_VORLAGE_ALLE" xml:space="preserve">
     <value>Die Abkürzung „alle Größen“ in der Zeile „Vorlage“ des Reiters „Konditionierung“: der Name einer Vorlage, die in mindestens einer der fünf Listen steht. Setzen stellt EINE Rückfrage für alle Größen, die der Anwender selbst beantwortet; nach „Ja“ übernimmt jede Größe mit einer Vorlage dieses Namens sie wie der Knopf „Übernehmen“, in einem Schritt für „Zurücknehmen“ – eine Größe ohne gleichnamige Vorlage und eine gesperrte Größe bleiben. Lesen nennt die Vorlage, die alle Größen mit einer Vorlage dieses Namens als Herkunft tragen; leer = keine gemeinsame.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN" xml:space="preserve">
+    <value>Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KUEHL_KATALOG" xml:space="preserve">
+    <value>Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt.</value>
+  </data>
+  <data name="WPA_BTN_KUEHLKENNLINIE_KATALOG" xml:space="preserve">
+    <value>Kühlkennlinie aus dem Katalog übernehmen</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_CLIPPING" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping).</value>
+  </data>
+  <data name="PVS_HINWEIS_ERWEITERT_OHNE_AC" xml:space="preserve">
+    <value>Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab.</value>
+  </data>
+  <data name="SIMENG_WP_ZU_VIELE_MODULE" xml:space="preserve">
+    <value>Das Projekt führt {0} Wärmepumpenanlagen; gerechnet werden höchstens {1}. Bitte Anlagen zusammenfassen oder entfernen.</value>
+  </data>
+  <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
+    <value>Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
+    <value>die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_KLIMAREGION" xml:space="preserve">
+    <value>dem Projekt ist keine Klimaregion zugeordnet — bitte in den Projektdaten eine Klimaregion wählen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_OHNE_PROJEKT" xml:space="preserve">
+    <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
+  </data>
+  <data name="SIMKONF_AUFH_GRP" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_SCHALTER" xml:space="preserve">
+    <value>Aufheizoptimierung rechnen</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_STUNDE" xml:space="preserve">
+    <value>kälteste Stunde</value>
+  </data>
+  <data name="SIMKONF_AUFH_BEMESSUNG_ABZUG" xml:space="preserve">
+    <value>kälteste Stunde − ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ABZUG" xml:space="preserve">
+    <value>Abzug ΔT_K</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_RESERVE" xml:space="preserve">
+    <value>Aufheizreserve ρ</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_TAEGLICH" xml:space="preserve">
+    <value>täglich</value>
+  </data>
+  <data name="SIMKONF_AUFH_ART_FEST" xml:space="preserve">
+    <value>fest</value>
+  </data>
+  <data name="SIMKONF_AUFH_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
+    <value>Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_AN" xml:space="preserve">
+    <value>Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
+    <value>Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
+    <value>Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe.</value>
+  </data>
+  <data name="SIMKONF_AUFH_MSG_FEHLER" xml:space="preserve">
+    <value>Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HILFE_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Aufheizoptimierung</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHALTER_ERL" xml:space="preserve">
+    <value>An = vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe (Gebäude nach VDI 6007), aus = der Sollwert springt wie im Kalender. Projekteinstellung; wird sofort gespeichert, die übrigen Werte bleiben beim Ausschalten erhalten.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_BEMESSUNG_ERL" xml:space="preserve">
+    <value>Bemessung der längsten Aufheizzeit: STUNDE = kälteste Stunde (Vorgabe), STUNDE_ABZUG = kälteste Stunde − ΔT_K. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ABZUG_ERL" xml:space="preserve">
+    <value>ΔT_K in K, um den die Bemessung kälter als die kälteste Stunde rechnet. Nur bei der Bemessung „kälteste Stunde − ΔT_K“; leer = Vorgabe 2 K, zulässig 0 bis 10 K; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_RESERVE_ERL" xml:space="preserve">
+    <value>Aufheizreserve ρ in %: Zuschlag auf die stationäre Last, wenn das Gebäude keine Heizleistungsgrenze führt. Leer = Vorgabe 20 %, zulässig 1 bis 100 %. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_ART_ERL" xml:space="preserve">
+    <value>Art der Aufheizzeit: TAEGLICH = jeder Tag nach seiner Außentemperatur (Vorgabe), FEST = jeder Tag so lange wie der Bemessungsfall. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NICHT_AN" xml:space="preserve">
+    <value>Die Aufheizoptimierung ist ausgeschaltet; die Maske zeigt das Feld erst, wenn der Schalter gesetzt ist.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NUR_ABZUG" xml:space="preserve">
+    <value>ΔT_K gilt nur für die Bemessung „kälteste Stunde − ΔT_K“; erst diese Bemessung wählen.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_UNBEKANNT" xml:space="preserve">
+    <value>Den Wert „{0}“ gibt es nicht; bekannt sind {1}.</value>
+  </data>
+  <data name="ANLAGE_LABEL_ALBEDO" xml:space="preserve">
+    <value>Albedo [-]:</value>
+  </data>
+  <data name="ANLAGE_TIP_ALBEDO" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1: der Anteil der Globalstrahlung, den der Boden auf die geneigte Fläche zurückwirft. Leer bedeutet 0,2.</value>
+  </data>
+  <data name="ANLAGE_HINWEIS_ALBEDO" xml:space="preserve">
+    <value>Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2.</value>
+  </data>
+  <data name="KI_DLG_ALBEDO_ERL" xml:space="preserve">
+    <value>Bodenalbedo vor der Anlage, 0 bis 1; leer bedeutet 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8.</value>
+  </data>
+  <data name="FLOTTE_BESTE_BTN" xml:space="preserve">
+    <value>Beste Variante übernehmen</value>
+  </data>
+  <data name="FLOTTE_BESTE_ERKL" xml:space="preserve">
+    <value>Die beste Variante wird die Flotte der Auslegung und für die Projektsimulation aktiviert. Das Simulationsergebnis ändert sich erst mit dem nächsten Projektlauf.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Beste Variante übernommen: Sie ist die Flotte der Auslegung und für die Projektsimulation aktiviert. Bitte die Projektsimulation neu berechnen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_KEINE_SUCHE" xml:space="preserve">
+    <value>Es gibt keine Auslegungssuche, deren beste Variante übernommen werden könnte.</value>
+  </data>
+  <data name="FLOTTE_BESTE_MSG_NULLVARIANTE" xml:space="preserve">
+    <value>Die beste Variante ist „ohne Speicher“ — es gibt keine Flotte zu übernehmen.</value>
+  </data>
+  <data name="FLOTTE_BESTE_GESPERRT" xml:space="preserve">
+    <value>Gesperrt: Das Ergebnis gehört nicht mehr zum eingestellten Stand, oder ein Lauf läuft. Erst neu rechnen.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_PAAR" xml:space="preserve">
+    <value>Vorlauf und Rücklauf bitte beide angeben oder beide leer lassen.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_BEREICH" xml:space="preserve">
+    <value>Vorlauf und Rücklauf müssen zwischen 0 und 250 °C liegen.</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_REIHENFOLGE" xml:space="preserve">
+    <value>Der Vorlauf darf nicht unter dem Rücklauf liegen.</value>
+  </data>
+  <data name="SIMENG_PROZESS_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperaturniveau aus {0} Profil(en) mit Temperaturpaar, Vorlauf bis {1:0.#} °C in {2} Stunden.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_KENNLINIE" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden rechnet die Kennlinie am Prozessvorlauf (bis {2:0.#} °C), weil der Prozesskanal eine höhere Temperatur verlangt als die Kennlinie der Stunde.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_NICHT_ERREICHT" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden deckt es den Prozesskanal nicht – gefordert bis {2:0.#} °C, die oberste Kennlinie liegt bei {3} °C und die Extrapolation ist nicht erlaubt.</value>
+  </data>
+  <data name="SIMENG_PROZESS_NICHT_ERREICHT" xml:space="preserve">
+    <value>„{0}": In {1} Stunden deckt der Kessel den Prozesskanal nicht – gefordert bis {2:0.#} °C, sein Vorlauf beträgt {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PROZESS_KESSEL_RUECKLAUF" xml:space="preserve">
+    <value>„{0}": In {1} Stunden geht der Prozessrücklauf (im Mittel {2:0.#} °C) anteilig in den Rücklauf der Brennwertkennlinie ein.</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_ZONE" xml:space="preserve">
+    <value>Pufferspeicher „{0}": In {1} Stunden entnimmt der Prozesskanal nur aus den Schichten, die den Prozessvorlauf halten (bis {2:0.#} °C).</value>
+  </data>
+  <data name="SIMENG_PROZESS_PUFFER_GESPERRT" xml:space="preserve">
+    <value>Pufferspeicher „{0}": In {1} Stunden entnimmt der Prozesskanal nichts – gefordert bis {2:0.#} °C, der Speicher hält {3:0.#} °C.</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_PROZESS" xml:space="preserve">
+    <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem Prozessvorlauf {2} °C eines Prozesswärmeprofils. In Stunden mit diesem Bedarf deckt die Anlage den Prozesskanal nicht.</value>
+  </data>
+  <data name="SIMENG_PROZESS_WP_QUELLE" xml:space="preserve">
+    <value>Modul „{0}": In {1} Stunden deckt es den Prozesskanal nicht – die Kennlinie am Prozessvorlauf ({2} °C) beginnt erst bei der Quelltemperatur {3:0.#} °C; darunter gibt es für diesen Vorlauf keinen Betriebspunkt.</value>
+  </data>
+  <data name="PW_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf:</value>
+  </data>
+  <data name="PW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf:</value>
+  </data>
+  <data name="PW_GRP_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturniveau des Prozesses</value>
+  </data>
+  <data name="PW_LBL_TEMPERATURNIVEAU" xml:space="preserve">
+    <value>Temperaturniveau:</value>
+  </data>
+  <data name="PW_HINW_TEMPERATUR" xml:space="preserve">
+    <value>Leer = ohne Temperaturniveau, der Prozess rechnet als reine Wärmemenge. Mit Vorlauf und Rücklauf führt der Lauf je Stunde den höchsten geforderten Vorlauf des Prozesskanals; ein Erzeuger, der ihn nicht erreicht, deckt den Prozess in dieser Stunde nicht.</value>
+  </data>
+  <data name="PW_BTN_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturen übernehmen</value>
+  </data>
+  <data name="PW_MSG_TEMPERATUR_UEBERNOMMEN" xml:space="preserve">
+    <value>Temperaturniveau übernommen; gespeichert wird mit OK.</value>
+  </data>
+  <data name="PW_TEMPERATUR_OHNE" xml:space="preserve">
+    <value>ohne</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur, die der Prozess verlangt, in °C (nur Prozesswärme); leer zusammen mit dem Rücklauf = ohne Temperaturniveau.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Die Rücklauftemperatur des Prozesses in °C (nur Prozesswärme); nicht über dem Vorlauf.</value>
+  </data>
+  <data name="SIMERG_LBL_SOLAR_PUMPENSTROM" xml:space="preserve">
+    <value>Pumpenstrom Solarkreis:</value>
+  </data>
+  <data name="SKK_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Bezugsfläche der Kennwerte :</value>
+  </data>
+  <data name="KBROW_LBL_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Bezugsfläche der Kennwerte:</value>
+  </data>
+  <data name="KBROW_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>apertur oder brutto</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_APERTUR" xml:space="preserve">
+    <value>Aperturfläche</value>
+  </data>
+  <data name="SKK_OPT_BEZUG_BRUTTO" xml:space="preserve">
+    <value>Bruttofläche (Modulfläche)</value>
+  </data>
+  <data name="SKK_HINT_BEZUGSFLAECHE" xml:space="preserve">
+    <value>Die Fläche, auf die η₀, a₁ und a₂ im Datenblatt bezogen sind. Prüfberichte nach EN ISO 9806:2017 nennen meist die Bruttofläche, ältere Datenblätter nach EN 12975 die Aperturfläche. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
+  </data>
+  <data name="SKV_LBL_PUMPENLEISTUNG" xml:space="preserve">
+    <value>Leistung Solarkreispumpe [W]:</value>
+  </data>
+  <data name="SKV_LBL_VERLUSTE" xml:space="preserve">
+    <value>Verluste Solarkreis [%]:</value>
+  </data>
+  <data name="SKV_LBL_ARBEITSTEMPERATUR" xml:space="preserve">
+    <value>Arbeitstemperatur:</value>
+  </data>
+  <data name="SKV_LBL_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit Wärmeübertrager [K]:</value>
+  </data>
+  <data name="SKV_LBL_SPREIZUNG" xml:space="preserve">
+    <value>Spreizung Kollektorkreis [K]:</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>fest 50 °C</value>
+  </data>
+  <data name="SKV_OPT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>aus dem Speicher</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_FEST" xml:space="preserve">
+    <value>Fest: Der Kollektor rechnet das ganze Jahr mit einer mittleren Fluidtemperatur von 50 °C.</value>
+  </data>
+  <data name="SKV_HINT_ARBEITSTEMPERATUR_SPEICHER" xml:space="preserve">
+    <value>Aus dem Speicher: Kollektoreintritt = unterste Zone des Senkenpuffers (ohne Puffer: Heizkreisrücklauf) plus Grädigkeit, mittlere Kollektortemperatur = Eintritt plus halbe Spreizung, je Stunde neu.</value>
+  </data>
+  <data name="SKV_HINT_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit leer = 5 K (externer Plattenübertrager); innenliegendes Glattrohr etwa 10 K. Spreizung leer = 10 K.</value>
+  </data>
+  <data name="SKV_HINT_PUMPE" xml:space="preserve">
+    <value>Pumpenleistung leer = kein Pumpenstrom (oder der Hilfsenergieanteil der Anlage); der Strom zählt in jeder Stunde, in der das Feld Wärme abgibt. Verluste leer = 8 %.</value>
+  </data>
+  <data name="KI_DLG_SK_PUMPE_ERL" xml:space="preserve">
+    <value>Elektrische Leistung der Solarkreispumpe in Watt. Sie zählt als Strombedarf in jeder Stunde, in der das Kollektorfeld Wärme abgibt; leer heißt kein Pumpenstrom.</value>
+  </data>
+  <data name="KI_DLG_SK_VERLUSTE_ERL" xml:space="preserve">
+    <value>Wärmeverluste des Solarkreises in Prozent des Kollektorertrags (0 bis 50); leer heißt 8 Prozent.</value>
+  </data>
+  <data name="KI_DLG_SK_ARBEITSTEMPERATUR_ERL" xml:space="preserve">
+    <value>Ja: Die Arbeitstemperatur des Kollektors folgt je Stunde der untersten Zone des Senkenpuffers plus Grädigkeit und halber Spreizung. Nein: fest 50 Grad.</value>
+  </data>
+  <data name="KI_DLG_SK_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Grädigkeit des Wärmeübertragers zum Speicher in Kelvin (0 bis 30); leer heißt 5 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher.</value>
+  </data>
+  <data name="KI_DLG_SK_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Spreizung des Kollektorkreises, Austritt minus Eintritt, in Kelvin (0 bis 30); leer heißt 10 Kelvin. Wirkt nur mit Arbeitstemperatur aus dem Speicher.</value>
+  </data>
+  <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche, auf die h0, k1 und k2 bezogen sind: apertur (Vorgabe) oder brutto. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
+  </data>
+  <data name="NETZKANAL_MSG_NEGATIV" xml:space="preserve">
+    <value>Ein Netzverlust je Kanal darf nicht negativ sein.</value>
+  </data>
+  <data name="NETZKANAL_MSG_PROZENT" xml:space="preserve">
+    <value>Ein Netzverlust in % darf höchstens 100 betragen.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Die Zirkulationsleistung liegt zwischen 0 und 100 kW.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation liegt zwischen 0 und 24 h/d.</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_JE_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal: Heizung {0:0.###} MWh, Brauchwasser {1:0.###} MWh, Prozesswärme {2:0.###} MWh; der Projektwert gilt nicht.</value>
+  </data>
+  <data name="SIMENG_ZIRKULATION_BESTANDSWEG" xml:space="preserve">
+    <value>Zirkulation {0:0.##} kW in {1:0.##} h/d, Jahresmenge {2:0.###} MWh.</value>
+  </data>
+  <data name="SIMENG_KALENDER_MONAT_OHNE_BETRIEB" xml:space="preserve">
+    <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte eine Bezeichnung für den Betriebskalender eingeben.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_LANG" xml:space="preserve">
+    <value>Die Bezeichnung darf höchstens 100 Zeichen lang sein.</value>
+  </data>
+  <data name="BKAL_MSG_BUNDESLAND" xml:space="preserve">
+    <value>Das Bundesland ist unbekannt.</value>
+  </data>
+  <data name="BKAL_MSG_FAKTOR" xml:space="preserve">
+    <value>Der Ferienfaktor liegt zwischen 0 und 100 %.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
+    <value>Ein Betriebskalender führt höchstens vier Ferienzeiträume.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
+    <value>Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar).</value>
+  </data>
+  <data name="SIMKONF_GRP_NV_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal und Zirkulation</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_HEIZUNG" xml:space="preserve">
+    <value>Netzverluste Heizung</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_BRAUCHWASSER" xml:space="preserve">
+    <value>Netzverluste Brauchwasser</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_PROZESS" xml:space="preserve">
+    <value>Netzverluste Prozesswärme</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AUS" xml:space="preserve">
+    <value>Kanalwerte leer: Es gilt der Projektwert der Netzverluste, je Stunde anteilig auf Heizung, Brauchwasser und Prozesswärme verteilt.</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AN" xml:space="preserve">
+    <value>Kanalwerte gesetzt: Je Kanal gilt sein Wert als fester Stundenbetrag (leer = 0); der Projektwert der Netzverluste gilt nicht.</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Zirkulation Leistung</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Zirkulation Laufzeit</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile: feste Leistung in den Laufstunden um die Tagesmitte der Zapfung, Jahresmenge = Leistung × Laufzeit × 365; mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK_MENGE" xml:space="preserve">
+    <value>Jahresmenge {0:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMKONF_MSG_NV_KANAL_FEHLER" xml:space="preserve">
+    <value>Die Netzverluste je Kanal konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_KANAL_ERL" xml:space="preserve">
+    <value>Netzverlust dieses Kanals in seiner Einheit (% des Jahresbedarfs des Kanals oder kWh/a); leer = kein Kanalwert. Sind alle drei leer, gilt der Projektwert der Netzverluste.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit des Kanalwerts: % oder kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>Die Einheit „{0}“ gibt es nicht; wählbar sind % und kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_ZIRK_ERL" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile des Brauchwassers: Leistung in kW (0 bis 100) und Laufzeit in h/d (0 bis 24); leer = keine Zirkulation. Mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="KI_DLG_BKAL_KALENDER_ERL" xml:space="preserve">
+    <value>Der gezeigte Betriebskalender; leer = ein neuer, noch nicht gespeicherter.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Name des Betriebskalenders, höchstens 100 Zeichen.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BUNDESLAND_ERL" xml:space="preserve">
+    <value>Bundesland für die Landesfeiertage (BW … TH); leer = nur die neun bundeseinheitlichen Feiertage.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIEN_ERL" xml:space="preserve">
+    <value>Beginn bzw. Ende eines Ferienzeitraums als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel; leer = kein Zeitraum.</value>
+  </data>
+  <data name="MENU_BETRIEBSKALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_TITEL" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_KONTEXT" xml:space="preserve">
+    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
+  </data>
+  <data name="BKAL_LBL_LISTE" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="BKAL_LEER" xml:space="preserve">
+    <value>noch kein Kalender angelegt</value>
+  </data>
+  <data name="BKAL_NEU_PLATZHALTER" xml:space="preserve">
+    <value>neuer Kalender</value>
+  </data>
+  <data name="BKAL_BTN_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="BKAL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BKAL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="BKAL_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Bundesland</value>
+  </data>
+  <data name="BKAL_BUNDESLAND_KEINES" xml:space="preserve">
+    <value>nur bundeseinheitliche Feiertage</value>
+  </data>
+  <data name="BKAL_LBL_FEIERTAG" xml:space="preserve">
+    <value>Feiertag wie Sonntag</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_VON" xml:space="preserve">
+    <value>Betriebsferien {0} von</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>Betriebsferien {0} bis</value>
+  </data>
+  <data name="BKAL_LBL_FAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="BKAL_LBL_KUERZEN" xml:space="preserve">
+    <value>Ferien kürzen die Monatsmenge</value>
+  </data>
+  <data name="BKAL_HRL_FEIERTAG" xml:space="preserve">
+    <value>Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR" xml:space="preserve">
+    <value>Ein Ferientag trägt je Stunde diesen Anteil des Tagesmittels des Wochenprofils; 0 % = Stillstand.</value>
+  </data>
+  <data name="BKAL_HRL_KUERZEN" xml:space="preserve">
+    <value>Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.</value>
+  </data>
+  <data name="BKAL_HRL_JAHR" xml:space="preserve">
+    <value>Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts.</value>
+  </data>
+  <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Betriebskalender gespeichert.</value>
+  </data>
+  <data name="BKAL_MSG_GELOESCHT" xml:space="preserve">
+    <value>Betriebskalender gelöscht.</value>
+  </data>
+  <data name="BKAL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Kalender ist noch nicht gespeichert.</value>
+  </data>
+  <data name="BKAL_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Den Betriebskalender „{0}“ löschen? {1} Profilzuordnung(en) rechnen danach ohne Kalender.</value>
+  </data>
+  <data name="BKAL_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="BKAL_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="BKAL_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Betriebskalender stehen auf dieser Plattform nicht zur Verfügung.</value>
+  </data>
+  <data name="BPF_GRP_KALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BPF_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender der Zuordnung</value>
+  </data>
+  <data name="BPF_KALENDER_KEINER" xml:space="preserve">
+    <value>ohne Kalender</value>
+  </data>
+  <data name="BPF_HINW_KALENDER" xml:space="preserve">
+    <value>Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an.</value>
+  </data>
+  <data name="BKAL_LAND_BW" xml:space="preserve">
+    <value>Baden-Württemberg</value>
+  </data>
+  <data name="BKAL_LAND_BY" xml:space="preserve">
+    <value>Bayern</value>
+  </data>
+  <data name="BKAL_LAND_BE" xml:space="preserve">
+    <value>Berlin</value>
+  </data>
+  <data name="BKAL_LAND_BB" xml:space="preserve">
+    <value>Brandenburg</value>
+  </data>
+  <data name="BKAL_LAND_HB" xml:space="preserve">
+    <value>Bremen</value>
+  </data>
+  <data name="BKAL_LAND_HH" xml:space="preserve">
+    <value>Hamburg</value>
+  </data>
+  <data name="BKAL_LAND_HE" xml:space="preserve">
+    <value>Hessen</value>
+  </data>
+  <data name="BKAL_LAND_MV" xml:space="preserve">
+    <value>Mecklenburg-Vorpommern</value>
+  </data>
+  <data name="BKAL_LAND_NI" xml:space="preserve">
+    <value>Niedersachsen</value>
+  </data>
+  <data name="BKAL_LAND_NW" xml:space="preserve">
+    <value>Nordrhein-Westfalen</value>
+  </data>
+  <data name="BKAL_LAND_RP" xml:space="preserve">
+    <value>Rheinland-Pfalz</value>
+  </data>
+  <data name="BKAL_LAND_SL" xml:space="preserve">
+    <value>Saarland</value>
+  </data>
+  <data name="BKAL_LAND_SN" xml:space="preserve">
+    <value>Sachsen</value>
+  </data>
+  <data name="BKAL_LAND_ST" xml:space="preserve">
+    <value>Sachsen-Anhalt</value>
+  </data>
+  <data name="BKAL_LAND_SH" xml:space="preserve">
+    <value>Schleswig-Holstein</value>
+  </data>
+  <data name="BKAL_LAND_TH" xml:space="preserve">
+    <value>Thüringen</value>
+  </data>
+  <data name="SIMENG_AUFH_W1" xml:space="preserve">
+    <value>Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2" xml:space="preserve">
+    <value>Aufheizoptimierung (W2): An {0} Tagen begrenzt die Absenkdauer die Rampe — die Absenkung ist dort weitgehend wirkungslos.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2_BEMESSUNG" xml:space="preserve">
+    <value>Aufheizoptimierung (W2): Die maximale Aufheizzeit von {0} h erreicht die kürzeste Absenkdauer der gerampten Sprünge ({1} h) — bei Bemessungswetter ist die Absenkung weitgehend wirkungslos.</value>
+  </data>
+  <data name="SIMENG_AUFH_W3" xml:space="preserve">
+    <value>Aufheizoptimierung (W3): An {0} Tagen verlässt der Lauf das Nachweisband der Rampe (Kappung durch die Heizleistungsgrenze bzw. Stundenleistung über 1,01 · Aufheizleistung). Die Vorhersage kennt Vorgeschichte, Sonne, innere Gewinne und Lüftungswechsel nicht; der Lauf rechnet weiter.</value>
+  </data>
+  <data name="SIMENG_AUFH_W4" xml:space="preserve">
+    <value>Aufheizoptimierung (W4): {0} Übergänge aus „aus“ bekommen keine Rampe, davon {1} am Beginn der Heizperiode — der Anfangswert der frei schwingenden Zone ist vor dem Lauf unbekannt.</value>
+  </data>
+  <data name="SIMENG_AUFH_W5" xml:space="preserve">
+    <value>Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung.</value>
+  </data>
+  <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
+    <value>Teillast und Takten</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_EL50" xml:space="preserve">
+    <value>El. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_EL50" xml:space="preserve">
+    <value>elektrischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_EL50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,27)</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_TH50" xml:space="preserve">
+    <value>Th. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_TH50" xml:space="preserve">
+    <value>thermischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_TH50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,64)</value>
+  </data>
+  <data name="BHKWK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start:</value>
+  </data>
+  <data name="BHKWK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start</value>
+  </data>
+  <data name="BHKWK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit:</value>
+  </data>
+  <data name="BHKWK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_VOLLLAST" xml:space="preserve">
+    <value>wie Volllast</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_OHNE_TAKTEN" xml:space="preserve">
+    <value>kein Takten</value>
+  </data>
+  <data name="BHKWK_HINWEIS_TEILLAST" xml:space="preserve">
+    <value>Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben.</value>
+  </data>
+  <data name="BHKWK_BILD_KENNLINIE" xml:space="preserve">
+    <value>Wirkungsgrad über der elektrischen Last</value>
+  </data>
+  <data name="BHKWK_BILD_ACHSE_LAST" xml:space="preserve">
+    <value>Elektrische Last [%]</value>
+  </data>
+  <data name="BHKWK_BILD_ELEKTRISCH" xml:space="preserve">
+    <value>elektrisch</value>
+  </data>
+  <data name="BHKWK_BILD_THERMISCH" xml:space="preserve">
+    <value>thermisch</value>
+  </data>
+  <data name="WPS_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_HINT_TAKTVERLUST_CD" xml:space="preserve">
+    <value>(Vorgabe 0,9 nach EN 14825)</value>
+  </data>
+  <data name="WPS_PLATZHALTER_OHNE_TAKT" xml:space="preserve">
+    <value>keine Taktrechnung</value>
+  </data>
+  <data name="WPS_PLATZHALTER_CD_VORGABE" xml:space="preserve">
+    <value>0,9</value>
+  </data>
+  <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
+    <value>Mehrstrom Takten [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust [kWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF" xml:space="preserve">
+    <value>Mehrbrennstoff Teillast [kWh/a]</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_EL50_ERL" xml:space="preserve">
+    <value>Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,27). Mit ihm rechnet das Modul eine Teillastkennlinie: zwischen 50 % und Volllast linear, darunter der Wert bei 50 %. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_TH50_ERL" xml:space="preserve">
+    <value>Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,64). Zusammen mit dem elektrischen Wert bestimmt er die Stromkennzahl in Teillast. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Brennstoff je Start in kWh. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze statt auszubleiben; jeder Start kostet diesen Brennstoff. Leer = kein Takten (ohne Mindestlaufzeit) bzw. 0 kWh.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Start in Minuten (1 bis 60). Sie begrenzt die Starts einer Taktstunde auf 60 geteilt durch die Mindestlaufzeit. Leer = kein Takten (ohne Anfahrverlust) bzw. 10 min.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Kleinste Modulationsleistung der Wärmepumpe in kW. Unterhalb taktet das Gerät, und die Leistungszahl sinkt nach EN 14825. Leer = keine Taktrechnung.</value>
+  </data>
+  <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Teillastkoeffizient C_d nach EN 14825 (0 bis 1). Er bestimmt den Taktverlust: COP_takt = COP · CR / (C_d · CR + 1 − C_d). Leer = Vorgabe 0,9.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_OHNE_KWP" xml:space="preserve">
+    <value>Photovoltaik: Die Einspeisegrenze von {0:N1} % braucht die installierte PV-Leistung (kWp) als Bezug; das Projekt führt keine. Gerechnet wird ohne Einspeisegrenze.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_HINWEIS" xml:space="preserve">
+    <value>Photovoltaik: Einspeisegrenze {0:N1} kW - ohne Speicher abgeregelt {1:N0} kWh/a ({2:N1} % des Ertrags). Ein Stromspeicher lädt vor dem Abregeln.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_STANDBY_AUSSERHALB" xml:space="preserve">
+    <value>Stromspeicher: Ein Standby-Verbrauch außerhalb 0 … 1 000 W wird nicht gerechnet.</value>
+  </data>
+  <data name="SP_LABEL_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Selbstentladung</value>
+  </data>
+  <data name="SP_HINWEIS_STANDBY" xml:space="preserve">
+    <value>Batteriemanagement und Wechselrichter im Leerlauf. Gedeckt aus PV-Überschuss, sonst aus dem Netz; leer = 0.</value>
+  </data>
+  <data name="SP_HINWEIS_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat, 0 … 20 %; leer = keine.</value>
+  </data>
+  <data name="SP_ERG_SELBSTENTLADUNG" xml:space="preserve">
+    <value>davon Selbstentladung</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Eigenverbrauch Speichersystem</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ" xml:space="preserve">
+    <value>davon aus dem Netz</value>
+  </data>
+  <data name="SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Standby-Verbrauch des Speichersystems: gedeckt aus PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG" xml:space="preserve">
+    <value>Abregelung an der Einspeisegrenze</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG_ANTEIL" xml:space="preserve">
+    <value>Abregelung in % der Erzeugung</value>
+  </data>
+  <data name="SIMERG_LBL_PV_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_GRP_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_HRL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss, in kW oder in % der installierten PV-Leistung. Was der Speicher nicht lädt und darüber liegt, wird abgeregelt. Leer = keine Grenze.</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_KW" xml:space="preserve">
+    <value>kW am Netzanschluss</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der installierten PV-Leistung</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_LEER" xml:space="preserve">
+    <value>keine Grenze</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_FEHLER" xml:space="preserve">
+    <value>Die Einspeisegrenze konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_MODK_SELBSTENTLADUNG_ERL" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss in der gewählten Einheit; leer heißt keine Grenze. Darüber wird abgeregelt, nachdem ein Speicher geladen hat.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze: kW am Netzanschluss oder % der installierten PV-Leistung (kWp).</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
+    <value>Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat.</value>
+  </data>
+  <data name="PSP_ANTEILE_ZAHL" xml:space="preserve">
+    <value>„{0}“ ist keine Zahl.</value>
+  </data>
+  <data name="PSP_ANTEILE_BEREICH" xml:space="preserve">
+    <value>Der Anteil „{0}“ liegt nicht zwischen 0 und 1.</value>
+  </data>
+  <data name="PSP_ANTEILE_ANZAHL" xml:space="preserve">
+    <value>{0} Anteile für {1} Zonen – je Zone genau ein Anteil.</value>
+  </data>
+  <data name="PSP_ANTEILE_SUMME" xml:space="preserve">
+    <value>Die Anteile ergeben {0}, nicht 1.</value>
+  </data>
+  <data name="DESINF_PRUEF_INTERVALL" xml:space="preserve">
+    <value>Das Intervall muss zwischen {0} und {1} Tagen liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_STUNDE" xml:space="preserve">
+    <value>Die Stunde muss zwischen {0} und {1} liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_ZIEL" xml:space="preserve">
+    <value>Die Zieltemperatur muss zwischen {0} und {1} °C liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_VOLUMEN" xml:space="preserve">
+    <value>Das Volumen muss zwischen 0 und {0:N0} l liegen.</value>
+  </data>
+  <data name="SIMENG_PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Bereitschaftsverlust nach Temperatur, H = {1:0.00} W/K, Aufstellraum {2:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_ANTEILE_ABGELEHNT" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Zonenanteile nicht übernommen – {1} Gerechnet wird mit gleich großen Zonen.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_OHNE_BRAUCHWASSER" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Das Frischwassermodul wirkt nicht – der Speicher führt kein Brauchwasser.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Frischwassermodul, Zapftemperatur {1:0.#} °C + Grädigkeit {2:0.#} K – Mindesttemperatur oben {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_STUNDEN" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: In {1} Stunden hielt die oberste Zone die Mindesttemperatur des Frischwassermoduls ({2:0.#} °C) nicht; den Rest deckte die nächste Stufe der Kaskade.</value>
+  </data>
+  <data name="SIMENG_TWW_ZAPF_VORGABE" xml:space="preserve">
+    <value>Brauchwasser: Das Projekt führt keine Zapftemperatur – gerechnet wird mit {0:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_DESINF_SOLL_VORGABE" xml:space="preserve">
+    <value>Thermische Desinfektion: Das Projekt führt keine Speichersolltemperatur – gerechnet wird mit {0:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_DESINF_OHNE_VOLUMEN" xml:space="preserve">
+    <value>Thermische Desinfektion ohne Volumen: Weder ist ein Volumen gepflegt noch führt ein Speicher Brauchwasser – kein Zusatzbedarf.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZIEL_UNTER_SOLL" xml:space="preserve">
+    <value>Thermische Desinfektion: Die Zieltemperatur {0:0.#} °C liegt nicht über der Speichersolltemperatur {1:0.#} °C – kein Zusatzbedarf.</value>
+  </data>
+  <data name="SIMENG_DESINF_BEDARF" xml:space="preserve">
+    <value>thermische Desinfektion {0}-mal im Jahr (alle {1} Tage um {2} Uhr), {3:0.#} l von {4:0.#} auf {5:0.#} °C: {6:0.##} kWh je Ereignis, {7:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMENG_DESINF_GEDECKT" xml:space="preserve">
+    <value>Thermische Desinfektion: {0} deckt {1:0.##} kWh.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZUSATZSTROM" xml:space="preserve">
+    <value>Thermische Desinfektion: Kein Erzeuger erreicht {1:0.#} °C für {0:0.##} kWh – gedeckt mit Zusatzstrom (elektrisch, Wirkungsgrad 1), im Reststrom enthalten.</value>
+  </data>
+  <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="PSP_GRUPPE_OPTIONEN" xml:space="preserve">
+    <value>Bereitschaft und Frischwassermodul</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFT_WEG" xml:space="preserve">
+    <value>Bereitschaftsverlust:</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TAG" xml:space="preserve">
+    <value>Tageswert anteilig zum Füllstand</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>nach Temperatur je Zone</value>
+  </data>
+  <data name="PSP_LABEL_AUFSTELLRAUM" xml:space="preserve">
+    <value>Aufstellraum:</value>
+  </data>
+  <data name="PSP_HINWEIS_AUFSTELLRAUM" xml:space="preserve">
+    <value>Nur beim Weg nach Temperatur: H = Q_B · 1000 / (24 · 45 K), je Zone H · a_i · (ϑ_i − ϑ_Raum); leer = 20 °C.</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHT_ANTEILE" xml:space="preserve">
+    <value>Zonenanteile von oben:</value>
+  </data>
+  <data name="PSP_BTN_VORSCHLAG_KOMBI" xml:space="preserve">
+    <value>Vorschlag Kombispeicher</value>
+  </data>
+  <data name="PSP_HINWEIS_ANTEILE" xml:space="preserve">
+    <value>Volumenanteile durch Semikolon getrennt, Summe 1; leer = gleich große Zonen. Vorschlag Kombispeicher: 0,10;0,16;0,37;0,37 (vier Zonen).</value>
+  </data>
+  <data name="PSP_LABEL_FRISCHWASSERMODUL" xml:space="preserve">
+    <value>Frischwassermodul</value>
+  </data>
+  <data name="PSP_LABEL_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit Frischwassermodul:</value>
+  </data>
+  <data name="PSP_HINWEIS_FWM" xml:space="preserve">
+    <value>Brauchwasser aus der obersten Zone nur ab Zapftemperatur + Grädigkeit; sonst deckt die nächste Stufe der Kaskade. Leer = 5 K.</value>
+  </data>
+  <data name="PSP_HINWEIS_UEBERTRAGER" xml:space="preserve">
+    <value>Übertrager: Leistung als Entladegrenze eintragen.</value>
+  </data>
+  <data name="PSP_FEHLER_AUFSTELLRAUM" xml:space="preserve">
+    <value>Der Aufstellraum muss zwischen 0 und 35 °C liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Die Grädigkeit des Frischwassermoduls muss zwischen 0 und 20 K liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_ANTEILE" xml:space="preserve">
+    <value>Zonenanteile: {0}</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Wahr = Bereitschaftsverlust je Zone nach Temperatur (H aus dem Bereitschaftswert bei 45 K, gegen den Aufstellraum); falsch = Tageswert anteilig zum Füllstand.</value>
+  </data>
+  <data name="KI_DLG_PSPV_AUFSTELLRAUM_ERL" xml:space="preserve">
+    <value>Temperatur des Aufstellraums für den Bereitschaftsverlust nach Temperatur, 0 bis 35 °C; leer = 20 °C.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ANTEILE_ERL" xml:space="preserve">
+    <value>Volumenanteile der Zonen von oben, durch Semikolon getrennt, Summe 1, Anzahl gleich der Schichtenzahl; leer = gleich große Zonen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_ERL" xml:space="preserve">
+    <value>Wahr = Brauchwasser über ein Frischwassermodul aus der obersten Zone, nur ab Zapftemperatur plus Grädigkeit.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Grädigkeit des Frischwassermoduls, 0 bis 20 K; leer = 5 K.</value>
+  </data>
+  <data name="SIMKONF_GRP_DESINFEKTION" xml:space="preserve">
+    <value>Thermische Desinfektion</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINFEKTION" xml:space="preserve">
+    <value>Thermische Desinfektion</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_INTERVALL" xml:space="preserve">
+    <value>Intervall:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_STUNDE" xml:space="preserve">
+    <value>Uhrzeit (Stunde):</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_ZIEL" xml:space="preserve">
+    <value>Zieltemperatur:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_VOLUMEN" xml:space="preserve">
+    <value>Volumen:</value>
+  </data>
+  <data name="SIMKONF_DESINF_VOLUMEN_LEER" xml:space="preserve">
+    <value>Brauchwasserspeicher</value>
+  </data>
+  <data name="SIMKONF_HRL_DESINFEKTION" xml:space="preserve">
+    <value>Zusatzbedarf je Ereignis Q = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) im Brauchwasserkanal, gedeckt vom Erzeuger, der die Zieltemperatur erreicht, sonst vom Heizstab oder als Zusatzstrom. Leer: alle 7 Tage um 2 Uhr, 70 °C, Volumen der Brauchwasserspeicher.</value>
+  </data>
+  <data name="SIMKONF_DESINFEKTION_FEHLER" xml:space="preserve">
+    <value>Die thermische Desinfektion konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_SIM_DESINFEKTION_ERL" xml:space="preserve">
+    <value>Wahr = thermische Desinfektion des Brauchwassers im Lauf (Zusatzbedarf in der gewählten Stunde).</value>
+  </data>
+  <data name="KI_SIM_DESINF_INTERVALL_ERL" xml:space="preserve">
+    <value>Abstand zweier Desinfektionen in Tagen, 1 bis 31; leer = 7.</value>
+  </data>
+  <data name="KI_SIM_DESINF_STUNDE_ERL" xml:space="preserve">
+    <value>Stunde des Tages, in der die Desinfektion läuft, 0 bis 23; leer = 2.</value>
+  </data>
+  <data name="KI_SIM_DESINF_ZIEL_ERL" xml:space="preserve">
+    <value>Zieltemperatur der Desinfektion, 55 bis 90 °C; leer = 70 °C.</value>
+  </data>
+  <data name="KI_SIM_DESINF_VOLUMEN_ERL" xml:space="preserve">
+    <value>Aufgeheiztes Volumen in Litern, 0 bis 100 000; leer = Volumen der Speicher, die Brauchwasser führen.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_DESINFEKTION" xml:space="preserve">
+    <value>davon thermische Desinfektion:</value>
+  </data>
+  <data name="PSP_ERG_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>{0}: Bereitschaftsverlust nach Temperatur je Zone.</value>
+  </data>
+  <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
+    <value>{0}: Frischwassermodul – {1} Stunden ohne ausreichende Puffertemperatur; dort deckt die nächste Stufe der Kaskade.</value>
+  </data>
+  <data name="KABG_MENUE" xml:space="preserve">
+    <value>Katalog aktualisieren…</value>
+  </data>
+  <data name="KABG_TITEL" xml:space="preserve">
+    <value>Katalog aktualisieren</value>
+  </data>
+  <data name="KABG_EINLEITUNG" xml:space="preserve">
+    <value>Gleicht die Gerätekataloge (Wärmepumpen, Heizkessel, BHKW, PV-Module, Brauchwasser- und Prozesswärmeprofile) mit dem Katalogpaket der Auslieferung ab. Eigene Sätze und alle Projekte bleiben unberührt; ein Satz, den Sie geändert oder entsperrt haben, wird nicht überschrieben.</value>
+  </data>
+  <data name="KABG_FASSUNG_DB" xml:space="preserve">
+    <value>Fassung der Datenbank</value>
+  </data>
+  <data name="KABG_FASSUNG_PAKET" xml:space="preserve">
+    <value>Fassung des Pakets</value>
+  </data>
+  <data name="KABG_PAKETORT" xml:space="preserve">
+    <value>Katalogpaket</value>
+  </data>
+  <data name="KABG_BTN_PRUEFEN" xml:space="preserve">
+    <value>Nur prüfen</value>
+  </data>
+  <data name="KABG_BTN_ABGLEICHEN" xml:space="preserve">
+    <value>Abgleichen…</value>
+  </data>
+  <data name="KABG_BTN_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungsstand wiederherstellen…</value>
+  </data>
+  <data name="KABG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KABG_SPALTE_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KABG_SPALTE_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="KABG_SPALTE_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="KABG_SPALTE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="KABG_SPALTE_HANDLUNG" xml:space="preserve">
+    <value>Handlung</value>
+  </data>
+  <data name="KABG_LEER" xml:space="preserve">
+    <value>Noch nicht geprüft.</value>
+  </data>
+  <data name="KABG_KEINE_AENDERUNG" xml:space="preserve">
+    <value>Der Katalog entspricht dem Paket — nichts zu tun.</value>
+  </data>
+  <data name="KABG_NUR_GEPRUEFT" xml:space="preserve">
+    <value>Nur geprüft — nichts geschrieben.</value>
+  </data>
+  <data name="KABG_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="KABG_FRAGE_ABGLEICHEN" xml:space="preserve">
+    <value>Den Katalog jetzt mit dem Paket abgleichen? Vorher wird eine Sicherung der Datenbank angelegt.</value>
+  </data>
+  <data name="KABG_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Den Satz „{0}“ auf den Auslieferungsstand zurücksetzen? Ihre Anpassung geht dabei verloren.</value>
+  </data>
+  <data name="KABG_NIE" xml:space="preserve">
+    <value>noch nie abgeglichen</value>
+  </data>
+  <data name="KABG_KEIN_PAKET" xml:space="preserve">
+    <value>Kein Katalogpaket gefunden ({0}) — der Katalog wurde nicht abgeglichen.</value>
+  </data>
+  <data name="KABG_KEIN_PAKET_KURZ" xml:space="preserve">
+    <value>kein Paket</value>
+  </data>
+  <data name="KABG_PAKET_FEHLER" xml:space="preserve">
+    <value>Das Katalogpaket ist nicht lesbar: {0}</value>
+  </data>
+  <data name="KABG_NICHT_BEREIT" xml:space="preserve">
+    <value>Die Datenbank ist für den Katalogabgleich noch nicht eingerichtet; der Schemaschritt fehlt.</value>
+  </data>
+  <data name="KABG_BEREITS" xml:space="preserve">
+    <value>Der Katalog steht bereits auf Fassung {0}.</value>
+  </data>
+  <data name="KABG_BERICHT" xml:space="preserve">
+    <value>{0} neu, {1} aktualisiert, {2} behalten, {3} ausgelaufen</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
+    <value>Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_ENTSPERRT" xml:space="preserve">
+    <value>Der Satz ist entsperrt. Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Ein eigener Satz trägt den Namen „{0}“; der Auslieferungssatz wurde nicht eingefügt.</value>
+  </data>
+  <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
+    <value>Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog.</value>
+  </data>
+  <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
+    <value>Der Satz steht nicht im Katalogpaket.</value>
+  </data>
+  <data name="KABG_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>Der Auslieferungsstand wurde wiederhergestellt.</value>
+  </data>
+  <data name="KABG_SICHERUNG" xml:space="preserve">
+    <value>Sicherung vor dem Abgleich: {0}</value>
+  </data>
+  <data name="KABG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>Die Sicherung vor dem Abgleich ist gescheitert — es wurde nichts abgeglichen: {0}</value>
+  </data>
+  <data name="KABG_START_TITEL" xml:space="preserve">
+    <value>Katalog aktualisiert</value>
+  </data>
+  <data name="KABG_START_TEXT" xml:space="preserve">
+    <value>Die Gerätekataloge wurden mit dem Katalogpaket der Fassung {0} abgeglichen: {1}.</value>
+  </data>
+  <data name="KABG_START_BEHALTEN" xml:space="preserve">
+    <value>Sätze, die Sie angepasst haben, bleiben unverändert. Unter Administration → Daten &amp; Import → Katalog aktualisieren… lassen sie sich mit dem neuen Auslieferungsstand vergleichen und auf Wunsch zurücksetzen.</value>
+  </data>
+  <data name="KABG_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KABG_AKTION_EINGEFUEGT" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="KABG_AKTION_AKTUALISIERT" xml:space="preserve">
+    <value>aktualisiert</value>
+  </data>
+  <data name="KABG_AKTION_BEHALTEN" xml:space="preserve">
+    <value>behalten</value>
+  </data>
+  <data name="KABG_AKTION_AUSGELAUFEN" xml:space="preserve">
+    <value>ausgelaufen</value>
+  </data>
+  <data name="KABG_AKTION_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>wiederhergestellt</value>
+  </data>
+  <data name="KABG_AKTION_KEIN_PAKET" xml:space="preserve">
+    <value>kein Paket</value>
+  </data>
+  <data name="KABG_AKTION_BERICHT" xml:space="preserve">
+    <value>Abgleich</value>
+  </data>
+  <data name="KABG_KATALOG_WP" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="KABG_KATALOG_KESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="KABG_KATALOG_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="KABG_KATALOG_PV" xml:space="preserve">
+    <value>PV-Module</value>
+  </data>
+  <data name="KABG_KATALOG_BW" xml:space="preserve">
+    <value>Brauchwasserprofile</value>
+  </data>
+  <data name="KABG_KATALOG_BWT" xml:space="preserve">
+    <value>Brauchwasser-Wochenprofile</value>
+  </data>
+  <data name="KABG_KATALOG_PW" xml:space="preserve">
+    <value>Prozesswärmeprofile</value>
+  </data>
+  <data name="KABG_KATALOG_PWT" xml:space="preserve">
+    <value>Prozesswärme-Wochenprofile</value>
+  </data>
+  <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="KABG_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="KABG_KATALOG_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffe</value>
+  </data>
+  <data name="KABG_KATALOG_TAGESVERTEILUNG" xml:space="preserve">
+    <value>Tagesverteilungen</value>
+  </data>
+  <data name="KABG_KATALOG_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="KABG_KATALOG_KONDITIONIERUNGSVORLAGE" xml:space="preserve">
+    <value>Konditionierungsvorlagen</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFERVORGABE" xml:space="preserve">
+    <value>Vorgaben der Pufferauslegung</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARKOLLEKTOR" xml:space="preserve">
+    <value>Solarkollektoren</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARGANGLINIE" xml:space="preserve">
+    <value>Solarganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHERTYP" xml:space="preserve">
+    <value>Stromverbraucher-Wochenprofile</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Stromverbraucherprofile</value>
+  </data>
+  <data name="KABG_KATALOG_STROMGANGLINIE" xml:space="preserve">
+    <value>Stromganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarfsganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="SIMQ_ERDREICH_STAND_LAUF" xml:space="preserve">
+    <value>Stand des Laufs vom {0}.</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_SCHLUESSEL" xml:space="preserve">
+    <value>Katalogschlüssel:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_PRUEFSUMME" xml:space="preserve">
+    <value>Prüfsumme der Auslieferung:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_AUSGELAUFEN" xml:space="preserve">
+    <value>Ausgelaufen:</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
+    <value>{0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
+    <value>{0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
+    <value>{0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
+    <value>{0}: Tagesbilanz — ohne Aufheizoptimierung</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0}: keine Bemessung — {1}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_GRENZE" xml:space="preserve">
+    <value>(Eingabe {0} kW gilt dem Katalogbau, × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR" xml:space="preserve">
+    <value>(Katalogbau {0} kW × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>(am Katalogbau; den Faktor der Verbrauchsangabe bestimmt erst der Lauf)</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GRENZE" xml:space="preserve">
+    <value>Heizleistungsgrenze</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_ZIEL" xml:space="preserve">
+    <value>Zielleistung</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>Grenze und Zielleistung je Zone</value>
+  </data>
+  <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
+    <value>Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_REFERENZ" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen, aber Raumbezüge der Bauteile (IfcRelReferencedInSpatialStructure): {1} Decken trennen die Geschosse {2} und koppeln deren Zonen (Regel Z4); {3} Innenwände zwischen Räumen eines Geschosses zählen als innere Masse. Die Flächen kommen aus den Mengen der Bauteile, je Geschosspaar, nicht je Raum.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
+    <value>Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
+    <value>{0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NAME_PLATZHALTER" xml:space="preserve">
+    <value>Das Gebäude heißt in der Datei „{0}“ — ein Platzhalter; als Name vorgeschlagen wird der Dateiname „{1}“.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
+    <value>Der Dateiname nennt {0}; die Datei führt kein Baujahr. Das Jahr wird nicht übernommen — Baujahr bzw. Baualtersklasse bitte selbst prüfen.</value>
+  </data>
+  <data name="PAUS_TITEL" xml:space="preserve">
+    <value>Pufferspeicher-Auslegung</value>
+  </data>
+  <data name="PAUS_ZURUECK" xml:space="preserve">
+    <value>← zurück</value>
+  </data>
+  <data name="PAUS_ABLAUF" xml:space="preserve">
+    <value>Ablauf der Auslegung</value>
+  </data>
+  <data name="PAUS_SCHRITT_ANLAGE" xml:space="preserve">
+    <value>Klasse und Erzeuger</value>
+  </data>
+  <data name="PAUS_SCHRITT_BEDARF" xml:space="preserve">
+    <value>Bedarf und Randbedingungen</value>
+  </data>
+  <data name="PAUS_SCHRITT_KRITERIEN" xml:space="preserve">
+    <value>Kriterien</value>
+  </data>
+  <data name="PAUS_SCHRITT_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis und Übernahme</value>
+  </data>
+  <data name="PAUS_VERALTET" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="PAUS_STUFE" xml:space="preserve">
+    <value>Tiefe</value>
+  </data>
+  <data name="PAUS_STUFE_SCHNELL" xml:space="preserve">
+    <value>Schnell</value>
+  </data>
+  <data name="PAUS_STUFE_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="PAUS_STUFE_EXPERTE" xml:space="preserve">
+    <value>Experte</value>
+  </data>
+  <data name="PAUS_KONTEXT_PUFFER" xml:space="preserve">
+    <value>Projekt „{0}“ · Speicher „{1}“</value>
+  </data>
+  <data name="PAUS_KONTEXT_NEU" xml:space="preserve">
+    <value>Projekt „{0}“ · neuer Pufferspeicher</value>
+  </data>
+  <data name="PAUS_GESPEICHERTE_AUSLEGUNG" xml:space="preserve">
+    <value>Die gespeicherte Auslegung dieses Speichers ist geladen.</value>
+  </data>
+  <data name="PAUS_WEITER" xml:space="preserve">
+    <value>Weiter ›</value>
+  </data>
+  <data name="PAUS_ZURUECK_SCHRITT" xml:space="preserve">
+    <value>‹ Zurück</value>
+  </data>
+  <data name="PAUS_RECHNEN" xml:space="preserve">
+    <value>Auslegen und Ergebnis zeigen</value>
+  </data>
+  <data name="PAUS_NEU_RECHNEN" xml:space="preserve">
+    <value>Neu rechnen</value>
+  </data>
+  <data name="PAUS_ZURUECKSETZEN" xml:space="preserve">
+    <value>Auf Vorbelegung zurücksetzen</value>
+  </data>
+  <data name="PAUS_VERALTET_HINWEIS" xml:space="preserve">
+    <value>Eingaben geändert — das Ergebnis rechnet beim Wechsel in Schritt 4 oder mit „Neu rechnen“ nach.</value>
+  </data>
+  <data name="PAUS_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="PAUS_QUELLE_PUFFER" xml:space="preserve">
+    <value>Puffer</value>
+  </data>
+  <data name="PAUS_QUELLE_KASKADE" xml:space="preserve">
+    <value>Kaskade</value>
+  </data>
+  <data name="PAUS_QUELLE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="PAUS_QUELLE_ZAPFPROFIL" xml:space="preserve">
+    <value>Zapfprofil</value>
+  </data>
+  <data name="PAUS_QUELLE_REIHE" xml:space="preserve">
+    <value>Bedarfsreihe</value>
+  </data>
+  <data name="PAUS_QUELLE_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="PAUS_QUELLE_PARAMETER" xml:space="preserve">
+    <value>Vorgabetabelle</value>
+  </data>
+  <data name="PAUS_QUELLE_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="PAUS_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>gespeichert</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>überschrieben</value>
+  </data>
+  <data name="PAUS_QUELLE_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERGEBEN" xml:space="preserve">
+    <value>übergeben</value>
+  </data>
+  <data name="PAUS_GRUPPE_KLASSE" xml:space="preserve">
+    <value>Speicherklasse und Nutzung</value>
+  </data>
+  <data name="PAUS_KLASSE_HEIZUNG" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="PAUS_KLASSE_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="PAUS_KLASSE_PROZESS" xml:space="preserve">
+    <value>Prozess</value>
+  </data>
+  <data name="PAUS_KLASSE_HINWEIS" xml:space="preserve">
+    <value>Je Klasse eine Zone mit eigenem Verfahren: Heizzone nach den Kriterien, Brauchwasserzone aus dem Zapfprofil, Prozesszone auf der Prozessreihe; Kombi = Heizung + Brauchwasser.</value>
+  </data>
+  <data name="PAUS_KLASSE_LEER" xml:space="preserve">
+    <value>Mindestens eine Speicherklasse wählen — ohne Klasse gibt es keine Zone.</value>
+  </data>
+  <data name="PAUS_NUTZUNGSPROFIL" xml:space="preserve">
+    <value>Nutzungsprofil</value>
+  </data>
+  <data name="PAUS_NP_HINWEIS" xml:space="preserve">
+    <value>nur Anzeige: Das Profil prägt die Bedarfsreihen, aus denen bemessen wird; es ist kein Rechenwert.</value>
+  </data>
+  <data name="PAUS_NP_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="PAUS_NP_BEHERBERGUNG" xml:space="preserve">
+    <value>Beherbergung</value>
+  </data>
+  <data name="PAUS_NP_PFLEGE" xml:space="preserve">
+    <value>Pflege/Krankenhaus</value>
+  </data>
+  <data name="PAUS_NP_BUERO_SCHULE" xml:space="preserve">
+    <value>Büro/Schule</value>
+  </data>
+  <data name="PAUS_NP_GEWERBE" xml:space="preserve">
+    <value>Gewerbe/Prozess</value>
+  </data>
+  <data name="PAUS_GRUPPE_VORLAGE" xml:space="preserve">
+    <value>Vorlage der Anlage</value>
+  </data>
+  <data name="PAUS_VORLAGE_HINWEIS" xml:space="preserve">
+    <value>Die Vorlage schaltet die Kriterien der Heizzone und belegt Beispielwerte; die Brauchwasserzone hat keine Vorlage — sie kommt aus dem Zapfprofil.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_UNTER" xml:space="preserve">
+    <value>monovalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_TEXT" xml:space="preserve">
+    <value>Die Wärmepumpe deckt allein: Gerätetyp und Mindestlaufzeit, Sperrzeit nach VDI 4645, Taktziel.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_UNTER" xml:space="preserve">
+    <value>bivalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_TEXT" xml:space="preserve">
+    <value>Ein Zweiterzeuger frei in der Sperre lässt die Sperrzeit entfallen; ein Heizstab ist mitgesperrt.</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_UNTER" xml:space="preserve">
+    <value>lange Laufzeiten</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_TEXT" xml:space="preserve">
+    <value>Mindestlaufzeit und wenige Starts je Tag; Verschiebedauer und Faustwert als Gegenprobe.</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_UNTER" xml:space="preserve">
+    <value>Gas/Öl</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_TEXT" xml:space="preserve">
+    <value>Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie; kleiner Puffer gegen Takten.</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF" xml:space="preserve">
+    <value>Festbrennstoff</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_UNTER" xml:space="preserve">
+    <value>Scheitholz, Pellets</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_TEXT" xml:space="preserve">
+    <value>Mindestvolumen nach Vorschrift aus dem Brennstoff des Kessels — bemessend.</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_UNTER" xml:space="preserve">
+    <value>Kollektorfeld am Puffer</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_TEXT" xml:space="preserve">
+    <value>Volumen je m² Aperturfläche als Tagesspeicher.</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS" xml:space="preserve">
+    <value>Prozess</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_UNTER" xml:space="preserve">
+    <value>Prozesspuffer</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_TEXT" xml:space="preserve">
+    <value>Deckung und Taktziel auf der Prozessreihe, Spreizung aus dem Puffer; Temperaturniveau prüfen.</value>
+  </data>
+  <data name="PAUS_FAUSTWERT" xml:space="preserve">
+    <value>Faustwert {0} {1}</value>
+  </data>
+  <data name="PAUS_GERAETETYP" xml:space="preserve">
+    <value>Gerätetyp</value>
+  </data>
+  <data name="PAUS_FIXED_SPEED" xml:space="preserve">
+    <value>Fixed-Speed</value>
+  </data>
+  <data name="PAUS_GEREGELT" xml:space="preserve">
+    <value>leistungsgeregelt</value>
+  </data>
+  <data name="PAUS_ZWEITERZEUGER" xml:space="preserve">
+    <value>Zweiterzeuger in der Sperre</value>
+  </data>
+  <data name="PAUS_ZWEIT_FREI" xml:space="preserve">
+    <value>Zweiterzeuger frei in der Sperre</value>
+  </data>
+  <data name="PAUS_ZWEIT_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab (gesperrt)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger am Puffer</value>
+  </data>
+  <data name="PAUS_ERZEUGER_KEINER" xml:space="preserve">
+    <value>Kein Wärmeerzeuger im Projekt — die Vorlage rechnet mit ihren Vorgabewerten.</value>
+  </data>
+  <data name="PAUS_GRUPPE_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturen und Schwellen am Puffer</value>
+  </data>
+  <data name="PAUS_TEMPERATURPAAR" xml:space="preserve">
+    <value>Vorlauf / Rücklauf</value>
+  </data>
+  <data name="PAUS_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen ein / aus</value>
+  </data>
+  <data name="PAUS_NUTZANTEIL_TEXT" xml:space="preserve">
+    <value>nutzbarer Anteil {0} %</value>
+  </data>
+  <data name="PAUS_TEMPERATUR_BLEIBT" xml:space="preserve">
+    <value>Temperaturpaar und Schwellen kommen aus dem Puffer; die Auslegung ändert sie nicht.</value>
+  </data>
+  <data name="PAUS_GRUPPE_REIHEN" xml:space="preserve">
+    <value>Bedarfsreihen</value>
+  </data>
+  <data name="PAUS_REIHEN_HINWEIS" xml:space="preserve">
+    <value>Bemessen wird gegen die stündlichen Bedarfsreihen des Projekts — ohne neuen Simulationslauf.</value>
+  </data>
+  <data name="PAUS_REIHEN_FEHLER" xml:space="preserve">
+    <value>Die Bedarfsreihen sind nicht rechenbar: {0}</value>
+  </data>
+  <data name="PAUS_SPALTE_KANAL" xml:space="preserve">
+    <value>Kanal</value>
+  </data>
+  <data name="PAUS_SPALTE_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="PAUS_SPALTE_JAHR" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERGABE" xml:space="preserve">
+    <value>Übergabe und Anlage</value>
+  </data>
+  <data name="PAUS_UEBERGABEART" xml:space="preserve">
+    <value>Übergabeart</value>
+  </data>
+  <data name="PAUS_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>keine Angabe (rechnet wie Flächenheizung)</value>
+  </data>
+  <data name="PAUS_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>Heizkörper</value>
+  </data>
+  <data name="PAUS_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>Flächenheizung</value>
+  </data>
+  <data name="PAUS_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>Konvektor</value>
+  </data>
+  <data name="PAUS_UEBERGABE_LUEFTER" xml:space="preserve">
+    <value>Lüfter</value>
+  </data>
+  <data name="PAUS_HEIZGRENZE" xml:space="preserve">
+    <value>Heizgrenze</value>
+  </data>
+  <data name="PAUS_HEIZLAST" xml:space="preserve">
+    <value>Auslegungsheizlast</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN" xml:space="preserve">
+    <value>Anlagenvolumen, nicht absperrbar</value>
+  </data>
+  <data name="PAUS_LEER_VORGABE" xml:space="preserve">
+    <value>leer = Vorgabe</value>
+  </data>
+  <data name="PAUS_HEIZLAST_LEER" xml:space="preserve">
+    <value>leer = Maximum der Heizreihe</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN_LEER" xml:space="preserve">
+    <value>leer = Übergabeart × Heizlast</value>
+  </data>
+  <data name="PAUS_GRUPPE_SPERRE" xml:space="preserve">
+    <value>Sperrzeiten</value>
+  </data>
+  <data name="PAUS_SPERRPROFIL" xml:space="preserve">
+    <value>Sperrprofil</value>
+  </data>
+  <data name="PAUS_SPERRE_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="PAUS_SPERRE_ZWEI_MAL_ZWEI" xml:space="preserve">
+    <value>2 × 2 h (11–13 und 17–19 Uhr)</value>
+  </data>
+  <data name="PAUS_SPERRE_DREI_MAL_ZWEI" xml:space="preserve">
+    <value>3 × 2 h (6–8, 11–13 und 17–19 Uhr)</value>
+  </data>
+  <data name="PAUS_SPERRE_EIGEN" xml:space="preserve">
+    <value>eigenes Fenster</value>
+  </data>
+  <data name="PAUS_SPERRBEGINN" xml:space="preserve">
+    <value>Beginn der Sperre</value>
+  </data>
+  <data name="PAUS_SPERRDAUER" xml:space="preserve">
+    <value>Dauer der Sperre</value>
+  </data>
+  <data name="PAUS_SPERRE_HINWEIS" xml:space="preserve">
+    <value>Neutrale Eingabe der Sperrdauer und ihrer Lage je Tag; die Übernahme schreibt die Sperrannahme nicht in die Wärmepumpe.</value>
+  </data>
+  <data name="PAUS_EXPERTENWEG" xml:space="preserve">
+    <value>Sperrzeit aus dem Lastgang bemessen (Expertenweg)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZIELE" xml:space="preserve">
+    <value>Betriebsziel</value>
+  </data>
+  <data name="PAUS_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit je Start</value>
+  </data>
+  <data name="PAUS_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Kleinste Dauerleistung</value>
+  </data>
+  <data name="PAUS_STARTZIEL" xml:space="preserve">
+    <value>Startziel</value>
+  </data>
+  <data name="PAUS_DECKUNGSZIEL" xml:space="preserve">
+    <value>Ziel-Deckungsgrad</value>
+  </data>
+  <data name="PAUS_EINHEIT_JE_TAG" xml:space="preserve">
+    <value>je Tag</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZAPF" xml:space="preserve">
+    <value>Brauchwasserzone aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_ZAPF_TOPOLOGIE" xml:space="preserve">
+    <value>Topologie</value>
+  </data>
+  <data name="PAUS_TOPO_SPEICHER" xml:space="preserve">
+    <value>Trinkwasserspeicher</value>
+  </data>
+  <data name="PAUS_TOPO_FRISCHWASSER" xml:space="preserve">
+    <value>Frischwasserstation</value>
+  </data>
+  <data name="PAUS_TOPO_WOHNUNGSSTATION" xml:space="preserve">
+    <value>Wohnungsstationen</value>
+  </data>
+  <data name="PAUS_TOPO_DURCHFLUSS" xml:space="preserve">
+    <value>Durchfluss ohne Speicher</value>
+  </data>
+  <data name="PAUS_ZAPF_DMAX" xml:space="preserve">
+    <value>Größtes Defizit D_max</value>
+  </data>
+  <data name="PAUS_ZAPF_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="PAUS_ZAPF_TAGESBEDARF" xml:space="preserve">
+    <value>Tagesbedarf bei 60 °C</value>
+  </data>
+  <data name="PAUS_ZAPF_KEIN" xml:space="preserve">
+    <value>Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer.</value>
+  </data>
+  <data name="PAUS_ZIRKULATION" xml:space="preserve">
+    <value>Zirkulationszuschlag</value>
+  </data>
+  <data name="PAUS_ZIRK_AUTOMATIK" xml:space="preserve">
+    <value>automatisch (Zapfprofil, sonst Projekt, sonst Anteil)</value>
+  </data>
+  <data name="PAUS_ZIRK_ZAPFPROFIL" xml:space="preserve">
+    <value>aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_ZIRK_PROJEKT" xml:space="preserve">
+    <value>Zirkulationsleistung des Projekts</value>
+  </data>
+  <data name="PAUS_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Anteil am Tagesbedarf</value>
+  </data>
+  <data name="PAUS_ZIRK_JE_WE" xml:space="preserve">
+    <value>je Wohneinheit</value>
+  </data>
+  <data name="PAUS_WOHNEINHEITEN" xml:space="preserve">
+    <value>Wohneinheiten</value>
+  </data>
+  <data name="PAUS_DELTA_TB" xml:space="preserve">
+    <value>Spreizung Brauchwasser ΔT_B</value>
+  </data>
+  <data name="PAUS_T_OBEN" xml:space="preserve">
+    <value>Temperatur oben im Puffer</value>
+  </data>
+  <data name="PAUS_KRITERIEN_HINWEIS" xml:space="preserve">
+    <value>Je Zone bemisst das größte aktive Kriterium. Die Vorlage hat vorgewählt, was zur Anlage passt; Kriterien lassen sich zu- oder abschalten.</value>
+  </data>
+  <data name="PAUS_KRIT_AN" xml:space="preserve">
+    <value>bemisst mit</value>
+  </data>
+  <data name="PAUS_KRIT_BEMESSEND" xml:space="preserve">
+    <value>bemessend</value>
+  </data>
+  <data name="PAUS_KRIT_NICHT_GUELTIG" xml:space="preserve">
+    <value>nicht erreichbar</value>
+  </data>
+  <data name="PAUS_KRIT_AUS" xml:space="preserve">
+    <value>abgeschaltet</value>
+  </data>
+  <data name="PAUS_KRIT_NOCH_NICHT" xml:space="preserve">
+    <value>noch nicht gerechnet</value>
+  </data>
+  <data name="PAUS_KRIT_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="PAUS_KRIT_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasserzone</value>
+  </data>
+  <data name="PAUS_KRIT_K1" xml:space="preserve">
+    <value>Vorprüfung Anlagenvolumen</value>
+  </data>
+  <data name="PAUS_KRIT_K2" xml:space="preserve">
+    <value>Faustwert nach Gerätetyp</value>
+  </data>
+  <data name="PAUS_KRIT_K3" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="PAUS_KRIT_K4" xml:space="preserve">
+    <value>Sperrzeit</value>
+  </data>
+  <data name="PAUS_KRIT_K4E" xml:space="preserve">
+    <value>Sperrzeit aus dem Lastgang</value>
+  </data>
+  <data name="PAUS_KRIT_D1" xml:space="preserve">
+    <value>Deckungsgrad</value>
+  </data>
+  <data name="PAUS_KRIT_D2" xml:space="preserve">
+    <value>Taktziel</value>
+  </data>
+  <data name="PAUS_KRIT_K9" xml:space="preserve">
+    <value>Festbrennstoff</value>
+  </data>
+  <data name="PAUS_KRIT_K9E" xml:space="preserve">
+    <value>Festbrennstoff nach DIN EN 303-5</value>
+  </data>
+  <data name="PAUS_KRIT_K10" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="PAUS_KRIT_KV" xml:space="preserve">
+    <value>Verschiebedauer BHKW</value>
+  </data>
+  <data name="PAUS_KRIT_B_SPEICHER" xml:space="preserve">
+    <value>Trinkwasserspeicher aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_KRIT_B_FRISCHWASSER" xml:space="preserve">
+    <value>Brauchwasser am Puffer (Station)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZONEN" xml:space="preserve">
+    <value>Vorschlag je Zone</value>
+  </data>
+  <data name="PAUS_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="PAUS_SPALTE_BEMESSEND" xml:space="preserve">
+    <value>bemessend</value>
+  </data>
+  <data name="PAUS_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="PAUS_ZONE_HEIZUNG" xml:space="preserve">
+    <value>Heizzone</value>
+  </data>
+  <data name="PAUS_ZONE_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasserzone</value>
+  </data>
+  <data name="PAUS_ZONE_PROZESS" xml:space="preserve">
+    <value>Prozesszone</value>
+  </data>
+  <data name="PAUS_SUMME" xml:space="preserve">
+    <value>Summe der Zonen</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG_ZEILE" xml:space="preserve">
+    <value>{0} l · {1} kWh nutzbar</value>
+  </data>
+  <data name="PAUS_KEIN_PUFFER" xml:space="preserve">
+    <value>kein Puffer erforderlich</value>
+  </data>
+  <data name="PAUS_UEBER_LISTENENDE" xml:space="preserve">
+    <value>über der Nenninhaltsliste auf das Raster gerundet</value>
+  </data>
+  <data name="PAUS_AN_PRAXISGRENZE" xml:space="preserve">
+    <value>an der Praxisgrenze gestoppt</value>
+  </data>
+  <data name="PAUS_KATALOGVORSCHLAG" xml:space="preserve">
+    <value>Katalogvorschlag</value>
+  </data>
+  <data name="PAUS_KATALOG_KEINER" xml:space="preserve">
+    <value>kein Katalogpuffer groß genug</value>
+  </data>
+  <data name="PAUS_GRUPPE_KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_TAG" xml:space="preserve">
+    <value>Starts je Tag</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_JAHR" xml:space="preserve">
+    <value>Starts je Heizperiode</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_TAG" xml:space="preserve">
+    <value>Bereitschaftsverlust bei 45 K</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_WK" xml:space="preserve">
+    <value>Wärmeverlustrate</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_JAHR" xml:space="preserve">
+    <value>Betriebsverlust</value>
+  </data>
+  <data name="PAUS_KZ_KAPAZITAET" xml:space="preserve">
+    <value>Nutzbare Kapazität</value>
+  </data>
+  <data name="PAUS_KZ_NUTZANTEIL" xml:space="preserve">
+    <value>Nutzbarer Anteil</value>
+  </data>
+  <data name="PAUS_KZ_FAUSTWERT" xml:space="preserve">
+    <value>Faustwert der Vorlage (Gegenprobe)</value>
+  </data>
+  <data name="PAUS_KZ_JE_PERSON" xml:space="preserve">
+    <value>Tagesbedarf je Person bei 60 °C</value>
+  </data>
+  <data name="PAUS_KZ_ZONENANTEIL" xml:space="preserve">
+    <value>Zonenanteil Heizung</value>
+  </data>
+  <data name="PAUS_KZ_SCHICHTEN" xml:space="preserve">
+    <value>Schichten mindestens</value>
+  </data>
+  <data name="PAUS_KZ_AUS_KATALOG" xml:space="preserve">
+    <value>aus dem Katalogsatz</value>
+  </data>
+  <data name="PAUS_KZ_KLASSE_C" xml:space="preserve">
+    <value>Grenze Klasse C</value>
+  </data>
+  <data name="PAUS_KZ_EXTRAPOLIERT" xml:space="preserve">
+    <value>extrapoliert</value>
+  </data>
+  <data name="PAUS_BAND" xml:space="preserve">
+    <value>Plausibilitätsband nach Übergabeart: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_BAND_WP" xml:space="preserve">
+    <value>Band nach Wärmepumpenleistung: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_GRUPPE_WARNUNGEN" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="PAUS_SPALTE_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="PAUS_SPALTE_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="PAUS_SPALTE_TEXT" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PAUS_SPALTE_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="PAUS_STUFE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PAUS_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="PAUS_WARNUNGEN_LEER" xml:space="preserve">
+    <value>keine Hinweise</value>
+  </data>
+  <data name="PAUS_ERGEBNIS_LEER" xml:space="preserve">
+    <value>Noch nicht gerechnet — „Auslegen und Ergebnis zeigen“ rechnet die Zonen.</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERNAHME" xml:space="preserve">
+    <value>Übernahme in den Projektpuffer</value>
+  </data>
+  <data name="PAUS_ZIEL" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="PAUS_ZIEL_AENDERN" xml:space="preserve">
+    <value>„{0}“ ändern</value>
+  </data>
+  <data name="PAUS_ZIEL_NEU" xml:space="preserve">
+    <value>neuen Pufferspeicher anlegen</value>
+  </data>
+  <data name="PAUS_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="PAUS_BEZEICHNER_MUSTER" xml:space="preserve">
+    <value>Pufferspeicher {0} l</value>
+  </data>
+  <data name="PAUS_UEBERNAHME_BLEIBT" xml:space="preserve">
+    <value>Schwellen und Temperaturpaar bleiben. Übernommen werden Volumen, Bereitschaftsverlust und Nutzung, beim Kombipuffer Schichten und Zonenanteile; die Sperrannahme nicht.</value>
+  </data>
+  <data name="PAUS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Auslegung speichern</value>
+  </data>
+  <data name="PAUS_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PAUS_MELDUNG_GESPEICHERT" xml:space="preserve">
+    <value>Auslegung gespeichert.</value>
+  </data>
+  <data name="PAUS_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Übernommen: „{0}“ mit {1} l.</value>
+  </data>
+  <data name="PAUS_GRUND_KEINE_EMPFEHLUNG" xml:space="preserve">
+    <value>Die Auslegung empfiehlt keinen Puffer — es gibt nichts zu übernehmen.</value>
+  </data>
+  <data name="PAUS_GRUND_BEZEICHNER" xml:space="preserve">
+    <value>Für einen neuen Speicher eine Bezeichnung eingeben.</value>
+  </data>
+  <data name="PAUS_GRUND_SCHREIBFEHLER" xml:space="preserve">
+    <value>Der Pufferspeicher konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="PAUS_GRUND_SPEICHERN" xml:space="preserve">
+    <value>Die Auslegung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PAUS_FEHLER_RECHNEN" xml:space="preserve">
+    <value>Die Auslegung ist nicht rechenbar: {0}</value>
+  </data>
+  <data name="PAUS_FEHLER_START" xml:space="preserve">
+    <value>Die Auslegung kann nicht vorbelegt werden: {0}</value>
+  </data>
+  <data name="PAUS_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Pufferspeicher-Auslegung ist hier nicht verfügbar.</value>
+  </data>
+  <data name="PAUS_BTN_AUSLEGEN" xml:space="preserve">
+    <value>Auslegen…</value>
+  </data>
+  <data name="PAUS_AUSLEGEN_VERWIRFT" xml:space="preserve">
+    <value>„Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung.</value>
+  </data>
+  <data name="PAUS_BTN_KONFIG" xml:space="preserve">
+    <value>Pufferspeicher auslegen…</value>
+  </data>
+  <data name="PAUS_EINSTIEG_KONFIG" xml:space="preserve">
+    <value>geöffnet aus ① Konfiguration</value>
+  </data>
+  <data name="PAUS_EINSTIEG_VERWALTUNG" xml:space="preserve">
+    <value>geöffnet aus der Pufferverwaltung</value>
+  </data>
+  <data name="PAUS_EINSTIEG_ZAPFPROFIL" xml:space="preserve">
+    <value>geöffnet aus der Zapfprofil-Auslegung</value>
+  </data>
+  <data name="PAUS_ZAPF_UEBERGEBEN" xml:space="preserve">
+    <value>Zapfprofil-Auslegung übergeben ({0})</value>
+  </data>
+  <data name="PAUS_UEBERGABE_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>ein Pufferspeicher wurde aus der Auslegung übernommen</value>
+  </data>
+  <data name="PA_KEIN_PUFFER" xml:space="preserve">
+    <value>Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich.</value>
+  </data>
+  <data name="PA_BAND_UNTER" xml:space="preserve">
+    <value>Das Volumen der Heizzone liegt unter dem Plausibilitätsband der Übergabeart.</value>
+  </data>
+  <data name="PA_BAND_UEBER" xml:space="preserve">
+    <value>Das Volumen der Heizzone liegt über dem Plausibilitätsband der Übergabeart.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG" xml:space="preserve">
+    <value>Trinkwasservorrang: Es fehlt Abtaureserve für die Heizung.</value>
+  </data>
+  <data name="PA_STARTS_TAG" xml:space="preserve">
+    <value>Die Starts je Tag liegen über der Warnschwelle.</value>
+  </data>
+  <data name="PA_STARTS_JAHR" xml:space="preserve">
+    <value>Die Starts je Heizperiode liegen über der Hinweisschwelle.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE" xml:space="preserve">
+    <value>Die Praxisgrenze ist erreicht: Ein Ziel ist mit dem größten Puffer nicht zu halten, oder die Summe ist ein Saisonalspeicher.</value>
+  </data>
+  <data name="PA_EXTRAPOLATION" xml:space="preserve">
+    <value>Der Bereitschaftsverlust ist über den Geltungsbereich der Klasse-C-Grenze hinaus extrapoliert.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK" xml:space="preserve">
+    <value>Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau).</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT" xml:space="preserve">
+    <value>Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt.</value>
+  </data>
+  <data name="PA_HYGIENE_W551" xml:space="preserve">
+    <value>Trinkwasserspeicher einer Großanlage: Anforderungen an die Trinkwasserhygiene beachten.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR" xml:space="preserve">
+    <value>Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT" xml:space="preserve">
+    <value>Die Brauchwasserzone übersteigt ein Vielfaches des Tagesbedarfs.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT" xml:space="preserve">
+    <value>Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI" xml:space="preserve">
+    <value>Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT" xml:space="preserve">
+    <value>Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.</value>
+  </data>
+  <data name="PA_KEINE_REIHE" xml:space="preserve">
+    <value>Eine Bedarfsreihe ist leer: Die Kriterien auf dem Lastgang entfallen für diese Zone.</value>
+  </data>
+  <data name="KI_DLG_PAUS_KLASSE_ERL" xml:space="preserve">
+    <value>Schaltet die Zone der Speicherklasse ein oder aus; jede Klasse bemisst ihre Zone nach eigenem Verfahren.</value>
+  </data>
+  <data name="KI_DLG_PAUS_VORLAGE_ERL" xml:space="preserve">
+    <value>Die Vorlage der Anlage schaltet die Kriterien der Heizzone und belegt Beispielwerte.</value>
+  </data>
+  <data name="KI_DLG_PAUS_GEREGELT_ERL" xml:space="preserve">
+    <value>Leistungsgeregelte Wärmepumpen brauchen kleinere Puffer (Faustwert 3 statt 20 l je kW).</value>
+  </data>
+  <data name="KI_DLG_PAUS_ZWEIT_ERL" xml:space="preserve">
+    <value>Ein in der Sperre freigegebener Zweiterzeuger lässt das Sperrzeitkriterium entfallen; ein Heizstab ist mitgesperrt.</value>
+  </data>
+  <data name="KI_DLG_PAUS_UEBERGABE_ERL" xml:space="preserve">
+    <value>Die Übergabeart wählt Stillstandzeit und Untergrenze der Sperrzeitformel und das Plausibilitätsband.</value>
+  </data>
+  <data name="KI_DLG_PAUS_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Die Heizgrenze wählt die akzeptable Stillstandzeit der Sperrzeitformel; leer = 15 °C.</value>
+  </data>
+  <data name="KI_DLG_PAUS_ANLAGENVOLUMEN_ERL" xml:space="preserve">
+    <value>Das dauerhaft durchströmte Volumen der Anlage wird von der Sperrzeit abgezogen; leer = Vorgabe nach Übergabeart.</value>
+  </data>
+  <data name="KI_DLG_PAUS_SPERRPROFIL_ERL" xml:space="preserve">
+    <value>Die Sperrzeiten des Netzbetreibers je Tag als neutrales Profil.</value>
+  </data>
+  <data name="KI_DLG_PAUS_STARTZIEL_ERL" xml:space="preserve">
+    <value>Höchstens so viele Starts je Tag soll der Erzeuger mit dem Puffer machen; leer = Vorgabe der Vorlage.</value>
+  </data>
+  <data name="KI_DLG_PAUS_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Start des Erzeugers für das Kriterium Mindestlaufzeit; leer = Vorgabe der Vorlage.</value>
+  </data>
+  <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
+    <value>Der Deckungsgrad, den die Durchlaufbilanz mit dem Puffer erreichen soll, in Prozent; leer = 100 %.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GESCHAETZT" xml:space="preserve">
+    <value>Trenndecke {0}/{1}: Die Datei referenziert nicht alle Deckenteile — Fläche aus den Raummengen geschätzt: {2} m² (kleinere beheizte Grundfläche der beiden Geschosse) statt {3} m² referenziert; U-Wert und Aufbau aus den referenzierten Teilen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
+    <value>Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen.</value>
   </data>
 </root>
 

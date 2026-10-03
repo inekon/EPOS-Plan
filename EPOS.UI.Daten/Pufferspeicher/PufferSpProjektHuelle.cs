@@ -39,12 +39,26 @@ namespace WindowsFormsApplication1
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn die beiden
         /// Überlagerungen der Wellen W10a.5 und W10a.7 nehmen können.
         /// </summary>
+        /// <param name="auslegen">
+        /// Der Weg des Knopfs „Auslegen…" (Stufe P2, Puffer-ID, <c>0</c> = neuer Speicher); <c>null</c> =
+        /// die freie Ansicht ohne Nachzug (Überlagerungen in Quellen- und Senkendialog).
+        /// </param>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            int idProjekt, string verwendung, int idPuffer)
+            int idProjekt, string verwendung, int idPuffer, Action<int> auslegen = null)
         {
             return new Dictionary<string, object>
             {
                 ["IdProjekt"] = idProjekt,
+                // Stufe P2: „Auslegen…" oeffnet die Pufferspeicher-Auslegung als freie Ansicht der
+                // Wurzel fuer den gewaehlten Speicher; der Dialog verlaesst sich dabei wie Abbrechen.
+                ["AuslegenOeffnen"] = auslegen ?? (id => PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+                {
+                    IdProjekt = idProjekt,
+                    IdPuffer = id > 0 ? id : (int?)null,
+                    Einstieg = MyResource.Resource.PAUS_EINSTIEG_VERWALTUNG
+                })),
+                ["BtnAuslegen"] = MyResource.Resource.PAUS_BTN_AUSLEGEN,
+                ["HinweisAuslegen"] = MyResource.Resource.PAUS_AUSLEGEN_VERWIRFT,
                 ["Verwendung"] = verwendung ?? "",
                 ["IdPuffer"] = idPuffer,
                 ["Dienste"] = Dienste(idProjekt),
@@ -138,6 +152,23 @@ namespace WindowsFormsApplication1
                 ["FehlerNachrangUnterEin"] = MyResource.Resource.PSP_FEHLER_NACHRANG_UNTER_EIN,
                 ["FehlerReserveUeberAus"] = MyResource.Resource.PSP_FEHLER_RESERVE_UEBER_AUS,
                 ["FehlerHoehe"] = MyResource.Resource.PSP_FEHLER_HOEHE,
+                // Welle M7: Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul, Hinweis HK4.
+                ["GruppeOptionen"] = MyResource.Resource.PSP_GRUPPE_OPTIONEN,
+                ["LabelBereitschaftWeg"] = MyResource.Resource.PSP_LABEL_BEREITSCHAFT_WEG,
+                ["BereitschaftTag"] = MyResource.Resource.PSP_BEREITSCHAFT_TAG,
+                ["BereitschaftTemperatur"] = MyResource.Resource.PSP_BEREITSCHAFT_TEMPERATUR,
+                ["LabelAufstellraum"] = MyResource.Resource.PSP_LABEL_AUFSTELLRAUM,
+                ["HinweisAufstellraum"] = MyResource.Resource.PSP_HINWEIS_AUFSTELLRAUM,
+                ["LabelSchichtAnteile"] = MyResource.Resource.PSP_LABEL_SCHICHT_ANTEILE,
+                ["BtnVorschlagKombi"] = MyResource.Resource.PSP_BTN_VORSCHLAG_KOMBI,
+                ["HinweisAnteile"] = MyResource.Resource.PSP_HINWEIS_ANTEILE,
+                ["LabelFrischwassermodul"] = MyResource.Resource.PSP_LABEL_FRISCHWASSERMODUL,
+                ["LabelFwmGraedigkeit"] = MyResource.Resource.PSP_LABEL_FWM_GRAEDIGKEIT,
+                ["HinweisFwm"] = MyResource.Resource.PSP_HINWEIS_FWM,
+                ["HinweisUebertrager"] = MyResource.Resource.PSP_HINWEIS_UEBERTRAGER,
+                ["FehlerAufstellraum"] = MyResource.Resource.PSP_FEHLER_AUFSTELLRAUM,
+                ["FehlerFwmGraedigkeit"] = MyResource.Resource.PSP_FEHLER_FWM_GRAEDIGKEIT,
+                ["FehlerAnteile"] = MyResource.Resource.PSP_FEHLER_ANTEILE,
                 ["FehlerLambdaEff"] = MyResource.Resource.PSP_FEHLER_LAMBDA_EFF,
                 ["FehlerTNutzBW"] = MyResource.Resource.PSP_FEHLER_T_NUTZ_BW,
                 ["FehlerEntnahmehoehe"] = MyResource.Resource.PSP_FEHLER_ENTNAHMEHOEHE,
@@ -302,7 +333,8 @@ namespace WindowsFormsApplication1
             return new PspSchichtdaten(
                 PufferSpCtrl.SchichtenKlemmen(s.Schichten), s.Hoehe, s.LambdaEff, s.TNutzBW,
                 s.EntnahmeHeizung, s.EntnahmeBW, s.EntnahmeProzess,
-                s.LadeleistungMax, s.EntladeleistungMax);
+                s.LadeleistungMax, s.EntladeleistungMax,
+                s.BereitschaftWeg, s.AufstellraumC, s.SchichtAnteile, s.Frischwassermodul, s.FwmGraedigkeitK);
         }
 
         private static PufferSpCtrl.Schichtdaten Schichtdaten(PspSchichtdaten s)
@@ -319,6 +351,11 @@ namespace WindowsFormsApplication1
             d.EntnahmeProzess = s.EntnahmeProzess;
             d.LadeleistungMax = s.LadeleistungMax;
             d.EntladeleistungMax = s.EntladeleistungMax;
+            d.BereitschaftWeg = s.BereitschaftWeg;
+            d.AufstellraumC = s.AufstellraumC;
+            d.SchichtAnteile = s.SchichtAnteile;
+            d.Frischwassermodul = s.Frischwassermodul;
+            d.FwmGraedigkeitK = s.FwmGraedigkeitK;
             return d;
         }
 

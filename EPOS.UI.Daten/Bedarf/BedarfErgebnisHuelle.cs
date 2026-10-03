@@ -192,7 +192,10 @@ namespace WindowsFormsApplication1
             };
 
             Zeichenmodell jahresmodell = null;
-            bool zapfprofil = mitBrauchwasser && simulation.Zapfprofil != null;
+            // Zapfung und Zirkulation getrennt: auf dem Zapfprofilweg und auf dem Bestandsweg mit
+            // Zirkulation (Entscheidungsvorlage Modellgrenzen BW4) - derselbe Posten, derselbe Stapel.
+            bool zapfprofil = mitBrauchwasser &&
+                              (simulation.Zapfprofil != null || simulation.Brauchwasser_Zirkulation_Mwh > 0);
             if (mitBrauchwasser)
             {
                 Monatssicht brauchwasser = Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
@@ -265,6 +268,17 @@ namespace WindowsFormsApplication1
                 liste.Insert(summe < 0 ? liste.Count : summe,
                              Energie(Text_("BERG_LBL_DAVON_ZIRKULATION", "davon Zirkulation:"),
                                      simulation.Brauchwasser_Zirkulation_Mwh, Energieeinheit.MWh));
+                daten.Kennzahlen = liste;
+            }
+            if (mitBrauchwasser && simulation.Brauchwasser_Desinfektion_Mwh > 0)
+            {
+                // Die thermische Desinfektion (BW5, Konzept Simulationsablauf 21) als eigener Posten VOR der
+                // Summe: Sie steht im Brauchwasserkanal, nicht im Profilanteil darüber.
+                var liste = new List<ErgebnisKennzahl>(daten.Kennzahlen);
+                int summe = liste.FindIndex(k => k.Art == Kennzahlart.Summe);
+                liste.Insert(summe < 0 ? liste.Count : summe,
+                             Energie(Text_("BERG_LBL_DAVON_DESINFEKTION", "davon thermische Desinfektion:"),
+                                     simulation.Brauchwasser_Desinfektion_Mwh, Energieeinheit.MWh));
                 daten.Kennzahlen = liste;
             }
             return daten;

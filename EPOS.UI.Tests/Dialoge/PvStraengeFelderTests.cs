@@ -286,6 +286,63 @@ public class PvStraengeFelderTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>B2 (Verbesserungen 29.09.2026):</b> Die Zeile des Weges „vereinfacht" sagt je
+    /// Rechenmodell, was gilt. Im Modell „Einfach" der feste Wirkungsgrad ohne Clipping;
+    /// im Modell „Erweitert" regelt EPOS-Plan ab, sobald eine AC-Nennleistung
+    /// eingetragen ist — dort darf die Zeile nicht „ohne Clipping" behaupten.
+    /// </summary>
+    [Fact]
+    public void B2_Der_Clipping_Hinweis_folgt_dem_Rechenmodell()
+    {
+        var einfach = Aufbauen(Zeile(), hersteller: HERSTELLER, filtern: Filtern);
+        string t = einfach.Find(".epos-strangrueckfall").TextContent;
+        Assert.Contains("Einfach", t, StringComparison.Ordinal);
+        Assert.Contains("ohne Clipping", t, StringComparison.Ordinal);
+        Assert.Contains("wirken in diesem Modell nicht", t, StringComparison.Ordinal);
+
+        var mitAc = Zeile();
+        mitAc.ModellErweitert = true;
+        mitAc.WrNennleistungKw = 2.5;
+        t = Aufbauen(mitAc, hersteller: HERSTELLER, filtern: Filtern).Find(".epos-strangrueckfall").TextContent;
+        Assert.Contains("Erweitert", t, StringComparison.Ordinal);
+        Assert.Contains("2,50 kW", t, StringComparison.Ordinal);
+        Assert.Contains("regelt", t, StringComparison.Ordinal);
+        Assert.DoesNotContain("ohne Clipping", t, StringComparison.Ordinal);
+
+        var ohneAc = Zeile();
+        ohneAc.ModellErweitert = true;
+        t = Aufbauen(ohneAc, hersteller: HERSTELLER, filtern: Filtern).Find(".epos-strangrueckfall").TextContent;
+        Assert.Contains("ohne AC-Nennleistung", t, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>B2:</b> Im Modell „Einfach" wirken die vier Anlagenwerte nicht — die Felder der
+    /// Überlagerung sind gesperrt, und die Kopfzeile sagt es. Im Modell „Erweitert" sind
+    /// sie frei.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void B2_Die_Anlagenwerte_sind_im_Modell_Einfach_gesperrt(bool erweitert)
+    {
+        var zeile = Zeile();
+        zeile.ModellErweitert = erweitert;
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern);
+
+        cut.Find(".epos-straenge-anlagenknopf").Click();
+
+        string[] namen = { "WrNennleistung", "WrEta10", "WrEta50", "WrEta100" };
+        var felder = cut.FindComponents<Zahlenfeld>()
+                        .Where(f => Array.IndexOf(namen, f.Instance.Feldname) >= 0)
+                        .ToList();
+        Assert.Equal(4, felder.Count);
+        Assert.All(felder, f => Assert.Equal(erweitert, f.Instance.Aktiv));
+
+        if (!erweitert)
+            Assert.Contains("gesperrt", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>W6‑B‑3:</b> Das Gerät der Katalogwahl geht in den NEUEN Strang — genau das
     /// ist der Sinn der Zeile über der Tabelle. Übernommen (<c>CopyFromStamm</c>) wird
     /// es dabei, nicht schon beim Blättern in der Klappliste.

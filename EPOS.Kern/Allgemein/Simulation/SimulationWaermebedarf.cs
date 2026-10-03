@@ -31,11 +31,34 @@ namespace WindowsFormsApplication1
         public double Waermebedarf_Brauchwasser = 0;
 
         /// <summary>
-        /// Zapfprofilgenerator (Umsetzungskonzept Zapfprofilgenerator 2.2): Jahresverlust der
-        /// Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe mitläuft — auf dem
-        /// Bestandsweg 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND Zirkulation.
+        /// Jahresverlust der Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe
+        /// mitläuft: auf dem Generatorweg die Zirkulation des Zapfprofilgenerators
+        /// (Umsetzungskonzept Zapfprofilgenerator 2.2), auf dem Bestandsweg die feste Leistung in
+        /// Laufstunden aus der Projekteinstellung (<see cref="Netzverlustvorgabe"/>, Konzept
+        /// Simulationsablauf 17), sonst 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND
+        /// Zirkulation.
         /// </summary>
         public double Brauchwasser_Zirkulation_Mwh = 0;
+
+        /// <summary>
+        /// Jahresmenge der thermischen Desinfektion [MWh] (BW5; Konzept Simulationsablauf 21): ein eigener
+        /// Posten des Brauchwasserkanals, <c>Q = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000</c> je
+        /// Ereignis. 0 ohne Desinfektion. Er steht im Kanal, nicht in <see cref="Waermebedarf_Brauchwasser"/>
+        /// (dem Profilanteil).
+        /// </summary>
+        public double Brauchwasser_Desinfektion_Mwh = 0;
+
+        /// <summary>Stundenreihe der Desinfektion [kWh]; 0 ohne Desinfektion.</summary>
+        public double[] Brauchwasser_Desinfektion_stuendlich = new double[8760];
+
+        /// <summary>Monatssummen der Desinfektion [MWh].</summary>
+        public double[] Waermebedarf_Brauchwasser_Desinfektion_Monat = new double[12];
+
+        /// <summary>Zahl der Desinfektionen im Jahr; 0 ohne Desinfektion.</summary>
+        public int DesinfektionEreignisse = 0;
+
+        /// <summary>Zieltemperatur der Desinfektion im Lauf [°C]; NaN ohne Desinfektion.</summary>
+        public double DesinfektionZielC = double.NaN;
 
         /// <summary>
         /// Monatssummen der Zirkulation [MWh] (<c>BhkwPlan.MonatsSumme</c>) für den Monatsstapel
@@ -84,6 +107,15 @@ namespace WindowsFormsApplication1
         /// (Jahr, Woche, Tag) und wird im Rechenweg nicht gelesen.
         /// </summary>
         public double[] Waermebedarf_Prozess_Stunde = new double[8760];
+
+        /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (PW1 Stufe 1): höchster geforderter Vorlauf
+        /// und mengengewichteter Rücklauf je Stunde, gebildet in <see cref="Prozesswaerme_berechnen"/>
+        /// aus den Profilen mit Temperaturpaar. <c>null</c>, solange kein Profil des Projekts ein Paar
+        /// trägt — dann rechnet der Lauf Zeichen für Zeichen wie ohne Temperaturniveau. Nur die
+        /// Projektrechnung bildet es; die Vorschau des Dialogs kennt keine Erzeuger.
+        /// </summary>
+        public Prozesstemperatur ProzessTemperatur;
 
         /// <summary>
         /// HEIZKANAL je Stunde [kWh] (Gebäudewärme samt Heizungs-Lastgängen) vor der
@@ -256,6 +288,68 @@ namespace WindowsFormsApplication1
 
         private string _anlagenkopplungProjekt;
         private bool _anlagenkopplungGelesen;
+
+        /// <summary>
+        /// Die Aufheizoptimierung dieses Projekts (<c>Tab_Einstellungen.Aufheizoptimierung</c> und
+        /// <c>Aufheiz_*</c>, Schemaschritt KP-S2; Entwurf KP3, Grundsatz 5) — gelesen EINMAL je Lauf und
+        /// Auskunft (zurückgesetzt in <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und
+        /// fehlende Spalte heißen „aus" (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>).
+        ///
+        /// <para><b>Der Leser im Rechenweg</b> ist <see cref="Vdi6007Rechenweg.Aufheizvorgabe"/>, gesetzt in
+        /// <see cref="HeizwaermeEinesGebaeudes"/> neben <c>_vdi6007.Kuehlbetrieb</c> (Welle R2). Der Setter
+        /// dient als Testnaht; <c>null</c> setzt „aus".</para>
+        /// </summary>
+        internal Aufheizvorgabe AufheizvorgabeProjekt
+        {
+            get
+            {
+                if (_aufheizvorgabeProjekt == null)
+                    _aufheizvorgabeProjekt = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+                return _aufheizvorgabeProjekt;
+            }
+            set { _aufheizvorgabeProjekt = value ?? Aufheizvorgabe.Aus; }
+        }
+
+        private Aufheizvorgabe _aufheizvorgabeProjekt;
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation im Bestandsweg dieses Projekts
+        /// (<c>Tab_Einstellungen</c>, <see cref="BedarfNetzKalenderSchema"/>; Entscheidungsvorlage
+        /// Modellgrenzen BW4) — gelesen EINMAL je Lauf und Auskunft (zurückgesetzt in
+        /// <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und fehlende Spalte heißen
+        /// „leer", und leer rechnet wie zuvor (<see cref="KonfigurationCtrl.NetzverlustvorgabeLesen"/>).
+        /// Der Setter dient als Testnaht; <c>null</c> setzt „leer".
+        /// </summary>
+        internal Netzverlustvorgabe NetzverlustvorgabeProjekt
+        {
+            get
+            {
+                if (_netzverlustvorgabeProjekt == null)
+                    _netzverlustvorgabeProjekt = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
+                return _netzverlustvorgabeProjekt;
+            }
+            set { _netzverlustvorgabeProjekt = value ?? Netzverlustvorgabe.Leer; }
+        }
+
+        private Netzverlustvorgabe _netzverlustvorgabeProjekt;
+
+        /// <summary>
+        /// Die thermische Desinfektion dieses Projekts (<c>Tab_Einstellungen</c>, <see cref="PufferOptionenSchema"/>;
+        /// BW5) — gelesen EINMAL je Lauf und Auskunft, dialogfrei; fehlende Zeile und Spalte heißen „aus".
+        /// Der Setter dient als Testnaht; <c>null</c> setzt „aus".
+        /// </summary>
+        internal Desinfektionsvorgabe DesinfektionsvorgabeProjekt
+        {
+            get
+            {
+                if (_desinfektionsvorgabeProjekt == null)
+                    _desinfektionsvorgabeProjekt = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt);
+                return _desinfektionsvorgabeProjekt;
+            }
+            set { _desinfektionsvorgabeProjekt = value ?? Desinfektionsvorgabe.Aus; }
+        }
+
+        private Desinfektionsvorgabe _desinfektionsvorgabeProjekt;
 
         /// <summary>
         /// Der projektierte Vorlauf des Heizkanals [°C] — der feste Vorlauf gekoppelter Gebäude
@@ -633,30 +727,46 @@ namespace WindowsFormsApplication1
             Waermebedarf_Gesamt = Waermebedarf.Sum() / 1000;
 
 
-            double stundl_netzverluste = 0;
-            if (Netzverluste_Einheit == "%")
+            // NETZVERLUSTE JE KANAL (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+            // Simulationsablauf 17): Ist mindestens ein Kanalwert gesetzt, gilt je Kanal sein Wert
+            // als fester Stundenbetrag auf diesen Kanal - ein leerer Kanal traegt 0 -, und der
+            // Projektwert gilt nicht. Ohne Kanalwert laeuft der Zweig darunter wie zuvor.
+            Netzverlustvorgabe kanalvorgabe = NetzverlustvorgabeProjekt;
+            if (kanalvorgabe.JeKanal)
             {
-                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (double)876000;
-                Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
+                NetzverlusteJeKanal(kanalvorgabe, probe);
             }
             else
             {
-                stundl_netzverluste = (double)Netzverluste / (double)8760;
+                double stundl_netzverluste = 0;
+                if (Netzverluste_Einheit == "%")
+                {
+                    stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (double)876000;
+                    Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
+                }
+                else
+                {
+                    stundl_netzverluste = (double)Netzverluste / (double)8760;
 
-                // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
-                // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
-                // Prozent-Zweig. Bisher blieb das Feld hier auf 0, obwohl NetzverlusteC die
-                // Energie auf alle 8760 Stunden addierte: der Bilanzausweis war falsch.
-                Waermebedarf_Netzverluste = (double)stundl_netzverluste * 8760 / 1000;
+                    // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
+                    // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
+                    // Prozent-Zweig. Bisher blieb das Feld hier auf 0, obwohl NetzverlusteC die
+                    // Energie auf alle 8760 Stunden addierte: der Bilanzausweis war falsch.
+                    Waermebedarf_Netzverluste = (double)stundl_netzverluste * 8760 / 1000;
+                }
+
+                //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
+                // F2 (entschieden 27.08.2026): Der konstante Stundenbetrag ist derselbe wie
+                // bisher, er geht aber nicht mehr geschlossen in den (Heiz-)Summenvektor,
+                // sondern je Stunde ANTEILIG auf die drei Kanäle. Bei Kanalsumme 0 vollständig
+                // auf den Heizkanal - siehe Kanalsatz.NetzverlusteVerteilen.
+                _kanaele.NetzverlusteVerteilen(stundl_netzverluste);
+                for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
             }
 
-            //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
-            // F2 (entschieden 27.08.2026): Der konstante Stundenbetrag ist derselbe wie
-            // bisher, er geht aber nicht mehr geschlossen in den (Heiz-)Summenvektor,
-            // sondern je Stunde ANTEILIG auf die drei Kanäle. Bei Kanalsumme 0 vollständig
-            // auf den Heizkanal - siehe Kanalsatz.NetzverlusteVerteilen.
-            _kanaele.NetzverlusteVerteilen(stundl_netzverluste);
-            for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
+            // THERMISCHE DESINFEKTION (BW5; Konzept Simulationsablauf 21): NACH den Netzverlusten - sie ist
+            // ein Aufheizen des Speichers, kein Verteilverlust. Ohne Desinfektion bleibt der Kanal, wie er ist.
+            BrauchwasserDesinfektion(probe);
 
             // Die beiden öffentlichen Bedarfsvektoren sind ab jetzt die KANÄLE inklusive
             // ihres Netzverlustanteils (gewollte F2-Wirkung, siehe Feldkommentare). Die
@@ -727,6 +837,40 @@ namespace WindowsFormsApplication1
         /// (<c>SimulationControl</c>, <c>Form_Simulation_Detail</c>), und eine
         /// Neubelegung würde dort auf einen veralteten Vektor zeigen lassen.
         /// </summary>
+        /// <summary>
+        /// <b>Netzverluste je Kanal</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf 17). Je Wärmekanal k (Heizung, Brauchwasser, Prozess) ein fester
+        /// Stundenbetrag auf genau diesen Kanal: in Prozent <c>Q_k · p_k / 100 / 8760</c> mit dem
+        /// Jahresbedarf Q_k des Kanals VOR dem Aufschlag (beim Brauchwasser samt Zirkulation), als
+        /// feste Menge <c>W_k / 8760</c>; ein leerer Kanal trägt 0. Der Projektwert
+        /// (<see cref="Netzverluste"/>) gilt nicht, und es wird nichts zwischen den Kanälen verteilt.
+        /// <see cref="Waermebedarf_Netzverluste"/> weist die Summe der drei Jahresmengen in MWh aus.
+        /// </summary>
+        private void NetzverlusteJeKanal(Netzverlustvorgabe vorgabe, double[] probe)
+        {
+            int[] kanaele = { Kanal.HEIZUNG, Kanal.BRAUCHWASSER, Kanal.PROZESS };
+            double[] betrag = new double[kanaele.Length];
+            double summe = 0;
+            for (int i = 0; i < kanaele.Length; i++)
+            {
+                double jahresbedarf = 0;
+                double[] reihe = _kanaele.Bedarf[kanaele[i]];
+                for (int h = 0; h < 8760; h++) jahresbedarf += reihe[h];
+                betrag[i] = vorgabe.BetragJeStunde(kanaele[i], jahresbedarf);
+                summe += betrag[i];
+            }
+            for (int i = 0; i < kanaele.Length; i++)
+            {
+                _kanaele.KanalverlustAufschlagen(kanaele[i], betrag[i]);
+                for (int h = 0; h < 8760; h++) probe[h] += betrag[i];
+            }
+            Waermebedarf_Netzverluste = summe * 8760 / 1000;
+
+            SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_NETZVERLUSTE_JE_KANAL,
+                betrag[0] * 8760 / 1000, betrag[1] * 8760 / 1000, betrag[2] * 8760 / 1000));
+        }
+
         private void SummenvektorAusKanaelen()
         {
             double[] summe = _kanaele.Summe();
@@ -856,6 +1000,14 @@ namespace WindowsFormsApplication1
             // Auskunft - hier neu, aus demselben Grund.
             _anlagenkopplungGelesen = false;
             _anlagenkopplungProjekt = null;
+
+            // AUFHEIZOPTIMIERUNG (KP3): die Projekteinstellung gilt je Lauf bzw. Auskunft - hier neu,
+            // aus demselben Grund.
+            _aufheizvorgabeProjekt = null;
+
+            // NETZVERLUSTE JE KANAL UND ZIRKULATION (BW4): je Lauf bzw. Auskunft neu, aus demselben Grund.
+            _netzverlustvorgabeProjekt = null;
+            _desinfektionsvorgabeProjekt = null;
             _anlagenVorlaufGelesen = false;
             _anlagenVorlaufC = double.NaN;
             _kuehlVorlaufGelesen = false;
@@ -946,22 +1098,7 @@ namespace WindowsFormsApplication1
             KlimakalenderGemeinsam gemeinsam = vorbereitung.Klimakalender.Gemeinsam;
             double verbrauchAltKwh;
 
-            // KÜHLUNG (KU1, K11): Der VDI-Weg regelt auf Kühlsollwert und Kühlleistungsgrenze
-            // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
-            // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
-            _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
-
-            // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
-            // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
-            // Anlagendaten. Ohne Stufe rechnet jedes Gebäude wie bisher.
-            string stufe = AnlagenkopplungProjekt;
-            _vdi6007.Anlagenkopplung = stufe;
-            _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
-            // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
-            _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
-                ? KuehlVorlaufAnlageC : double.NaN;
-            _vdi6007.NennleistungSkalierung = 1.0;
-            _vdi6007.Probelauf = false;
+            VdiWegEinstellen();
 
             // STUFE G3 (Konzept 4.7, E8): Ein Gebäude mit Zone trägt seine echte Hülle - ein
             // Lauf, keine Nachmultiplikation, keine Verbrauchs-Rückrechnung. Ohne Zone bleibt
@@ -1015,6 +1152,108 @@ namespace WindowsFormsApplication1
             // 4. Der Lauf auf der Bezugsfläche des Gebäudes.
             return weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh);
         }
+
+        /// <summary>
+        /// Die Projektschalter an den VDI-Weg — vor jeder Gebäuderechnung und vor der Auskunft der
+        /// Aufheizbemessung (<see cref="AufheizbemessungEinesGebaeudes"/>), damit beide denselben Weg sehen.
+        /// </summary>
+        private void VdiWegEinstellen()
+        {
+            // KÜHLUNG (KU1, K11): Der VDI-Weg regelt auf Kühlsollwert und Kühlleistungsgrenze
+            // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
+            // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
+            _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
+            _vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt;
+
+            // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
+            // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
+            // Anlagendaten. Ohne Stufe rechnet jedes Gebäude wie bisher.
+            string stufe = AnlagenkopplungProjekt;
+            _vdi6007.Anlagenkopplung = stufe;
+            _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
+            // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
+            _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
+                ? KuehlVorlaufAnlageC : double.NaN;
+            _vdi6007.NennleistungSkalierung = 1.0;
+            _vdi6007.Probelauf = false;
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizbemessung EINES Gebäudes ohne Jahreslauf</b> (Entwurf KP3, Welle D2; Grundsatz 3,
+        /// Festlegung 3: eine Bemessung, zwei Verwendungen; B14) — die Auskunft der Herleitungszeile. Gebaut wird
+        /// wie im Lauf: dieselben Schalter (<see cref="VdiWegEinstellen"/>), derselbe Eingang mit dem
+        /// Konditionierungssatz (<see cref="Vdi6007Rechenweg.EingangBauen"/>; <see cref="UebergabeEingang"/> baut
+        /// ohne Satz und zeigte mit Heizkalender eine andere Rampe) bzw. dieselben Zonen samt 4-K-Regel
+        /// (<see cref="Vdi6007Rechenweg.ZonenBauen"/>), dieselbe Planung (<see cref="Aufheizoptimierung.Planen"/>,
+        /// sie ruft <see cref="Aufheizoptimierung.Bemessen"/>) mit der Projektvorgabe und der Testnaht des Wegs,
+        /// im Mehrzonenweg dieselben Gebäudewerte (<see cref="Aufheizoptimierung.Gebaeudewerte"/>, Festlegung 22).
+        /// Damit ist jede Zahl bitgleich zur Ergebniszeile des Laufs (<c>AufheizAuskunftTests</c>).
+        ///
+        /// <para><b>Faktor</b> (Festlegung 16, B11): bei Flächenangabe dieselbe Division wie der Lauf
+        /// (<c>Z_AuswahlWohnflaeche / Nutzflaeche</c>), mit Zone 1, mit Verbrauchsangabe offen — die
+        /// Rückrechnung braucht den Jahreslauf. Eine fest eingetragene Nennleistung der Übergabe geht nicht ein:
+        /// Ein gekoppeltes Gebäude wird nicht optimiert (GEKOPPELT), die Kälteseite bemisst nicht mit.</para>
+        ///
+        /// <para>Voraussetzung ist <see cref="KlimakalenderLesen"/>; liest die Projektvorgabe, schreibt nichts
+        /// und rechnet kein Jahr des Gebäudes (im Mehrzonenweg mit Regelpaaren nur den adiabaten Vorlauf der
+        /// 4-K-Regel, den die Zonen des Laufs ebenso brauchen).</para>
+        /// </summary>
+        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            var leer = new Aufheizauskunft { ID_Gebaeude = item.ID_Gebaeude, Gebaeudename = item.Gebaeudename ?? "" };
+            if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007)) return leer with { Tagesbilanz = true };
+
+            VdiWegEinstellen();
+            Aufheizvorgabe vorgabe = _vdi6007.Aufheizvorgabe;
+            if (vorgabe == null || !vorgabe.An) return leer;
+            KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
+            try
+            {
+                if (Vdi6007Rechenweg.Mehrzonenweg(item))
+                {
+                    IReadOnlyList<ZonenEingang> zonen = _vdi6007.ZonenBauen(item, gemeinsam, 0);
+                    Aufheizgebaeude g = Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
+                    double? p = Endlich(g.AufheizleistungW / 1000.0);
+                    // Ein Gebäude mit Zonen trägt seine echte Hülle: Faktor 1, P_auf unskaliert wie im Lauf.
+                    // E59: Zustand und t_auf,max der BEMESSUNG, daneben Art, manuelle Zeit und τ₂ (Festlegungen 39, 40).
+                    return leer with
+                    {
+                        Zustand = g.Gekoppelt ? g.Zustand : g.BemessungZustand, Bemessung = g.Bemessung,
+                        AufheizzeitMaxH = g.Gekoppelt ? g.AufheizzeitMaxH : g.AufheizzeitBemessenH,
+                        AussenC = Endlich(g.AussenBC), LeistungUnskaliertKw = p, Skalierungsfaktor = 1.0, LeistungKw = p,
+                        Quelle = g.Quelle, Art = g.Art, AufheizzeitManuellH = g.ManuellH, Tau2H = Endlich(g.Tau2S / 3600.0),
+                    };
+                }
+
+                GebaeudeModellEingang eingang = _vdi6007.EingangBauen(item, gemeinsam);
+                Aufheizplan plan = Aufheizoptimierung.Planen(Aufheizzone.Aus(ZonenEingang.Einzeln(eingang)), vorgabe,
+                                                            _vdi6007.AufheizleistungTestW);
+                Aufheizbemessung b = plan.Bemessung;
+                if (b == null) return leer with { Zustand = plan.Zustand };
+
+                // Derselbe Faktor wie der Lauf (EinLaufMitNachmultiplikation bzw. EinLaufMitZone).
+                double? faktor = GebaeudeZonensatz.HatZonen(item) ? 1.0
+                    : GebaeudeVorbereitung.Bilden(_kalender, item).IstFlaeche ? item.Z_AuswahlWohnflaeche / item.Nutzflaeche
+                    : (double?)null;
+                double? unskaliert = Endlich(b.AufheizleistungW / 1000.0);
+                // E59: Zustand und t_auf,max der BEMESSUNG, daneben Art, manuelle Zeit und τ₂ (Festlegungen 39, 40).
+                return leer with
+                {
+                    Zustand = b.Zustand, Bemessung = b.Bemessung, AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
+                    AussenC = Endlich(b.Wirksam.AussenC), LeistungUnskaliertKw = unskaliert, Skalierungsfaktor = faktor,
+                    LeistungKw = faktor.HasValue ? unskaliert * faktor.Value : null, Quelle = b.Quelle,
+                    Art = plan.Art, AufheizzeitManuellH = plan.ManuellH, Tau2H = Endlich(b.Wirksam.Tau2S / 3600.0),
+                };
+            }
+            catch (GebaeudeModellException ex)
+            {
+                return leer with { Befund = ex.Message };
+            }
+        }
+
+        /// <summary>NaN wird <c>null</c> — wie <c>Aufheizergebnis</c>; ±∞ (Testnaht) bleibt.</summary>
+        private static double? Endlich(double x) => double.IsNaN(x) ? (double?)null : x;
 
         /// <summary>
         /// <b>Der Zweig des VDI-Wegs in der Fassade</b> (Rechenschritte 8.3, Umsetzungskonzept
@@ -1115,10 +1354,28 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < 8760; h++) ziel[h] *= faktor;
             GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
             if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
+            if (!vorbereitung.IstFlaeche) HinweisAufheizungVerbrauch(item, ergebnis?.Aufheizung);
 
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis „Aufheizoptimierung bei Verbrauchsangabe"</b> (Entwurf KP3, B11; Befund R4) — einmal je
+        /// Gebäude, wenn die Rampe an einem Gebäude mit Verbrauchs-Rückrechnung wirkt (geplant, mit mindestens einem
+        /// Rampentag): Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Rampen in den Faktor
+        /// auf; die Jahreswärme bleibt der angegebene Verbrauch. Muster der übrigen Gebäudehinweise der Fassade.
+        /// </summary>
+        internal static void HinweisAufheizungVerbrauch(ProjektGebaeudeModel item, Aufheizergebnis a)
+        {
+            if (item == null || a == null || !a.Geplant || !(a.Aufheiztage > 0)) return;
+            System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+            string wer = (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "aufh-verbrauch-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(k, MyResource.Resource.SIMENG_AUFH_VERBRAUCH, a.Aufheiztage.Value.ToString(k)));
         }
 
         /// <summary>
@@ -1290,9 +1547,34 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
                 quelle.Jahressummen = jahressummen;
+
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur im Lauf. Jedes
+                // gerechnete Profil mit vollständigem Paar trägt seine Stunden bei; ohne ein
+                // einziges bleibt ProzessTemperatur null und der Lauf rechnet wie zuvor.
+                ProzessTemperatur = null;
+                Prozesstemperatur niveau = modus == ProfilQuellmodus.Projektrechnung ? new Prozesstemperatur() : null;
+                ProfilLaufInfo info = niveau == null ? null : new ProfilLaufInfo
+                {
+                    JeProfil = (kopf, reihe) =>
+                    {
+                        if (Prozesstemperatur.PaarAusZeile(kopf, out double vl, out double rl))
+                            niveau.Aufnehmen(vl, rl, reihe);
+                    }
+                };
+
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
-                                     prozesswerte, Waermebedarf_Prozess_Monat);
+                                     prozesswerte, Waermebedarf_Prozess_Monat, info);
+
+                if (niveau != null && niveau.Profile > 0)
+                {
+                    niveau.Abschliessen();
+                    ProzessTemperatur = niveau;
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_PROZESSWAERME + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_TEMPERATURNIVEAU,
+                        niveau.Profile, niveau.VorlaufMax, niveau.Stunden));
+                }
 
                 // Der reine Profilanteil für die Ganglinie des Ergebnisdialogs: Der
                 // Rechenweg schlägt später den Netzverlust auf prozesswerte, die
@@ -1378,9 +1660,120 @@ namespace WindowsFormsApplication1
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
+
+                // ZIRKULATION IM BESTANDSWEG (BW4): nur in der Projektrechnung und nur, wenn das
+                // Projekt sie mit Leistung und Laufzeit führt; ohne sie bleibt der Kanal, wie er ist.
+                if (modus == ProfilQuellmodus.Projektrechnung)
+                    BestandswegZirkulation(NetzverlustvorgabeProjekt);
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+        }
+
+        /// <summary>
+        /// <b>Die thermische Desinfektion</b> (Entscheidungsvorlage Modellgrenzen BW5; Konzept
+        /// Simulationsablauf 21): in jeder Ereignisstunde ein Zusatzbedarf
+        /// <code>
+        /// Q_D = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000
+        /// </code>
+        /// als eigener Posten des Brauchwasserkanals. V ist das gepflegte Volumen, sonst das der Speicher,
+        /// die Brauchwasser führen; ϑ_Soll die Speichersolltemperatur des Zapfprofilgenerators, sonst 60 °C
+        /// (mit Hinweis). Ohne Volumen oder mit ϑ_Soll ≥ ϑ_Ziel entsteht kein Posten (mit Hinweis).
+        /// </summary>
+        internal void BrauchwasserDesinfektion(double[] probe)
+        {
+            Brauchwasser_Desinfektion_Mwh = 0;
+            DesinfektionEreignisse = 0;
+            DesinfektionZielC = double.NaN;
+            Array.Clear(Brauchwasser_Desinfektion_stuendlich, 0, Brauchwasser_Desinfektion_stuendlich.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Desinfektion_Monat, 0, Waermebedarf_Brauchwasser_Desinfektion_Monat.Length);
+
+            Desinfektionsvorgabe v = DesinfektionsvorgabeProjekt;
+            if (v == null || !v.Aktiv) return;
+
+            string praefix = MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER;
+            double? sollGefuehrt = TwwTemperaturen.SpeicherSollC(m_ID_Projekt);
+            double soll = sollGefuehrt ?? Desinfektion.SOLL_VORGABE_C;
+            if (!sollGefuehrt.HasValue)
+                SimulationProtokoll.Aktuell.Hinweis(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_DESINF_SOLL_VORGABE, soll));
+
+            double volumen = v.VolumenL ?? TwwTemperaturen.BrauchwasserspeicherVolumenL(m_ID_Projekt) ?? 0;
+            if (!(volumen > 0))
+            {
+                SimulationProtokoll.Aktuell.Warnung(praefix + MyResource.Resource.SIMENG_DESINF_OHNE_VOLUMEN);
+                return;
+            }
+
+            double ziel = v.ZielWirksamC;
+            double jeEreignis = Desinfektion.ZusatzbedarfKwh(volumen, ziel, soll);
+            if (!(jeEreignis > 0))
+            {
+                SimulationProtokoll.Aktuell.Warnung(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_DESINF_ZIEL_UNTER_SOLL, ziel, soll));
+                return;
+            }
+
+            double[] reihe = Desinfektion.Reihe(v.IntervallWirksam, v.StundeWirksam, jeEreignis);
+            Array.Copy(reihe, Brauchwasser_Desinfektion_stuendlich, 8760);
+            double[] kanal = _kanaele.Brauchwasser;
+            for (int h = 0; h < 8760; h++)
+            {
+                if (reihe[h] <= 0) continue;
+                kanal[h] += reihe[h];
+                if (probe != null) probe[h] += reihe[h];
+            }
+
+            DesinfektionEreignisse = Desinfektion.EreignisseImJahr(v.IntervallWirksam);
+            DesinfektionZielC = ziel;
+            Brauchwasser_Desinfektion_Mwh = Energieeinheit.MWh.AusKWh(reihe.Sum());
+            WPPlan.Core.BhkwPlan.MonatsSumme(reihe, Waermebedarf_Brauchwasser_Desinfektion_Monat, mo_anfang, mo_ende);
+
+            SimulationProtokoll.Aktuell.Hinweis(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_DESINF_BEDARF, DesinfektionEreignisse, v.IntervallWirksam, v.StundeWirksam,
+                volumen, soll, ziel, jeEreignis, Brauchwasser_Desinfektion_Mwh));
+        }
+
+        /// <summary>
+        /// <b>Die Zirkulation des Bestandswegs</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf 17): eine feste Leistung P [kW] in t_Lauf Laufstunden je Tag als eigene
+        /// Teilreihe des Brauchwasserkanals — dieselbe Formel wie die Methode „manuell" des
+        /// Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+        /// <code>
+        /// q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+        /// </code>
+        /// Das Laufzeitfenster liegt wie beim Generator zusammenhängend um die Tagesmitte der
+        /// Zapfung (hier: der Brauchwasserreihe der Profile), eine gebrochene Laufzeit belegt die
+        /// letzte Stunde anteilig (<see cref="Zirkulationskanal.Laufzeitfenster"/>). Normbezug:
+        /// Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und DIN V 18599-8, Betrieb
+        /// der Zirkulation (Unterbrechung höchstens 8 h am Tag) nach DVGW W 551.
+        ///
+        /// <para>Ohne Zirkulation (<see cref="Netzverlustvorgabe.MitZirkulation"/> falsch) bleibt
+        /// alles, wie es war: kein Posten, keine Monatsschichten. Mit ihr tragen
+        /// <see cref="Brauchwasser_Zirkulation_Mwh"/>, die Monatsschichten Zapfung und Zirkulation
+        /// und die Monatssummen des Kanals die Teilreihe — derselbe Ausweis wie beim Generator.</para>
+        /// </summary>
+        internal void BestandswegZirkulation(Netzverlustvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.MitZirkulation) return;
+
+            double laufzeit = vorgabe.ZirkulationLaufzeitHd.Value;
+            double[] zapfung = (double[])brauchwasserwerte.Clone();
+            double mitte = Zirkulationskanal.Tagesmitte(new IReadOnlyList<double>[] { zapfung });
+            double[] fenster = Zirkulationskanal.Laufzeitfenster(laufzeit, mitte);
+            double[] zirkulation = Zirkulationskanal.Reihe(vorgabe.ZirkulationJahresKwh, laufzeit, fenster)
+                                                    .KopieStundenKwh();
+
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
+            Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(zirkulation.Sum());
+            WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zapfung, Waermebedarf_Brauchwasser_Zapfung_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat, mo_anfang, mo_ende);
+
+            SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER + string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_ZIRKULATION_BESTANDSWEG,
+                vorgabe.ZirkulationLeistungKw.Value, laufzeit, Brauchwasser_Zirkulation_Mwh));
         }
 
         // =====================================================================

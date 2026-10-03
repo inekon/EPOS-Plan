@@ -283,12 +283,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// BEREITSCHAFTSLEISTUNG je Kessel [kW] — der Brennstoffeinsatz einer
         /// Stillstandsstunde ist dieser Wert mal eine Stunde (<see cref="Stunde_Abschluss"/>).
-        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c>, und das ist eine
-        /// LEISTUNG in kW, kein Anteil der Nennleistung: Der Import liest sie aus
-        /// VDI 3805 Blatt 3, Satz 700, Spalte 28 (die Bereitschaftsleistung des
-        /// Produktdatenblatts, im Katalog 0,03 … 0,16 kW, bei einer Baureihe gleich über
-        /// alle Leistungsgrößen) und weist sie in kW aus (<c>KatalogImportProfil</c>,
-        /// Feld VERLUSTE). Siehe <see cref="BereitschaftsleistungKw"/>.
+        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c> in der Einheit
+        /// <c>Tab_Heizkessel.Bereitschaft_Einheit</c>: kW (Vorgabe; der Import liest die
+        /// Bereitschaftsleistung aus VDI 3805 Blatt 3, Satz 700, Spalte 28, im Katalog
+        /// 0,03 … 0,16 kW) oder Prozent der Nennleistung. Hier steht immer die Leistung in kW
+        /// (<see cref="KesselBereitschaft.LeistungKw"/>, gerufen über
+        /// <see cref="BereitschaftsleistungKw(double, string, double)"/>).
         /// </summary>
         double[] Betriebsbereitschaft_Verluste = new double[MAX_SPK];
         string[] Kessel_Name = new string[MAX_SPK];
@@ -363,6 +363,69 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = keine Stufe (c). Gefragt nur für Kessel mit Brennwertkennlinie.
         /// </summary>
         public Func<int, double?> RuecklaufPaarLesen;
+
+        // ------------------------------------------------------------------
+        // TEMPERATURNIVEAU DES PROZESSKANALS (Entscheidungsvorlage Modellgrenzen PW1 Stufe 1)
+        //
+        // (b) Ein Kessel, dessen GEPFLEGTER Vorlauf (Kette Anlage -> Heizkessel, wie W3) unter dem
+        // geforderten Prozessvorlauf der Stunde liegt, deckt den Prozesskanal in dieser Stunde
+        // nicht. (c) Ein Brennwertkessel mit Kennlinie sieht für den Anteil seiner Wärme, der in den
+        // Prozesskanal ging, den Prozessrücklauf. Ohne Temperaturniveau (null) ist beides wirkungslos.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Das Temperaturniveau des Prozesskanals (PW1 Stufe 1); <c>null</c> = kein Prozess mit
+        /// Temperaturpaar. Eingang, gesetzt von <c>SimulationControl</c> vor <see cref="Vorbereiten_Zweikanalig"/>.
+        /// </summary>
+        public Prozesstemperatur Prozesstemperatur;
+
+        /// <summary>
+        /// Liest den GEPFLEGTEN Vorlauf einer Anlage (<c>Tab_Energieanlagen.ID</c>) [°C], <c>null</c>
+        /// ohne vollständiges Paar — dieselbe Kette Anlage → Heizkessel wie <see cref="RuecklaufPaarLesen"/>.
+        /// Gefragt nur mit <see cref="Prozesstemperatur"/>.
+        /// </summary>
+        public Func<int, double?> VorlaufPaarLesen;
+
+        /// <summary>Gepflegter Vorlauf je Kessel [°C]; <c>null</c> = keiner (erreicht jeden Prozessvorlauf).</summary>
+        private readonly double?[] _prozessErzeugerVorlauf = new double?[MAX_SPK];
+
+        /// <summary>In der laufenden Stunde in den Prozesskanal abgegebene Wärme je Kessel [kWh].</summary>
+        private readonly double[] _prozessAbgabe = new double[MAX_SPK];
+
+        private readonly int[] _prozessGesperrtStunden = new int[MAX_SPK];
+        private readonly double[] _prozessGesperrtMax = new double[MAX_SPK];
+        private readonly int[] _prozessRuecklaufStunden = new int[MAX_SPK];
+        private readonly double[] _prozessRuecklaufSumme = new double[MAX_SPK];
+        private readonly double[] _prozessRuecklaufGewicht = new double[MAX_SPK];
+
+        /// <summary>Stunden, in denen Kessel <paramref name="index"/> den Prozesskanal nicht deckte (PW1 Stufe 1).</summary>
+        public int ProzessGesperrtStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _prozessGesperrtStunden[index] : 0;
+
+        /// <summary>Laufstunden, in denen der Prozessrücklauf in den Rücklauf der Brennwertkennlinie einging (PW1 Stufe 1).</summary>
+        public int ProzessRuecklaufStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _prozessRuecklaufStunden[index] : 0;
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Kessel die Stunden ohne Prozessdeckung und die Stunden mit
+        /// Prozessrücklauf (PW1 Stufe 1). Ohne Temperaturniveau meldet sie nichts.
+        /// </summary>
+        public void ProzessMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            for (int i = 0; i < _anzahlZweikanalig && i < spk_list.Count; i++)
+            {
+                if (_prozessGesperrtStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_NICHT_ERREICHT,
+                        spk_list[i], _prozessGesperrtStunden[i], _prozessGesperrtMax[i], _prozessErzeugerVorlauf[i] ?? 0));
+                if (_prozessRuecklaufStunden[i] > 0 && _prozessRuecklaufGewicht[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_KESSEL_RUECKLAUF,
+                        spk_list[i], _prozessRuecklaufStunden[i],
+                        _prozessRuecklaufSumme[i] / _prozessRuecklaufGewicht[i]));
+            }
+        }
 
         /// <summary>Rechnet der Kessel mit der Brennwertkennlinie?</summary>
         private readonly bool[] _brennwertKennlinie = new bool[MAX_SPK];
@@ -573,7 +636,9 @@ namespace WindowsFormsApplication1
                 TaktwerteBilden(i, heizkesselctrl.items[0]);
 
                 Betriebsbereitschaft_Verluste[i] =
-                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
+                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust,
+                                            heizkesselctrl.items[0].Bereitschaft_Einheit,
+                                            heizkesselctrl.items[0].Ptherm);
 
                 // Ein Katalogwert über 2 % der Nennleistung ist für eine Bereitschafts-
                 // leistung ungewöhnlich hoch — der Lauf rechnet mit ihm, nennt ihn aber,
@@ -664,10 +729,16 @@ namespace WindowsFormsApplication1
         /// Zweiundzwanzigfache. Negativ oder nicht gesetzt heißt: kein Bereitschaftsverlust.</para>
         /// </summary>
         internal static double BereitschaftsleistungKw(double katalogwertKw)
-        {
-            if (double.IsNaN(katalogwertKw) || katalogwertKw <= 0) return 0;
-            return katalogwertKw;
-        }
+            => KesselBereitschaft.LeistungKw(katalogwertKw, DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW, 0);
+
+        /// <summary>
+        /// Die Bereitschaftsleistung [kW] aus Wert und Einheit des Katalogsatzes — bei kW der
+        /// Wert selbst (wie <see cref="BereitschaftsleistungKw(double)"/>), bei Prozent
+        /// <c>Wert × Nennleistung / 100</c>. Die Regel steht einmal in
+        /// <see cref="KesselBereitschaft.LeistungKw"/>.
+        /// </summary>
+        internal static double BereitschaftsleistungKw(double wert, string einheit, double nennleistungKw)
+            => KesselBereitschaft.LeistungKw(wert, einheit, nennleistungKw);
 
         private int CarrierZuKessel(string bezeichner)
         {
@@ -1483,6 +1554,15 @@ namespace WindowsFormsApplication1
                         MyResource.Resource.SIMENG_KESSEL_HEIZGRENZE,
                         Heizgrenze_C, Heiztage_Anzahl));
 
+            // PW1 Stufe 1: die Zähler des Prozesskanals auf den Laufanfang.
+            Array.Clear(_prozessErzeugerVorlauf, 0, MAX_SPK);
+            Array.Clear(_prozessAbgabe, 0, MAX_SPK);
+            Array.Clear(_prozessGesperrtStunden, 0, MAX_SPK);
+            Array.Clear(_prozessGesperrtMax, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufStunden, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufSumme, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufGewicht, 0, MAX_SPK);
+
             // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
             for (int i = 0; i < Anzahl; i++)
@@ -1490,6 +1570,10 @@ namespace WindowsFormsApplication1
                 int idAnlage = (i < spk_anlagen_ids.Count) ? spk_anlagen_ids[i] : 0;
                 _kesselSenke.Add(SenkeZuAnlage(senken, idAnlage));
                 _wirkungsgradStunde[i] = new double[8760];
+
+                // PW1 Stufe 1: der gepflegte Vorlauf - nur mit Temperaturniveau des Prozesskanals.
+                _prozessErzeugerVorlauf[i] = (Prozesstemperatur != null && VorlaufPaarLesen != null && idAnlage > 0)
+                    ? VorlaufPaarLesen(idAnlage) : null;
 
                 // Etappe E3: Stufe (c) der Rücklaufkette und die Mitschrift - nur für Kessel mit
                 // Brennwertkennlinie; jeder andere Kessel liest nichts zusätzlich.
@@ -1542,6 +1626,7 @@ namespace WindowsFormsApplication1
                 _kesselStunde[i] = 0;
                 _kesselAbgabe[i] = 0;
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
+                _prozessAbgabe[i] = 0;
 
                 // Etappe E3, Stufe (b) der Rücklaufkette: der Senkenspeicher EINMAL je Stunde, am
                 // Stundenanfang - der Zustand am Ende der Vorstunde, wie der Lesepunkt „Davor" der
@@ -1604,12 +1689,37 @@ namespace WindowsFormsApplication1
                 Senkenliste senken = _kesselSenke[i];
                 if (senken != null && !senken.HatDirektsenke) continue;
 
+                // PW1 STUFE 1 (b): Erreicht der gepflegte Vorlauf des Kessels den geforderten
+                // Prozessvorlauf der Stunde nicht, ist der Prozesskanal für ihn gesperrt - für die
+                // Dauer dieses Kessels auf 0, danach unverändert zurückgelegt (Muster KU2 der
+                // Wärmepumpe). Ohne Temperaturniveau ist die Bedingung falsch.
+                bool prozessDirekt = Prozesstemperatur != null && senken != null && senken.BedientProzessDirekt;
+                bool prozessGesperrt = false;
+                double prozessZurueck = 0;
+                if (prozessDirekt && rest[Kanal.PROZESS] > 0)
+                {
+                    double gefordert = Prozesstemperatur.Vorlauf(stunde);
+                    if (!Prozesstemperatur.Erreicht(_prozessErzeugerVorlauf[i] ?? 0, gefordert))
+                    {
+                        prozessGesperrt = true;
+                        prozessZurueck = rest[Kanal.PROZESS];
+                        rest[Kanal.PROZESS] = 0;
+                        _prozessGesperrtStunden[i]++;
+                        if (gefordert > _prozessGesperrtMax[i]) _prozessGesperrtMax[i] = gefordert;
+                    }
+                }
+                try
+                {
+
                 double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
                 double menge = Math.Min(MaxAbgabe(i), verfuegbar);
                 if (menge <= 0) continue;
+
+                // PW1 Stufe 1 (c): der Prozessanteil dieser Abgabe, gemessen am Kanalrest.
+                double prozessVorher = rest[Kanal.PROZESS];
 
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
@@ -1619,6 +1729,8 @@ namespace WindowsFormsApplication1
                 // Stunde - aus derselben gemessenen rest-Differenz.
                 Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal,
                                     Direktdeckung_KanalStuendlich, stunde);
+
+                if (prozessDirekt) _prozessAbgabe[i] += prozessVorher - rest[Kanal.PROZESS];
 
                 _kesselAbgabe[i] += menge;
 
@@ -1633,6 +1745,11 @@ namespace WindowsFormsApplication1
                 // Klemmung fängt allein die Gleitkomma-Reste. Ohne Quellbezug ist
                 // _restLeistung nie negativ und die Zeile wirkungslos.
                 if (_restLeistung[i] < 0) _restLeistung[i] = 0;
+                }
+                finally
+                {
+                    if (prozessGesperrt) rest[Kanal.PROZESS] = prozessZurueck;
+                }
             }
 
             if (stunde >= 0 && stunde < 8760)
@@ -1757,6 +1874,22 @@ namespace WindowsFormsApplication1
                     if (_brennwertKennlinie[i])
                     {
                         ruecklauf = RuecklaufDerStunde(i, stunde, out Ruecklaufstufe stufe);
+
+                        // PW1 Stufe 1 (c): Ging ein Teil der Wärme in den Prozesskanal, sieht dieser
+                        // Anteil den Prozessrücklauf der Stunde - gewichtet mit der Abgabe der Stunde.
+                        if (_prozessAbgabe[i] > 0 && Prozesstemperatur != null)
+                        {
+                            double rlProzess = Prozesstemperatur.Ruecklauf(stunde);
+                            if (!double.IsNaN(rlProzess))
+                            {
+                                double anteil = _prozessAbgabe[i] / _kesselAbgabe[i];
+                                ruecklauf = Prozesstemperatur.MischRuecklauf(anteil, rlProzess, ruecklauf);
+                                _prozessRuecklaufStunden[i]++;
+                                double w = Math.Min(_prozessAbgabe[i], _kesselAbgabe[i]);
+                                _prozessRuecklaufSumme[i] += w * rlProzess;
+                                _prozessRuecklaufGewicht[i] += w;
+                            }
+                        }
                         wirk = WirkungsgradBrennwert(i, KesselLeistung, eta100, ruecklauf, out wirkTrocken);
                         _ruecklaufStufen[i][(int)stufe]++;
                     }

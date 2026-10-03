@@ -235,8 +235,8 @@ namespace EPOS.Kern.Tests
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
-        [InlineData("PROZESSWAERME", 32, 0, 1)]
-        [InlineData("PROZESSTYP", 20, 0, 2)]
+        [InlineData("PROZESSWAERME", 40, 0, 1)]   // 32 + acht Betriebsweisen (PW5)
+        [InlineData("PROZESSTYP", 28, 0, 2)]      // 20 + acht Wochenprofile (PW5)
         [InlineData("STROMGANGLINIE", 3, 0, 0)]
         [InlineData("SOLARGANGLINIE", 1, 0, 0)]
         [InlineData("WAERMEBEDARF", 4, 0, 1)]

@@ -444,8 +444,16 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Nachtfenster | night window | die Nachtzeit einer Spalte (von / bis, volle Stunde 0 … 23), leer = das der Heizspalte; bei Heizen „Nachtabsenkung von / bis" (oben) |
 | Aufheizzeit | preheat time | Dauer der Aufheizrampe vor einem Sprung des Heizsollwerts nach oben (Stufe KP3) |
 | Aufheizleistung | preheat power | die Leistung, mit der die Aufheizung bemessen wird (Stufe KP3) |
-| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3) |
-| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6) |
+| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3); Feld „Aufheizreserve ρ" → „Preheat reserve ρ" in %, 1 … 100, Vorgabe 20 %, gespeichert als Anteil |
+| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6); Schalter „Aufheizoptimierung rechnen" → „Calculate preheat optimisation" (`SIMKONF_AUFH_*`) |
+| Bemessung (der Aufheizzeit) | design basis | woran die längste Aufheizzeit bemessen wird: „kälteste Stunde" → „coldest hour" (Vorgabe), „kälteste Stunde − ΔT_K" → „coldest hour − ΔT_K"; die Persistenzwerte `STUNDE`, `STUNDE_ABZUG` bleiben (§ 10); Bemessungsfall → design case |
+| Abzug ΔT_K | deduction ΔT_K | um wie viel K die Bemessung (b) kälter rechnet als die kälteste Stunde (0 … 10 K, Vorgabe 2 K) |
+| Art der Aufheizzeit | preheat time mode | „täglich" → „daily" (Vorgabe: jeder Tag nach seiner Außentemperatur), „fest" → „fixed" (jeder Tag so lange wie der Bemessungsfall); die Persistenzwerte `TAEGLICH`, `FEST` bleiben (§ 10) |
+| Aufheizzuschlag | heating-up capacity | der Teil der Aufheizleistung über der stationären Last, P_auf − Φ_stat; mit der Auslegungsheizlast die Auslegungsgröße (Muster Φ_RH der DIN EN 12831-1, englische Fassung „heating-up capacity"); nicht mit „Aufschlag" verwechseln |
+| Aufschlag (der Aufheizzeit) | surcharge | Projektvorgabe in Stunden und in Prozent, um die jede Rampe eines Kalendersprungs mit n > 1 länger wird, es gilt der größere Wert (Stufe KP3); Felder „Aufschlag (h)" → „Surcharge (h)", „Aufschlag (%)" → „Surcharge (%)" (`SIMKONF_AUFH_AUFSCHLAG_*`) |
+| Aufheizzeit manuell | manual preheat time | je Gebäude eingegebene Aufheizzeit in h, dritte Art neben „täglich" und „fest" → „manual"; Persistenzwert `MANUELL` in `Aufheiz_Art` bleibt (§ 10) |
+| Vorschlag | suggestion | Wert neben einem Feld, den der Anwender übernehmen kann, hier die bemessene Aufheizzeit und die Spanne aus der Zeitkonstante des Gebäudes; „Übernehmen" → „Apply" (§ 8); nicht „proposal" |
+| Herleitungszeile | derivation line | leise Zeile unter einem Feld oder Abschnitt, die sagt, woraus ein Wert folgt — bei der Aufheizoptimierung je Gebäude „t_auf,max … bei … · P_auf … · C_w …"; das Wort selbst steht in keiner Beschriftung |
 | Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
 | Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |
@@ -470,7 +478,9 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Duplizieren | duplicate | Kopie einer ausgelieferten Vorlage oder eines Katalogsatzes; Kernmeldungen „Duplicate…" |
 | Umbenennen | rename | eigene Vorlagen in der Verwaltung |
 | Kopieren nach … | copy to … | Handlung der Vorlagenverwaltung: eine Vorlage als eigene Vorlage einer anderen Größe — Heizen → Kühlen, Geräte ↔ Personen |
-| Komfortsollwert | comfort setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in jede Zelle mit Heizsollwert setzt (Vorgabe 26 °C) |
+| Komfortsollwert | comfort setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in jede Zelle setzt, deren Heizsollwert den Tagwert der Vorlage erreicht (Vorgabe 26 °C) |
+| Absenksollwert | setback setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in die Absenkzeiten setzt – jede Zelle mit Heizsollwert unter dem Tagwert (Vorgabe 28 °C, wählbar „aus“; nie unter dem Komfortsollwert) |
+| Tagwert | day value | der Heizsollwert der Zeile „Tag“ einer Vorlage, ohne Tagzeile ihr höchster Heizsollwert – die Schwelle der Absenkzeit bei „Kopieren nach …" |
 | Katalogbau | catalogue building | ein Gebäude des Gebäudekatalogs, Träger von Matrix und Kalendern; „Katalogsatz" (oben) ist der allgemeine Begriff |
 | Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
 | erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |

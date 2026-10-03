@@ -12,7 +12,7 @@ Eine PV-Anlage entsteht in vier Schritten; die Felder im Einzelnen beschreiben [
 
 # '''Modul im Katalog.''' ''Administration → Energiesysteme → Photovoltaik → PV Module'' pflegt den Modulkatalog. Datensätze aus der CEC-Liste oder im PVsyst-Format liest ''Administration → Daten & Import → Photovoltaik → PV Module (CEC, PAN)...'' ein.
 # {{Anker|beschreibung-der-anlage|modulauswahl}}'''Anlage im Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Photovoltaik'' den Dialog ''Verwaltung Photovoltaik Module''. Das Modul in ''Module aus Datenbank'' wählen und ''In das Projekt übernehmen'': Jede Übernahme legt eine eigene Anlage an, die als Zeile in ''ausgewählte Module'' steht. Für die markierte Zeile stehen im Block ''PV Anlage Eigenschaften'' die Felder ''Neigung [°]'', ''Azimut [°]'' (0° = Süden, Osten negativ, Westen positiv), der Energieträger und ''Anzahl Module''. ''Gesamtleistung [kW]'' im Block ''Modul Eigenschaften'' zählt alle Anlagen des Projekts zusammen.
-# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
+# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). ''Albedo [-]'' ist der Bodenreflex vor der Anlage, 0 bis 1 (leer = 0,2); die Zeile darunter nennt Richtwerte. Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
 # '''Simulationskonfiguration.''' In Schritt ① der Ansicht ''Simulation'' steht die Photovoltaik in der Gruppe ''Stromerzeuger''. Solange die Kaskade nicht von Hand gepflegt ist, setzt das Programm eine vorhandene PV-Anlage beim Öffnen selbst auf diesen Platz; sonst ''einblenden'', ''+ aufnehmen'' und ''Konfiguration speichern''. Alle PV-Anlagen des Projekts rechnen gemeinsam auf diesem einen Platz ([[Programm Dokumentation/Simulation#erzeugerliste|Simulation]]).
 
 {{Anker|teilfelder}}'''Teilfelder.''' Eine Dachfläche mit anderer Ausrichtung wird eine eigene Anlage – dasselbe Modul ein zweites Mal übernehmen – oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut. Teilen sich Dachflächen einen Wechselrichter, müssen es Stränge derselben Anlage sein: Jede Anlage rechnet nur ihre eigenen Geräte. Den Ertrag aller Anlagen addiert der Lauf Stunde für Stunde.
@@ -44,7 +44,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 |-
 | Verwaltung Photovoltaik Module || ''Module aus Datenbank'', dann ''In das Projekt übernehmen'' || Modul 1, 400 W || eine Übernahme ist eine Anlage
 |-
-| rowspan="6" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
+| rowspan="7" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
 |-
 | ''Azimut [°]'' || 0 || Süddach
 |-
@@ -55,6 +55,8 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 | ''Rechenmodell'' || Erweitert || genauere Einstrahlung; der ''WR-Wirkungsgrad'' ist dann gesperrt
 |-
 | ''Systemverluste [%]'' || 3 || Verschmutzung und Leitungen; leer rechnet mit 0 %
+|-
+| ''Albedo [-]'' || leer || Bodenreflex vor der Anlage, 0 bis 1; leer rechnet mit 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8 – wirksam vor allem bei steilen und Fassadenanlagen
 |-
 | Verwaltung Photovoltaik Module, ''Wechselrichter und Stränge'' || Option || vereinfacht || das Gerät wird ausgelegt, wenn die Größe steht
 |-
@@ -100,7 +102,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 {{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan. Im Jahr rund 28,5 MWh: 59 % direkt genutzt, 12 % über den Speicher, 29 % eingespeist.}}
 
 {{Anker|ergebnisse|deckungsanteil|speicherfuellstand}}'''Wo Sie es prüfen.'''
-* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
+* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', mit Einspeisegrenze dazu ''Abregelung an der Einspeisegrenze'', ''Abregelung in % der Erzeugung'' und ''Einspeisegrenze'', danach ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
 * Reiter ''Stromspeicher'': ''Einspeisung ohne Speicher'' und ''Einspeisung mit Speicher'', ''Netzbezug ohne Speicher'' und ''Netzbezug mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''.
 
 == Zusammenspiel mit anderen Technologien ==
@@ -140,11 +142,11 @@ Den eingespeisten Strom bewertet die Wirtschaftlichkeit mit der Vergütung unter
 * '''Angelegt, aber nicht aufgenommen.''' Ohne Platz rechnet die Photovoltaik nicht: Das Laufprotokoll meldet „… ist im Projekt angelegt, aber nicht in die Simulation aufgenommen …“, und ein Stromspeicher rechnet ohne Erzeugung. Abhilfe: in Schritt ① ''einblenden'', ''+ aufnehmen'', ''Konfiguration speichern''.
 * '''''PV-optimiert'' ohne Photovoltaik.''' Steht keine Photovoltaik auf dem Platz ''Stromerzeuger'', arbeitet die Wärmepumpe leistungsoptimiert; die Konfiguration meldet das bei der Wahl des Modus.
 * '''''Überschuss'' im Reiter Photovoltaik.''' Ohne aktive Projektflotte ist das der Überschuss vor der Speicherladung, während ''Reststrombedarf'' die Entladung schon abzieht. Die Einspeisung mit Speicher steht im Reiter ''Stromspeicher''.
-* '''Autarkie Analyse mit theoretischem Speicher.''' Kachel und Monatsbild des Blatts ''Autarkie Analyse'' (Reiter ''Ergebnis'') rechnen mit dem Feld ''Theoretischer Speicher (PV) (kWh)'' – vorbelegt mit der Kapazität der Stromspeicher des Projekts, ohne Stromspeicher mit 5 kWh – und mit Vorgabewerten (Leistung gleich Kapazität, Band 10 bis 90 %, Umlaufwirkungsgrad 0,90, nur aus PV geladen). Die Zahl wird nicht gespeichert und ändert den Lauf nicht; maßgeblich ist der Reiter ''Stromspeicher''.
+* '''Autarkie Analyse mit theoretischem Speicher.''' Kachel und Monatsbild des Blatts ''Autarkie Analyse'' (Reiter ''Ergebnis'') rechnen mit dem Feld ''Theoretischer Speicher (PV) (kWh)'' – vorbelegt mit der Kapazität der Stromspeicher des Projekts; ohne Stromspeicher steht dort 0 kWh, und das Blatt sagt, dass ohne Stromspeicher gerechnet wird – und mit Vorgabewerten (Leistung gleich Kapazität, Band 10 bis 90 %, Umlaufwirkungsgrad 0,90, nur aus PV geladen). Die Zahl wird nicht gespeichert und ändert den Lauf nicht; maßgeblich ist der Reiter ''Stromspeicher''.
 * '''Stundenraster.''' Die Klimadaten sind Stundenwerte: Der PV-Ertrag ist innerhalb der Stunde gleich verteilt, und den Direktverbrauch verrechnet EPOS-Plan gegen den mittleren Bedarf der Stunde. Stromspeicher und Lastspitzenkappung rechnen je Viertelstunde mit diesem gleich verteilten Ertrag.
 * '''Keine Verschattung.''' EPOS-Plan rechnet ohne Horizont und ohne Verschattung durch Nachbargebäude, Bäume oder Modulreihen. Ein Abschlag über ''Systemverluste [%]'' mindert jede Stunde gleich und trifft die Tageszeit einer Verschattung nicht.
 * '''''mit Wechselrichter'' ohne Gerät.''' Der Weg rechnet nur, wenn mindestens eine Strangzeile ein Gerät führt; sonst rechnet die Anlage vereinfacht, und das Protokoll sagt es. Stränge ohne Gerät rechnen nicht mit.
-* '''Keine Einspeisegrenze.''' Die Photovoltaik begrenzt nur am Wechselrichter (Clipping); eine Netzeinspeisegrenze kennt allein die Projektflotte ([[Programm Dokumentation/Stromspeicher#auslegung-netz|Netz und Planung]]).
+* '''Einspeisegrenze.''' Neben dem Clipping am Wechselrichter begrenzt die Projekteinstellung ''Einspeisegrenze'' ([[Programm Dokumentation/Simulation#einspeisegrenze|Simulation]]) die Einspeisung je Viertelstunde; abgeregelt wird erst, was der Stromspeicher nicht lädt.
 * '''Keine Alterung im Stundenlauf.''' Die ''Degradation [%/a]'' der PV-Vergütung wirkt nur in der Erlösreihe der Wirtschaftlichkeit.
 
 == Eingaben ==

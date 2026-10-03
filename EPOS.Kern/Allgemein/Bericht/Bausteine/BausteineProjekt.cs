@@ -83,6 +83,37 @@ namespace WindowsFormsApplication1
                 // Gesamtdeckungsgrad verdeckt: ob die Auslegung Warmwasser und Prozess
                 // ebenso trägt wie die Heizung. Ein Kanal ohne Bedarf erscheint als „—" —
                 // ein Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur, wenn ein Prozess ein
+                // Temperaturpaar trägt; sonst bleibt die Tafel, wie sie war.
+                if (stamm.Details != null && stamm.Details.ProzessVorlaufMax != null && stamm.Details.ProzessRuecklaufMin != null)
+                    k.Eigenschaften(
+                        "Temperaturniveau Prozesswärme",
+                        k.F(stamm.Details.ProzessVorlaufMax.Value, 0) + " / " +
+                        k.F(stamm.Details.ProzessRuecklaufMin.Value, 0) + " °C");
+
+                // BW4: Netzverluste je Kanal und die Zirkulation des Bestandswegs - nur, wenn das
+                // Projekt sie fuehrt; sonst bleibt die Tafel, wie sie war.
+                Netzverlustvorgabe nv = stamm.Details?.Netzkanaele;
+                if (nv != null && nv.JeKanal)
+                    k.Eigenschaften(
+                        "Netzverluste Heizung", NetzKanalWert(k, nv.HeizungWert, nv.HeizungEinheit),
+                        "Netzverluste Brauchwasser", NetzKanalWert(k, nv.BrauchwasserWert, nv.BrauchwasserEinheit),
+                        "Netzverluste Prozesswärme", NetzKanalWert(k, nv.ProzessWert, nv.ProzessEinheit));
+                if (nv != null && nv.MitZirkulation && !stamm.Details.Zapfprofilweg)
+                    k.Eigenschaften(
+                        "Zirkulation Brauchwasser",
+                        k.F(nv.ZirkulationLeistungKw.Value, 1) + " kW · " + k.F(nv.ZirkulationLaufzeitHd.Value, 1) +
+                        " h/d = " + k.F(Energieeinheit.MWh.AusKWh(nv.ZirkulationJahresKwh), 1) + " MWh/a");
+
+                // BW5: die thermische Desinfektion - nur, wenn das Projekt sie fuehrt.
+                Desinfektionsvorgabe dv = stamm.Details?.Desinfektion;
+                if (dv != null && dv.Aktiv)
+                    k.Eigenschaften(
+                        "Thermische Desinfektion",
+                        k.F(dv.IntervallWirksam, 0) + " d · " + k.F(dv.StundeWirksam, 0) + " h · " +
+                        k.F(stamm.Details.DesinfektionVolumenL, 0) + " l · " + k.F(dv.ZielWirksamC, 0) + " °C = " +
+                        k.F(stamm.Details.DesinfektionMwh, 2) + " MWh/a");
+
                 k.Ueberschrift2("Deckungsgrade je Bedarfsart");
                 k.Eigenschaften(
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),
@@ -643,6 +674,10 @@ namespace WindowsFormsApplication1
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }
 
         /// <summary>PAKET E1: Bedarf eines Kanals [MWh/a]; „—", wenn die Zeile ihn nicht führt.</summary>
+        /// <summary>Ein Kanalwert der Netzverluste (BW4) mit Einheit; ohne Wert „0".</summary>
+        private static string NetzKanalWert(WordKontext k, double? wert, string einheit)
+            => wert.HasValue ? k.F(wert.Value, 1) + " " + (einheit ?? "%") : "0";
+
         private static string KanalWert(WordKontext k, ErgebnisEnergiebedarfModel e, int kanal)
         {
             if (e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length) return "—";

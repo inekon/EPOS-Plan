@@ -135,6 +135,10 @@ namespace WindowsFormsApplication1
             // verknuepft und nicht in einer der beiden.
             _konfig.AuslegungWegSetzen(_ergebnis.AuslegungOeffnen);
 
+            // Stufe P2: Nach einer Uebernahme aus der Pufferspeicher-Auslegung gilt ein gerechnetes
+            // Ergebnis als veraltet - dieselbe Bruecke, nur in der Gegenrichtung.
+            _konfig.PufferNachzugSetzen(_ergebnis.PufferAuslegungUebernommen);
+
             // Dasselbe fuer den KANALBEDARF des Schemas (Abnehmer ohne Versorger): Nur die
             // Ergebnishuelle kennt den gerechneten Lauf und weiss, ob er noch gilt.
             _konfig.KanalbedarfQuelleSetzen(_ergebnis.AktuellerKanalbedarf);

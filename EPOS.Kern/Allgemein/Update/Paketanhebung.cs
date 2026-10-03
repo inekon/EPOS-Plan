@@ -221,6 +221,56 @@ namespace WindowsFormsApplication1
             // stempelt im Ziel - dessen Trigger feuern beim Einfügen der Projektzeilen.
             new Stufe(KostenStempelSchema.SCHRITT, Art.Ddl,
                       "Änderungsstempel für Kosten, Preise und Kostenkatalog (zwei Spalten und ihre Trigger)"),
+            // KP-S2 und KP-S3 (Entwurf KP3 Abschnitt 4): reine Spalten. Ein Paket davor kommt mit dem
+            // Schalter 0 (Spaltenvorgabe) und leeren Aufheizspalten an - „aus", wie es gerechnet hat.
+            new Stufe(AufheizvorgabeSchema.SCHRITT, Art.Ddl,
+                      "Aufheizoptimierung als Projekteinstellung (Schalter, Bemessung, Abzug, Reserve, Art)"),
+            new Stufe(AufheizErgebnisSchema.SCHRITT, Art.Ddl,
+                      "Ergebnisspalten der Aufheizoptimierung je Gebäude und Zone"),
+            // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
+            new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
+                      "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
+            // Die Spalte kommt leer an - leer rechnet die Vorgabe 0,2, wie das Paket gerechnet hat.
+            new Stufe(AlbedoSchema.SCHRITT, Art.Ddl,
+                      "Bodenalbedo je Photovoltaik- und Solarthermie-Anlage"),
+            // Die Spalten kommen leer an - ein Paketsatz ohne Temperaturpaar rechnet wie zuvor.
+            new Stufe(ProzesswaermeTemperaturSchema.SCHRITT, Art.Ddl,
+                      "Temperaturpaar je Prozesswärmesatz (Vorlauf, Rücklauf) und Katalog typischer Betriebsweisen"),
+            // Die Anlagenspalten kommen leer an (Vorgaben: kein Pumpenstrom, 8 % Verluste, feste
+            // Arbeitstemperatur), der Kollektorsatz mit der Vorgabe apertur - so, wie er rechnet.
+            new Stufe(SolarthermieFelderSchema.SCHRITT, Art.Ddl,
+                      "Felder des Kollektorfelds (Pumpe, Verluste, Grädigkeit, Spreizung, Arbeitstemperatur) und Bezugsfläche des Kollektorsatzes"),
+            // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
+            new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
+                      "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
+            // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
+            new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
+                      "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
+            // Die Spalten kommen leer an - keine Einspeisegrenze, keine Selbstentladung; ein Paketsatz
+            // rechnet wie zuvor.
+            new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
+                      "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
+            // Die Auslegungstabelle kommt leer an, die Vorgabetabelle mit ihrer Saat - die Auslegung
+            // rechnet nur auf Zuruf, der Paketstand rechnet wie zuvor.
+            new Stufe(PufferAuslegungSchema.SCHRITT, Art.Ddl,
+                      "Pufferspeicher-Auslegung: Auslegungstabelle je Projektpuffer und Vorgabewerte"),
+            // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
+            new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
+                      "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),
+            // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
+            // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
+            new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
+                      "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
+            // Katalogspalten und Saat betreffen nur Kataloge und globale Tabellen, die das Ziel schon
+            // führt; die Erdreichprüfung kommt mit einem Paket davor schlicht nicht mit - der Dialog
+            // zeigt sie nach dem nächsten Lauf.
+            new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
+                      "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
+            // Dieselben Katalogspalten an den übrigen Katalogen; ein Paket führt keine Kataloge.
+            new Stufe(KatalogfassungStufe2Schema.SCHRITT, Art.Katalog,
+                      "Katalogfassung der übrigen Kataloge (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze)"),
+            new Stufe(AufheizManuellSchema.SCHRITT, Art.Ddl,
+                      "Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, Zustand GEKOPPELT der Zone"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

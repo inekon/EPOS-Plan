@@ -318,8 +318,9 @@ namespace WindowsFormsApplication1
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl,
                              Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, ReadOnly, Brennwert, Wirkungsgrad_Teillast30, Mindestleistung)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Betriebsbereitschaftverlust, Bereitschaft_Einheit, ReadOnly, Brennwert,
+                             Wirkungsgrad_Teillast30, Mindestleistung)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -340,6 +341,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@co", model.CO),
                         new DbParam("@sta", model.Staub),
                         new DbParam("@bbv", model.Betriebsbereitschaftverlust),
+                        // Die Einheit, die der Import liefert (VDI 3805: die Bereitschaftsleistung in kW).
+                        new DbParam("@bbe", KesselBereitschaft.Einheit(model.Bereitschaft_Einheit)),
                         new DbParam("@ro", false),
                         new DbParam("@brn", model.Brennwert),
                         new DbParam("@eta30", KesselKennlinieWerte.Wert(model.Wirkungsgrad_Teillast30)),
@@ -369,10 +372,10 @@ namespace WindowsFormsApplication1
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
                              Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
                              Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly,
+                             Betriebsbereitschaftverlust, Bereitschaft_Einheit, Brennwert, Vorlauf, Ruecklauf, ReadOnly,
                              Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung,
                              Anfahrverlust_kWh, Mindestlaufzeit_min)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                                    ?, ?, ?, ?, ?)";
 
             // Die fuenf Kennlinienfelder (Konzept Kesselkennlinie 3.1) haengen hinten an, in der
@@ -398,6 +401,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
                 new DbParam("@brn", this.Brennwert),
                 new DbParam("@vl", this.Vorlauf),
                 new DbParam("@tl", this.Ruecklauf),
@@ -469,7 +473,7 @@ namespace WindowsFormsApplication1
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
                             Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?,
+                            Betriebsbereitschaftverlust = ?, Bereitschaft_Einheit = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?,
                             Wirkungsgrad_Teillast30 = ?, Kennlinie_Brennwert = ?, Mindestleistung = ?,
                             Anfahrverlust_kWh = ?, Mindestlaufzeit_min = ?
                           WHERE ID = ?";
@@ -493,6 +497,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
                 new DbParam("@brn", this.Brennwert),
                 new DbParam("@vl", this.Vorlauf),
                 new DbParam("@rl", this.Ruecklauf)
@@ -529,7 +534,7 @@ namespace WindowsFormsApplication1
                             Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Raumbedarf = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?,
+                            Betriebsbereitschaftverlust = ?, Bereitschaft_Einheit = ?,
                             Brennwert = ?, Kennlinie_Brennwert = Kennlinie_Brennwert * ?,
                             Wirkungsgrad_Teillast30 = COALESCE(?, Wirkungsgrad_Teillast30),
                             Mindestleistung = COALESCE(?, Mindestleistung)
@@ -548,6 +553,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                // Der Wert der Datei kommt in IHRER Einheit - ein vorher in Prozent gepflegter
+                // Satz bekommt mit dem kW-Wert des Imports auch die Einheit kW zurueck.
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
                 new DbParam("@brn", this.Brennwert ? 1 : 0),
                 new DbParam("@kbw", this.Brennwert ? 1 : 0),
                 new DbParam("@eta30", KesselKennlinieWerte.Wert(this.Wirkungsgrad_Teillast30)),
@@ -662,6 +670,10 @@ namespace WindowsFormsApplication1
             target.CO = row["CO"] != DBNull.Value ? Convert.ToDouble(row["CO"]) : 0.0;
             target.Staub = row["Staub"] != DBNull.Value ? Convert.ToDouble(row["Staub"]) : 0.0;
             target.Betriebsbereitschaftverlust = row["Betriebsbereitschaftverlust"] != DBNull.Value ? Convert.ToDouble(row["Betriebsbereitschaftverlust"]) : 0.0;
+            // Ohne Spalte (nicht migriert) und bei NULL gilt kW - die Einheit des Bestands.
+            target.Bereitschaft_Einheit = KesselBereitschaft.Einheit(
+                row.Table.Columns.Contains(KesselBereitschaftEinheitSchema.SPALTE)
+                    ? row[KesselBereitschaftEinheitSchema.SPALTE] as string : null);
             target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;
             target.Vorlauf = row["Vorlauf"] != DBNull.Value ? Convert.ToInt32(row["Vorlauf"]) : 0;
             target.Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
@@ -1036,6 +1048,10 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrEmpty(kennlinie))
                     return new SpeicherErgebnis(false, kennlinie, "");
 
+                string bereitschaft = BereitschaftVerstoss(ctrl);
+                if (!string.IsNullOrEmpty(bereitschaft))
+                    return new SpeicherErgebnis(false, bereitschaft, "");
+
                 if (!ctrl.Insert())
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
                         "Fehler beim Speichern des Datensatzes!"), "");
@@ -1113,8 +1129,23 @@ namespace WindowsFormsApplication1
             string kennlinie = KesselKennlinieWerte.Verstoss(this);
             if (!string.IsNullOrEmpty(kennlinie)) return (false, kennlinie);
 
+            // Der Bereitschaftsverlust in den Grenzen seiner Einheit (kW: 0 … Nennleistung,
+            // %: 0 … 100) - Anwenderentscheid 02.10.2026.
+            string bereitschaft = BereitschaftVerstoss(this);
+            if (!string.IsNullOrEmpty(bereitschaft)) return (false, bereitschaft);
+
             return (Schreiben(), "");
         }
+
+        /// <summary>
+        /// Die Prüfgrenzen des Bereitschaftsverlusts je Einheit (<see cref="KesselBereitschaft.Verstoss"/>)
+        /// gegen die Nennleistung des Satzes; <c>null</c> = in Ordnung.
+        /// </summary>
+        internal static string BereitschaftVerstoss(HeizkesselModel m)
+            => m == null ? null
+             : KesselBereitschaft.Verstoss(m.Betriebsbereitschaftverlust, m.Bereitschaft_Einheit,
+                                           m.Ptherm > 0 ? m.Ptherm : (double?)null,
+                                           MyResource.Resource.HZKK_FELD_BBVERLUST);
 
         /// <summary>Uebernimmt die Felder eines Modells in diesen Controller (samt Kennlinie).</summary>
         private void Uebernehmen(HeizkesselModel m)
@@ -1138,6 +1169,7 @@ namespace WindowsFormsApplication1
             this.CO = m.CO;
             this.Staub = m.Staub;
             this.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            this.Bereitschaft_Einheit = m.Bereitschaft_Einheit;
             this.Brennwert = m.Brennwert;
             this.Vorlauf = m.Vorlauf;
             this.Ruecklauf = m.Ruecklauf;
@@ -1260,6 +1292,9 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldWirkungsgradGas] = Feld(r, "Wirkungsgrad_Gas");
             werte[KatalogBrowserProfil.FeldWirkungsgradOel] = Feld(r, "Wirkungsgrad_Öl");
             werte[KatalogBrowserProfil.FeldBBVerlust] = Feld(r, "Betriebsbereitschaftverlust");
+            // Die Einheit (Anwenderentscheid 02.10.2026): ohne Spalte und bei NULL kW.
+            werte[KatalogBrowserProfil.FeldBBEinheit] =
+                KesselBereitschaft.Einheit(Feld(r, KesselBereitschaftEinheitSchema.SPALTE));
             werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
             werte[KatalogBrowserProfil.FeldWartungskosten] = Feld(r, "Wartungskosten");
             werte[KatalogBrowserProfil.FeldWartungEinheit] =
@@ -1308,6 +1343,9 @@ namespace WindowsFormsApplication1
         /// nicht Bequemlichkeit, sondern Datenschutz im Wortsinn: Der Schreibweg liest
         /// den Satz, aendert die mitgegebenen Felder und schreibt ihn ganz zurueck; ein
         /// vergessenes Feld wuerde sonst als 0 ueber einen gepflegten Wert laufen.</para>
+        /// <para><b>Die Einheit des Bereitschaftsverlusts</b> (<c>BereitschaftEinheit</c>, „kW" oder
+        /// „%", Anwenderentscheid 02.10.2026) steht als Nachschlagewert ganz am Ende; <c>null</c>
+        /// oder leer laesst die gespeicherte Einheit stehen.</para>
         /// <para><b>Die fuenf Felder der Kennlinie</b> (Konzept Kesselkennlinie 3.1) stehen
         /// ganz hinten; die vier Zahlen kommen als TEXT, weil bei ihnen ein leeres Feld etwas
         /// anderes heisst als ein fehlendes: <c>null</c> laesst die Spalte stehen, <c>""</c>
@@ -1332,7 +1370,8 @@ namespace WindowsFormsApplication1
                                                      bool? KennlinieBrennwert = null,
                                                      string Mindestleistung = null,
                                                      string Anfahrverlust = null,
-                                                     string Mindestlaufzeit = null);
+                                                     string Mindestlaufzeit = null,
+                                                     string BereitschaftEinheit = null);
 
         /// <summary>
         /// Die drei zulaessigen Bezugsgroessen der Wartungskosten, in Anzeigereihenfolge
@@ -1457,14 +1496,30 @@ namespace WindowsFormsApplication1
                 Nichtnegativ(KatalogBrowserProfil.FeldSo2, f.SO2),
                 Nichtnegativ(KatalogBrowserProfil.FeldNox, f.NOx),
                 Nichtnegativ(KatalogBrowserProfil.FeldCo, f.CO),
-                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub),
-                f.Betriebsbereitschaftverlust.HasValue
-                    ? KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldBBVerlust,
-                                                    f.Betriebsbereitschaftverlust.Value, 0, 100)
-                    : null);
+                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub));
             if (!string.IsNullOrEmpty(grund)) return grund;
 
-            // 2. Die zwei Nachschlagewerte.
+            // 2. Die drei Nachschlagewerte - zuerst die Einheit des Bereitschaftsverlusts, weil
+            //    die Grenze seines Werts an ihr haengt.
+            string bbEinheit;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBBEinheit,
+                                                 f.BereitschaftEinheit, KesselBereitschaft.EINHEITEN,
+                                                 out bbEinheit);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // Die Grenzen je Einheit (kW: 0 … Nennleistung, %: 0 … 100) gegen den Stand NACH dem
+            // Speichern: der neue Wert oder der gespeicherte, die neue Einheit oder die gespeicherte,
+            // die mitgegebene Nennleistung.
+            double bbWert = f.Betriebsbereitschaftverlust ?? satz.Betriebsbereitschaftverlust;
+            string bbWirksam = bbEinheit ?? satz.Bereitschaft_Einheit;
+            if (f.Betriebsbereitschaftverlust.HasValue || bbEinheit != null)
+            {
+                grund = KesselBereitschaft.Verstoss(bbWert, bbWirksam,
+                    f.Ptherm > 0 ? f.Ptherm : (double?)null,
+                    KatalogFeldPruefung.Feldname(art, KatalogBrowserProfil.FeldBBVerlust));
+                if (!string.IsNullOrEmpty(grund)) return grund;
+            }
+
             string einheit;
             grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldWartungEinheit,
                                                  f.WartungskostenEinheit, WARTUNGSEINHEITEN,
@@ -1494,6 +1549,7 @@ namespace WindowsFormsApplication1
             if (f.WirkungsgradOel.HasValue) satz.Wirkungsgrad_Oel = f.WirkungsgradOel.Value;
             if (f.Betriebsbereitschaftverlust.HasValue)
                 satz.Betriebsbereitschaftverlust = f.Betriebsbereitschaftverlust.Value;
+            if (bbEinheit != null) satz.Bereitschaft_Einheit = KesselBereitschaft.Einheit(bbEinheit);
             if (f.Raumbedarf.HasValue) satz.Raumbedarf = f.Raumbedarf.Value;
             if (f.Wartungskosten.HasValue) satz.Wartungskosten = f.Wartungskosten.Value;
             if (einheit != null) satz.Wartungskosten_Einheit = einheit;

@@ -90,19 +90,20 @@ public class BhkwKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <b>Nur noch ZWEI Gruppen</b> (Anwenderentscheid 15.09.2026). Der Fall haelt
-    /// zugleich die Abwesenheit der drei entfallenen fest — sonst kaemen sie bei der
-    /// naechsten Pflege unbemerkt zurueck.
+    /// <b>Drei Gruppen</b>: Modul und Technische Daten (Anwenderentscheid 15.09.2026), dazu
+    /// „Teillast und Takten" (Welle M4: BH1, BH2). Der Fall haelt zugleich die Abwesenheit
+    /// der drei entfallenen fest — sonst kaemen sie bei der naechsten Pflege unbemerkt zurueck.
     /// </summary>
     [Fact]
-    public void Der_Editor_traegt_nur_noch_Modul_und_Technische_Daten()
+    public void Der_Editor_traegt_Modul_Technische_Daten_und_Teillast()
     {
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
-        Assert.Equal(2, titel.Count);
+        Assert.Equal(3, titel.Count);
         Assert.Equal("Modul", titel[0]);
         Assert.Equal("Technische Daten", titel[1]);
+        Assert.Equal("Teillast und Takten", titel[2]);
 
         Assert.DoesNotContain("Eingabedaten zur Berechnung der Kosten", titel);
         Assert.DoesNotContain("Emissionen nach BEHG-V", titel);
@@ -114,13 +115,14 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // Zwoelf Felder: 5 Zahlen (Ptherm, Pel, elektrischer und thermischer
-        // Wirkungsgrad, Grenzleistung), 2 Ganzzahlen (Vorlauf, Ruecklauf),
+        // Sechzehn Felder: 8 Zahlen (Ptherm, Pel, elektrischer und thermischer
+        // Wirkungsgrad, Grenzleistung; Welle M4: die zwei Wirkungsgrade bei 50 % Last und
+        // der Anfahrverlust), 3 Ganzzahlen (Vorlauf, Ruecklauf, Mindestlaufzeit),
         // 4 Texte (Modulname, Hersteller, Motortyp und die BERECHNETE Anzeige des
         // Gesamtwirkungsgrads), 1 mehrzeilige Beschreibung und die Klappliste des
         // Energietraegers.
-        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
+        Assert.Equal(8, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         Assert.Equal(4, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Single(cut.FindAll("select"));
@@ -717,5 +719,90 @@ public class BhkwKatalogDialogTests : EposBunitContext
 
         Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
         Assert.Equal(0, gerufen);
+    }
+
+    // =================================================================================
+    // Teillast und Takten (Welle M4: BH1, BH2)
+    // =================================================================================
+
+    /// <summary>
+    /// Die vier Felder der Gruppe landen im Feldsatz, leer bleibt leer, und der Speicherweg
+    /// bekommt sie.
+    /// </summary>
+    [Fact]
+    public void Teillastfelder_landen_im_Feldsatz()
+    {
+        BhkwKatalogDaten? geschrieben = null;
+        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        {
+            geschrieben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        var dez = cut.FindAll("input[inputmode=decimal]");
+        dez[5].Input("0,27");
+        cut.FindAll("input[inputmode=decimal]")[7].Input("0,5");
+        cut.FindAll("input[inputmode=numeric]")[2].Input("15");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(0.27, geschrieben!.WirkungsgradEl50!.Value, 9);
+        Assert.Null(geschrieben.WirkungsgradTh50);
+        Assert.Equal(0.5, geschrieben.AnfahrverlustKwh!.Value, 9);
+        Assert.Equal(15, geschrieben.MindestlaufzeitMin);
+    }
+
+    /// <summary>
+    /// Ein Teillastwirkungsgrad als Prozentzahl liegt außerhalb des Bandes 0 … 1 und wird abgewiesen —
+    /// es wird nichts geschrieben.
+    /// </summary>
+    [Fact]
+    public void Ein_Teillastwirkungsgrad_ueber_eins_wird_nicht_geschrieben()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll("input[inputmode=decimal]")[6].Input("64");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.False(string.IsNullOrEmpty(cut.Instance.Meldung));
+    }
+
+    /// <summary>
+    /// Die kleine Kurve folgt dem Arbeitsstand: zwei Linien (elektrisch, thermisch), neu gezeichnet nur bei
+    /// einem Feld, das sie bestimmt; ohne Teillastwert stehen beide Linien flach auf dem Volllastwert.
+    /// </summary>
+    [Fact]
+    public void Die_Kurve_folgt_dem_Arbeitsstand()
+    {
+        var daten = Bestand();
+        daten.WirkungsgradEl = 0.35;
+        daten.WirkungsgradTh = 0.5;
+        int bilder = 0;
+        var cut = Render<BhkwKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.Kennlinienbild, d => { bilder++; return BhkwKennlinienbild.Modell(d); }));
+
+        var bild = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal("bhkwk-kennlinie", bild.Instance.Kennung);
+        Assert.Equal(2, bild.Instance.Modell!.Reihen.Count);
+        Assert.Equal(1, bilder);
+        double el100 = 0.85 * 40 / 120;
+        Assert.All(bild.Instance.Modell!.Reihen[0].Werte, w => Assert.Equal(el100, w, 9));
+
+        cut.FindAll("input[inputmode=decimal]")[5].Input("0,25");
+        Assert.Equal(2, bilder);
+        var reihen = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell!.Reihen;
+        Assert.Equal(0.25, reihen[0].Werte[0], 9);
+        Assert.Equal(el100, reihen[0].Werte[^1], 9);
+
+        cut.FindAll("input[type=text]")[1].Input("Anderes Werk");
+        Assert.Equal(2, bilder);
     }
 }

@@ -48,6 +48,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         public DataTable Einstellungen;
 
+        /// <summary>
+        /// Das Temperaturniveau des Prozesskanals (PW1 Stufe 1): höchster Vorlauf und tiefster
+        /// Rücklauf der zugeordneten Prozesswärmesätze mit Temperaturpaar [°C]; <c>null</c>, wenn
+        /// keiner ein Paar trägt (dann führt der Bericht keine Zeile).
+        /// </summary>
+        public double? ProzessVorlaufMax;
+
+        /// <summary>Tiefster Rücklauf der Prozesswärmesätze mit Temperaturpaar [°C]; siehe <see cref="ProzessVorlaufMax"/>.</summary>
+        public double? ProzessRuecklaufMin;
+
+        /// <summary>Zahl der zugeordneten Prozesswärmesätze mit Temperaturpaar.</summary>
+        public int ProzessMitTemperatur;
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4); leer, wenn
+        /// das Projekt keine führt (dann führt der Bericht keine Zeile).
+        /// </summary>
+        public Netzverlustvorgabe Netzkanaele = Netzverlustvorgabe.Leer;
+
+        /// <summary>Die thermische Desinfektion (BW5); „aus", wenn das Projekt keine führt (dann keine Zeile).</summary>
+        public Desinfektionsvorgabe Desinfektion = Desinfektionsvorgabe.Aus;
+
+        /// <summary>Jahresmenge der Desinfektion [MWh] nach den Regeln des Laufs; 0 ohne.</summary>
+        public double DesinfektionMwh;
+
+        /// <summary>Aufgeheiztes Volumen der Desinfektion [l] (gepflegt oder das der Brauchwasserspeicher).</summary>
+        public double DesinfektionVolumenL;
+
+        /// <summary>Rechnet das Projekt sein Brauchwasser über den Zapfprofilgenerator? (Dann gilt dessen Zirkulation.)</summary>
+        public bool Zapfprofilweg;
+
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
 
@@ -223,6 +254,22 @@ namespace WindowsFormsApplication1
 
             // Stufe G6a: die Zonen EINMAL je Projekt, samt Aufbauten und Zonenmerkmalen.
             LadeZonen(d);
+
+            // PW1 Stufe 1: das Temperaturniveau des Prozesskanals.
+            LadeProzesstemperatur(d);
+
+            // BW4: Netzverluste je Kanal und Zirkulation im Bestandsweg.
+            d.Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(d.IdProjekt);
+            d.Zapfprofilweg = ZapfprofilCtrl.Weg(d.IdProjekt) == BrauchwasserWeg.Generator;
+
+            // BW5: die thermische Desinfektion samt Jahresmenge (dieselben Regeln wie im Lauf).
+            d.Desinfektion = KonfigurationCtrl.DesinfektionLesen(d.IdProjekt);
+            if (d.Desinfektion.Aktiv)
+            {
+                double kwh = WindowsFormsApplication1.Desinfektion.JahresmengeKwh(d.IdProjekt, d.Desinfektion, out double volumen, out _);
+                d.DesinfektionMwh = Energieeinheit.MWh.AusKWh(kwh);
+                d.DesinfektionVolumenL = volumen;
+            }
             return d;
         }
 
@@ -252,6 +299,27 @@ namespace WindowsFormsApplication1
                 return KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile(plan, idProjekt);
 
             return LadeTabelle(tabelle, idProjekt);   // Gewerk ohne Plan: wie bisher
+        }
+
+        /// <summary>
+        /// Liest das Temperaturniveau der zugeordneten Prozesswärmesätze (PW1 Stufe 1) — über die
+        /// Zuordnungszeilen, mit denen der Lauf rechnet. Still: Vor dem Schemaschritt fehlen die
+        /// Spalten, dann bleibt es bei „ohne".
+        /// </summary>
+        private static void LadeProzesstemperatur(ProjektDetails d)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT MAX(p.Vorlauf) AS VL, MIN(p.Ruecklauf) AS RL, COUNT(*) AS N FROM Tab_Prozesswaerme p " +
+                "INNER JOIN Z_Projekt_Prozesswaerme z ON z.ID_Prozesswaerme = p.ID " +
+                "WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL",
+                StilleDb.Par("@p", DbParamTyp.Integer, d.IdProjekt),
+                StilleDb.Par("@p2", DbParamTyp.Integer, d.IdProjekt));
+            if (dt == null || dt.Rows.Count == 0) return;
+            int n = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "N"));
+            if (n <= 0) return;
+            d.ProzessMitTemperatur = n;
+            d.ProzessVorlaufMax = D(dt.Rows[0], "VL");
+            d.ProzessRuecklaufMin = D(dt.Rows[0], "RL");
         }
 
         private static DataTable LadeTabelle(string tabelle, int idProjekt)

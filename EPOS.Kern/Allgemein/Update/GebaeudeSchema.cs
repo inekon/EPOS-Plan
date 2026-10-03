@@ -71,8 +71,14 @@ namespace WindowsFormsApplication1
     // Nummer bei BaualtersklassenSchema.SCHRITT). Eine Spalte Energiestandard (TEXT, CHECK auf die
     // elf Codes, NULL = keiner) je Gebaeudetabelle, die Sicht mit ihr HINTER der Nachtzeit neu (102
     // Spalten); dazu die einmalige Umschluesselung der Baualtersklassen (BaualtersklassenSchema). Er
-    // laeuft in Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer Durchgang die Spalte
-    // wieder aus der Sicht schneidet.
+    // laeuft in Migration, Werkzeug und Testkopie hinter den sechs aelteren Durchgaengen.
+    //
+    // DER ACHTE DURCHGANG: die manuelle Aufheizzeit (Entscheid E59, Entwurf KP3 Abschnitt 4,
+    // KP-S4; Nummer bei AufheizManuellSchema.SCHRITT). Eine Spalte Aufheizzeit_Manuell_H (INTEGER,
+    // 1 bis 47 h, NULL = die Art des Projekts) NUR an Tab_Gebaeude - der Katalog fuehrt sie nicht
+    // (Festlegung 38) -, die Sicht mit ihr HINTER dem Energiestandard neu (103 Spalten). Er laeuft in
+    // Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer Durchgang die Spalte wieder aus
+    // der Sicht schneidet.
     // ====================================================================================
 
     /// <summary>
@@ -90,7 +96,8 @@ namespace WindowsFormsApplication1
     /// (<see cref="NachtzeitSchema.SCHRITT"/>, E43): Beginn und Ende der Nachtabsenkung je
     /// Gebaeudetabelle und der sechste Sichtneubau; und der siebte Durchgang
     /// (<see cref="BaualtersklassenSchema.SCHRITT"/>, E47): der Energiestandard je Gebaeudetabelle und
-    /// der siebte Sichtneubau.
+    /// der siebte Sichtneubau; und der achte Sichtneubau (<see cref="AufheizManuellSchema.SCHRITT"/>,
+    /// E59): die manuelle Aufheizzeit an <c>Tab_Gebaeude</c>, gebaut von <see cref="AufheizManuellSchema"/>.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -654,14 +661,42 @@ namespace WindowsFormsApplication1
                                  .Concat(NACHTZEIT_SPALTEN)
                                  .Concat(new[] { SPALTE_ENERGIESTANDARD }));
 
-        /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Energiestandards).
-        /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
-        /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_ENERGIESTANDARD;
+        // ---- der achte Durchgang: die manuelle Aufheizzeit (E59, KP-S4) ------------------
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Energiestandards).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_ENERGIESTANDARD;
+        /// <summary>
+        /// Die manuelle Aufheizzeit des Gebäudes (E59, Festlegung 37): die Aufheizzeit t = n − 1 in Stunden
+        /// wie <c>Aufheizzeit_Max_H</c>, 1 bis 47; NULL = das Gebäude folgt der Art des Projekts. NUR an
+        /// <c>Tab_Gebaeude</c> — der Katalog führt sie nicht (Festlegung 38).
+        /// </summary>
+        public const string SPALTE_AUFHEIZZEIT_MANUELL = "Aufheizzeit_Manuell_H";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der manuellen Aufheizzeit (<see cref="AufheizManuellSchema.SCHRITT"/>,
+        /// der achte Durchgang): die 102 aus <see cref="SICHT_ENERGIESTANDARD"/>, dahinter die manuelle
+        /// Aufheizzeit - an der Stelle 102.
+        /// </summary>
+        public static readonly string[] SICHT_AUFHEIZ_MANUELL =
+            SICHT_ENERGIESTANDARD.Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL }).ToArray();
+
+        /// <summary>Die Sichtdefinition der manuellen Aufheizzeit: alle sieben Durchgänge davor und dahinter die manuelle Aufheizzeit.</summary>
+        public static readonly string SQL_VIEW_AUFHEIZ_MANUELL =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL }));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der manuellen
+        /// Aufheizzeit). Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
+        /// </summary>
+        public static string[] SICHT_AKTUELL => SICHT_AUFHEIZ_MANUELL;
+
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der manuellen Aufheizzeit).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_AUFHEIZ_MANUELL;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

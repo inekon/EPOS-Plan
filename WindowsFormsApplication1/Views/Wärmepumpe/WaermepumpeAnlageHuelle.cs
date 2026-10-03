@@ -269,6 +269,10 @@ namespace WindowsFormsApplication1
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
                 ["BtnKennlinienText"] = Text_("WPA_BTN_KENNLINIEN_KATALOG",
                     "Kennlinien aus dem Katalog übernehmen"),
+                ["HerleitungKuehlKatalog"] = Text_("WPA_HERLEITUNG_KUEHL_KATALOG",
+                    "Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt."),
+                ["BtnKuehlKennlinieText"] = Text_("WPA_BTN_KUEHLKENNLINIE_KATALOG",
+                    "Kühlkennlinie aus dem Katalog übernehmen"),
                 ["TextKennlinienUebernommen"] = Text_("WPA_MSG_KENNLINIEN_UEBERNOMMEN",
                     "{0} Stützstellen aus dem Katalog in das Projekt übernommen."),
                 ["TextKennlinienOhneKatalog"] = Text_("WPA_MSG_KENNLINIEN_OHNE_KATALOG",
@@ -384,7 +388,8 @@ namespace WindowsFormsApplication1
                     quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
                 quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog
                     ? Kennlinienherkunft.Katalog : Kennlinienherkunft.Projekt,
-                quelle.Nachholbar);
+                quelle.Nachholbar,
+                quelle.KuehlNachholbar);
         }
 
         /// <summary>
@@ -485,6 +490,9 @@ namespace WindowsFormsApplication1
                 Modulkosten = m.Modulkosten,
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): die Taktwerte des Geräts - im Anlagendialog nur lesend.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -589,6 +597,15 @@ namespace WindowsFormsApplication1
                 Solaranteil = m.Solaranteil,
                 RendeMix = m.rendeMix
             };
+
+            // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie - nur zur Anzeige; sie reisen
+            // mit der Übernahme aus dem Katalog und werden hier nicht zurückgeschrieben.
+            WPModel geraet = m.ID_WP > 0 ? WaermepumpeGeraeteCtrl.Geraetedaten(m.ID_WP) : null;
+            if (geraet != null)
+            {
+                d.MindestleistungKw = geraet.MindestleistungKw;
+                d.TaktverlustfaktorCd = geraet.TaktverlustfaktorCd;
+            }
 
             // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
             // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell

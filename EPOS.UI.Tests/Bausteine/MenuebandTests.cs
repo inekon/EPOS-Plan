@@ -184,7 +184,15 @@ public class MenuebandTests : EposBunitContext
         // GEBAEUDESIMULATION G3 (Softwarearchitektur 3.1): „Gebaeude" fuehrt
         // hinter „Gebaeudetypen" die zwei Kataloge „Baustoffe" und
         // „Bauteilaufbauten" - zwei neue Wege. Also 63 Punkte und 49 Handlungen.
-        Assert.Equal(63, Punkte.Count);
+        //
+        // BETRIEBSKALENDER (Entscheidungsvorlage Modellgrenzen PW2, BW2): „Profile &
+        // Lastgaenge" fuehrt die Verwaltung der Betriebskalender - ein neuer Weg.
+        // Also 64 Punkte und 50 Handlungen.
+        //
+        // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): „Daten &
+        // Import" fuehrt hinter der Dublettenpruefung „Katalog aktualisieren…" - ein
+        // neuer Weg. Also 65 Punkte und 51 Handlungen.
+        Assert.Equal(65, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -289,7 +297,7 @@ public class MenuebandTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_drei_Punkte_in_dieser_Reihenfolge()
+    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_vier_Punkte_in_dieser_Reihenfolge()
     {
         // "Erstelle in 'Waermebedarf & Heizung' Unterrubrik 'Profile &
         // Lastgaenge'; verschiebe in diese Rubrik: 'Waermebedarf Lastgang',
@@ -311,6 +319,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_WaermebedarfExtern",
             "MenuItem_Prozesswaerme",
             "MenuItem_SolThermGanglinie",
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile.
+            "MenuItem_Betriebskalender",
         }, Kinder(rubrik));
     }
 
@@ -431,6 +441,8 @@ public class MenuebandTests : EposBunitContext
             // MN-1: Trennstrich, danach die Dublettenpruefung.
             "MenuItem_TrennerImportDubletten",
             "MenuItem_KatalogDubletten",
+            // KU1 Stufe 1: der Abgleich mit dem Katalogpaket, hinter der Dublettenpruefung.
+            "MenuItem_Katalogabgleich",
         }, Kinder(daten));
 
         Menuepunkt knoten = daten.Untereintraege.Single(p => p.Name == "MenuItem_PV_Import_Gruppe");
@@ -849,6 +861,8 @@ public class MenuebandTests : EposBunitContext
             // Kataloge der Baustoffe und der Bauteilaufbauten.
             Seitenschluessel.BaustoffKatalog,
             Seitenschluessel.BauteilaufbauKatalog,
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile - ein neuer Weg.
+            Seitenschluessel.Betriebskalender,
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
             // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
@@ -861,6 +875,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.Gesetzeskatalog,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
+            // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
+            Seitenschluessel.Katalogabgleich,
             Seitenschluessel.KatalogDubletten,
             Seitenschluessel.Klimadaten,
             Seitenschluessel.Kostenverwaltung,
@@ -988,14 +1004,19 @@ public class MenuebandTests : EposBunitContext
         Menuepunkt daten = Rubrik("MenuItem_DatImport");
         IReadOnlyList<Menuepunkt> kinder = daten.Untereintraege;
 
-        Assert.Equal("MenuItem_KatalogDubletten", kinder[^1].Name);
-        Assert.True(kinder[^2].Trenner);
-        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^1].Ziel);
-        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^1].TextSchluessel);
-        Assert.Equal("", kinder[^1].Bild);
+        // KU1 Stufe 1: danach nur noch „Katalog aktualisieren…" - dieselbe Rubrik, die
+        // Pflege der eingelesenen Kataloge.
+        Assert.Equal("MenuItem_Katalogabgleich", kinder[^1].Name);
+        Assert.Equal(Seitenschluessel.Katalogabgleich, kinder[^1].Ziel);
+        Assert.Equal("KABG_MENUE", kinder[^1].TextSchluessel);
+        Assert.Equal("MenuItem_KatalogDubletten", kinder[^2].Name);
+        Assert.True(kinder[^3].Trenner);
+        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^2].Ziel);
+        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
+        Assert.Equal("", kinder[^2].Bild);
 
         // Sechs Importe davor, in der Reihenfolge der Kataloge.
-        Assert.Equal(6, kinder.Take(kinder.Count - 2).Count());
+        Assert.Equal(6, kinder.Take(kinder.Count - 3).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1213,8 +1234,13 @@ public class MenuebandTests : EposBunitContext
         //
         // Die Gebaeudesimulation G3 legt zwei echte Wege an - die Kataloge der
         // Baustoffe und der Bauteilaufbauten unter „Gebaeude" (47 -> 49).
+        //
+        // Die Betriebskalender (PW2/BW2) legen unter „Profile & Lastgaenge" einen
+        // echten Weg an (49 -> 50).
+        //
+        // „Katalog aktualisieren…" (KU1 Stufe 1) ist ein echter Weg (50 -> 51).
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(49, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(51, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

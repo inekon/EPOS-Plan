@@ -112,9 +112,10 @@ namespace EPOS.Kern.Tests
             Assert.EndsWith(") STRICT", soll, StringComparison.Ordinal);
             Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
             Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
-            // Die Messlatte steht auf dem Zielstand: dazu die fünf Spalten des Kältekreises (KAK-S3, E37)
-            // und die Nachtauskühlstunden (KP-S1v).
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            // Die Messlatte steht auf dem Zielstand: dazu die fünf Spalten des Kältekreises (KAK-S3, E37),
+            // die Nachtauskühlstunden (KP-S1v), die vierzehn Spalten der Aufheizoptimierung (KP-S3) und die
+            // drei des Schritts KP-S4 (B24).
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
             // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 128, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);
@@ -257,7 +258,12 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(DBNull.Value, r["Kuehlstunden_H"]);
                 Assert.Equal(vdi.MittlereRaumtemperaturHeizzeit, (double)r["MittlereRaumtemperatur_C"]);
                 Assert.Equal(vdi.Ueberhitzungsstunden, Convert.ToInt32(r["Ueberhitzungsstunden_H"]));
-                Assert.Equal(vdi.StundenMitSommerlueftung, Convert.ToInt32(r["Sommerlueftungsstunden_H"]));
+                // Entwurf KP3, Festlegung 26 (B17): Die Gebäude von 1039 tragen keine Sommerlüftung - das Modell
+                // behält seine Zahl (0), die Zelle bleibt NULL wie die der Nachtauskühlstunden (E30).
+                Assert.False(vdi.SommerlueftungGesetzt);
+                Assert.Equal(0, vdi.StundenMitSommerlueftung);
+                Assert.Null(m.SommerlueftungsstundenH);
+                Assert.Equal(DBNull.Value, r["Sommerlueftungsstunden_H"]);
                 Assert.Equal(vdi.ThetaMax, (double)r["ObereRaumtemperatur_C"]);
                 // Schritt 128: ohne Kopplung tragen die vier Spalten des Heizkreises NULL.
                 Assert.Null(vdi.Heizkreis);

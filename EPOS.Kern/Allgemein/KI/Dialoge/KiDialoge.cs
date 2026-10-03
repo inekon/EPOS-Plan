@@ -411,6 +411,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Nutzungsdauern (AfA) (<c>NutzungsdauerDialog</c>).</summary>
         public const string NUTZUNGSDAUER = "Form_Nutzungsdauer";
 
+        /// <summary>
+        /// Die Betriebskalender der Bedarfsprofile (<c>BetriebskalenderDialog</c>;
+        /// Entscheidungsvorlage Modellgrenzen PW2, BW2).
+        /// </summary>
+        public const string BETRIEBSKALENDER = "Form_Betriebskalender";
+
+        /// <summary>
+        /// Die Pufferspeicher-Auslegung (<c>PufferAuslegungSeite</c>; Konzept Pufferspeicher-Auslegung,
+        /// Stufe P2) — eine freie Ansicht der Wurzel wie die Stromspeicher-Auslegung.
+        /// </summary>
+        public const string PUFFER_AUSLEGUNG = "Form_PufferAuslegung";
+
         /// <summary>Der Zeileneditor einer Kostenposition (<c>VorlagenPositionDialog</c>).</summary>
         public const string VORLAGENPOSITION = "Form_VorlagenPosition";
 
@@ -807,6 +819,8 @@ namespace WindowsFormsApplication1
                 Kostenfaktorkatalog(),
                 Emissionskatalog(),
                 Nutzungsdauer(),
+                Betriebskalender(),
+                PufferAuslegung(),
                 Vorlagenposition(),
                 CaseEingabe(),
                 WirtschaftlichkeitParameter(),
@@ -961,7 +975,10 @@ namespace WindowsFormsApplication1
                     ["hersteller"] = KatalogBrowserProfil.FeldFirma,
                     ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
                     ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
-                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust
+                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust,
+                    // Die Einheit (Anwenderentscheid 02.10.2026): im Editor ein Schalter „in %",
+                    // in der Verwaltung das Textfeld „kW"/„%".
+                    ["bereitschaftsverlust_prozent"] = KatalogBrowserProfil.FeldBBEinheit
                 },
                 [KiMaskennamen.BHKW] = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
@@ -2768,6 +2785,147 @@ namespace WindowsFormsApplication1
                 });
         }
 
+        // =====================================================================
+        // Form_Betriebskalender  ->  BetriebskalenderDialog   (Entscheidungsvorlage PW2, BW2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Betriebskalender der Bedarfsprofile — die Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BetriebskalenderKiSicht</c>: die Wahl des Kalenders, Bezeichnung,
+        /// Bundesland, Feiertagsregel, vier Ferienzeiträume als Jahrestag, Ferienfaktor in Prozent und
+        /// der Schalter „Ferien kürzen die Monatsmenge".
+        /// </summary>
+        /// <remarks>
+        /// <b>Geschrieben wird mit „Speichern" oder OK</b> über <c>dialog_speichern</c>; „Löschen" bleibt
+        /// dem Anwender (Rückfrage mit der Zahl der Zuordnungen, die den Kalender nutzen).
+        /// </remarks>
+        private static KiDialog Betriebskalender()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BETRIEBSKALENDER,
+                anzeigename: KiDialogTexte.MaskeBetriebskalender,
+                felder: new[]
+                {
+                    new KiDialogFeld("kalender", "BetriebskalenderKiSicht.Kalender",
+                                     KiDialogTexte.BkalKalenderName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkalKalenderErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichnung", "BetriebskalenderKiSicht.Bezeichnung",
+                                     KiDialogTexte.BkalBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkalBezeichnungErl),
+                    new KiDialogFeld("bundesland", "BetriebskalenderKiSicht.Bundesland",
+                                     KiDialogTexte.BkalBundeslandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkalBundeslandErl, leerErlaubt: true),
+                    new KiDialogFeld("feiertag_wie_sonntag", "BetriebskalenderKiSicht.FeiertagWieSonntag",
+                                     KiDialogTexte.BkalFeiertagName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalFeiertagErl),
+                    new KiDialogFeld("ferien1_von", "BetriebskalenderKiSicht.Ferien1Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 1), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien1_bis", "BetriebskalenderKiSicht.Ferien1Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 1), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien2_von", "BetriebskalenderKiSicht.Ferien2Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 2), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien2_bis", "BetriebskalenderKiSicht.Ferien2Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 2), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien3_von", "BetriebskalenderKiSicht.Ferien3Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 3), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien3_bis", "BetriebskalenderKiSicht.Ferien3Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 3), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien4_von", "BetriebskalenderKiSicht.Ferien4Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 4), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien4_bis", "BetriebskalenderKiSicht.Ferien4Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 4), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferienfaktor", "BetriebskalenderKiSicht.Ferienfaktor",
+                                     KiDialogTexte.BkalFaktorName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BkalFaktorErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("ferien_kuerzen", "BetriebskalenderKiSicht.FerienKuerzen",
+                                     KiDialogTexte.BkalKuerzenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalKuerzenErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PufferAuslegung  ->  PufferAuslegungSeite   (Konzept Pufferspeicher-Auslegung, Stufe P2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Pufferspeicher-Auslegung — die Felder aus
+        /// <c>EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungKiSicht</c>: das Klassen-Set, die Vorlage,
+        /// Gerätetyp und Zweiterzeuger der Wärmepumpe, Übergabeart, Heizgrenze, Anlagenvolumen,
+        /// Sperrprofil und die drei Ziele.
+        /// </summary>
+        /// <remarks>
+        /// <b>Keine Knöpfe.</b> „Auslegung speichern" und „Übernehmen" schreiben in die Datenbank —
+        /// sie bleiben dem Anwender. Ein gesetzter Schalter rechnet die Auslegung neu, ein gesetztes
+        /// Zahlenfeld markiert das Ergebnis als veraltet.
+        /// </remarks>
+        private static KiDialog PufferAuslegung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PUFFER_AUSLEGUNG,
+                anzeigename: KiDialogTexte.MaskePufferAuslegung,
+                felder: new[]
+                {
+                    new KiDialogFeld("klasse_heizung", "PufferAuslegungKiSicht.KlasseHeizung",
+                                     KiDialogTexte.PausKlasseHeizungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("klasse_brauchwasser", "PufferAuslegungKiSicht.KlasseBrauchwasser",
+                                     KiDialogTexte.PausKlasseBrauchwasserName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("klasse_prozess", "PufferAuslegungKiSicht.KlasseProzess",
+                                     KiDialogTexte.PausKlasseProzessName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("vorlage", "PufferAuslegungKiSicht.Vorlage",
+                                     KiDialogTexte.PausVorlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausVorlageErl),
+                    new KiDialogFeld("geregelt", "PufferAuslegungKiSicht.Geregelt",
+                                     KiDialogTexte.PausGeregeltName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausGeregeltErl),
+                    new KiDialogFeld("zweiterzeuger_frei", "PufferAuslegungKiSicht.ZweiterzeugerFrei",
+                                     KiDialogTexte.PausZweitName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausZweitErl),
+                    new KiDialogFeld("uebergabeart", "PufferAuslegungKiSicht.Uebergabeart",
+                                     KiDialogTexte.PausUebergabeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausUebergabeErl, leerErlaubt: true),
+                    new KiDialogFeld("heizgrenze", "PufferAuslegungKiSicht.Heizgrenze",
+                                     KiDialogTexte.PausHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausHeizgrenzeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("anlagenvolumen", "PufferAuslegungKiSicht.Anlagenvolumen",
+                                     KiDialogTexte.PausAnlagenvolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausAnlagenvolumenErl, einheit: KiDialogTexte.EINHEIT_LITER,
+                                     leerErlaubt: true, min: 0),
+                    new KiDialogFeld("sperrprofil", "PufferAuslegungKiSicht.Sperrprofil",
+                                     KiDialogTexte.PausSperrprofilName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausSperrprofilErl),
+                    new KiDialogFeld("mindestlaufzeit", "PufferAuslegungKiSicht.Mindestlaufzeit",
+                                     KiDialogTexte.PausMindestlaufzeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausMindestlaufzeitErl, einheit: "min",
+                                     leerErlaubt: true, min: 0),
+                    new KiDialogFeld("startziel", "PufferAuslegungKiSicht.Startziel",
+                                     KiDialogTexte.PausStartzielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausStartzielErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("deckungsziel", "PufferAuslegungKiSicht.Deckungsziel",
+                                     KiDialogTexte.PausDeckungszielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausDeckungErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     leerErlaubt: true, min: 0, max: 100)
+                });
+        }
+
         /// <summary>
         /// Die Eigenschaft, aus der eine Zeile der Nutzungsdauertabelle ihren
         /// Klartextnamen bekommt — „Nutzungsdauer (Waermeerzeuger)" statt
@@ -3548,6 +3706,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("rechenweg", "BedarfsProfileKiSicht.Rechenweg",
                                      KiDialogTexte.BpfRechenwegName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BpfRechenwegErl),
+                    // PW2/BW2: der Betriebskalender der markierten Zuordnung (geschrieben mit OK).
+                    new KiDialogFeld("betriebskalender", "BedarfsProfileKiSicht.Betriebskalender",
+                                     KiDialogTexte.BpfKalenderName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfKalenderErl, leerErlaubt: true),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,
@@ -5159,7 +5321,16 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TstammMonatswerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.TstammMonatswerteErl,
                                      einheit: KiDialogTexte.EINHEIT_MWH,
-                                     reihe: KiZahlenreihen.Monate())
+                                     reihe: KiZahlenreihen.Monate()),
+                    // PW1 Stufe 1: das Temperaturpaar - nur die Prozesswärme zeigt es; leer = ohne.
+                    new KiDialogFeld("vorlauf", "TypStammDaten.Vorlauf",
+                                     KiDialogTexte.TstammVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "TypStammDaten.Ruecklauf",
+                                     KiDialogTexte.TstammRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TstammRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -6280,7 +6451,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Pufferspeicher-Verwaltung des Projekts — zweiundzwanzig Felder aus
+        /// Die Pufferspeicher-Verwaltung des Projekts — siebenundzwanzig Felder aus
         /// <c>EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -6427,7 +6598,28 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("entnahmehoehe_prozess",
                                      "PufferSpProjektKiSicht.EntnahmehoeheProzess",
                                      KiDialogTexte.PspvEntnahmeProzessName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.PspvEntnahmeProzessErl, leerErlaubt: true)
+                                     KiDialogTexte.PspvEntnahmeProzessErl, leerErlaubt: true),
+
+                    // ---- Welle M7: Bereitschaft, Zonenanteile, Frischwassermodul ---------
+                    new KiDialogFeld("bereitschaft_nach_temperatur",
+                                     "PufferSpProjektKiSicht.BereitschaftNachTemperatur",
+                                     KiDialogTexte.PspvBereitschaftTemperaturName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvBereitschaftTemperaturErl),
+                    new KiDialogFeld("aufstellraum", "PufferSpProjektKiSicht.Aufstellraum",
+                                     KiDialogTexte.PspvAufstellraumName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvAufstellraumErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("zonenanteile", "PufferSpProjektKiSicht.Zonenanteile",
+                                     KiDialogTexte.PspvAnteileName, KiParameterTyp.Text,
+                                     KiDialogTexte.PspvAnteileErl, leerErlaubt: true),
+                    new KiDialogFeld("frischwassermodul", "PufferSpProjektKiSicht.Frischwassermodul",
+                                     KiDialogTexte.PspvFwmName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvFwmErl),
+                    new KiDialogFeld("fwm_graedigkeit", "PufferSpProjektKiSicht.FwmGraedigkeit",
+                                     KiDialogTexte.PspvFwmGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvFwmGraedigkeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -6661,7 +6853,28 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    // Welle M2 (Modellgrenzen ST1 bis ST4): der Solarkreis des Felds.
+                    new KiDialogFeld("pumpenleistung", "SolarkollektorenKiSicht.PumpenleistungW",
+                                     KiDialogTexte.SkPumpeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkPumpeErl, leerErlaubt: true),
+                    new KiDialogFeld("solarkreisverluste", "SolarkollektorenKiSicht.VerlusteProzent",
+                                     KiDialogTexte.SkVerlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkVerlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("arbeitstemperatur_aus_speicher", "SolarkollektorenKiSicht.ArbeitstemperaturAusSpeicher",
+                                     KiDialogTexte.SkArbeitstemperaturName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SkArbeitstemperaturErl),
+                    new KiDialogFeld("graedigkeit", "SolarkollektorenKiSicht.GraedigkeitK",
+                                     KiDialogTexte.SkGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkGraedigkeitErl, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "SolarkollektorenKiSicht.SpreizungK",
+                                     KiDialogTexte.SkSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkSpreizungErl, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "SolarkollektorenKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -7086,11 +7299,17 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.HkWgOelName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkWgOelErl,
                                      leerErlaubt: true),
+                    // Der Wert steht in kW ODER % der Nennleistung (Anwenderentscheid 02.10.2026);
+                    // welche Einheit gilt, sagt das Feld darunter - deshalb hier keine feste.
                     new KiDialogFeld("bereitschaftsverlust",
                                      "HeizkesselKatalogDaten.Betriebsbereitschaftverlust",
                                      KiDialogTexte.HkBbVerlustName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkBbVerlustErl,
-                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                                     leerErlaubt: true),
+                    new KiDialogFeld("bereitschaftsverlust_prozent",
+                                     "HeizkesselKatalogDaten.BereitschaftProzent",
+                                     KiDialogTexte.HkBbProzentName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.HkBbProzentErl),
                     new KiDialogFeld("vorlauf", "HeizkesselKatalogDaten.Vorlauf",
                                      KiDialogTexte.HkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkVorlaufErl,
@@ -7249,6 +7468,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvSystemverlusteErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("albedo", "PhotovoltaikKiSicht.Albedo",
+                                     KiDialogTexte.AlbedoName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.AlbedoErl,
+                                     leerErlaubt: true),
 
                     // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
                     new KiDialogFeld("mit_wechselrichter", "PhotovoltaikKiSicht.MitWechselrichter",
@@ -7504,7 +7727,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung", "WaermepumpeStammDaten.Kuehlleistung",
                                      KiDialogTexte.WpKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpKuehlleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true)
+                                     einheit: KiDialogTexte.EINHEIT_KW, nurLesen: true),
+
+                    // ---- Welle M4 (WP1): der Taktverlust nach EN 14825 ---------------
+                    new KiDialogFeld("mindestleistung", "WaermepumpeStammDaten.MindestleistungKw",
+                                     KiDialogTexte.WpMindestleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpMindestleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("taktverlust_cd", "WaermepumpeStammDaten.TaktverlustfaktorCd",
+                                     KiDialogTexte.WpTaktverlustCdName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpTaktverlustCdErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8122,6 +8354,36 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimKuehlbetriebErl),
 
+                    // ---- Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4) ----
+                    //
+                    // Unter den Netzverlusten und wie sie SOFORT geschrieben - ueber EINEN Delegaten
+                    // (NetzkanaeleSchreiben) fuer die ganze Vorgabe. Alle drei Kanalwerte leer = der
+                    // Projektwert gilt.
+                    new KiDialogFeld("netzverlust_heizung", "SimulationKiSicht.NetzverlustHeizung",
+                                     KiDialogTexte.SimNvHeizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_heizung_einheit", "SimulationKiSicht.NetzverlustHeizungEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("netzverlust_brauchwasser", "SimulationKiSicht.NetzverlustBrauchwasser",
+                                     KiDialogTexte.SimNvBrauchwasserName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_brauchwasser_einheit", "SimulationKiSicht.NetzverlustBrauchwasserEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("netzverlust_prozess", "SimulationKiSicht.NetzverlustProzess",
+                                     KiDialogTexte.SimNvProzessName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_prozess_einheit", "SimulationKiSicht.NetzverlustProzessEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("zirkulation_leistung", "SimulationKiSicht.ZirkulationLeistung",
+                                     KiDialogTexte.SimZirkLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimZirkErl, einheit: "kW", leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("zirkulation_laufzeit", "SimulationKiSicht.ZirkulationLaufzeit",
+                                     KiDialogTexte.SimZirkLaufzeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimZirkErl, einheit: "h/d", leerErlaubt: true, min: 0, max: 24),
+
                     // ---- Die Projektstufe der Anlagenkopplung (Konzept Anlagenkopplung 9.4) ----
                     //
                     // Neben dem Kuehlschalter und wie er SOFORT geschrieben - ueber denselben
@@ -8130,6 +8392,63 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("anlagenkopplung", "SimulationKiSicht.Anlagenkopplung",
                                      KiDialogTexte.SimAnlagenkopplungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimAnlagenkopplungErl),
+
+                    // ---- Die Aufheizoptimierung (Entwurf KP3, Grundsatz 5; Welle O1) ----------
+                    //
+                    // Neben der Anlagenkopplung und wie sie SOFORT geschrieben - jede Setzung
+                    // schreibt die ganze Einstellung ueber denselben Delegaten wie der Abschnitt
+                    // (AufheizvorgabeSchreiben), normalisiert nach Festlegung 24. Bemessung, Reserve
+                    // und Art nur bei Schalter an, ΔT_K nur bei „kaelteste Stunde − ΔT_K" - sonst
+                    // lehnt die Sicht benannt ab, wie die Maske sie nicht zeigt.
+                    new KiDialogFeld("aufheizoptimierung", "SimulationKiSicht.Aufheizoptimierung",
+                                     KiDialogTexte.SimAufheizSchalterName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAufheizSchalterErl),
+                    new KiDialogFeld("aufheiz_bemessung", "SimulationKiSicht.AufheizBemessung",
+                                     KiDialogTexte.SimAufheizBemessungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizBemessungErl, leerErlaubt: true),
+                    new KiDialogFeld("aufheiz_abzug", "SimulationKiSicht.AufheizAbzugK",
+                                     KiDialogTexte.SimAufheizAbzugName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizAbzugErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0, max: 10),
+                    new KiDialogFeld("aufheiz_reserve", "SimulationKiSicht.AufheizReserveProzent",
+                                     KiDialogTexte.SimAufheizReserveName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizReserveErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 1, max: 100),
+                    new KiDialogFeld("aufheiz_art", "SimulationKiSicht.AufheizArt",
+                                     KiDialogTexte.SimAufheizArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizArtErl, leerErlaubt: true),
+
+                    // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
+                    //
+                    // Wie die Aufheizoptimierung SOFORT geschrieben - Wert und Einheit ueber
+                    // denselben Delegaten wie der Abschnitt (EinspeisegrenzeSchreiben). Leer heisst
+                    // keine Grenze.
+                    new KiDialogFeld("einspeisegrenze", "SimulationKiSicht.Einspeisegrenze",
+                                     KiDialogTexte.SimEinspeisegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimEinspeisegrenzeErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("einspeisegrenze_einheit", "SimulationKiSicht.EinspeisegrenzeEinheit",
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimEinspeisegrenzeEinheitErl, leerErlaubt: true),
+
+                    // ---- Die thermische Desinfektion (Welle M7, BW5) -------------------------------
+                    // Fuenf Felder ueber EINEN Delegaten (DesinfektionSchreiben) wie der Abschnitt.
+                    new KiDialogFeld("desinfektion", "SimulationKiSicht.Desinfektion",
+                                     KiDialogTexte.SimDesinfektionName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimDesinfektionErl),
+                    new KiDialogFeld("desinfektion_intervall", "SimulationKiSicht.DesinfektionIntervall",
+                                     KiDialogTexte.SimDesinfIntervallName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimDesinfIntervallErl, leerErlaubt: true, min: 1, max: 31),
+                    new KiDialogFeld("desinfektion_stunde", "SimulationKiSicht.DesinfektionStunde",
+                                     KiDialogTexte.SimDesinfStundeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimDesinfStundeErl, leerErlaubt: true, min: 0, max: 23),
+                    new KiDialogFeld("desinfektion_zieltemperatur", "SimulationKiSicht.DesinfektionZieltemperatur",
+                                     KiDialogTexte.SimDesinfZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimDesinfZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 55, max: 90),
+                    new KiDialogFeld("desinfektion_volumen", "SimulationKiSicht.DesinfektionVolumen",
+                                     KiDialogTexte.SimDesinfVolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimDesinfVolumenErl,
+                                     einheit: KiDialogTexte.EINHEIT_LITER, leerErlaubt: true, min: 0, max: 100000),
 
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //
@@ -8423,7 +8742,23 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ruecklauf", "BhkwKatalogDaten.Ruecklauf",
                                      KiDialogTexte.BhkkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkkRuecklaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ----------
+                    new KiDialogFeld("wirkungsgrad_el_teillast50", "BhkwKatalogDaten.WirkungsgradEl50",
+                                     KiDialogTexte.BhkkEtaEl50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaEl50Erl, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_th_teillast50", "BhkwKatalogDaten.WirkungsgradTh50",
+                                     KiDialogTexte.BhkkEtaTh50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkEtaTh50Erl, leerErlaubt: true),
+                    new KiDialogFeld("anfahrverlust", "BhkwKatalogDaten.AnfahrverlustKwh",
+                                     KiDialogTexte.BhkkAnfahrverlustName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkAnfahrverlustErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("mindestlaufzeit", "BhkwKatalogDaten.MindestlaufzeitMin",
+                                     KiDialogTexte.BhkkMindestlaufzeitName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkkMindestlaufzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_MINUTE, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8510,8 +8845,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SkkKdirErl),
                     new KiDialogFeld("kdiff", "SolarkollektorKatalogDaten.Kdiff",
                                      KiDialogTexte.SkkKdiffName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.SkkKdiffErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD)
+                                     KiDialogTexte.SkkKdiffErl),
+                    // Welle M2 (ST6): die Bezugsfläche der Kennwerte - Persistenzwert apertur/brutto.
+                    new KiDialogFeld("bezugsflaeche", "SolarkollektorKatalogDaten.Bezugsflaeche",
+                                     KiDialogTexte.SkkBezugsflaecheName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkBezugsflaecheErl)
                 },
                 knoepfe: new[]
                 {
@@ -8706,7 +9044,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("standby", "ModulKatalogKiSicht.Standby",
                                      KiDialogTexte.ModkStandbyName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkStandbyErl,
-                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true, min: 0, max: 1000),
+                    // Welle M5 (SP1): die Selbstentladung des Speichers - leer heißt keine.
+                    new KiDialogFeld("selbstentladung", "ModulKatalogKiSicht.Selbstentladung",
+                                     KiDialogTexte.ModkSelbstentladungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkSelbstentladungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_MONAT, leerErlaubt: true, min: 0, max: 20)
                 },
                 knoepfe: Modulkatalogknoepfe());
         }

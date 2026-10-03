@@ -378,6 +378,14 @@ namespace Testdatenbankschema
 
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten (spaeterer Schritt) ist der Nachtrag
+                // gegenstandslos - melden statt eine Abfrage auf eine entfallene Spalte zu fahren.
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                      ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
                 long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
                 Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
@@ -2322,6 +2330,329 @@ namespace Testdatenbankschema
                     }
                 Console.WriteLine("Schritt " + nrStempel + " - " + stempel + " Anweisung(en) in diesem Lauf; " +
                                   "vollstaendig: " + KostenStempelSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizvorgabeSchema.SCHRITT (KP-S2, Entwurf KP3 Abschnitt 4): die fuenf
+            //      Spalten der Aufheizoptimierung an Tab_Einstellungen - der Schalter (0/1, Vorgabe 0)
+            //      und Bemessung, Abzug, Reserve, Art (nullbar, NULL = Vorgabe). REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_AufheizVorgabe bedient
+            //      (AufheizvorgabeSchema), in EINEM Vorgang. Nach den Stempeln ohne Wirkung auf sie:
+            //      Tab_Einstellungen traegt keinen Stempeltrigger, und ADD COLUMN feuert keinen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jedes Projekt steht auf „aus".
+            string nrAufheizVorgabe = AufheizvorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizVorgabe + " - Aufheizoptimierung als Projekteinstellung: " +
+                              (AufheizvorgabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizVorgabe = new List<string>();
+                angelegt += AufheizvorgabeSchema.Ausfuehren(berichtAufheizVorgabe);
+                foreach (string zeile in berichtAufheizVorgabe)
+                    Console.WriteLine("Schritt " + nrAufheizVorgabe + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizVorgabe + " - vollstaendig: " +
+                                  AufheizvorgabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizErgebnisSchema.SCHRITT (KP-S3, Entwurf KP3 Abschnitt 4): je vierzehn
+            //      nullbare Ergebnisspalten der Aufheizoptimierung an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizErgebnis bedient (AufheizErgebnisSchema), in EINEM
+            //      Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Referenzlauf liest die Ergebnistabellen nicht.
+            string nrAufheizErgebnis = AufheizErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizErgebnis + " - Ergebnisspalten der Aufheizoptimierung: " +
+                              (AufheizErgebnisSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizErgebnis = new List<string>();
+                angelegt += AufheizErgebnisSchema.Ausfuehren(berichtAufheizErgebnis);
+                foreach (string zeile in berichtAufheizErgebnis)
+                    Console.WriteLine("Schritt " + nrAufheizErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizErgebnis + " - vollstaendig: " +
+                                  AufheizErgebnisSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+            //      Einheit des Bereitschaftsverlusts - Bereitschaft_Einheit (TEXT, Vorgabe kW, Pruefklausel
+            //      kW oder %) an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_KesselBereitschaftEinheit bedient. Ein ALTER TABLE
+            //      loest keinen Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bekommt kW, die Einheit, in der sie rechnet.
+            string nrBereitschaft = KesselBereitschaftEinheitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBereitschaft + " - Einheit des Bereitschaftsverlusts: " +
+                              (KesselBereitschaftEinheitSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBereitschaft = new List<string>();
+                angelegt += KesselBereitschaftEinheitSchema.Ausfuehren(berichtBereitschaft);
+                foreach (string zeile in berichtBereitschaft)
+                    Console.WriteLine("Schritt " + nrBereitschaft + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBereitschaft + " - vollstaendig: " +
+                                  KesselBereitschaftEinheitSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+            //      Bodenalbedo je Anlage - Albedo (REAL, nullbar, Pruefklausel 0 bis 1) an
+            //      Tab_Energieanlagen. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Albedo bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt leer und rechnet mit 0,2.
+            string nrAlbedo = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAlbedo + " - Bodenalbedo je Anlage: " +
+                              (AlbedoSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAlbedo = new List<string>();
+                angelegt += AlbedoSchema.Ausfuehren(berichtAlbedo);
+                foreach (string zeile in berichtAlbedo)
+                    Console.WriteLine("Schritt " + nrAlbedo + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAlbedo + " - vollstaendig: " +
+                                  AlbedoSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+            //      Temperaturpaar je Prozess - Vorlauf und Ruecklauf (REAL, nullbar, 0 bis 250 degC,
+            //      paarweise) an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme. Aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_ProzesswaermeTemperatur bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt ohne Temperaturpaar.
+            string nrProzess = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProzess + " - Temperaturpaar je Prozess: " +
+                              (ProzesswaermeTemperaturSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProzess = new List<string>();
+                angelegt += ProzesswaermeTemperaturSchema.Ausfuehren(berichtProzess);
+                foreach (string zeile in berichtProzess)
+                    Console.WriteLine("Schritt " + nrProzess + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProzess + " - vollstaendig: " +
+                                  ProzesswaermeTemperaturSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+            //      Kollektorfelds an Tab_Energieanlagen (Pumpenleistung_W, Solarkreisverluste_Prozent,
+            //      Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K, Arbeitstemperatur_Weg; nullbar) und
+            //      die Bezugsflaeche an Tab_Solarkollektoren_STAMM und Tab_Solarkollektoren (Vorgabe
+            //      apertur). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_SolarthermieFelder bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen ihre Vorgaben, jeder Kollektorsatz
+            //      bekommt die Aperturflaeche, mit der er rechnet.
+            string nrSolarFelder = SolarthermieFelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSolarFelder + " - Felder des Kollektorfelds: " +
+                              (SolarthermieFelderSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSolarFelder = new List<string>();
+                angelegt += SolarthermieFelderSchema.Ausfuehren(berichtSolarFelder);
+                foreach (string zeile in berichtSolarFelder)
+                    Console.WriteLine("Schritt " + nrSolarFelder + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSolarFelder + " - vollstaendig: " +
+                                  SolarthermieFelderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste
+            //      je Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die
+            //      Kalenderspalte der drei Zuordnungstabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_BedarfNetzKalender bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alles bleibt leer.
+            string nrBedarf = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBedarf + " - Netzverluste je Kanal, Zirkulation, Betriebskalender: " +
+                              (BedarfNetzKalenderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBedarf = new List<string>();
+                angelegt += BedarfNetzKalenderSchema.Ausfuehren(berichtBedarf);
+                foreach (string zeile in berichtBedarf)
+                    Console.WriteLine("Schritt " + nrBedarf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBedarf + " - vollstaendig: " +
+                                  BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder der
+            //      Waermepumpe an Tab_WP_STAMM und Tab_WP (Mindestleistung_kW, Taktverlustfaktor_Cd) und
+            //      des BHKW an Tab_BHKW_STAMM und Tab_BHKW (Wirkungsgrad_el_Teillast50,
+            //      Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min), alle nullbar mit
+            //      Pruefklausel. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErzeugerTeillast bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen wie zuvor.
+            string nrTeillast = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTeillast + " - Teillastfelder von Waermepumpe und BHKW: " +
+                              (ErzeugerTeillastSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTeillast = new List<string>();
+                angelegt += ErzeugerTeillastSchema.Ausfuehren(berichtTeillast);
+                foreach (string zeile in berichtTeillast)
+                    Console.WriteLine("Schritt " + nrTeillast + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTeillast + " - vollstaendig: " +
+                                  ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+            //      Einspeisegrenze an Tab_Einstellungen (Einspeisegrenze_Wert, Einspeisegrenze_Einheit;
+            //      nullbar) und die Selbstentladung an Tab_Stromspeicher_STAMM und Tab_Stromspeicher
+            //      (Selbstentladung_Prozent_Monat; nullbar). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_StromViertelstunden bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder heissen keine Einspeisegrenze und keine
+            //      Selbstentladung.
+            string nrStromViertel = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStromViertel + " - Einspeisegrenze und Selbstentladung: " +
+                              (StromViertelstundenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStromViertel = new List<string>();
+                angelegt += StromViertelstundenSchema.Ausfuehren(berichtStromViertel);
+                foreach (string zeile in berichtStromViertel)
+                    Console.WriteLine("Schritt " + nrStromViertel + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStromViertel + " - vollstaendig: " +
+                                  StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+            //      Auslegungstabelle je Projektpuffer und die Vorgabetabelle samt Saat (INSERT OR
+            //      IGNORE). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegung
+            //      bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Auslegung rechnet und schreibt nur auf Zuruf.
+            string nrPuffer = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPuffer + " - Pufferspeicher-Auslegung: " +
+                              (PufferAuslegungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPuffer = new List<string>();
+                angelegt += PufferAuslegungSchema.Ausfuehren(berichtPuffer);
+                foreach (string zeile in berichtPuffer)
+                    Console.WriteLine("Schritt " + nrPuffer + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPuffer + " - vollstaendig: " +
+                                  PufferAuslegungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, Register E30-Q12,
+            //      EZ-24): die Empfehlungsspannen der Pflichtzeilen "Hilfsenergiekosten" (BHKW) und
+            //      "Hilfsenergiekosten (Strom)" (Heizkessel) in den Auslieferungsvorlagen auf Weg B.
+            //      Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_HilfsenergieEmpfehlung bedient; Projektzeilen unberuehrt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Empfehlung ist ein Hinweis, kein Rechenwert.
+            string nrHilfsEmpf = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHilfsEmpf + " - Katalogempfehlung der Hilfsenergie auf Weg B: " +
+                              (HilfsenergieEmpfehlungNachzug.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + HilfsenergieEmpfehlungNachzug.Offen() + " offen).");
+            if (!trocken)
+            {
+                var berichtHilfsEmpf = new List<string>();
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(berichtHilfsEmpf);
+                foreach (string zeile in berichtHilfsEmpf)
+                    Console.WriteLine("Schritt " + nrHilfsEmpf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHilfsEmpf + " - vollstaendig: " +
+                                  HilfsenergieEmpfehlungNachzug.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+            //      Pufferspeichers an Tab_Pufferspeicher (Bereitschaft_Weg, Aufstellraum_Temperatur_C,
+            //      Schicht_Anteile, Frischwassermodul, FWM_Graedigkeit_K) und die thermische
+            //      Desinfektion an Tab_Einstellungen (Desinfektion_*), alle nullbar. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferOptionen bedient.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder rechnen wie zuvor.
+            string nrPufferOptionen = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferOptionen + " - Pufferoptionen und Desinfektion: " +
+                              (PufferOptionenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferOptionen = new List<string>();
+                angelegt += PufferOptionenSchema.Ausfuehren(berichtPufferOptionen);
+                foreach (string zeile in berichtPufferOptionen)
+                    Console.WriteLine("Schritt " + nrPufferOptionen + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferOptionen + " - vollstaendig: " +
+                                  PufferOptionenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1 und EQ1): an den acht
+            //      Katalogtabellen der Stufe 1 Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen
+            //      samt eindeutigem Teilindex, Tab_Applikation.Katalogfassung, die Tabellen
+            //      Tab_Katalogabgleich und Tab_ErgebnisErdreich (STRICT) und die Saat von Schluessel und
+            //      Pruefsumme der ausgelieferten Saetze (ReadOnly = 1). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Katalogfassung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog + " - Katalogfassung und Erdreichpruefung: " +
+                              (KatalogfassungSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog = new List<string>();
+                angelegt += KatalogfassungSchema.Ausfuehren(berichtKatalog);
+                foreach (string zeile in berichtKatalog)
+                    Console.WriteLine("Schritt " + nrKatalog + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog + " - vollstaendig: " +
+                                  KatalogfassungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+            //      den sechzehn Katalogtabellen der Stufe 2 samt Teilindex und die Saat von Schluessel und
+            //      Pruefsumme ihrer ausgelieferten Saetze. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogfassungStufe2 bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog2 = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog2 + " - Katalogfassung der uebrigen Kataloge: " +
+                              (KatalogfassungStufe2Schema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog2 = new List<string>();
+                angelegt += KatalogfassungStufe2Schema.Ausfuehren(berichtKatalog2);
+                foreach (string zeile in berichtKatalog2)
+                    Console.WriteLine("Schritt " + nrKatalog2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog2 + " - vollstaendig: " +
+                                  KatalogfassungStufe2Schema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59 samt Folgeentscheiden, E60;
+            //      Entwurf KP3 Abschnitt 4): an Tab_Einstellungen Aufheiz_Aufschlag_H und
+            //      Aufheiz_Aufschlag_Prozent, an Tab_Gebaeude Aufheizzeit_Manuell_H samt achtem Neubau der
+            //      Sicht Abfrage_Projektgebaeude (103 Spalten), an Tab_ErgebnisGebaeude Aufheiz_Art,
+            //      Auslegungsheizlast_Kw und Aufheizzuschlag_Kw, an Tab_ErgebnisZone Aufheiz_Art und der
+            //      Zustand GEKOPPELT per kleinem Neubau. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizManuell bedient; ZULETZT, damit kein aelterer
+            //      Sichtdurchgang (Energiestandard) die Spalte wieder aus der Sicht schneidet.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Felder entstehen leer, KEIN DML an Bestandsdaten.
+            string nrAufheizManuell = AufheizManuellSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizManuell + " - Aufschlag und manuelle Aufheizzeit: " +
+                              (AufheizManuellSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizManuell = new List<string>();
+                angelegt += AufheizManuellSchema.Ausfuehren(berichtAufheizManuell);
+                foreach (string zeile in berichtAufheizManuell)
+                    Console.WriteLine("Schritt " + nrAufheizManuell + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizManuell + " - vollstaendig: " +
+                                  AufheizManuellSchema.Vollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
@@ -243,6 +244,22 @@ namespace WindowsFormsApplication1
         private static readonly Verwendung[] SIM_WIRT_BER =
             { Verwendung.Simulation, Verwendung.Wirtschaftlichkeit, Verwendung.Bericht };
 
+        /// <summary>
+        /// KU1 Stufe 1 und 2 (Schemaschritte <see cref="KatalogfassungSchema"/> und
+        /// <see cref="KatalogfassungStufe2Schema"/>): die drei Katalogspalten der Kataloge des Registers,
+        /// in der Reihenfolge der Tabelle die letzten. Kein Fachwert — die
+        /// Kennung des Auslieferungssatzes, die der Katalogabgleich liest und schreibt.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> Katalogspalten(Func<string, string> t) => new[]
+        {
+            E(Katalogfassung.SPALTE_SCHLUESSEL, t("PARV_LBL_KATALOG_SCHLUESSEL"), "", NIX,
+              "Katalogabgleich (stabile Kennung des Auslieferungssatzes; Anwendersatz leer)"),
+            E(Katalogfassung.SPALTE_PRUEFSUMME, t("PARV_LBL_KATALOG_PRUEFSUMME"), "", NIX,
+              "Katalogabgleich (Pruefsumme des ausgelieferten Stands: gleich = nicht angepasst)"),
+            E(Katalogfassung.SPALTE_AUSGELAUFEN, t("PARV_LBL_KATALOG_AUSGELAUFEN"), "", NIX,
+              "Katalogabgleich (Satz in einer spaeteren Auslieferung entfallen, bleibt stehen)"),
+        };
+
         private static ParameterEintrag E(string spalte, string anzeige, string einheit,
                                           Verwendung[] verwendung, string fundstelle = "")
         {
@@ -250,7 +267,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 1. Heizkessel — Tab_Heizkessel_STAMM (28 Spalten)
+        // 1. Heizkessel — Tab_Heizkessel_STAMM (29 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -312,8 +329,9 @@ namespace WindowsFormsApplication1
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
-                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW", SIM,
-                  "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde"),
+                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW / %", SIM,
+                  "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde, " +
+                  "in der Einheit Bereitschaft_Einheit (KesselBereitschaft.LeistungKw)"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", SIM_BER,
                   "AbweichungsErmittler.cs:100; SimulationSPK.Kesseldaten_Einlesen " +
                   "(Kesselkennlinie.Bauart: Brennwertkessel fuer die Normvorgabe von eta30)"),
@@ -345,12 +363,18 @@ namespace WindowsFormsApplication1
                   "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
                 E("Mindestlaufzeit_min", t("HZKK_LBL_MINDESTLAUFZEIT"), "min", SIM,
                   "SimulationSPK.TaktwerteBilden und Stunde_Abschluss (Kesselkennlinie.MindestlaufzeitWirksam, StartsImTakt; " +
-                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)")
-            };
+                  "leer = Normvorgabe); HeizkesselKatalogDialog.razor (Gruppe Kennlinie); KatalogBrowserProfil (Heizkessel)"),
+
+                // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026, Schemaschritt
+                // KesselBereitschaftEinheitSchema.SCHRITT) - in der Reihenfolge der Tabelle die letzte Spalte.
+                E(KesselBereitschaftEinheitSchema.SPALTE, t("HZKK_LBL_BB_EINHEIT"), "", SIM,
+                  "KesselBereitschaft.LeistungKw (kW oder % der Nennleistung); HeizkesselKatalogDialog.razor; " +
+                  "KatalogBrowserProfil (Heizkessel)")
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
-        // 2. BHKW — Tab_BHKW_STAMM (29 Spalten)
+        // 2. BHKW — Tab_BHKW_STAMM (33 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -453,12 +477,27 @@ namespace WindowsFormsApplication1
                 E(BhkwWirkungsgrad.SPALTE_EL, t("BHKWK_LBL_WIRKUNGSGRAD_EL"), "", DLG,
                   "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads"),
                 E(BhkwWirkungsgrad.SPALTE_TH, t("BHKWK_LBL_WIRKUNGSGRAD_TH"), "", DLG,
-                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads")
-            };
+                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads"),
+
+                // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT), in der Spaltenfolge der
+                // Tabelle: Teillastkennlinie (BH1) und Takten (BH2) - leer rechnet das Modul wie zuvor.
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ETA_EL50, t("BHKWK_LBL_ETA_EL50"), "", SIM,
+                  "SimulationBHKW.Moduldaten_Einlesen und TeillastStundeAbschliessen (BhkwTeillast.EtaEl, " +
+                  "Stromkennzahl der Motorlaeufe; leer = wie Volllast); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ETA_TH50, t("BHKWK_LBL_ETA_TH50"), "", SIM,
+                  "SimulationBHKW.Moduldaten_Einlesen und Motorlaeufe (BhkwTeillast.EtaTh, WaermeAusStrom/" +
+                  "StromAusWaerme; leer = wie Volllast); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_ANFAHRVERLUST, t("BHKWK_LBL_ANFAHRVERLUST"), "kWh", SIM,
+                  "SimulationBHKW.TeillastStundeAbschliessen (Starts mal Anfahrverlust, Takten unter der " +
+                  "Untergrenze); BhkwKatalogDialog (Gruppe Teillast und Takten)"),
+                E(ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min", SIM,
+                  "SimulationBHKW.TeillastStundeAbschliessen (BhkwTeillast.StartsImTakt, Kesselregel; mit " +
+                  "Anfahrverlust Schalter des Taktens); BhkwKatalogDialog (Gruppe Teillast und Takten)")
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
-        // 3. Waermepumpe — Tab_WP_STAMM (23 Spalten)
+        // 3. Waermepumpe — Tab_WP_STAMM (25 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -533,20 +572,29 @@ namespace WindowsFormsApplication1
                 // den Katalog).
                 E(KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB, t("WPS_LBL_KUEHLBETRIEB"), "", NIX),
                 E(KuehlungSchema.SPALTE_KUEHL_VORLAUF, t("WPS_LBL_KUEHL_VORLAUF"), "°C", NIX),
-                E(KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL, t("WPS_LBL_KUEHL_HILFSSTROM"), "", NIX)
-            };
+                E(KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL, t("WPS_LBL_KUEHL_HILFSSTROM"), "", NIX),
+
+                // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT): der Taktverlust nach EN 14825
+                // (WP1) - leer = keine Taktrechnung bzw. C_d = 0,9.
+                E(ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG, t("WPS_LBL_MINDESTLEISTUNG"), "kW", SIM,
+                  "SimulationWaermepumpe.TaktwerteLesen und TaktStundeAbschliessen (Waermepumpentakt.Taktet, " +
+                  "Mehrstrom, StartsImTakt); Kaeltekaskade (Mindestanteil im Kuehlbetrieb); WaermepumpeStammFelder"),
+                E(ErzeugerTeillastSchema.SPALTE_WP_CD, t("WPS_LBL_TAKTVERLUST_CD"), "", SIM,
+                  "SimulationWaermepumpe.TaktStundeAbschliessen (Waermepumpentakt.Teillastfaktor, leer = 0,9); " +
+                  "Kaeltekaskade; WaermepumpeStammFelder")
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
-        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (16 Spalten)
+        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (15 Spalten)
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle:</b> <c>Kdfu</c> (im Editor „Kdiff") wird
-        /// gepflegt, aber nirgends gerechnet — der Kollektorwirkungsgrad benutzt nur
-        /// <c>h0</c>, <c>k1</c>, <c>k2</c> und <c>Kdir</c>
-        /// (<c>SimulationSolarthermie.cs:242-245</c>). Und <c>Modulflaeche</c> ist die
-        /// Flaeche EINES Moduls, gerechnet wird mit <c>Aperturflaeche</c> mal
+        /// <b>Der Befund dieser Tabelle:</b> Der Kollektorwirkungsgrad rechnet mit <c>h0</c>,
+        /// <c>k1</c>, <c>k2</c>, <c>Kdir</c> und — für die Diffus- und Bodenreflexstrahlung —
+        /// <c>Kdfu</c> (im Editor „Kdiff", Welle M2 ST5; 0 = Faktor der Direktstrahlung). Und <c>Modulflaeche</c> ist die
+        /// Bruttoflaeche EINES Moduls; gerechnet wird mit der Flaeche, auf die die Kennwerte
+        /// bezogen sind (<c>Bezugsflaeche</c>: Apertur als Vorgabe oder Brutto, Welle M2 ST6), mal
         /// <c>Tab_Energieanlagen.Kollektormodulanzahl</c>.
         ///
         /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
@@ -570,21 +618,30 @@ namespace WindowsFormsApplication1
                   "SolarkollektorKatalogDialog.razor (Feld Beschreibung)"),
                 E("Kollektortyp", t("SKK_LBL_TYP"), "", BER,
                   "AbweichungsErmittler.cs:104"),
-                E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche) — gerechnet wird mit Aperturflaeche"),
+                E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", SIM,
+                  "Solarkreis.Modulbezugsflaeche (Bruttoflaeche, rechnet bei Bezugsflaeche = brutto); " +
+                  "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche)"),
                 E("Aperturflaeche", t("SKK_LBL_APERTURFLAECHE"), "m²", SIM_BER,
-                  "SimulationSolarthermie.cs:232; AbweichungsErmittler.cs:105"),
+                  "Solarkreis.Modulbezugsflaeche (rechnet bei Bezugsflaeche = apertur, der Vorgabe); " +
+                  "AbweichungsErmittler.cs:105"),
                 E("h0", "h0:", "", SIM, "SimulationSolarthermie.cs:242 (Konversionsfaktor)"),
                 E("k1", "k1:", "W/(m²*K)", SIM, "SimulationSolarthermie.cs:243"),
                 E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.cs:244"),
                 E("Kdir", "Kdir:", "", SIM, "SimulationSolarthermie.cs:245 (IAM, direkt)"),
-                E("Kdfu", "Kdiff:", "50°", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Kdiff) — kein Leser im Rechenweg"),
+                E("Kdfu", "Kdiff:", "", SIM,
+                  "Solarkreis.LeistungJeQm (K_d der Diffus- und Bodenreflexstrahlung, ST5; 0 = K_b(θ)); " +
+                  "SolarkollektorKatalogDialog.razor (Feld Kdiff)"),
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "SolarkollektorenStammCtrl (Auslieferungssatz)")
-            };
+                  "SolarkollektorenStammCtrl (Auslieferungssatz)"),
+
+                // Welle M2 ST6 (Schemaschritt SolarthermieFelderSchema.SCHRITT) - in der Reihenfolge
+                // der Tabelle die letzte Spalte.
+                E(SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, t("SKK_LBL_BEZUGSFLAECHE"), "", SIM,
+                  "SimulationSolarthermie.Kollektorfelder_Lesen → Solarkreis.Modulbezugsflaeche " +
+                  "(apertur oder brutto); SolarkollektorKatalogDialog.razor; KatalogBrowserProfil (Solarkollektoren)")
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -643,11 +700,11 @@ namespace WindowsFormsApplication1
                   "PhotovoltaikStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Technologie", t("PVM_MODUL_LABEL_TECHNOLOGIE"), "", SIM_BER,
                   "SimulationPV.cs:590 (Huld-Satz je Zelltechnologie); AbweichungsErmittler.cs:112")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
-        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (15 Spalten)
+        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (16 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -690,7 +747,8 @@ namespace WindowsFormsApplication1
                 E("Investition_Fix", t("SP_LABEL_INVESTITION_FIX"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:334; StromspeicherSimCtrl.cs:1114"),
                 E("Standby_Verbrauch", t("SP_LABEL_STANDBY"), "W", SIM,
-                  "StromspeicherSimCtrl.cs:1115 (Eigenverbrauch der Leistungselektronik)"),
+                  "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.StandbyKw); " +
+                  "SpeicherEngine/Speichersystem.Standby (aus PV-Überschuss, sonst Netz; Welle M5, SP1)"),
 
                 // Migrationsschritt 68 (Anwenderentscheid W14a-E-10-Q7 vom 07.09.2026).
                 // Die Spalte steht am ENDE der Tabelle, weil ALTER TABLE ADD COLUMN sie
@@ -699,8 +757,13 @@ namespace WindowsFormsApplication1
                 // Hersteller, er sortiert und filtert die Katalogliste.
                 E("Firma", t("MODK_LBL_FIRMA"), "", DLG,
                   "StromspeicherStammCtrl.Hersteller (Spalte \"Hersteller\" der Katalogliste); " +
-                  "StromspeicherCtrl.CopyFromStamm (Quelle der Projektkopie)")
-            };
+                  "StromspeicherCtrl.CopyFromStamm (Quelle der Projektkopie)"),
+
+                // Welle M5 (SP1; Schemaschritt StromViertelstundenSchema.SCHRITT) - am Ende der Tabelle.
+                E(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, t("SP_LABEL_SELBSTENTLADUNG"), "%/Monat", SIM,
+                  "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.SelbstentladungProzentMonat); " +
+                  "SpeicherEngine/Speichersystem.Selbstentladung; SpeicherFlottenStudieCtrl.EinheitAusKatalogsatz")
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -741,7 +804,7 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.cs:357 (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -875,7 +938,7 @@ namespace WindowsFormsApplication1
                   "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, Handpflege; " +
                   "StrangPlausibilitaet.MpptPruefen (P4 rot); " +
                   "StrangAuslegung.ParallelJeMppt (Grenze)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
     }
 }

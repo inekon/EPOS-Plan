@@ -171,7 +171,8 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
 
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_VORLAGE,
+            // Dazu die drei Katalogspalten (KU1 Stufe 2), sobald der Schritt der Katalogfassung gelaufen ist.
+            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_VORLAGE + (Katalogfassung.SpaltenVorhanden(VLG) ? 3 : 0),
                          (int)Zahl("SELECT COUNT(*) FROM pragma_table_info(?)", new DbParam("@t", VLG)));
             Assert.EndsWith(") STRICT", Sql("table", VLG), StringComparison.Ordinal);
             foreach (string t in new[] { KAL, PER, VOR, VLG })
@@ -206,10 +207,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("CASCADE", Convert.ToString(fk.Rows[0][0], CultureInfo.InvariantCulture));
             }
 
-            // Die Ergebnisspalten.
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
+            // Die Ergebnisspalten - die Messlatte steht auf dem Zielstand: dazu je vierzehn Spalten der
+            // Aufheizoptimierung (KP-S3) und die drei bzw. eine des Schritts KP-S4 (B24).
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_ZONE,
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE,
                          DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in KonditionierungVorlagenSchema.Ergebnistabellen)
             {

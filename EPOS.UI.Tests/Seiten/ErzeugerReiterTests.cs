@@ -662,6 +662,25 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Solarthermie);
     }
 
+    /// <summary>
+    /// Der Pumpenstrom der Solarkreise (Welle M2, ST1) steht nur mit Wert: ohne gepflegte Pumpe
+    /// keine Zeile, mit Pumpe der Jahreswert in MWh/a.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_zeigt_den_Pumpenstrom_nur_mit_Wert()
+    {
+        var ohne = SolarZeichnen();
+        Assert.DoesNotContain("Pumpenstrom Solarkreis:", ohne.Markup);
+
+        var e = Solar();
+        e.PumpenstromMwh = 0.123;
+        var mit = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+        var liste = mit.FindAll("dl.epos-simerg-werte")[0];
+        string[] titel = liste.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = liste.QuerySelectorAll("dd:not(.epos-simerg-einheit)").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("0,12", werte[Array.IndexOf(titel, "Pumpenstrom Solarkreis:")]);
+    }
+
     /// <summary>Ohne bekannten Bezug bleibt das Deckungsfeld LEER (woertlich :4603).</summary>
     [Fact]
     public void Solarthermie_laesst_die_Deckung_ohne_Bezug_leer()
@@ -766,6 +785,24 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(new[] { "57,76", "5,43", "52,33" }, a[4..]);
         string[] b = zeilen[1].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "0,02", "0,01", "0,01" }, b[4..]);
+    }
+
+    /// <summary>
+    /// Die Zeile der SOLARTHERMIEGANGLINIE (Folgeauftrag 4) hat weder Fläche noch Anzahl —
+    /// dort steht ein Strich statt „0,00“ und „0“; Ertrag, Nutzung und Überschuss wie bei
+    /// einem Kollektorfeld.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl()
+    {
+        var e = Solar();
+        e.Module.Clear();
+        e.Module.Add(new SimulationErgebnisCtrl.SolarModulZeile("Solarthermie-Ganglinie ‚Dach‘", 0, 0, 30.0, 20.0, true));
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        string[] z = Assert.Single(seite.FindAll("table.epos-raster tbody tr"))
+                           .QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "1", "Solarthermie-Ganglinie ‚Dach‘", "–", "–", "50,00", "30,00", "20,00" }, z);
     }
 
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
@@ -1266,6 +1303,30 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Contains("0,00", seite.Markup);
         Assert.DoesNotContain("NaN", seite.Markup);
+    }
+
+    /// <summary>
+    /// Welle M5 (PV3): Ohne Einspeisegrenze steht keine Abregelungszeile; mit Grenze und Abregelung
+    /// stehen Abregelung in MWh/a und in % der Erzeugung sowie die Grenze in kW.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_zeigt_die_Abregelung_nur_mit_Einspeisegrenze()
+    {
+        var ohne = PvZeichnen();
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_ABREGELUNG, ohne.Markup);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, ohne.Markup);
+
+        var daten = Pv();
+        daten.AbregelungMwh = 1.25;
+        daten.AbregelungProzent = 9.5;
+        daten.EinspeisegrenzeKw = 7.0;
+        var mit = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell));
+        string text = mit.Markup;
+        Assert.Contains(Resource.SIMERG_LBL_PV_ABREGELUNG, text);
+        Assert.Contains("1,25", text);
+        Assert.Contains("9,50", text);
+        Assert.Contains(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, text);
+        Assert.Contains("7,00", text);
     }
 
     // ---- W11b‑B‑19: EINE Reihenzeile mit ALLEN vier Reihen -----------------

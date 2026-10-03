@@ -829,6 +829,13 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_LBL_KOMFORTSOLLWERT</c> — das Sollwertfeld bei Heizen → Kühlen</summary>
     public string LabelKomfortsollwert { get; set; } = "Komfortsollwert";
 
+    /// <summary><c>KOND_LBL_ABSENKSOLLWERT</c> — das Feld der Absenkzeiten bei Heizen → Kühlen; nimmt „aus“</summary>
+    public string LabelAbsenksollwert { get; set; } = "Absenksollwert";
+
+    /// <summary><c>KOND_TXT_HINWEIS_ABSENKSOLLWERT</c> — der Hinweis (title) am Feld des Absenksollwerts</summary>
+    public string HinweisAbsenksollwert { get; set; }
+        = "Gilt in den Absenkzeiten – überall, wo der Heizsollwert unter dem Tagwert der Vorlage liegt. „aus“ schaltet die Kühlung dort ab.";
+
     /// <summary><c>KOND_TXT_KOPIEREN_NACH</c> — Kurztext des Knopfs „Kopieren nach …“</summary>
     public string HinweisKopierenNach { get; set; }
         = "Legt eine eigene Vorlage einer anderen Größe an — die Vorlage selbst bleibt, wie sie ist.";
@@ -839,7 +846,7 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_TXT_KOPIEREN_ZEITSTRUKTUR</c> — unter dem Ziel Kühlen einer Heizvorlage</summary>
     public string HinweisKopierenZeitstruktur { get; set; }
-        = "Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert wird der Komfortsollwert.";
+        = "Übernommen werden die Zeitstruktur – Standardwoche, Perioden, Feiertage, Nacht-, Wochenend- und Ferienzeilen mit ihren Zeiten – und die Aus-Zeiten; jeder Heizsollwert in Höhe des Tagwerts wird der Komfortsollwert, jeder niedrigere (Absenkzeit) der Absenksollwert oder „aus“.";
 
     /// <summary>
     /// <c>KOND_TXT_GRUND_KEIN_KOPIERZIEL</c> — der Grund des weich gesperrten „Kopieren nach …“ (Kühlen,
@@ -859,6 +866,12 @@ public sealed class KonditionierungTexte
     /// „{1}“ die Grenzen
     /// </summary>
     public string MeldungKomfortsollwert { get; set; } = "Der Komfortsollwert ist eine Zahl von {0} bis {1} °C.";
+
+    /// <summary>
+    /// <c>KOND_TXT_MELDUNG_ABSENKSOLLWERT</c> — am Absenkfeld, solange es weder eine gültige Zahl noch „aus“ trägt;
+    /// „{0}“ und „{1}“ die Grenzen, „{2}“ der Text von „aus“
+    /// </summary>
+    public string MeldungAbsenksollwert { get; set; } = "Der Absenksollwert ist eine Zahl von {0} bis {1} °C oder „{2}“.";
     // ------------------------------------------------------------ Die Abkürzung „alle Größen“ (E57, Welle U5)
 
     /// <summary>

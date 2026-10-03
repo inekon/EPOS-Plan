@@ -941,7 +941,8 @@ public sealed class KonditionierungBearbeitung
 
     /// <summary>
     /// „Kopieren nach …" — eine Vorlage als eigene Vorlage einer anderen Größe; schreibt sofort. Eine Ablehnung
-    /// des Namens kommt mit <c>AmNamen</c>, eine des Komfortsollwerts mit <c>AmSollwert</c>.
+    /// des Namens kommt mit <c>AmNamen</c>, eine des Komfortsollwerts mit <c>AmSollwert</c>, eine des
+    /// Absenksollwerts mit <c>AmAbsenkwert</c>.
     /// </summary>
     public KonditionierungVorlageErgebnis VorlageKopieren(long id, KonditionierungVorlageKopie kopie)
         => Vorlagenhandlung(KonditionierungHandlung.VorlageKopieren, () => Weg.VorlageKopieren!(id, kopie));

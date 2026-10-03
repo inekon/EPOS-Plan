@@ -236,7 +236,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
-        new("BedarfsProfileDialog", 3),
+        // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
+        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
+        // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
+        new("BetriebskalenderDialog", 8),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
         new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
@@ -273,8 +277,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
-        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
-            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
+        // „In DB übernehmen": das Namensfeld der Abfrage gehört zur Handlung, die mit eigenem OK sofort
+        // einen Katalogsatz schreibt — kein Einstellwert der Maske: 0 → 1.
+        new("GebaeudeDialog", 1, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Abfrage „In DB übernehmen“ " +
+            "gehört zur Handlung, die mit eigenem OK sofort schreibt"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
@@ -323,9 +330,9 @@ public sealed class KiMaskenabdeckungWacheTests
             "Aktion von „Übernehmen“; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
             "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
-        // Zielgröße, Name und Komfortsollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4).
-        new("KonditionierungVorlagenverwaltung", 4, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name " +
-            "und Komfortsollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
+        // Zielgröße, Name, Komfort- und Absenksollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4): 4 → 5.
+        new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +
+            "Komfort- und Absenksollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
             "Einstellwert des Gebäudes"),
         // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
         // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
@@ -357,13 +364,28 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
-        new("PufferSpProjektDialog", 20),
-        new("PvModellFelder", 3),
+        // Pufferspeicher-Auslegung (Stufe P2): dreizehn Felder im Katalog Form_PufferAuslegung (Klassen,
+        // Vorlage, Gerätetyp, Zweiterzeuger, Übergabeart, Heizgrenze, Anlagenvolumen, Sperrprofil und die
+        // drei Ziele). Draußen bleiben die Anzeigestufe (Sitzungseinstellung), die Kriterienschalter der
+        // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
+        // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
+        // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
+        new("PufferAuslegungSeite", 26, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme und " +
+            "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
+        new("PufferSpProjektDialog", 25),
+        new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
-        new("SimulationKonfigSeite", 4),
+        // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
+        // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
+        // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
+        // Welle M3b (BW4): Netzverluste je Kanal mit Einheit und die Zirkulation des Bestandswegs - die
+        // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
+        // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
+        // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
+        new("SimulationKonfigSeite", 24),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

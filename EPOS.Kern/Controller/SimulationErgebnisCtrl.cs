@@ -307,15 +307,25 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Eine Zeile der WP-Modultabelle.</summary>
+        /// <param name="MitTakt">
+        /// Welle M4, WP1: rechnet das Modul den Taktverlust (Mindestleistung gepflegt)? Nur dann
+        /// zeigt der Reiter <paramref name="Starts"/> und <paramref name="TaktstromMwh"/>.
+        /// </param>
+        /// <param name="Starts">Starts im Jahr [1/a], Heiz- und Kühlbetrieb zusammen.</param>
+        /// <param name="TaktstromMwh">Mehrstrom aus Taktverlust [MWh/a], Teil des Strombedarfs.</param>
         public sealed record WpModulZeile(string Name, double GrenzleistungKw,
                                           double WaermeproduktionMwh, double StrombedarfMwh,
-                                          double HeizstabMwh, double LaufzeitStunden);
+                                          double HeizstabMwh, double LaufzeitStunden,
+                                          bool MitTakt = false, int Starts = 0, double TaktstromMwh = 0);
 
         /// <summary>Eine Zeile der Pufferspeichertabelle (Konzept 6.6).</summary>
+        /// <param name="BereitschaftTemperatur">Welle M7, PS1 (c): Bereitschaftsverlust nach Temperatur je Zone.</param>
+        /// <param name="Nachheizstunden">Welle M7, PS5 (a): Stunden, in denen das Frischwassermodul die Entnahme begrenzte; −1 = kein Modul.</param>
         public sealed record PufferZeile(string Bezeichner, string Rolle, double KapazitaetKwh,
                                          double LadungKwh, double EntladungKwh, double VerlusteKwh,
                                          double Vollzyklen, double FuellstandEndeProzent,
-                                         bool IstKombi);
+                                         bool IstKombi, bool BereitschaftTemperatur = false,
+                                         int Nachheizstunden = -1);
 
         public sealed class WaermepumpeErgebnis
         {
@@ -397,14 +407,32 @@ namespace WindowsFormsApplication1
                 if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
             e.MinSpkLeistungKw = maxSpk;
 
+            // Welle M4, WP1: die Kälteerzeuger desselben Moduls - ihre Starts und ihr Mehrstrom
+            // aus Taktverlust zählen zur Modulzeile.
+            Kaeltekaskade kaskade = wb?.Kaelteseite?.Kaskade;
+
             for (int i = 0; i < wp.wp_list.Count; i++)
+            {
+                int starts = i < SimulationWaermepumpe.MAX_WP ? wp.Starts_WP[i] : 0;
+                double taktKwh = i < SimulationWaermepumpe.MAX_WP ? wp.Taktstrom_KWh_WP[i] : 0.0;
+                if (kaskade != null)
+                    foreach (Kaelteerzeuger z in kaskade.Erzeuger)
+                        if (z != null && z.Modulindex == i)
+                        {
+                            starts += z.Starts;
+                            taktKwh += z.TaktstromKwh;
+                        }
                 e.Module.Add(new WpModulZeile(
                     wp.WP_Modul[i],
                     wp.wp_model[i].Grenzleistung,
                     wp.Modul_WP_Waermeproduktion[i] / 1000.0,
                     wp.Modul_WP_Strombedarf[i] / 1000.0,
                     wp.Modul_Heizstab[i] / 1000.0,
-                    wp.Modul_WP_Laufzeit[i]));
+                    wp.Modul_WP_Laufzeit[i],
+                    wp.RechnetMitTakt(i),
+                    starts,
+                    taktKwh / 1000.0));
+            }
 
             e.Puffer.AddRange(Pufferzeilen(sim));
             e.PufferVolumenKwh = PufferVolumenKwh(sim);
@@ -436,7 +464,10 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new PufferZeile(
                     sp.BezeichnerAnzeige(), sp.RolleAnzeige(), sp.Q_max,
                     sp.Ladung_gesamt, sp.Entladung_gesamt, sp.Verluste_gesamt,
-                    sp.Vollzyklen, sp.SOC, sp.IstKombi));
+                    sp.Vollzyklen, sp.SOC, sp.IstKombi,
+                    sp.BereitschaftTemperatur && !sp.IstQuelle,
+                    sp.Frischwassermodul && sim.FrischwasserBegrenzteStunden.TryGetValue(sp.ID_Pufferspeicher, out int n) ? n
+                        : sp.Frischwassermodul ? 0 : -1));
 
             return zeilen;
         }
@@ -788,9 +819,13 @@ namespace WindowsFormsApplication1
         //  Solarthermie
         // =================================================================
 
-        /// <summary>Eine Zeile der Kollektortabelle.</summary>
+        /// <summary>
+        /// Eine Zeile der Kollektortabelle. <paramref name="Ganglinie"/>: die Zeile der
+        /// Solarthermieganglinie (Folgeauftrag 4) — ohne Fläche und Anzahl.
+        /// </summary>
         public sealed record SolarModulZeile(string Name, double FlaecheM2, long Anzahl,
-                                             double WaermeproduktionMwh, double UeberschussMwh);
+                                             double WaermeproduktionMwh, double UeberschussMwh,
+                                             bool Ganglinie = false);
 
         public sealed class SolarthermieErgebnis
         {
@@ -802,6 +837,14 @@ namespace WindowsFormsApplication1
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
             public double UeberschussMwh;
+
+            /// <summary>
+            /// Pumpenstrom der Solarkreise [MWh/a] (ST1) — der Strom, den der Lauf an der Position der
+            /// Solarthermie in den Strombedarf bucht; 0 ohne gepflegte Pumpenleistung und ohne
+            /// Hilfsenergieanteil.
+            /// </summary>
+            public double PumpenstromMwh;
+
             public List<SolarModulZeile> Module = new List<SolarModulZeile>();
 
             /// <summary>
@@ -845,12 +888,14 @@ namespace WindowsFormsApplication1
 
             e.WaermeproduktionMwh = st.WaermeproduktionGesamtKwh / 1000.0;
             e.UeberschussMwh = st.UeberschussSummeKwh / 1000.0;
+            e.PumpenstromMwh = st.PumpenstromGesamtKwh / 1000.0;
 
             if (st.Kollektor_Ergebnisse != null)
                 foreach (var k in st.Kollektor_Ergebnisse)
                     e.Module.Add(new SolarModulZeile(k.Name, k.Flaeche, k.Anzahl,
                                                      k.WaermeproduktionKwh / 1000.0,
-                                                     k.UeberschussKwh / 1000.0));
+                                                     k.UeberschussKwh / 1000.0,
+                                                     k.IstGanglinie));
 
             e.HinweisOhneAbnehmer = SolarHinweisOhneAbnehmer(sim, wb, e.UeberschussMwh);
 
@@ -947,7 +992,14 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Eine Zeile der BHKW-Modultabelle.</summary>
-        public sealed record BhkwModulZeile(string Name, double WaermeMwh, double StromMwh);
+        /// <param name="MitTakten">Welle M4, BH2: taktet das Modul (Anfahrverlust oder Mindestlaufzeit gepflegt)?</param>
+        /// <param name="Starts">Starts im Jahr [1/a]; nur mit Takten.</param>
+        /// <param name="AnfahrverlustKwh">Anfahrverlust im Jahr [kWh/a] — Teil des Brennstoffs.</param>
+        /// <param name="MitKennlinie">Welle M4, BH1: rechnet das Modul mit Teillastkennlinie?</param>
+        /// <param name="TeillastMehrbrennstoffKwh">Mehrbrennstoff der Kennlinie gegenüber dem Gesamtwirkungsgrad [kWh/a].</param>
+        public sealed record BhkwModulZeile(string Name, double WaermeMwh, double StromMwh,
+                                            bool MitTakten = false, int Starts = 0, double AnfahrverlustKwh = 0,
+                                            bool MitKennlinie = false, double TeillastMehrbrennstoffKwh = 0);
 
         public sealed class BhkwErgebnis
         {
@@ -1020,8 +1072,16 @@ namespace WindowsFormsApplication1
             e.StromdeckungProzent = BhkwStromdeckungProzent(sim);
 
             for (int i = 0; i < bh.bhkw_list.Count; i++)
+            {
+                // Welle M4 (BH1, BH2): der Ausweis der Teillastrechnung - nur für ein Modul, das sie führt.
+                BhkwTeillast t = bh.Teillast(i);
+                bool takt = t != null && t.MitTakten;
+                bool kennlinie = t != null && t.MitKennlinie;
                 e.Module.Add(new BhkwModulZeile(
-                    bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i]));
+                    bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i],
+                    takt, takt ? bh.Starts_BHKW[i] : 0, takt ? bh.Anfahrverlust_KWh_BHKW[i] : 0.0,
+                    kennlinie, kennlinie ? bh.TeillastMehrbrennstoff_KWh_BHKW[i] : 0.0));
+            }
 
             return e;
         }
@@ -1126,6 +1186,19 @@ namespace WindowsFormsApplication1
             public double GenutztMwh;
 
             public double UeberschussMwh;
+
+            /// <summary>
+            /// Abgeregelte PV-Energie [MWh/a] an der Einspeisegrenze (PV3) — nach der Speicherladung,
+            /// im Flottenpfad die Abregelung der Flotte. 0 ohne Grenze.
+            /// </summary>
+            public double AbregelungMwh;
+
+            /// <summary>Die Abregelung in % der Erzeugung der Module; 0 ohne Erzeugung.</summary>
+            public double AbregelungProzent;
+
+            /// <summary>Die Einspeisegrenze des Laufs [kW]; <c>null</c> = keine.</summary>
+            public double? EinspeisegrenzeKw;
+
             public double DeckungProzent;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
@@ -1172,14 +1245,29 @@ namespace WindowsFormsApplication1
             // am genutzten Anteil - das ist seine Definition.
             double erzeugungKwh = pv.Stromproduktion_Theoretisch.Sum();
             double genutztKwh = pv.Stromproduktion.Sum();
-            // E29 (#536, E29‑Q10 a): je Stunde geklemmt - wortgleich mit SimulationRunner.
-            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf_stuendlich).Sum();
+            // E29 (#536, E29‑Q10 a) mit SB1 (a): je Viertelstunde geklemmt - wortgleich mit
+            // SimulationRunner.
+            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf).Sum() / 4.0;
 
             e.StromproduktionMwh = erzeugungKwh / 1000.0;
             e.GenutztMwh = genutztKwh / 1000.0;
-            e.UeberschussMwh = sim.Speicherflottennetzbilanz != null
-                ? sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0
-                : pv.Ueberschuss.Sum() / 1000.0;
+            e.EinspeisegrenzeKw = pv.EinspeisegrenzeKw;
+            if (sim.Speicherflottennetzbilanz != null)
+            {
+                e.UeberschussMwh = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
+                e.AbregelungMwh = sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
+            }
+            else
+            {
+                // Der Reiter zeigt den Überschuss VOR der Speicherladung (die Einspeisung mit
+                // Speicher steht im Reiter „Stromspeicher"). PV3: die Abregelung je Viertelstunde
+                // nach der Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie
+                // SimulationRunner.
+                e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
+                sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
+                e.AbregelungMwh = SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
+            }
+            e.AbregelungProzent = erzeugungKwh > 0 ? e.AbregelungMwh * 1000.0 / erzeugungKwh * 100.0 : 0.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             // E28 (#535, E28‑Q3 a): dieselbe Klemme wie die Ergebniszeile (SimulationRunner).
             e.StrombedarfMwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf).Sum() / 4000.0;
@@ -1337,6 +1425,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Eigener Zähler (E34, Wahl 2)?</summary>
             public bool EigenerZaehler;
+
+            /// <summary>Starts im Kühlbetrieb [1/a] (Welle M4, WP1); 0 ohne Mindestleistung.</summary>
+            public int Starts;
+
+            /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [MWh/a] (Welle M4, WP1).</summary>
+            public double TaktstromMwh;
         }
 
         /// <summary>
@@ -1387,7 +1481,9 @@ namespace WindowsFormsApplication1
                         Eer = z.StromGesamtKwh > 0 ? z.EerJahreswert : (double?)null,
                         NetzbezugMwh = z.NetzbezugKwh / 1000.0,
                         Kuehltraeger = z.Kuehltraeger,
-                        EigenerZaehler = z.NebenDerStufenrechnung
+                        EigenerZaehler = z.NebenDerStufenrechnung,
+                        Starts = z.Starts,
+                        TaktstromMwh = z.TaktstromKwh / 1000.0
                     });
                 }
                 e.KaeltestromNetzbezugMwh = netz / 1000.0;

@@ -231,6 +231,9 @@ namespace WindowsFormsApplication1
                         m.Kollektormodulanzahl = (int)(zeile.AnzahlModule ?? 0);
                         m.m_Neigung = zeile.Neigung ?? 0;
                         m.m_Azimut = zeile.Azimut ?? 0;
+                        m.Albedo = zeile.Albedo;
+                        // Welle M2: der Solarkreis des Felds (Pumpe, Verluste, Arbeitstemperatur).
+                        Kollektorfeldabbildung.InModell(zeile, m);
                         // Vor- und Ruecklauf der Anlagenzeile bleiben, wie sie sind: Der
                         // Dialog fuehrt sie nicht, sie haben beim Kollektor keinen
                         // Rechenweg (AnlagenTemperaturen.FuehrtTemperaturpaar).
@@ -255,6 +258,9 @@ namespace WindowsFormsApplication1
                 ["LabelAperturflaeche"] = Text_("SKV_LBL_APERTURFLAECHE", "Aperturfläche [m²]:"),
                 ["LabelNeigung"] = Text_("SKV_LBL_NEIGUNG", "Neigung [°]:"),
                 ["LabelAzimut"] = Text_("SKV_LBL_AZIMUT", "Azimut [°]:"),
+                ["LabelAlbedo"] = Text_("ANLAGE_LABEL_ALBEDO", "Albedo [-]:"),
+                ["HinweisAlbedo"] = Text_("ANLAGE_HINWEIS_ALBEDO",
+                    "Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2."),
                 ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
 
                 // „Bearbeiten…" STATT „Kollektor in DB ändern…" (Anwenderentscheid
@@ -377,7 +383,7 @@ namespace WindowsFormsApplication1
 
         private static ErzeugerZeile ZeileZu(WErzeugerModel m)
         {
-            return new ErzeugerZeile
+            ErzeugerZeile z = new ErzeugerZeile
             {
                 Schluessel = m.ID,
                 Bezeichner = m.Bezeichner ?? "",
@@ -385,10 +391,13 @@ namespace WindowsFormsApplication1
                 Neigung = m.m_Neigung,
                 Azimut = m.m_Azimut,
                 AnzahlModule = m.Kollektormodulanzahl,
+                Albedo = m.Albedo,
                 // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
                 // formuliert im Kern; leer beim Referenzfeld und ohne Projekt.
                 Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)
             };
+            Kollektorfeldabbildung.InZeile(m, z);
+            return z;
         }
 
 
@@ -507,6 +516,7 @@ namespace WindowsFormsApplication1
             ziel.Kdir = m.m_Kdir;
             ziel.Kdiff = m.m_Kdfu;
             ziel.Kosten = m.m_Kosten;
+            ziel.Bezugsflaeche = Solarkreis.Bezugsflaeche(m.m_Bezugsflaeche);
         }
 
         /// <summary>
@@ -529,7 +539,9 @@ namespace WindowsFormsApplication1
                 m_k2 = d.K2 ?? 0,
                 m_Kdir = d.Kdir ?? 0,
                 m_Kdfu = d.Kdiff ?? 0,
-                m_Kosten = d.Kosten ?? 0
+                m_Kosten = d.Kosten ?? 0,
+                // ST6: ohne diese Zeile schriebe jedes „Überschreiben" die Vorgabe apertur zurück.
+                m_Bezugsflaeche = Solarkreis.Bezugsflaeche(d.Bezugsflaeche)
             };
         }
 

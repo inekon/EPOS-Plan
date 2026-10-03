@@ -361,6 +361,78 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KESSEL_WARTUNG_EINHEIT_PROZENT = "%/a";
 
+        // =====================================================================
+        // Einheit des Bereitschaftsverlusts des Heizkessels
+        //   Tab_Heizkessel.Bereitschaft_Einheit und
+        //   Tab_Heizkessel_STAMM.Bereitschaft_Einheit
+        //   (Schemaschritt KesselBereitschaftEinheitSchema.SCHRITT)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist eine LEISTUNG in kW — die Vorgabe jeder
+        /// Bestandszeile und die Einheit des Imports aus VDI 3805.
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_KW = "kW";
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist ein ANTEIL DER NENNLEISTUNG in Prozent; die
+        /// Rechnung macht daraus kW (<c>KesselBereitschaft.LeistungKw</c>).
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_PROZENT = "%";
+
+        // =====================================================================
+        // Kollektorfeld der Solarthermie (Welle M2, ST2 und ST6)
+        //   Tab_Energieanlagen.Arbeitstemperatur_Weg und
+        //   Tab_Solarkollektoren(_STAMM).Bezugsflaeche
+        //   (Schemaschritt SolarthermieFelderSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors FEST: mittlere Fluidtemperatur 50 °C für das ganze
+        /// Jahr — die Vorgabe; leer heißt dasselbe.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_FEST = "fest";
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors AUS DEM SPEICHER: je Stunde aus der untersten Zone
+        /// des Senkenpuffers (bzw. dem Rücklauf der Senke) plus Grädigkeit und halber Spreizung.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_SPEICHER = "speicher";
+
+        /// <summary>Die Kollektorkennwerte sind auf die APERTURFLÄCHE bezogen — die Vorgabe.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_APERTUR = "apertur";
+
+        /// <summary>Die Kollektorkennwerte sind auf die BRUTTOFLÄCHE (Modulfläche) bezogen.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_BRUTTO = "brutto";
+
+        // =====================================================================
+        // Einspeisegrenze des Projekts (Welle M5, PV3)
+        //   Tab_Einstellungen.Einspeisegrenze_Einheit
+        //   (Schemaschritt StromViertelstundenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Die Einspeisegrenze steht in kW am Netzanschlusspunkt — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string EINSPEISEGRENZE_KW = "kW";
+
+        /// <summary>Die Einspeisegrenze steht in Prozent der installierten PV-Leistung (kWp).</summary>
+        public const string EINSPEISEGRENZE_PROZENT = "%";
+
+        // =====================================================================
+        // Bereitschaftsweg des Pufferspeichers (Welle M7, PS1 (c))
+        //   Tab_Pufferspeicher.Bereitschaft_Weg
+        //   (Schemaschritt PufferOptionenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Bereitschaftsverlust als Tageswert anteilig zum Füllstand — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string PSP_BEREITSCHAFT_TAG = "tag";
+
+        /// <summary>Bereitschaftsverlust je Zone aus dem Verlustkoeffizienten und der Übertemperatur gegen den Aufstellraum.</summary>
+        public const string PSP_BEREITSCHAFT_TEMPERATUR = "temperatur";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim
@@ -615,6 +687,9 @@ namespace WindowsFormsApplication1
         //   den Satz beim Umschalten der Bemessung NICHT stillschweigend uebernehmen.
         //
         //   ERFAHRUNGSWERTE gelten fuer Weg A: BHKW 2-4 %, Heizkessel 4-8 %.
+        //   Fuer Weg B (Anteil des Brennstoffeinsatzes als Strommenge) fuehrt die Saat
+        //   der Auslieferungsvorlagen BHKW 0,5-1,5 % und Heizkessel 1-2 % - Herleitung
+        //   und Nachzug im Bestand: HilfsenergieEmpfehlungNachzug (Auftrag P671).
         //
         //   NUR WEG C bei Puffer- und Stromspeicher sowie Photovoltaik: Ihre
         //   Umwandlungsverluste stecken bereits im Wirkungsgrad der Speicherrechnung
@@ -674,9 +749,10 @@ namespace WindowsFormsApplication1
         /// Hilfsenergie als Anteil des <b>Endenergiebedarfs</b> der Anlage [%] (Weg B) —
         /// dieselbe Menge wie bei <see cref="BEMESSUNG_PROZENT_ENDENERGIEKOSTEN"/>, aber
         /// unbewertet. Ergibt unmittelbar eine Strommenge [kWh], die mit dem
-        /// Strombezugspreis bewertet wird. <b>Keine Auslieferungsvorlage nutzt diesen
-        /// Weg</b> — er steht als ausdrückliche Alternative zur Kostenbasis zur Wahl
-        /// (Festlegung 29.08.2026). Die Sätze beider Wege sind NICHT austauschbar.
+        /// Strombezugspreis bewertet wird. Die Hilfsenergie-Pflichtzeilen der
+        /// Auslieferungsvorlagen von BHKW, Heizkessel und Wärmepumpe rechnen mit diesem
+        /// Weg (Schritt 94), ihre Empfehlung ist auf ihn bezogen
+        /// (<c>HilfsenergieEmpfehlungNachzug</c>). Die Sätze beider Wege sind NICHT austauschbar.
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_ENDENERGIEBEDARF = "PROZENT_ENDENERGIEBEDARF";
@@ -2526,6 +2602,81 @@ namespace WindowsFormsApplication1
         /// <summary>Kopplungsstufe AK3 — der geschlossene Kreis. Zugelassen wie <see cref="ANLAGENKOPPLUNG_AK2"/>,
         /// angeboten erst mit dem Rechenweg.</summary>
         public const string ANLAGENKOPPLUNG_AK3 = "AK3";
+
+        // =====================================================================
+        // Aufheizoptimierung, Stufe KP3 (Entwurf KP3 Abschnitt 4; Schemaschritte
+        //   KP-S2 an Tab_Einstellungen und KP-S3 an Tab_ErgebnisGebaeude und
+        //   Tab_ErgebnisZone). Persistenzwerte, eingefroren und ASCII (in SQL
+        //   verglichen, Quelle der CHECK-Klauseln). NULL heisst in der
+        //   Projekteinstellung „die Vorgabe", im Ergebnis „Schalter aus".
+        // =====================================================================
+
+        /// <summary>
+        /// Bemessung der Aufheizzeit (a): an der kältesten Stunde des Referenzjahres
+        /// (<c>Tab_Einstellungen.Aufheiz_Bemessung</c>). <b>Auch NULL bedeutet (a)</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE = "STUNDE";
+
+        /// <summary>Bemessung der Aufheizzeit (b): an der kältesten Stunde abzüglich ΔT_K (<c>Aufheiz_Abzug_K</c>).</summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE_ABZUG = "STUNDE_ABZUG";
+
+        /// <summary>Die zwei Bemessungsvarianten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_BEMESSUNGEN = new[]
+        {
+            AUFHEIZ_BEMESSUNG_STUNDE, AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+        };
+
+        /// <summary>
+        /// Art der Aufheizzeit: täglich neu aus der Außenluft des Tages
+        /// (<c>Tab_Einstellungen.Aufheiz_Art</c>). <b>Auch NULL bedeutet TAEGLICH</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_ART_TAEGLICH = "TAEGLICH";
+
+        /// <summary>Art der Aufheizzeit: fest, jeden Tag die bemessene Aufheizzeit.</summary>
+        public const string AUFHEIZ_ART_FEST = "FEST";
+
+        /// <summary>Die zwei Arten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST
+        };
+
+        /// <summary>
+        /// Art der Aufheizzeit im ERGEBNIS: manuell — das Gebäude rampt an jedem Sprung mit seiner
+        /// manuellen Aufheizzeit <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c> (E59, Festlegungen 37, 39). Nur
+        /// in <c>Tab_ErgebnisGebaeude.Aufheiz_Art</c>/<c>Tab_ErgebnisZone.Aufheiz_Art</c>, nie in
+        /// <c>Tab_Einstellungen.Aufheiz_Art</c> — die Art des Projekts bleibt täglich oder fest.
+        /// </summary>
+        public const string AUFHEIZ_ART_MANUELL = "MANUELL";
+
+        /// <summary>Die drei Arten der Ergebnisspalte <c>Aufheiz_Art</c> in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ERGEBNIS_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST, AUFHEIZ_ART_MANUELL
+        };
+
+        /// <summary>Zustand der Aufheizrechnung im Ergebnis: bemessen (Festlegung 25).</summary>
+        public const string AUFHEIZ_ZUSTAND_BEMESSEN = "BEMESSEN";
+
+        /// <summary>Zustand: der Bemessungsfall ist mit keiner Rampe bis 48 h erreichbar (W1); t_auf,max bleibt NULL.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNERREICHBAR = "UNERREICHBAR";
+
+        /// <summary>Zustand: das Gebäude bzw. die Zone rechnet gekoppelt (W5); an der Zone ab Schritt KP-S4 (<see cref="AufheizManuellSchema"/>).</summary>
+        public const string AUFHEIZ_ZUSTAND_GEKOPPELT = "GEKOPPELT";
+
+        /// <summary>Zustand: die Zone ist unbeheizt, ohne Rampe — nur an der Zone.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNBEHEIZT = "UNBEHEIZT";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Heizleistungsgrenze der Zone.</summary>
+        public const string AUFHEIZ_QUELLE_GRENZE = "GRENZE";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Zielleistung (1 + ρ)·Φ_stat.</summary>
+        public const string AUFHEIZ_QUELLE_ZIEL = "ZIEL";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: Zonen verschiedener Quelle — nur am Gebäude.</summary>
+        public const string AUFHEIZ_QUELLE_GEMISCHT = "GEMISCHT";
 
         // =====================================================================
         // Anlagenkopplung, Kaelteseite (Entscheid E37, Konzept Anlagenkopplung

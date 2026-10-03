@@ -216,6 +216,19 @@
                     <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
                             @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
 
+                    @* DER EINSTIEG IN DIE PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-
+                       Auslegung, Stufe P2) - nach dem Muster „Stromspeicher auslegen…": Jede
+                       Speicherart hat ihr Anlegen und ihr Auslegen beieinander. Steht genau EIN
+                       Puffer im Projekt, legt die Auslegung ihn aus; sonst oeffnet sie fuer einen
+                       neuen (die Klasse kommt aus dem Projekt) - einen bestimmten Speicher waehlt
+                       der Knopf „Auslegen…" der Pufferverwaltung. Kein Delegat, kein Knopf. *@
+                    @if (Dienste?.PufferAuslegungOeffnen is not null)
+                    {
+                        <button type="button" class="epos-knopf epos-simkonfig-pufferauslegung"
+                                disabled="@(IdProjekt <= 0)"
+                                @onclick="PufferAuslegungOeffnen">@BtnPufferAuslegen</button>
+                    }
+
                     @* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274,
                        Anwenderwunsch 14.09.2026): „Der Dialog Stromspeicher soll in den
                        Dialog Konfiguration verschoben werden. Aehnlich zu ‚Pufferspeicher
@@ -310,7 +323,14 @@
        Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und geschlossener Kreis (AK3) stehen in
        der Liste, sind aber gesperrt und nennen den Grund - steht eine davon schon in der
        Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet dann AK1 und sagt es).
-       Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
+       Scheitert das Schreiben, kehrt die Wahl zurueck (@key).
+
+       „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1): der Schalter (Vorgabe aus) und
+       - nur bei Schalter an - Bemessung, ΔT_K (nur bei „kaelteste Stunde − ΔT_K"), Aufheizreserve
+       ρ in % und Art der Aufheizzeit. Jedes Feld schreibt sofort die GANZE Einstellung
+       (AufheizvorgabeSchreiben, normalisiert nach Festlegung 24: Vorgaben als NULL, ein getippter
+       Wert bleibt); scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. Die
+       Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung). *@
     @if (Parameter?.Laden is not null)
     {
         <fieldset class="epos-simkonfig-einstellungen" disabled="@_daten.Gesperrt">
@@ -325,9 +345,56 @@
                                     Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
                                     WertChanged="NetzverlusteGesetzt" />
                         <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
+                        @if (_parameter.Netzkanaele.JeKanal)
+                        {
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_NV_KANAL_AN" />
+                        }
                     </KindInhalt>
                 </Formularraster>
             </section>
+
+            @* NETZVERLUSTE JE KANAL UND ZIRKULATION (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+               Simulationsablauf 17). Je Kanal Wert und Einheit; alle leer = der Projektwert darueber.
+               Die Zirkulation gilt nur auf dem Bestandsweg des Brauchwassers. Jedes Feld schreibt SOFORT
+               die ganze Vorgabe; scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. *@
+            @if (Parameter.NetzkanaeleSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-netzkanaele" aria-label="@Resource.SIMKONF_GRP_NV_KANAL">
+                    <Formularraster Einspaltig="true" @key="_netzkanalSchluessel">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_HEIZUNG" Feldname="@Resource.SIMKONF_LBL_NV_HEIZUNG"
+                                        Wert="@_parameter.Netzkanaele.HeizungWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.HeizungEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(0, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.HeizungEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(0, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER" Feldname="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER"
+                                        Wert="@_parameter.Netzkanaele.BrauchwasserWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(1, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(1, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_PROZESS" Feldname="@Resource.SIMKONF_LBL_NV_PROZESS"
+                                        Wert="@_parameter.Netzkanaele.ProzessWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.ProzessEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(2, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.ProzessEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(2, i))" />
+                            <Herleitungszeile Text="@(_parameter.Netzkanaele.JeKanal ? Resource.SIMKONF_HRL_NV_KANAL_AN : Resource.SIMKONF_HRL_NV_KANAL_AUS)" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG" Feldname="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLeistungKw" Min="0" Max="100" Nachkommastellen="2"
+                                        Einheit="kW" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLeistungGesetzt" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT" Feldname="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLaufzeitHd" Min="0" Max="24" Nachkommastellen="1"
+                                        Einheit="h/d" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLaufzeitGesetzt" />
+                            <Herleitungszeile Text="@ZirkulationZeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
 
             @if (Parameter.KuehlbetriebSchreiben is not null)
             {
@@ -363,6 +430,127 @@
                                          Aktiv="@(!_daten.Gesperrt)"
                                          AuswahlChanged="AnlagenkopplungGewaehlt" />
                             <Herleitungszeile Text="@Kopplungszeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @if (Parameter.AufheizvorgabeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-aufheizung" aria-label="@Resource.SIMKONF_AUFH_GRP">
+                    @* Hilfe zur Projekteinstellung: die Seite „Gebäudemodell VDI 6007" (help_mapping.txt). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Simulation_Config_Aufheizung.btn_Help"
+                                   StandardKurztext="@Resource.SIMKONF_AUFH_HILFE_KNOPF" MitAssistent="false" />
+                    </div>
+                    <Formularraster Einspaltig="true" @key="_aufheizSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_AUFH_LBL_SCHALTER"
+                                      Wert="@Aufheizung.An"
+                                      Aktiv="@(!_daten.Gesperrt)"
+                                      WertChanged="AufheizSchalterGesetzt" />
+                            @if (Aufheizung.An)
+                            {
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_BEMESSUNG"
+                                             Eintraege="@Bemessungseintraege"
+                                             Auswahl="@(Aufheizung.MitAbzug ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizBemessungGewaehlt" />
+                                @if (Aufheizung.MitAbzug)
+                                {
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ABZUG"
+                                                Wert="@Aufheizung.AbzugK"
+                                                Einheit="K" Min="0" Max="10"
+                                                Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_VORGABE_K)"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizAbzugGesetzt" />
+                                }
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
+                                            Wert="@ReserveProzent"
+                                            Einheit="%" Min="1" Max="100"
+                                            Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE * 100.0)"
+                                            Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="AufheizReserveGesetzt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ART"
+                                             Eintraege="@Arteintraege"
+                                             Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizArtGewaehlt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
+                                @if (_parameter.Anlagenkopplung == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1)
+                                {
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GEKOPPELT" />
+                                }
+                                @foreach (string zeile in _aufheizZeilen)
+                                {
+                                    <Herleitungszeile Text="@zeile" />
+                                }
+                            }
+                            else
+                            {
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AUS" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @* „Einspeisegrenze" (Welle M5, PV3): Wert und Einheit (kW oder % der installierten
+               PV-Leistung) schreiben SOFORT die ganze Einstellung (EinspeisegrenzeSchreiben); leer heißt
+               keine Grenze. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.EinspeisegrenzeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-einspeisegrenze" aria-label="@Resource.SIMKONF_GRP_EINSPEISEGRENZE">
+                    <Formularraster Einspaltig="true" @key="_einspeisegrenzeSchluessel">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE"
+                                        Wert="@Einspeisegrenze.Wert"
+                                        Einheit="@EinspeisegrenzeEinheitText" Min="0"
+                                        Platzhalter="@Resource.SIMKONF_EINSPEISEGRENZE_LEER"
+                                        Aktiv="@(!_daten.Gesperrt)"
+                                        WertChanged="EinspeisegrenzeWertGesetzt" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT"
+                                         Eintraege="@Einspeiseeinheiten"
+                                         Auswahl="@(Einspeisegrenze.InProzent ? 1 : 0)"
+                                         Aktiv="@(!_daten.Gesperrt)"
+                                         AuswahlChanged="EinspeisegrenzeEinheitGewaehlt" />
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_EINSPEISEGRENZE" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @* „Thermische Desinfektion" (Welle M7, BW5): Schalter, Intervall, Stunde, Zieltemperatur und
+               Volumen schreiben SOFORT die ganze Einstellung (DesinfektionSchreiben); leer heisst die
+               Vorgabe. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.DesinfektionSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-desinfektion" aria-label="@Resource.SIMKONF_GRP_DESINFEKTION">
+                    <Formularraster Einspaltig="true" @key="_desinfektionSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_DESINFEKTION" Wert="@Desinfektion.Aktiv"
+                                      Aktiv="@(!_daten.Gesperrt)" WertChanged="DesinfektionSchalterGesetzt" />
+                            @if (Desinfektion.Aktiv)
+                            {
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_INTERVALL" Einheit="d"
+                                              Wert="@Desinfektion.IntervallTage" Min="1" Max="31"
+                                              Platzhalter="7" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { IntervallTage = w })" />
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_STUNDE" Einheit="h"
+                                              Wert="@Desinfektion.Stunde" Min="0" Max="23"
+                                              Platzhalter="2" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { Stunde = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_ZIEL" Einheit="°C"
+                                            Wert="@Desinfektion.ZielC" Min="55" Max="90"
+                                            Platzhalter="70" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { ZielC = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_VOLUMEN" Einheit="l"
+                                            Wert="@Desinfektion.VolumenL" Min="0" Max="100000"
+                                            Platzhalter="@Resource.SIMKONF_DESINF_VOLUMEN_LEER" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { VolumenL = w })" />
+                            }
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_DESINFEKTION" />
                         </KindInhalt>
                     </Formularraster>
                 </section>
@@ -633,6 +821,9 @@
 
     /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
     [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
+
+    /// <summary>„Pufferspeicher auslegen…" (<c>PAUS_BTN_KONFIG</c>).</summary>
+    [Parameter] public string BtnPufferAuslegen { get; set; } = "Pufferspeicher auslegen…";
 
     /// <summary>
     /// SIMKONF_BTN_KONFIGURATION — der Knopf an der Erzeugerkarte, der den
@@ -907,6 +1098,7 @@
     private void Neuladen()
     {
         _parameter = Parameter?.Laden?.Invoke() ?? new ParameterDaten();
+        AufheizZeilenLaden();
         KachelnNeuladen();
     }
 
@@ -939,6 +1131,97 @@
         _parameter.Netzverluste = wert ?? 0.0;
         Parameter?.NetzverlusteSchreiben?.Invoke(_parameter.Netzverluste,
                                                  _parameter.NetzverlusteEinheit);
+    }
+
+    // =====================================================================
+    // Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _netzkanalSchluessel;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts: 0 = %, 1 = kWh/a.</summary>
+    private static readonly IReadOnlyList<(int Id, string Text)> KanalEinheiten = new[]
+    {
+        (0, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        (1, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    /// <summary>Der Platz einer Einheit in <see cref="KanalEinheiten"/>; leer gilt als %.</summary>
+    private static int KanalEinheitIndex(string? einheit)
+        => einheit == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH ? 1 : 0;
+
+    /// <summary>Die Einheit hinter dem Zahlenfeld; leer gilt als %.</summary>
+    private static string KanalEinheit(string? einheit) => KanalEinheiten[KanalEinheitIndex(einheit)].Text;
+
+    /// <summary>Die Herleitung der Zirkulation samt Jahresmenge, wenn Leistung und Laufzeit stehen.</summary>
+    private string ZirkulationZeile
+    {
+        get
+        {
+            WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+            if (!v.MitZirkulation) return Resource.SIMKONF_HRL_ZIRK;
+            return Resource.SIMKONF_HRL_ZIRK + " " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Resource.SIMKONF_HRL_ZIRK_MENGE, WindowsFormsApplication1.Energieeinheit.MWh.AusKWh(v.ZirkulationJahresKwh));
+        }
+    }
+
+    /// <summary>Der Wert eines Kanals (0 Heizung, 1 Brauchwasser, 2 Prozess); leer = kein Kanalwert.</summary>
+    private void KanalwertGesetzt(int kanal, double? wert)
+    {
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungWert = wert },
+            1 => v with { BrauchwasserWert = wert },
+            _ => v with { ProzessWert = wert }
+        });
+    }
+
+    /// <summary>Die Einheit eines Kanals; sie wirkt erst mit einem Wert.</summary>
+    private void KanalEinheitGewaehlt(int kanal, int? index)
+    {
+        if (index is null) return;
+        string einheit = KanalEinheiten[index.Value == 1 ? 1 : 0].Text;
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungEinheit = einheit },
+            1 => v with { BrauchwasserEinheit = einheit },
+            _ => v with { ProzessEinheit = einheit }
+        });
+    }
+
+    private void ZirkLeistungGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLeistungKw = wert });
+
+    private void ZirkLaufzeitGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLaufzeitHd = wert });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe SOFORT über die Naht der Hülle (Muster Aufheizoptimierung). Eine
+    /// Einheit ohne Wert bleibt im Arbeitsstand stehen, bis ein Wert dazukommt; scheitert das
+    /// Schreiben, zeigt der Abschnitt wieder den gespeicherten Stand (@key) und die Fußzeile meldet es.
+    /// </summary>
+    private void NetzkanaeleSchreiben(WindowsFormsApplication1.Netzverlustvorgabe neu)
+    {
+        if (Parameter?.NetzkanaeleSchreiben is null) return;
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is null && Parameter.NetzkanaeleSchreiben(gespeichert))
+        {
+            // Die gewählte Einheit eines leeren Kanals bleibt sichtbar stehen.
+            _parameter.Netzkanaele = gespeichert with
+            {
+                HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+                BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+                ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+            };
+            return;
+        }
+
+        _netzkanalSchluessel++;
+        Melden(grund ?? Resource.SIMKONF_MSG_NV_KANAL_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>@key des Kühlschalters — ein Neuaufbau nach gescheitertem Schreiben.</summary>
@@ -1059,6 +1342,190 @@
 
         _anlagenkopplungSchluessel++;
         Melden(Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _aufheizSchluessel;
+
+    /// <summary>
+    /// Die Herleitungszeilen je Gebäude (<c>AufheizHerleitung</c>, verdrahtet mit der Welle D2);
+    /// leer ohne Delegat — dann steht keine Zeile da.
+    /// </summary>
+    private IReadOnlyList<string> _aufheizZeilen = Array.Empty<string>();
+
+    /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe Aufheizung
+        => _parameter.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    /// <summary>Die Reserve ρ in Prozent, wie das Feld sie zeigt; <c>null</c> = leer (Vorgabe).</summary>
+    private double? ReserveProzent => Aufheizung.Reserve is double r ? r * 100.0 : null;
+
+    /// <summary>Die zwei Bemessungen (Id 0 = (a) kälteste Stunde, 1 = (b) kälteste Stunde − ΔT_K).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Bemessungseintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE),
+        (1, Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG)
+    };
+
+    /// <summary>Die zwei Arten (Id 0 = täglich, 1 = fest).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Arteintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_ART_TAEGLICH),
+        (1, Resource.SIMKONF_AUFH_ART_FEST)
+    };
+
+    /// <summary>Der leise Platzhalter eines leeren Zahlenfeldes („Vorgabe 2") in der Oberflächenkultur.</summary>
+    private static string Vorgabetext(double wert)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_VORGABE,
+                         wert.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>Liest die Herleitungszeilen je Gebäude neu — ohne Delegat keine.</summary>
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _einspeisegrenzeSchluessel;
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze
+        => _parameter.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Die zwei Einheiten: kW (Vorgabe) und % der installierten PV-Leistung.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Einspeiseeinheiten => new[]
+    {
+        (0, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        (1, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private string EinspeisegrenzeEinheitText => Einspeisegrenze.InProzent ? "%" : "kW";
+
+    private void EinspeisegrenzeWertGesetzt(double? wert)
+        => EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(wert, Einspeisegrenze.Einheit));
+
+    private void EinspeisegrenzeEinheitGewaehlt(int? index)
+    {
+        if (!index.HasValue) return;
+        string einheit = index.Value == 1
+            ? WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT
+            : WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW;
+        EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(Einspeisegrenze.Wert, einheit));
+    }
+
+    private void EinspeisegrenzeSchreiben(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        if (Parameter?.EinspeisegrenzeSchreiben is null) return;
+        if (Parameter.EinspeisegrenzeSchreiben(neu))
+        {
+            _parameter.Einspeisegrenze = neu;
+        }
+        else
+        {
+            _einspeisegrenzeSchluessel++;
+            Melden(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _desinfektionSchluessel;
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion
+        => _parameter.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    private void DesinfektionSchalterGesetzt(bool an)
+        => DesinfektionSchreiben(Desinfektion with { Aktiv = an });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe; ein Wert außerhalb der Grenzen wird benannt abgelehnt
+    /// (<c>Desinfektionsvorgabe.Pruefen</c>), ein gescheitertes Schreiben setzt den Abschnitt zurück.
+    /// </summary>
+    private void DesinfektionSchreiben(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        if (Parameter?.DesinfektionSchreiben is null) return;
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null)
+        {
+            _desinfektionSchluessel++;
+            Melden(fehler, WarnStufe.Warnung);
+            return;
+        }
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (Parameter.DesinfektionSchreiben(normal))
+        {
+            _parameter.Desinfektion = normal;
+        }
+        else
+        {
+            _desinfektionSchluessel++;
+            Melden(Resource.SIMKONF_DESINFEKTION_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
+    private void AufheizZeilenLaden()
+        => _aufheizZeilen = Parameter?.AufheizHerleitung?.Invoke() ?? Array.Empty<string>();
+
+    private void AufheizSchalterGesetzt(bool an)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+    }
+
+    private void AufheizBemessungGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art));
+    }
+
+    private void AufheizAbzugGesetzt(double? wert)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art));
+    }
+
+    /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
+    private void AufheizReserveGesetzt(double? prozent)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        double? anteil = prozent is double p ? p / 100.0 : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+    }
+
+    private void AufheizArtGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!));
+    }
+
+    /// <summary>
+    /// Schreibt die ganze Einstellung SOFORT über die Naht der Hülle (Muster Kühlschalter). Steht
+    /// danach nicht die gewünschte Einstellung, zeigt der Abschnitt wieder den gespeicherten Stand
+    /// (@key), und die Fußzeile meldet es — kein stilles Zurückspringen.
+    /// </summary>
+    private void AufheizSchreiben(WindowsFormsApplication1.Aufheizvorgabe neu)
+    {
+        if (Parameter?.AufheizvorgabeSchreiben is null) return;
+        if (neu.Equals(Aufheizung)) return;
+
+        if (Parameter.AufheizvorgabeSchreiben(neu))
+        {
+            _parameter.Aufheizung = neu;
+            AufheizZeilenLaden();
+            return;
+        }
+
+        _aufheizSchluessel++;
+        Melden(Resource.SIMKONF_AUFH_MSG_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>
@@ -1347,6 +1814,18 @@
     {
         if (IdProjekt <= 0) return;
         Dienste?.AuslegungOeffnen?.Invoke();
+    }
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2): mit dem einzigen Puffer
+    /// des Projekts, sonst für einen neuen. Der Rückweg führt über den Stapel der Wurzel hierher
+    /// zurück, und die Speicherspalte liest dabei frisch.
+    /// </summary>
+    private void PufferAuslegungOeffnen()
+    {
+        if (IdProjekt <= 0) return;
+        int idPuffer = _daten.Speicher.Count == 1 ? _daten.Speicher[0].IdPuffer : 0;
+        Dienste?.PufferAuslegungOeffnen?.Invoke(idPuffer);
     }
 
     // =====================================================================

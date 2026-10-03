@@ -52,6 +52,11 @@ namespace WindowsFormsApplication1
         // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 107).
         public List<ErgebnisGebaeudeModel> Gebaeude = new List<ErgebnisGebaeudeModel>();
 
+        // Erdreichpruefung des Laufs (Tab_ErgebnisErdreich, Entscheidungsvorlage Modellgrenzen
+        // EQ1): je Anlage mit Waermequelle Erdreich die Pruefzeilen. Leere Liste = keine
+        // Erdreichquelle (oder die Datenbank steht vor dem Schemaschritt der Katalogfassung).
+        public List<ErdreichErgebnisSpeicher.Zeile> Erdreich = new List<ErdreichErgebnisSpeicher.Zeile>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;
@@ -165,6 +170,72 @@ namespace WindowsFormsApplication1
         /// <summary>Davon die Stunden an der Vorlaufgrenze [h] (7.2); nur mit Kühlkopplung.</summary>
         public double? KuehlVorlaufgrenzeStundenH;
 
+        // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
+        //
+        // Gebildet von GebaeudeKennzahlen aus dem Ergebnis des Laufs (eine Quelle je Kennzahl);
+        // ErgebnisCtrl legt die Werte unverändert nach Tab_ErgebnisGebaeude, nur wo die Spalte steht.
+
+        /// <summary>
+        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c> ohne UNBEHEIZT, Festlegung 25); <c>null</c> heißt
+        /// „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
+        /// </summary>
+        public string AufheizZustand;
+
+        /// <summary>Die Bemessungsvariante des Laufs (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>) — der Bericht liest nicht die Projekteinstellung.</summary>
+        public string AufheizBemessung;
+
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59, Schritt KP-S4): MANUELL mit manueller
+        /// Aufheizzeit des Gebäudes (dann ist <see cref="AufheizzeitMaxH"/> der manuelle Wert), sonst die Art des
+        /// Projekts; <c>null</c> bei GEKOPPELT und ohne Aufheizrechnung.
+        /// </summary>
+        public string AufheizArt;
+
+        /// <summary>Φ_HL — die stationäre Auslegungsheizlast [kW], skaliert wie P_auf (E60, Festlegung 41); <c>null</c> ohne Herleitung.</summary>
+        public double? AuslegungsheizlastKw;
+
+        /// <summary>Φ_RH — der Aufheizzuschlag max(0, P_auf − Φ_stat) [kW], skaliert wie P_auf (E60, Festlegung 41).</summary>
+        public double? AufheizzuschlagKw;
+
+        /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
+        public int? AufheizzeitMaxH;
+
+        /// <summary>T_a,B — die Außentemperatur der Bemessung [°C] (kälteste Stunde, bei (b) abzüglich ΔT_K).</summary>
+        public double? AufheizAussenC;
+
+        /// <summary>P_auf — die Aufheizleistung [kW], skaliert wie die Spitzen.</summary>
+        public double? AufheizLeistungKw;
+
+        /// <summary>Die Quelle von P_auf (Grenze, Ziel oder gemischt bei Zonen verschiedener Quelle).</summary>
+        public string AufheizLeistungsquelle;
+
+        /// <summary>Tage mit einer Rampe (n &gt; 1).</summary>
+        public int? Aufheiztage;
+
+        /// <summary>Tage, an denen die Absenkdauer die Rampe begrenzt hat (W2).</summary>
+        public int? AufheiztageBegrenzt;
+
+        /// <summary>Tage ohne erreichbare Rampe bis 48 h (W1 je Tag).</summary>
+        public int? AufheiztageUnerreichbar;
+
+        /// <summary>Tage, an denen der Lauf über dem Nachweisband lag (W3).</summary>
+        public int? AufheiztageNachweisband;
+
+        /// <summary>Σ (n − 1) — die Rampenstunden des Jahres [h].</summary>
+        public int? AufheizstundenH;
+
+        /// <summary>Die längste Rampe des Jahres [h] (größtes n − 1).</summary>
+        public int? AufheizzeitLaengsteH;
+
+        /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
+        public int? AufheizspruengeAus;
+
+        /// <summary>
+        /// Σ der Kappungsanteile an der Heizleistungsgrenze [h] (<c>HeizleistungMax_H</c>, B22) — eine
+        /// Summe von Zeitanteilen, auch ohne Kopplung.
+        /// </summary>
+        public double? HeizleistungMaxStundenH;
+
         /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
         public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
 
@@ -223,6 +294,62 @@ namespace WindowsFormsApplication1
         /// <c>null</c> heißt „keine Nachtauskühlung gesetzt" (Muster E30).
         /// </summary>
         public int? NachtauskuehlstundenH;
+
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung dieser Zone [h] (E54 je Zone, KP-S3); <c>null</c>
+        /// heißt „nicht gesetzt".
+        /// </summary>
+        public int? SommerlueftungsstundenH;
+
+        // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
+
+        /// <summary>
+        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>, Festlegung 25; GEKOPPELT ab Schritt KP-S4);
+        /// <c>null</c> heißt „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
+        /// </summary>
+        public string AufheizZustand;
+
+        /// <summary>Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>) — die Art des Gebäudes (E59, Festlegung 39).</summary>
+        public string AufheizArt;
+
+        /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
+        public int? AufheizzeitMaxH;
+
+        /// <summary>T_a,B — die Außentemperatur der Bemessung [°C] (kälteste Stunde, bei (b) abzüglich ΔT_K).</summary>
+        public double? AufheizAussenC;
+
+        /// <summary>P_auf — die Aufheizleistung [kW], skaliert wie die Spitzen.</summary>
+        public double? AufheizLeistungKw;
+
+        /// <summary>Die Quelle von P_auf (Grenze oder Ziel).</summary>
+        public string AufheizLeistungsquelle;
+
+        /// <summary>Tage mit einer Rampe (n &gt; 1).</summary>
+        public int? Aufheiztage;
+
+        /// <summary>Tage, an denen die Absenkdauer die Rampe begrenzt hat (W2).</summary>
+        public int? AufheiztageBegrenzt;
+
+        /// <summary>Tage ohne erreichbare Rampe bis 48 h (W1 je Tag).</summary>
+        public int? AufheiztageUnerreichbar;
+
+        /// <summary>Tage, an denen der Lauf über dem Nachweisband lag (W3).</summary>
+        public int? AufheiztageNachweisband;
+
+        /// <summary>Σ (n − 1) — die Rampenstunden des Jahres [h].</summary>
+        public int? AufheizstundenH;
+
+        /// <summary>Die längste Rampe des Jahres [h] (größtes n − 1).</summary>
+        public int? AufheizzeitLaengsteH;
+
+        /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
+        public int? AufheizspruengeAus;
+
+        /// <summary>
+        /// Σ der Kappungsanteile an der Heizleistungsgrenze [h] (<c>HeizleistungMax_H</c>, B22) — eine
+        /// Summe von Zeitanteilen, auch ohne Kopplung.
+        /// </summary>
+        public double? HeizleistungMaxStundenH;
     }
 
     // Detail: Waerme-/Strombedarf (Tab_ErgebnisEnergiebedarf).

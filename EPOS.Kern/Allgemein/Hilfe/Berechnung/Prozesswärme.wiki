@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
-     EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
-     EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
+     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, SimulationWaermebedarf.cs, Prozesstemperatur.cs, SimulationWaermepumpe.cs, SimulationSPK.cs,
+     Kaskadenschleife.cs, Init.cs, SimulationKanaele.cs, EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Energieeinheit.cs,
+     EPOS.Kern/Allgemein/Update/ProzesstypSaat.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -9,6 +9,8 @@
 Der '''Prozesswaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der dritte der drei Bedarfskanaele. Der Rechenweg ist derselbe wie beim Brauchwasser: je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten''', daraus der Jahresgang.
 
 Der eigene Kanal ist der Grund, warum die Prozesswaerme ueberhaupt getrennt gefuehrt wird: Ein Erzeuger darf Heizung und Brauchwasser decken und die Prozesswaerme nicht — oder umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
+
+Traegt ein Profil ein '''Temperaturpaar''' (Vorlauf und Ruecklauf), bildet der Lauf daneben das '''Temperaturniveau des Kanals''': je Stunde den hoechsten geforderten Vorlauf und den mengengewichteten Ruecklauf. Es entscheidet, ob ein Erzeuger den Prozess in dieser Stunde erreicht, an welcher Kennlinie eine Waermepumpe rechnet, welchen Ruecklauf ein Brennwertkessel sieht und aus welchen Schichten ein Pufferspeicher an den Prozess abgibt. Ohne Temperaturpaar ist der Prozess eine reine Waermemenge.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -27,6 +29,8 @@ Der eigene Kanal ist der Grund, warum die Prozesswaerme ueberhaupt getrennt gefu
 | Jahressumme des Projekts || MWh oder kWh (waehlbar) || Dialog „Prozesswärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
 |-
 | Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+|-
+| Vorlauf und Ruecklauf je Profil || °C || Kopfsatz des Profils, Gruppe „Temperaturniveau des Prozesses"; im Projekt die Projektkopie (Dialog „Prozesswärme", „Temperaturen übernehmen"); beide leer = ohne Temperaturniveau
 |}
 
 == Formelzeichen und Parameter ==
@@ -54,6 +58,8 @@ Was in die Rechnung hereinkommt:
 | <math>Q_{\mathrm{a,Proj}}</math> || Jahressumme des Projekts || MWh (intern; Eingabe wahlweise in MWh oder kWh) || Dialog „Prozesswärme", Feld „Jahresverbrauch"; leer oder 0 = keine Skalierung
 |-
 | <math>1\,000</math> || Umrechnung MWh in kWh || kWh/MWh || Konstante
+|-
+| <math>T_{\mathrm{VL},p}</math>, <math>T_{\mathrm{RL},p}</math> || Vorlauf und Ruecklauf des Profils p || °C || Kopfsatz, Felder <code>Vorlauf</code>, <code>Ruecklauf</code>; 0 bis 250 °C, beide oder keiner, Vorlauf nicht unter dem Ruecklauf
 |}
 
 === Variablen ===
@@ -74,6 +80,10 @@ Was die Rechnung selbst bildet:
 | <math>Q_{\mathrm{Pro}}(t)</math> || Prozesswaermebedarf der Stunde t || kWh || (5)
 |-
 | <math>Q_{\mathrm{a}}</math> || ausgewiesene Jahresmenge des Kanals || MWh || (6)
+|-
+| <math>T_{\mathrm{VL}}(t)</math> || hoechster geforderter Vorlauf des Kanals in der Stunde t || °C || (7)
+|-
+| <math>T_{\mathrm{RL}}(t)</math> || mengengewichteter Ruecklauf des Kanals in der Stunde t || °C || (8)
 |}
 
 == Rechenweg ==
@@ -83,7 +93,7 @@ Was die Rechnung selbst bildet:
 
 Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den '''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten, nicht mit denen des Katalogs.
 
-Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', bricht die Prozesswaermerechnung ab — ohne Typ gibt es keine Verteilung, und ein Vektor aus Nullen sieht aus wie ein Ergebnis.
+Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', gilt dasselbe: Ohne Typ gibt es keine Verteilung, das Profil geht mit '''Anteil 0''' ein, der Lauf meldet es mit seinem Namen, und die uebrigen Profile rechnen vollstaendig. Die Summe haengt damit nicht an der Reihenfolge der Profile.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
@@ -107,6 +117,8 @@ Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh,
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
 :: <math>168</math> – Stunden je Woche [h] Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index <math>j</math> von (3) sind das <math>j = 0 \dots 23</math> bzw. <math>j = 144 \dots 167</math>. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
+
+Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dialog, gepflegt unter ''Betriebskalender'') wird <math>x(t)</math> vor der Normierung tageweise ersetzt: Ein '''Feiertag''' traegt die 24 Werte des Sonntags im Wochenprofil (<math>j = 144 \dots 167</math>), sofern der Kalender „Feiertag wie Sonntag" fuehrt; ein '''Ferientag''' traegt je Stunde <math>s</math> den Ferienfaktor <math>f</math> mal dem Tagesmittel des Wochenprofils, <math>f \cdot \frac{1}{7} \sum_{d=0}^{6} P_{\mathrm{W}}(24 d + s)</math>. Ferien gehen Feiertagen vor. Die Feiertage sind die neun bundeseinheitlichen und, mit gewaehltem Bundesland, die landesweiten Feiertage dieses Landes im Referenzjahr des Projekts. Normiert wird danach wie in (4) und der Normierung: Die Monatsmenge bleibt erhalten und verteilt sich auf die uebrigen Tage. Mit „Ferien kuerzen die Monatsmenge" steht im Nenner von der Normierung statt <math>S(m)</math> die Monatssumme OHNE die Ferientage — die Menge des Monats sinkt dann im Verhaeltnis der Ferienstunden; Feiertage verteilen stets nur um. Ohne Kalender bleibt <math>x(t)</math>, wie es (3) bildet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -134,23 +146,68 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 
 '''Die Einheit gehoert zum Wert.''' Die Umrechnung steht an EINER Stelle, und die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
 
+=== 6. Temperaturniveau des Kanals ===
+
+Jedes Profil p mit Temperaturpaar traegt in den Stunden mit Bedarf <math>Q_{\mathrm{Pro},p}(t) > 0</math> bei:
+
+: <math>\displaystyle T_{\mathrm{VL}}(t) = \max_{p:\ Q_{\mathrm{Pro},p}(t) > 0} T_{\mathrm{VL},p}</math> &nbsp;&nbsp;(7)
+:: <math>T_{\mathrm{VL}}(t)</math> – hoechster geforderter Vorlauf der Stunde [°C]
+:: <math>T_{\mathrm{VL},p}</math> – Vorlauf des Profils p [°C]
+:: <math>Q_{\mathrm{Pro},p}(t)</math> – Bedarf des Profils p in der Stunde nach (5) [kWh]
+: <math>\displaystyle T_{\mathrm{RL}}(t) = \frac{\sum_{p} Q_{\mathrm{Pro},p}(t) \cdot T_{\mathrm{RL},p}}{\sum_{p} Q_{\mathrm{Pro},p}(t)}</math> &nbsp;&nbsp;(8)
+:: <math>T_{\mathrm{RL}}(t)</math> – mengengewichteter Ruecklauf der Stunde [°C]
+:: <math>T_{\mathrm{RL},p}</math> – Ruecklauf des Profils p [°C]
+:: Summiert wird ueber dieselben Profile wie in (7). In Stunden ohne ein solches Profil gibt es kein Niveau; ohne ein einziges Temperaturpaar im Projekt rechnet der Lauf wie fuer eine reine Waermemenge.
+
+Wirkung in Stunden mit Prozessbedarf und gefordertem Vorlauf:
+
+* '''Waermepumpe mit Direktsenke Prozesswaerme.''' Liegt <math>T_{\mathrm{VL}}(t)</math> ueber dem Vorlauf der Kennlinie der Stunde, rechnet die Stunde mit der untersten Kennlinie des Geraets, die ihn erreicht — fuer die ganze Abgabe der Stunde, die hoechste geforderte Temperatur bestimmt den Betriebspunkt. Ueber der obersten Kennlinie gilt die Projekteinstellung „Extrapolation der Kennlinie erlauben“: erlaubt — die oberste Kennlinie; nicht erlaubt — die Waermepumpe erreicht den Vorlauf nicht. Unterhalb der untersten Quelltemperatur dieser Kennlinie gibt es keinen Betriebspunkt; auch dann erreicht sie ihn nicht.
+* '''Ein Erzeuger, der den Vorlauf nicht erreicht''', deckt den Prozesskanal in dieser Stunde nicht; die uebrigen Kanaele bedient er weiter. Der Heizkessel wird an seinem gepflegten Vorlauf gemessen (Anlage, sonst Heizkessel); ohne gepflegten Vorlauf gilt er als erreichend. Die Pruefung der Senkenzuordnung (Warnkriterium W3) meldet einen Erzeuger mit Direktsenke Prozesswaerme, dessen Vorlauf unter dem hoechsten Prozessvorlauf liegt.
+* '''Brennwertkessel mit Kennlinie.''' Fuer den Anteil seiner Stundenabgabe, der in den Prozesskanal ging, gilt der Ruecklauf <math>T_{\mathrm{RL}}(t)</math>; fuer den Rest der Ruecklauf seiner Kette (siehe [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]]).
+* '''Pufferspeicher.''' Ein geschichteter Speicher gibt an den Prozess nur aus Schichten ab, die <math>T_{\mathrm{VL}}(t)</math> halten. Ein ungeschichteter Speicher mit gepflegtem Temperaturpaar gibt nichts ab, wenn sein Vorlauf <math>T_{\mathrm{VL}}(t)</math> nicht erreicht.
+
+=== 7. Ausgelieferte Betriebsweisen ===
+
+Der Prozesswaerme-Katalog liefert acht typische Betriebsweisen als Schichtmodelle mit, je mit Jahresmenge 100 MWh, Monatswerten nach Monatsfaktor und Kalendertagen, Wochenprofil als relative Last und Temperaturpaar als Vorbelegung. Sie sind schreibgeschuetzt; im Projekt wird die Menge ueber den Jahresverbrauch skaliert und das Temperaturpaar bei Bedarf angepasst.
+
+{| class="wikitable"
+! Betriebsweise !! Wochenprofil !! Monatsfaktoren !! Vorlauf/Ruecklauf
+|-
+| Einschicht 5 Tage || Mo–Fr 6–14 Uhr voll, 5 Uhr halbe Last || August 0,4, Dezember 0,8 || 60/40 °C
+|-
+| Zweischicht 5 Tage || Mo–Fr 6–22 Uhr || August 0,4, Dezember 0,8 || 70/50 °C
+|-
+| Dreischicht 5 Tage || Mo 6 Uhr bis Sa 6 Uhr durchgehend || August 0,4, Dezember 0,8 || 80/60 °C
+|-
+| Durchlaufbetrieb 7 Tage || rund um die Uhr, nachts 10 % weniger || August 0,7 (Revision) || 90/70 °C
+|-
+| Reinigung/Spülen (CIP) || Mo–Fr je eine Spitze 14 und 22 Uhr || 1,0 || 75/40 °C
+|-
+| Trocknung/Lackierung || Mo–Fr 6–22 Uhr, erste Stunde 150 % || 1,0 || 120/90 °C
+|-
+| Waschen/Bäder || Mo–Fr 6–18 Uhr, Montag erste Stunde 200 % || 1,0 || 60/45 °C
+|-
+| Raumlufttechnik Halle || Mo–Fr 5–20 Uhr || Oktober–April 1,0, Mai–September 0,1 || 50/30 °C
+|}
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
-* '''Der Prozess ist eine Waermemenge, kein Prozess.''' In (1) bis (6) kommen weder Temperaturniveau noch Vor- und Ruecklauf vor; Gleichzeitigkeit mehrerer Verbraucher und Abwaerme werden hier nicht gerechnet. Welcher Erzeuger den Prozesskanal ueberhaupt bedienen darf, entscheidet die Senkenzuordnung — dort wirkt auch die Temperaturpruefung (Warnkriterium W3).
+* '''Ein Temperaturpaar je Prozess, kein Verlauf.''' Das Temperaturniveau kommt aus dem Paar des Profils nach (7) und (8); ein Prozess mit wechselndem Niveau innerhalb des Jahres (Reinigungszyklen, Chargen) ist nicht abbildbar, und Lastgaenge mit Kanal Prozesswaerme tragen kein Niveau. Gleichzeitigkeit mehrerer Verbraucher und Abwaerme werden hier nicht gerechnet. Welcher Erzeuger den Prozesskanal ueberhaupt bedienen darf, entscheidet die Senkenzuordnung.
+* '''Die Waermepumpe rechnet die ganze Stunde am hoechsten Vorlauf.''' Bedient sie in einer Stunde Prozess und Heizung, teilt sie die Stunde nicht in Zeitanteile — die Kennlinie am Prozessvorlauf gilt fuer ihre ganze Abgabe der Stunde, auch fuer eine Pufferladung. Die Solarthermie wertet den Prozessvorlauf nicht aus.
 * '''Kein Wirkungsgrad, keine Verteilverluste je Prozess.''' Was eingegeben wird, ist die Nutzwaerme am Prozess; Verluste bildet der pauschale Netzverlust ab.
-* '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen. Schichtplaene, Betriebsferien und Sonderschichten bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab; ein Werk mit drei Wochen Sommerstillstand braucht dafuer einen kleinen Julimonatswert, nicht ein zweites Profil.
+* '''Der Wochengang ist ein Muster.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage und Betriebsferien legt ein '''Betriebskalender''' an der Zuordnung darauf (Schritt 3). Ein Werk mit drei Wochen Sommerstillstand waehlt einen Kalender mit diesen Ferien und „Ferien kuerzen die Monatsmenge"; Sonderschichten bildet weiter der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsmenge ist unantastbar.''' Wegen (4) und (5) verschiebt der Kalender nur die Verteilung INNERHALB des Monats; wie viele Wochenenden ein Monat hat, aendert seine Menge nicht.
-* '''Kein Auslieferungskatalog.''' Anders als beim Brauchwasser liefert das Programm keine Normprofile fuer Prozesswaerme mit — Monatswerte und Wochenprofil sind Anwenderdaten. Das ist Absicht: Ein Prozess ist ein Einzelfall.
-* '''Abbruch statt Nullprofil.''' Ein fehlender Typbezug beendet die Prozesswaermerechnung, statt sie mit Nullen fortzusetzen.
+* '''Die ausgelieferten Betriebsweisen sind Schichtmodelle, keine Messungen.''' Sie geben einen typischen Wochengang und ein typisches Temperaturniveau vor; fuer einen konkreten Betrieb sind Monatswerte, Wochenprofil und Temperaturpaar zu pruefen.
+* '''Ueberspringen statt Abbruch.''' Ein Profil ohne Typbezug traegt nichts bei und wird gemeldet; die uebrigen Profile rechnen vollstaendig.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
 * '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile mit dem Jahresverbrauch, der im Dialog steht (auch vor dem Speichern); der Reiter „Grafik" zeigt die Monate als Balken und die Stundenreihe als Jahresverlauf sowie je Woche und Tag.
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Prozessanteil im Jahresbedarf.
-* '''Bericht''' — Bedarfsuebersicht.
-* '''Laufprotokoll''' — uebersprungene Profile und der Abbruchgrund „Typ nicht definiert".
+* '''Bericht''' — Bedarfsuebersicht; mit Temperaturpaar die Zeile „Temperaturniveau Prozesswärme" (hoechster Vorlauf / tiefster Ruecklauf).
+* '''Laufprotokoll''' — uebersprungene Profile, auch die ohne Typbezug („Typ nicht definiert"); mit Temperaturpaar das Niveau des Kanals und je Erzeuger und Speicher die Stunden mit Kennlinie am Prozessvorlauf, ohne Prozessdeckung, mit Prozessruecklauf und mit begrenzter Entnahme.
 
 == Bezüge ==
 {{Anker|bezuege}}
@@ -160,3 +217,6 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 * [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] — dieselbe Profilroutine
 * [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]] — dieselbe Profilroutine
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — die drei Kanäle in der Kaskade
+* [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]] — die Kennlinie am Prozessvorlauf
+* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der Rücklauf der Brennwertkennlinie
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — die Entnahme aus den Schichten

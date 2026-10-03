@@ -144,29 +144,10 @@ public sealed class IosHilfeDienst : IHilfeDienst
     /// </summary>
     internal static string Adresse(string ziel)
     {
-        if (string.IsNullOrWhiteSpace(ziel)) return "";
-
-        string rest = ziel.Trim();
-        string anker = "";
-
-        int raute = rest.IndexOf('#');
-        if (raute >= 0)
-        {
-            anker = rest.Substring(raute + 1).Trim();
-            rest = rest.Substring(0, raute).Trim();
-        }
-        if (rest.Length == 0) return "";
-
-        string basis = WikiWissen.Basis();
-
-        // Ein fertiger Seitenpfad wird nur angehaengt, ein Kurzname bekommt
-        // erst die Rubrik davor.
-        if (rest.StartsWith("/"))
-        {
-            string url = basis + rest;
-            return anker.Length > 0 ? url + "#" + anker : url;
-        }
-
-        return WikiWissen.SeitenUrl(basis, WikiWissen.RubrikTitel(rest), anker);
+        // Die Adressbildung steht im Kern (Hilfeziel.Seitenadresse): Auch ein fertiger
+        // Seitenpfad geht dort je Segment durch Uri.EscapeDataString wie jeder Kurzname
+        // (WikiWissen.SeitenUrl) - bis dahin wurde er ungeschuetzt angehaengt, und ein
+        // Umlaut oder Leerzeichen im Pfad stand roh in der Adresse.
+        return Hilfeziel.Seitenadresse(WikiWissen.Basis(), ziel);
     }
 }

@@ -42,11 +42,17 @@ namespace EPOS.Kern.Tests
             string[] kennlinie =
             {
                 KatalogBrowserProfil.FeldTeillast30, KatalogBrowserProfil.FeldMindestleistung,
-                KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+                KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit,
+                // Das BHKW (Welle M4: BH1): die zwei Wirkungsgrade bei 50 % Last.
+                KatalogBrowserProfil.FeldTeillastEl50, KatalogBrowserProfil.FeldTeillastTh50
             };
+            // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) nennt ihre zwei Werte.
             Assert.All(profil.Detailfelder.Where(f => f.Schluessel != KatalogBrowserProfil.FeldNutzungsdauer &&
+                                                      f.Schluessel != KatalogBrowserProfil.FeldBBEinheit &&
                                                       !kennlinie.Contains(f.Schluessel)),
                        f => Assert.Equal("", f.Hinweis));
+            Assert.All(profil.Detailfelder.Where(f => f.Schluessel == KatalogBrowserProfil.FeldBBEinheit),
+                       f => Assert.Equal("kW oder % (der Nennleistung)", f.Hinweis));
             Assert.All(profil.Detailfelder.Where(f => kennlinie.Contains(f.Schluessel)),
                        f => Assert.Equal("leer = Vorgabe", f.Hinweis));
         }

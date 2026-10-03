@@ -2096,10 +2096,11 @@ namespace WindowsFormsApplication1
             /// Anwenderentscheid 30.09.2026 (Register EZ‑18) — der Hinweis, dass der Rollentarif
             /// an einem Stand ohne stromverwendenden Erzeuger (Kopie der Gruppenregel) den
             /// Leistungspreis seines Reststromtarifs nicht ansetzt; <c>null</c> = kein solcher
-            /// Fall oder der Tarif führt keinen. Er gilt nur, wenn <see cref="RollenGerechnet"/>
-            /// steht, und tritt dann an die Stelle des Hinweises zum Leistungspreis des
-            /// Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>), dessen
-            /// Preise der Rollentarif ersetzt.
+            /// Fall, der Tarif führt keinen, oder sein Leistungspreis ist dem des Stromträgers
+            /// gleich (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>,
+            /// Anwenderentscheid 02.10.2026). Er steht ZUSÄTZLICH zum Hinweis zum Leistungspreis
+            /// des Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>) —
+            /// dieselbe Regel wie die Fußzeile unter der Kostentafel des Berichts.
             /// </summary>
             public string LeistungspreisTarifNichtAngesetzt;
 
@@ -2638,10 +2639,13 @@ namespace WindowsFormsApplication1
             // Modells nicht — er ist an einem solchen Stand eine Größe der Lastoptimierung. Die
             // Bezugsrolle rechnet ebenso ohne, damit die vermiedenen Kosten keinen
             // Leistungsanteil ausweisen, den keine Anlage vermeidet. Führt der Reststromtarif
-            // einen Leistungspreis, nennt ihn der Hinweis mit dem Klartext seines Modells; er
-            // tritt an die Stelle des Hinweises zum Leistungspreis des Stromträgers, dessen
-            // Preise der Tarif ersetzt (RechneProjekt). Stände mit Stromverwendung rechnen
-            // unverändert.
+            // einen Leistungspreis, der sich von dem des Stromträgers unterscheidet
+            // (StromTarifRechner.TarifLeistungspreisWieTraeger, Anwenderentscheid 02.10.2026),
+            // nennt ihn der Hinweis mit dem Klartext seines Modells — zusätzlich zum Hinweis zum
+            // Leistungspreis des Trägers (RechneProjekt), dieselbe Regel wie die Fußzeile unter
+            // der Kostentafel des Berichts. Den Monatssatz des Trägers hat der
+            // KostenEmissionRechner an dieser Kopie schon gesetzt (Szenariodaten). Stände mit
+            // Stromverwendung rechnen unverändert.
             bool ohneLeistungspreis = v.StromImVergleichBepreisen;
             TarifRolle bezug = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Bezug) : tarif.Bezug;
             TarifRolle reststrom = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Reststrom) : tarif.Reststrom;
@@ -2668,7 +2672,9 @@ namespace WindowsFormsApplication1
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
             e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
             e.LeistungspreisTarifNichtAngesetzt =
-                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom)
+                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
+                !StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                 v.LeistungspreisNichtAngesetztMonatssatz)
                     ? string.Format(BerichtTexte.Kultur, HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
                                     Leistungsmodelltext(tarif.Reststrom))
                     : null;
@@ -6672,17 +6678,57 @@ namespace WindowsFormsApplication1
             // (SteuerGutschriftRechner.ProduzierendesGewerbe) — eine zweite Fassung
             // waere eine zweite Antwort auf dieselbe Frage.
             erg.VermiedenMengeMWh = eingabe.VermiedenMengeMWh;
+
+            // Der Stromsteueranteil des Netzträgers [€/MWh] — der Deckel des § 9b-Satzes, EINE
+            // Ermittlung für den Ausweis hier und den Abzug der Wärmegestehung (BaueWaermeEingabe,
+            // Register EZ‑22, EZ‑23). Gelesen wird er höchstens einmal je Ergebnis und nur, wenn eine
+            // der beiden Stellen ihn braucht.
+            double? anteil9b = null;
+            bool anteil9bGelesen = false;
+            Func<double?> stromsteueranteil9b = () =>
+            {
+                if (!anteil9bGelesen)
+                {
+                    anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, eingabe.EnergiekostenJeTraeger);
+                    anteil9bGelesen = true;
+                }
+                return anteil9b;
+            };
+            string nachweisAusweis9b = null;
             if (eingabe.SteuerEingabe != null &&
                 SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
             {
                 erg.ProduzierendesGewerbe = true;
                 if (eingabe.VermiedenMengeMWh > 0)
                 {
+                    // Anwenderentscheid 02.10.2026 (EZ‑22): dieselbe Größe wie der § 9b-Abzug der
+                    // Wärmegestehung und dieselbe Funktion — die Differenz der Entlastung ohne und
+                    // mit der vermiedenen Menge, der Sockelbetrag gegen den Netzbezug, mit dem die
+                    // Entlastung des Projekts rechnet (§ 3.8). Trägt der Netzbezug den Sockel, ist
+                    // es Zeichen für Zeichen Satz × vermiedene Menge.
+                    //
+                    // Anwenderentscheid 02.10.2026 (EZ‑23, „Deckel"): derselbe Deckel wie im Abzug der
+                    // Gestehung — der wirksame Satz ist höchstens der Stromsteueranteil des Preises, mit
+                    // dem der Eigenstrom bewertet wird. Der Ausweis bewertet im Rollentarif mit der
+                    // Bezugsrolle; sie führt keinen eigenen Träger (Tab_ProjektTarif kennt keinen) und
+                    // ersetzt die Preise des Netzträgers (RechneRollentarif) — ihr Träger ist der
+                    // Netzträger, sein Anteil derselbe wie in der Gestehung. Ohne gepflegten Anteil
+                    // (Rückfallträger) der Regelsatz des Jahres als Obergrenze; eine abgeschaltete
+                    // Komponente ist Anteil 0, kein Abzug. Deckel ab dem Satz → bitgleich.
                     if (_gesetze == null) _gesetze = new GesetzKatalog();
-                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B,
-                                                 Foerderbeginn(p));
+                    int jahr1 = Foerderbeginn(p);
+                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1);
+                    double? anteil = null, regelsatz = null;
                     if (satz.HasValue && satz.Value > 0)
-                        erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
+                    {
+                        anteil = stromsteueranteil9b();
+                        regelsatz = _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1);
+                    }
+                    erg.VermiedenEntlastung9bJahr = SteuerGutschriftRechner.Entgangene9bEur(
+                        eingabe.SteuerEingabe.NetzbezugMWh, eingabe.VermiedenMengeMWh, satz,
+                        _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1),
+                        anteil ?? regelsatz);
+                    nachweisAusweis9b = Nachweis9bAusweis(satz, anteil, regelsatz, BerichtTexte.Kultur);
                 }
             }
 
@@ -6706,6 +6752,9 @@ namespace WindowsFormsApplication1
             erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
 
             erg.Hinweis = eingabe.Hinweis;
+            // Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises (EZ‑23) — Text am
+            // Laufhinweis, nur wenn er wirkt (wie der Nachweis des § 9b-Abzugs der Gestehung).
+            if (!string.IsNullOrEmpty(nachweisAusweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweisAusweis9b);
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
             // Strom-Energieträger auf den Strommix-Vorgabewert zurück (Flag aus
@@ -6775,13 +6824,15 @@ namespace WindowsFormsApplication1
             // eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn diese Zeile
             // (Satz und Träger, gebildet vom KostenEmissionRechner); dieselbe Reise wie die
             // Zeilen darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
-            // EZ‑18: Hat der Rollentarif den Stromanteil ersetzt, gilt sein Reststromtarif und
-            // nicht der Träger — dann nennt die Zeile den Leistungspreis des Tarifs (Modell),
-            // gebildet in RechneRollentarif, oder es steht keine.
-            string leistungspreisNichtAngesetzt = eingabe.RollenGerechnet
-                ? eingabe.LeistungspreisTarifNichtAngesetzt : v.LeistungspreisNichtAngesetzt;
-            if (!string.IsNullOrEmpty(leistungspreisNichtAngesetzt))
-                erg.Hinweis = Anhaengen(erg.Hinweis, leistungspreisNichtAngesetzt);
+            // EZ‑18 (Anwenderentscheid 02.10.2026): Den Leistungspreis des Trägers nennt die Zeile
+            // immer; hat der Rollentarif den Stromanteil ersetzt, dahinter zusätzlich den des
+            // Reststromtarifs (Modell), wenn er sich von dem des Trägers unterscheidet — gebildet
+            // in RechneRollentarif nach StromTarifRechner.TarifLeistungspreisWieTraeger. Dieselbe
+            // Regel wie die Fußzeile unter der Kostentafel des Berichts.
+            if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, v.LeistungspreisNichtAngesetzt);
+            if (eingabe.RollenGerechnet && !string.IsNullOrEmpty(eingabe.LeistungspreisTarifNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, eingabe.LeistungspreisTarifNichtAngesetzt);
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
@@ -6903,8 +6954,13 @@ namespace WindowsFormsApplication1
             {
                 double stromgutschrift, eigenstromOhnePreisMWh;
                 KapitalwertRechner.ErloesReihe entgangen9b;
-                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, out stromgutschrift,
-                                                          out eigenstromOhnePreisMWh, out entgangen9b);
+                string nachweis9b;
+                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, stromsteueranteil9b,
+                                                          out stromgutschrift, out eigenstromOhnePreisMWh,
+                                                          out entgangen9b, out nachweis9b);
+                // Der Nachweis des § 9b-Abzugs (EZ‑22): Sockel und Deckel, wenn sie wirken, und die
+                // Obergrenze ohne gepflegten Stromsteueranteil — Text am Laufhinweis.
+                if (!string.IsNullOrEmpty(nachweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweis9b);
                 // Kein stilles Weglassen: Fehlt dem im Projekt verbrauchten BHKW-Strom der
                 // Arbeitspreis, rechnet die Kennzahl ohne Stromgutschrift — und sagt es.
                 if (eigenstromOhnePreisMWh > 0)
@@ -6948,13 +7004,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         private ProjektEingabe BaueWaermeEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                                  ProjektEingabe gesamt, string szenario,
+                                                 Func<double?> stromsteueranteil9b,
                                                  out double stromgutschrift,
                                                  out double eigenstromOhnePreisMWh,
-                                                 out KapitalwertRechner.ErloesReihe entgangen9b)
+                                                 out KapitalwertRechner.ErloesReihe entgangen9b,
+                                                 out string nachweis9b)
         {
             stromgutschrift = 0.0;
             eigenstromOhnePreisMWh = 0.0;
             entgangen9b = null;
+            nachweis9b = null;
             SzenarioSatz satz = p.SatzFuer(szenario);
             ErgebnisBHKWModel bhkw = v.Ergebnis != null ? v.Ergebnis.BHKW : null;
             bool bhkwImProjekt = bhkw != null && bhkw.Module != null && bhkw.Module.Count > 0;
@@ -7003,16 +7062,94 @@ namespace WindowsFormsApplication1
             // das BHKW. Dieselbe Unternehmensart und dieselbe Prüfung wie die § 9b-Korrektur des
             // Ausweises (gesamt.SteuerEingabe), der Satz jahresscharf aus dem Gesetzeskatalog wie
             // die Steuerreihen. Ohne Gewerbe, Gutschrift oder Satz entsteht keine Reihe (bitgleich).
+            // Anwenderentscheid 02.10.2026 (EZ‑22): dieselben Regeln wie die Entlastung des Projekts
+            // — der Sockelbetrag des Jahres gegen den Netzbezug der Steuereingabe, der Satz gedeckelt
+            // auf den Stromsteueranteil des Arbeitspreises, mit dem die Gutschrift rechnet (Netzträger,
+            // § 3.9); ohne gepflegten Anteil der Regelsatz der Stromsteuer des Jahres. Der Anteil wird
+            // nur gelesen, wenn der Abzug greifen kann.
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            double? anteil9b = null;
+            bool kann9b = gesamt.SteuerEingabe != null &&
+                          SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
+                          eigenstrom > 0 && stromgutschrift > 0;
+            if (kann9b) anteil9b = stromsteueranteil9b();
             entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
-                p.Betrachtungszeitraum, Foerderbeginn(p), jahr =>
-                {
-                    if (_gesetze == null) _gesetze = new GesetzKatalog();
-                    return _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr);
-                });
+                p.Betrachtungszeitraum, Foerderbeginn(p),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr),
+                jahr => anteil9b ?? _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr));
+            if (kann9b)
+            {
+                int jahr1 = Foerderbeginn(p);
+                nachweis9b = Waermegestehung.Nachweis9b(eigenstrom, gesamt.SteuerEingabe.NetzbezugMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1),
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1), anteil9b,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1), BerichtTexte.Kultur);
+            }
             if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
             w.Risikoabzug = 0.0;
             w.WaermeMWh = gesamt.WaermeMWh;
             return w;
+        }
+
+        /// <summary>
+        /// <b>Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises</b> der vermiedenen
+        /// Stromkosten (Konzept § 3.6, Register EZ‑23) — ein Text, nur wenn der Deckel wirkt
+        /// (wirksamer Satz unter dem § 9b-Satz): mit gepflegtem Anteil
+        /// <c>WIRT_VERMIEDEN_9B_DECKEL</c> (auch Anteil 0, die abgeschaltete Komponente), ohne ihn
+        /// <c>WIRT_VERMIEDEN_9B_REGELSATZ</c> (der Regelsatz als Obergrenze unter dem Satz).
+        /// <c>null</c>, wenn nichts wirkt oder kein Satz gepflegt ist.
+        /// </summary>
+        internal static string Nachweis9bAusweis(double? satzEurJeMWh, double? anteilEurJeMWh,
+                                                 double? regelsatzEurJeMWh,
+                                                 System.Globalization.CultureInfo kultur)
+        {
+            if (!satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return null;
+            double satz = satzEurJeMWh.Value;
+            double wirksam = SteuerGutschriftRechner.Satz9bWirksam(satz, anteilEurJeMWh ?? regelsatzEurJeMWh).Value;
+            if (!(wirksam < satz)) return null;
+            if (anteilEurJeMWh.HasValue)
+                return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_DECKEL,
+                    wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
+            return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_REGELSATZ,
+                wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
+        }
+
+        /// <summary>
+        /// <b>Der Stromsteueranteil des Netzträgers [€/MWh]</b> — der Deckel des § 9b-Abzugs der
+        /// Wärmegestehung (Konzept § 3.8, § 6.3 Nr. 41; Register EZ‑22) und der § 9b-Korrektur des
+        /// Ausweises der vermiedenen Stromkosten (§ 3.6, EZ‑23; der Träger der Bezugsrolle). Der
+        /// Träger ist der, dessen Arbeitspreis die Stromgutschrift trägt: der Netzeintrag der Aufstellung je Träger, ohne
+        /// ihn der Projektträger samt Rückfall (<see cref="Kaeltestromabrechnung.Projekttraeger"/>,
+        /// dieselbe Wahl wie <see cref="StromArbeitspreisEurJeKwh(int, string)"/>). Der Anteil ist
+        /// der in „Strompreis Details" gepflegte Wert (§ 3.9, <see cref="StrompreisZerlegungCtrl.StromsteuerRoh"/>)
+        /// in ct/kWh × 10; eine abgeschaltete Komponente heißt „der Preis enthält keine Stromsteuer"
+        /// → 0.
+        ///
+        /// <para><c>null</c> = kein Anteil gepflegt (kein Wert, keine Zeile — wie am Rückfallträger,
+        /// der keinen führt); dann gilt der Regelsatz des Jahres als Obergrenze. Ein Lesefehler wird
+        /// benannt (Rechenstufe Energieträger) und zählt wie „nicht gepflegt".</para>
+        /// </summary>
+        private double? StromsteueranteilNetzEurJeMWh(int idProjekt, IList<EnergieTraegerNachweis> traeger)
+        {
+            try
+            {
+                int carrier = 0;
+                if (traeger != null)
+                    foreach (EnergieTraegerNachweis t in traeger)
+                        if (t != null && t.Netzstrom) { carrier = t.CarrierId; break; }
+                if (carrier <= 0) carrier = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+                if (carrier <= 0) return null;
+                double? roh = StrompreisZerlegungCtrl.StromsteuerRoh(idProjekt, carrier);
+                if (!roh.HasValue) return null;
+                bool aktiv = new StrompreisZerlegungCtrl().Read(idProjekt, carrier).Stromsteuer_Aktiv;
+                return aktiv ? Math.Max(0.0, roh.Value) * 10.0 : 0.0;
+            }
+            catch (Exception ex)
+            {
+                Stufenfehler(idProjekt, STUFE_TRAEGER, Fehlergrund.Text(ex));
+                return null;
+            }
         }
 
         /// <summary>Der Arbeitspreis [€/kWh] des Trägers, der den Netzbezug bepreist, aus der

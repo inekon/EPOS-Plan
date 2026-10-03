@@ -78,7 +78,8 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             SimulationControl sim = Lauf(1018).sim;
-            Assert.True(sim.simulation_bhkw.Stromproduktion_BHKW_MWh > 27);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): > 27 MWh; jetzt 25,55 MWh.
+            Assert.True(sim.simulation_bhkw.Stromproduktion_BHKW_MWh > 25);
             Assert.Equal(0.0, SimulationErgebnisCtrl.BhkwEigenverbrauchMwh(sim), 6);
             Assert.Equal(0.0, SimulationErgebnisCtrl.BhkwStromdeckungProzent(sim), 9);
         }

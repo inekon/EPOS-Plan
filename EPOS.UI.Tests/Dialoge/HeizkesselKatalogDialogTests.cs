@@ -130,7 +130,9 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Equal(2, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Equal(12, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll("textarea"));
-        Assert.Single(cut.FindAll("select"));
+        // Die zweite Auswahlliste ist die Einheit des Bereitschaftsverlusts (kW oder % der
+        // Nennleistung, Anwenderentscheid 02.10.2026).
+        Assert.Equal(2, cut.FindAll("select").Count);
         Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
@@ -142,6 +144,7 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Contains("Wirkungsgrad Gas, Biogas, Holz und Sonstiges:", texte);
         Assert.Contains("Wirkungsgrad Öl:", texte);
         Assert.Contains("Betriebsbereitschaftsverluste:", texte);
+        Assert.Contains("Einheit Bereitschaftsverlust:", texte);
         Assert.Contains("Brennwertkessel", texte);
         Assert.Contains("Vorlauf:", texte);
         Assert.Contains("Rücklauf:", texte);
@@ -355,6 +358,45 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.False(daten.Brennwert);
         Assert.False(daten.Kennlinie_Brennwert);
         Assert.True(cut.FindAll("input[type=checkbox]")[1].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 02.10.2026: Der Bereitschaftsverlust steht in kW ODER % der Nennleistung.
+    /// Die Wahl steht neben dem Wert, kommt aus den Daten und schreibt in den Arbeitsstand; die
+    /// Einheit hinter dem Wertfeld folgt ihr.
+    /// </summary>
+    [Fact]
+    public void Die_Einheit_des_Bereitschaftsverlusts_ist_waehlbar()
+    {
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        var wahl = cut.FindAll("select")[1];
+        Assert.Equal(new[] { "kW", "% der Nennleistung" }, wahl.QuerySelectorAll("option").Select(o => o.TextContent));
+        Assert.True(wahl.QuerySelector("option[value='1']")!.HasAttribute("selected"));
+        Assert.False(daten.BereitschaftProzent);
+        Assert.Contains("kW", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+
+        wahl.Change(HeizkesselKatalogDialog.BB_EINHEIT_PROZENT.ToString(CultureInfo.InvariantCulture));
+
+        Assert.True(daten.BereitschaftProzent);
+        Assert.Equal(1.5, daten.Betriebsbereitschaftverlust);       // der Wert bleibt, nur die Einheit wechselt
+        Assert.Contains("%", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+
+        cut.FindAll("select")[1].Change(HeizkesselKatalogDialog.BB_EINHEIT_KW.ToString(CultureInfo.InvariantCulture));
+        Assert.False(daten.BereitschaftProzent);
+    }
+
+    /// <summary>Eine in Prozent gespeicherte Einheit steht beim Öffnen gewählt da.</summary>
+    [Fact]
+    public void Die_gespeicherte_Prozenteinheit_steht_gewaehlt()
+    {
+        var daten = Bestand();
+        daten.BereitschaftProzent = true;
+        var cut = Aufbauen(daten);
+
+        Assert.True(cut.FindAll("select")[1].QuerySelector("option[value='2']")!.HasAttribute("selected"));
+        Assert.Contains("%", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
     }
 
     /// <summary>

@@ -342,6 +342,39 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Vorwahl folgt den Ladeprioritäten</b> (Solarthermie, Wärmepumpe, BHKW,
+        /// Heizkessel). Ohne Einstellungssatz wählt die Konfigurationsseite die Anlagen des
+        /// Projekts 1026 (Wärmepumpe, Solarthermie, Heizkessel) in dieser Folge vor. Steht
+        /// schon ein leerer, ungepflegter Satz, setzt <c>HeizkesselNachziehen</c> den Kessel
+        /// auf Platz 1 — die vorgewählte Wärmepumpe kommt trotzdem vor ihn.
+        /// </summary>
+        [Fact]
+        public void Die_Vorwahl_folgt_den_Ladeprioritaeten()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            int ohneSatz = PerAssistentAnlegen("Kaskadenprobe Ladeprio");
+            AnlagenUebernehmen(1026, ohneSatz);
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE,
+                                            DbWerte.ERZEUGER_HEIZKESSEL },
+                         Aufgenommen(Kaskadendienste(ohneSatz).Laden(ohneSatz)));
+
+            int mitSatz = PerAssistentAnlegen("Kaskadenprobe Nachzug");
+            Assert.True(Kaskadendienste(mitSatz).Speichern());
+            Assert.Equal(new List<string> { "", "", "", "" }, Plaetze(mitSatz));
+            AnlagenUebernehmen(1023, mitSatz);                 // Wärmepumpe und Heizkessel
+
+            SimulationKonfigDienste dienste = Kaskadendienste(mitSatz);
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_HEIZKESSEL, "", "", "" }, Plaetze(mitSatz));
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL },
+                         Aufgenommen(dienste.Laden(mitSatz)));
+            Assert.True(dienste.Speichern());
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL, "", "" },
+                         Plaetze(mitSatz));
+        }
+
+        /// <summary>
         /// Eine Kaskade, die nichts vorwählt (Projekt ohne Anlagen), wird trotzdem als Text
         /// gespeichert — ein gespeicherter Satz ist nie ein Vormerksatz.
         /// </summary>

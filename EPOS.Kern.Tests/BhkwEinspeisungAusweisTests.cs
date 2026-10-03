@@ -111,7 +111,7 @@ namespace EPOS.Kern.Tests
         /// 15 MWh/a (SV1, R30) 17,1 bzw. 24,6 MWh, 1024 nichts — dort fehlt die Reihe (Schwelle 0,5 kWh).
         /// </summary>
         [Theory]
-        [InlineData(1018, 27.4575)]
+        [InlineData(1018, 25.5543)]   // vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575
         [InlineData(1030, 0.392)]
         [InlineData(1017, 17.1199)]
         [InlineData(1024, 0.0)]
@@ -166,7 +166,8 @@ namespace EPOS.Kern.Tests
             Assert.True(abw < 1e-9, "Stundenformel weicht vom BHKW-Überschuss der PV ab: " + abw);
 
             var bh = SimulationErgebnisCtrl.Bhkw(r.sim, r.simulation_Waermebedarf, r.simulation_Strombedarf);
-            Assert.Equal(27.4575, bh.EinspeisungMwh, 4);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh.
+            Assert.Equal(25.5543, bh.EinspeisungMwh, 4);
 
             // E29‑Q10 a: der PV-Deckungsgrad bleibt ≤ 100 % und ist in Ergebnis und Ansicht gleich.
             ErgebnisModel e = SimulationRunner.BaueErgebnis(1018, r.simulation_Waermebedarf,
@@ -176,7 +177,10 @@ namespace EPOS.Kern.Tests
                          SimulationErgebnisCtrl.Photovoltaik(r.sim).DeckungProzent, 9);
         }
 
-        /// <summary>E29‑Q10 a an 1040 (keine negative Stunde): der Deckungsgrad bitgleich zur alten Formel.</summary>
+        /// <summary>
+        /// E29‑Q10 a an 1040 (keine negative Viertelstunde): der Deckungsgrad bitgleich zur ungeklemmten
+        /// Formel — seit SB1 (a) mit dem Viertelstundenbedarf als Nenner.
+        /// </summary>
         [Fact]
         public void Der_PV_Deckungsgrad_ohne_BHKW_Ueberschuss_bleibt_bitgleich()
         {
@@ -185,7 +189,7 @@ namespace EPOS.Kern.Tests
             var r = new SimulationRunner();
             Assert.True(r.Simuliere(1040, out string fehler), "Lauf gescheitert: " + fehler);
             SimulationPV pvs = r.sim.simulation_pv;
-            double alt = pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum();
+            double alt = pvs.Stromproduktion.Sum() * 100.0 / (pvs.Strombedarf.Sum() / 4.0);
 
             ErgebnisModel e = SimulationRunner.BaueErgebnis(1040, r.simulation_Waermebedarf,
                                                             r.simulation_Strombedarf, r.sim);

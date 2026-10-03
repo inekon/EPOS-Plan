@@ -74,7 +74,10 @@ Filter `WP-Plan.Kern.slnf` (die plattformfreien Projekte samt Tests — Grundlag
   = gehört zur Auslieferung), `Z_*` Zuordnung Projekt ↔ Katalog. Fachtabellen sind `STRICT`.
   **Neue Beziehungen über IDs**, nicht über Textfelder. Schemaänderungen laufen als
   nummerierte Schritte über `SchemaMigration`
-  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); der Rechenkern arbeitet
+  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); die nächste Nummer meldet jede Sitzung **vor dem Bau** in der
+  Zeile „Schemaschritt angemeldet" im Kopf der Statusdatei an und pusht allein diese Zeile sofort —
+  eine angemeldete Nummer vergibt keine andere Sitzung, die Kette hängt immer über `+ 1` an der
+  Vorgängerklasse, und beim Push der Welle wird die Zeile auf die nächste freie Nummer gesetzt; der Rechenkern arbeitet
   mit festen Rastern (8760 Stunden, 168 Wochenstunden, 365 Tage, 12 Monate, kein Schaltjahr).
 - **SQL-Dialekt:** Regeln in BETRIEB_SQLITE.md Abschnitt 6 (Umlautregel, Verbotsliste der
   Access-Schreibweisen, Boolean-Spalten als 0/1 — neue Spalten mit `CHECK (spalte IN (0,1))`, Sortierung über `IIF`/`CASE`). Zugriffe über `DataRepository` mit
@@ -143,7 +146,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 | `EPOS.Referenzlauf` | plattformfreier Rechennachweis gegen die eingefrorene Basis (Linux, macOS, CI) | `dotnet run --project EPOS.Referenzlauf -- lauf …` / `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite (`lauf`, `projekt`, `vergleich`, `pruefen`, `liste`, `migration`) | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` aus der neutralen `.resx`; wiederholbar. **Nach jedem neuen Ressourcenschlüssel ziehen** | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
-| `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die bereinigte Auslieferungsdatenbank samt Prüfbericht. **Vor jeder Auslieferung ziehen** | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle> <ziel> [--beispiele …] [--trocken]` |
+| `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die bereinigte Auslieferungsdatenbank samt Prüfbericht und schreibt das Katalogpaket der Fassung (`Katalogpaket.json`) daneben. **Vor jeder Auslieferung ziehen** | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle> <ziel> [--beispiele …] [--katalogfassung <n>] [--trocken]` |
 | `Werkzeuge/Berichtsvorlage` | bereinigt die Word-Stilvorlage des Berichts (doppelte Stile, Format „EPOS Kapitelkopf“) und baut daraus die Beispielvorlage mit Platzhaltern und mit `--standard` die ausgelieferte Standardvorlage `Berichtsvorlage_Standard.docx`, mit `kurzbericht` den ausgelieferten Kurzbericht je Sprache, alles nur bei grünem `OpenXmlValidator`; `BerichtsvorlageDateiWacheTests` und `AuslieferungsvorlagenWacheTests` halten die Dateien und beide Lieferwege. **Nach jeder Änderung an einer der Vorlagen ziehen**; Einzelheiten in [`LIESMICH.md`](Werkzeuge/Berichtsvorlage/LIESMICH.md) | `dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen <docx>` / `… beispiel <quelle.docx> <ziel.docx> [--standard] [--katalogfassung <n>]` / `… kurzbericht <quelle.docx> <ziel.docx> --sprache de\|en` |
 | `Werkzeuge/ZapfprofilValidierung` | hält den Zapfprofilgenerator gegen **gemessene** Reihen: je Objekt eine Ampel nach den Abnahmekriterien der Stufe Z5 (Band der Dauerlinie, Formabgleich, Energie nach Kalibrierung), dazu die √N-Skalierung über alle Objekte; Bericht in Markdown und CSV. Datenbankfrei, der Katalog kommt aus einem Paketordner oder einer SQLite. **Die Messreihen liegen nie im Repositorium** — eine Wache im Werkzeug hält jeden Absolutwert und jede Mengeneinheit aus dem Bericht; Ablage und Konverter für offen lizenzierte Fremddaten in [`LIESMICH.md`](Werkzeuge/ZapfprofilValidierung/LIESMICH.md) | `dotnet run --project Werkzeuge/ZapfprofilValidierung -c Release -- <ordner> --ziel <berichtordner> [--katalog <sqlite\|paketordner>] [--realisierungen N] [--seed S] [--trocken]` |
 | `Werkzeuge/SqlDialektPruefer` | hält jeden SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und die Verbotsliste | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
@@ -155,7 +158,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-30_R30_Stromverbraucher`, sechzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-02_R33_Viertelstunden`, sechzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -163,7 +166,10 @@ Stromverbraucher-Zuordnung (über die ID, gehalten von `EPOS.Kern.Tests/Stromver
 Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
 gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, Projekt 1049 rechnet als
 Kopie von 1018 ein Kollektorfeld vor BHKW und Kessel, das direkt und über den Puffer deckt —
-mit der Nachrang-Vorgabe 30 % am Puffer, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
+mit der Nachrang-Vorgabe 30 % am Puffer und der Arbeitstemperatur aus der untersten Zone des
+Puffers, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
+1018 und 1049 rechnen ihr BHKW mit der unteren Grenzleistung ihres Anlagenfelds (Rangfolge Anlage,
+Katalog, Projekt, gehalten von `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests`),
 Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie,
 Brennwertkennlinie am Rückfall-Rücklauf und gepflegten Taktwerten, gehalten von
 `EPOS.Kern.Tests/KesselKennlinieTests`, und steht nicht in der CI-Auswahl,
@@ -205,7 +211,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines
   Referenzprojekts auf den Generator;
 - gesäte Solardaten des Referenzprojekts 1049: das Kollektorfeld (Kollektorsatz in
-  `Tab_Solarkollektoren`, Modulanzahl, Neigung, Azimut, Senken in `Z_AnlageSenke`), sein Puffer
+  `Tab_Solarkollektoren` samt `Kdfu` und `Bezugsflaeche`, Modulanzahl, Neigung, Azimut, Senken in
+  `Z_AnlageSenke`, die Felder des Solarkreises `Arbeitstemperatur_Weg`, `Uebertrager_Graedigkeit_K`,
+  `Kollektor_Spreizung_K`, `Solarkreisverluste_Prozent`, `Pumpenleistung_W`), sein Puffer
   (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, `Schwelle_Aus`, `Schwelle_Aus_Nachrang` leer),
   die Lade-Prioritäten der Erzeuger an diesem Puffer und die Kaskade (`Tool_1` bis `Tool_4`),
   dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie;
@@ -220,7 +228,13 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   Prozesswärme (`Z_Projekt_Stromverbraucher`, `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme` — ID der
   Projektkopie und gepflegte `Summe`), die zugeordneten Projektkopien samt Typsätzen (`Tab_Stromverbraucher` und
   `Tab_Stromverbrauchertyp`, `Tab_Brauchwasser` und `Tab_Brauchwassertyp`, `Tab_Prozesswaerme` und `Tab_Prozesstyp`)
-  und das Anlegen oder Entfernen einer solchen Zuordnung.
+  und das Anlegen oder Entfernen einer solchen Zuordnung;
+- gesäte BHKW-Grenzleistungen der Referenzprojekte: das Anlagenfeld `Tab_Energieanlagen.Grenzleistung`
+  ihrer BHKW-Zeilen, die Katalogspalte `Tab_BHKW.Grenzleistung` ihrer Projektmodule und der Projektwert
+  `Tab_Einstellungen.Leistungsgrenze`;
+- gesäte Stromfelder der Referenzprojekte: die Einspeisegrenze `Tab_Einstellungen.Einspeisegrenze_Wert` und
+  `Einspeisegrenze_Einheit`, an den Projektkopien ihrer Stromspeicher `Standby_Verbrauch` und
+  `Selbstentladung_Prozent_Monat`.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

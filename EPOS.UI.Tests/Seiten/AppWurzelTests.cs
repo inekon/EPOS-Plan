@@ -1225,6 +1225,48 @@ public class AppWurzelTests : EposBunitContext
                         MarkeDerSimulation(cut));
     }
 
+    /// <summary>
+    /// <b>Die Pufferspeicher-Auslegung als freie Ansicht</b> (Stufe P2): Die Wurzel holt ihren
+    /// Parametersatz bei der Quelle, zeigt die Ansicht, und „← zurück" führt über den Stapel
+    /// dorthin zurück, woher man kam — hier in die Simulation.
+    /// </summary>
+    [Fact]
+    public void Die_Pufferauslegung_ist_eine_freie_Ansicht_mit_Rueckweg()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            PufferAuslegung = new Dictionary<string, object>
+            {
+                ["Daten"] = new EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungStartDaten { Projektname = "B3-Kaskade" }
+            }
+        };
+        var cut = MitSimulation(quelle);
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.Simulation));
+        cut.Render();
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.PufferAuslegung));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-pausl"));
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+        Assert.NotNull(quelle.PufferAuslegungRuf);
+
+        cut.FindAll("button").First(k => k.TextContent.Trim() == "← zurück").Click();
+        cut.Render();
+        Assert.Empty(cut.FindAll(".epos-pausl"));
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+    }
+
+    /// <summary>Ohne Parametersatz bleibt stehen, was steht, und die Statuszeile nennt den Grund.</summary>
+    [Fact]
+    public void Ohne_Quelle_nennt_die_Wurzel_den_Grund_der_fehlenden_Pufferauslegung()
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+        cut.Instance.OeffneMaske(Seitenschluessel.PufferAuslegung);
+        cut.Render();
+        Assert.Empty(cut.FindAll(".epos-pausl"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PAUS_KEINE_ANSICHT, cut.Markup);
+    }
+
     /// <summary>Die Marke der stehenden Simulationsansicht — über ihre Prüfhilfe.</summary>
     private static string MarkeDerSimulation(IRenderedComponent<AppWurzel> cut)
         => cut.FindComponent<EPOS.UI.Seiten.Simulation.SimulationSeite>().Instance.AktuelleMarke;

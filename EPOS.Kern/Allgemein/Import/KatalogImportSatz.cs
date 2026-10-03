@@ -188,6 +188,9 @@ namespace WindowsFormsApplication1
                 model.Wirkungsgrad_Gas = model.Wirkungsgrad_Oel = 1;
 
             model.Betriebsbereitschaftverlust = ZahlText.NachDouble(_satz.m_szVerluste);
+            // VDI 3805 fuehrt die Bereitschaftsleistung in kW - die Einheit, die der Import liefert
+            // (Anwenderentscheid 02.10.2026: gespeichert werden Wert UND Einheit).
+            model.Bereitschaft_Einheit = DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW;
             model.NOx = ZahlText.NachDouble(_satz.m_szNOX);
             model.CO2 = ZahlText.NachDouble(_satz.m_szCO2);
             model.CO = ZahlText.NachDouble(_satz.m_szCO);
@@ -271,6 +274,7 @@ namespace WindowsFormsApplication1
                 { "CO", m.CO },
                 { "Staub", m.Staub },
                 { "Betriebsbereitschaftverlust", m.Betriebsbereitschaftverlust },
+                { KesselBereitschaftEinheitSchema.SPALTE, m.Bereitschaft_Einheit },
                 { "Brennwert", m.Brennwert },
                 { KesselKennlinieSchema.SPALTE_TEILLAST30, m.Wirkungsgrad_Teillast30 },
                 { KesselKennlinieSchema.SPALTE_MINDESTLEISTUNG, m.Mindestleistung }
@@ -302,6 +306,7 @@ namespace WindowsFormsApplication1
             stamm.CO = m.CO;
             stamm.Staub = m.Staub;
             stamm.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            stamm.Bereitschaft_Einheit = m.Bereitschaft_Einheit;
             stamm.Brennwert = m.Brennwert;
             stamm.Wirkungsgrad_Teillast30 = m.Wirkungsgrad_Teillast30;
             stamm.Mindestleistung = m.Mindestleistung;
@@ -436,7 +441,8 @@ namespace WindowsFormsApplication1
                 m_Kdir = _satz.m_kdir,
                 m_Kdfu = _satz.m_kdiff,
                 m_Modulfläche = _satz.m_Modulfläche,
-                m_Aperturfläche = _satz.m_Aperturfläche
+                m_Aperturfläche = _satz.m_Aperturfläche,
+                m_Bezugsflaeche = Solarkreis.Bezugsflaeche(_satz.m_szBezugsflaeche)
             };
         }
 
@@ -453,7 +459,8 @@ namespace WindowsFormsApplication1
                 { "k1", m.m_k1 },
                 { "k2", m.m_k2 },
                 { "Kdir", m.m_Kdir },
-                { "Kdfu", m.m_Kdfu }
+                { "Kdfu", m.m_Kdfu },
+                { SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, m.m_Bezugsflaeche }
             };
         }
 
@@ -477,6 +484,7 @@ namespace WindowsFormsApplication1
             ctrl.m_Kdfu = m.m_Kdfu;
             ctrl.m_Modulfläche = m.m_Modulfläche;
             ctrl.m_Aperturfläche = m.m_Aperturfläche;
+            ctrl.m_Bezugsflaeche = m.m_Bezugsflaeche;
 
             return ctrl.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben
@@ -714,6 +722,7 @@ namespace WindowsFormsApplication1
             stamm.m_Energie = m.m_Energie;
             stamm.m_WirkungsgradRT = m.m_WirkungsgradRT;
             stamm.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+            stamm.m_Selbstentladung = m.m_Selbstentladung;
 
             return stamm.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben

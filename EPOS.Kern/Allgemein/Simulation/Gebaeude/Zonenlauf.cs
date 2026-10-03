@@ -44,6 +44,10 @@ namespace WindowsFormsApplication1
         private readonly double[] _kVorlauf, _kRuecklauf, _kBegrenzt;
         private double _stundenKl, _stundenKk, _stundenGrenze, _ueberschreitung;
 
+        // Stufe KP3 (Festlegung 20): der Kappungsanteil je Stunde, auch ohne Kopplung - eigener Akkumulator.
+        private readonly double[] _kappung = new double[8760];
+        private double _kappungH;
+
         internal Zonenlauf(ZonenEingang zone)
         {
             _zone = zone ?? throw new ArgumentNullException(nameof(zone));
@@ -131,6 +135,8 @@ namespace WindowsFormsApplication1
             if (s.Abschnitte > 1) _umschaltung++;
             if (s.HeizleistungW > 0.0 && s.KuehlleistungW > 0.0) _beides++;
             _summeW += s.HeizleistungW;
+            _kappung[h] = s.HeizleistungMaxAnteil;
+            _kappungH += s.HeizleistungMaxAnteil;
 
             if (!Endlich(_heiz[h]) || _heiz[h] < 0.0 || !Endlich(_kuehl[h]) || _kuehl[h] < 0.0
                 || !Endlich(_luft[h]) || !Endlich(_op[h]))
@@ -210,6 +216,10 @@ namespace WindowsFormsApplication1
                 kuehlkreis = KuehlkreisErgebnis.Bilden(eingang, _kVorlauf, _kRuecklauf, _kBegrenzt, _stundenKl, _stundenKk,
                                                        _stundenGrenze, kuehlW, _ueberschreitung);
             }
+            // Stufe KP3 (Welle R4): die Aufheizwerte aus dem Plan der Zone und dem Lauf - nur mit Plan.
+            Aufheizergebnis aufheizung = _zone.Aufheizplan == null
+                ? null
+                : Aufheizergebnis.Bilden(_zone.Aufheizplan, _heiz, _kappung, _kappungH);
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               _heiz, _luft, _op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, _umschaltung, _beides,
@@ -218,7 +228,12 @@ namespace WindowsFormsApplication1
                                                   ? (double?)eingang.KuehlSollwert : null,
                                               heizkreis, kuehlkreis, eingang.Nachtzeit,
                                               eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null,
-                                              eingang.Nutzungsmaske);
+                                              eingang.Nutzungsmaske, _kappung, _kappungH, aufheizung)
+            {
+                // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
+                SommerlueftungGesetzt = eingang.Sommerlueftung,
+                HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+            };
         }
 
         /// <summary>

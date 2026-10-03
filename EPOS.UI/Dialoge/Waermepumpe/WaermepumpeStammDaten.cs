@@ -65,9 +65,15 @@ public enum Kennlinienherkunft
 /// vorhandene Gerätekopie im Projekt UND einen Katalogsatz mit Kennlinien voraus.
 /// Nur dann zeigt der Dialog den Knopf — ein Knopf ohne Ziel ist ein Versprechen.
 /// </param>
+/// <param name="KuehlNachholbar">
+/// Die Wärmekennlinien kommen aus dem Projekt, allein die KÜHLkennlinie fehlt dort und
+/// steht im Katalogsatz. Dann zeigt der Dialog eine eigene Herleitung und den Knopf
+/// „Kühlkennlinie aus dem Katalog übernehmen" — derselbe Schreibweg holt nur, was fehlt.
+/// </param>
 public sealed record KennlinienBilder(Zeichenmodell? Cop, Zeichenmodell? Leistung,
                                       Kennlinienherkunft Herkunft = Kennlinienherkunft.Ohne,
-                                      bool Nachholbar = false)
+                                      bool Nachholbar = false,
+                                      bool KuehlNachholbar = false)
 {
     /// <summary>Kein Bild — die Blätter zeigen dann ihren Platzhalter.</summary>
     public static readonly KennlinienBilder Leer = new(null, null);
@@ -187,6 +193,15 @@ public sealed class WaermepumpeStammDaten
     /// <summary>Bauart — die Maske zeigt sie nicht, das <c>INSERT</c> schreibt sie.</summary>
     public string Bauart { get; set; } = "";
 
+    /// <summary>
+    /// Kleinste Modulationsleistung [kW] (Welle M4, WP1). <c>null</c> = keine Taktrechnung — das
+    /// Gerät moduliert bis null.
+    /// </summary>
+    public double? MindestleistungKw { get; set; }
+
+    /// <summary>Teillastkoeffizient C_d nach EN 14825 (Welle M4, WP1); <c>null</c> = Vorgabe 0,9.</summary>
+    public double? TaktverlustfaktorCd { get; set; }
+
     /// <summary>Auslieferungssatz? Dann sind Speichern und Löschen gesperrt.</summary>
     public bool NurLesen { get; set; }
 
@@ -207,6 +222,8 @@ public sealed class WaermepumpeStammDaten
         Modulkosten = Modulkosten,
         MaxPtherm = MaxPtherm,
         Bauart = Bauart,
+        MindestleistungKw = MindestleistungKw,
+        TaktverlustfaktorCd = TaktverlustfaktorCd,
         NurLesen = NurLesen
     };
 }

@@ -1,4 +1,4 @@
-# Übergabe der Sitzung „EPOS Plan Wirtschaftlichkeit" — Stand 30.09.2026 (fortgeschrieben aus der Fassung vom 27.09.2026)
+# Übergabe der Sitzung „EPOS Plan Wirtschaftlichkeit" — Stand 03.10.2026 (fortgeschrieben aus den Fassungen vom 27.09., 30.09. und 02.10.2026)
 
 Diese Datei ist der Einstieg für die Fortführung in einer neuen Sitzung, gleich ob Cloud (claude.ai/code), Desktop-App oder ein
 anderes Claude-Konto. Sie ersetzt das maschinenlokale Gedächtnis der bisherigen Sitzung; alles Fachliche steht in Statusdatei,
@@ -7,32 +7,41 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
 
 ## 1 Stand
 
-- **Alle Etappen des Konzepts sind gebaut und gepusht:** E0–E10, E13–E31 (E11 entfällt, E12 = Wiki-Sammel-Upload #556). E31 „Der Bericht
-  folgt dem gewählten Szenario" baute die Cloud-Sitzung Berichterstellung nach der Fachvorgabe der Wirtschaftlichkeit (#591); die Abnahme
-  E31‑A1 steht im Register. Dazu die Nachlese-Wellen **#603** (P555: Gruppenregel im Konzept, Szenarioabdeckung je Lauf, Befund zu #555),
-  **#612** (P556: Leistungspreis nur bei stromverwendendem Erzeuger, EZ‑17, mit Hinweis) und **#633** (P630: Rollentarif unter EZ‑17,
-  Veraltet-Band am Haken, Rückfallträger im Ausweis, Stromsteuer-Kohärenz am Rückfallträger, EZ‑18). Das Kostenkapitel des Berichts
-  (Einzelzahl mit Fußzeile der Gruppenregel, Fachvorgabe P555‑B) baute die Berichterstellung als #609 und ist abgenommen; #613 trägt den
-  Wiki-Satz zu EZ‑17.
-- **Letzter eigener Push:** `56140d04f` (30.09.2026 13:56) auf `ios_migration_september` — Statuszeile #633 samt CI-Vermerk (Kern-Lauf
-  36708236840 grün). `main` steht auf einem fremden Stand (`8692ab40`, 29.09.) und wurde nicht mitgezogen; der Windows-Nachtlauf prüft
-  inzwischen den Arbeitszweig (`windows.yml`), ein Fast-Forward von `main` ist nur nach einem grünen Kern-Lauf des Zweigstands sinnvoll.
-- **Nummern und Basis:** Statuszeilen bis #634 vergeben (Stand 12:03), vor jeder Vergabe `git fetch` und die Statusdatei auf origin
-  messen; die Nachbarn pushen im Minutentakt, Kreuzungen sind der Regelfall. Referenzbasis `Referenzlaeufe/2026-09-30_R29_Kesseltakten`
-  (sechzehn Projekte, 1050 neu; Nachbarn), Schemastand 158 (Schritte bis 158 vergeben, KP2 hat 156 angemeldet, nächster Schritt nach
-  fetch prüfen). Die Wirtschaftlichkeit hat seit R21 keinen Rechenweg und kein Schema mehr berührt.
-- **Messlatten:** Windows-Bildmesslatte des lokalen Gates `C:\Waermeplan\.claude\gate\messlatte_windows.sha256` mit 194 Hashes (Sicherungen
-  daneben); Linux-Messlatte im Repo `Proben/ChartProben/Messlatte_2026-09-30.sha256`, die `kern.yml` auf ubuntu prüft. Die sechs
-  Bericht-Messlatten `EPOS.Kern.Tests/Messlatten/Bericht_*` sind byte-gleich zu halten.
-- **Offene Anwenderentscheide** (Wortlaut in den Nach-Blöcken der Statusdatei): Nach #633 (a) Bezugsrolle ohne Leistungspreis an der
-  Gruppenregel-Kopie bestätigen; (b) Laufvermerk je Ergebnis, damit die Seite veraltete Ergebnisse auch nach einem Wechsel in Übersicht
-  oder Kosten erkennt — Schemaschritt; (c) Kohärenz am Rückfallträger kann nie „stimmig" melden, weil dort kein Stromsteueranteil
-  pflegbar ist; (d) Wiki-Upload der Quelle Wirtschaftlichkeit mit den Logbuchsätzen unter 1.2.0.6; (e) Windows-Proben (Veraltet-Band,
-  Hinweis zum Leistungspreismodell) und die älteren aus #590, #591, #600, #609. Ferner § 6.3 Nr. 37 (Vorlagenweg: Kapitelplatzhalter
-  gemischt mit Einzelplatzhaltern zeigt zwei Szenarien — nur mit neuen Platzhaltern lösbar), die E30-Reste (Satzfeld im Kostenraster,
-  Katalogempfehlung „Hilfsenergie Kessel 4–8 %", N11 Flotten-Einspeisung), Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18.
-- **Kostenrahmen der offenen Bauwellen** (Erfahrungswerte 29./30.09.: Welle mit vier Punkten samt Gate 8 %, kleine Welle 5 %, Papierschritt
-  1 % des Wochenbudgets): Laufvermerk 8–10 %, Kohärenz „stimmig" 5–8 %, Nr. 37 5–6 %, E30-Reste je 3–4 %.
+- **Alle Etappen des Konzepts sind gebaut und gepusht:** E0–E10, E13–E31 (E11 entfällt, E12 = Wiki-Sammel-Upload #556), dazu die
+  Nachlese-Wellen #603, #612, #633 (bis 30.09.) und am 02.10.2026 vier Wellen: **#645** (P641: Laufvermerk `Lauf_Staende` je
+  Ergebnis, Spalte additiv über `StelleTabellenSicher`, Testdatenbank nachgezogen; EZ‑19), **#650** (P646: Nachlese der fremden
+  Welle #642 Wärmegestehung nach fachlicher Prüfung — Stromsteuer einmal, EZ‑6 gilt, Nachweisumschlag Fassung 13 mit Vermerk an
+  Altläufen, Register EZ‑20/EZ‑21, Protokoll W642 nachgetragen, Zielvorgabe neu gerechnet; dazu der flatterhafte fremde Test
+  `AssistentAbgleichTests` behoben), **#653** (P651: § 9b-Abzug der Gestehung mit Sockelbetrag und Deckelung, gemeinsame
+  Hilfsfunktion `SteuerGutschriftRechner.Entgangene9bEur`; EZ‑22) und **#656** (P654: Deckel auch im § 9b-Ausweis der vermiedenen
+  Stromkosten; EZ‑23). Alle vier mit grünem Gate, Referenzlauf 16/16 gegen R30 und CI-Vermerk (grüne Kern-Läufe auf fremden Zweigen
+  mit demselben Stand, weil Läufe auf dem Arbeitszweig fortlaufend durch Pushes abgebrochen werden).
+- **Letzter eigener Push:** Statuszeile #676 (03.10.2026, P671: Katalogempfehlung der Hilfsenergie, Schritt 170) auf `ios_migration_september`; davor `258bee90c` (02.10.2026, CI-Vermerk zu #656). `main` steht
+  weiter auf `8692ab40` (29.09.); ein Fast-Forward nur nach Gate auf dem Zweigstand und auf Zuruf.
+- **Nummern und Basis:** Statuszeilen bis #676 vergeben (gemessen 03.10.2026 auf origin: #673 die Welle M4 Teillast, #674 die Welle M5 Strom in Viertelstunden, #675 die Pufferauslegung P1), #676 für P671 (die
+  Orchestrierung prüft beim Push); vor jeder Vergabe `git fetch` und die Statusdatei auf origin
+  messen; am 02.10. wanderte jede eigene Nummer zwei- bis dreimal (Nachbarn: KP2/KP3 Gebäudesimulation, Dialogsitzung, Berichterstellung,
+  Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R33_Viertelstunden` (Nachbarn; keine neue Basis durch P671; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
+  Schemastand 170 (fremde Schritte bis 169, Kostenstempel 159, 167 die Teillastfelder der Welle M4, 168 Einspeisegrenze und Selbstentladung der Welle M5, 169 die Pufferauslegung P1; 170 die Katalogempfehlung der Hilfsenergie aus P671; LFS-Zeiger
+  `bd624ace…`), `SchemaStand.Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT`; Basis und Schemastand wandern täglich, vor
+  jeder Welle neu messen. Die Wirtschaftlichkeit hat keinen Rechenweg der Simulation berührt; ihr einziger nummerierter
+  Schemaschritt seit den Etappen ist der Katalogschritt 170 (P671, reines DML an den Auslieferungsvorlagen); Ergebnisspalten von `Tab_ErgebnisWirtschaftlichkeit`
+  laufen additiv über `SpalteSicher` und `Werkzeuge/Testdatenbankschema` (kein Schritt, Hausmuster).
+- **Messlatten:** Linux-Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256` (200 Hashes, `kern.yml` auf ubuntu); Windows-Messlatte
+  des lokalen Gates beim Anwender; die sechs Bericht-Messlatten `EPOS.Kern.Tests/Messlatten/Bericht_*` byte-gleich zu halten. Gate in
+  der Cloud: `Werkzeuge/Gate/gate_linux.sh <Nr> <Worktree>` (rund 25 Minuten, `dotnet` unter `/root/.dotnet`, SDK 10.0.400 per
+  `dotnet-install.sh`; in einer neuen Cloud-Sitzung erneut zu installieren).
+- **Offene Anwenderpunkte** (Wortlaut in den Nach-Blöcken): Wiki-Sammel-Upload am 05.10.2026 mit 25 Logbuchsätzen aller Sitzungen unter
+  1.2.0.6 (Nach #633 (d), #645 (a), #650 (a), #653 (a), #656 (a)); Windows-Proben am 05.10. (Nach #633 (e), #645 (b), #650 (b),
+  #653 (b) und (d) Hinweiszeile „Obergrenze Regelsatz", #656 (b)); Unterrichtung der Nachbarsitzung Wärmegestehung (Zweige
+  `wirt-gestehung`, `wirt-merge`) über Nachlese, EZ‑20 bis EZ‑23 und die fachliche Führung (Nach #650 (d)); ferner § 6.3 Nr. 37
+  (Vorlagenweg, 5–6 %), die E30-Reste E30‑Q5 (Emission und Stromsteuer des Hilfsstroms) und N11 (Flotten-Netzeinspeisung) — Katalogempfehlung und Satzfeld sind mit P671 (#676, EZ‑24) erledigt —, Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18 (macOS-Läufer, nur nach Rückfrage).
+- **Nutzung:** Anwenderangabe 02.10.2026 „unter 40 %" vor den Wellen P651 und P654; Erfahrungswerte des Tages: Welle mit Code und
+  Gate 6–9 %, kleine Welle 3–5 %, jeder zusätzliche Merge mit Nachtest etwa 1 %, volles Gate wiederholt etwa 1 %.
+- **Lehren des Tages:** (1) Ein Skriptabbruch in einer Befehlskette darf den Commit nicht mitnehmen — Papieränderungen vor dem Commit
+  prüfen (`git diff --stat`), Merge-Ausgaben nicht per Textfilter auswerten (Fast-Forward). (2) Fremde Wellen prüfen, bevor sie
+  gemergt werden: `git diff --stat <alt> origin -- EPOS.Kern …`, bei Code erneut Nachtest. (3) Flatterhafte fremde Tests reproduzieren
+  (mehrfach, im Hauptbaum auf origin-Stand) und die Ursache beheben, nicht abschalten.
 
 ## 2 Arbeitsweise
 
@@ -48,7 +57,9 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
    CI-Projekte, `vergleich` gegen die Basis — die sieben Projekte PASS, `GESAMT: FAIL` wegen der nicht gerechneten Basisprojekte ist normal.
    Windows-Schale `dotnet build WindowsFormsApplication1/… -c Debug -p:Platform=x64` durch den Agenten. Tests nur mit
    `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`, nie parallel zu fremden Testprozessen (`tasklist | grep -i testhost`).
-3. **Nummern:** Statusnummer und Schemaschritt erst beim Push gegen origin endgültig. Wird umnummeriert, nur die eigenen Fundstellen
+3. **Nummern:** Statusnummer und Schemaschritt erst beim Push gegen origin endgültig. Ein Schemaschritt wird außerdem **vor dem Bau** in der Zeile
+   „Schemaschritt angemeldet" im Kopf der Statusdatei angemeldet und die Zeile allein sofort gepusht (Regel in `CLAUDE.md`, seit #676);
+   angemeldete Nummern vergibt keine andere Sitzung. Wird umnummeriert, nur die eigenen Fundstellen
    ändern — Anwenderzitate mit der alten Nummer und fremde Zeilen, die durch einen Merge schon im Baum liegen, vorher ausschließen
    (Lehre aus #633: die fremde #630 wurde mit ersetzt und musste wiederhergestellt werden). CI-Nachweis ist der erste grüne Kern-Lauf,
    dessen Commit den eigenen enthält (`git merge-base --is-ancestor <eigener> <Lauf-Commit>`); Folge-Pushes brechen laufende Läufe ab.
@@ -67,6 +78,7 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
 
 ## 3 Einstieg in der neuen Sitzung
 
-Erste Anweisung: „Lies `CLAUDE.md`, diese Übergabe und in `Dokumentation/aktuell/Status_iOS_Migration.md` die Zeilen #603, #612 und #633
-samt Nach-Blöcken; dann `git fetch`, Nummern und Basis messen, Nutzung prüfen und die offenen Anwenderentscheide aus Abschnitt 1
-einholen, beginnend mit Nach #633 (a) und (b)." Sitzungsname „EPOS Plan Wirtschaftlichkeit", Modell Opus 5.5.
+Erste Anweisung: „Lies `CLAUDE.md`, diese Übergabe und in `Dokumentation/aktuell/Status_iOS_Migration.md` die Zeilen #645, #650, #653
+und #656 samt Nach-Blöcken; dann `git fetch`, Nummern und Basis messen, Nutzung prüfen und die offenen Anwenderpunkte aus Abschnitt 1
+einholen." Sitzungsname „EPOS Plan Wirtschaftlichkeit"; Orchestrierung Fable 5.1, Agenten mit `model: opus`. Die Sitzung vom 02.10.2026
+pausiert auf Anwenderwunsch bis 03.10.2026, 10:00 Uhr.

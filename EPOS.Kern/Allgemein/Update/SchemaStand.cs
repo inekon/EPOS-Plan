@@ -739,11 +739,121 @@ namespace WindowsFormsApplication1
         /// (<see cref="KostenStempelSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer,
         /// und kein Rechenweg liest sie. Die Nummer steht allein bei
         /// <see cref="KostenStempelSchema.SCHRITT"/>.
+        /// Danach, mit der AUFHEIZOPTIMIERUNG (Stufe KP3, Entwurf KP3 Abschnitt 4; zwei Schritte nach
+        /// Festlegung 23) steht das Ziel auf <see cref="AufheizErgebnisSchema.SCHRITT"/>: zuerst
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> (KP-S2) mit den fünf Projektspalten
+        /// <c>Tab_Einstellungen.Aufheizoptimierung</c> (0/1, Vorgabe 0), <c>Aufheiz_Bemessung</c>,
+        /// <c>Aufheiz_Abzug_K</c>, <c>Aufheiz_Reserve</c> und <c>Aufheiz_Art</c> (nullbar, NULL = Vorgabe),
+        /// dann KP-S3 mit je vierzehn nullbaren Ergebnisspalten an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>, reines DDL (<see cref="AufheizvorgabeSchema"/>,
+        /// <see cref="AufheizErgebnisSchema"/>). <b>Ergebnisneutral:</b> Der Schalter steht überall auf 0,
+        /// die übrigen Spalten auf NULL, und kein Rechenweg liest sie. Die Nummern stehen allein bei
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> und <see cref="AufheizErgebnisSchema.SCHRITT"/>.
+        /// Danach, mit der EINHEIT DES BEREITSCHAFTSVERLUSTS (Anwenderentscheid vom 02.10.2026),
+        /// steht das Ziel auf <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>: die Spalte
+        /// <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %) an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c>, reines DDL
+        /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
+        /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
+        /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
+        /// Danach, mit der BODENALBEDO JE ANLAGE (Entscheidungsvorlage Modellgrenzen, PV4), steht
+        /// das Ziel auf <see cref="AlbedoSchema.SCHRITT"/>: die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1) an <c>Tab_Energieanlagen</c>, reines DDL
+        /// (<see cref="AlbedoSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile bleibt NULL
+        /// und rechnet mit der Vorgabe 0,2. Die Nummer steht allein bei
+        /// <see cref="AlbedoSchema.SCHRITT"/>.
+        /// Danach, mit dem TEMPERATURPAAR JE PROZESS (Entscheidungsvorlage Modellgrenzen, PW1 Stufe 1,
+        /// Welle M3a), steht das Ziel auf <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>: die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, paarweise, Vorlauf
+        /// nicht unter dem Rücklauf) an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c>
+        /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
+        /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
+        /// Danach, mit den FELDERN DES KOLLEKTORFELDS (Welle M2 Solarthermie der Entscheidungsvorlage
+        /// Modellgrenzen), steht das Ziel auf <see cref="SolarthermieFelderSchema.SCHRITT"/>: an
+        /// <c>Tab_Energieanlagen</c> die nullbaren Spalten <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>, <c>Kollektor_Spreizung_K</c>
+        /// und <c>Arbeitstemperatur_Weg</c>, an <c>Tab_Solarkollektoren_STAMM</c> und
+        /// <c>Tab_Solarkollektoren</c> die Bezugsfläche der Kennwerte (TEXT, Vorgabe apertur), reines DDL
+        /// (<see cref="SolarthermieFelderSchema"/>). <b>Ergebnisneutral:</b> Die Anlagenspalten entstehen
+        /// leer und rechnen ihre Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche. Die Nummer steht
+        /// allein bei <see cref="SolarthermieFelderSchema.SCHRITT"/>.
+        /// Danach, mit den NETZVERLUSTEN JE KANAL, der ZIRKULATION IM BESTANDSWEG und dem
+        /// BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2,
+        /// Welle M3b), steht das Ziel auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>: acht nullbare
+        /// Spalten an <c>Tab_Einstellungen</c>, die Tabelle <c>Tab_Betriebskalender</c> und je
+        /// Zuordnungstabelle die nullbare Spalte <c>ID_Betriebskalender</c>
+        /// (<see cref="BedarfNetzKalenderSchema"/>). <b>Ergebnisneutral:</b> Alles bleibt leer, und leer
+        /// rechnet wie zuvor. Die Nummer steht allein bei <see cref="BedarfNetzKalenderSchema.SCHRITT"/>.
+        /// Danach, mit den TEILLASTFELDERN VON WÄRMEPUMPE UND BHKW (Welle M4 der Entscheidungsvorlage
+        /// Modellgrenzen: WP1, BH1, BH2), steht das Ziel auf <see cref="ErzeugerTeillastSchema.SCHRITT"/>:
+        /// an <c>Tab_WP_STAMM</c> und <c>Tab_WP</c> die nullbaren Spalten <c>Mindestleistung_kW</c> und
+        /// <c>Taktverlustfaktor_Cd</c>, an <c>Tab_BHKW_STAMM</c> und <c>Tab_BHKW</c>
+        /// <c>Wirkungsgrad_el_Teillast50</c>, <c>Wirkungsgrad_th_Teillast50</c>, <c>Anfahrverlust_kWh</c> und
+        /// <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel, reines DDL (<see cref="ErzeugerTeillastSchema"/>).
+        /// <b>Ergebnisneutral:</b> Leere Felder rechnen wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ErzeugerTeillastSchema.SCHRITT"/>.
+        /// Danach, mit der EINSPEISEGRENZE UND DER SELBSTENTLADUNG (Welle M5 „Strom in Viertelstunden"
+        /// der Entscheidungsvorlage Modellgrenzen, PV3 und SP1), steht das Ziel auf
+        /// <see cref="StromViertelstundenSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> die nullbaren
+        /// Spalten <c>Einspeisegrenze_Wert</c> (≥ 0) und <c>Einspeisegrenze_Einheit</c> ('kW'/'%'), an
+        /// <c>Tab_Stromspeicher_STAMM</c> und <c>Tab_Stromspeicher</c> <c>Selbstentladung_Prozent_Monat</c>
+        /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
+        /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
+        /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
+        /// Danach, mit der PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle
+        /// W1), steht das Ziel auf <see cref="PufferAuslegungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_PufferAuslegung</c> und <c>Tab_PufferAuslegungParameter_STAMM</c> samt Saat der
+        /// Vorgabewerte (<see cref="PufferAuslegungSchema"/>). <b>Ergebnisneutral:</b> Die Auslegung
+        /// rechnet und schreibt nur auf Zuruf. Die Nummer steht allein bei
+        /// <see cref="PufferAuslegungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGEMPFEHLUNG DER HILFSENERGIE AUF WEG B (Auftrag P671, Register
+        /// E30‑Q12, EZ‑24), steht das Ziel auf <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>: die
+        /// Empfehlungsspannen der Pflichtzeilen „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und
+        /// „Hilfsenergiekosten (Strom)“ (Heizkessel, 4–8 % → 1–2 %) in den Auslieferungsvorlagen,
+        /// reines DML (<see cref="HilfsenergieEmpfehlungNachzug"/>). <b>Ergebnisneutral:</b> Die
+        /// Empfehlung ist Hinweis am Satzfeld, kein Rechenwert; Projektzeilen bleiben unberührt. Die
+        /// Nummer steht allein bei <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>.
+        /// Danach, mit den OPTIONEN DES PUFFERSPEICHERS UND DER THERMISCHEN DESINFEKTION (Welle M7
+        /// „Speicher" der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a), PS5 (a), BW5), steht das
+        /// Ziel auf <see cref="PufferOptionenSchema.SCHRITT"/>: an <c>Tab_Pufferspeicher</c> die nullbaren
+        /// Spalten <c>Bereitschaft_Weg</c>, <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>,
+        /// <c>Frischwassermodul</c> und <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c>
+        /// <c>Desinfektion_Aktiv</c>, <c>Desinfektion_Intervall_Tage</c>, <c>Desinfektion_Stunde</c>,
+        /// <c>Desinfektion_Zieltemperatur_C</c> und <c>Desinfektion_Volumen_l</c>, alle mit Prüfklausel,
+        /// reines DDL (<see cref="PufferOptionenSchema"/>). <b>Ergebnisneutral:</b> Leere Felder rechnen
+        /// wie zuvor. Die Nummer steht allein bei <see cref="PufferOptionenSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG und der GESPEICHERTEN ERDREICHPRÜFUNG (Welle M6 der
+        /// Entscheidungsvorlage Modellgrenzen: KU1 Stufe 1, EQ1), steht das Ziel auf
+        /// <see cref="KatalogfassungSchema.SCHRITT"/>: an den acht Katalogtabellen der Stufe 1
+        /// <c>Katalog_Schluessel</c> (eindeutig, Teilindex), <c>Katalog_Pruefsumme</c> und
+        /// <c>Katalog_Ausgelaufen</c>, an <c>Tab_Applikation</c> die <c>Katalogfassung</c>, die Tabellen
+        /// <c>Tab_Katalogabgleich</c> und <c>Tab_ErgebnisErdreich</c> (STRICT) und die Saat von Schlüssel
+        /// und Prüfsumme der ausgelieferten Sätze (<see cref="KatalogfassungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG DER ÜBRIGEN KATALOGE (Entscheidungsvorlage Modellgrenzen KU1
+        /// Stufe 2), steht das Ziel auf <see cref="KatalogfassungStufe2Schema.SCHRITT"/>: an den sechzehn
+        /// Katalogtabellen der Stufe 2 (<see cref="Katalogfassung.Stufe2"/>) dieselben drei Katalogspalten
+        /// samt Teilindex und die Saat von Schlüssel und Prüfsumme ihrer ausgelieferten Sätze; Klima- und
+        /// Zapfprofilkatalog bleiben benannt ausgenommen (<see cref="Katalogfassung.Ausgenommen"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungStufe2Schema.SCHRITT"/>.
+        /// Danach, mit AUFSCHLAG UND MANUELLER AUFHEIZZEIT DER AUFHEIZOPTIMIERUNG (Entscheid E59 samt
+        /// Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4, KP-S4), steht das Ziel auf
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c>
+        /// und <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c> samt dem
+        /// achten Neubau der Sicht <c>Abfrage_Projektgebaeude</c> (103 Spalten), an <c>Tab_ErgebnisGebaeude</c>
+        /// <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und <c>Aufheizzuschlag_Kw</c>, an
+        /// <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c> und der Zustand <c>GEKOPPELT</c> per kleinem Neubau
+        /// (<see cref="AufheizManuellSchema"/>). <b>Ergebnisneutral:</b> Alle Felder entstehen leer, leer
+        /// heißt kein Aufschlag und keine manuelle Zeit. Die Nummer steht allein bei
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KostenStempelSchema.SCHRITT;
+        public const int Zielversion = AufheizManuellSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

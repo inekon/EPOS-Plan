@@ -226,6 +226,39 @@ public sealed class ParameterDaten
     /// </summary>
     public string? Anlagenkopplung;
 
+    // ---- Aufheizoptimierung (Entwurf KP3, Grundsatz 5; Welle O1) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Aufheizoptimierung" (<c>Tab_Einstellungen.Aufheizoptimierung</c> und
+    /// <c>Aufheiz_*</c>) in der gespeicherten, normalisierten Form (Festlegung 24): Schalter,
+    /// Bemessung, ΔT_K, Reserve als Anteil, Art. Ohne Einstellungssatz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Aufheizvorgabe Aufheizung = WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    // ---- Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4) ----
+
+    /// <summary>
+    /// Netzverluste je Kanal und Zirkulation (<c>Tab_Einstellungen</c>, Schritt
+    /// <c>BedarfNetzKalenderSchema</c>) in der gespeicherten, normalisierten Form; alle Kanalwerte
+    /// leer = der Projektwert <see cref="Netzverluste"/> gilt.
+    /// </summary>
+    public WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele = WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+    // ---- Einspeisegrenze (Welle M5, PV3) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Einspeisegrenze" (<c>Tab_Einstellungen.Einspeisegrenze_Wert</c> und
+    /// <c>Einspeisegrenze_Einheit</c>) in der gespeicherten Form; ohne Satz und ohne Spalten „keine".
+    /// </summary>
+    public WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze = WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    // ---- Thermische Desinfektion (Welle M7, BW5) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (<c>Tab_Einstellungen.Desinfektion_*</c>) in der
+    /// gespeicherten Form; ohne Satz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion = WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
     /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
@@ -245,7 +278,11 @@ public sealed class ParameterDaten
         Bereitschaft = Bereitschaft,
         Heizgrenze = Heizgrenze,
         Kuehlbetrieb = Kuehlbetrieb,
-        Anlagenkopplung = Anlagenkopplung
+        Anlagenkopplung = Anlagenkopplung,
+        Aufheizung = Aufheizung,
+        Netzkanaele = Netzkanaele,
+        Einspeisegrenze = Einspeisegrenze,
+        Desinfektion = Desinfektion
     };
 }
 
@@ -595,6 +632,13 @@ public sealed class AutarkieDaten
     public double Co2ErsparnisKg;
     public double SpeichernutzenKwh;
     public double SpeicherKwh;
+
+    /// <summary>
+    /// Rechnet die Analyse OHNE Stromspeicher (Kapazität 0 kWh)? Ohne Speicher im Projekt ist
+    /// das die Vorbelegung — es wird kein Speicher angenommen, den das Projekt nicht hat; die
+    /// Seite sagt es in einer Zeile unter dem Feld.
+    /// </summary>
+    public bool OhneStromspeicher => SpeicherKwh <= 0.0;
 
     /// <summary>
     /// Die Platzhalter der Kacheln und des Monatsstapels (Katalog v10, „ähnlich im Bericht“): Autarkie der

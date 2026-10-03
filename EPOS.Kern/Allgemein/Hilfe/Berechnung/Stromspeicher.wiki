@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Fassung 7 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Fassung 8 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
@@ -35,7 +35,9 @@ Der Speicher darf den Lauf '''nicht kippen''': Fehlen Stammdaten, passt das Zeit
 |-
 | Degradation || %/a || Speicherkatalog
 |-
-| Standby-Verbrauch || W || Speicherkatalog
+| Standby-Verbrauch || W || Speicherkatalog, Feld „Standby-Verbrauch"
+|-
+| Selbstentladung || %/Monat || Speicherkatalog, Feld „Selbstentladung"
 |-
 | Zugesicherte Zyklen || — || Speicherkatalog
 |-
@@ -94,7 +96,9 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>d</math> || Degradation je Jahr || — (Anteil) || Speicherkatalog, Feld „Degradation"
 |-
-| <math>P_{\mathrm{sb}}</math> || Standby-Verbrauch || W || Speicherkatalog — Parameter des Geräts, kein Term des Dispatchs
+| <math>P_{\mathrm{sb}}</math> || Standby-Verbrauch des Speichersystems, 0 … 1 000 || W || Speicherkatalog, Feld „Standby-Verbrauch"; leer = 0 — aus PV-Überschuss, sonst aus dem Netz, kein Term des Dispatchs
+|-
+| <math>s_{\mathrm{SE}}</math> || Selbstentladung, 0 … 20 || %/Monat || Speicherkatalog, Feld „Selbstentladung"; leer = 0
 |-
 | <math>n_{\mathrm{Z}}</math> || zugesicherte Zyklen || — || Speicherkatalog
 |-
@@ -142,7 +146,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>w_j</math> || Grenzverschleiß je abgegebener AC-Kilowattstunde — Lenkpreis der Planung, keine Auszahlung || €/kWh || Flotteneditor
 |-
-| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (52) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (50)
+| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (54) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (52)
 |-
 | <math>G_{\mathrm{imp}}</math>, <math>G_{\mathrm{exp}}</math> || '''harte''' technische Anschlussgrenzen für Bezug und Einspeisung || kW || Flotteneditor; eine verbleibende Überschreitung macht die Variante unzulässig
 |-
@@ -190,87 +194,87 @@ Größen, die der Lauf je Intervall oder je Lauf bildet.
 |-
 | <math>E_{\mathrm{quelle}}(k)</math> || zum Laden zugelassener Überschuss || kWh || (11)
 |-
-| <math>E_{\mathrm{ch}}(k)</math> || Ladeenergie des Intervalls, AC-seitig || kWh || (12)
+| <math>E_{\mathrm{ch}}(k)</math> || Ladeenergie des Intervalls, AC-seitig || kWh || (14)
 |-
-| <math>E_{\mathrm{dis}}(k)</math> || Entladeenergie des Intervalls, AC-seitig || kWh || (13)
+| <math>E_{\mathrm{dis}}(k)</math> || Entladeenergie des Intervalls, AC-seitig || kWh || (15)
 |-
-| <math>\mathrm{SOC}(k)</math> || Ladezustand am Ende des Intervalls || kWh || (12) und (13)
+| <math>\mathrm{SOC}(k)</math> || Ladezustand am Ende des Intervalls || kWh || (14) und (15)
 |-
 | <math>E_{\mathrm{pv,ant}}(k)</math>, <math>E_{\mathrm{bhkw,ant}}(k)</math> || Aufteilung der Ladung nach der Merit-Order PV vor BHKW || kWh || Schritt 4
 |-
-| <math>F(k)</math> || Geldwert des Intervalls || € || (14)
+| <math>F(k)</math> || Geldwert des Intervalls || € || (16)
 |-
 | <math>E_{\mathrm{dis,DC}}</math> || entnommene Energie des Jahres, DC-seitig || kWh || Jahressumme
 |-
-| <math>z_{\mathrm{aeq}}</math> || äquivalente Vollzyklen || — || (15)
+| <math>z_{\mathrm{aeq}}</math> || äquivalente Vollzyklen || — || (17)
 |-
-| <math>E_{\mathrm{a,1}}</math> || Ertrag im Referenzjahr || €/a || (16)
+| <math>E_{\mathrm{a,1}}</math> || Ertrag im Referenzjahr || €/a || (18)
 |-
-| <math>a(i,N)</math> || Annuitätsfaktor || 1/a || (17)
+| <math>a(i,N)</math> || Annuitätsfaktor || 1/a || (19)
 |-
-| <math>A</math> || Kapitaldienst || €/a || (18)
+| <math>A</math> || Kapitaldienst || €/a || (20)
 |-
-| <math>\mathrm{RBF}(i,N)</math> || Rentenbarwertfaktor || a || (19)
+| <math>\mathrm{RBF}(i,N)</math> || Rentenbarwertfaktor || a || (21)
 |-
-| <math>q</math> || Hilfsgröße des degradierten Rentenbarwertfaktors || — || (20)
+| <math>q</math> || Hilfsgröße des degradierten Rentenbarwertfaktors || — || (22)
 |-
-| <math>\mathrm{RBF}_{\mathrm{deg}}</math> || degradierter Rentenbarwertfaktor || a || (21)
+| <math>\mathrm{RBF}_{\mathrm{deg}}</math> || degradierter Rentenbarwertfaktor || a || (23)
 |-
-| <math>\mathrm{NPV}</math> || Kapitalwert || € || (22)
+| <math>\mathrm{NPV}</math> || Kapitalwert || € || (24)
 |-
-| <math>\Delta J(C,P)</math> || Jahresüberschuss nach Kapitaldienst — die Zielfunktion der Auslegung || €/a || (23)
+| <math>\Delta J(C,P)</math> || Jahresüberschuss nach Kapitaldienst — die Zielfunktion der Auslegung || €/a || (25)
 |-
 | <math>t_{\mathrm{A}}</math> || Amortisationszeit || a || Ausgabe — Sekundärkennzahl je Auslegung
 |-
 ! colspan="4" | Erweiterte Auslegung
 |-
-| <math>I</math>, <math>O</math> || Investition und jährlicher Betriebsaufwand eines Kandidaten || €, €/a || (24) und (25)
+| <math>I</math>, <math>O</math> || Investition und jährlicher Betriebsaufwand eines Kandidaten || €, €/a || (26) und (27)
 |-
 | <math>Q_{\mathrm{Entladung}}</math> || simulierte AC-Entladeenergie des Jahres || kWh || Kandidatenlauf
 |-
 ! colspan="4" | Speicherflotte
 |-
-| <math>E_j(k)</math> || Energie der Einheit am Anfang des Intervalls || kWh || (26)
+| <math>E_j(k)</math> || Energie der Einheit am Anfang des Intervalls || kWh || (28)
 |-
-| <math>c_j(k)</math>, <math>d_j(k)</math> || ausgeführte Lade- und Entladeleistung der Einheit, AC-seitig und nicht negativ || kW || (28) und (35)
+| <math>c_j(k)</math>, <math>d_j(k)</math> || ausgeführte Lade- und Entladeleistung der Einheit, AC-seitig und nicht negativ || kW || (30) und (37)
 |-
-| <math>E_{\mathrm{min},j}</math>, <math>E_{\mathrm{max},j}</math>, <math>E_{\mathrm{floor},j}</math> || Energiegrenzen und Reservegrenze der Einheit || kWh || (27)
+| <math>E_{\mathrm{min},j}</math>, <math>E_{\mathrm{max},j}</math>, <math>E_{\mathrm{floor},j}</math> || Energiegrenzen und Reservegrenze der Einheit || kWh || (29)
 |-
 | <math>v_j(k)</math> || Verfügbarkeitsfaktor der Einheit, 0 bis 1 || — || Eingangsreihe; ein fehlender Eintrag bedeutet volle Verfügbarkeit
 |-
-| <math>V_j(k)</math> || Umwandlungsverlust der Einheit im Intervall || kWh || (29)
+| <math>V_j(k)</math> || Umwandlungsverlust der Einheit im Intervall || kWh || (31)
 |-
 | <math>K(k)</math> || abgeregelte PV-Leistung || kW || nur aus verbleibendem PV-Überschuss
 |-
-| <math>G(k)</math> || Netzleistung am gemeinsamen Anschluss, positiv Bezug || kW || (30)
+| <math>G(k)</math> || Netzleistung am gemeinsamen Anschluss, positiv Bezug || kW || (32)
 |-
-| <math>P_{\mathrm{imp}}(k)</math>, <math>P_{\mathrm{exp}}(k)</math> || Netzbezug und Netzeinspeisung, beide nicht negativ || kW || (31)
+| <math>P_{\mathrm{imp}}(k)</math>, <math>P_{\mathrm{exp}}(k)</math> || Netzbezug und Netzeinspeisung, beide nicht negativ || kW || (33)
 |-
-| <math>n(k)</math> || Netzlast ohne Batterie || kW || (32)
+| <math>n(k)</math> || Netzlast ohne Batterie || kW || (34)
 |-
-| <math>p_{\mathrm{soll}}(k)</math> || Gesamtanforderung der Flotte, positiv entladen || kW || (33)
+| <math>p_{\mathrm{soll}}(k)</math> || Gesamtanforderung der Flotte, positiv entladen || kW || (35)
 |-
-| <math>c_{\mathrm{deckel}}(k)</math> || Ladedeckel der Lastspitzenkappung || kW || (34)
+| <math>c_{\mathrm{deckel}}(k)</math> || Ladedeckel der Lastspitzenkappung || kW || (36)
 |-
-| <math>z(k)</math>, <math>g(k)</math> || Binärvariablen für Batterie- und Netzrichtung || — || (36)
+| <math>z(k)</math>, <math>g(k)</math> || Binärvariablen für Batterie- und Netzrichtung || — || (38)
 |-
-| <math>z_{\mathrm{aeq},j}</math> || äquivalente Vollzyklen der Einheit || — || (38)
+| <math>z_{\mathrm{aeq},j}</math> || äquivalente Vollzyklen der Einheit || — || (40)
 |-
-| <math>D_j</math> || Miner-Schaden der Einheit || — || (39)
+| <math>D_j</math> || Miner-Schaden der Einheit || — || (41)
 |-
-| <math>I_{\mathrm{F}}</math> || Investition der ganzen Flotte || € || (41)
+| <math>I_{\mathrm{F}}</math> || Investition der ganzen Flotte || € || (43)
 |-
-| <math>O(a)</math>, <math>R(a)</math> || Betriebsaufwand und Stromrechnung des Projektjahrs || €/a || (42) und (43)
+| <math>O(a)</math>, <math>R(a)</math> || Betriebsaufwand und Stromrechnung des Projektjahrs || €/a || (44) und (45)
 |-
-| <math>\mathrm{CF}(a)</math> || Jahresüberschuss gegenüber der Referenz ohne Speicher || €/a || (44)
+| <math>\mathrm{CF}(a)</math> || Jahresüberschuss gegenüber der Referenz ohne Speicher || €/a || (46)
 |-
-| <math>\mathrm{NPV}_{\mathrm{F}}</math> || Kapitalwert der Flotte gegenüber „ohne Speicher" || € || (45)
+| <math>\mathrm{NPV}_{\mathrm{F}}</math> || Kapitalwert der Flotte gegenüber „ohne Speicher" || € || (47)
 |-
-| <math>D(k)</math> || verfügbare Entladeleistung der ganzen Flotte im Intervall || kW || (51)
+| <math>D(k)</math> || verfügbare Entladeleistung der ganzen Flotte im Intervall || kW || (53)
 |-
-| <math>H(k)</math> || geltende Entladeschwelle der '''Ratsche''' — sie kann im Lauf nur steigen || kW || (52)
+| <math>H(k)</math> || geltende Entladeschwelle der '''Ratsche''' — sie kann im Lauf nur steigen || kW || (54)
 |-
-| <math>H_{\mathrm{end}}</math> || kausal erreichte Schwelle am Ende des Laufs || kW || (53)
+| <math>H_{\mathrm{end}}</math> || kausal erreichte Schwelle am Ende des Laufs || kW || (55)
 |}
 
 == Rechenweg ==
@@ -346,11 +350,28 @@ Sie ist für alle Strategien dieselbe und teilt Last, PV und BHKW auf:
 
 (7) sagt: '''das BHKW deckt vorrangig'''. Überschuss <math>E_{\mathrm{quelle}}</math> und Defizit <math>E_{\mathrm{defizit}}</math> schließen einander konstruktiv aus — Laden und Entladen im selben Intervall ist damit unmöglich. Welche Quellen zulässig sind (<math>\chi = 1</math>) und welche nicht (<math>\chi = 0</math>), sagt die Variante.
 
+=== Schritt 2a — Standby und Selbstentladung ===
+
+Die '''Selbstentladung''' zehrt zu Beginn jedes Intervalls am Inhalt, höchstens bis zur unteren Grenze des Bands:
+
+: <math>\displaystyle \Delta E_{\mathrm{SE}}(k) = \min\left( \mathrm{SOC}(k) \cdot \frac{s_{\mathrm{SE}}}{100} \cdot \frac{\Delta t}{730\,\mathrm{h}} , \; \mathrm{SOC}(k) - \mathrm{SOC}_{\mathrm{min}} \right)</math> &nbsp;&nbsp;(12)
+:: <math>\Delta E_{\mathrm{SE}}(k)</math> – Selbstentladung im Intervall [kWh]
+:: <math>s_{\mathrm{SE}}</math> – Selbstentladung je Monat [%]
+:: <math>730\,\mathrm{h}</math> – Stunden eines mittleren Monats (8 760 / 12)
+
+Der '''Standby''' des Speichersystems ist eine Last hinter dem Speicher. Er wird aus dem PV-Überschuss gedeckt, der nach der Ladung bleibt, der Rest aus dem Netz — nie aus der Batterie:
+
+: <math>\displaystyle E_{\mathrm{sb,PV}}(k) = \min\left( P_{\mathrm{sb}} \cdot \Delta t , \; \max\left( 0 , E_{\mathrm{pv}}(k) - E_{\mathrm{last}}(k) - E_{\mathrm{ch}}(k) \right) \right) \; ; \quad E_{\mathrm{sb,Netz}}(k) = P_{\mathrm{sb}} \cdot \Delta t - E_{\mathrm{sb,PV}}(k)</math> &nbsp;&nbsp;(13)
+:: <math>E_{\mathrm{sb,PV}}(k)</math>, <math>E_{\mathrm{sb,Netz}}(k)</math> – Standby aus PV-Überschuss bzw. aus dem Netz [kWh]
+:: <math>E_{\mathrm{ch}}(k)</math> – Ladung des Intervalls [kWh]
+
+Der Netzanteil steht im Netzbezug des Laufs, der PV-Anteil fehlt in der Einspeisung; der Fahrplan des Speichers bleibt unberührt. Mit <math>P_{\mathrm{sb}} = 0</math> und <math>s_{\mathrm{SE}} = 0</math> rechnet der Speicher wie ohne beide Felder.
+
 === Schritt 3 — Dispatch nach Betriebsstrategie ===
 
 '''Dauernutzung''' (Vorgabe): laden aus Überschuss, entladen gegen die Residuallast.
 
-: <math>\displaystyle E_{\mathrm{ch}}(k) \le \min\left( E_{\mathrm{quelle}}(k) , P \cdot \Delta t , \frac{\mathrm{SOC}_{\mathrm{max}} - \mathrm{SOC}(k-1)}{\eta_{\mathrm{ch}}} \right) \; ; \quad \mathrm{SOC}(k) = \mathrm{SOC}(k-1) + E_{\mathrm{ch}}(k) \cdot \eta_{\mathrm{ch}}</math> &nbsp;&nbsp;(12)
+: <math>\displaystyle E_{\mathrm{ch}}(k) \le \min\left( E_{\mathrm{quelle}}(k) , P \cdot \Delta t , \frac{\mathrm{SOC}_{\mathrm{max}} - \mathrm{SOC}(k-1)}{\eta_{\mathrm{ch}}} \right) \; ; \quad \mathrm{SOC}(k) = \mathrm{SOC}(k-1) + E_{\mathrm{ch}}(k) \cdot \eta_{\mathrm{ch}}</math> &nbsp;&nbsp;(14)
 :: <math>E_{\mathrm{ch}}(k)</math> – Ladeenergie des Intervalls, AC-seitig [kWh]
 :: <math>E_{\mathrm{quelle}}(k)</math> – zugelassener Überschuss aus (11) [kWh]
 :: <math>P</math> – Ladeleistung des Speichers [kW]
@@ -359,7 +380,7 @@ Sie ist für alle Strategien dieselbe und teilt Last, PV und BHKW auf:
 :: <math>\mathrm{SOC}(k-1)</math> – Ladezustand am Ende des vorigen Intervalls [kWh]
 :: <math>\eta_{\mathrm{ch}}</math> – Ladewirkungsgrad aus (4) [–]
 
-: <math>\displaystyle E_{\mathrm{dis}}(k) \le \min\left( E_{\mathrm{defizit}}(k) , P \cdot \Delta t , \left( \mathrm{SOC}(k-1) - \mathrm{SOC}_{\mathrm{min}} \right) \cdot \eta_{\mathrm{dis}} \right) \; ; \quad \mathrm{SOC}(k) = \mathrm{SOC}(k-1) - \frac{E_{\mathrm{dis}}(k)}{\eta_{\mathrm{dis}}}</math> &nbsp;&nbsp;(13)
+: <math>\displaystyle E_{\mathrm{dis}}(k) \le \min\left( E_{\mathrm{defizit}}(k) , P \cdot \Delta t , \left( \mathrm{SOC}(k-1) - \mathrm{SOC}_{\mathrm{min}} \right) \cdot \eta_{\mathrm{dis}} \right) \; ; \quad \mathrm{SOC}(k) = \mathrm{SOC}(k-1) - \frac{E_{\mathrm{dis}}(k)}{\eta_{\mathrm{dis}}}</math> &nbsp;&nbsp;(15)
 :: <math>E_{\mathrm{dis}}(k)</math> – Entladeenergie des Intervalls, AC-seitig [kWh]
 :: <math>E_{\mathrm{defizit}}(k)</math> – Residuallast aus (10) [kWh]
 :: <math>P</math> – Entladeleistung des Speichers [kW]
@@ -368,7 +389,7 @@ Sie ist für alle Strategien dieselbe und teilt Last, PV und BHKW auf:
 :: <math>\mathrm{SOC}_{\mathrm{min}}</math> – untere Grenze des Ladezustands [kWh]
 :: <math>\eta_{\mathrm{dis}}</math> – Entladewirkungsgrad aus (4) [–]
 
-'''Preissteuerung / Arbitrage''': Zuerst plant ein Vorlauf die Netzpfade des ganzen Jahres (rollierend über 24-Stunden-Fenster mit vollständiger Pfadprüfung), dann fährt der Dispatch diesen Plan ab. Der '''Eigenverbrauchsfluss hat Vorrang''' und läuft unverändert nach (12) und (13); die Netzpfade — Netzladung zum Ladepreis, Verkauf zum Erlöspreis — bekommen nur, was im Intervall danach frei bleibt. Sind weder Netzladung noch Netzentladung zugelassen, ist das Ergebnis '''bitgleich''' zur Dauernutzung.
+'''Preissteuerung / Arbitrage''': Zuerst plant ein Vorlauf die Netzpfade des ganzen Jahres (rollierend über 24-Stunden-Fenster mit vollständiger Pfadprüfung), dann fährt der Dispatch diesen Plan ab. Der '''Eigenverbrauchsfluss hat Vorrang''' und läuft unverändert nach (14) und (15); die Netzpfade — Netzladung zum Ladepreis, Verkauf zum Erlöspreis — bekommen nur, was im Intervall danach frei bleibt. Sind weder Netzladung noch Netzentladung zugelassen, ist das Ergebnis '''bitgleich''' zur Dauernutzung.
 
 Jede andere Berechnungsart fällt protokolliert auf die Dauernutzung zurück: Ein Lauf soll nie daran scheitern, dass eine Variante eine Ausbaustufe anfordert, die das Programm noch nicht kann.
 
@@ -378,9 +399,9 @@ Daneben gibt es einen '''Excel-Kompatibilitätsmodus''' — die zeichengetreue N
 
 Bewertet wird die '''AC-seitige''' Energie. Die Entladung mit dem Bezugspreis (vermiedener Netzbezug), die Ladung nach der Merit-Order '''PV vor BHKW''' — erst der PV-Anteil bis zur Ladegrenze, der Rest aus dem BHKW-Überschuss:
 
-: <math>\displaystyle F(k) = \frac{E_{\mathrm{dis}}(k) \cdot p_{\mathrm{bez}}(k)}{100} - \frac{E_{\mathrm{pv,ant}}(k) \cdot v_{\mathrm{pv}}(k)}{100} - \frac{E_{\mathrm{bhkw,ant}}(k) \cdot v_{\mathrm{bhkw}}(k)}{100}</math> &nbsp;&nbsp;(14)
+: <math>\displaystyle F(k) = \frac{E_{\mathrm{dis}}(k) \cdot p_{\mathrm{bez}}(k)}{100} - \frac{E_{\mathrm{pv,ant}}(k) \cdot v_{\mathrm{pv}}(k)}{100} - \frac{E_{\mathrm{bhkw,ant}}(k) \cdot v_{\mathrm{bhkw}}(k)}{100}</math> &nbsp;&nbsp;(16)
 :: <math>F(k)</math> – Geldwert des Intervalls [€]
-:: <math>E_{\mathrm{dis}}(k)</math> – Entladeenergie des Intervalls aus (13) [kWh]
+:: <math>E_{\mathrm{dis}}(k)</math> – Entladeenergie des Intervalls aus (15) [kWh]
 :: <math>p_{\mathrm{bez}}(k)</math> – Bezugspreis [ct/kWh]
 :: <math>E_{\mathrm{pv,ant}}(k)</math>, <math>E_{\mathrm{bhkw,ant}}(k)</math> – Aufteilung der Ladung nach der Merit-Order PV vor BHKW [kWh]
 :: <math>v_{\mathrm{pv}}(k)</math>, <math>v_{\mathrm{bhkw}}(k)</math> – Einspeisevergütung je Quelle [ct/kWh]
@@ -390,61 +411,61 @@ Die Division durch 100 rechnet Cent in Euro um. Die Ladung kostet also die '''en
 
 === Schritt 5 — Kennzahlen und Wirtschaftlichkeit ===
 
-: <math>\displaystyle z_{\mathrm{aeq}} = \frac{E_{\mathrm{dis,DC}}}{C_{\mathrm{nutz}}}</math> &nbsp;&nbsp;(15)
+: <math>\displaystyle z_{\mathrm{aeq}} = \frac{E_{\mathrm{dis,DC}}}{C_{\mathrm{nutz}}}</math> &nbsp;&nbsp;(17)
 :: <math>z_{\mathrm{aeq}}</math> – äquivalente Vollzyklen des Jahres [–]
 :: <math>E_{\mathrm{dis,DC}}</math> – entnommene Energie des Jahres, DC-seitig [kWh]
 :: <math>C_{\mathrm{nutz}}</math> – nutzbare Kapazität aus (3) [kWh]
 
-: <math>\displaystyle E_{\mathrm{a,1}} = \sum_{k=1}^{K} F(k)</math> &nbsp;&nbsp;(16)
+: <math>\displaystyle E_{\mathrm{a,1}} = \sum_{k=1}^{K} F(k)</math> &nbsp;&nbsp;(18)
 :: <math>E_{\mathrm{a,1}}</math> – Ertrag im Referenzjahr [€/a]
-:: <math>F(k)</math> – Geldwert eines Intervalls aus (14) [€]
+:: <math>F(k)</math> – Geldwert eines Intervalls aus (16) [€]
 :: <math>K</math> – Zahl der Intervalle des Jahres [–], Konstante 35 040
 
-: <math>\displaystyle a(i,N) = \begin{cases} \frac{i}{1 - \left( 1 + i \right)^{-N}} & i > 0 \\ \frac{1}{N} & i = 0 \end{cases}</math> &nbsp;&nbsp;(17)
+: <math>\displaystyle a(i,N) = \begin{cases} \frac{i}{1 - \left( 1 + i \right)^{-N}} & i > 0 \\ \frac{1}{N} & i = 0 \end{cases}</math> &nbsp;&nbsp;(19)
 :: <math>a(i,N)</math> – Annuitätsfaktor [1/a]
 :: <math>i</math> – Kapitalzins [–], Rückfall 0,03
 :: <math>N</math> – Nutzungsdauer [a], Rückfall 20
 
-: <math>\displaystyle A = I \cdot a(i,N)</math> &nbsp;&nbsp;(18)
+: <math>\displaystyle A = I \cdot a(i,N)</math> &nbsp;&nbsp;(20)
 :: <math>A</math> – Kapitaldienst [€/a]
 :: <math>I</math> – Investition aus (5) [€]
-:: <math>a(i,N)</math> – Annuitätsfaktor aus (17) [1/a]
+:: <math>a(i,N)</math> – Annuitätsfaktor aus (19) [1/a]
 
-: <math>\displaystyle \mathrm{RBF}(i,N) = \begin{cases} \frac{1 - \left( 1 + i \right)^{-N}}{i} & i > 0 \\ N & i = 0 \end{cases}</math> &nbsp;&nbsp;(19)
+: <math>\displaystyle \mathrm{RBF}(i,N) = \begin{cases} \frac{1 - \left( 1 + i \right)^{-N}}{i} & i > 0 \\ N & i = 0 \end{cases}</math> &nbsp;&nbsp;(21)
 :: <math>\mathrm{RBF}(i,N)</math> – Rentenbarwertfaktor [a]
 :: <math>i</math> – Kapitalzins [–]
 :: <math>N</math> – Nutzungsdauer [a]
 
-Mit Degradation <math>d</math> tritt der '''degradierte''' Rentenbarwertfaktor an die Stelle von (19):
+Mit Degradation <math>d</math> tritt der '''degradierte''' Rentenbarwertfaktor an die Stelle von (21):
 
-: <math>\displaystyle q = \frac{1 - d}{1 + i}</math> &nbsp;&nbsp;(20)
+: <math>\displaystyle q = \frac{1 - d}{1 + i}</math> &nbsp;&nbsp;(22)
 :: <math>q</math> – Hilfsgröße des degradierten Rentenbarwertfaktors [–]
 :: <math>d</math> – Degradation je Jahr [–]
 :: <math>i</math> – Kapitalzins [–]
 
-: <math>\displaystyle \mathrm{RBF}_{\mathrm{deg}} = \frac{1}{1 + i} \cdot \frac{1 - q^{N}}{1 - q}</math> &nbsp;&nbsp;(21)
+: <math>\displaystyle \mathrm{RBF}_{\mathrm{deg}} = \frac{1}{1 + i} \cdot \frac{1 - q^{N}}{1 - q}</math> &nbsp;&nbsp;(23)
 :: <math>\mathrm{RBF}_{\mathrm{deg}}</math> – degradierter Rentenbarwertfaktor [a]
 :: <math>i</math> – Kapitalzins [–]
-:: <math>q</math> – Hilfsgröße aus (20) [–]
+:: <math>q</math> – Hilfsgröße aus (22) [–]
 :: <math>N</math> – Nutzungsdauer [a]
 
-: <math>\displaystyle \mathrm{NPV} = E_{\mathrm{a,1}} \cdot \mathrm{RBF}_{\mathrm{deg}} - I</math> &nbsp;&nbsp;(22)
+: <math>\displaystyle \mathrm{NPV} = E_{\mathrm{a,1}} \cdot \mathrm{RBF}_{\mathrm{deg}} - I</math> &nbsp;&nbsp;(24)
 :: <math>\mathrm{NPV}</math> – Kapitalwert [€]
-:: <math>E_{\mathrm{a,1}}</math> – Ertrag im Referenzjahr aus (16) [€/a]
-:: <math>\mathrm{RBF}_{\mathrm{deg}}</math> – degradierter Rentenbarwertfaktor aus (21) [a]
+:: <math>E_{\mathrm{a,1}}</math> – Ertrag im Referenzjahr aus (18) [€/a]
+:: <math>\mathrm{RBF}_{\mathrm{deg}}</math> – degradierter Rentenbarwertfaktor aus (23) [a]
 :: <math>I</math> – Investition aus (5) [€]
 
-Die Grenzfälle sind ausdrücklich geregelt: <math>d = 0</math> führt (21) auf (19) zurück; <math>i = 0</math> und <math>d > 0</math> ergibt <math>\mathrm{RBF}_{\mathrm{deg}} = \frac{1 - \left( 1 - d \right)^{N}}{d}</math>; <math>d = 0</math> und <math>i = 0</math> ergibt <math>N</math>. Die '''Amortisationszeit''' <math>t_{\mathrm{A}}</math> wird daraus als Sekundärkennzahl je Auslegung ausgewiesen.
+Die Grenzfälle sind ausdrücklich geregelt: <math>d = 0</math> führt (23) auf (21) zurück; <math>i = 0</math> und <math>d > 0</math> ergibt <math>\mathrm{RBF}_{\mathrm{deg}} = \frac{1 - \left( 1 - d \right)^{N}}{d}</math>; <math>d = 0</math> und <math>i = 0</math> ergibt <math>N</math>. Die '''Amortisationszeit''' <math>t_{\mathrm{A}}</math> wird daraus als Sekundärkennzahl je Auslegung ausgewiesen.
 
 === Schritt 6 — Auslegungsoptimierung (getrennter Lauf) ===
 
 Die Auslegungssuche ist kein Teil des Simulationslaufs, sondern ein eigener Rechenlauf. Sie durchsucht zweistufig — Grobraster über den ganzen Suchraum, dann ein Feinraster um das Groboptimum, verfeinert wird die ausgewählte Größenachse (Kapazität oder Leistung) — und maximiert den '''Jahresüberschuss nach Kapitaldienst''':
 
-: <math>\displaystyle \Delta J(C,P) = E_{\mathrm{a,aeq}}(C,P) - \left[ c_{\mathrm{cap}} \cdot C + c_{\mathrm{pow}} \cdot P + I_{\mathrm{fix}} \right] \cdot a(i,N)</math> &nbsp;&nbsp;(23)
+: <math>\displaystyle \Delta J(C,P) = E_{\mathrm{a,aeq}}(C,P) - \left[ c_{\mathrm{cap}} \cdot C + c_{\mathrm{pow}} \cdot P + I_{\mathrm{fix}} \right] \cdot a(i,N)</math> &nbsp;&nbsp;(25)
 :: <math>\Delta J(C,P)</math> – Jahresüberschuss nach Kapitaldienst [€/a]
 :: <math>E_{\mathrm{a,aeq}}(C,P)</math> – Jahresertrag der Auslegung mit Kapazität <math>C</math> und Leistung <math>P</math> [€/a]
 :: <math>c_{\mathrm{cap}}</math>, <math>c_{\mathrm{pow}}</math>, <math>I_{\mathrm{fix}}</math> – Modul-, Leistungs- und feste Kosten [€/kWh, €/kW, €]
-:: <math>a(i,N)</math> – Annuitätsfaktor aus (17) [1/a]
+:: <math>a(i,N)</math> – Annuitätsfaktor aus (19) [1/a]
 :: <math>c_{\mathrm{ver}}</math> – Verschleißkosten je Zyklus [€/(kWh·Zyklus)]; der Verschleißterm ist wählbar und wird, wenn eingeschaltet, hier zusätzlich abgezogen
 
 Der Verschleißterm über <math>c_{\mathrm{ver}}</math> ist wählbar und '''standardmäßig aus'''. Die '''Amortisationszeit ist bewusst nicht die Zielfunktion''': Sie ignoriert die Nutzungsdauer <math>N</math> und liefert systematisch zu kleine Speicher; sie erscheint als Sekundärkennzahl je Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet wurde.
@@ -458,14 +479,14 @@ Als Größenachse wird entweder die Kapazität <math>E</math> in kWh oder die AC
 
 Investition und Betrieb beziehen ihre spezifischen Sätze unabhängig aus dem Kostenmodul der aktiven Speicheranlage oder aus dem Dialog. Für jeden Kandidaten werden neu berechnet:
 
-: <math>\displaystyle I = c_P \cdot P + c_E \cdot E</math> &nbsp;&nbsp;(24)
+: <math>\displaystyle I = c_P \cdot P + c_E \cdot E</math> &nbsp;&nbsp;(26)
 :: <math>I</math> – Investition des geprüften Kandidaten [€]
 :: <math>c_P</math> – Investitionssatz je Leistung [€/kW]
 :: <math>P</math> – AC-Nennleistung des Kandidaten [kW]
 :: <math>c_E</math> – Investitionssatz je Kapazität [€/kWh]
 :: <math>E</math> – Nennkapazität des Kandidaten [kWh]
 
-: <math>\displaystyle O = o_P \cdot P + o_E \cdot E + o_D \cdot Q_{\mathrm{Entladung}}</math> &nbsp;&nbsp;(25)
+: <math>\displaystyle O = o_P \cdot P + o_E \cdot E + o_D \cdot Q_{\mathrm{Entladung}}</math> &nbsp;&nbsp;(27)
 :: <math>O</math> – jährlicher Betriebsaufwand des Kandidaten [€/a]
 :: <math>o_P</math> – Betriebskostensatz je Leistung [€/(kW·a)]
 :: <math>o_E</math> – Betriebskostensatz je Kapazität [€/(kWh·a)]
@@ -476,7 +497,7 @@ Dabei bedeuten <math>c_P</math> und <math>c_E</math> die Investitionssätze in �
 
 Beispiel: 100 kWh zu 300 €/kWh und 50 kW zu 120 €/kW ergeben 36.000 € Investition. Bei 3 €/(kWh·a), 5 €/(kW·a) und 20.000 kWh Entladung zu 0,01 €/kWh entstehen 750 €/a Betriebskosten.
 
-Die Zielfunktion aus (23) wird um <math>O</math> vermindert. Der Kapitalwert wird um den Barwert des konstant angesetzten jährlichen Betriebskostenbetrags vermindert; die Amortisationswerte verwenden ebenfalls den Ertrag nach Betriebskosten. Der vorhandene Degradationsansatz bleibt auf der Ertragsseite wirksam. Der optionale Verschleißterm bleibt ein gesonderter Abzug in der Zielfunktion und darf nicht zugleich als derselbe Kostenanteil unter <math>o_D</math> angesetzt werden. Die vollständige Projektwirtschaftlichkeit bleibt eine eigene Bewertung.
+Die Zielfunktion aus (25) wird um <math>O</math> vermindert. Der Kapitalwert wird um den Barwert des konstant angesetzten jährlichen Betriebskostenbetrags vermindert; die Amortisationswerte verwenden ebenfalls den Ertrag nach Betriebskosten. Der vorhandene Degradationsansatz bleibt auf der Ertragsseite wirksam. Der optionale Verschleißterm bleibt ein gesonderter Abzug in der Zielfunktion und darf nicht zugleich als derselbe Kostenanteil unter <math>o_D</math> angesetzt werden. Die vollständige Projektwirtschaftlichkeit bleibt eine eigene Bewertung.
 
 '''Lastspitzenkappung in der erweiterten Auslegung:''' Die Regelung verwendet die Residuallast am Netzanschluss, also Bruttolast minus PV und gegebenenfalls BHKW. Die Änderung des tatsächlichen Netzbezugs wird je Viertelstunde mit ihrem tatsächlichen Bezugspreis bewertet. Beim Laden aus Erzeugungsüberschüssen wird entgangene Einspeisevergütung berücksichtigt.
 
@@ -498,31 +519,31 @@ Der Laufindex bleibt <math>k</math>, die Intervalldauer <math>\Delta t = 0{,}25<
 
 === Modell einer Einheit ===
 
-: <math>\displaystyle E_j(k+1) = E_j(k) + \Delta t \cdot \left( \eta_{\mathrm{c},j} \cdot c_j(k) - \frac{d_j(k)}{\eta_{\mathrm{d},j}} \right)</math> &nbsp;&nbsp;(26)
+: <math>\displaystyle E_j(k+1) = E_j(k) + \Delta t \cdot \left( \eta_{\mathrm{c},j} \cdot c_j(k) - \frac{d_j(k)}{\eta_{\mathrm{d},j}} \right)</math> &nbsp;&nbsp;(28)
 :: <math>E_j(k)</math> – Energie der Einheit <math>j</math> am Anfang des Intervalls [kWh]
 :: <math>\Delta t</math> – Dauer eines Intervalls [h], Konstante 0,25
 :: <math>\eta_{\mathrm{c},j}</math>, <math>\eta_{\mathrm{d},j}</math> – Lade- und Entladewirkungsgrad der Einheit [–], Vorgabe je 0,95
 :: <math>c_j(k)</math>, <math>d_j(k)</math> – ausgeführte Lade- und Entladeleistung, AC-seitig und nicht negativ [kW]
 
-: <math>\displaystyle E_{\mathrm{min},j} = s_{\mathrm{min},j} \cdot C_j \; ; \quad E_{\mathrm{max},j} = s_{\mathrm{max},j} \cdot C_j \; ; \quad E_{\mathrm{floor},j} = E_{\mathrm{min},j} + R_j</math> &nbsp;&nbsp;(27)
+: <math>\displaystyle E_{\mathrm{min},j} = s_{\mathrm{min},j} \cdot C_j \; ; \quad E_{\mathrm{max},j} = s_{\mathrm{max},j} \cdot C_j \; ; \quad E_{\mathrm{floor},j} = E_{\mathrm{min},j} + R_j</math> &nbsp;&nbsp;(29)
 :: <math>E_{\mathrm{min},j}</math>, <math>E_{\mathrm{max},j}</math> – technische Energiegrenzen der Einheit [kWh]
 :: <math>s_{\mathrm{min},j}</math>, <math>s_{\mathrm{max},j}</math> – nutzbares Ladezustandsband [–], Vorgabe 0,10…0,90
 :: <math>C_j</math> – Vollbereichskapazität der Einheit [kWh]
 :: <math>E_{\mathrm{floor},j}</math> – Entladeuntergrenze im Normalbetrieb [kWh]
 :: <math>R_j</math> – geschützte Peak-Reserve [kWh]
 
-: <math>\displaystyle c_{\mathrm{max},j}(k) = v_j(k) \cdot \min\left( P_{\mathrm{c},j} , \frac{E_{\mathrm{max},j} - E_j(k)}{\eta_{\mathrm{c},j} \cdot \Delta t} \right) \; ; \quad d_{\mathrm{max},j}(k) = v_j(k) \cdot \min\left( P_{\mathrm{d},j} , \frac{\left( E_j(k) - E_{\mathrm{floor},j} \right) \cdot \eta_{\mathrm{d},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(28)
+: <math>\displaystyle c_{\mathrm{max},j}(k) = v_j(k) \cdot \min\left( P_{\mathrm{c},j} , \frac{E_{\mathrm{max},j} - E_j(k)}{\eta_{\mathrm{c},j} \cdot \Delta t} \right) \; ; \quad d_{\mathrm{max},j}(k) = v_j(k) \cdot \min\left( P_{\mathrm{d},j} , \frac{\left( E_j(k) - E_{\mathrm{floor},j} \right) \cdot \eta_{\mathrm{d},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(30)
 :: <math>c_{\mathrm{max},j}(k)</math>, <math>d_{\mathrm{max},j}(k)</math> – höchste ausführbare Lade- und Entladeleistung des Intervalls [kW]
 :: <math>v_j(k)</math> – Verfügbarkeitsfaktor der Einheit, 0 bis 1 [–]
 :: <math>P_{\mathrm{c},j}</math>, <math>P_{\mathrm{d},j}</math> – Nennleistung je Richtung [kW]
-:: <math>E_{\mathrm{floor},j}</math> – Entladeuntergrenze aus (27) [kWh]
+:: <math>E_{\mathrm{floor},j}</math> – Entladeuntergrenze aus (29) [kWh]
 
-: <math>\displaystyle V_j(k) = \Delta t \cdot \left( \left( 1 - \eta_{\mathrm{c},j} \right) \cdot c_j(k) + \left( \frac{1}{\eta_{\mathrm{d},j}} - 1 \right) \cdot d_j(k) \right)</math> &nbsp;&nbsp;(29)
+: <math>\displaystyle V_j(k) = \Delta t \cdot \left( \left( 1 - \eta_{\mathrm{c},j} \right) \cdot c_j(k) + \left( \frac{1}{\eta_{\mathrm{d},j}} - 1 \right) \cdot d_j(k) \right)</math> &nbsp;&nbsp;(31)
 :: <math>V_j(k)</math> – Umwandlungsverlust der Einheit im Intervall [kWh]
 :: <math>\eta_{\mathrm{c},j}</math>, <math>\eta_{\mathrm{d},j}</math> – Lade- und Entladewirkungsgrad [–]
 :: <math>c_j(k)</math>, <math>d_j(k)</math> – ausgeführte Leistungen des Intervalls [kW]
 
-Negative Restmöglichkeiten in (28) werden auf null begrenzt. '''Ein Sollwert wird erst durch diese Grenzen zum Istwert''': Fortgeschrieben wird in (26) ausschließlich mit dem tatsächlich ausgeführten Wert. Ein nachträgliches Abschneiden des Ladezustands erzeugte oder vernichtete Energie und findet nicht statt.
+Negative Restmöglichkeiten in (30) werden auf null begrenzt. '''Ein Sollwert wird erst durch diese Grenzen zum Istwert''': Fortgeschrieben wird in (28) ausschließlich mit dem tatsächlich ausgeführten Wert. Ein nachträgliches Abschneiden des Ladezustands erzeugte oder vernichtete Energie und findet nicht statt.
 
 Bei einer '''tatsächlichen''' Peak-Anforderung darf die Ausführung die Reserve <math>R_j</math> freigeben und bis <math>E_{\mathrm{min},j}</math> entladen; die technische Mindestenergie bleibt dabei eingehalten. Der Fahrplaner hält die Reserve im Horizont dagegen konservativ vor — zwei verschiedene Verwendungen derselben Energie, bewusst unterschieden.
 
@@ -530,7 +551,7 @@ Der Hilfsverbrauch <math>A_j</math> zählt als '''zusätzliche Standortlast''' u
 
 === Die Flotte am Netzanschluss ===
 
-: <math>\displaystyle G(k) = P_{\mathrm{last}}(k) - P_{\mathrm{pv}}(k) - P_{\mathrm{bhkw}}(k) + K(k) + \sum_{j=1}^{m} \left( A_j + c_j(k) - d_j(k) \right)</math> &nbsp;&nbsp;(30)
+: <math>\displaystyle G(k) = P_{\mathrm{last}}(k) - P_{\mathrm{pv}}(k) - P_{\mathrm{bhkw}}(k) + K(k) + \sum_{j=1}^{m} \left( A_j + c_j(k) - d_j(k) \right)</math> &nbsp;&nbsp;(32)
 :: <math>G(k)</math> – Netzleistung am gemeinsamen Anschluss, positiv Bezug [kW]
 :: <math>P_{\mathrm{last}}(k)</math> – Bruttolast des Standorts [kW]
 :: <math>P_{\mathrm{pv}}(k)</math>, <math>P_{\mathrm{bhkw}}(k)</math> – verfügbare PV- und BHKW-Leistung [kW]
@@ -538,10 +559,10 @@ Der Hilfsverbrauch <math>A_j</math> zählt als '''zusätzliche Standortlast''' u
 :: <math>A_j</math> – Hilfsverbrauch der Einheit [kW]
 :: <math>m</math> – Zahl der Einheiten der Flotte [–]
 
-: <math>\displaystyle P_{\mathrm{imp}}(k) = \max\left( G(k) , 0 \right) \; ; \quad P_{\mathrm{exp}}(k) = \max\left( -G(k) , 0 \right)</math> &nbsp;&nbsp;(31)
+: <math>\displaystyle P_{\mathrm{imp}}(k) = \max\left( G(k) , 0 \right) \; ; \quad P_{\mathrm{exp}}(k) = \max\left( -G(k) , 0 \right)</math> &nbsp;&nbsp;(33)
 :: <math>P_{\mathrm{imp}}(k)</math> – Netzbezug des Intervalls [kW]
 :: <math>P_{\mathrm{exp}}(k)</math> – Netzeinspeisung des Intervalls [kW]
-:: <math>G(k)</math> – Netzleistung aus (30) [kW]
+:: <math>G(k)</math> – Netzleistung aus (32) [kW]
 
 Bezug und Einspeisung sind '''zwei getrennte, nicht negative Reihen'''; nur der Bezug geht in den Reststrombedarf des Projekts ein. Die Einspeisung wird ohne Doppelzählung in PV-, BHKW- und Batterieanteil zerlegt, die PV-Abregelung bleibt davon getrennt. Die Flotte lädt und entlädt nie gleichzeitig, und Bezug und Einspeisung schließen einander ebenso aus.
 
@@ -549,34 +570,34 @@ Die '''technischen''' Anschlussgrenzen <math>G_{\mathrm{imp}}</math> und <math>G
 
 === Die fünf Betriebsziele ===
 
-: <math>\displaystyle n(k) = P_{\mathrm{last}}(k) - P_{\mathrm{pv}}(k) - P_{\mathrm{bhkw}}(k) + \sum_{j=1}^{m} A_j</math> &nbsp;&nbsp;(32)
+: <math>\displaystyle n(k) = P_{\mathrm{last}}(k) - P_{\mathrm{pv}}(k) - P_{\mathrm{bhkw}}(k) + \sum_{j=1}^{m} A_j</math> &nbsp;&nbsp;(34)
 :: <math>n(k)</math> – Netzlast ohne Batterie [kW]
 :: <math>P_{\mathrm{last}}(k)</math> – Bruttolast des Standorts [kW]
 :: <math>P_{\mathrm{pv}}(k)</math>, <math>P_{\mathrm{bhkw}}(k)</math> – verfügbare PV- und BHKW-Leistung [kW]
 :: <math>A_j</math> – Hilfsverbrauch der Einheit [kW]
 
-: <math>\displaystyle p_{\mathrm{soll}}(k) = n(k) - H</math> &nbsp;&nbsp;(33)
+: <math>\displaystyle p_{\mathrm{soll}}(k) = n(k) - H</math> &nbsp;&nbsp;(35)
 :: <math>p_{\mathrm{soll}}(k)</math> – Gesamtanforderung an die Flotte: positiv entladen, negativ laden [kW]
-:: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
+:: <math>n(k)</math> – Netzlast ohne Batterie aus (34) [kW]
 :: <math>H</math> – wirtschaftliches Peak-Ziel [kW]
 
-: <math>\displaystyle c_{\mathrm{deckel}}(k) = \begin{cases} \max\left( 0 , H - n(k) \right) & \text{Netzladung erlaubt} \\ \max\left( 0 , -n(k) \right) & \text{sonst} \end{cases}</math> &nbsp;&nbsp;(34)
+: <math>\displaystyle c_{\mathrm{deckel}}(k) = \begin{cases} \max\left( 0 , H - n(k) \right) & \text{Netzladung erlaubt} \\ \max\left( 0 , -n(k) \right) & \text{sonst} \end{cases}</math> &nbsp;&nbsp;(36)
 :: <math>c_{\mathrm{deckel}}(k)</math> – höchste zulässige Ladeleistung der Flotte im Intervall [kW]
 :: <math>H</math> – Peak-Ziel [kW]
-:: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
+:: <math>n(k)</math> – Netzlast ohne Batterie aus (34) [kW]
 
-(33) und (34) sind die '''Lastspitzenkappung''': Über dem Ziel wird die Differenz entladen, unter dem Ziel wieder geladen — und zwar höchstens so viel, dass die Wiederaufladung '''keinen neuen Peak über <math>H</math>''' erzeugt. Das ist der erste Fall von (34). Ohne Freigabe der Netzladung gilt der zweite: Geladen wird nur aus verbleibendem Überschuss, also nur bei <math>n(k) < 0</math>.
+(35) und (36) sind die '''Lastspitzenkappung''': Über dem Ziel wird die Differenz entladen, unter dem Ziel wieder geladen — und zwar höchstens so viel, dass die Wiederaufladung '''keinen neuen Peak über <math>H</math>''' erzeugt. Das ist der erste Fall von (36). Ohne Freigabe der Netzladung gilt der zweite: Geladen wird nur aus verbleibendem Überschuss, also nur bei <math>n(k) < 0</math>.
 
 {| class="wikitable"
 ! Betriebsziel !! Was es tut !! Zukunftswissen
 |-
 | '''PV-Eigenverbrauch''' (reaktiv) || Überschuss sofort laden, bei Nettobedarf sofort entladen; die Gesamtanforderung ist <math>p_{\mathrm{soll}} = n(k)</math> || nein
 |-
-| '''Lastspitzenkappung''' || reaktiv am Netzanschlusspunkt gegen <math>H</math> nach (33) und (34) || nein
+| '''Lastspitzenkappung''' || reaktiv am Netzanschlusspunkt gegen <math>H</math> nach (35) und (36) || nein
 |-
 | '''PV-Prognoseplanung''' || plant lexikografisch: erst kleinster Netzbezug, dann kleinste PV-Abregelung, dann kleinste gespeicherte Energie über die Zeit || '''ja — Fahrplaner'''
 |-
-| '''Preisoptimierung / Arbitrage''' || plant die prognostizierten Arbeits-, Leistungs-, Export-, Verschleiß- und Endenergiekosten nach (37) || '''ja — Fahrplaner'''
+| '''Preisoptimierung / Arbitrage''' || plant die prognostizierten Arbeits-, Leistungs-, Export-, Verschleiß- und Endenergiekosten nach (39) || '''ja — Fahrplaner'''
 |-
 | '''Multi Use mit Peak-Priorität''' || plant zuerst die kleinste unvermeidbare Peak-Überschreitung, danach unter dieser Bedingung die Kosten || '''ja — Fahrplaner'''
 |}
@@ -589,35 +610,35 @@ Die ersten zwei Ziele sind '''reaktiv''': Sie entscheiden allein aus dem laufend
 
 Die Gesamtanforderung <math>p_{\mathrm{soll}}</math> eines '''reaktiven''' Ziels wird auf die Einheiten verteilt. Für ein planendes Ziel gilt das nicht — dort ist die Leistung jeder Einheit eine eigene Variable der Planung.
 
-: <math>\displaystyle d_j(k) = p_{\mathrm{soll}}(k) \cdot \frac{E_j(k) - E_{\mathrm{floor},j}}{\sum_{l=1}^{m} \left( E_l(k) - E_{\mathrm{floor},l} \right)}</math> &nbsp;&nbsp;(35)
+: <math>\displaystyle d_j(k) = p_{\mathrm{soll}}(k) \cdot \frac{E_j(k) - E_{\mathrm{floor},j}}{\sum_{l=1}^{m} \left( E_l(k) - E_{\mathrm{floor},l} \right)}</math> &nbsp;&nbsp;(37)
 :: <math>d_j(k)</math> – Entladeanteil der Einheit bei der Verteilung nach verfügbarer Kapazität [kW]
-:: <math>p_{\mathrm{soll}}(k)</math> – Gesamtanforderung aus (33) [kW]
+:: <math>p_{\mathrm{soll}}(k)</math> – Gesamtanforderung aus (35) [kW]
 :: <math>E_j(k)</math> – Energie der Einheit [kWh]
-:: <math>E_{\mathrm{floor},j}</math> – Entladeuntergrenze aus (27) [kWh]
+:: <math>E_{\mathrm{floor},j}</math> – Entladeuntergrenze aus (29) [kWh]
 :: <math>l</math> – Laufindex über die Einheiten der Verteilmenge [–]
 
 {| class="wikitable"
 ! Verteilung !! Regel !! Aussagegrenze
 |-
-| '''Nach verfügbarer Kapazität''' || anteilig nach (35) — beim Laden nach freiem Energieplatz statt nach verfügbarer Energie || kein exakter Ausgleich der Ladezustände
+| '''Nach verfügbarer Kapazität''' || anteilig nach (37) — beim Laden nach freiem Energieplatz statt nach verfügbarer Energie || kein exakter Ausgleich der Ladezustände
 |-
 | '''Kaskade''' || die Einheiten nacheinander auslasten, in stabiler Reihenfolge der Konfiguration || kein Zustandsmodell für Ruhen oder Schaltkosten
 |-
 | '''Nach Grenzkosten und Wirkungsgrad''' || beim Entladen nach <math>w_j</math> und <math>\eta_{\mathrm{d},j}</math> sortieren, beim Laden nach <math>\eta_{\mathrm{c},j}</math> || gierige Reihenfolge, keine garantierte Kostenoptimalität
 |}
 
-Jede Einheit wird '''zuerst''' durch Verfügbarkeit, Leistung, Ladezustand, Wirkungsgrad und Reserve nach (28) begrenzt. Eine begrenzte Einheit fällt aus der Verteilmenge, und ihr Rest geht deterministisch an die übrigen: 40&nbsp;kW Anforderung an zwei gleich gewichtete Einheiten, von denen eine nur 5&nbsp;kW kann, ergeben '''5 und 35''' kW — nicht 5 und 20.
+Jede Einheit wird '''zuerst''' durch Verfügbarkeit, Leistung, Ladezustand, Wirkungsgrad und Reserve nach (30) begrenzt. Eine begrenzte Einheit fällt aus der Verteilmenge, und ihr Rest geht deterministisch an die übrigen: 40&nbsp;kW Anforderung an zwei gleich gewichtete Einheiten, von denen eine nur 5&nbsp;kW kann, ergeben '''5 und 35''' kW — nicht 5 und 20.
 
 === Prognoseplanung als gemischt-ganzzahliges Programm ===
 
 Die drei planenden Ziele lösen je Planungszeitpunkt ein '''gemischt-ganzzahliges lineares Programm''' über einen rollierenden Horizont. Ausgeführt werden nur die ersten Intervalle des Fahrplans, danach wird aus dem '''real erreichten''' Zustand neu geplant. Vorgabe sind 192 Intervalle Horizont (48&nbsp;h) und Neuplanung in jedem Intervall.
 
-: <math>\displaystyle 0 \le c_j(k) \le P_{\mathrm{c},j} \cdot z(k) \; ; \quad 0 \le d_j(k) \le P_{\mathrm{d},j} \cdot \left( 1 - z(k) \right) \; ; \quad z(k) \in \{0,1\}</math> &nbsp;&nbsp;(36)
+: <math>\displaystyle 0 \le c_j(k) \le P_{\mathrm{c},j} \cdot z(k) \; ; \quad 0 \le d_j(k) \le P_{\mathrm{d},j} \cdot \left( 1 - z(k) \right) \; ; \quad z(k) \in \{0,1\}</math> &nbsp;&nbsp;(38)
 :: <math>z(k)</math> – Binärvariable der Batterierichtung: 1 = laden, 0 = entladen [–]
 :: <math>c_j(k)</math>, <math>d_j(k)</math> – Lade- und Entladeleistung der Einheit [kW]
 :: <math>P_{\mathrm{c},j}</math>, <math>P_{\mathrm{d},j}</math> – Nennleistung je Richtung [kW]
 
-: <math>\displaystyle \min \sum_{k} \Delta t \cdot \left( p_{\mathrm{bez}}(k) \cdot P_{\mathrm{imp}}(k) - p_{\mathrm{exp}}(k) \cdot P_{\mathrm{exp}}(k) + \sum_{j=1}^{m} w_j \cdot d_j(k) \right) + p_{\mathrm{L}} \cdot B - v_{\mathrm{E}} \cdot E_{\mathrm{ende}}</math> &nbsp;&nbsp;(37)
+: <math>\displaystyle \min \sum_{k} \Delta t \cdot \left( p_{\mathrm{bez}}(k) \cdot P_{\mathrm{imp}}(k) - p_{\mathrm{exp}}(k) \cdot P_{\mathrm{exp}}(k) + \sum_{j=1}^{m} w_j \cdot d_j(k) \right) + p_{\mathrm{L}} \cdot B - v_{\mathrm{E}} \cdot E_{\mathrm{ende}}</math> &nbsp;&nbsp;(39)
 :: <math>p_{\mathrm{bez}}(k)</math> – Arbeitspreis des Netzbezugs [€/kWh]
 :: <math>p_{\mathrm{exp}}(k)</math> – Vergütung der Einspeisung, je Quelle getrennt [€/kWh]
 :: <math>w_j</math> – Grenzverschleiß der Einheit je abgegebener AC-Kilowattstunde [€/kWh]
@@ -632,72 +653,72 @@ Eine zweite Binärvariable <math>g(k)</math> verhindert gleichzeitigen Bezug und
 
 === Alterung und Reserven ===
 
-: <math>\displaystyle z_{\mathrm{aeq},j} = \frac{\sum_{k=1}^{K} \Delta t \cdot \left( \eta_{\mathrm{c},j} \cdot c_j(k) + \frac{d_j(k)}{\eta_{\mathrm{d},j}} \right)}{2 \cdot C_j}</math> &nbsp;&nbsp;(38)
+: <math>\displaystyle z_{\mathrm{aeq},j} = \frac{\sum_{k=1}^{K} \Delta t \cdot \left( \eta_{\mathrm{c},j} \cdot c_j(k) + \frac{d_j(k)}{\eta_{\mathrm{d},j}} \right)}{2 \cdot C_j}</math> &nbsp;&nbsp;(40)
 :: <math>z_{\mathrm{aeq},j}</math> – äquivalente Vollzyklen der Einheit im Jahr [–]
 :: <math>c_j(k)</math>, <math>d_j(k)</math> – Lade- und Entladeleistung des Intervalls [kW]
 :: <math>\eta_{\mathrm{c},j}</math>, <math>\eta_{\mathrm{d},j}</math> – Wirkungsgrade der Einheit [–]
 :: <math>C_j</math> – Referenzkapazität der Einheit [kWh]
 :: <math>K</math> – Zahl der Intervalle des Jahres [–], Konstante 35 040
 
-: <math>\displaystyle D_j = \sum_{u} \frac{n_{j,u}}{N_{\mathrm{EOL}}\left( \mathrm{DoD}_u \right)}</math> &nbsp;&nbsp;(39)
+: <math>\displaystyle D_j = \sum_{u} \frac{n_{j,u}}{N_{\mathrm{EOL}}\left( \mathrm{DoD}_u \right)}</math> &nbsp;&nbsp;(41)
 :: <math>D_j</math> – Miner-Schaden der Einheit [–]; 1 bedeutet das vereinbarte Lebensdauerende
 :: <math>n_{j,u}</math> – gezählte Zyklen der Tiefenklasse <math>u</math> aus der Rainflow-Auswertung [–]
 :: <math>N_{\mathrm{EOL}}</math> – Zyklen bis zum Lebensdauerende bei dieser Tiefe [–]
 :: <math>\mathrm{DoD}_u</math> – Zyklustiefe der Klasse [–]
 
-: <math>\displaystyle E_{\mathrm{res}} \ge \frac{P \cdot \tau}{\eta_{\mathrm{d}}}</math> &nbsp;&nbsp;(40)
+: <math>\displaystyle E_{\mathrm{res}} \ge \frac{P \cdot \tau}{\eta_{\mathrm{d}}}</math> &nbsp;&nbsp;(42)
 :: <math>E_{\mathrm{res}}</math> – Energie, die eine erwartete Spitze mindestens verlangt [kWh]
 :: <math>P</math> – Höhe der Spitze [kW]
 :: <math>\tau</math> – Dauer der Spitze [h]
 :: <math>\eta_{\mathrm{d}}</math> – Entladewirkungsgrad [–]
 
-'''Rainflow''' zerlegt den Ladezustandsverlauf in Voll- und Halbzyklen mit Tiefe und mittlerem Ladezustand; daraus entsteht (39). Die Lebensdauerkurve ist eine '''Eingabe''' der Einheit (Stützstellen Tiefe → Zyklen), und zwischen den Stützstellen wird logarithmisch interpoliert. '''Außerhalb der gelieferten Stützstellen bricht die Auswertung ab, statt zu extrapolieren''', und eine leere Kurve liefert die gezählten Zyklen '''ohne''' Schadenswert — eine scheinbar exakte Lebensdauer aus Daten, die es nicht gibt, wäre schlimmer als keine.
+'''Rainflow''' zerlegt den Ladezustandsverlauf in Voll- und Halbzyklen mit Tiefe und mittlerem Ladezustand; daraus entsteht (41). Die Lebensdauerkurve ist eine '''Eingabe''' der Einheit (Stützstellen Tiefe → Zyklen), und zwischen den Stützstellen wird logarithmisch interpoliert. '''Außerhalb der gelieferten Stützstellen bricht die Auswertung ab, statt zu extrapolieren''', und eine leere Kurve liefert die gezählten Zyklen '''ohne''' Schadenswert — eine scheinbar exakte Lebensdauer aus Daten, die es nicht gibt, wäre schlimmer als keine.
 
-(40) sagt, warum eine große Energiereserve allein nichts nützt: Zusätzlich muss die abrufbare '''Entladeleistung''' mindestens <math>P</math> erreichen, sonst lässt sich eine scharfe Spitze nicht kappen. Reserve (Energie oberhalb der Untergrenze) und Ladefreiraum (Platz unterhalb der Obergrenze) sind dabei ausdrücklich '''nicht''' dasselbe Band.
+(42) sagt, warum eine große Energiereserve allein nichts nützt: Zusätzlich muss die abrufbare '''Entladeleistung''' mindestens <math>P</math> erreichen, sonst lässt sich eine scharfe Spitze nicht kappen. Reserve (Energie oberhalb der Untergrenze) und Ladefreiraum (Platz unterhalb der Obergrenze) sind dabei ausdrücklich '''nicht''' dasselbe Band.
 
 === Kapitalwert je Kandidat ===
 
 Bewertet wird immer '''gegenüber der Referenz ohne Speicher''' — derselbe Standortdatensatz, derselbe Tarif, dieselben Netzgrenzen, nur ohne Einheiten.
 
-: <math>\displaystyle I_{\mathrm{F}} = \sum_{j=1}^{m} \left( I_{\mathrm{fix},j} + c_{\mathrm{cap},j} \cdot C_j + c_{\mathrm{pow},j} \cdot \max\left( P_{\mathrm{c},j} , P_{\mathrm{d},j} \right) \right)</math> &nbsp;&nbsp;(41)
+: <math>\displaystyle I_{\mathrm{F}} = \sum_{j=1}^{m} \left( I_{\mathrm{fix},j} + c_{\mathrm{cap},j} \cdot C_j + c_{\mathrm{pow},j} \cdot \max\left( P_{\mathrm{c},j} , P_{\mathrm{d},j} \right) \right)</math> &nbsp;&nbsp;(43)
 :: <math>I_{\mathrm{F}}</math> – Investition der ganzen Flotte [€]
 :: <math>I_{\mathrm{fix},j}</math> – leistungs- und kapazitätsunabhängiger Anteil der Einheit [€]
 :: <math>c_{\mathrm{cap},j}</math>, <math>c_{\mathrm{pow},j}</math> – kapazitäts- und leistungsbezogene Investition [€/kWh, €/kW]
 :: <math>C_j</math> – Kapazität der Einheit [kWh]
 :: <math>P_{\mathrm{c},j}</math>, <math>P_{\mathrm{d},j}</math> – Nennleistung je Richtung [kW]
 
-: <math>\displaystyle O(a) = \sum_{j=1}^{m} \left( o_{\mathrm{fix},j} + o_{\mathrm{cap},j} \cdot C_j + o_{\mathrm{pow},j} \cdot \max\left( P_{\mathrm{c},j} , P_{\mathrm{d},j} \right) + o_{\mathrm{dur},j} \cdot Q_j(a) \right)</math> &nbsp;&nbsp;(42)
+: <math>\displaystyle O(a) = \sum_{j=1}^{m} \left( o_{\mathrm{fix},j} + o_{\mathrm{cap},j} \cdot C_j + o_{\mathrm{pow},j} \cdot \max\left( P_{\mathrm{c},j} , P_{\mathrm{d},j} \right) + o_{\mathrm{dur},j} \cdot Q_j(a) \right)</math> &nbsp;&nbsp;(44)
 :: <math>O(a)</math> – Betriebsaufwand des Projektjahrs <math>a</math> [€/a]
 :: <math>o_{\mathrm{fix},j}</math> – fester jährlicher Betriebsaufwand [€/a]
 :: <math>o_{\mathrm{cap},j}</math>, <math>o_{\mathrm{pow},j}</math> – kapazitäts- und leistungsbezogener Betriebsaufwand [€/(kWh·a), €/(kW·a)]
 :: <math>o_{\mathrm{dur},j}</math> – Durchsatzkosten je abgegebener AC-Kilowattstunde [€/kWh]
 :: <math>Q_j(a)</math> – AC-Entladeenergie der Einheit im Jahr [kWh]
 
-: <math>\displaystyle R(a) = \sum_{k=1}^{K} \Delta t \cdot \left( p_{\mathrm{bez}}(k) \cdot P_{\mathrm{imp}}(k) - p_{\mathrm{exp}}(k) \cdot P_{\mathrm{exp}}(k) \right) + p_{\mathrm{L}} \cdot \max_{k} P_{\mathrm{imp}}(k) + F</math> &nbsp;&nbsp;(43)
+: <math>\displaystyle R(a) = \sum_{k=1}^{K} \Delta t \cdot \left( p_{\mathrm{bez}}(k) \cdot P_{\mathrm{imp}}(k) - p_{\mathrm{exp}}(k) \cdot P_{\mathrm{exp}}(k) \right) + p_{\mathrm{L}} \cdot \max_{k} P_{\mathrm{imp}}(k) + F</math> &nbsp;&nbsp;(45)
 :: <math>R(a)</math> – Stromrechnung des Jahres [€/a]
 :: <math>p_{\mathrm{bez}}(k)</math> – Arbeitspreis des Netzbezugs [€/kWh]
 :: <math>p_{\mathrm{exp}}(k)</math> – Vergütung der Einspeisung, je Quelle getrennt [€/kWh]
-:: <math>P_{\mathrm{imp}}(k)</math>, <math>P_{\mathrm{exp}}(k)</math> – Bezug und Einspeisung aus (31) [kW]
+:: <math>P_{\mathrm{imp}}(k)</math>, <math>P_{\mathrm{exp}}(k)</math> – Bezug und Einspeisung aus (33) [kW]
 :: <math>p_{\mathrm{L}}</math> – Leistungspreis [€/kW], einmal je Abrechnungsperiode
 :: <math>F</math> – Fixkosten der Periode [€/a]
 
-: <math>\displaystyle \mathrm{CF}(a) = R_{\mathrm{ref}}(a) - R_{\mathrm{var}}(a) - O(a) - E_{\mathrm{ers}}(a) + v_{\mathrm{E}} \cdot \Delta E(a)</math> &nbsp;&nbsp;(44)
+: <math>\displaystyle \mathrm{CF}(a) = R_{\mathrm{ref}}(a) - R_{\mathrm{var}}(a) - O(a) - E_{\mathrm{ers}}(a) + v_{\mathrm{E}} \cdot \Delta E(a)</math> &nbsp;&nbsp;(46)
 :: <math>\mathrm{CF}(a)</math> – Jahresüberschuss gegenüber der Referenz [€/a]
-:: <math>R_{\mathrm{ref}}(a)</math>, <math>R_{\mathrm{var}}(a)</math> – Rechnung nach (43) ohne und mit Flotte [€/a]
-:: <math>O(a)</math> – Betriebsaufwand aus (42) [€/a]
+:: <math>R_{\mathrm{ref}}(a)</math>, <math>R_{\mathrm{var}}(a)</math> – Rechnung nach (45) ohne und mit Flotte [€/a]
+:: <math>O(a)</math> – Betriebsaufwand aus (44) [€/a]
 :: <math>E_{\mathrm{ers}}(a)</math> – Ersatzbeschaffung des Jahres [€/a]
 :: <math>v_{\mathrm{E}}</math> – Energie-Ausgleichswert [€/kWh]
 :: <math>\Delta E(a)</math> – Änderung der gespeicherten Energie im Jahr [kWh]
 
-: <math>\displaystyle \mathrm{NPV}_{\mathrm{F}} = -I_{\mathrm{F}} + \sum_{a=1}^{T} \frac{\mathrm{CF}(a)}{\left( 1 + i \right)^{a}} + \frac{W_T}{\left( 1 + i \right)^{T}}</math> &nbsp;&nbsp;(45)
+: <math>\displaystyle \mathrm{NPV}_{\mathrm{F}} = -I_{\mathrm{F}} + \sum_{a=1}^{T} \frac{\mathrm{CF}(a)}{\left( 1 + i \right)^{a}} + \frac{W_T}{\left( 1 + i \right)^{T}}</math> &nbsp;&nbsp;(47)
 :: <math>\mathrm{NPV}_{\mathrm{F}}</math> – Kapitalwert der Flotte gegenüber „ohne Speicher" [€]
-:: <math>I_{\mathrm{F}}</math> – Investition aus (41) [€]
-:: <math>\mathrm{CF}(a)</math> – Jahresüberschuss aus (44) [€/a]
+:: <math>I_{\mathrm{F}}</math> – Investition aus (43) [€]
+:: <math>\mathrm{CF}(a)</math> – Jahresüberschuss aus (46) [€/a]
 :: <math>i</math> – Kalkulationszins [–]
 :: <math>T</math> – finanzielle Projektlaufzeit [a]
 :: <math>W_T</math> – Restwert der Flotte am Ende der Laufzeit [€]
 
-'''Was die Rechnung ausdrücklich nicht tut.''' Sie addiert keine getrennt geschätzten Erlöse aus Batterieentladungen — bewertet werden die am '''Netzanschluss''' bezogenen und eingespeisten Mengen. Der Grenzverschleiß <math>w_j</math> aus (37) ist ein '''Lenkpreis''' der Planung und wird nicht zusätzlich als Auszahlung gebucht. Energieverluste und Hilfsverbrauch stecken schon in (43) und werden nicht noch einmal als pauschale Energiekosten abgezogen. Ein Batterieexport braucht einen '''eigenen endlichen Verkaufspreis'''; der Bezugspreis wird nie als Verkaufspreis verwendet. '''Einsparungen dürfen negativ sein''' — eine Fahrweise, die durch ungünstiges Nachladen einen höheren Peak verursacht, wird entsprechend schlechter bewertet und nicht auf null gekappt.
+'''Was die Rechnung ausdrücklich nicht tut.''' Sie addiert keine getrennt geschätzten Erlöse aus Batterieentladungen — bewertet werden die am '''Netzanschluss''' bezogenen und eingespeisten Mengen. Der Grenzverschleiß <math>w_j</math> aus (39) ist ein '''Lenkpreis''' der Planung und wird nicht zusätzlich als Auszahlung gebucht. Energieverluste und Hilfsverbrauch stecken schon in (45) und werden nicht noch einmal als pauschale Energiekosten abgezogen. Ein Batterieexport braucht einen '''eigenen endlichen Verkaufspreis'''; der Bezugspreis wird nie als Verkaufspreis verwendet. '''Einsparungen dürfen negativ sein''' — eine Fahrweise, die durch ungünstiges Nachladen einen höheren Peak verursacht, wird entsprechend schlechter bewertet und nicht auf null gekappt.
 
 Ein '''Teiljahr ist kein Jahrescashflow'''. Gelieferte Projektjahre müssen lückenlos und vollständig sein; jedes wird neu simuliert, und der End-Ladezustand jeder Einheit ist der Start-Ladezustand des Folgejahres. Ein einzelnes Referenzjahr wird nur dann über die Laufzeit vervielfacht, wenn das ausdrücklich eingeschaltet ist — und dann als vereinfachte '''Projektion''' gekennzeichnet.
 
@@ -705,7 +726,7 @@ Ein '''Teiljahr ist kein Jahrescashflow'''. Gelieferte Projektjahre müssen lüc
 
 Wie beim Einzelspeicher ist die Größensuche ein '''eigener Rechenlauf'''. Eine Suchachse ersetzt genau '''eine''' Einheit der Flotte; die übrigen bleiben fest, und die Anzahl darf auch null sein.
 
-'''Die Größensuche rechnet Geräte.''' Vorgegeben werden ein Bereich für die Kapazität in kWh und einer für die Entladeleistung in kW sowie die '''Quelle''': der Speicherbestand des Projekts oder die Stammdaten. Gerechnet wird, was in diesem Bestand steht — es wird nichts skaliert und nichts gerastert. Die C-Rate nach (46) ist damit keine Suchgröße, sondern eine Kennzahl, die sich aus jedem Gerät ergibt.
+'''Die Größensuche rechnet Geräte.''' Vorgegeben werden ein Bereich für die Kapazität in kWh und einer für die Entladeleistung in kW sowie die '''Quelle''': der Speicherbestand des Projekts oder die Stammdaten. Gerechnet wird, was in diesem Bestand steht — es wird nichts skaliert und nichts gerastert. Die C-Rate nach (48) ist damit keine Suchgröße, sondern eine Kennzahl, die sich aus jedem Gerät ergibt.
 
 '''Je Lauf wird genau eine Größe variiert.''' Welche, sagt die '''Suchmethode''':
 
@@ -719,13 +740,13 @@ Wie beim Einzelspeicher ist die Größensuche ein '''eigener Rechenlauf'''. Eine
 | '''Stückzahl suchen''' || die '''Stückzahl''' von–bis; '''Kapazität und Leistung bleiben''' die der Vorlage, es wird nichts skaliert || <math>a_{\max} - a_{\min} + 1</math>
 |}
 
-Die Gesamtzahl ist das Produkt über alle eingeschalteten Achsen, mal der Zahl der Betriebsziele. Die '''Kosten''' einer Bestückung sind die Kosten einer Einheit mal ihrer Stückzahl: Investition, Betrieb, Ersatz und Restwert gehen je Stück in (45) ein — deshalb ist der Kapitalwert über der Stückzahl keine Gerade, sondern kippt, sobald der zusätzliche Nutzen die zusätzliche Investition nicht mehr trägt.
+Die Gesamtzahl ist das Produkt über alle eingeschalteten Achsen, mal der Zahl der Betriebsziele. Die '''Kosten''' einer Bestückung sind die Kosten einer Einheit mal ihrer Stückzahl: Investition, Betrieb, Ersatz und Restwert gehen je Stück in (47) ein — deshalb ist der Kapitalwert über der Stückzahl keine Gerade, sondern kippt, sobald der zusätzliche Nutzen die zusätzliche Investition nicht mehr trägt.
 
 Ein Mischraster Stückzahl × Größe in EINEM Lauf gibt es nicht: Es vervielfachte die Kandidatenzahl und ließe sich weder als Karte noch als Kurve zeichnen. Wer beides prüfen will, fährt zwei Läufe.
 
 Eine Suchmethode ohne eine einzige eingeschaltete Achse wird '''benannt abgewiesen''' — ebenso ein Stückzahlbereich, dessen „bis" unter seinem „von" liegt, ein unbrauchbarer Größenbereich und eine Quelle, die kein rechenbares Gerät führt.
 
-: <math>\displaystyle P = E \cdot r \quad \text{bzw.} \quad E = \frac{P}{r}</math> &nbsp;&nbsp;(46)
+: <math>\displaystyle P = E \cdot r \quad \text{bzw.} \quad E = \frac{P}{r}</math> &nbsp;&nbsp;(48)
 :: <math>P</math> – AC-Nennleistung der Einheit [kW]
 :: <math>E</math> – Nennkapazität der Einheit [kWh]
 :: <math>r</math> – C-Rate [1/h]
@@ -736,21 +757,21 @@ Ein Gerät ist ein '''Treffer''', wenn seine Kapazität im Kapazitätsbereich ''
 
 Die Abweichung misst je Größe, wie weit das Gerät '''außerhalb''' seines Bereichs liegt, bezogen auf die Mitte des Bereichs; beide Anteile werden addiert:
 
-: <math>\displaystyle d_{x} = \frac{\max(0,\; x_{\min} - x) + \max(0,\; x - x_{\max})}{(x_{\min} + x_{\max}) / 2}</math> &nbsp;&nbsp;(47)
+: <math>\displaystyle d_{x} = \frac{\max(0,\; x_{\min} - x) + \max(0,\; x - x_{\max})}{(x_{\min} + x_{\max}) / 2}</math> &nbsp;&nbsp;(49)
 :: <math>d_{x}</math> – normierter Abstand der Größe <math>x</math> von ihrem Bereich [-]
 :: <math>x</math> – Kapazität [kWh] beziehungsweise Entladeleistung [kW] des Geräts
 :: <math>x_{\min}, x_{\max}</math> – Unter- und Obergrenze des zugehörigen Bereichs
 
-: <math>\displaystyle d = d_{E} + d_{P}</math> &nbsp;&nbsp;(48)
+: <math>\displaystyle d = d_{E} + d_{P}</math> &nbsp;&nbsp;(50)
 :: <math>d</math> – Abweichung des Geräts von der Vorgabe [-]; <math>d = 0</math> heißt Treffer
-:: <math>d_{E}</math> – Abstand der Kapazität nach (47)
-:: <math>d_{P}</math> – Abstand der Entladeleistung nach (47)
+:: <math>d_{E}</math> – Abstand der Kapazität nach (49)
+:: <math>d_{P}</math> – Abstand der Entladeleistung nach (49)
 
 Bezogen wird auf die '''Bereichsmitte''', weil Kilowattstunden und Kilowatt sonst nicht vergleichbar wären und weil ein Bereich zu einem Punkt zusammenfallen darf — seine Breite wäre dort null. '''Addiert''' wird, damit ein Gerät, das in beiden Größen danebenliegt, schlechter dasteht als eines, das nur in einer danebenliegt. Geordnet wird nach Abweichung, dann Kapazität, dann Entladeleistung, zuletzt nach der Kennung des Satzes in seiner Quelle: Zwei Läufe auf demselben Bestand liefern dieselbe Reihenfolge.
 
 Die Kandidatenzahl ist damit die Zahl der gefundenen Geräte, mal der Zahl der ausgewählten Betriebsziele:
 
-: <math>\displaystyle N = z \cdot \prod_{a} g_{a}</math> &nbsp;&nbsp;(49)
+: <math>\displaystyle N = z \cdot \prod_{a} g_{a}</math> &nbsp;&nbsp;(51)
 :: <math>N</math> – Zahl der zu rechnenden Kandidaten
 :: <math>g_{a}</math> – Zahl der gefundenen Geräte der Suchachse <math>a</math>
 :: <math>z</math> – Zahl der ausgewählten Betriebsziele, mindestens 1
@@ -766,7 +787,7 @@ Je Kandidat entstehen ohne zweiten Lauf:
 {| class="wikitable"
 ! Kennzahl !! Bedeutung
 |-
-| '''Kapitalwert''' || <math>\mathrm{NPV}_{\mathrm{F}}</math> nach (45) gegenüber „ohne Speicher"
+| '''Kapitalwert''' || <math>\mathrm{NPV}_{\mathrm{F}}</math> nach (47) gegenüber „ohne Speicher"
 |-
 | '''Ersparnis je Jahr''' || die Rechnungsdifferenz '''ohne''' Kapitaldienst — abzüglich Betrieb und Durchsatz, aber ohne Investition, Ersatz und Restwert
 |-
@@ -819,13 +840,13 @@ Der typische Fall sind '''drei Sperren zugleich''': ein fest geratenes Peak-Ziel
 
 === Peak-Ziel: Vorschlag und Bestimmung ===
 
-: <math>\displaystyle H_0 = \max\left( P_{\mathrm{ref}} - \sum_{j=1}^{m} P_{\mathrm{d},j} , \max_{\mathrm{Tag}} \min_{k \in \mathrm{Tag}} n(k) \right)</math> &nbsp;&nbsp;(50)
+: <math>\displaystyle H_0 = \max\left( P_{\mathrm{ref}} - \sum_{j=1}^{m} P_{\mathrm{d},j} , \max_{\mathrm{Tag}} \min_{k \in \mathrm{Tag}} n(k) \right)</math> &nbsp;&nbsp;(52)
 :: <math>H_0</math> – vorgeschlagenes Peak-Ziel [kW]
 :: <math>P_{\mathrm{ref}}</math> – Bezugsspitze der Referenz ohne Speicher [kW]
 :: <math>P_{\mathrm{d},j}</math> – Entladeleistung der Einheit [kW]
-:: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
+:: <math>n(k)</math> – Netzlast ohne Batterie aus (34) [kW]
 
-Der erste Term sagt, '''wie tief die Flotte überhaupt kappen kann'''. Der zweite — das Maximum der Tagesminima — verhindert ein Ziel, unter das die Last nie fällt: An einem solchen Tag wäre jede Wiederaufladung nach (34) ausgeschlossen. Jeder Vorschlag trägt eine Herleitungszeile im Klartext.
+Der erste Term sagt, '''wie tief die Flotte überhaupt kappen kann'''. Der zweite — das Maximum der Tagesminima — verhindert ein Ziel, unter das die Last nie fällt: An einem solchen Tag wäre jede Wiederaufladung nach (36) ausgeschlossen. Jeder Vorschlag trägt eine Herleitungszeile im Klartext.
 
 Liegt keine Zeitreihe vor, gilt ein '''benannter''' Rückfall: mit bekannter Bezugsspitze <math>\max\left( P_{\mathrm{ref}} - \sum_j P_{\mathrm{d},j} , 0{,}1 \cdot P_{\mathrm{ref}} \right)</math>, ohne sie die Konstante '''50&nbsp;kW'''. '''Gespeicherte Stände werden nie überschrieben''' — die Vorbelegung greift ausschließlich beim Anlegen einer neuen Flotte.
 
@@ -840,9 +861,9 @@ Der '''Start-Ladezustand''' bleibt beim Produktivstandard auf der unteren Marke.
 
 Ein '''festes''' Peak-Ziel hält die Schwelle das ganze Jahr. Kann die Flotte eine Spitze nicht halten, ist die Jahresspitze verloren — und die Regel entlädt danach trotzdem bei jeder kleineren Spitze weiter, hält den Ladezustand niedrig und verfehlt auch die nächste große Spitze. Beobachtet wurde genau das: Die Tagesspitzen einer Januarwoche wurden sauber gekappt, die große Spitze am siebten Tag traf auf einen leeren Speicher.
 
-Die '''Ratsche''' behebt das ohne jedes Zukunftswissen. Die Schwelle ist dann kein Parameter, sondern ein '''Zustand''', der im Lauf nur '''steigen''' kann: Vor jedem Intervall wird geprüft, ob die Flotte die anstehende Netzlast überhaupt bis auf <math>H</math> drücken '''kann'''; kann sie es nicht, wird <math>H</math> auf das Erreichbare nachgezogen. Erst danach gilt die Regel aus (33) und (34) unverändert — mit dem nachgezogenen <math>H</math>.
+Die '''Ratsche''' behebt das ohne jedes Zukunftswissen. Die Schwelle ist dann kein Parameter, sondern ein '''Zustand''', der im Lauf nur '''steigen''' kann: Vor jedem Intervall wird geprüft, ob die Flotte die anstehende Netzlast überhaupt bis auf <math>H</math> drücken '''kann'''; kann sie es nicht, wird <math>H</math> auf das Erreichbare nachgezogen. Erst danach gilt die Regel aus (35) und (36) unverändert — mit dem nachgezogenen <math>H</math>.
 
-: <math>\displaystyle D(k) = \sum_{j=1}^{m} \min\left( P_{\mathrm{d},j} \cdot v_j(k) , \frac{\left( E_j(k) - E_{\mathrm{min},j} \right) \cdot \eta_{\mathrm{dis},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(51)
+: <math>\displaystyle D(k) = \sum_{j=1}^{m} \min\left( P_{\mathrm{d},j} \cdot v_j(k) , \frac{\left( E_j(k) - E_{\mathrm{min},j} \right) \cdot \eta_{\mathrm{dis},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(53)
 :: <math>D(k)</math> – verfügbare Entladeleistung der ganzen Flotte im Intervall [kW]
 :: <math>P_{\mathrm{d},j}</math> – höchste Entladeleistung der Einheit [kW]
 :: <math>v_j(k)</math> – Verfügbarkeitsfaktor der Einheit, 0…1 [–]
@@ -851,21 +872,21 @@ Die '''Ratsche''' behebt das ohne jedes Zukunftswissen. Die Schwelle ist dann ke
 :: <math>\eta_{\mathrm{dis},j}</math> – Entladewirkungsgrad der Einheit [–]
 :: <math>\Delta t</math> – Länge des Intervalls, 0,25 [h]
 
-: <math>\displaystyle H(k) = \max\left( H(k-1) , n(k) - D(k) \right) , \quad H(0) = H_{\mathrm{start}}</math> &nbsp;&nbsp;(52)
+: <math>\displaystyle H(k) = \max\left( H(k-1) , n(k) - D(k) \right) , \quad H(0) = H_{\mathrm{start}}</math> &nbsp;&nbsp;(54)
 :: <math>H(k)</math> – die in diesem Intervall geltende Entladeschwelle [kW]
 :: <math>H(k-1)</math> – die Schwelle des vorigen Intervalls [kW]
-:: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
-:: <math>D(k)</math> – verfügbare Entladeleistung aus (51) [kW]
-:: <math>H_{\mathrm{start}}</math> – Startwert der Ratsche; Vorgabe ist die Grundlast, das Maximum der Tagesminima aus (50) [kW]
+:: <math>n(k)</math> – Netzlast ohne Batterie aus (34) [kW]
+:: <math>D(k)</math> – verfügbare Entladeleistung aus (53) [kW]
+:: <math>H_{\mathrm{start}}</math> – Startwert der Ratsche; Vorgabe ist die Grundlast, das Maximum der Tagesminima aus (52) [kW]
 
-<math>D(k)</math> ist '''genau''' die Entladegrenze der Ausführung — Leistung mal Verfügbarkeit, nutzbare Energie über der unteren Marke, Entladewirkungsgrad. Die '''Peak-Reserve''' ist bei <math>n(k) > H</math> definitionsgemäß freigegeben und geht deshalb in <math>D(k)</math> ein; die untere Marke ist dort <math>E_{\mathrm{min},j}</math> und nicht die um die Reserve angehobene Untergrenze aus (27).
+<math>D(k)</math> ist '''genau''' die Entladegrenze der Ausführung — Leistung mal Verfügbarkeit, nutzbare Energie über der unteren Marke, Entladewirkungsgrad. Die '''Peak-Reserve''' ist bei <math>n(k) > H</math> definitionsgemäß freigegeben und geht deshalb in <math>D(k)</math> ein; die untere Marke ist dort <math>E_{\mathrm{min},j}</math> und nicht die um die Reserve angehobene Untergrenze aus (29).
 
-: <math>\displaystyle M^{*} \le H_{\mathrm{end}} = H(K)</math> &nbsp;&nbsp;(53)
+: <math>\displaystyle M^{*} \le H_{\mathrm{end}} = H(K)</math> &nbsp;&nbsp;(55)
 :: <math>M^{*}</math> – kleinstes FESTES Ziel, das ein Jahr mit vollem Wissen gehalten wird (Bisektion) [kW]
 :: <math>H_{\mathrm{end}}</math> – die kausal erreichte Schwelle am Ende des Laufs [kW]
 :: <math>K</math> – Zahl der Intervalle des Rechenzeitraums [–]
 
-(53) gilt immer, und zwar aus einem einfachen Grund: Ein festes <math>M^{*}</math> ab dem ersten Intervall entlädt in jedem Intervall höchstens so viel wie die Ratsche — deren Schwelle liegt nie über <math>M^{*}</math>, solange sie nicht scheitert — und lädt mindestens so viel; sein Ladezustand liegt deshalb nie unter dem der Ratsche, und was <math>M^{*}</math> hält, hält sie auch. Die '''Differenz <math>H_{\mathrm{end}} - M^{*}</math> ist der Wert der Vorausschau''' — die Zahl, die sagt, ob sich ein Prognoseregler lohnen würde. Die Ergebnisansicht zeigt deshalb beide: '''„kausal erreicht“''' und '''„mit Vorausschau erreichbar“'''.
+(55) gilt immer, und zwar aus einem einfachen Grund: Ein festes <math>M^{*}</math> ab dem ersten Intervall entlädt in jedem Intervall höchstens so viel wie die Ratsche — deren Schwelle liegt nie über <math>M^{*}</math>, solange sie nicht scheitert — und lädt mindestens so viel; sein Ladezustand liegt deshalb nie unter dem der Ratsche, und was <math>M^{*}</math> hält, hält sie auch. Die '''Differenz <math>H_{\mathrm{end}} - M^{*}</math> ist der Wert der Vorausschau''' — die Zahl, die sagt, ob sich ein Prognoseregler lohnen würde. Die Ergebnisansicht zeigt deshalb beide: '''„kausal erreicht“''' und '''„mit Vorausschau erreichbar“'''.
 
 Die Ratsche ist '''kausal''' (sie kennt keine Zukunft), '''deterministisch''' und '''monoton'''; sie braucht weder einen Zielwert noch eine Bisektion und verschwendet keine Energie an Spitzen, die die Jahresspitze nicht mehr senken. Sie ist das Verhalten eines realen Reglers ohne Prognose.
 
@@ -874,9 +895,9 @@ Die Ratsche ist '''kausal''' (sie kennt keine Zukunft), '''deterministisch''' un
 |-
 | Bedeutung der eingegebenen Zahl || '''Startwert''' <math>H_{\mathrm{start}}</math> der Schwelle || das Ziel des ganzen Zeitraums
 |-
-| Vorgabe im Feld || die '''Grundlast''' (Maximum der Tagesminima) || der Vorschlag <math>H_0</math> nach (50)
+| Vorgabe im Feld || die '''Grundlast''' (Maximum der Tagesminima) || der Vorschlag <math>H_0</math> nach (52)
 |-
-| Schwelle im Lauf || steigt nach (52), wenn <math>n(k) - D(k) > H</math> || bleibt
+| Schwelle im Lauf || steigt nach (54), wenn <math>n(k) - D(k) > H</math> || bleibt
 |-
 | Ergebnis || <math>H_{\mathrm{end}}</math> — „kausal erreicht“ || die Bezugsspitze wird gegen <math>H</math> gehalten
 |-
@@ -919,13 +940,15 @@ Ein '''Eingabefehler''' ist etwas anderes als ein Prüfhinweis: Ein Ladezustands
 * '''Keine Alterung im Jahreslauf.''' 
 
 * '''Keine Temperaturabhängigkeit''', kein Batteriemanagement, keine Zellchemie.
-* '''Der Standby-Verbrauch wird nicht berücksichtigt''' 
+* '''Standby und Selbstentladung sind konstant''' — keine Abhängigkeit von Ladezustand oder Temperatur; der Standby läuft das ganze Jahr.
 
 * '''Netzladung und Netzverkauf''' werden in der Preissteuerung über die Freigaben der Variante gesteuert. Die Lastspitzenkappung kann den Speicher innerhalb ihres verfügbaren Leistungsspielraums aus dem Netz wieder aufladen.
 
-* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das Simulationsergebnis.
+* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das Simulationsergebnis. Ihr bester Rasterpunkt wird über ''„Beste Variante übernehmen"'' zur Flotte der Auslegung und für den Projektlauf aktiviert; gerechnet wird er erst im nächsten Projektlauf, damit das Simulationsergebnis immer das Ergebnis eines Laufs mit gespeicherten Eingaben bleibt.
 
 Zusätzlich für die '''Speicherflotte''':
+
+* '''Der Hilfsverbrauch einer Einheit ist ihr Standby.''' Er zählt als Standortlast am Netzanschluss; die Einheit übernimmt ihn aus dem Standby-Verbrauch des Katalogs, die Selbstentladung ebenso. Die '''Einspeisegrenze der Projekteinstellung''' wirkt im Projektlauf als weiche Grenze: Die Flotte lädt zuerst, darüber wird PV abgeregelt, die Variante bleibt zulässig. Die harte Einspeisegrenze des Netzblocks bleibt davon getrennt.
 
 * '''Die beste Variante gilt für das geprüfte endliche Raster''', nicht global. Zwischen zwei Stützstellen kann ein besserer Punkt liegen, den niemand gerechnet hat; ein zu großes Raster wird abgewiesen statt gekürzt.
 
@@ -946,12 +969,12 @@ Zusätzlich für die '''Speicherflotte''':
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Stromspeicher"''' — der Verlauf <math>\mathrm{SOC}(k)</math>, Lade- und Entladeenergie, äquivalente Vollzyklen <math>z_{\mathrm{aeq}}</math>, Geldwert und die  Kennzahlen der Wirtschaftlichkeit.
+* '''Simulationsergebnis, Reiter „Stromspeicher"''' — der Verlauf <math>\mathrm{SOC}(k)</math>, Lade- und Entladeenergie, äquivalente Vollzyklen <math>z_{\mathrm{aeq}}</math>, Geldwert und die  Kennzahlen der Wirtschaftlichkeit; mit Selbstentladung deren Jahressumme, mit Standby der '''Eigenverbrauch des Speichersystems''' und sein Netzanteil.
 
-* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauchsquote und Autarkie mit Speicherwirkung.
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauchsquote und Autarkie mit Speicherwirkung. Die Autarkie-Analyse rechnet mit der Kapazität der Stromspeicher des Projekts; führt das Projekt keinen, rechnet sie mit 0&nbsp;kWh — ohne Stromspeicher — und sagt es unter dem Feld. Eine andere Kapazität im Feld ist eine Was-wäre-wenn-Rechnung und wird nicht gespeichert.
 
 * '''Variantenvergleich der Speicher''' — dieselben Kennzahlen je Variante nebeneinander.
-* '''Auslegungsoptimierung''' — Heatmap über Kapazität oder Leistung und C-Rate, Bestpunkt nach (23) und Kennzahlen je Rasterpunkt.
+* '''Auslegungsoptimierung''' — Heatmap über Kapazität oder Leistung und C-Rate, Bestpunkt nach (25) und Kennzahlen je Rasterpunkt.
 
 * '''Simulationsprotokoll''' — jeder Rückfall (kein Speicher, keine Kapazität, 1‑C‑Annahme, Ersatz-SoC-Band, nicht umgesetzte Berechnungsart) und jede Rasterabweichung.
 

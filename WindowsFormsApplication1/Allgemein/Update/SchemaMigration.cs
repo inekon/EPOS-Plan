@@ -4783,6 +4783,264 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KOSTEN_STEMPEL = KostenStempelSchema.SCHRITT;
 
+        // ---- Stufe KP3 (Entwurf KP3 Abschnitt 4, Festlegung 23): die Aufheizoptimierung --------
+
+        /// <summary>
+        /// Schritt <see cref="AufheizvorgabeSchema.SCHRITT"/> — <b>die Aufheizoptimierung als
+        /// Projekteinstellung</b> (KP-S2). Er folgt auf <see cref="SCHRITT_KOSTEN_STEMPEL"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> fünf Spalten an <c>Tab_Einstellungen</c> — der Schalter
+        /// <c>Aufheizoptimierung</c> (0/1, Vorgabe 0) und die nullbaren <c>Aufheiz_Bemessung</c>,
+        /// <c>Aufheiz_Abzug_K</c>, <c>Aufheiz_Reserve</c>, <c>Aufheiz_Art</c> mit ihren Prüfklauseln;
+        /// NULL heißt „die Vorgabe". Die Anweisungen stehen bei <see cref="AufheizvorgabeSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jedes Projekt steht danach auf „aus".</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_VORGABE = AufheizvorgabeSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="AufheizErgebnisSchema.SCHRITT"/> — <b>die Ergebnisspalten der
+        /// Aufheizoptimierung</b> (KP-S3). Er folgt auf <see cref="SCHRITT_AUFHEIZ_VORGABE"/> und braucht
+        /// die Tabellen <c>Tab_ErgebnisGebaeude</c> (Schritt 107) und <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Reines DDL:</b> je vierzehn nullbare Spalten an beiden Tabellen (Zustand, Zeiten,
+        /// T_a,B, P_auf samt Quelle, Tageszähler, Stunden, Sprünge aus „aus", Kappungsstunden; am
+        /// Gebäude die Bemessung, an der Zone die Sommerlüftungsstunden). Die Anweisungen stehen bei
+        /// <see cref="AufheizErgebnisSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede vorhandene Ergebniszeile ist eine
+        /// Zeile ohne Aufheizrechnung.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_ERGEBNIS = AufheizErgebnisSchema.SCHRITT;
+
+        // ---- Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts des Heizkessels ----
+
+        /// <summary>
+        /// Schritt <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/> — <b>die Einheit des
+        /// Bereitschaftsverlusts</b> (Anwenderentscheid 02.10.2026: kW oder % der Nennleistung). Er
+        /// folgt auf <see cref="SCHRITT_AUFHEIZ_ERGEBNIS"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> die
+        /// Spalte <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %). Die
+        /// Anweisungen stehen bei <see cref="KesselBereitschaftEinheitSchema"/>, die Nummer allein
+        /// dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bekommt kW, die
+        /// Einheit, in der ihr Wert gerechnet wird; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT = KesselBereitschaftEinheitSchema.SCHRITT;
+
+        // ---- Entscheidungsvorlage Modellgrenzen, PV4: die Bodenalbedo je Anlage ----
+
+        /// <summary>
+        /// Schritt <see cref="AlbedoSchema.SCHRITT"/> — <b>die Bodenalbedo je Photovoltaik- und
+        /// Solarthermie-Anlage</b>. Er folgt auf <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Energieanlagen</c> die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1). Die Anweisung steht bei <see cref="AlbedoSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt NULL und
+        /// rechnet mit der Vorgabe 0,2; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_ALBEDO = AlbedoSchema.SCHRITT;
+
+        // ---- Welle M3a (Entscheidungsvorlage Modellgrenzen PW1 Stufe 1 und PW5): Prozesswärme ----
+
+        /// <summary>
+        /// Schritt <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/> — <b>das Temperaturpaar je
+        /// Prozess</b> (PW1 Stufe 1). Er folgt auf <see cref="SCHRITT_ALBEDO"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c> die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, beide oder keine,
+        /// Vorlauf nicht unter dem Rücklauf). Die Anweisungen stehen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Bestandszeile bleibt ohne Paar und
+        /// rechnet wie zuvor; eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_PROZESSWAERME_TEMPERATUR = ProzesswaermeTemperaturSchema.SCHRITT;
+        // ---- Welle M2 Solarthermie: Felder des Kollektorfelds und Bezugsfläche des Kollektorsatzes ----
+
+        /// <summary>
+        /// Schritt <see cref="SolarthermieFelderSchema.SCHRITT"/> — <b>die Felder des
+        /// Kollektorfelds</b> (Welle M2 der Entscheidungsvorlage Modellgrenzen: ST1, ST2, ST3 Stufe 1,
+        /// ST4, ST6). Er folgt auf <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Energieanlagen</c> die nullbaren Spalten
+        /// <c>Pumpenleistung_W</c>, <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>,
+        /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>, an
+        /// <c>Tab_Solarkollektoren_STAMM</c> und <c>Tab_Solarkollektoren</c> die Spalte
+        /// <c>Bezugsflaeche</c> (TEXT, Vorgabe apertur), alle mit Prüfklausel. Die Anweisungen stehen bei
+        /// <see cref="SolarthermieFelderSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Anlagenspalten rechnen ihre
+        /// Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche, mit der er rechnet.</para>
+        /// </summary>
+        public const int SCHRITT_SOLARTHERMIE_FELDER = SolarthermieFelderSchema.SCHRITT;
+
+        // ---- Welle M3b (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2): Bedarf ----
+
+        /// <summary>
+        /// Schritt <see cref="BedarfNetzKalenderSchema.SCHRITT"/> — <b>Netzverluste je Kanal,
+        /// Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile</b>. Er folgt auf
+        /// <see cref="SCHRITT_SOLARTHERMIE_FELDER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL:</b> die Tabelle <c>Tab_Betriebskalender</c>, acht nullbare Spalten an
+        /// <c>Tab_Einstellungen</c> und je Zuordnungstabelle die nullbare Spalte
+        /// <c>ID_Betriebskalender</c>. Die Anweisungen stehen bei
+        /// <see cref="BedarfNetzKalenderSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alles entsteht leer, und leer rechnet wie
+        /// zuvor; ein stehender Teil wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_BEDARF_NETZ_KALENDER = BedarfNetzKalenderSchema.SCHRITT;
+
+        // ---- Welle M4: Erzeuger in Teillast (Wärmepumpe und BHKW) ----
+
+        /// <summary>
+        /// Schritt <see cref="ErzeugerTeillastSchema.SCHRITT"/> — <b>die Teillastfelder von
+        /// Wärmepumpe und BHKW</b> (Welle M4 der Entscheidungsvorlage Modellgrenzen: WP1, BH1, BH2). Er
+        /// folgt auf <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_WP_STAMM</c> und <c>Tab_WP</c> die nullbaren Spalten
+        /// <c>Mindestleistung_kW</c> und <c>Taktverlustfaktor_Cd</c>, an <c>Tab_BHKW_STAMM</c> und
+        /// <c>Tab_BHKW</c> <c>Wirkungsgrad_el_Teillast50</c>, <c>Wirkungsgrad_th_Teillast50</c>,
+        /// <c>Anfahrverlust_kWh</c> und <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel. Die Anweisungen
+        /// stehen bei <see cref="ErzeugerTeillastSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Felder rechnen wie zuvor — keine
+        /// Taktrechnung der Wärmepumpe, Volllastwirkungsgrade und kein Takten beim BHKW.</para>
+        /// </summary>
+        public const int SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT;
+        // ---- Welle M5 Strom in Viertelstunden: Einspeisegrenze und Selbstentladung ----
+
+        /// <summary>
+        /// Schritt <see cref="StromViertelstundenSchema.SCHRITT"/> — <b>die Einspeisegrenze des Projekts
+        /// und die Selbstentladung des Stromspeichers</b> (Welle M5 der Entscheidungsvorlage Modellgrenzen:
+        /// PV3, SP1). Er folgt auf <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Einstellungen</c> die nullbaren Spalten
+        /// <c>Einspeisegrenze_Wert</c> und <c>Einspeisegrenze_Einheit</c>, an <c>Tab_Stromspeicher_STAMM</c>
+        /// und <c>Tab_Stromspeicher</c> die Spalte <c>Selbstentladung_Prozent_Monat</c>, alle mit
+        /// Prüfklausel. Die Anweisungen stehen bei <see cref="StromViertelstundenSchema"/>, die Nummer
+        /// allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten heißen keine
+        /// Einspeisegrenze und keine Selbstentladung.</para>
+        /// </summary>
+        public const int SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT;
+        // ---- Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle W1) ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferAuslegungSchema.SCHRITT"/> — <b>Pufferspeicher-Auslegung</b>. Er
+        /// folgt auf <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> die STRICT-Tabellen <c>Tab_PufferAuslegung</c> (je
+        /// Projektpuffer, NULL = Vorgabe) und <c>Tab_PufferAuslegungParameter_STAMM</c>, dazu die
+        /// Vorgabewerte per <c>INSERT OR IGNORE</c>. Die Anweisungen stehen bei
+        /// <see cref="PufferAuslegungSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Bestandszeile wird angefasst; die
+        /// Auslegung rechnet und schreibt nur auf Zuruf.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_AUSLEGUNG = PufferAuslegungSchema.SCHRITT;
+
+        // ---- Auftrag P671 (Register E30‑Q12, EZ‑24): Katalogempfehlung der Hilfsenergie auf Weg B ----
+
+        /// <summary>
+        /// Schritt <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/> — <b>die Katalogempfehlung der
+        /// Hilfsenergie auf Weg B</b> (Auftrag P671, Register E30‑Q12, EZ‑24). Er folgt auf
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG"/> ohne Reihenfolgebedingung (er berührt keine Spalte der
+        /// Teillastfelder, der Einspeisegrenze, der Selbstentladung und keine Tabelle der
+        /// Pufferauslegung); er setzt Schritt 94
+        /// (Bemessung Weg B der Saat) voraus, der immer vor ihm läuft.
+        ///
+        /// <para><b>Reines DML:</b> <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> der Pflichtzeilen
+        /// „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und „Hilfsenergiekosten (Strom)“ (Heizkessel,
+        /// 4–8 % → 1–2 %) in den Auslieferungsvorlagen (<c>ReadOnly = 1</c>), nur wo noch die alte
+        /// Spanne aus Weg A steht. Projektzeilen und eigene Vorlagen bleiben unberührt. Quelle
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>; die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (die Empfehlung ist Hinweis am Satzfeld), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_HILFSENERGIE_EMPFEHLUNG = HilfsenergieEmpfehlungNachzug.SCHRITT;
+
+        // ---- Welle M7 Speicher: Optionen des Pufferspeichers und thermische Desinfektion ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferOptionenSchema.SCHRITT"/> — <b>die Optionen des Pufferspeichers und die
+        /// thermische Desinfektion</b> (Welle M7 der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a),
+        /// PS5 (a), BW5). Er folgt auf <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Pufferspeicher</c> die nullbaren Spalten <c>Bereitschaft_Weg</c>,
+        /// <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>, <c>Frischwassermodul</c> und
+        /// <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c> die fünf Spalten <c>Desinfektion_*</c>, alle
+        /// mit Prüfklausel. Die Anweisungen stehen bei <see cref="PufferOptionenSchema"/>, die Nummer allein
+        /// dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten rechnen wie zuvor.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_OPTIONEN = PufferOptionenSchema.SCHRITT;
+
+        // ---- Welle M6: Katalog-Update (KU1 Stufe 1) und Erdreichpruefung im Ergebnis (EQ1) ----
+
+        /// <summary>
+        /// Schritt <see cref="KatalogfassungSchema.SCHRITT"/> — <b>die Katalogfassung und die
+        /// gespeicherte Erdreichprüfung</b> (Welle M6 der Entscheidungsvorlage Modellgrenzen). Er folgt
+        /// auf <see cref="SCHRITT_PUFFER_OPTIONEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> an den acht Katalogtabellen der Stufe 1 <c>Katalog_Schluessel</c>,
+        /// <c>Katalog_Pruefsumme</c>, <c>Katalog_Ausgelaufen</c> samt eindeutigem Teilindex, an
+        /// <c>Tab_Applikation</c> die <c>Katalogfassung</c>, die Tabellen <c>Tab_Katalogabgleich</c> und
+        /// <c>Tab_ErgebnisErdreich</c>; danach belegt die Saat Schlüssel und Prüfsumme der ausgelieferten
+        /// Sätze (<c>ReadOnly = 1</c>). Die Anweisungen stehen bei <see cref="KatalogfassungSchema"/>, die
+        /// Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich.
+        /// Den eigentlichen Abgleich mit dem Katalogpaket der Auslieferung macht nicht dieser Schritt,
+        /// sondern <c>Katalogabgleich.BeimStart</c> nach der Migration.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGFASSUNG = KatalogfassungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KatalogfassungStufe2Schema.SCHRITT"/> — <b>die Katalogfassung der übrigen
+        /// Kataloge</b> (Entscheidungsvorlage Modellgrenzen KU1 Stufe 2). Er folgt auf
+        /// <see cref="SCHRITT_KATALOGFASSUNG"/>, dessen Protokoll und Fassungsspalte er mitbenutzt.
+        ///
+        /// <para><b>DDL und Saat:</b> an den sechzehn Katalogtabellen der Stufe 2 dieselben drei
+        /// Katalogspalten samt Teilindex; danach belegt die Saat Schlüssel und Prüfsumme der
+        /// ausgelieferten Sätze. Klima- und Zapfprofilkatalog bleiben benannt ausgenommen.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGFASSUNG_STUFE2 = KatalogfassungStufe2Schema.SCHRITT;
+
+        // ---- Stufe KP3, Welle R5: Aufschlag und manuelle Aufheizzeit (E59, E60; KP-S4) ----
+
+        /// <summary>
+        /// Schritt <see cref="AufheizManuellSchema.SCHRITT"/> — <b>Aufschlag und manuelle Aufheizzeit der
+        /// Aufheizoptimierung</b> (Entscheid E59 samt Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4). Er
+        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/> und läuft als LETZTER Sichtdurchgang: Er baut die
+        /// Sicht <c>Abfrage_Projektgebaeude</c> zum achten Mal (103 Spalten).
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c> und
+        /// <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c>, an
+        /// <c>Tab_ErgebnisGebaeude</c> <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und
+        /// <c>Aufheizzuschlag_Kw</c>, an <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c>; der Zustand
+        /// <c>GEKOPPELT</c> der Zone per kleinem Neubau dieser einen Tabelle. Die Anweisungen stehen bei
+        /// <see cref="AufheizManuellSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Felder entstehen leer; KEIN DML an
+        /// Bestandsdaten.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6883,6 +7141,151 @@ namespace WindowsFormsApplication1
                         "am Kostenkatalog nach der Rechnung blieb ohne Hinweis. Die Datenbank stempelt solche " +
                         "Aenderungen jetzt selbst. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_KostenStempel),
+            // STUFE KP3 (Entwurf KP3 Abschnitt 4) - die Aufheizoptimierung als Projekteinstellung:
+            // fuenf Spalten an Tab_Einstellungen. REIN DDL; die Quelle ist AufheizvorgabeSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_VORGABE,
+                        "Tab_Einstellungen: Aufheizoptimierung (Aufheizoptimierung, Aufheiz_Bemessung, " +
+                        "Aufheiz_Abzug_K, Aufheiz_Reserve, Aufheiz_Art)",
+                        "Der Schalter der Aufheizoptimierung und ihre Bemessung haetten keinen Ort je Projekt. " +
+                        "Die Spalten entstehen mit dem Schalter aus und leer; leer rechnet die Vorgabe. KEIN " +
+                        "Rechenergebnis aendert sich.",
+                        Schritt_AufheizVorgabe),
+            // STUFE KP3 (Entwurf KP3 Abschnitt 4) - die Ergebnisspalten der Aufheizoptimierung: je
+            // vierzehn nullbare Spalten an Tab_ErgebnisGebaeude und Tab_ErgebnisZone. REIN DDL; die
+            // Quelle ist AufheizErgebnisSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_ERGEBNIS,
+                        "Tab_ErgebnisGebaeude und Tab_ErgebnisZone: Ergebnisspalten der Aufheizoptimierung",
+                        "Aufheizzeit, Aufheizleistung, Rampentage und Hinweiszaehler eines Laufs mit " +
+                        "Aufheizoptimierung haetten keinen Ort; Bedarfsdialog, Bericht und Vergleich koennten sie " +
+                        "nicht zeigen. Die Spalten entstehen leer. KEIN Rechenergebnis aendert sich.",
+                        Schritt_AufheizErgebnis),
+            // ANWENDERENTSCHEID 02.10.2026 - die Einheit des Bereitschaftsverlusts des Heizkessels:
+            // eine Spalte an Katalog und Projektkopie. REIN DDL; die Quelle ist
+            // KesselBereitschaftEinheitSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT,
+                        "Tab_Heizkessel_STAMM und Tab_Heizkessel: Einheit des Bereitschaftsverlusts " +
+                        "(Bereitschaft_Einheit, kW oder %)",
+                        "Der Bereitschaftsverlust liesse sich nur in kW erfassen; ein Datenblattwert in " +
+                        "Prozent der Nennleistung muesste von Hand umgerechnet werden. KEIN Rechenergebnis " +
+                        "aendert sich - jede Bestandszeile bekommt kW, die Einheit, in der sie rechnet.",
+                        Schritt_KesselBereitschaftEinheit),
+            // ENTSCHEIDUNGSVORLAGE MODELLGRENZEN, PV4 - die Bodenalbedo je Anlage: eine nullbare
+            // Spalte an Tab_Energieanlagen. REIN DDL; die Quelle ist AlbedoSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_ALBEDO,
+                        "Tab_Energieanlagen: Bodenalbedo je Anlage (Albedo, 0 bis 1, leer = 0,2)",
+                        "Die Bodenalbedo vor einer Photovoltaik- oder Solarthermie-Anlage liesse sich " +
+                        "nicht pflegen; Fassaden, helle Daecher und Schnee rechneten mit 0,2. Die Spalte " +
+                        "entsteht leer. KEIN Rechenergebnis aendert sich - leer rechnet die Vorgabe 0,2.",
+                        Schritt_Albedo),
+            // WELLE M3a (PW1 Stufe 1, PW5) - das Temperaturpaar je Prozess: zwei nullbare Spalten an
+            // Katalog und Projektkopie. Die Quelle ist ProzesswaermeTemperaturSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_PROZESSWAERME_TEMPERATUR,
+                        "Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme: Temperaturpaar je Prozess " +
+                        "(Vorlauf, Ruecklauf) und acht ausgelieferte Betriebsweisen",
+                        "Ein Prozess waere eine reine Waermemenge; welches Temperaturniveau er verlangt, " +
+                        "kaeme im Rechenweg nicht vor. KEIN Rechenergebnis aendert sich - jede " +
+                        "Bestandszeile bleibt ohne Temperaturpaar und rechnet wie zuvor.",
+                        Schritt_ProzesswaermeTemperatur),
+            // WELLE M2 SOLARTHERMIE - die Felder des Kollektorfelds an der Anlagenzeile und die
+            // Bezugsflaeche der Kennwerte am Kollektorsatz. REIN DDL; die Quelle ist
+            // SolarthermieFelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_SOLARTHERMIE_FELDER,
+                        "Tab_Energieanlagen: Felder des Kollektorfelds (Pumpenleistung_W, " +
+                        "Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K, " +
+                        "Arbeitstemperatur_Weg); Tab_Solarkollektoren(_STAMM): Bezugsflaeche",
+                        "Pumpenstrom, Verluste des Solarkreises, Graedigkeit, Spreizung und Arbeitstemperatur " +
+                        "des Kollektorfelds und die Bezugsflaeche der Kollektorkennwerte haetten keinen Ort. " +
+                        "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen ihre " +
+                        "Vorgaben, jeder Kollektorsatz bekommt die Aperturflaeche.",
+                        Schritt_SolarthermieFelder),
+            // WELLE M3b (BW4, PW2, BW2) - Netzverluste je Kanal, Zirkulation im Bestandsweg und
+            // Betriebskalender. Die Quelle ist BedarfNetzKalenderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BEDARF_NETZ_KALENDER,
+                        "Tab_Einstellungen, Tab_Betriebskalender und Zuordnungen der Bedarfsprofile: " +
+                        "Netzverluste je Kanal, Zirkulation, Betriebskalender",
+                        "Die Netzverluste gaelten nur als ein Projektwert, der Bestandsweg kennte keine " +
+                        "Zirkulation, und ein Wochenprofil liefe ohne Feiertage und Betriebsferien durch das " +
+                        "Jahr. KEIN Rechenergebnis aendert sich - alles entsteht leer und rechnet wie zuvor.",
+                        Schritt_BedarfNetzKalender),
+            // WELLE M4 - die Teillastfelder von Waermepumpe und BHKW an Katalog und Projektkopie.
+            // REIN DDL; die Quelle ist ErzeugerTeillastSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERZEUGER_TEILLAST,
+                        "Tab_WP(_STAMM): Mindestleistung_kW, Taktverlustfaktor_Cd; Tab_BHKW(_STAMM): " +
+                        "Wirkungsgrad_el_Teillast50, Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min",
+                        "Taktverlust der Waermepumpe, Teillastkennlinie und Takten des BHKW haetten keinen Ort. " +
+                        "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen wie zuvor.",
+                        Schritt_ErzeugerTeillast),
+            // WELLE M5 STROM IN VIERTELSTUNDEN - die Einspeisegrenze an der Projekteinstellung und die
+            // Selbstentladung am Stromspeicher. REIN DDL; die Quelle ist StromViertelstundenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROM_VIERTELSTUNDEN,
+                        "Tab_Einstellungen: Einspeisegrenze_Wert, Einspeisegrenze_Einheit; " +
+                        "Tab_Stromspeicher(_STAMM): Selbstentladung_Prozent_Monat",
+                        "Die Einspeisegrenze des Projekts und die Selbstentladung des Stromspeichers " +
+                        "haetten keinen Ort. KEIN Rechenergebnis aendert sich - die Felder entstehen leer " +
+                        "und heissen keine Grenze und keine Selbstentladung.",
+                        Schritt_StromViertelstunden),
+            // PUFFERSPEICHER-AUSLEGUNG (P1, W1) - Auslegungstabelle und Vorgabetabelle samt Saat.
+            // Die Quelle ist PufferAuslegungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_AUSLEGUNG,
+                        "Tab_PufferAuslegung und Tab_PufferAuslegungParameter_STAMM: Pufferspeicher-Auslegung " +
+                        "je Projektpuffer und ihre Vorgabewerte",
+                        "Die Pufferspeicher-Auslegung haette keinen Ort fuer Eingaben, Ergebnis und Vorgabewerte. " +
+                        "KEIN Rechenergebnis aendert sich - die Auslegungstabelle entsteht leer, die Vorgaben " +
+                        "werden nur gesaet.",
+                        Schritt_PufferAuslegung),
+            // AUFTRAG P671 (E30-Q12, EZ-24) - die Empfehlungsspannen der Hilfsenergie von BHKW und
+            // Heizkessel in den Auslieferungsvorlagen auf Weg B. Reines DML; die Quelle ist
+            // HilfsenergieEmpfehlungNachzug, die Nummer steht allein dort.
+            new Schritt(SCHRITT_HILFSENERGIE_EMPFEHLUNG,
+                        "Tab_KostenVorlagePosition: Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel " +
+                        "auf den Endenergiebedarf (Weg B)",
+                        "Die Empfehlung am Satzfeld der Hilfsenergie nennte die Spanne aus Weg A (Anteil der " +
+                        "Brennstoffkosten) - in Weg B um das Preisverhaeltnis Strom zu Brennstoff zu hoch. KEIN " +
+                        "Rechenergebnis aendert sich - die Empfehlung ist ein Hinweis, Projektzeilen bleiben.",
+                        Schritt_HilfsenergieEmpfehlung),
+            // WELLE M7 SPEICHER - die Optionen des Pufferspeichers und die thermische Desinfektion.
+            // REIN DDL; die Quelle ist PufferOptionenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_OPTIONEN,
+                        "Tab_Pufferspeicher: Bereitschaft_Weg, Aufstellraum_Temperatur_C, Schicht_Anteile, " +
+                        "Frischwassermodul, FWM_Graedigkeit_K; Tab_Einstellungen: Desinfektion_Aktiv, " +
+                        "Desinfektion_Intervall_Tage, Desinfektion_Stunde, Desinfektion_Zieltemperatur_C, Desinfektion_Volumen_l",
+                        "Bereitschaftsweg, Zonenanteile und Frischwassermodul des Pufferspeichers und die " +
+                        "thermische Desinfektion haetten keinen Ort. KEIN Rechenergebnis aendert sich - die " +
+                        "Felder entstehen leer und rechnen wie zuvor.",
+                        Schritt_PufferOptionen),
+            // WELLE M6 - Katalogfassung (Schluessel, Pruefsumme, Auslaufkennzeichen, Protokoll) und
+            // gespeicherte Erdreichpruefung. Die Quelle ist KatalogfassungSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_KATALOGFASSUNG,
+                        "Katalogtabellen der Stufe 1: Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen; " +
+                        "Tab_Applikation.Katalogfassung; Tab_Katalogabgleich; Tab_ErgebnisErdreich",
+                        "Ein Update koennte den Katalog nicht abgleichen, ohne eigene Anpassungen zu ueberschreiben, " +
+                        "und die Erdreichpruefung ginge mit dem Programmende verloren. KEIN Rechenergebnis aendert " +
+                        "sich - die Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
+                        Schritt_Katalogfassung),
+            // KU1 STUFE 2 - dieselben Katalogspalten an den uebrigen Katalogen samt Saat. Die Quelle ist
+            // KatalogfassungStufe2Schema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGFASSUNG_STUFE2,
+                        "Katalogtabellen der Stufe 2: Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen",
+                        "Ein Update koennte die uebrigen Kataloge (Baustoffe, Gebaeude, Brennstoffe, Ganglinien ...) nicht " +
+                        "abgleichen, ohne eigene Anpassungen zu ueberschreiben. KEIN Rechenergebnis aendert sich - die " +
+                        "Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
+                        Schritt_KatalogfassungStufe2),
+            // STUFE KP3, WELLE R5 (E59, E60) - Aufschlag und manuelle Aufheizzeit der
+            // Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
+            // der Zone; der achte Sichtneubau. Die Quelle ist AufheizManuellSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_MANUELL,
+                        "Tab_Einstellungen: Aufheiz_Aufschlag_H, Aufheiz_Aufschlag_Prozent; Tab_Gebaeude: " +
+                        "Aufheizzeit_Manuell_H (Sicht Abfrage_Projektgebaeude neu); Tab_ErgebnisGebaeude: Aufheiz_Art, " +
+                        "Auslegungsheizlast_Kw, Aufheizzuschlag_Kw; Tab_ErgebnisZone: Aufheiz_Art, Zustand GEKOPPELT",
+                        "Aufschlag und manuelle Aufheizzeit haetten keinen Ort, und eine gekoppelte Zone liesse sich " +
+                        "nicht ablegen. KEIN Rechenergebnis aendert sich - die Felder entstehen leer.",
+                        Schritt_AufheizManuell),
         };
 
         /// <summary>
@@ -8826,6 +9229,13 @@ namespace WindowsFormsApplication1
             int gesamt = 0;
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten gegenstandslos - keine Abfrage auf eine
+                // entfallene Spalte (KwkAnlagenwahrheit.Anwendbar).
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    l.Notiz("89: " + paar.Anlage + " aus " + paar.Projekt + ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 int offen = Anzahl(KwkAnlagenwahrheit.Zaehlung(paar));
                 if (offen <= 0) continue;
                 if (!SqliteDml(l, KwkAnlagenwahrheit.Uebertragung(paar),
@@ -12133,6 +12543,782 @@ namespace WindowsFormsApplication1
                     " Spalte(n) und " + trigger.ToString(CultureInfo.InvariantCulture) + " von " +
                     KostenStempelSchema.Trigger.Count.ToString(CultureInfo.InvariantCulture) +
                     " Trigger(n) in diesem Lauf angelegt. KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Aufheizoptimierung als Projekteinstellung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_VORGABE"/>, die Anweisungen bei <see cref="AufheizvorgabeSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AufheizvorgabeSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// <c>Tab_Einstellungen</c>, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_AufheizVorgabe(Lauf l)
+        {
+            string nr = AufheizvorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(AufheizvorgabeSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + AufheizvorgabeSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AufheizvorgabeSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AufheizvorgabeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Aufheizoptimierung an " + AufheizvorgabeSchema.TABELLE +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aufheizoptimierung an " + AufheizvorgabeSchema.TABELLE + " - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Schalter 0, sonst leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisspalten der Aufheizoptimierung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_ERGEBNIS"/>, die Anweisungen bei <see cref="AufheizErgebnisSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AufheizErgebnisSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der beiden Ergebnistabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_AufheizErgebnis(Lauf l)
+        {
+            string nr = AufheizErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AufheizErgebnisSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AufheizErgebnisSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AufheizErgebnisSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Aufheizspalten an " + AufheizErgebnisSchema.TAB_GEBAEUDE + " und " +
+                                  AufheizErgebnisSchema.TAB_ZONE + " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisspalten der Aufheizoptimierung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") + " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einheit des Bereitschaftsverlusts" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KESSEL_BEREITSCHAFT_EINHEIT"/>, die Anweisungen bei
+        /// <see cref="KesselBereitschaftEinheitSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KesselBereitschaftEinheitSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine
+        /// der beiden Kesseltabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselBereitschaftEinheit(Lauf l)
+        {
+            string nr = KesselBereitschaftEinheitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KesselBereitschaftEinheitSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KesselBereitschaftEinheitSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KesselBereitschaftEinheitSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + KesselBereitschaftEinheitSchema.SPALTE + " an " +
+                                  KesselBereitschaftEinheitSchema.TAB_STAMM + " und " +
+                                  KesselBereitschaftEinheitSchema.TAB_PROJEKT +
+                                  " steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einheit des Bereitschaftsverlusts - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (Vorgabe kW).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bodenalbedo je Anlage" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ALBEDO"/>, die Anweisung bei <see cref="AlbedoSchema"/>.
+        /// <b>Wiederholbar</b>: <c>AlbedoSchema.Anweisungen</c> nennt nur die fehlende Spalte. Fehlt
+        /// die Anlagentabelle, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Albedo(Lauf l)
+        {
+            string nr = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(AlbedoSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + AlbedoSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(AlbedoSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!AlbedoSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + AlbedoSchema.SPALTE + " an " + AlbedoSchema.TABELLE +
+                                  " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Bodenalbedo je Anlage - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte angelegt (leer = 0,2).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Temperaturpaar je Prozess" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PROZESSWAERME_TEMPERATUR"/>, die Anweisungen bei
+        /// <see cref="ProzesswaermeTemperaturSchema"/>. <b>Wiederholbar</b>:
+        /// <c>ProzesswaermeTemperaturSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine
+        /// der beiden Prozesswärmetabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_ProzesswaermeTemperatur(Lauf l)
+        {
+            string nr = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzesswaermeTemperaturSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzesswaermeTemperaturSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzesswaermeTemperaturSchema.SpaltenVollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten " + ProzesswaermeTemperaturSchema.SPALTE_VORLAUF + " und " +
+                                  ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF + " an " +
+                                  ProzesswaermeTemperaturSchema.TAB_STAMM + " und " +
+                                  ProzesswaermeTemperaturSchema.TAB_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // PW5: die acht typischen Betriebsweisen ueber den KERN mit ?-Parametern, still wie die
+            // Saat der Konditionierungsvorlagen - dieser Zweig laeuft vor dem ersten Fenster.
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ProzesstypSaat.Ausfuehren(zeilen);
+                    vollstaendig = ProzesswaermeTemperaturSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die gesaeten Saetze bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Der Prozesswaermekatalog traegt nach dem Schritt nicht alle ausgelieferten Betriebsweisen.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Temperaturpaar je Prozess - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Felder des Kollektorfelds" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_SOLARTHERMIE_FELDER"/>, die Anweisungen bei
+        /// <see cref="SolarthermieFelderSchema"/>. <b>Wiederholbar</b>:
+        /// <c>SolarthermieFelderSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_SolarthermieFelder(Lauf l)
+        {
+            string nr = SolarthermieFelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in SolarthermieFelderSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(SolarthermieFelderSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!SolarthermieFelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten des Kollektorfelds an " + SolarthermieFelderSchema.TAB_ANLAGEN +
+                                  ", " + SolarthermieFelderSchema.TAB_KATALOG_STAMM + " und " +
+                                  SolarthermieFelderSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Felder des Kollektorfelds - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer bzw. Vorgabe apertur).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Netzverluste je Kanal, Zirkulation, Betriebskalender" — Anlass und Wirkung
+        /// stehen bei <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/>, die Anweisungen bei
+        /// <see cref="BedarfNetzKalenderSchema"/>. <b>Wiederholbar</b>: die Anweisungen nennen nur
+        /// fehlende Teile. Fehlt eine der vier Bestandstabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_BedarfNetzKalender(Lauf l)
+        {
+            string nr = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            var tabellen = new List<string> { BedarfNetzKalenderSchema.TAB_EINSTELLUNGEN };
+            tabellen.AddRange(BedarfNetzKalenderSchema.ZUORDNUNGEN);
+            foreach (string tabelle in tabellen)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(BedarfNetzKalenderSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!BedarfNetzKalenderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabelle " + BedarfNetzKalenderSchema.TAB_KALENDER +
+                                  ", Netzverlustspalten oder Kalenderspalten stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Netzverluste je Kanal, Zirkulation, Betriebskalender - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e) (leer).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Teillastfelder von Wärmepumpe und BHKW" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ERZEUGER_TEILLAST"/>, die Anweisungen bei <see cref="ErzeugerTeillastSchema"/>.
+        /// <b>Wiederholbar</b>: <c>ErzeugerTeillastSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der vier Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_ErzeugerTeillast(Lauf l)
+        {
+            string nr = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErzeugerTeillastSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ErzeugerTeillastSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ErzeugerTeillastSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Teillastspalten an " + string.Join(", ", ErzeugerTeillastSchema.TABELLEN) +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Teillastfelder von Waermepumpe und BHKW - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einspeisegrenze und Selbstentladung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/>, die Anweisungen bei
+        /// <see cref="StromViertelstundenSchema"/>. <b>Wiederholbar</b>:
+        /// <c>StromViertelstundenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_StromViertelstunden(Lauf l)
+        {
+            string nr = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromViertelstundenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(StromViertelstundenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!StromViertelstundenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Einspeisegrenze und der Selbstentladung an " +
+                                  StromViertelstundenSchema.TAB_EINSTELLUNGEN + ", " +
+                                  StromViertelstundenSchema.TAB_KATALOG_STAMM + " und " +
+                                  StromViertelstundenSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einspeisegrenze und Selbstentladung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Pufferspeicher-Auslegung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG"/>, Anweisungen und Saat bei
+        /// <see cref="PufferAuslegungSchema"/>. <b>Wiederholbar</b>: angelegt wird nur, was fehlt,
+        /// gesät nur, was nicht steht. Fehlen Tab_Projekt oder Tab_Pufferspeicher, ist das ein Fehler.
+        /// </summary>
+        private static bool Schritt_PufferAuslegung(Lauf l)
+        {
+            string nr = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in new[] { SchemaKatalog.TAB_PROJEKT, SchemaKatalog.TAB_PUFFERSPEICHER })
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PufferAuslegungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!PufferAuslegungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabelle " + PufferAuslegungSchema.TAB + ", " + PufferAuslegungSchema.TAB_PARAMETER +
+                                  " oder ihre Saat stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferspeicher-Auslegung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e) (Tabellen und Saat).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogempfehlung der Hilfsenergie auf Weg B" — Anlass und Regel stehen bei
+        /// <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/>, die Anweisungen bei
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>: über den KERN mit <c>?</c>-Parametern in einem
+        /// <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Berichtszeile des Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe
+        /// fragt <see cref="HilfsenergieEmpfehlungNachzug.Vollstaendig"/>. Fehlt eine der drei
+        /// Kostentabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_HilfsenergieEmpfehlung(Lauf l)
+        {
+            string nr = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { HilfsenergieEmpfehlungNachzug.TABELLE, SchemaKatalog.TAB_KOSTENVORLAGE,
+                                         SchemaKatalog.TAB_KOSTENKOMPONENTE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    HilfsenergieEmpfehlungNachzug.Ausfuehren(zeilen);
+                    vollstaendig = HilfsenergieEmpfehlungNachzug.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Nach dem Schritt traegt noch eine Auslieferungsvorlage die Hilfsenergie-Empfehlung aus Weg A.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogempfehlung der Hilfsenergie auf Weg B - KEIN Rechenergebnis aendert sich, " +
+                    "Projektzeilen bleiben unberuehrt, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Pufferoptionen und Desinfektion" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_OPTIONEN"/>, die Anweisungen bei <see cref="PufferOptionenSchema"/>.
+        /// <b>Wiederholbar</b>: <c>PufferOptionenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der zwei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_PufferOptionen(Lauf l)
+        {
+            string nr = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PufferOptionenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(PufferOptionenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!PufferOptionenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Pufferoptionen und der Desinfektion an " +
+                                  PufferOptionenSchema.TAB_PUFFER + " und " + PufferOptionenSchema.TAB_EINSTELLUNGEN +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferoptionen und Desinfektion - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfassung und Erdreichprüfung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGFASSUNG"/>, die Anweisungen bei <see cref="KatalogfassungSchema"/>.
+        /// <b>Wiederholbar</b>: <c>KatalogfassungSchema.Anweisungen</c> nennt nur Fehlendes, die Saat nur
+        /// ausgelieferte Sätze ohne Schlüssel. Fehlt eine vorausgesetzte Tabelle, ist das ein Fehler.
+        /// </summary>
+        private static bool Schritt_Katalogfassung(Lauf l)
+        {
+            string nr = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogfassungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KatalogfassungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KatalogfassungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Katalogspalten, Tab_Katalogabgleich oder Tab_ErgebnisErdreich stehen nach dem " +
+                                  "Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, still wie die Saat der Betriebsweisen - dieser
+            // Zweig laeuft vor dem ersten Fenster.
+            var zeilen = new List<string>();
+            int offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe1);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe1);
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die belegten Schluessel bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || offen > 0)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : offen + " ausgelieferte(r) Satz/Saetze ohne Schluessel oder Pruefsumme nach dem Schritt.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogfassung und Erdreichpruefung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfassung der übrigen Kataloge" (KU1 Stufe 2) — Anlass und Wirkung stehen
+        /// bei <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/>, die Anweisungen bei
+        /// <see cref="KatalogfassungStufe2Schema"/>. <b>Wiederholbar</b> wie der Schritt der Stufe 1.
+        /// </summary>
+        private static bool Schritt_KatalogfassungStufe2(Lauf l)
+        {
+            string nr = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogfassungStufe2Schema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KatalogfassungStufe2Schema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KatalogfassungStufe2Schema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Katalogspalten der Stufe 2 stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, still wie beim Schritt der Stufe 1.
+            var zeilen = new List<string>();
+            int offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe2);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe2);
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die belegten Schluessel bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || offen > 0)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : offen + " ausgelieferte(r) Satz/Saetze der Stufe 2 ohne Schluessel oder Pruefsumme nach dem Schritt.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogfassung der uebrigen Kataloge - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Aufschlag und manuelle Aufheizzeit" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/>, Rezept und Anweisungen bei <see cref="AufheizManuellSchema"/>.
+        ///
+        /// <para><b>Wie Schritt 152:</b> Der kleine Neubau von <c>Tab_ErgebnisZone</c> braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt — der Schritt läuft deshalb ganz im Kern.
+        /// Jede Berichtszeile geht ins Protokoll; ein benannter Abbruch lässt die Datei, wie sie war, und der
+        /// nächste Lauf versucht es wieder. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="AufheizManuellSchema.Vollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_AufheizManuell(Lauf l)
+        {
+            string nr = AufheizManuellSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AufheizManuellSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    AufheizManuellSchema.Ausfuehren(zeilen);
+                    vollstaendig = AufheizManuellSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Aufschlag, manuelle Aufheizzeit, Ergebnisspalten, GEKOPPELT an der Zone oder die Sicht " +
+                      GebaeudeSchema.VIEW + " stehen nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Aufschlag und manuelle Aufheizzeit - KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

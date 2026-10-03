@@ -29,6 +29,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<int> bhkw_anlagen_ids = new List<int>();
 
+        /// <summary>
+        /// Das ANLAGENFELD „Untere Grenzleistung des ausgewählten Moduls"
+        /// (<c>Tab_Energieanlagen.Grenzleistung</c>) je BHKW in PROZENT, indexgleich zu
+        /// <see cref="bhkw_list"/>; 0 = nicht gepflegt. Es geht Katalog- und Projektwert
+        /// vor, sobald es gepflegt ist (<see cref="Grenzfaktor"/>).
+        /// </summary>
+        public List<double> bhkw_anlagen_grenzleistung = new List<double>();
+
+        /// <summary>
+        /// Die größte gültige untere Grenzleistung [%]. Darüber liefe ein Modul nie an —
+        /// ein solcher Wert ist ungültig, wird benannt und übersprungen.
+        /// </summary>
+        public const double GRENZLEISTUNG_MAX_PROZENT = 100.0;
+
         public int m_ID_Projekt = 0;
 
         public double[] waermebedarf = new double[8760];
@@ -48,6 +62,102 @@ namespace WindowsFormsApplication1
         public double[] bhkwGrenzL = new double[10];
         public double bhkwGrenzleistungAllgemein = 0;
         public double WaermeueberschussKwh = 0.0;
+
+        // =====================================================================
+        //  Welle M4, BH1 und BH2: Teillastkennlinie und Takten je Modul
+        //
+        // _teillast[i] ist null, solange das Modul weder einen Teillastwirkungsgrad noch
+        // Anfahrverlust oder Mindestlaufzeit trägt - dann rechnet es Anweisung für Anweisung
+        // wie zuvor. Mit Kennlinie (BH1) bilden die Motorläufe Strom und Wärme über die
+        // Stromkennzahl an der Auslastung; mit Takten (BH2) läuft ein Modul unter seiner
+        // Untergrenze im Takt statt aus. Brennstoff, Starts und Anfahrverlust der Stunde
+        // entstehen am Stundenende (TeillastStundeAbschliessen) aus der Wärme und dem
+        // Strom, die das Modul in der Stunde erzeugt hat.
+        // =====================================================================
+
+        private readonly BhkwTeillast[] _teillast = new BhkwTeillast[MAX_BHKW];
+        private bool _teillastIrgendein;
+        private readonly bool[] _taktStunde = new bool[MAX_BHKW];
+        private readonly double[] _waermeStunde = new double[MAX_BHKW];
+        private readonly double[] _stromStunde = new double[MAX_BHKW];
+        private readonly double[] _waermeVorher = new double[MAX_BHKW];
+        private readonly double[] _stromVorher = new double[MAX_BHKW];
+        private readonly bool[] _liefVorstunde = new bool[MAX_BHKW];
+        private readonly double[] _mehrbrennstoffKwh = new double[MAX_BHKW];
+
+        /// <summary>STARTS je Modul [1/a] (BH2): im Takt so viele, wie Mindestläufe die Wärme braucht, sonst je Laufphase einer. Nur mit Takten.</summary>
+        public int[] Starts_BHKW = new int[MAX_BHKW];
+
+        /// <summary>TAKTSTUNDEN je Modul [h/a] (BH2): Stunden, in denen das Modul unter seiner Untergrenze taktet.</summary>
+        public int[] Taktstunden_BHKW = new int[MAX_BHKW];
+
+        /// <summary>ANFAHRVERLUST je Modul [kWh/a] (BH2): Starts mal Anfahrverlust je Start — Teil des Brennstoffs.</summary>
+        public double[] Anfahrverlust_KWh_BHKW = new double[MAX_BHKW];
+
+        /// <summary>
+        /// MEHRBRENNSTOFF AUS TEILLAST je Modul [kWh/a] (BH1): Brennstoff mit Kennlinie minus Brennstoff
+        /// mit dem Gesamtwirkungsgrad — Teil des Brennstoffs; ohne Kennlinie 0.
+        /// </summary>
+        public double[] TeillastMehrbrennstoff_KWh_BHKW = new double[MAX_BHKW];
+
+        /// <summary>Die Teillastwerte des Moduls; <c>null</c>, wenn es wie zuvor rechnet.</summary>
+        public BhkwTeillast Teillast(int index) => index >= 0 && index < MAX_BHKW ? _teillast[index] : null;
+
+        /// <summary>Strom zur Wärme eines modulierenden Moduls — mit Kennlinie über die Stromkennzahl, sonst der Dreisatz des Bestands.</summary>
+        private double StromAusWaerme(int motor, double waerme, double[] pth, double[] pel)
+            => _teillast[motor] != null ? _teillast[motor].StromAusWaerme(waerme)
+                                        : waerme / pth[motor] * pel[motor];
+
+        /// <summary>Wärme zum Strom eines modulierenden Moduls — mit Kennlinie über die Stromkennzahl, sonst der Dreisatz des Bestands.</summary>
+        private double WaermeAusStrom(int motor, double strom, double[] pth, double[] pel)
+            => _teillast[motor] != null ? _teillast[motor].WaermeAusStrom(strom)
+                                        : strom / pel[motor] * pth[motor];
+
+        /// <summary>Taktet das Modul unter seiner Untergrenze (BH2)?</summary>
+        private bool Taktfaehig(int motor) => _teillast[motor] != null && _teillast[motor].MitTakten;
+
+        /// <summary>
+        /// Stundenende der Teillastrechnung (BH1, BH2): je Modul mit Teillastwerten der Brennstoff der
+        /// Stunde nach Kennlinie, die Starts und der Anfahrverlust - als Mehrbrennstoff gegenüber dem
+        /// Gesamtwirkungsgrad, den <see cref="Auswertung"/> dem Modulverbrauch zuschlägt.
+        /// </summary>
+        private void TeillastStundeAbschliessen()
+        {
+            for (int m = 0; m < _anzahlZweikanalig && m < MAX_BHKW; m++)
+            {
+                BhkwTeillast t = _teillast[m];
+                if (t == null) continue;
+                double q = _waermeStunde[m];
+                double p = _stromStunde[m];
+                bool lief = q + p >= Rechenrand.ABSOLUT;
+                if (lief)
+                {
+                    bool takt = _taktStunde[m];
+                    double kennlinie = t.Brennstoff(p, q, takt) - (q + p) / t.EtaGesamt;
+                    double mehr = kennlinie;
+                    TeillastMehrbrennstoff_KWh_BHKW[m] += kennlinie;
+                    if (t.MitTakten)
+                    {
+                        int starts;
+                        if (takt)
+                        {
+                            starts = t.StartsImTakt(q);
+                            Taktstunden_BHKW[m]++;
+                        }
+                        else
+                        {
+                            starts = _liefVorstunde[m] ? 0 : 1;
+                        }
+                        Starts_BHKW[m] += starts;
+                        double anfahr = starts * t.AnfahrverlustWirksam;
+                        Anfahrverlust_KWh_BHKW[m] += anfahr;
+                        mehr += anfahr;
+                    }
+                    _mehrbrennstoffKwh[m] += mehr;
+                }
+                _liefVorstunde[m] = lief;
+            }
+        }
 
         // PAKET BHKW-REGULÄR: Hier standen die drei Solar-Felder (solarVorhanden,
         // solarSpeicher, solarWaerme) des einkanaligen Altpfads. Sie waren eine
@@ -269,14 +379,30 @@ namespace WindowsFormsApplication1
         /// hier IN PLACE durch 100 geteilt. Ein zweiter Aufruf auf derselben Instanz
         /// teilte erneut — deshalb ruft der Rechenweg diese Methode genau einmal.
         ///
-        /// <para><b>ZWEI EBENEN, seit W6‑E‑7 ohne stille dritte.</b> Der Katalogwert des
-        /// Moduls (<c>Tab_BHKW.Grenzleistung</c>) gilt, sobald er ungleich 0 ist; sonst
-        /// gilt der PROJEKTWERT (<c>Tab_Einstellungen.Leistungsgrenze</c>), und ist auch
-        /// der 0, dann gibt es keine Untergrenze. Der frühere Fallback auf 30 % ist
+        /// <para><b>DREI EBENEN, ohne stillen Rückfall.</b> Das Anlagenfeld
+        /// (<c>Tab_Energieanlagen.Grenzleistung</c>) gilt, sobald es gepflegt ist (&gt; 0);
+        /// sonst der Katalogwert des Moduls (<c>Tab_BHKW.Grenzleistung</c>, &gt; 0); sonst
+        /// der PROJEKTWERT (<c>Tab_Einstellungen.Leistungsgrenze</c>), und ist auch der 0,
+        /// dann gibt es keine Untergrenze. Werte über 100 % sind ungültig und werden benannt
+        /// übersprungen (<see cref="Grenzfaktor"/>). Der frühere Fallback auf 30 % ist
         /// gefallen — die Begründung steht im Rumpf.</para>
         /// </summary>
         private void Moduldaten_Einlesen(int anzahl)
         {
+            // Befund BHKW-Untergrenze (Papier „Verbesserungen 29.09.2026"): Ein Projektwert
+            // über 100 % ist ungültig - benannt, und er rechnet als „keine Untergrenze",
+            // statt das Modul still nie anlaufen zu lassen.
+            if (bhkwGrenzleistungAllgemein > GRENZLEISTUNG_MAX_PROZENT)
+            {
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "bhkw-grenze-projekt",
+                    string.Format(MyResource.Resource.SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG,
+                                  MyResource.Resource.SIMENG_BHKW_GRENZE_ALLE_MODULE,
+                                  Prozenttext(bhkwGrenzleistungAllgemein),
+                                  MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_PROJEKT,
+                                  Prozenttext(0.0)));
+                bhkwGrenzleistungAllgemein = 0.0;
+            }
             bhkwGrenzleistungAllgemein /= 100;
 
             // ANWENDERENTSCHEID W6-E-7 (07.09.2026): HIER STAND EIN STILLER FALLBACK,
@@ -320,6 +446,10 @@ namespace WindowsFormsApplication1
             // gilt fuer den ganzen Lauf - EINMAL gelesen, nicht je Modul.
             string modus = Emissionsquelle.Modus(m_ID_Projekt);
 
+            // Welle M4: die Teillastwerte gehören zum Laufzustand.
+            _teillastIrgendein = false;
+            Array.Clear(_teillast, 0, MAX_BHKW);
+
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahl; i++)
             {
@@ -332,29 +462,35 @@ namespace WindowsFormsApplication1
                 bhkwWirkungsgrad[i] = (double)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
                 bhkwSKZ[i] = bhkwStromLeistung[i] / bhkwWaermeLeistung[i];
 
-                if ((double)ctrl.m_Grenzleistung == 0)
-                    bhkwGrenzL[i] = bhkwGrenzleistungAllgemein; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
-                else
-                    // PAKET BHKW-REGULÄR — EINHEITEN-FIX. Hier stand der Katalogwert OHNE
-                    // Division: bhkwGrenzL[i] = (double)ctrl.m_Grenzleistung.
-                    //
-                    // DER BRUCH. bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast) - so
-                    // wird das Feld in allen drei Motorläufen benutzt
-                    // (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]). Der Anlagenwert aus
-                    // Tab_Energieanlagen.Grenzleistung wird deshalb beim Laden durch 100
-                    // geteilt (SimulationControl.BHKW_Liste_Laden), und die projektweite
-                    // Grenze ebenso (die Zeile am Methodenanfang). Der KATALOGWERT aus
-                    // Tab_BHKW.Grenzleistung wurde es nicht - er trägt aber dieselbe
-                    // Einheit, nämlich Prozent.
-                    //
-                    // DIE FOLGE war ein Faktor 100 zu viel: Ein Katalog-BHKW mit 50 %
-                    // Modulationsgrenze rechnete mit bhkwGrenzL = 50. Da der Katalogwert
-                    // den Anlagenwert überschreibt, sobald er ungleich 0 ist, betraf das
-                    // jedes Modul mit gepflegter Katalog-Grenzleistung. Die Bedingung
-                    // „bhkwWaermeLeistung * bhkwGrenzL <= Wärmeraum" war damit praktisch
-                    // nie erfüllt - der Teillastzweig fiel aus, das Modul lief nur noch
-                    // Volllast oder gar nicht.
-                    bhkwGrenzL[i] = (double)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
+                // DREI EBENEN (Befund BHKW-Untergrenze, Papier „Verbesserungen
+                // 29.09.2026", Anwenderentscheid): Das ANLAGENFELD gilt, sobald es gepflegt
+                // ist (> 0), sonst der KATALOGWERT des Moduls, sonst der PROJEKTWERT. Bis
+                // dahin überschrieb der Katalog- bzw. Projektwert das Anlagenfeld immer -
+                // es war wirkungslos. Die Untergrenze gilt in allen drei Betriebsarten
+                // (Motorlauf_Waermegefuehrt, _Stromgefuehrt, _OhneEinspeisung).
+                //
+                // bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast): Alle drei Ebenen tragen
+                // Prozent und werden durch 100 geteilt (EINHEITEN-FIX des Pakets
+                // BHKW-REGULÄR - der Katalogwert rechnete einmal mit 50 statt 0,5, und der
+                // Teillastzweig fiel aus).
+                double anlageProzent = i < bhkw_anlagen_grenzleistung.Count ? bhkw_anlagen_grenzleistung[i] : 0.0;
+                bhkwGrenzL[i] = Grenzfaktor(i < bhkw_list_Namen.Count ? bhkw_list_Namen[i] : "",
+                                            anlageProzent, (double)ctrl.m_Grenzleistung,
+                                            bhkwGrenzleistungAllgemein);
+
+                // Welle M4 (BH1, BH2): Teillastkennlinie und Takten aus der Projektkopie. Ohne
+                // gepflegte Felder bleibt der Eintrag leer, und das Modul rechnet wie zuvor.
+                if (i < MAX_BHKW)
+                {
+                    BhkwTeillast t = new BhkwTeillast(bhkwStromLeistung[i], bhkwWaermeLeistung[i], bhkwWirkungsgrad[i],
+                                                      ctrl.m_Wirkungsgrad_el_Teillast50, ctrl.m_Wirkungsgrad_th_Teillast50,
+                                                      bhkwGrenzL[i], ctrl.m_Anfahrverlust_kWh, ctrl.m_Mindestlaufzeit_min);
+                    if (t.Aktiv)
+                    {
+                        _teillast[i] = t;
+                        _teillastIrgendein = true;
+                    }
+                }
 
                 // ANWENDERENTSCHEID W14a-E-8-B1 (07.09.2026): HIER STANDEN DIE FUENF
                 // GERAETESPALTEN, und sie sind als Rechengroesse gefallen.
@@ -402,6 +538,61 @@ namespace WindowsFormsApplication1
                         "gepflegten Wert aus dem Emissionskatalog.");
             }
         }
+
+        /// <summary>
+        /// Die UNTERE GRENZLEISTUNG eines Moduls als Faktor der Nennleistung (0,3 = 30 %) —
+        /// eine Regel für alle drei Betriebsarten (Befund BHKW-Untergrenze, Papier
+        /// „Verbesserungen 29.09.2026", Anwenderentscheid).
+        ///
+        /// <para><b>Rangfolge:</b> das Anlagenfeld (<paramref name="anlageProzent"/>), sobald
+        /// es gepflegt ist (&gt; 0); sonst der Katalogwert des Moduls
+        /// (<paramref name="katalogProzent"/>, &gt; 0); sonst der Projektwert
+        /// (<paramref name="projektFaktor"/>, schon als Faktor), und ist auch der 0, gibt
+        /// es keine Untergrenze.</para>
+        ///
+        /// <para><b>Ungültig ist ein Wert über 100 %</b> — mit ihm liefe das Modul nie an
+        /// (die Testdatenbank führt im Auslieferungskatalog vier solche Zeilen). Er wird mit
+        /// benannter Warnung übersprungen; es gilt die nächste Ebene.</para>
+        ///
+        /// <para>Bitgleich zum Bestand, wo der Bestand schon galt: Katalog und Projekt
+        /// teilen dieselbe Prozentzahl durch 100 wie zuvor.</para>
+        /// </summary>
+        public static double Grenzfaktor(string modul, double anlageProzent, double katalogProzent,
+                                         double projektFaktor)
+        {
+            var ungueltig = new List<(double Prozent, string Ebene)>();
+            double faktor;
+
+            if (anlageProzent > GRENZLEISTUNG_MAX_PROZENT)
+                ungueltig.Add((anlageProzent, MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_ANLAGE));
+
+            if (anlageProzent > 0.0 && anlageProzent <= GRENZLEISTUNG_MAX_PROZENT)
+            {
+                faktor = anlageProzent / 100.0;
+            }
+            else
+            {
+                if (katalogProzent > GRENZLEISTUNG_MAX_PROZENT)
+                    ungueltig.Add((katalogProzent, MyResource.Resource.SIMENG_BHKW_GRENZE_EBENE_KATALOG));
+
+                faktor = katalogProzent > 0.0 && katalogProzent <= GRENZLEISTUNG_MAX_PROZENT
+                         ? katalogProzent / 100.0
+                         : (projektFaktor > 0.0 ? projektFaktor : 0.0);
+            }
+
+            foreach (var u in ungueltig)
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "bhkw-grenze-" + modul + "-" + u.Ebene,
+                    string.Format(MyResource.Resource.SIMENG_BHKW_GRENZLEISTUNG_UNGUELTIG,
+                                  string.Format(MyResource.Resource.SIMENG_BHKW_GRENZE_MODUL, modul),
+                                  Prozenttext(u.Prozent), u.Ebene, Prozenttext(faktor * 100.0)));
+
+            return faktor;
+        }
+
+        /// <summary>Eine Prozentzahl für eine Meldung, in der Kultur der Oberfläche.</summary>
+        private static string Prozenttext(double prozent)
+            => prozent.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
 
         /// <summary>
         /// Der Energieträger EINES Moduls aus <see cref="bhkw_carrier"/> (W14a-E-8-B1);
@@ -474,6 +665,11 @@ namespace WindowsFormsApplication1
                 {
                     // Verbrauch berechnen (Wärme + Strom) / Wirkungsgrad
                     double ModulVerbrauch = (s_waerme_MWh[zaehler] + s_strom_MWh[zaehler]) / bhkwWirkungsgrad[zaehler];
+
+                    // Welle M4 (BH1, BH2): Mehrbrennstoff aus Teillastkennlinie und Anfahrverlust.
+                    // Ohne Teillastwerte gibt es keinen Eintrag, und der Verbrauch bleibt der Bestand.
+                    if (zaehler < MAX_BHKW && _teillast[zaehler] != null)
+                        ModulVerbrauch += _mehrbrennstoffKwh[zaehler] / 1000.0;
 
                     BruttoBHKWErzeugung += ModulVerbrauch;
 
@@ -645,12 +841,30 @@ namespace WindowsFormsApplication1
                 else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
                                                      bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                 {
+                    // Welle M4 (BH1): mit Teillastkennlinie über die Stromkennzahl an der
+                    // Auslastung, sonst der Dreisatz des Bestands (StromAusWaerme).
+                    double stromModuliert = StromAusWaerme(motor, restWaerme + restSpeicher, bhkwWaermeLeistung, bhkwStromLeistung);
                     waermeproduktion[stunde] += restWaerme + restSpeicher;
                     s_waerme[motor] += restWaerme + restSpeicher;
-                    stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                    s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                    stromproduktion[stunde] += stromModuliert;
+                    s_strom[motor] += stromModuliert;
                     speicher = kapazitaetPendelspeicher;
                     restWaerme = 0.0;
+                }
+                // Welle M4 (BH2): Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
+                // Mindestlaufzeit - es liefert den Wärmeraum mit der Stromkennzahl der
+                // Untergrenze, sofern der Wärmeraum einen Mindestlauf aufnimmt. Sonst bleibt es aus.
+                else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufWaerme(restWaerme + restSpeicher))
+                {
+                    double waermeTakt = restWaerme + restSpeicher;
+                    double stromTakt = _teillast[motor].TaktStromAusWaerme(waermeTakt);
+                    waermeproduktion[stunde] += waermeTakt;
+                    s_waerme[motor] += waermeTakt;
+                    stromproduktion[stunde] += stromTakt;
+                    s_strom[motor] += stromTakt;
+                    speicher = kapazitaetPendelspeicher;
+                    restWaerme = 0.0;
+                    _taktStunde[motor] = true;
                 }
             }
         }
@@ -678,12 +892,17 @@ namespace WindowsFormsApplication1
         /// ihre Leistung nach dem Strombedarf, nicht nach dem Füllstand. Was an Wärme
         /// übrig bleibt, entscheidet erst der Aufrufer — <see cref="Fahrweise_Stunde"/>
         /// gibt es an die Ladephase C/D weiter (Konzept 6.3).
+        ///
+        /// <para><b>Die Untergrenze je Modul</b> (<paramref name="bhkwGrenzL"/>, aufgelöst in
+        /// <see cref="Grenzfaktor"/>) ist dieselbe wie wärmegeführt und ohne Einspeisung —
+        /// bis zum Befund BHKW-Untergrenze (Papier „Verbesserungen 29.09.2026") nahmen die
+        /// zwei stromseitigen Fahrweisen hier nur den Projektwert.</para>
         /// </summary>
         private void Motorlauf_Stromgefuehrt(
             int stunde, int anzahl,
             double[] stromproduktion, double[] waermeproduktion,
             double[] s_waerme, double[] s_strom,
-            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double[] bhkwGrenzL,
             ref double restStrom, ref double restWaerme)
         {
             for (int motor = 0; motor < anzahl; motor++)
@@ -719,12 +938,13 @@ namespace WindowsFormsApplication1
                 // Vergleich war schon geschlossen; der Rand aendert an der Gleichheit
                 // nichts und haelt nur die zwei Stufen derselben Weiche nach EINEM Mass.
                 else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                     bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                     bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                 {
                     stromproduktion[stunde] += restStrom;
 
-                    // Anteilige Wärmeproduktion berechnen (Dreisatz über den elektrischen Wirkungsgrad)
-                    double anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                    // Anteilige Wärmeproduktion berechnen (Dreisatz über den elektrischen Wirkungsgrad;
+                    // Welle M4, BH1: mit Teillastkennlinie über die Stromkennzahl an der Auslastung)
+                    double anteiligeWaerme = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                     waermeproduktion[stunde] += anteiligeWaerme;
 
                     s_strom[motor] += restStrom;
@@ -732,6 +952,19 @@ namespace WindowsFormsApplication1
 
                     restWaerme -= anteiligeWaerme;
                     restStrom = 0.0;
+                }
+                // Welle M4 (BH2): Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
+                // Mindestlaufzeit und deckt den Reststrom mit der Stromkennzahl der Untergrenze, ab einem Mindestlauf.
+                else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
+                {
+                    double waermeTakt = _teillast[motor].TaktWaermeAusStrom(restStrom);
+                    stromproduktion[stunde] += restStrom;
+                    waermeproduktion[stunde] += waermeTakt;
+                    s_strom[motor] += restStrom;
+                    s_waerme[motor] += waermeTakt;
+                    restWaerme -= waermeTakt;
+                    restStrom = 0.0;
+                    _taktStunde[motor] = true;
                 }
             }
         }
@@ -758,7 +991,7 @@ namespace WindowsFormsApplication1
             int stunde, int anzahl,
             double[] stromproduktion, double[] waermeproduktion,
             double[] s_waerme, double[] s_strom,
-            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double[] bhkwGrenzL,
             double kapazitaetPendelspeicher,
             ref double speicher, ref double restWaerme, ref double restStrom)
         {
@@ -797,10 +1030,17 @@ namespace WindowsFormsApplication1
                         // restStrom == P_el * x_min deckt die Mindestlast den Bedarf
                         // GENAU, es wird nichts eingespeist.
                         else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                             bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
-                            wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                            wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
+                        }
+                        // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
+                        else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
+                        {
+                            sLeistung = restStrom;
+                            wLeistung = _teillast[motor].TaktWaermeAusStrom(restStrom);
+                            _taktStunde[motor] = true;
                         }
                         else
                         {
@@ -828,9 +1068,9 @@ namespace WindowsFormsApplication1
                     // Waermeseite, WERT der Waermeraum - der Vergleich war geschlossen,
                     // die Gleichheit bleibt, wo sie war.
                     else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
-                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                     {
-                        sLeistung = (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                        sLeistung = StromAusWaerme(motor, restWaerme + restSpeicher, bhkwWaermeLeistung, bhkwStromLeistung);
 
                         // Alte Bauart: if (sLeistung < restStrom). SCHWELLE ist hier die
                         // AUSBEUTE des modulierten Laufs, WERT wieder der Reststrom -
@@ -844,10 +1084,17 @@ namespace WindowsFormsApplication1
                         }
                         // Dieselbe Modulationsgrenze wie in W1, mit derselben Begründung.
                         else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
+                                                             bhkwStromLeistung[motor] * bhkwGrenzL[motor]))
                         {
                             sLeistung = restStrom;
-                            wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                            wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
+                        }
+                        // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
+                        else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
+                        {
+                            sLeistung = restStrom;
+                            wLeistung = _teillast[motor].TaktWaermeAusStrom(restStrom);
+                            _taktStunde[motor] = true;
                         }
                         else
                         {
@@ -870,6 +1117,39 @@ namespace WindowsFormsApplication1
                             speicher -= restWaerme;
                             restWaerme = 0.0;
                         }
+                    }
+                    // Welle M4 (BH2): Der Wärmeraum liegt unter der Untergrenze - mit Anfahrverlust
+                    // oder Mindestlaufzeit taktet das Modul, begrenzt durch Wärmeraum UND Reststrom
+                    // (keine Einspeisung), mit der Stromkennzahl der Untergrenze; beide tragen einen Mindestlauf.
+                    else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufWaerme(restWaerme + restSpeicher) &&
+                             _teillast[motor].NimmtMindestlaufStrom(restStrom))
+                    {
+                        double raumTakt = restWaerme + restSpeicher;
+                        double stromRaum = _teillast[motor].TaktStromAusWaerme(raumTakt);
+                        if (Rechenrand.SchwelleErreicht(restStrom, stromRaum))
+                        {
+                            sLeistung = stromRaum;
+                            wLeistung = raumTakt;
+                        }
+                        else
+                        {
+                            sLeistung = restStrom;
+                            wLeistung = _teillast[motor].TaktWaermeAusStrom(restStrom);
+                        }
+
+                        waermeproduktion[stunde] += wLeistung;
+                        s_waerme[motor] += wLeistung;
+                        stromproduktion[stunde] += sLeistung;
+                        s_strom[motor] += sLeistung;
+
+                        restStrom -= sLeistung;
+                        restWaerme -= wLeistung;
+                        if (restWaerme < 0)
+                        {
+                            speicher -= restWaerme;
+                            restWaerme = 0.0;
+                        }
+                        _taktStunde[motor] = true;
                     }
                 }
                 for (int motor = 0; motor < anzahl; motor++)
@@ -908,14 +1188,14 @@ namespace WindowsFormsApplication1
                     // zweite war streng; an der Gleichheit bucht S2 statt S3, und beide
                     // rechnen dort dieselbe Menge - nur ueber verschiedene Dreisaetze.
                     else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                                                         bhkwStromLeistung[motor] * bhkwGrenzL[motor]) &&
                              Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
-                                                         restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]))
+                                                         WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung)))
                     {
                         stromproduktion[stunde] += restStrom;
                         s_strom[motor] += restStrom;
 
-                        double anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                        double anteiligeWaerme = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         waermeproduktion[stunde] += anteiligeWaerme;
                         s_waerme[motor] += anteiligeWaerme;
 
@@ -936,14 +1216,14 @@ namespace WindowsFormsApplication1
                     // Seite, auf der sie an der waermeseitigen Stufe W2 (dort <=) liegt:
                     // Ein Waermeraum GENAU auf der Mindestlast laesst das Modul laufen.
                     else if (Rechenrand.SchwelleErreicht(restStrom,
-                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                                                         bhkwStromLeistung[motor] * bhkwGrenzL[motor]) &&
                              Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
-                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                     {
                         waermeproduktion[stunde] += (restSpeicher + restWaerme);
                         s_waerme[motor] += (restSpeicher + restWaerme);
 
-                        double berechneterStrom = (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                        double berechneterStrom = StromAusWaerme(motor, restSpeicher + restWaerme, bhkwWaermeLeistung, bhkwStromLeistung);
                         stromproduktion[stunde] += berechneterStrom;
                         s_strom[motor] += berechneterStrom;
 
@@ -1229,6 +1509,17 @@ namespace WindowsFormsApplication1
                 s_waerme_ueberschuss[i] = 0.0;
                 Laufzeiten[i] = 0.0;
                 VbhElektrisch[i] = 0.0;
+
+                // Welle M4 (BH1, BH2): Ausweis und Stundenzustand der Teillastrechnung.
+                Starts_BHKW[i] = 0;
+                Taktstunden_BHKW[i] = 0;
+                Anfahrverlust_KWh_BHKW[i] = 0.0;
+                TeillastMehrbrennstoff_KWh_BHKW[i] = 0.0;
+                _mehrbrennstoffKwh[i] = 0.0;
+                _liefVorstunde[i] = false;
+                _taktStunde[i] = false;
+                _waermeStunde[i] = 0.0;
+                _stromStunde[i] = 0.0;
             }
         }
 
@@ -1360,6 +1651,14 @@ namespace WindowsFormsApplication1
             _ueberschussStunde = 0;
             _direktStunde = 0;
             _reservierungen.Clear();
+
+            // Welle M4 (BH1, BH2): die Teillastrechnung beginnt die Stunde ohne Wärme und Strom.
+            if (_teillastIrgendein)
+            {
+                Array.Clear(_waermeStunde, 0, MAX_BHKW);
+                Array.Clear(_stromStunde, 0, MAX_BHKW);
+                Array.Clear(_taktStunde, 0, MAX_BHKW);
+            }
 
             double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
@@ -1730,6 +2029,9 @@ namespace WindowsFormsApplication1
         /// </param>
         public void Stunde_Ende(int stunde, double entladungsAnteilStunde)
         {
+            // Welle M4 (BH1, BH2): Brennstoff nach Kennlinie, Starts und Anfahrverlust der Stunde.
+            if (_teillastIrgendein) TeillastStundeAbschliessen();
+
             if (_ueberschussStunde > 0)
             {
                 WaermeueberschussKwh += (double)_ueberschussStunde;
@@ -1770,12 +2072,21 @@ namespace WindowsFormsApplication1
             double restWaerme = (double)bedarf;
             double kapazitaet = (double)speicherraum;
 
+            // Welle M4 (BH1, BH2): Stand der Modulsummen vor dem Lauf - die Differenz danach ist
+            // Wärme und Strom des Moduls in dieser Stunde.
+            if (_teillastIrgendein)
+                for (int m = 0; m < _anzahlZweikanalig && m < MAX_BHKW; m++)
+                {
+                    _waermeVorher[m] = s_waerme_MWh[m];
+                    _stromVorher[m] = s_strom_MWh[m];
+                }
+
             if (modeBHKW == 1)
             {
                 double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_Stromgefuehrt(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                         s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
-                                        bhkwGrenzleistungAllgemein, ref restStrom, ref restWaerme);
+                                        bhkwGrenzL, ref restStrom, ref restWaerme);
 
                 // Stromgeführt kennt keine Speichergrenze in der Zuschaltung: Was über den
                 // Bedarf hinaus entsteht, ist Koppelprodukt und geht in die Ladephase.
@@ -1790,7 +2101,7 @@ namespace WindowsFormsApplication1
                 double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_OhneEinspeisung(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                           s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
-                                          bhkwGrenzleistungAllgemein, kapazitaet,
+                                          bhkwGrenzL, kapazitaet,
                                           ref speicher, ref restWaerme, ref restStrom);
             }
             else
@@ -1803,6 +2114,13 @@ namespace WindowsFormsApplication1
                                          s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
                                          bhkwGrenzL, kapazitaet, ref speicher, ref restWaerme);
             }
+
+            if (_teillastIrgendein)
+                for (int m = 0; m < _anzahlZweikanalig && m < MAX_BHKW; m++)
+                {
+                    _waermeStunde[m] += s_waerme_MWh[m] - _waermeVorher[m];
+                    _stromStunde[m] += s_strom_MWh[m] - _stromVorher[m];
+                }
 
             gedeckt = bedarf - restWaerme;
             if (gedeckt < 0) gedeckt = 0;

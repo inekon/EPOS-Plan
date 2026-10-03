@@ -106,6 +106,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
         private Action _auslegungWeg;
 
+        /// <summary>Was nach einer Übernahme aus der Pufferspeicher-Auslegung nachzuziehen ist (Stufe P2).</summary>
+        private Action _pufferNachzug;
+
         /// <summary>
         /// Der Kanalbedarf des gerechneten, noch gültigen Laufs [MWh/a] — für die
         /// Abnehmer ohne Versorger im Schema. <c>null</c> (oder ein Weg, der <c>null</c>
@@ -151,10 +154,17 @@ namespace WindowsFormsApplication1
         /// selbst als gewählte Komponenten — auch ohne je gespeicherte Konfiguration.
         /// Eine gespeicherte Auswahl bleibt unangetastet, ergänzt wird nur Fehlendes.
         ///
-        /// <para>Genommen wird der ERSTE freie Platz in der Reihenfolge 1…4 — wörtlich
-        /// wie <c>VerbauteAnlagenVorwaehlen</c>:349-380 und damit ausdrücklich anders als
-        /// <c>Kaskade.Aufnehmen</c> (dort der erste freie Platz HINTER dem letzten
-        /// belegten, weil das die Bedienhandlung „+ aufnehmen" ist).</para>
+        /// <para><b>Vorgewählt wird in der Folge der Ladeprioritäten</b> (Anwenderentscheid
+        /// vom 29.09.2026): Solarthermie, Wärmepumpe, BHKW, Heizkessel — dieselbe Folge, in
+        /// der die Vorgabe-Ladeprioritäten (10, 20, 30, 40) die Erzeuger an den Puffer
+        /// lassen. Jeder verbaute, noch fehlende Erzeuger kommt über
+        /// <c>Kaskade.Vorwaehlen</c> vor den ersten belegten Platz mit schlechterer
+        /// Vorgabe-Ladepriorität, sonst ans Ende; schon belegte Plätze behalten ihre
+        /// Reihenfolge untereinander. Damit steht auch ein von
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> gesetzter Kessel hinter der
+        /// vorgewählten Wärmepumpe. Umordnen kann der Anwender mit den Pfeilen der
+        /// Erzeugerkarte (<c>Kaskade.Verschieben</c>); danach gilt die Kaskade als gepflegt
+        /// und wird nicht mehr vorgewählt.</para>
         ///
         /// <para><b>EINE GEPFLEGTE KASKADE WIRD NICHT VORGEWÄHLT</b> (Anwenderentscheid
         /// vom 16.09.2026, Merkspalte <c>Tab_Einstellungen.Kaskade_Gepflegt</c>). Die
@@ -175,17 +185,16 @@ namespace WindowsFormsApplication1
 
             try
             {
-                List<string> plaetze = Kaskade.Lesen(_konfiguration);
-
                 foreach (string erzeuger in ErzeugerKatalog.WAERMEERZEUGER)
                 {
-                    if (!TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger)) continue;
-                    if (plaetze.Contains(erzeuger)) continue;
-
-                    for (int i = 0; i < plaetze.Count; i++)
-                        if (string.IsNullOrEmpty(plaetze[i])) { plaetze[i] = erzeuger; break; }
+                    // Folgeauftrag 4: Eine vollständige Solarthermieganglinie rechnet auch
+                    // ohne Anlagenzeile - sie zählt für die Vorwahl wie ein Kollektorfeld.
+                    bool verbaut = TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger) ||
+                                   (erzeuger == DbWerte.ERZEUGER_SOLARTHERMIE &&
+                                    SolarganglinieWeiche.Lesen(m_ID_Projekt).Vollstaendig);
+                    if (!verbaut) continue;
+                    Kaskade.Vorwaehlen(_konfiguration, erzeuger);
                 }
-                Kaskade.Schreiben(_konfiguration, plaetze);
 
                 if (TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_PHOTOVOLTAIK) &&
                     Kaskade.StromWert(_konfiguration, Kaskade.PLATZ_STROMERZEUGER) !=
@@ -276,6 +285,7 @@ namespace WindowsFormsApplication1
                 ["TipSpeicherAufklappen"] = MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN,
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
                 ["BtnStromspeicherAuslegen"] = MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
+                ["BtnPufferAuslegen"] = MyResource.Resource.PAUS_BTN_KONFIG,
 
                 // ANWENDERWUNSCH 16.09.2026: der Knopf an der Erzeugerkarte, der den
                 // Konfigurationsdialog oeffnet - derselbe Wortlaut wie der Knopf in der
@@ -427,7 +437,12 @@ namespace WindowsFormsApplication1
                 WaermesenkeFertig = WaermesenkeFertig,
 
                 PufferVerwaltungGaben = idPuffer =>
-                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer),
+                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer, PufferAuslegungOeffnen),
+
+                // Stufe P2: „Pufferspeicher auslegen…" neben der Pufferverwaltung. Der Weg ist
+                // plattformfrei (freie Ansicht der Wurzel); nach einer Uebernahme gilt ein
+                // gerechnetes Ergebnis als veraltet (Nachzug der Ergebnishuelle).
+                PufferAuslegungOeffnen = PufferAuslegungOeffnen,
 
                 // #274: „Stromspeicher auslegen…" neben der Pufferverwaltung. Ohne
                 // eingelegten Weg gibt es den Knopf nicht (Hausregel „kein Delegat,
@@ -1457,6 +1472,32 @@ namespace WindowsFormsApplication1
             _auslegungWeg = weg;
         }
 
+        /// <summary>
+        /// Legt den Nachzug nach einer Übernahme aus der Pufferspeicher-Auslegung ein — die
+        /// Ergebnishülle markiert ihren Lauf als veraltet (<c>SimulationAnsichtQuelle</c>).
+        /// </summary>
+        internal void PufferNachzugSetzen(Action nachzug)
+        {
+            _pufferNachzug = nachzug;
+        }
+
+        /// <summary>
+        /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2) für den Projektpuffer
+        /// <paramref name="idPuffer"/> (<c>0</c> = einen neuen). Ohne angemeldete Wurzel geschieht
+        /// nichts — derselbe Ausgang wie bei jedem anderen Navigationsweg.
+        /// </summary>
+        private void PufferAuslegungOeffnen(int idPuffer)
+        {
+            if (m_ID_Projekt <= 0) return;
+            PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+            {
+                IdProjekt = m_ID_Projekt,
+                IdPuffer = idPuffer > 0 ? idPuffer : (int?)null,
+                Einstieg = MyResource.Resource.PAUS_EINSTIEG_KONFIG,
+                Nachzug = _pufferNachzug
+            });
+        }
+
         private void AuslegungOeffnen()
         {
             if (_auslegungWeg == null) return;
@@ -1915,6 +1956,9 @@ namespace WindowsFormsApplication1
         /// <para><b>Ebenso die Kopplungsstufe „Anlagenkopplung"</b> (Schemaschritt 122,
         /// Anlagenkopplung 8.1): nullbar, ohne Vorgabe — nachgereicht wird ein gesetzter Wert,
         /// NULL („aus") bleibt NULL.</para>
+        ///
+        /// <para><b>Ebenso die Aufheizoptimierung</b> (Schemaschritt KP-S2): die fünf Spalten in
+        /// einem <c>UPDATE</c>, wenn VOR dem Delete etwas anderes als „aus und leer" stand.</para>
         /// </summary>
         private bool Speichern()
         {
@@ -1935,6 +1979,10 @@ namespace WindowsFormsApplication1
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
             string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
+            Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+            Netzverlustvorgabe netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
+            Einspeisegrenze einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt);
+            Desinfektionsvorgabe desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1954,6 +2002,26 @@ namespace WindowsFormsApplication1
             // VOR dem Delete in der Datenbank stand; NULL bleibt NULL.
             if (anlagenkopplung != null)
                 KonfigurationCtrl.AnlagenkopplungSchreiben(m_ID_Projekt, anlagenkopplung);
+
+            // DIE AUFHEIZOPTIMIERUNG REIST MIT (Schemaschritt KP-S2, Entwurf KP3): Die neue Zeile traegt
+            // den Schalter 0 und leere Spalten - nachgereicht wird der Stand VOR dem Delete, auch ein
+            // Schalter aus mit gepflegten Werten (Festlegung 24). Ohne Spalten liest sich „aus" und
+            // nichts ist zu schreiben.
+            if (!aufheizvorgabe.Equals(Aufheizvorgabe.Aus))
+                KonfigurationCtrl.AufheizvorgabeSchreiben(m_ID_Projekt, aufheizvorgabe);
+
+            // NETZVERLUSTE JE KANAL UND ZIRKULATION REISEN MIT (Schritt BedarfNetzKalenderSchema, BW4):
+            // Die neue Zeile traegt leere Spalten - nachgereicht wird der Stand VOR dem Delete.
+            if (!netzkanaele.Equals(Netzverlustvorgabe.Leer))
+                KonfigurationCtrl.NetzverlustvorgabeSchreiben(m_ID_Projekt, netzkanaele);
+            // DIE EINSPEISEGRENZE REIST MIT (Welle M5, PV3): Die neue Zeile traegt zwei NULL (= keine
+            // Grenze) - nachgereicht wird der Stand VOR dem Delete.
+            if (einspeisegrenze.Gesetzt)
+                KonfigurationCtrl.EinspeisegrenzeSchreiben(m_ID_Projekt, einspeisegrenze);
+            // DIE THERMISCHE DESINFEKTION REIST MIT (Welle M7, BW5): Die neue Zeile traegt fuenf NULL
+            // (= aus) - nachgereicht wird der Stand VOR dem Delete.
+            if (!desinfektion.Equals(Desinfektionsvorgabe.Aus))
+                KonfigurationCtrl.DesinfektionSchreiben(m_ID_Projekt, desinfektion);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

@@ -907,6 +907,205 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Projekteinstellung „Aufheizoptimierung" (Schemaschritt KP-S2; Entwurf KP3, Grundsatz 5)
+
+        /// <summary>
+        /// Die Aufheizoptimierung eines Projekts — DIALOGFREI und NULL-ERHALTEND gelesen, in EINER
+        /// Abfrage der fünf Spalten (<see cref="AufheizvorgabeSchema"/>) und — wo sie stehen — der zwei
+        /// Spalten des Aufschlags (<see cref="AufheizManuellSchema"/>, E59). <b>Fehlende Zeile, fehlende
+        /// Spalte und ein unlesbarer Satz heißen „aus"</b> (<see cref="Aufheizvorgabe.Aus"/>); fehlen nur
+        /// die Aufschlagspalten, gilt kein Aufschlag. Ein Schalter auf 0 behält die übrigen Werte
+        /// (Festlegungen 24, 36). Die Werte durchlaufen die Normalisierung des Records.
+        /// </summary>
+        public static Aufheizvorgabe AufheizvorgabeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Aufheizvorgabe.Aus;
+
+            bool mitAufschlag = AufschlagspaltenVorhanden();
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "], [" + AufheizvorgabeSchema.SPALTE_BEMESSUNG +
+                "], [" + AufheizvorgabeSchema.SPALTE_ABZUG + "], [" + AufheizvorgabeSchema.SPALTE_RESERVE +
+                "], [" + AufheizvorgabeSchema.SPALTE_ART + "]" +
+                (mitAufschlag
+                    ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "], [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "]"
+                    : "") +
+                " FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < AufheizvorgabeSchema.SPALTEN.Count)
+                return Aufheizvorgabe.Aus;
+
+            DataRow r = dt.Rows[0];
+            double? aufschlagH = mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[5]) : null;
+            return new Aufheizvorgabe(
+                WahrOderFalsch(r[0]),
+                TextOderLeer(r[1]),
+                HeizgrenzeOderLeer(r[2]),
+                HeizgrenzeOderLeer(r[3]),
+                TextOderLeer(r[4]),
+                aufschlagH.HasValue ? (int?)Math.Round(aufschlagH.Value) : null,
+                mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[6]) : null);
+        }
+
+        /// <summary>Stehen die zwei Spalten des Aufschlags (Schemaschritt KP-S4)?</summary>
+        private static bool AufschlagspaltenVorhanden()
+        {
+            HashSet<string> spalten = StilleDb.SpaltenNamen(AufheizManuellSchema.TAB_EINSTELLUNGEN);
+            return spalten != null && spalten.Contains(AufheizManuellSchema.SPALTE_AUFSCHLAG_H)
+                                   && spalten.Contains(AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT);
+        }
+
+        /// <summary>
+        /// Schreibt die Aufheizoptimierung eines Projekts in EINEM, zielgenauen <c>UPDATE</c> der fünf
+        /// Spalten — wie bei <see cref="KuehlbetriebSchreiben"/> und aus demselben Grund: Die
+        /// Spaltenlisten von <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette.
+        /// Geschrieben wird die normalisierte Form des Records (Festlegung 24): der Schalter als 0/1,
+        /// (a) und „täglich" als NULL, ein leeres Zahlenfeld als NULL, ein getippter Wert, wie er ist.
+        /// Ein Wert außerhalb der Prüfklauseln scheitert an der Spalte und liefert <c>false</c>.
+        /// Der Aufschlag (E59) geht in derselben Anweisung mit, 0 und leer als NULL (Festlegung 36); auf
+        /// einer Datei ohne seine Spalten schreibt der Weg die fünf Spalten, solange kein Aufschlag gesetzt
+        /// ist — mit Aufschlag liefert er <c>false</c>.
+        ///
+        /// Rückgabe <c>false</c> ohne Einstellung (<c>null</c>), wenn keine Zeile getroffen wurde oder
+        /// eine Spalte fehlt.
+        /// </summary>
+        public static bool AufheizvorgabeSchreiben(int idProjekt, Aufheizvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+
+            bool mitAufschlag = AufschlagspaltenVorhanden();
+            if (!mitAufschlag && vorgabe.HatAufschlag) return false;
+            var parameter = new List<DbParam>
+            {
+                StilleDb.Par("@an", DbParamTyp.Integer, vorgabe.An ? 1 : 0),
+                StilleDb.Par("@bemessung", DbParamTyp.VarWChar, (object)vorgabe.Bemessung ?? DBNull.Value),
+                StilleDb.Par("@abzug", DbParamTyp.Double, (object)vorgabe.AbzugK ?? DBNull.Value),
+                StilleDb.Par("@reserve", DbParamTyp.Double, (object)vorgabe.Reserve ?? DBNull.Value),
+                StilleDb.Par("@art", DbParamTyp.VarWChar, (object)vorgabe.Art ?? DBNull.Value),
+            };
+            if (mitAufschlag)
+            {
+                parameter.Add(StilleDb.Par("@aufschlagH", DbParamTyp.Integer, (object)vorgabe.AufschlagH ?? DBNull.Value));
+                parameter.Add(StilleDb.Par("@aufschlagP", DbParamTyp.Double, (object)vorgabe.AufschlagProzent ?? DBNull.Value));
+            }
+            parameter.Add(StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_BEMESSUNG + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ABZUG + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_RESERVE + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ART + "] = ?" +
+                (mitAufschlag
+                    ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "] = ?, [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "] = ?"
+                    : "") +
+                " WHERE ID_Projekt = ?",
+                parameter.ToArray());
+
+            return betroffen > 0;
+        }
+
+        // --- Netzverluste je Kanal und Zirkulation im Bestandsweg (Schritt BedarfNetzKalenderSchema; BW4)
+
+        /// <summary>Die acht Spalten in Lesereihenfolge.</summary>
+        private static readonly string[] NETZKANAL_SPALTEN =
+        {
+            BedarfNetzKalenderSchema.SPALTE_NV_HEIZUNG, BedarfNetzKalenderSchema.SPALTE_NV_HEIZUNG_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_NV_BRAUCHWASSER, BedarfNetzKalenderSchema.SPALTE_NV_BRAUCHWASSER_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_NV_PROZESS, BedarfNetzKalenderSchema.SPALTE_NV_PROZESS_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_ZIRK_LEISTUNG, BedarfNetzKalenderSchema.SPALTE_ZIRK_LAUFZEIT
+        };
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation eines Projekts (<see cref="Netzverlustvorgabe"/>) —
+        /// DIALOGFREI und NULL-ERHALTEND in EINER Abfrage der acht Spalten gelesen. <b>Fehlende
+        /// Zeile, fehlende Spalte und ein unlesbarer Satz heißen „leer"</b>
+        /// (<see cref="Netzverlustvorgabe.Leer"/>): Dann gilt der Projektwert wie zuvor.
+        /// </summary>
+        public static Netzverlustvorgabe NetzverlustvorgabeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Netzverlustvorgabe.Leer;
+            HashSet<string> spalten = StilleDb.SpaltenNamen(BedarfNetzKalenderSchema.TAB_EINSTELLUNGEN);
+            if (spalten == null || !spalten.Contains(BedarfNetzKalenderSchema.SPALTE_ZIRK_LAUFZEIT))
+                return Netzverlustvorgabe.Leer;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + string.Join("], [", NETZKANAL_SPALTEN) + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < NETZKANAL_SPALTEN.Length)
+                return Netzverlustvorgabe.Leer;
+
+            DataRow r = dt.Rows[0];
+            return new Netzverlustvorgabe
+            {
+                HeizungWert = HeizgrenzeOderLeer(r[0]),
+                HeizungEinheit = TextOderLeer(r[1]),
+                BrauchwasserWert = HeizgrenzeOderLeer(r[2]),
+                BrauchwasserEinheit = TextOderLeer(r[3]),
+                ProzessWert = HeizgrenzeOderLeer(r[4]),
+                ProzessEinheit = TextOderLeer(r[5]),
+                ZirkulationLeistungKw = HeizgrenzeOderLeer(r[6]),
+                ZirkulationLaufzeitHd = HeizgrenzeOderLeer(r[7])
+            }.Normalisiert();
+        }
+
+        /// <summary>
+        /// Schreibt Netzverluste je Kanal und Zirkulation in EINEM, zielgenauen <c>UPDATE</c> der acht
+        /// Spalten — wie <see cref="AufheizvorgabeSchreiben"/> und aus demselben Grund (die
+        /// Spaltenlisten von <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette).
+        /// Geschrieben wird die normalisierte Form; ein Wert außerhalb der Prüfklauseln scheitert an der
+        /// Spalte und liefert <c>false</c>, ebenso eine fehlende Zeile.
+        /// </summary>
+        public static bool NetzverlustvorgabeSchreiben(int idProjekt, Netzverlustvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+            Netzverlustvorgabe v = vorgabe.Normalisiert();
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + string.Join("] = ?, [", NETZKANAL_SPALTEN) + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@nvh", DbParamTyp.Double, (object)v.HeizungWert ?? DBNull.Value),
+                StilleDb.Par("@nvhe", DbParamTyp.VarWChar, (object)v.HeizungEinheit ?? DBNull.Value),
+                StilleDb.Par("@nvb", DbParamTyp.Double, (object)v.BrauchwasserWert ?? DBNull.Value),
+                StilleDb.Par("@nvbe", DbParamTyp.VarWChar, (object)v.BrauchwasserEinheit ?? DBNull.Value),
+                StilleDb.Par("@nvp", DbParamTyp.Double, (object)v.ProzessWert ?? DBNull.Value),
+                StilleDb.Par("@nvpe", DbParamTyp.VarWChar, (object)v.ProzessEinheit ?? DBNull.Value),
+                StilleDb.Par("@zl", DbParamTyp.Double, (object)v.ZirkulationLeistungKw ?? DBNull.Value),
+                StilleDb.Par("@zt", DbParamTyp.Double, (object)v.ZirkulationLaufzeitHd ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Netzverluste je Kanal und Zirkulation</b> — der Schreibweg der Oberfläche (Abschnitt
+        /// „Wärmebedarf" der Simulationskonfiguration) und des Assistenten, nach der Regel von
+        /// <see cref="KuehlbetriebSetzen"/>: <b>Steht ein Einstellungssatz</b>, werden die acht Spalten
+        /// geschrieben. <b>Steht keiner</b>, ist <see cref="Netzverlustvorgabe.Leer"/> schon wahr —
+        /// dann wird nichts geschrieben; jede andere Vorgabe legt den <b>Vormerksatz</b> an
+        /// (<see cref="IstVormerksatz"/>), den das erste Speichern der Kaskade zum Einstellungssatz
+        /// macht (die Vorgabe reist dort mit).
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Vorgabe trägt.</returns>
+        public static bool NetzverlustvorgabeSetzen(int idProjekt, Netzverlustvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+            Netzverlustvorgabe v = vorgabe.Normalisiert();
+            if (v.Pruefen() != null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (v.Equals(Netzverlustvorgabe.Leer)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return NetzverlustvorgabeSchreiben(idProjekt, v);
+        }
+
+        /// <summary>Ein gelesenes Textfeld: <c>null</c> und <c>DBNull</c> ergeben <c>null</c>.</summary>
+        private static string TextOderLeer(object feld)
+            => feld == null || feld == DBNull.Value
+                ? null
+                : Convert.ToString(feld, System.Globalization.CultureInfo.InvariantCulture);
+
         /// <summary>
         /// <b>DER ANFANGSWERT EINES NEUEN PROJEKTS</b> (Entscheid E27, K10; Kuehlkonzept 7.2)
         /// - die EINE Stelle, an der die Programmeinstellung „Neue Projekte mit Kuehlung
@@ -1008,6 +1207,191 @@ namespace WindowsFormsApplication1
             }
 
             return AnlagenkopplungSchreiben(idProjekt, wert);
+        }
+
+        /// <summary>
+        /// <b>Die Projekteinstellung „Aufheizoptimierung"</b> (Entwurf KP3, Grundsatz 5; Welle O1) — der
+        /// Schreibweg der Oberfläche (Abschnitt „Aufheizoptimierung" der Simulationskonfiguration) und des
+        /// Assistenten, nach der Regel von <see cref="KuehlbetriebSetzen"/>: <b>Steht ein Einstellungssatz</b>,
+        /// werden die fünf Spalten in einem <c>UPDATE</c> geschrieben (<see cref="AufheizvorgabeSchreiben"/>,
+        /// normalisiert nach Festlegung 24). <b>Steht keiner</b>, ist <see cref="Aufheizvorgabe.Aus"/> ohne Satz
+        /// schon wahr — dann wird nichts geschrieben; jede andere Einstellung (auch „aus" mit gepflegten
+        /// Werten) legt denselben <b>Vormerksatz</b> an (<see cref="IstVormerksatz"/>), den das erste Speichern
+        /// der Kaskade zum Einstellungssatz macht (die Einstellung reist dort mit).
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Einstellung trägt.</returns>
+        public static bool AufheizvorgabeSetzen(int idProjekt, Aufheizvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (vorgabe.Equals(Aufheizvorgabe.Aus)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return AufheizvorgabeSchreiben(idProjekt, vorgabe);
+        }
+
+        // --- Projekteinstellung „Einspeisegrenze" (Schemaschritt StromViertelstundenSchema; Welle M5, PV3)
+
+        /// <summary>
+        /// Die Einspeisegrenze eines Projekts — DIALOGFREI und NULL-ERHALTEND gelesen, in EINER Abfrage der
+        /// zwei Spalten (<see cref="StromViertelstundenSchema"/>). <b>Fehlende Zeile, fehlende Spalte und ein
+        /// unlesbarer Satz heißen „keine Grenze"</b> (<see cref="Einspeisegrenze.Keine"/>).
+        /// </summary>
+        public static Einspeisegrenze EinspeisegrenzeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Einspeisegrenze.Keine;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_WERT + "], [" +
+                StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_EINHEIT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < 2)
+                return Einspeisegrenze.Keine;
+
+            DataRow r = dt.Rows[0];
+            return new Einspeisegrenze(HeizgrenzeOderLeer(r[0]), TextOderLeer(r[1]));
+        }
+
+        /// <summary>
+        /// Die Einspeisegrenze eines Projekts in kW (Welle M5, PV3) — in Prozent auf die installierte
+        /// PV-Leistung bezogen (<see cref="PhotovoltaikCtrl.KwpDesProjekts"/>). <c>null</c> ohne Grenze
+        /// oder bei Prozent ohne installierte Leistung. Für Auskünfte außerhalb des Laufs (Netzblock der
+        /// Speicherflotte); der Lauf löst dieselbe Regel in <c>SimulationPV.Berechnung</c> auf.
+        /// </summary>
+        public static double? EinspeisegrenzeKwLesen(int idProjekt)
+        {
+            Einspeisegrenze grenze = EinspeisegrenzeLesen(idProjekt);
+            if (!grenze.Gesetzt) return null;
+            return grenze.Kw(grenze.InProzent ? PhotovoltaikCtrl.KwpDesProjekts(idProjekt) : 0.0);
+        }
+
+        /// <summary>
+        /// Schreibt die Einspeisegrenze eines Projekts in EINEM, zielgenauen <c>UPDATE</c> der zwei Spalten
+        /// — aus demselben Grund wie <see cref="AufheizvorgabeSchreiben"/>. Geschrieben wird die normalisierte
+        /// Form (keine Grenze = zwei NULL, kW = NULL). Rückgabe <c>false</c>, wenn keine Zeile getroffen
+        /// wurde oder eine Spalte fehlt.
+        /// </summary>
+        public static bool EinspeisegrenzeSchreiben(int idProjekt, Einspeisegrenze grenze)
+        {
+            if (idProjekt <= 0 || grenze == null) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_WERT + "] = ?, [" +
+                StromViertelstundenSchema.SPALTE_EINSPEISEGRENZE_EINHEIT + "] = ? WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.Double, (object)grenze.Wert ?? DBNull.Value),
+                StilleDb.Par("@einheit", DbParamTyp.VarWChar, (object)grenze.Einheit ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Die Projekteinstellung „Einspeisegrenze"</b> — der Schreibweg der Oberfläche und des
+        /// Assistenten nach der Regel von <see cref="AufheizvorgabeSetzen"/>: Steht ein Einstellungssatz,
+        /// wird geschrieben; steht keiner, ist „keine Grenze" ohne Satz schon wahr, jede andere Einstellung
+        /// legt den Vormerksatz an.
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Grenze trägt.</returns>
+        public static bool EinspeisegrenzeSetzen(int idProjekt, Einspeisegrenze grenze)
+        {
+            if (idProjekt <= 0 || grenze == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (grenze.Equals(Einspeisegrenze.Keine)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return EinspeisegrenzeSchreiben(idProjekt, grenze);
+        }
+
+        // --- Projekteinstellung „Thermische Desinfektion" (Schemaschritt PufferOptionenSchema; Welle M7, BW5)
+
+        /// <summary>Die fünf Spalten der Desinfektion in Lesereihenfolge.</summary>
+        private static readonly string[] DESINFEKTION_SPALTEN =
+        {
+            PufferOptionenSchema.SPALTE_DESINFEKTION_AKTIV, PufferOptionenSchema.SPALTE_DESINFEKTION_INTERVALL,
+            PufferOptionenSchema.SPALTE_DESINFEKTION_STUNDE, PufferOptionenSchema.SPALTE_DESINFEKTION_ZIEL,
+            PufferOptionenSchema.SPALTE_DESINFEKTION_VOLUMEN
+        };
+
+        /// <summary>
+        /// Die thermische Desinfektion eines Projekts — DIALOGFREI und NULL-ERHALTEND in EINER Abfrage der
+        /// fünf Spalten gelesen. <b>Fehlende Zeile, fehlende Spalte und ein unlesbarer Satz heißen „aus"</b>
+        /// (<see cref="Desinfektionsvorgabe.Aus"/>).
+        /// </summary>
+        public static Desinfektionsvorgabe DesinfektionLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Desinfektionsvorgabe.Aus;
+            HashSet<string> spalten = StilleDb.SpaltenNamen(PufferOptionenSchema.TAB_EINSTELLUNGEN);
+            if (spalten == null || !spalten.Contains(PufferOptionenSchema.SPALTE_DESINFEKTION_VOLUMEN))
+                return Desinfektionsvorgabe.Aus;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + string.Join("], [", DESINFEKTION_SPALTEN) + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < DESINFEKTION_SPALTEN.Length)
+                return Desinfektionsvorgabe.Aus;
+
+            DataRow r = dt.Rows[0];
+            double? aktiv = HeizgrenzeOderLeer(r[0]);
+            double? intervall = HeizgrenzeOderLeer(r[1]);
+            double? stunde = HeizgrenzeOderLeer(r[2]);
+            return new Desinfektionsvorgabe(
+                aktiv.HasValue && aktiv.Value != 0,
+                intervall.HasValue ? (int?)Math.Round(intervall.Value) : null,
+                stunde.HasValue ? (int?)Math.Round(stunde.Value) : null,
+                HeizgrenzeOderLeer(r[3]),
+                HeizgrenzeOderLeer(r[4]));
+        }
+
+        /// <summary>
+        /// Schreibt die Desinfektion in EINEM, zielgenauen <c>UPDATE</c> der fünf Spalten — aus demselben
+        /// Grund wie <see cref="AufheizvorgabeSchreiben"/>. „Aus" schreibt 0 nur, wenn Werte gepflegt sind;
+        /// <see cref="Desinfektionsvorgabe.Aus"/> schreibt NULL in alle fünf. Rückgabe <c>false</c>, wenn
+        /// keine Zeile getroffen wurde oder eine Spalte fehlt.
+        /// </summary>
+        public static bool DesinfektionSchreiben(int idProjekt, Desinfektionsvorgabe v)
+        {
+            if (idProjekt <= 0 || v == null) return false;
+            bool leer = v.Equals(Desinfektionsvorgabe.Aus);
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + string.Join("] = ?, [", DESINFEKTION_SPALTEN) + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@aktiv", DbParamTyp.Integer, leer ? (object)DBNull.Value : (v.Aktiv ? 1 : 0)),
+                StilleDb.Par("@intervall", DbParamTyp.Integer, (object)v.IntervallTage ?? DBNull.Value),
+                StilleDb.Par("@stunde", DbParamTyp.Integer, (object)v.Stunde ?? DBNull.Value),
+                StilleDb.Par("@ziel", DbParamTyp.Double, (object)v.ZielC ?? DBNull.Value),
+                StilleDb.Par("@volumen", DbParamTyp.Double, (object)v.VolumenL ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Die Projekteinstellung „Thermische Desinfektion"</b> — der Schreibweg der Oberfläche und des
+        /// Assistenten nach der Regel von <see cref="AufheizvorgabeSetzen"/>: Steht ein Einstellungssatz,
+        /// wird geschrieben; steht keiner, ist „aus" ohne Satz schon wahr, jede andere Einstellung legt den
+        /// Vormerksatz an.
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Vorgabe trägt.</returns>
+        public static bool DesinfektionSetzen(int idProjekt, Desinfektionsvorgabe v)
+        {
+            if (idProjekt <= 0 || v == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (v.Equals(Desinfektionsvorgabe.Aus)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return DesinfektionSchreiben(idProjekt, v);
         }
 
         /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>

@@ -96,6 +96,9 @@ namespace WindowsFormsApplication1
             if (monat != null)
                 for (int m = 0; m < 12; m++) daten.Monat[m] = monat[m];
 
+            // PW1 Stufe 1: das Temperaturpaar - nur die Prozesswärme führt eines.
+            (daten.Vorlauf, daten.Ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, daten.Name);
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
@@ -104,6 +107,7 @@ namespace WindowsFormsApplication1
                 ["Exists"] = new Func<string, bool>(n => BedarfStammCtrl.Exists(art, n)),
                 ["Speichern"] = new Func<TypStammDaten, bool, string, KatalogSpeicherErgebnis>(
                     (d, istNeu, bez) => Schreiben(art, d, istNeu, bez)),
+                ["TemperaturPruefen"] = new Func<double?, double?, string>(Prozesstemperatur.Paarpruefung),
 
                 ["TitelText"] = Titel(art),
                 ["GruppeKopf"] = Text_("BTYP_GRP_KOPF", "Bezeichnung"),
@@ -145,7 +149,7 @@ namespace WindowsFormsApplication1
                     bezeichner);
 
             bool ok = BedarfStammCtrl.SaveHead(art, bezeichner, daten.Typ, daten.Beschreibung,
-                                               daten.MonatWerte(), istNeu);
+                                               daten.MonatWerte(), istNeu, daten.Vorlauf, daten.Ruecklauf);
             return new KatalogSpeicherErgebnis(ok,
                 ok ? "" : Text_("BTYP_MSG_FEHLER", "Fehler beim Aktualisieren der Daten!"),
                 bezeichner);

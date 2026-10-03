@@ -170,6 +170,11 @@ Form_Prozesswaerme.btn_Help         = Prozesswärme
 # Ueberlagerung des Bedarfsprofil-Dialogs mit eigener Bedienseite. Die Gruppen der
 # Stufen Erweitert und Experte und die Warnliste der Bilanz springen auf ihre Anker.
 Form_Zapfprofil.btn_Help            = Brauchwasser-Zapfprofil
+# Betriebskalender der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2).
+Form_Betriebskalender.btn_Help      = Betriebskalender
+# Die Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P2); die eigene Bedienseite
+# „Pufferspeicher auslegen" folgt mit Stufe P3 (Wiki), bis dahin die Seite Pufferspeicher.
+Form_PufferAuslegung.btn_Help       = Pufferspeicher
 Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
 Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
 Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte
@@ -448,6 +453,9 @@ Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
 # Abschnitt dazu. Die Importschluessel stehen in KatalogImportDialog (je
 # Auspraegung) bzw. im Kern (ModulImportProfil).
 Form_KatalogDubletten.btn_Help          = Gerätekataloge#dubletten
+# Katalog aktualisieren (Abgleich mit dem Katalogpaket der Auslieferung): eigener
+# Abschnitt derselben Seite.
+Form_Katalogabgleich.btn_Help           = Gerätekataloge#katalog-aktualisieren
 Form_Heizkessel_einlesen.btn_Help       = Gerätekataloge#import
 Form_PufferSp_einlesen.btn_Help         = Gerätekataloge#import
 Form_SolarKollektoren_einlesen.btn_Help = Gerätekataloge#import
@@ -802,3 +810,8 @@ Form_WP_Kuehlung.Grundlagen       = /wiki/Grundlagen/Kühlung
 # (GebaeudeKuehluebergabeFelder, in Katalogeditor und Verwaltung).
 Form_Simulation_Config_Kuehlung.btn_Help = Kühlung#einschalten
 Form_Gebaeude_Kuehluebergabe.btn_Help    = Gebäudemodell VDI 6007#kuehluebergabe
+
+# Die Projekteinstellung "Aufheizoptimierung" der Simulationskonfiguration
+# (SimulationKonfigSeite, Entwurf KP3 Welle O1): bis der Abschnitt der Anwendungsseite
+# mit seinem Anker steht, auf Seitenebene.
+Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007

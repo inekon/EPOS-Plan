@@ -14,7 +14,7 @@ Wie ein Batteriespeicher arbeitet und wie man ihn bemisst, steht unter [[Grundla
 # '''Simulationskonfiguration.''' In Schritt ① steht der Stromspeicher in der Gruppe ''Energiespeicher''. Wie bei der Photovoltaik setzt das Programm einen vorhandenen Speicher selbst auf den Platz, solange die Kaskade nicht von Hand gepflegt ist; sonst ''+ aufnehmen'' und ''Konfiguration speichern'' ([[Programm Dokumentation/Simulation#speicher-im-projekt|Simulation]]).
 # '''Betriebsführung''' – einer von zwei Wegen:
 #* die '''Einzelanlage''', solange keine Projektflotte aktiv ist: Ergebnisseite (Schritt ③), Reiter ''Stromspeicher'', Block ''Einzelanlage (klassischer Projektlauf)''; jedes Feld schreibt sofort, auch vor dem ersten Lauf ([[#berechnungsart|Berechnungsart der Speichervariante]]).
-#* die '''Projektflotte''' über ''Stromspeicher auslegen…'' und ''Als Projektflotte übernehmen''; solange sie aktiv ist, rechnet der Projektlauf die Flotte, und der Block der Einzelanlage entfällt ([[#auslegung-ansicht|Stromspeicher-Auslegung]]).
+#* die '''Projektflotte''' über ''Stromspeicher auslegen…'' und ''Diese Flotte für die Projektsimulation aktivieren''; solange sie aktiv ist, rechnet der Projektlauf die Flotte, und der Block der Einzelanlage entfällt ([[#auslegung-ansicht|Stromspeicher-Auslegung]]).
 
 {{Diagramm-Anfang|titel=Wo der Stromspeicher im Projektlauf sitzt}}
 {{Fluss-Anfang}}
@@ -140,6 +140,7 @@ Der Speicher rechnet nach Wärmeseite und Photovoltaik, je Viertelstunde, gegen 
 * '''Ladezustand''' – der Ladezustand zu Beginn des Laufs in Prozent der Kapazität; die Grenzen setzt die Betriebsführung (''Ladezustand min.'', ''Ladezustand max.'').
 * '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
 * '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
+* {{Anker|standby}}'''Standby-Verbrauch und Selbstentladung''' – unter ''Gerätetechnik'': der Verbrauch von Batteriemanagement und Wechselrichter im Leerlauf in W (0 bis 1 000) und der Verlust des Speicherinhalts in Prozent je Monat (0 bis 20). Leer heißt 0. Den Standby deckt die Simulation aus PV-Überschuss, sonst aus dem Netz; der Reiter ''Stromspeicher'' zeigt ihn als ''Eigenverbrauch Speichersystem'' samt Netzanteil.
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
 * {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''. Ausgelegt wird er über den Knopf ''Stromspeicher auslegen…'' derselben Spalte.
 
@@ -288,9 +289,9 @@ Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ 
 * '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.
 * Übernommen werden Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und der Hilfsverbrauch. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; die tragen Sie bei Bedarf in der Anlage nach.
 
-Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet allein ''„Als Projektflotte übernehmen"'' in Schritt 5.
+Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet allein ''„Diese Flotte für die Projektsimulation aktivieren"'' in Schritt 5.
 
-'''In einer Variante''' gilt dasselbe für sich: Eine neu angelegte Variante übernimmt die Speicherflotte ihres Stammprojekts, samt Einheiten, Betriebsziel und Peak-Ziel, und die Einheiten zeigen dabei auf die Speicheranlagen der Variante. Danach führt jede Variante ihre eigene Speicherflotte; sie ändert sie für sich, und ''„Als Projektflotte übernehmen"'' wirkt je Projekt. Die Wirtschaftlichkeit nennt je Spalte, womit gerechnet wurde – siehe [[Programm Dokumentation/Wirtschaftlichkeit#speicherkontext|Stromspeicher in der Vergleichsgruppe]].
+'''In einer Variante''' gilt dasselbe für sich: Eine neu angelegte Variante übernimmt die Speicherflotte ihres Stammprojekts, samt Einheiten, Betriebsziel und Peak-Ziel, und die Einheiten zeigen dabei auf die Speicheranlagen der Variante. Danach führt jede Variante ihre eigene Speicherflotte; sie ändert sie für sich, und ''„Diese Flotte für die Projektsimulation aktivieren"'' wirkt je Projekt. Die Wirtschaftlichkeit nennt je Spalte, womit gerechnet wurde – siehe [[Programm Dokumentation/Wirtschaftlichkeit#speicherkontext|Stromspeicher in der Vergleichsgruppe]].
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
@@ -432,7 +433,7 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 
 Dieser Block steht hier und nicht bei einer Einheit: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
 
-* '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze".
+* '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze". Eine neue Flotte übernimmt als Netzeinspeisegrenze die ''Einspeisegrenze'' der Projekteinstellung ([[Programm Dokumentation/Simulation#einspeisegrenze|Simulation]]); die Zeile unter dem Feld nennt sie. Im Projektlauf wirkt die Projekteinstellung zusätzlich als weiche Grenze: Die Flotte lädt zuerst, PV darüber wird abgeregelt.
 * '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Idealwissen'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
 ** '''''Archivierte Prognose-Snapshots''''' ist die Vorbelegung und rechnet ausschließlich mit '''geladenen''' Prognosen – die tatsächliche Jahresreihe des Projekts wird nie als Prognose verwendet, sonst wäre jeder Fahrplan heimlich hellsichtig. Ist keine Prognose geladen, steht der Hinweis unter dem Feld, der Rechenknopf bleibt gesperrt und nennt den Grund. '''Zwei Auswege''': den Informationsstand auf ''Idealwissen'' setzen – ein Knopf tut das – oder in Schritt 2 über '''„Prognosen und Projektjahre…"''' Prognosen laden.
 * '''Endenergieziele''' – bei ''je Speicher ein Ziel'' eine Zeile je Einheit, mit dem '''Namen''' der Einheit davor.
@@ -584,6 +585,9 @@ Nach dem Lauf steht der Kasten '''„Bestes Ergebnis"''' mit drei Karten:
 
 '''Der Kapitalwert ist das Ziel, die jährliche Ersparnis steht daneben.''' Wer aus einer Tabellenkalkulation kommt, sucht oft den Jahresüberschuss nach Kapitaldienst – der ist hier die zweite Zahl derselben Karte; optimiert wird gegen den Kapitalwert, weil er Laufzeit und Zins enthält.
 
+{{Anker|auslegung-beste-uebernehmen}}
+'''„Beste Variante übernehmen"''' steht unter dem Kasten, sobald die Suche einen besten Kandidaten mit Speicher gefunden hat; was er schreibt, steht unter [[#auslegung-uebernahme|Übernehmen: drei Knöpfe]].
+
 ===== Ergebnisse über der Speichergröße =====
 {{Anker|auslegung-groessen}}
 
@@ -624,7 +628,11 @@ Von oben nach unten:
 
 Die '''Jahresprojektion''' hat keine Zeitachse und deshalb auch keine Leiste: Zwischen zwei Projektjahren liegt nichts. Sie zeigt statt dessen '''den Wert des Elements, auf das Sie zeigen''' – eine Säule nennt ihr Jahr und ihren Betrag, das Band eines Ersatzjahres seinen Anlass.
 
-Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen Ergebnis) und '''„Beste Flotte übernehmen"''' (nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante). Die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten; erst danach fährt der gewöhnliche Projektlauf diese Flotte.
+{{Anker|auslegung-uebernahme}}
+'''Übernehmen: drei Knöpfe.''' Ein Ergebnis der Auslegung wird erst durch einen dieser Knöpfe Teil des Projekts; keiner schreibt in das Simulationsergebnis, das rechnet der nächste Projektlauf:
+* '''„Diese Flotte für die Projektsimulation aktivieren"''' (unten, nur bei einem zulässigen Ergebnis) aktiviert die bewertete Flotte als Projektflotte und schreibt sie zugleich als Auslegungsstand; die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten.
+* '''„Beste Flotte in die Auslegung übernehmen"''' (unten, nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante) schreibt den besten Kandidaten als feste Flotte in Schritt 1 und speichert die Einstellungen; für die Projektsimulation aktiviert ist er damit noch nicht.
+* '''„Beste Variante übernehmen"''' (unter dem Kasten „Bestes Ergebnis") tut beides in einem Schritt: Der beste Kandidat wird die feste Flotte der Auslegung, Suchmethode ''Nur bewerten'', und ist mit denselben Prüfungen für die Projektsimulation aktiviert. Gehört das Ergebnis nicht mehr zum eingestellten Stand oder läuft gerade eine Rechnung, ist der Knopf gesperrt und nennt den Grund.
 
 {{Anker|auslegung-anlage}}
 '''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Block ''Einzelanlage (klassischer Projektlauf)'' im Reiter ''Stromspeicher'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.

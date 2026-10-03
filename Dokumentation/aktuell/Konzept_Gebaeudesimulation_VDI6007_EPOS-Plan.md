@@ -1766,7 +1766,9 @@ Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, V
 und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
 P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
-N1.66), KP3 und KP4 auf Auftrag; kein Bestandteil der Stufen G0 bis GA.
+N1.66), KP3 entworfen und entschieden (E58, N1.67; Aufschlag, manuelle Aufheizzeit und Auslegungsgröße mit E59 und
+E60, N1.68), Umsetzung läuft; KP4 auf Auftrag; kein Bestandteil der Stufen
+G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -1954,7 +1956,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der sechzehn Testprojekte
-(`Referenzlaeufe/2026-09-30_R30_Stromverbraucher`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-10-02_R33_Viertelstunden`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -4938,3 +4940,75 @@ Projekte gegen R29.
 **Folgen.** Teilkonzept Konditionierungsprofile im Kopf und in 7.2, 7.4, 8, 9.7, 10.5, 11 (R16) und 12 fortgeschrieben;
 Entwurf KP2 und die zwei Übergaben der Sitzung liegen unter `ueberholt/`. Offen beim Anwender: die Sichtabnahme SA1 unter Windows, die SA2
 weitgehend mit abdeckt, samt der Bestätigung von Nr. 27 („eine Rückfrage, immer"). KP3, KP4 und KU3 folgen auf Auftrag.
+
+### N1.67 Entscheid E58 — Konditionierungsprofile: Aufheizoptimierung, Variantenvergleich, Kurzbericht, Referenzprojekt 1051, Einfrieren, Reserve, Nachtlüftung
+
+**Anlass.** Der Entwurf der Stufe KP3
+([`Gebaeudesimulation/2026-10-02_Entwurf_KP3.md`](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)) — zwei Leser, zwei
+unabhängige Entwürfe (einer vom Rechenweg und den Nachweisen her, einer von Daten, Ergebnissen, Darstellung und
+Regressionsnetz her), eine Gegenprüfung jeder code-gestützten Aussage am Code, an der Testdatenbank und mit
+Rechenproben, die Synthese in einem Papier — legt acht Fragen vor; alles Übrige benennt er als 33 Festlegungen der
+Umsetzung, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 02.10.2026 alle acht per
+Auswahl: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und F7 abweichend**.
+
+| Frage | Entscheid |
+|---|---|
+| F1 Welche Leistung hält die Rampe bei Quelle `Heizleistung_Max`? | **(b)**, nach Empfehlung: der **Augenblickswert** bei Quelle Grenze (Leistung am Beginn der Sprungstunde, das Maximum über die Rampe bei festen Rändern), das **Stundenmittel** bei Zielleistung — die Grenze ist im Löser ein Augenblickswert, die Zielleistung eine Stundengröße des Erzeugers; am Prüfsatz n = 7 statt 5, die Sprungstunde kappt bei festen Rändern nicht |
+| F2 Ab welchem Sollwert bemisst sich ein Sprung nach gestufter Absenkung? | **(b)**, nach Empfehlung: θ_N ist der **kleinste endliche Sollwert im Fenster der Rampe** — sicher auch nach einer Wochenend- oder Ferienabsenkung unter dem Nachtwert (Prüfsatz n = 10 statt 2); bei einfacher Nachtabsenkung gleich s(h_s − 1) |
+| F3 Wo stehen Nachtauskühl-, Sommerlüftungs- und Aufheizwerte im Variantenvergleich? | **(c) beides, abweichend von der Empfehlung (a):** die Gebäudetafel je Stand im Vergleichskapitel (Marke `stand.tabelle.gebaeude`, je Variante jedes Gebäude, ohne Δ) **und** eine Kennzahlgruppe „Gebäude" im Kennzahlenkatalog mit Δ (Höchstwert über die Gebäude, P_auf als Summe; neue Kennzahlen nur mit `Kennzahl.Seit`); +0,75 PT. **Warum es trägt:** Die Tafel zeigt je Gebäude, was sich über Gebäude nicht addieren lässt; die Gruppe gibt dem Vergleich das Δ, das die Empfehlung allein `energie.waermelast` überlassen hätte, und legt die Verdichtung ausdrücklich fest (Höchstwert, Summe). Mit `Kennzahl.Seit` bleiben die eingefrorenen Listen v1–v11 unberührt, beides fällt in die Katalogfassung 12, die KP3 ohnehin hebt |
+| F4 Kurzbericht und Einzelfelder? | **(b), abweichend von der Empfehlung (a):** die Einzelfelder `gebaeude.ergebnis.*` für eigene Vorlagen **und** ein Aufheizabsatz im ausgelieferten Kurzbericht in beiden Sprachen; +0,25 PT. **Warum es trägt:** Die Kurzberichte werden mit der Fassung 12 ohnehin über `Werkzeuge/Berichtsvorlage` neu gebaut, der Absatz entsteht im selben Lauf und unter denselben Vorlagenwachen; nach dem Grundsatz „NULL heißt Schalter aus" (Entwurf Abschnitt 2) bleibt er ohne wirksamen Schalter leer |
+| F5 Zuschnitt des Referenzprojekts 1051 | **(a)**, nach Empfehlung: „Referenzprojekt Konditionierung", Kopie von 1007, Bau per Probe mit dem echten Kern, „Büro" in allen fünf Größen, `Kuehlung_Aktiv` = 1 bei Kühlbetrieb aus, Nachtauskühlung nach F8, Sommerlüftung an, Ferien 23.12.–6.1. und 1.–14.8., Heizperiode 1.10.–30.4., Bemessung „kälteste Stunde − 2 K", täglich, ρ leer, Zuordnung mit der Fläche des Baus; die CI rechnet es als achtes Projekt |
+| F6 Wann wird eingefroren? | **(a)**, nach Empfehlung: nach Rechenweg, Export und Referenzprojekt (RP2 nach RP1); Oberfläche und Bericht (O1–O3) danach byte-gleich gegen die neue Basis R34 — die Basis hängt nur an Kern und Export |
+| F7 Bleibt die Aufheizreserve ρ bei 20 %? | **(c) Entscheid nach der Messung, abweichend von der Empfehlung (a):** RP1 misst ρ_min aller 17 VDI-Gebäude der Referenzprojekte mit dem echten Kern und legt sie dem A/B-Protokoll bei; bis dahin gilt 20 %, danach entscheidet der Anwender (offener Entscheid, Register P14). **Warum es trägt:** Die Werte über 20 % (rund 22–25 % an 1008, 1018 und 1049) sind aus der konvektiven KP0-Probe auf den Strahlungsanteil 0,3 hochgerechnet; die Messung ersetzt die Hochrechnung, bevor ein Wert in eine Basis eingeht. Die Wellen bis RP1 hängen nicht am Zahlenwert — ρ ist eine Spalte mit Vorgabe, die Vorgabe eine Zahl im Kern —, fällig ist der Entscheid vor dem Einfrieren RP2, weil 1051 mit ρ leer die Vorgabe rechnet |
+| F8 Lüftungsvorlage „Büro" gegen Nachtauskühlung | **(a)**, nach Empfehlung: Das Skript übernimmt „Büro" in allen fünf Größen und überschreibt danach die Lüftungs-Nachtzeile mit der Nachtauskühlung (2,0 1/h, 18–7 Uhr, bedingt); Wochenende und Ferien bleiben 0,1 1/h — Vorlage und Anpassung stehen im Netz, die ausgelieferte Saat bleibt |
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 4.1, 4.3,
+4.4, 4.5, 5.4, 6, 7.6, 8, 10.1, 10.2 und 12 fortgeschrieben, die Entscheide stehen in 9.8; der Entwurf trägt je Frage
+den Entscheid. F3 (c) und F4 (b) heben die Welle O3 auf 2,5–3 PT und KP3 auf **14–18,25 PT** (Entwurf 13–17,25 PT,
+Teilkonzept 6–9 PT). F7 bleibt bis zur Messung in RP1 offen; das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+zählt danach **2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung — im Entwurf Abschnitt 5 benannt — folgen
+mit der Umsetzung als **N1.69**; N1.68 hält E59 und E60.
+
+### N1.68 Entscheide E59 und E60 — Konditionierungsprofile: individuelle Rampe mit Aufschlag, manuelle Aufheizzeit je Gebäude, Auslegungsgröße
+
+**Anlass E59.** Nach E58 gibt der Anwender am 02.10.2026 eine Vorgabe zur Aufheizoptimierung: „Die Rampe soll jeweils
+individuell für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
+(Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
+beantwortet er am selben Tag. Der [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) führt die Vorgabe als F9
+(Abschnitt 6) und ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5).
+
+| Frage | Entscheid |
+|---|---|
+| (1) Wo liegt der manuelle Wert? | **Je Gebäude.** Eine dritte Art „manuell" neben täglich und fest, am Gebäude statt am Projekt: `Tab_Gebaeude.Aufheizzeit_Manuell_H` (1–47 h, NULL = Art des Projekts). Ein Gebäude mit Wert rampt an jedem Sprung mit n = Wert + 1 (der Wert ist die Aufheizzeit t = n − 1), begrenzt auf Absenkdauer und Deckel 48, gekappt an θ_K − 1 K; die Bemessung läuft weiter und liefert die Herleitungszeile, entscheidet aber nicht. Zonen erben den Wert ihres Gebäudes, der Katalog trägt kein Feld, die Übernahme Katalog → Projekt lässt NULL. Ergebnisspalte `Aufheiz_Art` = `MANUELL` (Schemaweg vom 03.10.2026, unten), `Aufheizzeit_Max_H` = Wert, Zustand BEMESSEN; der Export nennt `Geb[n].Aufheizzeit_Manuell` nur, wenn gesetzt |
+| (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum.** Projektvorgabe in `Tab_Einstellungen`: `Aufheiz_Aufschlag_H` (0–24) und `Aufheiz_Aufschlag_Prozent` (0–100), NULL = 0, beim Schreiben wird 0 zu NULL. Wirksam ist n' = min(48, n + max(Aufschlag_H, ⌈n · Prozent/100⌉)) auf ermittelte n der Arten täglich und fest — nach P16 (03.10.2026, unten) nur auf Rampen eines Kalendersprungs mit n > 1 —, nicht auf den manuellen Wert; die Rampe beginnt entsprechend früher, die Absenkdauer begrenzt n' wie jedes n (W2 zählt mit n'), t_auf,max bleibt die bemessene Zeit |
+| (3) Wann wird umgesetzt? | **Nach D2, vor RP1.** Welle R5 (Rechenweg, ein Schemaschritt `AufheizManuellSchema` mit den drei Spalten und den Ergebnisspalten nach dem Schemaweg unten, Testdatenbank, Export; Nachweise N-AH11 Aufschlag und N-AH12 manuell), O1b (zwei Aufschlagfelder in der Projekteinstellung, KI-Felder), Erweiterung von O2 (Feld „Aufheizzeit manuell" im Gebäudedialog mit zwei Vorschlägen: die bemessene Zeit des Gebäudes zum Übernehmen und eine Spanne, nach P15 aus τ₂ des Gebäudes; außerhalb Hinweis, keine Sperre) und O3 (Abweichungsmerkmale). Reihenfolge D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A |
+
+**„Individuell, nicht pauschal".** Der Rechenweg ermittelt die Rampe schon je Gebäude und Zone — Stufenformel, Bemessung und
+P_auf mit eigenen Massen, eigenem Φ_stat und eigener Quelle. Pauschal je Projekt bleiben allein die Aufheizreserve ρ (offen
+bis zur Messung, P14), die Art täglich/fest und der neue Aufschlag; E59 benennt das ausdrücklich und ändert daran nichts.
+
+**Anlass E60.** Am 03.10.2026 fragt der Anwender, ob ein Filter (FFT, Z-Transformation, Tiefpass in einem zweiten Durchlauf)
+die Heizlastspitzen nach Sollwertsprüngen glätten soll, weil sie eine zu hohe Spitzenleistung für die Auslegung ergeben. Das
+[Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) prüft beide Filterwege und
+schlägt vor, die Frage in der Auswertung zu beantworten. **Entschieden: Vorschlag 1.** Auslegungsgröße der Heizung ist die
+stationäre Auslegungsheizlast plus die Aufheizleistung P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3)
+weisen ideale Spitze (`SpitzeKw`), Tagesmittel (`SpitzeTagesmittelKw`) und P_auf mit Quelle nebeneinander aus, mit dem
+Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist. Kein Filter im Rechenweg; die Kennzahl „Spitze
+als n-h-Mittel" (Vorschlag 2) ist nicht beauftragt. Entwurf Festlegung 41.
+
+**Folgeentscheide vom 03.10.2026.** Die Ausgestaltung warf drei Fragen auf (Register P15–P17) und eine Wahl im Schema; der
+Anwender entscheidet alle vier am selben Tag:
+
+| Frage | Entscheid |
+|---|---|
+| P16 Trifft der Aufschlag auch Sprünge ohne Rampe? | **Nein — kalenderbezogen.** Der Aufschlag gilt nur an Rampen, die ein Sprung des Heizsollwerts (Heizkalender) auslöst, und verlängert nur Rampen mit n > 1; an Sprüngen ohne Rampe (n = 1) und an Tagen ohne Sprung kein Aufschlag. Begrenzung auf D + 1 und W2 bleiben (Entwurf Festlegung 35) |
+| P17 Wie ist „Auslegungsheizlast plus P_auf" zu lesen? | **(b)**: Auslegungsheizlast Φ_HL plus Aufheizzuschlag Φ_RH = max(0, P_auf − Φ_stat) nach dem Muster der DIN EN 12831-1 — P_auf enthält die stationäre Last am Bemessungspunkt schon, die wörtliche Summe zählte sie doppelt. Die Ergebniszeile des Gebäudes trägt dafür `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw` (Festlegung 41) |
+| P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? | **(b)**: aus τ₂ des Gebäudes, der langsamen Zeitkonstante des Zweikapazitätenmodells (`Zonenmodell2K.Aufheizantwort`), keine feste Bauart-Tabelle; dazu die bemessene Zeit. Regel der Umsetzung: [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] Stunden (Festlegung 40) |
+| Schemaweg des Schritts KP-S4 | **Ergebnisspalte `Aufheiz_Art`** (`TAEGLICH`, `FEST`, `MANUELL`) per `ADD COLUMN` an `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone`; `Aufheiz_Bemessung` behält die Variante, `Tab_ErgebnisGebaeude` wird nicht neu gebaut; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" (Festlegungen 39, 43). Die Nummer bleibt Platzhalter 171, spät gegen origin |
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 3.4,
+4.6, 4.8, 4.9, 5.3, 5.4, 5.5, 7.6, 7.7, 8, 10.3 und 13 fortgeschrieben, die Entscheide stehen in 9.9. KP3 wächst um
+R5 (1,25–1,75 PT) und O1b (0,25–0,5 PT), O2 um 0,75 PT, O3 um 0,5 PT, auf **16,75–21,75 PT**; die Basis R34 sieht weder
+Aufschlag noch Art „manuell", ihr Netz sind N-AH11 und N-AH12. Das
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) führt P15, P16 und P17 als entschieden und zählt wieder
+**2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung KP3 folgen als **N1.69**.

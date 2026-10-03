@@ -359,7 +359,9 @@ namespace WindowsFormsApplication1
         {
             var ausschluss = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                k.IdSpalte, k.NamensSpalte, "ReadOnly", "Beschreibung"
+                k.IdSpalte, k.NamensSpalte, "ReadOnly", "Beschreibung",
+                // KU1: Schlüssel, Prüfsumme und Auslaufkennzeichen sind keine Fachwerte.
+                Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN
             };
             foreach (string a in k.AusschlussSpalten) ausschluss.Add(a);
 

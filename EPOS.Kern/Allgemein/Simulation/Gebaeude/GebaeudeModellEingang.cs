@@ -282,6 +282,12 @@ namespace WindowsFormsApplication1
         internal double HeizungStrahlungsanteil { get; private set; }
         /// <summary>Heizleistungsgrenze [W]; NaN = unbegrenzt.</summary>
         internal double HeizleistungMaxW { get; private set; }
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h] des Gebäudes (E59, Festlegung 37; <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>),
+        /// 1 … 47; <c>null</c> = die Art des Projekts. Jede Zone des Gebäudes trägt denselben Wert (Festlegung 38,
+        /// Teilkonzept 3.4: Zonen erben, ein Zonenfeld gibt es nicht). Gelesen nur von <see cref="Aufheizoptimierung"/>.
+        /// </summary>
+        internal int? AufheizzeitManuellH { get; private set; }
         /// <summary>Randbedingung der Grundfläche (<c>DbWerte.GRUND_*</c>).</summary>
         internal string GrundRandbedingung { get; private set; }
         /// <summary>Kellertemperatur [°C].</summary>
@@ -725,8 +731,90 @@ namespace WindowsFormsApplication1
         internal double[] PhiRadIW { get; private set; }
         /// <summary>Konvektive Last an der Raumluft [W].</summary>
         internal double[] PhiConv { get; private set; }
-        /// <summary>Heizsollwert [°C] (E8).</summary>
+        /// <summary>
+        /// Heizsollwert [°C] (E8). Mit Aufheizoptimierung trägt er nach
+        /// <see cref="HeizsollwertMitRampeSetzen"/> die Rampen (Entwurf KP3, Festlegungen 1 und 2) —
+        /// Übergabe, Kälte, F21 und die stündliche Kühlprüfung hat <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>
+        /// vorher an der Reihe ohne Rampe ausgelegt.
+        /// </summary>
         internal double[] ThetaSoll { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Heizsollwertreihe mit Rampe</b> (Entwurf KP3, Festlegungen 1, 2 und 8) — der
+        /// einzige Schreibweg nach dem Bauen: <see cref="Aufheizoptimierung.Anwenden"/> ruft ihn, wenn
+        /// die Planung mindestens eine Stunde angehoben hat. Ohne Schalter wird er nie gerufen
+        /// (Grundsatz 3), die Reihe bleibt dann Zeichen für Zeichen die des Bauers.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn die Reihe nicht 8 760 Stunden führt.</exception>
+        internal void HeizsollwertMitRampeSetzen(double[] reihe)
+        {
+            if (reihe == null || reihe.Length != 8760)
+                throw new ArgumentException("Die Heizsollwertreihe mit Rampe muss 8760 Stunden führen.", nameof(reihe));
+            ThetaSoll = reihe;
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt</b> [°C] in der <b>Außenform</b>
+        /// (Entwurf KP3, Befund B4, Festlegung 12): Außenluft und Fenster bei <paramref name="aussenC"/>
+        /// ohne Strahlung, das Erdreich mit seinem Tagesmittel am Tag <paramref name="tag"/>, der
+        /// unbeheizte Raum bei der Kellertemperatur — dieselben Gewichte und dieselbe Rechnung wie am
+        /// Auslegungspunkt der Anlagenkopplung (8.4), nur als Mitglied statt lokal in
+        /// <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>.
+        /// Ohne Sonne und Gewinne.
+        ///
+        /// <para><b>Nur ohne Nachbarglieder:</b> Im Bauteilweg mit Nachbarzonen teilte die Außenform
+        /// durch die U·A-Summe samt Nachbargliedern, summierte aber nur die Außenglieder (B4) — die
+        /// Nachbarn stünden bei 0 °C. Ein solcher Eingang nimmt die Nachbarform
+        /// <see cref="AequivalentN(int, double, ReadOnlySpan{double})"/>; hier lehnt das Mitglied benannt ab.</para>
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <exception cref="InvalidOperationException">bei einem Eingang mit Nachbargliedern oder ohne Bau.</exception>
+        internal double AequivalentN(int tag, double aussenC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            if (Nachbarglieder.Count > 0)
+                throw new InvalidOperationException(Bezeichnung + ": Die äquivalente Außentemperatur mit Nachbarzonen braucht die Temperaturen der Nachbarn (Nachbarform).");
+            return _aequivalentN(tag, aussenC);
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt in der Nachbarform</b> [°C] (Entwurf
+        /// KP3, Befund B4, Festlegungen 12–14): der Zähler der Außenglieder wie in der Außenform
+        /// (Außenluft und Fenster bei <paramref name="aussenC"/> ohne Strahlung, Erdreich als
+        /// Tagesmittel des Tags <paramref name="tag"/>, unbeheizter Raum bei der Kellertemperatur),
+        /// dahinter Σ U·A_j·θ_j der Nachbarglieder mit den festen Lufttemperaturen
+        /// <paramref name="nachbarC"/> — geteilt durch dieselbe U·A-Summe samt Nachbargliedern.
+        /// Dieselbe Bildung und Reihenfolge wie <see cref="ZonenEingang.ThetaEq"/> (Gl. (41)/(42)):
+        /// Liegt die Stunde ohne Strahlung und ohne Erdreich, sind beide gleich (N-AH9).
+        /// Ohne Nachbarglieder ist das wörtlich die Außenform.
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <param name="nachbarC">Je Nachbarglied (<see cref="Nachbarglieder"/>, in deren Reihenfolge) die Lufttemperatur der Nachbarzone [°C].</param>
+        /// <exception cref="InvalidOperationException">ohne Bau.</exception>
+        /// <exception cref="ArgumentException">wenn die Zahl der Temperaturen nicht die der Nachbarglieder ist.</exception>
+        internal double AequivalentN(int tag, double aussenC, ReadOnlySpan<double> nachbarC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            IReadOnlyList<Nachbarglied> glieder = Nachbarglieder;
+            if (nachbarC.Length != glieder.Count)
+                throw new ArgumentException(Bezeichnung + ": " + nachbarC.Length.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbartemperaturen für " + glieder.Count.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbarglieder.", nameof(nachbarC));
+            if (glieder.Count == 0) return _aequivalentN(tag, aussenC);
+            double zaehler = _aequivalentZaehlerN(tag, aussenC);
+            for (int k = 0; k < glieder.Count; k++) zaehler += glieder[k].UA_WK * nachbarC[k];
+            return zaehler / UaSummeGewichtung_WK;
+        }
+
+        /// <summary>Die Außenform der äquivalenten Außentemperatur am Bemessungspunkt, gebildet im Bauen (B4).</summary>
+        private Func<int, double, double> _aequivalentN;
+
+        /// <summary>Der Zähler der Außenglieder am Bemessungspunkt (Bauteilweg, B4); <c>null</c> im Klassenweg.</summary>
+        private Func<int, double, double> _aequivalentZaehlerN;
         /// <summary>Obere Regelgrenze je Stunde [°C]: der Kühlsollwert, ohne wirksame Kühlung +∞ (E32).</summary>
         internal double[] ThetaMax { get; private set; }
 
@@ -1055,6 +1143,8 @@ namespace WindowsFormsApplication1
             }
 
             e.ThetaEq = thetaEq;
+            // Entwurf KP3 (B4, Festlegung 12): dieselbe Außenform als Mitglied für die Aufheizbemessung.
+            e._aequivalentN = aequivalentN;
             e.PhiRadAW = phiRadAW;
             e.PhiRadIW = phiRadIW;
             e.PhiConv = phiConv;
@@ -1362,8 +1452,10 @@ namespace WindowsFormsApplication1
 
             // 8.4: am Auslegungspunkt Außenluft und Fenster bei θ_out,N ohne Strahlung, das
             // Erdreich mit seinem Tagesmittel am Auslegungstag, der unbeheizte Raum bei der
-            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe.
-            return (tag, aN) =>
+            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe. Der Zähler der
+            // Außenglieder steht für sich (Entwurf KP3, B4): Die Nachbarform hängt die Nachbarglieder
+            // dahinter wie ZonenEingang.ThetaEq; die Außenform teilt ihn wie bisher.
+            Func<int, double, double> zaehlerN = (tag, aN) =>
             {
                 double summe = 0.0;
                 foreach (Glied g in glieder)
@@ -1385,8 +1477,10 @@ namespace WindowsFormsApplication1
                     }
                     summe += g.UA_WK * theta;
                 }
-                return uaSumme > 0.0 ? summe / uaSumme : aN;
+                return summe;
             };
+            _aequivalentZaehlerN = zaehlerN;
+            return (tag, aN) => uaSumme > 0.0 ? zaehlerN(tag, aN) / uaSumme : aN;
         }
 
         // =====================================================================
@@ -1944,6 +2038,7 @@ namespace WindowsFormsApplication1
                 Innenflaechenfaktor = g.Innenflaechenfaktor ?? GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR,
                 HeizungStrahlungsanteil = g.Heizung_Strahlungsanteil ?? GebaeudeFestwerte.VORGABE_HEIZUNG_STRAHLUNGSANTEIL,
                 HeizleistungMaxW = g.Heizleistung_Max.HasValue ? 1000.0 * g.Heizleistung_Max.Value : double.NaN,
+                AufheizzeitManuellH = g.Aufheizzeit_Manuell_H,
                 GrundRandbedingung = string.IsNullOrEmpty(g.Grundflaeche_Randbedingung)
                     ? DbWerte.GRUND_ERDREICH : g.Grundflaeche_Randbedingung,
                 Kellertemperatur = g.Kellertemperatur ?? GebaeudeFestwerte.VORGABE_KELLERTEMPERATUR,
@@ -1959,6 +2054,11 @@ namespace WindowsFormsApplication1
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(nInf) + " 1/h ist nicht größer null.");
             if (g.Luftwechsel_Nutzer is double nNutz && (!Endlich(nNutz) || nNutz < 0.0))
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(nNutz) + " 1/h ist negativ oder nicht endlich.");
+            // E59: die manuelle Aufheizzeit nur im Bereich der Pruefklausel (1 bis 47 h).
+            if (g.Aufheizzeit_Manuell_H is int tManuell &&
+                (tManuell < AufheizManuellSchema.MANUELL_MIN_H || tManuell > AufheizManuellSchema.MANUELL_MAX_H))
+                e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die manuelle Aufheizzeit " +
+                         tManuell.ToString(CultureInfo.InvariantCulture) + " h liegt nicht zwischen 1 und 47 h.");
             e.SommerlueftungBilden();
 
             // Ost/West: die NULL-Vorgabe aus dem Bestandsfeld bildet der Vorbereitungsschritt.

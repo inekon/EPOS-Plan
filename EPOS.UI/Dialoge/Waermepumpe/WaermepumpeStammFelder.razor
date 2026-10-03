@@ -75,6 +75,22 @@
                     WertChanged="BeiKuehlleistung"
                     Aktiv="@(Aktiv && KuehlleistungAenderbar)" />
 
+        @* TAKTVERLUST NACH EN 14825 (Welle M4, WP1): die kleinste Modulationsleistung und der
+           Teillastkoeffizient C_d. Leer heisst nicht 0: ohne Mindestleistung keine Taktrechnung,
+           ohne C_d die Vorgabe 0,9 - der Platzhalter sagt es im Feld. Gepflegt wird im KATALOG;
+           im Anlagendialog stehen die Werte der Projektkopie nur lesend (TeillastAenderbar),
+           sie reisen mit der Uebernahme aus dem Katalog. *@
+        <Zahlenfeld Bezeichnung="@Texte.LabelMindestleistung" Einheit="@Texte.EinheitKw"
+                    Feldname="@Texte.FeldMindestleistung" Wert="@Daten.MindestleistungKw"
+                    Platzhalter="@Texte.PlatzhalterOhneTakt" Min="0" Max="1000"
+                    WertChanged="BeiMindestleistung"
+                    Aktiv="@(Aktiv && TeillastAenderbar)" />
+        <Zahlenfeld Bezeichnung="@Texte.LabelTaktverlustCd" Einheit="@Texte.HinweisTaktverlustCd"
+                    Feldname="@Texte.FeldTaktverlustCd" Wert="@Daten.TaktverlustfaktorCd"
+                    Platzhalter="@Texte.PlatzhalterCdVorgabe" Min="0" Max="1"
+                    WertChanged="BeiTaktverlustCd"
+                    Aktiv="@(Aktiv && TeillastAenderbar)" />
+
         @* --- Modulkosten, nur lesend (W14a-O-1) --------------------------------
            KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein gesperrtes
            Feld sagte "hier koenntest du tippen, nur jetzt nicht"; hier gibt es
@@ -137,6 +153,15 @@
     /// </summary>
     [Parameter] public bool KuehlleistungAenderbar { get; set; }
 
+    /// <summary>
+    /// Dürfen MINDESTLEISTUNG und C_d geändert werden? (Welle M4, WP1)
+    ///
+    /// <para><c>true</c> (Vorgabe) ist der Weg der Katalogverwaltung, in der die beiden Werte gepflegt
+    /// werden. <c>false</c> ist der Weg des <c>WaermepumpeAnlageDialog</c>: Dort zeigt der Baustein die
+    /// Werte der Projektkopie, die mit der Übernahme aus dem Katalog kommen.</para>
+    /// </summary>
+    [Parameter] public bool TeillastAenderbar { get; set; } = true;
+
     /// <summary>Jede Eingabe meldet sich — der Wirt zieht daraufhin Sperren und Knöpfe nach.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
@@ -167,7 +192,9 @@
             new EPOS.UI.Bausteine.Stammblattwert(texte.LabelBaujahr, daten.Baujahr?.ToString(CultureInfo.CurrentCulture) ?? ""),
             new EPOS.UI.Bausteine.Stammblattwert(texte.LabelNennleistung, Zahl(daten.Nennleistung), texte.EinheitKw),
             new EPOS.UI.Bausteine.Stammblattwert(texte.LabelHeizstab, Zahl(daten.Heizstab), texte.EinheitKw),
-            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelKuehlleistung, Zahl(daten.Kuehlleistung), texte.EinheitKw)
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelKuehlleistung, Zahl(daten.Kuehlleistung), texte.EinheitKw),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelMindestleistung, Zahl(daten.MindestleistungKw), texte.EinheitKw),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelTaktverlustCd, Zahl(daten.TaktverlustfaktorCd))
         };
     }
 
@@ -255,6 +282,12 @@
     /// nicht".
     /// </summary>
     private Task BeiKuehlleistung(double? wert) { Daten.Kuehlleistung = wert ?? 0; return Melden(); }
+
+    /// <summary>Die Mindestleistung [kW] — leer bleibt leer (keine Taktrechnung).</summary>
+    private Task BeiMindestleistung(double? wert) { Daten.MindestleistungKw = wert; return Melden(); }
+
+    /// <summary>Der Teillastkoeffizient C_d — leer bleibt leer (Vorgabe 0,9).</summary>
+    private Task BeiTaktverlustCd(double? wert) { Daten.TaktverlustfaktorCd = wert; return Melden(); }
 
     private Task BeiTyp(int? index)
     {

@@ -162,6 +162,80 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die VORWAHL eines Waermeerzeugers in eine ungepflegte Kaskade — in der Folge der
+        /// Vorgabe-Ladeprioritaeten (Solarthermie 10, Waermepumpe 20, BHKW 30, Heizkessel 40;
+        /// <see cref="Ladeordnung.VorgabeLadeprio"/>). <c>false</c> = nichts geaendert.
+        ///
+        /// <para>Der Erzeuger kommt VOR den ersten belegten Platz, dessen Erzeuger eine
+        /// schlechtere (groessere) Vorgabe-Ladeprioritaet hat; die Plaetze ab dort ruecken
+        /// in den naechsten freien Platz nach. Hat keiner der belegten eine schlechtere,
+        /// gilt <see cref="Aufnehmen"/> (erster freier Platz hinter dem letzten belegten).
+        /// Die Reihenfolge der schon belegten Plaetze untereinander bleibt erhalten —
+        /// gerueckt wird nur, um dem neuen Platz zu machen.</para>
+        ///
+        /// <para>Damit stimmen Vorwahl und Ladereihenfolge ueberein, auch wenn
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> den Kessel schon an das Ende einer
+        /// leeren Kaskade gesetzt hat: Eine danach vorgewaehlte Waermepumpe steht vor ihm.
+        /// Die Bedienhandlung „+ aufnehmen" bleibt <see cref="Aufnehmen"/> (hinten
+        /// anfuegen) — dort entscheidet der Anwender, und umordnen kann er mit
+        /// <see cref="Verschieben"/>.</para>
+        /// </summary>
+        public static bool Vorwaehlen(KonfigurationModel k, string dbWert)
+        {
+            if (k == null || string.IsNullOrEmpty(dbWert)) return false;
+
+            List<string> plaetze = Lesen(k);
+            if (plaetze.Contains(dbWert)) return false;   // schon aufgenommen
+
+            int rangNeu = VorwahlRang(dbWert);
+
+            int vor = -1;
+            for (int i = 0; i < plaetze.Count; i++)
+                if (!string.IsNullOrEmpty(plaetze[i]) && VorwahlRang(plaetze[i]) > rangNeu)
+                {
+                    vor = i;
+                    break;
+                }
+
+            if (vor < 0) return Aufnehmen(k, dbWert);
+
+            // Freier Platz hinter „vor": die Plaetze vor..frei-1 ruecken um eins nach hinten.
+            int frei = -1;
+            for (int i = vor + 1; i < plaetze.Count; i++)
+                if (string.IsNullOrEmpty(plaetze[i])) { frei = i; break; }
+
+            if (frei >= 0)
+            {
+                for (int i = frei; i > vor; i--) plaetze[i] = plaetze[i - 1];
+                plaetze[vor] = dbWert;
+            }
+            else
+            {
+                // Sonst der letzte freie Platz davor: die Plaetze frei+1..vor-1 ruecken
+                // um eins nach vorn, der neue Erzeuger steht unmittelbar vor „vor".
+                for (int i = vor - 1; i >= 0; i--)
+                    if (string.IsNullOrEmpty(plaetze[i])) { frei = i; break; }
+                if (frei < 0) return false;   // alle vier Plaetze belegt
+
+                for (int i = frei; i < vor - 1; i++) plaetze[i] = plaetze[i + 1];
+                plaetze[vor - 1] = dbWert;
+            }
+
+            Schreiben(k, plaetze);
+            return true;
+        }
+
+        /// <summary>
+        /// Rang eines Waermeerzeugers fuer die Vorwahl: seine Vorgabe-Ladeprioritaet;
+        /// ein unbekannter Wert ruht hinten (<see cref="Ladeordnung.PRIO_SONSTIGE"/>).
+        /// </summary>
+        public static int VorwahlRang(string dbWert)
+        {
+            int typ = TypZuAnlagentyp(dbWert);
+            return typ == 0 ? Ladeordnung.PRIO_SONSTIGE : Ladeordnung.VorgabeLadeprio(typ);
+        }
+
+        /// <summary>
         /// Nimmt einen Waermeerzeuger aus der Simulation — das „×" der aufgenommenen
         /// Karte (woertlich <c>KaskadeEntfernen</c>:559-573). Der Platz wird leer, alle
         /// uebrigen bleiben, wo sie sind (keine Verdichtung).

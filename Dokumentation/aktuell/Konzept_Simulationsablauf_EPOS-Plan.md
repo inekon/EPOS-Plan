@@ -928,8 +928,17 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 | Zustand der Stunde | Brennstoffeinsatz |
 |---|---|
 | läuft (Abgabe ab dem Zahlenrand von 10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer; ein Rest darunter aus einer Vorstufe zählt nicht als Lauf) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
-| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust`, eine Leistung, kein Prozentwert) |
+| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust` in der Einheit `Bereitschaft_Einheit`, siehe unten) |
 | steht still und ist abgeschaltet | 0 |
+
+**Die Bereitschaftsleistung in ihrer Einheit.** Katalog und Projektkopie führen den Wert
+`Betriebsbereitschaftverlust` und seine Einheit `Bereitschaft_Einheit` (Schemaschritt 162,
+`KesselBereitschaftEinheitSchema`): `kW` — Vorgabe jeder Bestandszeile und die Einheit des Imports
+aus VDI 3805 — oder `%` der Nennleistung. Der Lauf rechnet in kW; die Umrechnung steht einmal in
+`KesselBereitschaft.LeistungKw` (bei `%`: Wert × `Ptherm` / 100, ohne Nennleistung 0), gerufen beim
+Einlesen des Kessels (`SimulationSPK.BereitschaftsleistungKw`). Die Prüfgrenzen je Einheit
+(`KesselBereitschaft.Verstoss`: kW 0 … Nennleistung, % 0 … 100) halten Katalogeditor und
+Katalogbrowser beim Speichern. Ein Import überschreibt mit seinem kW-Wert auch die Einheit.
 
 **Betriebsbereit** ist ein stillstehender Kessel (`SimulationSPK.IstBetriebsbereit`), wenn
 
@@ -1012,5 +1021,610 @@ höchste Stundenwert des Brennstoffs (Wärmeabgabe ÷ Wirkungsgrad plus Anfahrve
 die Summe dieser Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
 meldet ihn mit „Katalogwert pflegen“.
 
-Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-09-30_R30_Stromverbraucher` (Größen `Kessel[i].*` in `aggregate.csv`).
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
+`EPOS.Kern.Tests/KesselKennlinieTests`,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R33_Viertelstunden` (Größen `Kessel[i].*` in `aggregate.csv`).
+
+## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
+
+Die vier Wärmeplätze `Tab_Einstellungen.Tool_1` bis `Tool_4` ordnen die Direktdeckung einer Stunde;
+welcher Erzeuger einen Pufferspeicher zuerst lädt, entscheidet die Ladepriorität der Wärmesenke
+(Vorgaben Solarthermie 10, Wärmepumpe 20, BHKW 30, Heizkessel 40, `Ladeordnung.VorgabeLadeprio`).
+
+**Vorwahl.** Solange eine Kaskade nicht von Hand gepflegt ist (`Tab_Einstellungen.Kaskade_Gepflegt`
+= 0), wählt die Simulationskonfiguration beim Öffnen die verbauten Wärmeerzeuger des Projekts vor
+(`SimulationKonfigHuelle.VerbauteAnlagenVorwaehlen`) — in der Folge der Vorgabe-Ladeprioritäten
+Solarthermie, Wärmepumpe, BHKW, Heizkessel (`ErzeugerKatalog.WAERMEERZEUGER`). Jeder noch fehlende
+Erzeuger kommt über `Kaskade.Vorwaehlen` vor den ersten belegten Platz, dessen Erzeuger eine
+schlechtere Vorgabe-Ladepriorität hat; die Plätze ab dort rücken in den nächsten freien nach. Hat
+keiner eine schlechtere, gilt `Kaskade.Aufnehmen` (erster freier Platz hinter dem letzten belegten).
+Die schon belegten Plätze behalten ihre Reihenfolge untereinander. Ein Heizkessel, den
+`KonfigurationCtrl.HeizkesselNachziehen` in eine gespeicherte, ungepflegte Kaskade an das Ende gesetzt
+hat, steht damit auch nach der Vorwahl einer Wärmepumpe hinter ihr. Geschrieben wird die Vorwahl
+erst mit „Konfiguration speichern“.
+
+**Wahl des Anwenders.** Die Erzeugerkarten tragen ihren Rang; die Pfeile der Karte ordnen um
+(`Kaskade.Verschieben`), „+ aufnehmen“ hängt hinten an (`Kaskade.Aufnehmen`), „×“ nimmt heraus. Jeder
+dieser Handgriffe setzt `Kaskade_Gepflegt`; eine gepflegte Kaskade wird weder vorgewählt noch
+nachgezogen. Gespeicherte Kaskaden — auch die der Referenzprojekte — rechnet der Lauf unverändert.
+
+Gehalten von `EPOS.Kern.Tests/KaskadeTests` (`Vorwaehlen_*`) und
+`EPOS.Kern.Tests/KuehlbetriebProgrammeinstellungTests.Die_Vorwahl_folgt_den_Ladeprioritaeten`.
+
+## 14. Solarthermie-Ganglinie als Rechenweg
+
+Die Solarthermie eines Projekts rechnet entweder über das **Kollektorfeld** (Klimadaten,
+Kollektorkennwerte, Ausrichtung — die Vorgabe) oder über eine zugeordnete **Solarthermieganglinie**
+mit 8 760 Stundenwerten (`Allgemein/Simulation/SolarganglinieWeiche.cs`, Rechenweg in
+`SimulationSolarthermie.GanglinieEinsetzen`).
+
+**Weiche.** Die Auswahl „Profil“/„Ganglinie“ der Startseiten-Kachel wählt nur den Dialog; sie wird
+nicht gespeichert. Maßgeblich ist der Datenstand: Die Weiche steht auf Ganglinie genau dann, wenn dem
+Projekt über `Z_ProjektSolarganglinie` eine Ganglinie zugeordnet ist, deren Projektkopie
+(`Tab_SolarganglinieDaten`, gelesen nach `ID`) **genau 8 760 endliche, nicht negative Werte** führt.
+Sonst rechnet das Kollektorfeld. Bei mehreren Zuordnungen rechnet die mit der kleinsten
+Zuordnungs-ID; die übrigen werden als Warnung gemeldet. Einen Schemaschritt braucht die Weiche nicht.
+
+**Einheit.** Ein Wert ist die Wärmeleistung der Stunde in kW und damit die Wärmemenge der Stunde in
+kWh — absolut, ohne Bezug auf eine Fläche. Die Ganglinie ist das stündliche Potenzial EINES Felds;
+was davon den Bedarf deckt, den Puffer lädt oder als Überschuss verfällt, entscheidet die Stunde.
+
+**Senken, Puffer, Kaskade.** Führt das Projekt eine Solarthermie-Anlagenzeile, ist die mit der
+kleinsten `Tab_Energieanlagen.ID` der Träger der Ganglinie: Die Ganglinie rechnet unter ihrer ID —
+mit ihren Senken (`Z_AnlageSenke`, sonst der Vorbelegung Heizkreis/Beides), ihrer Pufferladung samt
+Nachrang-Schwelle und an ihrem Kaskadenplatz. Weitere Kollektorfelder rechnen dann nicht (Hinweis im
+Protokoll). Ohne Anlagenzeile deckt die Ganglinie alle Wärmekanäle — Heizung, Brauchwasser,
+Prozesswärme — direkt und ohne Puffer (Hinweis im Protokoll). In beiden Fällen rechnet sie nur, wenn
+die Solarthermie einen Kaskadenplatz hat; die Vorwahl der Simulationskonfiguration zählt eine
+vollständige Ganglinie wie ein Kollektorfeld, und ohne Platz meldet der Lauf
+`SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ` (`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`).
+
+**Rückfälle.** Eine zugeordnete, aber unvollständige Ganglinie (zu wenige oder zu viele Werte, leere,
+negative oder nicht endliche Werte) ist eine Warnung mit dem benannten Mangel; der Lauf rechnet mit
+dem Kollektorfeld, ohne Kollektorfeld liefert die Solarthermie nichts. Der Statuspunkt der Kachel
+(`KomponentenBestandCtrl`) ist ohne Anlagenzeile nur mit vollständiger Ganglinie an.
+
+**Ergebnis und Bericht.** Die Ganglinie erscheint in `Kollektor_Ergebnisse` und damit in
+`Tab_ErgebnisSolarthermieModul`, im Ergebnisreiter und in den Erzeugertabellen des Berichts als eine
+Zeile „Solarthermie-Ganglinie ‚Bezeichner‘“ mit Jahresertrag (genutzt plus Überschuss), genutzter
+Wärme und Überschuss; Fläche und Anzahl stehen auf 0 und werden im Ergebnisreiter als „–“ gezeigt
+(`SolarKollektorErgebnis.IstGanglinie`, `JahresertragKwh`, `NutzanteilProzent`). Die
+Wirtschaftlichkeit kennt für die Ganglinie keine eigene Investition; ihre Wärmemenge steht in der
+Wärmemenge der Komponente Solarthermie. Eine Kostenposition, die an eine einzelne Anlage gebunden ist,
+findet die Ganglinienzeile nicht unter dem Anlagennamen und behält ihre gespeicherte Menge.
+
+Gehalten von `EPOS.Kern.Tests/SolarganglinieRechenwegTests` und
+`EPOS.UI.Tests/Seiten/ErzeugerReiterTests.Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl`.
+Kein Referenzprojekt führt eine Solarthermieganglinie.
+
+## 15. Prozesswärme: Temperaturniveau und Betriebsweisen
+
+Ein Prozesswärmesatz trägt neben Monatswerten und Wochenprofil ein **Temperaturpaar**: `Vorlauf`
+und `Ruecklauf` [°C] an `Tab_Prozesswaerme_STAMM` und an der Projektkopie `Tab_Prozesswaerme`
+(Schemaschritt `ProzesswaermeTemperaturSchema`; REAL, nullbar, 0 … 250 °C, beide oder keiner,
+Vorlauf nicht unter dem Rücklauf). Leer heißt „ohne Temperaturniveau“ — der Prozess ist dann
+eine reine Wärmemenge, und der Lauf rechnet Zeichen für Zeichen wie ohne die Spalten.
+
+**Das Niveau des Kanals.** Die Profilroutine meldet jedes gerechnete Profil mit Kopfsatz und
+Jahresreihe (`ProfilLaufInfo.JeProfil`); `Prozesstemperatur` bildet daraus je Stunde
+
+- den **höchsten geforderten Vorlauf** der Prozesse, die in der Stunde Wärme verlangen und ein
+  Paar tragen, und
+- ihren **Rücklauf, mengengewichtet** über dieselben Prozesse.
+
+In Stunden ohne einen solchen Prozess steht NaN; ohne ein einziges Paar entsteht kein Niveau
+(`SimulationWaermebedarf.ProzessTemperatur` bleibt `null`). Lastgänge mit Kanal Prozesswärme
+tragen kein Temperaturniveau.
+
+**Wirkung im Lauf** — nur in Stunden mit Prozessbedarf und gefordertem Vorlauf:
+
+| | Erzeuger bzw. Speicher | Regel |
+|---|---|---|
+| a | Wärmepumpe mit Direktsenke Prozesswärme | Liegt der Prozessvorlauf über der Kennlinie der Stunde, rechnet die Stunde mit der **untersten Kennlinie, die ihn erreicht** (`ProzessKennlinieWaehlen`) — für die ganze Abgabe der Stunde, die höchste geforderte Temperatur bestimmt den Betriebspunkt. Über der obersten Stützstelle gilt die Extrapolationsregel des Projekts (erlaubt: oberste Kennlinie; verboten: nicht erreicht). Unter der untersten Quelltemperatur dieser Kennlinie gibt es keinen Betriebspunkt — nicht erreicht, weder Extrapolation noch Abbruch. |
+| b | jeder Erzeuger mit Direktsenke Prozesswärme | Erreicht er den Prozessvorlauf nicht, ist der Prozesskanal für ihn in dieser Stunde gesperrt (Muster der Heizkanalsperre im Kühlbetrieb). Die Wärmepumpe misst am Kennfeld (a), der Heizkessel an seinem **gepflegten** Vorlauf (Kette Anlage → Heizkessel; ohne Paar keine Sperre). Das BHKW deckt Prozesswärme nur über einen Puffer. Das Warnkriterium W3 meldet einen Erzeuger mit Direktsenke Prozesswärme, dessen gepflegter Vorlauf unter dem höchsten Prozessvorlauf des Projekts liegt (Wärmepumpe ausgenommen). |
+| c | Brennwertkessel mit Kennlinie | Der Anteil seiner Stundenabgabe, der in den Prozesskanal ging, sieht den Prozessrücklauf: `T_RL = a · T_RL,Prozess + (1 − a) · T_RL,Kette`, `a` = Prozessabgabe ÷ Abgabe der Stunde. |
+| d | Pufferspeicher, Entnahme in den Prozesskanal | Geschichtet: Die Mindest-Nutztemperatur des Prozesskanals steigt für diese Entnahme auf den Prozessvorlauf — entnommen wird nur aus Schichten, die ihn halten. Ungeschichtet mit gepflegtem Paar: Hält `VL_eff` den Prozessvorlauf nicht, entnimmt der Prozess nichts; ohne gepflegtes Paar keine Sperre. |
+
+Das Laufprotokoll nennt je Erzeuger und Speicher die Stunden mit Kennlinie am Prozessvorlauf, ohne
+Prozessdeckung, mit Prozessrücklauf und mit begrenzter Entnahme. Der Bericht führt in der
+Bedarfstafel die Zeile „Temperaturniveau Prozesswärme“ (höchster Vorlauf / tiefster Rücklauf), nur
+wenn ein Prozess ein Paar trägt.
+
+**Stufe 2, nicht gebaut.** Die Wärmepumpe teilt eine Stunde nicht zeitlich in Prozess- und
+Heizanteil, sie rechnet die ganze Stunde am höchsten geforderten Vorlauf; auch ihre Pufferladung
+in einer solchen Stunde. Die Solarthermie wertet den Prozessvorlauf nicht aus (eigene
+Arbeitstemperatur, Abschnitt 16). Eine zweikanalige Ganglinie mit
+Vorlauftemperatur je Stunde (PW1 Stufe 2) gibt es nicht.
+
+**Bedienung.** Der Stammkopf der Prozesswärme führt Vorlauf und Rücklauf (Prüfung
+`Prozesstemperatur.Paarpruefung`, dieselben Grenzen wie die Prüfklauseln); die Projektkopie
+übernimmt das Paar des Katalogs. Im Projektdialog zeigt der Infoblock das Temperaturniveau, und
+„Temperaturen übernehmen“ setzt das Paar der gewählten Projektzeile in den Arbeitsstand —
+geschrieben wird mit OK (`WizardCtrl.Add_Projekt_Prozess`, nur bei geänderter Zeile).
+
+**Katalog typischer Betriebsweisen.** Derselbe Schemaschritt sät acht Sätze in
+`Tab_Prozesswaerme_STAMM` und `Tab_Prozesstyp_STAMM` (`ProzesstypSaat`, `ReadOnly = 1`, wiederholbar,
+nie überschreibend; ein eigener gleichnamiger Satz bleibt): Jahresmenge 100 MWh, Monatswerte nach
+Monatsfaktor × Kalendertagen, Wochenprofil als relative Last, Temperaturpaar als Vorbelegung,
+Beschreibung mit dem Vermerk „Schichtmodell, keine Messung“.
+
+| Satz | Wochenprofil | Monatsfaktoren | Vorlauf/Rücklauf |
+|---|---|---|---|
+| Einschicht 5 Tage | Mo–Fr 6–14 Uhr 1,0, 5 Uhr 0,5 | August 0,4, Dezember 0,8 | 60/40 °C |
+| Zweischicht 5 Tage | Mo–Fr 6–22 Uhr 1,0 | August 0,4, Dezember 0,8 | 70/50 °C |
+| Dreischicht 5 Tage | Mo 6 Uhr bis Sa 6 Uhr 1,0 | August 0,4, Dezember 0,8 | 80/60 °C |
+| Durchlaufbetrieb 7 Tage | täglich 6–22 Uhr 1,0, 22–6 Uhr 0,9 | August 0,7 (Revision) | 90/70 °C |
+| Reinigung/Spülen (CIP) | Mo–Fr 14 und 22 Uhr je 1,0 | 1,0 | 75/40 °C |
+| Trocknung/Lackierung | Mo–Fr 6 Uhr 1,5, 7–22 Uhr 1,0 | 1,0 | 120/90 °C |
+| Waschen/Bäder | Mo–Fr 6–18 Uhr 1,0, Montag 6 Uhr 2,0 | 1,0 | 60/45 °C |
+| Raumlufttechnik Halle | Mo–Fr 5–20 Uhr 1,0 | Oktober–April 1,0, Mai–September 0,1 | 50/30 °C |
+
+Kein Referenzprojekt ordnet einen dieser Sätze zu und keines trägt ein Temperaturpaar; die Basis
+bleibt unberührt. Gehalten von `EPOS.Kern.Tests/ProzesswaermeTemperaturSchemaTests`,
+`ProzesstemperaturRechenwegTests` (Läufe auf Kopien von 1041 und 1050), `ProzesswaermeTemperaturWegeTests`,
+`ProzesstypSaatWacheTests` und `EPOS.UI.Tests/Dialoge/ProzessTemperaturDialogTests`.
+
+## 16. Solarthermie: Arbeitstemperatur, Diffus-IAM, Solarkreis
+
+Das Kollektorfeld rechnet je Stunde die Leistung je Quadratmeter Bezugsfläche nach EN ISO 9806
+(`Allgemein/Simulation/Solarkreis.cs`, Rechenweg in `SimulationSolarthermie`). Die Eingaben stehen an
+der Anlagenzeile des Felds in `Tab_Energieanlagen` (neben Modulanzahl, Neigung und Azimut), die
+Bezugsfläche am Kollektorsatz (`Tab_Solarkollektoren(_STAMM).Bezugsflaeche`); Schemaschritt
+`SolarthermieFelderSchema`, alle Spalten mit `CHECK`.
+
+| Spalte | Bedeutung | leer |
+|---|---|---|
+| `Pumpenleistung_W` | elektrische Leistung der Solarkreispumpe | `Hilfsenergie_Anteil` der Zeile auf die genutzte Wärme, sonst kein Pumpenstrom |
+| `Solarkreisverluste_Prozent` | Verluste von Leitung und Übertrager, 0 … 50 % | 8 % |
+| `Arbeitstemperatur_Weg` | `fest` oder `speicher` | `fest` |
+| `Uebertrager_Graedigkeit_K` | Grädigkeit des Wärmeübertragers (nur `speicher`) | 5 K |
+| `Kollektor_Spreizung_K` | Spreizung des Kollektorkreises (nur `speicher`) | 10 K |
+| `Bezugsflaeche` (Katalog) | `apertur` oder `brutto` | `apertur` |
+
+**Arbeitstemperatur.** `fest` rechnet gegen 50 °C. `speicher` rechnet die mittlere Fluidtemperatur
+ϑ_m = ϑ_Speicher,unten + Grädigkeit + Spreizung/2 in jeder Stunde neu, mit dem Speicherstand vom
+Beginn der Stunde (`Stunde_Start`, vor Bedarf und Ladung): ϑ_Speicher,unten ist die unterste Zone des
+Puffers, den das Feld lädt (`T_unten`, bei einer Zone Rücklauf + SOC/Q_max · (Vorlauf − Rücklauf)).
+Das Feld nimmt den ersten Puffer seiner Ladefolge aus dem Speicherregister
+(`SolarTemperaturSpeicherSetzen` nach dem Rücklaufspeicher des Kessels); das Protokoll nennt ihn.
+Ohne Puffer gilt der Heizkreisrücklauf der Stunde, wenn die Anlagenkopplung ihn rechnet, sonst 50 °C
+mit einem Hinweis. Die Leistung des Kollektors bestimmt so den Speicher und der Speicher die
+Leistung der nächsten Stunde; eine Iteration innerhalb der Stunde gibt es nicht. Das Ergebnis führt
+die mittlere Arbeitstemperatur je Feld (`ArbeitstemperaturMittelC`, Referenzskalar nur bei
+`speicher`).
+
+**Einfallswinkel.** Die Strahlung auf die geneigte Fläche teilt sich in den Direktanteil
+G_b = DNI · cos θ und den Rest G_dr = G_t − G_b (Diffus und Reflexion). Die Leistung ist
+q = η_0 · (K_b(θ) · G_b + K_d · G_dr) − a_1 · Δϑ − a_2 · Δϑ², Δϑ = ϑ_m − ϑ_a. K_d ist der gepflegte
+Katalogwert `Kdfu`; ohne ihn rechnet die Diffusstrahlung mit K_b(θ) wie die Direktstrahlung — der
+alte Rechenweg, bitgleich.
+
+**Bezugsfläche.** Die Kennwerte η_0, a_1, a_2 gelten für die Fläche, auf die das Datenblatt sie
+bezieht: `apertur` multipliziert mit der Aperturfläche, `brutto` mit der Modulfläche. Fehlt bei
+`brutto` die Modulfläche, rechnet das Feld mit der Aperturfläche und meldet es. Der VDI-3805-Import
+setzt `brutto` nur, wenn die Bezugsfläche der Datei der Bruttofläche gleicht und von der
+Aperturfläche abweicht; Absorberflächen bleiben `apertur`.
+
+**Solarkreis.** Die Verluste kürzen die abgegebene Wärme um den Faktor (100 − p)/100 — bei 8 %
+bitgleich 0,92. Die Pumpe läuft in jeder Stunde, in der das Feld Wärme abgibt (Senke oder Puffer),
+und geht mit Leistung · 1 h (ohne Leistung: `Hilfsenergie_Anteil` × genutzte Wärme der Stunde)
+in den Rest-Strombedarf (`Rest_Strombedarf_viertelstuendlich`, je
+Viertelstunde gleich verteilt); das Ergebnis zeigt den Pumpenstrom im Reiter Solarthermie und als
+Referenzskalar `Solarthermie.PumpenstromMwh`, beides nur, wenn er größer als null ist.
+
+Gehalten von `EPOS.Kern.Tests/SolarkreisTests`, `SolarthermieModellgrenzenTests`,
+`SolarthermieFelderSchemaTests` und `SolarWaermeMonateTests` (Referenzprojekt 1049 mit `speicher`,
+Grädigkeit 5 K, Spreizung 10 K, ohne Pumpe und mit der Vorgabe der Verluste).
+
+## 17. Bedarf: Netzverluste je Kanal, Zirkulation, Betriebskalender
+
+Drei Optionen der Bedarfsrechnung, alle mit der Vorgabe „leer = wie ohne sie“ (Schemaschritt
+`BedarfNetzKalenderSchema`; Punkte BW4, PW2 und BW2 der Entscheidungsvorlage Modellgrenzen). Kein
+Referenzprojekt setzt eine davon; die Basis bleibt unberührt.
+
+**Netzverluste je Kanal.** `Tab_Einstellungen` führt je Wärmekanal Wert und Einheit:
+`Netzverluste_Heizung`, `Netzverluste_Brauchwasser`, `Netzverluste_Prozess` (REAL ≥ 0) mit
+`…_Einheit` (`%` oder `kWh/a`, paarweise, ein Prozentwert höchstens 100). Die Regel
+(`SimulationWaermebedarf`, `Netzverlustvorgabe`):
+
+| Stand | Wirkung |
+|---|---|
+| alle drei Kanalwerte leer | der Projektwert `Netzverluste`/`NetzverlusteEinheit` als konstanter Stundenbetrag, je Stunde anteilig auf Heizung, Brauchwasser und Prozess verteilt (`Kanalsatz.NetzverlusteVerteilen`) |
+| mindestens ein Kanalwert gesetzt | je Kanal sein eigener Wert als fester Stundenbetrag auf genau diesen Kanal, ein leerer Kanal trägt 0; der Projektwert gilt nicht, und es wird nichts zwischen den Kanälen verteilt |
+
+Ein Kanalwert in % bezieht sich auf den Jahresbedarf des Kanals vor dem Aufschlag
+(`Q_k · p_k / 100 / 8760` je Stunde; beim Brauchwasser samt Zirkulation), ein Wert in kWh/a gilt
+fest (`W_k / 8760`). Die Kanäle sind die Wärmekanäle; der Kühlkanal trägt keinen Netzverlust.
+`Waermebedarf_Netzverluste` weist die Summe der drei Jahresmengen aus, das Laufprotokoll die drei
+Posten. Bedient im Abschnitt „Wärmebedarf“ der Simulationskonfiguration; sobald ein Kanalwert
+steht, sagt die Zeile unter den Netzverlusten, dass der Projektwert nicht gilt.
+
+**Zirkulation im Bestandsweg.** `Zirkulation_Leistung_kW` (0 … 100) und `Zirkulation_Laufzeit_h_d`
+(0 … 24) an `Tab_Einstellungen`. Rechnet das Projekt sein Brauchwasser aus den Bestandsprofilen,
+kommt eine Zirkulation als eigene Teilreihe in den Brauchwasserkanal — dieselbe Formel wie die
+Methode „manuell“ des Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+
+```
+q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+```
+
+Die Laufstunden liegen zusammenhängend um die Tagesmitte der Brauchwasserreihe
+(`Zirkulationskanal.Laufzeitfenster`), eine gebrochene Laufzeit belegt die letzte Stunde anteilig.
+Ohne Leistung oder ohne Laufzeit gibt es keine Zirkulation. Auf dem Generatorweg gilt dessen
+Zirkulation, die Projekteinstellung wirkt dort nicht; die Vorschau mit Namensliste rechnet keine.
+Ausgewiesen wird sie wie beim Generator: `Brauchwasser_Zirkulation_Mwh`, getrennte Monatsschichten
+Zapfung und Zirkulation, der Posten „davon Zirkulation“ und das gestapelte Monatsbild im Reiter
+Wärmebedarf. Normbezug: Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und
+DIN V 18599-8, Betrieb der Zirkulation nach DVGW W 551.
+
+**Betriebskalender.** `Tab_Betriebskalender` (STRICT) hält Kalender projektübergreifend wie einen
+Katalog: Bezeichnung, Bundesland (leer = nur die neun bundeseinheitlichen Feiertage), bis vier
+Betriebsferien als Tag im Jahr (Beginn nach Ende = über den Jahreswechsel), Ferienfaktor
+f (0 … 1), `Feiertag_wie_Sonntag` und `Ferien_kuerzen` (0/1). Je Zuordnungszeile
+(`Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`) zeigt die
+nullbare Spalte `ID_Betriebskalender` auf einen Kalender (`ON DELETE SET NULL`); leer = das
+Wochenprofil gilt für alle Wochen.
+
+Die Kalenderschicht (`Betriebskalenderschicht`) sitzt in `ProfilBedarf.Rechnen` zwischen der
+Kachelung des Wochenprofils und der Monatsnormierung — dieselbe Routine für alle drei Profilarten:
+
+```
+t(h) = w((24 · w₀ + h) mod 168)                      Kachelung ab dem Wochentag des 1. Januar
+a(h) = w(144 + s) an einem Feiertag, sonst t(h)       Sonntag des Wochenprofils
+b(h) = f · m_s an einem Ferientag, sonst a(h)         m_s = (1/7) · Σ_d w(24 d + s)
+q(h) = b(h) / Σ_M b · M_m · 1000                     Vorgabe: Ferien verteilen die Monatsmenge um
+q(h) = b(h) / Σ_M a · M_m · 1000                     „Ferien kürzen die Monatsmenge“
+```
+
+h = 24 d + s, M die Stunden des Monats m, M_m seine Menge [MWh]. Ferien gehen Feiertagen vor;
+Feiertage verteilen stets nur um. Die Feiertage kommen aus `Feiertage` (die neun
+bundeseinheitlichen, Ostern als Rechenvorschrift) und `Landesfeiertage` (die landesweiten
+Feiertage des gewählten Landes), aufgelöst gegen das Referenzjahr des Projekts
+(`SolardatenCtrl.Referenzjahr`) und als Tag im Gemeinjahr abgebildet. Hat ein Monat ohne Kürzen
+keine Stunde mit Bedarf mehr, rechnet er ohne Ferien und das Laufprotokoll nennt es. Ohne Kalender
+ruft die Routine die Kachelung `BhkwPlan.StromWocheToJahr` wie zuvor.
+
+Der Lauf liest den Kalender je Zuordnungszeile, die Projektvorschau über die ID des Kopfsatzes;
+Zuordnungsdialog, Assistent und Speichern tragen ihn mit (`LiesProjekt`, `WizardCtrl.Add_*`),
+Duplizieren behält die ID, Export und Import finden den Kalender über seinen Bezeichner. Bedient
+wird er in der Verwaltung „Betriebskalender“ (Administration → Wärmebedarf & Heizung → Profile &
+Lastgänge) und je Zuordnung in den Bedarfsprofil-Dialogen von Brauchwasser, Prozesswärme und
+Strom.
+
+Gehalten von `EPOS.Kern.Tests/BedarfNetzKalenderSchemaTests`, `NetzverlusteJeKanalTests`,
+`ZirkulationBestandswegTests` (Läufe auf Kopien von 1041 und 1045), `BetriebskalenderTests` und
+`EPOS.UI.Tests/Dialoge/BetriebskalenderDialogTests`.
+
+## 18. Erzeuger in Teillast: Wärmepumpe und BHKW
+
+Wärmepumpe und BHKW rechnen ihr Verhalten unter der Volllast aus Katalogfeldern; leer heißt
+„nicht gepflegt", und ohne gepflegten Wert rechnet ein Gerät bitgleich ohne diesen
+Abschnitt. Schemaschritt `ErzeugerTeillastSchema` (167), alle Spalten nullbar mit `CHECK`,
+in Katalog und Projektkopie gleich; die Projektkopie entsteht beim Übernehmen aus dem Katalog
+(`ErzeugerTeillastWerte`).
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_WP(_STAMM)` | `Mindestleistung_kW` (0 … 1000) | kleinste Modulationsleistung P_min | kein Takten |
+| `Tab_WP(_STAMM)` | `Taktverlustfaktor_Cd` (0 … 1) | Teillastkoeffizient C_d nach EN 14825 | 0,9 |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_el_Teillast50` (0 … 1) | η_el bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_th_Teillast50` (0 … 1) | η_th bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Anfahrverlust_kWh` (0 … 100) | Brennstoff je Start | 0 |
+| `Tab_BHKW(_STAMM)` | `Mindestlaufzeit_min` (0 … 60) | Mindestlaufzeit je Start | 10 min |
+
+**Wärmepumpe: Taktverlust (`Waermepumpentakt`).** Am Ende jeder Stunde
+(`Zweikanalig_StundeEnde`) sammelt der Lauf je Modul die Verdichterwärme Q und den
+Verdichterstrom P der Stunde aus Bedarfsdeckung und Ladung. Bei 0 < Q < P_min · 1 h taktet das
+Gerät: CR = Q / P_min, f = CR / (C_d · CR + 1 − C_d), COP_takt = f · COP; die Wärme bleibt, der
+Strom steigt um P · (1/f − 1) — in die Stundenreihe, die Modulsumme und den Jahresstrom, damit
+auch in die JAZ. Die Starts folgen der Kesselregel (`Kesselkennlinie.StartsImTakt`) mit fest
+10 min; außerhalb des Takts ist ein Start der Übergang aus einer Stillstandsstunde. Die
+Quellentnahme der Stunde wird nicht nachgezogen. Im Kühlbetrieb rechnet die Kältekaskade
+dasselbe mit der Mindestkühlleistung P_min / P_nenn · P_kühl(t) (`Kaeltekaskade.Mindestanteil`).
+
+**BHKW: Teillastkennlinie (`BhkwTeillast`).** η_el,100 und η_th,100 teilen den
+Gesamtwirkungsgrad im Verhältnis P_el : P_th, so dass Volllast unverändert bleibt. Zwischen
+β = 0,5 und 1 verlaufen beide Wirkungsgrade linear, darunter gilt der Wert bei 0,5. Die
+Motorläufe rechnen Wärme aus Strom über η_th(β)/η_el(β) mit β = P/P_el, Strom aus Wärme durch
+Intervallhalbierung über β; ohne Kennlinie bleibt es der Dreisatz des Bestands, bitgleich. Der
+Brennstoff einer Laufstunde ist P / η_el(β); die Abweichung gegen (Q + P)/η geht als
+Teillast-Mehrbrennstoff in den Brennstoffverbrauch und die Emissionen.
+
+**BHKW: Takten (`BhkwTeillast`, `SimulationBHKW.TeillastStundeAbschliessen`).** Nur mit
+Anfahrverlust oder Mindestlaufzeit und einer Untergrenze x_min > 0. Unter der Untergrenze bleibt
+das Modul nicht aus, sondern liefert in allen drei Fahrweisen den Wärmeraum, den Reststrom oder
+— ohne Einspeisung — das Kleinere von beiden mit der Stromkennzahl an x_min. Die Starts zählt
+die Kesselregel gegen die Wärme der Untergrenze Q_min = x_min · P_el · η_th(x_min)/η_el(x_min);
+je Start kommt der Anfahrverlust auf den Brennstoff. Der Brennstoff einer Taktstunde rechnet mit
+η_el(x_min). Getaktet wird nur, wenn der Wärmeraum der Stunde (offener Bedarf plus freier
+Pufferraum) mindestens einen Mindestlauf Q_min · t_min / 60 aufnimmt (t_min leer = 10 min;
+`BhkwTeillast.NimmtMindestlaufWaerme`); stromgeführt muss der Reststrom den Strom eines
+Mindestlaufs tragen, ohne Einspeisung beides — sonst bleibt das Modul aus. Der Heizkessel zählt
+sein Takten (`Kesselkennlinie.Taktet`) dagegen schon ab jeder Wärme über dem Zahlenrand, denn er
+deckt als letzter Erzeuger auch einen kleinen Rest.
+
+**Ergebnis.** Die Reiter Wärmepumpe und BHKW zeigen Starts, Mehrstrom, Anfahrverlust und
+Teillast-Mehrbrennstoff nur, wenn ein Modul sie rechnet; ebenso die Referenzskalare
+`Takt.Waermepumpe[i].*`, `Takt.Kaelte[k].*`, `Takt.Bhkw[i].*` und
+`Teillast.Bhkw[i].MehrbrennstoffKwh`, nur bei Werten größer null — die Basis bleibt damit
+unberührt, solange kein Referenzprojekt die Felder pflegt.
+
+**Pflege.** Der BHKW-Katalogeditor führt die Gruppe „Teillast und Takten" mit kleiner
+Kennlinie, die BHKW-Verwaltung dieselben vier Felder (leer schreibt NULL); der
+Wärmepumpenkatalog führt Mindestleistung und C_d mit dem Hinweis „Vorgabe 0,9 nach EN 14825",
+die Projektdialoge zeigen die Werte lesend. Der VDI-3805-Import (Blatt 22) setzt keine der
+Spalten: Die Lastangaben der Datei nennen einen Modulationsbereich, aber keine Mindestleistung
+in kW, und C_d steht nicht in der Datei; das BHKW hat keinen VDI-Import.
+
+Gehalten von `EPOS.Kern.Tests/ErzeugerTeillastTests` (Formeln ohne Datenbank, Rechnungen auf
+Kopien der Projekte 1039, 1017, 1018 und 1024), `ErzeugerTeillastSchemaTests`,
+`KatalogAufklapperTests` und den bunit-Fällen `BhkwKatalogDialogTests`,
+`WaermepumpeStammFelderTests`.
+## 19. Strom in Viertelstunden: PV-Bilanz, Einspeisegrenze, Standby
+
+Die Strombilanz der Photovoltaik und der Stromspeicher laufen auf den 35 040 Viertelstunden des
+Jahres; die Klimadaten bleiben stündlich. Schemaschritt `StromViertelstundenSchema`, alle neuen
+Spalten mit `CHECK`.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Einstellungen` | `Einspeisegrenze_Wert` | höchste PV-Einspeisung am Netzanschluss, ≥ 0 | keine Grenze |
+| `Tab_Einstellungen` | `Einspeisegrenze_Einheit` | `kW` oder `%` der installierten PV-Leistung | `kW` |
+| `Tab_Stromspeicher(_STAMM)` | `Standby_Verbrauch` | Standby des Speichersystems in W, 0 … 1 000 (im Code geprüft) | 0 |
+| `Tab_Stromspeicher(_STAMM)` | `Selbstentladung_Prozent_Monat` | Selbstentladung in %/Monat, 0 … 20 | 0 |
+
+**PV-Bilanz.** `SimulationPV.Bilanzieren` verteilt die Stundenerzeugung aller Anlagen auf die vier
+Viertel nach dem Kosinus des Zenitwinkels in der Mitte jeder Viertelstunde
+(`SolarPVGISCalculator.KosinusZenitwinkel`, Zeitachse der UTC-Stunde der Klimazeile):
+P_q = 4 · P_h · cos θ_z,q / Σ cos θ_z. Das Mittel der vier Viertel ist der Stundenwert; ohne Sonne
+in allen vier Vierteln tragen alle den Stundenwert. Direktverbrauch, Überschuss und Reststrom
+entstehen je Viertelstunde gegen `Rest_Strombedarf_viertelstuendlich`; die Stundenreihen sind die
+Mittel ihrer Viertel. Der Reiter „Photovoltaik" zeigt den Überschuss vor dem Speicher.
+
+**Einspeisegrenze.** P_grenz in kW, oder in % als Anteil der installierten Leistung (kWp). Je
+Viertelstunde: E_ein = min(Ü − Ladung − Standby aus PV, P_grenz), Abregelung = Rest. Der Speicher
+lädt vor dem Abregeln (`SimulationControl.PvEinspeisungAufteilen` nach der Speicherphase). Ohne
+Grenze ist die Abregelung null.
+Ausweis: Reiter „Photovoltaik" (Abregelung kWh/a und % der Erzeugung, Grenze kW), Zeitreihe
+`PV_ABREGELUNG`, Monatstafel des Berichts, Referenzskalar `Photovoltaik.AbregelungMwh` nur bei
+> 0, Kennzahl `pv_eigen` ohne Abregelung. Eine aktive Speicherflotte liest die Projekteinstellung
+als weiche Grenze (`PvEinspeisegrenzeWeichKw`): Sie lädt zuerst, darüber wird abgeregelt, die
+Variante bleibt zulässig. Eine neue Flotte belegt ihre harte Netzeinspeisegrenze mit dem Wert vor;
+der Netzblock nennt ihn.
+
+**Standby und Selbstentladung.** `SpeicherEngine.Speichersystem` zieht zu Beginn jedes Intervalls
+die Selbstentladung SoC · s/100 · Δt/730 h ab, höchstens bis SoC_min, und teilt den Standby
+(`StandbyBilanz`): aus dem PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.
+Der Netzanteil geht in den Rest-Strombedarf, der PV-Anteil fehlt in der Einspeisung; der Fahrplan
+bleibt unberührt. In der Flotte ist der Standby der Hilfsverbrauch der Einheit (Standortlast am
+Netzanschluss), die Selbstentladung ein Parameter der Einheit; beide übernimmt sie aus dem Katalog.
+Ausweis: Reiter „Stromspeicher" (Eigenverbrauch Speichersystem, Netzanteil, Selbstentladung),
+Zeitreihe `SPEICHER_EIGENVERBRAUCH`, Monatstafel des Berichts, Referenzskalar
+`Stromspeicher.EigenverbrauchSystemMwh` nur bei > 0.
+
+Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSchemaTests`,
+`PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
+Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.
+
+## 20. Katalogabgleich mit Katalogfassung; Erdreichprüfung im Ergebnis
+
+Welle M6 der [Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)
+(KU1 Stufe 1 und 2, EQ1). **Kein Rechenweg ist betroffen:** Der Lauf liest Projektkopien, und die
+fasst der Abgleich nie an; die Erdreichprüfung wird nur gespeichert, nicht anders gerechnet.
+
+**Schemaschritt `KatalogfassungSchema`** (DDL und Saat, wiederholbar):
+
+| Ort | Spalte bzw. Tabelle | Bedeutung |
+|---|---|---|
+| acht Kataloge der Stufe 1 | `Katalog_Schluessel` TEXT, eindeutig (Teilindex `WHERE … IS NOT NULL`) | stabile Kennung des Auslieferungssatzes, über Fassungen gleich; Anwendersatz leer |
+| dieselben | `Katalog_Pruefsumme` TEXT (64 Hexzeichen) | SHA-256 des ausgelieferten Stands |
+| dieselben | `Katalog_Ausgelaufen` INTEGER 0/1 | 1 = in einer späteren Auslieferung entfallen, bleibt stehen |
+| `Tab_Applikation` | `Katalogfassung` INTEGER | Fassung des letzten Abgleichs; leer = noch nie |
+| `Tab_Katalogabgleich` | STRICT | Protokoll: Zeitpunkt, Fassung, Tabelle, Schlüssel, Aktion, Hinweis |
+| `Tab_ErgebnisErdreich` | STRICT, an Projekt und Anlage (`ON DELETE CASCADE`) | Prüfzeilen der Erdreichprüfung je Lauf |
+
+**Die Stufe 1** (`Katalogfassung.Stufe1`) sind die laufend gepflegten Kataloge:
+`Tab_WP_STAMM` (Kürzel WP, mit den Kindtabellen `Tab_Kenndaten_STAMM` und
+`Tab_Kenndaten_Kuehlung_STAMM`, diese nur mit `ID_Projekt` 0 oder leer), `Tab_Heizkessel_STAMM`
+(KES), `Tab_BHKW_STAMM` (BHKW), `Tab_PV_STAMM` (PV), `Tab_Brauchwasser_STAMM` (BW),
+`Tab_Brauchwassertyp_STAMM` (BWT), `Tab_Prozesswaerme_STAMM` (PW), `Tab_Prozesstyp_STAMM` (PWT).
+
+**Die Stufe 2** (`Katalogfassung.Stufe2`, Schemaschritt `KatalogfassungStufe2Schema`: dieselben
+drei Spalten samt Teilindex an den sechzehn Kopftabellen, Saat wie oben) sind die übrigen Kataloge.
+Kindtabellen tragen keine Katalogspalte, ihre Zeilen gehören über den Fremdschlüssel zum Kopf:
+
+| Katalog | Kopftabelle (Kürzel) | Name für Schlüssel und Namensprüfung | Kind- und Enkeltabellen |
+|---|---|---|---|
+| Baustoffe | `Tab_Baustoff_STAMM` (BST) | Bezeichner | `Tab_Baustoffsynonym_STAMM` (`ID_Baustoff`, eingefügt gesperrt) |
+| Bauteilaufbauten | `Tab_Bauteilaufbau_STAMM` (BTA) | Bezeichner | `Tab_Bauteilschicht_STAMM` (`ID_Aufbau`); `ID_Baustoff` ist ein Verweis über den Schlüssel des Baustoffs |
+| Brennstoffe | `Tab_Brennstoff_Stamm` (BRS) | Bezeichner | —; `ID_Kategorie` ist ein Verweis über `Tab_BrennstoffKategorien.Gruppe` |
+| Tagesverteilungen | `Tab_DBTagV_STAMM` (TAGV) | Bezeichner | `Tab_DBTagVDaten_STAMM` (`ID_TagV`, Reihe) |
+| Gebäude | `Tab_Gebaeude_STAMM` (GEB) | Bezeichner | `Tab_Konditionierungsvorgabe`, `Tab_Konditionierungskalender` (`ID_Gebaeude_Stamm`), Enkel `Tab_Konditionierungsperiode` (`ID_Kalender`) |
+| Konditionierungsvorlagen | `Tab_Konditionierungsvorlage_STAMM` (KV) | Größe und Bezeichner | wie Gebäude, über `ID_Vorlage` |
+| Pufferspeicher | `Tab_Pufferspeicher_STAMM` (PS) | Bezeichner | — |
+| Vorgaben der Pufferauslegung | `Tab_PufferAuslegungParameter_STAMM` (PAP) | Schluessel | — |
+| Solarkollektoren | `Tab_Solarkollektoren_STAMM` (SK) | Bezeichner | — |
+| Solarganglinien | `Tab_Solarganglinie_STAMM` (SOLGL) | Bezeichner | `Tab_SolarganglinieDaten_STAMM` (`ID_Ganglinie`, Reihe) |
+| Stromspeicher | `Tab_Stromspeicher_STAMM` (SSP) | Bezeichner | — |
+| Stromverbraucher-Wochenprofile | `Tab_Stromverbrauchertyp_STAMM` (SVT) | Typname | — |
+| Stromverbraucherprofile | `Tab_Stromverbraucher_STAMM` (SV) | Bezeichner | — |
+| Stromganglinien | `Tab_Stromganglinie_STAMM` (STRGL) | Bezeichner | `Tab_StromganglinieDaten_STAMM` (`ID_Ganglinie`, Reihe) |
+| Wärmebedarfsganglinien | `Tab_Waermebedarf_STAMM` (WBGL) | Bezeichner | `Tab_WaermebedarfDaten_STAMM` (`ID_Ganglinie`, Reihe) |
+| Wechselrichter | `Tab_Wechselrichter_STAMM` (WR) | Bezeichner | — |
+
+**Benannt ausgenommen** (`Katalogfassung.Ausgenommen`, im Bericht des Werkzeugs genannt):
+
+- **Klimakatalog** (`Tab_Klimaregion_STAMM`, `Tab_Klimadaten_STAMM`, `Tab_Solar_STAMM`): je Region
+  eine Stundenreihe mit 13 Spalten und eine Tagesreihe — das Paket würde dreistellige Megabyte groß.
+  Der Pflegeweg ist der Klimaimport mit Quelle, Importdatum, Szenario und Bezugsjahr; der
+  Primärschlüssel heißt `ID_Klimaregion`.
+- **Zapfprofilkatalog** (`Tab_Tww*_STAMM`, acht Tabellen): Er führt eine eigene Katalogversion und
+  einen eigenen Paketweg (`TwwPaketteilCtrl`, Katalogimport mit Konfliktregeln und Herkunft je
+  Zeile), und seine Tabellen verweisen über IDs aufeinander. Ein zweiter Weg daneben ergäbe zwei
+  Wahrheiten über denselben Stand; das Update dieses Katalogs geht über sein Paket.
+
+Die Wache `KatalogabgleichTests` hält das Register gegen das Schema: Jede Spalte einer
+Registertabelle ist Fach- oder Metaspalte, jede Spalte einer Kind- oder Enkeltabelle Fachspalte,
+Fremdschlüssel, Projekt- oder Nebenspalte (ein anderer Eigentümer derselben Tabelle), jedes
+Verweisziel steht vor seinem Verweiser, und jede `_STAMM`-Tabelle der Testdatenbank steht im
+Register oder in den Ausnahmen.
+
+**Was ein Abgleich der Stufe 2 bewirkt.** Brennstoffe, Konditionierungsvorlagen und die Vorgaben
+der Pufferauslegung haben keine Projektkopie; ein Projekt liest sie aus dem Katalog. Ein
+aktualisierter Satz ändert dort also das Ergebnis eines Projekts, das ihn benutzt (etwa die
+Emissionsfaktoren eines Brennstoffs) — genau das ist der Zweck einer Auslieferung. Ein vom Anwender
+angepasster oder entsperrter Satz bleibt wie in Stufe 1 stehen. Die Testdatenbank wird nie
+abgeglichen; die Saat setzt dort nur Schlüssel und Prüfsumme.
+
+**Prüfsumme.** SHA-256 über die Fachspalten in der festen Folge der Liste, je Spalte
+„Name=Wert"; Zahlen invariant und rundlauffest (eine ganzzahlige Gleitkommazahl wie die Ganzzahl,
+Wahrheitswerte als 1/0), Text unverändert, leer trägt nichts bei — eine neu und leer angelegte
+Spalte verschiebt keine Prüfsumme. Die Kindzeilen gehen sortiert hinter dem Kopf ein, eine
+**Reihe** (Ganglinie, Tagesverteilung) in ihrer Folge mit Position, die Enkel einer Kindzeile
+sortiert in deren Zeile. Ein **Verweis** geht mit dem Namen seines Ziels ein (Schlüssel des
+Baustoffs, Gruppe der Brennstoffkategorie), nie mit dessen ID, und wird beim Schreiben wieder zur
+ID des Ziels in dieser Datenbank; fehlt das Ziel, bleibt die Spalte leer.
+**Schlüssel:** Kürzel und bereinigter Name (Umlaute ausgeschrieben, alles außer A–Z und
+0–9 als „_", groß), bei Dopplung mit Zähler `_2`, `_3`; der Name ist der Bezeichner oder die
+Namensspalten der Tabelle (Konditionierungsvorlage: „HEIZSOLL / Büro" → `KV:HEIZSOLL_BUERO`). Die
+**Saat** des Schritts belegt Schlüssel und Prüfsumme jedes gesperrten Satzes (`ReadOnly = 1`) ohne
+Schlüssel — kein Fachwert ändert sich. Ob ein Name belegt ist, prüft der Abgleich ohne Unterschied
+von Groß- und Kleinschreibung.
+
+**Katalogpaket.** `Werkzeuge/Auslieferungsvorlage` schreibt den Auslieferungsstand in der
+Vorlage fest (`Katalogpaket.Festschreiben`: Saat, Prüfsummen auf den heutigen Stand,
+`Katalogfassung`) und legt `Katalogpaket.json` neben die Vorlage: alle gesperrten Sätze des
+Registers mit Schlüssel, Prüfsumme, Werten und Kindzeilen, dazu die Fassung (`--katalogfassung`,
+Vorgabe das Datum als JJJJMMTT). Eine JSON-Datei statt des Formats des Katalogimports: Jener liest
+Herstellerformate ohne Schlüssel und Prüfsumme, und das CSV-Paket des Zapfprofilgenerators trennt
+Zahl und Text nicht — die Prüfsumme braucht beides. Das Paket ist deterministisch (Tabellen in der
+Folge des Registers, Sätze nach Schlüssel, Werte in Spaltenfolge, ASCII mit LF) und trägt keinen
+Schemastand. **Formatversion 2** liest auch Fassung 1; eine Reihe steht darin als bloße Werteliste
+in ihrer Folge, die Enkel einer Kindzeile unter `"Kinder"`. **Größe:** Die Reihen machen den
+Hauptteil (eine Stundenreihe rund 0,2 MB, eine Viertelstundenreihe rund 0,8 MB); das Paket der
+Testdatenbank misst knapp 1 MB (417 Sätze, drei Wärmebedarfsganglinien). Das Werkzeug nennt die
+Größe im Bericht und warnt ab 20 MB — dann wären die Reihen benannt auszunehmen. In der Auslieferung liegt es unter `{app}\Vorlage\Katalogpaket.json`
+(`Katalogpaket.Pfad(Dienste.Pfade.Auslieferungsvorlage)`).
+
+**Abgleich** (`Katalogabgleich`), je Satz des Pakets:
+
+| Lage in der Datenbank | Aktion |
+|---|---|
+| Schlüssel fehlt | **eingefügt** (`ReadOnly = 1`, Schlüssel, Prüfsumme); trägt ein eigener Satz den Namen: behalten mit Hinweis |
+| Werte = Paket, Prüfsumme = Paket | nichts (unverändert) |
+| gesperrt, Prüfsumme der Zeile = gespeicherte Prüfsumme | **aktualisiert** (Werte, Kindzeilen, Prüfsumme, nicht ausgelaufen) |
+| geändert (Prüfsumme weicht ab) oder entsperrt (`ReadOnly = 0`) | **behalten** — „Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor" |
+| Satz mit Schlüssel, den das Paket nicht mehr führt | **ausgelaufen** (`Katalog_Ausgelaufen = 1`), nie gelöscht |
+
+Anwenderzeilen (ohne Schlüssel) und jede Projektkopie bleiben unberührt. Alles läuft in EINEM
+Vorgang, samt Protokoll und neuer `Katalogfassung`; ein Lauf mit derselben Fassung tut nichts, und
+auch ein erzwungener Lauf schreibt keine Protokollzeile doppelt. Ohne lesbares Paket steht
+`KEIN_PAKET` im Protokoll.
+
+**Beim Start** (`Katalogabgleich.BeimStart`, gerufen von `Program.Main` der Windows-Schale nach
+erfolgreicher Schemamigration): nur wenn das Paket eine NEUERE Fassung trägt als die Datenbank, nach
+einer Sicherung per `VACUUM INTO` in `DB-Backup` (`Katalogabgleich.SicherungAnlegen` über
+`Datenbanksicherung.KopieAnlegen`). Den Bericht („n neu, m aktualisiert, k behalten,
+a ausgelaufen") zeigt das Hauptfenster einmal als Überlagerung. iOS gleicht nicht ab; dort liegt
+kein Paket.
+
+**Bedienung.** Administration → Daten & Import → „Katalog aktualisieren…"
+(`KatalogabgleichDialog`, Hülle `KatalogabgleichHuelle`, Fenster `KatalogabgleichFenster`): Fassung
+der Datenbank und des Pakets, „Nur prüfen", „Abgleichen…" (Rückfrage, Sicherung) und je behaltenem
+Satz „Auslieferungsstand wiederherstellen…" (Werte des Pakets, gesperrt, Aktion
+`WIEDERHERGESTELLT`). Eine Katalogkopie (`Katalogkopie.Duplizieren`) übernimmt die Katalogspalten
+nicht, die Dublettenprüfung vergleicht sie nicht.
+
+**Erdreichprüfung im Ergebnis (EQ1).** `SimulationRunner.BaueErgebnis` legt die Prüfung des Laufs
+(`ErdreichAuswertung.FuerProjekt`) ins Modell, `ErgebnisCtrl.Save` schreibt sie im Vorgang des
+Ergebnisses nach `Tab_ErgebnisErdreich` (die alten Zeilen des Projekts weg, die neuen hinein);
+`ErgebnisCtrl.Delete` nimmt sie mit. Je Anlage die Prüfzeilen `ENTZUGSLEISTUNG` (W; Hinweis = Text
+anstelle der Prüfung), `JAHRESENTZUG` (kWh/a; Hinweis = Vorbehalt), `VOLLLASTSTUNDEN` (h/a),
+`FROST` (h, Grenzwert 5 % der Betriebsstunden; Hinweis = Frostmeldung) und `VDI4640:<Zeile>` je
+Zeile der Auslegungsprüfung, alle mit Grundlage und Laufstempel. Der Erdreich-Dialog nimmt den Lauf
+der Sitzung, sonst das gespeicherte Ergebnis (`ErdreichErgebnisSpeicher.Gespeichert`) und zeigt
+darunter „Stand des Laufs vom …". Der Bericht führt die Prüfung nicht als Baustein; ein späterer
+Baustein liest sie über `ErdreichErgebnisSpeicher.Lesen`.
+
+Gehalten von `EPOS.Kern.Tests/KatalogabgleichTests` (Prüfsumme, Schlüssel, Wachen des Registers,
+Saat, Abgleich mit der Probe `Referenzlaeufe/Importproben/Katalogpaket_Probe.json` — Prozesswärme
+aus Stufe 1, Konditionierungsvorlagen und Wechselrichter aus Stufe 2 —, Reihen, Enkel und Verweise,
+Formatversion, Wiederherstellen, Start, kein Paket), `ErdreichErgebnisSpeicherTests`, `KatalogduplizierenTests`, den Werkzeugtests
+`KatalogpaketVorlageTests` und den bunit-Fällen `KatalogabgleichDialogTests` und
+`QuelleErdreichDialogTests`.
+
+## 21. Pufferspeicher: Bereitschaft, Zonenanteile, Frischwassermodul, Desinfektion
+
+Vier Optionen des Speichers und des Brauchwassers (Entscheidungsvorlage Modellgrenzen PS1 (c),
+PS1 (a), PS5 (a), BW5). Schemaschritt `PufferOptionenSchema`, alle Spalten nullbar mit `CHECK`;
+leer rechnet Anweisung für Anweisung wie zuvor. Die Rechenregeln stehen in
+`Allgemein/Simulation/PufferOptionen.cs` und `Desinfektion.cs`, ohne Datenbank.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Pufferspeicher` | `Bereitschaft_Weg` | `tag` oder `temperatur` | `tag` |
+| `Tab_Pufferspeicher` | `Aufstellraum_Temperatur_C` | Raumtemperatur am Speicher, 0 … 35 °C | 20 °C |
+| `Tab_Pufferspeicher` | `Schicht_Anteile` | Volumenanteile der Zonen von oben, „0,10;0,16;0,37;0,37" | gleich große Zonen |
+| `Tab_Pufferspeicher` | `Frischwassermodul` | 0/1 | aus |
+| `Tab_Pufferspeicher` | `FWM_Graedigkeit_K` | Grädigkeit des Moduls, 0 … 20 K | 5 K |
+| `Tab_Einstellungen` | `Desinfektion_Aktiv` | 0/1 | aus |
+| `Tab_Einstellungen` | `Desinfektion_Intervall_Tage` | 1 … 31 | 7 |
+| `Tab_Einstellungen` | `Desinfektion_Stunde` | 0 … 23 | 2 |
+| `Tab_Einstellungen` | `Desinfektion_Zieltemperatur_C` | 55 … 90 °C | 70 °C |
+| `Tab_Einstellungen` | `Desinfektion_Volumen_l` | 0 … 100 000 l | Volumen der Speicher mit Brauchwasser |
+
+Die Pufferfelder stehen an der Projektkopie (wie Schichtzahl und Entnahmehöhen): Sie beschreiben
+die Anlage, in der der Speicher steht, nicht das Gerät. Der Katalog bleibt bei seinen Gerätewerten.
+
+**Bereitschaft nach Temperatur (PS1 (c)).** `H = Q_B · 1000 / (24 · 45 K)` [W/K] aus dem
+Katalogwert Q_B [kWh/24 h] (Prüfwert nach EN 12897/EN 15332 bei 45 K). In Phase G verliert jede
+Zone `H · a_i · max(ϑ_i − ϑ_Raum, 0) / 1000` [kWh], höchstens ihren Inhalt über dem Rücklauf; die
+Summe geht vom Füllstand ab wie der Tageswert. Ein leerer Speicher verliert nichts, ein voller
+`H · (ϑ_VL − ϑ_Raum)` — mehr als der Tageswert ab 45 K Übertemperatur. Quellspeicher und der
+Durchfluss einer Stunde rechnen mit dem Tageswert bzw. ohne Verlust. Das Protokoll nennt H.
+
+**Zonenanteile (PS1 (a)).** Mit gültigen Anteilen (Summe 1 ± 0,001, Anzahl = Zonenzahl, je Anteil
+> 0; `PufferOptionen.AnteilePruefen`, benannte Ablehnung im Dialog, im Lauf Warnung und gleich große
+Zonen) ist die Zone i `Q_max · a_i` groß: Füllen, Leeren, Klemmen, Temperatur, Mantelfläche
+`π · D · H · a_i` (plus Deckel), Leitwert je Paar `λ · A / (H · (a_i + a_i+1)/2)`, Kappung an der
+kleineren Kapazität des Paars, Inversionsmischung auf dem Füllgrad mit Volumengewicht und die Zone
+zu einer Anschlusshöhe (kumuliertes Band). Ohne Anteile laufen die Zweige der gleich großen Zonen
+unverändert. Vorschlag im Dialog: „Vorschlag Kombispeicher" = vier Zonen 0,10/0,16/0,37/0,37, nach
+der Gliederung von prEN 15316-5 Anhang B (Planungsvorschlag, kein Normwert).
+
+**Frischwassermodul (PS5 (a)).** Nur an einem Speicher mit Brauchwasser im Klassen-Set (sonst
+Warnung, ohne Wirkung). Mindesttemperatur oben `ϑ_FWM = ϑ_Zapf + ΔT_FWM`; ϑ_Zapf ist die höchste
+Zapftemperatur der Zonen des Zapfprofilgenerators (Zone, sonst Bezugswert der Nutzungsart), ohne
+Generator 60 °C mit Hinweis. In der Entladung des Brauchwasserkanals (Phasen A und E,
+`Kaskadenschleife.EntladeKanal`) klemmt `SimulationPufferspeicher.FrischwasserEntnahmefaehigkeit`
+den Bedarf: Hält die oberste Zone ϑ_FWM nicht, nur der Durchfluss; sonst geschichtet die Zonen mit
+ϑ_i ≥ ϑ_FWM ab der Brauchwasser-Entnahmehöhe, mit einer Zone der Inhalt über ϑ_FWM. Der Rest bleibt
+offen für die nächste Stufe der Kaskade (Muster `TNutz[PROZESS]`, Abschnitt 15 (d)). Das Protokoll
+und die Pufferrubrik nennen die Stunden mit Begrenzung (je Stunde einmal gezählt).
+
+**Thermische Desinfektion (BW5).** Zusatzbedarf je Ereignis
+`Q_D = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000` (V in l), am Tag d (0 … 364) in der Stunde
+s, wenn (d + 1) mod Intervall = 0 — bei 7 Tagen 52 Ereignisse. ϑ_Soll ist die Speichertemperatur
+des Zapfprofilgenerators (`Tab_TwwProjekt.Speicher_C`), ohne sie 60 °C mit Hinweis; V das gepflegte
+Volumen, sonst die Summe der Speicher mit Brauchwasser; ohne V oder mit ϑ_Soll ≥ ϑ_Ziel kein Posten
+(Warnung). `SimulationWaermebedarf.BrauchwasserDesinfektion` addiert die Reihe NACH den
+Netzverlusten in den Brauchwasserkanal und führt sie als `Brauchwasser_Desinfektion_Mwh`.
+
+Deckung (`Desinfektionsdeckung`): Vor der Kaskade wird der Zusatzbedarf aus dem Kanal genommen
+und nur vor einer **fähigen** Stufe freigegeben; was die Stufe danach im Kanal deckt, deckt zuerst
+ihn, der Rest steht wieder zurück. Fähig sind Heizkessel und BHKW mit gepflegtem Vorlauf ≥ ϑ_Ziel
+oder ohne gepflegten Vorlauf (Regel 15 (b)), die Wärmepumpe, wenn eine projektierte Kennlinie den
+Vorlauf erreicht, ihr Heizstab (Phase F) und nach Phase E ein Brauchwasserspeicher mit gepflegtem
+Vorlauf ≥ ϑ_Ziel, den eine fähige Anlage lädt. Solarthermie und Pufferentladung sonst nie. In der
+Speicherstufe gilt das je Erzeugerart, bei Vektorstufen je Stufe. Was offen bleibt, deckt ein
+benannter **Zusatzstrom** (elektrisch, Wirkungsgrad 1, in `Rest_Strombedarf_viertelstuendlich`,
+Warnung). Ausweis: Reiter Wärmebedarf „davon thermische Desinfektion", Protokoll je Stufe, Bericht
+„Thermische Desinfektion".
+
+**Hinweis HK4.** Der Pufferdialog trägt an der Entladegrenze „Übertrager: Leistung als
+Entladegrenze eintragen"; ein Übertragermodell gibt es nicht.
+
+Kein Referenzprojekt setzt eines der Felder; die Basis R33 bleibt byte-gleich. Gehalten von
+`EPOS.Kern.Tests/PufferOptionenSchemaTests`, `PufferOptionenTests`, `PufferOptionenLaufTests`
+(Läufe auf Kopien von 1049 und 1045), `DesinfektionTests` und den bunit-Fällen in
+`EPOS.UI.Tests/Dialoge/PufferSpProjektDialogTests` und `Seiten/SimulationKonfigSeiteTests`.

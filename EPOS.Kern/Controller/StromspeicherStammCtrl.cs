@@ -77,8 +77,9 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                             Selbstentladung_Prozent_Monat)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -96,7 +97,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@cver", this.m_Verschleisskosten),
                 new DbParam("@cpow", this.m_Leistungskosten),
                 new DbParam("@ifix", this.m_InvestitionFix),
-                new DbParam("@stby", this.m_StandbyVerbrauch)
+                new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@selbst", this.m_Selbstentladung)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -121,7 +123,8 @@ namespace WindowsFormsApplication1
                             Bezeichner = ?, Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
                             Degradation = ?, Ladezustand = ?, Modulkosten = ?,
                             Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
+                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Selbstentladung_Prozent_Monat = ?
                           WHERE Bezeichner = ?";
 
             DbParam[] ps = {
@@ -139,6 +142,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@cpow", this.m_Leistungskosten),
                 new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@selbst", this.m_Selbstentladung),
                 new DbParam("@key", szKey ?? "")
             };
 
@@ -193,8 +197,9 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                             Selbstentladung_Prozent_Monat)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -212,7 +217,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@cver", model.m_Verschleisskosten),
                         new DbParam("@cpow", model.m_Leistungskosten),
                         new DbParam("@ifix", model.m_InvestitionFix),
-                        new DbParam("@stby", model.m_StandbyVerbrauch)
+                        new DbParam("@stby", model.m_StandbyVerbrauch),
+                        new DbParam("@selbst", model.m_Selbstentladung)
                     };
 
                     v.Ausfuehren(sql, ps);
@@ -291,7 +297,7 @@ namespace WindowsFormsApplication1
             m_ID = 0; m_szBezeichner = string.Empty; m_szTyp = string.Empty;
             m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0; m_Modulkosten = 0;
             m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0; m_Verschleisskosten = 0;
-            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0;
+            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
             m_bReadOnly = false;
         }
 
@@ -325,6 +331,10 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value) t.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
             if (row.Table.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value) t.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
             if (row.Table.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value) t.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
+            // Welle M5 (SP1): dieselbe Wache - vor dem Schemaschritt fehlt die Spalte.
+            if (row.Table.Columns.Contains(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG) &&
+                row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG] != DBNull.Value)
+                t.m_Selbstentladung = Convert.ToDouble(row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG]);
         }
 
         private StromspeicherModel MapRowToModel(DataRow row)
@@ -335,16 +345,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der RUECKFALL der Dashboard-Kachel, wenn das Projekt keinen Stromspeicher
-        /// fuehrt: 5 kWh (iU9-W11a.2).
+        /// Die Kapazitaet der Autarkie-Analyse, wenn das Projekt keinen Stromspeicher
+        /// fuehrt: 0 kWh — die Analyse rechnet dann OHNE Stromspeicher, und die Seite sagt
+        /// es (Anwenderentscheid „Ohne Speicher = 0 kWh!", Papier „Verbesserungen
+        /// 29.09.2026"). Ein angenommener Speicher, den das Projekt nicht hat, ist kein
+        /// Projektergebnis.
         ///
-        /// <para>Woertlich uebernommen aus <c>TabNavigationManager</c> Z. 154
-        /// (<c>if (speicherKWh == 0) dashForm.speicherKWh = 5;</c>). Der Wert ist eine
-        /// ANZEIGEvorgabe fuer das Was-waere-wenn-Feld der Autarkiekachel und geht
-        /// nirgends in die Datenbank (Befund W11-B32) — er darf deshalb hier stehen und
-        /// nicht in <c>DbWerte</c>.</para>
+        /// <para>Der Wert ist die VORBELEGUNG des Was-waere-wenn-Feldes der Autarkiekachel
+        /// und geht nirgends in die Datenbank (Befund W11-B32) — er darf deshalb hier
+        /// stehen und nicht in <c>DbWerte</c>.</para>
         /// </summary>
-        public const double KAPAZITAET_RUECKFALL_KWH = 5.0;
+        public const double KAPAZITAET_OHNE_SPEICHER_KWH = 0.0;
 
         /// <summary>
         /// Kapazitaet [kWh] und Lade-/Entladeleistung [kW] der Einheit, die auch
@@ -472,8 +483,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die SUMME der Speicherkapazitaeten eines Projekts [kWh], mit dem
-        /// 5-kWh-Rueckfall der Autarkiekachel (iU9-W11a.2, Befund W11-B45).
+        /// Die SUMME der Speicherkapazitaeten eines Projekts [kWh]; ohne Stromspeicher
+        /// <see cref="KAPAZITAET_OHNE_SPEICHER_KWH"/> (0 kWh, kein angenommener Speicher).
         ///
         /// <para><b>Woher sie kommt.</b> Bis hierher stand sie in der
         /// NAVIGATIONSklasse <c>TabNavigationManager</c> (Z. 142-154) — mit einem
@@ -492,7 +503,7 @@ namespace WindowsFormsApplication1
         public static double KapazitaetJeProjekt(int idProjekt)
         {
             double summe = 0.0;
-            if (idProjekt <= 0) return KAPAZITAET_RUECKFALL_KWH;
+            if (idProjekt <= 0) return KAPAZITAET_OHNE_SPEICHER_KWH;
 
             try
             {
@@ -512,7 +523,7 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Die Speicherkapazitaet des Projekts konnte nicht gelesen werden: " + ex.Message);
             }
 
-            return summe == 0.0 ? KAPAZITAET_RUECKFALL_KWH : summe;
+            return summe > 0.0 ? summe : KAPAZITAET_OHNE_SPEICHER_KWH;
         }
 
         // =================================================================================
@@ -812,6 +823,7 @@ namespace WindowsFormsApplication1
             ziel.m_Leistungskosten = m.m_Leistungskosten;
             ziel.m_InvestitionFix = m.m_InvestitionFix;
             ziel.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+            ziel.m_Selbstentladung = m.m_Selbstentladung;
         }
 
         /// <summary>
@@ -851,6 +863,7 @@ namespace WindowsFormsApplication1
             werte[ModulKatalogProfil.FeldLeistungskosten] = Spaltentext(r, "Leistungskosten");
             werte[ModulKatalogProfil.FeldInvestitionFix] = Spaltentext(r, "Investition_Fix");
             werte[ModulKatalogProfil.FeldStandby] = Spaltentext(r, "Standby_Verbrauch");
+            werte[ModulKatalogProfil.FeldSelbstentladung] = Spaltentext(r, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG);
 
             return werte;
         }

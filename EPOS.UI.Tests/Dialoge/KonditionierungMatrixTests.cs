@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Standards;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -229,6 +230,30 @@ public class KonditionierungMatrixTests : EposBunitContext
         Assert.Equal(5, _bearbeitung.Stand.NachtEnde);
         Assert.Null(_bearbeitung.Stand.KuehlSollwert);
         Assert.Null(_bearbeitung.Stand.Konditionierung);
+    }
+
+    /// <summary>
+    /// Die Felder der Kühlspalte nehmen die Zellgrenze des Kerns (<c>Konditionierungsgroessen.Min/Max</c>) — dieselbe
+    /// Zahl, mit der die Zellprüfung ablehnt und die die Meldung nennt.
+    /// </summary>
+    [Fact]
+    public void Die_Felder_der_Kuehlspalte_nehmen_die_Zellgrenze_des_Kerns()
+    {
+        var cut = Aufbauen(Satz());
+        double min = Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll);
+        double max = Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll);
+        var kuehlfelder = cut.FindComponents<Zahlenfeld>().Where(f => f.Instance.Bezeichnung.StartsWith("Kühlen ·")).ToList();
+        Assert.NotEmpty(kuehlfelder);
+        Assert.All(kuehlfelder, f => Assert.Equal(((double?)min, (double?)max), (f.Instance.Min, f.Instance.Max)));
+
+        // Genau an der Grenze nimmt das Feld den Wert, knapp darüber färbt es.
+        Eingabe(cut, "Kühlen · Tag").Input(max.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(max, _bearbeitung.Stand.KuehlSollwert);
+        Eingabe(cut, "Kühlen · Tag").Input((max + 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Kühlen · Tag").ClassName);
+        Assert.Equal(max, _bearbeitung.Stand.KuehlSollwert);
+        Assert.NotNull(Konditionierungsarbeit.Zellenpruefung(Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG,
+                                                              Matrixzelle.AusWert(max + 0.5)));
     }
 
     [Fact]

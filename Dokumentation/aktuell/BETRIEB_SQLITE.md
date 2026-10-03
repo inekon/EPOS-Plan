@@ -409,7 +409,7 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 15.09.2026: Schemastand 76** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+**Schemastand 173** (`Tab_Applikation.SchemaVersion`; jüngste Schritte 156 Kessel-Kennlinie, 157 Saat der Konditionierungsvorlagen, 158 Brennwert in Projekten, 159 Änderungsstempel — Abschnitt 2b, 160 und 161 Aufheizoptimierung (Projekteinstellung, Ergebnisspalten), 162 Einheit des Bereitschaftsverlusts am Heizkessel (`Bereitschaft_Einheit`, kW oder %, Vorgabe kW), 163 Bodenalbedo je Photovoltaik- und Solarthermie-Anlage (`Tab_Energieanlagen.Albedo`, 0 bis 1, leer = 0,2), 164 Temperaturpaar je Prozess (`Vorlauf`, `Ruecklauf` an `Tab_Prozesswaerme(_STAMM)`, REAL, nullbar, 0 … 250 °C, paarweise) samt Saat der acht ausgelieferten Betriebsweisen (`Tab_Prozesswaerme_STAMM`, `Tab_Prozesstyp_STAMM`, `ReadOnly = 1`), 165 Felder des Kollektorfelds an `Tab_Energieanlagen` (`Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K`, `Arbeitstemperatur_Weg`, nullbar mit Prüfklausel) und Bezugsfläche der Kennwerte an `Tab_Solarkollektoren(_STAMM)` (`Bezugsflaeche`, apertur oder brutto, Vorgabe apertur), 166 Netzverluste je Kanal und Zirkulation im Bestandsweg (acht nullbare Spalten `Netzverluste_Heizung`/`_Brauchwasser`/`_Prozess` samt `…_Einheit`, `Zirkulation_Leistung_kW`, `Zirkulation_Laufzeit_h_d` an `Tab_Einstellungen`) und Betriebskalender der Bedarfsprofile (`Tab_Betriebskalender`, STRICT, und `ID_Betriebskalender` an `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`, nullbar, `ON DELETE SET NULL`), 167 Teillastfelder der Wärmepumpe an `Tab_WP(_STAMM)` (`Mindestleistung_kW` 0 … 1 000, `Taktverlustfaktor_Cd` 0 … 1) und des BHKW an `Tab_BHKW(_STAMM)` (`Wirkungsgrad_el_Teillast50`, `Wirkungsgrad_th_Teillast50` als Faktor 0 … 1, `Anfahrverlust_kWh` 0 … 100, `Mindestlaufzeit_min` 0 … 60), nullbar mit Prüfklausel, leer = Rechnung wie zuvor, 168 Einspeisegrenze des Projekts an `Tab_Einstellungen` (`Einspeisegrenze_Wert` ≥ 0, `Einspeisegrenze_Einheit` kW oder %, beide nullbar, leer = keine Grenze) und Selbstentladung an `Tab_Stromspeicher(_STAMM)` (`Selbstentladung_Prozent_Monat`, 0 … 20, leer = keine), 169 Pufferspeicher-Auslegung (`Tab_PufferAuslegung`, STRICT, leer, und `Tab_PufferAuslegungParameter_STAMM`, STRICT, mit gesäten Vorgabewerten), 170 Katalogempfehlung der Hilfsenergie von BHKW und Heizkessel auf Weg B (reines DML an `Tab_KostenVorlagePosition` der Auslieferungsvorlagen, `ReadOnly = 1`), 171 Optionen des Pufferspeichers an `Tab_Pufferspeicher` (`Bereitschaft_Weg` tag oder temperatur, `Aufstellraum_Temperatur_C` 0 … 35, `Schicht_Anteile` als Text, `Frischwassermodul` 0/1, `FWM_Graedigkeit_K` 0 … 20) und thermische Desinfektion an `Tab_Einstellungen` (`Desinfektion_Aktiv` 0/1, `Desinfektion_Intervall_Tage` 1 … 31, `Desinfektion_Stunde` 0 … 23, `Desinfektion_Zieltemperatur_C` 55 … 90, `Desinfektion_Volumen_l` 0 … 100 000), nullbar mit Prüfklausel, leer = Rechnung wie zuvor, 172 Katalogfassung der ausgelieferten Sätze (`Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen` an acht Katalogtabellen, `Tab_Applikation.Katalogfassung`) samt Protokoll des Abgleichs (`Tab_Katalogabgleich`, STRICT) und gespeicherter Erdreichprüfung (`Tab_ErgebnisErdreich`, STRICT), 173 dieselben Katalogspalten an den sechzehn Katalogen der Stufe 2 samt Saat — Abschnitt 8a; die Schritte bis 76 im Einzelnen: 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
 repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
 `Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
@@ -573,6 +573,71 @@ nächste Start von EPOS-Plan (oder ein SQLite-Werkzeug) spielt es von selbst ein
 noch gibt**: Die Deinstallation fragt seit Auftrag #161 (09.09.2026), ob
 `%ProgramData%\EPOS_PLAN` samt `DB-Backup` gelöscht werden soll (Vorgabe *Nein*, aber
 ein bestätigtes *Ja* nimmt Datenbank und Sicherungsordner unwiederbringlich mit).
+
+---
+
+## 8a. Katalogabgleich nach einem Update
+
+**Schemaschritt 172** (`KatalogfassungSchema`, nach 170 Katalogempfehlung der Hilfsenergie und 171 Optionen des Pufferspeichers): An den acht Katalogen der Stufe 1 — Wärmepumpen
+(`Tab_WP_STAMM` samt `Tab_Kenndaten_STAMM` und `Tab_Kenndaten_Kuehlung_STAMM`), Heizkessel, BHKW,
+PV-Module, Brauchwasser- und Prozesswärmeprofile samt Typen — stehen `Katalog_Schluessel` (TEXT,
+eindeutig über einen Teilindex `UX_<Tabelle>_Katalog_Schluessel … WHERE Katalog_Schluessel IS NOT
+NULL`), `Katalog_Pruefsumme` (TEXT, 64 Hexzeichen) und `Katalog_Ausgelaufen` (INTEGER 0/1, Vorgabe 0);
+an `Tab_Applikation` die `Katalogfassung` (INTEGER, leer = noch nie abgeglichen); dazu die
+STRICT-Tabellen `Tab_Katalogabgleich` (Protokoll) und `Tab_ErgebnisErdreich` (gespeicherte
+Erdreichprüfung je Lauf und Anlage, am Projekt und an der Energieanlage mit `ON DELETE CASCADE`).
+Die Saat des Schritts belegt Schlüssel und Prüfsumme jedes gesperrten Satzes (`ReadOnly = 1`); ein
+eigener Satz (`ReadOnly = 0`) bleibt ohne Schlüssel. Kein Fachwert ändert sich, der Referenzlauf
+bleibt byte-gleich. Die Messlatte aus 6.5 hebt `Werkzeuge/Testdatenbankschema` wie jeden Schritt.
+
+**Schemaschritt 173** (`KatalogfassungStufe2Schema`): dieselben drei Spalten samt Teilindex und
+dieselbe Saat an den sechzehn Katalogen der Stufe 2 — Baustoffe, Bauteilaufbauten, Brennstoffe
+(`Tab_Brennstoff_Stamm`), Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher,
+Vorgaben der Pufferauslegung, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien,
+Stromspeicher, Stromverbraucherprofile samt Wochenprofilen, Wechselrichter. Ihre Kindtabellen
+(Synonyme, Schichten, Ganglinien- und Verteilungswerte, Konditionierungsvorgaben, -kalender und
+-perioden) bekommen keine Spalte; ihre Zeilen gehören über den Fremdschlüssel zum Kopfsatz. Nicht
+abgeglichen werden der **Klimakatalog** (`Tab_Klimaregion_STAMM`, `Tab_Klimadaten_STAMM`,
+`Tab_Solar_STAMM` — Pflege über den Klimaimport) und der **Zapfprofilkatalog** (`Tab_Tww*_STAMM` —
+Pflege über sein eigenes Paket mit Katalogversion). Kein Fachwert ändert sich, der Referenzlauf
+bleibt byte-gleich.
+
+**Das Paket.** Die Auslieferung legt neben `{app}\Vorlage\Kenndaten.sqlite` die Datei
+`{app}\Vorlage\Katalogpaket.json` (geschrieben von `Werkzeuge/Auslieferungsvorlage`, Fassung über
+`--katalogfassung`): alle ausgelieferten Sätze der Stufen 1 und 2 mit Schlüssel, Prüfsumme und
+Werten, Ganglinien als Wertelisten (Formatversion 2; Größe im Bericht des Werkzeugs, Warnung ab
+20 MB). Sie liegt nicht im Repository (`.gitignore: Setup/Vorlage/Katalogpaket.json`).
+
+Brennstoffe, Konditionierungsvorlagen und die Vorgaben der Pufferauslegung haben keine Projektkopie:
+Ein Projekt, das einen aktualisierten Satz davon benutzt, rechnet nach dem Abgleich mit dem neuen
+Auslieferungsstand. Wer das für einen Satz nicht will, entsperrt oder ändert ihn vor dem Update — dann
+bleibt er stehen.
+
+**Ablauf beim Start.** Nach einer erfolgreichen Schemamigration vergleicht EPOS-Plan die Fassung
+des Pakets mit `Tab_Applikation.Katalogfassung`. Ist das Paket neuer:
+
+1. Sicherung per `VACUUM INTO` (Abschnitt 3.2) als `Kenndaten_Katalogabgleich_<Zeitstempel>.sqlite`
+   in `DB-Backup` neben der Datenbank (gibt es den Ordner nicht: daneben). Scheitert die Sicherung,
+   gleicht EPOS-Plan nicht ab.
+2. Abgleich in EINER Transaktion: fehlender Satz eingefügt, unveränderter ausgelieferter Satz
+   aktualisiert, angepasster oder entsperrter Satz behalten, entfallener Satz als ausgelaufen
+   gekennzeichnet (nie gelöscht). Projektkopien und eigene Sätze fasst er nicht an.
+3. Je Aktion eine Zeile in `Tab_Katalogabgleich`, dazu die Zusammenfassung; danach steht die
+   Fassung des Pakets in `Tab_Applikation.Katalogfassung`. Ein Fenster nennt das Ergebnis.
+
+Ohne Paket oder mit einem unlesbaren Paket bleibt der Katalog, wie er ist (beim unlesbaren Paket mit
+der Zeile `KEIN_PAKET` im Protokoll).
+
+**Nachsehen und wiederherstellen.**
+
+```sql
+SELECT Zeitpunkt, Fassung, Tabelle, Schluessel, Aktion, Hinweis FROM Tab_Katalogabgleich ORDER BY ID DESC;
+SELECT Katalogfassung FROM Tab_Applikation;
+```
+
+Den Auslieferungsstand EINES behaltenen Satzes stellt Administration → Daten & Import → „Katalog
+aktualisieren…" wieder her (Aktion `WIEDERHERGESTELLT`). Den Stand VOR dem Abgleich insgesamt holt
+die Sicherung aus Schritt 1 zurück (Abschnitt 8); beim nächsten Start gleicht EPOS-Plan dann erneut ab.
 
 ---
 

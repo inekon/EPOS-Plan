@@ -41,8 +41,10 @@ namespace WindowsFormsApplication1
     {
         internal Mehrzonenergebnis(GebaeudeModellErgebnis gebaeude, IReadOnlyList<GebaeudeModellErgebnis> zonen,
                                    IReadOnlyList<ZonenEingang> eingaenge, Zonenschleife schleife,
-                                   IReadOnlyList<Zonenpaarzuordnung> paare, double zeitGesamtMs, double zeitVorlaeufeMs)
+                                   IReadOnlyList<Zonenpaarzuordnung> paare, double zeitGesamtMs, double zeitVorlaeufeMs,
+                                   Aufheizgebaeude aufheizgebaeude = null)
         {
+            Aufheizgebaeude = aufheizgebaeude;
             Gebaeude = gebaeude;
             Zonen = zonen;
             Eingaenge = eingaenge;
@@ -72,6 +74,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Rechenzeit der Vorläufe [ms]: adiabater Vorlauf der 4-K-Regel und gekoppelter Vorlauf.</summary>
         internal double ZeitVorlaeufeMs { get; }
+
+        /// <summary>
+        /// Die Aufheizwerte des Gebäudes (Entwurf KP3, Welle R3, Festlegung 22) aus den Plänen der Zonen
+        /// (<see cref="ZonenEingang.Aufheizplan"/> an <see cref="Eingaenge"/>); <c>null</c> heißt
+        /// „Schalter aus". R4 übernimmt sie in das Gebäudeergebnis.
+        /// </summary>
+        internal Aufheizgebaeude Aufheizgebaeude { get; }
     }
 
     /// <summary>
@@ -95,41 +104,29 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Rechnet das Gebäude <paramref name="gebaeude"/> mit seinen Zonen (Klassenkopf).</summary>
         /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen, der Kopplung oder der Schleife.</exception>
+        /// <param name="aufheizvorgabe">Die Aufheizoptimierung des Projekts (Entwurf KP3, Welle R3): eingeschaltet
+        /// planen beide Aufbauten der Zonen ihre Rampen (Festlegung 1); <c>null</c> oder aus = kein Aufruf.</param>
+        /// <param name="aufheizleistungTestW">Testnaht der Grenzfallprobe (N-AH8): P_auf statt der Bemessung [W].</param>
         internal static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima, bool kuehlbetrieb,
                                                   string anlagenkopplung, int index, int idGebaeude,
-                                                  Func<long?, Konditionierungssatz> konditionierung = null)
+                                                  Func<long?, Konditionierungssatz> konditionierung = null,
+                                                  Aufheizvorgabe aufheizvorgabe = null,
+                                                  double aufheizleistungTestW = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
             string wer = Wer(gebaeude);
             var uhr = Stopwatch.StartNew();
 
-            // 1. Die 4-K-Regel über den adiabaten Vorlauf.
-            List<(int A, int B)> regelpaare = Regelpaare(gebaeude);
-            var zuordnung = new Dictionary<(int, int), Trennflaechenzuordnung>();
-            var deltaVorlauf = new Dictionary<(int, int), double>();
-            if (regelpaare.Count > 0)
-            {
-                IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung,
-                                                                         adiabat: true, konditionierung: konditionierung);
-                var luft = new Dictionary<int, double[]>();
-                foreach (ZonenEingang z in adiabat)
-                    if (z.IstBeheizt && regelpaare.Any(p => p.A == z.ZonenId || p.B == z.ZonenId))
-                        luft[z.ZonenId] = Zonenlauf.Laufen(z, index, idGebaeude).Raumtemperatur;
-                foreach ((int a, int b) in regelpaare)
-                {
-                    double d = GroessteDifferenz(luft[a], luft[b]);
-                    deltaVorlauf[(a, b)] = d;
-                    zuordnung[(a, b)] = d < GebaeudeFestwerte.VIER_K_GRENZE_K ? Trennflaechenzuordnung.Innen : Trennflaechenzuordnung.Aussen;
-                }
-            }
-            double zeitAdiabat = uhr.Elapsed.TotalMilliseconds;
+            // 1. und 2. Die 4-K-Regel über den adiabaten Vorlauf, dann die Zonen - samt Aufheizplänen.
+            IReadOnlyList<ZonenEingang> zonen = ZonenBauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, index, idGebaeude,
+                                                           konditionierung, aufheizvorgabe, aufheizleistungTestW,
+                                                           out List<(int A, int B)> regelpaare,
+                                                           out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
+                                                           out Dictionary<(int, int), double> deltaVorlauf,
+                                                           out double zeitAdiabat);
 
-            // 2. Zonen und Schleife.
-            Trennflaechenzuordnung VierK(int a, int b)
-                => zuordnung.TryGetValue(Paar(a, b), out Trennflaechenzuordnung g) ? g : Trennflaechenzuordnung.Regel;
-            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
-                                                                   konditionierung: konditionierung);
+            // Die Schleife.
             var schleife = new Zonenschleife(zonen, wer);
             double vorBeginn = uhr.Elapsed.TotalMilliseconds;
             schleife.Vorlauf();
@@ -145,19 +142,84 @@ namespace WindowsFormsApplication1
                 paare.Add(new Zonenpaarzuordnung(a, b, deltaVorlauf[(a, b)], zuordnung[(a, b)], d));
             }
 
-            GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude);
+            // Stufe KP3 (Festlegung 22): die Gebaeudewerte aus den Plaenen der Zonen - nur mit Schalter; die
+            // Aufheizwerte des Gebaeudes (Welle R4) mit W3 und Kappung aus den Zonenlaeufen, vor dem Bau des
+            // Gebaeudeergebnisses, weil seine Nutzungszeit die vereinigte Rampenmaske ausnimmt (Festlegung 10).
+            Aufheizgebaeude aufheiz = zonen[0].Aufheizplan == null
+                ? null
+                : Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
+            GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude,
+                                                            aufheiz == null ? null : Aufheizergebnis.Gebaeude(aufheiz, ergebnisse));
             summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
-                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf);
+                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
+        }
+
+        /// <summary>
+        /// <b>Die Zonen eines Gebäudes vor dem Jahr</b> — die Schritte 1 und 2 von <see cref="Rechnen"/>, als
+        /// Rumpf ausgelagert (EPOS.Kern/CLAUDE.md: Eine Auskunft ruft den Rechenweg des Laufs), damit die
+        /// Auskunft der Aufheizbemessung (Entwurf KP3, Welle D2, Festlegung 3) dieselben Zonen ohne Jahreslauf des
+        /// Gebäudes bekommt: die 4-K-Regel über den adiabaten Vorlauf (nur mit Regelpaaren; er rechnet je
+        /// beteiligter Zone ein Jahr für sich), danach <see cref="ZonenEingang.Bauen"/> mit der gewählten Gruppe —
+        /// eingeschaltet setzt der Eingangsbauer am Ende die Aufheizpläne (Festlegung 1).
+        /// </summary>
+        /// <param name="zeitAdiabatMs">Die Rechenzeit des adiabaten Vorlaufs [ms].</param>
+        internal static IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima, bool kuehlbetrieb,
+                                                             string anlagenkopplung, int index, int idGebaeude,
+                                                             Func<long?, Konditionierungssatz> konditionierung,
+                                                             Aufheizvorgabe aufheizvorgabe, double aufheizleistungTestW,
+                                                             out List<(int A, int B)> regelpaare,
+                                                             out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
+                                                             out Dictionary<(int, int), double> deltaVorlauf,
+                                                             out double zeitAdiabatMs)
+        {
+            if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
+            if (klima == null) throw new ArgumentNullException(nameof(klima));
+            var uhr = Stopwatch.StartNew();
+
+            // 1. Die 4-K-Regel über den adiabaten Vorlauf.
+            regelpaare = Regelpaare(gebaeude);
+            var gruppen = new Dictionary<(int, int), Trennflaechenzuordnung>();
+            deltaVorlauf = new Dictionary<(int, int), double>();
+            if (regelpaare.Count > 0)
+            {
+                IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung,
+                                                                         adiabat: true, konditionierung: konditionierung,
+                                                                         aufheizvorgabe: aufheizvorgabe,
+                                                                         aufheizleistungTestW: aufheizleistungTestW);
+                var luft = new Dictionary<int, double[]>();
+                List<(int A, int B)> paare = regelpaare;
+                foreach (ZonenEingang z in adiabat)
+                    if (z.IstBeheizt && paare.Any(p => p.A == z.ZonenId || p.B == z.ZonenId))
+                        luft[z.ZonenId] = Zonenlauf.Laufen(z, index, idGebaeude).Raumtemperatur;
+                foreach ((int a, int b) in regelpaare)
+                {
+                    double d = GroessteDifferenz(luft[a], luft[b]);
+                    deltaVorlauf[(a, b)] = d;
+                    gruppen[(a, b)] = d < GebaeudeFestwerte.VIER_K_GRENZE_K ? Trennflaechenzuordnung.Innen : Trennflaechenzuordnung.Aussen;
+                }
+            }
+            zuordnung = gruppen;
+            zeitAdiabatMs = uhr.Elapsed.TotalMilliseconds;
+
+            // 2. Die Zonen.
+            Trennflaechenzuordnung VierK(int a, int b)
+                => gruppen.TryGetValue(Paar(a, b), out Trennflaechenzuordnung g) ? g : Trennflaechenzuordnung.Regel;
+            return ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
+                                      konditionierung: konditionierung,
+                                      aufheizvorgabe: aufheizvorgabe,
+                                      aufheizleistungTestW: aufheizleistungTestW);
         }
 
         /// <summary>
         /// Die Summe der Zonen als Ergebnis des Gebäudes (Klassenkopf, Festlegung 10): Heizlast und
         /// Kühlbedarf summiert, Temperaturen, Sollwert und θ_max flächengewichtet über die beheizten Zonen.
         /// </summary>
+        /// <param name="aufheizung">Die Aufheizwerte des Gebäudes (Entwurf KP3, Welle R4); <c>null</c> = Schalter aus.</param>
         internal static GebaeudeModellErgebnis Gebaeudeergebnis(IReadOnlyList<ZonenEingang> zonen, IReadOnlyList<GebaeudeModellErgebnis> ergebnisse,
-                                                              Zonenschleife schleife, int index, int idGebaeude)
+                                                              Zonenschleife schleife, int index, int idGebaeude,
+                                                              Aufheizergebnis aufheizung = null)
         {
             var heiz = new double[8760];
             var luft = new double[8760];
@@ -218,7 +280,12 @@ namespace WindowsFormsApplication1
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
                                               schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
-                                              Gebaeudenutzung(zonen));
+                                              Gebaeudenutzung(zonen), aufheizung: aufheizung)
+            {
+                // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
+                SommerlueftungGesetzt = zonen.Any(z => z.Eingang.Sommerlueftung),
+                HeizkalenderWirksam = zonen.Any(z => z.IstBeheizt && z.Eingang.HeizkalenderWirksam),
+            };
         }
 
         /// <summary>

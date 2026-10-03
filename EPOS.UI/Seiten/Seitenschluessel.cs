@@ -193,6 +193,16 @@ public static class Seitenschluessel
     /// </remarks>
     public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
 
+    /// <summary>
+    /// Die Ansicht „Pufferspeicher-Auslegung" (<c>Seiten.Pufferspeicher.PufferAuslegungSeite</c>;
+    /// Konzept Pufferspeicher-Auslegung, Stufe P2) — eine freie Ansicht nach dem Muster der
+    /// Stromspeicher-Auslegung, ohne Menüpunkt und ohne <c>Masken.*</c>-Zwilling. Die Wege hinein:
+    /// „Pufferspeicher auslegen…" in ① Konfiguration, „Auslegen…" in der Pufferverwaltung und in der
+    /// Kachel Pufferspeicher; der Arbeitsgang (Projekt, Zielpuffer) ist vorher bei
+    /// <c>PufferAuslegungHuelle</c> angemeldet.
+    /// </summary>
+    public const string PufferAuslegung = "PUFFER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -364,6 +374,13 @@ public static class Seitenschluessel
     /// </summary>
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
+    /// <summary>
+    /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Profile &amp; Lastgänge -> Betriebskalender"
+    /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
+    /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
+    /// </summary>
+    public const string Betriebskalender = "BETRIEBSKALENDER";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -393,6 +410,17 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Katalog-Dubletten" (<c>KatalogDublettenDialog</c>, W14c.5).</summary>
     public const string KatalogDubletten = "KATALOG_DUBLETTEN";
 
+    /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
+    /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liegt kein Katalogpaket der Auslieferung.
+    /// </remarks>
+    public const string Katalogabgleich = "KATALOGABGLEICH";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -420,7 +448,7 @@ public static class Seitenschluessel
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
@@ -433,9 +461,9 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog,
+        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
         Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
+        Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };
 }

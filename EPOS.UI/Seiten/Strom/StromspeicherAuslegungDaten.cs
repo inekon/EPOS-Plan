@@ -126,6 +126,13 @@ public sealed class StromspeicherAuslegungDienste
     public Func<Task<string>>? ProjektflotteDeaktivieren;
 
     /// <summary>
+    /// „Beste Variante übernehmen" (SP2): Der beste Rasterpunkt des Laufs wird die Flotte der
+    /// Auslegung und für den Projektlauf aktiviert; leer = Erfolg. Geschrieben wird kein
+    /// Simulationsergebnis.
+    /// </summary>
+    public Func<SpeicherFlottenErgebnis, Task<string>>? BesteVarianteUebernehmen;
+
+    /// <summary>
     /// Die VORPRÜFUNG vor dem Lauf (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.
     /// </summary>
     /// <remarks>
@@ -150,6 +157,13 @@ public sealed class StromspeicherAuslegungDienste
 
     /// <summary>Der hergeleitete Vorschlag für das Peak-Ziel H₀ (SD‑Q3).</summary>
     public Func<SpeicherOptimierungEingaben, FlottenPeakZielVorschlag>? PeakZielVorschlag;
+
+    /// <summary>
+    /// Die Einspeisegrenze der Projekteinstellung in kW (Welle M5, PV3); <c>null</c> = keine. Der
+    /// Netzblock nennt sie an der harten Einspeisegrenze der Flotte — sie ist deren Vorbelegung und
+    /// wirkt im Projektlauf zusätzlich als weiche Grenze. Kein Delegat ist keine Zeile.
+    /// </summary>
+    public Func<double?>? ProjektEinspeisegrenzeKw;
 
     // =====================================================================
     //  „Speicher hinzufügen" — die drei Quellen (Auftrag #239)

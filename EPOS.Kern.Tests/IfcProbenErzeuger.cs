@@ -47,6 +47,8 @@ namespace EPOS.Kern.Tests
             {
                 ["ifc4_haus.ifc"] = haus,
                 ["ifc2x3_haus.ifc"] = Haus(XbimSchemaVersion.Ifc2X3, "ifc2x3_haus.ifc"),
+                ["ifc2x3_enthaltensein.ifc"] = Enthaltensein(),
+                ["ifc2x3_referenzen.ifc"] = Referenzen(),
                 ["ifc4_haus.ifczip"] = Zip("ifc4_haus.ifc", haus),
                 ["ifc4x1_kopf.ifc"] = Ifc4x1Kopf(),
                 ["ifc4_zwei_gebaeude.ifc"] = ZweiGebaeude(),
@@ -55,6 +57,7 @@ namespace EPOS.Kern.Tests
                 ["ifc4_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten.ifc", nullwerte: false),
                 ["ifc4_schichten_nullwerte.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten_nullwerte.ifc", nullwerte: true),
                 ["ifc2x3_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc2X3, "ifc2x3_schichten.ifc", nullwerte: false),
+                ["ifc4_schichtdicken_mm.ifc"] = SchichtdickenMillimeter(),
                 ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
                 ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
@@ -257,6 +260,37 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Das Millimeterhaus</b> (Rückfall „Schichtdicke in Millimetern"): Längeneinheit <c>METRE</c> ohne
+        /// Präfix, aber die Schichtdicken der Außenwand in Millimetern geschrieben, wie CAD-Exporte es tun —
+        /// Folie 0.2, Dämmung 160., Beton 200.; das Dach dagegen in Metern (Beton 0.2, Dämmung 0.016), die
+        /// Gegenprobe. Ein beheizter Raum (80 m², 2,5 m, 200 m³), Südwand 25 m², Dach 80 m², ohne U-Werte.
+        /// </summary>
+        public static byte[] SchichtdickenMillimeter()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_schichtdicken_mm.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false, meter: true);
+                IIfcBuilding g = b.Gebaeude("Millimeterhaus", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(eg, "0.01", "Wohnen", 0.15, 0.15, 80, 2.5, 200, beheizt: true);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ M", null);
+
+                IIfcMaterial folie = b.Baustoff("Folie", 0.2, 900, 1800);
+                IIfcMaterial daemm = b.Baustoff("Dämmung", 0.04, 30, 1500);
+                IIfcMaterial beton = b.Baustoff("Beton", 2.0, 2400, 1000);
+                IIfcMaterialLayerSet wand = b.Schichtsatz("Außenwand Millimeter", (folie, 0.2), (daemm, 160), (beton, 200));
+                IIfcMaterialLayerSet dach = b.Schichtsatz("Dach Meter", (beton, 0.2), (daemm, 0.016));
+
+                IIfcWall w = b.Wand(eg, Wandlage.Sued.Name, Wandlage.Sued, typ, null, "BaseQuantities", 25.0, null, null, new[] { r });
+                b.Schichten(w, wand, IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE);
+                IIfcSlab d = b.Platte(eg, "Dach", IfcSlabTypeEnum.ROOF, aussen: true, u: null, brutto: 80.0,
+                                      raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL);
+                b.Schichten(d, dach, IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
         /// <b>Das Rückfallhaus</b> (Umsetzungskonzept 3.4, Spalte „Rückfall"): zwei Geschosse mit je einem
         /// beheizten Raum (60 und 50 m²) ohne Höhe und ohne Volumen, das Obergeschoss mit der
         /// Bruttogrundfläche 70 m²; zwei Außenwände mit Mengen, Dach- und Bodenplatte OHNE Mengen, keine
@@ -415,6 +449,152 @@ namespace EPOS.Kern.Tests
                 b.Gebaeude("Probengebäude", null);
                 string text = Encoding.ASCII.GetString(b.Speichern());
                 return Encoding.ASCII.GetBytes(text.Replace("FILE_SCHEMA (('IFC4'));", "FILE_SCHEMA (('IFC4X1'));"));
+            }
+        }
+
+        /// <summary>
+        /// <b>Räume über das Enthaltensein, Mengen unter fremdem Satznamen</b> (IFC2X3, Mehrzonenkonzept 6.5) —
+        /// nach dem Muster eines CAD-Exports: Die Geschosse „EG" (0 mm) und „OG" (2800 mm) hängen über
+        /// <c>IfcRelContainedInSpatialStructure</c> am Gebäude, die Räume ebenso am Geschoss; der Raumname
+        /// steht in <c>Name</c>, <c>LongName</c> fehlt. Die Mengen stehen im Satz <c>CAD_RaumQuantities</c>
+        /// als <c>Area</c>/<c>Volume</c>/<c>Height</c>: EG „Wohnen" 40 m², 100 m³, 2,5 m; „Küche" 20 m², 50 m³,
+        /// 2,5 m — zusätzlich über <c>IfcRelAggregates</c> am EG (beide Wege, einmal gezählt); OG „Schlafen"
+        /// 30 m², 72 m³, 2,4 m; „Abstellraum" 5 m², 12 m³, 2,4 m (nach dem Namen unbeheizt); „Bad" mit
+        /// <c>BaseQuantities</c> (<c>NetFloorArea</c> 10 m², <c>NetVolume</c> 24 m³, <c>Height</c> 2,4 m) UND
+        /// einem fremden Satz mit <c>Area</c> 999 m² — der Standard geht vor. Dazu eine Außenwand Süd im EG
+        /// (U 0,3, brutto = netto 30 m²). Beheizt: 100 m², 246 m³.
+        ///
+        /// <para><b>Die Bauteile des CAD-Exports</b> (Mehrzonenkonzept 6.5, <see cref="Bau.CadBauteil{T}"/>): ohne
+        /// <c>IsExternal</c> und ohne Raumgrenze, Platzierung im Ursprung des Geschosses; Angrenzung in
+        /// <c>CAD_BauteilAllgemein.AdjacentType</c> (Aufzählung), Himmelsrichtung als Text
+        /// <c>Orientation (°)</c>, Hüllkennung <c>ElementEnergyConsultingProperties.CladdingSurface</c>, der
+        /// U-Wert als <c>UValue (W/(m² K))</c> in <c>CAD_Bauteilreferenzen</c> und mit falscher Einheit als
+        /// <c>ThermalTransmittance (W/(m K))</c> in <c>Pset_*Common</c> (ein anderer Wert, der nie gelten darf),
+        /// die Flächen als <c>GrossArea</c>/<c>NetArea</c> in <c>CAD_BauteilQuantities</c> neben Lockwerten
+        /// <c>Width</c> (= Länge) und <c>Length</c> (= Höhe). EG: „Nord CAD" außen, 0°, U 0,25 (falsch 0,5),
+        /// brutto 30, netto 24 m², mit zwei Fenstern über Öffnungen — „F1 CAD" 2 × 2 m über
+        /// <c>OverallWidth</c>/<c>OverallHeight</c>, „F2 CAD" nur <c>GrossArea</c> 2 m² neben Width = Length =
+        /// 5 m, beide U 1,2 (falsch 9,9) —; „Kellerdecke CAD" <c>btaCellarCeiling</c>, U 0,4, 60 m²;
+        /// „Kellerwand CAD" <c>btaGround</c>, 90°, U 0,5, 10 m²; „Innenwand CAD" <c>btaHeated</c>, U 1,5, 12 m²;
+        /// „Wand unbeheizt CAD" <c>btaUnHeated</c>, U 0,6, 6 m²; „Hilfswand CAD" <c>btaNone</c> ohne Mengen
+        /// und U-Wert. OG: „Dach CAD" außen, U 0,2 (falsch 0,9), brutto 35 m², mit dem Dachfenster
+        /// „DF CAD" (1 × 1 m, U 1,4) über <c>IfcRelAggregates</c>; „Oberste Decke CAD"
+        /// <c>btaUppermostStorey</c>, U 0,3, 20 m²; „Spitzbodenwand CAD" außen, 270°, U 0,3, 8 m², aber
+        /// Hüllkennung FALSE.</para>
+        ///
+        /// <para><b>Das Baujahr des CAD-Exports</b> (Baujahr-Rückfall, Mehrzonenkonzept 6.5): kein
+        /// <c>Pset_BuildingCommon</c>; im Satz <c>CAD_GebaeudeAllgemein</c> erst <c>Constructed</c> = 1983
+        /// (Ganzzahl), dann <c>YearOfConstruction (Datum)</c> = „01.01.1984 00:00:00" — der Standardname geht
+        /// in der Rangfolge vor, das Baujahr ist 1984 (Klasse H), nicht 1983 (G).</para>
+        /// </summary>
+        public static byte[] Enthaltensein()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_enthaltensein.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Probengebäude", null);
+                b.Eigenschaften(g, "CAD_GebaeudeAllgemein", ("Constructed", new IfcInteger(1983)),
+                                ("YearOfConstruction (Datum)", new IfcLabel("01.01.1984 00:00:00")));
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                b.RaumEnthalten(eg, "Wohnen", 150, 150, 40, 100, 2500, zerlegt: false);
+                b.RaumEnthalten(eg, "Küche", 6150, 150, 20, 50, 2500, zerlegt: true);
+                b.RaumEnthalten(og, "Schlafen", 150, 150, 30, 72, 2400, zerlegt: false);
+                b.RaumEnthalten(og, "Abstellraum", 6150, 150, 5, 12, 2400, zerlegt: false);
+                IIfcSpace bad = b.RaumEnthalten(og, "Bad", 6150, 4150, null, null, null, zerlegt: false);
+                b.RaumMengen(bad, "BaseQuantities", 10, 24, 2400, standard: true);
+                b.RaumMengen(bad, "CAD_RaumQuantities", 999, 999, 9999, standard: false);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ E", 0.3);
+                b.Wand(eg, "EG Süd", Wandlage.Sued, typ, null, "BaseQuantities", 30.0, 30.0, null, new IIfcSpace[0]);
+
+                // Die Bauteile des CAD-Exports (Klassenkopf).
+                IIfcWall nord = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Nord CAD", "btaOutside", true, 0.25, 0.5, 0, 30, 24, 10000, 3000);
+                b.CadFenster(nord, eg, "F1 CAD", (2000, 2000), null, 1.2, 9.9);
+                b.CadFenster(nord, eg, "F2 CAD", null, 2.0, 1.2, 9.9);
+                b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Kellerdecke CAD", "btaCellarCeiling", true, 0.4, null, null, 60, 60, 7500, 8000);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Kellerwand CAD", "btaGround", true, 0.5, null, 90, 10, 10, 4000, 2500);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand CAD", "btaHeated", false, 1.5, null, null, 12, 12, 4800, 2500);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand unbeheizt CAD", "btaUnHeated", true, 0.6, null, null, 6, 6, 2400, 2500);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Hilfswand CAD", "btaNone", false, null, null, null, null, null, null, null);
+                IIfcRoof dach = b.CadBauteil<IIfcRoof>(og, "IfcRoof", "Dach CAD", "btaOutside", true, 0.2, 0.9, null, 35, 34, 7000, 5000);
+                b.CadFenster(dach, og, "DF CAD", (1000, 1000), null, 1.4, null, teil: true);
+                b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke CAD", "btaUppermostStorey", true, 0.3, null, null, 20, 20, 5000, 4000);
+                b.CadBauteil<IIfcWall>(og, "IfcWall", "Spitzbodenwand CAD", "btaOutside", false, 0.3, null, 270, 8, 8, 3200, 2500);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Trenndecken über die Raumbezüge</b> (IFC2X3, Mehrzonenkonzept 6.5) — ein CAD-Export ohne Raumgrenzen, der
+        /// je Raum ein <c>IfcRelReferencedInSpatialStructure</c> mit den angrenzenden Bauteilen schreibt (HottCAD-Muster).
+        /// Das Gebäude heißt „Gebäude" (Platzhalter) und führt kein Baujahr. Geschosse KG (−2600 mm), EG (0), OG (2800),
+        /// Räume über das Enthaltensein mit Mengen in <c>CAD_RaumQuantities</c>: KG „Keller" 50 m² (nach dem Namen
+        /// unbeheizt); EG „Wohnen" 40 m², „Küche" 20 m², „Abstellraum" 5 m² (unbeheizt); OG „Schlafen" 35 m²,
+        /// „Kind" 25 m² — beheizt je Geschoss 60 m², zusammen 120 m². Höhe 2,5 m.
+        ///
+        /// <para><b>Die Bauteile</b> (<see cref="Bau.CadBauteil{T}"/>, ohne <c>IsExternal</c> und ohne Raumgrenze) und wer
+        /// sie referenziert: „Decke EG/OG" <c>btaHeated</c>, U 1,0, 60 m² (bzw. 10 m² mit <paramref name="schwach"/>) —
+        /// Wohnen, Küche, Schlafen, Kind: die Trenndecke EG/OG; „Kellerdecke" <c>btaCellarCeiling</c>, U 0,4, 65 m² —
+        /// Keller, Wohnen, Küche, Abstellraum: die Trenndecke KG/EG; „Oberste Decke" <c>btaUppermostStorey</c>, U 0,3,
+        /// 60 m² — nur Schlafen und Kind (ein Geschoss, keine Trenndecke); „Vordach" außen, U 0,5, 6 m² — Wohnen und
+        /// Schlafen (außen, nie Trenndecke); „Innenwand EG" <c>btaHeated</c>, 12 m² — Wohnen, Küche (innere Masse);
+        /// „Wand Abstellraum" <c>btaHeated</c>, 6 m² — Küche, Abstellraum (gegen unbeheizt); „Innenwand OG"
+        /// <c>btaHeated</c>, 10 m² — Schlafen, Kind; „Treppenhauswand" <c>btaHeated</c>, 9 m² — Wohnen und Schlafen
+        /// (zwei Geschosse: kein Nachbar, einseitig); „Innenwand einzeln" <c>btaHeated</c>, 4 m² — nur Wohnen
+        /// (einseitig); „Innenwand frei" <c>btaHeated</c>, 8 m², ohne Bezug (einseitig); „Außenwand Süd" (EG, 180°) und
+        /// „Außenwand Nord" (OG, 0°) außen, U 0,3, je 40 m² — Wohnen bzw. Schlafen; „Kellerwand" <c>btaGround</c>, 30 m²,
+        /// Hüllkennung FALSE — Keller.</para>
+        ///
+        /// <para>Zwei Abwandlungen, nur im Speicher (keine Probendatei): <paramref name="schwach"/> — die Decke EG/OG trägt
+        /// nur 10 m² (die Datei referenziert nicht alle Deckenteile; die Fläche wird aus den Raummengen geschätzt);
+        /// <paramref name="spitzboden"/> — ein Geschoss DG (5200 mm) mit dem Raum „Spitzboden" (20 m², nach dem Namen
+        /// beheizt), der die „Oberste Decke" mitreferenziert: Die Datei erklärt sie gegen unbeheizt, die Erklärung gilt vor
+        /// dem Bezug und wird benannt.</para>
+        /// </summary>
+        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_referenzen.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Gebäude", null);
+                IIfcBuildingStorey kg = b.GeschossEnthalten(g, "KG", -2600);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                IIfcSpace keller = b.RaumEnthalten(kg, "Keller", 150, 150, 50, 125, 2500, zerlegt: false);
+                IIfcSpace wohnen = b.RaumEnthalten(eg, "Wohnen", 150, 150, 40, 100, 2500, zerlegt: false);
+                IIfcSpace kueche = b.RaumEnthalten(eg, "Küche", 6150, 150, 20, 50, 2500, zerlegt: false);
+                IIfcSpace abstell = b.RaumEnthalten(eg, "Abstellraum", 6150, 4150, 5, 12.5, 2500, zerlegt: false);
+                IIfcSpace schlafen = b.RaumEnthalten(og, "Schlafen", 150, 150, 35, 87.5, 2500, zerlegt: false);
+                IIfcSpace kind = b.RaumEnthalten(og, "Kind", 6150, 150, 25, 62.5, 2500, zerlegt: false);
+
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null,
+                                                        schwach ? 10 : 60, schwach ? 10 : 60, null, null);
+                IIfcSlab kellerdecke = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Kellerdecke", "btaCellarCeiling", true, 0.4, null, null, 65, 65, null, null);
+                IIfcSlab oberste = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaUppermostStorey", true, 0.3, null, null, 60, 60, null, null);
+                IIfcSlab vordach = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Vordach", "btaOutside", true, 0.5, null, null, 6, 6, null, null);
+                IIfcWall iwEg = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand EG", "btaHeated", false, 1.5, null, null, 12, 12, null, null);
+                IIfcWall abstellwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Abstellraum", "btaHeated", false, 1.5, null, null, 6, 6, null, null);
+                IIfcWall iwOg = b.CadBauteil<IIfcWall>(og, "IfcWall", "Innenwand OG", "btaHeated", false, 1.5, null, null, 10, 10, null, null);
+                IIfcWall treppe = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Treppenhauswand", "btaHeated", false, 1.5, null, null, 9, 9, null, null);
+                IIfcWall einzeln = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand einzeln", "btaHeated", false, 1.5, null, null, 4, 4, null, null);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand frei", "btaHeated", false, 1.5, null, null, 8, 8, null, null);
+                IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
+                IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
+                IIfcWall kellerwand = b.CadBauteil<IIfcWall>(kg, "IfcWall", "Kellerwand", "btaGround", false, 0.5, null, 90, 30, 30, null, null);
+
+                b.Bezug(keller, kellerdecke, kellerwand);
+                b.Bezug(wohnen, decke, kellerdecke, vordach, iwEg, treppe, einzeln, sued);
+                b.Bezug(kueche, decke, kellerdecke, iwEg, abstellwand);
+                b.Bezug(abstell, kellerdecke, abstellwand);
+                b.Bezug(schlafen, decke, oberste, vordach, iwOg, treppe, nord);
+                b.Bezug(kind, decke, oberste, iwOg);
+                if (spitzboden)
+                {
+                    IIfcBuildingStorey dg = b.GeschossEnthalten(g, "DG", 5200);
+                    IIfcSpace sb = b.RaumEnthalten(dg, "Spitzboden", 150, 150, 20, 30, 1500, zerlegt: false);
+                    b.Bezug(sb, oberste);
+                }
+                return b.Speichern();
             }
         }
 
@@ -599,12 +779,15 @@ namespace EPOS.Kern.Tests
                 return u;
             }
 
-            /// <summary>Projekt, Einheiten, Modellkontext (mit Nordrichtung und ggf. Koordinatenumrechnung), Grundstück.</summary>
-            public void Anfang(double[] nord, bool karte)
+            /// <summary>
+            /// Projekt, Einheiten, Modellkontext (mit Nordrichtung und ggf. Koordinatenumrechnung), Grundstück.
+            /// Längen in Millimetern, mit <paramref name="meter"/> in Metern.
+            /// </summary>
+            public void Anfang(double[] nord, bool karte, bool meter = false)
             {
                 _projekt = Wurzel<IIfcProject>("IfcProject", "Importprobe");
                 IIfcUnitAssignment e = N<IIfcUnitAssignment>("IfcUnitAssignment");
-                e.Units.Add(Einheit(IfcUnitEnum.LENGTHUNIT, IfcSIUnitName.METRE, IfcSIPrefix.MILLI));
+                e.Units.Add(Einheit(IfcUnitEnum.LENGTHUNIT, IfcSIUnitName.METRE, meter ? (IfcSIPrefix?)null : IfcSIPrefix.MILLI));
                 e.Units.Add(Einheit(IfcUnitEnum.AREAUNIT, IfcSIUnitName.SQUARE_METRE, null));
                 e.Units.Add(Einheit(IfcUnitEnum.VOLUMEUNIT, IfcSIUnitName.CUBIC_METRE, null));
                 e.Units.Add(Einheit(IfcUnitEnum.PLANEANGLEUNIT, IfcSIUnitName.RADIAN, null));
@@ -673,6 +856,18 @@ namespace EPOS.Kern.Tests
                 r.RelatedObjects.Add(teil);
             }
 
+            /// <summary>
+            /// Die Raumbezüge eines Raums nach dem Muster eines CAD-Exports ohne Raumgrenzen: ein
+            /// <c>IfcRelReferencedInSpatialStructure</c> je Raum mit den angrenzenden Bauteilen.
+            /// </summary>
+            public void Bezug(IIfcSpace raum, params IIfcProduct[] bauteile)
+            {
+                IIfcRelReferencedInSpatialStructure r = Wurzel<IIfcRelReferencedInSpatialStructure>("IfcRelReferencedInSpatialStructure",
+                    "Spatial references of space " + raum.Name);
+                r.RelatingStructure = raum;
+                foreach (IIfcProduct p in bauteile) r.RelatedElements.Add(p);
+            }
+
             private void Enthalten(IIfcSpatialElement ort, IIfcProduct teil)
             {
                 if (!_enthalten.TryGetValue(ort.EntityLabel, out IIfcRelContainedInSpatialStructure r))
@@ -728,6 +923,131 @@ namespace EPOS.Kern.Tests
                 }
                 return r;
             }
+
+            /// <summary>Ein Geschoss, das über das Enthaltensein (nicht die Zerlegung) am Gebäude hängt.</summary>
+            public IIfcBuildingStorey GeschossEnthalten(IIfcBuilding g, string name, double hoeheMm)
+            {
+                IIfcBuildingStorey s = Wurzel<IIfcBuildingStorey>("IfcBuildingStorey", name);
+                s.CompositionType = IfcElementCompositionEnum.ELEMENT;
+                s.Elevation = new IfcLengthMeasure(hoeheMm);
+                s.ObjectPlacement = Platzierung(g.ObjectPlacement, 0, 0, hoeheMm);
+                Enthalten(g, s);
+                return s;
+            }
+
+            /// <summary>
+            /// Ein Raum, der über das Enthaltensein am Geschoss hängt (mit <paramref name="zerlegt"/> zusätzlich
+            /// über die Zerlegung), Name in <c>Name</c>, ohne <c>LongName</c>; Mengen — wenn angegeben — im
+            /// fremden Satz <c>CAD_RaumQuantities</c> als <c>Area</c>, <c>Volume</c>, <c>Height</c>.
+            /// </summary>
+            public IIfcSpace RaumEnthalten(IIfcBuildingStorey s, string name, double x, double y,
+                                           double? flaecheM2, double? volumenM3, double? hoeheMm, bool zerlegt)
+            {
+                IIfcSpace r = Wurzel<IIfcSpace>("IfcSpace", name);
+                r.CompositionType = IfcElementCompositionEnum.ELEMENT;
+                r.ObjectPlacement = Platzierung(s.ObjectPlacement, x, y, 0);
+                _raumUrsprung[r.EntityLabel] = (x, y);
+                Enthalten(s, r);
+                if (zerlegt) Zerlegen(s, r);
+                if (flaecheM2.HasValue) RaumMengen(r, "CAD_RaumQuantities", flaecheM2.Value, volumenM3.Value, hoeheMm.Value, standard: false);
+                return r;
+            }
+
+            /// <summary>
+            /// <b>Ein Bauteil nach dem Muster eines CAD-Exports</b> (Mehrzonenkonzept 6.5): kein <c>IsExternal</c>,
+            /// keine Raumgrenze, Platzierung im Ursprung des Geschosses. Die Angaben stehen in fremden Sätzen
+            /// (Klassenkopf von <see cref="Enthaltensein"/>); <paramref name="breiteMm"/> und <paramref name="laengeMm"/>
+            /// sind Lockwerte <c>Width</c>/<c>Length</c> im fremden Mengensatz, aus denen nichts abgeleitet werden darf.
+            /// </summary>
+            public T CadBauteil<T>(IIfcBuildingStorey s, string express, string name, string angrenzung, bool huelle,
+                                   double? u, double? uFalscheEinheit, double? orientierungGrad, double? brutto, double? netto,
+                                   double? breiteMm, double? laengeMm) where T : class, IIfcElement
+            {
+                T e = Wurzel<T>(express, name);
+                e.ObjectPlacement = Platzierung(s.ObjectPlacement, 0, 0, 0);
+                Enthalten(s, e);
+                CadEigenschaften(e, express.Substring(3), angrenzung, huelle, u, uFalscheEinheit, orientierungGrad);
+                var mengen = new List<IIfcPhysicalQuantity>();
+                if (brutto.HasValue) mengen.Add(Flaeche("GrossArea", brutto.Value));
+                if (netto.HasValue) mengen.Add(Flaeche("NetArea", netto.Value));
+                if (breiteMm.HasValue) mengen.Add(Laenge("Width", breiteMm.Value));
+                if (laengeMm.HasValue) mengen.Add(Laenge("Length", laengeMm.Value));
+                if (mengen.Count > 0) Mengen(e, "CAD_BauteilQuantities", mengen.ToArray());
+                return e;
+            }
+
+            /// <summary>
+            /// Ein Fenster des CAD-Exports: über eine Öffnung im <paramref name="wirt"/> oder — mit
+            /// <paramref name="teil"/> — als Teil des Wirts (<c>IfcRelAggregates</c>, Dachfenster). Die Fläche über
+            /// <c>OverallWidth</c>/<c>OverallHeight</c> oder nur als <c>GrossArea</c> im fremden Satz, neben dem
+            /// Lockwert Width = Length = 5 m.
+            /// </summary>
+            public IIfcWindow CadFenster(IIfcElement wirt, IIfcBuildingStorey s, string name, (double B, double H)? gesamtMm,
+                                         double? grossArea, double u, double? uFalscheEinheit, bool teil = false)
+            {
+                IIfcWindow f = Wurzel<IIfcWindow>("IfcWindow", name);
+                f.ObjectPlacement = Platzierung(s.ObjectPlacement, 0, 0, 0);
+                if (gesamtMm.HasValue)
+                {
+                    f.OverallWidth = new IfcPositiveLengthMeasure(gesamtMm.Value.B);
+                    f.OverallHeight = new IfcPositiveLengthMeasure(gesamtMm.Value.H);
+                }
+                if (teil) Zerlegen(wirt, f);
+                else
+                {
+                    Enthalten(s, f);
+                    Fuellen(Oeffnung(wirt, name), f);
+                }
+                CadEigenschaften(f, "Window", "btaOutside", true, u, uFalscheEinheit, null);
+                if (grossArea.HasValue)
+                    Mengen(f, "CAD_BauteilQuantities", Flaeche("GrossArea", grossArea.Value), Laenge("Width", 5000), Laenge("Length", 5000));
+                return f;
+            }
+
+            private void CadEigenschaften(IIfcElement e, string klasse, string angrenzung, bool huelle, double? u,
+                                          double? uFalscheEinheit, double? orientierungGrad)
+            {
+                var allgemein = new List<IIfcProperty> { Aufzaehlung("AdjacentType", angrenzung) };
+                if (orientierungGrad.HasValue)
+                    allgemein.Add(Einzel("Orientation (°)",
+                        new IfcLabel(orientierungGrad.Value.ToString("0.###", CultureInfo.GetCultureInfo("de-DE")))));
+                SatzMit(e, "CAD_BauteilAllgemein", allgemein);
+                Satz(e, "CAD_BauteilEnergetik", ("ElementEnergyConsultingProperties.CladdingSurface", new IfcBoolean(huelle)));
+                if (u.HasValue) Satz(e, "CAD_Bauteilreferenzen", ("UValue (W/(m² K))", new IfcReal(u.Value)));
+                if (uFalscheEinheit.HasValue)
+                    Satz(e, "Pset_" + klasse + "Common", ("ThermalTransmittance (W/(m K))", new IfcReal(uFalscheEinheit.Value)));
+            }
+
+            /// <summary>
+            /// Eine Aufzählungseigenschaft mit einem Textwert. Die Schnittstelle führt die Werte nur lesend;
+            /// angelegt wird über die Klasse des Schemas (Testhilfe, nicht Kern).
+            /// </summary>
+            private IIfcProperty Aufzaehlung(string name, string wert)
+            {
+                if (_ifc2x3)
+                {
+                    var p2 = _m.Instances.New<Xbim.Ifc2x3.PropertyResource.IfcPropertyEnumeratedValue>();
+                    p2.Name = new Xbim.Ifc2x3.MeasureResource.IfcIdentifier(name);
+                    p2.EnumerationValues.Add(new Xbim.Ifc2x3.MeasureResource.IfcLabel(wert));
+                    return p2;
+                }
+                var p4 = N<Xbim.Ifc4.PropertyResource.IfcPropertyEnumeratedValue>("IfcPropertyEnumeratedValue");
+                p4.Name = new IfcIdentifier(name);
+                p4.EnumerationValues.Add(new IfcLabel(wert));
+                return p4;
+            }
+
+            private void SatzMit(IIfcObject o, string name, IEnumerable<IIfcProperty> eigenschaften)
+            {
+                IIfcPropertySet ps = Wurzel<IIfcPropertySet>("IfcPropertySet", name);
+                foreach (IIfcProperty p in eigenschaften) ps.HasProperties.Add(p);
+                Definieren(o, ps);
+            }
+
+            /// <summary>Raummengen unter den Standardnamen (<paramref name="standard"/>) oder den Namen des CAD-Exports.</summary>
+            public void RaumMengen(IIfcSpace r, string satz, double flaecheM2, double volumenM3, double hoeheMm, bool standard)
+                => Mengen(r, satz, Flaeche(standard ? "NetFloorArea" : "Area", flaecheM2),
+                          Volumen(standard ? "NetVolume" : "Volume", volumenM3), Laenge("Height", hoeheMm));
 
             public IIfcWallType Wandtyp(string name, double? u)
             {
@@ -1051,6 +1371,9 @@ namespace EPOS.Kern.Tests
                 p.NominalValue = wert;
                 return p;
             }
+
+            /// <summary>Ein Eigenschaftssatz mit Einzelwerten an <paramref name="o"/>.</summary>
+            public void Eigenschaften(IIfcObject o, string name, params (string Name, IIfcValue Wert)[] werte) => Satz(o, name, werte);
 
             private void Satz(IIfcObject o, string name, params (string Name, IIfcValue Wert)[] werte)
             {

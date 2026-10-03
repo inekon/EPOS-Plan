@@ -195,6 +195,14 @@ else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKata
     <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
                                                 Geschlossen="BeiBauteilaufbauKatalogFertig" />
 }
+@* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
+   freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
+   EPOS.UI.Daten (BetriebskalenderHuelle). *@
+else if (_ansicht == Seitenschluessel.Betriebskalender && _betriebskalender is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.BetriebskalenderDialog @attributes="_betriebskalender"
+                                                   Geschlossen="BeiBetriebskalenderFertig" />
+}
 @* DER KATALOG DER BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26): der EINZIGE
    Katalog, der auf iOS aufgeht - die acht uebrigen Katalogverwaltungen bleiben dort
    geschlossen (KI-D-Q10). Unter Windows kommt die Wurzel hier nicht an die Reihe: Die
@@ -287,6 +295,16 @@ else if (_ansicht == Seitenschluessel.StromspeicherAuslegung && _auslegung is no
                                                       @attributes="_auslegung"
                                                       Geschlossen="ZurueckZumAufrufer" />
 }
+else if (_ansicht == Seitenschluessel.PufferAuslegung && _pufferAuslegung is not null)
+{
+    @* DIE PUFFERSPEICHER-AUSLEGUNG als freie Ansicht (Konzept Pufferspeicher-Auslegung, Stufe P2) -
+       dieselbe Bauart wie die Stromspeicher-Auslegung: Der Einstieg meldet seinen Arbeitsgang bei
+       PufferAuslegungHuelle an, die Wurzel holt beim Betreten den Parametersatz, und „← zurück"
+       fuehrt ueber den Rueckwegstapel dorthin, woher man kam. Eine Rueckfrage beim Verlassen gibt
+       es nicht: Geschrieben wird nur mit „Auslegung speichern" und „Uebernehmen". *@
+    <EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungSeite @attributes="_pufferAuslegung"
+                                                       Geschlossen="ZurueckVonPufferAuslegung" />
+}
 else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
 {
     @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
@@ -330,6 +348,9 @@ else
     private IReadOnlyDictionary<string, object>? _kiAssistent;
     private IReadOnlyDictionary<string, object>? _assistent;
     private IReadOnlyDictionary<string, object>? _auslegung;
+
+    /// <summary>Der Parametersatz der stehenden Pufferspeicher-Auslegung (Stufe P2).</summary>
+    private IReadOnlyDictionary<string, object>? _pufferAuslegung;
 
     /// <summary>
     /// Die stehende Auslegungsansicht — sie beantwortet, ob der Stand ungespeichert
@@ -425,6 +446,7 @@ else
     private IReadOnlyDictionary<string, object>? _nutzungsartKatalog;
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
+    private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -608,6 +630,14 @@ else
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
     /// <summary>
+    /// Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2) zum Projekt der Wurzel,
+    /// wenn ihn die Hülle stellt (Windows: <c>PufferAuslegungHuelle.AnsichtGaben</c>). Ohne ihn
+    /// fragt die Wurzel <c>IProjektQuelle.PufferAuslegungGaben</c> — der iOS-Weg. Ein Delegat je
+    /// Betreten: Der Arbeitsgang (Zielpuffer, Einstieg) ist vorher angemeldet.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? PufferAuslegungGaben { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Ansicht „Simulation", wenn ihn die Hülle stellt
     /// (Windows: <c>SimulationHuelle.AnsichtGaben</c>). Ohne ihn fragt die Wurzel
     /// <c>IProjektQuelle.SimulationGaben</c> — der iOS-Weg (Stufe S2, Auftrag #208).
@@ -637,6 +667,13 @@ else
     /// <c>IProjektQuelle.BauteilaufbauKatalogGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) — dieselbe
+    /// Form wie <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BetriebskalenderGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -820,6 +857,7 @@ else
         || ziel == Seitenschluessel.SimulationKonfiguration
         || ziel == Seitenschluessel.SimulationErgebnis
         || ziel == Seitenschluessel.StromspeicherAuslegung
+        || ziel == Seitenschluessel.PufferAuslegung
         || ziel == Seitenschluessel.KiAssistent;
 
     /// <summary>Die Marke der STEHENDEN Ansicht; leer = sie führt keine.</summary>
@@ -1251,6 +1289,15 @@ else
             return true;
         }
 
+        // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
+        if (maske == Seitenschluessel.Betriebskalender)
+        {
+            _betriebskalender = BetriebskalenderGaben?.Invoke() ?? Quelle.BetriebskalenderGaben();
+            if (_betriebskalender is null) { _statuszeile = KeinBetriebskalenderText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         // ---- Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (ZU26) -----------------
         // ALLEIN die Quelle, ohne Delegat der Huelle: Unter Windows faengt die Schale
         // den Maskenschluessel ab und oeffnet ihr Fenster - die Wurzel kommt dort nicht
@@ -1384,6 +1431,21 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.PufferAuslegung)
+        {
+            // Wie die Stromspeicher-Auslegung: der Delegat der Huelle vor der Projektquelle (iOS).
+            int idProjekt = _projekt?.Id ?? 0;
+            _pufferAuslegung = PufferAuslegungGaben?.Invoke(idProjekt) ?? Quelle.PufferAuslegungGaben(idProjekt);
+            if (_pufferAuslegung is null)
+            {
+                _statuszeile = KeinePufferAuslegungText;
+                return false;
+            }
+            if (merken) RueckwegMerken();
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.KiAssistent)
         {
             IReadOnlyDictionary<string, object>? gaben = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
@@ -1457,6 +1519,7 @@ else
         // Brauchwasser-Nutzungsarten (ZU26).
         _baustoffKatalog = null;
         _bauteilaufbauKatalog = null;
+        _betriebskalender = null;
         _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
@@ -1523,6 +1586,9 @@ else
 
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Betriebskalender sind zu — sie schreiben in ihrem Speicherweg.</summary>
+    private void BeiBetriebskalenderFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// Der Katalog der Brauchwasser-Nutzungsarten ist zu (ZU26) — er schreibt in EINER
@@ -1638,6 +1704,14 @@ else
 
         if (Zurueck()) return;
 
+        ZurueckZurListe();
+    }
+
+    /// <summary>Die Pufferspeicher-Auslegung ist zu — zurück dorthin, woher sie kam.</summary>
+    private void ZurueckVonPufferAuslegung()
+    {
+        _pufferAuslegung = null;
+        if (Zurueck()) return;
         ZurueckZurListe();
     }
 
@@ -1802,6 +1876,7 @@ else
            || maske == Seitenschluessel.Startseite
            || maske == Seitenschluessel.BerichteKosten
            || maske == Seitenschluessel.StromspeicherAuslegung
+           || maske == Seitenschluessel.PufferAuslegung
            || maske == Seitenschluessel.Projektliste
 
            // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
@@ -1827,6 +1902,7 @@ else
            // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
            || maske == Seitenschluessel.BaustoffKatalog
            || maske == Seitenschluessel.BauteilaufbauKatalog
+           || maske == Seitenschluessel.Betriebskalender
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
            // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
@@ -2051,6 +2127,12 @@ else
 
     /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Pufferspeicher-Auslegung nicht aufzubauen ist (kein Projekt, keine Quelle).</summary>
+    [Parameter] public string KeinePufferAuslegungText { get; set; } = Resource.PAUS_KEINE_ANSICHT;
 
     // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) --------------
 

@@ -164,6 +164,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(Anlagenart.Heizkessel, "Ptherm")]
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
+        [InlineData(Anlagenart.Heizkessel, "Bereitschaft_Einheit")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
         [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
         [InlineData(Anlagenart.Heizkessel, "Brennwert")]
@@ -375,8 +376,9 @@ namespace EPOS.Kern.Tests
 
             // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und haben
             // auch nach S3 GAR KEINEN Leser (Konzept 3.3.3).
-            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
-            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
+            // Ohne die drei Katalogspalten (KU1), die kein Fachwert sind und ebenfalls keinen Leser haben.
+            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)));
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)),
                        e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
         }
 
@@ -430,6 +432,8 @@ namespace EPOS.Kern.Tests
                                    "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
                                    "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
+                                   // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+                                   "Bereitschaft_Einheit",
                                    // Konzept Kesselkennlinie 3.4: die Gruppe „Kennlinie" des Editors
                                    // (HeizkesselAdminHuelle.Schreiben, AnzeigefelderSchreiben).
                                    "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert", "Mindestleistung",
@@ -446,7 +450,11 @@ namespace EPOS.Kern.Tests
                                    "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
                                    "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
-                                   "Vorlauf", "Ruecklauf" };
+                                   "Vorlauf", "Ruecklauf",
+                                   // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
+                                   // Katalogeditors (BHKWStammCtrl.Update).
+                                   "Wirkungsgrad_el_Teillast50", "Wirkungsgrad_th_Teillast50",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
 
                 case Anlagenart.Waermepumpe:
                     // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
@@ -456,12 +464,18 @@ namespace EPOS.Kern.Tests
                     // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
                     // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
-                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
+                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
+                                   // Welle M4 (WP1): Mindestleistung und C_d schreibt die
+                                   // Katalogpflege zurueck (WPStammCtrl.Speichern).
+                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd" };
 
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
                                    "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
-                                   "Kdfu", "Investitionskosten" };
+                                   "Kdfu", "Investitionskosten",
+                                   // Welle M2 (ST6): die Bezugsfläche, Auswahl im Katalogeditor und
+                                   // Feld im Aufklapper (SolarkollektorAdminHuelle.Schreiben).
+                                   "Bezugsflaeche" };
 
                 case Anlagenart.Photovoltaik:
                     // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.
@@ -473,7 +487,9 @@ namespace EPOS.Kern.Tests
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
                                    "Degradation", "Modulkosten", "Wirkungsgrad_RT",
                                    "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                   "Investition_Fix", "Standby_Verbrauch" };
+                                   "Investition_Fix", "Standby_Verbrauch",
+                                   // Welle M5 (SP1): das Katalogfeld „Selbstentladung".
+                                   StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG };
 
                 case Anlagenart.Wechselrichter:
                     // Aus ModulKatalogProfil.Felder (Auspraegung Wechselrichter, W6-E-2)

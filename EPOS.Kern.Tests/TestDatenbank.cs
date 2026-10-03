@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -122,8 +124,16 @@ namespace EPOS.Kern.Tests
     public sealed class TestDatenbank : IDisposable
     {
         /// <summary>
-        /// Namensanfang jeder Arbeitskopie unter <see cref="Path.GetTempPath"/>; es folgen acht
-        /// Hexziffern. Der Aufraeumlauf fasst nur Ordner an, die GENAU diesem Muster folgen.
+        /// Namensanfang jeder Arbeitskopie unter <see cref="Path.GetTempPath"/>; es folgen die
+        /// Prozesskennung des Besitzers, ein Bindestrich und acht Hexziffern
+        /// (<c>epos-kerntest-4711-0a1b2c3d</c>). Der Aufraeumlauf fasst nur Ordner an, die GENAU
+        /// diesem Muster folgen - oder dem aelteren ohne Prozesskennung.
+        ///
+        /// <para><b>Warum die Prozesskennung.</b> Testlaeufe aus mehreren Worktrees laufen
+        /// gleichzeitig ueber dasselbe <c>/tmp</c>. Lebt der Prozess im Namen noch, ist die Kopie
+        /// tabu - unabhaengig davon, ob die Besitzmarke auf dem Dateisystem wirkt. Die Marke und
+        /// die Schonfrist bleiben die zweite Sicherung, fuer eine wiederverwendete Kennung und
+        /// fuer Kopien des aelteren Musters.</para>
         /// </summary>
         internal const string ORDNER_PRAEFIX = "epos-kerntest-";
 
@@ -152,7 +162,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Der Name, den der Konstruktor vergibt - und nur diesen raeumt der Aufraeumlauf.</summary>
         private static readonly Regex KOPIEORDNER =
-            new Regex("^" + ORDNER_PRAEFIX + "[0-9a-f]{8}$", RegexOptions.CultureInvariant);
+            new Regex("^" + ORDNER_PRAEFIX + "(?:(?<pid>[0-9]{1,10})-)?[0-9a-f]{8}$", RegexOptions.CultureInvariant);
 
         /// <summary>1, sobald der Aufraeumlauf dieses Prozesses gelaufen ist.</summary>
         private static int _aufraeumlaufGelaufen;
@@ -199,7 +209,7 @@ namespace EPOS.Kern.Tests
 
                 VerwaisteKopienEinmalAufraeumen();
 
-                _ordner = Path.Combine(wurzel, ORDNER_PRAEFIX + Guid.NewGuid().ToString("N").Substring(0, 8));
+                _ordner = Path.Combine(wurzel, Ordnername(Environment.ProcessId));
                 Directory.CreateDirectory(_ordner);
                 _besitzmarke = new FileStream(Path.Combine(_ordner, BESITZMARKE), FileMode.CreateNew,
                                               FileAccess.Write, FileShare.None);
@@ -222,6 +232,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Steht eine beschreibbare Arbeitskopie? Sonst ueberspringt der Fall.</summary>
         public bool Vorhanden { get; }
+
+        /// <summary>Der Name eines neuen Kopieordners des Prozesses <paramref name="prozess"/>.</summary>
+        internal static string Ordnername(int prozess)
+            => ORDNER_PRAEFIX + prozess.ToString(CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N").Substring(0, 8);
 
         /// <summary>Der Kopieordner, <c>null</c> ohne Kopie - fuer die Aufraeumproben.</summary>
         internal string Ordner => _ordner;
@@ -815,6 +829,81 @@ namespace EPOS.Kern.Tests
                 // Nachzug davor die Stempel einer frischen Kopie setzt; wiederholbar, KEIN DML.
                 KostenStempelSchema.Ausfuehren(null);
 
+                // Schritte AufheizvorgabeSchema.SCHRITT und AufheizErgebnisSchema.SCHRITT (KP-S2 und
+                // KP-S3, Entwurf KP3 Abschnitt 4): die fuenf Spalten der Aufheizoptimierung an
+                // Tab_Einstellungen und je vierzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+                // Tab_ErgebnisZone. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN
+                // DML - der Schalter steht auf 0, alles uebrige leer.
+                AufheizvorgabeSchema.Ausfuehren(null);
+                AufheizErgebnisSchema.Ausfuehren(null);
+
+                // Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+                // Einheit des Bereitschaftsverlusts an Tab_Heizkessel_STAMM und Tab_Heizkessel, Vorgabe
+                // kW. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML - ein
+                // ALTER TABLE loest keinen Stempeltrigger aus.
+                KesselBereitschaftEinheitSchema.Ausfuehren(null);
+
+                // Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+                // Bodenalbedo an Tab_Energieanlagen, nullbar, leer = 0,2. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN DML.
+                AlbedoSchema.Ausfuehren(null);
+                // Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+                // Temperaturpaar je Prozess an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme, leer. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                ProzesswaermeTemperaturSchema.Ausfuehren(null);
+                // Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+                // Kollektorfelds an Tab_Energieanlagen (leer) und die Bezugsflaeche an
+                // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML.
+                SolarthermieFelderSchema.Ausfuehren(null);
+                // Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste je
+                // Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die Kalenderspalte
+                // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
+                BedarfNetzKalenderSchema.Ausfuehren(null);
+                // Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder von
+                // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
+
+                // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+                // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                PufferAuslegungSchema.Ausfuehren(null);
+
+                // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
+                // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den
+                // Auslieferungsvorlagen auf Weg B. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // reines DML, wiederholbar, Projektzeilen unberuehrt.
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(null);
+
+                // Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+                // Pufferspeichers an Tab_Pufferspeicher und die thermische Desinfektion an
+                // Tab_Einstellungen, leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                PufferOptionenSchema.Ausfuehren(null);
+                // Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1, EQ1): die Katalogspalten
+                // der Stufe-1-Kataloge samt Saat von Schluessel und Pruefsumme der ausgelieferten Saetze,
+                // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungSchema.Ausfuehren(null);
+                // Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+                // den uebrigen Katalogen samt Saat. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungStufe2Schema.Ausfuehren(null);
+
+                // Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59, E60; Entwurf KP3 Abschnitt
+                // 4): Aufschlag an Tab_Einstellungen, manuelle Aufheizzeit an Tab_Gebaeude samt achtem
+                // Sichtneubau, Aufheiz_Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
+                // der Zone per kleinem Neubau. Aus DERSELBEN Quelle wie Migration und Werkzeug; ZULETZT,
+                // damit kein aelterer Sichtdurchgang oben (Energiestandard) die Spalte wieder aus der Sicht
+                // schneidet; wiederholbar, KEIN DML an Bestandsdaten.
+                AufheizManuellSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
@@ -1135,11 +1224,13 @@ namespace EPOS.Kern.Tests
         /// Zahl zurueck.
         ///
         /// <para><b>Verwaist ist ein Ordner</b>, dessen Name genau dem Muster des Konstruktors
-        /// folgt, in dem keine Datei gesperrt ist und dessen Besitzer nicht mehr lebt: Traegt er
-        /// eine <see cref="BESITZMARKE"/>, ist sie frei; traegt er keine (eine Kopie von einem
+        /// folgt, dessen Prozess (Kennung im Namen) nicht mehr lebt, in dem keine Datei gesperrt
+        /// ist und dessen Besitzer auch nach der Marke fort ist: Traegt er eine
+        /// <see cref="BESITZMARKE"/>, ist sie frei; traegt er keine (eine Kopie von einem
         /// Stand vor der Marke), liegt seine letzte Regung mindestens
         /// <paramref name="schonfrist"/> vor <paramref name="jetztUtc"/>. Die Kopie eines
-        /// laufenden Tests - auch aus einer anderen Sitzung - bleibt damit unberuehrt.</para>
+        /// laufenden Tests - auch aus einer anderen Sitzung - bleibt damit unberuehrt; ein
+        /// Loeschversuch, der an einer Sperre scheitert, wird uebersprungen.</para>
         /// </summary>
         internal static int VerwaisteKopienAufraeumen(string wurzel, DateTime jetztUtc, TimeSpan schonfrist)
         {
@@ -1148,7 +1239,9 @@ namespace EPOS.Kern.Tests
             {
                 try
                 {
-                    if (!KOPIEORDNER.IsMatch(Path.GetFileName(ordner))) continue;
+                    Match name = KOPIEORDNER.Match(Path.GetFileName(ordner));
+                    if (!name.Success) continue;
+                    if (name.Groups["pid"].Success && ProzessLebt(name.Groups["pid"].Value)) continue;
                     if (!Verwaist(ordner, jetztUtc, schonfrist)) continue;
                     Directory.Delete(ordner, true);
                     geloescht++;
@@ -1157,6 +1250,24 @@ namespace EPOS.Kern.Tests
                 catch (UnauthorizedAccessException) { /* dito */ }
             }
             return geloescht;
+        }
+
+        /// <summary>
+        /// Lebt der Prozess mit dieser Kennung? Im Zweifel ja - eine Kopie bleibt lieber einen Lauf
+        /// laenger liegen, als dass ein laufender Test seine Datenbank verliert.
+        /// </summary>
+        internal static bool ProzessLebt(string kennung)
+        {
+            if (!int.TryParse(kennung, NumberStyles.None, CultureInfo.InvariantCulture, out int pid) || pid <= 0)
+                return false;
+            try
+            {
+                using (Process p = Process.GetProcessById(pid))
+                    return !p.HasExited;
+            }
+            catch (ArgumentException) { return false; }          // kein Prozess mit dieser Kennung
+            catch (InvalidOperationException) { return false; }  // schon beendet
+            catch (Exception) { return true; }                   // fremder Prozess, kein Zugriff: lebt
         }
 
         private static bool Verwaist(string ordner, DateTime jetztUtc, TimeSpan schonfrist)

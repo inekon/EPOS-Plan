@@ -24,6 +24,13 @@ namespace WindowsFormsApplication1
         public double m_kdiff;
         public double m_kdir;
 
+        /// <summary>
+        /// Bezugsfläche der Kennwerte (ST6): <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO"/>, wenn die
+        /// in Feld 11 genannte Bezugsfläche die Bruttofläche (Feld 25) ist, sonst
+        /// <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR"/> — siehe <see cref="Solarkollektorenlmport.BezugBestimmen"/>.
+        /// </summary>
+        public string m_szBezugsflaeche;
+
         public Attrribute_st()
         {
             m_szName = "";;
@@ -38,6 +45,7 @@ namespace WindowsFormsApplication1
             m_a2 = 0.0;
             m_kdiff = 0.0;
             m_kdir = 0.0;
+            m_szBezugsflaeche = DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
         }
     }
 
@@ -66,6 +74,7 @@ namespace WindowsFormsApplication1
             double a2 = 0.0;
             double kdiff = 0.0; // bleibt 0 - Blatt 19 (2006-02) führt keinen Diffus-IAM; Kdfu ist im Katalogdialog nachpflegbar
             double kdir = 0.0;
+            string bezug = DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
             bool bBeginn = false;
 
             Attrribute_st temp = null;
@@ -89,6 +98,7 @@ namespace WindowsFormsApplication1
                     temp.m_kdiff = kdiff;
                     temp.m_kdir = kdir;
                     temp.m_szBauart = szBauart;
+                    temp.m_szBezugsflaeche = bezug;
                     _list.Add(temp);
 
                     // Akkumulatoren zurücksetzen, damit ein Block ohne eigenen
@@ -101,6 +111,7 @@ namespace WindowsFormsApplication1
                     a1 = 0.0;
                     a2 = 0.0;
                     kdir = 0.0;
+                    bezug = DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
                     bBeginn = false;
                 }
 
@@ -127,12 +138,20 @@ namespace WindowsFormsApplication1
                     // (Solar Keymark, meist die Apertur) - sie gehört als A_ref in
                     // die Ertragsrechnung. Feld 26 (Aperturfläche) nur als Rückfall,
                     // wenn keine Bezugsfläche angegeben ist.
-                    Aperturfläche = ParseDouble(csvReader[11]);
-                    if (Aperturfläche == 0.0) Aperturfläche = ParseDouble(csvReader[26]);
+                    double bezugsflaeche = ParseDouble(csvReader[11]);
+                    double apertur26 = ParseDouble(csvReader[26]);
 
                     // Feld 25 ist die Brutto-Kollektorfläche (Rahmenaußenmaß) für
-                    // Dachbelegung/Flächenbilanz - nicht die Kennlinien-Bezugsfläche.
+                    // Dachbelegung/Flächenbilanz.
                     Modulfläche = ParseDouble(csvReader[25]);
+
+                    // ST6 (Welle M2): Ist die Bezugsfläche die Bruttofläche, rechnet der Satz
+                    // mit der Modulfläche (Bezug brutto) und die Aperturfläche bekommt Feld 26;
+                    // sonst bleibt Feld 11 die rechnende Aperturfläche wie zuvor.
+                    bezug = BezugBestimmen(bezugsflaeche, Modulfläche, apertur26);
+                    Aperturfläche = bezug == DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO
+                        ? (apertur26 > 0 ? apertur26 : bezugsflaeche)
+                        : (bezugsflaeche != 0.0 ? bezugsflaeche : apertur26);
 
                     h0 = ParseDouble(csvReader[12]);
                     a1 = ParseDouble(csvReader[13]);
@@ -164,10 +183,25 @@ namespace WindowsFormsApplication1
                 temp.m_kdiff = kdiff;
                 temp.m_kdir = kdir;
                 temp.m_szBauart = szBauart;
+                temp.m_szBezugsflaeche = bezug;
                 _list.Add(temp);
                 bBeginn = false;
             }
-        } 
+        }
+
+        /// <summary>
+        /// Worauf beziehen sich die Kennwerte eines Satzes 710.01 (ST6)? „brutto", wenn die
+        /// Bezugsfläche (Feld 11) gleich der Bruttofläche (Feld 25) ist und nicht zugleich gleich
+        /// der Aperturfläche (Feld 26); sonst „apertur" — auch bei einer Absorberfläche, die
+        /// zwischen beiden liegt und wie bisher als rechnende Fläche bleibt.
+        /// </summary>
+        internal static string BezugBestimmen(double bezugsflaeche, double brutto, double apertur)
+        {
+            const double toleranz = 1e-6;
+            bool istBrutto = bezugsflaeche > 0 && brutto > 0 && Math.Abs(bezugsflaeche - brutto) < toleranz;
+            bool istApertur = bezugsflaeche > 0 && apertur > 0 && Math.Abs(bezugsflaeche - apertur) < toleranz;
+            return istBrutto && !istApertur ? DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO : DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
+        }
 
         private static double ParseDouble(string value)
         {

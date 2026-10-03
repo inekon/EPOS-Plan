@@ -1,5 +1,6 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Fassung 3 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene),
+     PufferOptionen.cs (Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul),
      Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G),
      Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität) -->
 
@@ -37,6 +38,16 @@ Der Speicher rechnet nicht für sich: Er ist die Senke der Erzeuger und die Quel
 | Mindest-Nutztemperatur Brauchwasser || °C || Abschnitt „Schichtung"
 |-
 | Ladeleistungsgrenze, Entladeleistungsgrenze || kWh je Stunde, 0 = unbegrenzt || Abschnitt „Eigenschaften"
+|-
+| Bereitschaftsverlust: Tageswert oder nach Temperatur || — || Abschnitt „Bereitschaft und Frischwassermodul"; leer = Tageswert
+|-
+| Temperatur des Aufstellraums || °C || derselbe Abschnitt; leer = 20&nbsp;°C
+|-
+| Zonenanteile von oben || — (Summe 1) || Abschnitt „Schichtung"; leer = gleich große Zonen
+|-
+| Frischwassermodul, Grädigkeit || —, K || Abschnitt „Bereitschaft und Frischwassermodul"; Grädigkeit leer = 5&nbsp;K
+|-
+| Zapftemperatur des Brauchwassers || °C || Zapfprofilgenerator (höchste Zapftemperatur der Zonen); ohne sie 60&nbsp;°C
 |-
 | Entladepriorität || 1…99 oder Automatik || Abschnitt „Ladereihenfolge"
 |-
@@ -90,6 +101,16 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 | <math>P_{\mathrm{lad,max}}</math>, <math>P_{\mathrm{ent,max}}</math> || Lade- und Entladeleistungsgrenze als Budget der Stunde || kWh je Stunde || Abschnitt „Eigenschaften"; '''0 = unbegrenzt'''
 |-
 | <math>N_{\mathrm{Sch,max}}</math> || größte Schichtenzahl || — || '''Konstante: 10'''
+|-
+| <math>\Delta T_{\mathrm{Pr}}</math> || Prüftemperaturdifferenz des Bereitschaftswerts (EN 12897, EN 15332) || K || '''Konstante: 45'''
+|-
+| <math>\vartheta_{\mathrm{Raum}}</math> || Temperatur des Aufstellraums || °C || Abschnitt „Bereitschaft und Frischwassermodul"; '''Vorgabe: 20'''
+|-
+| <math>a_{i}</math> || Volumenanteil der Zone <math>i</math>, Summe 1 || — || Abschnitt „Schichtung", Feld „Zonenanteile"; '''Vorgabe: <math>1/N</math>'''
+|-
+| <math>\vartheta_{\mathrm{Zapf}}</math> || Zapftemperatur des Brauchwassers || °C || Zapfprofilgenerator; '''Vorgabe: 60'''
+|-
+| <math>\Delta T_{\mathrm{FWM}}</math> || Grädigkeit des Frischwassermoduls || K || Abschnitt „Bereitschaft und Frischwassermodul"; '''Vorgabe: 5'''
 |}
 
 === Variablen ===
@@ -150,6 +171,18 @@ Größen, die der Lauf je Stunde oder je Speicher bildet.
 | <math>U_{\mathrm{a}}</math> || Jahresumsatz — Entladung beim Quellspeicher, sonst Ladung || kWh || Jahressumme
 |-
 | <math>z_{\mathrm{V}}</math> || Vollzyklen des Jahres || — || (19)
+|-
+| <math>H_{\mathrm{B}}</math> || Wärmeverlustkoeffizient des Speichers || W/K || (20)
+|-
+| <math>Q_{\mathrm{V},i}(t)</math> || Bereitschaftsverlust der Zone <math>i</math> nach Temperatur || kWh || (21)
+|-
+| <math>q_{\mathrm{max},i}</math> || Kapazität der Zone <math>i</math> || kWh || (22)
+|-
+| <math>k_{i}</math> || Wärmeleitwert des Zonenpaars <math>i</math>, <math>i+1</math> || kWh/K || (23)
+|-
+| <math>\vartheta_{\mathrm{FWM}}</math> || Mindesttemperatur oben für das Frischwassermodul || °C || (24)
+|-
+| <math>Q_{\mathrm{FWM}}(t)</math> || Entnahmefähigkeit des Brauchwasserkanals über das Frischwassermodul || kWh || (25)
 |}
 
 == Rechenweg ==
@@ -270,11 +303,11 @@ Am Stundenende, nach Bedarfsdeckung, Ladung und Nachentladung:
 :: <math>\mathrm{SOC}(t)</math> – Füllstand vor dem Abzug [kWh]
 :: <math>Q_{\mathrm{V}}(t)</math> – Bereitschaftsverlust dieser Stunde aus (10) [kWh]
 
-Der Verlust ist also füllstandsanteilig: Ein halb voller Speicher verliert halb so viel wie ein voller. Steht ausnahmsweise noch Durchfluss im Speicher, trägt dieser den Verlust zuerst, damit die getrennte Bilanz aufgeht.
+Der Verlust ist also füllstandsanteilig: Ein halb voller Speicher verliert halb so viel wie ein voller. Steht ausnahmsweise noch Durchfluss im Speicher, trägt dieser den Verlust zuerst, damit die getrennte Bilanz aufgeht. Mit dem Weg '''nach Temperatur''' treten (20) und (21) aus Schritt 8 an die Stelle von (9) und (10).
 
 === Schritt 6 — Schichtung (nur bei mehr als einer Schicht) ===
 
-Der Speicherinhalt wird auf <math>N</math> gleich große Zonen verteilt, Schicht 0 oben. Der Füllstand bleibt die führende Größe; die Schichtebene verteilt ihn nur:
+Der Speicherinhalt wird auf <math>N</math> Zonen verteilt, Schicht 0 oben — ohne gepflegte Zonenanteile gleich groß, mit ihnen nach Schritt 9. Der Füllstand bleibt die führende Größe; die Schichtebene verteilt ihn nur:
 
 : <math>\displaystyle \sum_{i} q_{i}(t) = \min\left( \mathrm{SOC}(t) , Q_{\mathrm{max}} \right) \quad \mathrm{mit} \quad 0 \le q_{i}(t) \le \frac{Q_{\mathrm{max}}}{N}</math> &nbsp;&nbsp;(12)
 :: <math>q_{i}(t)</math> – Energie der Schicht <math>i</math> [kWh]
@@ -326,7 +359,7 @@ Je Stunde laufen in dieser Reihenfolge: ideale '''Einschichtung''' beim Laden (d
 
 Weitere Vorbelegungen ohne gepflegte Werte: Entnahmehöhe <math>h_{\mathrm{E}}</math> '''oben''' (1,0), Mindest-Nutztemperatur <math>\vartheta_{\mathrm{min}}</math> '''gleich <math>\vartheta_{\mathrm{RL}}</math>'''. Höchstens '''zehn''' Schichten.
 
-Mit <math>N = 1</math> — der Vorbelegung — ist die Schichtebene wirkungslos: Es gibt kein Schichtpaar, also weder (16) noch (18), keine Inversion, und die Entladefähigkeit klemmt nichts.
+Mit <math>N = 1</math> — der Vorbelegung — ist die Schichtebene wirkungslos: Es gibt kein Schichtpaar, also weder (16) noch (18), keine Inversion, und die Entladefähigkeit klemmt nichts. Die Gleichungen (12), (13), (16) und (17) gelten für gleich große Zonen; mit Zonenanteilen treten (22) und (23) an ihre Stelle.
 
 === Schritt 7 — Vollzyklen ===
 
@@ -337,26 +370,97 @@ Mit <math>N = 1</math> — der Vorbelegung — ist die Schichtebene wirkungslos:
 
 Der '''Umsatz''' <math>U_{\mathrm{a}}</math> hängt von der Rolle des Speichers ab: Bei einem '''Quellspeicher''' ist es die Jahressumme der Entladung, bei jedem anderen die der '''Ladung'''. <math>Q_{\mathrm{max}} \le 0</math> ergibt <math>z_{\mathrm{V}} = 0</math>.
 
+=== Schritt 8 — Bereitschaftsverlust nach Temperatur (Option) ===
+
+Der Bereitschaftswert des Katalogs gilt nach EN 12897 und EN 15332 bei '''45&nbsp;K''' zwischen Speicher und Umgebung. Daraus folgt der Wärmeverlustkoeffizient:
+
+: <math>\displaystyle H_{\mathrm{B}} = \frac{q_{\mathrm{V,24}} \cdot 1\,000}{24 \cdot \Delta T_{\mathrm{Pr}}}</math> &nbsp;&nbsp;(20)
+:: <math>H_{\mathrm{B}}</math> – Wärmeverlustkoeffizient des Speichers [W/K]
+:: <math>q_{\mathrm{V,24}}</math> – Bereitschaftsverluste eines Tages [kWh/24 h]
+:: <math>1\,000</math> – Umrechnung kWh in Wh [Wh/kWh]
+:: <math>24</math> – Stunden je Tag [h]
+:: <math>\Delta T_{\mathrm{Pr}}</math> – Prüftemperaturdifferenz [K], Konstante 45
+
+Je Zone und Stunde verliert der Speicher, statt (9) und (10):
+
+: <math>\displaystyle Q_{\mathrm{V},i}(t) = \min\left( \frac{H_{\mathrm{B}} \cdot a_{i} \cdot \max\left( \vartheta_{i}(t) - \vartheta_{\mathrm{Raum}} , 0 \right)}{1\,000} , q_{i}(t) \right) \; ; \quad Q_{\mathrm{V}}(t) = \sum_{i} Q_{\mathrm{V},i}(t)</math> &nbsp;&nbsp;(21)
+:: <math>Q_{\mathrm{V},i}(t)</math> – Bereitschaftsverlust der Zone <math>i</math> [kWh]
+:: <math>H_{\mathrm{B}}</math> – Wärmeverlustkoeffizient aus (20) [W/K]
+:: <math>a_{i}</math> – Volumenanteil der Zone [–]; gleich große Zonen <math>1/N</math>, ein Speicher ohne Schichtung 1
+:: <math>\vartheta_{i}(t)</math> – Temperatur der Zone aus (13) bzw. (22) [°C]
+:: <math>\vartheta_{\mathrm{Raum}}</math> – Temperatur des Aufstellraums [°C]
+:: <math>q_{i}(t)</math> – Energie der Zone über dem Rücklauf [kWh]; eine Zone fällt nicht unter die Rücklauftemperatur
+:: <math>1\,000</math> – Umrechnung Wh in kWh [Wh/kWh]
+:: <math>Q_{\mathrm{V}}(t)</math> – Bereitschaftsverlust dieser Stunde, abgezogen vom Füllstand wie in (11) [kWh]
+
+Ein leerer Speicher — alle Zonen auf Rücklauftemperatur — verliert damit nichts; ein voller verliert <math>H_{\mathrm{B}} \cdot (\vartheta_{\mathrm{VL}} - \vartheta_{\mathrm{Raum}})</math> und damit mehr als der Tageswert, sobald sein Vorlauf mehr als 45&nbsp;K über dem Aufstellraum liegt. Ein Quellspeicher rechnet mit dem Tageswert.
+
+=== Schritt 9 — Zonenanteile (Option) ===
+
+Mit gepflegten Anteilen <math>a_{i}</math> (von oben, Summe 1 innerhalb 0,001, eine Zahl je Zone) hat jede Zone ihre eigene Kapazität; (12), (13) und (17) rechnen mit ihr statt mit <math>Q_{\mathrm{max}} / N</math>:
+
+: <math>\displaystyle q_{\mathrm{max},i} = Q_{\mathrm{max}} \cdot a_{i} \; ; \quad \vartheta_{i}(t) = \vartheta_{\mathrm{RL}} + \frac{q_{i}(t)}{q_{\mathrm{max},i}} \cdot \left( \vartheta_{\mathrm{VL}} - \vartheta_{\mathrm{RL}} \right)</math> &nbsp;&nbsp;(22)
+:: <math>q_{\mathrm{max},i}</math> – Kapazität der Zone <math>i</math> [kWh]
+:: <math>Q_{\mathrm{max}}</math> – nutzbare Kapazität aus (1) [kWh]
+:: <math>a_{i}</math> – Volumenanteil der Zone [–]
+:: <math>\vartheta_{i}(t)</math> – Temperatur der Zone [°C]
+:: <math>q_{i}(t)</math> – Energie der Zone [kWh]
+:: <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> – Vorlauf- und Rücklauftemperatur [°C]
+
+Der Wärmeleitwert eines Zonenpaars folgt dem Abstand der beiden Zonenmitten; die Kappung (18) nimmt die kleinere der beiden Zonenkapazitäten:
+
+: <math>\displaystyle k_{i} = \frac{\lambda_{\mathrm{eff}} \cdot A_{q}}{H \cdot \frac{a_{i} + a_{i+1}}{2} \cdot 1\,000}</math> &nbsp;&nbsp;(23)
+:: <math>k_{i}</math> – Wärmeleitwert des Zonenpaars <math>i</math>, <math>i+1</math> [kWh/K]
+:: <math>\lambda_{\mathrm{eff}}</math> – effektive Wärmeleitfähigkeit [W/(m·K)]
+:: <math>A_{q}</math> – Querschnittsfläche aus (15) [m²]
+:: <math>H</math> – Behälterhöhe [m]
+:: <math>a_{i}</math>, <math>a_{i+1}</math> – Volumenanteile der beiden Zonen [–]
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
+
+Die Mantelfläche einer Zone ist ihr Anteil an der Behälterhöhe, die Inversionsmischung gewichtet mit den Volumenanteilen, und eine Entnahme- oder Einspeisehöhe trifft die Zone, in deren Band sie liegt. Eine Angabe, deren Summe nicht 1 ergibt oder deren Zahl nicht zur Schichtenzahl passt, lehnt der Dialog benannt ab; der Lauf rechnet sie mit gleich großen Zonen und meldet es. Als Vorschlag für einen '''Kombispeicher''' setzt der Dialog vier Zonen mit 0,10 / 0,16 / 0,37 / 0,37 — Bereitschaftsteil, Übergang und zwei Heizungszonen, gegliedert wie die Standardaufteilung von prEN 15316-5, Anhang B; ein Planungsvorschlag, kein Normwert.
+
+=== Schritt 10 — Frischwassermodul (Option) ===
+
+Ein Frischwassermodul zapft das Brauchwasser über einen Übertrager aus der obersten Zone. Es braucht oben die Mindesttemperatur
+
+: <math>\displaystyle \vartheta_{\mathrm{FWM}} = \vartheta_{\mathrm{Zapf}} + \Delta T_{\mathrm{FWM}}</math> &nbsp;&nbsp;(24)
+:: <math>\vartheta_{\mathrm{FWM}}</math> – Mindesttemperatur oben [°C]
+:: <math>\vartheta_{\mathrm{Zapf}}</math> – Zapftemperatur des Brauchwassers [°C]
+:: <math>\Delta T_{\mathrm{FWM}}</math> – Grädigkeit des Frischwassermoduls [K]
+
+Der Brauchwasserkanal entnimmt in dieser Stunde höchstens, solange <math>\vartheta_{0}(t) \ge \vartheta_{\mathrm{FWM}}</math> gilt (sonst nichts außer dem Durchfluss):
+
+: <math>\displaystyle Q_{\mathrm{FWM}}(t) = \begin{cases} \sum_{i:\,\vartheta_{i}(t) \ge \vartheta_{\mathrm{FWM}}} q_{i}(t) & N > 1 \\ q_{0}(t) - Q_{\mathrm{max}} \cdot \frac{\vartheta_{\mathrm{FWM}} - \vartheta_{\mathrm{RL}}}{\vartheta_{\mathrm{VL}} - \vartheta_{\mathrm{RL}}} & N = 1 \end{cases}</math> &nbsp;&nbsp;(25)
+:: <math>Q_{\mathrm{FWM}}(t)</math> – Entnahmefähigkeit über das Frischwassermodul [kWh], zuzüglich des Durchflusses der Stunde
+:: <math>q_{i}(t)</math> – Energie der Zone [kWh]; gezählt werden die Zonen ab der Entnahmehöhe des Brauchwassers
+:: <math>\vartheta_{i}(t)</math> – Temperatur der Zone [°C]
+:: <math>\vartheta_{\mathrm{FWM}}</math> – Mindesttemperatur aus (24) [°C]
+:: <math>Q_{\mathrm{max}}</math> – nutzbare Kapazität [kWh]
+:: <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> – Vorlauf- und Rücklauftemperatur [°C]
+
+Was der Speicher so nicht hergibt, bleibt im Brauchwasserkanal offen und geht an die nächste Stufe der Kaskade — Kessel, Heizstab oder ein weiterer Speicher; der Vergleich trägt den Zahlenrand der Betriebsschwellen. Das Laufprotokoll zählt die Stunden, in denen das Modul die Entnahme begrenzt hat. Ein Modul an einem Speicher ohne Brauchwasser wirkt nicht und wird gemeldet.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
 * '''Ein Energiebilanzmodell, kein Strömungsmodell.''' Es gibt keine Massenströme, keine Rohrleitungen, keine Wärmeübertrager. <math>P_{\mathrm{lad,max}}</math> und <math>P_{\mathrm{ent,max}}</math> sind die einzige hydraulische Schranke, und sie sind Zahlen, keine Geometrie.
 * '''Ideale Einschichtung und ideale Verdrängung.''' Ein einströmender Strahl mischt nicht auf; in einem realen Speicher tut er das.
-* '''Gleich große Zonen.''' Die Schichtdicke <math>Q_{\mathrm{max}} / N</math> ist nicht wählbar.
-* '''Der Bereitschaftsverlust ist ein Tageswert''', keine Funktion von Umgebungstemperatur, Aufstellort oder Dämmstärke — (2) teilt ihn schlicht durch 24.
+* '''Zonenanteile sind Volumenanteile.''' Ohne Angabe sind die Zonen gleich groß; eine eingeströmte Menge mischt nicht mit der Eintrittszone.
+* '''Der Bereitschaftsverlust kennt zwei Wege.''' Der Tageswert (Vorgabe) teilt den Katalogwert durch 24 und gewichtet mit dem Füllstand; der Weg nach Temperatur (20), (21) rechnet mit der Prüftemperaturdifferenz von 45&nbsp;K und einer festen Raumtemperatur — ohne Dämmstärke, Anschlussverluste oder Mantelgeometrie.
 * '''Ein Quellspeicher ist statisch''', solange er nicht zugleich Senke eines Erzeugers ist: Erst ein geteilter Puffer bekommt eine stündliche Temperatur; ein eigenständiger Quellspeicher bleibt bei seiner festen Temperatur.
 * '''Der Durchfluss wird nicht in Schichten geführt.''' Er ist hydraulisch durchströmende Wärme und war nie Speicherinhalt; eine bei Vorlauftemperatur gekappte Temperatursumme (12) könnte ihn gar nicht darstellen.
 * '''Der Katalog führt nur sechs Gerätewerte.''' Vor- und Rücklauf, Schwellen, Schichten, Entnahmehöhen und Leistungsgrenzen entstehen erst in der Projektkopie und werden im Projektdialog gepflegt.
-* '''Kein interner Wärmeübertrager''', kein Frischwassermodul, keine Legionellenschaltung.
+* '''Kein interner Wärmeübertrager.''' Ein Übertrager zwischen Puffer und Kessel wird über die Entladeleistungsgrenze <math>P_{\mathrm{ent,max}}</math> abgebildet; seine Grädigkeit wirkt nicht.
+* '''Das Frischwassermodul prüft eine Temperatur, keinen Durchfluss.''' (25) ist eine Bedingung je Stunde an die oberste Zone; Zapfspitzen innerhalb der Stunde und die Rücklaufeinschichtung des Moduls sieht das Modell nicht. Die thermische Desinfektion steht auf der Seite [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]].
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen <math>z_{\mathrm{V}}</math> und Füllstand am Jahresende; ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
+* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen <math>z_{\mathrm{V}}</math> und Füllstand am Jahresende, darunter je Speicher mit Option die Zeilen „Bereitschaftsverlust nach Temperatur" und „Frischwassermodul – Stunden ohne ausreichende Puffertemperatur"; ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
 * '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' — Speicherladung und Speicherentladung im Stapel der Erzeuger, die Entladung den Erzeugern zugerechnet, die geladen haben; mit der Auswahl „Speicher:" die Ganglinie des Füllstands <math>\mathrm{SOC}(t)</math>.
 * '''Simulationsergebnis, Temperaturverlauf''' — je geschichtetem Speicher die Zonentemperaturen <math>\vartheta_{i}(t)</math> über das Jahr.
 * '''Simulationskonfiguration''' — die Speicherkachel zeigt Kurzbilanz und Schwellenband, das Hydraulikschema die Kanten zwischen Erzeugern, Speichern und Kanälen samt Ladepriorität.
-* '''Simulationsprotokoll''' — Rückfall <math>\Delta T_{0}</math>, wirkungslose Quellbezüge, Speicher ohne Lader.
+* '''Simulationsprotokoll''' — Rückfall <math>\Delta T_{0}</math>, wirkungslose Quellbezüge, Speicher ohne Lader, Wärmeverlustkoeffizient <math>H_{\mathrm{B}}</math> des Wegs nach Temperatur, abgelehnte Zonenanteile, Mindesttemperatur und Nachheizstunden des Frischwassermoduls.
 
 == Bezüge ==
 {{Anker|bezuege}}

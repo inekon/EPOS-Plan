@@ -67,6 +67,12 @@ public class SimulationKonfigSeiteTests : BunitContext
     /// <summary>#274: Wie oft wurde die Auslegung geöffnet?</summary>
     private int _spGeoeffnet;
 
+    /// <summary>Stufe P2: Hat die Hülle einen Weg in die Pufferspeicher-Auslegung eingelegt?</summary>
+    private bool _puWeg;
+
+    /// <summary>Stufe P2: Mit welchem Puffer wurde die Pufferspeicher-Auslegung geöffnet?</summary>
+    private readonly List<int> _puGeoeffnet = new();
+
     /// <summary>#307: Steht die Merkspalte „Kaskade vom Anwender gepflegt" auf 1?</summary>
     private bool _gepflegt;
 
@@ -215,6 +221,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         {
             Laden = _ => Daten(gesperrt, mitBooster),
             AuslegungOeffnen = _spWeg ? () => _spGeoeffnet++ : null,
+            PufferAuslegungOeffnen = _puWeg ? id => _puGeoeffnet.Add(id) : null,
             SchemaLaden = _ => { _schemaGeholt++; return SchemaBild.Leer; },
             Verschieben = (w, r) => _verschoben.Add(w + ":" + r),
             Aufnehmen = w => _aufgenommen.Add(w),
@@ -594,6 +601,336 @@ public class SimulationKonfigSeiteTests : BunitContext
         var seite = SeiteMitParametern();
 
         Assert.Empty(seite.FindAll("section.epos-simkonfig-anlagenkopplung"));
+    }
+
+    // =====================================================================
+    //  KP3 O1 (Entwurf KP3, Grundsatz 5) — die Projekteinstellung
+    //  „Aufheizoptimierung"
+    // =====================================================================
+
+    /// <summary>Was der Abschnitt geschrieben hat; die Antwort der Naht steht in <see cref="_aufheizAntwort"/>.</summary>
+    private readonly List<WindowsFormsApplication1.Aufheizvorgabe> _aufheizGeschrieben = new();
+
+    private bool _aufheizAntwort = true;
+
+    /// <summary>Wie oft der Herleitungsweg gefragt wurde.</summary>
+    private int _herleitungGefragt;
+
+    private static readonly WindowsFormsApplication1.Aufheizvorgabe AUFHEIZ_AN =
+        new(true, null!, null, null, null!);
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitAufheizung(
+        WindowsFormsApplication1.Aufheizvorgabe stand, bool mitHerleitung = false,
+        string? kopplung = null, bool gesperrt = false)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Aufheizung = stand;
+            p.Anlagenkopplung = kopplung;
+            return p;
+        };
+        wege.AufheizvorgabeSchreiben = v =>
+        {
+            _aufheizGeschrieben.Add(v);
+            return _aufheizAntwort;
+        };
+        if (mitHerleitung)
+            wege.AufheizHerleitung = () =>
+            {
+                _herleitungGefragt++;
+                return new[] { "Haus A: t_auf,max 8 h bei −18,2 °C", "Haus B: t_auf,max 0 h bei −18,2 °C" };
+            };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(gesperrt))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Aufheizabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-aufheizung");
+
+    private static List<IElement> Wahlen(IRenderedComponent<SimulationKonfigSeite> seite)
+        => Aufheizabschnitt(seite).QuerySelectorAll("select").ToList();
+
+    private static List<IElement> Textfelder(IRenderedComponent<SimulationKonfigSeite> seite)
+        => Aufheizabschnitt(seite).QuerySelectorAll("input[type=text]").ToList();
+
+    private static string Gewaehlt(IElement wahl)
+        => wahl.QuerySelectorAll("option").First(o => o.HasAttribute("selected")).TextContent.Trim();
+
+    /// <summary>
+    /// Schalter aus (die Vorgabe): Der Abschnitt steht mit Hilfe, Schalter und der Zeile, was „aus"
+    /// und „ein" heißt — Bemessung, ΔT_K, Reserve und Art stehen nicht da. Zeichnen schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizoptimierung_zeigt_bei_Schalter_aus_nur_den_Schalter()
+    {
+        var seite = SeiteMitAufheizung(WindowsFormsApplication1.Aufheizvorgabe.Aus);
+
+        IElement abschnitt = Aufheizabschnitt(seite);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GRP, abschnitt.GetAttribute("aria-label"));
+        Assert.NotNull(abschnitt.QuerySelector(".epos-berechnungshilfe"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_SCHALTER, abschnitt.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_AUS, abschnitt.TextContent);
+
+        IElement schalter = abschnitt.QuerySelector("input[type=checkbox]")!;
+        Assert.False(schalter.HasAttribute("checked"));
+        Assert.Single(abschnitt.QuerySelectorAll("input"));
+        Assert.Empty(Wahlen(seite));
+        Assert.Empty(_aufheizGeschrieben);
+
+        // Der Abschnitt folgt der Anlagenkopplung — er steht als letzter der weiteren Einstellungen.
+        Assert.Equal("epos-simkonfig-aufheizung",
+                     seite.FindAll("fieldset.epos-simkonfig-einstellungen section").Last().ClassList.Last());
+    }
+
+    /// <summary>
+    /// Schalter an mit lauter Vorgaben (in der Datenbank NULL): Bemessung „kälteste Stunde", kein
+    /// Feld ΔT_K, die Reserve leer mit dem Platzhalter „Vorgabe 20", Art „täglich", dazu die
+    /// Herleitungszeilen zu Reserve und Bemessung.
+    /// </summary>
+    [Fact]
+    public void Bei_Schalter_an_stehen_Bemessung_Reserve_und_Art_mit_ihren_Vorgaben()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_AN);
+
+        IElement abschnitt = Aufheizabschnitt(seite);
+        Assert.True(abschnitt.QuerySelector("input[type=checkbox]")!.HasAttribute("checked"));
+
+        List<IElement> wahlen = Wahlen(seite);
+        Assert.Equal(2, wahlen.Count);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE, Gewaehlt(wahlen[0]));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH, Gewaehlt(wahlen[1]));
+
+        IElement reserve = Assert.Single(Textfelder(seite));
+        Assert.Equal("", reserve.GetAttribute("value") ?? "");
+        Assert.Equal("Vorgabe 20", reserve.GetAttribute("placeholder"));
+        Assert.Contains("%", abschnitt.TextContent);
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_RESERVE, abschnitt.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_AN, abschnitt.TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_AUS, abschnitt.TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_ABZUG, abschnitt.TextContent);
+        Assert.Empty(_aufheizGeschrieben);
+    }
+
+    /// <summary>Die Bemessung (b) zeigt das Feld ΔT_K — leer mit „Vorgabe 2", gepflegt mit seinem Wert; die Reserve in Prozent.</summary>
+    [Fact]
+    public void Die_Bemessung_b_zeigt_das_Feld_Delta_T_K()
+    {
+        var leer = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!));
+        List<IElement> felder = Textfelder(leer);
+        Assert.Equal(2, felder.Count);
+        Assert.Equal("Vorgabe 2", felder[0].GetAttribute("placeholder"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_ABZUG, Aufheizabschnitt(leer).TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG, Gewaehlt(Wahlen(leer)[0]));
+
+        var gepflegt = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.5, 0.25,
+            WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST));
+        felder = Textfelder(gepflegt);
+        Assert.Equal("3,5", felder[0].GetAttribute("value"));
+        Assert.Equal("25", felder[1].GetAttribute("value"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_ART_FEST, Gewaehlt(Wahlen(gepflegt)[1]));
+    }
+
+    /// <summary>
+    /// Jedes Feld schreibt SOFORT die ganze Einstellung; die Vorgaben gehen als NULL (Festlegung 24),
+    /// die Reserve als Anteil (Festlegung 15), ein getippter Wert bleibt, auch wenn er der Vorgabe gleicht.
+    /// </summary>
+    [Fact]
+    public void Jedes_Feld_schreibt_sofort_die_ganze_Einstellung()
+    {
+        var seite = SeiteMitAufheizung(WindowsFormsApplication1.Aufheizvorgabe.Aus);
+
+        Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(true);
+        Assert.Equal(AUFHEIZ_AN, _aufheizGeschrieben.Last());
+        Assert.True(seite.Instance.Laufparameter.Aufheizung.An);
+
+        Wahlen(seite)[0].Change("1");
+        Assert.Equal(WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, _aufheizGeschrieben.Last().Bemessung);
+
+        Textfelder(seite)[0].Input("2");
+        Assert.Equal(2.0, _aufheizGeschrieben.Last().AbzugK);
+
+        Textfelder(seite)[1].Input("25");
+        Assert.Equal(0.25, _aufheizGeschrieben.Last().Reserve);
+
+        Wahlen(seite)[1].Change("1");
+        Assert.Equal(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, _aufheizGeschrieben.Last().Art);
+
+        Wahlen(seite)[1].Change("0");
+        Assert.Null(_aufheizGeschrieben.Last().Art);
+
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 2.0, 0.25, null!),
+                     seite.Instance.Laufparameter.Aufheizung);
+
+        // Aus behält die übrigen Werte.
+        Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(false);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 2.0, 0.25, null!),
+                     _aufheizGeschrieben.Last());
+        Assert.Empty(Wahlen(seite));
+        Assert.Equal(7, _aufheizGeschrieben.Count);
+    }
+
+    /// <summary>Ein geleertes Feld schreibt NULL — es gilt wieder die Vorgabe, der Platzhalter sagt welche.</summary>
+    [Fact]
+    public void Ein_geleertes_Feld_schreibt_null()
+    {
+        var seite = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 4.0, 0.3, null!));
+
+        Textfelder(seite)[1].Input("");
+        Assert.Null(_aufheizGeschrieben.Last().Reserve);
+        Assert.Equal(4.0, _aufheizGeschrieben.Last().AbzugK);
+
+        Textfelder(seite)[0].Input("");
+        Assert.Null(_aufheizGeschrieben.Last().AbzugK);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!),
+                     seite.Instance.Laufparameter.Aufheizung);
+    }
+
+    /// <summary>
+    /// Die Grenzen der Felder: ρ = 0 und ΔT_K über 10 K färben das Feld und schreiben nicht
+    /// (Festlegung 15: 0 ist ausgeschlossen).
+    /// </summary>
+    [Fact]
+    public void Werte_ausserhalb_der_Grenzen_schreiben_nicht()
+    {
+        var seite = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!));
+
+        Textfelder(seite)[1].Input("0");
+        Textfelder(seite)[1].Input("101");
+        Textfelder(seite)[0].Input("11");
+
+        Assert.Empty(_aufheizGeschrieben);
+        Assert.Contains("epos-fehleingabe", Textfelder(seite)[0].ClassName);
+    }
+
+    /// <summary>
+    /// Scheitert das Schreiben, kehrt der Abschnitt auf den gespeicherten Stand zurück (Schalter, Wahl,
+    /// Feld), und die Fußzeile meldet es — kein stilles Zurückspringen.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_kehrt_zurueck_und_wird_gemeldet()
+    {
+        _aufheizAntwort = false;
+        var seite = SeiteMitAufheizung(WindowsFormsApplication1.Aufheizvorgabe.Aus);
+
+        Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(true);
+
+        Assert.Single(_aufheizGeschrieben);
+        Assert.Equal(WindowsFormsApplication1.Aufheizvorgabe.Aus, seite.Instance.Laufparameter.Aufheizung);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_MSG_FEHLER, seite.Markup);
+        Assert.False(Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.HasAttribute("checked"));
+        Assert.Empty(Wahlen(seite));
+
+        var an = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(true, null!, null, 0.2, null!));
+        Textfelder(an)[0].Input("35");
+        Assert.Equal(0.35, _aufheizGeschrieben.Last().Reserve);
+        Assert.Equal(0.2, an.Instance.Laufparameter.Aufheizung.Reserve);
+        Assert.Equal("20", Textfelder(an)[0].GetAttribute("value"));
+
+        Wahlen(an)[0].Change("1");
+        Assert.Null(an.Instance.Laufparameter.Aufheizung.Bemessung);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE, Gewaehlt(Wahlen(an)[0]));
+        Assert.Single(Textfelder(an));
+    }
+
+    /// <summary>
+    /// Die Herleitungszeilen je Gebäude stehen nur mit ihrem Delegaten und nur bei Schalter an;
+    /// nach einem Schreiben werden sie neu gefragt.
+    /// </summary>
+    [Fact]
+    public void Die_Herleitungszeilen_je_Gebaeude_stehen_nur_mit_Delegat()
+    {
+        var ohne = SeiteMitAufheizung(AUFHEIZ_AN);
+        Assert.DoesNotContain("Haus A", Aufheizabschnitt(ohne).TextContent);
+
+        var aus = SeiteMitAufheizung(WindowsFormsApplication1.Aufheizvorgabe.Aus, mitHerleitung: true);
+        Assert.DoesNotContain("Haus A", Aufheizabschnitt(aus).TextContent);
+
+        _herleitungGefragt = 0;
+        var mit = SeiteMitAufheizung(AUFHEIZ_AN, mitHerleitung: true);
+        string text = Aufheizabschnitt(mit).TextContent;
+        Assert.Contains("Haus A: t_auf,max 8 h bei −18,2 °C", text);
+        Assert.Contains("Haus B: t_auf,max 0 h bei −18,2 °C", text);
+        int vorher = _herleitungGefragt;
+
+        Wahlen(mit)[0].Change("1");
+        Assert.True(_herleitungGefragt > vorher);
+    }
+
+    /// <summary>Mit der Anlagenkopplung AK1 sagt eine Zeile, dass ein Gebäude ohne Zonen nicht optimiert wird (W5).</summary>
+    [Fact]
+    public void Mit_AK1_nennt_eine_Zeile_die_ausgenommenen_Gebaeude()
+    {
+        var ohne = SeiteMitAufheizung(AUFHEIZ_AN);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_GEKOPPELT,
+                              Aufheizabschnitt(ohne).TextContent);
+
+        var mit = SeiteMitAufheizung(AUFHEIZ_AN, kopplung: WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_GEKOPPELT,
+                        Aufheizabschnitt(mit).TextContent);
+    }
+
+    /// <summary>
+    /// Sperrzustand (ADR-001): Der Grund steht im Banner der Seite, jedes Feld des Abschnitts ist
+    /// gesperrt, und es wird nichts geschrieben.
+    /// </summary>
+    [Fact]
+    public void Im_Sperrzustand_ist_die_Aufheizoptimierung_gesperrt()
+    {
+        var seite = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!), gesperrt: true);
+
+        Assert.Contains("Schema-Migration", seite.Find(".epos-warnbanner").TextContent);
+        Assert.True(seite.Find("fieldset.epos-simkonfig-einstellungen").HasAttribute("disabled"));
+        IElement abschnitt = Aufheizabschnitt(seite);
+        List<IElement> bedienelemente = abschnitt.QuerySelectorAll("input, select").ToList();
+        Assert.Equal(5, bedienelemente.Count);
+        Assert.All(bedienelemente, e => Assert.True(e.HasAttribute("disabled")));
+        Assert.Empty(_aufheizGeschrieben);
+    }
+
+    /// <summary>Ohne Schreibweg (eine Plattform ohne die Naht) steht kein Abschnitt „Aufheizoptimierung".</summary>
+    [Fact]
+    public void Ohne_Schreibweg_steht_kein_Aufheizabschnitt()
+    {
+        var seite = SeiteMitParametern();
+
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-aufheizung"));
+    }
+
+    /// <summary>
+    /// Beide Kulturen: Unter en-US stehen die englischen Texte und Platzhalter, und die Reserve
+    /// schreibt dieselbe Zahl.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizoptimierung_spricht_englisch()
+    {
+        using var englisch = new Kulturvorrichtung("en-US");
+        var seite = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!));
+
+        IElement abschnitt = Aufheizabschnitt(seite);
+        Assert.Equal("Preheat optimisation", abschnitt.GetAttribute("aria-label"));
+        Assert.Contains("Calculate preheat optimisation", abschnitt.TextContent);
+        Assert.Equal("coldest hour − ΔT_K", Gewaehlt(Wahlen(seite)[0]));
+        Assert.Equal("daily", Gewaehlt(Wahlen(seite)[1]));
+        Assert.Equal("Default 2", Textfelder(seite)[0].GetAttribute("placeholder"));
+        Assert.Equal("Default 20", Textfelder(seite)[1].GetAttribute("placeholder"));
+
+        Textfelder(seite)[1].Input("12.5");
+        Assert.Equal(0.125, _aufheizGeschrieben.Last().Reserve);
     }
 
     /// <summary>
@@ -1642,6 +1979,40 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Single(cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf"));
     }
     // ==================================================================
+    //  Stufe P2 — „Pufferspeicher auslegen…" unter der Pufferverwaltung
+    // ==================================================================
+
+    /// <summary>
+    /// Konzept Pufferspeicher-Auslegung, Abschnitt 6: „Pufferspeicher auslegen…" steht unter
+    /// „Pufferspeicher anlegen / verwalten…" nach dem Muster „Stromspeicher auslegen…". Bei zwei
+    /// Speichern im Projekt öffnet er die Auslegung für einen neuen (0) — einen bestimmten wählt
+    /// „Auslegen…" der Pufferverwaltung.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_Pufferspeicher_auslegen_steht_unter_der_Pufferverwaltung()
+    {
+        _puWeg = true;
+        var cut = Seite();
+
+        var knoepfe = cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains("Pufferspeicher anlegen", knoepfe[0].TextContent);
+        Assert.Equal("Pufferspeicher auslegen…", knoepfe[1].TextContent.Trim());
+
+        cut.Find("button.epos-simkonfig-pufferauslegung").Click();
+        Assert.Equal(new[] { 0 }, _puGeoeffnet);
+    }
+
+    /// <summary>Kein Delegat, kein Knopf: Ohne Weg fehlt „Pufferspeicher auslegen…".</summary>
+    [Fact]
+    public void Ohne_Weg_in_die_Pufferauslegung_fehlt_der_Knopf()
+    {
+        _puWeg = false;
+        var cut = Seite();
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-pufferauslegung"));
+    }
+
+    // ==================================================================
     //  Hausmuster der Dialoge: OK speichert, Abbrechen und ✕ verwerfen
     // ==================================================================
 
@@ -2074,5 +2445,221 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(_aufgenommen);
         Assert.Empty(_entfernt);
         Assert.False(cut.Instance.Ungespeichert);
+    }
+
+    // =====================================================================
+    //  Welle M3b (BW4) — Netzverluste je Kanal und Zirkulation
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Netzverlustvorgabe> _netzGeschrieben = new();
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitNetzkanaelen(WindowsFormsApplication1.Netzverlustvorgabe stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Netzkanaele = stand;
+            return p;
+        };
+        wege.NetzkanaeleSchreiben = v =>
+        {
+            _netzGeschrieben.Add(v);
+            return true;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    /// <summary>
+    /// Leer: Der Abschnitt nennt, dass der Projektwert gilt; ein Kanalwert schreibt die ganze Vorgabe
+    /// mit der gewählten Einheit, danach sagt die Seite, dass der Projektwert nicht gilt. Leistung und
+    /// Laufzeit der Zirkulation schreiben ebenso und nennen die Jahresmenge.
+    /// </summary>
+    [Fact]
+    public void Netzverluste_je_Kanal_und_Zirkulation_schreiben_sofort()
+    {
+        var seite = SeiteMitNetzkanaelen(WindowsFormsApplication1.Netzverlustvorgabe.Leer);
+        IElement abschnitt = seite.Find("section.epos-simkonfig-netzkanaele");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_NV_KANAL_AUS, abschnitt.TextContent);
+        Assert.Empty(_netzGeschrieben);
+
+        // Brauchwasser auf kWh/a, dann der Wert.
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("select")[1].Change("1");
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]")[1].Input("500");
+        WindowsFormsApplication1.Netzverlustvorgabe v = _netzGeschrieben.Last();
+        Assert.Equal(500, v.BrauchwasserWert);
+        Assert.Equal("kWh/a", v.BrauchwasserEinheit);
+        Assert.Null(v.HeizungWert);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_NV_KANAL_AN, seite.Markup);
+
+        var felder = seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]");
+        felder[3].Input("2");
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]")[4].Input("10");
+        v = _netzGeschrieben.Last();
+        Assert.Equal(2, v.ZirkulationLeistungKw);
+        Assert.Equal(10, v.ZirkulationLaufzeitHd);
+        Assert.Contains("7,3", seite.Find("section.epos-simkonfig-netzkanaele").TextContent);
+    }
+
+    /// <summary>Ohne Schreibweg der Plattform steht der Abschnitt nicht da.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_kein_Abschnitt_Netzkanaele()
+    {
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, Parameterdienste())
+            .Add(x => x.StartProjekt, 1030));
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-netzkanaele"));
+    }
+
+    // =====================================================================
+    //  Welle M5 (PV3) — die Projekteinstellung „Einspeisegrenze"
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Einspeisegrenze> _grenzeGeschrieben = new();
+
+    private bool _grenzeAntwort = true;
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Einspeisegrenze = stand;
+            return p;
+        };
+        wege.EinspeisegrenzeSchreiben = g =>
+        {
+            _grenzeGeschrieben.Add(g);
+            return _grenzeAntwort;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Grenzabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-einspeisegrenze");
+
+    /// <summary>
+    /// Ohne Grenze: das Feld leer mit dem Platzhalter „keine Grenze", die Einheit kW gewählt, die
+    /// Herleitungszeile darunter. Zeichnen schreibt nichts. Ohne Delegat gibt es den Abschnitt nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Einspeisegrenze_steht_leer_mit_Einheit_kW()
+    {
+        var seite = SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze.Keine);
+        IElement abschnitt = Grenzabschnitt(seite);
+
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_EINSPEISEGRENZE, abschnitt.GetAttribute("aria-label"));
+        IElement feld = abschnitt.QuerySelector("input[type=text]")!;
+        Assert.Equal("", feld.GetAttribute("value") ?? "");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_EINSPEISEGRENZE_LEER, feld.GetAttribute("placeholder"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW,
+                     Gewaehlt(abschnitt.QuerySelector("select")!));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_EINSPEISEGRENZE, abschnitt.TextContent);
+        Assert.Empty(_grenzeGeschrieben);
+
+        var ohne = Seite();
+        Assert.Empty(ohne.FindAll("section.epos-simkonfig-einspeisegrenze"));
+    }
+
+    /// <summary>
+    /// Wert und Einheit schreiben SOFORT die ganze Einstellung; die Einheit % zeigt „%" am Feld, ein
+    /// geleertes Feld schreibt „keine Grenze". Scheitert das Schreiben, bleibt der Stand.
+    /// </summary>
+    [Fact]
+    public void Wert_und_Einheit_der_Einspeisegrenze_schreiben_sofort()
+    {
+        var seite = SeiteMitEinspeisegrenze(WindowsFormsApplication1.Einspeisegrenze.Keine);
+
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("70");
+        Assert.Equal(new WindowsFormsApplication1.Einspeisegrenze(70, null), _grenzeGeschrieben.Last());
+
+        Grenzabschnitt(seite).QuerySelector("select")!.Change("1");
+        Assert.Equal(new WindowsFormsApplication1.Einspeisegrenze(70, WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT),
+                     _grenzeGeschrieben.Last());
+        Assert.Contains("%", Grenzabschnitt(seite).TextContent);
+        Assert.Equal(_grenzeGeschrieben.Last(), seite.Instance.Laufparameter.Einspeisegrenze);
+
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("");
+        Assert.False(_grenzeGeschrieben.Last().Gesetzt);
+
+        _grenzeAntwort = false;
+        Grenzabschnitt(seite).QuerySelector("input[type=text]")!.Input("5");
+        Assert.False(seite.Instance.Laufparameter.Einspeisegrenze.Gesetzt);
+        Assert.Equal(4, _grenzeGeschrieben.Count);
+    }
+
+    // =====================================================================
+    //  Welle M7 (BW5) — die Projekteinstellung „Thermische Desinfektion"
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Desinfektionsvorgabe> _desinfGeschrieben = new();
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitDesinfektion(WindowsFormsApplication1.Desinfektionsvorgabe stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Desinfektion = stand;
+            return p;
+        };
+        wege.DesinfektionSchreiben = v =>
+        {
+            _desinfGeschrieben.Add(v);
+            return true;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Desinfektionsabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-desinfektion");
+
+    /// <summary>
+    /// Aus: nur der Schalter und die Herleitungszeile; Zeichnen schreibt nichts, ohne Delegat kein
+    /// Abschnitt. Der Schalter schreibt sofort „an", danach stehen die vier Felder mit ihren Vorgaben
+    /// als Platzhalter da; ein Wert schreibt die ganze Vorgabe, ein Wert außerhalb wird benannt abgelehnt.
+    /// </summary>
+    [Fact]
+    public void Die_Desinfektion_schaltet_und_schreibt_sofort()
+    {
+        var seite = SeiteMitDesinfektion(WindowsFormsApplication1.Desinfektionsvorgabe.Aus);
+        IElement abschnitt = Desinfektionsabschnitt(seite);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_DESINFEKTION, abschnitt.GetAttribute("aria-label"));
+        Assert.Empty(abschnitt.QuerySelectorAll("input[type=text]"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_DESINFEKTION, abschnitt.TextContent);
+        Assert.Empty(_desinfGeschrieben);
+        Assert.Empty(Seite().FindAll("section.epos-simkonfig-desinfektion"));
+
+        Desinfektionsabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(true);
+        Assert.True(_desinfGeschrieben.Last().Aktiv);
+        Assert.True(seite.Instance.Laufparameter.Desinfektion.Aktiv);
+        var felder = Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]");
+        Assert.Equal(4, felder.Length);
+        Assert.Equal("7", felder[0].GetAttribute("placeholder"));
+
+        felder[0].Input("14");
+        Assert.Equal(14, _desinfGeschrieben.Last().IntervallTage);
+        Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]")[3].Input("800");
+        Assert.Equal(800.0, _desinfGeschrieben.Last().VolumenL);
+        Assert.Equal(14, _desinfGeschrieben.Last().IntervallTage);
+
+        int vorher = _desinfGeschrieben.Count;
+        Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]")[2].Input("95");
+        Assert.Equal(vorher, _desinfGeschrieben.Count);
+        Assert.Null(seite.Instance.Laufparameter.Desinfektion.ZielC);
     }
 }

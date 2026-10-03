@@ -1072,6 +1072,33 @@ namespace WindowsFormsApplication1
             /// <summary>Größte Entladeleistung [kW]; 0 = unbegrenzt.</summary>
             public double EntladeleistungMax;
 
+            // --- Welle M7 (Schemaschritt PufferOptionenSchema; Konzept Simulationsablauf 21) ---
+
+            /// <summary>PS1 (c): <c>tag</c> oder <c>temperatur</c>; <c>null</c> = Tageswert.</summary>
+            public string BereitschaftWeg;
+
+            /// <summary>PS1 (c): Temperatur des Aufstellraums [°C]; <c>null</c> = 20 °C.</summary>
+            public double? AufstellraumC;
+
+            /// <summary>PS1 (a): Zonenanteile von oben („0,10;0,16;0,37;0,37"); <c>null</c> = gleich groß.</summary>
+            public string SchichtAnteile;
+
+            /// <summary>PS5 (a): Frischwassermodul am Speicher.</summary>
+            public bool Frischwassermodul;
+
+            /// <summary>PS5 (a): Grädigkeit des Frischwassermoduls [K]; <c>null</c> = 5 K.</summary>
+            public double? FwmGraedigkeitK;
+
+            /// <summary>true, wenn keine der Optionen der Welle M7 gepflegt ist.</summary>
+            public bool OptionenLeer
+            {
+                get
+                {
+                    return string.IsNullOrEmpty(BereitschaftWeg) && !AufstellraumC.HasValue &&
+                           string.IsNullOrEmpty(SchichtAnteile) && !Frischwassermodul && !FwmGraedigkeitK.HasValue;
+                }
+            }
+
             /// <summary>true, sobald der Speicher mehr als eine Schicht führt.</summary>
             public bool Geschichtet
             {
@@ -1092,7 +1119,7 @@ namespace WindowsFormsApplication1
                            !Hoehe.HasValue && !LambdaEff.HasValue && !TNutzBW.HasValue &&
                            !EntnahmeHeizung.HasValue && !EntnahmeBW.HasValue &&
                            !EntnahmeProzess.HasValue &&
-                           LadeleistungMax <= 0 && EntladeleistungMax <= 0;
+                           LadeleistungMax <= 0 && EntladeleistungMax <= 0 && OptionenLeer;
                 }
             }
 
@@ -1110,6 +1137,11 @@ namespace WindowsFormsApplication1
                 m.Entnahme_Prozess = EntnahmeProzess;
                 m.Ladeleistung_Max = LadeleistungMax;
                 m.Entladeleistung_Max = EntladeleistungMax;
+                m.Bereitschaft_Weg = BereitschaftWeg;
+                m.Aufstellraum_Temperatur_C = AufstellraumC;
+                m.Schicht_Anteile = SchichtAnteile;
+                m.Frischwassermodul = Frischwassermodul;
+                m.FWM_Graedigkeit_K = FwmGraedigkeitK;
             }
         }
 
@@ -1139,6 +1171,13 @@ namespace WindowsFormsApplication1
             d.EntnahmeProzess = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS);
             d.LadeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX) ?? 0;
             d.EntladeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX) ?? 0;
+
+            // Welle M7 - spaltentolerant: ohne den Schritt bleiben die Vorgaben stehen.
+            d.BereitschaftWeg = TextOderNull(r, PufferOptionenSchema.SPALTE_BEREITSCHAFT_WEG);
+            d.AufstellraumC = KommazahlOderNull(r, PufferOptionenSchema.SPALTE_AUFSTELLRAUM);
+            d.SchichtAnteile = TextOderNull(r, PufferOptionenSchema.SPALTE_SCHICHT_ANTEILE);
+            d.Frischwassermodul = (ZahlOderNull(r, PufferOptionenSchema.SPALTE_FRISCHWASSERMODUL) ?? 0) == 1;
+            d.FwmGraedigkeitK = KommazahlOderNull(r, PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT);
 
             return d;
         }
@@ -1223,6 +1262,7 @@ namespace WindowsFormsApplication1
 
             if (daten.IstVorbelegung && !SchichtSpaltenVorhanden()) return true;
             if (!StelleSchichtSpaltenSicher()) return false;
+            if (!OptionenSchreiben(idPuffer, daten)) return false;
 
             return StillNonQuery(
                 "UPDATE Tab_Pufferspeicher SET " +
@@ -1245,6 +1285,46 @@ namespace WindowsFormsApplication1
                 Zahlpar("@ep", daten.EntnahmeProzess),
                 StilleDb.Par("@lp", DbParamTyp.Double, daten.LadeleistungMax),
                 StilleDb.Par("@ep2", DbParamTyp.Double, daten.EntladeleistungMax),
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
+        }
+
+        /// <summary>
+        /// Die Optionen der Welle M7 an einer Puffer-Zeile — ein zielgenaues <c>UPDATE</c> der fünf Spalten
+        /// des Schemaschritts <see cref="PufferOptionenSchema"/>. Fehlen die Spalten, ist das ohne gepflegte
+        /// Option kein Fehler (es gibt nichts zu schreiben); mit gepflegter Option scheitert das Speichern
+        /// benannt am fehlenden Schritt, statt die Angabe still zu verlieren. Die Prüfklauseln der Spalten
+        /// halten die Grenzen.
+        /// </summary>
+        public static bool OptionenSchreiben(int idPuffer, Schichtdaten daten)
+        {
+            if (idPuffer <= 0 || daten == null) return false;
+            if (!DataRepository.SpalteVorhanden(PufferOptionenSchema.TAB_PUFFER, PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT))
+                return daten.OptionenLeer;
+
+            string weg = PufferOptionen.IstTemperaturweg(daten.BereitschaftWeg) ? DbWerte.PSP_BEREITSCHAFT_TEMPERATUR
+                       : string.IsNullOrEmpty(daten.BereitschaftWeg) ? null : DbWerte.PSP_BEREITSCHAFT_TAG;
+            string anteile = string.IsNullOrWhiteSpace(daten.SchichtAnteile) ? null : daten.SchichtAnteile.Trim();
+
+            DbParam pWeg = new DbParam("@weg", DbParamTyp.VarWChar);
+            pWeg.Wert = (object)weg ?? DBNull.Value;
+            DbParam pAnteile = new DbParam("@anteile", DbParamTyp.VarWChar);
+            pAnteile.Wert = (object)anteile ?? DBNull.Value;
+            DbParam pFwm = new DbParam("@fwm", DbParamTyp.Integer);
+            pFwm.Wert = daten.Frischwassermodul ? (object)1 : DBNull.Value;
+
+            return StillNonQuery(
+                "UPDATE Tab_Pufferspeicher SET " +
+                "[" + PufferOptionenSchema.SPALTE_BEREITSCHAFT_WEG + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_AUFSTELLRAUM + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_SCHICHT_ANTEILE + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_FRISCHWASSERMODUL + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT + "] = ? " +
+                "WHERE ID = ?",
+                pWeg,
+                Zahlpar("@raum", daten.AufstellraumC),
+                pAnteile,
+                pFwm,
+                Zahlpar("@grad", daten.FwmGraedigkeitK),
                 StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
         }
 
@@ -1414,6 +1494,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Kommazahl-Feld; fehlende Spalte, NULL und Unlesbares ergeben <c>null</c>.</summary>
+        private static string TextOderNull(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return null;
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            string s = Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture);
+            return string.IsNullOrWhiteSpace(s) ? null : s;
+        }
+
         private static double? KommazahlOderNull(DataRow r, string spalte)
         {
             if (r == null || !r.Table.Columns.Contains(spalte)) return null;

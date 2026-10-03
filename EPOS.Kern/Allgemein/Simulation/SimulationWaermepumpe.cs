@@ -65,6 +65,32 @@ namespace WindowsFormsApplication1
         // Je Modul die Kennlinienwahl am gerechneten Vorlauf; null = fester Vorlauf (Bestand).
         private readonly List<Kennlinienwahl> wp_kennlinienwahl = new List<Kennlinienwahl>();
 
+        /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (PW1 Stufe 1) — gesetzt von
+        /// <c>SimulationControl</c> vor dem Modulaufbau; <c>null</c> = kein Prozess mit
+        /// Temperaturpaar, dann rechnet jedes Modul wie zuvor.
+        /// </summary>
+        internal Prozesstemperatur Prozesstemperatur { get; set; }
+
+        // Je Modul alle Kennlinien des Geräts für den Prozessanteil (PW1 Stufe 1); null ohne
+        // Temperaturniveau. Gelesen werden nur die Kurven - die Stundenzähler der Heizseite
+        // bleiben unberührt, auch wenn das Objekt mit wp_kennlinienwahl geteilt ist.
+        private readonly List<Kennlinienwahl> wp_prozesswahl = new List<Kennlinienwahl>();
+
+        // Je Modul: Stunden mit der Kennlinie am Prozessvorlauf und deren höchster Vorlauf;
+        // Stunden, in denen das Modul den Prozesskanal nicht deckt, weil keine Kennlinie den
+        // Prozessvorlauf erreicht, der höchste dabei geforderte Vorlauf und die oberste Stützstelle.
+        private readonly int[] _prozessKennlinieStunden = new int[MAX_WP];
+        private readonly double[] _prozessKennlinieMax = new double[MAX_WP];
+        private readonly int[] _prozessGesperrtStunden = new int[MAX_WP];
+        private readonly double[] _prozessGesperrtMax = new double[MAX_WP];
+        private readonly int[] _prozessGesperrtOberste = new int[MAX_WP];
+        // ... und davon die Stunden, in denen die Quelltemperatur unter der untersten Stützstelle der
+        // Kennlinie am Prozessvorlauf lag (Vorlauf und Grenze dieser Kennlinie).
+        private readonly int[] _prozessQuelleStunden = new int[MAX_WP];
+        private readonly int[] _prozessQuelleVorlauf = new int[MAX_WP];
+        private readonly double[] _prozessQuelleGrenze = new double[MAX_WP];
+
         // Quelltemperatur-Jahresprofil je WP-Modul (Wärmequelle):
         // Luft-Wasser = Außentemperatur; Sole-/Wasser-Wasser gemäß WQ_Typ
         // (Konstant, Pufferspeicher, Profil, CSV) - siehe WaermequelleClass.
@@ -538,6 +564,132 @@ namespace WindowsFormsApplication1
         private readonly double[] _heizWaermeStunde = new double[MAX_WP];
         private readonly double[] _heizLeistungStunde = new double[MAX_WP];
 
+        // ==================================================================
+        //  Welle M4, WP1: der Taktverlust nach EN 14825
+        //
+        // Je Modul mit gepflegter Mindestleistung (Tab_WP.Mindestleistung_kW > 0) sammelt die
+        // Stunde Verdichterwärme und Verdichterstrom aus Bedarfsdeckung und Speicherladung; am
+        // Stundenende (Zweikanalig_StundeEnde) rechnet Waermepumpentakt den Mehrstrom der
+        // Taktstunde und die Starts. Ohne Mindestleistung in irgendeinem Modul ist jede Zeile
+        // hierzu ein sofortiger Rücksprung - die Stunde rechnet Anweisung für Anweisung wie zuvor.
+        // ==================================================================
+
+        /// <summary>Gilt die Taktrechnung für irgendein Modul des Laufs?</summary>
+        private bool _taktIrgendein;
+
+        /// <summary>Je Modul: rechnet es den Taktverlust (Mindestleistung gepflegt)?</summary>
+        private readonly bool[] _takt = new bool[MAX_WP];
+
+        /// <summary>Je Modul: die Mindestleistung P_min [kW]; 0 ohne Taktrechnung.</summary>
+        private readonly double[] _taktMindestleistungKw = new double[MAX_WP];
+
+        /// <summary>Je Modul: der wirksame Teillastkoeffizient C_d.</summary>
+        private readonly double[] _taktCd = new double[MAX_WP];
+
+        /// <summary>Je Modul: gepflegtes C_d? (Ausweis gepflegt oder Vorgabe.)</summary>
+        private readonly bool[] _taktCdGepflegt = new bool[MAX_WP];
+
+        private readonly double[] _taktWaermeStunde = new double[MAX_WP];
+        private readonly double[] _taktStromStunde = new double[MAX_WP];
+        private readonly bool[] _taktLiefVorstunde = new bool[MAX_WP];
+
+        /// <summary>STARTS je Modul [1/a] im Heizbetrieb (WP1): im Takt so viele, wie Mindestläufe die Wärme braucht, sonst je Laufphase einer. Nur mit Mindestleistung.</summary>
+        public int[] Starts_WP = new int[MAX_WP];
+
+        /// <summary>TAKTSTUNDEN je Modul [h/a]: Laufstunden mit einer Wärme unter der Mindestleistung.</summary>
+        public int[] Taktstunden_WP = new int[MAX_WP];
+
+        /// <summary>MEHRSTROM aus Taktverlust je Modul [kWh/a] — Teil von <see cref="Modul_WP_Strombedarf"/>.</summary>
+        public double[] Taktstrom_KWh_WP = new double[MAX_WP];
+
+        /// <summary>Rechnet das Modul den Taktverlust (Mindestleistung gepflegt)?</summary>
+        public bool RechnetMitTakt(int index) => index >= 0 && index < MAX_WP && _takt[index];
+
+        /// <summary>Die Mindestleistung des Moduls [kW]; 0 ohne Taktrechnung.</summary>
+        public double TaktMindestleistung(int index) => index >= 0 && index < MAX_WP ? _taktMindestleistungKw[index] : 0.0;
+
+        /// <summary>Der wirksame Teillastkoeffizient C_d des Moduls.</summary>
+        public double TaktCd(int index) => index >= 0 && index < MAX_WP ? _taktCd[index] : Waermepumpentakt.VORGABE_CD;
+
+        /// <summary>Rechnet das Modul mit der Vorgabe 0,9 (C_d leer)?</summary>
+        public bool TaktCdIstVorgabe(int index) => index >= 0 && index < MAX_WP && _takt[index] && !_taktCdGepflegt[index];
+
+        /// <summary>
+        /// Liest Mindestleistung und C_d der Projektkopie <paramref name="idWp"/> (<c>Tab_WP</c>). Eine
+        /// Datenbank ohne die Spalten (vor <see cref="ErzeugerTeillastSchema.SCHRITT"/>) liefert sie leer.
+        /// </summary>
+        private void TaktwerteLesen(int index, int idWp)
+        {
+            _takt[index] = false;
+            _taktMindestleistungKw[index] = 0.0;
+            _taktCd[index] = Waermepumpentakt.VORGABE_CD;
+            _taktCdGepflegt[index] = false;
+            if (index < 0 || index >= MAX_WP) return;
+
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", idWp));
+            if (dt == null || dt.Rows.Count == 0) return;
+            System.Data.DataRow r = dt.Rows[0];
+            double? pmin = NullbareZahl(r, ErzeugerTeillastSchema.SPALTE_WP_MINDESTLEISTUNG);
+            double? cd = NullbareZahl(r, ErzeugerTeillastSchema.SPALTE_WP_CD);
+            if (!Waermepumpentakt.RechnetMitTakt(pmin)) return;
+
+            _takt[index] = true;
+            _taktIrgendein = true;
+            _taktMindestleistungKw[index] = pmin.Value;
+            _taktCd[index] = Waermepumpentakt.CdWirksam(cd);
+            _taktCdGepflegt[index] = cd.HasValue && _taktCd[index] == cd.Value;
+        }
+
+        private static double? NullbareZahl(System.Data.DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte)) return null;
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Stundenende der Taktrechnung: je Modul mit Mindestleistung der Mehrstrom der Taktstunde
+        /// (<see cref="Waermepumpentakt.Mehrstrom"/>) in Stunden-, Jahres- und Modulsumme, dazu Starts
+        /// und Taktstunden. Die Wärme der Stunde bleibt; nur ihre Leistungszahl sinkt.
+        /// </summary>
+        private void TaktStundeAbschliessen(int stunde)
+        {
+            int module = Math.Min(wp_model.Count, MAX_WP);
+            for (int i = 0; i < module; i++)
+            {
+                if (!_takt[i]) continue;
+                double q = _taktWaermeStunde[i];
+                double p = _taktStromStunde[i];
+                bool lief = q >= Rechenrand.ABSOLUT;
+                if (lief)
+                {
+                    int starts;
+                    if (Waermepumpentakt.Taktet(q, _taktMindestleistungKw[i]))
+                    {
+                        starts = Waermepumpentakt.StartsImTakt(q, _taktMindestleistungKw[i]);
+                        Taktstunden_WP[i]++;
+                        double mehr = Waermepumpentakt.Mehrstrom(p, q, _taktMindestleistungKw[i], _taktCd[i]);
+                        if (mehr > 0)
+                        {
+                            if (stunde >= 0 && stunde < WP_Strombedarf_stuendlich.Length)
+                                WP_Strombedarf_stuendlich[stunde] += mehr;
+                            WpStrombedarfGesamtKwh += mehr;
+                            Modul_WP_Strombedarf[i] += mehr;
+                            Taktstrom_KWh_WP[i] += mehr;
+                        }
+                    }
+                    else
+                    {
+                        starts = _taktLiefVorstunde[i] ? 0 : 1;
+                    }
+                    Starts_WP[i] += starts;
+                }
+                _taktLiefVorstunde[i] = lief;
+            }
+        }
+
         /// <summary>
         /// Stellt Module auf Kühlbetrieb (Stufe KU2) — gerufen von <c>SimulationControl</c> nach
         /// dem Modulaufbau und vor der Kaskade, EINMAL je Lauf.
@@ -656,6 +808,15 @@ namespace WindowsFormsApplication1
             wp_model.Clear();
             wp_kenndaten.Clear();
             wp_kennlinienwahl.Clear();
+            wp_prozesswahl.Clear();
+            Array.Clear(_prozessKennlinieStunden, 0, MAX_WP);
+            Array.Clear(_prozessKennlinieMax, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtStunden, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtMax, 0, MAX_WP);
+            Array.Clear(_prozessGesperrtOberste, 0, MAX_WP);
+            Array.Clear(_prozessQuelleStunden, 0, MAX_WP);
+            Array.Clear(_prozessQuelleVorlauf, 0, MAX_WP);
+            Array.Clear(_prozessQuelleGrenze, 0, MAX_WP);
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
             wp_typ.Clear();
@@ -688,6 +849,9 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 wp_model.Add(model);
+
+                // Welle M4, WP1: Mindestleistung und C_d der Projektkopie (leer = keine Taktrechnung).
+                TaktwerteLesen(i, model.ID_WP);
 
                 // K-3: einmaliger Hinweis, wenn eine bivalent-alternative Anlage mit der
                 // Vorbelegung 0 °C als Bivalenztemperatur rechnet. Steht hier, weil der
@@ -793,6 +957,12 @@ namespace WindowsFormsApplication1
                 // „Beides" oder „Heizung"); ein reines Warmwassermodul behält seinen Vorlauf.
                 wp_kennlinienwahl.Add(Heizkreisvorlauf != null && SenkeMitHeizung(wp_senke[i])
                     ? KennlinienwahlLaden(model.ID_WP, item)
+                    : null);
+
+                // PW1 Stufe 1: Mit Temperaturniveau des Prozesskanals braucht der Prozessanteil alle
+                // Kennlinien des Geräts - die schon geladene Wahl der Heizseite oder eine eigene.
+                wp_prozesswahl.Add(Prozesstemperatur != null
+                    ? (wp_kennlinienwahl[i] ?? KennlinienwahlLaden(model.ID_WP, item))
                     : null);
             }
 
@@ -917,6 +1087,63 @@ namespace WindowsFormsApplication1
             return wahl.Kurven[stelle];
         }
 
+        /// <summary>
+        /// <b>Die Kennlinie für den Prozessanteil</b> (PW1 Stufe 1): die UNTERSTE Kennlinie des Geräts,
+        /// deren Vorlauf den geforderten Prozessvorlauf <paramref name="gefordert"/> erreicht — anders
+        /// als die Heizseite nicht die nächstgelegene, denn eine Kennlinie darunter liefert die
+        /// geforderte Temperatur nicht. Über der obersten Stützstelle gilt die Extrapolationsregel des
+        /// Projekts: erlaubt — die oberste Kennlinie (<paramref name="oberhalb"/>); verboten —
+        /// <c>null</c>, das Modul erreicht den Prozessvorlauf nicht und deckt den Prozesskanal in
+        /// dieser Stunde nicht. Ohne geladene Kennlinien zählt allein die feste Kennlinie
+        /// <paramref name="fest"/>.
+        /// </summary>
+        internal static _Kenndaten ProzessKennlinieWaehlen(_Kenndaten[] kurven, _Kenndaten fest, double gefordert,
+                                                          bool extrapolationErlaubt, out bool oberhalb)
+        {
+            oberhalb = false;
+            _Kenndaten[] k = (kurven != null && kurven.Length > 0) ? kurven : new[] { fest };
+            for (int i = 0; i < k.Length; i++)
+                if (k[i] != null && Rechenrand.SchwelleErreicht(k[i].Vorlauf, gefordert)) return k[i];
+            if (!extrapolationErlaubt) return null;
+            oberhalb = true;
+            return k[k.Length - 1];
+        }
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Modul, in wie vielen Stunden die Kennlinie am Prozessvorlauf
+        /// rechnete und in wie vielen das Modul den Prozesskanal nicht deckte (PW1 Stufe 1). Ohne
+        /// Temperaturniveau meldet sie nichts.
+        /// </summary>
+        private void ProzesswahlMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+            {
+                string bezeichner = wp_model[i]?.Bezeichner ?? "";
+                if (_prozessKennlinieStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_KENNLINIE,
+                        bezeichner, _prozessKennlinieStunden[i], _prozessKennlinieMax[i]));
+                int ohneKennlinie = _prozessGesperrtStunden[i] - _prozessQuelleStunden[i];
+                if (ohneKennlinie > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_NICHT_ERREICHT,
+                        bezeichner, ohneKennlinie, _prozessGesperrtMax[i], _prozessGesperrtOberste[i]));
+                if (_prozessQuelleStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                        CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_WP_QUELLE,
+                        bezeichner, _prozessQuelleStunden[i], _prozessQuelleVorlauf[i], _prozessQuelleGrenze[i]));
+            }
+        }
+
+        /// <summary>Stunden, in denen Modul <paramref name="index"/> den Prozesskanal nicht deckte (PW1 Stufe 1).</summary>
+        internal int ProzessGesperrtStunden(int index)
+            => index >= 0 && index < MAX_WP ? _prozessGesperrtStunden[index] : 0;
+
+        /// <summary>Stunden, in denen Modul <paramref name="index"/> mit der Kennlinie am Prozessvorlauf rechnete (PW1 Stufe 1).</summary>
+        internal int ProzessKennlinieStunden(int index)
+            => index >= 0 && index < MAX_WP ? _prozessKennlinieStunden[index] : 0;
+
         /// <summary>Wo der gerechnete Vorlauf zu den Stützstellen liegt (F-A8).</summary>
         internal enum Vorlauflage
         {
@@ -1010,7 +1237,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Vorbereiten_Zweikanalig()
         {
-            if (wp_list.Count >= MAX_WP) return false;
+            string zuviele = ModulzahlPruefen(wp_list.Count);
+            if (zuviele != null)
+            {
+                Fehlertext = zuviele;
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
+                return false;
+            }
 
             Meldung.Warten(true);
 
@@ -1018,6 +1252,19 @@ namespace WindowsFormsApplication1
 
             QuellspeicherZusammenfuehren();
             return true;
+        }
+
+        /// <summary>
+        /// Die Modulgrenze des Laufs: <see cref="MAX_WP"/> Wärmepumpenmodule gelten, erst
+        /// das elfte wird abgelehnt — und zwar BENANNT (<c>SIMENG_WP_ZU_VIELE_MODULE</c>),
+        /// nicht still. <c>null</c> = die Zahl ist zulässig.
+        /// </summary>
+        /// <param name="anzahl">Zahl der Wärmepumpenanlagen des Projekts.</param>
+        public static string ModulzahlPruefen(int anzahl)
+        {
+            if (anzahl <= MAX_WP) return null;
+            return string.Format(CultureInfo.CurrentCulture,
+                                 MyResource.Resource.SIMENG_WP_ZU_VIELE_MODULE, anzahl, MAX_WP);
         }
 
         /// <summary>
@@ -1285,6 +1532,13 @@ namespace WindowsFormsApplication1
                 Array.Clear(_heizWaermeStunde, 0, MAX_WP);
                 Array.Clear(_heizLeistungStunde, 0, MAX_WP);
             }
+
+            // Welle M4, WP1: die Taktrechnung beginnt die Stunde ohne Wärme und Strom.
+            if (_taktIrgendein)
+            {
+                Array.Clear(_taktWaermeStunde, 0, MAX_WP);
+                Array.Clear(_taktStromStunde, 0, MAX_WP);
+            }
         }
 
         /// <summary>
@@ -1323,6 +1577,9 @@ namespace WindowsFormsApplication1
                     // Ohne Kühlbetrieb ist die Bedingung falsch, und der Rumpf ist der bisherige.
                     bool heizkanalGesperrt = HeizkanalGesperrt(index, stunde);
                     double heizkanalZurueck = 0;
+                    // PW1 Stufe 1: Sperre des Prozesskanals, gesetzt nach der Kennlinienwahl.
+                    bool prozesskanalGesperrt = false;
+                    double prozesskanalZurueck = 0;
                     if (heizkanalGesperrt)
                     {
                         heizkanalZurueck = rest[Kanal.HEIZUNG];
@@ -1341,6 +1598,59 @@ namespace WindowsFormsApplication1
                     }
                     Senkenliste senken = kontext.SenkenlisteJeModul[index];
                     SimulationPufferspeicher quelle = wp_quellspeicher[index];
+
+                    // PW1 STUFE 1: das Temperaturniveau des Prozesskanals. Deckt das Modul den
+                    // Prozesskanal unmittelbar und steht dort Bedarf mit gefordertem Vorlauf über
+                    // dem der Kennlinie der Stunde, rechnet die Stunde mit der Kennlinie am
+                    // Prozessvorlauf (die höchste geforderte Temperatur); erreicht keine Kennlinie
+                    // ihn, ist der Prozesskanal für dieses Modul in dieser Stunde gesperrt - Muster
+                    // KU2, danach unverändert zurückgelegt. Ohne Temperaturniveau falsch.
+                    if (Prozesstemperatur != null && rest[Kanal.PROZESS] > 0 &&
+                        senken != null && senken.BedientProzessDirekt)
+                    {
+                        double gefordert = Prozesstemperatur.Vorlauf(stunde);
+                        if (!double.IsNaN(gefordert) && !Rechenrand.SchwelleErreicht(kenndaten.Vorlauf, gefordert))
+                        {
+                            Kennlinienwahl pw = index < wp_prozesswahl.Count ? wp_prozesswahl[index] : null;
+                            _Kenndaten kp = ProzessKennlinieWaehlen(pw?.Kurven, kenndaten, gefordert,
+                                                                     Extrapolation_Erlaubt, out bool _);
+
+                            // Die Kennlinie am Prozessvorlauf gilt nach unten nur bis zu ihrer
+                            // untersten Quelltemperatur: Darunter liefert der Hersteller für diesen
+                            // Vorlauf keinen Betriebspunkt, und eine lineare Verlängerung einer
+                            // Hochtemperaturkennlinie mit wenigen Stützstellen läuft auf eine
+                            // Arbeitszahl gegen null zu. Das Modul erreicht den Prozessvorlauf in
+                            // dieser Stunde dann nicht - weder Extrapolation noch Abbruch. Eine
+                            // gekoppelte Pufferquelle kappt ohnehin (F13) und bleibt außen vor.
+                            bool quelleZuKalt = kp != null && !QuelleGekoppelt(index) && kp.anz >= 2 &&
+                                                wp_quelltemp[index][stunde] < kp.dat[kp.anz - 1].Temperatur;
+                            if (quelleZuKalt)
+                            {
+                                _prozessQuelleStunden[index]++;
+                                _prozessQuelleVorlauf[index] = kp.Vorlauf;
+                                _prozessQuelleGrenze[index] = kp.dat[kp.anz - 1].Temperatur;
+                                kp = null;
+                            }
+
+                            if (kp == null)
+                            {
+                                prozesskanalGesperrt = true;
+                                prozesskanalZurueck = rest[Kanal.PROZESS];
+                                rest[Kanal.PROZESS] = 0;
+                                _prozessGesperrtStunden[index]++;
+                                if (gefordert > _prozessGesperrtMax[index]) _prozessGesperrtMax[index] = gefordert;
+                                _Kenndaten[] alle = pw?.Kurven;
+                                _prozessGesperrtOberste[index] = (alle != null && alle.Length > 0)
+                                    ? alle[alle.Length - 1].Vorlauf : kenndaten.Vorlauf;
+                            }
+                            else
+                            {
+                                kenndaten = kp;
+                                _prozessKennlinieStunden[index]++;
+                                if (gefordert > _prozessKennlinieMax[index]) _prozessKennlinieMax[index] = gefordert;
+                            }
+                        }
+                    }
 
                     double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index);
                     if (result[STATUS] == 0)
@@ -1479,6 +1789,11 @@ namespace WindowsFormsApplication1
                     // steht NICHT hier, sondern zentral in Phase G.
                     double erzeugt = WP_Waermeproduktion_stuendlich[stunde] - vorherTherm;
                     double strom = WP_Strombedarf_stuendlich[stunde] - vorherEl;
+                    if (_taktIrgendein && _takt[index])
+                    {
+                        _taktWaermeStunde[index] += erzeugt;
+                        _taktStromStunde[index] += strom;
+                    }
                     if (quelle != null)
                     {
                         double entnahme = erzeugt - strom;
@@ -1550,6 +1865,7 @@ namespace WindowsFormsApplication1
                     finally
                     {
                         if (heizkanalGesperrt) rest[Kanal.HEIZUNG] = heizkanalZurueck;
+                        if (prozesskanalGesperrt) rest[Kanal.PROZESS] = prozesskanalZurueck;
                     }
 
                 } // end alle WP-Module
@@ -1565,6 +1881,9 @@ namespace WindowsFormsApplication1
         public void Zweikanalig_StundeEnde(int stunde, double[] rest)
         {
             waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
+
+            // Welle M4, WP1: Taktverlust und Starts der Stunde.
+            if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
             // KU2 (5.2): der Zeitanteil des Heizbetriebs dieser Stunde je Modul im Kühlbetrieb.
             if (KuehlModule != null && stunde >= 0 && stunde < 8760)
@@ -1607,6 +1926,9 @@ namespace WindowsFormsApplication1
 
             // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf.
             VorlaufwahlMelden();
+
+            // PW1 Stufe 1: die Kennlinie am Prozessvorlauf und die Stunden ohne Prozessdeckung.
+            ProzesswahlMelden();
 
             if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
@@ -1938,6 +2260,13 @@ namespace WindowsFormsApplication1
                 WpStrombedarfGesamtKwh += strom;
                 Modul_WP_Strombedarf[index] += strom;
 
+                // Welle M4, WP1: die Ladung gehört zur Wärme der Stunde.
+                if (_taktIrgendein && index < MAX_WP && _takt[index])
+                {
+                    _taktWaermeStunde[index] += ladung;
+                    _taktStromStunde[index] += strom;
+                }
+
                 if (ladeTherm[index] > 0)
                 {
                     WP_Laufzeit += ladung / ladeTherm[index];
@@ -1977,6 +2306,25 @@ namespace WindowsFormsApplication1
         /// hinter dem Abbruch auf einen gedeckten Rest — an der Reihenfolge der
         /// Modulbeiträge ändert das nichts.</para>
         /// </summary>
+        /// <summary>
+        /// BW5 (Konzept Simulationsablauf 21): Erreicht ein Modul mit seiner projektierten Kennlinie die
+        /// Zieltemperatur <paramref name="zielC"/>? Gefragt nach dem Modulaufbau.
+        /// </summary>
+        public bool ErreichtVorlauf(double zielC)
+        {
+            foreach (_Kenndaten k in wp_kenndaten)
+                if (k != null && Rechenrand.SchwelleErreicht(k.Vorlauf, zielC)) return true;
+            return false;
+        }
+
+        /// <summary>BW5: Führt ein Modul einen Heizstab mit Leistung?</summary>
+        public bool HeizstabVorhanden()
+        {
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+                if (WP_MitHeizstab[i] && WP_Heizung[i] > 0) return true;
+            return false;
+        }
+
         public void Heizstabphase(int stunde, double[] rest)
         {
             for (int index = 0; index < wp_model.Count; index++)
@@ -2394,6 +2742,18 @@ namespace WindowsFormsApplication1
                 // ModuleAufbauen füllt ihn gleich danach aus der Anlagenzeile; ein Lauf mit
                 // kürzerer Modulliste dürfte keinen Schalter des Vorlaufs erben.
                 WP_MitHeizstab[i] = false;
+
+                // Welle M4, WP1: Taktwerte und Taktausweis gehören zum Laufzustand.
+                _takt[i] = false;
+                _taktMindestleistungKw[i] = 0;
+                _taktCd[i] = Waermepumpentakt.VORGABE_CD;
+                _taktCdGepflegt[i] = false;
+                _taktWaermeStunde[i] = 0;
+                _taktStromStunde[i] = 0;
+                _taktLiefVorstunde[i] = false;
+                Starts_WP[i] = 0;
+                Taktstunden_WP[i] = 0;
+                Taktstrom_KWh_WP[i] = 0;
             }
 
             for (int i = 0; i < 8760; i++)
@@ -2408,6 +2768,7 @@ namespace WindowsFormsApplication1
             HeizstabGesamtKwh = 0;
             WpStrombedarfGesamtKwh = 0;
             WP_Laufzeit = 0;
+            _taktIrgendein = false;
             // B0-7: Bilanzgrößen mit zurücksetzen — bei einem Abbruch der Berechnung
             // blieben sonst Werte des Vorlaufs stehen und BaueErgebnis meldete eine
             // falsche Deckung/einen falschen Restbedarf.

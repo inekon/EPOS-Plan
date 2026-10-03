@@ -96,6 +96,130 @@ namespace WindowsFormsApplication1
         public Kaskadenkontext Kontext;
 
         /// <summary>
+        /// <b>Das Temperaturniveau des Prozesskanals</b> (Entscheidungsvorlage Modellgrenzen, PW1
+        /// Stufe 1) — gesetzt von <c>SimulationControl</c> vor dem Lauf; <c>null</c> = kein Prozess
+        /// mit Temperaturpaar, dann entlädt jeder Speicher wie zuvor. Wirkung in
+        /// <see cref="ProzessEntnahmeGrenze"/>.
+        /// </summary>
+        public Prozesstemperatur Prozesstemperatur;
+
+        /// <summary>
+        /// BW5 (Konzept Simulationsablauf 21): die Deckung der thermischen Desinfektion — der Zusatzbedarf
+        /// steht vor jeder Erzeugerart zurück, die die Zieltemperatur nicht erreicht. <c>null</c> = keine
+        /// Desinfektion; die Schleife rechnet dann Anweisung für Anweisung wie zuvor.
+        /// </summary>
+        public Desinfektionsdeckung Desinfektion;
+
+        /// <summary>PS5 (a): Stunden je Speicher, in denen das Frischwassermodul die Entnahme begrenzte.</summary>
+        private readonly Dictionary<SimulationPufferspeicher, int> _fwmStunden =
+            new Dictionary<SimulationPufferspeicher, int>();
+
+        /// <summary>PS5 (a): die zuletzt gezählte Stunde je Speicher — eine Stunde zählt einmal (Phase A und E).</summary>
+        private readonly Dictionary<SimulationPufferspeicher, int> _fwmLetzteStunde =
+            new Dictionary<SimulationPufferspeicher, int>();
+
+        /// <summary>PS5 (a): Stunden, in denen das Frischwassermodul den Brauchwasserkanal begrenzte.</summary>
+        public int FwmBegrenzteStunden(SimulationPufferspeicher sp)
+            => sp != null && _fwmStunden.TryGetValue(sp, out int n) ? n : 0;
+
+        private void FwmZaehlen(SimulationPufferspeicher sp, int stunde)
+        {
+            if (_fwmLetzteStunde.TryGetValue(sp, out int h) && h == stunde) return;
+            _fwmLetzteStunde[sp] = stunde;
+            Zaehlen(_fwmStunden, sp);
+        }
+
+        /// <summary>
+        /// PS5 (a): meldet je Speicher mit Frischwassermodul die Stunden, in denen die oberste Zone die
+        /// Mindesttemperatur nicht hielt; den Rest deckte die nächste Stufe der Kaskade.
+        /// </summary>
+        public void FrischwasserMelden()
+        {
+            foreach (KeyValuePair<SimulationPufferspeicher, int> e in _fwmStunden)
+                if (e.Value > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PSP_FWM_STUNDEN, e.Key.BezeichnerAnzeige(), e.Value, e.Key.FwmMindestC));
+        }
+
+        /// <summary>
+        /// BW5: Entladung des Zusatzbedarfs aus den fähigen Speichern des Brauchwasserkanals, in ihrer
+        /// Entladereihenfolge - dieselbe Entladung wie Phase E (Frischwassermodul, Leistungsgrenzen und
+        /// Schichtung wirken mit), nur mit dem freigegebenen Zusatzbedarf.
+        /// </summary>
+        private void DesinfektionAusSpeichern(int stunde, double[] rest)
+        {
+            List<SimulationPufferspeicher> ordnung = Kontext.Entladeordnung(Kanal.BRAUCHWASSER);
+            if (ordnung == null) return;
+            foreach (SimulationPufferspeicher sp in ordnung)
+            {
+                if (sp == null || Desinfektion.Offen[stunde] <= 0) continue;
+                if (!Desinfektion.FaehigeSpeicher.Contains(sp.ID_Pufferspeicher)) continue;
+                double vorher = Desinfektion.Freigeben(stunde, rest);
+                EntladeKanal(new List<SimulationPufferspeicher> { sp }, Kanal.BRAUCHWASSER, false, stunde, rest);
+                Desinfektion.Zurueckhalten(stunde, rest, vorher, sp.BezeichnerAnzeige());
+            }
+        }
+
+        /// <summary>Name einer Erzeugerart für die Bilanz der Desinfektion.</summary>
+        private static string ArtName(int art)
+        {
+            if (art == ProjektPuffer.TYP_WP) return DbWerte.ERZEUGER_WAERMEPUMPE;
+            if (art == ProjektPuffer.TYP_KESSEL) return DbWerte.ERZEUGER_HEIZKESSEL;
+            if (art == ProjektPuffer.TYP_BHKW) return DbWerte.ERZEUGER_BHKW;
+            if (art == ProjektPuffer.TYP_SOLARTHERMIE) return DbWerte.ERZEUGER_SOLARTHERMIE;
+            return art.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        // PW1 Stufe 1: je Speicher die Stunden, in denen der Prozesskanal nur aus der Zone über dem
+        // Prozessvorlauf entnahm (geschichtet), und die Stunden, in denen er gar nicht entnahm, weil
+        // das gepflegte Temperaturpaar den Prozessvorlauf nicht hält (ungeschichtet).
+        private readonly Dictionary<SimulationPufferspeicher, int> _prozessZoneStunden =
+            new Dictionary<SimulationPufferspeicher, int>();
+        private readonly Dictionary<SimulationPufferspeicher, int> _prozessGesperrtStunden =
+            new Dictionary<SimulationPufferspeicher, int>();
+        private readonly Dictionary<SimulationPufferspeicher, double> _prozessGefordertMax =
+            new Dictionary<SimulationPufferspeicher, double>();
+
+        /// <summary>Stunden mit Entnahme nur aus der Zone über dem Prozessvorlauf (PW1 Stufe 1).</summary>
+        public int ProzessZoneStunden(SimulationPufferspeicher sp)
+            => sp != null && _prozessZoneStunden.TryGetValue(sp, out int n) ? n : 0;
+
+        /// <summary>Stunden, in denen der Speicher den Prozessvorlauf nicht hielt und den Prozesskanal nicht bediente (PW1 Stufe 1).</summary>
+        public int ProzessGesperrtStunden(SimulationPufferspeicher sp)
+            => sp != null && _prozessGesperrtStunden.TryGetValue(sp, out int n) ? n : 0;
+
+        /// <summary>
+        /// <b>Die Entnahme des Prozesskanals aus einem Speicher</b> (PW1 Stufe 1, Punkt d): Der Speicher
+        /// gibt an den Prozess nur Wärme ab, die den geforderten Vorlauf der Stunde hält.
+        ///
+        /// <para><b>Geschichtet</b> (N &gt; 1): Die Mindest-Nutztemperatur des Prozesskanals steigt für
+        /// diese Entnahme auf den Prozessvorlauf — die Entladefähigkeit zählt dann nur die Schichten ab
+        /// dieser Temperatur (dieselbe Regel wie <c>T_Nutz_BW</c> beim Brauchwasser). Rückgabe: die
+        /// zu setzende Grenze. <b>Ungeschichtet</b> (N = 1): Hält das GEPFLEGTE Paar (VL_eff) den
+        /// Prozessvorlauf nicht, entnimmt der Prozess in dieser Stunde nichts (Rückgabe
+        /// <see cref="double.PositiveInfinity"/>); ohne gepflegtes Paar entscheidet nichts — eine
+        /// Sperre aus Unkenntnis wäre schlechter als keine (Lesart W3).</para>
+        ///
+        /// <para>Ohne Temperaturniveau, in Stunden ohne Forderung und für jeden anderen Kanal NaN: Die
+        /// Entnahme bleibt Anweisung für Anweisung die bisherige.</para>
+        /// </summary>
+        internal double ProzessEntnahmeGrenze(SimulationPufferspeicher sp, int kanal, int stunde)
+        {
+            if (kanal != Kanal.PROZESS || Prozesstemperatur == null || sp == null) return double.NaN;
+            double gefordert = Prozesstemperatur.Vorlauf(stunde);
+            if (double.IsNaN(gefordert)) return double.NaN;
+
+            if (sp.Geschichtet)
+                return gefordert > sp.RL_eff ? gefordert : double.NaN;
+
+            if (sp.RueckfallDeltaT > 0) return double.NaN;              // kein gepflegtes Paar
+            return Prozesstemperatur.Erreicht(sp.VL_eff, gefordert) ? double.NaN : double.PositiveInfinity;
+        }
+
+        private static void Zaehlen(Dictionary<SimulationPufferspeicher, int> z, SimulationPufferspeicher sp)
+            => z[sp] = z.TryGetValue(sp, out int n) ? n + 1 : 1;
+
+        /// <summary>
         /// Erzeugerarten (<c>ProjektPuffer.TYP_*</c>) der Phase B in KASKADENREIHENFOLGE.
         /// Sie bestimmt, wer den Momentanbedarf zuerst deckt — anders als die Ladeordnung
         /// der Phasen C/D, die kaskadenübergreifend nach Ladepriorität arbeitet (3.4).
@@ -937,6 +1061,12 @@ namespace WindowsFormsApplication1
                     {
                         int art = arten[s];
 
+                        // BW5: Erreicht die Art die Zieltemperatur, sieht sie den Zusatzbedarf der
+                        // Desinfektion; sonst steht er zurück. Ohne Desinfektion falsch.
+                        bool desinfektion = Desinfektion != null && Desinfektion.Offen[stunde] > 0 &&
+                                            Desinfektion.FaehigJeArt.TryGetValue(art, out bool faehig) && faehig;
+                        double desinfektionVorher = desinfektion ? Desinfektion.Freigeben(stunde, rest) : 0;
+
                         if (art == ProjektPuffer.TYP_WP && MitWP)
                         {
                             if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
@@ -957,6 +1087,8 @@ namespace WindowsFormsApplication1
                         {
                             BHKW.Stunde_Bedarf(stunde, pvUeberschuss, rest);
                         }
+
+                        if (desinfektion) Desinfektion.Zurueckhalten(stunde, rest, desinfektionVorher, ArtName(art));
                     }
 
                     // Durchsatzbudget der Stunde festhalten — Stand NACH der
@@ -988,13 +1120,27 @@ namespace WindowsFormsApplication1
                 // --- E) Nachentladung -----------------------------------------------------
                 Entladephase(stunde, false, rest);
 
+                // BW5: Ein Speicher, den eine fähige Anlage lädt und dessen Vorlauf die Zieltemperatur
+                // erreicht, gibt den Zusatzbedarf der Desinfektion ab. Ohne Desinfektion übersprungen.
+                if (Desinfektion != null && Desinfektion.Offen[stunde] > 0 && Desinfektion.FaehigeSpeicher.Count > 0)
+                    DesinfektionAusSpeichern(stunde, rest);
+
                 // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
                 // vor dem Heizstab. Maßgeblich ist der offene GESAMTbedarf; welcher Kanal
                 // ihn trägt, spielt für die Bivalenztemperatur keine Rolle.
                 if (MitWP && RestSumme(rest) > 0) biv.Add(WP.Temperatur[stunde]);
 
                 // --- F) Heizstab ----------------------------------------------------------
-                if (MitWP) WP.Heizstabphase(stunde, rest);
+                if (MitWP)
+                {
+                    // BW5: Der Heizstab erreicht die Zieltemperatur der Desinfektion.
+                    bool desinfektionStab = Desinfektion != null && Desinfektion.HeizstabFaehig &&
+                                            Desinfektion.Offen[stunde] > 0;
+                    double stabVorher = desinfektionStab ? Desinfektion.Freigeben(stunde, rest) : 0;
+                    WP.Heizstabphase(stunde, rest);
+                    if (desinfektionStab)
+                        Desinfektion.Zurueckhalten(stunde, rest, stabVorher, MyResource.Resource.SIMENG_DESINF_HEIZSTAB);
+                }
 
                 // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
                 foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
@@ -1727,6 +1873,28 @@ namespace WindowsFormsApplication1
                 // solange der Speicher nicht im Bilanzraum eines BHKW steht oder keine
                 // Reserve gepflegt ist. Math.Min mit MaxValue gibt den Bedarf unverändert
                 // zurück - kein Projekt ohne BHKW ändert sein Ergebnis.
+                // PW1 STUFE 1 (d): Der Prozesskanal entnimmt nur, was den geforderten Vorlauf der
+                // Stunde hält - geschichtet ab der Zone über dem Prozessvorlauf (die Grenze steht
+                // für die Dauer dieser Entnahme an TNutz[PROZESS] und wird danach zurückgelegt),
+                // ungeschichtet gar nicht, wenn das gepflegte Paar ihn nicht hält. Ohne
+                // Temperaturniveau ist die Grenze NaN und der Zweig wird nicht betreten.
+                double prozessGrenze = ProzessEntnahmeGrenze(sp, kanal, stunde);
+                double tNutzZurueck = double.NaN;
+                if (!double.IsNaN(prozessGrenze))
+                {
+                    double g = Prozesstemperatur.Vorlauf(stunde);
+                    if (_prozessGefordertMax.TryGetValue(sp, out double m) ? g > m : true) _prozessGefordertMax[sp] = g;
+                    if (double.IsPositiveInfinity(prozessGrenze))
+                    {
+                        Zaehlen(_prozessGesperrtStunden, sp);
+                        continue;
+                    }
+                    tNutzZurueck = sp.TNutz[kanal];
+                    if (prozessGrenze > tNutzZurueck) sp.TNutz[kanal] = prozessGrenze;
+                    Zaehlen(_prozessZoneStunden, sp);
+                }
+                try
+                {
                 double entnehmbar = sp.EntnahmeObergrenze();
                 if (bedarf > entnehmbar) bedarf = entnehmbar;
 
@@ -1743,6 +1911,19 @@ namespace WindowsFormsApplication1
                 // Migrationsschritt 53) rechnet Anweisung für Anweisung wie zuvor.
                 double schichtfaehig = sp.EntladefaehigkeitKanal(kanal);
                 if (bedarf > schichtfaehig) bedarf = schichtfaehig;
+
+                // PS5 (a): FRISCHWASSERMODUL. Der Brauchwasserkanal zapft nur, solange die oberste
+                // Zone ϑ_Zapf + ΔT_FWM hält; den Rest deckt die nächste Stufe der Kaskade. Ohne Modul
+                // liefert die Methode double.MaxValue und der Zweig klemmt nichts.
+                if (kanal == Kanal.BRAUCHWASSER && sp.Frischwassermodul)
+                {
+                    double fwm = sp.FrischwasserEntnahmefaehigkeit();
+                    if (bedarf > fwm)
+                    {
+                        bedarf = fwm;
+                        FwmZaehlen(sp, stunde);
+                    }
+                }
 
                 // Reservemarke erreicht: nichts mehr entnehmen. Der Speicher geht in den
                 // NACHLADEBETRIEB - der Bedarf bleibt offen und wird von der nächsten
@@ -1791,6 +1972,36 @@ namespace WindowsFormsApplication1
                 // Zehntelwattstundenbereich; ihn zu behalten hieße, den Speicher an einer
                 // Summe zu messen, die er im Dreikanalmodell gar nicht mehr sieht.
                 if (vorab && rest[kanal] > 0.0001) sp.LaedtGerade = true;
+                }
+                finally
+                {
+                    if (!double.IsNaN(tNutzZurueck)) sp.TNutz[kanal] = tNutzZurueck;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Speicher die Stunden, in denen der Prozesskanal nur aus der
+        /// Zone über dem Prozessvorlauf entnahm oder gar nicht (PW1 Stufe 1). Ohne Temperaturniveau
+        /// meldet sie nichts.
+        /// </summary>
+        public void ProzessMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            var speicher = new List<SimulationPufferspeicher>();
+            foreach (SimulationPufferspeicher sp in _prozessZoneStunden.Keys) if (!speicher.Contains(sp)) speicher.Add(sp);
+            foreach (SimulationPufferspeicher sp in _prozessGesperrtStunden.Keys) if (!speicher.Contains(sp)) speicher.Add(sp);
+            foreach (SimulationPufferspeicher sp in speicher)
+            {
+                double max = _prozessGefordertMax.TryGetValue(sp, out double m) ? m : 0;
+                int zone = ProzessZoneStunden(sp);
+                int gesperrt = ProzessGesperrtStunden(sp);
+                if (zone > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_PUFFER_ZONE, sp.BezeichnerAnzeige(), zone, max));
+                if (gesperrt > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_PROZESS_PUFFER_GESPERRT, sp.BezeichnerAnzeige(), gesperrt, max, sp.VL_eff));
             }
         }
 

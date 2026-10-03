@@ -87,25 +87,31 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        /// <summary>Die kleinste zulässige Zahl der Größe (die Grenze der Zelle, Konzept 3.6).</summary>
+        /// <summary>
+        /// Die kleinste zulässige Zahl der Größe (die Grenze der Zelle, Konzept 3.6) — die EINE Quelle für
+        /// Zellprüfung, Leser, Felder der Matrix und der Kalenderkarte, den Assistenten und die Sollwerte von
+        /// „Kopieren nach …". Der Kühlsollwert nimmt die Plausibilitätsgrenzen des Kühlsollwerts
+        /// (<see cref="Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"/> … <see cref="Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"/>),
+        /// dieselben wie der Kühlsollwert des Gebäudes, dessen Wert die Bestandszelle der Kühlspalte trägt.
+        /// </summary>
         public static double Min(Konditionierungsgroesse g)
         {
             switch (g)
             {
-                case Konditionierungsgroesse.Heizsoll:
-                case Konditionierungsgroesse.Kuehlsoll: return GebaeudeFestwerte.SOLLWERTPROFIL_MIN_C;
+                case Konditionierungsgroesse.Heizsoll: return GebaeudeFestwerte.SOLLWERTPROFIL_MIN_C;
+                case Konditionierungsgroesse.Kuehlsoll: return Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN;
                 case Konditionierungsgroesse.Lueftung: return LUEFTUNG_MIN;
                 default: return ANTEIL_MIN;
             }
         }
 
-        /// <summary>Die größte zulässige Zahl der Größe.</summary>
+        /// <summary>Die größte zulässige Zahl der Größe (siehe <see cref="Min"/>).</summary>
         public static double Max(Konditionierungsgroesse g)
         {
             switch (g)
             {
-                case Konditionierungsgroesse.Heizsoll:
-                case Konditionierungsgroesse.Kuehlsoll: return GebaeudeFestwerte.SOLLWERTPROFIL_MAX_C;
+                case Konditionierungsgroesse.Heizsoll: return GebaeudeFestwerte.SOLLWERTPROFIL_MAX_C;
+                case Konditionierungsgroesse.Kuehlsoll: return Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX;
                 case Konditionierungsgroesse.Lueftung: return LUEFTUNG_MAX;
                 default: return ANTEIL_MAX;
             }

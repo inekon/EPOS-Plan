@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.Data.Sqlite;
@@ -147,6 +148,123 @@ namespace EPOS.Kern.Tests
                 // Sind die Sperren fort, bleibt allein der fremde Ordner.
                 Assert.Equal(2, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, jetzt + frist + TimeSpan.FromMinutes(1), frist));
                 Assert.Equal(new[] { fremd }, Directory.GetDirectories(wurzel));
+            }
+            finally
+            {
+                Directory.Delete(wurzel, true);
+            }
+        }
+
+        // =====================================================================
+        //  Die Prozesskennung im Namen (gleichzeitige Läufe aus mehreren Worktrees)
+        // =====================================================================
+
+        /// <summary>Eine Kennung, die kein lebender Prozess trägt - der „verwaiste“ Besitzer.</summary>
+        private static readonly string TOTE_PID = int.MaxValue.ToString(CultureInfo.InvariantCulture);
+
+        private static string EIGENE_PID => Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
+
+        [Fact]
+        public void Der_Kopieordner_traegt_die_Prozesskennung_im_Namen()
+        {
+            string name = TestDatenbank.Ordnername(Environment.ProcessId);
+            Assert.Matches("^" + TestDatenbank.ORDNER_PRAEFIX + EIGENE_PID + "-[0-9a-f]{8}$", name);
+            Assert.NotEqual(name, TestDatenbank.Ordnername(Environment.ProcessId));
+
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Assert.Matches("^" + TestDatenbank.ORDNER_PRAEFIX + EIGENE_PID + "-[0-9a-f]{8}$", Path.GetFileName(db.Ordner));
+        }
+
+        [Fact]
+        public void Die_Lebensprobe_kennt_den_eigenen_und_keinen_toten_Prozess()
+        {
+            Assert.True(TestDatenbank.ProzessLebt(EIGENE_PID));
+            Assert.False(TestDatenbank.ProzessLebt(TOTE_PID));
+            Assert.False(TestDatenbank.ProzessLebt("0"));
+        }
+
+        /// <summary>
+        /// <b>Die Kopie eines lebenden Prozesses bleibt</b> — auch mit freier Marke, ohne Marke
+        /// und lange nach der Schonfrist. So steht es, wenn ein zweiter Lauf aus einem anderen
+        /// Worktree aufräumt, während dieser Prozess seine Kopie noch braucht.
+        /// </summary>
+        [Fact]
+        public void Der_Aufraeumlauf_verschont_die_Kopie_eines_lebenden_Prozesses()
+        {
+            string wurzel = Probenordner();
+            try
+            {
+                string markeFrei = Kopie(wurzel, EIGENE_PID + "-0000000a", mitMarke: true);
+                string ohneMarke = Kopie(wurzel, EIGENE_PID + "-0000000b", mitMarke: false);
+                TimeSpan frist = TestDatenbank.SCHONFRIST_OHNE_MARKE;
+                DateTime spaeter = DateTime.UtcNow + frist + TimeSpan.FromDays(1);
+
+                Assert.Equal(0, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, spaeter, frist));
+                Assert.Equal(0, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, spaeter, TimeSpan.Zero));
+                Assert.True(Directory.Exists(markeFrei));
+                Assert.True(Directory.Exists(ohneMarke));
+            }
+            finally
+            {
+                Directory.Delete(wurzel, true);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Kopie eines toten Prozesses geht</b> — mit freier Marke sofort, ohne Marke erst
+        /// nach der Schonfrist (zweite Sicherung, etwa für eine wiederverwendete Kennung).
+        /// </summary>
+        [Fact]
+        public void Der_Aufraeumlauf_raeumt_die_Kopie_eines_toten_Prozesses_nach_der_Schonfrist()
+        {
+            string wurzel = Probenordner();
+            try
+            {
+                string markeFrei = Kopie(wurzel, TOTE_PID + "-0000000a", mitMarke: true);
+                string ohneMarke = Kopie(wurzel, TOTE_PID + "-0000000b", mitMarke: false);
+                TimeSpan frist = TestDatenbank.SCHONFRIST_OHNE_MARKE;
+                DateTime jetzt = DateTime.UtcNow;
+
+                Assert.Equal(1, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, jetzt, frist));
+                Assert.False(Directory.Exists(markeFrei));
+                Assert.True(Directory.Exists(ohneMarke));
+
+                Assert.Equal(1, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, jetzt + frist + TimeSpan.FromMinutes(1), frist));
+                Assert.Empty(Directory.GetDirectories(wurzel));
+            }
+            finally
+            {
+                Directory.Delete(wurzel, true);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die fremde Kopie mit altem Zeitstempel und offenem Griff bleibt</b>: Der Prozess im
+        /// Namen ist tot, die Schonfrist längst um — aber die Marke oder die Datenbank ist belegt.
+        /// Der Lauf überspringt sie und nimmt sie mit, sobald der Griff fort ist.
+        /// </summary>
+        [Fact]
+        public void Der_Aufraeumlauf_ueberspringt_eine_gesperrte_Kopie_eines_toten_Prozesses()
+        {
+            string wurzel = Probenordner();
+            try
+            {
+                string markeBelegt = Kopie(wurzel, TOTE_PID + "-0000000a", mitMarke: true);
+                string datenbankBelegt = Kopie(wurzel, TOTE_PID + "-0000000b", mitMarke: false);
+                TimeSpan frist = TestDatenbank.SCHONFRIST_OHNE_MARKE;
+                DateTime spaeter = DateTime.UtcNow + frist + TimeSpan.FromDays(1);
+
+                using (Belegen(Path.Combine(markeBelegt, TestDatenbank.BESITZMARKE)))
+                using (Belegen(Path.Combine(datenbankBelegt, DATENBANK)))
+                {
+                    Assert.Equal(0, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, spaeter, frist));
+                    Assert.True(Directory.Exists(markeBelegt));
+                    Assert.True(Directory.Exists(datenbankBelegt));
+                }
+
+                Assert.Equal(2, TestDatenbank.VerwaisteKopienAufraeumen(wurzel, spaeter, frist));
+                Assert.Empty(Directory.GetDirectories(wurzel));
             }
             finally
             {

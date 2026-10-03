@@ -285,8 +285,37 @@ namespace WindowsFormsApplication1.Referenzlauf
             skalare.Add(Neu("Sim.bSimulationWP", sim.bSimulationWP.ToString()));
             skalare.Add(Neu("Sim.bSimulationKessel", sim.bSimulationKessel.ToString()));
             skalare.Add(Neu("Sim.bSimulationSolarthermie", sim.bSimulationSolarthermie.ToString()));
+            // ST2 (Welle M2): die mittlere Arbeitstemperatur eines Kollektorfelds [Grad C], mit dem
+            // Potenzial gewichtet - NUR fuer Felder mit Arbeitstemperatur aus dem Speicher; ein Feld
+            // mit fester Arbeitstemperatur bekommt keinen Schluessel.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
+            {
+                var felder = sim.simulation_solarthermie.Kollektor_Ergebnisse;
+                for (int i = 0; i < felder.Count; i++)
+                    if (felder[i].ArbeitstemperaturAusSpeicher && !double.IsNaN(felder[i].ArbeitstemperaturMittelC))
+                        skalare.Add(Neu("Solarthermie.Feld[" + i.ToString(CultureInfo.InvariantCulture) +
+                                        "].ArbeitstemperaturMittelC", Zahl(felder[i].ArbeitstemperaturMittelC)));
+            }
+            // ST1 (Welle M2): der Pumpenstrom der Solarkreise [MWh/a] - NUR mit gepflegter Pumpe
+            // oder Hilfsenergieanteil; ohne beides kein Schluessel, die Basis bleibt byte-gleich.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null &&
+                sim.simulation_solarthermie.PumpenstromGesamtKwh > 0)
+                skalare.Add(Neu("Solarthermie.PumpenstromMwh",
+                                Zahl(sim.simulation_solarthermie.PumpenstromGesamtKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationBHKW", sim.bSimulationBHKW.ToString()));
             skalare.Add(Neu("Sim.bSimulationPV", sim.bSimulationPV.ToString()));
+            // PV3 (Welle M5): die Abregelung an der Einspeisegrenze [MWh/a] - nach der Speicherladung,
+            // im Flottenpfad die der Flotte. NUR bei > 0; ohne Einspeisegrenze kein Schluessel.
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+            {
+                SimulationErgebnisCtrl.PhotovoltaikErgebnis pvErg = SimulationErgebnisCtrl.Photovoltaik(sim);
+                if (pvErg != null && pvErg.AbregelungMwh > 0)
+                    skalare.Add(Neu("Photovoltaik.AbregelungMwh", Zahl(pvErg.AbregelungMwh)));
+            }
+            // SP1 (Welle M5): der Eigenverbrauch des Speichersystems (Standby) [MWh/a] - NUR bei > 0.
+            if (sim.bSimulationSSP && sim.SpeichersystemEigenverbrauchKwh > 0)
+                skalare.Add(Neu("Stromspeicher.EigenverbrauchSystemMwh",
+                                Zahl(sim.SpeichersystemEigenverbrauchKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationSSP", sim.bSimulationSSP.ToString()));
             skalare.Add(Neu("Sim.PufferWP_vorhanden", (sim.puffer_wp != null).ToString()));
             if (sim.puffer_wp != null)
@@ -347,8 +376,14 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(s.Key, Zahl(s.Value)));
                     // Der Rechenweg als Text steht gleich hinter der Kennung.
                     if (k == 0)
+                    {
                         skalare.Add(Neu("Geb[" + satz.Index.ToString(CultureInfo.InvariantCulture) + "].Modell",
                                         satz.Modell));
+                        // Stufe KP3 (Festlegung 28): Zustand, Bemessung und Quelle der Aufheizoptimierung als
+                        // Text daneben - nur bei eingeschalteter Aufheizoptimierung, sonst kein Schluessel.
+                        foreach (var t in satz.Texte)
+                            skalare.Add(Neu(t.Key, t.Value));
+                    }
                 }
             }
 
@@ -464,6 +499,58 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Em.Bhkw.NoxKg",   Zahl(bh.Em_NOX_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.CoKg",    Zahl(bh.Em_CO_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.StaubKg", Zahl(bh.Em_Staub_BHKW)));
+            }
+
+            // --- Erzeuger in Teillast (Welle M4: WP1, BH1, BH2) ----------------------------
+            //
+            // NUR BEI > 0: Die Schluessel entstehen allein fuer ein Modul, das die neue Rechnung
+            // tatsaechlich fuehrt - Starts nur mit gepflegter Mindestleistung (Waermepumpe) bzw.
+            // mit Anfahrverlust oder Mindestlaufzeit (BHKW), der Mehrbrennstoff der Kennlinie nur
+            // mit Teillastwirkungsgrad. Ein Bestandsprojekt ohne diese Felder bekommt keinen
+            // Schluessel; die Basis bleibt byte-gleich. EIGENES PRAEFIX "Takt." und "Teillast.",
+            // aus demselben Grund wie "Em." oben.
+            if (sim.bSimulationWP && sim.simulation_wp != null)
+            {
+                SimulationWaermepumpe wpT = sim.simulation_wp;
+                int module = Math.Min(wpT.wp_list.Count, SimulationWaermepumpe.MAX_WP);
+                for (int i = 0; i < module; i++)
+                {
+                    if (wpT.Starts_WP[i] <= 0) continue;
+                    string p = "Takt.Waermepumpe[" + i + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(wpT.Starts_WP[i])));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(wpT.Taktstunden_WP[i])));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(wpT.Taktstrom_KWh_WP[i])));
+                }
+            }
+            Kaeltekaskade kaskadeT = sim.simulation_Waermebedarf?.Kaelteseite?.Kaskade;
+            if (kaskadeT != null)
+                for (int k = 0; k < kaskadeT.Erzeuger.Count; k++)
+                {
+                    Kaelteerzeuger e = kaskadeT.Erzeuger[k];
+                    if (e == null || e.Starts <= 0) continue;
+                    string p = "Takt.Kaelte[" + k + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(e.Starts)));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(e.Taktstunden)));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(e.TaktstromKwh)));
+                }
+            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+            {
+                SimulationBHKW bhT = sim.simulation_bhkw;
+                int module = Math.Min(bhT.bhkw_list.Count, SimulationBHKW.MAX_BHKW);
+                for (int i = 0; i < module; i++)
+                {
+                    if (bhT.Starts_BHKW[i] > 0)
+                    {
+                        string p = "Takt.Bhkw[" + i + "].";
+                        skalare.Add(Neu(p + "Starts", Zahl(bhT.Starts_BHKW[i])));
+                        skalare.Add(Neu(p + "Taktstunden", Zahl(bhT.Taktstunden_BHKW[i])));
+                        skalare.Add(Neu(p + "AnfahrKwh", Zahl(bhT.Anfahrverlust_KWh_BHKW[i])));
+                    }
+                    BhkwTeillast t = bhT.Teillast(i);
+                    if (t != null && t.MitKennlinie && bhT.TeillastMehrbrennstoff_KWh_BHKW[i] != 0)
+                        skalare.Add(Neu("Teillast.Bhkw[" + i + "].MehrbrennstoffKwh",
+                                        Zahl(bhT.TeillastMehrbrennstoff_KWh_BHKW[i])));
+                }
             }
 
             // --- Speicherflotte: Kennzahlen (Anwenderentscheid SP-O-8, 11.09.2026) --------

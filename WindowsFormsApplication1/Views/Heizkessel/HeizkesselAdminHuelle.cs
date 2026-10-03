@@ -162,7 +162,10 @@ namespace WindowsFormsApplication1
                     KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldKennlinieBrennwert),
                 Mindestleistung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestleistung),
                 Anfahrverlust: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
-                Mindestlaufzeit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit));
+                Mindestlaufzeit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Die Einheit des Bereitschaftsverlusts („kW" oder „%", Anwenderentscheid
+                // 02.10.2026) als TEXT - der Kern haelt ihn gegen seine Liste.
+                BereitschaftEinheit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBBEinheit));
 
             HeizkesselStammCtrl.SpeicherErgebnis e =
                 HeizkesselStammCtrl.AnzeigefelderSchreiben(name, werte);
