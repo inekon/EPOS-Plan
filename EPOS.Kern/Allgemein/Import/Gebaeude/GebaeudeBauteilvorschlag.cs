@@ -1261,7 +1261,7 @@ namespace WindowsFormsApplication1
                         _aktuelleStelle = f.Zone;
                         Bauteilart art = GebaeudeHuelleneinordnung.IstWaagerechteArt(f.Bauteil.Art) ? Bauteilart.Decke : Bauteilart.Innenwand;
                         bool gespiegelt = Gespiegelt(f.Bauteil, f.Raum);
-                        if (!f.Beidseitig) trenn++;
+                        if (!f.Beidseitig && !f.Bauteil.InnenEinseitig) trenn++;
                         Innenteil(f.Bauteil, netto.Value, art, gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.Raum, f.AndererRaum) : null,
                                   f.Beidseitig ? "A" : null);
                         if (f.Beidseitig)
@@ -1387,7 +1387,7 @@ namespace WindowsFormsApplication1
                     foreach (Innenposten p in flaechen)
                     {
                         Bauteilart art = GebaeudeHuelleneinordnung.IstWaagerechteArt(p.Bauteil.Art) ? Bauteilart.Decke : Bauteilart.Innenwand;
-                        if (p.PosB < 0) trenn++;
+                        if (p.PosB < 0 && p.PosA >= 0) trenn++;   // eine Innenwand ohne Nachbarraum ist keine Gebäudetrennung
                         Innenzeile(p, art, p.PosA, p.PosB, p.PosB >= 0 ? "A" : null);
                         if (p.PosB >= 0) Innenzeile(p, art, p.PosB, p.PosA, "B");
                     }
@@ -1413,7 +1413,7 @@ namespace WindowsFormsApplication1
                 AbbildBauteil s = p.Bauteil;
                 bool gespiegelt = pos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
-                if (!neigung.HasValue && art == Bauteilart.Decke)
+                if (!neigung.HasValue && art == Bauteilart.Decke && pos >= 0)
                 {
                     neigung = DeckenneigungAusSicht(s, pos, gegenPos);
                     if (neigung.HasValue) hn = _datei;
