@@ -40,10 +40,11 @@
 > (10.1); die Aufheizreserve ρ entscheidet der Anwender nach der Messung in RP1 (4.4). Der Entwurf veranschlagt KP3 mit
 > 14–18,25 PT (8); nachgezogen sind 5.4, 6 und 12.
 
-**Stand:** 02.10.2026. **Fassung:** Rev. 3 mit E54 bis E58 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+**Stand:** 03.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
 Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
-(E57), die acht Fragen des KP3-Entwurfs entschieden, eine davon als Entscheid nach einer Messung (E58); KP0 bis KP2
+(E57), die acht Fragen des KP3-Entwurfs entschieden, eine davon als Entscheid nach einer Messung (E58), Aufschlag und
+manuelle Aufheizzeit (E59) und die Auslegungsgröße (E60) aufgenommen, beide in 9.9; KP0 bis KP2
 sind umgesetzt, KP3 ist entworfen und entschieden, die Umsetzung läuft, KP4 folgt auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
@@ -58,8 +59,9 @@ steigt der Sollwert über eine **berechnete** Aufheizzeit an. Kapitel 9 trennt d
 (Grundlagen dort 4.4–4.6, 5.6, 15, N1.32, N1.37, N1.48, N1.55, N1.56). Die Entscheide stehen dort als **Nachtrag
 N1.59 (E52, P1–P8)** und **Nachtrag N1.60 (E53, P9–P13 und Heizperiode)** und je als Zeile in Abschnitt 1 der
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md); das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
-führt die dreizehn Punkte P1–P13 in Kapitel 10 mit Entscheidvermerk und als offenen Punkt P14 die Aufheizreserve nach
-der Messung in RP1 (E58 F7). Die Stufen KP0–KP4 führt die
+führt die dreizehn Punkte P1–P13 in Kapitel 10 mit Entscheidvermerk und als offene Punkte P14 (die Aufheizreserve nach
+der Messung in RP1, E58 F7), P15 (die Spanne der Aufheizzeit nach Bauart), P16 (der Aufschlag an Sprüngen ohne Rampe)
+und P17 (die Lesart der Auslegungsgröße). Die Stufen KP0–KP4 führt die
 Statusdatei in Abschnitt 2. Was das Papier in Kühlkonzept, Anlagenkopplung und Mehrzonenmodell berührt, nennt 2.3.
 
 **Was dieses Papier nicht tut.** Es übernimmt aus Normen weder Tabellenwerte noch Formeln. VDI 6007 Blatt 1 und 3
@@ -390,7 +392,8 @@ für sie nicht); einen Kühlkalender der Zone gibt es erst mit KU3 (bis dahin E4
 Heiz- noch Kühlkalender (N1.56 Festlegung 2), wohl aber Lüftung, Geräte und Personen. **Nutzungszeit (F16):** Die
 Kennzahlen der Nutzungszeit folgen dem Personenkalender (Anwesenheit > 0), wenn einer gilt, sonst der Nachtzeit wie
 heute; Rampenstunden zählen nicht. Für das Gebäude zählt eine Stunde, in der eine beheizte Zone in Nutzung ist (Muster
-N1.56 Nr. 10).
+N1.56 Nr. 10). **Aufheizzeit manuell (4.6):** Die Zone erbt den Wert ihres Gebäudes immer; ein eigenes Zonenfeld gibt es
+nicht, unbeheizte Zonen rampen nicht.
 
 **Katalogbauten (P3).** Ein Katalogbau (`Tab_Gebaeude_STAMM`) führt Matrix und Kalender nach denselben Regeln, ohne
 Zonen. Die Übernahme ins Projekt **kopiert** seine Vorgabezellen und angelegten Kalender samt Perioden an das
@@ -706,6 +709,20 @@ sagt es.
   und der Tag zählt als begrenzt (W2).
 - **Rundung (F8):** das kleinste haltende n, also Aufrunden; keine Mindestrampe, denn 1 h Vorlauf mit dem Zielwert
   verschöbe den Sprung nur und senkte die Spitze nicht.
+- **Individuell je Gebäude:** n folgt je Gebäude und Zone aus eigenen Massen, eigenem Φ_stat und eigener P_auf (4.3,
+  4.4); pauschal je Projekt sind nur ρ, die Art und der Aufschlag.
+- **„manuell"** *(am Gebäude)*: Ein Gebäude mit einer manuellen Aufheizzeit t_m (`Aufheizzeit_Manuell_H`, 1–47 h) rampt
+  vor jedem Sprung mit n = t_m + 1, begrenzt auf D + 1 und den Deckel; ein Gebäude ohne Wert folgt der Art des Projekts.
+  Die Bemessung läuft weiter und liefert Vorschlag und Herleitungszeile (4.8, 7.6), entscheidet aber nicht; der Aufschlag
+  gilt nicht. Zonen erben den Wert ihres Gebäudes (3.4), unbeheizte Zonen rampen nicht; ein gekoppeltes Einzonengebäude
+  bleibt nicht optimiert (W5).
+- **Aufschlag** *(Projekt)*: Auf jedes ermittelte n der Arten täglich und fest kommt
+  n' = min(48, n + max(A_h, ⌈n · A_% / 100⌉)) mit dem Aufschlag A_h in Stunden (0–24) und A_% in Prozent (0–100); es
+  gilt der größere der beiden. Danach begrenzt die Absenkdauer wie bei jedem n (n' − 1 ≤ D, W2 zählt mit n'); die Rampe
+  wird mit n' nach 4.1 geschrieben, die Sprungstunde nie, gekappt an θ_K − 1 K. t_auf,max bleibt die bemessene Zeit
+  ohne Aufschlag. Mit A_% > 0 erhält jeder Sprung, auch einer mit n = 1, mindestens eine Rampenstunde, mit A_h > 0
+  mindestens A_h — ob das so bleibt, ist offen (P16 im [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)).
+  Ohne Aufschlag (beide leer oder 0) rechnet die Rampe bitgleich wie ohne die Felder.
 
 ### 4.7 Wechselwirkungen
 
@@ -751,6 +768,22 @@ sagt es.
 Die Spalten sind nullbar (NULL = Schalter aus); der Export schreibt die neuen Kennzahlen **nur bei wirksamem Schalter**
 (Muster E32). Den Vergleich mit und ohne Rampe liefert eine Projektvariante (P8).
 
+**Art „manuell" im Ergebnis.** Rampt ein Gebäude mit manueller Aufheizzeit, trägt seine Ergebniszeile
+`Aufheiz_Bemessung` = `MANUELL` und `Aufheizzeit_Max_H` = t_m (Gebäude und Zonen), Zustand BEMESSEN; T_a,B, P_auf und
+Quelle bleiben die der Bemessung. Der Export nennt `Geb[n].Aufheizzeit_Manuell` nur, wenn der Wert gesetzt ist. Die
+**Herleitungszeile** der Bemessung (ohne Jahreslauf) bleibt bei jeder Art stehen; sie ist zugleich der Vorschlag für die
+manuelle Aufheizzeit (7.6) und nennt bei gesetztem Wert beide Zeiten. Rampentage, Aufheizstunden, längste Rampe, W2 und
+W3 zählen die tatsächlich geschriebenen Rampen, also mit Aufschlag bzw. manuellem Wert.
+
+**Auslegungsgröße der Heizung.** Für die Auslegung gilt die stationäre Auslegungsheizlast plus die Aufheizleistung P_auf
+aus der Bemessung, nicht das Maximum der idealen Last. Bedarfsdialog und Bericht weisen ideale Spitze (`SpitzeKw`),
+Tagesmittel (`SpitzeTagesmittelKw`) und P_auf mit Quelle (`Aufheiz_Leistung_Kw`, `Aufheiz_Leistungsquelle`)
+nebeneinander aus und sagen, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist. Ein Filter auf der
+Lastreihe gehört nicht in den Rechenweg ([Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md));
+die Rampe senkt die Spitze geschlossen geregelt. Weil P_auf bei Quelle Ziel die stationäre Last am Bemessungspunkt
+schon enthält ((1 + ρ) · Φ_stat), ist die Lesart der Summe offen (P17 im Register); bis dahin stehen die Zahlen
+nebeneinander, eine Summe wird nicht ausgewiesen.
+
 | Hinweis (benannt; Protokoll, Bedarfsdialog, Bericht; der Lauf rechnet weiter) | Kriterium |
 |---|---|
 | **W1** Aufheizleistung reicht nicht | P_auf ≤ Φ_stat(θ_T,max, T_a,B); dazu die Zahl der Tage mit P_auf ≤ Φ_stat bei T_a des Tages |
@@ -779,6 +812,8 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 | N-AH8 Grenzfall | Schalter an, P_auf = +∞ | byte-gleich zu „aus" |
 | N-AH9 Mehrzonen | zwei Zonen mit Trennfläche, Formel gegen die volle Zonenschleife | sicher, Band 1 % |
 | N-AH10 Ränder | Sprung am 1. Januar, D < n, Übergang aus „aus", Beginn der Heizperiode, Bemessung innerhalb der Heizperiode, Deckel 48, Kühlkappung an θ_K − 1 K, AK1-Gebäude | benannte Ergebnisse W1–W5 |
+| N-AH11 Aufschlag | n' nach 4.6 je Sprung in täglich und fest, Deckel 48, W2 mit n', t_auf,max unverändert | ohne Ausnahme; Aufschlag 0/0 und Schalter aus byte-gleich |
+| N-AH12 manuell | jeder Sprung n = t_m + 1, Zonen erben, kein Aufschlag, Bemessung unverändert, Ergebniszeile `MANUELL`, Export nur gesetzt | ohne Ausnahme; Schalter aus byte-gleich |
 
 ## 5. Datenmodell und Schema
 
@@ -847,6 +882,12 @@ OR …)`. Modus und Abzug stehen getrennt, damit NULL nicht zugleich „Variante
 `Tab_ErgebnisZone` bekommen die Spalten aus 4.8 (KP3) und `Nachtauskuehlstunden_H` (KP1), alle nullbar (Muster E30),
 `Aufheiz_Leistungsquelle` mit `CHECK (… IN ('GRENZE','ZIEL'))`.
 
+Der **Aufschlag** steht in `Tab_Einstellungen` als `Aufheiz_Aufschlag_H` INTEGER 0…24 und `Aufheiz_Aufschlag_Prozent`
+REAL 0…100, NULL heißt jeweils 0; beim Schreiben werden 0 und ein leeres Feld zu NULL. Die **manuelle Aufheizzeit** steht
+je Gebäude in `Tab_Gebaeude.Aufheizzeit_Manuell_H` INTEGER 1…47, NULL heißt „Art des Projekts"; der Katalog
+(`Tab_Gebaeude_STAMM`) und die Zonen tragen kein Feld. `Tab_ErgebnisGebaeude.Aufheiz_Bemessung` kennt zusätzlich
+`MANUELL`.
+
 ### 5.4 Die Schemaschritte
 
 **KP-S1** die Tabellen aus 5.1, 5.6 und 5.7 samt Indizes und `Nachtauskuehlstunden_H` (KP1) — gebaut als Schritte 151
@@ -862,6 +903,11 @@ Nachbarsitzungen die nächsten Nummern belegen können
 `Program.cs:1919-1939`) und die Schemakopien; die Testdatenbank wandert im selben Merge mit aktivem LFS-Filter. **Kein
 DML an Bestandsdaten** — die einzige Saat sind neue Katalogzeilen der Vorlagen, die kein Lauf liest; der Referenzlauf
 bleibt byte-gleich.
+
+**KP-S4** (KP3, Welle R5) trägt die drei Spalten aus 5.3 und die Erweiterung des `CHECK` von `Aufheiz_Bemessung`; weil
+SQLite einen `CHECK` nicht ändert, baut der Schritt `Tab_ErgebnisGebaeude` neu (Rezept von Schritt 96) und die Sicht
+`Abfrage_Projektgebaeude` um die Gebäudespalte. Die Nummer vergibt die Beauftragung wie oben aus `SchemaStand.Zielversion`
++ 1 — Platzhalter Schritt 171 — und prüft sie spät gegen `origin`; kein DML an Bestandsdaten.
 
 ### 5.5 Kopierwege, Leser und Werkzeuge
 
@@ -879,6 +925,9 @@ bleibt byte-gleich.
 | Zapfprofil, Ferien-Vorbelegung | liest `Ferienbeginn/-ende` | mit angelegtem Heizkalender dessen Perioden der Art FERIEN; `ZapfprofilReferenzprojektWacheTests` bleibt grün |
 | Auslieferungsvorlage | Katalogvorgaben, Katalogkalender, ausgelieferte Vorlagen und die Kalender der Beispielprojekte reisen mit | Die Projektbereinigung erfasst Vorgaben und Kalender über `ID_Gebaeude` als Folgetabellen und lässt Katalog- und Vorlagenzeilen (`ID_Gebaeude` leer) stehen (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:24-40, 75-87`); die Katalogbereinigung (`--kataloge readonly`) räumt eigene Vorlagen und entfernte Katalogbauten samt Kaskade; der **Prüfbericht** zählt Vorlagen, Vorgaben, Kalender und Perioden je Eigentümerart; die Werkzeugtests zählen vier STRICT-Tabellen mehr |
 | `SqlDialektPruefer`, KI-Wissen | neue Anweisungen, neue Handlungen | Prüfer ziehen; Aktionswissen „Matrix", „Kalender anlegen", „Vorlage übernehmen", „Nachtauskühlung", „Aufheizoptimierung" |
+
+Die manuelle Aufheizzeit reist mit „Projekt duplizieren", Variante und `.wpx`, nicht zwischen Katalog und Projekt (kein
+Katalogfeld; die Übernahme lässt NULL); die Importe gbXML und IFC schreiben NULL.
 
 **Die alten Spalten bleiben** bis GA (F5): Zellen der Matrix, Eingaben von Altweg und Katalog, Ziel des Imports,
 Quelle des Exports; bei angelegtem Kalender ruhen sie für diese Größe. `Sollwertprofil` bleibt für AK1 lesbar, die
@@ -1096,7 +1145,8 @@ von `Proben/ChartProben`. „Verwerfen" führt zurück zur Matrix.
 ### 7.6 Aufheizoptimierung, Ergebnis, Bericht
 
 Die Projekteinstellung steht in `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor` neben Kühlbetrieb und
-Anlagenkopplung: Schalter, (a)/(b) mit ΔT_K, Aufheizreserve ρ, Art täglich/fest und je Gebäude eine Herleitungszeile
+Anlagenkopplung: Schalter, (a)/(b) mit ΔT_K, Aufheizreserve ρ, Art täglich/fest, Aufschlag in Stunden und in Prozent
+(4.6) und je Gebäude eine Herleitungszeile
 („t_auf,max 8 h bei −18,2 °C · P_auf 18,9 kW Zielleistung · C_w 8,3 kWh/K"). Ergebnisseite und Bericht führen die
 Kennzahlen aus 4.8 und die Nachtauskühlungsstunden (Muster E30), das Bedarfsbild die geformte Sollwertreihe, der Bericht
 je Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizperiode 1.10.–30.4.") und je Größe den Namen der
@@ -1110,6 +1160,20 @@ die Listen v1–v11 bleiben). Für eigene Vorlagen stehen die Einzelfelder `geba
 Kurzbericht trägt in beiden Sprachen einen **Aufheizabsatz**. Alle neuen Marken gehören zur Katalogfassung 12, die
 Vorlagen werden über `Werkzeuge/Berichtsvorlage` neu gebaut.
 
+**Aufheizzeit manuell im Gebäudedialog.** Der Reiter „Konditionierung" des Gebäudedialogs trägt im Projektmodus eine
+Gruppe „Aufheizung" mit dem Feld „Aufheizzeit manuell (h)" (1–47, leer = Art des Projekts) und zwei **Vorschlägen**
+daneben: (1) die bemessene Aufheizzeit dieses Gebäudes aus der Herleitungszeile (4.8, ohne Jahreslauf) mit
+„Übernehmen"; (2) die **Spanne nach Bauart** — die Bauart folgt aus `Bauweise` je m² Wohnfläche wie im Katalogdialog
+(leicht < 30, schwer 30–75, sehr schwer > 75 Wh/(m²·K)): leicht 1–2 h, schwer 2–4 h, sehr schwer 4–8 h (Zahlen offen
+als P15). Ein Wert außerhalb der Spanne wird mit Hinweis angenommen, nicht gesperrt (weiche Sperre nach den Hausregeln
+von `EPOS.UI`); ohne Projektschalter sagt das Feld, dass es erst mit der Aufheizoptimierung wirkt. Zonen zeigen den
+geerbten Wert lesend, der Katalogmodus zeigt das Feld nicht. Der Assistent setzt es über ein Katalogfeld in
+`GebaeudeKiSicht`; Abweichungsmerkmale „Aufheizzeit manuell (h)", „Aufschlag (h)" und „Aufschlag (%)".
+
+**Auslegungsgröße in Bedarfsdialog und Bericht.** Die Gruppe „Aufheizung" des Bedarfsdialogs und die Gebäudetafel des
+Berichts stellen je Gebäude ideale Spitze, Tagesmittel und P_auf mit Quelle nebeneinander, mit dem Hinweis aus 4.8, dass
+die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; beide Sprachen, keine neue Spalte.
+
 ### 7.7 Plattform, Glossar, Texte, Assistent, Tests
 
 - **Plattform:** Windows und iOS teilen jede Komponente; alles geschieht in der einen Überlagerung des Katalogeditors,
@@ -1118,7 +1182,8 @@ Vorlagen werden über `Werkzeuge/Berichtsvorlage` neu gebaut.
   Konditionierung → conditioning, Vorgabe-Matrix → defaults matrix, Vorlage → template, Standardwoche → standard week,
   Periode → period, Heizperiode → heating period, Kühlperiode → cooling period, Nachtauskühlung → night purge
   ventilation, Aufheizzeit → preheat time, Aufheizleistung → preheat power, Aufheizreserve → preheat reserve,
-  Aufheizoptimierung → preheat optimisation.
+  Aufheizoptimierung → preheat optimisation, Aufschlag → surcharge, Aufheizzeit manuell → manual preheat time,
+  Vorschlag → suggestion.
 - **Texte und Assistent:** `KOND_*` in **beiden** `.resx`, danach `Werkzeuge/ResourceDesigner`; jede neue Eingabe
   braucht ein Katalogfeld in `KiDialoge` (Woche und Matrixzeile als Textfeld wie `sollwertprofil`, `KiDialoge.cs:5783`)
   oder einen Grund in `BewusstDraussen`, gezählt in `EINGABESTELLEN`; `KiMaskenabdeckungWacheTests` hält es.
@@ -1133,9 +1198,9 @@ Vorlagen werden über `Werkzeuge/Berichtsvorlage` neu gebaut.
 | **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
 | **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) — abgeschlossen 02.10.2026 in elf Wellen samt der Abkürzung „alle Größen" (E57; [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept N1.66) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich — erfüllt bis auf die Sichtabnahme SA1, die beim Anwender aussteht (Referenzlauf byte-gleich gegen R29) | nein | 14–18; Entwurf: 19–22 (E56) |
-| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI — Entwurf vorgelegt und E58 entschieden am 02.10.2026 ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8), Umsetzung in zwölf Wellen, 14–18,25 PT | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9; Entwurf mit E58: 14–18,25 |
+| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI — Entwurf vorgelegt und E58 entschieden am 02.10.2026 ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8), Umsetzung in zwölf Wellen, 14–18,25 PT; mit Aufschlag und manueller Aufheizzeit (9.9) vierzehn Wellen samt R5 und O1b, 16,75–21,75 PT | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
 | **KP4** | Papiere nachziehen (Rechenschritte mit neuen Schritten „Aufheizrampe" und „Nachtauskühlung", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
-| **Summe** | | | | | **35–49** (mit den Entwürfen KP2 und KP3: 48–62,25) |
+| **Summe** | | | | | **35–49** (mit den Entwürfen KP2 und KP3: 50,75–65,75) |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
 In KP1 stecken 2–3 PT für die Katalogkalender (P3) und 3–4 PT für Vorgabetabelle, Generator mit fünf Spalten, Vorlagen
@@ -1265,7 +1330,7 @@ entschieden. Der Entscheid und die Festlegungen seiner Umsetzung stehen im Nacht
 
 Acht Fragen aus dem [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) (Abschnitt 6), per Auswahl entschieden: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und
 F7 abweichend**. Der Entscheid steht als Nachtrag N1.67 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md);
-die Festlegungen der Umsetzung (Entwurf Abschnitt 5) folgen mit der Umsetzung als N1.68.
+die Festlegungen der Umsetzung (Entwurf Abschnitt 5) folgen mit der Umsetzung als N1.69.
 
 | Frage | Entscheid | Folgen |
 |---|---|---|
@@ -1277,6 +1342,24 @@ die Festlegungen der Umsetzung (Entwurf Abschnitt 5) folgen mit der Umsetzung al
 | F6 Wann wird eingefroren? | **(a)**, nach Empfehlung: nach Rechenweg, Export und Referenzprojekt (RP2 nach RP1); O1–O3 danach gegen R34 | 10.1 |
 | F7 Bleibt die Aufheizreserve ρ bei 20 %? | **(c) Entscheid nach der Messung**, abweichend von der Empfehlung (a): RP1 misst ρ_min aller 17 VDI-Gebäude mit dem echten Kern (A/B-Protokoll); bis dahin 20 % | 4.4; offener Punkt P14 im Register, fällig vor RP2 |
 | F8 Lüftungsvorlage „Büro" gegen Nachtauskühlung | **(a)**, nach Empfehlung: das Skript übernimmt „Büro" in allen fünf Größen und überschreibt danach die Lüftungs-Nachtzeile mit der Nachtauskühlung (2,0 1/h, 18–7 Uhr, bedingt); Wochenende und Ferien bleiben 0,1 1/h | 10.2; die ausgelieferte Saat bleibt |
+
+### 9.9 Entscheide des Anwenders (E59, 02.10.2026; E60, 03.10.2026)
+
+**E59** antwortet auf eine Vorgabe des Anwenders, nicht auf eine Frage des Papiers: „Die Rampe soll jeweils individuell
+für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
+(Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
+hat der Anwender beantwortet; im [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) steht die Vorgabe als F9
+(Abschnitt 6), ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5). **E60** entscheidet Vorschlag 1 des
+[Konzepts Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) (Abschnitt 5), im
+Entwurf Festlegung 41. Beide stehen als Nachtrag N1.68 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
+
+| Frage | Entscheid | Folgen |
+|---|---|---|
+| E59 (1) Wo liegt der manuelle Wert? | **je Gebäude**: dritte Art „manuell" am Gebäude, `Tab_Gebaeude.Aufheizzeit_Manuell_H` 1–47 h; Zonen erben, kein Feld am Katalog | 3.4, 4.6, 4.8, 5.3, 5.5, 7.6; Festlegungen 37–39 |
+| E59 (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum**: `Aufheiz_Aufschlag_H` 0–24 und `Aufheiz_Aufschlag_Prozent` 0–100 am Projekt, n' = min(48, n + max(A_h, ⌈n · A_%/100⌉)) auf jedes ermittelte n, nicht auf den manuellen Wert | 4.6, 5.3, 7.6; Festlegungen 35, 36; ob der Aufschlag auch Sprünge ohne Rampe trifft, ist offen (P16) |
+| E59 (3) Wann wird umgesetzt? | **nach D2, vor RP1**: Welle R5 (Rechenweg, Schritt KP-S4, Testdatenbank, Export), O1b (Projekteinstellung), Erweiterung von O2 (Feld mit Vorschlägen: bemessene Zeit und Spanne nach Bauart) und O3 (Abweichungsmerkmale) | 5.4, 8; KP3 16,75–21,75 PT mit E60; die Spanne nach Bauart ist zu bestätigen (P15) |
+| E59 „individuell" | Der Rechenweg ist es schon — Stufenformel, Bemessung und P_auf je Gebäude und Zone —; pauschal bleiben ρ (P14), die Art und der Aufschlag | 4.6; Festlegung 34 |
+| E60 Welche Größe gilt für die Heizungsauslegung? | **Vorschlag 1**: stationäre Auslegungsheizlast plus P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3) stellen ideale Spitze, Tagesmittel und P_auf mit Quelle nebeneinander, mit dem Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; kein Filter im Rechenweg, die Kennzahl „Spitze als n-h-Mittel" (Vorschlag 2) nicht beauftragt | 4.8, 7.6; Festlegung 41; die Lesart der Summe ist offen (P17) |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
@@ -1320,7 +1403,7 @@ neunte Einfrierregel: *Wer gesäte Konditionierungsdaten eines Referenzprojekts 
 Basis neu ein.* Betroffen sind die Vorgabe-, Kalender- und Periodenzeilen seiner Gebäude und Zonen samt Nennwerten,
 Heiz- und Kühlperiode und Nachtauskühlung, die **gesäten Katalogkalender und Vorlagen**, aus denen sein Referenzskript
 übernimmt (`ID_Gebaeude_Stamm`, `ID_Vorlage`), `Aufheizoptimierung` und die Spalten `Aufheiz_*` seiner
-`Tab_Einstellungen`, das Referenzjahr seiner Spotpreisreihe (es verschiebt Wochentage und Feiertage) und das Anlegen
+`Tab_Einstellungen` (darunter der Aufschlag), `Aufheizzeit_Manuell_H` seiner Gebäude, das Referenzjahr seiner Spotpreisreihe (es verschiebt Wochentage und Feiertage) und das Anlegen
 oder Entfernen eines Referenzprojekts mit Kalender oder Aufheizoptimierung.
 
 ### 10.4 Wiki-Änderungen (nur Liste; Veröffentlichung gebündelt nach KP3)
@@ -1425,6 +1508,9 @@ Gebäudehülle und des Stundenmodells gilt [Glossar Lokalisierung](Glossar_Lokal
 | **Aufheizleistung P_auf** | Die Leistung, die das Aufheizen höchstens beanspruchen darf: `Heizleistung_Max`, wenn gesetzt, sonst die Zielleistung (1 + ρ) mal die stationäre Last an der kältesten Stunde (4.4). |
 | **Aufheizoptimierung** | Der Projektschalter (Vorgabe aus), der vor jedem Sollwertsprung nach oben eine berechnete Rampe einfügt, damit die Sprungspitze die Aufheizleistung nicht übersteigt (4, F9). |
 | **Aufheizzeit t_auf** | Die Dauer der Rampe vor einem Sprung, (n − 1) Stunden bei n Stufen, höchstens die Absenkdauer D (4.1). |
+| **Aufheizzeit manuell t_m** | Die je Gebäude eingegebene Aufheizzeit (1–47 h), mit der das Gebäude statt der ermittelten an jedem Sprung rampt; die Zonen erben sie (4.6, 7.6). |
+| **Aufschlag** | Die Projektvorgabe in Stunden und in Prozent, um die jede ermittelte Rampe länger wird; es gilt der größere Wert, höchstens bis zum Deckel (4.6). |
+| **Auslegungsgröße** | Die Leistung, nach der die Heizung ausgelegt wird: die stationäre Auslegungsheizlast mit der Aufheizleistung P_auf, nicht das Maximum der idealen Last (4.8). |
 | **Ausnahmetag** | Ein Tag, den eine eigene Periode (Ferien, Betriebspause, Feiertag oder „wie Wochentag X") statt der Standardwoche bestimmt; er bleibt erhalten, wenn die Matrix erneut angewendet oder eine Vorlage übernommen wird (3.2, P12). |
 | **Bemessung (a) und (b)** | Die zwei Varianten der kältesten Außentemperatur für die Höchstzeit: (a) die kälteste Stunde selbst (Vorgabe) oder (b) die kälteste Stunde abzüglich des Abzugs ΔT_K als Reserve für kältere Jahre (4.5). |
 | **Deckel** | Die feste Obergrenze von 48 Stufen (Stunden) je Rampe, unabhängig von Absenkdauer und Stufenformel (4.6). |
