@@ -1,6 +1,6 @@
 # P671 — Katalogempfehlung der Hilfsenergie auf Weg B, Satzfeld im Kostenraster (Protokoll, 03.10.2026)
 
-Statuszeile vorläufig #671 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile vorläufig #673 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push; mit dieser Welle keine Statuszeile); Auftrag
 [`P671_Auftrag_2026-10-03.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P671_Auftrag_2026-10-03.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P654_Ausweis_9b_Deckel_Protokoll.md`](P654_Ausweis_9b_Deckel_Protokoll.md) (#656). Zweig

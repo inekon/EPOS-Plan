@@ -177,7 +177,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
 - Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
-- Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#671; Version bestätigt der Anwender beim Upload)
+- Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#673; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
