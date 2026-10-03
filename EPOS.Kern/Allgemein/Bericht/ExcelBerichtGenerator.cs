@@ -2039,6 +2039,8 @@ namespace WindowsFormsApplication1
                     "Strombedarf"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.PV_GENUTZT, "PV-Eigenverbrauch"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_STROM, "BHKW-Strom"),
+                // Katalog v12: der Reststrombedarf am BHKW (Stromlast des BHKW-Reiters) — nur mit Reihe.
+                new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_RESTSTROM, "BHKW-Reststrom"),
             };
             if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
             {
@@ -2065,6 +2067,11 @@ namespace WindowsFormsApplication1
             // SP1 (Welle M5): der Eigenverbrauch des Speichersystems - nur mit Reihe.
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH, "Eigenverbrauch Speichersystem"));
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
+            // Katalog v12: die Kälteproduktion des Kältereiters — die gedeckte Kälte je Kälteerzeuger und die
+            // ungedeckte Kälte; nur, wenn der Lauf Kälte rechnet und die Reihe Werte trägt.
+            foreach (string kaelte in z.Kaeltereihen)
+                spalten.Add(new KeyValuePair<string, string>(kaelte, "Kälte " + z.Beschriftung(kaelte)));
+            spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.KAELTEREST, "Kälte ungedeckt"));
             spalten = spalten.Where(s => z.Hat(s.Key)).ToList();
             if (spalten.Count == 0) return r;
 

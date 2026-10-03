@@ -1566,6 +1566,20 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(2, seite.FindAll("svg.epos-flaeche").Count);
     }
 
+    /// <summary>
+    /// Katalog v12: Beide Bilder des BHKW-Reiters tragen ihre Marke — die Wärmelast <c>stand.bild.bhkw</c>, die Stromlast
+    /// <c>stand.bild.bhkw_strom</c>, je „ähnlich im Bericht“ (der Bericht zeigt alle Reihen ohne Schalter).
+    /// </summary>
+    [Fact]
+    public void Beide_Bilder_des_Bhkwreiters_tragen_ihr_Vorlagenfeld()
+    {
+        var bilder = BhkwZeichnen(Bhkw()).FindComponents<DiagrammSvg>();
+        Assert.Equal(new[] { "stand.bild.bhkw", "stand.bild.bhkw_strom" },
+                     bilder.Select(b => b.Instance.Vorlagenfeld).ToArray());
+        Assert.All(bilder, b => Assert.Equal(Vorlagenfeldstufe.Aehnlich, b.Instance.VorlagenfeldStufe));
+        Assert.All(bilder, b => Assert.NotNull(Vorlagenfeldkatalog.Finde(b.Instance.Vorlagenfeld)));
+    }
+
     [Fact]
     public void Der_Pvreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
         => Bildpruefung(PvZeichnen(), "simerg-photovoltaik");

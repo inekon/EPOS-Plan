@@ -23,7 +23,11 @@
                   WertChanged="@(w => { _sortiert = w; Merken(); })" />
     </div>
 
+    @* Die Marke des Bildes (Katalog v12, ähnlich): Der Bericht zeigt die Kälteproduktion mit allen Reihen im
+       Jahresverlauf, ohne „sortiert" (stand.bild.kaelte_produktion). *@
     <DiagrammSvg Modell="@ModellGang" Kennung="simerg-kaeltegang"
+                 Vorlagenfeld="stand.bild.kaelte_produktion" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                 VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                  Bezeichnung="@Resource.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE"
                  Einheit="kW"
                  Palette="@Farbpalette.Aktuell"

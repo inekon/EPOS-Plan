@@ -662,7 +662,12 @@ namespace Berichtsvorlage
                     ("heizkessel", "Heizkessel: Wärmeproduktion, Restwärme und Wärmebedarf", "Boiler: heat production, residual heat and heat demand"),
                     ("solarthermie", "Solarthermie: Wärmeproduktion und Wärmebedarf", "Solar thermal: heat production and heat demand"),
                     ("bhkw", "BHKW: Wärmeproduktion, Restwärme und Wärmebedarf", "CHP: heat production, residual heat and heat demand"),
+                    // Katalog v12: die Stromlast des BHKW und die Kälteproduktion.
+                    ("bhkw_strom", "BHKW: Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf",
+                     "CHP: power production, feed-in, residual power demand and power demand"),
                     ("photovoltaik", "Photovoltaik: Erzeugung, Überschuss und Strombedarf", "Photovoltaics: generation, surplus and electricity demand"),
+                    ("kaelte_produktion", "Kälteproduktion: gedeckte Kälte je Wärmepumpe, ungedeckte Kälte und Kältebedarf",
+                     "Cooling production: covered cooling per heat pump, uncovered cooling and cooling demand"),
                 };
                 foreach ((string schluessel, string de, string en) in ergebnisbilder)
                 {

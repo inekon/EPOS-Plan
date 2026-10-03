@@ -39964,6 +39964,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
     <value>Bildschalter: Gibt es das Bild des BHKW (Stand bzw. irgendein Stand)?</value>
   </data>
+  <data name="VF_STAND__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Bild je Stand: Stromlast des BHKW — Stromproduktion als Säule, Einspeisung, Reststrombedarf und Strombedarf als Linien im Jahresverlauf — wie das Bild „Stromlast“ des Reiters „BHKW“; leer ohne BHKW.</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Stromlast des BHKW“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_STAND__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Bild je Stand: Kälteproduktion — je Wärmepumpe im Kühlbetrieb die gedeckte Kälte als Säule, die ungedeckte Kälte grau, der Kältebedarf als Linie im Jahresverlauf — wie das Blatt „Kälte“ des Reiters „Ergebnis“; leer, wenn das Projekt keine Kälte rechnet.</value>
+  </data>
+  <data name="VF_HAT__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kälteproduktion“ (Stand bzw. irgendein Stand)?</value>
+  </data>
   <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
     <value>Bildschalter: Gibt es das Bild der Photovoltaik (Stand bzw. irgendein Stand)?</value>
   </data>
