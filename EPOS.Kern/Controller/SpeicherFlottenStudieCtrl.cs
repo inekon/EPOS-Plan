@@ -259,6 +259,7 @@ public static partial class SpeicherFlottenStudieCtrl
     ///   <item><term><c>Leistungskosten</c> [€/kW]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKw"/></description></item>
     ///   <item><term><c>Investition_Fix</c> [€]</term><description>→ <see cref="FlottenEinheit.InvestitionEuro"/></description></item>
     ///   <item><term><c>Standby_Verbrauch</c> [W]</term><description>→ <see cref="FlottenEinheit.HilfsverbrauchKw"/> (W / 1000)</description></item>
+    ///   <item><term><c>Selbstentladung_Prozent_Monat</c> [%/Monat]</term><description>→ <see cref="FlottenEinheit.SelbstentladungProzentProMonat"/> (außerhalb 0 … 20: 0)</description></item>
     /// </list>
     /// <para><b>Was bewusst NICHT abgebildet wird.</b> <c>Verschleisskosten</c> steht im
     /// Katalog in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
@@ -342,6 +343,9 @@ public static partial class SpeicherFlottenStudieCtrl
             Entladewirkungsgrad = etaEntladen,
             SocMin = socMin, SocMax = socMax, SocStart = socStart,
             HilfsverbrauchKw = m.m_StandbyVerbrauch / 1000.0,
+            SelbstentladungProzentProMonat = m.m_Selbstentladung > 0.0 &&
+                                             m.m_Selbstentladung <= StromViertelstundenSchema.SELBSTENTLADUNG_MAX_PROZENT
+                ? m.m_Selbstentladung : 0.0,
             EigeneKosten = kosten,
             InvestitionEuro = kosten ? m.m_InvestitionFix : 0.0,
             InvestitionEuroProKWh = kosten ? m.m_Modulkosten : 0.0,
@@ -370,6 +374,11 @@ public static partial class SpeicherFlottenStudieCtrl
         f.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(f.Optionen.Betriebsziel);
         f.Optionen.PeakZielAdaptiv = FlottenVorgaben.PeakZielAdaptivFuer(f.Optionen.Betriebsziel);
         f.Optionen.WirtschaftlicherPeakZielwertKw = PeakZielVorschlag(f, bezugsspitzeKw, ctrl, sim).PeakZielKw;
+        // PV3 (Welle M5): Die HARTE Einspeisegrenze einer neuen Flotte wird mit der Einspeisegrenze
+        // der Projekteinstellung vorbelegt - benannt im Netzblock des Dialogs
+        // (FLOTTE_ED_EINSPEISEGRENZE_PROJEKT), nie still. Eine gepflegte Grenze bleibt.
+        if (!f.Optionen.NetzeinspeisungGrenzeKw.HasValue)
+            f.Optionen.NetzeinspeisungGrenzeKw = SpeicherFlottenProjektCtrl.WeicheEinspeisegrenze(sim);
     }
 
     /// <summary>

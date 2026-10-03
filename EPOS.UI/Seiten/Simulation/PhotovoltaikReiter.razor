@@ -83,6 +83,17 @@
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                    @* PV3 (Welle M5): die Abregelung an der Einspeisegrenze - nur mit Grenze und nur,
+                       wenn abgeregelt wurde; die Zeile darunter nennt die Grenze. *@
+                    @if (Daten.AbregelungMwh > 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PV_ABREGELUNG, Zahl(Daten.AbregelungMwh), MWH)
+                        @Wertzeile(Resource.SIMERG_LBL_PV_ABREGELUNG_ANTEIL, Zahl(Daten.AbregelungProzent), "%")
+                    }
+                    @if (Daten.EinspeisegrenzeKw is double grenzeKw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, Zahl(grenzeKw), "kW")
+                    }
                 </dl>
             </section>
 

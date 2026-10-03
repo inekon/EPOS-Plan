@@ -722,6 +722,7 @@ namespace WindowsFormsApplication1
             stamm.m_Energie = m.m_Energie;
             stamm.m_WirkungsgradRT = m.m_WirkungsgradRT;
             stamm.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+            stamm.m_Selbstentladung = m.m_Selbstentladung;
 
             return stamm.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben

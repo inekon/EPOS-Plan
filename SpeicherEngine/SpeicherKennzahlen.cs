@@ -79,6 +79,11 @@
         /// </summary>
         public double SpeicherverlusteKwh { get; init; }
 
+        /// <summary>
+        /// Davon Selbstentladung des Jahres [kWh/a] (Welle M5, SP1); 0 ohne Selbstentladung.
+        /// </summary>
+        public double SelbstentladungKwh { get; init; }
+
         // ---------------------------------------------------------------- Bilanz
 
         /// <summary>Jahreslastenergie <c>Sigma E_last</c> [kWh/a].</summary>

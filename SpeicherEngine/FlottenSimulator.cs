@@ -187,10 +187,24 @@ public static class FlottenSimulator
             ? o.WirtschaftlicherPeakZielwertKw ?? 0.0
             : o.WirtschaftlicherPeakZielwertKw;
 
+        // SP1 (Welle M5): die Selbstentladung je Einheit und Intervall; 0 = keine, der Lauf bleibt
+        // Bit fuer Bit, wie er war.
+        var selbstAnteil = einheiten.Select(x => x.SelbstentladungProzentProMonat > 0
+            ? x.SelbstentladungProzentProMonat / 100.0 * Dt / SpeicherParameter.STUNDEN_JE_MONAT : 0.0).ToArray();
+        var mitSelbstentladung = selbstAnteil.Any(a => a > 0);
+
         for (var t = 0; t < input.Istwerte.Count; t++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var row = input.Istwerte[t];
+            if (mitSelbstentladung)
+                for (var j = 0; j < einheiten.Count; j++)
+                {
+                    var v = Speichersystem.Selbstentladung(energie[j],
+                        einheiten[j].SocMin * einheiten[j].KapazitaetKWh, selbstAnteil[j]);
+                    energie[j] -= v;
+                    ergebnis.SelbstentladungKWh += v;
+                }
             var ziel = o.Betriebsziel;
             var planend = einheiten.Count > 0 &&
                 ziel is FlottenBetriebsziel.PvPlanung or FlottenBetriebsziel.Arbitrage or FlottenBetriebsziel.MultiUse;
@@ -533,6 +547,14 @@ public static class FlottenSimulator
         var extraCurtail = Math.Min(maxCurtail - curtail, Math.Max(0, -exportLimit - rawGrid));
         curtail += extraCurtail;
         var grid = rawGrid + extraCurtail;
+        // PV3 (Welle M5): die WEICHE Einspeisegrenze der Projekteinstellung - abgeregelt wird erst,
+        // was nach der Ladung ueber der Grenze ins Netz ginge (Laden vor Abregeln), und nur PV.
+        if (o.PvEinspeisegrenzeWeichKw.HasValue)
+        {
+            var weich = Math.Min(maxCurtail - curtail, Math.Max(0, -o.PvEinspeisegrenzeWeichKw.Value - grid));
+            curtail += weich;
+            grid += weich;
+        }
         var export = Math.Max(0, -grid);
         var chargeKw = ist.Where(x => x < 0).Sum(x => -x);
         var directExport = Math.Min(export,
@@ -803,6 +825,7 @@ public static class FlottenSimulator
         var o = config.Optionen;
         if (!IstOptionaleNichtnegativeZahl(o.NetzbezugGrenzeKw) ||
             !IstOptionaleNichtnegativeZahl(o.NetzeinspeisungGrenzeKw) ||
+            !IstOptionaleNichtnegativeZahl(o.PvEinspeisegrenzeWeichKw) ||
             !IstOptionaleNichtnegativeZahl(o.WirtschaftlicherPeakZielwertKw) ||
             !IstOptionaleEndlicheZahl(o.ArbitrageLadepreisSchwelle) ||
             !IstOptionaleEndlicheZahl(o.ArbitrageEntladepreisSchwelle) ||
@@ -831,6 +854,7 @@ public static class FlottenSimulator
             !IstEndlichNichtNegativ(b.PeakReserveKWh) ||
             b.PeakReserveKWh > (b.SocMax - b.SocMin) * b.KapazitaetKWh + Eps ||
             !IstEndlichNichtNegativ(b.HilfsverbrauchKw) ||
+            !IstEndlichNichtNegativ(b.SelbstentladungProzentProMonat) || b.SelbstentladungProzentProMonat >= 100 ||
             !IstEndlichNichtNegativ(b.GrenzverschleissEuroProKWhEntladung) ||
             !IstEndlichNichtNegativ(b.InvestitionEuro) || !IstEndlichNichtNegativ(b.InvestitionEuroProKWh) ||
             !IstEndlichNichtNegativ(b.InvestitionEuroProKw) || !IstEndlichNichtNegativ(b.JaehrlicheFixeOpexEuro) ||
@@ -857,6 +881,7 @@ internal static class FlottenKopie
         EntladeleistungKw = x.EntladeleistungKw, Ladewirkungsgrad = x.Ladewirkungsgrad,
         Entladewirkungsgrad = x.Entladewirkungsgrad, SocMin = x.SocMin, SocMax = x.SocMax,
         SocStart = x.SocStart, PeakReserveKWh = x.PeakReserveKWh, HilfsverbrauchKw = x.HilfsverbrauchKw,
+        SelbstentladungProzentProMonat = x.SelbstentladungProzentProMonat,
         GrenzverschleissEuroProKWhEntladung = x.GrenzverschleissEuroProKWhEntladung,
         InvestitionEuro = x.InvestitionEuro, InvestitionEuroProKWh = x.InvestitionEuroProKWh,
         InvestitionEuroProKw = x.InvestitionEuroProKw, JaehrlicheFixeOpexEuro = x.JaehrlicheFixeOpexEuro,
@@ -873,6 +898,7 @@ internal static class FlottenKopie
     {
         Betriebsziel = x.Betriebsziel, Verteilung = x.Verteilung, NetzbezugGrenzeKw = x.NetzbezugGrenzeKw,
         NetzeinspeisungGrenzeKw = x.NetzeinspeisungGrenzeKw, NetzladungErlaubt = x.NetzladungErlaubt,
+        PvEinspeisegrenzeWeichKw = x.PvEinspeisegrenzeWeichKw,
         BatterieexportErlaubt = x.BatterieexportErlaubt, WirtschaftlicherPeakZielwertKw = x.WirtschaftlicherPeakZielwertKw,
         PeakZielAdaptiv = x.PeakZielAdaptiv,
         ArbitrageLadepreisSchwelle = x.ArbitrageLadepreisSchwelle,

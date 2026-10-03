@@ -114,13 +114,15 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             ErgebnisPhotovoltaikModel a = Rechne(1040).Ergebnis.Photovoltaik;
             Assert.Equal(6.713, a.Stromproduktion, 3);     // vor E26 4,441 (der Direktverbrauch)
-            Assert.Equal(2.273, a.Ueberschuss, 3);
-            Assert.Equal(4.441, a.Stromproduktion - a.Ueberschuss, 3);   // vor E26 2,168
+            // Welle M5 (SB1 a, Basis R33): Bilanz je Viertelstunde - vorher 2,273 / 4,441.
+            Assert.Equal(2.277, a.Ueberschuss, 3);
+            Assert.Equal(4.437, a.Stromproduktion - a.Ueberschuss, 3);   // vor E26 2,168
 
             ErgebnisPhotovoltaikModel b = Rechne(1026).Ergebnis.Photovoltaik;
             Assert.Equal(6.713, b.Stromproduktion, 3);     // vor E26 4,197
-            Assert.Equal(1.246, b.Ueberschuss, 3);
-            Assert.Equal(5.467, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
+            // Welle M5 (SB1 a, Basis R33): vorher 1,246 / 5,467.
+            Assert.Equal(1.249, b.Ueberschuss, 3);
+            Assert.Equal(5.465, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
         }
 
         // =====================================================================
@@ -178,8 +180,9 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             var erwartet = new Dictionary<int, (double bedarf, double menge)>
             {
-                [1040] = (27.427, 4.441),     // vor E26 8,000 / −14,986
-                [1026] = (31.351, 5.348),     // vor E26 8,000 / −18,004
+                // Welle M5 (SB1 a, Basis R33): vorher 4,441 und 5,348.
+                [1040] = (27.427, 4.437),     // vor E26 8,000 / −14,986
+                [1026] = (31.351, 5.345),     // vor E26 8,000 / −18,004
                 [1042] = (41.345, 0.000)      // vor E26 8,000 / −33,345
             };
             var rolle = new TarifRolle

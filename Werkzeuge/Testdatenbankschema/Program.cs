@@ -2495,6 +2495,29 @@ namespace Testdatenbankschema
                                   ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+            //      Einspeisegrenze an Tab_Einstellungen (Einspeisegrenze_Wert, Einspeisegrenze_Einheit;
+            //      nullbar) und die Selbstentladung an Tab_Stromspeicher_STAMM und Tab_Stromspeicher
+            //      (Selbstentladung_Prozent_Monat; nullbar). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_StromViertelstunden bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder heissen keine Einspeisegrenze und keine
+            //      Selbstentladung.
+            string nrStromViertel = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStromViertel + " - Einspeisegrenze und Selbstentladung: " +
+                              (StromViertelstundenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStromViertel = new List<string>();
+                angelegt += StromViertelstundenSchema.Ausfuehren(berichtStromViertel);
+                foreach (string zeile in berichtStromViertel)
+                    Console.WriteLine("Schritt " + nrStromViertel + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStromViertel + " - vollstaendig: " +
+                                  StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -432,6 +432,26 @@ namespace WindowsFormsApplication1
             return Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour).Alpha * Rad2Deg;
         }
 
+        /// <summary>
+        /// Der KOSINUS DES ZENITWINKELS <c>cos θ_z = sin α</c> zu einem Zeitpunkt, bei Sonne unter dem
+        /// Horizont 0 — rein lesend, ohne statische Seitenwirkung (wie <see cref="Sonnenhoehe"/>).
+        ///
+        /// <para><b>Wozu (Welle M5, SB1 a).</b> Die PV-Bilanz verteilt den Stundenertrag
+        /// energieerhaltend auf die vier Viertelstunden der Stunde, gewichtet mit
+        /// <c>cos θ_z</c> in der Mitte jeder Viertelstunde (<c>SimulationPV.Viertelgewichte</c>).
+        /// Der Sinus läuft über <see cref="Plattformrundung"/>, damit die Gewichte auf jeder Plattform
+        /// dieselben Bits tragen.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <param name="hour">UTC-Stunde als Kommazahl (14,125 = 14:07:30 UTC).</param>
+        public static double KosinusZenitwinkel(double Lon, double Lat, int dayOfYear, double hour)
+        {
+            Sonnenstand s = Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour);
+            if (s.Nacht) return 0.0;
+            double c = Plattformrundung.Sin(s.Alpha);
+            return c > 0.0 ? c : 0.0;
+        }
+
         /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
         /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
         /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>

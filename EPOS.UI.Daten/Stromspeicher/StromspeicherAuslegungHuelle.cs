@@ -134,6 +134,8 @@ namespace WindowsFormsApplication1
                 Vorpruefen = eingaben => _ctrl.Vorpruefen(eingaben),
                 VorpruefenSchnell = eingaben => _ctrl.VorpruefenSchnell(eingaben),
                 PeakZielVorschlag = eingaben => _ctrl.PeakZielVorschlag(eingaben),
+                // PV3 (Welle M5): die Einspeisegrenze der Projekteinstellung fuer die Zeile im Netzblock.
+                ProjektEinspeisegrenzeKw = () => KonfigurationCtrl.EinspeisegrenzeKwLesen(_ctrl.ProjektId),
                 PeakZielBestimmen = PeakZielBestimmen,
 
                 // „Speicher hinzufuegen" aus einer Projektanlage oder aus dem Katalog

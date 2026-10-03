@@ -687,7 +687,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (15 Spalten)
+        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (16 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -730,7 +730,8 @@ namespace WindowsFormsApplication1
                 E("Investition_Fix", t("SP_LABEL_INVESTITION_FIX"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:334; StromspeicherSimCtrl.cs:1114"),
                 E("Standby_Verbrauch", t("SP_LABEL_STANDBY"), "W", SIM,
-                  "StromspeicherSimCtrl.cs:1115 (Eigenverbrauch der Leistungselektronik)"),
+                  "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.StandbyKw); " +
+                  "SpeicherEngine/Speichersystem.Standby (aus PV-Überschuss, sonst Netz; Welle M5, SP1)"),
 
                 // Migrationsschritt 68 (Anwenderentscheid W14a-E-10-Q7 vom 07.09.2026).
                 // Die Spalte steht am ENDE der Tabelle, weil ALTER TABLE ADD COLUMN sie
@@ -739,7 +740,12 @@ namespace WindowsFormsApplication1
                 // Hersteller, er sortiert und filtert die Katalogliste.
                 E("Firma", t("MODK_LBL_FIRMA"), "", DLG,
                   "StromspeicherStammCtrl.Hersteller (Spalte \"Hersteller\" der Katalogliste); " +
-                  "StromspeicherCtrl.CopyFromStamm (Quelle der Projektkopie)")
+                  "StromspeicherCtrl.CopyFromStamm (Quelle der Projektkopie)"),
+
+                // Welle M5 (SP1; Schemaschritt StromViertelstundenSchema.SCHRITT) - am Ende der Tabelle.
+                E(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, t("SP_LABEL_SELBSTENTLADUNG"), "%/Monat", SIM,
+                  "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.SelbstentladungProzentMonat); " +
+                  "SpeicherEngine/Speichersystem.Selbstentladung; SpeicherFlottenStudieCtrl.EinheitAusKatalogsatz")
             };
         }
 

@@ -482,6 +482,31 @@
                     </Formularraster>
                 </section>
             }
+
+            @* „Einspeisegrenze" (Welle M5, PV3): Wert und Einheit (kW oder % der installierten
+               PV-Leistung) schreiben SOFORT die ganze Einstellung (EinspeisegrenzeSchreiben); leer heißt
+               keine Grenze. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.EinspeisegrenzeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-einspeisegrenze" aria-label="@Resource.SIMKONF_GRP_EINSPEISEGRENZE">
+                    <Formularraster Einspaltig="true" @key="_einspeisegrenzeSchluessel">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE"
+                                        Wert="@Einspeisegrenze.Wert"
+                                        Einheit="@EinspeisegrenzeEinheitText" Min="0"
+                                        Platzhalter="@Resource.SIMKONF_EINSPEISEGRENZE_LEER"
+                                        Aktiv="@(!_daten.Gesperrt)"
+                                        WertChanged="EinspeisegrenzeWertGesetzt" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT"
+                                         Eintraege="@Einspeiseeinheiten"
+                                         Auswahl="@(Einspeisegrenze.InProzent ? 1 : 0)"
+                                         Aktiv="@(!_daten.Gesperrt)"
+                                         AuswahlChanged="EinspeisegrenzeEinheitGewaehlt" />
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_EINSPEISEGRENZE" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
         </fieldset>
     }
 
@@ -1308,6 +1333,51 @@
                          wert.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
 
     /// <summary>Liest die Herleitungszeilen je Gebäude neu — ohne Delegat keine.</summary>
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _einspeisegrenzeSchluessel;
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze
+        => _parameter.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Die zwei Einheiten: kW (Vorgabe) und % der installierten PV-Leistung.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Einspeiseeinheiten => new[]
+    {
+        (0, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        (1, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private string EinspeisegrenzeEinheitText => Einspeisegrenze.InProzent ? "%" : "kW";
+
+    private void EinspeisegrenzeWertGesetzt(double? wert)
+        => EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(wert, Einspeisegrenze.Einheit));
+
+    private void EinspeisegrenzeEinheitGewaehlt(int? index)
+    {
+        if (!index.HasValue) return;
+        string einheit = index.Value == 1
+            ? WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT
+            : WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW;
+        EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(Einspeisegrenze.Wert, einheit));
+    }
+
+    private void EinspeisegrenzeSchreiben(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        if (Parameter?.EinspeisegrenzeSchreiben is null) return;
+        if (Parameter.EinspeisegrenzeSchreiben(neu))
+        {
+            _parameter.Einspeisegrenze = neu;
+        }
+        else
+        {
+            _einspeisegrenzeSchluessel++;
+            Melden(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
     private void AufheizZeilenLaden()
         => _aufheizZeilen = Parameter?.AufheizHerleitung?.Invoke() ?? Array.Empty<string>();
 

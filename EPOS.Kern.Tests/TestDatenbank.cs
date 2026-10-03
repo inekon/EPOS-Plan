@@ -864,6 +864,11 @@ namespace EPOS.Kern.Tests
                 // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
                 // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
                 ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

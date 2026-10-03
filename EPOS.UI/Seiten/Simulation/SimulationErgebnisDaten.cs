@@ -243,6 +243,13 @@ public sealed class ParameterDaten
     /// leer = der Projektwert <see cref="Netzverluste"/> gilt.
     /// </summary>
     public WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele = WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+    // ---- Einspeisegrenze (Welle M5, PV3) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Einspeisegrenze" (<c>Tab_Einstellungen.Einspeisegrenze_Wert</c> und
+    /// <c>Einspeisegrenze_Einheit</c>) in der gespeicherten Form; ohne Satz und ohne Spalten „keine".
+    /// </summary>
+    public WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze = WindowsFormsApplication1.Einspeisegrenze.Keine;
 
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
@@ -265,7 +272,8 @@ public sealed class ParameterDaten
         Kuehlbetrieb = Kuehlbetrieb,
         Anlagenkopplung = Anlagenkopplung,
         Aufheizung = Aufheizung,
-        Netzkanaele = Netzkanaele
+        Netzkanaele = Netzkanaele,
+        Einspeisegrenze = Einspeisegrenze
     };
 }
 
