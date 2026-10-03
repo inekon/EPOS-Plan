@@ -84,8 +84,14 @@ Kopf), Übergabepapier, `Referenzlaeufe/LIESMICH.md`, Wiki-Quelle `Programm Doku
 
 ## Gate
 
-offen — volles Gate durch die Orchestrierung.
+Gate #673 auf `0983d8102` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 402 grün, 2 übersprungen, 0 rot (Kern 10 145, UI 7 295,
+KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
+`2026-10-02_R32_Solarthermie` (5 180 241 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS; Werkzeugtest
+`Auslieferungsvorlage.Tests` 44/44. Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
 
 ## Commit
 
-offen — die Commits auf `p671` nennt die Orchestrierung mit dem Merge.
+Fünf Commits auf `p671` hinter dem Auftrag `bd5811bf9` (`f257d60fb`, `718451eef`, `e360a892d`, `abcc77a43`, `b80b5562e`); Merge mit
+origin (#671, #672 der KP3-Sitzung; Schritt 167 dort frei) und `0983d8102` (eigene Nummer #673 statt #671). Statuszeile #673 im
+Folgecommit; Push nach Freigabe des Anwenders; CI-Vermerk in Nach #673 (d).

@@ -18,7 +18,7 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
   mit demselben Stand, weil Läufe auf dem Arbeitszweig fortlaufend durch Pushes abgebrochen werden).
 - **Letzter eigener Push:** `258bee90c` (02.10.2026, 10:15 UTC) auf `ios_migration_september` — CI-Vermerk zu #656. `main` steht
   weiter auf `8692ab40` (29.09.); ein Fast-Forward nur nach Gate auf dem Zweigstand und auf Zuruf.
-- **Nummern und Basis:** Statuszeilen bis #670 vergeben (gemessen 03.10.2026 auf origin), #673 vorläufig für P671 (die
+- **Nummern und Basis:** Statuszeilen bis #673 vergeben (gemessen 03.10.2026 auf origin), #673 vorläufig für P671 (die
   Orchestrierung prüft beim Push); vor jeder Vergabe `git fetch` und die Statusdatei auf origin
   messen; am 02.10. wanderte jede eigene Nummer zwei- bis dreimal (Nachbarn: KP2/KP3 Gebäudesimulation, Dialogsitzung, Berichterstellung,
   Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R32_Solarthermie` (Nachbarn; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
