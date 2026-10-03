@@ -2674,6 +2674,25 @@ namespace Testdatenbankschema
                                   ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KonditionierungNutzungSchema.SCHRITT: die Nutzung der Vorlage am Kalender des
+            //      Projekts (Tab_Konditionierungskalender.Nutzung) samt Saat aus der Herkunft in Bemerkung.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KonditionierungNutzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Lauf liest die Nutzung nicht.
+            string nrNutzung = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNutzung + " - Konditionierungsnutzung an der Kalenderkopie: " +
+                              (KonditionierungNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNutzung = new List<string>();
+                angelegt += KonditionierungNutzungSchema.Ausfuehren(berichtNutzung);
+                foreach (string zeile in berichtNutzung)
+                    Console.WriteLine("Schritt " + nrNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNutzung + " - vollstaendig: " +
+                                  KonditionierungNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

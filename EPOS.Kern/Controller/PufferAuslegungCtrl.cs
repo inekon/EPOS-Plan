@@ -197,11 +197,14 @@ namespace WindowsFormsApplication1
         internal const string SQL_ZAPFNUTZUNGEN =
             "SELECT n.Bezeichner FROM " + TwwSchema.TAB_TWW_ZONE + " z JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
             " n ON n.ID = z.ID_Nutzungsart WHERE z.ID_Projekt = ? ORDER BY z.Reihenfolge, z.ID";
+        /// <summary>
+        /// Die Nutzung an den Kalendern der Projektgebäude und ihrer Zonen (am Zonenkalender ist
+        /// <c>ID_Gebaeude</c> das Gebäude der Zone) — die Kopie trägt sie selbst
+        /// (<see cref="KonditionierungNutzungSchema"/>), der Vorlagenkatalog wird nicht gelesen.
+        /// </summary>
         internal const string SQL_KONDITIONIERUNG =
-            "SELECT k.Groesse, k.Bemerkung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
-            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Bemerkung IS NOT NULL ORDER BY g.ID, k.ID";
-        internal const string SQL_KONDITIONIERUNG_NUTZUNG =
-            "SELECT Nutzung FROM " + KonditionierungVorlagenSchema.TAB_VORLAGE + " WHERE Bezeichner = ? AND Groesse = ?";
+            "SELECT k.Nutzung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
+            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Nutzung IS NOT NULL ORDER BY g.ID, k.ID";
         internal const string SQL_KATALOG =
             "SELECT ID, Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM Tab_Pufferspeicher_STAMM " +
             "WHERE Gesamtvolumen > 0 ORDER BY Gesamtvolumen, ID";
@@ -920,22 +923,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierungsvorlagen, aus denen die Kalender der Projektgebäude stammen
-        /// (Herkunft in <c>Bemerkung</c>, <see cref="Kalenderherkunft.AusBemerkung"/>).
+        /// Die Nutzung der Konditionierungskalender der Projektgebäude und ihrer Zonen — aus der Kopie
+        /// (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt <see cref="KonditionierungNutzungSchema.SCHRITT"/>).
+        /// Umbenennen, Löschen oder Katalogabgleich einer Vorlage ändern die Vorbelegung nicht.
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            if (!DataRepository.TabelleVorhanden(KonditionierungSchema.TAB_KALENDER) ||
-                !DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE)) return l;
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return l;
             DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
             if (t == null) return l;
             foreach (DataRow r in t.Rows)
             {
-                string vorlage = Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage;
-                if (string.IsNullOrEmpty(vorlage)) continue;
-                object n = DataRepository.ExecuteScalar(SQL_KONDITIONIERUNG_NUTZUNG, P("@bez", vorlage), P("@groesse", Text(r, "Groesse") ?? ""));
-                if (n != null && n != DBNull.Value) l.Add(Convert.ToString(n, CultureInfo.InvariantCulture));
+                string n = Text(r, "Nutzung");
+                if (!string.IsNullOrEmpty(n)) l.Add(n);
             }
             return l;
         }
