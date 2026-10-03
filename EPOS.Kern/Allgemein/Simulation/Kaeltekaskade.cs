@@ -125,9 +125,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double NetzbezugKwh;
 
+        /// <summary>
+        /// <b>Taktverlust im Kühlbetrieb</b> (Welle M4, WP1): die kleinste Modulationsstufe als Anteil
+        /// der Kühlleistung der Stunde — Mindestleistung der Wärmepumpe durch ihre Heiz-Nennleistung,
+        /// höchstens 1. 0 = keine Taktrechnung (Mindestleistung leer oder keine Nennleistung).
+        /// </summary>
+        public double Mindestanteil;
+
+        /// <summary>Teillastkoeffizient C_d der Taktrechnung (EN 14825); Vorgabe 0,9.</summary>
+        public double Cd = Waermepumpentakt.VORGABE_CD;
+
+        /// <summary>Starts im Kühlbetrieb [1/a] — nur mit <see cref="Mindestanteil"/> &gt; 0.</summary>
+        public int Starts;
+
+        /// <summary>Taktstunden im Kühlbetrieb [h/a]: Kühlstunden unter der Mindestleistung.</summary>
+        public int Taktstunden;
+
+        /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [kWh/a] — Teil von <see cref="StromGesamtKwh"/>.</summary>
+        public double TaktstromKwh;
+
+        /// <summary>Die Stunde des letzten Kühllaufs (für die Zählung der Laufphasen); −2 = keiner.</summary>
+        internal int LetzteKuehlstunde = -2;
+
         /// <summary>Setzt das Ergebnis auf den Laufanfang.</summary>
         internal void Nullen()
         {
+            Starts = 0;
+            Taktstunden = 0;
+            TaktstromKwh = 0;
+            LetzteKuehlstunde = -2;
             Array.Clear(Kaelte_stuendlich, 0, Kaelte_stuendlich.Length);
             Array.Clear(Strom_stuendlich, 0, Strom_stuendlich.Length);
             KaelteGesamtKwh = 0;
@@ -347,6 +373,13 @@ namespace WindowsFormsApplication1
 
                     double deckung = rest < kapazitaet ? rest : kapazitaet;
                     double verdichter = deckung / p.Eer;
+
+                    // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
+                    // Mindestleistung als Anteil der Kühlleistung der Stunde. Ohne Mindestanteil
+                    // rechnet die Stunde wie zuvor.
+                    if (e.Mindestanteil > 0)
+                        verdichter += Taktverlust(e, h, deckung, verdichter, e.Mindestanteil * p.Pkuehl);
+
                     double strom = verdichter * (1.0 + e.Hilfsstromanteil);
 
                     e.Kaelte_stuendlich[h] = deckung;
@@ -371,6 +404,42 @@ namespace WindowsFormsApplication1
                 if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
                 else RestAnHeiztagenKwh += rest;
             }
+        }
+
+        /// <summary>
+        /// Die kleinste Modulationsstufe als Anteil (Welle M4, WP1): Mindestleistung durch
+        /// Heiz-Nennleistung, höchstens 1; 0 ohne Mindestleistung oder ohne Nennleistung.
+        /// </summary>
+        public static double Mindestanteil(double mindestleistungKw, double nennleistungKw)
+        {
+            if (!(mindestleistungKw > 0) || !(nennleistungKw > 0)) return 0.0;
+            double a = mindestleistungKw / nennleistungKw;
+            return a > 1.0 ? 1.0 : a;
+        }
+
+        /// <summary>
+        /// Taktverlust und Starts einer Kühlstunde (Welle M4, WP1): der Mehrstrom des Verdichters
+        /// (<see cref="Waermepumpentakt.Mehrstrom"/>) bei Kälte unter der Mindestleistung, die Starts
+        /// wie im Heizbetrieb. Liefert den Mehrstrom [kWh].
+        /// </summary>
+        private static double Taktverlust(Kaelteerzeuger e, int h, double kaelteKwh, double verdichterKwh,
+                                          double mindestleistungKw)
+        {
+            if (!(kaelteKwh >= Rechenrand.ABSOLUT)) return 0.0;
+            double mehr = 0.0;
+            if (Waermepumpentakt.Taktet(kaelteKwh, mindestleistungKw))
+            {
+                e.Starts += Waermepumpentakt.StartsImTakt(kaelteKwh, mindestleistungKw);
+                e.Taktstunden++;
+                mehr = Waermepumpentakt.Mehrstrom(verdichterKwh, kaelteKwh, mindestleistungKw, e.Cd);
+                e.TaktstromKwh += mehr;
+            }
+            else if (e.LetzteKuehlstunde != h - 1)
+            {
+                e.Starts++;
+            }
+            e.LetzteKuehlstunde = h;
+            return mehr;
         }
 
         // =====================================================================

@@ -243,6 +243,9 @@ namespace WindowsFormsApplication1
             // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
             new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
                       "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
+            // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
+            new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
+                      "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

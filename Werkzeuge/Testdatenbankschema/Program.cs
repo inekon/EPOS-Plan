@@ -2473,6 +2473,28 @@ namespace Testdatenbankschema
                                   BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder der
+            //      Waermepumpe an Tab_WP_STAMM und Tab_WP (Mindestleistung_kW, Taktverlustfaktor_Cd) und
+            //      des BHKW an Tab_BHKW_STAMM und Tab_BHKW (Wirkungsgrad_el_Teillast50,
+            //      Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min), alle nullbar mit
+            //      Pruefklausel. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErzeugerTeillast bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen wie zuvor.
+            string nrTeillast = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTeillast + " - Teillastfelder von Waermepumpe und BHKW: " +
+                              (ErzeugerTeillastSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTeillast = new List<string>();
+                angelegt += ErzeugerTeillastSchema.Ausfuehren(berichtTeillast);
+                foreach (string zeile in berichtTeillast)
+                    Console.WriteLine("Schritt " + nrTeillast + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTeillast + " - vollstaendig: " +
+                                  ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -109,7 +109,10 @@ public sealed class BerechnungsknopfTests
         new(StringComparer.Ordinal)
         {
             { "Stromspeicher", "Fassung 7" },
-            { "Solarthermie", "Fassung 4" }
+            { "Solarthermie", "Fassung 4" },
+            // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
+            { "Wärmepumpe", "Fassung 4" },
+            { "BHKW", "Fassung 4" }
         };
 
     /// <summary>

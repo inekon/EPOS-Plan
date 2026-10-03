@@ -364,7 +364,7 @@
                     <span class="@Huelle(MANGEL_HEIZSTAB)">
                         <WaermepumpeStammFelder Daten="@_stamm" Texte="@StammfelderTexte"
                                                 Aktiv="@(!NurLesen)" BezeichnerAenderbar="false"
-                                                KuehlleistungAenderbar="true"
+                                                KuehlleistungAenderbar="true" TeillastAenderbar="false"
                                                 Geaendert="StammfeldGeaendert" />
                     </span>
 
@@ -1297,7 +1297,10 @@
             Nennleistung = Daten.Nennleistung,
             Heizstab = Daten.HeizstabLeistung,
             Kuehlleistung = Daten.Kuehlleistung ?? 0,
-            Modulkosten = Daten.Modulkosten
+            Modulkosten = Daten.Modulkosten,
+            // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie - im Baustein nur lesend.
+            MindestleistungKw = Daten.MindestleistungKw,
+            TaktverlustfaktorCd = Daten.TaktverlustfaktorCd
         };
         _stammMeldung = "";
     }
@@ -1381,6 +1384,8 @@
             Daten.Aufstellung = stamm.Aufstellung;
             Daten.HeizstabLeistung = stamm.Heizstab;
             Daten.Kuehlleistung = stamm.Kuehlleistung;
+            Daten.MindestleistungKw = stamm.MindestleistungKw;
+            Daten.TaktverlustfaktorCd = stamm.TaktverlustfaktorCd;
         }
         Auffrischen();
     }

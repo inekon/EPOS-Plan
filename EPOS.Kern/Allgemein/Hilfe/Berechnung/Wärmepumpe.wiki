@@ -1,5 +1,6 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, WaermequelleClass.cs,
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Fassung 4 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, Waermepumpentakt.cs, Kaeltekaskade.cs,
+     WaermequelleClass.cs,
      WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
      Kaskadenschleife.cs (Bivalenzpunkt, Phase F); Katalog/ParameterVerwendung.cs -->
 
@@ -25,6 +26,10 @@ Ergebnisgrößen sind die Wärmeproduktion, der Strombedarf der Wärmepumpe, der
 | Bauart (Luft/Wasser, Sole/Wasser, …) || — || Wärmepumpenkatalog, Feld „Typ"
 |-
 | Nennleistung || kW || Wärmepumpenkatalog
+|-
+| Mindestleistung (kleinste Modulationsleistung) || kW || Wärmepumpenkatalog, Feld „Mindestleistung"; leer = moduliert bis null, kein Taktverlust
+|-
+| Teillastkoeffizient <math>C_{\mathrm{d}}</math> || — || Wärmepumpenkatalog, Feld „Teillastkoeffizient C_d"; leer = Vorgabe 0,9 nach EN 14825
 |-
 | Heizstableistung || kW || Dialog „Wärmepumpe", Abschnitt „Kenndaten", Feld „P Heizstab"
 |-
@@ -82,6 +87,12 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 | <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 20''' (Solarthermie 10, BHKW 30, Heizkessel 40)
 |-
 | <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 9''' — mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht
+|-
+| <math>P_{\mathrm{min}}</math> || Mindestleistung des Geräts, unterhalb derer es taktet || kW || Wärmepumpenkatalog, Feld „Mindestleistung"; leer oder 0 = kein Takten
+|-
+| <math>C_{\mathrm{d}}</math> || Teillastkoeffizient nach EN 14825 || — || Wärmepumpenkatalog, Feld „Teillastkoeffizient C_d"; '''Vorgabe: 0,9'''
+|-
+| <math>t_{\mathrm{min}}</math> || Mindestlaufzeit je Start, mit der die Starts gezählt werden || min || '''Konstante: 10''' — dieselbe Vorgabe wie beim Heizkessel
 |}
 
 === Variablen ===
@@ -138,6 +149,16 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 | <math>\vartheta_{\mathrm{biv,erg}}</math> || ermittelter Bivalenzpunkt || °C || (13)
 |-
 | <math>\mathrm{JAZ}</math> || Jahresarbeitszahl || — || (14)
+|-
+| <math>Q_{\mathrm{WP}}(t)</math>, <math>E_{\mathrm{WP}}(t)</math> || Wärme und Verdichterstrom des Moduls in der Stunde, Deckung und Ladung zusammen || kWh || Schritte 4 und 5
+|-
+| <math>\mathrm{CR}(t)</math> || Lastverhältnis der Stunde || — || (15)
+|-
+| <math>f(t)</math> || Teillastfaktor; <math>\operatorname{COP}_{\mathrm{takt}} = f \cdot \operatorname{COP}</math> || — || (16)
+|-
+| <math>\Delta E(t)</math> || Mehrstrom der Taktstunde || kWh || (17)
+|-
+| <math>n_{\mathrm{S}}(t)</math> || Starts der Stunde || — || (18)
 |}
 
 == Rechenweg ==
@@ -333,10 +354,39 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
 :: <math>E_{\mathrm{a}}</math> – Strombedarf der Wärmepumpe im Jahr [kWh]
 :: <math>E_{\mathrm{HS,a}}</math> – Strombedarf des Heizstabs im Jahr [kWh]
 
+<math>E_{\mathrm{a}}</math> enthält den Mehrstrom des Taktens aus Schritt 8; die Jahresarbeitszahl sinkt damit um den Taktverlust.
+
+=== Schritt 8 — Takten unter der Mindestleistung ===
+
+Dieser Schritt greift nur für ein Gerät mit gepflegter Mindestleistung <math>P_{\mathrm{min}} > 0</math>. Bleibt die Wärme einer Stunde darunter, taktet das Gerät: Es läuft in Abschnitten mit <math>P_{\mathrm{min}}</math> und steht dazwischen, und jedes Anfahren kostet Leistungszahl. Der Lauf bildet das nach EN 14825 über das '''Lastverhältnis''' ab:
+
+: <math>\displaystyle \mathrm{CR}(t) = \frac{Q_{\mathrm{WP}}(t)}{P_{\mathrm{min}} \cdot 1\,\mathrm{h}}</math> &nbsp;&nbsp;(15)
+:: <math>\mathrm{CR}(t)</math> – Lastverhältnis der Stunde [–]
+:: <math>Q_{\mathrm{WP}}(t)</math> – Wärme des Moduls in der Stunde, Deckung und Ladung zusammen [kWh]
+:: <math>P_{\mathrm{min}}</math> – Mindestleistung des Geräts [kW]
+
+: <math>\displaystyle f(t) = \begin{cases} \frac{\mathrm{CR}(t)}{C_{\mathrm{d}} \cdot \mathrm{CR}(t) + 1 - C_{\mathrm{d}}} & 0 < \mathrm{CR}(t) < 1 \\ 1 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(16)
+:: <math>f(t)</math> – Teillastfaktor; die Leistungszahl im Takt ist <math>f(t) \cdot \operatorname{COP}(t)</math> [–]
+:: <math>C_{\mathrm{d}}</math> – Teillastkoeffizient, Vorgabe 0,9 [–]
+
+Die Wärme der Stunde bleibt, der Strom steigt um den '''Mehrstrom''':
+
+: <math>\displaystyle \Delta E(t) = E_{\mathrm{WP}}(t) \cdot \left( \frac{1}{f(t)} - 1 \right)</math> &nbsp;&nbsp;(17)
+:: <math>\Delta E(t)</math> – Mehrstrom der Taktstunde [kWh]
+:: <math>E_{\mathrm{WP}}(t)</math> – Verdichterstrom des Moduls in der Stunde nach (8), (9) und der Ladung [kWh]
+
+Der Mehrstrom geht in den Strombedarf der Stunde, des Moduls und des Jahres ein. Die Starts zählt der Lauf nach der Regel des Heizkessels mit der Mindestlaufzeit <math>t_{\mathrm{min}}</math>: in einer Taktstunde so viele, wie Mindestläufe die Wärme brauchen, höchstens so viele, wie ganz in die Stunde passen; sonst ist ein Start der Übergang aus einer Stillstandsstunde in eine Laufstunde:
+
+: <math>\displaystyle n_{\mathrm{S}}(t) = \begin{cases} \min\left( \left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor , \left\lceil \frac{Q_{\mathrm{WP}}(t)}{P_{\mathrm{min}} \cdot t_{\mathrm{min}}/60} \right\rceil \right) & 0 < Q_{\mathrm{WP}}(t) < P_{\mathrm{min}} \\ 1 & Q_{\mathrm{WP}}(t-1) = 0 < Q_{\mathrm{WP}}(t) \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(18)
+:: <math>n_{\mathrm{S}}(t)</math> – Starts der Stunde [–]
+:: <math>t_{\mathrm{min}}</math> – Mindestlaufzeit je Start, 10&nbsp;min [min]
+
+'''Im Kühlbetrieb''' gilt dieselbe Rechnung in der Kältekaskade: Die Mindestleistung der Kühlung ist <math>P_{\mathrm{min}}</math> im Verhältnis zur Nennleistung auf die Kühlleistung der Stunde umgelegt, und der Mehrstrom erhöht den Kältestrom.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
-* '''Keine Taktung, kein An/Aus innerhalb der Stunde.''' Eine Stunde ist voll, moduliert oder aus; Mindestlaufzeiten, Mindestpausen und Anlaufverluste bildet das Modell nicht ab.
+* '''Das Takten ist ein Faktor auf die Leistungszahl''' (16). Ohne gepflegte Mindestleistung ist eine Stunde voll, moduliert bis null oder aus. Mit Mindestleistung senkt der Teillastfaktor die Leistungszahl unter <math>P_{\mathrm{min}}</math>, und die Starts werden gezählt (18); Mindestpausen, das Abkühlen zwischen zwei Läufen und die Wirkung des Mehrstroms auf die Quellentnahme bildet das Modell nicht ab. Die Mindestlaufzeit ist fest 10&nbsp;min.
 * '''Keine Extrapolation nach oben.''' Oberhalb der obersten Stützstelle gilt deren COP — konservativ, aber es gibt dort keine Herstellerdaten.
 * '''Keine Abtauverluste''' und keine Feuchtekorrektur bei Luft/Wasser-Geräten. Was das Kennfeld ausweist, gilt.
 * '''Keine Vorlaufregelung ohne Anlagenkopplung.''' Ohne Kopplung wird das Kennfeld das ganze Jahr zu der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math> ausgewertet, die an der Anlage steht. Erst die Anlagenkopplung „Heizkreis (AK1)" bringt eine Heizkurve ins Spiel — dann wählt der Lauf je Stunde die nächstgelegene Vorlaufstufe des Kennfelds (Schritt 2), ohne Zwischenwerte.
@@ -349,7 +399,7 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — je Modul Wärmeproduktion, Strombedarf, Laufzeit und Heizstabanteil; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
+* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — je Modul Wärmeproduktion, Strombedarf, Laufzeit und Heizstabanteil, mit Mindestleistung dazu Starts und Mehrstrom des Taktens; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Wärmepumpe an der Jahreswärme. Die Jahresarbeitszahl <math>\mathrm{JAZ}</math> steht nicht dort, sondern im Bericht („Jahresarbeitszahl (JAZ) WP").
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Anteil der Wärmepumpe am Strombedarf.
 * '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich, Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert.

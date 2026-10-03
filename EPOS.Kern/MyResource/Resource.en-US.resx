@@ -41799,5 +41799,107 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Preheat optimisation (W5): the building is calculated with system coupling and is not optimised; the heat emitter limits the output after the step.</value>
   </data>
+  <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
+    <value>Part load and cycling</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_EL50" xml:space="preserve">
+    <value>El. efficiency at 50 % load:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_EL50" xml:space="preserve">
+    <value>electrical efficiency at 50 % load</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_EL50" xml:space="preserve">
+    <value>(factor, e.g. 0.27)</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_TH50" xml:space="preserve">
+    <value>Th. efficiency at 50 % load:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_TH50" xml:space="preserve">
+    <value>thermal efficiency at 50 % load</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_TH50" xml:space="preserve">
+    <value>(factor, e.g. 0.64)</value>
+  </data>
+  <data name="BHKWK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Start-up loss per start:</value>
+  </data>
+  <data name="BHKWK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>start-up loss per start</value>
+  </data>
+  <data name="BHKWK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Minimum run time:</value>
+  </data>
+  <data name="BHKWK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>minimum run time</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_VOLLLAST" xml:space="preserve">
+    <value>as at full load</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_OHNE_TAKTEN" xml:space="preserve">
+    <value>no cycling</value>
+  </data>
+  <data name="BHKWK_HINWEIS_TEILLAST" xml:space="preserve">
+    <value>Empty = as at full load or no cycling. With a start-up loss or a minimum run time the module cycles below its lower limit instead of staying off for the hour.</value>
+  </data>
+  <data name="BHKWK_BILD_KENNLINIE" xml:space="preserve">
+    <value>Efficiency over electrical load</value>
+  </data>
+  <data name="BHKWK_BILD_ACHSE_LAST" xml:space="preserve">
+    <value>Electrical load [%]</value>
+  </data>
+  <data name="BHKWK_BILD_ELEKTRISCH" xml:space="preserve">
+    <value>electrical</value>
+  </data>
+  <data name="BHKWK_BILD_THERMISCH" xml:space="preserve">
+    <value>thermal</value>
+  </data>
+  <data name="WPS_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum output</value>
+  </data>
+  <data name="WPS_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>minimum output</value>
+  </data>
+  <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Degradation coefficient C_d</value>
+  </data>
+  <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
+    <value>degradation coefficient C_d</value>
+  </data>
+  <data name="WPS_HINT_TAKTVERLUST_CD" xml:space="preserve">
+    <value>(default 0.9 to EN 14825)</value>
+  </data>
+  <data name="WPS_PLATZHALTER_OHNE_TAKT" xml:space="preserve">
+    <value>no cycling</value>
+  </data>
+  <data name="WPS_PLATZHALTER_CD_VORGABE" xml:space="preserve">
+    <value>0.9</value>
+  </data>
+  <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
+    <value>Cycling extra power [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
+    <value>Start-up loss [kWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF" xml:space="preserve">
+    <value>Part-load extra fuel [kWh/a]</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_EL50_ERL" xml:space="preserve">
+    <value>Electrical efficiency at 50 % electrical load as a factor (e.g. 0.27). With it the module uses a part-load curve: linear between 50 % and full load, below that the 50 % value. Empty = as at full load.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_TH50_ERL" xml:space="preserve">
+    <value>Thermal efficiency at 50 % electrical load as a factor (e.g. 0.64). Together with the electrical value it sets the power-to-heat ratio at part load. Empty = as at full load.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Fuel per start in kWh. With a start-up loss or a minimum run time the module cycles below its lower limit instead of staying off; each start costs this fuel. Empty = no cycling (without minimum run time) or 0 kWh.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Minimum run time per start in minutes (1 to 60). It limits the starts of a cycling hour to 60 divided by the minimum run time. Empty = no cycling (without start-up loss) or 10 min.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Smallest modulating output of the heat pump in kW. Below it the unit cycles and the COP drops to EN 14825. Empty = no cycling calculation.</value>
+  </data>
+  <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Degradation coefficient C_d to EN 14825 (0 to 1). It sets the cycling loss: COP_cycl = COP · CR / (C_d · CR + 1 − C_d). Empty = default 0.9.</value>
+  </data>
 </root>
 

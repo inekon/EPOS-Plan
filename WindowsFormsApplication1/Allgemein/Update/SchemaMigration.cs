@@ -4901,6 +4901,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BEDARF_NETZ_KALENDER = BedarfNetzKalenderSchema.SCHRITT;
 
+        // ---- Welle M4: Erzeuger in Teillast (Wärmepumpe und BHKW) ----
+
+        /// <summary>
+        /// Schritt <see cref="ErzeugerTeillastSchema.SCHRITT"/> — <b>die Teillastfelder von
+        /// Wärmepumpe und BHKW</b> (Welle M4 der Entscheidungsvorlage Modellgrenzen: WP1, BH1, BH2). Er
+        /// folgt auf <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_WP_STAMM</c> und <c>Tab_WP</c> die nullbaren Spalten
+        /// <c>Mindestleistung_kW</c> und <c>Taktverlustfaktor_Cd</c>, an <c>Tab_BHKW_STAMM</c> und
+        /// <c>Tab_BHKW</c> <c>Wirkungsgrad_el_Teillast50</c>, <c>Wirkungsgrad_th_Teillast50</c>,
+        /// <c>Anfahrverlust_kWh</c> und <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel. Die Anweisungen
+        /// stehen bei <see cref="ErzeugerTeillastSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Felder rechnen wie zuvor — keine
+        /// Taktrechnung der Wärmepumpe, Volllastwirkungsgrade und kein Takten beim BHKW.</para>
+        /// </summary>
+        public const int SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7070,6 +7088,14 @@ namespace WindowsFormsApplication1
                         "Zirkulation, und ein Wochenprofil liefe ohne Feiertage und Betriebsferien durch das " +
                         "Jahr. KEIN Rechenergebnis aendert sich - alles entsteht leer und rechnet wie zuvor.",
                         Schritt_BedarfNetzKalender),
+            // WELLE M4 - die Teillastfelder von Waermepumpe und BHKW an Katalog und Projektkopie.
+            // REIN DDL; die Quelle ist ErzeugerTeillastSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERZEUGER_TEILLAST,
+                        "Tab_WP(_STAMM): Mindestleistung_kW, Taktverlustfaktor_Cd; Tab_BHKW(_STAMM): " +
+                        "Wirkungsgrad_el_Teillast50, Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min",
+                        "Taktverlust der Waermepumpe, Teillastkennlinie und Takten des BHKW haetten keinen Ort. " +
+                        "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen wie zuvor.",
+                        Schritt_ErzeugerTeillast),
         };
 
         /// <summary>
@@ -12640,6 +12666,45 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Netzverluste je Kanal, Zirkulation, Betriebskalender - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e) (leer).") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Teillastfelder von Wärmepumpe und BHKW" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ERZEUGER_TEILLAST"/>, die Anweisungen bei <see cref="ErzeugerTeillastSchema"/>.
+        /// <b>Wiederholbar</b>: <c>ErzeugerTeillastSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der vier Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_ErzeugerTeillast(Lauf l)
+        {
+            string nr = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErzeugerTeillastSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ErzeugerTeillastSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ErzeugerTeillastSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Teillastspalten an " + string.Join(", ", ErzeugerTeillastSchema.TABELLEN) +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Teillastfelder von Waermepumpe und BHKW - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
             return true;
         }
 

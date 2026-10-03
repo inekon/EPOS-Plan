@@ -346,6 +346,12 @@ namespace WindowsFormsApplication1
         public const string FeldAnfahrverlust = "ANFAHRVERLUST";
         public const string FeldMindestlaufzeit = "MINDESTLAUFZEIT";
 
+        // Die Teillastkennlinie des BHKW (Welle M4, BH1): die zwei Wirkungsgrade bei 50 % Last.
+        // Anfahrverlust und Mindestlaufzeit (BH2) fuehrt das BHKW unter denselben Schluesseln
+        // wie der Kessel (FeldAnfahrverlust, FeldMindestlaufzeit). Leer heisst „nicht gepflegt".
+        public const string FeldTeillastEl50 = "WIRKUNGSGRAD_EL_TEILLAST50";
+        public const string FeldTeillastTh50 = "WIRKUNGSGRAD_TH_TEILLAST50";
+
         public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
         public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
         public const string FeldWirkungsgradTh = "WIRKUNGSGRAD_TH";
@@ -574,6 +580,23 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWirkungsgrad, t("BHKWK_LBL_WIRKUNGSGRAD"), "",
                                                   BrowserFeldArt.Zahl),
+
+                            // Teillast und Takten (Welle M4: BH1, BH2). Leer heisst hier NICHT 0,
+                            // sondern „Volllastwert" bzw. „kein Takten" - der Speicherweg schreibt
+                            // ein leeres Feld als NULL (BHKWStammCtrl.FelderUebernehmen).
+                            new BrowserDetailfeld(FeldTeillastEl50, t("BHKWK_LBL_ETA_EL50"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldTeillastTh50, t("BHKWK_LBL_ETA_TH50"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldAnfahrverlust, t("BHKWK_LBL_ANFAHRVERLUST"), "kWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldMindestlaufzeit, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+
                             new BrowserDetailfeld(FeldMotortyp,     t("BHKWK_LBL_MOTORTYP"), "",
                                                   BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldRaumbedarf,   t("BHKWK_LBL_RAUMBEDARF"), "m³",

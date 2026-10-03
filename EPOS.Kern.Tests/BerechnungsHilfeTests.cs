@@ -636,7 +636,13 @@ namespace EPOS.Kern.Tests
                 { "Stromspeicher", 7 },
                 // Die Solarthermieseite traegt Arbeitstemperatur aus dem Speicher,
                 // Diffus-IAM, Bezugsflaeche und den Solarkreis (Pumpenstrom, Verluste).
-                { "Solarthermie", 4 }
+                { "Solarthermie", 4 },
+                // Die Waermepumpenseite traegt das Takten unter der Mindestleistung nach
+                // EN 14825 (Welle M4, WP1).
+                { "Wärmepumpe", 4 },
+                // Die BHKW-Seite traegt Teillastkennlinie und Takten mit Anfahrverlust
+                // (Welle M4, BH1 und BH2).
+                { "BHKW", 4 }
             };
 
         /// <summary>

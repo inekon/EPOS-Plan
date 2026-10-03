@@ -45,7 +45,7 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 3 | Drei Nebenbefunde im PV-Rechenweg beheben | nur die Frage zum 5-kWh-Speicher | Simulationsergebnisse (Monatsbild) |
 | 4 | Solarthermieganglinie: in die Rechnung oder entfernen | ja — Weg (a), umgesetzt | Energieerzeuger, Solarthermie, Rechenweg Solarthermie |
 | 5 | Kaskaden-Vorwahl: Kessel nicht vor die Wärmepumpe | ja — Variante (a), umgesetzt | Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simulation, Kühlung |
-| 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
+| 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1), vollständig umgesetzt | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
 | 8 | Tww-Einspielskript Python-versionsfest machen | – | – |
 | 9 | Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle | – | – |
@@ -213,6 +213,17 @@ auf den Seiten Wärmepumpe, Heizkessel, BHKW, Solarthermie, Pufferspeicher, Simu
 Kühlung.
 
 ## 6. BHKW-Untergrenze wirkungslos, Einheit und Tippfehler
+
+**Vollständig umgesetzt:** (1) Die Untergrenze wirkt in allen drei Betriebsarten je Modul, in der
+Rangfolge Anlagenfeld, Katalogwert, Projektwert; Werte über 100 % werden mit Protokollwarnung
+übergangen (Statuszeile #659). Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
+Mindestlaufzeit (BH2 der
+[Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md), Welle M4),
+sonst bleibt es in der Stunde aus. (2) Der Bereitschaftsverlust des Kessels steht im
+Katalogbrowser in kW oder % nach seiner gepflegten Einheit. (3) `SIMERG_INFO_BHKW` ist in beiden
+Sprachen berichtigt. (4) Die Grenzleistungen über 100 % stehen nur an Katalogsätzen
+(`Tab_BHKW_STAMM`), an keinem Projektmodul; der Lauf übergeht sie mit Warnung. Gültiger Stand:
+[Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 **Aufgabe:**
 1. **Das Feld „Untere Grenzleistung des ausgewählten Moduls“ wirkt nicht.**
