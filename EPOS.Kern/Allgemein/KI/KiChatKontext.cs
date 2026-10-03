@@ -221,6 +221,7 @@ namespace WindowsFormsApplication1
             { "Form_Heizkessel",               B_HEIZKESSEL },
             { "Form_ImportKonflikte",          B_PROJEKT },
             { "Form_KatalogDubletten",         B_ADMIN },
+            { "Form_Katalogabgleich",          B_ADMIN },
             { "Form_KiChat",                   B_HILFE },
             { "Form_KiEinstellungen",          B_HILFE },
             { "Form_Klimadaten",               B_KLIMADATEN },

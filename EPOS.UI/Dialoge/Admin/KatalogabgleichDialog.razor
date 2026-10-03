@@ -1,0 +1,277 @@
+﻿@* KATALOG AKTUALISIEREN (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1, Welle M6).
+
+   WOZU. Die Auslieferung bringt neben der Vorlagendatenbank ein Katalogpaket mit. Beim ersten
+   Start einer neuen Fassung gleicht der Kern die laufend gepflegten Kataloge damit ab; dieser
+   Dialog zeigt den Stand (Fassung der Datenbank, Fassung des Pakets), prüft ohne zu schreiben
+   („Nur prüfen"), gleicht auf Wunsch ab und stellt den Auslieferungsstand eines Satzes wieder
+   her, dessen Anpassung der Abgleich behalten hat.
+
+   EIN WERKZEUGDIALOG wie die Dublettensuche: „Abgleichen" und „Wiederherstellen" schreiben
+   SOFORT, nach einer Rückfrage mit Vorgabe „Nein"; es gibt keinen Arbeitsstand und deshalb keine
+   SpeichernLeiste, nur „Schließen". Enter ist nicht belegt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Alles kommt als Delegat aus der Hülle
+   (EPOS.UI.Daten/Allgemein/KatalogabgleichHuelle.cs). Ohne Gaben zeichnet der Dialog den leeren
+   Stand und bietet keinen Knopf an, der nichts tun könnte. *@
+
+@namespace EPOS.UI.Dialoge.Admin
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalogabgleich" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@T.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@T.Titel" />
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    <p class="epos-dialog-einleitung">@T.Einleitung</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <table class="epos-katalogabgleich-stand">
+        <tbody>
+            <tr><th scope="row">@T.FassungDatenbank</th><td class="epos-kabg-fassung-db">@_stand.FassungDatenbank</td></tr>
+            <tr><th scope="row">@T.FassungPaket</th><td class="epos-kabg-fassung-paket">@_stand.FassungPaket</td></tr>
+            <tr><th scope="row">@T.Paketort</th><td class="epos-kabg-paketort">@_stand.Paketpfad</td></tr>
+        </tbody>
+    </table>
+
+    <div class="epos-kontextleiste">
+        @if (Pruefen is not null)
+        {
+            <button type="button" class="epos-knopf epos-kabg-pruefen" disabled="@(_laeuft || !_stand.PaketVorhanden)"
+                    @onclick="BeiPruefen">@T.Pruefen</button>
+        }
+        @if (Abgleichen is not null)
+        {
+            <button type="button" class="epos-knopf epos-kabg-abgleichen" disabled="@(_laeuft || !_stand.PaketVorhanden)"
+                    @onclick="BeiAbgleichen">@T.Abgleichen</button>
+        }
+        <span class="epos-status">@_status</span>
+    </div>
+
+    @if (_zeilen.Count == 0)
+    {
+        <p class="epos-leerzustand">@(_geprueft ? T.KeineAenderung : T.Leer)</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-kabg-liste">
+                <thead>
+                    <tr>
+                        <th>@T.SpalteKatalog</th>
+                        <th>@T.SpalteSatz</th>
+                        <th>@T.SpalteAktion</th>
+                        <th>@T.SpalteHinweis</th>
+                        <th>@T.SpalteHandlung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (KatalogabgleichZeile z in _zeilen)
+                    {
+                        <tr @key="@(z.Tabelle + "|" + z.Schluessel + "|" + z.Aktion)">
+                            <td>@z.Katalog</td>
+                            <td title="@z.Schluessel">@z.Satz</td>
+                            <td>@z.Aktion</td>
+                            <td>@z.Hinweis</td>
+                            <td>
+                                @if (z.Wiederherstellbar && Wiederherstellen is not null)
+                                {
+                                    <button type="button" class="epos-knopf epos-kabg-wiederherstellen" disabled="@_laeuft"
+                                            @onclick="() => BeiWiederherstellen(z)">@T.Wiederherstellen</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (_stand.Protokoll.Count > 0)
+    {
+        <details class="epos-kabg-protokoll">
+            <summary>@T.Protokoll</summary>
+            <ul>
+                @foreach (string zeile in _stand.Protokoll)
+                {
+                    <li>@zeile</li>
+                }
+            </ul>
+        </details>
+    }
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="Schliessen">@T.Schliessen</button>
+    </div>
+
+    <Rueckfrage Offen="@_abgleichFrageOffen" Frage="@T.FrageAbgleichen" TitelText="@T.Titel" VorgabeNein="true"
+                JaText="@T.Ja" NeinText="@T.Nein" Beantwortet="AbgleichBeantwortet" />
+
+    <Rueckfrage Offen="@(_wiederherstellen is not null)" Frage="@_wiederherstellenFrage" TitelText="@T.Titel"
+                VorgabeNein="true" JaText="@T.Ja" NeinText="@T.Nein" Beantwortet="WiederherstellenBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle
+    // =====================================================================
+
+    /// <summary>Der Stand beim Öffnen (Fassungen, Paketort, Protokoll).</summary>
+    [Parameter] public KatalogabgleichStand? Stand { get; set; }
+
+    /// <summary>„Nur prüfen": plant den Abgleich, schreibt nichts.</summary>
+    [Parameter] public Func<Task<KatalogabgleichAntwort>>? Pruefen { get; set; }
+
+    /// <summary>„Abgleichen": Sicherung, dann Abgleich in einem Vorgang.</summary>
+    [Parameter] public Func<Task<KatalogabgleichAntwort>>? Abgleichen { get; set; }
+
+    /// <summary>Stellt den Auslieferungsstand eines Satzes wieder her (Tabelle, Schlüssel).</summary>
+    [Parameter] public Func<string, string, Task<KatalogabgleichAntwort>>? Wiederherstellen { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = es wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Das Textbündel.</summary>
+    [Parameter] public KatalogabgleichTexte? Texte { get; set; }
+
+    /// <summary>Der Hilfeschlüssel (Seite Gerätekataloge, Abschnitt Katalog aktualisieren).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Katalogabgleich.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private KatalogabgleichTexte T => Texte ?? _vorgabeTexte;
+    private readonly KatalogabgleichTexte _vorgabeTexte = new();
+
+    private KatalogabgleichStand _stand = KatalogabgleichStand.Leer;
+    private List<KatalogabgleichZeile> _zeilen = new();
+    private bool _geprueft;
+    private bool _laeuft;
+    private bool _geschrieben;
+    private string _status = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _abgleichFrageOffen;
+    private KatalogabgleichZeile? _wiederherstellen;
+    private string _wiederherstellenFrage = "";
+
+    /// <summary>Die angezeigten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<KatalogabgleichZeile> Zeilen => _zeilen;
+
+    /// <summary>Hat der Dialog geschrieben (Prüfhilfe für Tests)?</summary>
+    public bool Geschrieben => _geschrieben;
+
+    protected override void OnInitialized()
+    {
+        _stand = Stand ?? KatalogabgleichStand.Leer;
+    }
+
+    // =====================================================================
+    // Handlungen
+    // =====================================================================
+
+    private async Task BeiPruefen()
+    {
+        if (Pruefen is null || _laeuft) return;
+        await Ausfuehren(Pruefen, geprueft: true);
+    }
+
+    private void BeiAbgleichen()
+    {
+        if (Abgleichen is null || _laeuft) return;
+        _abgleichFrageOffen = true;
+    }
+
+    private async Task AbgleichBeantwortet(bool? ja)
+    {
+        _abgleichFrageOffen = false;
+        if (ja != true || Abgleichen is null) return;
+        await Ausfuehren(Abgleichen, geprueft: false);
+    }
+
+    private void BeiWiederherstellen(KatalogabgleichZeile z)
+    {
+        if (Wiederherstellen is null || _laeuft) return;
+        _wiederherstellen = z;
+        _wiederherstellenFrage = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                               T.FrageWiederherstellen, z.Satz);
+    }
+
+    private async Task WiederherstellenBeantwortet(bool? ja)
+    {
+        KatalogabgleichZeile? z = _wiederherstellen;
+        _wiederherstellen = null;
+        if (ja != true || z is null || Wiederherstellen is null) return;
+        _laeuft = true;
+        try
+        {
+            KatalogabgleichAntwort a = await Wiederherstellen(z.Tabelle, z.Schluessel);
+            Melden(a.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung, a.Meldung);
+            if (a.Ok)
+            {
+                _geschrieben = true;
+                _zeilen.Remove(z);
+            }
+            if (a.Stand is not null) _stand = a.Stand;
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private async Task Ausfuehren(Func<Task<KatalogabgleichAntwort>> weg, bool geprueft)
+    {
+        _laeuft = true;
+        _meldung = "";
+        try
+        {
+            KatalogabgleichAntwort a = await weg();
+            _zeilen = new List<KatalogabgleichZeile>(a.Zeilen ?? Array.Empty<KatalogabgleichZeile>());
+            _geprueft = true;
+            _status = a.Zusammenfassung ?? "";
+            if (!geprueft && a.Ok) _geschrieben = true;
+            if (a.Stand is not null) _stand = a.Stand;
+            string meldung = a.Meldung ?? "";
+            if (geprueft && a.Ok && meldung.Length == 0) meldung = T.NurGeprueft;
+            Melden(a.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung, meldung);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private void Melden(WarnStufe stufe, string text)
+    {
+        _meldungStufe = stufe;
+        _meldung = text ?? "";
+    }
+
+    private async Task Schliessen()
+    {
+        if (_laeuft) return;
+        await Geschlossen.InvokeAsync(_geschrieben);
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        if (_abgleichFrageOffen || _wiederherstellen is not null) return;   // die Frage hält Esc selbst
+        await Schliessen();
+    }
+}

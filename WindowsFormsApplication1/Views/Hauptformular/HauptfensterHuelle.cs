@@ -155,7 +155,13 @@ namespace WindowsFormsApplication1
                 // Zeichenfaden (Regel S-2 aus W15c). Was hineingeht, ist ein
                 // fertiger Satz samt Dringlichkeit — kein Token, kein Anker,
                 // kein Schlüssel.
-                ["Lizenzlage"] = LizenzLage.Ermitteln()
+                ["Lizenzlage"] = LizenzLage.Ermitteln(),
+
+                // DER BERICHT DES KATALOGABGLEICHS BEIM START (KU1 Stufe 1): einmal abgeholt, als
+                // Ueberlagerung des Fensters; leer, wenn der Start nichts abgeglichen hat.
+                ["Starthinweis"] = Katalogabgleich.StartberichtAbholen()?.Starttext() ?? "",
+                ["StarthinweisTitel"] = MyResource.Resource.KABG_START_TITEL,
+                ["StarthinweisOk"] = MyResource.Resource.KABG_OK
             };
         }
 
@@ -334,6 +340,11 @@ namespace WindowsFormsApplication1
 
                 case Seitenschluessel.KatalogDubletten:
                     return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());
+
+                // KU1 Stufe 1: „Katalog aktualisieren…" - die Datenseite liegt plattformfrei in
+                // KatalogabgleichHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Katalogabgleich:
+                    return () => KatalogabgleichFenster.Oeffnen(_besitzer?.Invoke());
 
                 // ANWENDERENTSCHEID MN-1 (19.09.2026): Der Fall
                 // Seitenschluessel.LizenzVerwaltung ist WEG. Der Menuepunkt
