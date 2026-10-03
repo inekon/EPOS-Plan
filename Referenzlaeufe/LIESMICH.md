@@ -445,6 +445,28 @@ Emissionen.
 > derselbe Bauweg auf einer Kopie bitgleich, Zonenschleife deterministisch, `Tab_ErgebnisZone` nach dem Lauf); die
 > Zeilen von 1052 legt [`Skripte/referenzprojekt_1052_zonen.cs`](Skripte/referenzprojekt_1052_zonen.cs) an.
 
+## Die Einfrierregel „gesäte Konditionierungsdaten“ (gilt mit dem Einfrieren von 1051)
+
+Dreizehnter Ort derselben Falle — als Regeltext vorbereitet; sie gilt, sobald das Konditionierungsprojekt 1051 in einer
+Basis steht (unten „Das Referenzprojekt 1051“). Das Gebäude von 1051 rechnet seine Sollwerte, Lüftung und Heizperiode
+aus Kalendern und Vorgabezeilen (`Tab_Konditionierungskalender`, `-periode`, `-vorgabe`) und bemisst seine Aufheizleistung
+aus der Projektvorgabe. Jede dieser Zeilen verschiebt Heizwärme, Spitze, Rampentage, Aufheizplan, Nachtauskühlung und
+Sommerlüftung und damit Erzeuger und Emissionen.
+
+> **Wer gesäte Konditionierungsdaten eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind der Referenzkatalogbau „Referenzbau Konditionierung“ (ID 289: Bauwerte, `Kuehlung_Aktiv`,
+> `Sommerlueftung`, die fünf Größen des Kalenders „Büro“ mit Kalendern, Perioden und Vorgabezeilen — Ferien, Heizperiode
+> SAISON, Nachtzeile der Lüftung mit `Bedingt_K`), das Gebäude 10657 von 1051 (alle Gebäudezellen, Zuordnung 572 m²,
+> keine manuelle Aufheizzeit), an `Tab_Einstellungen` von 1051 die Aufheizvorgabe (`Aufheizoptimierung`, `Aufheiz_*`:
+> Bemessung, Reserve, Art, Aufschlag), die Ferien, die Heizperiode und der Schalter `Kuehlbetrieb`, die
+> Nachtzeile der Lüftung sowie das Anlegen oder Entfernen eines Referenzprojekts mit Konditionierung. Gehalten werden
+> die Zellen von `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` (jede gesäte Zelle gegen den Bauplan, derselbe
+> Bauweg auf einer Arbeitskopie bitgleich, zwei Läufe bytegleich, Vorlage „Büro“ unverändert, Abgleich gegen die Basis);
+> die Zeilen von 1051 legt
+> [`Skripte/referenzprojekt_1051_konditionierung.cs`](Skripte/referenzprojekt_1051_konditionierung.cs) an.
+
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
@@ -939,6 +961,49 @@ der Konditionierungsvorlagen, `integrity_check` und `foreign_key_check` und erse
 fällt auf `MAX(Tab_Projekt.ID) + 1`: Steht 1051 schon, fällt sie von selbst auf 1052; fehlt 1051, hält eine
 Platzhalterzeile `Tab_Projekt.ID = 1051` die Nummer nur für die Dauer der Kopie frei (ohne Kindzeile, danach gelöscht).
 Nach einer Neufassung der Testdatenbank wird es auf der neuen Fassung erneut gezogen — zuerst 1051, dann 1052.
+
+### Das Referenzprojekt 1051 „Konditionierung“ (noch nicht in der Basis)
+
+Projekt **1051 „Referenzprojekt Konditionierung“** ist das Projekt der Testdatenbank mit Kalendern, bedingter Lüftung und
+wirksamer Aufheizoptimierung: Kopie von 1007 auf dem Kopierweg des Programms (fällt auf `MAX(Tab_Projekt.ID) + 1`, also
+1051, wenn 1052 noch nicht steht), mit einem Gebäude 10657 aus dem Referenzkatalogbau „Referenzbau Konditionierung“
+(ID 289), Zuordnung 572 m².
+
+Bauwahl (Bemessung (b) 2 K, täglich, Reserve leer): Der Referenzbau ist ein Duplikat von Verw_I_40 (572 m², 100
+Rampentage, längste Rampe 13 h, t_auf,max 26 h, W1/W2/W3 0/1/0, Bemessungsfall erreichbar, P_auf 32,03 kW). Verw_I_33
+(905,3 m², 132 Rampentage) wäre ebenfalls tauglich, EFH-A-TS-212 (5 Rampentage, 8 h) nicht. Ein Rückfall über
+`Heizleistung_Max` oder die Art „fest“ war nicht nötig.
+
+| Zelle | gesät |
+|---|---|
+| Katalogbau 289 | dupliziert aus Verw_I_40 (275 Bestandssätze unberührt); `Kuehlung_Aktiv` 1, `Sommerlueftung` 1 |
+| Kalender „Büro“ | in allen fünf Größen, Lüftung zuerst „aufteilen“ (0,6 → 0,3 Infiltration + 0,3 Nutzer): 5 Kalender („aus Vorlage Büro“, de-DE), 16 Vorgaben, 54 Perioden, 9 Feiertage „wie Sonntag“ je Größe |
+| Nachtzeile der Lüftung | 2,0 1/h von 18 bis 7 Uhr bei `Bedingt_K` 2 K; Wochenende und Ferien 0,1 1/h |
+| Ferien, Heizperiode | Ferien Tag 357–6 und 213–226; Heizperiode SAISON 274–120 (Heizsoll-Betriebspause 121–273) |
+| Gebäude 10657 | 26 Gebäudezellen, keine manuelle Aufheizzeit, Zuordnung 572 m² |
+| `Tab_Einstellungen` | Aufheizvorgabe STUNDE_ABZUG 2 K, Reserve leer (wirksam 20 %), Art und Aufschlag leer, täglich; Kühlbetrieb aus; `Kosten_Geaendert` NULL |
+
+Gerechnet (zwei Läufe byte-gleich): Heizwärme 25,256 MWh (ohne Rampe 24,718), Spitze 30,96 kW (ohne Rampe 42,83),
+100 Rampentage, t_auf,max 26 h, P_auf 32,03 kW bei −20,17 °C, 291 Aufheizstunden, längste Rampe 13 h, W1/W2/W3/W4
+0/1/0/1, 589 Nachtauskühlstunden, 1 724 Sommerlüftungsstunden. Die kleinste Reserve ohne W1 und W3 liegt bei 8,75 %
+(Bemessungsfall erreichbar ab 13,75 %); die gesetzte Reserve von 20 % bleibt.
+
+1051 steht **nicht** in der Basis R33; eingefroren wird es mit RP2 in der Basis R34, dann gilt die Einfrierregel „gesäte
+Konditionierungsdaten“ oben. Die Auslieferungsvorlage liefert 1051 und den Referenzbau nicht aus.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1051_konditionierung.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Zellen und Programmwege stehen im Bauplan
+[`Skripte/referenzprojekt_1051_bauplan.cs`](Skripte/referenzprojekt_1051_bauplan.cs) (Klasse
+`Konditionierungsprojekt1051`); das Skript zieht ihn über `#:include`, `EPOS.Kern.Tests` verlinkt ihn für die Wache. Das
+Skript läuft unter de-DE und ist wiederholbar (Rückgabe 0 ohne Änderung). **Reihenfolge nach einer Neufassung der
+Testdatenbank: zuerst 1051, dann 1052** (eine Kopie für 1051 fiele bei stehendem 1052 auf 1053).
+
+**Die achtzehn Projekte der Basis R34 (Vorschlag):** die sechzehn der Basis R33, dazu 1051 und 1052.
+**CI-Auswahl (Vorschlag):** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1052 und 1050
+stehen nicht in der CI-Auswahl).
 
 ## Die wichtigste Regel
 
