@@ -62,7 +62,9 @@ namespace WindowsFormsApplication1
     /// Die Ergebnisse liegen prozessweit je Projekt (Muster der übrigen Statics in
     /// <c>Program</c>), damit sie sowohl die Detailansicht als auch den später
     /// geöffneten Quellendialog erreichen, ohne dass eine Aufrufkette dafür nötig ist.
-    /// Sie werden NICHT persistiert - sie gelten für den Lauf der laufenden Sitzung.
+    /// Mit dem gespeicherten Simulationsergebnis schreibt <c>ErgebnisCtrl.Save</c> sie zudem nach
+    /// <c>Tab_ErgebnisErdreich</c> (Entscheidungsvorlage Modellgrenzen EQ1,
+    /// <see cref="ErdreichErgebnisSpeicher"/>); nach einem Neustart liest der Dialog sie von dort.
     /// </summary>
     public static class ErdreichAuswertung
     {
@@ -259,6 +261,12 @@ namespace WindowsFormsApplication1
             string HinweisVorbehalt,
             string HinweisFrost)
         {
+            /// <summary>
+            /// Der Laufstempel eines GESPEICHERTEN Ergebnisses (EQ1, <see cref="ErdreichErgebnisSpeicher"/>);
+            /// leer bei einem Lauf dieser Sitzung. Der Dialog schreibt dann „Stand des Laufs vom …".
+            /// </summary>
+            public string Laufstempel { get; init; } = "";
+
             /// <summary>„Es gab keinen Lauf" — der Zustand beim Öffnen ohne Ergebnis.</summary>
             public static readonly ErdreichLaufErgebnis Keines =
                 new ErdreichLaufErgebnis(false, false, 0, 0, 0, "", "", "");
