@@ -557,8 +557,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **172**, 81 293 312 Byte, LFS-SHA-256
-`8edc80c49b95d9841d044580dc61a011915f3b330c587de66a41c86c9dab2bfd`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **173**, 81 412 096 Byte, LFS-SHA-256
+`d65e7ef5c67f1ac8302bf17faa350da792535655c67118ddd39679549b249f2b`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -693,6 +693,17 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **81 293 312 Byte, LFS-SHA-256 `8edc80c49b95d9841d044580dc61a011915f3b330c587de66a41c86c9dab2bfd`**. **Die Basis bleibt:** Die sechzehn
 > Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich; der Katalogabgleich selbst
 > läuft auf der Testdatenbank nie (Einfrierregeln nennen Katalogzeilen der Referenzprojekte). Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 173 (Katalogfassung Stufe 2), Basis unverändert.** `KatalogfassungStufe2Schema` (Nummer
+> `KatalogfassungSchema.SCHRITT + 1`): die drei Katalogspalten `Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen`
+> an 16 weiteren Kopftabellen (Baustoffe, Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen,
+> Pufferspeicher, Pufferauslegungs-Vorgaben, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien, Stromspeicher,
+> Stromverbraucher und -typen, Wechselrichter); Klima und Zapfprofilkatalog benannt ausgenommen. Die Saat setzt nur Schlüssel
+> und Prüfsumme der Sätze mit `ReadOnly = 1` (BST 132, GEB 6, KV 14, PAP 148, WBGL 3, WR 1), keine Fachwerte; Projektkopien
+> unberührt. Die Testdatenbank ist aus der Fassung `8edc80c4…` (172) mit `Werkzeuge/Testdatenbankschema` auf **173** gezogen
+> (`integrity_check` ok). Neue Fassung **81 412 096 Byte, LFS-SHA-256 `d65e7ef5c67f1ac8302bf17faa350da792535655c67118ddd39679549b249f2b`**.
+> **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
+> byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 
