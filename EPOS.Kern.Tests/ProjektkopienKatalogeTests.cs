@@ -47,7 +47,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(KatalogfassungStufe2Schema.SCHRITT + 1, ProjektkopienKatalogeSchema.SCHRITT);
+            Assert.Equal(AufheizManuellSchema.SCHRITT + 1, ProjektkopienKatalogeSchema.SCHRITT);
+            Assert.Equal(175, ProjektkopienKatalogeSchema.SCHRITT);
+            Assert.Equal(ProjektkopienKatalogeSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.True(SchemaStand.Zielversion >= ProjektkopienKatalogeSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == ProjektkopienKatalogeSchema.SCHRITT).Wirkung);

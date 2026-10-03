@@ -50,10 +50,10 @@ namespace WindowsFormsApplication1
     public static class ProjektkopienKatalogeSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Vorläufig hinter der
-        /// Katalogfassung der Stufe 2; hängt beim Merge an <c>AufheizManuellSchema</c> (174).
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste Schritt
+        /// hinter Aufschlag und manueller Aufheizzeit (<see cref="AufheizManuellSchema"/>, 174), also 175.
         /// </summary>
-        public const int SCHRITT = KatalogfassungStufe2Schema.SCHRITT + 1;
+        public const int SCHRITT = AufheizManuellSchema.SCHRITT + 1;
 
         /// <summary>Die Projektkopie der Brennstoffe.</summary>
         public const string TAB_BRENNSTOFF = "Tab_Brennstoff";
