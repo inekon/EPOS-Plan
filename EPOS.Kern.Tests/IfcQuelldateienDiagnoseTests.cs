@@ -100,8 +100,77 @@ namespace EPOS.Kern.Tests
                                        + Z(mitU > 0.0 ? ua / mitU : (double?)null) + " W/(m²K) über " + Z(mitU) + " m²");
                     }
                     _aus.WriteLine("Vorschlag: " + Text(v.Meldungen));
+
+                    // Kopf, innere Masse und Zonierung (Vorgabe und Z4) — die Zahlen der Trenndecke über Raumbezüge.
+                    GebaeudeFeldzeile innen = satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR);
+                    _aus.WriteLine("Kopf: " + GebaeudeZuordnungsModell.KopfText(satz) + "; Vorschlagsname „"
+                                   + GebaeudeZuordnungsModell.Vorschlagsname(satz) + "“");
+                    _aus.WriteLine("Innenflächenfaktor " + Z(innen.Wert) + " (" + innen.Herkunft + ", " + innen.Beleg?.Schluessel + ": "
+                                   + string.Join(";", innen.Beleg?.Werte ?? Array.Empty<string>()) + ")");
+                    GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, gi);
+                    _aus.WriteLine("Zonierung: Regeln " + string.Join(",", vorgabe.Regeln) + ", Vorgabe " + vorgabe.Vorgabe
+                                   + ", Trenndecken über Raumbezüge " + g.ZahlTrenndeckenReferenz + "; " + Text(vorgabe.Meldungen));
+                    if (vorgabe.Regeln.Contains(IfcImportProfil.ZONENREGEL_Z4))
+                    {
+                        GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, gi, IfcImportProfil.ZONENREGEL_Z4);
+                        _aus.WriteLine("Z4: " + z4.Zonen.Count + " Zonen (" + string.Join(", ", z4.Zonen.Select(z => z.Name + " " + Z(z.FlaecheM2) + " m²"))
+                                       + "), Trennungen " + z4.Trennungen.Count + " mit " + Z(z4.Trennungen.Sum(t => Math.Max(t.FlaecheA, t.FlaecheB)))
+                                       + " m², Innen " + Z(z4.Flaechen.Where(f => f.Rand == Zonenrand.Innen).Sum(f => (f.BruttoM2 ?? 0) * (f.Beidseitig ? 2 : 1)))
+                                       + " m²; " + Text(z4.Meldungen));
+                        foreach (Zonentrennung t in z4.Trennungen)
+                            _aus.WriteLine("  Trennung " + z4.Zonen[t.ZoneA].Name + " – " + z4.Zonen[t.ZoneB].Name + ": " + Z(Math.Max(t.FlaecheA, t.FlaecheB)) + " m²");
+                        GebaeudeBauteilvorschlag v4 = GebaeudeBauteilvorschlag.BildenMitZonen(a, gi, null, IfcImportProfil.ZONENREGEL_Z4);
+                        _aus.WriteLine("Vorschlag Z4: " + v4.Zeilen.Count + " Zeilen, Zone " + Z(v4.Zeilen.Where(r => r.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE)
+                                                                                                   .Sum(r => r.Bauteil.Flaeche)) + " m²; "
+                                       + Text(v4.Meldungen.Where(m => m.Stufe != PruefStufe.Info)));
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// <b>Die Raumbezüge der Anwenderdatei MFH 1964</b> (Mehrzonenkonzept 6.5): Die Datei führt keine Raumgrenzen,
+        /// aber je Raum ein <c>IfcRelReferencedInSpatialStructure</c>. Drei Decken trennen Geschosspaare (Keller/EG,
+        /// EG/OG1, OG1/DG1); die Decke DG1/DG2 erklärt die Datei als oberste Geschossdecke gegen unbeheizt, während
+        /// der Spitzboden „Wohnraum" nach dem Namen beheizt ist — dort gilt die Erklärung der Datei. Die Datei
+        /// referenziert je Geschossdecke nur das erste Deckenteil (23,75 m² von rund 96 m² über dem EG, 2,26 m² über dem
+        /// OG1): Beide Paare sind zu klein, um zu koppeln — benannt —, die Vorgabe bleibt Z5. 51 Innenwände liegen
+        /// zwischen Räumen eines Geschosses, 19 Innenwände (89,9 m²) zählen einseitig; der Innenflächenfaktor kommt aus
+        /// der Datei statt leer. Fehlt die Datei, endet der Fall ohne Prüfung.
+        /// </summary>
+        [Fact]
+        public void MFH_1964_Trenndecken_und_innere_Masse_aus_den_Raumbezuegen()
+        {
+            string pfad = Quellen() == null ? null : Path.Combine(Quellen(), "MFH-Klein-unsaniert-1964.ifc");
+            if (pfad == null || !File.Exists(pfad) || new FileInfo(pfad).Length < 1024) { _aus.WriteLine("MFH 1964 fehlt — übersprungen."); return; }
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal(3, g.ZahlTrenndeckenReferenz);
+            Assert.False(g.GeschosseGekoppelt);
+            PruefMeldung bezug = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_REFERENZ");
+            Assert.Equal(new[] { "Gebäude", "3", "Keller/EG, EG/OG1, OG1/DG1", "51" }, bezug.Werte);
+            Assert.Equal(new[] { "EG;OG1;23.75;96.42;25", "OG1;DG1;2.26;96.42;2" },
+                         g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_KLEIN").Select(m => string.Join(";", m.Werte)));
+            PruefMeldung einseitig = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_INNEN_EINSEITIG");
+            Assert.Equal(new[] { "19", "89.9" }, einseitig.Werte);
+
+            // Die Hülle des Einzonenwegs bleibt; die Wände zu den Abstellräumen zählen gegen unbeheizt.
+            GebaeudeImportSatz satz = a.Zuordnen(0, null);
+            Assert.Equal("245.59", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert));
+            Assert.Equal("148.68", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_DACH).Wert));
+            Assert.Equal("119.01", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_GRUND).Wert));
+            Assert.Equal("14.78", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert));
+            Assert.Equal("1.95", Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert));
+            Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Herkunft);
+
+            GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0);
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z5, vorgabe.Vorgabe);
+            GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            Assert.Contains(z4.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
+            Assert.Equal(new[] { "DG1|OG1|2.26", "OG1|OG1 (unbeheizt)|5.85", "OG1|EG|23.75", "EG|EG (unbeheizt)|5.85", "EG|Keller|11.84" },
+                         z4.Trennungen.Select(t => z4.Zonen[t.ZoneA].Name + "|" + z4.Zonen[t.ZoneB].Name + "|" + Z(Math.Max(t.FlaecheA, t.FlaecheB))));
         }
 
         /// <summary>

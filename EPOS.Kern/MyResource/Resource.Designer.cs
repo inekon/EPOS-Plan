@@ -36853,6 +36853,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_INNEN_EINSEITIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_INNEN_EINSEITIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen mit Trennflächen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene (IfcRelSpaceBoundary2ndLevel) erneut ausgeben. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KEINE_GRENZEN {
@@ -37137,6 +37146,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_KLEIN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen, aber Raumbezüge der Bauteile (IfcRelReferencedInSpatialStructure): {1} Decken trennen die Geschosse {2} und koppeln deren Zonen (Regel Z4); {3} Innenwände zwischen Räumen eines Geschosses zählen als innere Masse. Die Flächen kommen aus den Mengen der Bauteile, je Geschosspaar, nicht je Raum. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_REFERENZ {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_REFERENZ", resourceCulture);
             }
         }
         

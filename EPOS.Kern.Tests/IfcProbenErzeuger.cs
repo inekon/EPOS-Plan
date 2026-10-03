@@ -48,6 +48,7 @@ namespace EPOS.Kern.Tests
                 ["ifc4_haus.ifc"] = haus,
                 ["ifc2x3_haus.ifc"] = Haus(XbimSchemaVersion.Ifc2X3, "ifc2x3_haus.ifc"),
                 ["ifc2x3_enthaltensein.ifc"] = Enthaltensein(),
+                ["ifc2x3_referenzen.ifc"] = Referenzen(),
                 ["ifc4_haus.ifczip"] = Zip("ifc4_haus.ifc", haus),
                 ["ifc4x1_kopf.ifc"] = Ifc4x1Kopf(),
                 ["ifc4_zwei_gebaeude.ifc"] = ZweiGebaeude(),
@@ -523,6 +524,68 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Trenndecken über die Raumbezüge</b> (IFC2X3, Mehrzonenkonzept 6.5) — ein CAD-Export ohne Raumgrenzen, der
+        /// je Raum ein <c>IfcRelReferencedInSpatialStructure</c> mit den angrenzenden Bauteilen schreibt (HottCAD-Muster).
+        /// Das Gebäude heißt „Gebäude" (Platzhalter) und führt kein Baujahr. Geschosse KG (−2600 mm), EG (0), OG (2800),
+        /// Räume über das Enthaltensein mit Mengen in <c>CAD_RaumQuantities</c>: KG „Keller" 50 m² (nach dem Namen
+        /// unbeheizt); EG „Wohnen" 40 m², „Küche" 20 m², „Abstellraum" 5 m² (unbeheizt); OG „Schlafen" 35 m²,
+        /// „Kind" 25 m² — beheizt je Geschoss 60 m², zusammen 120 m². Höhe 2,5 m.
+        ///
+        /// <para><b>Die Bauteile</b> (<see cref="Bau.CadBauteil{T}"/>, ohne <c>IsExternal</c> und ohne Raumgrenze) und wer
+        /// sie referenziert: „Decke EG/OG" <c>btaHeated</c>, U 1,0, 60 m² (bzw. 10 m² mit <paramref name="schwach"/>) —
+        /// Wohnen, Küche, Schlafen, Kind: die Trenndecke EG/OG; „Kellerdecke" <c>btaCellarCeiling</c>, U 0,4, 65 m² —
+        /// Keller, Wohnen, Küche, Abstellraum: die Trenndecke KG/EG; „Oberste Decke" <c>btaUppermostStorey</c>, U 0,3,
+        /// 60 m² — nur Schlafen und Kind (ein Geschoss, keine Trenndecke); „Vordach" außen, U 0,5, 6 m² — Wohnen und
+        /// Schlafen (außen, nie Trenndecke); „Innenwand EG" <c>btaHeated</c>, 12 m² — Wohnen, Küche (innere Masse);
+        /// „Wand Abstellraum" <c>btaHeated</c>, 6 m² — Küche, Abstellraum (gegen unbeheizt); „Innenwand OG"
+        /// <c>btaHeated</c>, 10 m² — Schlafen, Kind; „Treppenhauswand" <c>btaHeated</c>, 9 m² — Wohnen und Schlafen
+        /// (zwei Geschosse: kein Nachbar, einseitig); „Innenwand einzeln" <c>btaHeated</c>, 4 m² — nur Wohnen
+        /// (einseitig); „Innenwand frei" <c>btaHeated</c>, 8 m², ohne Bezug (einseitig); „Außenwand Süd" (EG, 180°) und
+        /// „Außenwand Nord" (OG, 0°) außen, U 0,3, je 40 m² — Wohnen bzw. Schlafen; „Kellerwand" <c>btaGround</c>, 30 m²,
+        /// Hüllkennung FALSE — Keller.</para>
+        /// </summary>
+        public static byte[] Referenzen(bool schwach = false)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_referenzen.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Gebäude", null);
+                IIfcBuildingStorey kg = b.GeschossEnthalten(g, "KG", -2600);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                IIfcSpace keller = b.RaumEnthalten(kg, "Keller", 150, 150, 50, 125, 2500, zerlegt: false);
+                IIfcSpace wohnen = b.RaumEnthalten(eg, "Wohnen", 150, 150, 40, 100, 2500, zerlegt: false);
+                IIfcSpace kueche = b.RaumEnthalten(eg, "Küche", 6150, 150, 20, 50, 2500, zerlegt: false);
+                IIfcSpace abstell = b.RaumEnthalten(eg, "Abstellraum", 6150, 4150, 5, 12.5, 2500, zerlegt: false);
+                IIfcSpace schlafen = b.RaumEnthalten(og, "Schlafen", 150, 150, 35, 87.5, 2500, zerlegt: false);
+                IIfcSpace kind = b.RaumEnthalten(og, "Kind", 6150, 150, 25, 62.5, 2500, zerlegt: false);
+
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null,
+                                                        schwach ? 10 : 60, schwach ? 10 : 60, null, null);
+                IIfcSlab kellerdecke = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Kellerdecke", "btaCellarCeiling", true, 0.4, null, null, 65, 65, null, null);
+                IIfcSlab oberste = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaUppermostStorey", true, 0.3, null, null, 60, 60, null, null);
+                IIfcSlab vordach = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Vordach", "btaOutside", true, 0.5, null, null, 6, 6, null, null);
+                IIfcWall iwEg = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand EG", "btaHeated", false, 1.5, null, null, 12, 12, null, null);
+                IIfcWall abstellwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Abstellraum", "btaHeated", false, 1.5, null, null, 6, 6, null, null);
+                IIfcWall iwOg = b.CadBauteil<IIfcWall>(og, "IfcWall", "Innenwand OG", "btaHeated", false, 1.5, null, null, 10, 10, null, null);
+                IIfcWall treppe = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Treppenhauswand", "btaHeated", false, 1.5, null, null, 9, 9, null, null);
+                IIfcWall einzeln = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand einzeln", "btaHeated", false, 1.5, null, null, 4, 4, null, null);
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand frei", "btaHeated", false, 1.5, null, null, 8, 8, null, null);
+                IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
+                IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
+                IIfcWall kellerwand = b.CadBauteil<IIfcWall>(kg, "IfcWall", "Kellerwand", "btaGround", false, 0.5, null, 90, 30, 30, null, null);
+
+                b.Bezug(keller, kellerdecke, kellerwand);
+                b.Bezug(wohnen, decke, kellerdecke, vordach, iwEg, treppe, einzeln, sued);
+                b.Bezug(kueche, decke, kellerdecke, iwEg, abstellwand);
+                b.Bezug(abstell, kellerdecke, abstellwand);
+                b.Bezug(schlafen, decke, oberste, vordach, iwOg, treppe, nord);
+                b.Bezug(kind, decke, oberste, iwOg);
+                return b.Speichern();
+            }
+        }
+
         /// <summary>Zwei Gebäude mit je einem beheizten Raum, einer Außenwand und einem Fenster (U13).</summary>
         public static byte[] ZweiGebaeude()
         {
@@ -779,6 +842,18 @@ namespace EPOS.Kern.Tests
                     _zerlegung[ganzes.EntityLabel] = r;
                 }
                 r.RelatedObjects.Add(teil);
+            }
+
+            /// <summary>
+            /// Die Raumbezüge eines Raums nach dem Muster eines CAD-Exports ohne Raumgrenzen: ein
+            /// <c>IfcRelReferencedInSpatialStructure</c> je Raum mit den angrenzenden Bauteilen.
+            /// </summary>
+            public void Bezug(IIfcSpace raum, params IIfcProduct[] bauteile)
+            {
+                IIfcRelReferencedInSpatialStructure r = Wurzel<IIfcRelReferencedInSpatialStructure>("IfcRelReferencedInSpatialStructure",
+                    "Spatial references of space " + raum.Name);
+                r.RelatingStructure = raum;
+                foreach (IIfcProduct p in bauteile) r.RelatedElements.Add(p);
             }
 
             private void Enthalten(IIfcSpatialElement ort, IIfcProduct teil)
