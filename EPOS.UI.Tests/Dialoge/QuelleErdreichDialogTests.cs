@@ -437,6 +437,20 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.False(cut.Instance.PruefungWarnt);
     }
 
+    /// <summary>
+    /// EQ1: Ein GESPEICHERTES Ergebnis (aus Tab_ErgebnisErdreich, kein Lauf in dieser Sitzung)
+    /// nennt seinen Lauf; ein Lauf der Sitzung (ohne Laufstempel) nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_gespeichertes_Ergebnis_nennt_den_Stand_des_Laufs()
+    {
+        var gespeichert = MitLauf() with { Laufstempel = "2026-10-03 09:30:00" };
+        var cut = Zeige(Kollektor(), lauf: gespeichert);
+        Assert.Equal("Stand des Laufs vom 2026-10-03 09:30:00.", cut.Find(".epos-erdreich-laufstand").TextContent.Trim());
+
+        Assert.Empty(Zeige(Kollektor(), lauf: MitLauf()).FindAll(".epos-erdreich-laufstand"));
+    }
+
     // ================================================================== Änderungshinweis
 
     /// <summary>

@@ -586,6 +586,17 @@ public sealed class IosProjektQuelle : IProjektQuelle
 
     /// <inheritdoc />
     /// <remarks>
+    /// Die Betriebskalender der Bedarfsprofile (Feiertage, Betriebsferien) als freie Ansicht
+    /// der Wurzel - dieselbe plattformfreie Hülle wie unter Windows.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? BetriebskalenderGaben()
+    {
+        try { return BetriebskalenderHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Betriebskalender: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
     /// Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26) - dieselbe
     /// plattformfreie Hülle wie unter Windows (<c>ZapfprofilHuelle.KatalogGaben</c>). Er ist
     /// der einzige Katalog, der auf iOS aufgeht; die acht übrigen Katalogverwaltungen lehnt

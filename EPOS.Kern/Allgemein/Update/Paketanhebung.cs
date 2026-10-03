@@ -261,6 +261,11 @@ namespace WindowsFormsApplication1
             // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
             new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
                       "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
+            // Katalogspalten und Saat betreffen nur Kataloge und globale Tabellen, die das Ziel schon
+            // führt; die Erdreichprüfung kommt mit einem Paket davor schlicht nicht mit - der Dialog
+            // zeigt sie nach dem nächsten Lauf.
+            new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
+                      "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

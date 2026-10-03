@@ -378,6 +378,14 @@ namespace Testdatenbankschema
 
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten (spaeterer Schritt) ist der Nachtrag
+                // gegenstandslos - melden statt eine Abfrage auf eine entfallene Spalte zu fahren.
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                      ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
                 long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
                 Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
@@ -2579,6 +2587,28 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrPufferOptionen + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrPufferOptionen + " - vollstaendig: " +
                                   PufferOptionenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1 und EQ1): an den acht
+            //      Katalogtabellen der Stufe 1 Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen
+            //      samt eindeutigem Teilindex, Tab_Applikation.Katalogfassung, die Tabellen
+            //      Tab_Katalogabgleich und Tab_ErgebnisErdreich (STRICT) und die Saat von Schluessel und
+            //      Pruefsumme der ausgelieferten Saetze (ReadOnly = 1). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Katalogfassung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog + " - Katalogfassung und Erdreichpruefung: " +
+                              (KatalogfassungSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog = new List<string>();
+                angelegt += KatalogfassungSchema.Ausfuehren(berichtKatalog);
+                foreach (string zeile in berichtKatalog)
+                    Console.WriteLine("Schritt " + nrKatalog + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog + " - vollstaendig: " +
+                                  KatalogfassungSchema.Vollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

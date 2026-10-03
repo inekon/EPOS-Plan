@@ -453,6 +453,9 @@ Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
 # Abschnitt dazu. Die Importschluessel stehen in KatalogImportDialog (je
 # Auspraegung) bzw. im Kern (ModulImportProfil).
 Form_KatalogDubletten.btn_Help          = Gerätekataloge#dubletten
+# Katalog aktualisieren (Abgleich mit dem Katalogpaket der Auslieferung): eigener
+# Abschnitt derselben Seite.
+Form_Katalogabgleich.btn_Help           = Gerätekataloge#katalog-aktualisieren
 Form_Heizkessel_einlesen.btn_Help       = Gerätekataloge#import
 Form_PufferSp_einlesen.btn_Help         = Gerätekataloge#import
 Form_SolarKollektoren_einlesen.btn_Help = Gerätekataloge#import

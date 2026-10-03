@@ -208,8 +208,12 @@ namespace Auslieferungsvorlage.Tests
             // 156 seit der Pufferauslegung P1 (Schemaschritt 169, PufferAuslegungSchema):
             // Tab_PufferAuslegung (LEER) und Tab_PufferAuslegungParameter_STAMM (mit Saat), beide STRICT
             // von ihrer ersten Zeile an. Schritt 170 (HilfsenergieEmpfehlungNachzug) ist reines DML und
-            // laesst die Zahl stehen.
-            Assert.Equal(156, befund.Strict);
+            // Schritt 171 (PufferOptionenSchema) ADD COLUMN; beide lassen die Zahl stehen.
+            //
+            // 158 seit dem Schemaschritt der Katalogfassung (Schritt 172, KatalogfassungSchema, Welle M6:
+            // KU1 Stufe 1 und EQ1): Tab_Katalogabgleich und Tab_ErgebnisErdreich, STRICT von ihrer ersten
+            // Zeile an.
+            Assert.Equal(158, befund.Strict);
         }
 
         // =============================================================================

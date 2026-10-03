@@ -57,6 +57,16 @@
 ; fuer xBIM (CDDL-1.0) der Verweis nach CDDL Abschnitt 3.1. Die Datei ist VERSIONIERT
 ; (anders als die Vorlagendatenbank daneben) und Pflicht: Ohne sie ist der IFC-Import nicht
 ; auslieferbar - deshalb #error statt eines stillen Weglassens.
+; Katalogpaket der Programmfassung (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): alle
+; ausgelieferten Saetze der laufend gepflegten Kataloge mit Schluessel und Pruefsumme. Werkzeuge/
+; Auslieferungsvorlage schreibt es neben die Vorlagendatenbank; die Anwendung gleicht beim ersten
+; Start einer neuen Fassung die Kataloge des Anwenders damit ab (Katalogabgleich im Kern). Wie die
+; Vorlagendatenbank nicht im Repository (.gitignore: Setup/Vorlage/Katalogpaket.json).
+#define Katalogpaket   SetupDir + "Vorlage\Katalogpaket.json"
+#if !FileExists(Katalogpaket)
+  #error Das Katalogpaket Setup\Vorlage\Katalogpaket.json fehlt. Werkzeuge\Auslieferungsvorlage schreibt es zusammen mit der Vorlagendatenbank; siehe Konzept, Abschnitt 6.1.
+#endif
+
 #define Lizenzhinweise SetupDir + "Vorlage\Lizenzhinweise.txt"
 #if !FileExists(Lizenzhinweise)
   #error Die Lizenzhinweise Setup\Vorlage\Lizenzhinweise.txt fehlen; sie sind versioniert und Pflicht fuer die Auslieferung (E27, U10).
@@ -351,6 +361,12 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; \
 ; Anwenderentscheid #157-E-1 vom 09.09.2026). Der Datenordner ist und bleibt
 ; %ProgramData%\EPOS_PLAN — der Ablageort aendert sich nicht.
 Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
+; Das Katalogpaket neben die Vorlage (oben #define Katalogpaket). Ein Update ersetzt es mit dem
+; Programm; die Anwendung liest es beim Start und gleicht die Kataloge ab, wenn seine Fassung
+; neuer ist als die der Datenbank - eigene Saetze und Projekte bleiben unberuehrt.
+Source: "{#Katalogpaket}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
     Components: programm
 
 ; Herstellerdaten (W6-O-9). NEBEN das Programm, nicht nach {commonappdata}:

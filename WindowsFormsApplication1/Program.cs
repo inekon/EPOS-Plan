@@ -347,6 +347,25 @@ namespace WindowsFormsApplication1
                     "Datenbank-Aktualisierung",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            else
+            {
+                // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): Bringt die
+                // Auslieferung ein Katalogpaket NEUERER Fassung mit, gleicht der Kern die Kataloge
+                // der Stufe 1 ab - nach einer Sicherung per VACUUM INTO, nie an einer Projektkopie
+                // und nie an einem eigenen Satz. Den Bericht zeigt das Hauptfenster als
+                // Ueberlagerung (Katalogabgleich.StartberichtAbholen). Ein Fehler hier haelt den
+                // Start nicht auf: Der Katalog bleibt, wie er ist, und der Abgleich laeuft beim
+                // naechsten Start erneut.
+                try
+                {
+                    Katalogabgleich.BeimStart(Katalogpaket.Pfad(Dienste.Pfade.Auslieferungsvorlage),
+                                              Katalogabgleich.SicherungAnlegen);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Katalogabgleich nicht ausgefuehrt: " + ex.Message);
+                }
+            }
 
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();

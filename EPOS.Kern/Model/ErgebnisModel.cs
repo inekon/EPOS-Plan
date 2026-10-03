@@ -52,6 +52,11 @@ namespace WindowsFormsApplication1
         // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 107).
         public List<ErgebnisGebaeudeModel> Gebaeude = new List<ErgebnisGebaeudeModel>();
 
+        // Erdreichpruefung des Laufs (Tab_ErgebnisErdreich, Entscheidungsvorlage Modellgrenzen
+        // EQ1): je Anlage mit Waermequelle Erdreich die Pruefzeilen. Leere Liste = keine
+        // Erdreichquelle (oder die Datenbank steht vor dem Schemaschritt der Katalogfassung).
+        public List<ErdreichErgebnisSpeicher.Zeile> Erdreich = new List<ErdreichErgebnisSpeicher.Zeile>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;

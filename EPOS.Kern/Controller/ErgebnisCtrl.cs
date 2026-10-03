@@ -52,6 +52,8 @@ namespace WindowsFormsApplication1
                     PufferzeilenLoeschen(v, idProjekt);
                     DetailzeilenLoeschen(v, TAB_SP, idProjekt);
                     DetailzeilenLoeschen(v, TAB_GEB, idProjekt);
+                    // EQ1: die Erdreichpruefung haengt am Projekt, nicht am Kopf - eigens weg.
+                    ErdreichErgebnisSpeicher.Schreiben(v, idProjekt, null, ErdreichErgebnisSpeicher.Vorhanden());
 
                     //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                     {
@@ -96,6 +98,9 @@ namespace WindowsFormsApplication1
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
+            // EQ1: die Erdreichpruefung - nur, wo der Schemaschritt der Katalogfassung die Tabelle
+            // angelegt hat; ebenso vor der Transaktion gefragt.
+            bool erdreichTabelle = ErdreichErgebnisSpeicher.Vorhanden();
             // Schritt 128 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
             // ebenso vor der Transaktion gefragt; vor 128 bleibt die Zeile die des Schritts 107.
             bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
@@ -924,6 +929,11 @@ namespace WindowsFormsApplication1
                             }
                         }
                     }
+
+                    // 12. Detail: Erdreichpruefung (Tab_ErgebnisErdreich, EQ1) - die Zeilen des
+                    //     Projekts werden ersetzt; ohne Erdreichquelle bleibt die Tabelle fuer das
+                    //     Projekt leer. Vor dem Schemaschritt fehlt sie, dann geschieht nichts.
+                    ErdreichErgebnisSpeicher.Schreiben(v, m.ID_Projekt, m.Erdreich, erdreichTabelle);
 
                     v.Commit();
                     m.ID = kopfId;

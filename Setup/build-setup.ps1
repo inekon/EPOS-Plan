@@ -648,6 +648,14 @@ Ohne sie laesst sich das Setup nicht uebersetzen (#define VorlageDb im .iss).
 
     $vorlageMb = [math]::Round(((Get-Item $VorlageDb).Length / 1MB), 1)
     Hinweis "Auslieferungsvorlage: $vorlageMb MB in $VorlageDb"
+
+    # Das Katalogpaket (KU1 Stufe 1) schreibt dasselbe Werkzeug neben die Vorlage; das .iss
+    # prueft es mit #if !FileExists(Katalogpaket).
+    $Katalogpaket = Join-Path (Split-Path $VorlageDb) 'Katalogpaket.json'
+    if (-not (Test-Path $Katalogpaket)) {
+        throw "Das Werkzeug meldete Erfolg, aber das Katalogpaket fehlt: $Katalogpaket"
+    }
+    Hinweis "Katalogpaket: $Katalogpaket"
 }
 else {
     Hinweis 'Trockenlauf - die vorhandene Vorlage bleibt, wie sie ist.'
