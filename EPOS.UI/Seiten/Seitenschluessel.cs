@@ -193,6 +193,16 @@ public static class Seitenschluessel
     /// </remarks>
     public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
 
+    /// <summary>
+    /// Die Ansicht „Pufferspeicher-Auslegung" (<c>Seiten.Pufferspeicher.PufferAuslegungSeite</c>;
+    /// Konzept Pufferspeicher-Auslegung, Stufe P2) — eine freie Ansicht nach dem Muster der
+    /// Stromspeicher-Auslegung, ohne Menüpunkt und ohne <c>Masken.*</c>-Zwilling. Die Wege hinein:
+    /// „Pufferspeicher auslegen…" in ① Konfiguration, „Auslegen…" in der Pufferverwaltung und in der
+    /// Kachel Pufferspeicher; der Arbeitsgang (Projekt, Zielpuffer) ist vorher bei
+    /// <c>PufferAuslegungHuelle</c> angemeldet.
+    /// </summary>
+    public const string PufferAuslegung = "PUFFER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -427,7 +437,7 @@ public static class Seitenschluessel
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,

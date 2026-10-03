@@ -173,6 +173,14 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt) => null;
 
     /// <summary>
+    /// Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2) zum Projekt —
+    /// <c>PufferAuslegungHuelle.AnsichtGaben</c>, plattformfrei. Unter Windows reicht die Hülle
+    /// ihn über den Parameter <c>AppWurzel.PufferAuslegungGaben</c>; <c>null</c> = diese Quelle
+    /// führt die Ansicht nicht, die Wurzel nennt den Grund.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt) => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ des KI-Hilfe-Assistenten (iU9-W15b.7,
     /// Entscheid E-10).
     ///

@@ -26823,7 +26823,7 @@ Do you want to allow this?</value>
     <value>Hand over to storage sizing…</value>
   </data>
   <data name="ZPG_AUS_GRUND_UEBERGEBEN" xml:space="preserve">
-    <value>Handing over to the storage sizing comes with a later version.</value>
+    <value>The hand-over opens the buffer storage sizing in its own window; this platform has none — the sizing is in ① configuration under “Size buffer storage…”.</value>
   </data>
   <data name="ZPG_AUS_WARNLISTE" xml:space="preserve">
     <value>Notes and warnings of the design</value>
@@ -42152,6 +42152,771 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
     <value>{0}: fresh water module – {1} hours without sufficient storage temperature; there the next cascade stage covers.</value>
+  </data>
+  <data name="PAUS_TITEL" xml:space="preserve">
+    <value>Buffer storage sizing</value>
+  </data>
+  <data name="PAUS_ZURUECK" xml:space="preserve">
+    <value>← back</value>
+  </data>
+  <data name="PAUS_ABLAUF" xml:space="preserve">
+    <value>Sizing steps</value>
+  </data>
+  <data name="PAUS_SCHRITT_ANLAGE" xml:space="preserve">
+    <value>Class and generator</value>
+  </data>
+  <data name="PAUS_SCHRITT_BEDARF" xml:space="preserve">
+    <value>Demand and boundary conditions</value>
+  </data>
+  <data name="PAUS_SCHRITT_KRITERIEN" xml:space="preserve">
+    <value>Criteria</value>
+  </data>
+  <data name="PAUS_SCHRITT_ERGEBNIS" xml:space="preserve">
+    <value>Result and transfer</value>
+  </data>
+  <data name="PAUS_VERALTET" xml:space="preserve">
+    <value>outdated</value>
+  </data>
+  <data name="PAUS_STUFE" xml:space="preserve">
+    <value>Depth</value>
+  </data>
+  <data name="PAUS_STUFE_SCHNELL" xml:space="preserve">
+    <value>Quick</value>
+  </data>
+  <data name="PAUS_STUFE_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="PAUS_STUFE_EXPERTE" xml:space="preserve">
+    <value>Expert</value>
+  </data>
+  <data name="PAUS_KONTEXT_PUFFER" xml:space="preserve">
+    <value>Project “{0}” · storage “{1}”</value>
+  </data>
+  <data name="PAUS_KONTEXT_NEU" xml:space="preserve">
+    <value>Project “{0}” · new buffer storage</value>
+  </data>
+  <data name="PAUS_GESPEICHERTE_AUSLEGUNG" xml:space="preserve">
+    <value>The saved sizing of this storage has been loaded.</value>
+  </data>
+  <data name="PAUS_WEITER" xml:space="preserve">
+    <value>Next ›</value>
+  </data>
+  <data name="PAUS_ZURUECK_SCHRITT" xml:space="preserve">
+    <value>‹ Back</value>
+  </data>
+  <data name="PAUS_RECHNEN" xml:space="preserve">
+    <value>Size and show result</value>
+  </data>
+  <data name="PAUS_NEU_RECHNEN" xml:space="preserve">
+    <value>Recalculate</value>
+  </data>
+  <data name="PAUS_ZURUECKSETZEN" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="PAUS_VERALTET_HINWEIS" xml:space="preserve">
+    <value>Inputs changed — the result is recalculated on entering step 4 or with “Recalculate”.</value>
+  </data>
+  <data name="PAUS_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="PAUS_QUELLE_PUFFER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="PAUS_QUELLE_KASKADE" xml:space="preserve">
+    <value>Cascade</value>
+  </data>
+  <data name="PAUS_QUELLE_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="PAUS_QUELLE_ZAPFPROFIL" xml:space="preserve">
+    <value>Draw-off profile</value>
+  </data>
+  <data name="PAUS_QUELLE_REIHE" xml:space="preserve">
+    <value>Demand series</value>
+  </data>
+  <data name="PAUS_QUELLE_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="PAUS_QUELLE_PARAMETER" xml:space="preserve">
+    <value>Default table</value>
+  </data>
+  <data name="PAUS_QUELLE_VORGABE" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="PAUS_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>saved</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>overridden</value>
+  </data>
+  <data name="PAUS_QUELLE_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERGEBEN" xml:space="preserve">
+    <value>handed over</value>
+  </data>
+  <data name="PAUS_GRUPPE_KLASSE" xml:space="preserve">
+    <value>Storage class and use</value>
+  </data>
+  <data name="PAUS_KLASSE_HEIZUNG" xml:space="preserve">
+    <value>Space heating</value>
+  </data>
+  <data name="PAUS_KLASSE_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="PAUS_KLASSE_PROZESS" xml:space="preserve">
+    <value>Process</value>
+  </data>
+  <data name="PAUS_KLASSE_HINWEIS" xml:space="preserve">
+    <value>One zone per class with its own method: heating zone by the criteria, hot water zone from the draw-off profile, process zone on the process series; combi = heating + hot water.</value>
+  </data>
+  <data name="PAUS_KLASSE_LEER" xml:space="preserve">
+    <value>Choose at least one storage class — without a class there is no zone.</value>
+  </data>
+  <data name="PAUS_NUTZUNGSPROFIL" xml:space="preserve">
+    <value>Usage profile</value>
+  </data>
+  <data name="PAUS_NP_HINWEIS" xml:space="preserve">
+    <value>display only: the profile shapes the demand series used for sizing; it is not a calculation value.</value>
+  </data>
+  <data name="PAUS_NP_WOHNEN" xml:space="preserve">
+    <value>Residential</value>
+  </data>
+  <data name="PAUS_NP_BEHERBERGUNG" xml:space="preserve">
+    <value>Accommodation</value>
+  </data>
+  <data name="PAUS_NP_PFLEGE" xml:space="preserve">
+    <value>Care/hospital</value>
+  </data>
+  <data name="PAUS_NP_BUERO_SCHULE" xml:space="preserve">
+    <value>Office/school</value>
+  </data>
+  <data name="PAUS_NP_GEWERBE" xml:space="preserve">
+    <value>Commercial/process</value>
+  </data>
+  <data name="PAUS_GRUPPE_VORLAGE" xml:space="preserve">
+    <value>System template</value>
+  </data>
+  <data name="PAUS_VORLAGE_HINWEIS" xml:space="preserve">
+    <value>The template switches the criteria of the heating zone and fills example values; the hot water zone has no template — it comes from the draw-off profile.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_UNTER" xml:space="preserve">
+    <value>monovalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_TEXT" xml:space="preserve">
+    <value>The heat pump covers alone: device type and minimum run time, lock-out time per VDI 4645, cycling target.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_UNTER" xml:space="preserve">
+    <value>bivalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_TEXT" xml:space="preserve">
+    <value>A second generator released during lock-out drops the lock-out criterion; an immersion heater is locked out too.</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_UNTER" xml:space="preserve">
+    <value>long run times</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_TEXT" xml:space="preserve">
+    <value>Minimum run time and few starts per day; shift duration and rule of thumb as cross-check.</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_UNTER" xml:space="preserve">
+    <value>gas/oil</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_TEXT" xml:space="preserve">
+    <value>Minimum output and minimum run time from the boiler curve; small buffer against cycling.</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF" xml:space="preserve">
+    <value>Solid fuel</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_UNTER" xml:space="preserve">
+    <value>log wood, pellets</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_TEXT" xml:space="preserve">
+    <value>Minimum volume required by regulation from the boiler fuel — sizing.</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_UNTER" xml:space="preserve">
+    <value>collector field on the storage</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_TEXT" xml:space="preserve">
+    <value>Volume per m² aperture area as a daily storage.</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS" xml:space="preserve">
+    <value>Process</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_UNTER" xml:space="preserve">
+    <value>process buffer</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_TEXT" xml:space="preserve">
+    <value>Coverage and cycling target on the process series, spread from the storage; check the temperature level.</value>
+  </data>
+  <data name="PAUS_FAUSTWERT" xml:space="preserve">
+    <value>Rule of thumb {0} {1}</value>
+  </data>
+  <data name="PAUS_GERAETETYP" xml:space="preserve">
+    <value>Device type</value>
+  </data>
+  <data name="PAUS_FIXED_SPEED" xml:space="preserve">
+    <value>fixed speed</value>
+  </data>
+  <data name="PAUS_GEREGELT" xml:space="preserve">
+    <value>modulating</value>
+  </data>
+  <data name="PAUS_ZWEITERZEUGER" xml:space="preserve">
+    <value>Second generator during lock-out</value>
+  </data>
+  <data name="PAUS_ZWEIT_FREI" xml:space="preserve">
+    <value>second generator released during lock-out</value>
+  </data>
+  <data name="PAUS_ZWEIT_HEIZSTAB" xml:space="preserve">
+    <value>immersion heater (locked out)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ERZEUGER" xml:space="preserve">
+    <value>Generators on the storage</value>
+  </data>
+  <data name="PAUS_ERZEUGER_KEINER" xml:space="preserve">
+    <value>No heat generator in the project — the template uses its default values.</value>
+  </data>
+  <data name="PAUS_GRUPPE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatures and thresholds of the storage</value>
+  </data>
+  <data name="PAUS_TEMPERATURPAAR" xml:space="preserve">
+    <value>Flow / return</value>
+  </data>
+  <data name="PAUS_SCHWELLEN" xml:space="preserve">
+    <value>Thresholds on / off</value>
+  </data>
+  <data name="PAUS_NUTZANTEIL_TEXT" xml:space="preserve">
+    <value>usable share {0} %</value>
+  </data>
+  <data name="PAUS_TEMPERATUR_BLEIBT" xml:space="preserve">
+    <value>Temperature pair and thresholds come from the storage; the sizing does not change them.</value>
+  </data>
+  <data name="PAUS_GRUPPE_REIHEN" xml:space="preserve">
+    <value>Demand series</value>
+  </data>
+  <data name="PAUS_REIHEN_HINWEIS" xml:space="preserve">
+    <value>Sizing uses the hourly demand series of the project — without a new simulation run.</value>
+  </data>
+  <data name="PAUS_REIHEN_FEHLER" xml:space="preserve">
+    <value>The demand series cannot be calculated: {0}</value>
+  </data>
+  <data name="PAUS_SPALTE_KANAL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="PAUS_SPALTE_SPITZE" xml:space="preserve">
+    <value>Peak</value>
+  </data>
+  <data name="PAUS_SPALTE_JAHR" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERGABE" xml:space="preserve">
+    <value>Emitters and system</value>
+  </data>
+  <data name="PAUS_UEBERGABEART" xml:space="preserve">
+    <value>Emitter type</value>
+  </data>
+  <data name="PAUS_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>not specified (calculated like surface heating)</value>
+  </data>
+  <data name="PAUS_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>radiator</value>
+  </data>
+  <data name="PAUS_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>surface heating</value>
+  </data>
+  <data name="PAUS_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>convector</value>
+  </data>
+  <data name="PAUS_UEBERGABE_LUEFTER" xml:space="preserve">
+    <value>fan coil</value>
+  </data>
+  <data name="PAUS_HEIZGRENZE" xml:space="preserve">
+    <value>Heating limit</value>
+  </data>
+  <data name="PAUS_HEIZLAST" xml:space="preserve">
+    <value>Design heat load</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN" xml:space="preserve">
+    <value>System volume, not shut off</value>
+  </data>
+  <data name="PAUS_LEER_VORGABE" xml:space="preserve">
+    <value>empty = default</value>
+  </data>
+  <data name="PAUS_HEIZLAST_LEER" xml:space="preserve">
+    <value>empty = maximum of the heating series</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN_LEER" xml:space="preserve">
+    <value>empty = emitter type × heat load</value>
+  </data>
+  <data name="PAUS_GRUPPE_SPERRE" xml:space="preserve">
+    <value>Lock-out times</value>
+  </data>
+  <data name="PAUS_SPERRPROFIL" xml:space="preserve">
+    <value>Lock-out profile</value>
+  </data>
+  <data name="PAUS_SPERRE_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="PAUS_SPERRE_ZWEI_MAL_ZWEI" xml:space="preserve">
+    <value>2 × 2 h (11–13 and 17–19 h)</value>
+  </data>
+  <data name="PAUS_SPERRE_DREI_MAL_ZWEI" xml:space="preserve">
+    <value>3 × 2 h (6–8, 11–13 and 17–19 h)</value>
+  </data>
+  <data name="PAUS_SPERRE_EIGEN" xml:space="preserve">
+    <value>own window</value>
+  </data>
+  <data name="PAUS_SPERRBEGINN" xml:space="preserve">
+    <value>Start of lock-out</value>
+  </data>
+  <data name="PAUS_SPERRDAUER" xml:space="preserve">
+    <value>Duration of lock-out</value>
+  </data>
+  <data name="PAUS_SPERRE_HINWEIS" xml:space="preserve">
+    <value>Neutral input of the lock-out duration and its position per day; the transfer does not write the lock-out assumption into the heat pump.</value>
+  </data>
+  <data name="PAUS_EXPERTENWEG" xml:space="preserve">
+    <value>Size lock-out from the load profile (expert method)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZIELE" xml:space="preserve">
+    <value>Operating target</value>
+  </data>
+  <data name="PAUS_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Minimum run time per start</value>
+  </data>
+  <data name="PAUS_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Minimum continuous output</value>
+  </data>
+  <data name="PAUS_STARTZIEL" xml:space="preserve">
+    <value>Start target</value>
+  </data>
+  <data name="PAUS_DECKUNGSZIEL" xml:space="preserve">
+    <value>Target coverage</value>
+  </data>
+  <data name="PAUS_EINHEIT_JE_TAG" xml:space="preserve">
+    <value>per day</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZAPF" xml:space="preserve">
+    <value>Hot water zone from the draw-off profile</value>
+  </data>
+  <data name="PAUS_ZAPF_TOPOLOGIE" xml:space="preserve">
+    <value>Topology</value>
+  </data>
+  <data name="PAUS_TOPO_SPEICHER" xml:space="preserve">
+    <value>potable water storage</value>
+  </data>
+  <data name="PAUS_TOPO_FRISCHWASSER" xml:space="preserve">
+    <value>fresh water station</value>
+  </data>
+  <data name="PAUS_TOPO_WOHNUNGSSTATION" xml:space="preserve">
+    <value>apartment stations</value>
+  </data>
+  <data name="PAUS_TOPO_DURCHFLUSS" xml:space="preserve">
+    <value>instantaneous without storage</value>
+  </data>
+  <data name="PAUS_ZAPF_DMAX" xml:space="preserve">
+    <value>Largest deficit D_max</value>
+  </data>
+  <data name="PAUS_ZAPF_PERSONEN" xml:space="preserve">
+    <value>Persons</value>
+  </data>
+  <data name="PAUS_ZAPF_TAGESBEDARF" xml:space="preserve">
+    <value>Daily demand at 60 °C</value>
+  </data>
+  <data name="PAUS_ZAPF_KEIN" xml:space="preserve">
+    <value>No draw-off profile result: the hot water zone stays empty.</value>
+  </data>
+  <data name="PAUS_ZIRKULATION" xml:space="preserve">
+    <value>Circulation allowance</value>
+  </data>
+  <data name="PAUS_ZIRK_AUTOMATIK" xml:space="preserve">
+    <value>automatic (profile, else project, else share)</value>
+  </data>
+  <data name="PAUS_ZIRK_ZAPFPROFIL" xml:space="preserve">
+    <value>from the draw-off profile</value>
+  </data>
+  <data name="PAUS_ZIRK_PROJEKT" xml:space="preserve">
+    <value>circulation output of the project</value>
+  </data>
+  <data name="PAUS_ZIRK_ANTEIL" xml:space="preserve">
+    <value>share of daily demand</value>
+  </data>
+  <data name="PAUS_ZIRK_JE_WE" xml:space="preserve">
+    <value>per dwelling</value>
+  </data>
+  <data name="PAUS_WOHNEINHEITEN" xml:space="preserve">
+    <value>Dwellings</value>
+  </data>
+  <data name="PAUS_DELTA_TB" xml:space="preserve">
+    <value>Hot water spread ΔT_B</value>
+  </data>
+  <data name="PAUS_T_OBEN" xml:space="preserve">
+    <value>Temperature at the top of the storage</value>
+  </data>
+  <data name="PAUS_KRITERIEN_HINWEIS" xml:space="preserve">
+    <value>Per zone the largest active criterion sizes. The template has preselected what fits the system; criteria can be switched on or off.</value>
+  </data>
+  <data name="PAUS_KRIT_AN" xml:space="preserve">
+    <value>included in sizing</value>
+  </data>
+  <data name="PAUS_KRIT_BEMESSEND" xml:space="preserve">
+    <value>sizing</value>
+  </data>
+  <data name="PAUS_KRIT_NICHT_GUELTIG" xml:space="preserve">
+    <value>not reachable</value>
+  </data>
+  <data name="PAUS_KRIT_AUS" xml:space="preserve">
+    <value>switched off</value>
+  </data>
+  <data name="PAUS_KRIT_NOCH_NICHT" xml:space="preserve">
+    <value>not yet calculated</value>
+  </data>
+  <data name="PAUS_KRIT_RECHENWEG" xml:space="preserve">
+    <value>Calculation</value>
+  </data>
+  <data name="PAUS_KRIT_BRAUCHWASSER" xml:space="preserve">
+    <value>Hot water zone</value>
+  </data>
+  <data name="PAUS_KRIT_K1" xml:space="preserve">
+    <value>Pre-check of system volume</value>
+  </data>
+  <data name="PAUS_KRIT_K2" xml:space="preserve">
+    <value>Rule of thumb by device type</value>
+  </data>
+  <data name="PAUS_KRIT_K3" xml:space="preserve">
+    <value>Minimum run time</value>
+  </data>
+  <data name="PAUS_KRIT_K4" xml:space="preserve">
+    <value>Lock-out time</value>
+  </data>
+  <data name="PAUS_KRIT_K4E" xml:space="preserve">
+    <value>Lock-out time from the load profile</value>
+  </data>
+  <data name="PAUS_KRIT_D1" xml:space="preserve">
+    <value>Coverage</value>
+  </data>
+  <data name="PAUS_KRIT_D2" xml:space="preserve">
+    <value>Cycling target</value>
+  </data>
+  <data name="PAUS_KRIT_K9" xml:space="preserve">
+    <value>Solid fuel</value>
+  </data>
+  <data name="PAUS_KRIT_K9E" xml:space="preserve">
+    <value>Solid fuel per DIN EN 303-5</value>
+  </data>
+  <data name="PAUS_KRIT_K10" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="PAUS_KRIT_KV" xml:space="preserve">
+    <value>CHP shift duration</value>
+  </data>
+  <data name="PAUS_KRIT_B_SPEICHER" xml:space="preserve">
+    <value>Potable water storage from the draw-off profile</value>
+  </data>
+  <data name="PAUS_KRIT_B_FRISCHWASSER" xml:space="preserve">
+    <value>Hot water from the storage (station)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZONEN" xml:space="preserve">
+    <value>Proposal per zone</value>
+  </data>
+  <data name="PAUS_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="PAUS_SPALTE_BEMESSEND" xml:space="preserve">
+    <value>sizing</value>
+  </data>
+  <data name="PAUS_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PAUS_ZONE_HEIZUNG" xml:space="preserve">
+    <value>Heating zone</value>
+  </data>
+  <data name="PAUS_ZONE_BRAUCHWASSER" xml:space="preserve">
+    <value>Hot water zone</value>
+  </data>
+  <data name="PAUS_ZONE_PROZESS" xml:space="preserve">
+    <value>Process zone</value>
+  </data>
+  <data name="PAUS_SUMME" xml:space="preserve">
+    <value>Sum of zones</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG_ZEILE" xml:space="preserve">
+    <value>{0} l · {1} kWh usable</value>
+  </data>
+  <data name="PAUS_KEIN_PUFFER" xml:space="preserve">
+    <value>no buffer required</value>
+  </data>
+  <data name="PAUS_UEBER_LISTENENDE" xml:space="preserve">
+    <value>rounded to the grid above the nominal volume list</value>
+  </data>
+  <data name="PAUS_AN_PRAXISGRENZE" xml:space="preserve">
+    <value>stopped at the practical limit</value>
+  </data>
+  <data name="PAUS_KATALOGVORSCHLAG" xml:space="preserve">
+    <value>Catalogue proposal</value>
+  </data>
+  <data name="PAUS_KATALOG_KEINER" xml:space="preserve">
+    <value>no catalogue storage large enough</value>
+  </data>
+  <data name="PAUS_GRUPPE_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_TAG" xml:space="preserve">
+    <value>Starts per day</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_JAHR" xml:space="preserve">
+    <value>Starts per heating period</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_TAG" xml:space="preserve">
+    <value>Standby loss at 45 K</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_WK" xml:space="preserve">
+    <value>Heat loss rate</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_JAHR" xml:space="preserve">
+    <value>Operating loss</value>
+  </data>
+  <data name="PAUS_KZ_KAPAZITAET" xml:space="preserve">
+    <value>Usable capacity</value>
+  </data>
+  <data name="PAUS_KZ_NUTZANTEIL" xml:space="preserve">
+    <value>Usable share</value>
+  </data>
+  <data name="PAUS_KZ_FAUSTWERT" xml:space="preserve">
+    <value>Template rule of thumb (cross-check)</value>
+  </data>
+  <data name="PAUS_KZ_JE_PERSON" xml:space="preserve">
+    <value>Daily demand per person at 60 °C</value>
+  </data>
+  <data name="PAUS_KZ_ZONENANTEIL" xml:space="preserve">
+    <value>Heating zone share</value>
+  </data>
+  <data name="PAUS_KZ_SCHICHTEN" xml:space="preserve">
+    <value>Minimum number of layers</value>
+  </data>
+  <data name="PAUS_KZ_AUS_KATALOG" xml:space="preserve">
+    <value>from the catalogue record</value>
+  </data>
+  <data name="PAUS_KZ_KLASSE_C" xml:space="preserve">
+    <value>class C limit</value>
+  </data>
+  <data name="PAUS_KZ_EXTRAPOLIERT" xml:space="preserve">
+    <value>extrapolated</value>
+  </data>
+  <data name="PAUS_BAND" xml:space="preserve">
+    <value>Plausibility band by emitter type: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_BAND_WP" xml:space="preserve">
+    <value>Band by heat pump output: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_GRUPPE_WARNUNGEN" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="PAUS_SPALTE_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="PAUS_SPALTE_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="PAUS_SPALTE_TEXT" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="PAUS_SPALTE_HERKUNFT" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PAUS_STUFE_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="PAUS_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="PAUS_WARNUNGEN_LEER" xml:space="preserve">
+    <value>no notes</value>
+  </data>
+  <data name="PAUS_ERGEBNIS_LEER" xml:space="preserve">
+    <value>Not yet calculated — “Size and show result” calculates the zones.</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERNAHME" xml:space="preserve">
+    <value>Transfer into the project storage</value>
+  </data>
+  <data name="PAUS_ZIEL" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="PAUS_ZIEL_AENDERN" xml:space="preserve">
+    <value>change “{0}”</value>
+  </data>
+  <data name="PAUS_ZIEL_NEU" xml:space="preserve">
+    <value>create a new buffer storage</value>
+  </data>
+  <data name="PAUS_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PAUS_BEZEICHNER_MUSTER" xml:space="preserve">
+    <value>Buffer storage {0} l</value>
+  </data>
+  <data name="PAUS_UEBERNAHME_BLEIBT" xml:space="preserve">
+    <value>Thresholds and temperature pair remain. Volume, standby loss and use are transferred, for a combi storage also layers and zone shares; the lock-out assumption is not.</value>
+  </data>
+  <data name="PAUS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save sizing</value>
+  </data>
+  <data name="PAUS_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfer</value>
+  </data>
+  <data name="PAUS_MELDUNG_GESPEICHERT" xml:space="preserve">
+    <value>Sizing saved.</value>
+  </data>
+  <data name="PAUS_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Transferred: “{0}” with {1} l.</value>
+  </data>
+  <data name="PAUS_GRUND_KEINE_EMPFEHLUNG" xml:space="preserve">
+    <value>The sizing recommends no buffer — there is nothing to transfer.</value>
+  </data>
+  <data name="PAUS_GRUND_BEZEICHNER" xml:space="preserve">
+    <value>Enter a name for a new storage.</value>
+  </data>
+  <data name="PAUS_GRUND_SCHREIBFEHLER" xml:space="preserve">
+    <value>The buffer storage could not be written.</value>
+  </data>
+  <data name="PAUS_GRUND_SPEICHERN" xml:space="preserve">
+    <value>The sizing could not be saved.</value>
+  </data>
+  <data name="PAUS_FEHLER_RECHNEN" xml:space="preserve">
+    <value>The sizing cannot be calculated: {0}</value>
+  </data>
+  <data name="PAUS_FEHLER_START" xml:space="preserve">
+    <value>The sizing cannot be prefilled: {0}</value>
+  </data>
+  <data name="PAUS_KEINE_ANSICHT" xml:space="preserve">
+    <value>Buffer storage sizing is not available here.</value>
+  </data>
+  <data name="PAUS_BTN_AUSLEGEN" xml:space="preserve">
+    <value>Size…</value>
+  </data>
+  <data name="PAUS_AUSLEGEN_VERWIRFT" xml:space="preserve">
+    <value>“Size…” leaves this dialog without saving and opens the buffer storage sizing.</value>
+  </data>
+  <data name="PAUS_BTN_KONFIG" xml:space="preserve">
+    <value>Size buffer storage…</value>
+  </data>
+  <data name="PAUS_EINSTIEG_KONFIG" xml:space="preserve">
+    <value>opened from ① configuration</value>
+  </data>
+  <data name="PAUS_EINSTIEG_VERWALTUNG" xml:space="preserve">
+    <value>opened from the storage management</value>
+  </data>
+  <data name="PAUS_EINSTIEG_ZAPFPROFIL" xml:space="preserve">
+    <value>opened from the draw-off profile sizing</value>
+  </data>
+  <data name="PAUS_ZAPF_UEBERGEBEN" xml:space="preserve">
+    <value>Draw-off profile sizing handed over ({0})</value>
+  </data>
+  <data name="PAUS_UEBERGABE_NICHT_MOEGLICH" xml:space="preserve">
+    <value>The hand-over opens the buffer storage sizing in its own window; this platform has none — the sizing is in ① configuration under “Size buffer storage…”.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>a buffer storage was transferred from the sizing</value>
+  </data>
+  <data name="PA_KEIN_PUFFER" xml:space="preserve">
+    <value>The non-shut-off system volume is sufficient: no heating buffer required.</value>
+  </data>
+  <data name="PA_BAND_UNTER" xml:space="preserve">
+    <value>The heating zone volume is below the plausibility band of the emitter type.</value>
+  </data>
+  <data name="PA_BAND_UEBER" xml:space="preserve">
+    <value>The heating zone volume is above the plausibility band of the emitter type.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG" xml:space="preserve">
+    <value>Hot water priority: defrost reserve for heating is missing.</value>
+  </data>
+  <data name="PA_STARTS_TAG" xml:space="preserve">
+    <value>Starts per day are above the warning threshold.</value>
+  </data>
+  <data name="PA_STARTS_JAHR" xml:space="preserve">
+    <value>Starts per heating period are above the note threshold.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE" xml:space="preserve">
+    <value>The practical limit is reached: a target cannot be met with the largest buffer, or the sum is a seasonal storage.</value>
+  </data>
+  <data name="PA_EXTRAPOLATION" xml:space="preserve">
+    <value>The standby loss is extrapolated beyond the validity range of the class C limit.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK" xml:space="preserve">
+    <value>Tank-in-tank combi storages are less suitable for heat pumps (high temperature level).</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT" xml:space="preserve">
+    <value>Without a buffer only with a modulating heat pump: the device is fixed speed, the buffer remains.</value>
+  </data>
+  <data name="PA_HYGIENE_W551" xml:space="preserve">
+    <value>Potable water storage of a large system: observe hot water hygiene requirements.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR" xml:space="preserve">
+    <value>Top of storage too cold for fresh water preparation; periodic heating is no substitute.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT" xml:space="preserve">
+    <value>The hot water zone exceeds a multiple of the daily demand.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT" xml:space="preserve">
+    <value>No emitter type on the building: the heating zone is calculated like surface heating.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI" xml:space="preserve">
+    <value>The second generator is released during lock-out: the lock-out time does not size the buffer.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT" xml:space="preserve">
+    <value>The immersion heater is considered locked out too: the lock-out time sizes the buffer.</value>
+  </data>
+  <data name="PA_KEINE_REIHE" xml:space="preserve">
+    <value>A demand series is empty: the load-profile criteria are dropped for this zone.</value>
+  </data>
+  <data name="KI_DLG_PAUS_KLASSE_ERL" xml:space="preserve">
+    <value>Switches the zone of the storage class on or off; each class sizes its zone with its own method.</value>
+  </data>
+  <data name="KI_DLG_PAUS_VORLAGE_ERL" xml:space="preserve">
+    <value>The system template switches the criteria of the heating zone and fills example values.</value>
+  </data>
+  <data name="KI_DLG_PAUS_GEREGELT_ERL" xml:space="preserve">
+    <value>Modulating heat pumps need smaller buffers (rule of thumb 3 instead of 20 l per kW).</value>
+  </data>
+  <data name="KI_DLG_PAUS_ZWEIT_ERL" xml:space="preserve">
+    <value>A second generator released during lock-out drops the lock-out criterion; an immersion heater is locked out too.</value>
+  </data>
+  <data name="KI_DLG_PAUS_UEBERGABE_ERL" xml:space="preserve">
+    <value>The emitter type selects standstill time and lower limit of the lock-out formula and the plausibility band.</value>
+  </data>
+  <data name="KI_DLG_PAUS_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>The heating limit selects the acceptable standstill time of the lock-out formula; empty = 15 °C.</value>
+  </data>
+  <data name="KI_DLG_PAUS_ANLAGENVOLUMEN_ERL" xml:space="preserve">
+    <value>The permanently flowed-through system volume is deducted from the lock-out volume; empty = default by emitter type.</value>
+  </data>
+  <data name="KI_DLG_PAUS_SPERRPROFIL_ERL" xml:space="preserve">
+    <value>The utility lock-out times per day as a neutral profile.</value>
+  </data>
+  <data name="KI_DLG_PAUS_STARTZIEL_ERL" xml:space="preserve">
+    <value>The generator should start at most this often per day with the buffer; empty = template default.</value>
+  </data>
+  <data name="KI_DLG_PAUS_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Minimum run time per start of the generator for the minimum run time criterion; empty = template default.</value>
+  </data>
+  <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
+    <value>The coverage the throughput balance should reach with the buffer, in percent; empty = 100 %.</value>
   </data>
 </root>
 

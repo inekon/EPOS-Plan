@@ -60,6 +60,7 @@
                BerichteKostenGaben="@BerichteKostenGaben"
                AssistentGaben="@AssistentGaben"
                StromspeicherAuslegungGaben="@StromspeicherAuslegungGaben"
+               PufferAuslegungGaben="@PufferAuslegungGaben"
                SimulationGaben="@SimulationGaben"
                BaustoffKatalogGaben="@BaustoffKatalogGaben"
                BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
@@ -233,6 +234,9 @@
     /// das Fenster wertet nichts davon aus.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Pufferspeicher-Auslegung je Projekt (Windows: <c>PufferAuslegungHuelle.AnsichtGaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? PufferAuslegungGaben { get; set; }
 
     /// <summary>
     /// Der Parametersatz der Ansicht „Simulation" (Windows:
