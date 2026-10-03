@@ -1008,8 +1008,16 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
   Region sprengen das Paket; Pflege über den Klimaimport) und der Zapfprofilkatalog (eigene
   Katalogversion und eigener Paketweg, Verweise über IDs). Konzept Simulationsablauf, Abschnitt 20;
   `BETRIEB_SQLITE.md`, Abschnitt 8a.
+- **Projektkopien der Stufe-2-Kataloge, die ein Projekt liest** (Anwenderentscheid 03.10.2026: „Die
+  drei Kataloge sollten ebenfalls eine Projektkopie besitzen“): Brennstoffe (`Tab_Brennstoff`, je
+  Projekt und Brennstoffart), Vorgaben der Pufferauslegung (`Tab_PufferAuslegungParameter`, je
+  Projekt mit Auslegung); Konditionierungsvorlagen werden bei der Übernahme in das Projektgebäude
+  kopiert. Schemaschritt `ProjektkopienKatalogeSchema` mit wertgleicher Saat; vor dem ersten
+  Schreiben legt der Abgleich fehlende Kopien an. Damit gilt die Basis „Der Abgleich ändert keine
+  Projektkopie“ für alle Kataloge, die ein Projekt liest. Konzept Simulationsablauf, Abschnitt 22.
 - **Entscheidung des Anwenders:** Stufe 1 ☑ · Stufe 2 (übrige Kataloge) ☑ — Klima- und
-  Zapfprofilkatalog benannt ausgenommen
+  Zapfprofilkatalog benannt ausgenommen · Projektkopien der Brennstoffe, Konditionierungsvorlagen und
+  Pufferauslegungs-Vorgaben ☑
 
 ---
 
