@@ -4103,6 +4103,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessendes Kriterium ähnelt.
+        /// </summary>
+        public static string BER_PAUS_BEMESSEND {
+            get {
+                return ResourceManager.GetString("BER_PAUS_BEMESSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnet am ähnelt.
+        /// </summary>
+        public static string BER_PAUS_BERECHNET_AM {
+            get {
+                return ResourceManager.GetString("BER_PAUS_BERECHNET_AM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeicherte Auslegungen der Pufferspeicher dieses Projekts (VDI 4645 und Betriebssimulation). Zonenvolumina, bemessendes Kriterium, Empfehlung und Berechnungsdatum stammen aus der gespeicherten Auslegung; Herkunft, Kennzahlen und Hinweise aus einer Nachrechnung mit der gespeicherten Eingabe und dem aktuellen Projektstand. ähnelt.
+        /// </summary>
+        public static string BER_PAUS_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("BER_PAUS_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewähltes Volumen ähnelt.
+        /// </summary>
+        public static string BER_PAUS_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("BER_PAUS_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachrechnung mit dem aktuellen Projektstand empfiehlt {0} l; die gespeicherte Auslegung ist neu zu rechnen. ähnelt.
+        /// </summary>
+        public static string BER_PAUS_NACHRECHNUNG_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("BER_PAUS_NACHRECHNUNG_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen und Hinweise fehlen, die Nachrechnung war nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string BER_PAUS_NACHRECHNUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("BER_PAUS_NACHRECHNUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Speicher (noch nicht übernommen) ähnelt.
+        /// </summary>
+        public static string BER_PAUS_NEUER_SPEICHER {
+            get {
+                return ResourceManager.GetString("BER_PAUS_NEUER_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherklasse ähnelt.
+        /// </summary>
+        public static string BER_PAUS_SPEICHERKLASSE {
+            get {
+                return ResourceManager.GetString("BER_PAUS_SPEICHERKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string BER_PAUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BER_PAUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Zielordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Zielordner wählen. ähnelt.
         /// </summary>
         public static string BER_ZIELORDNER_GESPERRT {

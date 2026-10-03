@@ -131,6 +131,9 @@ namespace WindowsFormsApplication1
 
             // PAKET P2 (Konzept 7.4): die Speichertemperaturen des Schichtmodells.
             SpeichertemperaturenSchreiben(k, stamm);
+
+            // Pufferspeicher-Auslegung P3: die gespeicherten Auslegungen des Stamms.
+            PufferauslegungSchreiben(k, stamm);
         }
 
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
@@ -670,6 +673,128 @@ namespace WindowsFormsApplication1
                 k.Beschriftung("Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)");
             }
         }
+
+        /// <summary>
+        /// <b>Pufferspeicher-Auslegung</b> (Konzept Pufferspeicher-Auslegung, Stufe P3): je gespeicherter
+        /// Zeile in <c>Tab_PufferAuslegung</c> Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina,
+        /// bemessendes Kriterium mit Herkunft, Empfehlung und gewähltes Volumen, Kennzahlen, Hinweise und
+        /// Berechnungsdatum. Der Abschnitt entfällt, wenn das Projekt keine Zeile trägt. Gelesen wird nur
+        /// <see cref="VariantenDaten.Pufferauslegungen"/> — die Texte kommen aus <c>MyResource</c> und
+        /// stehen damit schon in der Berichtssprache (Roh-Weg).
+        /// </summary>
+        internal static void PufferauslegungSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            List<PufferAuslegungGespeichert> zeilen = stamm?.Pufferauslegungen;
+            if (zeilen == null || zeilen.Count == 0) return;
+
+            k.Ueberschrift2Roh(MyResource.Resource.PAUS_TITEL);
+            k.TextRoh(MyResource.Resource.BER_PAUS_EINLEITUNG);
+
+            foreach (PufferAuslegungGespeichert g in zeilen)
+            {
+                k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Puffername) ? MyResource.Resource.BER_PAUS_NEUER_SPEICHER : g.Puffername);
+
+                var paare = new List<string>
+                {
+                    MyResource.Resource.BER_PAUS_SPEICHERKLASSE, Klassentext(g),
+                    MyResource.Resource.BER_PAUS_VORLAGE, Vorlagentext(g.Vorlage),
+                    MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g)
+                };
+                void Zone(PufferZone zone, double? volumen)
+                {
+                    if (!volumen.HasValue) return;
+                    paare.Add(Pauskey("PAUS_ZONE_", zone.ToString(), zone.ToString()));
+                    paare.Add(Liter(k, volumen));
+                }
+                Zone(PufferZone.Heizung, g.VolumenHeizungL);
+                Zone(PufferZone.Brauchwasser, g.VolumenBrauchwasserL);
+                Zone(PufferZone.Prozess, g.VolumenProzessL);
+
+                paare.Add(MyResource.Resource.BER_PAUS_BEMESSEND);
+                paare.Add(Bemessendtext(g));
+                paare.Add(MyResource.Resource.PAUS_SPALTE_HERKUNFT);
+                paare.Add(string.IsNullOrWhiteSpace(g.BemessendHerkunft) ? "—" : g.BemessendHerkunft);
+                paare.Add(MyResource.Resource.PAUS_EMPFEHLUNG);
+                paare.Add(g.EmpfehlungL.HasValue && g.EmpfehlungL.Value <= 0 ? MyResource.Resource.PAUS_KEIN_PUFFER : Liter(k, g.EmpfehlungL));
+                paare.Add(MyResource.Resource.BER_PAUS_GEWAEHLT);
+                paare.Add(Liter(k, g.GewaehltL));
+                paare.Add(MyResource.Resource.PAUS_KZ_STARTS_TAG);
+                paare.Add(Wert(k, g.StartsJeTag, 1, "1/d"));
+                paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_TAG);
+                paare.Add(Wert(k, g.VerlustKwhJeTag, 2, "kWh/d"));
+                paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_WK);
+                paare.Add(Wert(k, g.VerlustWJeK, 2, "W/K"));
+                paare.Add(MyResource.Resource.BER_PAUS_BERECHNET_AM);
+                paare.Add(g.BerechnetAm.HasValue ? g.BerechnetAm.Value.ToString("dd.MM.yyyy HH:mm", k.Kultur) : "—");
+                k.Eigenschaften(paare.ToArray());
+
+                if (g.Fehlertext != null)
+                    k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_FEHLT,
+                                               g.Fehlertext.Length > 0 ? g.Fehlertext : "—"));
+                else if (g.NachgerechnetL.HasValue && g.EmpfehlungL.HasValue
+                         && Math.Abs(g.NachgerechnetL.Value - g.EmpfehlungL.Value) > 0.5)
+                    k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_ABWEICHEND,
+                                               k.F(g.NachgerechnetL.Value, 0)));
+
+                k.TextRoh(MyResource.Resource.PAUS_GRUPPE_WARNUNGEN);
+                if (g.Warnungen == null || g.Warnungen.Count == 0)
+                    k.HinweisRoh("• " + MyResource.Resource.PAUS_WARNUNGEN_LEER);
+                else
+                    foreach (PufferWarnung w in g.Warnungen)
+                        k.HinweisRoh("• " + (w.Stufe == PufferStufe.Warnung ? MyResource.Resource.PAUS_STUFE_WARNUNG
+                                                                            : MyResource.Resource.PAUS_STUFE_HINWEIS) +
+                                     ": " + Pauskey("", w.Ressourcenschluessel, w.Text));
+            }
+        }
+
+        /// <summary>Ein Ressourcentext über seinen Schlüssel (Präfix + Wert, „-“ → „_“); Rückfall der Klartext.</summary>
+        private static string Pauskey(string praefix, string wert, string rueckfall)
+        {
+            string t = null;
+            try
+            {
+                t = MyResource.Resource.ResourceManager.GetString(praefix + (wert ?? "").Replace('-', '_').ToUpperInvariant(),
+                                                                  System.Globalization.CultureInfo.CurrentUICulture);
+            }
+            catch (Exception) { t = null; }
+            return string.IsNullOrEmpty(t) ? (rueckfall ?? wert ?? "") : t;
+        }
+
+        private static string Klassentext(PufferAuslegungGespeichert g)
+        {
+            var teile = new List<string>();
+            if (g.KlasseHeizung) teile.Add(MyResource.Resource.PAUS_KLASSE_HEIZUNG);
+            if (g.KlasseBrauchwasser) teile.Add(MyResource.Resource.PAUS_KLASSE_BRAUCHWASSER);
+            if (g.KlasseProzess) teile.Add(MyResource.Resource.PAUS_KLASSE_PROZESS);
+            return teile.Count == 0 ? "—" : string.Join(" + ", teile);
+        }
+
+        private static string Vorlagentext(PufferVorlage? v)
+        {
+            if (!v.HasValue) return "—";
+            string name = Pauskey("PAUS_VORLAGE_", v.Value.ToString(), v.Value.ToString());
+            string unter = Pauskey("PAUS_VORLAGE_", v.Value + "_UNTER", "");
+            return unter.Length == 0 ? name : name + " (" + unter + ")";
+        }
+
+        private static string Nutzungsprofiltext(PufferAuslegungGespeichert g)
+        {
+            if (!g.Nutzungsprofil.HasValue) return "—";
+            string name = Pauskey("PAUS_NP_", g.Nutzungsprofil.Value.ToString(), g.Nutzungsprofil.Value.ToString());
+            return string.IsNullOrWhiteSpace(g.NutzungsprofilHerkunft) ? name : name + " — " + g.NutzungsprofilHerkunft;
+        }
+
+        private static string Bemessendtext(PufferAuslegungGespeichert g)
+        {
+            string kennung = g.BemessendeKennung;
+            if (kennung == null) return "—";
+            string krit = Pauskey("PAUS_KRIT_", kennung, kennung) + " (" + kennung + ")";
+            return g.BemessendeZone.HasValue
+                ? Pauskey("PAUS_ZONE_", g.BemessendeZone.Value.ToString(), g.BemessendeZone.Value.ToString()) + ": " + krit
+                : krit;
+        }
+
+        private static string Liter(WordKontext k, double? l) => l.HasValue ? k.F(l.Value, 0) + " l" : "—";
 
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }
 

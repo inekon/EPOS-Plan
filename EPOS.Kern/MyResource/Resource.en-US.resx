@@ -43203,5 +43203,32 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
     <value>According to the file, slab "{0}" adjoins an unheated space, but space "{1}" on that side is considered heated. The file's declaration applies: the slab stays part of the envelope and is no separating slab — please check the heating of the space.</value>
   </data>
+  <data name="BER_PAUS_EINLEITUNG" xml:space="preserve">
+    <value>Saved sizings of the buffer storages of this project (VDI 4645 and operating simulation). Zone volumes, sizing criterion, recommendation and calculation date come from the saved sizing; source, key figures and notes from a recalculation with the saved input and the current project state.</value>
+  </data>
+  <data name="BER_PAUS_NEUER_SPEICHER" xml:space="preserve">
+    <value>New storage (not yet applied)</value>
+  </data>
+  <data name="BER_PAUS_SPEICHERKLASSE" xml:space="preserve">
+    <value>Storage class</value>
+  </data>
+  <data name="BER_PAUS_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="BER_PAUS_BEMESSEND" xml:space="preserve">
+    <value>Sizing criterion</value>
+  </data>
+  <data name="BER_PAUS_GEWAEHLT" xml:space="preserve">
+    <value>Selected volume</value>
+  </data>
+  <data name="BER_PAUS_BERECHNET_AM" xml:space="preserve">
+    <value>Calculated on</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG_ABWEICHEND" xml:space="preserve">
+    <value>The recalculation with the current project state recommends {0} l; the saved sizing should be recalculated.</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG_FEHLT" xml:space="preserve">
+    <value>Key figures and notes are missing, the recalculation was not possible: {0}</value>
+  </data>
 </root>
 

@@ -75,6 +75,67 @@ namespace WindowsFormsApplication1
                                                     double MindestlaufzeitMin, double StartzielJeTag,
                                                     double BeispielLeistungKw, double Faustwert, string FaustwertEinheit);
 
+    /// <summary>
+    /// Eine gespeicherte Auslegung aus <c>Tab_PufferAuslegung</c>, wie der Bericht sie zeigt
+    /// (Stufe P3): die gespeicherten Zonenvolumina, Empfehlung, bemessendes Kriterium und Zeitpunkt,
+    /// dazu der Projektpuffer (Name, gewähltes Volumen) und — aus einer Nachrechnung mit der
+    /// gespeicherten Eingabe und dem aktuellen Projektstand — Vorlage, Nutzungsprofil, Herkunft des
+    /// bemessenden Kriteriums, Kennzahlen und Warnliste. Die Nachrechnung schreibt nichts.
+    /// </summary>
+    public sealed record PufferAuslegungGespeichert
+    {
+        /// <summary>Die ID der Zeile in <c>Tab_PufferAuslegung</c>.</summary>
+        public int IdZeile { get; init; }
+        /// <summary>Der Projektpuffer; <c>null</c> = „neu anlegen“, noch nicht übernommen.</summary>
+        public int? IdPuffer { get; init; }
+        /// <summary>Der Bezeichner des Projektpuffers; <c>null</c> ohne Puffer.</summary>
+        public string Puffername { get; init; }
+        /// <summary>Das Volumen des Projektpuffers [l] (<c>Gesamtvolumen</c>); <c>null</c> ohne Puffer.</summary>
+        public double? GewaehltL { get; init; }
+        public bool KlasseHeizung { get; init; }
+        public bool KlasseBrauchwasser { get; init; }
+        public bool KlasseProzess { get; init; }
+        /// <summary>Die wirksame Vorlage (gespeichert, sonst Vorbelegung); <c>null</c> ohne Nachrechnung und ohne Spalte.</summary>
+        public PufferVorlage? Vorlage { get; init; }
+        /// <summary>Das wirksame Nutzungsprofil (gespeichert, sonst abgeleitet).</summary>
+        public PufferNutzungsprofil? Nutzungsprofil { get; init; }
+        /// <summary>Die Herkunft des abgeleiteten Nutzungsprofils (Klartext des Kerns).</summary>
+        public string NutzungsprofilHerkunft { get; init; }
+        public double? VolumenHeizungL { get; init; }
+        public double? VolumenBrauchwasserL { get; init; }
+        public double? VolumenProzessL { get; init; }
+        public double? EmpfehlungL { get; init; }
+        /// <summary>Zone und Kriterium, die bemessen (z. B. „Heizung: K4“), wie gespeichert.</summary>
+        public string Bemessend { get; init; }
+        /// <summary>Die Herkunft des bemessenden Kriteriums aus der Nachrechnung; <c>null</c> = unbekannt.</summary>
+        public string BemessendHerkunft { get; init; }
+        public DateTime? BerechnetAm { get; init; }
+        /// <summary>Die Empfehlung der Nachrechnung [l]; <c>null</c> = keine Nachrechnung.</summary>
+        public double? NachgerechnetL { get; init; }
+        public double? StartsJeTag { get; init; }
+        public double? VerlustKwhJeTag { get; init; }
+        public double? VerlustWJeK { get; init; }
+        public IReadOnlyList<PufferWarnung> Warnungen { get; init; } = Array.Empty<PufferWarnung>();
+        /// <summary>Warum die Nachrechnung nicht möglich war; <c>null</c> = sie lief (oder war nicht verlangt).</summary>
+        public string Fehlertext { get; init; }
+
+        /// <summary>Die Zone des bemessenden Kriteriums; <c>null</c>, wenn <see cref="Bemessend"/> keine nennt.</summary>
+        public PufferZone? BemessendeZone => Teilen(Bemessend).Zone;
+
+        /// <summary>Die Kennung des bemessenden Kriteriums (z. B. „K4“); <c>null</c> ohne.</summary>
+        public string BemessendeKennung => Teilen(Bemessend).Kennung;
+
+        private static (PufferZone? Zone, string Kennung) Teilen(string bemessend)
+        {
+            if (string.IsNullOrWhiteSpace(bemessend)) return (null, null);
+            int i = bemessend.IndexOf(':');
+            if (i < 0) return (null, bemessend.Trim());
+            PufferZone? zone = Enum.TryParse(bemessend.Substring(0, i).Trim(), out PufferZone z) ? z : null;
+            string kennung = bemessend.Substring(i + 1).Trim();
+            return (zone, kennung.Length == 0 ? null : kennung);
+        }
+    }
+
     /// <summary>Der Controller der Pufferspeicher-Auslegung (Konzept 5).</summary>
     public static class PufferAuslegungCtrl
     {
@@ -118,6 +179,11 @@ namespace WindowsFormsApplication1
         internal const string SQL_KATALOG =
             "SELECT ID, Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM Tab_Pufferspeicher_STAMM " +
             "WHERE Gesamtvolumen > 0 ORDER BY Gesamtvolumen, ID";
+
+        internal const string SQL_GESPEICHERT =
+            "SELECT a.*, p.Bezeichner AS Puffer_Bezeichner, p.Gesamtvolumen AS Puffer_Volumen FROM " + PufferAuslegungSchema.TAB +
+            " a LEFT JOIN Tab_Pufferspeicher p ON p.ID = a.ID_Pufferspeicher AND p.ID_Projekt = a.ID_Projekt " +
+            "WHERE a.ID_Projekt = ? ORDER BY a.ID";
 
         internal const string SQL_ZEILE_LESEN =
             "SELECT * FROM " + PufferAuslegungSchema.TAB + " WHERE ID_Projekt = ? AND ID_Pufferspeicher IS ? ORDER BY ID";
@@ -939,6 +1005,95 @@ namespace WindowsFormsApplication1
             if (DataRepository.ExecuteNonQuery(SQL_ZEILE_EINFUEGEN, werte.ToArray()) < 0) return -1;
             DataRow neu = ZeileLesen(idProjekt, idPuffer);
             return neu == null ? -1 : (int)Zahl(neu["ID"]);
+        }
+
+        // =================================================================================
+        //  Gespeicherte Auslegungen lesen (Bericht, Stufe P3)
+        // =================================================================================
+
+        /// <summary>
+        /// Die gespeicherten Auslegungen des Projekts (eine je Zeile in <c>Tab_PufferAuslegung</c>, nach
+        /// ID) mit Puffername und gewähltem Volumen. Mit <paramref name="nachrechnen"/> rechnet jede Zeile
+        /// mit ihrer gespeicherten Eingabe und dem aktuellen Projektstand nach (Bedarfsreihen einmal je
+        /// Projekt) und trägt Vorlage, Nutzungsprofil, Herkunft des bemessenden Kriteriums, Kennzahlen und
+        /// Warnliste; misslingt die Nachrechnung, steht der Grund in <see cref="PufferAuslegungGespeichert.Fehlertext"/>.
+        /// Nur lesend. Ohne Tabelle oder Zeile: leere Liste.
+        /// </summary>
+        public static IReadOnlyList<PufferAuslegungGespeichert> Gespeichert(int idProjekt, bool nachrechnen = true)
+        {
+            var liste = new List<PufferAuslegungGespeichert>();
+            if (idProjekt <= 0 || !DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB)) return liste.AsReadOnly();
+            DataTable t = DataRepository.GetDataTable(SQL_GESPEICHERT, P("@projekt", idProjekt));
+            if (t == null || t.Rows.Count == 0) return liste.AsReadOnly();
+
+            PufferAuslegungReihen reihen = null;
+            if (nachrechnen)
+            {
+                try { reihen = Reihen(idProjekt); }
+                catch (Exception ex) { reihen = new PufferAuslegungReihen(null, null, null, ex.Message); }
+            }
+
+            foreach (DataRow z in t.Rows)
+            {
+                double? idp = ZahlOderNull(z, "ID_Pufferspeicher");
+                int? idPuffer = idp.HasValue ? (int)idp.Value : null;
+                string np = Text(z, "Nutzungsprofil"), vo = Text(z, "Vorlage");
+                DateTime? am = DateTime.TryParse(Text(z, "Berechnet_am"), CultureInfo.InvariantCulture,
+                                                 DateTimeStyles.AssumeLocal, out DateTime d) ? d : null;
+                var g = new PufferAuslegungGespeichert
+                {
+                    IdZeile = (int)Zahl(z["ID"]),
+                    IdPuffer = idPuffer,
+                    Puffername = Text(z, "Puffer_Bezeichner"),
+                    GewaehltL = ZahlOderNull(z, "Puffer_Volumen"),
+                    KlasseHeizung = Zahl(z["Klasse_Heizung"]) != 0,
+                    KlasseBrauchwasser = Zahl(z["Klasse_Brauchwasser"]) != 0,
+                    KlasseProzess = Zahl(z["Klasse_Prozess"]) != 0,
+                    Vorlage = vo != null && Enum.TryParse(vo, out PufferVorlage vw) ? vw : null,
+                    Nutzungsprofil = np != null && Enum.TryParse(np, out PufferNutzungsprofil nw) ? nw : null,
+                    VolumenHeizungL = ZahlOderNull(z, "Volumen_H_l"),
+                    VolumenBrauchwasserL = ZahlOderNull(z, "Volumen_B_l"),
+                    VolumenProzessL = ZahlOderNull(z, "Volumen_P_l"),
+                    EmpfehlungL = ZahlOderNull(z, "Volumen_Empfehlung_l"),
+                    Bemessend = Text(z, "Bemessend"),
+                    BerechnetAm = am
+                };
+                liste.Add(nachrechnen ? Nachrechnen(idProjekt, g, reihen) : g);
+            }
+            return liste.AsReadOnly();
+        }
+
+        /// <summary>Die Nachrechnung einer gespeicherten Zeile — Vorbelegung samt Zeile, dann der Rechenkern.</summary>
+        private static PufferAuslegungGespeichert Nachrechnen(int idProjekt, PufferAuslegungGespeichert g, PufferAuslegungReihen reihen)
+        {
+            PufferAuslegungVorbelegung v;
+            try { v = Vorbelegen(idProjekt, g.IdPuffer, reihen); }
+            catch (Exception ex) { return g with { Fehlertext = ex.Message }; }
+
+            g = g with
+            {
+                Vorlage = v.Eingang.Vorlage,
+                Nutzungsprofil = v.Eingang.Nutzungsprofil ?? v.Nutzungsprofil?.Profil,
+                NutzungsprofilHerkunft = g.Nutzungsprofil.HasValue ? null : v.Nutzungsprofil?.Herkunft
+            };
+            if (reihen == null || !reihen.Vorhanden) return g with { Fehlertext = reihen?.Fehlertext ?? "" };
+
+            PufferAuslegungErgebnis r;
+            try { r = Rechnen(v.Eingang); }
+            catch (Exception ex) { return g with { Fehlertext = ex.Message }; }
+
+            PufferZonenergebnis zone = g.BemessendeZone.HasValue ? r.Zone(g.BemessendeZone.Value) : null;
+            PufferKriterium k = g.BemessendeKennung == null ? null : zone?.Kriterium(g.BemessendeKennung);
+            PufferBetriebsbild bild = r.Zone(PufferZone.Heizung)?.Betriebsbild ?? r.Zone(PufferZone.Prozess)?.Betriebsbild;
+            return g with
+            {
+                BemessendHerkunft = string.IsNullOrWhiteSpace(k?.Herkunft) ? null : k.Herkunft,
+                NachgerechnetL = r.EmpfehlungL,
+                StartsJeTag = bild?.StartsJeTag,
+                VerlustKwhJeTag = r.Kennzahlen?.Verlust?.KwhJeTag,
+                VerlustWJeK = r.Kennzahlen?.Verlust?.WJeK,
+                Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>()
+            };
         }
 
         // =================================================================================

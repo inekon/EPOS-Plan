@@ -43210,5 +43210,32 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
     <value>Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen.</value>
   </data>
+  <data name="BER_PAUS_EINLEITUNG" xml:space="preserve">
+    <value>Gespeicherte Auslegungen der Pufferspeicher dieses Projekts (VDI 4645 und Betriebssimulation). Zonenvolumina, bemessendes Kriterium, Empfehlung und Berechnungsdatum stammen aus der gespeicherten Auslegung; Herkunft, Kennzahlen und Hinweise aus einer Nachrechnung mit der gespeicherten Eingabe und dem aktuellen Projektstand.</value>
+  </data>
+  <data name="BER_PAUS_NEUER_SPEICHER" xml:space="preserve">
+    <value>Neuer Speicher (noch nicht übernommen)</value>
+  </data>
+  <data name="BER_PAUS_SPEICHERKLASSE" xml:space="preserve">
+    <value>Speicherklasse</value>
+  </data>
+  <data name="BER_PAUS_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="BER_PAUS_BEMESSEND" xml:space="preserve">
+    <value>Bemessendes Kriterium</value>
+  </data>
+  <data name="BER_PAUS_GEWAEHLT" xml:space="preserve">
+    <value>Gewähltes Volumen</value>
+  </data>
+  <data name="BER_PAUS_BERECHNET_AM" xml:space="preserve">
+    <value>Berechnet am</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG_ABWEICHEND" xml:space="preserve">
+    <value>Die Nachrechnung mit dem aktuellen Projektstand empfiehlt {0} l; die gespeicherte Auslegung ist neu zu rechnen.</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG_FEHLT" xml:space="preserve">
+    <value>Kennzahlen und Hinweise fehlen, die Nachrechnung war nicht möglich: {0}</value>
+  </data>
 </root>
 
