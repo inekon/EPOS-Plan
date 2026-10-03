@@ -188,7 +188,7 @@ Die Gruppe ''Teillast und Takten'' in ''BHKW Eigenschaften'' und die gleichnamig
 * '''Anfahrverlust je Start''' – in kWh Brennstoff, der je Start zusätzlich verbraucht wird.
 * '''Mindestlaufzeit''' – in Minuten je Start, höchstens 60; leer gelten 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
 
-Mit einem Anfahrverlust oder einer Mindestlaufzeit '''taktet''' ein Modul unter seiner Untergrenze, statt in der Stunde auszubleiben: Es deckt den Wärmeraum, den Strombedarf oder – ohne Einspeisung – das Kleinere von beiden in kurzen Läufen an der Untergrenze. Die Simulation zählt dabei die Starts der Stunde so, wie Mindestläufe die Wärme brauchen, und schlägt je Start den Anfahrverlust auf den Brennstoff. Ohne Untergrenze (0 in allen drei Ebenen) taktet kein Modul.
+Mit einem Anfahrverlust oder einer Mindestlaufzeit '''taktet''' ein Modul unter seiner Untergrenze, statt in der Stunde auszubleiben – sofern der Wärmeraum der Stunde (offener Bedarf plus freier Puffer) mindestens einen Mindestlauf aufnimmt, also die Wärme der Untergrenze über die Mindestlaufzeit: Es deckt den Wärmeraum, den Strombedarf oder – ohne Einspeisung – das Kleinere von beiden in kurzen Läufen an der Untergrenze. Die Simulation zählt dabei die Starts der Stunde so, wie Mindestläufe die Wärme brauchen, und schlägt je Start den Anfahrverlust auf den Brennstoff. Ohne Untergrenze (0 in allen drei Ebenen) taktet kein Modul.
 
 === Betriebsart ===
 {{Anker|fahrweise|betriebsart|strategie}}

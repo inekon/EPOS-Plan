@@ -186,6 +186,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Starts einer Taktstunde mit der Wärme Q (<see cref="Kesselkennlinie.StartsImTakt"/>).</summary>
+        /// <summary>
+        /// Die Wärme EINES Mindestlaufs [kWh]: die Wärme der Untergrenze über die Mindestlaufzeit,
+        /// Q_min · t_min / 60. Unter ihr taktet das Modul nicht - ein Lauf, der kürzer wäre als die
+        /// Mindestlaufzeit, findet nicht statt.
+        /// </summary>
+        public double MindestlaufWaermeKwh => MindestwaermeKw * MindestlaufzeitWirksam / (double)Kesselkennlinie.MINUTEN_JE_STUNDE;
+
+        /// <summary>Der Strom eines Mindestlaufs [kWh], mit der Stromkennzahl der Untergrenze.</summary>
+        public double MindestlaufStromKwh => TaktStromAusWaerme(MindestlaufWaermeKwh);
+
+        /// <summary>Nimmt der Wärmeraum der Stunde einen Mindestlauf auf (mit dem Zahlenrand)?</summary>
+        public bool NimmtMindestlaufWaerme(double raumKwh) => Rechenrand.SchwelleErreicht(raumKwh, MindestlaufWaermeKwh);
+
+        /// <summary>Nimmt der Reststrom der Stunde einen Mindestlauf auf (mit dem Zahlenrand)?</summary>
+        public bool NimmtMindestlaufStrom(double stromKwh) => Rechenrand.SchwelleErreicht(stromKwh, MindestlaufStromKwh);
+
         public int StartsImTakt(double waermeKwh)
             => Kesselkennlinie.StartsImTakt(waermeKwh, MindestwaermeKw, MindestlaufzeitWirksam);
     }

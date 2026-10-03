@@ -853,8 +853,8 @@ namespace WindowsFormsApplication1
                 }
                 // Welle M4 (BH2): Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
                 // Mindestlaufzeit - es liefert den Wärmeraum mit der Stromkennzahl der
-                // Untergrenze. Ohne die beiden Felder bleibt es aus wie zuvor.
-                else if (Taktfaehig(motor) && restWaerme + restSpeicher >= Rechenrand.ABSOLUT)
+                // Untergrenze, sofern der Wärmeraum einen Mindestlauf aufnimmt. Sonst bleibt es aus.
+                else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufWaerme(restWaerme + restSpeicher))
                 {
                     double waermeTakt = restWaerme + restSpeicher;
                     double stromTakt = _teillast[motor].TaktStromAusWaerme(waermeTakt);
@@ -954,8 +954,8 @@ namespace WindowsFormsApplication1
                     restStrom = 0.0;
                 }
                 // Welle M4 (BH2): Unter der Untergrenze taktet ein Modul mit Anfahrverlust oder
-                // Mindestlaufzeit und deckt den Reststrom mit der Stromkennzahl der Untergrenze.
-                else if (Taktfaehig(motor) && restStrom >= Rechenrand.ABSOLUT)
+                // Mindestlaufzeit und deckt den Reststrom mit der Stromkennzahl der Untergrenze, ab einem Mindestlauf.
+                else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
                 {
                     double waermeTakt = _teillast[motor].TaktWaermeAusStrom(restStrom);
                     stromproduktion[stunde] += restStrom;
@@ -1036,7 +1036,7 @@ namespace WindowsFormsApplication1
                             wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         }
                         // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
-                        else if (Taktfaehig(motor) && restStrom >= Rechenrand.ABSOLUT)
+                        else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
                         {
                             sLeistung = restStrom;
                             wLeistung = _teillast[motor].TaktWaermeAusStrom(restStrom);
@@ -1090,7 +1090,7 @@ namespace WindowsFormsApplication1
                             wLeistung = WaermeAusStrom(motor, restStrom, bhkwWaermeLeistung, bhkwStromLeistung);
                         }
                         // Welle M4 (BH2): Takten auf den Reststrom unter der Untergrenze.
-                        else if (Taktfaehig(motor) && restStrom >= Rechenrand.ABSOLUT)
+                        else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufStrom(restStrom))
                         {
                             sLeistung = restStrom;
                             wLeistung = _teillast[motor].TaktWaermeAusStrom(restStrom);
@@ -1120,9 +1120,9 @@ namespace WindowsFormsApplication1
                     }
                     // Welle M4 (BH2): Der Wärmeraum liegt unter der Untergrenze - mit Anfahrverlust
                     // oder Mindestlaufzeit taktet das Modul, begrenzt durch Wärmeraum UND Reststrom
-                    // (keine Einspeisung), mit der Stromkennzahl der Untergrenze.
-                    else if (Taktfaehig(motor) && restWaerme + restSpeicher >= Rechenrand.ABSOLUT &&
-                             restStrom >= Rechenrand.ABSOLUT)
+                    // (keine Einspeisung), mit der Stromkennzahl der Untergrenze; beide tragen einen Mindestlauf.
+                    else if (Taktfaehig(motor) && _teillast[motor].NimmtMindestlaufWaerme(restWaerme + restSpeicher) &&
+                             _teillast[motor].NimmtMindestlaufStrom(restStrom))
                     {
                         double raumTakt = restWaerme + restSpeicher;
                         double stromRaum = _teillast[motor].TaktStromAusWaerme(raumTakt);

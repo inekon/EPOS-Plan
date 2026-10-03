@@ -344,6 +344,8 @@ Die Schwellen der drei Fahrweisen bleiben die aus Schritt 2.
 :: <math>Q_{\mathrm{min}}</math> – Wärme der Untergrenze in einer vollen Stunde; ohne Kennlinie <math>x_{\mathrm{min}} \cdot P_{\mathrm{th}}</math> [kWh]
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze aus (2) [–]
 
+Getaktet wird nur, wenn der Wärmeraum der Stunde mindestens einen Mindestlauf aufnimmt, also die Wärme <math>Q_{\mathrm{min}} \cdot t_{\mathrm{min}}/60</math>; stromgeführt muss der Reststrom den Strom eines Mindestlaufs tragen, ohne Einspeisung beides. Sonst bleibt das Modul in der Stunde aus.
+
 Die Starts zählt der Lauf nach der Regel des Heizkessels: In einer Taktstunde so viele, wie Mindestläufe die Wärme brauchen, höchstens so viele, wie ganz in die Stunde passen; sonst ist ein Start der Übergang aus einer Stillstandsstunde in eine Laufstunde:
 
 : <math>\displaystyle n_{\mathrm{S}}(t) = \begin{cases} \min\left( \left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor , \left\lceil \frac{Q(t)}{Q_{\mathrm{min}} \cdot t_{\mathrm{min}}/60} \right\rceil \right) & \text{Taktstunde} \\ 1 & Q(t-1) = 0 < Q(t) \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(18)

@@ -99,6 +99,27 @@ namespace EPOS.Kern.Tests
                                           double? anfahr = null, int? laufzeit = null)
             => new BhkwTeillast(14.5, 30.8, 0.9216, el50, th50, grenze, anfahr, laufzeit);
 
+        /// <summary>
+        /// Das Modul taktet nur ab einem Mindestlauf: Q_min · t_min / 60 Wärme, mit leerer Mindestlaufzeit
+        /// 10 min; auf der Schwelle ja, deutlich darunter nein. Der Strom eines Mindestlaufs folgt der
+        /// Stromkennzahl der Untergrenze.
+        /// </summary>
+        [Fact]
+        public void Takten_erst_ab_einem_Mindestlauf()
+        {
+            BhkwTeillast leer = Modul(null, null, 0.5, 0.5);
+            double qmin = 0.5 * 30.8;
+            Assert.Equal(qmin * 10 / 60.0, leer.MindestlaufWaermeKwh, 12);
+            Assert.True(leer.NimmtMindestlaufWaerme(qmin * 10 / 60.0));
+            Assert.False(leer.NimmtMindestlaufWaerme(qmin * 10 / 60.0 * 0.99));
+            Assert.Equal(qmin * 10 / 60.0 / 30.8 * 14.5, leer.MindestlaufStromKwh, 12);
+
+            BhkwTeillast lang = Modul(0.27, 0.62, 0.5, null, 30);
+            Assert.Equal(lang.MindestwaermeKw * 0.5, lang.MindestlaufWaermeKwh, 12);
+            Assert.True(lang.NimmtMindestlaufStrom(lang.MindestlaufStromKwh));
+            Assert.False(lang.NimmtMindestlaufStrom(lang.MindestlaufStromKwh * 0.9));
+        }
+
         /// <summary>η(β) trifft η₅₀ bei 0,5 und η₁₀₀ bei 1, liegt bei 0,75 in der Mitte und ist außerhalb geklemmt.</summary>
         [Fact]
         public void Kennlinie_an_den_Stuetzpunkten()

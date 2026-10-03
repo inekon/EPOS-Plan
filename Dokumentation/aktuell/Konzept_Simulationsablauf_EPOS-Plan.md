@@ -1336,7 +1336,12 @@ das Modul nicht aus, sondern liefert in allen drei Fahrweisen den Wärmeraum, de
 — ohne Einspeisung — das Kleinere von beiden mit der Stromkennzahl an x_min. Die Starts zählt
 die Kesselregel gegen die Wärme der Untergrenze Q_min = x_min · P_el · η_th(x_min)/η_el(x_min);
 je Start kommt der Anfahrverlust auf den Brennstoff. Der Brennstoff einer Taktstunde rechnet mit
-η_el(x_min).
+η_el(x_min). Getaktet wird nur, wenn der Wärmeraum der Stunde (offener Bedarf plus freier
+Pufferraum) mindestens einen Mindestlauf Q_min · t_min / 60 aufnimmt (t_min leer = 10 min;
+`BhkwTeillast.NimmtMindestlaufWaerme`); stromgeführt muss der Reststrom den Strom eines
+Mindestlaufs tragen, ohne Einspeisung beides — sonst bleibt das Modul aus. Der Heizkessel zählt
+sein Takten (`Kesselkennlinie.Taktet`) dagegen schon ab jeder Wärme über dem Zahlenrand, denn er
+deckt als letzter Erzeuger auch einen kleinen Rest.
 
 **Ergebnis.** Die Reiter Wärmepumpe und BHKW zeigen Starts, Mehrstrom, Anfahrverlust und
 Teillast-Mehrbrennstoff nur, wenn ein Modul sie rechnet; ebenso die Referenzskalare
