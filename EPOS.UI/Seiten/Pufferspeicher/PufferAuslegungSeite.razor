@@ -146,6 +146,9 @@
     private string _pufferName = "";
     private int _ziel;
     private string _bezeichner = "";
+
+    /// <summary>V14: das Sperrprofil der Auslegung beim Übernehmen an die Wärmepumpe schreiben? Vorgabe aus.</summary>
+    private bool _sperrprofilSchreiben;
     private string _meldung = "";
     private bool _meldungErfolg;
     private Hilfekontext? _gemeldet;
@@ -919,7 +922,7 @@
             Melden(Texte.GrundBezeichner, false);
             return;
         }
-        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name));
+        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name, _sperrprofilSchreiben));
         Melden(r.Text, r.Erfolg);
         if (r.Erfolg && r.IdPuffer > 0)
         {
@@ -1100,6 +1103,8 @@
                             </KindInhalt>
                         </Formularraster>
                     }
+                    <Schalter Bezeichnung="@Texte.SperrprofilSchreiben" Wert="@_sperrprofilSchreiben"
+                              WertChanged="@((bool w) => _sperrprofilSchreiben = w)" />
                     <p class="epos-leisezeile epos-pausl-bleibt">@Texte.UebernahmeBleibt</p>
                     <div class="epos-pausl-uebernahme-knoepfe">
                         @if (Dienste?.Speichern is not null)

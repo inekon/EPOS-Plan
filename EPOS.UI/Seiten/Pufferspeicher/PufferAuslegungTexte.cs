@@ -463,6 +463,9 @@ public sealed class PufferAuslegungTexte
     /// <summary>„Für einen neuen Speicher eine Bezeichnung eingeben." (<c>PAUS_GRUND_BEZEICHNER</c>).</summary>
     public string GrundBezeichner { get; set; } = Resource.PAUS_GRUND_BEZEICHNER;
 
+    /// <summary>V14: der Schalter im Übernahme-Block.</summary>
+    public string SperrprofilSchreiben { get; set; } = Resource.PAUS_LBL_SPERRPROFIL_SCHREIBEN;
+
     /// <summary>
     /// Der Text zum Schlüssel <paramref name="praefix"/> + <paramref name="wert"/> (Bindestrich wird
     /// Unterstrich, groß geschrieben); <paramref name="rueckfall"/>, wenn der Schlüssel fehlt.

@@ -43816,5 +43816,71 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMENG_SPERRPROFIL_ZEILE" xml:space="preserve">
     <value>Sperrprofil {0}: {1} Fenster, {2} gesperrte Stunden</value>
   </data>
+  <data name="WPA_GRP_SPERRZEITEN" xml:space="preserve">
+    <value>Sperrzeiten</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VORLAGE" xml:space="preserve">
+    <value>Vorlage:</value>
+  </data>
+  <data name="WPA_BTN_SPERR_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WPA_BTN_SPERR_2X2" xml:space="preserve">
+    <value>2 × 2 h</value>
+  </data>
+  <data name="WPA_BTN_SPERR_3X2" xml:space="preserve">
+    <value>3 × 2 h</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VON" xml:space="preserve">
+    <value>Beginn</value>
+  </data>
+  <data name="WPA_LBL_SPERR_DAUER" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="WPA_LBL_SPERR_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab mitgesperrt</value>
+  </data>
+  <data name="WPA_BTN_SPERR_HINZU" xml:space="preserve">
+    <value>Fenster hinzufügen</value>
+  </data>
+  <data name="WPA_BTN_SPERR_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_LEER" xml:space="preserve">
+    <value>Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_UEBERTRAG" xml:space="preserve">
+    <value>Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt.</value>
+  </data>
+  <data name="WPA_WT_MO" xml:space="preserve">
+    <value>Mo</value>
+  </data>
+  <data name="WPA_WT_DI" xml:space="preserve">
+    <value>Di</value>
+  </data>
+  <data name="WPA_WT_MI" xml:space="preserve">
+    <value>Mi</value>
+  </data>
+  <data name="WPA_WT_DO" xml:space="preserve">
+    <value>Do</value>
+  </data>
+  <data name="WPA_WT_FR" xml:space="preserve">
+    <value>Fr</value>
+  </data>
+  <data name="WPA_WT_SA" xml:space="preserve">
+    <value>Sa</value>
+  </data>
+  <data name="WPA_WT_SO" xml:space="preserve">
+    <value>So</value>
+  </data>
+  <data name="WPA_EINHEIT_STUNDEN" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="PAUS_LBL_SPERRPROFIL_SCHREIBEN" xml:space="preserve">
+    <value>Sperrprofil an die Wärmepumpe schreiben</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRFENSTER_ERL" xml:space="preserve">
+    <value>Sperrfenster der Wärmepumpe als Liste „Beginn-Ende“ in Stunden, getrennt durch Semikolon (z. B. „11-13; 17-19“); jeden Tag, Heizstab mitgesperrt. Ein Fenster über Mitternacht („22-2“) läuft in den Folgetag; leer = keine Sperrzeiten.</value>
+  </data>
 </root>
 

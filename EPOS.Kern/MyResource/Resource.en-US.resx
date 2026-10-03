@@ -43809,5 +43809,71 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_SPERRPROFIL_ZEILE" xml:space="preserve">
     <value>Lock-out profile {0}: {1} windows, {2} locked hours</value>
   </data>
+  <data name="WPA_GRP_SPERRZEITEN" xml:space="preserve">
+    <value>Lock-out times</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VORLAGE" xml:space="preserve">
+    <value>Template:</value>
+  </data>
+  <data name="WPA_BTN_SPERR_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WPA_BTN_SPERR_2X2" xml:space="preserve">
+    <value>2 × 2 h</value>
+  </data>
+  <data name="WPA_BTN_SPERR_3X2" xml:space="preserve">
+    <value>3 × 2 h</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VON" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="WPA_LBL_SPERR_DAUER" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="WPA_LBL_SPERR_HEIZSTAB" xml:space="preserve">
+    <value>Heating rod locked too</value>
+  </data>
+  <data name="WPA_BTN_SPERR_HINZU" xml:space="preserve">
+    <value>Add window</value>
+  </data>
+  <data name="WPA_BTN_SPERR_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_LEER" xml:space="preserve">
+    <value>No lock-out times — the heat pump may run at any time.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_UEBERTRAG" xml:space="preserve">
+    <value>A window past midnight continues into the next day; every hour whose start lies in the window is locked.</value>
+  </data>
+  <data name="WPA_WT_MO" xml:space="preserve">
+    <value>Mon</value>
+  </data>
+  <data name="WPA_WT_DI" xml:space="preserve">
+    <value>Tue</value>
+  </data>
+  <data name="WPA_WT_MI" xml:space="preserve">
+    <value>Wed</value>
+  </data>
+  <data name="WPA_WT_DO" xml:space="preserve">
+    <value>Thu</value>
+  </data>
+  <data name="WPA_WT_FR" xml:space="preserve">
+    <value>Fri</value>
+  </data>
+  <data name="WPA_WT_SA" xml:space="preserve">
+    <value>Sat</value>
+  </data>
+  <data name="WPA_WT_SO" xml:space="preserve">
+    <value>Sun</value>
+  </data>
+  <data name="WPA_EINHEIT_STUNDEN" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="PAUS_LBL_SPERRPROFIL_SCHREIBEN" xml:space="preserve">
+    <value>Write lock-out profile to the heat pump</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRFENSTER_ERL" xml:space="preserve">
+    <value>Lock-out windows of the heat pump as a list “start-end” in hours, separated by semicolons (e.g. “11-13; 17-19”); every day, heating rod locked too. A window past midnight (“22-2”) continues into the next day; empty = no lock-out times.</value>
+  </data>
 </root>
 

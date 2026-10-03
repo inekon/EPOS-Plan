@@ -670,6 +670,13 @@ namespace WindowsFormsApplication1
                             if (art != PufferBrennstoff.Keiner) { brennstoff = art; festbrennstoff = true; }
                         }
                     }
+                    // V14: die Sperrfenster der Wärmepumpe (Tab_Sperrfenster) vor dem Altfenster.
+                    if (a.Typ == TYP_WP && sperre.Count == 0)
+                    {
+                        List<Sperrfenster> tabelle = SperrfensterCtrl.Lesen(a.Id);
+                        if (tabelle.Count > 0)
+                            sperre = tabelle.Select(f => new PufferSperrfenster(f.VonH, f.DauerH)).ToList();
+                    }
                     if (a.Sperrung && sperre.Count == 0)
                     {
                         double dauer = ((a.SperrBis - a.SperrVon) % 24 + 24) % 24;
@@ -1290,6 +1297,30 @@ namespace WindowsFormsApplication1
             if (neu > 0 && DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB))
                 DataRepository.ExecuteNonQuery(SQL_ZEILE_UMHAENGEN, P("@puffer", neu), P("@projekt", idProjekt));
             return neu;
+        }
+
+        /// <summary>
+        /// Schreibt das Sperrprofil der Auslegung an die Wärmepumpen des Projekts — <b>nur auf Zuruf</b>
+        /// (Schalter „Sperrprofil an die Wärmepumpe schreiben“ im Übernahme-Block, Vorgabe aus). Jedes
+        /// Fenster gilt an allen Tagen und sperrt den Heizstab mit; die Liste ersetzt die Fenster der
+        /// Anlage, das Altfenster geht aus (<see cref="SperrfensterCtrl.Schreiben"/>).
+        /// </summary>
+        /// <returns>Die Zahl der beschriebenen Anlagen; -1 bei einem Schreibfehler.</returns>
+        public static int SperrprofilSchreiben(int idProjekt, IReadOnlyList<PufferSperrfenster> fenster)
+        {
+            if (idProjekt <= 0 || !SperrfensterCtrl.TabelleVorhanden()) return 0;
+            var liste = (fenster ?? Array.Empty<PufferSperrfenster>())
+                .Where(f => f != null && f.DauerH > 0)
+                .Select(f => new Sperrfenster { VonH = f.BeginnH, DauerH = Math.Min(24, f.DauerH) })
+                .ToList();
+            int n = 0;
+            foreach (Anlage a in AnlagenLesen(idProjekt))
+            {
+                if (a.Typ != TYP_WP) continue;
+                if (!SperrfensterCtrl.Schreiben(a.Id, liste)) return -1;
+                n++;
+            }
+            return n;
         }
 
         // =================================================================================
