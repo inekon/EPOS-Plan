@@ -42207,5 +42207,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
     <value>The file name mentions {0}; the file carries no year of construction. The year is not adopted — please check the year of construction or age class yourself.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GESCHAETZT" xml:space="preserve">
+    <value>Separating slab {0}/{1}: the file does not reference all slab parts — area estimated from the space quantities: {2} m² (smaller heated floor area of the two storeys) instead of {3} m² referenced; U-value and construction from the referenced parts.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
+    <value>According to the file, slab "{0}" adjoins an unheated space, but space "{1}" on that side is considered heated. The file's declaration applies: the slab stays part of the envelope and is no separating slab — please check the heating of the space.</value>
+  </data>
 </root>
 

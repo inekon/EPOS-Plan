@@ -36799,6 +36799,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume tragen teils Netto-, teils nur Bruttoflächen ({0} netto, {1} nur brutto, {2} ohne) — eine gemischte Summe wird nicht gebildet, die Nutzfläche bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHENART_GEMISCHT {
@@ -37164,6 +37173,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trenndecke {0}/{1}: Die Datei referenziert nicht alle Deckenteile — Fläche aus den Raummengen geschätzt: {2} m² (kleinere beheizte Grundfläche der beiden Geschosse) statt {3} m² referenziert; U-Wert und Aufbau aus den referenzierten Teilen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_GESCHAETZT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_GESCHAETZT", resourceCulture);
             }
         }
         
