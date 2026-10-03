@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using EPOS.Referenzlaeufe.Skripte;
 using WindowsFormsApplication1;
 using Xunit;
 using Xunit.Abstractions;
@@ -178,8 +179,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>N-AH8 mit Zonen</b> (Welle R3): Jedes Mehrzonengebäude der sechzehn Referenzprojekte — die
-        /// Testdatenbank führt heute keines (keine Zeile in <c>Tab_Zone</c>, G6d offen) — und jedes
+        /// <b>N-AH8 mit Zonen</b> (Welle R3, an die Datenbank gehängt mit G6d): Jedes Mehrzonengebäude der
+        /// sechzehn Referenzprojekte und des Zonenprojekts 1052 (<see cref="Zonenprojekt1052"/>: drei Zonen,
+        /// Trennwand, Luftstrom, Heizkalender je Zone — das einzige der Testdatenbank, Pflicht, sobald es steht) und jedes
         /// VDI-Gebäude der sechzehn Projekte in seiner Mehrzonenfassung
         /// (<see cref="AufheizLauf.Mehrzonenfassung"/>: zwei Hälften mit Trennwand und Luftstrom, ein
         /// unbeheizter Nebenraum) rechnen über die Fassade mit eingeschalteter Aufheizoptimierung und
@@ -193,7 +195,7 @@ namespace EPOS.Kern.Tests
 
             var an = new Aufheizvorgabe(true, null, null, null, null);
             int ausDb = 0, gebaeude = 0, zonen = 0, gekoppelt = 0, unbeheizt = 0, spruenge = 0;
-            foreach (int projekt in AufheizLauf.Referenzprojekte)
+            foreach (int projekt in AufheizLauf.Referenzprojekte.Append(Zonenprojekt1052.NEU))
             {
                 foreach (bool fassung in new[] { false, true })
                 {
@@ -256,6 +258,8 @@ namespace EPOS.Kern.Tests
                 "davon {3} gekoppelt (W5), {4} unbeheizt; {5} Sprünge mit n = 1", ausDb, gebaeude, zonen, gekoppelt, unbeheizt, spruenge));
             Assert.True(gebaeude >= 17, "Weniger VDI-Gebäude als erwartet: " + gebaeude);
             Assert.True(spruenge > 0);
+            if (Zonenprojekt1052.Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?", Zonenprojekt1052.NEU) == 1)
+                Assert.True(ausDb >= 1, "Das Zonenprojekt " + Zonenprojekt1052.NEU + " rechnet kein Mehrzonengebäude der Datenbank.");
         }
 
         internal static void Bitgleich(GebaeudeModellErgebnis a, GebaeudeModellErgebnis b, string wo)
