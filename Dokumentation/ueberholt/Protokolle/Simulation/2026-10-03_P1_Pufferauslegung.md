@@ -14,7 +14,7 @@ nachgezogen (`4c7ab4cc`). Statuszeile **#675**.
 | W2 | `4bd1c707` | Rechenkern `EPOS.Kern/Allgemein/Pufferauslegung/`: `PufferAuslegungEingang` (record), `HeizzoneRechner` (K1–K4, K4e, K8–K11, Band), `Betriebssimulation` (Durchlauf mit Bisektion auf das Deckungsziel, Zweipunkt mit Schwellen und Modulationsmodus, Bisektion auf Starts je Tag), `BrauchwasserzoneRechner`, `ProzesszoneRechner`, `Nutzungsprofil`, `PufferAuslegungErgebnis`, Fassade `PufferAuslegung.Rechnen`; 44 datenbankfreie Tests (`Betriebssimulation`, Handrechnungen, Fassade) |
 | W3 | `5aee63c0` | `EPOS.Kern/Controller/PufferAuslegungCtrl`: `Vorbelegen` (Puffer, Kaskade, Erzeuger, Gebäude, Einstellungen, Zapfprofil über `ZapfprofilCtrl.Auslegung`, Prozessdaten, Konditionierung; Herkunftsliste je Feld; gespeicherte Zeile überschreibt spaltenweise), `Reihen` (Vorprüfen, Bedarf, `KanaeleDrei()`), `Rechnen`, `Durchrechnen`, `Speichern` (UPSERT), `Uebernehmen` (über `PufferSpCtrl`), `Vorlagen`, `Katalog` |
 | W4 | `69bec6b7` | `PufferAuslegungCtrlTests` (11 Fälle mit Testdatenbank: 1045 Kombi aus dem Zapfprofil, 1041 Prozesszone, 1030 BHKW, 1047 Übergabeart; Übernahme nur auf einer Projektkopie, Referenzpuffer unberührt; Duplizieren und Export → Import tragen die Zeile mit umgesetzter Puffer-ID) |
-| Merge | `@@MERGE@@` | Zusammenführung mit `origin/ios_migration_september` (`3baa73ca`, Statuszeilen #671–#674, Schemaschritte 167 Teillast und 168 Viertelstunden, Basis R33): Umnummerierung des Schritts auf **169**, Testdatenbank aus der Fassung `6e5d24aa…` (168) auf 169 gehoben |
+| Merge | ``4cec25d6`` | Zusammenführung mit `origin/ios_migration_september` (`3baa73ca`, Statuszeilen #671–#674, Schemaschritte 167 Teillast und 168 Viertelstunden, Basis R33): Umnummerierung des Schritts auf **169**, Testdatenbank aus der Fassung `6e5d24aa…` (168) auf 169 gehoben |
 
 ## 2 Schemaschritt 169
 
@@ -64,7 +64,7 @@ Gate des Agenten vor dem Merge (Stand `69bec6b7`, Basis R32): Kern-Filter 0 Fehl
 UI 7 284, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen); Windows-Schale auf Linux 0 Fehler;
 Referenzlauf 16/16 PASS, 487/487 CSV byte-gleich; SQL-Prüfer 0 Fundstellen (2 171 Texte).
 
-Gate auf dem Merge-Stand (`@@MERGE@@`, Basis R33, Schemastand 169): Kern-Filter 0 Fehler; Tests Kern 10 245 (1 übersprungen), UI 7 302, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), alle grün; Windows-Schale auf Linux 0 Fehler; Referenzlauf 16/16 PASS gegen , 487/487 CSV byte-gleich; SQL-Prüfer 2 201 Texte, 0 Fundstellen.
+Gate auf dem Merge-Stand (``4cec25d6``, Basis R33, Schemastand 169): Kern-Filter 0 Fehler; Tests Kern 10 245 (1 übersprungen), UI 7 302, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), alle grün; Windows-Schale auf Linux 0 Fehler; Referenzlauf 16/16 PASS gegen , 487/487 CSV byte-gleich; SQL-Prüfer 2 201 Texte, 0 Fundstellen.
 
 ## 6 Offen (P2/P3)
 
