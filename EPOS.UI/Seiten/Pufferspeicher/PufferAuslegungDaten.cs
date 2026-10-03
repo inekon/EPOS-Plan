@@ -116,6 +116,9 @@ public sealed class PufferAuslegungEingabeDaten
     /// </summary>
     public Dictionary<string, bool> Kriterien { get; set; } = new(StringComparer.Ordinal);
 
+    /// <summary>Die Anzeigestufe (<c>SCHNELL</c>, <c>STANDARD</c>, <c>EXPERTE</c>); leer = Vorgabe (Standard).</summary>
+    public string Anzeigestufe { get; set; } = "";
+
     /// <summary>Eine tiefe Kopie — der Arbeitsstand ist entkoppelt vom Startstand.</summary>
     public PufferAuslegungEingabeDaten Kopie()
     {
@@ -310,7 +313,10 @@ public sealed class PufferAuslegungErgebnisDaten
 }
 
 /// <summary>Was übernommen werden soll: neuer Speicher oder der gewählte, mit Bezeichnung.</summary>
-public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner, bool SperrprofilSchreiben = false);
+/// <summary>Was die Übernahme braucht: neu anlegen, Bezeichner, den Katalogsatz als Herkunft merken,
+/// das Sperrprofil der Wärmepumpe mitschreiben.</summary>
+public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner, bool Katalogsatz = true,
+                                           bool SperrprofilSchreiben = false);
 
 /// <summary>Die Antwort der Übernahme: Erfolg, Text der Statuszeile, Puffer-ID (bei Erfolg).</summary>
 public sealed record PufferUebernahmeErgebnis(bool Erfolg, string Text, int IdPuffer);

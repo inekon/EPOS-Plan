@@ -145,6 +145,7 @@
     private int? _idPuffer;
     private string _pufferName = "";
     private int _ziel;
+    private bool _katalogsatz = true;
     private string _bezeichner = "";
 
     /// <summary>V14: das Sperrprofil der Auslegung beim Übernehmen an die Wärmepumpe schreiben? Vorgabe aus.</summary>
@@ -169,6 +170,9 @@
     protected override void OnInitialized()
     {
         _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
+        // Die gespeicherte Anzeigestufe (Welle P4c); leer = Standard.
+        if (Enum.TryParse(_eingabe.Anzeigestufe ?? "", true, out PufferAuslegungStufe gespeichert) &&
+            Enum.IsDefined(typeof(PufferAuslegungStufe), gespeichert)) _stufe = gespeichert;
         _ergebnis = Daten.Ergebnis;
         _probelauf = Daten.Probelauf;
         _idPuffer = Daten.IdPuffer;
@@ -236,7 +240,11 @@
 
     private void StufeGewaehlt(int? id)
     {
-        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i)) _stufe = (PufferAuslegungStufe)i;
+        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i))
+        {
+            _stufe = (PufferAuslegungStufe)i;
+            _eingabe.Anzeigestufe = _stufe.ToString().ToUpperInvariant();
+        }
     }
 
     private bool AbStandard => _stufe != PufferAuslegungStufe.Schnell;
@@ -929,6 +937,9 @@
 
     private bool Neuanlage => !_idPuffer.HasValue || _ziel == 1;
 
+    /// <summary>Hat das Ergebnis einen Katalogvorschlag (dann steht der Schalter „Katalogsatz übernehmen")?</summary>
+    private bool HatKatalogvorschlag => _ergebnis is { } e && !string.IsNullOrEmpty(e.Katalogvorschlag);
+
     private bool UebernahmeFrei => _ergebnis is { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 } && !_veraltet;
 
     private void Speichern()
@@ -955,7 +966,9 @@
             Melden(Texte.GrundBezeichner, false);
             return;
         }
-        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name, _sperrprofilSchreiben));
+        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(),
+            new PufferUebernahmeDaten(neu, name, Katalogsatz: _katalogsatz && HatKatalogvorschlag,
+                                      SperrprofilSchreiben: _sperrprofilSchreiben));
         Melden(r.Text, r.Erfolg);
         if (r.Erfolg && r.IdPuffer > 0)
         {
@@ -1248,6 +1261,11 @@
                     }
                     <Schalter Bezeichnung="@Texte.SperrprofilSchreiben" Wert="@_sperrprofilSchreiben"
                               WertChanged="@((bool w) => _sperrprofilSchreiben = w)" />
+                    @if (HatKatalogvorschlag)
+                    {
+                        <Schalter Bezeichnung="@Texte.KatalogsatzUebernehmen" Wert="@_katalogsatz"
+                                  WertChanged="@((bool w) => _katalogsatz = w)" />
+                    }
                     <p class="epos-leisezeile epos-pausl-bleibt">@Texte.UebernahmeBleibt</p>
                     <div class="epos-pausl-uebernahme-knoepfe">
                         @if (Dienste?.Speichern is not null)

@@ -43966,11 +43966,95 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_HERK_PROZESS_TEMPERATUR_KEINE" xml:space="preserve">
     <value>kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers</value>
   </data>
+  <data name="PA_PROZESS_TEMPERATUR_TEXT" xml:space="preserve">
+    <value>Der Prozessvorlauf {0} °C liegt über 95 °C oder über dem höchsten Erzeugervorlauf {1} °C: Der Puffer kann ihn nicht sicher liefern.</value>
+  </data>
+  <data name="PA_PROZESS_TEMPERATUR_95_TEXT" xml:space="preserve">
+    <value>Der Prozessvorlauf {0} °C liegt über 95 °C: Der Puffer kann ihn nicht sicher liefern.</value>
+  </data>
   <data name="PAUS_HERK_ERZEUGER_VORLAUF" xml:space="preserve">
     <value>höchster Vorlauf der Erzeuger an der Kaskade</value>
   </data>
   <data name="PAUS_HERK_ERZEUGER_VORLAUF_KEINE" xml:space="preserve">
     <value>kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C</value>
+  </data>
+  <data name="PAUS_KATALOGSATZ_UEBERNEHMEN" xml:space="preserve">
+    <value>Katalogsatz als Herkunft am Puffer merken</value>
+  </data>
+  <data name="PSP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>aus Katalog: {0}</value>
+  </data>
+  <data name="PA_KEINE_REIHE_BW_TEXT" xml:space="preserve">
+    <value>Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer.</value>
+  </data>
+  <data name="PA_HYGIENE_W551_TEXT" xml:space="preserve">
+    <value>Trinkwasserspeicher über {0} l: Anforderungen an Großanlagen beachten.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR_TEXT" xml:space="preserve">
+    <value>Puffer oben {0} °C: Für die Frischwasserbereitung mindestens {1} °C Vorlauf; periodisches Aufheizen ist kein Ersatz.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT_TEXT" xml:space="preserve">
+    <value>Die Brauchwasserzone ({0} l) übersteigt das {1}-fache des Tagesbedarfs ({2} l).</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_TEXT" xml:space="preserve">
+    <value>Die Summe der Zonen ({0} l) überschreitet die Praxisgrenze {1} l: Das ist ein Saisonalspeicher, keine Pufferauslegung.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK_TEXT" xml:space="preserve">
+    <value>Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau).</value>
+  </data>
+  <data name="PA_EXTRAPOLATION_TEXT" xml:space="preserve">
+    <value>Bereitschaftsverlust über {0} l aus der Klasse-C-Grenze extrapoliert.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT_TEXT" xml:space="preserve">
+    <value>Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_TEXT" xml:space="preserve">
+    <value>Die Heizreihe ist leer: Lastgang-Kriterien (K4e, D1, D2) entfallen.</value>
+  </data>
+  <data name="PA_KEIN_PUFFER_TEXT" xml:space="preserve">
+    <value>Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich.</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT_TEXT" xml:space="preserve">
+    <value>Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI_TEXT" xml:space="preserve">
+    <value>Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT_TEXT" xml:space="preserve">
+    <value>Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.</value>
+  </data>
+  <data name="PA_BAND_UNTER_TEXT" xml:space="preserve">
+    <value>Das Volumen der Heizzone ({0} l) liegt unter dem Band {1}–{2} l.</value>
+  </data>
+  <data name="PA_BAND_UEBER_TEXT" xml:space="preserve">
+    <value>Das Volumen der Heizzone ({0} l) liegt über dem Band {1}–{2} l.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG_TEXT" xml:space="preserve">
+    <value>Trinkwasservorrang: Unter {0} l fehlt Abtaureserve für die Heizung.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_DECKUNG_TEXT" xml:space="preserve">
+    <value>Das Deckungsziel {0} ist auch mit {1} l nicht erreichbar: Die Erzeugerleistung ist zu klein; die Deckung bemisst nicht.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_START_TEXT" xml:space="preserve">
+    <value>Das Startziel {0} je Tag ist auch mit {1} l nicht zu halten; das Taktziel bemisst nicht.</value>
+  </data>
+  <data name="PA_STARTS_TAG_TEXT" xml:space="preserve">
+    <value>{0} Starts je Tag über der Warnschwelle {1}.</value>
+  </data>
+  <data name="PA_STARTS_JAHR_TEXT" xml:space="preserve">
+    <value>{0} Starts je Heizperiode über {1}.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_PROZESS_TEXT" xml:space="preserve">
+    <value>Die Prozessreihe ist leer: Die Prozesszone bleibt leer.</value>
+  </data>
+  <data name="BV_GRUND_KEINE_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>keine gespeicherte Pufferauslegung</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG" xml:space="preserve">
+    <value>Nachrechnung</value>
+  </data>
+  <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
   </data>
 </root>
 

@@ -99,6 +99,7 @@ namespace WindowsFormsApplication1
                 ["LabelAusKatalog"] = MyResource.Resource.PSP_LABEL_AUS_KATALOG,
                 ["KatalogFreieEingabe"] = MyResource.Resource.PSP_KATALOG_FREIE_EINGABE,
                 ["LabelBezeichner"] = MyResource.Resource.PSP_LABEL_BEZEICHNER,
+                ["HerkunftKatalog"] = MyResource.Resource.PSP_HERKUNFT_KATALOG,
                 ["LabelVerwendung"] = MyResource.Resource.PSP_LABEL_VERWENDUNG,
                 ["LabelGesamtvolumen"] = MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN,
                 ["LabelBereitschaftsverluste"] = MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE,
@@ -324,7 +325,8 @@ namespace WindowsFormsApplication1
                 p.SchwelleReserve,
                 p.Entladeprio,
                 set.Heizung, set.Brauchwasser, set.Prozess,
-                Schichtdaten(s));
+                Schichtdaten(s),
+                PufferSpCtrl.Katalogherkunft(idPuffer));
         }
 
         private static PspSchichtdaten Schichtdaten(PufferSpCtrl.Schichtdaten s)

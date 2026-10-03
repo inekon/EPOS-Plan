@@ -864,11 +864,17 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Nutzungsprofil_STAMM</c> und <c>Z_Nutzungsprofil</c> samt Saat und der Nachtrag der drei
         /// Nutzungsarten in einen versionierten Zapfkatalog. <b>Ergebnisneutral.</b> Die Nummer steht allein
         /// bei <see cref="ProzessNutzungSchema.SCHRITT"/>.
+        /// Danach, mit den ERGÄNZUNGEN DER PUFFERSPEICHER-AUSLEGUNG (Welle P4c), steht das Ziel auf
+        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>: an <c>Tab_PufferAuslegung</c> die
+        /// Sitzungseingaben (Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten, Anzeigestufe), an
+        /// <c>Tab_Gebaeude</c> <c>ID_Konditionierungsvorlage</c>, an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>
+        /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProzessNutzungSchema.SCHRITT;
+        public const int Zielversion = PufferAuslegungErgaenzungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

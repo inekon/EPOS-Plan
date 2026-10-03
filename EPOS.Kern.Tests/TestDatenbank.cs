@@ -913,6 +913,10 @@ namespace EPOS.Kern.Tests
                 // Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile und die
                 // Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
                 ProzessNutzungSchema.Ausfuehren(null);
+                // Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Welle P4c): die Sitzungseingaben der
+                // Pufferauslegung, ID_Konditionierungsvorlage am Gebaeude, ID_Stamm am Projektpuffer.
+                // Reines DDL aus DERSELBEN Quelle wie Migration und Werkzeug; die Spalten bleiben leer.
+                PufferAuslegungErgaenzungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

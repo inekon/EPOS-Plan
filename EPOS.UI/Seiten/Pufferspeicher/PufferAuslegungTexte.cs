@@ -433,6 +433,9 @@ public sealed class PufferAuslegungTexte
     /// <summary>„Übernahme in den Projektpuffer" (<c>PAUS_GRUPPE_UEBERNAHME</c>).</summary>
     public string GruppeUebernahme { get; set; } = Resource.PAUS_GRUPPE_UEBERNAHME;
 
+    /// <summary>„Katalogsatz übernehmen" (<c>PAUS_KATALOGSATZ_UEBERNEHMEN</c>).</summary>
+    public string KatalogsatzUebernehmen { get; set; } = Resource.PAUS_KATALOGSATZ_UEBERNEHMEN;
+
     /// <summary>„Ziel" (<c>PAUS_ZIEL</c>).</summary>
     public string Ziel { get; set; } = Resource.PAUS_ZIEL;
 

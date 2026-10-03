@@ -282,6 +282,9 @@ namespace WindowsFormsApplication1
             // die Vorgabe im Code zurück, bis die Datenbank des Ziels den Schritt trägt.
             new Stufe(ProzessNutzungSchema.SCHRITT, Art.Ddl,
                       "Zuordnung der Nutzungsprofile über IDs, Zapf-Nutzungsarten Büro, Schule und Gewerbe"),
+            // Ein älteres Paket bringt die Ergänzungsspalten der Pufferauslegung nicht mit; sie bleiben leer.
+            new Stufe(PufferAuslegungErgaenzungSchema.SCHRITT, Art.Ddl,
+                      "Sitzungseingaben der Pufferauslegung, Konditionierungsvorlage am Gebäude, Katalogverweis am Projektpuffer"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

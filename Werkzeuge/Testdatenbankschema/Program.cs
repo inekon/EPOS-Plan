@@ -2712,6 +2712,25 @@ namespace Testdatenbankschema
                                   ProzessNutzungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Welle P4c): die Sitzungseingaben der
+            //      Pufferauslegung, ID_Konditionierungsvorlage am Gebaeude, ID_Stamm am Projektpuffer.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegungErgaenzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrPufferErg = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferErg + " - Ergaenzungen der Pufferauslegung: " +
+                              (PufferAuslegungErgaenzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferErg = new List<string>();
+                angelegt += PufferAuslegungErgaenzungSchema.Ausfuehren(berichtPufferErg);
+                foreach (string zeile in berichtPufferErg)
+                    Console.WriteLine("Schritt " + nrPufferErg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferErg + " - vollstaendig: " +
+                                  PufferAuslegungErgaenzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

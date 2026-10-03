@@ -33,9 +33,9 @@ namespace WindowsFormsApplication1
             if (ProzessvorlaufKritisch(pVl, g.E.ErzeugerVorlaufMaxC))
                 g.Warnung(PufferWarncode.PROZESS_TEMPERATUR, PufferStufe.Warnung,
                           g.E.ErzeugerVorlaufMaxC > 0
-                              ? "Der Prozessvorlauf " + PufferRechengroessen.Zahl(pVl.Value) + " °C liegt über 95 °C oder über dem höchsten Erzeugervorlauf " +
-                                PufferRechengroessen.Zahl(g.E.ErzeugerVorlaufMaxC.Value) + " °C: Der Puffer kann ihn nicht sicher liefern."
-                              : "Der Prozessvorlauf " + PufferRechengroessen.Zahl(pVl.Value) + " °C liegt über 95 °C: Der Puffer kann ihn nicht sicher liefern.",
+                              ? Textbaustein.T("PA_PROZESS_TEMPERATUR_TEXT", "Der Prozessvorlauf {0} °C liegt über 95 °C oder über dem höchsten Erzeugervorlauf {1} °C: Der Puffer kann ihn nicht sicher liefern.",
+                                               pVl.Value, g.E.ErzeugerVorlaufMaxC.Value)
+                              : Textbaustein.T("PA_PROZESS_TEMPERATUR_95_TEXT", "Der Prozessvorlauf {0} °C liegt über 95 °C: Der Puffer kann ihn nicht sicher liefern.", pVl.Value),
                           Textbaustein.T("PAUS_HERK_PROZESS_TEMPERATUR", "Temperaturpaar der Prozesswärme"), ZONE);
             if (pVl.HasValue && pRl.HasValue && pVl.Value > pRl.Value)
                 g = g.MitSpreizung(pVl.Value - pRl.Value);
@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
             if (!HeizzoneRechner.HatReihe(g.E.ReiheProzess))
             {
                 g.Warnung(PufferWarncode.KEINE_REIHE, PufferStufe.Warnung,
-                          "Die Prozessreihe ist leer: Die Prozesszone bleibt leer.", HeizzoneRechner.HERKUNFT_D1, ZONE);
+                          Textbaustein.T("PA_KEINE_REIHE_PROZESS_TEXT", "Die Prozessreihe ist leer: Die Prozesszone bleibt leer."), HeizzoneRechner.HERKUNFT_D1, ZONE);
                 return HeizzoneRechner.Bemessen(ZONE, k, false);
             }
             k.AddRange(HeizzoneRechner.Simulationskriterien(g, g.E.ReiheProzess, z, true, true, ZONE));

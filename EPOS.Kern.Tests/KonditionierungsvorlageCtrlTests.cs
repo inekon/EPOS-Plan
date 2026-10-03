@@ -447,6 +447,11 @@ namespace EPOS.Kern.Tests
             KonditionierungCtrl.Ergebnis e = _ctrl.Uebernehmen(id, ziel, Zielmatrix());
             Assert.True(e.Ok, e.Meldung);
 
+            // Das Gebäude merkt die übernommene Vorlage (Welle P4c).
+            Assert.Equal(id, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT \"" + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + "\" FROM \"" +
+                Matrixzellenort.TAB_GEBAEUDE + "\" WHERE \"ID\" = ?", new DbParam("@id", g)), CultureInfo.InvariantCulture));
+
             // Die Tagzelle der Vorlage ist in der BESTANDSSPALTE des Ziels gelandet (Weiche 5.6).
             Assert.Equal(21.0, Convert.ToDouble(DataRepository.ExecuteScalar(
                 "SELECT \"Raumsolltemperatur_Tag\" FROM \"" + Matrixzellenort.TAB_GEBAEUDE +

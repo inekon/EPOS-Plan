@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
             return k;
         }
 
-        public void Warnung(string code, PufferStufe stufe, string text, Textbaustein herkunft, PufferZone? zone)
+        public void Warnung(string code, PufferStufe stufe, Textbaustein text, Textbaustein herkunft, PufferZone? zone)
         {
             foreach (PufferWarnung w in Warnungen)
                 if (w.Code == code && w.Zone == zone) return;
@@ -300,10 +300,10 @@ namespace WindowsFormsApplication1
 
             if (e.Uebergabeart == null)
                 g.Warnung(PufferWarncode.UEBERGABE_UNBEKANNT, PufferStufe.Hinweis,
-                          "Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung.", HERKUNFT_K4, ZONE);
+                          Textbaustein.T("PA_UEBERGABE_UNBEKANNT_TEXT", "Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung."), HERKUNFT_K4, ZONE);
             if (!reihe)
                 g.Warnung(PufferWarncode.KEINE_REIHE, PufferStufe.Warnung,
-                          "Die Heizreihe ist leer: Lastgang-Kriterien (K4e, D1, D2) entfallen.", HERKUNFT_D1, ZONE);
+                          Textbaustein.T("PA_KEINE_REIHE_TEXT", "Die Heizreihe ist leer: Lastgang-Kriterien (K4e, D1, D2) entfallen."), HERKUNFT_D1, ZONE);
 
             // ---- K1 Vorprüfung ----
             bool keinPuffer = false;
@@ -325,11 +325,11 @@ namespace WindowsFormsApplication1
                 {
                     keinPuffer = true;
                     g.Warnung(PufferWarncode.KEIN_PUFFER, PufferStufe.Hinweis,
-                              "Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich.", HERKUNFT_K1, ZONE);
+                              Textbaustein.T("PA_KEIN_PUFFER_TEXT", "Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich."), HERKUNFT_K1, ZONE);
                 }
                 else if (positiv)
                     g.Warnung(PufferWarncode.OHNE_PUFFER_GEREGELT, PufferStufe.Warnung,
-                              "Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt.",
+                              Textbaustein.T("PA_OHNE_PUFFER_GEREGELT_TEXT", "Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt."),
                               HERKUNFT_ANHANG_F, ZONE);
             }
 
@@ -367,10 +367,10 @@ namespace WindowsFormsApplication1
                 bool entfaellt = z.ZweiterzeugerFrei && !z.Heizstab;
                 if (entfaellt)
                     g.Warnung(PufferWarncode.ZWEITERZEUGER_FREI, PufferStufe.Hinweis,
-                              "Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.", HERKUNFT_VDI_88, ZONE);
+                              Textbaustein.T("PA_ZWEITERZEUGER_FREI_TEXT", "Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht."), HERKUNFT_VDI_88, ZONE);
                 if (z.Heizstab)
                     g.Warnung(PufferWarncode.HEIZSTAB_GESPERRT, PufferStufe.Hinweis,
-                              "Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.", HERKUNFT_WHITEPAPER, ZONE);
+                              Textbaustein.T("PA_HEIZSTAB_GESPERRT_TEXT", "Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer."), HERKUNFT_WHITEPAPER, ZONE);
 
                 double hg = e.HeizgrenzeC ?? SimulationSPK.HEIZGRENZE_VORGABE_C;
                 double tAus = Stillstand(hg, e.Uebergabeart, p);
@@ -469,11 +469,11 @@ namespace WindowsFormsApplication1
                 (double min, double max) = Band(e.Uebergabeart, qAusl, p);
                 if (zone.VolumenL < min)
                     g.Warnung(PufferWarncode.BAND_UNTER, PufferStufe.Hinweis,
-                              "Das Volumen der Heizzone (" + Z(zone.VolumenL) + " l) liegt unter dem Band " + Z(min) + "–" + Z(max) + " l.",
+                              Textbaustein.T("PA_BAND_UNTER_TEXT", "Das Volumen der Heizzone ({0} l) liegt unter dem Band {1}–{2} l.", (double)zone.VolumenL, (double)min, (double)max),
                               HERKUNFT_BAND, ZONE);
                 else if (zone.VolumenL > max)
                     g.Warnung(PufferWarncode.BAND_UEBER, PufferStufe.Hinweis,
-                              "Das Volumen der Heizzone (" + Z(zone.VolumenL) + " l) liegt über dem Band " + Z(min) + "–" + Z(max) + " l.",
+                              Textbaustein.T("PA_BAND_UEBER_TEXT", "Das Volumen der Heizzone ({0} l) liegt über dem Band {1}–{2} l.", (double)zone.VolumenL, (double)min, (double)max),
                               HERKUNFT_BAND, ZONE);
             }
 
@@ -483,7 +483,7 @@ namespace WindowsFormsApplication1
                 double reserve = p.Wert(PufferAuslegungVorgaben.ABTAU_RESERVE) * qAusl;
                 if (zone.VolumenL < reserve)
                     g.Warnung(PufferWarncode.ABTAU_VORRANG, PufferStufe.Hinweis,
-                              "Trinkwasservorrang: Unter " + Z(reserve) + " l fehlt Abtaureserve für die Heizung.",
+                              Textbaustein.T("PA_ABTAU_VORRANG_TEXT", "Trinkwasservorrang: Unter {0} l fehlt Abtaureserve für die Heizung.", (double)reserve),
                               PufferAuslegungVorgaben.Quellentext(p.Quelle(PufferAuslegungVorgaben.ABTAU_RESERVE)), ZONE);
             }
 
@@ -508,8 +508,7 @@ namespace WindowsFormsApplication1
                                                                               g.C * g.DeltaT * g.Eta / 1000.0, g.PraxisgrenzeL);
                 if (!ok)
                     g.Warnung(PufferWarncode.PRAXISGRENZE, PufferStufe.Warnung,
-                              "Das Deckungsziel " + Z(g.Deckungsziel) + " ist auch mit " + Z(g.PraxisgrenzeL) +
-                              " l nicht erreichbar: Die Erzeugerleistung ist zu klein; die Deckung bemisst nicht.", HERKUNFT_D1, zone);
+                              Textbaustein.T("PA_PRAXISGRENZE_DECKUNG_TEXT", "Das Deckungsziel {0} ist auch mit {1} l nicht erreichbar: Die Erzeugerleistung ist zu klein; die Deckung bemisst nicht.", (double)g.Deckungsziel, (double)g.PraxisgrenzeL), HERKUNFT_D1, zone);
                 liste.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.D1, Bezeichnung = "Deckungsgrad (Durchlauf)", VolumenL = v,
@@ -525,8 +524,7 @@ namespace WindowsFormsApplication1
                                                                             g.C * g.DeltaT / 1000.0, g.Startziel, g.PraxisgrenzeL);
                 if (!ok)
                     g.Warnung(PufferWarncode.PRAXISGRENZE, PufferStufe.Warnung,
-                              "Das Startziel " + Z(g.Startziel) + " je Tag ist auch mit " + Z(g.PraxisgrenzeL) +
-                              " l nicht zu halten; das Taktziel bemisst nicht.", HERKUNFT_D2, zone);
+                              Textbaustein.T("PA_PRAXISGRENZE_START_TEXT", "Das Startziel {0} je Tag ist auch mit {1} l nicht zu halten; das Taktziel bemisst nicht.", (double)g.Startziel, (double)g.PraxisgrenzeL), HERKUNFT_D2, zone);
                 liste.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.D2, Bezeichnung = "Taktziel (Zweipunkt)", VolumenL = v,
@@ -556,11 +554,11 @@ namespace WindowsFormsApplication1
             double jahr = g.P.Wert(PufferAuslegungVorgaben.HEIZPERIODE_MAX);
             if (b.StartsJeTag > warn)
                 g.Warnung(PufferWarncode.STARTS_TAG, PufferStufe.Warnung,
-                          Z(b.StartsJeTag) + " Starts je Tag über der Warnschwelle " + Z(warn) + ".",
+                          Textbaustein.T("PA_STARTS_TAG_TEXT", "{0} Starts je Tag über der Warnschwelle {1}.", (double)b.StartsJeTag, (double)warn),
                           PufferAuslegungVorgaben.Quellentext(g.P.Quelle(PufferAuslegungVorgaben.WARNSCHWELLE)), zone);
             if (b.StartsHeizperiode > jahr)
                 g.Warnung(PufferWarncode.STARTS_JAHR, PufferStufe.Hinweis,
-                          Z(b.StartsHeizperiode) + " Starts je Heizperiode über " + Z(jahr) + ".",
+                          Textbaustein.T("PA_STARTS_JAHR_TEXT", "{0} Starts je Heizperiode über {1}.", (double)b.StartsHeizperiode, (double)jahr),
                           PufferAuslegungVorgaben.Quellentext(g.P.Quelle(PufferAuslegungVorgaben.HEIZPERIODE_MAX)), zone);
             return b;
         }

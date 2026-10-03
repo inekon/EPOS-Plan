@@ -108,6 +108,10 @@ namespace WindowsFormsApplication1
             // zeigen auf DENSELBEN Katalogsatz. Die deklarierte Beziehung zielt auf
             // Tab_Gebaeude_STAMM (nie im Plan) - der Eintrag haelt die Regel auch ohne sie.
             GebaeudeKatalogverweis.SPALTE,
+            // Die zuletzt uebernommene Konditionierungsvorlage des Projektgebaeudes (Welle P4c): Die
+            // Vorlagen sind Katalog (Tab_Konditionierungsvorlage_STAMM); die Kopie zeigt auf DIESELBE.
+            // Tab_Pufferspeicher.ID_Stamm (Katalogverweis des Projektpuffers) steht oben als ID_Stamm.
+            PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE,
             // Stammverweis einer Variante (Tab_Variante.ID_ProjektRef): Die Kopie einer Variante
             // bleibt Variante DESSELBEN Stamms - kopiert wird das Projekt, nicht der Stamm. Die
             // deklarierte Beziehung zielt auf Tab_Projekt; ohne diesen Eintrag bekaeme der Verweis
