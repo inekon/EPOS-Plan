@@ -102,6 +102,12 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
                 Ablehnung = viele ? "zu viele Zonen" : "",
                 Kopftext = eine ? "Zone „Zonenhaus“" : "2 Zonen · Nutzfläche 120 m²",
                 Zeilen = new[] { new GebaeudeBauteilzeileDaten("Wand", "Außenwand", "20 m²", "0,3", "180°", "90°", "Außenluft", "Datei", "DATEI", "w-1") },
+                Profil = GebaeudeImportHuelle.Bauteilprofil(),
+                Liste = new[]
+                {
+                    new Katalogfilterzeile(0, "Wand").MitText(Katalogfilterprofil.SpBezeichner, "Wand")
+                        .MitText(GebaeudeImportZonen.SP_ART, "Außenwand").MitZahl(GebaeudeImportZonen.SP_FLAECHE, 20, 2),
+                },
             },
             Zonierung = new GebaeudeZonierungDaten
             {
