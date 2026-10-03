@@ -105,6 +105,14 @@ offen, SqlDialektPruefer 2 179 Texte, 0 Fundstellen.
 
 Gate #676 auf `527cad53b` (drittes volles Gate nach den Merges mit M5 und KP3, Linux): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes gleich der Messlatte; Tests 18 477 grün, 2 übersprungen, 0 rot (Kern 10 200, UI 7 304, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen `2026-10-02_R33_Viertelstunden` (5 180 242 Werte, 487/487 CSV byte-gleich), Störlauf PASS; Werkzeugtest `Auslieferungsvorlage.Tests` 44/44.
 
+Nachtest nach dem Merge mit P1/E60 (Linux, Merge `2d647c086`): Kern-Filter Release 0 Fehler; gefilterte Tests (eigene Klassen,
+Kosten, Wirtschaftlichkeit, Bemessung, Paketanhebung, Schemastand, Wachen und die von P1 berührten Puffer-Klassen) 2 021 grün, 0
+rot (Kern 1 140, UI 828, SpeicherEngine 51, SpeicherPlanung 2), darin zwei fremde Pins nachgezogen
+(`PufferAuslegungSchemaTests.Nummer_Ziel_und_Register` prüft das Ziel mit ≥ 169,
+`VorlageTests.P6_Schemastand_Integritaet_und_STRICT_stimmen` STRICT 154 → 156); Referenzlauf der sieben CI-Projekte gegen R33 7/7
+PASS (226 CSV, 2 497 980 Werte); `Auslieferungsvorlage.Tests` 44/44; Windows-Schale 0 Fehler; Testdatenbank 169 → 170 mit
+`--trocken` danach 0 offen, SqlDialektPruefer 2 202 Texte, 0 Fundstellen.
+
 ## Commit
 
 Fünf Commits auf `p671` hinter dem Auftrag `bd5811bf9` (`f257d60fb`, `718451eef`, `e360a892d`, `abcc77a43`, `b80b5562e`); Merge mit
