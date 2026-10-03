@@ -119,8 +119,9 @@ namespace EPOS.Kern.Tests
             byte[] bytes = File.ReadAllBytes(Probe);
             Katalogpaket p = Katalogpaket.AusBytes(bytes);
             Assert.Equal(1, p.Fassung);
-            Assert.Equal(new[] { "Tab_Prozesswaerme_STAMM", "Tab_Prozesstyp_STAMM" }, p.Tabellen.Select(t => t.Tabelle).ToArray());
-            Assert.Equal(16, p.Satzzahl);
+            Assert.Equal(new[] { "Tab_Prozesswaerme_STAMM", "Tab_Prozesstyp_STAMM", "Tab_Konditionierungsvorlage_STAMM", "Tab_Wechselrichter_STAMM" },
+                         p.Tabellen.Select(t => t.Tabelle).ToArray());
+            Assert.Equal(16 + 14 + 1, p.Satzzahl);
             Assert.Equal(bytes, p.Bytes());
 
             string text = Encoding.ASCII.GetString(bytes).Replace("\"Monat_1\": ", "\"Monat_1\": 1");
@@ -146,6 +147,73 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Paketanhebung.Art.Katalog, Paketanhebung.Stufen.Single(x => x.Nr == KatalogfassungSchema.SCHRITT).Wirkung);
             Assert.Equal(8, Katalogfassung.Stufe1.Count);
             Assert.Equal(Katalogfassung.Stufe1.Count, Katalogfassung.Stufe1.Select(t => t.Kuerzel).Distinct().Count());
+
+            // Stufe 2: der nächste Schritt, dieselbe Paketstufe, sechzehn Kopftabellen, Kürzel eindeutig.
+            Assert.Equal(KatalogfassungSchema.SCHRITT + 1, KatalogfassungStufe2Schema.SCHRITT);
+            Assert.Equal(173, KatalogfassungStufe2Schema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= KatalogfassungStufe2Schema.SCHRITT);
+            Assert.Equal(Paketanhebung.Art.Katalog,
+                         Paketanhebung.Stufen.Single(x => x.Nr == KatalogfassungStufe2Schema.SCHRITT).Wirkung);
+            Assert.Equal(16, Katalogfassung.Stufe2.Count);
+            Assert.All(Katalogfassung.Stufe2, t => Assert.Equal(2, t.Stufe));
+            Assert.Equal(Katalogfassung.Alle.Count, Katalogfassung.Alle.Select(t => t.Kuerzel).Distinct().Count());
+            Assert.Equal(Katalogfassung.Alle.Count, Katalogfassung.Alle.Select(t => t.Tabelle).Distinct().Count());
+            Assert.All(Katalogfassung.Alle, t => Assert.False(string.IsNullOrEmpty(t.Anzeigeschluessel)));
+        }
+
+        /// <summary>Der Katalog in Worten kommt aus dem Register, für jede Tabelle in beiden Sprachen.</summary>
+        [Fact]
+        public void Jeder_Katalog_des_Registers_hat_einen_Namen_in_beiden_Sprachen()
+        {
+            CultureInfo vorher = CultureInfo.CurrentUICulture;
+            try
+            {
+                foreach (string kultur in new[] { "de-DE", "en-US" })
+                {
+                    CultureInfo.CurrentUICulture = new CultureInfo(kultur);
+                    foreach (Katalogtabelle t in Katalogfassung.Alle)
+                    {
+                        string name = Katalogfassung.Anzeigename(t.Tabelle);
+                        Assert.False(string.IsNullOrWhiteSpace(name));
+                        Assert.NotEqual(t.Tabelle, name);
+                    }
+                }
+            }
+            finally { CultureInfo.CurrentUICulture = vorher; }
+            Assert.Equal("Tab_Gibt_Es_Nicht", Katalogfassung.Anzeigename("Tab_Gibt_Es_Nicht"));
+        }
+
+        /// <summary>
+        /// Eine REIHE geht in ihrer Folge ein — vertauschte Werte ändern die Prüfsumme; die Kennlinie
+        /// (keine Reihe) bleibt reihenfolgefest. Die Enkel einer Kindzeile gehen sortiert ein.
+        /// </summary>
+        [Fact]
+        public void Reihen_gehen_geordnet_und_Enkel_sortiert_ein()
+        {
+            Katalogtabelle wb = Katalogfassung.Tabelle("Tab_Waermebedarf_STAMM");
+            Assert.True(wb.Kinder.Single().Reihe);
+            var kopf = new Dictionary<string, object> { ["Bezeichner"] = "Ganglinie" };
+            IReadOnlyDictionary<string, object> a = new Dictionary<string, object> { ["Wert"] = 1.5 };
+            IReadOnlyDictionary<string, object> b = new Dictionary<string, object> { ["Wert"] = 2.5 };
+            string ab = Katalogfassung.Pruefsumme(wb, kopf, new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object>>>
+                { ["Tab_WaermebedarfDaten_STAMM"] = new[] { a, b } });
+            string ba = Katalogfassung.Pruefsumme(wb, kopf, new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object>>>
+                { ["Tab_WaermebedarfDaten_STAMM"] = new[] { b, a } });
+            Assert.NotEqual(ab, ba);
+
+            Katalogtabelle kv = Katalogfassung.Tabelle("Tab_Konditionierungsvorlage_STAMM");
+            var vorlage = new Dictionary<string, object> { ["Groesse"] = "HEIZSOLL", ["Bezeichner"] = "Muster" };
+            Dictionary<string, object> P(long rang, double wert) =>
+                new Dictionary<string, object> { ["Rang"] = rang, ["Art"] = "FEIERTAG", ["Bezeichner"] = "F" + rang, ["Wert"] = wert };
+            IReadOnlyDictionary<string, object> Kalender(params Dictionary<string, object>[] perioden) =>
+                new Dictionary<string, object> { ["Groesse"] = "HEIZSOLL", ["Wert"] = 20.0, ["Tab_Konditionierungsperiode"] = perioden.ToList() };
+            string Summe(IReadOnlyDictionary<string, object> kal) => Katalogfassung.Pruefsumme(kv, vorlage,
+                new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object>>> { ["Tab_Konditionierungskalender"] = new[] { kal } });
+            Assert.Equal(Summe(Kalender(P(101, 16), P(102, 16))), Summe(Kalender(P(102, 16), P(101, 16))));
+            Assert.NotEqual(Summe(Kalender(P(101, 16), P(102, 16))), Summe(Kalender(P(101, 16), P(102, 17))));
+            Assert.NotEqual(Summe(Kalender(P(101, 16))), Summe(Kalender(P(101, 16), P(102, 16))));
+
+            Assert.Equal("KV:HEIZSOLL_MUSTER", Katalogfassung.Schluesselstamm(kv, Katalogfassung.Name(kv, vorlage)));
         }
 
         // =============================================================================
@@ -159,11 +227,11 @@ namespace EPOS.Kern.Tests
         /// die Spalte in die Liste (und die Prüfsummen festgeschrieben, wenn sie gefüllt entsteht).
         /// </summary>
         [Fact]
-        public void Wache_die_Tabellenliste_der_Stufe1_haelt_das_Schema()
+        public void Wache_die_Tabellenliste_des_Registers_haelt_das_Schema()
         {
             if (!_db.Vorhanden) return;
 
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+            foreach (Katalogtabelle t in Katalogfassung.Alle)
             {
                 Assert.True(DataRepository.TabelleVorhanden(t.Tabelle), t.Tabelle + " fehlt.");
                 List<string> schema = DataRepository.SpaltenVonTabelle(t.Tabelle);
@@ -171,20 +239,70 @@ namespace EPOS.Kern.Tests
                     Assert.True(schema.Contains(s), t.Tabelle + "." + s + " steht nicht im Schema.");
                 foreach (string s in schema)
                     Assert.True(t.Fachspalten.Contains(s) || Katalogfassung.Metaspalten.Contains(s),
-                                t.Tabelle + "." + s + " ist weder Fach- noch Metaspalte der Stufe 1.");
-                Assert.True(schema.Contains("Bezeichner") && schema.Contains("ReadOnly"));
+                                t.Tabelle + "." + s + " ist weder Fach- noch Metaspalte des Registers.");
+                Assert.Contains("ReadOnly", schema);
+                foreach (string s in t.Namensspalten) Assert.Contains(s, t.Fachspalten);
+                foreach (Katalogverweis v in t.Verweise) Verweis(t.Tabelle, t.Fachspalten, v);
 
-                foreach (Katalogkind k in t.Kinder)
+                foreach (Katalogkind k in Katalogfassung.KinderUndEnkel(t))
                 {
                     Assert.True(DataRepository.TabelleVorhanden(k.Tabelle), k.Tabelle + " fehlt.");
                     List<string> kind = DataRepository.SpaltenVonTabelle(k.Tabelle);
                     Assert.Contains(k.Fremdschluessel, kind);
                     if (k.Projektspalte != null) Assert.Contains(k.Projektspalte, kind);
+                    foreach (string s in k.Fachspalten)
+                        Assert.True(kind.Contains(s), k.Tabelle + "." + s + " steht nicht im Schema.");
                     foreach (string s in kind)
                         Assert.True(k.Fachspalten.Contains(s) || s == "ID" || s == "ReadOnly" || s == k.Fremdschluessel ||
-                                    s == k.Projektspalte, k.Tabelle + "." + s + " ist keine Fachspalte der Kindtabelle.");
+                                    s == k.Projektspalte || k.Nebenspalten.Contains(s),
+                                    k.Tabelle + "." + s + " ist keine Fachspalte der Kindtabelle.");
+                    foreach (Katalogverweis v in k.Verweise) Verweis(k.Tabelle, k.Fachspalten, v);
+                    if (k.GesperrtEinfuegen) Assert.Contains("ReadOnly", kind);
                 }
             }
+        }
+
+        private static void Verweis(string tabelle, IReadOnlyList<string> fachspalten, Katalogverweis v)
+        {
+            Assert.True(fachspalten.Contains(v.Spalte), tabelle + "." + v.Spalte + ": Verweis ohne Fachspalte.");
+            Assert.True(DataRepository.SpalteVorhanden(v.Zieltabelle, v.Zielspalte),
+                        tabelle + "." + v.Spalte + ": Ziel " + v.Zieltabelle + "." + v.Zielspalte + " fehlt.");
+            // Ein Ziel im Register steht VOR dem Verweiser - die Saat und der Abgleich belegen es zuerst.
+            Katalogtabelle ziel = Katalogfassung.Tabelle(v.Zieltabelle);
+            if (ziel != null)
+            {
+                int i = Katalogfassung.Alle.ToList().FindIndex(x => x.Tabelle == ziel.Tabelle);
+                int j = Katalogfassung.Alle.ToList().FindIndex(x => x.Tabelle == tabelle ||
+                                                                    Katalogfassung.KinderUndEnkel(x).Any(k => k.Tabelle == tabelle));
+                Assert.True(i < j, v.Zieltabelle + " muss vor " + tabelle + " im Register stehen.");
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Wache der Vollständigkeit:</b> Jede <c>_STAMM</c>-Tabelle der Testdatenbank steht im
+        /// Register (als Kopf, Kind oder Enkel) oder benannt in <see cref="Katalogfassung.Ausgenommen"/> —
+        /// nie beides, und jede Ausnahme nennt einen Grund. Ein neuer Katalog macht sie rot.
+        /// </summary>
+        [Fact]
+        public void Wache_jede_Stammtabelle_ist_im_Register_oder_benannt_ausgenommen()
+        {
+            if (!_db.Vorhanden) return;
+
+            var erfasst = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (Katalogtabelle t in Katalogfassung.Alle)
+            {
+                erfasst.Add(t.Tabelle);
+                foreach (Katalogkind k in Katalogfassung.KinderUndEnkel(t)) erfasst.Add(k.Tabelle);
+            }
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND upper(name) LIKE '%\\_STAMM' ESCAPE '\\' ORDER BY name");
+            var stamm = dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0])).ToList();
+            Assert.Equal(43, stamm.Count);
+            foreach (string s in stamm)
+                Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
+                            s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
+            Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
+            Assert.Equal(11, Katalogfassung.Ausgenommen.Count);
         }
 
         /// <summary>
@@ -203,7 +321,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, KatalogSchluesselSaat.Ausfuehren(null));
             Assert.Equal(vorher, Schluesselbild());
 
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+            foreach (Katalogtabelle t in Katalogfassung.Alle)
             {
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + t.Tabelle + "\" WHERE \"ReadOnly\" = 0 AND Katalog_Schluessel IS NOT NULL"));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + t.Tabelle + "\" WHERE \"ReadOnly\" = 1 AND " +
@@ -275,7 +393,7 @@ namespace EPOS.Kern.Tests
             KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
             Assert.True(e.Ausgefuehrt, e.Meldung);
             Assert.Equal((1, 1, 2, 1), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
-            Assert.Equal(11, e.Unveraendert);
+            Assert.Equal(11 + 15, e.Unveraendert);                          // acht + acht Prozesswärme, 14 Vorlagen und ein Wechselrichter
             Assert.Equal(1, Katalogabgleich.FassungDerDatenbank());
 
             // eingefügt: gesperrt, mit Schlüssel und Prüfsumme der Probe
@@ -438,6 +556,168 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Teil 4 - Stufe 2: Reihen, Enkel, Verweise
+        // =============================================================================
+
+        /// <summary>Die Formatversion 1 liest sich weiter; eine unbekannte spätere nicht.</summary>
+        [Fact]
+        public void Formatversion_1_liest_sich_und_eine_spaetere_nicht()
+        {
+            string text = File.ReadAllText(Probe, new UTF8Encoding(false));
+            Assert.Contains("\"Formatversion\": " + Katalogpaket.FORMATVERSION, text);
+            Katalogpaket alt = Katalogpaket.AusBytes(new UTF8Encoding(false).GetBytes(
+                text.Replace("\"Formatversion\": 2", "\"Formatversion\": 1")));
+            Assert.Equal(31, alt.Satzzahl);
+            Assert.Throws<InvalidDataException>(() => Katalogpaket.AusBytes(new UTF8Encoding(false).GetBytes(
+                text.Replace("\"Formatversion\": 2", "\"Formatversion\": 3"))));
+        }
+
+        /// <summary>
+        /// Das Paket der ganzen Testkopie liest sich verlustfrei zurück — Reihen als Werteliste, die
+        /// Perioden der Konditionierungskalender als Enkel —, und eine Reihe steht in ihrer Folge.
+        /// </summary>
+        [Fact]
+        public void Paket_der_Stufe_2_liest_sich_byte_gleich_zurueck()
+        {
+            if (!_db.Vorhanden) return;
+
+            Katalogpaket p = Katalogpaket.AusDatenbank(3);
+            byte[] bytes = p.Bytes();
+            Katalogpaket zurueck = Katalogpaket.AusBytes(bytes);
+            Assert.Equal(bytes, zurueck.Bytes());
+
+            Katalogpaketsatz wb = zurueck.Tabellen.Single(t => t.Tabelle == "Tab_Waermebedarf_STAMM").Saetze.First();
+            List<Dictionary<string, object>> reihe = wb.Kinder["Tab_WaermebedarfDaten_STAMM"];
+            Assert.Equal(8760, reihe.Count);
+            long id = Zahl("SELECT ID FROM Tab_Waermebedarf_STAMM WHERE Katalog_Schluessel = '" + wb.Schluessel + "'");
+            DataTable dt = DataRepository.GetDataTable("SELECT Wert FROM Tab_WaermebedarfDaten_STAMM WHERE ID_Ganglinie = ? ORDER BY ID",
+                                                       new DbParam("@id", id));
+            for (int i = 0; i < 8760; i += 997)
+                Assert.Equal(Convert.ToDouble(dt.Rows[i][0], CultureInfo.InvariantCulture),
+                             Convert.ToDouble(reihe[i]["Wert"], CultureInfo.InvariantCulture));
+
+            Katalogpaketsatz kv = zurueck.Tabellen.Single(t => t.Tabelle == "Tab_Konditionierungsvorlage_STAMM")
+                                         .Saetze.Single(s => s.Schluessel == "KV:HEIZSOLL_BUERO");
+            Assert.Equal("HEIZSOLL / Büro", kv.Bezeichner);
+            Assert.Equal(9, Katalogfassung.Enkelzeilen(kv.Kinder["Tab_Konditionierungskalender"].Single(),
+                                                       "Tab_Konditionierungsperiode").Count);
+
+            // Der Verweis des Brennstoffs steht mit dem Namen seiner Kategorie, nicht mit ihrer ID.
+            Katalogtabelle brs = Katalogfassung.Tabelle("Tab_Brennstoff_Stamm");
+            DataTable b = DataRepository.GetDataTable("SELECT ID, " + string.Join(", ", brs.Fachspalten.Select(s => "\"" + s + "\"")) +
+                                                      " FROM Tab_Brennstoff_Stamm WHERE Bezeichner = 'Stadtgas'");
+            Dictionary<string, object> werte = Katalogfassung.Fachwerte(brs, brs.Fachspalten, b.Rows[0], Katalogfassung.LeseOhneVorgang);
+            Assert.Equal("Gas", werte["ID_Kategorie"]);
+        }
+
+        /// <summary>
+        /// <b>Der Abgleich der Stufe 2:</b> Eine Vorlage mit geänderter Periode wird aktualisiert (Kalender
+        /// samt Perioden neu), eine fehlende Wärmebedarfsganglinie samt ihrer 8 760 Werte in ihrer Folge
+        /// eingefügt; ein zweiter, erzwungener Lauf findet nichts mehr zu tun.
+        /// </summary>
+        [Fact]
+        public void Abgleich_der_Stufe_2_mit_Perioden_und_Reihe()
+        {
+            if (!_db.Vorhanden) return;
+
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(2).Bytes());
+            Katalogtabelle kvT = Katalogfassung.Tabelle("Tab_Konditionierungsvorlage_STAMM");
+            Katalogpaketsatz kv = paket.Tabellen.Single(t => t.Tabelle == kvT.Tabelle).Saetze.Single(s => s.Schluessel == "KV:HEIZSOLL_BUERO");
+            var periode = (Dictionary<string, object>)Katalogfassung.Enkelzeilen(
+                kv.Kinder["Tab_Konditionierungskalender"].Single(), "Tab_Konditionierungsperiode")[0];
+            periode["Bezeichner"] = "Neuer Name";
+            kv.Pruefsumme = Neusumme(kvT, kv);
+
+            Katalogpaketsatz wb = paket.Tabellen.Single(t => t.Tabelle == "Tab_Waermebedarf_STAMM").Saetze.First();
+            long wbId = Zahl("SELECT ID FROM Tab_Waermebedarf_STAMM WHERE Katalog_Schluessel = '" + wb.Schluessel + "'");
+            string reiheVorher = Tabellenbild2("SELECT Wert FROM Tab_WaermebedarfDaten_STAMM WHERE ID_Ganglinie = " + wbId + " ORDER BY ID");
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_WaermebedarfDaten_STAMM WHERE ID_Ganglinie = ?", new DbParam("@id", wbId));
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Waermebedarf_STAMM WHERE ID = ?", new DbParam("@id", wbId));
+            string projektVorher = Projektbild();
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((1, 1, 0, 0), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
+
+            long kvId = Zahl("SELECT ID FROM Tab_Konditionierungsvorlage_STAMM WHERE Katalog_Schluessel = 'KV:HEIZSOLL_BUERO'");
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Vorlage = " + kvId));
+            Assert.Equal(9L, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode p JOIN Tab_Konditionierungskalender k " +
+                                  "ON k.ID = p.ID_Kalender WHERE k.ID_Vorlage = " + kvId));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode p JOIN Tab_Konditionierungskalender k " +
+                                  "ON k.ID = p.ID_Kalender WHERE k.ID_Vorlage = " + kvId + " AND p.Bezeichner = 'Neuer Name'"));
+            Assert.Equal(kv.Pruefsumme, Text("SELECT Katalog_Pruefsumme FROM Tab_Konditionierungsvorlage_STAMM WHERE ID = " + kvId));
+
+            long neu = Zahl("SELECT ID FROM Tab_Waermebedarf_STAMM WHERE Katalog_Schluessel = '" + wb.Schluessel + "' AND \"ReadOnly\" = 1");
+            Assert.Equal(reiheVorher, Tabellenbild2("SELECT Wert FROM Tab_WaermebedarfDaten_STAMM WHERE ID_Ganglinie = " + neu + " ORDER BY ID"));
+            Assert.Equal(projektVorher, Projektbild());
+
+            KatalogabgleichErgebnis zweiter = Katalogabgleich.Ausfuehren(paket, nurPruefen: true, erzwingen: true);
+            Assert.False(zweiter.EtwasZuTun);
+            Assert.Equal(0, zweiter.Behalten);
+        }
+
+        /// <summary>
+        /// Ein Verweis überlebt den Weg über das Paket: Die Schicht eines ausgelieferten Bauteilaufbaus
+        /// zeigt nach dem Einfügen auf denselben Baustoff — über dessen Schlüssel, nicht über die ID.
+        /// </summary>
+        [Fact]
+        public void Verweis_der_Bauteilschicht_geht_ueber_den_Schluessel_des_Baustoffs()
+        {
+            if (!_db.Vorhanden) return;
+
+            long baustoff = Zahl("SELECT ID FROM Tab_Baustoff_STAMM WHERE Bezeichner = 'Kalkzementputz'");
+            string schluessel = Text("SELECT Katalog_Schluessel FROM Tab_Baustoff_STAMM WHERE ID = " + baustoff);
+            Assert.StartsWith("BST:", schluessel);
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilaufbau_STAMM (Bezeichner, Bauteilart, Herkunft, \"ReadOnly\") " +
+                                           "VALUES ('Probewand', 'AUSSENWAND', 'VORGABE', 1)");
+            long aufbau = Zahl("SELECT ID FROM Tab_Bauteilaufbau_STAMM WHERE Bezeichner = 'Probewand'");
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilschicht_STAMM (ID_Aufbau, Reihenfolge, ID_Baustoff, Dicke, Lambda) " +
+                                           "VALUES (?, 1, ?, 0.015, 1.0)", new DbParam("@a", aufbau), new DbParam("@b", baustoff));
+            Assert.Equal(1, KatalogSchluesselSaat.Ausfuehren(null, Katalogfassung.Stufe2));
+
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(2).Bytes());
+            Katalogpaketsatz satz = paket.Tabellen.Single(t => t.Tabelle == "Tab_Bauteilaufbau_STAMM").Saetze.Single();
+            Assert.Equal("BTA:PROBEWAND", satz.Schluessel);
+            Assert.Equal(schluessel, satz.Kinder["Tab_Bauteilschicht_STAMM"].Single()["ID_Baustoff"]);
+
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Bauteilschicht_STAMM WHERE ID_Aufbau = " + aufbau);
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Bauteilaufbau_STAMM WHERE ID = " + aufbau);
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.Equal((1, 0, 0, 0), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
+            Assert.Equal(baustoff, Zahl("SELECT s.ID_Baustoff FROM Tab_Bauteilschicht_STAMM s JOIN Tab_Bauteilaufbau_STAMM a " +
+                                        "ON a.ID = s.ID_Aufbau WHERE a.Katalog_Schluessel = 'BTA:PROBEWAND'"));
+        }
+
+        /// <summary>„Auslieferungsstand wiederherstellen" gilt auch für einen Satz der Stufe 2.</summary>
+        [Fact]
+        public void Wiederherstellen_gilt_auch_fuer_die_Stufe_2()
+        {
+            if (!_db.Vorhanden) return;
+
+            Katalogpaket paket = Katalogpaket.Lesen(Probe);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Wechselrichter_STAMM SET \"ReadOnly\" = 0, Kosten = 1 WHERE Bezeichner = 'Muster 2500TL'");
+            KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
+            KatalogabgleichEintrag z = plan.Eintraege.Single(x => x.Tabelle == "Tab_Wechselrichter_STAMM");
+            Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, z.Aktion);
+            Assert.True(z.Wiederherstellbar);
+
+            (bool ok, string meldung) = Katalogabgleich.Wiederherstellen(paket, "Tab_Wechselrichter_STAMM", z.Schluessel);
+            Assert.True(ok, meldung);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Wechselrichter_STAMM WHERE Bezeichner = 'Muster 2500TL' AND \"ReadOnly\" = 1 " +
+                                  "AND COALESCE(Kosten, -1) <> 1"));
+        }
+
+        private static string Neusumme(Katalogtabelle t, Katalogpaketsatz s) =>
+            Katalogfassung.Pruefsumme(t, s.Werte, s.Kinder.ToDictionary(k => k.Key,
+                k => (IReadOnlyList<IReadOnlyDictionary<string, object>>)k.Value.Cast<IReadOnlyDictionary<string, object>>().ToList()));
+
+        private static string Tabellenbild2(string sql)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql);
+            return string.Join("|", dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture)));
+        }
+
+        // =============================================================================
         //  Hilfen
         // =============================================================================
 
@@ -448,7 +728,7 @@ namespace EPOS.Kern.Tests
         private static Dictionary<string, string> Schluesselbild()
         {
             var d = new Dictionary<string, string>();
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+            foreach (Katalogtabelle t in Katalogfassung.Alle)
             {
                 DataTable dt = DataRepository.GetDataTable("SELECT ID, Katalog_Schluessel, Katalog_Pruefsumme FROM \"" + t.Tabelle + "\" ORDER BY ID");
                 foreach (DataRow r in dt.Rows)
