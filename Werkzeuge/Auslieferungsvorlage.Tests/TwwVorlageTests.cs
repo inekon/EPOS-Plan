@@ -480,6 +480,9 @@ namespace Auslieferungsvorlage.Tests
         /// <summary>Anfang der Quelle der Nutzungsart "Hotel (aus Messung, je Zimmer)" (ZU36).</summary>
         private const string QUELLE_HOTEL = "Mittel aus drei Hotels, ";
 
+        /// <summary>Quelle der Setzungen Büro, Schule, Gewerbe (V31).</summary>
+        private const string QUELLE_SETZUNG_NICHTWOHNEN = "Setzung nach DIN EN 12831-3 Profilfamilie";
+
         /// <summary>
         /// <b>T13 (ZU20, ZU36):</b> Die fuenf aus VDI 6002 ABGELEITETEN Nutzungsarten des freien Paketteils
         /// stehen in der Vorlage — Status AUSLIEFERUNG, ReadOnly 1, Herkunftsart VERFAHREN in jeder
@@ -522,8 +525,10 @@ namespace Auslieferungsvorlage.Tests
                     {
                         string herkunft = Convert.ToString(r[g + "_Herkunftsart"]);
                         Assert.Equal(z[g + "_Herkunftsart"], herkunft);
-                        Assert.StartsWith(herkunft == TwwSchema.HERKUNFT_VERFAHREN ? QUELLE_VDI_ABGELEITET : QUELLE_HOTEL,
-                                          Convert.ToString(r[g + "_Quelle"]));
+                        string quelle = Convert.ToString(r[g + "_Quelle"]);
+                        if (herkunft == TwwSchema.HERKUNFT_VERFAHREN) Assert.StartsWith(QUELLE_VDI_ABGELEITET, quelle);
+                        else Assert.True(quelle.StartsWith(QUELLE_HOTEL, StringComparison.Ordinal) ||
+                                         quelle == QUELLE_SETZUNG_NICHTWOHNEN, quelle);
                         Assert.Contains(herkunft, new[] { TwwSchema.HERKUNFT_VERFAHREN, TwwSchema.HERKUNFT_EIGENKONSTRUKTION });
                         Assert.Equal(z[g + "_Quelle"], Convert.ToString(r[g + "_Quelle"]));
                     }
@@ -551,8 +556,9 @@ namespace Auslieferungsvorlage.Tests
                              Convert.ToInt64(DataRepository.ExecuteScalar(
                                  "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE (Herkunftsart = ? AND " +
                                  "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt %') OR (Herkunftsart = ? AND " +
-                                 "Quelle LIKE 'Mittel aus drei Hotels%')", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN),
-                                 new DbParam("?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION))));
+                                 "(Quelle LIKE 'Mittel aus drei Hotels%' OR Quelle = ?))", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN),
+                                 new DbParam("?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION), new DbParam("?", QUELLE_SETZUNG_NICHTWOHNEN))));
+                Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n == "Büro (Setzung)");
                 Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n == "Hotel (aus Messung, je Zimmer)");
                 // Der Tagesgangsatz behaelt den Namen ohne Zusatz: "je Zimmer" betrifft die Bezugsmenge (#579).
                 Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM), n => n == "Hotel (aus Messung)");
