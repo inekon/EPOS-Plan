@@ -185,19 +185,21 @@ namespace EPOS.Kern.Tests
                                       "Baualtersklasse NOT IN ('A','B','C','D','E','F','G','H','I','J','K','L','M')"));
             }
 
-            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'NIEDRIGENERGIE'"));
+            Assert.Equal(35L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'NIEDRIGENERGIE'"));   // 34 + der Referenzkatalogbau von 1051 (KP3, RP1)
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'PASSIVHAUS'"));
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'EH70'"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL"));
+            // Einzige Projektkopie mit Energiestandard: das Gebäude von 1051 aus seinem Referenzkatalogbau (KP3, RP1).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL" + Konditionierungsbestand.Ausser("Tab_Gebaeude")));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard = 'NIEDRIGENERGIE' AND ID IN (" + Konditionierungsbestand.GEBAEUDE_1051 + ")"));
             // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter;
             // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018), G5 mit der
             // des Referenzprojekts Kesselkennlinie 1050 (Vorlage 1023), H4 mit der des Zonenprojekts 1052
-            // (Vorlage 1018, G6d).
+            // (Vorlage 1018, G6d), J1 mit dem Gebäude des Referenzprojekts 1051 aus seinem Referenzkatalogbau (KP3, RP1).
             var kopien = DataRepository.GetDataTable(
                 "SELECT Baualtersklasse, COUNT(*) AS Anzahl FROM Tab_Gebaeude GROUP BY Baualtersklasse ORDER BY Baualtersklasse")
                 .Rows.Cast<DataRow>()
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
-            Assert.Equal(new[] { "B18", "E2", "G5", "H4", "I2" }, kopien);
+            Assert.Equal(new[] { "B18", "E2", "G5", "H4", "I2", "J1" }, kopien);
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EPOS.Referenzlaeufe.Skripte;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -42,12 +43,16 @@ namespace EPOS.Kern.Tests
         public void Heute_zaehlt_jeder_Katalogbau_null_Kalender()
         {
             if (!_db.Vorhanden) return;
-            IReadOnlyList<Katalogfilterzeile> zeilen = GebaeudeKatalogkalender.Katalogfilterzeilen();
+            // Ausser dem Referenzkatalogbau von 1051 (KP3, RP1): fünf Kalender aus „Büro".
+            int referenzbau = Konditionierungsprojekt1051.Referenzbau();
+            IReadOnlyList<Katalogfilterzeile> alle = GebaeudeKatalogkalender.Katalogfilterzeilen();
+            Assert.Equal(5.0, alle.Single(z => z.Id == referenzbau).Zahl(Katalogfilterprofil.SpKonditionierungskalender));
+            IReadOnlyList<Katalogfilterzeile> zeilen = alle.Where(z => z.Id != referenzbau).ToList();
             Assert.NotEmpty(zeilen);
-            Assert.Equal(GebaeudeStammCtrl.Katalogfilterzeilen().Select(z => z.Id), zeilen.Select(z => z.Id));
+            Assert.Equal(GebaeudeStammCtrl.Katalogfilterzeilen().Select(z => z.Id), alle.Select(z => z.Id));
             Assert.All(zeilen, z => Assert.Equal(0.0, z.Zahl(Katalogfilterprofil.SpKonditionierungskalender)));
             Assert.All(zeilen, z => Assert.Equal("0", z.Text(Katalogfilterprofil.SpKonditionierungskalender)));
-            Assert.Empty(Konditionierungdatenweg.KalenderJeKatalogbau());
+            Assert.Equal(new[] { (long)referenzbau }, Konditionierungdatenweg.KalenderJeKatalogbau().Keys);
         }
 
         /// <summary>
@@ -64,7 +69,7 @@ namespace EPOS.Kern.Tests
             Anlegen(id, DbWerte.KOND_GROESSE_HEIZSOLL, 20.0);
             IReadOnlyList<Katalogfilterzeile> zeilen = GebaeudeKatalogkalender.Katalogfilterzeilen();
             Assert.Equal(1.0, zeilen.Single(z => z.Id == id).Zahl(Katalogfilterprofil.SpKonditionierungskalender));
-            Assert.All(zeilen.Where(z => z.Id != id),
+            Assert.All(zeilen.Where(z => z.Id != id && z.Id != Konditionierungsprojekt1051.Referenzbau()),   // ohne den Referenzkatalogbau von 1051
                        z => Assert.Equal(0.0, z.Zahl(Katalogfilterprofil.SpKonditionierungskalender)));
             Assert.Single(Konditionierungdatenweg.KalenderzeilenVon(KonditionierungCtrl.Eigner.Katalogbau(id)));
 
