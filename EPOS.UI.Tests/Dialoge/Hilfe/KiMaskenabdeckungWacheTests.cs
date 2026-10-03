@@ -277,8 +277,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
-        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
-            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
+        // „In DB übernehmen": das Namensfeld der Abfrage gehört zur Handlung, die mit eigenem OK sofort
+        // einen Katalogsatz schreibt — kein Einstellwert der Maske: 0 → 1.
+        new("GebaeudeDialog", 1, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Abfrage „In DB übernehmen“ " +
+            "gehört zur Handlung, die mit eigenem OK sofort schreibt"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.

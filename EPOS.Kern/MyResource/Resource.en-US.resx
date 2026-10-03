@@ -14626,6 +14626,39 @@ Please check all entries!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Add the building selected in “Buildings in DB” to the project list</value>
   </data>
+  <data name="GEB_BTN_IN_DB" xml:space="preserve">
+    <value>Save to DB</value>
+  </data>
+  <data name="GEB_BTN_IN_DB_HINWEIS" xml:space="preserve">
+    <value>Save the building selected in the project list as a new record in the database</value>
+  </data>
+  <data name="GEB_TITEL_IN_DB" xml:space="preserve">
+    <value>Save building to the database</value>
+  </data>
+  <data name="GEB_LBL_IN_DB_NAME" xml:space="preserve">
+    <value>Name in the database:</value>
+  </data>
+  <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
+    <value>All building values and the building's conditioning are saved. Zones and components remain in the project – the database does not hold zones.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
+    <value>Building “{0}” saved to the database.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
+    <value>Building “{0}” saved to the database. Its {1} zones with {2} components remain in the project.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>No saved building is selected in the project.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
+    <value>Please enter a name.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be saved to the database after OK.</value>
+  </data>
+  <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>from project {0}, {1}</value>
+  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Building: consumption</value>
   </data>
