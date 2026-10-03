@@ -43117,6 +43117,447 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_UEBERGABE_NICHT_MOEGLICH" xml:space="preserve">
     <value>Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.</value>
   </data>
+  <data name="PAUS_HERK_ZAPF_SPEICHER" xml:space="preserve">
+    <value>Zapfprofil-Speicherauslegung (TwwSpeicherauslegung)</value>
+  </data>
+  <data name="PAUS_HERK_FRISCHWASSER" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1</value>
+  </data>
+  <data name="PAUS_HERK_W551" xml:space="preserve">
+    <value>DVGW W 551</value>
+  </data>
+  <data name="PAUS_HERK_IEA" xml:space="preserve">
+    <value>IEA SHC Task/Annex 46</value>
+  </data>
+  <data name="PAUS_WEG_B_SPEICHER" xml:space="preserve">
+    <value>Nenninhalt {0} l (Zuschläge und Zirkulation in der Zapfprofil-Auslegung)</value>
+  </data>
+  <data name="PAUS_WEG_B_DURCHFLUSS" xml:space="preserve">
+    <value>Durchflussbereitung: kein Brauchwasseranteil im Puffer</value>
+  </data>
+  <data name="PAUS_WEG_ZIRK_ZAPFPROFIL" xml:space="preserve">
+    <value>Zirkulation im Zapfprofil enthalten</value>
+  </data>
+  <data name="PAUS_WEG_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Zirkulation {0} · D_max = {1} kWh</value>
+  </data>
+  <data name="PAUS_WEG_ZIRK_TAG" xml:space="preserve">
+    <value>Zirkulation {0} kWh/d · D_max / Q_d = {1} kWh</value>
+  </data>
+  <data name="PAUS_WEG_ZIRK_OHNE" xml:space="preserve">
+    <value>Zirkulation ohne Tagesbedarf nicht umzurechnen: kein Zuschlag</value>
+  </data>
+  <data name="PAUS_WEG_B_FRISCHWASSER" xml:space="preserve">
+    <value>({0} + {1}) kWh · 1000 · (1 + {2}) / ({3} · {4} K · {5}); {6}</value>
+  </data>
+  <data name="PAUS_HERK_VDI_782" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, 7.8.2</value>
+  </data>
+  <data name="PAUS_HERK_K1" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, 7.8.3</value>
+  </data>
+  <data name="PAUS_HERK_K2" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, 7.8.4</value>
+  </data>
+  <data name="PAUS_HERK_K3" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Gleichung 22; Wärmespeicher-Tool C.6.2</value>
+  </data>
+  <data name="PAUS_HERK_K4" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15</value>
+  </data>
+  <data name="PAUS_HERK_K4E" xml:space="preserve">
+    <value>Wärmespeicher-Tool C.6.3 (rollierendes Lastmittel über die Sperrdauer)</value>
+  </data>
+  <data name="PAUS_HERK_D1" xml:space="preserve">
+    <value>Wärmespeicher-Tool, Durchlauf mit Bisektion auf das Deckungsziel</value>
+  </data>
+  <data name="PAUS_HERK_D2" xml:space="preserve">
+    <value>Wärmespeicher-Tool, Zweipunktsimulation mit den Schwellen des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_KV" xml:space="preserve">
+    <value>Fachportal KWK-Flexibilisierung (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_K9" xml:space="preserve">
+    <value>1. BImSchV § 5; BEG</value>
+  </data>
+  <data name="PAUS_HERK_K9E" xml:space="preserve">
+    <value>DIN EN 303-5</value>
+  </data>
+  <data name="PAUS_HERK_K10" xml:space="preserve">
+    <value>Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977</value>
+  </data>
+  <data name="PAUS_HERK_BAND" xml:space="preserve">
+    <value>VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450</value>
+  </data>
+  <data name="PAUS_HERK_K11" xml:space="preserve">
+    <value>Delegierte Verordnungen (EU) 812/2013 und 814/2013 (Klasse C); prEN 15316-5 Formel 3; DIN EN 15332</value>
+  </data>
+  <data name="PAUS_HERK_VDI_ANHANG_F" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Anhang F</value>
+  </data>
+  <data name="PAUS_HERK_VDI_88" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, 8.8</value>
+  </data>
+  <data name="PAUS_HERK_WHITEPAPER" xml:space="preserve">
+    <value>VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen</value>
+  </data>
+  <data name="PAUS_WEG_GEREGELT" xml:space="preserve">
+    <value>leistungsgeregelt</value>
+  </data>
+  <data name="PAUS_WEG_FIXED_SPEED" xml:space="preserve">
+    <value>Fixed-Speed</value>
+  </data>
+  <data name="PAUS_WEG_BRENNSTOFF_SCHEITHOLZ" xml:space="preserve">
+    <value>Scheitholz</value>
+  </data>
+  <data name="PAUS_WEG_BRENNSTOFF_PELLETS" xml:space="preserve">
+    <value>Pellets</value>
+  </data>
+  <data name="PAUS_WEG_BRENNSTOFF_HACKSCHNITZEL" xml:space="preserve">
+    <value>Hackschnitzel</value>
+  </data>
+  <data name="PAUS_WEG_BRENNSTOFF_KEINER" xml:space="preserve">
+    <value>keiner</value>
+  </data>
+  <data name="PAUS_WEG_KOLLEKTOR_ROEHRE" xml:space="preserve">
+    <value>Röhrenkollektor</value>
+  </data>
+  <data name="PAUS_WEG_KOLLEKTOR_FLACH" xml:space="preserve">
+    <value>Flachkollektor</value>
+  </data>
+  <data name="PAUS_HERK_K11_KATALOG" xml:space="preserve">
+    <value>Katalogsatz (Prüfwert bei {0} K, DIN EN 15332)</value>
+  </data>
+  <data name="PAUS_WEG_K1" xml:space="preserve">
+    <value>V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5}</value>
+  </data>
+  <data name="PAUS_WEG_K1_EINZELRAUM" xml:space="preserve">
+    <value>; Einzelraumregelung: absperrbar, keine Gutschrift für K1</value>
+  </data>
+  <data name="PAUS_WEG_K2" xml:space="preserve">
+    <value>{0} l/kW ({1}) · {2} kW</value>
+  </data>
+  <data name="PAUS_WEG_K3" xml:space="preserve">
+    <value>{0} kW · {1} min / ({2} · {3} K · {4})</value>
+  </data>
+  <data name="PAUS_WEG_K4" xml:space="preserve">
+    <value>{0} kW · ({1} h − {2} h) · 1000 / ({3} · (({4} + {5}) − ({6} + {7}))) − {8} l{9}</value>
+  </data>
+  <data name="PAUS_WEG_K4_NENNER" xml:space="preserve">
+    <value>; Nenner nicht positiv</value>
+  </data>
+  <data name="PAUS_WEG_K4E" xml:space="preserve">
+    <value>{0} kW ({1}) · {2} h / ({3} · {4} K · {5})</value>
+  </data>
+  <data name="PAUS_WEG_K4E_MITTEL" xml:space="preserve">
+    <value>größtes rollierendes Mittel</value>
+  </data>
+  <data name="PAUS_WEG_K4E_ERSATZ" xml:space="preserve">
+    <value>Ersatzwert Nennleistung</value>
+  </data>
+  <data name="PAUS_WEG_KV" xml:space="preserve">
+    <value>{0} kW · {1} h / ({2} · {3} K · {4})</value>
+  </data>
+  <data name="PAUS_WEG_K9" xml:space="preserve">
+    <value>Brennstoff {0} · {1} kW</value>
+  </data>
+  <data name="PAUS_WEG_K9E" xml:space="preserve">
+    <value>{0} · {1} kW · {2} h · (1 − {3} · {4} kW / {5} kW)</value>
+  </data>
+  <data name="PAUS_WEG_K9E_FEHLT" xml:space="preserve">
+    <value>Mindestleistung des Kessels oder Heizlast fehlt</value>
+  </data>
+  <data name="PAUS_WEG_K10" xml:space="preserve">
+    <value>{0} m² ({1})</value>
+  </data>
+  <data name="PAUS_WEG_K10_KEINE" xml:space="preserve">
+    <value>keine Kollektorfläche</value>
+  </data>
+  <data name="PAUS_WEG_D1" xml:space="preserve">
+    <value>kleinstes Volumen mit Deckungsgrad ≥ {0} bei {1} kW; erreicht {2}</value>
+  </data>
+  <data name="PAUS_WEG_D2" xml:space="preserve">
+    <value>kleinstes Volumen mit ≤ {0} Starts je Tag ({1}, Schwellen {2}/{3}); erreicht {4} je Tag</value>
+  </data>
+  <data name="PAUS_WEG_D2_MODULATION" xml:space="preserve">
+    <value>Modulationsmodus</value>
+  </data>
+  <data name="PAUS_WEG_D2_EINAUS" xml:space="preserve">
+    <value>Ein/Aus</value>
+  </data>
+  <data name="PAUS_HERK_NP_ZAPF" xml:space="preserve">
+    <value>Zapf-Nutzungsart „{0}“</value>
+  </data>
+  <data name="PAUS_HERK_NP_PROZESS" xml:space="preserve">
+    <value>Prozesswärme im Projekt</value>
+  </data>
+  <data name="PAUS_HERK_NP_KONDITIONIERUNG" xml:space="preserve">
+    <value>Konditionierungsnutzung {0}</value>
+  </data>
+  <data name="PAUS_HERK_NP_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="PAUS_HERK_Q_KERN" xml:space="preserve">
+    <value>EPOS-Plan Rechenkern (ProjektPuffer.WH_JE_LITER_KELVIN)</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_783" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Abschnitt 7.8.3</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_784" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Abschnitt 7.8.4</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_88" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Abschnitt 8.8</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_T14" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Tabelle 14</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_T15" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Tabelle 15</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_GL23" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Gleichung 23 (Raumtemperatur)</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDI_ANH_I" xml:space="preserve">
+    <value>VDI 4645 E 2026-03, Anhang I</value>
+  </data>
+  <data name="PAUS_HERK_Q_BACOGA" xml:space="preserve">
+    <value>BaCoGa, Anlagenwasserinhalt je Übergabeart (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_WHITEPAPER" xml:space="preserve">
+    <value>VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen (RWTH)</value>
+  </data>
+  <data name="PAUS_HERK_Q_VDZ" xml:space="preserve">
+    <value>Herstellerangabe nach VdZ 2025 (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_WPQS" xml:space="preserve">
+    <value>Fraunhofer ISE, Feldtest WP-QS</value>
+  </data>
+  <data name="PAUS_HERK_Q_SEKUNDAER_TAKT" xml:space="preserve">
+    <value>Fachportale zur Taktung (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_TOOL" xml:space="preserve">
+    <value>Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation</value>
+  </data>
+  <data name="PAUS_HERK_Q_EN15450" xml:space="preserve">
+    <value>DIN EN 15450</value>
+  </data>
+  <data name="PAUS_HERK_Q_BIMSCHV" xml:space="preserve">
+    <value>1. BImSchV § 5</value>
+  </data>
+  <data name="PAUS_HERK_Q_BEG" xml:space="preserve">
+    <value>BEG Einzelmaßnahmen, Fördervoraussetzung Pufferspeicher</value>
+  </data>
+  <data name="PAUS_HERK_Q_EN303" xml:space="preserve">
+    <value>DIN EN 303-5</value>
+  </data>
+  <data name="PAUS_HERK_Q_SOLAR" xml:space="preserve">
+    <value>Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977</value>
+  </data>
+  <data name="PAUS_HERK_Q_RUNDE2" xml:space="preserve">
+    <value>Recherche Pufferspeicher-Auslegung Runde 2, Abschnitt 4.1</value>
+  </data>
+  <data name="PAUS_HERK_Q_ZIRK" xml:space="preserve">
+    <value>Fachportale zur Zirkulation (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_ECOSIZER" xml:space="preserve">
+    <value>Ecosizer, Zirkulationsverlust je Wohneinheit (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_BHKW" xml:space="preserve">
+    <value>Fachportal KWK-Flexibilisierung (Sekundärquelle)</value>
+  </data>
+  <data name="PAUS_HERK_Q_EN15332" xml:space="preserve">
+    <value>DIN EN 15332, Abschnitt 5.3</value>
+  </data>
+  <data name="PAUS_HERK_Q_812" xml:space="preserve">
+    <value>Delegierte Verordnung (EU) 812/2013</value>
+  </data>
+  <data name="PAUS_HERK_Q_IEA" xml:space="preserve">
+    <value>IEA SHC Task/Annex 46</value>
+  </data>
+  <data name="PAUS_HERK_Q_EN15316" xml:space="preserve">
+    <value>prEN 15316-5:2024, Tabelle B.4</value>
+  </data>
+  <data name="PAUS_HERK_Q_V39" xml:space="preserve">
+    <value>Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39</value>
+  </data>
+  <data name="PAUS_HERK_Q_PUFFER" xml:space="preserve">
+    <value>EPOS-Plan Vorgabe des Projektpuffers (Schwellen)</value>
+  </data>
+  <data name="PAUS_HERK_Q_VORLAGE" xml:space="preserve">
+    <value>Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6</value>
+  </data>
+  <data name="PAUS_HERK_PARAMETER_KOPIE" xml:space="preserve">
+    <value>{0} (Projektkopie), fehlende Schlüssel aus {1}</value>
+  </data>
+  <data name="PAUS_HERK_PARAMETER_TABELLE" xml:space="preserve">
+    <value>{0}, fehlende Schlüssel aus den eingebauten Vorgaben</value>
+  </data>
+  <data name="PAUS_HERK_PARAMETER_EINGEBAUT" xml:space="preserve">
+    <value>eingebaute Vorgaben (Vorgabetabelle fehlt)</value>
+  </data>
+  <data name="PAUS_HERK_KLASSEN_PUFFER" xml:space="preserve">
+    <value>Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)</value>
+  </data>
+  <data name="PAUS_HERK_KLASSEN_NEU_PROZESS" xml:space="preserve">
+    <value>neuer Puffer: Heizung und Prozesswärme (Projekt trägt Prozesswärme)</value>
+  </data>
+  <data name="PAUS_HERK_KLASSEN_NEU" xml:space="preserve">
+    <value>neuer Puffer: Heizung</value>
+  </data>
+  <data name="PAUS_HERK_TEMPERATUR_PUFFER" xml:space="preserve">
+    <value>Temperaturpaar des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_TEMPERATUR_KASKADE" xml:space="preserve">
+    <value>Systemtemperaturen der Erzeuger (kleinster Vorlauf, größter Rücklauf)</value>
+  </data>
+  <data name="PAUS_HERK_TEMPERATUR_RUECKFALL" xml:space="preserve">
+    <value>Rückfall-Temperaturpaar des Rechenkerns</value>
+  </data>
+  <data name="PAUS_HERK_SCHWELLE_EIN_PUFFER" xml:space="preserve">
+    <value>Einschaltschwelle des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_SCHWELLE_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="PAUS_HERK_SCHWELLE_AUS_PUFFER" xml:space="preserve">
+    <value>Ausschaltschwelle des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_HEIZGRENZE_LEER" xml:space="preserve">
+    <value>leer: {0} °C</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_PROZESS" xml:space="preserve">
+    <value>nur Prozesswärme</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_SOLAR" xml:space="preserve">
+    <value>Solarthermie an Rang 1</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_WP_BIVALENT" xml:space="preserve">
+    <value>Wärmepumpe mit Zweiterzeuger (Kessel, Heizstab oder bivalenter Betrieb)</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_WP_MONO" xml:space="preserve">
+    <value>Wärmepumpe ohne Zweiterzeuger</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_BHKW" xml:space="preserve">
+    <value>BHKW an Rang 1</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_FESTBRENNSTOFF" xml:space="preserve">
+    <value>Festbrennstoffkessel an Rang 1</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_KESSEL" xml:space="preserve">
+    <value>Kessel an Rang 1</value>
+  </data>
+  <data name="PAUS_HERK_VORLAGE_KEIN_ERZEUGER" xml:space="preserve">
+    <value>kein Wärmeerzeuger im Projekt: Vorgabe</value>
+  </data>
+  <data name="PAUS_HERK_SPERRE_ANLAGE" xml:space="preserve">
+    <value>Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)</value>
+  </data>
+  <data name="PAUS_HERK_SPERRE_KEINE" xml:space="preserve">
+    <value>keine Sperrzeit gepflegt</value>
+  </data>
+  <data name="PAUS_HERK_UEBERGABE_GEBAEUDE" xml:space="preserve">
+    <value>häufigste Übergabeart über {0} Gebäude</value>
+  </data>
+  <data name="PAUS_HERK_UEBERGABE_KEINE" xml:space="preserve">
+    <value>keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0})</value>
+  </data>
+  <data name="PAUS_HERK_ANLAGENVOLUMEN" xml:space="preserve">
+    <value>Übergabeart × Auslegungsheizlast (Anlagenvolumen.&lt;Übergabe&gt;_l_kW)</value>
+  </data>
+  <data name="PAUS_HERK_HEIZLAST_REIHE" xml:space="preserve">
+    <value>Maximum der Heizreihe</value>
+  </data>
+  <data name="PAUS_HERK_KATALOG_PUFFER" xml:space="preserve">
+    <value>{0} Katalogpuffer aus Tab_Pufferspeicher_STAMM</value>
+  </data>
+  <data name="PAUS_HERK_REIHEN" xml:space="preserve">
+    <value>Bedarfsreihen aus KanaeleDrei()</value>
+  </data>
+  <data name="PAUS_HERK_REIHEN_KEINE" xml:space="preserve">
+    <value>keine Reihen: {0}</value>
+  </data>
+  <data name="PAUS_HERK_RANG1_KASKADE" xml:space="preserve">
+    <value>Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1})</value>
+  </data>
+  <data name="PAUS_HERK_RANG1_RUECKFALL" xml:space="preserve">
+    <value>Kaskade ohne vorhandenen Erzeuger: erster Erzeuger in der Rangfolge WP, BHKW, Kessel, Solar</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER" xml:space="preserve">
+    <value>Nennleistung {0} kW{1}{2}; Zweiterzeuger {3} kW{4}</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_SUMME" xml:space="preserve">
+    <value> (Summe aus {0} Anlagen)</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_GEREGELT" xml:space="preserve">
+    <value>, leistungsgeregelt</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_HEIZSTAB" xml:space="preserve">
+    <value> (Heizstab)</value>
+  </data>
+  <data name="PAUS_HERK_KOLLEKTOR" xml:space="preserve">
+    <value>Kollektorfläche {0} m² (Bezugsfläche × Modulanzahl)</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_WEG_FEHLT" xml:space="preserve">
+    <value>Weg nicht lesbar: {0}</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Zapfprofil-Auslegung nicht rechenbar: {0}</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_REIHE" xml:space="preserve">
+    <value>D_max {0} kWh als Tagesmaximum der Brauchwasserreihe{1}</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_BESTANDSWEG" xml:space="preserve">
+    <value> (Bestandsweg: Trinkwasser über den Puffer)</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_OHNE_REIHE" xml:space="preserve">
+    <value>Bestandsweg: D_max erst mit den Bedarfsreihen</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_AUSLEGUNG" xml:space="preserve">
+    <value>Zapfprofil-Auslegung ({0}, {1}{2}, D_max {3} kWh)</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_GRUPPEN" xml:space="preserve">
+    <value>{0} Topologiegruppen</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_GRUPPE" xml:space="preserve">
+    <value>{0} Topologiegruppe</value>
+  </data>
+  <data name="PAUS_HERK_ZAPF_NENNINHALT" xml:space="preserve">
+    <value>, Nenninhalt {0} l</value>
+  </data>
+  <data name="PAUS_HERK_NENNINHALTE_PARAMETER" xml:space="preserve">
+    <value>Speicherauslegung.Nenninhalt.* ({0})</value>
+  </data>
+  <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
+    <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
+  </data>
+  <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
+    <value>kein Wärmeerzeuger im Projekt</value>
+  </data>
+  <data name="PAUS_HERK_TYP_WP" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="PAUS_HERK_TYP_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="PAUS_HERK_TYP_KESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="PAUS_HERK_TYP_SOLAR" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="PAUS_QUELLE_TEILLAST" xml:space="preserve">
+    <value>Teillastfeld der Anlage</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_WP_MINDEST" xml:space="preserve">
+    <value>Teillastfeld der Anlage: {0}.{1} = {2} kW</value>
+  </data>
+  <data name="PAUS_HERK_KATALOG_WP_MINDEST" xml:space="preserve">
+    <value>Katalog: {0}.{1} = {2} kW (Katalogsatz {3})</value>
+  </data>
+  <data name="PAUS_HERK_TEILLAST_BHKW_LAUFZEIT" xml:space="preserve">
+    <value>Teillastfeld der Anlage: {0}.{1} = {2} min</value>
+  </data>
   <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
     <value>ein Pufferspeicher wurde aus der Auslegung übernommen</value>
   </data>

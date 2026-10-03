@@ -62,12 +62,12 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             KlasseBrauchwasser = true,
             Vorlage = PufferVorlage.WP_BIVALENT,
             Nutzungsprofil = PufferNutzungsprofil.WOHNEN,
-            NutzungsprofilHerkunft = "Zapfprofil",
+            NutzungsprofilHerkunft = Textbaustein.Klar("Zapfprofil"),
             VolumenHeizungL = 700,
             VolumenBrauchwasserL = 300,
             EmpfehlungL = 1000,
             Bemessend = "Heizung: K4",
-            BemessendHerkunft = "VDI 4645 Gl. 23",
+            BemessendHerkunft = Textbaustein.Klar("VDI 4645 Gl. 23"),
             BerechnetAm = new DateTime(2026, 10, 3, 12, 30, 0),
             NachgerechnetL = 1000,
             StartsJeTag = 4,
@@ -147,6 +147,30 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Contains("Heating zone: Lock-out time (K4)", alles);
             Assert.Contains("Selected volume", alles);
             Assert.DoesNotContain("Bemessendes Kriterium", alles);
+        }
+
+        /// <summary>
+        /// Herkunft des bemessenden Kriteriums und des Nutzungsprofils kommen als Ressourcenschlüssel aus dem Kern
+        /// (Stufe P4a): Der Bericht löst sie in seiner Sprache auf — in Englisch ohne die deutschen Marken.
+        /// </summary>
+        [Fact]
+        public void Herkunftstexte_stehen_in_der_Sprache_des_Berichts()
+        {
+            PufferAuslegungGespeichert g = Probe() with
+            {
+                BemessendHerkunft = HeizzoneRechner.HERKUNFT_K4,
+                NutzungsprofilHerkunft = Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null).HerkunftBaustein
+            };
+            string de = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
+            Assert.Contains("VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15", de);
+            Assert.Contains(R.PAUS_NP_WOHNEN + " — Zapf-Nutzungsart „Mehrfamilienhaus“", de);
+
+            string en;
+            using (BerichtTexte.ImLauf(true)) en = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
+            Assert.Contains("VDI 4645 draft 2026-03, equation 23 with tables 14 and 15", en);
+            Assert.Contains("Draw-off use type “Mehrfamilienhaus”", en);
+            foreach (string marke in new[] { "Gleichung", "Tabellen", "Zapf-Nutzungsart", "Wärmespeicher-Tool", "Vorgabe" })
+                Assert.DoesNotContain(marke, en);
         }
 
         // =============================================================================

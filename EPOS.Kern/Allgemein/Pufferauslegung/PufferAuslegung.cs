@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
                 g.Warnung(PufferWarncode.PRAXISGRENZE, PufferStufe.Warnung,
                           "Die Summe der Zonen (" + PufferRechengroessen.Zahl(summe) + " l) überschreitet die Praxisgrenze " +
                           PufferRechengroessen.Zahl(g.PraxisgrenzeL) + " l: Das ist ein Saisonalspeicher, keine Pufferauslegung.",
-                          p.Quelle(PufferAuslegungVorgaben.PRAXISGRENZE), null);
+                          PufferAuslegungVorgaben.Quellentext(p.Quelle(PufferAuslegungVorgaben.PRAXISGRENZE)), null);
             }
 
             // ---- Kombipuffer und Tank-im-Tank ----
@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
             if (kombi && wp && eingang.Zapfprofil?.Topologie == PufferBwTopologie.Speicher)
                 g.Warnung(PufferWarncode.TANK_IM_TANK, PufferStufe.Hinweis,
                           "Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau).",
-                          "VDI 4645 E 2026-03, 7.8.2", null);
+                          Textbaustein.T("PAUS_HERK_VDI_782", "VDI 4645 E 2026-03, 7.8.2"), null);
 
             // ---- Katalogvorschlag (Platzhalter-Schnittstelle bis W3) ----
             PufferKatalogsatz vorschlag = null;

@@ -514,4 +514,82 @@ public class PufferAuslegungSeiteEnglischTests : EposBunitContext
         cut.FindAll(".epos-ablaufleiste-schritt button")[2].Click();
         Assert.Contains("Lock-out time", cut.Markup);
     }
+
+    /// <summary>Die deutschen Marken aus Herkunft und Rechenweg des Kerns, die eine englische Ansicht nicht zeigt.</summary>
+    private static readonly string[] DEUTSCHE_MARKEN =
+    {
+        "Gleichung", "Tabellen 14", "Wärmespeicher-Tool", "Sekundärquelle", "Anhang I", "kleinstes Volumen", "Starts je Tag",
+        "Nennleistung", "Zweiterzeuger", "leistungsgeregelt", "Zapf-Nutzungsart", "Rang 1 der Kaskade", "Zirkulation",
+        "Recherche Runde", "Ersatzwert", "rollierendes", "Modulationsmodus", "Fachportal", "Klassen-Set"
+    };
+
+    /// <summary>Eine synthetische Heizreihe über 8 760 h (Heizgrenze 15 °C, Tagesgang).</summary>
+    private static double[] Jahresreihe(double spitzeKw)
+    {
+        var r = new double[8760];
+        for (int i = 0; i < 8760; i++)
+        {
+            double tag = i / 24;
+            double aussen = 8 - 10 * Math.Cos(2 * Math.PI * (tag - 15) / 365.0) + 3 * Math.Sin(2 * Math.PI * (i % 24 - 9) / 24.0);
+            r[i] = Math.Max(0, (15 - aussen) / 27.0 * spitzeKw);
+        }
+        return r;
+    }
+
+    /// <summary>
+    /// Herkunft und Rechenweg kommen als Ressourcenschlüssel aus dem Kern (Stufe P4a): Das Ergebnis des
+    /// Rechenkerns, über die Abbildung der Hülle in en-US aufgelöst, zeigt in Schritt 3 und 4 keine
+    /// deutsche Marke; ebenso Herkunftszeilen, Erzeugerzeile und Nutzungsprofil des Startstands.
+    /// </summary>
+    [Fact]
+    public void Herkunft_und_Rechenweg_des_Kerns_stehen_englisch_da()
+    {
+        var eingang = new WindowsFormsApplication1.PufferAuslegungEingang
+        {
+            KlasseHeizung = true, KlasseBrauchwasser = true, Vorlage = WindowsFormsApplication1.PufferVorlage.WP_BIVALENT,
+            Erzeuger = new WindowsFormsApplication1.PufferErzeuger { NennleistungKw = 40, IstWaermepumpe = true, Geregelt = true, ZweiterzeugerKw = 20 },
+            VorlaufC = 50, RuecklaufC = 40, Uebergabeart = "FLAECHE", HeizgrenzeC = 15, ReiheHeizung = Jahresreihe(40),
+            Sperrfenster = WindowsFormsApplication1.PufferSperrprofil.Fenster("ZWEI_MAL_ZWEI"),
+            ZirkulationWeg = WindowsFormsApplication1.PufferZirkulationWeg.ANTEIL,
+            Zapfprofil = new WindowsFormsApplication1.PufferZapfprofil
+            {
+                Topologie = WindowsFormsApplication1.PufferBwTopologie.Frischwasser, DmaxKwh = 20, TagesbedarfL = 2000, Personen = 50
+            }
+        };
+        PufferAuslegungErgebnisDaten ergebnis = WindowsFormsApplication1.PufferAuslegungHuelle.Abbilden(
+            WindowsFormsApplication1.PufferAuslegung.Rechnen(eingang));
+        Assert.NotEmpty(ergebnis.Zonen.SelectMany(z => z.Kriterien).Where(k => k.Rechenweg.Length > 0));
+
+        var stand = new PufferAuslegungSeiteTests.Pruefstand();
+        PufferAuslegungStartDaten start = PufferAuslegungSeiteTests.Start(stand);
+        var erzeuger = WindowsFormsApplication1.Textbaustein.T("PAUS_HERK_ERZEUGER", "Nennleistung {0} kW{1}{2}; Zweiterzeuger {3} kW{4}",
+            40.0, "", WindowsFormsApplication1.Textbaustein.T("PAUS_HERK_ERZEUGER_GEREGELT", ", leistungsgeregelt"), 20.0, "").Aufloesen();
+        start.Herkunft = new[]
+        {
+            new PufferHerkunftDaten("Klassen", "Puffer", "Buffer",
+                WindowsFormsApplication1.Textbaustein.T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers").Aufloesen()),
+            new PufferHerkunftDaten("Erzeuger", "Kaskade", "Cascade", erzeuger)
+        };
+        start.Erzeuger = new[] { erzeuger };
+        start.NutzungsprofilHerkunft = WindowsFormsApplication1.Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null)
+            .HerkunftBaustein.Aufloesen();
+        start.Ergebnis = ergebnis;
+
+        var cut = Render<PufferAuslegungSeite>(p => p
+            .Add(x => x.Daten, start)
+            .Add(x => x.Dienste, new PufferAuslegungDienste(_ => ergebnis)));
+        var markup = new List<string> { cut.Markup };
+        cut.FindAll(".epos-ablaufleiste-schritt button")[2].Click();
+        markup.Add(cut.Markup);
+        cut.FindAll(".epos-ablaufleiste-schritt button")[3].Click();
+        markup.Add(cut.Markup);
+
+        string alles = string.Join("\n", markup);
+        Assert.Contains("Rated output 40 kW, modulating; second generator 20 kW", alles);
+        Assert.Contains("Draw-off use type", alles);
+        Assert.Contains("VDI 4645 draft 2026-03", alles);
+        Assert.Contains("smallest volume", alles);
+        foreach (string marke in DEUTSCHE_MARKEN)
+            Assert.DoesNotContain(marke, alles);
+    }
 }

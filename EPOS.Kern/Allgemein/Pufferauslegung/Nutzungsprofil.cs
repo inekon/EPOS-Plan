@@ -3,8 +3,12 @@ using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>Das abgeleitete Nutzungsprofil samt Herkunft (Konzept 3.5).</summary>
-    public sealed record PufferNutzungsprofilAbleitung(PufferNutzungsprofil Profil, string Herkunft, bool Vorgabe);
+    /// <summary>Das abgeleitete Nutzungsprofil samt Herkunft (Konzept 3.5) als <see cref="Textbaustein"/>.</summary>
+    public sealed record PufferNutzungsprofilAbleitung(PufferNutzungsprofil Profil, Textbaustein HerkunftBaustein, bool Vorgabe)
+    {
+        /// <summary>Die Herkunft als deutscher Klartext.</summary>
+        public string Herkunft => HerkunftBaustein?.Klartext ?? "";
+    }
 
     /// <summary>
     /// Die Ableitung des Nutzungsprofils aus übergebenen Fakten (Konzept 3.5, keine Datenbank): zuerst
@@ -43,15 +47,19 @@ namespace WindowsFormsApplication1
                 foreach (string n in zapfnutzungen)
                 {
                     PufferNutzungsprofil? p = AusZapfnutzung(n);
-                    if (p.HasValue) return new PufferNutzungsprofilAbleitung(p.Value, "Zapf-Nutzungsart „" + n + "“", false);
+                    if (p.HasValue) return new PufferNutzungsprofilAbleitung(p.Value,
+                        Textbaustein.T("PAUS_HERK_NP_ZAPF", "Zapf-Nutzungsart „{0}“", n), false);
                 }
             if (prozesswaermeVorhanden)
-                return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.GEWERBE, "Prozesswärme im Projekt", false);
+                return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.GEWERBE,
+                    Textbaustein.T("PAUS_HERK_NP_PROZESS", "Prozesswärme im Projekt"), false);
             if (konditionierungNutzungen != null)
                 foreach (string n in konditionierungNutzungen)
                     if (n == "BUERO" || n == "SCHULE")
-                        return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.BUERO_SCHULE, "Konditionierungsnutzung " + n, false);
-            return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.WOHNEN, "Vorgabe", true);
+                        return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.BUERO_SCHULE,
+                            Textbaustein.T("PAUS_HERK_NP_KONDITIONIERUNG", "Konditionierungsnutzung {0}", n), false);
+            return new PufferNutzungsprofilAbleitung(PufferNutzungsprofil.WOHNEN,
+                Textbaustein.T("PAUS_HERK_NP_VORGABE", "Vorgabe"), true);
         }
     }
 }

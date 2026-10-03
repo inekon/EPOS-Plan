@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using static WindowsFormsApplication1.Textbaustein;
 
 namespace WindowsFormsApplication1
 {
@@ -56,7 +57,7 @@ namespace WindowsFormsApplication1
         /// <summary>Liter je kWh nutzbarer Energie: 1000 / (c · Δϑ · η_s).</summary>
         public double LiterJeKwhNutzbar => 1000.0 / (C * DeltaT * Eta);
 
-        public void Warnung(string code, PufferStufe stufe, string text, string herkunft, PufferZone? zone)
+        public void Warnung(string code, PufferStufe stufe, string text, Textbaustein herkunft, PufferZone? zone)
         {
             foreach (PufferWarnung w in Warnungen)
                 if (w.Code == code && w.Zone == zone) return;
@@ -73,19 +74,22 @@ namespace WindowsFormsApplication1
     public static class HeizzoneRechner
     {
         // ---- Herkunft (Zitate) ----
-        public const string HERKUNFT_K1 = "VDI 4645 E 2026-03, 7.8.3";
-        public const string HERKUNFT_K2 = "VDI 4645 E 2026-03, 7.8.4";
-        public const string HERKUNFT_K3 = "VDI 4645 E 2026-03, Gleichung 22; Wärmespeicher-Tool C.6.2";
-        public const string HERKUNFT_K4 = "VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15";
-        public const string HERKUNFT_K4E = "Wärmespeicher-Tool C.6.3 (rollierendes Lastmittel über die Sperrdauer)";
-        public const string HERKUNFT_D1 = "Wärmespeicher-Tool, Durchlauf mit Bisektion auf das Deckungsziel";
-        public const string HERKUNFT_D2 = "Wärmespeicher-Tool, Zweipunktsimulation mit den Schwellen des Puffers";
-        public const string HERKUNFT_KV = "Fachportal KWK-Flexibilisierung (Sekundärquelle)";
-        public const string HERKUNFT_K9 = "1. BImSchV § 5; BEG";
-        public const string HERKUNFT_K9E = "DIN EN 303-5";
-        public const string HERKUNFT_K10 = "Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977";
-        public const string HERKUNFT_BAND = "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450";
-        public const string HERKUNFT_K11 = "Delegierte Verordnungen (EU) 812/2013 und 814/2013 (Klasse C); prEN 15316-5 Formel 3; DIN EN 15332";
+        public static readonly Textbaustein HERKUNFT_K1 = T("PAUS_HERK_K1", "VDI 4645 E 2026-03, 7.8.3");
+        public static readonly Textbaustein HERKUNFT_K2 = T("PAUS_HERK_K2", "VDI 4645 E 2026-03, 7.8.4");
+        public static readonly Textbaustein HERKUNFT_K3 = T("PAUS_HERK_K3", "VDI 4645 E 2026-03, Gleichung 22; Wärmespeicher-Tool C.6.2");
+        public static readonly Textbaustein HERKUNFT_K4 = T("PAUS_HERK_K4", "VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15");
+        public static readonly Textbaustein HERKUNFT_K4E = T("PAUS_HERK_K4E", "Wärmespeicher-Tool C.6.3 (rollierendes Lastmittel über die Sperrdauer)");
+        public static readonly Textbaustein HERKUNFT_D1 = T("PAUS_HERK_D1", "Wärmespeicher-Tool, Durchlauf mit Bisektion auf das Deckungsziel");
+        public static readonly Textbaustein HERKUNFT_D2 = T("PAUS_HERK_D2", "Wärmespeicher-Tool, Zweipunktsimulation mit den Schwellen des Puffers");
+        public static readonly Textbaustein HERKUNFT_KV = T("PAUS_HERK_KV", "Fachportal KWK-Flexibilisierung (Sekundärquelle)");
+        public static readonly Textbaustein HERKUNFT_K9 = T("PAUS_HERK_K9", "1. BImSchV § 5; BEG");
+        public static readonly Textbaustein HERKUNFT_K9E = T("PAUS_HERK_K9E", "DIN EN 303-5");
+        public static readonly Textbaustein HERKUNFT_K10 = T("PAUS_HERK_K10", "Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977");
+        public static readonly Textbaustein HERKUNFT_BAND = T("PAUS_HERK_BAND", "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450");
+        public static readonly Textbaustein HERKUNFT_K11 = T("PAUS_HERK_K11", "Delegierte Verordnungen (EU) 812/2013 und 814/2013 (Klasse C); prEN 15316-5 Formel 3; DIN EN 15332");
+        public static readonly Textbaustein HERKUNFT_ANHANG_F = T("PAUS_HERK_VDI_ANHANG_F", "VDI 4645 E 2026-03, Anhang F");
+        public static readonly Textbaustein HERKUNFT_VDI_88 = T("PAUS_HERK_VDI_88", "VDI 4645 E 2026-03, 8.8");
+        public static readonly Textbaustein HERKUNFT_WHITEPAPER = T("PAUS_HERK_WHITEPAPER", "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen");
 
         /// <summary>Faktor der DIN-EN-303-5-Formel [l/kWh] (Zitat der Formel, Konzept K9).</summary>
         public const double DIN_EN_303_5_FAKTOR = 15.0;
@@ -93,6 +97,26 @@ namespace WindowsFormsApplication1
         public const double DIN_EN_303_5_ABZUG = 0.3;
 
         private static string Z(double w) => PufferRechengroessen.Zahl(w);
+
+        /// <summary>Der Gerätetyp im Rechenweg von K2 (leistungsgeregelt bzw. Fixed-Speed).</summary>
+        internal static Textbaustein Geraetetyp(bool geregelt) =>
+            geregelt ? T("PAUS_WEG_GEREGELT", "leistungsgeregelt") : T("PAUS_WEG_FIXED_SPEED", "Fixed-Speed");
+
+        /// <summary>Die Brennstoffart im Rechenweg von K9.</summary>
+        internal static Textbaustein Brennstofftext(PufferBrennstoff b)
+        {
+            switch (b)
+            {
+                case PufferBrennstoff.Scheitholz: return T("PAUS_WEG_BRENNSTOFF_SCHEITHOLZ", "Scheitholz");
+                case PufferBrennstoff.Pellets: return T("PAUS_WEG_BRENNSTOFF_PELLETS", "Pellets");
+                case PufferBrennstoff.Hackschnitzel: return T("PAUS_WEG_BRENNSTOFF_HACKSCHNITZEL", "Hackschnitzel");
+                default: return T("PAUS_WEG_BRENNSTOFF_KEINER", "keiner");
+            }
+        }
+
+        /// <summary>Die Kollektorart im Rechenweg von K10.</summary>
+        internal static Textbaustein Kollektortext(PufferKollektorart a) =>
+            a == PufferKollektorart.Roehre ? T("PAUS_WEG_KOLLEKTOR_ROEHRE", "Röhrenkollektor") : T("PAUS_WEG_KOLLEKTOR_FLACH", "Flachkollektor");
 
         // =================================================================
         //  Einzelformeln
@@ -193,7 +217,7 @@ namespace WindowsFormsApplication1
                 KwhJeJahr = qb * Math.Max(faktor, 0) * 365.0,
                 AusKatalog = katalog,
                 Extrapoliert = !katalog && volumenL > grenze,
-                Herkunft = katalog ? "Katalogsatz (Prüfwert bei " + Z(pruef) + " K, DIN EN 15332)" : HERKUNFT_K11
+                HerkunftBaustein = katalog ? T("PAUS_HERK_K11_KATALOG", "Katalogsatz (Prüfwert bei {0} K, DIN EN 15332)", pruef) : HERKUNFT_K11
             };
         }
 
@@ -279,10 +303,12 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.K1, Bezeichnung = "Vorprüfung Anlagenvolumen", VolumenL = null,
-                    Aktiv = false, Herkunft = HERKUNFT_K1,
-                    Rechenweg = "V_Hz = " + Z(vHz) + " l " + (positiv ? "≥" : "<") + " " +
-                                Z(p.Wert(PufferAuslegungVorgaben.VORPRUEFUNG)) + " l/kW · " + Z(nenn) + " kW = " + Z(grenze) +
-                                " l" + (e.Einzelraumregelung ? "; Einzelraumregelung: absperrbar, keine Gutschrift für K1" : "")
+                    Aktiv = false, HerkunftBaustein = HERKUNFT_K1,
+                    RechenwegBaustein = T("PAUS_WEG_K1", "V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5}",
+                                          vHz, positiv ? "≥" : "<", p.Wert(PufferAuslegungVorgaben.VORPRUEFUNG), nenn, grenze,
+                                          e.Einzelraumregelung
+                                              ? T("PAUS_WEG_K1_EINZELRAUM", "; Einzelraumregelung: absperrbar, keine Gutschrift für K1")
+                                              : Leer)
                 });
                 if (positiv && z.Geregelt)
                 {
@@ -293,7 +319,7 @@ namespace WindowsFormsApplication1
                 else if (positiv)
                     g.Warnung(PufferWarncode.OHNE_PUFFER_GEREGELT, PufferStufe.Warnung,
                               "Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt.",
-                              "VDI 4645 E 2026-03, Anhang F", ZONE);
+                              HERKUNFT_ANHANG_F, ZONE);
             }
 
             // ---- K2 Faustwert ----
@@ -303,8 +329,8 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.K2, Bezeichnung = "Faustwert nach Gerätetyp",
-                    VolumenL = K2Faustwert(nenn, z.Geregelt, p), Aktiv = true, Herkunft = HERKUNFT_K2,
-                    Rechenweg = Z(spez) + " l/kW (" + (z.Geregelt ? "leistungsgeregelt" : "Fixed-Speed") + ") · " + Z(nenn) + " kW"
+                    VolumenL = K2Faustwert(nenn, z.Geregelt, p), Aktiv = true, HerkunftBaustein = HERKUNFT_K2,
+                    RechenwegBaustein = T("PAUS_WEG_K2", "{0} l/kW ({1}) · {2} kW", spez, Geraetetyp(z.Geregelt), nenn)
                 });
             }
 
@@ -318,8 +344,8 @@ namespace WindowsFormsApplication1
                 {
                     Kennung = PufferKriteriumKennung.K3, Bezeichnung = "Mindestlaufzeit",
                     VolumenL = K3Mindestlaufzeit(leistung, tMin, g.C, g.DeltaT, g.Eta), Aktiv = true,
-                    EnthaeltNutzanteil = true, Herkunft = HERKUNFT_K3,
-                    Rechenweg = Z(leistung) + " kW · " + Z(tMin) + " min / (" + Z(g.C) + " · " + Z(g.DeltaT) + " K · " + Z(g.Eta) + ")"
+                    EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_K3,
+                    RechenwegBaustein = T("PAUS_WEG_K3", "{0} kW · {1} min / ({2} · {3} K · {4})", leistung, tMin, g.C, g.DeltaT, g.Eta)
                 });
             }
 
@@ -330,10 +356,10 @@ namespace WindowsFormsApplication1
                 bool entfaellt = z.ZweiterzeugerFrei && !z.Heizstab;
                 if (entfaellt)
                     g.Warnung(PufferWarncode.ZWEITERZEUGER_FREI, PufferStufe.Hinweis,
-                              "Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.", "VDI 4645 E 2026-03, 8.8", ZONE);
+                              "Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.", HERKUNFT_VDI_88, ZONE);
                 if (z.Heizstab)
                     g.Warnung(PufferWarncode.HEIZSTAB_GESPERRT, PufferStufe.Hinweis,
-                              "Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.", "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen", ZONE);
+                              "Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.", HERKUNFT_WHITEPAPER, ZONE);
 
                 double hg = e.HeizgrenzeC ?? SimulationSPK.HEIZGRENZE_VORGABE_C;
                 double tAus = Stillstand(hg, e.Uebergabeart, p);
@@ -345,10 +371,10 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.K4, Bezeichnung = "Sperrzeit (Standardweg)",
-                    VolumenL = v4, Aktiv = !entfaellt && !e.SperrzeitExpertenweg, Gueltig = v4.HasValue, Herkunft = HERKUNFT_K4,
-                    Rechenweg = Z(qAusl) + " kW · (" + Z(tSperr) + " h − " + Z(tAus) + " h) · 1000 / (" + Z(g.C) + " · ((" +
-                                Z(e.VorlaufC) + " + " + Z(dSp) + ") − (" + Z(raum) + " + " + Z(dTw) + "))) − " + Z(vHz) + " l" +
-                                (v4.HasValue ? "" : "; Nenner nicht positiv")
+                    VolumenL = v4, Aktiv = !entfaellt && !e.SperrzeitExpertenweg, Gueltig = v4.HasValue, HerkunftBaustein = HERKUNFT_K4,
+                    RechenwegBaustein = T("PAUS_WEG_K4", "{0} kW · ({1} h − {2} h) · 1000 / ({3} · (({4} + {5}) − ({6} + {7}))) − {8} l{9}",
+                                          qAusl, tSperr, tAus, g.C, e.VorlaufC, dSp, raum, dTw, vHz,
+                                          v4.HasValue ? Leer : T("PAUS_WEG_K4_NENNER", "; Nenner nicht positiv"))
                 });
 
                 double qMittel = reihe ? fenster.Max(f => Betriebssimulation.MaxMittelleistung(e.ReiheHeizung, f.DauerH)) : nenn;
@@ -361,9 +387,12 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.K4E, Bezeichnung = "Sperrzeit (Expertenweg, Lastgang)",
-                    VolumenL = v4e, Aktiv = !entfaellt && e.SperrzeitExpertenweg, EnthaeltNutzanteil = true, Herkunft = HERKUNFT_K4E,
-                    Rechenweg = Z(qMittel) + " kW (" + (reihe ? "größtes rollierendes Mittel" : "Ersatzwert Nennleistung") + ") · " +
-                                Z(tSperr) + " h / (" + Z(g.C) + " · " + Z(g.DeltaT) + " K · " + Z(g.Eta) + ")"
+                    VolumenL = v4e, Aktiv = !entfaellt && e.SperrzeitExpertenweg, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_K4E,
+                    RechenwegBaustein = T("PAUS_WEG_K4E", "{0} kW ({1}) · {2} h / ({3} · {4} K · {5})",
+                                          qMittel,
+                                          reihe ? T("PAUS_WEG_K4E_MITTEL", "größtes rollierendes Mittel")
+                                                : T("PAUS_WEG_K4E_ERSATZ", "Ersatzwert Nennleistung"),
+                                          tSperr, g.C, g.DeltaT, g.Eta)
                 });
             }
 
@@ -378,8 +407,8 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.KV, Bezeichnung = "Verschiebedauer BHKW",
-                    VolumenL = Volumen(nenn * t, g.C, g.DeltaT, g.Eta), Aktiv = t > 0, EnthaeltNutzanteil = true, Herkunft = HERKUNFT_KV,
-                    Rechenweg = Z(nenn) + " kW · " + Z(t) + " h / (" + Z(g.C) + " · " + Z(g.DeltaT) + " K · " + Z(g.Eta) + ")"
+                    VolumenL = Volumen(nenn * t, g.C, g.DeltaT, g.Eta), Aktiv = t > 0, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_KV,
+                    RechenwegBaustein = T("PAUS_WEG_KV", "{0} kW · {1} h / ({2} · {3} K · {4})", nenn, t, g.C, g.DeltaT, g.Eta)
                 });
             }
 
@@ -389,8 +418,8 @@ namespace WindowsFormsApplication1
                 k.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.K9, Bezeichnung = "Festbrennstoff (Mindestvolumen)",
-                    VolumenL = K9Faustwert(z.Brennstoff, nenn, p), Aktiv = true, Herkunft = HERKUNFT_K9,
-                    Rechenweg = "Brennstoff " + z.Brennstoff + " · " + Z(nenn) + " kW"
+                    VolumenL = K9Faustwert(z.Brennstoff, nenn, p), Aktiv = true, HerkunftBaustein = HERKUNFT_K9,
+                    RechenwegBaustein = T("PAUS_WEG_K9", "Brennstoff {0} · {1} kW", Brennstofftext(z.Brennstoff), nenn)
                 });
                 double tB = z.AbbrandperiodeH ?? p.Wert(PufferAuslegungVorgaben.FB_ABBRAND);
                 bool daten = z.MindestleistungKw.HasValue && z.MindestleistungKw.Value > 0 && qAusl > 0;
@@ -398,10 +427,11 @@ namespace WindowsFormsApplication1
                 {
                     Kennung = PufferKriteriumKennung.K9E, Bezeichnung = "Festbrennstoff (DIN EN 303-5)",
                     VolumenL = daten ? K9Din303(nenn, tB, qAusl, z.MindestleistungKw.Value) : (double?)null,
-                    Aktiv = daten, Gueltig = daten, Herkunft = HERKUNFT_K9E,
-                    Rechenweg = daten
-                        ? "15 · " + Z(nenn) + " kW · " + Z(tB) + " h · (1 − 0,3 · " + Z(qAusl) + " kW / " + Z(z.MindestleistungKw.Value) + " kW)"
-                        : "Mindestleistung des Kessels oder Heizlast fehlt"
+                    Aktiv = daten, Gueltig = daten, HerkunftBaustein = HERKUNFT_K9E,
+                    RechenwegBaustein = daten
+                        ? T("PAUS_WEG_K9E", "{0} · {1} kW · {2} h · (1 − {3} · {4} kW / {5} kW)",
+                            DIN_EN_303_5_FAKTOR, nenn, tB, DIN_EN_303_5_ABZUG, qAusl, z.MindestleistungKw.Value)
+                        : T("PAUS_WEG_K9E_FEHLT", "Mindestleistung des Kessels oder Heizlast fehlt")
                 });
             }
 
@@ -413,8 +443,10 @@ namespace WindowsFormsApplication1
                 {
                     Kennung = PufferKriteriumKennung.K10, Bezeichnung = "Solarthermie",
                     VolumenL = flaeche ? K10Solar(z.KollektorflaecheM2, z.Kollektorart, p) : (double?)null,
-                    Aktiv = flaeche, Gueltig = flaeche, Herkunft = HERKUNFT_K10,
-                    Rechenweg = flaeche ? Z(z.KollektorflaecheM2) + " m² (" + z.Kollektorart + ")" : "keine Kollektorfläche"
+                    Aktiv = flaeche, Gueltig = flaeche, HerkunftBaustein = HERKUNFT_K10,
+                    RechenwegBaustein = flaeche
+                        ? T("PAUS_WEG_K10", "{0} m² ({1})", z.KollektorflaecheM2, Kollektortext(z.Kollektorart))
+                        : T("PAUS_WEG_K10_KEINE", "keine Kollektorfläche")
                 });
             }
 
@@ -441,7 +473,7 @@ namespace WindowsFormsApplication1
                 if (zone.VolumenL < reserve)
                     g.Warnung(PufferWarncode.ABTAU_VORRANG, PufferStufe.Hinweis,
                               "Trinkwasservorrang: Unter " + Z(reserve) + " l fehlt Abtaureserve für die Heizung.",
-                              p.Quelle(PufferAuslegungVorgaben.ABTAU_RESERVE), ZONE);
+                              PufferAuslegungVorgaben.Quellentext(p.Quelle(PufferAuslegungVorgaben.ABTAU_RESERVE)), ZONE);
             }
 
             // ---- Betriebsbild mit dem Zonenvolumen ----
@@ -470,9 +502,9 @@ namespace WindowsFormsApplication1
                 liste.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.D1, Bezeichnung = "Deckungsgrad (Durchlauf)", VolumenL = v,
-                    Aktiv = true, Gueltig = ok, EnthaeltNutzanteil = true, Herkunft = HERKUNFT_D1,
-                    Rechenweg = "kleinstes Volumen mit Deckungsgrad ≥ " + Z(g.Deckungsziel) + " bei " + Z(z.NennleistungKw + z.ZweiterzeugerKw) +
-                                " kW; erreicht " + Z(lauf.Deckungsgrad)
+                    Aktiv = true, Gueltig = ok, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_D1,
+                    RechenwegBaustein = T("PAUS_WEG_D1", "kleinstes Volumen mit Deckungsgrad ≥ {0} bei {1} kW; erreicht {2}",
+                                          g.Deckungsziel, z.NennleistungKw + z.ZweiterzeugerKw, lauf.Deckungsgrad)
                 });
             }
             if (d2)
@@ -487,9 +519,11 @@ namespace WindowsFormsApplication1
                 liste.Add(new PufferKriterium
                 {
                     Kennung = PufferKriteriumKennung.D2, Bezeichnung = "Taktziel (Zweipunkt)", VolumenL = v,
-                    Aktiv = true, Gueltig = ok, EnthaeltNutzanteil = true, Herkunft = HERKUNFT_D2,
-                    Rechenweg = "kleinstes Volumen mit ≤ " + Z(g.Startziel) + " Starts je Tag (" + (z.Geregelt ? "Modulationsmodus" : "Ein/Aus") +
-                                ", Schwellen " + Z(g.SEin) + "/" + Z(g.SAus) + "); erreicht " + Z(bild.StartsJeTag) + " je Tag"
+                    Aktiv = true, Gueltig = ok, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_D2,
+                    RechenwegBaustein = T("PAUS_WEG_D2", "kleinstes Volumen mit ≤ {0} Starts je Tag ({1}, Schwellen {2}/{3}); erreicht {4} je Tag",
+                                          g.Startziel,
+                                          z.Geregelt ? T("PAUS_WEG_D2_MODULATION", "Modulationsmodus") : T("PAUS_WEG_D2_EINAUS", "Ein/Aus"),
+                                          g.SEin, g.SAus, bild.StartsJeTag)
                 });
             }
             return liste;
@@ -512,11 +546,11 @@ namespace WindowsFormsApplication1
             if (b.StartsJeTag > warn)
                 g.Warnung(PufferWarncode.STARTS_TAG, PufferStufe.Warnung,
                           Z(b.StartsJeTag) + " Starts je Tag über der Warnschwelle " + Z(warn) + ".",
-                          g.P.Quelle(PufferAuslegungVorgaben.WARNSCHWELLE), zone);
+                          PufferAuslegungVorgaben.Quellentext(g.P.Quelle(PufferAuslegungVorgaben.WARNSCHWELLE)), zone);
             if (b.StartsHeizperiode > jahr)
                 g.Warnung(PufferWarncode.STARTS_JAHR, PufferStufe.Hinweis,
                           Z(b.StartsHeizperiode) + " Starts je Heizperiode über " + Z(jahr) + ".",
-                          g.P.Quelle(PufferAuslegungVorgaben.HEIZPERIODE_MAX), zone);
+                          PufferAuslegungVorgaben.Quellentext(g.P.Quelle(PufferAuslegungVorgaben.HEIZPERIODE_MAX)), zone);
             return b;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -76,6 +77,53 @@ namespace WindowsFormsApplication1
         private const string Q_V39 = "Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39";
         private const string Q_PUFFER = "EPOS-Plan Vorgabe des Projektpuffers (Schwellen)";
         private const string Q_VORLAGE = "Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6";
+
+        /// <summary>Die Ressourcenschlüssel der Quellen (Zitate) — <see cref="Quellentext"/>.</summary>
+        private static readonly Dictionary<string, string> QUELLENSCHLUESSEL = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Q_KERN] = "PAUS_HERK_Q_KERN",
+            [Q_VDI_783] = "PAUS_HERK_Q_VDI_783",
+            [Q_VDI_784] = "PAUS_HERK_Q_VDI_784",
+            [Q_VDI_88] = "PAUS_HERK_Q_VDI_88",
+            [Q_VDI_T14] = "PAUS_HERK_Q_VDI_T14",
+            [Q_VDI_T15] = "PAUS_HERK_Q_VDI_T15",
+            [Q_VDI_GL23] = "PAUS_HERK_Q_VDI_GL23",
+            [Q_VDI_ANH_I] = "PAUS_HERK_Q_VDI_ANH_I",
+            [Q_BACOGA] = "PAUS_HERK_Q_BACOGA",
+            [Q_WHITEPAPER] = "PAUS_HERK_Q_WHITEPAPER",
+            [Q_VDZ] = "PAUS_HERK_Q_VDZ",
+            [Q_WPQS] = "PAUS_HERK_Q_WPQS",
+            [Q_SEKUNDAER_TAKT] = "PAUS_HERK_Q_SEKUNDAER_TAKT",
+            [Q_TOOL] = "PAUS_HERK_Q_TOOL",
+            [Q_EN15450] = "PAUS_HERK_Q_EN15450",
+            [Q_BIMSCHV] = "PAUS_HERK_Q_BIMSCHV",
+            [Q_BEG] = "PAUS_HERK_Q_BEG",
+            [Q_EN303] = "PAUS_HERK_Q_EN303",
+            [Q_SOLAR] = "PAUS_HERK_Q_SOLAR",
+            [Q_RUNDE2] = "PAUS_HERK_Q_RUNDE2",
+            [Q_ZIRK] = "PAUS_HERK_Q_ZIRK",
+            [Q_ECOSIZER] = "PAUS_HERK_Q_ECOSIZER",
+            [Q_BHKW] = "PAUS_HERK_Q_BHKW",
+            [Q_EN15332] = "PAUS_HERK_Q_EN15332",
+            [Q_812] = "PAUS_HERK_Q_812",
+            [Q_IEA] = "PAUS_HERK_Q_IEA",
+            [Q_EN15316] = "PAUS_HERK_Q_EN15316",
+            [Q_V39] = "PAUS_HERK_Q_V39",
+            [Q_PUFFER] = "PAUS_HERK_Q_PUFFER",
+            [Q_VORLAGE] = "PAUS_HERK_Q_VORLAGE",
+        };
+
+        /// <summary>
+        /// Die Quelle eines Vorgabewerts (Spalte <c>Quelle</c>) als <see cref="Textbaustein"/>: eine Quelle der
+        /// eingebauten Liste trägt ihren Ressourcenschlüssel <c>PAUS_HERK_Q_*</c>, eine fremde bleibt Klartext.
+        /// </summary>
+        public static Textbaustein Quellentext(string quelle)
+        {
+            if (string.IsNullOrEmpty(quelle)) return Textbaustein.Leer;
+            return QUELLENSCHLUESSEL.TryGetValue(quelle, out string schluessel)
+                ? Textbaustein.T(schluessel, quelle)
+                : Textbaustein.Klar(quelle);
+        }
 
         // ---- Die Schlüssel, die der Rechenkern liest (ohne Präfix) ----
         public const string KONSTANTE = "Konstante.Wh_je_l_K";

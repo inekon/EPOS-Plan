@@ -698,7 +698,7 @@ namespace WindowsFormsApplication1
                 {
                     MyResource.Resource.BER_PAUS_SPEICHERKLASSE, Klassentext(g),
                     MyResource.Resource.BER_PAUS_VORLAGE, Vorlagentext(g.Vorlage),
-                    MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g)
+                    MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g, k.Kultur)
                 };
                 void Zone(PufferZone zone, double? volumen)
                 {
@@ -713,7 +713,8 @@ namespace WindowsFormsApplication1
                 paare.Add(MyResource.Resource.BER_PAUS_BEMESSEND);
                 paare.Add(Bemessendtext(g));
                 paare.Add(MyResource.Resource.PAUS_SPALTE_HERKUNFT);
-                paare.Add(string.IsNullOrWhiteSpace(g.BemessendHerkunft) ? "—" : g.BemessendHerkunft);
+                string herkunft = Textbaustein.Aufloesen(g.BemessendHerkunft, k.Kultur);
+                paare.Add(string.IsNullOrWhiteSpace(herkunft) ? "—" : herkunft);
                 paare.Add(MyResource.Resource.PAUS_EMPFEHLUNG);
                 paare.Add(g.EmpfehlungL.HasValue && g.EmpfehlungL.Value <= 0 ? MyResource.Resource.PAUS_KEIN_PUFFER : Liter(k, g.EmpfehlungL));
                 paare.Add(MyResource.Resource.BER_PAUS_GEWAEHLT);
@@ -777,11 +778,12 @@ namespace WindowsFormsApplication1
             return unter.Length == 0 ? name : name + " (" + unter + ")";
         }
 
-        private static string Nutzungsprofiltext(PufferAuslegungGespeichert g)
+        private static string Nutzungsprofiltext(PufferAuslegungGespeichert g, System.Globalization.CultureInfo kultur)
         {
             if (!g.Nutzungsprofil.HasValue) return "—";
             string name = Pauskey("PAUS_NP_", g.Nutzungsprofil.Value.ToString(), g.Nutzungsprofil.Value.ToString());
-            return string.IsNullOrWhiteSpace(g.NutzungsprofilHerkunft) ? name : name + " — " + g.NutzungsprofilHerkunft;
+            string herkunft = Textbaustein.Aufloesen(g.NutzungsprofilHerkunft, kultur);
+            return string.IsNullOrWhiteSpace(herkunft) ? name : name + " — " + herkunft;
         }
 
         private static string Bemessendtext(PufferAuslegungGespeichert g)

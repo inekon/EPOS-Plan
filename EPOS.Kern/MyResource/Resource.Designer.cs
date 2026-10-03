@@ -70937,6 +70937,1014 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart × Auslegungsheizlast (Anlagenvolumen.&lt;Übergabe&gt;_l_kW) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ANLAGENVOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ANLAGENVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_BAND {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool, Durchlauf mit Bisektion auf das Deckungsziel ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_D1 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_D1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool, Zweipunktsimulation mit den Schwellen des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_D2 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_D2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung {0} kW{1}{2}; Zweiterzeuger {3} kW{4} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , leistungsgeregelt ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_GEREGELT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_GEREGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (Heizstab) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (Summe aus {0} Anlagen) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_SUMME {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_FRISCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_FRISCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer: {0} °C ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_HEIZGRENZE_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_HEIZGRENZE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximum der Heizreihe ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_HEIZLAST_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_HEIZLAST_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IEA SHC Task/Annex 46 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_IEA {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_IEA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, 7.8.3 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K1 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K10 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Delegierte Verordnungen (EU) 812/2013 und 814/2013 (Klasse C); prEN 15316-5 Formel 3; DIN EN 15332 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K11 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K11", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz (Prüfwert bei {0} K, DIN EN 15332) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K11_KATALOG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K11_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, 7.8.4 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K2 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Gleichung 22; Wärmespeicher-Tool C.6.2 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K3 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K4 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool C.6.3 (rollierendes Lastmittel über die Sperrdauer) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K4E {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K4E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1. BImSchV § 5; BEG ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K9 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K9", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 303-5 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K9E {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K9E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogpuffer aus Tab_Pufferspeicher_STAMM ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KATALOG_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KATALOG_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog: {0}.{1} = {2} kW (Katalogsatz {3}) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KATALOG_WP_MINDEST {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KATALOG_WP_MINDEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neuer Puffer: Heizung ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KLASSEN_NEU {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KLASSEN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neuer Puffer: Heizung und Prozesswärme (Projekt trägt Prozesswärme) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KLASSEN_NEU_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KLASSEN_NEU_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KLASSEN_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KLASSEN_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektorfläche {0} m² (Bezugsfläche × Modulanzahl) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KOLLEKTOR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fachportal KWK-Flexibilisierung (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KV {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NENNINHALTE_PARAMETER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NENNINHALTE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die feste Liste 100 … 10 000 l, darüber Raster 1 000 l ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NENNINHALTE_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NENNINHALTE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsnutzung {0} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NP_KONDITIONIERUNG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NP_KONDITIONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme im Projekt ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NP_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NP_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NP_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NP_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapf-Nutzungsart „{0}“ ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NP_ZAPF {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NP_ZAPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingebaute Vorgaben (Vorgabetabelle fehlt) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PARAMETER_EINGEBAUT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PARAMETER_EINGEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projektkopie), fehlende Schlüssel aus {1} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PARAMETER_KOPIE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PARAMETER_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, fehlende Schlüssel aus den eingebauten Vorgaben ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PARAMETER_TABELLE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PARAMETER_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Delegierte Verordnung (EU) 812/2013 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_812 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_812", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BaCoGa, Anlagenwasserinhalt je Übergabeart (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_BACOGA {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_BACOGA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BEG Einzelmaßnahmen, Fördervoraussetzung Pufferspeicher ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_BEG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_BEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fachportal KWK-Flexibilisierung (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_BHKW {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1. BImSchV § 5 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_BIMSCHV {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_BIMSCHV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecosizer, Zirkulationsverlust je Wohneinheit (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_ECOSIZER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_ECOSIZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die prEN 15316-5:2024, Tabelle B.4 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_EN15316 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_EN15316", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 15332, Abschnitt 5.3 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_EN15332 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_EN15332", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 15450 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_EN15450 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_EN15450", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 303-5 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_EN303 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_EN303", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IEA SHC Task/Annex 46 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_IEA {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_IEA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Rechenkern (ProjektPuffer.WH_JE_LITER_KELVIN) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_KERN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_KERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Vorgabe des Projektpuffers (Schwellen) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 2, Abschnitt 4.1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_RUNDE2 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_RUNDE2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fachportale zur Taktung (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_SEKUNDAER_TAKT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_SEKUNDAER_TAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_SOLAR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_TOOL {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_TOOL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_V39 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_V39", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Abschnitt 7.8.3 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_783 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_783", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Abschnitt 7.8.4 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_784 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_784", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Abschnitt 8.8 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_88 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_88", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_ANH_I {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_ANH_I", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Gleichung 23 (Raumtemperatur) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_GL23 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_GL23", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Tabelle 14 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_T14 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_T14", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Tabelle 15 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDI_T15 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDI_T15", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herstellerangabe nach VdZ 2025 (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VDZ {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VDZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_VORLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen (RWTH) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_WHITEPAPER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_WHITEPAPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fraunhofer ISE, Feldtest WP-QS ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_WPQS {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_WPQS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fachportale zur Zirkulation (Sekundärquelle) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_ZIRK {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_ZIRK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1}) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_RANG1_KASKADE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_RANG1_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Wärmeerzeuger im Projekt ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_RANG1_KEINER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_RANG1_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade ohne vorhandenen Erzeuger: erster Erzeuger in der Rangfolge WP, BHKW, Kessel, Solar ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_RANG1_RUECKFALL {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_RANG1_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsreihen aus KanaeleDrei() ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_REIHEN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Reihen: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_REIHEN_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_REIHEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausschaltschwelle des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_SCHWELLE_AUS_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_SCHWELLE_AUS_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einschaltschwelle des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_SCHWELLE_EIN_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_SCHWELLE_EIN_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_SCHWELLE_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_SCHWELLE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_SPERRE_ANLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_SPERRE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Sperrzeit gepflegt ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_SPERRE_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_SPERRE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage: {0}.{1} = {2} min ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEILLAST_BHKW_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEILLAST_BHKW_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage: {0}.{1} = {2} kW ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEILLAST_WP_MINDEST {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEILLAST_WP_MINDEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemtemperaturen der Erzeuger (kleinster Vorlauf, größter Rücklauf) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEMPERATUR_KASKADE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEMPERATUR_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturpaar des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEMPERATUR_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEMPERATUR_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall-Temperaturpaar des Rechenkerns ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TEMPERATUR_RUECKFALL {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TEMPERATUR_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TYP_BHKW {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TYP_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TYP_KESSEL {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TYP_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TYP_SOLAR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TYP_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_TYP_WP {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_TYP_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die häufigste Übergabeart über {0} Gebäude ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_UEBERGABE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_UEBERGABE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0}) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_UEBERGABE_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_UEBERGABE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, 7.8.2 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VDI_782 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VDI_782", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, 8.8 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VDI_88 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VDI_88", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang F ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VDI_ANHANG_F {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VDI_ANHANG_F", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW an Rang 1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_BHKW {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festbrennstoffkessel an Rang 1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_FESTBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_FESTBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Wärmeerzeuger im Projekt: Vorgabe ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_KEIN_ERZEUGER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_KEIN_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel an Rang 1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_KESSEL {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Prozesswärme ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie an Rang 1 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_SOLAR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe mit Zweiterzeuger (Kessel, Heizstab oder bivalenter Betrieb) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_WP_BIVALENT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_WP_BIVALENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ohne Zweiterzeuger ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_VORLAGE_WP_MONO {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_VORLAGE_WP_MONO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DVGW W 551 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_W551 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_W551", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_WHITEPAPER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_WHITEPAPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Auslegung ({0}, {1}{2}, D_max {3} kWh) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (Bestandsweg: Trinkwasser über den Puffer) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_BESTANDSWEG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Topologiegruppe ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_GRUPPE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Topologiegruppen ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_GRUPPEN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_GRUPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Nenninhalt {0} l ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_NENNINHALT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_NENNINHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Auslegung nicht rechenbar: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_NICHT_RECHENBAR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_NICHT_RECHENBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestandsweg: D_max erst mit den Bedarfsreihen ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die D_max {0} kWh als Tagesmaximum der Brauchwasserreihe{1} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Speicherauslegung (TwwSpeicherauslegung) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_SPEICHER {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ZAPF_WEG_FEHLT {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ZAPF_WEG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogvorschlag ähnelt.
         /// </summary>
         public static string PAUS_KATALOGVORSCHLAG {
@@ -71545,6 +72553,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_QUELLE_REIHE {
             get {
                 return ResourceManager.GetString("PAUS_QUELLE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastfeld der Anlage ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_TEILLAST {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_TEILLAST", resourceCulture);
             }
         }
         
@@ -72274,6 +73291,312 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_WARNUNGEN_LEER {
             get {
                 return ResourceManager.GetString("PAUS_WARNUNGEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hackschnitzel ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_BRENNSTOFF_HACKSCHNITZEL {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_BRENNSTOFF_HACKSCHNITZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keiner ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_BRENNSTOFF_KEINER {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_BRENNSTOFF_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pellets ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_BRENNSTOFF_PELLETS {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_BRENNSTOFF_PELLETS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Scheitholz ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_BRENNSTOFF_SCHEITHOLZ {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_BRENNSTOFF_SCHEITHOLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchflussbereitung: kein Brauchwasseranteil im Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_B_DURCHFLUSS {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_B_DURCHFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ({0} + {1}) kWh · 1000 · (1 + {2}) / ({3} · {4} K · {5}); {6} ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_B_FRISCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_B_FRISCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenninhalt {0} l (Zuschläge und Zirkulation in der Zapfprofil-Auslegung) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_B_SPEICHER {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_B_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinstes Volumen mit Deckungsgrad ≥ {0} bei {1} kW; erreicht {2} ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_D1 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_D1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinstes Volumen mit ≤ {0} Starts je Tag ({1}, Schwellen {2}/{3}); erreicht {4} je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_D2 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_D2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein/Aus ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_D2_EINAUS {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_D2_EINAUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulationsmodus ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_D2_MODULATION {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_D2_MODULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fixed-Speed ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_FIXED_SPEED {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_FIXED_SPEED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leistungsgeregelt ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_GEREGELT {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_GEREGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5} ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K1 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} m² ({1}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K10 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kollektorfläche ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K10_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K10_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift für K1 ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K1_EINZELRAUM {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K1_EINZELRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l/kW ({1}) · {2} kW ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K2 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW · {1} min / ({2} · {3} K · {4}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K3 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW · ({1} h − {2} h) · 1000 / ({3} · (({4} + {5}) − ({6} + {7}))) − {8} l{9} ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K4 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW ({1}) · {2} h / ({3} · {4} K · {5}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K4E {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K4E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzwert Nennleistung ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K4E_ERSATZ {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K4E_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größtes rollierendes Mittel ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K4E_MITTEL {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K4E_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; Nenner nicht positiv ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K4_NENNER {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K4_NENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff {0} · {1} kW ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K9 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K9", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} kW · {2} h · (1 − {3} · {4} kW / {5} kW) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K9E {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K9E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung des Kessels oder Heizlast fehlt ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K9E_FEHLT {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K9E_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flachkollektor ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_KOLLEKTOR_FLACH {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_KOLLEKTOR_FLACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Röhrenkollektor ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_KOLLEKTOR_ROEHRE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_KOLLEKTOR_ROEHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW · {1} h / ({2} · {3} K · {4}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_KV {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation {0} · D_max = {1} kWh ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_ZIRK_ANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_ZIRK_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation ohne Tagesbedarf nicht umzurechnen: kein Zuschlag ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_ZIRK_OHNE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_ZIRK_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation {0} kWh/d · D_max / Q_d = {1} kWh ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_ZIRK_TAG {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_ZIRK_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation im Zapfprofil enthalten ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_ZIRK_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_ZIRK_ZAPFPROFIL", resourceCulture);
             }
         }
         
