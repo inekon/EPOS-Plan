@@ -3114,6 +3114,10 @@ namespace WindowsFormsApplication1
                 // Ein Rollback nimmt den Einstellungssatz mit.
                 KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
 
+                // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog,
+                // innerhalb der Klammer des Laufs (ein Rollback nimmt sie mit).
+                ProjektBrennstoffe.Sichern(projektID);
+
                 return true;
             }
             else

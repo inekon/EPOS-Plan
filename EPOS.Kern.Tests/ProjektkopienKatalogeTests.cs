@@ -356,6 +356,68 @@ namespace EPOS.Kern.Tests
             Assert.False(ProjektBrennstoffe.Liste(1030).Single(e => e.IdBrennstoff == 5).KatalogVorhanden);
         }
 
+        /// <summary>
+        /// <b>Die Projektanlage kopiert sofort</b> — über den Assistenten wie über den zweiten Anlageweg
+        /// (<c>ProjektCtrl.Insert</c>): Das neue Projekt führt je Brennstoffart eine Kopie, wertgleich zum
+        /// Katalog, und hängt nicht bis zum ersten Abgleich am Stamm.
+        /// </summary>
+        [Fact]
+        public void Ein_neues_Projekt_bekommt_seine_Brennstoffkopien_sofort()
+        {
+            if (!_db.Vorhanden) return;
+            var modell = new ProjektModel
+            {
+                m_szProjektname = "Brennstoffkopie Assistent", m_szBearbeiter = "Probe", m_szBeschreibung = "",
+                m_szKunde = "", m_szKlimaregion = "",
+                m_Aenderungsdatum = new DateTime(2026, 10, 3), m_Erstelldatum = new DateTime(2026, 10, 3),
+            };
+            int perAssistent = 0;
+            Assert.True(new WizardCtrl().Add_Projekt(ref perAssistent, modell));
+            var ctrl = new ProjektCtrl
+            {
+                m_szProjektname = "Brennstoffkopie Projektdialog", m_szBearbeiter = "Probe",
+                m_Aenderungsdatum = new DateTime(2026, 10, 3), m_Erstelldatum = new DateTime(2026, 10, 3),
+            };
+            Assert.True(ctrl.Insert());
+
+            string katalog = Bild("SELECT ID AS Art, " + FACHSPALTEN + " FROM Tab_Brennstoff_Stamm ORDER BY ID");
+            foreach (int p in new[] { perAssistent, ctrl.m_ID })
+            {
+                Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Brennstoff_Stamm"),
+                             Zahl("SELECT COUNT(*) FROM Tab_Brennstoff WHERE ID_Projekt = " + p));
+                Assert.Equal(katalog, Bild("SELECT ID_Brennstoff AS Art, " + FACHSPALTEN + " FROM Tab_Brennstoff WHERE ID_Projekt = " + p +
+                                           " ORDER BY ID_Brennstoff"));
+            }
+            Assert.Equal(0, ProjektBrennstoffe.OffeneKopien());
+        }
+
+        /// <summary>Ein Paket ohne Brennstoffkopien (älterer Stand) bekommt sie beim Import aus dem Katalog des Ziels.</summary>
+        [Fact]
+        public void Ein_Paketimport_ohne_Kopien_legt_sie_an()
+        {
+            if (!_db.Vorhanden) return;
+            const string name = "Referenz BHKW-Kaskade (Regressionstest)";
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-pbrs-alt-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                // Das Paket entsteht ohne Kopien - wie aus einer Datenbank vor dem Schemaschritt.
+                DataRepository.ExecuteNonQuery("DELETE FROM Tab_Brennstoff WHERE ID_Projekt = 1030");
+                string paket = Path.Combine(ordner, "p.wpx");
+                var io = new ProjektExportImportCtrl();
+                Assert.True(io.Exportieren(name, paket));
+                int neu = io.Importieren(paket, "Transfer ohne Kopien", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+                Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Brennstoff_Stamm"),
+                             Zahl("SELECT COUNT(*) FROM Tab_Brennstoff WHERE ID_Projekt = " + neu));
+            }
+            finally
+            {
+                try { Directory.Delete(ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
         [Fact]
         public void Die_Pufferauslegung_legt_ihre_Vorgaben_beim_Speichern_als_Kopie_an()
         {

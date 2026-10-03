@@ -302,6 +302,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt für JEDES Projekt die fehlenden Kopien an (nach einem Paketimport, der mehrere Projekte
+        /// einspielen kann). Liefert die Zahl der neuen Kopien.
+        /// </summary>
+        public static int SichernAlle()
+        {
+            if (!Vorhanden()) return 0;
+            return Math.Max(0, DataRepository.ExecuteNonQuery(SQL_SICHERN_ALLE));
+        }
+
+        /// <summary>
         /// <b>„Auf Katalog zurücksetzen"</b>: schreibt die heutigen Werte des Stammsatzes in die Kopie
         /// und vermerkt die Fassung. Ohne Stammsatz bleibt die Kopie, wie sie ist (<c>false</c>).
         /// </summary>
