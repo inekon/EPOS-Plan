@@ -280,6 +280,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Ergebnisreiter der Simulation zeigt bei Projekten mit Kühlbetrieb das Diagramm „Kälte Produktion“; „Autarkie Analyse“ steht ganz rechts. (#694)
 - Der BHKW-Reiter zeigt unter der Wärmelast die Stromlast-Jahresganglinie mit Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf. (#694)
 - Die Hinweise auf der Wirtschaftlichkeitsseite lassen sich ein- und ausklappen. (#694)
+- Der Bericht enthält die Stromlast-Jahresganglinie des BHKW und bei Projekten mit Kühlbetrieb das Kälte-Produktionsbild, in Word und Excel (Platzhalterkatalog Fassung 12). (#698)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

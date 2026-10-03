@@ -39957,6 +39957,18 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
     <value>Image switch: is there the CHP image (case or any case)?</value>
   </data>
+  <data name="VF_STAND__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Image per case: electrical load of the CHP — power production as columns, feed-in, residual power demand and power demand as lines over the year — as the image “electrical load” of the tab “CHP”; empty without CHP.</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Image switch: is there the image “electrical load of the CHP” (case or any case)?</value>
+  </data>
+  <data name="VF_STAND__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Image per case: cooling production — per heat pump in cooling mode the covered cooling as columns, the uncovered cooling in grey, the cooling demand as a line over the year — as the sheet “Cooling” of the tab “Result”; empty if the project does not calculate cooling.</value>
+  </data>
+  <data name="VF_HAT__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Image switch: is there the image “cooling production” (case or any case)?</value>
+  </data>
   <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
     <value>Image switch: is there the photovoltaics image (case or any case)?</value>
   </data>

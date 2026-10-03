@@ -831,6 +831,12 @@ namespace WindowsFormsApplication1
         /// die BHKW-Einspeisung jedes Laufs mit BHKW-Überschuss: ohne Flotte die Stundenformel
         /// des KWK-Splits (auch ohne PV), mit Flotte die BHKW-Einspeisung der Flottenbilanz.</summary>
         public const string BHKW_UEBERSCHUSS = "BHKW_Ueberschuss";
+        /// <summary>Katalog v12: der Strombedarf am Eingang des BHKW (<c>SimulationBHKW.strombedarf</c>) — die Linie
+        /// „Strombedarf“ der Stromlast des BHKW-Reiters (<c>SimulationErgebnisCtrl.BhkwStromStunden</c>).</summary>
+        public const string BHKW_STROMBEDARF = "BHKW_Strombedarf";
+        /// <summary>Katalog v12: Strombedarf am BHKW minus Stromproduktion je Stunde, nie unter 0 — die Linie
+        /// „Reststrombedarf“ der Stromlast des BHKW-Reiters.</summary>
+        public const string BHKW_RESTSTROM = "BHKW_Reststrom";
         public const string KESSEL_WAERME = "Kessel_Waerme";
         public const string SOLAR_WAERME = "Solar_Waerme";
         public const string PV_GENUTZT = "PV_Genutzt";
@@ -851,6 +857,23 @@ namespace WindowsFormsApplication1
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
+
+        /// <summary>
+        /// Katalog v12: die <b>ungedeckte Kälte</b> je Stunde [kWh] (<c>Kaeltekaskade.Rest_stuendlich</c>; ohne
+        /// Kälteerzeuger der ganze Kältebedarf). Steht im Satz, sobald das Projekt Kälte rechnet — auch mit lauter
+        /// Nullen; ihr Vorhandensein (<see cref="RechnetKaelte"/>) ist das Zeichen „Kälte gerechnet“.
+        /// </summary>
+        public const string KAELTEREST = "Kaelterest";
+
+        /// <summary>Katalog v12: Präfix der Kältedeckung je Kälteerzeuger (<c>KAELTE_&lt;n&gt;</c>, n ab 1 in der Folge
+        /// der Kältekaskade); der Anzeigetext ist der Bezeichner der Wärmepumpe (<see cref="Beschriftungen"/>).</summary>
+        public const string KAELTE_PRAEFIX = "KAELTE_";
+
+        /// <summary>Die Schlüssel der Kältedeckung je Erzeuger in der Folge der Kältekaskade (Katalog v12).</summary>
+        public List<string> Kaeltereihen = new List<string>();
+
+        /// <summary>Rechnet der Lauf Kälte (die Reihe <see cref="KAELTEREST"/> steht im Satz)?</summary>
+        public bool RechnetKaelte => Reihen.ContainsKey(KAELTEREST);
 
         // ---------------------------------------------------------------------
         // PAKET E1 (Konzept 6.3, Befund S-1): Der Wärmespeicher-Füllstand läuft JE

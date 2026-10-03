@@ -61,9 +61,11 @@ hat.bild.bedarf_kaelte
 hat.bild.bedarf_strom
 hat.bild.bedarf_waerme
 hat.bild.bhkw
+hat.bild.bhkw_strom
 hat.bild.deckung_strom
 hat.bild.deckung_waerme
 hat.bild.heizkessel
+hat.bild.kaelte_produktion
 hat.bild.photovoltaik
 hat.bild.solarthermie
 hat.bild.speichertemperaturen
@@ -1280,9 +1282,11 @@ stand.bild.bedarf_kaelte
 stand.bild.bedarf_strom
 stand.bild.bedarf_waerme
 stand.bild.bhkw
+stand.bild.bhkw_strom
 stand.bild.deckung_strom
 stand.bild.deckung_waerme
 stand.bild.heizkessel
+stand.bild.kaelte_produktion
 stand.bild.photovoltaik
 stand.bild.solarthermie
 stand.bild.speicherverlauf

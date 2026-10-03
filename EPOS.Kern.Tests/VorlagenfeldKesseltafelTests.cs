@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
                                                            // v12: der Schalter der Pufferauslegungstafel ist so alt wie sie.
                                                            && f.Schluessel != "hat.tabelle.pufferauslegung"),
                        f => Assert.Equal(4, f.Seit));
-            // Spätere Fassungen heben die Word-Fassung weiter (v12: Pufferauslegungstafel).
+            // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild, Pufferauslegungstafel).
             Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
         }
 

@@ -872,6 +872,19 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.True(_kaelteStand.Sortiert);
     }
 
+    /// <summary>
+    /// Katalog v12: Das Kaeltebild traegt die Marke <c>stand.bild.kaelte_produktion</c>, „aehnlich im Bericht" (der
+    /// Bericht zeigt das Jahr ohne „sortiert").
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_traegt_sein_Vorlagenfeld()
+    {
+        DiagrammSvg bild = KaelteZeichnen().FindComponents<DiagrammSvg>().Single().Instance;
+        Assert.Equal("stand.bild.kaelte_produktion", bild.Vorlagenfeld);
+        Assert.Equal(Vorlagenfeldstufe.Aehnlich, bild.VorlagenfeldStufe);
+        Assert.NotNull(Vorlagenfeldkatalog.Finde(bild.Vorlagenfeld));
+    }
+
     /// <summary>„sortiert" uebersteht den Neuaufbau des Blatts (Sitzungsgedaechtnis).</summary>
     [Fact]
     public void Kaeltegang_liest_sortiert_aus_dem_Gedaechtnis()
