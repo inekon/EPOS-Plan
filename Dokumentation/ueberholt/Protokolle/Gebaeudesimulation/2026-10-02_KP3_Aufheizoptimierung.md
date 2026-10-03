@@ -20,7 +20,11 @@ N-AH12, 16,75–21,75 PT), Teilkonzept 9.9, Leitkonzept N1.68 — die Festlegung
 Register (P15–P17), Statusdateien, Glossar. **E60 (03.10.2026)** aus dem
 [Konzept Heizlastspitzen](../../../aktuell/Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md):
 Auslegungsgröße stationäre Auslegungsheizlast plus P_auf, in O2 und O3 neben ideale Spitze und Tagesmittel gestellt, kein
-Filter im Rechenweg; in denselben Papieren eingetragen.
+Filter im Rechenweg; in denselben Papieren eingetragen. **Folgeentscheide am 03.10.2026:** P16 — der Aufschlag gilt nur
+kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsheizlast + Aufheizzuschlag P_auf − Φ_stat
+(Muster Φ_RH der DIN EN 12831-1); P15 (b) — Vorschlagsspanne aus τ₂ des Gebäudes,
+[max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] h; Schemaweg A1 — Ergebnisspalte `Aufheiz_Art` ohne Neubau von
+`Tab_ErgebnisGebaeude`, `GEKOPPELT` an der Zone als Neubau von `Tab_ErgebnisZone`. Nachgetragen im selben Worktree.
 
 ## 2. Was gebaut ist
 
@@ -265,16 +269,16 @@ Filter im Rechenweg; in denselben Papieren eingetragen.
   4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.69.
 - **RP1:** ρ_min (P14) an allen 17 VDI-Gebäuden messen; 1051 im gestörten Lauf (Ladekopie-Muster aus `AufheizDeterminismusTests`); Bauwahl mit B11: knappe `Heizleistung_Max` im Rahmen des Katalogbaus.
 - **R5 (E59, nach D2, vor RP1):** Schemaschritt `AufheizManuellSchema` (Nummer spät gegen origin, Platzhalter 171; drei
-  Spalten, Neubau von `Tab_ErgebnisGebaeude` für `MANUELL` im `CHECK`, Sicht `Abfrage_Projektgebaeude`; Alternativen A1
-  neue Spalte `Aufheiz_Art` ohne Neubau, A2 `GEKOPPELT` im Zonen-`CHECK` mitnehmen), Testdatenbank anheben, Aufschlag nach
-  Festlegung 35 (P16 vorher klären), Art „manuell“ samt Vererbung und Kopierwegen (Festlegungen 37, 38), Ergebniszeile und
-  Export (Festlegung 39), N-AH11, N-AH12.
+  Eingabespalten, `Aufheiz_Art` an Gebäude und Zone, `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw` am Gebäude, alles
+  per `ADD COLUMN`; Neubau nur von `Tab_ErgebnisZone` für `GEKOPPELT`; Sicht `Abfrage_Projektgebaeude`), Testdatenbank
+  anheben, Aufschlag nach Festlegung 35 (nur Rampen mit n > 1), Art „manuell“ samt Vererbung und Kopierwegen
+  (Festlegungen 37, 38), Ergebniszeile, Auslegungsgröße und Export `Geb[n].Aufheizart` (Festlegungen 39, 41), τ₂ in der
+  Auskunft (Festlegung 40), N-AH11, N-AH12.
 - **O1b (E59):** zwei Aufschlagfelder in der Projekteinstellung, `SIMKONF_AUFH_AUFSCHLAG_*`, zwei KI-Felder, Glossar.
 - **O2 erweitert (E59, E60):** Feld „Aufheizzeit manuell (h)“ im Reiter „Konditionierung“ des Gebäudedialogs mit Vorschlägen
-  (bemessene Zeit, Spanne nach Bauart — P15) und weicher Sperre; Auslegungsgröße: ideale Spitze, Tagesmittel und P_auf
-  mit Quelle nebeneinander (P17).
-- **O3 erweitert (E59, E60):** Abweichungsmerkmale „Aufheizzeit manuell (h)“, „Aufschlag (h)“, „Aufschlag (%)“;
+  (bemessene Zeit, Spanne aus τ₂) und weicher Sperre; Auslegungsgröße Auslegungsheizlast + Aufheizzuschlag mit ihren
+  Teilen, daneben ideale Spitze, Tagesmittel und P_auf mit Quelle.
+- **O3 erweitert (E59, E60):** Abweichungsmerkmale „Art“, „Aufheizzeit manuell (h)“, „Aufschlag (h)“, „Aufschlag (%)“;
   Auslegungsgröße in der Gebäudetafel.
 - Reihenfolge der offenen Wellen: D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A (Alternative: RP1/RP2 nach R5 parallel zu O1b–O3).
-- Beim Anwender: P14 (ρ nach der Messung in RP1), P15 (Spanne nach Bauart, vor O2), P16 (Aufschlag an Sprüngen ohne
-  Rampe, vor R5), P17 (Lesart der Auslegungsgröße, vor O2), SA1 der KP2-Oberfläche, SA-KP3 am Ende.
+- Beim Anwender: P14 (ρ nach der Messung in RP1), SA1 der KP2-Oberfläche, SA-KP3 am Ende.
