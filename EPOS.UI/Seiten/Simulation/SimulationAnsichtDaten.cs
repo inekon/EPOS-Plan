@@ -359,6 +359,20 @@ public sealed class SimulationParameterDienste
     /// Felder nicht an; dann steht der Abschnitt nicht da.
     /// </summary>
     public Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? NetzkanaeleSchreiben;
+    /// Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3) — schreibt SOFORT wie der
+    /// Kühlschalter und meldet, ob danach die gewünschte Grenze steht
+    /// (<c>KonfigurationCtrl.EinspeisegrenzeSetzen</c>, ohne Einstellungssatz mit Vormerksatz).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Einspeisegrenze, bool>? EinspeisegrenzeSchreiben;
+
+    /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5) — schreibt SOFORT wie der
+    /// Kühlschalter und meldet, ob danach die gewünschte Vorgabe steht
+    /// (<c>KonfigurationCtrl.DesinfektionSetzen</c>, ohne Einstellungssatz mit Vormerksatz).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? DesinfektionSchreiben;
 
     /// <summary>
     /// Die Herleitungszeilen der Aufheizoptimierung, eine je Gebäude („Gebäude: t_auf,max … bei … ·

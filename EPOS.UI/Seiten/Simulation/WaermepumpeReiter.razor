@@ -221,6 +221,20 @@
                     }
                 </tbody>
             </table>
+
+            @* Welle M7 (Konzept Simulationsablauf 21): Bereitschaft nach Temperatur und die Stunden des
+               Frischwassermoduls ohne ausreichende Puffertemperatur - nur, wo die Option gilt. *@
+            @foreach (var sp in Daten.Puffer)
+            {
+                @if (sp.BereitschaftTemperatur)
+                {
+                    <Herleitungszeile Text="@string.Format(Kultur, Resource.PSP_ERG_BEREITSCHAFT_TEMPERATUR, sp.Bezeichner)" />
+                }
+                @if (sp.Nachheizstunden >= 0)
+                {
+                    <Herleitungszeile Text="@string.Format(Kultur, Resource.PSP_ERG_FWM_STUNDEN, sp.Bezeichner, sp.Nachheizstunden)" />
+                }
+            }
         }
 
         @* ---- Die VDI-4640-Auslegungspruefung (Konzept 4.5) ---- *@

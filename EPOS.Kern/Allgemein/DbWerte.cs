@@ -407,6 +407,32 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kollektorkennwerte sind auf die BRUTTOFLÄCHE (Modulfläche) bezogen.</summary>
         public const string SOLAR_BEZUGSFLAECHE_BRUTTO = "brutto";
 
+        // =====================================================================
+        // Einspeisegrenze des Projekts (Welle M5, PV3)
+        //   Tab_Einstellungen.Einspeisegrenze_Einheit
+        //   (Schemaschritt StromViertelstundenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Die Einspeisegrenze steht in kW am Netzanschlusspunkt — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string EINSPEISEGRENZE_KW = "kW";
+
+        /// <summary>Die Einspeisegrenze steht in Prozent der installierten PV-Leistung (kWp).</summary>
+        public const string EINSPEISEGRENZE_PROZENT = "%";
+
+        // =====================================================================
+        // Bereitschaftsweg des Pufferspeichers (Welle M7, PS1 (c))
+        //   Tab_Pufferspeicher.Bereitschaft_Weg
+        //   (Schemaschritt PufferOptionenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Bereitschaftsverlust als Tageswert anteilig zum Füllstand — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string PSP_BEREITSCHAFT_TAG = "tag";
+
+        /// <summary>Bereitschaftsverlust je Zone aus dem Verlustkoeffizienten und der Übertemperatur gegen den Aufstellraum.</summary>
+        public const string PSP_BEREITSCHAFT_TEMPERATUR = "temperatur";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim

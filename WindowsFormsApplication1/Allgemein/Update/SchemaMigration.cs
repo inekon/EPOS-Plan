@@ -4918,13 +4918,46 @@ namespace WindowsFormsApplication1
         /// Taktrechnung der Wärmepumpe, Volllastwirkungsgrade und kein Takten beim BHKW.</para>
         /// </summary>
         public const int SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT;
+        // ---- Welle M5 Strom in Viertelstunden: Einspeisegrenze und Selbstentladung ----
+
+        /// <summary>
+        /// Schritt <see cref="StromViertelstundenSchema.SCHRITT"/> — <b>die Einspeisegrenze des Projekts
+        /// und die Selbstentladung des Stromspeichers</b> (Welle M5 der Entscheidungsvorlage Modellgrenzen:
+        /// PV3, SP1). Er folgt auf <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Einstellungen</c> die nullbaren Spalten
+        /// <c>Einspeisegrenze_Wert</c> und <c>Einspeisegrenze_Einheit</c>, an <c>Tab_Stromspeicher_STAMM</c>
+        /// und <c>Tab_Stromspeicher</c> die Spalte <c>Selbstentladung_Prozent_Monat</c>, alle mit
+        /// Prüfklausel. Die Anweisungen stehen bei <see cref="StromViertelstundenSchema"/>, die Nummer
+        /// allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten heißen keine
+        /// Einspeisegrenze und keine Selbstentladung.</para>
+        /// </summary>
+        public const int SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT;
+        // ---- Welle M7 Speicher: Optionen des Pufferspeichers und thermische Desinfektion ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferOptionenSchema.SCHRITT"/> — <b>die Optionen des Pufferspeichers und die
+        /// thermische Desinfektion</b> (Welle M7 der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a),
+        /// PS5 (a), BW5). Er folgt auf <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Pufferspeicher</c> die nullbaren Spalten <c>Bereitschaft_Weg</c>,
+        /// <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>, <c>Frischwassermodul</c> und
+        /// <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c> die fünf Spalten <c>Desinfektion_*</c>, alle
+        /// mit Prüfklausel. Die Anweisungen stehen bei <see cref="PufferOptionenSchema"/>, die Nummer allein
+        /// dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten rechnen wie zuvor.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_OPTIONEN = PufferOptionenSchema.SCHRITT;
 
         // ---- Welle M6: Katalog-Update (KU1 Stufe 1) und Erdreichpruefung im Ergebnis (EQ1) ----
 
         /// <summary>
         /// Schritt <see cref="KatalogfassungSchema.SCHRITT"/> — <b>die Katalogfassung und die
         /// gespeicherte Erdreichprüfung</b> (Welle M6 der Entscheidungsvorlage Modellgrenzen). Er folgt
-        /// auf <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung.
+        /// auf <see cref="SCHRITT_PUFFER_OPTIONEN"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>DDL und Saat:</b> an den acht Katalogtabellen der Stufe 1 <c>Katalog_Schluessel</c>,
         /// <c>Katalog_Pruefsumme</c>, <c>Katalog_Ausgelaufen</c> samt eindeutigem Teilindex, an
@@ -7116,6 +7149,26 @@ namespace WindowsFormsApplication1
                         "Taktverlust der Waermepumpe, Teillastkennlinie und Takten des BHKW haetten keinen Ort. " +
                         "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen wie zuvor.",
                         Schritt_ErzeugerTeillast),
+            // WELLE M5 STROM IN VIERTELSTUNDEN - die Einspeisegrenze an der Projekteinstellung und die
+            // Selbstentladung am Stromspeicher. REIN DDL; die Quelle ist StromViertelstundenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROM_VIERTELSTUNDEN,
+                        "Tab_Einstellungen: Einspeisegrenze_Wert, Einspeisegrenze_Einheit; " +
+                        "Tab_Stromspeicher(_STAMM): Selbstentladung_Prozent_Monat",
+                        "Die Einspeisegrenze des Projekts und die Selbstentladung des Stromspeichers " +
+                        "haetten keinen Ort. KEIN Rechenergebnis aendert sich - die Felder entstehen leer " +
+                        "und heissen keine Grenze und keine Selbstentladung.",
+                        Schritt_StromViertelstunden),
+            // WELLE M7 SPEICHER - die Optionen des Pufferspeichers und die thermische Desinfektion.
+            // REIN DDL; die Quelle ist PufferOptionenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_OPTIONEN,
+                        "Tab_Pufferspeicher: Bereitschaft_Weg, Aufstellraum_Temperatur_C, Schicht_Anteile, " +
+                        "Frischwassermodul, FWM_Graedigkeit_K; Tab_Einstellungen: Desinfektion_Aktiv, " +
+                        "Desinfektion_Intervall_Tage, Desinfektion_Stunde, Desinfektion_Zieltemperatur_C, Desinfektion_Volumen_l",
+                        "Bereitschaftsweg, Zonenanteile und Frischwassermodul des Pufferspeichers und die " +
+                        "thermische Desinfektion haetten keinen Ort. KEIN Rechenergebnis aendert sich - die " +
+                        "Felder entstehen leer und rechnen wie zuvor.",
+                        Schritt_PufferOptionen),
             // WELLE M6 - Katalogfassung (Schluessel, Pruefsumme, Auslaufkennzeichen, Protokoll) und
             // gespeicherte Erdreichpruefung. Die Quelle ist KatalogfassungSchema, die Nummer steht
             // allein dort.
@@ -12740,6 +12793,90 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Teillastfelder von Waermepumpe und BHKW - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einspeisegrenze und Selbstentladung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/>, die Anweisungen bei
+        /// <see cref="StromViertelstundenSchema"/>. <b>Wiederholbar</b>:
+        /// <c>StromViertelstundenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_StromViertelstunden(Lauf l)
+        {
+            string nr = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromViertelstundenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(StromViertelstundenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!StromViertelstundenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Einspeisegrenze und der Selbstentladung an " +
+                                  StromViertelstundenSchema.TAB_EINSTELLUNGEN + ", " +
+                                  StromViertelstundenSchema.TAB_KATALOG_STAMM + " und " +
+                                  StromViertelstundenSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einspeisegrenze und Selbstentladung - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Der Schritt „Pufferoptionen und Desinfektion" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_OPTIONEN"/>, die Anweisungen bei <see cref="PufferOptionenSchema"/>.
+        /// <b>Wiederholbar</b>: <c>PufferOptionenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der zwei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_PufferOptionen(Lauf l)
+        {
+            string nr = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PufferOptionenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(PufferOptionenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!PufferOptionenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Pufferoptionen und der Desinfektion an " +
+                                  PufferOptionenSchema.TAB_PUFFER + " und " + PufferOptionenSchema.TAB_EINSTELLUNGEN +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferoptionen und Desinfektion - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN DML.");
             return true;

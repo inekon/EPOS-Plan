@@ -41901,6 +41901,258 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
     <value>Degradation coefficient C_d to EN 14825 (0 to 1). It sets the cycling loss: COP_cycl = COP · CR / (C_d · CR + 1 − C_d). Empty = default 0.9.</value>
   </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_OHNE_KWP" xml:space="preserve">
+    <value>Photovoltaics: The feed-in limit of {0:N1} % needs the installed PV power (kWp) as its reference; the project has none. The run uses no feed-in limit.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_HINWEIS" xml:space="preserve">
+    <value>Photovoltaics: feed-in limit {0:N1} kW - curtailed without storage {1:N0} kWh/a ({2:N1} % of the yield). A battery charges before curtailment.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_STANDBY_AUSSERHALB" xml:space="preserve">
+    <value>Battery storage: a standby consumption outside 0 … 1,000 W is not used.</value>
+  </data>
+  <data name="SP_LABEL_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Self-discharge</value>
+  </data>
+  <data name="SP_HINWEIS_STANDBY" xml:space="preserve">
+    <value>Battery management and inverter at idle. Covered from PV surplus, otherwise from the grid; empty = 0.</value>
+  </data>
+  <data name="SP_HINWEIS_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Loss of stored energy per month, 0 … 20 %; empty = none.</value>
+  </data>
+  <data name="SP_ERG_SELBSTENTLADUNG" xml:space="preserve">
+    <value>of which self-discharge</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Storage system own consumption</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ" xml:space="preserve">
+    <value>of which from the grid</value>
+  </data>
+  <data name="SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Standby consumption of the storage system: covered from PV surplus after charging, otherwise from the grid, never from the battery.</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG" xml:space="preserve">
+    <value>Curtailment at the feed-in limit</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG_ANTEIL" xml:space="preserve">
+    <value>Curtailment in % of generation</value>
+  </data>
+  <data name="SIMERG_LBL_PV_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_GRP_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT" xml:space="preserve">
+    <value>Unit of the feed-in limit</value>
+  </data>
+  <data name="SIMKONF_HRL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Maximum PV feed-in at the grid connection, in kW or in % of the installed PV power. Whatever the battery does not charge and lies above it is curtailed. Empty = no limit.</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_KW" xml:space="preserve">
+    <value>kW at the grid connection</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% of the installed PV power</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_LEER" xml:space="preserve">
+    <value>no limit</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_FEHLER" xml:space="preserve">
+    <value>The feed-in limit could not be saved.</value>
+  </data>
+  <data name="KI_DLG_MODK_SELBSTENTLADUNG_ERL" xml:space="preserve">
+    <value>Loss of stored energy per month in percent, 0 to 20; empty means no self-discharge. The simulation deducts it from the content every quarter-hour, at most down to the lower state-of-charge limit.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Maximum PV feed-in at the grid connection in the chosen unit; empty means no limit. Above it, PV is curtailed after a battery has charged.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL" xml:space="preserve">
+    <value>Unit of the feed-in limit: kW at the grid connection or % of the installed PV power (kWp).</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
+    <value>Project setting feed-in limit: {0:N1} kW. It pre-fills the hard limit of a new fleet and, in the project run, curtails PV feed-in above it after the fleet has charged.</value>
+  </data>
+  <data name="PSP_ANTEILE_ZAHL" xml:space="preserve">
+    <value>“{0}” is not a number.</value>
+  </data>
+  <data name="PSP_ANTEILE_BEREICH" xml:space="preserve">
+    <value>The share “{0}” is not between 0 and 1.</value>
+  </data>
+  <data name="PSP_ANTEILE_ANZAHL" xml:space="preserve">
+    <value>{0} shares for {1} zones – exactly one share per zone.</value>
+  </data>
+  <data name="PSP_ANTEILE_SUMME" xml:space="preserve">
+    <value>The shares add up to {0}, not 1.</value>
+  </data>
+  <data name="DESINF_PRUEF_INTERVALL" xml:space="preserve">
+    <value>The interval must be between {0} and {1} days.</value>
+  </data>
+  <data name="DESINF_PRUEF_STUNDE" xml:space="preserve">
+    <value>The hour must be between {0} and {1}.</value>
+  </data>
+  <data name="DESINF_PRUEF_ZIEL" xml:space="preserve">
+    <value>The target temperature must be between {0} and {1} °C.</value>
+  </data>
+  <data name="DESINF_PRUEF_VOLUMEN" xml:space="preserve">
+    <value>The volume must be between 0 and {0:N0} l.</value>
+  </data>
+  <data name="SIMENG_PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>Buffer storage “{0}”: standby loss by temperature, H = {1:0.00} W/K, installation room {2:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_ANTEILE_ABGELEHNT" xml:space="preserve">
+    <value>Buffer storage “{0}”: zone shares not applied – {1} Equal zones are used.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_OHNE_BRAUCHWASSER" xml:space="preserve">
+    <value>Buffer storage “{0}”: the fresh water module has no effect – the storage does not serve domestic hot water.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM" xml:space="preserve">
+    <value>Buffer storage “{0}”: fresh water module, tapping temperature {1:0.#} °C + approach {2:0.#} K – minimum temperature at the top {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_STUNDEN" xml:space="preserve">
+    <value>Buffer storage “{0}”: in {1} hours the top zone did not hold the minimum temperature of the fresh water module ({2:0.#} °C); the next cascade stage covered the rest.</value>
+  </data>
+  <data name="SIMENG_TWW_ZAPF_VORGABE" xml:space="preserve">
+    <value>Domestic hot water: the project has no tapping temperature – {0:0.#} °C is used.</value>
+  </data>
+  <data name="SIMENG_DESINF_SOLL_VORGABE" xml:space="preserve">
+    <value>Thermal disinfection: the project has no storage set temperature – {0:0.#} °C is used.</value>
+  </data>
+  <data name="SIMENG_DESINF_OHNE_VOLUMEN" xml:space="preserve">
+    <value>Thermal disinfection without volume: no volume is entered and no storage serves domestic hot water – no additional demand.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZIEL_UNTER_SOLL" xml:space="preserve">
+    <value>Thermal disinfection: the target temperature {0:0.#} °C is not above the storage set temperature {1:0.#} °C – no additional demand.</value>
+  </data>
+  <data name="SIMENG_DESINF_BEDARF" xml:space="preserve">
+    <value>thermal disinfection {0} times a year (every {1} days at {2}:00), {3:0.#} l from {4:0.#} to {5:0.#} °C: {6:0.##} kWh per event, {7:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMENG_DESINF_GEDECKT" xml:space="preserve">
+    <value>Thermal disinfection: {0} covers {1:0.##} kWh.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZUSATZSTROM" xml:space="preserve">
+    <value>Thermal disinfection: no generator reaches {1:0.#} °C for {0:0.##} kWh – covered by additional electricity (electric, efficiency 1), included in the residual electricity.</value>
+  </data>
+  <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
+    <value>Electric heater</value>
+  </data>
+  <data name="PSP_GRUPPE_OPTIONEN" xml:space="preserve">
+    <value>Standby loss and fresh water module</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFT_WEG" xml:space="preserve">
+    <value>Standby loss:</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TAG" xml:space="preserve">
+    <value>Daily value pro rata to the charge level</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>By temperature per zone</value>
+  </data>
+  <data name="PSP_LABEL_AUFSTELLRAUM" xml:space="preserve">
+    <value>Installation room:</value>
+  </data>
+  <data name="PSP_HINWEIS_AUFSTELLRAUM" xml:space="preserve">
+    <value>Only for the temperature method: H = Q_B · 1000 / (24 · 45 K), per zone H · a_i · (ϑ_i − ϑ_room); empty = 20 °C.</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHT_ANTEILE" xml:space="preserve">
+    <value>Zone shares from the top:</value>
+  </data>
+  <data name="PSP_BTN_VORSCHLAG_KOMBI" xml:space="preserve">
+    <value>Suggestion combi storage</value>
+  </data>
+  <data name="PSP_HINWEIS_ANTEILE" xml:space="preserve">
+    <value>Volume shares separated by semicolons, sum 1; empty = equal zones. Suggestion combi storage: 0.10;0.16;0.37;0.37 (four zones).</value>
+  </data>
+  <data name="PSP_LABEL_FRISCHWASSERMODUL" xml:space="preserve">
+    <value>Fresh water module</value>
+  </data>
+  <data name="PSP_LABEL_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Approach of the fresh water module:</value>
+  </data>
+  <data name="PSP_HINWEIS_FWM" xml:space="preserve">
+    <value>Domestic hot water from the top zone only at tapping temperature + approach or above; otherwise the next cascade stage covers it. Empty = 5 K.</value>
+  </data>
+  <data name="PSP_HINWEIS_UEBERTRAGER" xml:space="preserve">
+    <value>Heat exchanger: enter its capacity as the discharge limit.</value>
+  </data>
+  <data name="PSP_FEHLER_AUFSTELLRAUM" xml:space="preserve">
+    <value>The installation room must be between 0 and 35 °C.</value>
+  </data>
+  <data name="PSP_FEHLER_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>The approach of the fresh water module must be between 0 and 20 K.</value>
+  </data>
+  <data name="PSP_FEHLER_ANTEILE" xml:space="preserve">
+    <value>Zone shares: {0}</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL" xml:space="preserve">
+    <value>True = standby loss per zone by temperature (H from the standby value at 45 K, against the installation room); false = daily value pro rata to the charge level.</value>
+  </data>
+  <data name="KI_DLG_PSPV_AUFSTELLRAUM_ERL" xml:space="preserve">
+    <value>Installation room temperature for the standby loss by temperature, 0 to 35 °C; empty = 20 °C.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ANTEILE_ERL" xml:space="preserve">
+    <value>Volume shares of the zones from the top, separated by semicolons, sum 1, count equal to the number of layers; empty = equal zones.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_ERL" xml:space="preserve">
+    <value>True = domestic hot water via a fresh water module from the top zone, only at tapping temperature plus approach or above.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Approach of the fresh water module, 0 to 20 K; empty = 5 K.</value>
+  </data>
+  <data name="SIMKONF_GRP_DESINFEKTION" xml:space="preserve">
+    <value>Thermal disinfection</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINFEKTION" xml:space="preserve">
+    <value>Thermal disinfection</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_INTERVALL" xml:space="preserve">
+    <value>Interval:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_STUNDE" xml:space="preserve">
+    <value>Time (hour):</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_ZIEL" xml:space="preserve">
+    <value>Target temperature:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_VOLUMEN" xml:space="preserve">
+    <value>Volume:</value>
+  </data>
+  <data name="SIMKONF_DESINF_VOLUMEN_LEER" xml:space="preserve">
+    <value>DHW storage</value>
+  </data>
+  <data name="SIMKONF_HRL_DESINFEKTION" xml:space="preserve">
+    <value>Additional demand per event Q = V · 1.163 kWh/(m³·K) · (ϑ_target − ϑ_set) in the domestic hot water channel, covered by the generator that reaches the target temperature, otherwise by the electric heater or as additional electricity. Empty: every 7 days at 2:00, 70 °C, volume of the DHW storage.</value>
+  </data>
+  <data name="SIMKONF_DESINFEKTION_FEHLER" xml:space="preserve">
+    <value>The thermal disinfection could not be saved.</value>
+  </data>
+  <data name="KI_SIM_DESINFEKTION_ERL" xml:space="preserve">
+    <value>True = thermal disinfection of the domestic hot water in the run (additional demand in the chosen hour).</value>
+  </data>
+  <data name="KI_SIM_DESINF_INTERVALL_ERL" xml:space="preserve">
+    <value>Interval between two disinfections in days, 1 to 31; empty = 7.</value>
+  </data>
+  <data name="KI_SIM_DESINF_STUNDE_ERL" xml:space="preserve">
+    <value>Hour of the day in which the disinfection runs, 0 to 23; empty = 2.</value>
+  </data>
+  <data name="KI_SIM_DESINF_ZIEL_ERL" xml:space="preserve">
+    <value>Target temperature of the disinfection, 55 to 90 °C; empty = 70 °C.</value>
+  </data>
+  <data name="KI_SIM_DESINF_VOLUMEN_ERL" xml:space="preserve">
+    <value>Heated volume in litres, 0 to 100,000; empty = volume of the storages serving domestic hot water.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_DESINFEKTION" xml:space="preserve">
+    <value>of which thermal disinfection:</value>
+  </data>
+  <data name="PSP_ERG_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>{0}: standby loss by temperature per zone.</value>
+  </data>
+  <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
+    <value>{0}: fresh water module – {1} hours without sufficient storage temperature; there the next cascade stage covers.</value>
+  </data>
   <data name="KABG_MENUE" xml:space="preserve">
     <value>Update catalogue…</value>
   </data>

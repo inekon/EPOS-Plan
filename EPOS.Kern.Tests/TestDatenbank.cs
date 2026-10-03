@@ -864,6 +864,16 @@ namespace EPOS.Kern.Tests
                 // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
                 // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
                 ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
+                // Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+                // Pufferspeichers an Tab_Pufferspeicher und die thermische Desinfektion an
+                // Tab_Einstellungen, leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                PufferOptionenSchema.Ausfuehren(null);
                 // Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1, EQ1): die Katalogspalten
                 // der Stufe-1-Kataloge samt Saat von Schluessel und Pruefsumme der ausgelieferten Saetze,
                 // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus

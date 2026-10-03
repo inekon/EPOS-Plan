@@ -278,7 +278,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
   Brauchwasserkanal und vom Erzeuger gedeckt, der die Zieltemperatur erreicht (sonst Heizstab).
 - **Empfehlung: später**, Aufwand M. Erst sinnvoll, wenn Speicher und Wärmepumpen-Vorlauf je
   Kanal (BW3, PS5) da sind; vorher gäbe es niemanden, der die Temperatur prüft.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M7)** — Projektschalter an `Tab_Einstellungen` (`Desinfektion_Aktiv`, `_Intervall_Tage`, `_Stunde`, `_Zieltemperatur_C`, `_Volumen_l`; leer = aus), Zusatzbedarf als eigener Posten `Brauchwasser_Desinfektion_Mwh`, zurückgehalten vor Stufen unter der Zieltemperatur, Rest als benannter Zusatzstrom; Schemaschritt `PufferOptionenSchema`. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW6 Einheit MWh im Lauf — erledigt
 
@@ -466,7 +466,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
   sonst nirgends gibt. Hinweistext im Pufferdialog: „Übertrager: Leistung als Entladegrenze
   eintragen“.
 - **Empfehlung: nein** (nur Hinweistext, S). Kein Planungsfall, der damit anders ausginge.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M7)** — nur der Hinweistext „Übertrager: Leistung als Entladegrenze eintragen" im Pufferdialog an der Entladeleistung.
 
 ---
 
@@ -631,7 +631,7 @@ Abschnitt 3.
 - **Empfehlung: (c) ja** (S–M; fachlich klar, der Katalogwert liefert H; Basis neu für jedes
   Referenzprojekt mit Puffer — deshalb als Option mit Vorgabe „Tageswert“); **(a) später** (S,
   erst mit Kombispeichern nötig); **(b) nein** (kein Anwender hat Daten dafür).
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (a) und (c), umgesetzt in Welle M7; (b) nein** — (c) `Bereitschaft_Weg` (`tag`/`temperatur`, leer = Tageswert) und `Aufstellraum_Temperatur_C` an `Tab_Pufferspeicher`; (a) `Schicht_Anteile` mit Prüfung und „Vorschlag Kombispeicher" im Dialog; beide als Option, Basis unberührt. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PS2 Quellspeicher statisch
 
@@ -679,13 +679,13 @@ Abschnitt 3.
   (c) Legionellenschaltung siehe BW5.
 - **Empfehlung: (a) später** (M, zusammen mit der Pufferauslegung und BW3); **(b) nein**;
   **(c) über BW5**.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (a), umgesetzt in Welle M7; (b) nein; (c) über BW5** — `Frischwassermodul` und `FWM_Graedigkeit_K` an `Tab_Pufferspeicher`, Entnahme des Brauchwassers nur ab ϑ_Zapf + ΔT_FWM, sonst die nächste Stufe; Nachheizstunden im Protokoll. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ---
 
 ## 8. Strombedarf
 
-### SB1 Viertelstunden ohne Unterstruktur — PV und Stromspeicher in 15 Minuten
+### SB1 Viertelstunden ohne Unterstruktur — PV und Stromspeicher in 15 Minuten — (a) umgesetzt
 
 - **Stand heute — wo gemittelt, wo viertelstündlich gerechnet wird:**
   1. **Strombedarf:** Profile liefern Stundenwerte und werden auf vier gleiche Viertel gespreizt
@@ -718,7 +718,12 @@ Abschnitt 3.
   hängen an der Viertelstunde; die Flotte gewinnt eine glatte PV-Reihe. **Basis neu** für jedes
   Referenzprojekt mit PV — Einfrierregel, eigene Welle. **(b) später** (M), **(c) nein**
   (Datenlage, Rechenzeit, Nutzen klein gegen (a)).
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5), (a):** Die PV-Erzeugung wird je Stunde nach dem Kosinus des Zenitwinkels in
+  der Mitte jeder Viertelstunde verteilt (energieerhaltend, ohne Sonne gleichmäßig); Direktverbrauch,
+  Überschuss, Reststrom und Abregelung entstehen je Viertelstunde, Stromspeicher und Flotte rechnen mit
+  der glatten Reihe. Basis R33: Direktverbrauch der vier Referenzprojekte mit PV-Ertrag −0,05 bis
+  −0,1 %. [Konzept Simulationsablauf, Abschnitt 19](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (a) entschieden, umgesetzt; (b), (c) offen**
 
 ### SB2 Projektfilter im Stromzweig — erledigt
 
@@ -769,7 +774,7 @@ Abschnitt 3.
   rechnen; die Warnung genügt.
 - **Entscheidung des Anwenders: ☐**
 
-### PV3 Keine Netzeinspeisebegrenzung im Stundenlauf
+### PV3 Keine Netzeinspeisebegrenzung im Stundenlauf — umgesetzt
 
 - **Stand heute:** Der PV-Lauf kappt die Einspeisung nicht. Die Flotte kennt eine **harte**
   Einspeisegrenze, die eine Variante unzulässig macht (`SpeicherEngine/FlottenModel.cs:827`,
@@ -781,7 +786,12 @@ Abschnitt 3.
   Planungsalltag, und der Speicher wird oft genau dafür gekauft.
 - **Empfehlung: ja**, Aufwand M (S für den PV-Lauf, Rest Flotte). Vorgabe leer → Basis
   unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5):** `Tab_Einstellungen.Einspeisegrenze_Wert` und `Einspeisegrenze_Einheit`
+  (kW oder % der kWp, Schemaschritt 166), Abschnitt „Einspeisegrenze" der Simulationskonfiguration.
+  Abregelung je Viertelstunde nach Speicherladung und Standby; Reiter „Photovoltaik", Bericht (Reihe und
+  Monatstafel), Referenzskalar `Photovoltaik.AbregelungMwh` nur bei > 0. Die Flotte liest den Wert als
+  weiche Grenze; ihre harte Grenze wird bei einer neuen Flotte damit vorbelegt und im Netzblock benannt.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### PV4 Albedo fest 0,2
 
@@ -803,7 +813,7 @@ Engine `SpeicherEngine`, Planer `SpeicherPlanung`; Konzept
 [`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Doku_Mehrspeicher_Konzept_und_Umsetzung.md).
 Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
-### SP1 Standby-Verbrauch nicht berücksichtigt
+### SP1 Standby-Verbrauch nicht berücksichtigt — umgesetzt
 
 - **Stand heute:** Weder Standby noch Selbstentladung in der Engine (keine Fundstelle in
   `SpeicherEngine/*.cs`).
@@ -814,7 +824,13 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 - **Empfehlung: ja**, Aufwand S–M. Kleine Speicher mit einigen zehn Watt Leerlauf verlieren damit
   einen merklichen Teil ihres Nutzens — eine Aussage, die Kunden interessiert. Vorgabe 0 → Basis
   unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5):** Standby aus `Tab_Stromspeicher(_STAMM).Standby_Verbrauch` [W] (0 … 1 000),
+  Selbstentladung `Selbstentladung_Prozent_Monat` (0 … 20, Schemaschritt 166). In `SpeicherEngine`
+  Parameter des Speichers und der Flotteneinheit (`Speichersystem.Standby`, `Speichersystem.Selbstentladung`);
+  Ausweis „Eigenverbrauch Speichersystem" im Reiter „Stromspeicher", im Bericht (Monatstafel) und als
+  Referenzskalar `Stromspeicher.EigenverbrauchSystemMwh` (nur bei > 0). In der Flotte ist der Standby der
+  Hilfsverbrauch der Einheit (Standortlast).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### SP2 Auslegungsoptimierung schreibt nichts ins Simulationsergebnis
 
@@ -1027,18 +1043,18 @@ Umstellen eines Referenzprojekts.
 | ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | umgesetzt (M2) | M | ja, 1049 (R32) | ☑ |
 | PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
-| SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
+| SB1 (a) PV-Bilanz im Viertelstundenraster | umgesetzt (M5) | M | ja, alle Referenzprojekte mit PV (R33) | ☑ |
 | KU1 Katalogabgleich mit Katalogfassung | Stufe 1 umgesetzt (Welle M6); Stufe 2 offen | L | nein (Projektkopien unberührt) | Stufe 1 ☑ · Stufe 2 ☐ |
 | PW2 Kalenderschicht für alle Profile (mit BW2) | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH2 BHKW-Takten mit Folgeauftrag 6 | umgesetzt (Welle M4) | M | nein (Option; kein Referenzprojekt pflegt die Felder) | ☑ |
-| PV3 Einspeisebegrenzung mit Abregelung | ja | M | nein (Option) | ☐ |
+| PV3 Einspeisebegrenzung mit Abregelung | umgesetzt (M5) | M | nein (Option) | ☑ |
 | ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
-| PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
+| PS1 (c) Bereitschaftsverlust temperaturabhängig | umgesetzt (Welle M7) | S–M | nein (Option; erst beim Umstellen eines Pufferprojekts) | ☑ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
 | PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
-| SP1 Standby des Speichersystems | ja | S–M | nein (Option) | ☐ |
+| SP1 Standby des Speichersystems | umgesetzt (M5) | S–M | nein (Option) | ☑ |
 | EQ1 Erdreichprüfung speichern | umgesetzt (Welle M6) | S–M | nein | ☑ |
 | ST1 Pumpenstrom Solarkreis | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST6 Bezugsfläche der Kennwerte | umgesetzt (M2) | S | nein (Option) | ☑ |
@@ -1046,13 +1062,13 @@ Umstellen eines Referenzprojekts.
 | PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☑ umgesetzt |
 | SP2 Beste Rastervariante übernehmen | ja | S | nein | ☑ umgesetzt |
 | BW3 Brauchwasser-Vorlauf je Erzeuger | später | M | nein (Option) | ☐ |
-| BW5 Thermische Desinfektion | später | M | nein (Option) | ☐ |
+| BW5 Thermische Desinfektion | umgesetzt (Welle M7) | M | nein (Option) | ☑ |
 | PW3 Wochenprofil je Monat oder Saison | später | M | nein (Option) | ☐ |
 | PW4 Verluste je Prozesssatz | später (Kanalwert über BW4) | S | nein | ☐ |
 | WP3 Abtaufaktor bei Kennfeldern ohne Abtauung | später | M | nein | ☐ |
 | PS2 Abwärme als Lader des Quellspeichers | später | M | nein | ☐ |
-| PS5 (a) Frischwassermodul | später | M | nein | ☐ |
-| PS1 (a) Zonenanteile wählbar | später | S | nein (Option) | ☐ |
+| PS5 (a) Frischwassermodul | umgesetzt (Welle M7) | M | nein (Option) | ☑ |
+| PS1 (a) Zonenanteile wählbar | umgesetzt (Welle M7) | S | nein (Option) | ☑ |
 | ST3 Stufe 2 Leitungsverlust physikalisch | später | S | ja, 1049 | ☐ |
 | SB1 (b) Stromprofile mit 672 Werten | später | M | nein | ☐ |
 | SP6 Alterung in der Wirtschaftlichkeit | später | M–L | nein (Wirtschaftlichkeit) | ☐ |
@@ -1061,10 +1077,10 @@ Umstellen eines Referenzprojekts.
 | SP10 Periodischer Start-SOC | später | S | ja, 1046 (nur als Option) | ☐ |
 | PV2 Klemmung je MPP-Eingang | später | S | nein | ☐ |
 | SP5 .NET-Planer für iOS | später | L | nein | ☐ |
-| HK4 Übertrager zwischen Puffer und Kessel | nein (Hinweistext) | S | nein | ☐ |
-| PS1 (b) Einströmmischung | nein | — | — | ☐ |
+| HK4 Übertrager zwischen Puffer und Kessel | Hinweistext umgesetzt (Welle M7) | S | nein | ☑ |
+| PS1 (b) Einströmmischung | nein | — | — | nein |
 | PS4 Mehr Katalogwerte Puffer | nein (außer mit PS1 (c)) | — | — | ☐ |
-| PS5 (b) Übertrager im Puffer | nein | — | — | ☐ |
+| PS5 (b) Übertrager im Puffer | nein | — | — | nein |
 | PV1 Ein-Dioden-Modell | nein | — | — | ☐ |
 | SB1 (c) Klimadaten in 10 oder 15 Minuten | nein | — | — | ☐ |
 | SP7 Herkunftsschichten | nein | — | — | ☐ |
@@ -1086,9 +1102,9 @@ zuerst, Rechenwegänderungen an Referenzprojekten gebündelt.
 | **M2 Solarthermie** | ST5, ST2 mit ST4, danach ST8 (Folgeauftrag 4) | **neu** (1049), einmal für alle drei | alle Änderungen am selben Referenzprojekt in einem Schritt |
 | **M3 Bedarf** | BW4, PW1 Stufe 1, PW2, PW5 | unberührt (Optionen) | gemeinsame Profilroutine und Kanäle; PW5 liefert die Sätze, mit denen PW1 und PW2 sofort sichtbar werden |
 | **M4 Erzeuger in Teillast** | WP1, BH1, BH2 mit Folgeauftrag 6 | neu nur, wenn die BHKW-Untergrenze in Referenzprojekten wirksam wird | dieselbe Bauart wie Kessel E2/E4, Tests und Editor wiederverwendbar |
-| **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV) | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
+| **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV), umgesetzt mit Basis R33 | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
 | **M6 Katalog-Update** | KU1 Stufe 1 (laufend gepflegte Kataloge), EQ1 | unberührt | Schema und Werkzeug, eigene Abnahme mit einer Bestandsdatenbank des Anwenders |
-| **M7 Speicher** | PS1 (c), danach nach Bedarf PS1 (a), PS5 (a), BW5 | neu für Pufferprojekte, falls als Vorgabe gesetzt | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
+| **M7 Speicher** | PS1 (c), PS1 (a), PS5 (a), BW5, Hinweis HK4 — umgesetzt (Schemaschritt `PufferOptionenSchema`) | unberührt (alle als Option) | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
 | später | BW3, PW3, PW4 je Prozess, WP3, PS2, SB1 (b), SP3, SP6, SP8, SP10, PV2, SP5 | — | nach Anlass und Rückmeldung der Anwender |
 
 Nach dem Entscheid wird je Welle ein Auftrag mit Abnahme (Build, Tests, Referenzlauf) formuliert;

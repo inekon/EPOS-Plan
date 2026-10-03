@@ -112,6 +112,9 @@
         /// <summary>Einheit einer Waermeleistung in Watt (Welle KI-F3).</summary>
         internal const string EINHEIT_W = "W";
 
+        /// <summary>Prozent je Monat — die Selbstentladung eines Stromspeichers (Welle M5, SP1).</summary>
+        internal const string EINHEIT_PROZENT_MONAT = "%/Monat";
+
         /// <summary>Einheit eines Waermedurchgangskoeffizienten (Welle KI-F3).</summary>
         internal const string EINHEIT_W_M2K = "W/(m²·K)";
 
@@ -777,6 +780,11 @@
         internal static string SimAufheizReserveErl => MyResource.Resource.KI_DLG_SIM_AUFH_RESERVE_ERL;
         internal static string SimAufheizArtName => MyResource.Resource.SIMKONF_AUFH_LBL_ART;
         internal static string SimAufheizArtErl => MyResource.Resource.KI_DLG_SIM_AUFH_ART_ERL;
+        // Die Einspeisegrenze (Welle M5, PV3): Namen = Beschriftungen des Abschnitts.
+        internal static string SimEinspeisegrenzeName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE;
+        internal static string SimEinspeisegrenzeErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_ERL;
+        internal static string SimEinspeisegrenzeEinheitName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT;
+        internal static string SimEinspeisegrenzeEinheitErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL;
         internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
         internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
         internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
@@ -870,6 +878,26 @@
         internal static string PspvEntladeleistungErl => MyResource.Resource.KI_DLG_PSPV_ENTLADELEISTUNG_ERL;
         internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
         internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
+        internal static string SimDesinfektionName => MyResource.Resource.SIMKONF_LBL_DESINFEKTION;
+        internal static string SimDesinfektionErl => MyResource.Resource.KI_SIM_DESINFEKTION_ERL;
+        internal static string SimDesinfIntervallName => MyResource.Resource.SIMKONF_LBL_DESINF_INTERVALL;
+        internal static string SimDesinfIntervallErl => MyResource.Resource.KI_SIM_DESINF_INTERVALL_ERL;
+        internal static string SimDesinfStundeName => MyResource.Resource.SIMKONF_LBL_DESINF_STUNDE;
+        internal static string SimDesinfStundeErl => MyResource.Resource.KI_SIM_DESINF_STUNDE_ERL;
+        internal static string SimDesinfZielName => MyResource.Resource.SIMKONF_LBL_DESINF_ZIEL;
+        internal static string SimDesinfZielErl => MyResource.Resource.KI_SIM_DESINF_ZIEL_ERL;
+        internal static string SimDesinfVolumenName => MyResource.Resource.SIMKONF_LBL_DESINF_VOLUMEN;
+        internal static string SimDesinfVolumenErl => MyResource.Resource.KI_SIM_DESINF_VOLUMEN_ERL;
+        internal static string PspvBereitschaftTemperaturName => MyResource.Resource.PSP_BEREITSCHAFT_TEMPERATUR;
+        internal static string PspvBereitschaftTemperaturErl => MyResource.Resource.KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL;
+        internal static string PspvAufstellraumName => MyResource.Resource.PSP_LABEL_AUFSTELLRAUM;
+        internal static string PspvAufstellraumErl => MyResource.Resource.KI_DLG_PSPV_AUFSTELLRAUM_ERL;
+        internal static string PspvAnteileName => MyResource.Resource.PSP_LABEL_SCHICHT_ANTEILE;
+        internal static string PspvAnteileErl => MyResource.Resource.KI_DLG_PSPV_ANTEILE_ERL;
+        internal static string PspvFwmName => MyResource.Resource.PSP_LABEL_FRISCHWASSERMODUL;
+        internal static string PspvFwmErl => MyResource.Resource.KI_DLG_PSPV_FWM_ERL;
+        internal static string PspvFwmGraedigkeitName => MyResource.Resource.PSP_LABEL_FWM_GRAEDIGKEIT;
+        internal static string PspvFwmGraedigkeitErl => MyResource.Resource.KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL;
 
         // Die NUTZUNG ist auf der Maske EINE Mehrfachwahl; im Katalog sind es drei
         // Wahrheitswerte, denn ein Katalogfeld traegt EINEN Wert. Ihre Anzeigenamen
@@ -2648,6 +2676,9 @@
         internal static string ModkInvestFixErl => MyResource.Resource.KI_DLG_MODK_INVEST_FIX_ERL;
         internal static string ModkStandbyName => MyResource.Resource.SP_LABEL_STANDBY;
         internal static string ModkStandbyErl => MyResource.Resource.KI_DLG_MODK_STANDBY_ERL;
+        // Welle M5 (SP1): Name = Beschriftung des Katalogfelds.
+        internal static string ModkSelbstentladungName => MyResource.Resource.SP_LABEL_SELBSTENTLADUNG;
+        internal static string ModkSelbstentladungErl => MyResource.Resource.KI_DLG_MODK_SELBSTENTLADUNG_ERL;
         internal static string ModkPmaxName => MyResource.Resource.MODK_LBL_PMAX;
         internal static string ModkPmaxErl => MyResource.Resource.KI_DLG_MODK_PMAX_ERL;
         internal static string ModkWirkungsgradName => MyResource.Resource.MODK_LBL_WIRKUNGSGRAD;

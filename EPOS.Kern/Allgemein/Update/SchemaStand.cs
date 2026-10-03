@@ -793,6 +793,23 @@ namespace WindowsFormsApplication1
         /// <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel, reines DDL (<see cref="ErzeugerTeillastSchema"/>).
         /// <b>Ergebnisneutral:</b> Leere Felder rechnen wie zuvor. Die Nummer steht allein bei
         /// <see cref="ErzeugerTeillastSchema.SCHRITT"/>.
+        /// Danach, mit der EINSPEISEGRENZE UND DER SELBSTENTLADUNG (Welle M5 „Strom in Viertelstunden"
+        /// der Entscheidungsvorlage Modellgrenzen, PV3 und SP1), steht das Ziel auf
+        /// <see cref="StromViertelstundenSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> die nullbaren
+        /// Spalten <c>Einspeisegrenze_Wert</c> (≥ 0) und <c>Einspeisegrenze_Einheit</c> ('kW'/'%'), an
+        /// <c>Tab_Stromspeicher_STAMM</c> und <c>Tab_Stromspeicher</c> <c>Selbstentladung_Prozent_Monat</c>
+        /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
+        /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
+        /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
+        /// Danach, mit den OPTIONEN DES PUFFERSPEICHERS UND DER THERMISCHEN DESINFEKTION (Welle M7
+        /// „Speicher" der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a), PS5 (a), BW5), steht das
+        /// Ziel auf <see cref="PufferOptionenSchema.SCHRITT"/>: an <c>Tab_Pufferspeicher</c> die nullbaren
+        /// Spalten <c>Bereitschaft_Weg</c>, <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>,
+        /// <c>Frischwassermodul</c> und <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c>
+        /// <c>Desinfektion_Aktiv</c>, <c>Desinfektion_Intervall_Tage</c>, <c>Desinfektion_Stunde</c>,
+        /// <c>Desinfektion_Zieltemperatur_C</c> und <c>Desinfektion_Volumen_l</c>, alle mit Prüfklausel,
+        /// reines DDL (<see cref="PufferOptionenSchema"/>). <b>Ergebnisneutral:</b> Leere Felder rechnen
+        /// wie zuvor. Die Nummer steht allein bei <see cref="PufferOptionenSchema.SCHRITT"/>.
         /// Danach, mit der KATALOGFASSUNG und der GESPEICHERTEN ERDREICHPRÜFUNG (Welle M6 der
         /// Entscheidungsvorlage Modellgrenzen: KU1 Stufe 1, EQ1), steht das Ziel auf
         /// <see cref="KatalogfassungSchema.SCHRITT"/>: an den acht Katalogtabellen der Stufe 1

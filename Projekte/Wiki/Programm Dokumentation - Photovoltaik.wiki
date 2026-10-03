@@ -102,7 +102,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 {{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan. Im Jahr rund 28,5 MWh: 59 % direkt genutzt, 12 % über den Speicher, 29 % eingespeist.}}
 
 {{Anker|ergebnisse|deckungsanteil|speicherfuellstand}}'''Wo Sie es prüfen.'''
-* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
+* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', mit Einspeisegrenze dazu ''Abregelung an der Einspeisegrenze'', ''Abregelung in % der Erzeugung'' und ''Einspeisegrenze'', danach ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
 * Reiter ''Stromspeicher'': ''Einspeisung ohne Speicher'' und ''Einspeisung mit Speicher'', ''Netzbezug ohne Speicher'' und ''Netzbezug mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''.
 
 == Zusammenspiel mit anderen Technologien ==
@@ -146,7 +146,7 @@ Den eingespeisten Strom bewertet die Wirtschaftlichkeit mit der Vergütung unter
 * '''Stundenraster.''' Die Klimadaten sind Stundenwerte: Der PV-Ertrag ist innerhalb der Stunde gleich verteilt, und den Direktverbrauch verrechnet EPOS-Plan gegen den mittleren Bedarf der Stunde. Stromspeicher und Lastspitzenkappung rechnen je Viertelstunde mit diesem gleich verteilten Ertrag.
 * '''Keine Verschattung.''' EPOS-Plan rechnet ohne Horizont und ohne Verschattung durch Nachbargebäude, Bäume oder Modulreihen. Ein Abschlag über ''Systemverluste [%]'' mindert jede Stunde gleich und trifft die Tageszeit einer Verschattung nicht.
 * '''''mit Wechselrichter'' ohne Gerät.''' Der Weg rechnet nur, wenn mindestens eine Strangzeile ein Gerät führt; sonst rechnet die Anlage vereinfacht, und das Protokoll sagt es. Stränge ohne Gerät rechnen nicht mit.
-* '''Keine Einspeisegrenze.''' Die Photovoltaik begrenzt nur am Wechselrichter (Clipping); eine Netzeinspeisegrenze kennt allein die Projektflotte ([[Programm Dokumentation/Stromspeicher#auslegung-netz|Netz und Planung]]).
+* '''Einspeisegrenze.''' Neben dem Clipping am Wechselrichter begrenzt die Projekteinstellung ''Einspeisegrenze'' ([[Programm Dokumentation/Simulation#einspeisegrenze|Simulation]]) die Einspeisung je Viertelstunde; abgeregelt wird erst, was der Stromspeicher nicht lädt.
 * '''Keine Alterung im Stundenlauf.''' Die ''Degradation [%/a]'' der PV-Vergütung wirkt nur in der Erlösreihe der Wirtschaftlichkeit.
 
 == Eingaben ==

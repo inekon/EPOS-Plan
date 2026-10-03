@@ -51,12 +51,16 @@ namespace WindowsFormsApplication1
         public double ZyklenZugesichert;
 
         /// <summary>
-        /// Standby-/Eigenverbrauch aller Speicheranlagen [W], summiert.
-        /// TODO: Die Engine kennt den Standby-Verbrauch noch nicht
-        /// (<c>SpeicherParameter</c> führt kein Feld dafür); der Wert wird hier bereits
-        /// beschafft, damit die Erweiterung nur noch die Engine betrifft.
+        /// Standby-/Eigenverbrauch aller Speicheranlagen [W], summiert — derselbe Wert, den
+        /// <c>SpeicherParameter.StandbyKw</c> in kW trägt (Welle M5, SP1).
         /// </summary>
         public double StandbyLeistungW;
+
+        /// <summary>
+        /// Die Deckung des Standby-Verbrauchs je Viertelstunde (aus PV-Überschuss, sonst aus dem
+        /// Netz; Welle M5, SP1); <c>null</c> ohne Standby.
+        /// </summary>
+        public SpeicherEngine.StandbyBilanz Standby;
 
         /// <summary>
         /// Bezeichnung der verwendeten Preisversion (AP4, Fachkonzept 4.1) — beim

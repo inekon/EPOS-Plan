@@ -246,6 +246,14 @@ namespace WindowsFormsApplication1
             // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
             new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
                       "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
+            // Die Spalten kommen leer an - keine Einspeisegrenze, keine Selbstentladung; ein Paketsatz
+            // rechnet wie zuvor.
+            new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
+                      "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
+            // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
+            // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
+            new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
+                      "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
             // Katalogspalten und Saat betreffen nur Kataloge und globale Tabellen, die das Ziel schon
             // führt; die Erdreichprüfung kommt mit einem Paket davor schlicht nicht mit - der Dialog
             // zeigt sie nach dem nächsten Lauf.

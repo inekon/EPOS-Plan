@@ -364,7 +364,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
-        new("PufferSpProjektDialog", 20),
+        new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
@@ -375,7 +375,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
         // Welle M3b (BW4): Netzverluste je Kanal mit Einheit und die Zirkulation des Bestandswegs - die
         // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
-        new("SimulationKonfigSeite", 17),
+        // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
+        // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
+        new("SimulationKonfigSeite", 24),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

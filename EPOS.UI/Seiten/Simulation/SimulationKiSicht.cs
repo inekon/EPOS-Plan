@@ -617,6 +617,117 @@ public sealed class SimulationKiSicht
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
     };
 
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Der Zahlenwert der Einspeisegrenze in ihrer Einheit; <c>null</c> = keine Grenze.</summary>
+    public double? Einspeisegrenze
+    {
+        get => Einspeisestand.Wert;
+        set
+        {
+            if (value is double w && (double.IsNaN(w) || w < 0))
+                Bereich(value, 0.0, double.MaxValue, Resource.SIMKONF_LBL_EINSPEISEGRENZE);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(value, Einspeisestand.Einheit));
+        }
+    }
+
+    /// <summary>
+    /// Die Einheit als Steuerwert (<c>DbWerte.EINSPEISEGRENZE_*</c>): <c>kW</c> (Vorgabe) oder <c>%</c>
+    /// der installierten PV-Leistung; leer heißt die Vorgabe.
+    /// </summary>
+    public string EinspeisegrenzeEinheit
+    {
+        get => Einspeisestand.EinheitWirksam;
+        set
+        {
+            string wert = Steuerwert(value, new[] { WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW,
+                                                    WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT },
+                                     WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(Einspeisestand.Wert, wert));
+        }
+    }
+
+    /// <summary>Die zwei Einheiten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> EinspeisegrenzeEinheitWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisestand
+        => Parameter?.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void EinspeisegrenzeSetzen(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Einspeisegrenze, bool>? schreiben = Wege?.EinspeisegrenzeSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        if (!schreiben(neu))
+            throw new InvalidOperationException(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER);
+        p.Einspeisegrenze = neu;
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Läuft die thermische Desinfektion?</summary>
+    public bool Desinfektion
+    {
+        get => Desinfektionsstand.Aktiv;
+        set => DesinfektionSetzen(Desinfektionsstand with { Aktiv = value });
+    }
+
+    /// <summary>Intervall [Tage], 1 … 31; leer heißt 7.</summary>
+    public int? DesinfektionIntervall
+    {
+        get => Desinfektionsstand.IntervallTage;
+        set => DesinfektionSetzen(Desinfektionsstand with { IntervallTage = value });
+    }
+
+    /// <summary>Stunde des Tages, 0 … 23; leer heißt 2.</summary>
+    public int? DesinfektionStunde
+    {
+        get => Desinfektionsstand.Stunde;
+        set => DesinfektionSetzen(Desinfektionsstand with { Stunde = value });
+    }
+
+    /// <summary>Zieltemperatur [°C], 55 … 90; leer heißt 70.</summary>
+    public double? DesinfektionZieltemperatur
+    {
+        get => Desinfektionsstand.ZielC;
+        set => DesinfektionSetzen(Desinfektionsstand with { ZielC = value });
+    }
+
+    /// <summary>Volumen [l], 0 … 100 000; leer heißt das Volumen der Brauchwasserspeicher.</summary>
+    public double? DesinfektionVolumen
+    {
+        get => Desinfektionsstand.VolumenL;
+        set => DesinfektionSetzen(Desinfektionsstand with { VolumenL = value });
+    }
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektionsstand
+        => Parameter?.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    /// <summary>Prüft und schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void DesinfektionSetzen(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? schreiben = Wege?.DesinfektionSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null) throw new ArgumentOutOfRangeException(nameof(neu), fehler);
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (!schreiben(normal))
+            throw new InvalidOperationException(Resource.SIMKONF_DESINFEKTION_FEHLER);
+        p.Desinfektion = normal;
+    }
+
     /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
     private WindowsFormsApplication1.Aufheizvorgabe Aufheizstand
         => Parameter?.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;

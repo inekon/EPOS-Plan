@@ -140,7 +140,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(ErzeugerTeillastSchema.SCHRITT + 1, KatalogfassungSchema.SCHRITT);
+            Assert.Equal(PufferOptionenSchema.SCHRITT + 1, KatalogfassungSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= KatalogfassungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, Paketanhebung.Stufen.Single(x => x.Nr == KatalogfassungSchema.SCHRITT).Wirkung);
             Assert.Equal(8, Katalogfassung.Stufe1.Count);

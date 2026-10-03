@@ -2503,6 +2503,51 @@ namespace Testdatenbankschema
                                   ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+            //      Einspeisegrenze an Tab_Einstellungen (Einspeisegrenze_Wert, Einspeisegrenze_Einheit;
+            //      nullbar) und die Selbstentladung an Tab_Stromspeicher_STAMM und Tab_Stromspeicher
+            //      (Selbstentladung_Prozent_Monat; nullbar). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_StromViertelstunden bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder heissen keine Einspeisegrenze und keine
+            //      Selbstentladung.
+            string nrStromViertel = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStromViertel + " - Einspeisegrenze und Selbstentladung: " +
+                              (StromViertelstundenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStromViertel = new List<string>();
+                angelegt += StromViertelstundenSchema.Ausfuehren(berichtStromViertel);
+                foreach (string zeile in berichtStromViertel)
+                    Console.WriteLine("Schritt " + nrStromViertel + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStromViertel + " - vollstaendig: " +
+                                  StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+
+            // ---- Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+            //      Pufferspeichers an Tab_Pufferspeicher (Bereitschaft_Weg, Aufstellraum_Temperatur_C,
+            //      Schicht_Anteile, Frischwassermodul, FWM_Graedigkeit_K) und die thermische
+            //      Desinfektion an Tab_Einstellungen (Desinfektion_*), alle nullbar. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferOptionen bedient.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder rechnen wie zuvor.
+            string nrPufferOptionen = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferOptionen + " - Pufferoptionen und Desinfektion: " +
+                              (PufferOptionenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferOptionen = new List<string>();
+                angelegt += PufferOptionenSchema.Ausfuehren(berichtPufferOptionen);
+                foreach (string zeile in berichtPufferOptionen)
+                    Console.WriteLine("Schritt " + nrPufferOptionen + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferOptionen + " - vollstaendig: " +
+                                  PufferOptionenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1 und EQ1): an den acht
             //      Katalogtabellen der Stufe 1 Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen
             //      samt eindeutigem Teilindex, Tab_Applikation.Katalogfassung, die Tabellen

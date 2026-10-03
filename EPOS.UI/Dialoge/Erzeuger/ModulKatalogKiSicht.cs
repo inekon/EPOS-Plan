@@ -236,6 +236,13 @@ public sealed class ModulKatalogKiSicht
         set => ZahlSetzen(ModulKatalogProfil.FeldStandby, value);
     }
 
+    /// <summary>Die Selbstentladung [%/Monat] (Welle M5, SP1); leer = keine.</summary>
+    public double? Selbstentladung
+    {
+        get => Zahl(ModulKatalogProfil.FeldSelbstentladung);
+        set => ZahlSetzen(ModulKatalogProfil.FeldSelbstentladung, value);
+    }
+
     // ---- Nur das PV-Modul -----------------------------------------------
 
     /// <summary>Der Modulwirkungsgrad [%].</summary>

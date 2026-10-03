@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R32_Solarthermie` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R33_Viertelstunden` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 
@@ -1360,6 +1360,51 @@ Gehalten von `EPOS.Kern.Tests/ErzeugerTeillastTests` (Formeln ohne Datenbank, Re
 Kopien der Projekte 1039, 1017, 1018 und 1024), `ErzeugerTeillastSchemaTests`,
 `KatalogAufklapperTests` und den bunit-Fällen `BhkwKatalogDialogTests`,
 `WaermepumpeStammFelderTests`.
+## 19. Strom in Viertelstunden: PV-Bilanz, Einspeisegrenze, Standby
+
+Die Strombilanz der Photovoltaik und der Stromspeicher laufen auf den 35 040 Viertelstunden des
+Jahres; die Klimadaten bleiben stündlich. Schemaschritt `StromViertelstundenSchema`, alle neuen
+Spalten mit `CHECK`.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Einstellungen` | `Einspeisegrenze_Wert` | höchste PV-Einspeisung am Netzanschluss, ≥ 0 | keine Grenze |
+| `Tab_Einstellungen` | `Einspeisegrenze_Einheit` | `kW` oder `%` der installierten PV-Leistung | `kW` |
+| `Tab_Stromspeicher(_STAMM)` | `Standby_Verbrauch` | Standby des Speichersystems in W, 0 … 1 000 (im Code geprüft) | 0 |
+| `Tab_Stromspeicher(_STAMM)` | `Selbstentladung_Prozent_Monat` | Selbstentladung in %/Monat, 0 … 20 | 0 |
+
+**PV-Bilanz.** `SimulationPV.Bilanzieren` verteilt die Stundenerzeugung aller Anlagen auf die vier
+Viertel nach dem Kosinus des Zenitwinkels in der Mitte jeder Viertelstunde
+(`SolarPVGISCalculator.KosinusZenitwinkel`, Zeitachse der UTC-Stunde der Klimazeile):
+P_q = 4 · P_h · cos θ_z,q / Σ cos θ_z. Das Mittel der vier Viertel ist der Stundenwert; ohne Sonne
+in allen vier Vierteln tragen alle den Stundenwert. Direktverbrauch, Überschuss und Reststrom
+entstehen je Viertelstunde gegen `Rest_Strombedarf_viertelstuendlich`; die Stundenreihen sind die
+Mittel ihrer Viertel. Der Reiter „Photovoltaik" zeigt den Überschuss vor dem Speicher.
+
+**Einspeisegrenze.** P_grenz in kW, oder in % als Anteil der installierten Leistung (kWp). Je
+Viertelstunde: E_ein = min(Ü − Ladung − Standby aus PV, P_grenz), Abregelung = Rest. Der Speicher
+lädt vor dem Abregeln (`SimulationControl.PvEinspeisungAufteilen` nach der Speicherphase). Ohne
+Grenze ist die Abregelung null.
+Ausweis: Reiter „Photovoltaik" (Abregelung kWh/a und % der Erzeugung, Grenze kW), Zeitreihe
+`PV_ABREGELUNG`, Monatstafel des Berichts, Referenzskalar `Photovoltaik.AbregelungMwh` nur bei
+> 0, Kennzahl `pv_eigen` ohne Abregelung. Eine aktive Speicherflotte liest die Projekteinstellung
+als weiche Grenze (`PvEinspeisegrenzeWeichKw`): Sie lädt zuerst, darüber wird abgeregelt, die
+Variante bleibt zulässig. Eine neue Flotte belegt ihre harte Netzeinspeisegrenze mit dem Wert vor;
+der Netzblock nennt ihn.
+
+**Standby und Selbstentladung.** `SpeicherEngine.Speichersystem` zieht zu Beginn jedes Intervalls
+die Selbstentladung SoC · s/100 · Δt/730 h ab, höchstens bis SoC_min, und teilt den Standby
+(`StandbyBilanz`): aus dem PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.
+Der Netzanteil geht in den Rest-Strombedarf, der PV-Anteil fehlt in der Einspeisung; der Fahrplan
+bleibt unberührt. In der Flotte ist der Standby der Hilfsverbrauch der Einheit (Standortlast am
+Netzanschluss), die Selbstentladung ein Parameter der Einheit; beide übernimmt sie aus dem Katalog.
+Ausweis: Reiter „Stromspeicher" (Eigenverbrauch Speichersystem, Netzanteil, Selbstentladung),
+Zeitreihe `SPEICHER_EIGENVERBRAUCH`, Monatstafel des Berichts, Referenzskalar
+`Stromspeicher.EigenverbrauchSystemMwh` nur bei > 0.
+
+Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSchemaTests`,
+`PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
+Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.
 
 ## 20. Katalogabgleich mit Katalogfassung; Erdreichprüfung im Ergebnis
 
@@ -1450,3 +1495,79 @@ der Probe `Referenzlaeufe/Importproben/Katalogpaket_Probe.json`, Wiederherstelle
 Paket), `ErdreichErgebnisSpeicherTests`, `KatalogduplizierenTests`, den Werkzeugtests
 `KatalogpaketVorlageTests` und den bunit-Fällen `KatalogabgleichDialogTests` und
 `QuelleErdreichDialogTests`.
+
+## 21. Pufferspeicher: Bereitschaft, Zonenanteile, Frischwassermodul, Desinfektion
+
+Vier Optionen des Speichers und des Brauchwassers (Entscheidungsvorlage Modellgrenzen PS1 (c),
+PS1 (a), PS5 (a), BW5). Schemaschritt `PufferOptionenSchema`, alle Spalten nullbar mit `CHECK`;
+leer rechnet Anweisung für Anweisung wie zuvor. Die Rechenregeln stehen in
+`Allgemein/Simulation/PufferOptionen.cs` und `Desinfektion.cs`, ohne Datenbank.
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_Pufferspeicher` | `Bereitschaft_Weg` | `tag` oder `temperatur` | `tag` |
+| `Tab_Pufferspeicher` | `Aufstellraum_Temperatur_C` | Raumtemperatur am Speicher, 0 … 35 °C | 20 °C |
+| `Tab_Pufferspeicher` | `Schicht_Anteile` | Volumenanteile der Zonen von oben, „0,10;0,16;0,37;0,37" | gleich große Zonen |
+| `Tab_Pufferspeicher` | `Frischwassermodul` | 0/1 | aus |
+| `Tab_Pufferspeicher` | `FWM_Graedigkeit_K` | Grädigkeit des Moduls, 0 … 20 K | 5 K |
+| `Tab_Einstellungen` | `Desinfektion_Aktiv` | 0/1 | aus |
+| `Tab_Einstellungen` | `Desinfektion_Intervall_Tage` | 1 … 31 | 7 |
+| `Tab_Einstellungen` | `Desinfektion_Stunde` | 0 … 23 | 2 |
+| `Tab_Einstellungen` | `Desinfektion_Zieltemperatur_C` | 55 … 90 °C | 70 °C |
+| `Tab_Einstellungen` | `Desinfektion_Volumen_l` | 0 … 100 000 l | Volumen der Speicher mit Brauchwasser |
+
+Die Pufferfelder stehen an der Projektkopie (wie Schichtzahl und Entnahmehöhen): Sie beschreiben
+die Anlage, in der der Speicher steht, nicht das Gerät. Der Katalog bleibt bei seinen Gerätewerten.
+
+**Bereitschaft nach Temperatur (PS1 (c)).** `H = Q_B · 1000 / (24 · 45 K)` [W/K] aus dem
+Katalogwert Q_B [kWh/24 h] (Prüfwert nach EN 12897/EN 15332 bei 45 K). In Phase G verliert jede
+Zone `H · a_i · max(ϑ_i − ϑ_Raum, 0) / 1000` [kWh], höchstens ihren Inhalt über dem Rücklauf; die
+Summe geht vom Füllstand ab wie der Tageswert. Ein leerer Speicher verliert nichts, ein voller
+`H · (ϑ_VL − ϑ_Raum)` — mehr als der Tageswert ab 45 K Übertemperatur. Quellspeicher und der
+Durchfluss einer Stunde rechnen mit dem Tageswert bzw. ohne Verlust. Das Protokoll nennt H.
+
+**Zonenanteile (PS1 (a)).** Mit gültigen Anteilen (Summe 1 ± 0,001, Anzahl = Zonenzahl, je Anteil
+> 0; `PufferOptionen.AnteilePruefen`, benannte Ablehnung im Dialog, im Lauf Warnung und gleich große
+Zonen) ist die Zone i `Q_max · a_i` groß: Füllen, Leeren, Klemmen, Temperatur, Mantelfläche
+`π · D · H · a_i` (plus Deckel), Leitwert je Paar `λ · A / (H · (a_i + a_i+1)/2)`, Kappung an der
+kleineren Kapazität des Paars, Inversionsmischung auf dem Füllgrad mit Volumengewicht und die Zone
+zu einer Anschlusshöhe (kumuliertes Band). Ohne Anteile laufen die Zweige der gleich großen Zonen
+unverändert. Vorschlag im Dialog: „Vorschlag Kombispeicher" = vier Zonen 0,10/0,16/0,37/0,37, nach
+der Gliederung von prEN 15316-5 Anhang B (Planungsvorschlag, kein Normwert).
+
+**Frischwassermodul (PS5 (a)).** Nur an einem Speicher mit Brauchwasser im Klassen-Set (sonst
+Warnung, ohne Wirkung). Mindesttemperatur oben `ϑ_FWM = ϑ_Zapf + ΔT_FWM`; ϑ_Zapf ist die höchste
+Zapftemperatur der Zonen des Zapfprofilgenerators (Zone, sonst Bezugswert der Nutzungsart), ohne
+Generator 60 °C mit Hinweis. In der Entladung des Brauchwasserkanals (Phasen A und E,
+`Kaskadenschleife.EntladeKanal`) klemmt `SimulationPufferspeicher.FrischwasserEntnahmefaehigkeit`
+den Bedarf: Hält die oberste Zone ϑ_FWM nicht, nur der Durchfluss; sonst geschichtet die Zonen mit
+ϑ_i ≥ ϑ_FWM ab der Brauchwasser-Entnahmehöhe, mit einer Zone der Inhalt über ϑ_FWM. Der Rest bleibt
+offen für die nächste Stufe der Kaskade (Muster `TNutz[PROZESS]`, Abschnitt 15 (d)). Das Protokoll
+und die Pufferrubrik nennen die Stunden mit Begrenzung (je Stunde einmal gezählt).
+
+**Thermische Desinfektion (BW5).** Zusatzbedarf je Ereignis
+`Q_D = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000` (V in l), am Tag d (0 … 364) in der Stunde
+s, wenn (d + 1) mod Intervall = 0 — bei 7 Tagen 52 Ereignisse. ϑ_Soll ist die Speichertemperatur
+des Zapfprofilgenerators (`Tab_TwwProjekt.Speicher_C`), ohne sie 60 °C mit Hinweis; V das gepflegte
+Volumen, sonst die Summe der Speicher mit Brauchwasser; ohne V oder mit ϑ_Soll ≥ ϑ_Ziel kein Posten
+(Warnung). `SimulationWaermebedarf.BrauchwasserDesinfektion` addiert die Reihe NACH den
+Netzverlusten in den Brauchwasserkanal und führt sie als `Brauchwasser_Desinfektion_Mwh`.
+
+Deckung (`Desinfektionsdeckung`): Vor der Kaskade wird der Zusatzbedarf aus dem Kanal genommen
+und nur vor einer **fähigen** Stufe freigegeben; was die Stufe danach im Kanal deckt, deckt zuerst
+ihn, der Rest steht wieder zurück. Fähig sind Heizkessel und BHKW mit gepflegtem Vorlauf ≥ ϑ_Ziel
+oder ohne gepflegten Vorlauf (Regel 15 (b)), die Wärmepumpe, wenn eine projektierte Kennlinie den
+Vorlauf erreicht, ihr Heizstab (Phase F) und nach Phase E ein Brauchwasserspeicher mit gepflegtem
+Vorlauf ≥ ϑ_Ziel, den eine fähige Anlage lädt. Solarthermie und Pufferentladung sonst nie. In der
+Speicherstufe gilt das je Erzeugerart, bei Vektorstufen je Stufe. Was offen bleibt, deckt ein
+benannter **Zusatzstrom** (elektrisch, Wirkungsgrad 1, in `Rest_Strombedarf_viertelstuendlich`,
+Warnung). Ausweis: Reiter Wärmebedarf „davon thermische Desinfektion", Protokoll je Stufe, Bericht
+„Thermische Desinfektion".
+
+**Hinweis HK4.** Der Pufferdialog trägt an der Entladegrenze „Übertrager: Leistung als
+Entladegrenze eintragen"; ein Übertragermodell gibt es nicht.
+
+Kein Referenzprojekt setzt eines der Felder; die Basis R33 bleibt byte-gleich. Gehalten von
+`EPOS.Kern.Tests/PufferOptionenSchemaTests`, `PufferOptionenTests`, `PufferOptionenLaufTests`
+(Läufe auf Kopien von 1049 und 1045), `DesinfektionTests` und den bunit-Fällen in
+`EPOS.UI.Tests/Dialoge/PufferSpProjektDialogTests` und `Seiten/SimulationKonfigSeiteTests`.

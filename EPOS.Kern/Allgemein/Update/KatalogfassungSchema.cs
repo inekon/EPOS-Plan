@@ -43,9 +43,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter den Teillastfeldern von Wärmepumpe und BHKW.
+        /// Schritt hinter den Optionen des Pufferspeichers und der thermischen Desinfektion.
         /// </summary>
-        public const int SCHRITT = ErzeugerTeillastSchema.SCHRITT + 1;
+        public const int SCHRITT = PufferOptionenSchema.SCHRITT + 1;
 
         /// <summary>Das Protokoll des Katalogabgleichs.</summary>
         public const string TAB_ABGLEICH = "Tab_Katalogabgleich";

@@ -697,11 +697,10 @@ namespace WindowsFormsApplication1
             // genutzte Anteil - der lag ohne Strombedarf auf 0, die Kurve war leer, und
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
             // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
-            // Die Viertelstunden kommen aus derselben Umrechnung wie die Bestandsreihen.
+            // SB1 (a): die glatte Viertelstundenreihe, mit der die Bilanz rechnet.
             if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
-                                 sim.simulation_pv.Stundenwerte_zu_viertelstunden(
-                                     sim.simulation_pv.Stromproduktion_Theoretisch), Farbrolle.STROM_PV));
+                                 sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde, Farbrolle.STROM_PV));
 
             // #234: Die zweite Achse nimmt seither eine LISTE; hier steht genau eine
             // Reihe darauf — der eine Stromspeicher des Projekts.
