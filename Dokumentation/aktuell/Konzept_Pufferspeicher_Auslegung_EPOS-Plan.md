@@ -6,7 +6,7 @@
 > Recherche liegt in vier Runden unter `Dokumentation/aktuell/Pufferspeicher/`; das Abnahme-Mockup ist
 > `Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html`. Die Entscheide des Anwenders vom 01.10.2026
 > (E-P12, E-P17, E-P31, E-P32, Freigabe P1, Einstiege) stehen in 9; alle übrigen Entscheide der Recherche gelten nach
-> Empfehlung (E60).
+> Empfehlung (E61).
 >
 > **Rev. 2 (03.10.2026, nach dem Bau P1).** Schemaschritt **169** statt 167 und Basis **R33** statt R32, weil der Arbeitszweig am selben Tag die Schritte 167 (Teillast WP/BHKW, M4) und 168 (Strom in Viertelstunden, M5) und die Basis R33 vergeben hat. P1 ist gebaut; Festlegungen beim Bau, Abweichungen und Nachweise stehen im Protokoll [`2026-10-03_P1_Pufferauslegung.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P1_Pufferauslegung.md), die Ergänzungen zu 4.1 in 10.
 
@@ -312,7 +312,7 @@ Schemaschritt (statt Tww-Parametertabelle, Entscheid V18); F9 drei Einstiege üb
 Simulation, Zapfprofil und Referenzbasis. Dazu gelten E-P8–E-P11, E-P13–E-P15, E-P18–E-P28 und E-P30 der Recherche nach
 Empfehlung.
 
-### 9.2 Entscheide des Anwenders (E60, 01.10.2026)
+### 9.2 Entscheide des Anwenders (E61, 01.10.2026)
 
 | Nr. | Entscheid |
 |---|---|
