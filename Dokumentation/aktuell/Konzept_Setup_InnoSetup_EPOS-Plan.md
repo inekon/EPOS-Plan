@@ -94,6 +94,7 @@ kann, ohne die Installation zu wiederholen.
 |---|---|---|---|
 | `%ProgramFiles%\EPOS-Plan` | Programm, Laufzeit, Satelliten, `Vorlagen\`, `runtimes\` | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Kenndaten.accdb` | Auslieferungsdatenbank, unverändert | Standard | nur das Setup |
+| `…\EPOS-Plan\Vorlage\Katalogpaket.json` | **Katalogpaket der Programmfassung** (KU1 Stufe 1): alle ausgelieferten Sätze der laufend gepflegten Kataloge mit Schlüssel und Prüfsumme; die Anwendung gleicht damit beim ersten Start einer neuen Fassung ab | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Katalogpaket_A100` | **Paketvorlage der A100-Nutzungsarten**: vier CSV-Dateien des Importformats mit Platzhalterzeile und `LIESMICH.md`, wenige Kilobyte, ohne Normwerte | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\VDI-3805-Daten` | **Herstellerdaten** (VDI 3805, CEC-Modul- und Wechselrichterliste), rund 186 MB — abwählbare Komponente (E10) | Standard (Benutzer: nur lesen) | nur das Setup |
 | `%LOCALAPPDATA%\EPOS_PLAN` | **Arbeitsdatenbank des Kontos**, Protokolle | Konto hat Vollzugriff | die Anwendung |
@@ -167,9 +168,12 @@ seinem `[UninstallDelete]` nur den Programmordner an, Datenbank
 > es bleiben. Nachbessern lässt sich das nicht mehr — der betreffende
 > Deinstallierer ist bereits ausgeliefert.
 
-Die Arbeitsdatenbank wird **nicht angefasst**. Neue Katalogeinträge und
-Schemaänderungen kommen ausschließlich über `SchemaMigration` beim nächsten
-Start. Das ist die einzige Stelle des Konzepts, die ohne Alternative ist: Ein
+Die Arbeitsdatenbank wird **nicht angefasst**. Schemaänderungen kommen
+ausschließlich über `SchemaMigration` beim nächsten Start, neue und geänderte
+Katalogsätze der laufend gepflegten Kataloge über den **Katalogabgleich** der
+Anwendung, der danach mit dem mitgelieferten `{app}\Vorlage\Katalogpaket.json`
+abgleicht — nach einer Sicherung, ohne eigene Sätze und Projekte anzufassen
+(`BETRIEB_SQLITE.md`, Abschnitt 8a). Das ist die einzige Stelle des Konzepts, die ohne Alternative ist: Ein
 Setup, das eine 92-MB-Datei mit Kundenprojekten überschreibt, ist ein
 Datenverlust mit Ansage.
 
@@ -220,7 +224,7 @@ Architekturbezeichner `x64compatible` noch UTF-8 ohne BOM).
 | `[Types]` / `[Components]` | Zwei Typen (`voll`, `custom`) und zwei Bestandteile: `programm` (`Flags: fixed`) und `herstellerdaten` — vorgewählt, abwählbar (E10) |
 | `[Tasks]` | Desktopsymbol |
 | `[Dirs]` | `%ProgramData%\EPOS_PLAN` mit `Permissions: users-modify` |
-| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Paketvorlage `Referenzlaeufe\Katalogpaket_Vorlage_A100` nach `{app}\Vorlage\Katalogpaket_A100`, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
+| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Katalogpaket `Setup\Vorlage\Katalogpaket.json` nach `{app}\Vorlage` (geprüft mit `#if !FileExists(Katalogpaket)`), Paketvorlage `Referenzlaeufe\Katalogpaket_Vorlage_A100` nach `{app}\Vorlage\Katalogpaket_A100`, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
 | `[Icons]` | Startmenü, Web-Verknüpfung, Deinstallation, optional Desktop |
 | `[Registry]` | `HKLM\SOFTWARE\INEKON\EPOS-Plan` (64-Bit-Sicht): `InstallDir`, `Version` |
 | `[Run]` | ACE-Installation mit Gegenprüfung, `icacls` bei Altbestand, Programmstart anbieten |
@@ -530,8 +534,18 @@ unter `Referenzlaeufe/Normzahlen/`. Jeder verletzte Posten bricht mit Rückgabe 
 > unterscheidet danach, und eine Marke zu pflegen, die niemand liest, wäre reine
 > Mehrarbeit ohne Nutzen. Umgesetzt in Auftrag #182.
 
+**Das Katalogpaket (Schritt 4b).** Neben der Vorlage schreibt das Werkzeug
+`Katalogpaket.json`: Es schreibt zuerst den Auslieferungsstand in der Vorlage fest (Schlüssel und
+Prüfsumme jedes gesperrten Satzes der Stufe-1-Kataloge, `Tab_Applikation.Katalogfassung`) und legt
+dieselben Sätze samt Kennlinien als Paket daneben. Die Fassung kommt aus `--katalogfassung <n>`
+(Vorgabe: das Datum des Laufs als JJJJMMTT) und muss mit jeder Auslieferung wachsen — nur ein
+neueres Paket gleicht beim Anwender ab. `build-setup.ps1` prüft nach dem Werkzeuglauf, dass die
+Datei da ist; das `.iss` nimmt sie in `[Files]` mit. Format und Regeln:
+[`Konzept_Simulationsablauf_EPOS-Plan.md`](Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 20.
+
 Der Stand **entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICHT im Repository
-(`.gitignore`: `Setup/Vorlage/*.sqlite`, dazu `-wal`/`-shm` und der Prüfbericht `*.bericht.txt`). Aufruf des
+(`.gitignore`: `Setup/Vorlage/*.sqlite`, dazu `-wal`/`-shm`, der Prüfbericht `*.bericht.txt` und
+`Setup/Vorlage/Katalogpaket.json`). Aufruf des
 Werkzeugs (Rückgabe 0 = erzeugt und abgenommen, sonst Grund auf stderr und keine Zieldatei):
 
 ```powershell
@@ -665,6 +679,7 @@ Setup\
   Lizenz.rtf                           Lizenzvereinbarung
   Liesmich.rtf                         Neuerungen, ACE-Supportfall, DB-Übernahme
   Vorlage\Kenndaten.accdb              Auslieferungsstand (NICHT versionieren)
+  Vorlage\Katalogpaket.json            Katalogpaket der Fassung (NICHT versionieren)
   Voraussetzungen\AccessDatabaseEngine_X64.exe
   Voraussetzungen\MicrosoftEdgeWebview2Setup.exe
   Ausgabe\                             Ergebnis (NICHT versionieren)

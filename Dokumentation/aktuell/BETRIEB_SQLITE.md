@@ -576,6 +576,53 @@ ein bestätigtes *Ja* nimmt Datenbank und Sicherungsordner unwiederbringlich mit
 
 ---
 
+## 8a. Katalogabgleich nach einem Update
+
+**Schemaschritt 168** (`KatalogfassungSchema`): An den acht Katalogen der Stufe 1 — Wärmepumpen
+(`Tab_WP_STAMM` samt `Tab_Kenndaten_STAMM` und `Tab_Kenndaten_Kuehlung_STAMM`), Heizkessel, BHKW,
+PV-Module, Brauchwasser- und Prozesswärmeprofile samt Typen — stehen `Katalog_Schluessel` (TEXT,
+eindeutig über einen Teilindex `UX_<Tabelle>_Katalog_Schluessel … WHERE Katalog_Schluessel IS NOT
+NULL`), `Katalog_Pruefsumme` (TEXT, 64 Hexzeichen) und `Katalog_Ausgelaufen` (INTEGER 0/1, Vorgabe 0);
+an `Tab_Applikation` die `Katalogfassung` (INTEGER, leer = noch nie abgeglichen); dazu die
+STRICT-Tabellen `Tab_Katalogabgleich` (Protokoll) und `Tab_ErgebnisErdreich` (gespeicherte
+Erdreichprüfung je Lauf und Anlage, am Projekt und an der Energieanlage mit `ON DELETE CASCADE`).
+Die Saat des Schritts belegt Schlüssel und Prüfsumme jedes gesperrten Satzes (`ReadOnly = 1`); ein
+eigener Satz (`ReadOnly = 0`) bleibt ohne Schlüssel. Kein Fachwert ändert sich, der Referenzlauf
+bleibt byte-gleich. Die Messlatte aus 6.5 hebt `Werkzeuge/Testdatenbankschema` wie jeden Schritt.
+
+**Das Paket.** Die Auslieferung legt neben `{app}\Vorlage\Kenndaten.sqlite` die Datei
+`{app}\Vorlage\Katalogpaket.json` (geschrieben von `Werkzeuge/Auslieferungsvorlage`, Fassung über
+`--katalogfassung`): alle ausgelieferten Sätze der Stufe 1 mit Schlüssel, Prüfsumme und Werten. Sie
+liegt nicht im Repository (`.gitignore: Setup/Vorlage/Katalogpaket.json`).
+
+**Ablauf beim Start.** Nach einer erfolgreichen Schemamigration vergleicht EPOS-Plan die Fassung
+des Pakets mit `Tab_Applikation.Katalogfassung`. Ist das Paket neuer:
+
+1. Sicherung per `VACUUM INTO` (Abschnitt 3.2) als `Kenndaten_Katalogabgleich_<Zeitstempel>.sqlite`
+   in `DB-Backup` neben der Datenbank (gibt es den Ordner nicht: daneben). Scheitert die Sicherung,
+   gleicht EPOS-Plan nicht ab.
+2. Abgleich in EINER Transaktion: fehlender Satz eingefügt, unveränderter ausgelieferter Satz
+   aktualisiert, angepasster oder entsperrter Satz behalten, entfallener Satz als ausgelaufen
+   gekennzeichnet (nie gelöscht). Projektkopien und eigene Sätze fasst er nicht an.
+3. Je Aktion eine Zeile in `Tab_Katalogabgleich`, dazu die Zusammenfassung; danach steht die
+   Fassung des Pakets in `Tab_Applikation.Katalogfassung`. Ein Fenster nennt das Ergebnis.
+
+Ohne Paket oder mit einem unlesbaren Paket bleibt der Katalog, wie er ist (beim unlesbaren Paket mit
+der Zeile `KEIN_PAKET` im Protokoll).
+
+**Nachsehen und wiederherstellen.**
+
+```sql
+SELECT Zeitpunkt, Fassung, Tabelle, Schluessel, Aktion, Hinweis FROM Tab_Katalogabgleich ORDER BY ID DESC;
+SELECT Katalogfassung FROM Tab_Applikation;
+```
+
+Den Auslieferungsstand EINES behaltenen Satzes stellt Administration → Daten & Import → „Katalog
+aktualisieren…" wieder her (Aktion `WIEDERHERGESTELLT`). Den Stand VOR dem Abgleich insgesamt holt
+die Sicherung aus Schritt 1 zurück (Abschnitt 8); beim nächsten Start gleicht EPOS-Plan dann erneut ab.
+
+---
+
 ## 9. Wo was steht
 
 | Thema | Datei |
