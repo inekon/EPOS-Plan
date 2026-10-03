@@ -365,6 +365,24 @@ namespace WindowsFormsApplication1
                 if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
+                // Die Verletzung im Innern des Abschnitts (Rechenbefund RB-Z4): Die Bisektion prüft den
+                // Endpunkt. Im geregelten Fall ist die Leistung eine Summe zweier Exponentialmoden und
+                // kann nach dem Beginn unter null fallen und bis zum Ende wieder steigen — etwa wenn die
+                // Innenbauteilmasse wärmer als die Raumluft ist und die schnelle Mode die Last binnen
+                // Minuten umkehrt. Dann wäre der ganze Rest der Stunde „geregelt" mit falschem
+                // Vorzeichen im Mittel. Erkennbar ist das nur am Mittel, und nur dann wird gesucht —
+                // jeder Abschnitt mit zulässigem Mittel bleibt Zeichen für Zeichen wie zuvor.
+                if (MittelVerletzt(fall, in ab, xMittel))
+                {
+                    double tauInnen = ErsteInnereVerletzung(fall, in ab, x, tau, in r);
+                    if (tauInnen < tau)
+                    {
+                        tau = tauInnen;
+                        u = ab.System.Rechner.Bei(tau);
+                        if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
+                        xMittel = u.Mittel(x, ab.B);
+                    }
+                }
                 double s1 = ab.Ausgang(0, xMittel);
                 double s2 = ab.Ausgang(1, xMittel);
                 double z2 = ab.Ausgang(2, xMittel);
@@ -1177,6 +1195,70 @@ namespace WindowsFormsApplication1
                                                    gExt: _gExt,
                                                    schluessel: strahlungsanteil);
             return _kuehlenUebergabe;
+        }
+
+        /// <summary>
+        /// Bucht der geregelte Abschnitt im Mittel <paramref name="xMittel"/> eine Leistung mit falschem
+        /// Vorzeichen über den Zahlenrand hinaus? Nur die geregelten Fälle: Ihre Leistung ist der dritte
+        /// Ausgang und folgt dem Zustand; die Fälle fester Leistung und die Lagen mit Leitwert kehren
+        /// ihr Vorzeichen im Abschnitt nicht um.
+        /// </summary>
+        private static bool MittelVerletzt(Betriebsfall fall, in Abschnitt ab, Vektor2 xMittel)
+        {
+            if (!ab.System.Geregelt) return false;
+            double q = ab.Ausgang(2, xMittel);
+            return fall == Betriebsfall.HeizenGeregelt ? -q > Rechenrand.Zu(0.0)
+                 : fall == Betriebsfall.KuehlenGeregelt && q > Rechenrand.Zu(0.0);
+        }
+
+        /// <summary>
+        /// <b>Der erste Umschaltpunkt im Innern eines geregelten Abschnitts</b> (Rechenbefund RB-Z4).
+        /// Bei festen Randbedingungen ist die Leistung q(t) = c + a₁·e^(−λ₁t) + a₂·e^(−λ₂t) mit reellen
+        /// λ₁, λ₂ &gt; 0; ihre Ableitung hat höchstens eine Nullstelle, q ist auf [0; τ] also unimodal.
+        /// Der Goldene Schnitt findet das Minimum der Heizleistung (das Maximum beim Kühlen); ist der
+        /// Fall dort verletzt, sucht die Bisektion auf [0; t_min] — dort ist q monoton — den ersten
+        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Die Stunde geht
+        /// danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein Abschnitt Wärme
+        /// und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne Verletzung im Innern
+        /// kommt <paramref name="tau"/> unverändert zurück.
+        /// </summary>
+        private static double ErsteInnereVerletzung(Betriebsfall fall, in Abschnitt ab, Vektor2 x, double tau, in Stundenrand r)
+        {
+            double vz = fall == Betriebsfall.HeizenGeregelt ? 1.0 : -1.0;
+            double invPhi = 0.5 * (Math.Sqrt(5.0) - 1.0);
+            double lo = 0.0, hi = tau;
+            double c = hi - invPhi * (hi - lo), d = lo + invPhi * (hi - lo);
+            double fc = vz * ab.Ausgang(2, ab.System.Rechner.Bei(c).Ende(x, ab.B));
+            double fd = vz * ab.Ausgang(2, ab.System.Rechner.Bei(d).Ende(x, ab.B));
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                if (fc < fd)
+                {
+                    hi = d; d = c; fd = fc;
+                    c = hi - invPhi * (hi - lo);
+                    fc = vz * ab.Ausgang(2, ab.System.Rechner.Bei(c).Ende(x, ab.B));
+                }
+                else
+                {
+                    lo = c; c = d; fc = fd;
+                    d = lo + invPhi * (hi - lo);
+                    fd = vz * ab.Ausgang(2, ab.System.Rechner.Bei(d).Ende(x, ab.B));
+                }
+                if (!(hi - lo > Rechenrand.Zu(tau))) break;
+            }
+            double tMin = fc < fd ? c : d;
+            if (!(tMin > 0.0) || !(tMin < tau)) return tau;
+            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r)) return tau;
+
+            double unten = 0.0, oben = tMin;
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                double mitte = 0.5 * (unten + oben);
+                if (!(mitte > unten) || !(mitte < oben)) break;
+                if (Verletzt(fall, in ab, ab.System.Rechner.Bei(mitte).Ende(x, ab.B), in r)) oben = mitte;
+                else unten = mitte;
+            }
+            return oben;
         }
 
         /// <summary>

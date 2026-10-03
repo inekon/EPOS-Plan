@@ -1413,19 +1413,23 @@ Platzhalternamen (`Gebäude`, `Gebaeude`, `Building`, `Default Building`, `Haus`
 schlägt der Dialog den Dateinamen ohne Endung vor (`IMP_IFC_PROT_NAME_PLATZHALTER`, I). Nennt der
 Dateiname genau eine vierstellige Zahl von 1500 bis 2100 und führt die Datei kein Baujahr, nennt das
 Protokoll das Jahr (`IMP_IFC_PROT_BAUJAHR_DATEINAME`, I) — **übernommen wird es nie**: Ein Name wie
-„…EG55-2026" nennt das Planungsjahr, nicht das Baujahr.
+„…EG55-2026" nennt das Planungsjahr, nicht das Baujahr. Führt die Datei ein Baujahr und nennt der Dateiname
+genau ein anderes Jahr, benennt das Protokoll den Widerspruch einmal: „Die Datei nennt 1995, der Dateiname 1970;
+es gilt das Baujahr der Datei" (`IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH`, I). Auch dann wird das Jahr des Namens nie
+übernommen; stimmen beide überein oder nennt der Name mehrere Jahre, schweigt das Protokoll.
 
 **Gemessen an den sechs Anwenderdateien** unter `Quellen/` (HottCAD-Exporte, IFC2X3 und IFC4, ohne Raumgrenzen,
 mit Raumbezügen und Beheizungsart je Raum; `IfcQuelldateienDiagnoseTests` mit Kennzahlen und Durchgang bis zur
 Rechnung je Datei): **MFH 1964** — Spitzboden „Wohnraum" und Kellerraum laut Datei unbeheizt, zehn Räume „getrennt
-beheizt" nach Name bzw. Annahme; vier Trenndecken, EG/OG1 und OG1/DG1 aus 23,75 bzw. 2,26 m² auf 96,42 m²
-geschätzt; die beheizten Geschosse sind gekoppelt, **Vorgabe Z4** (7 Zonen); 19 Innenwände (89,9 m²) einseitig,
-Innenflächenfaktor 3,38. **Produktion EG55-2026** — allein der Entsorgungsraum unbeheizt, seine Zone ohne Fläche
+beheizt" nach ihrer Raumtemperatur (fünf mit 15 bzw. 20 °C beheizt, fünf Treppen- und Abstellräume mit 10 °C
+unbeheizt); vier Trenndecken, EG/OG1 und OG1/DG1 aus 23,75 bzw. 2,26 m² auf 88,53 m² geschätzt; die beheizten
+Geschosse sind gekoppelt, **Vorgabe Z4** (7 Zonen); 19 Innenwände (89,9 m²) einseitig, Innenflächenfaktor 3,47. **Produktion EG55-2026** — allein der Entsorgungsraum unbeheizt, seine Zone ohne Fläche
 entfällt; EG/OG1 aus 31,8 m² auf 8 794,25 m² geschätzt, **Vorgabe Z4** (2 Zonen). **MFH 1984** — die Praxisräume im
 Keller laut Datei beheizt; die Decke über dem Fitnessraum erklärt die Datei als Kellerdecke (Erklärung vor Bezug),
 das beheizte Kellerteil bleibt ungekoppelt: **Vorgabe Z5**. **Sportheim** — die Decke UG/EG grenzt nur an
 unbeheizte Räume des UG, die beheizten UG-Räume bleiben ungekoppelt: **Vorgabe Z5**. **Verwaltung** — das Paar
-OG1/OG2 trägt keinen Bezug: **Vorgabe Z5**. **WG EH55** — alle Räume beheizt, fünf Bodenöffnungen (U 0, ohne Aufbau)
+OG1/OG2 trägt keinen Bezug: **Vorgabe Z5**; von 31 Räumen „getrennt beheizt" sind 13 nach ihrer Raumtemperatur
+beheizt und 18 unbeheizt. **WG EH55** — alle Räume beheizt, fünf Bodenöffnungen (U 0, ohne Aufbau)
 trennen nicht, Keller/EG und EG/DG geschätzt: **Vorgabe Z4** (3 Zonen).
 
 **Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
@@ -1496,9 +1500,19 @@ Geometrierechnung (ADR-003):
   beliebigen Satz des Raums (der Export schreibt sie in `HSETU_RaumAllgemein`; Aufzählung oder Text, Präfix
   `bht` ohne Belang): `bhtHeated` beheizt, `bhtUnHeated` unbeheizt — als Regel B3 mit dem Beleg „Satz.Name =
   Wert", vor Namensregel (B4) und Lage (B5); je Gebäude gezählt (`IMP_IFC_PROT_BEHEIZUNGSART`, I).
-  `bhtSeparatelyHeated` (getrennt beheizt) und jeder andere Wert sagen nicht, ob der Raum in der Hülle liegt;
-  es gelten B4 bis B6, benannt (`IMP_IFC_PROT_BEHEIZUNGSART_OFFEN`, I, mit Zahl und Wert). Die Raumtemperatur
-  des Exports (`InsideTemperature (°C)`) wird nicht gelesen.
+  `bhtSeparatelyHeated` (getrennt beheizt) entscheidet nach der Raumtemperatur des Exports
+  (`InsideTemperature (°C)` aus einem beliebigen Satz des Raums, nur mit der Einheit °C im Namen): wie Regel B3
+  über 12 °C beheizt, sonst unbeheizt, benannt je Gebäude mit Raum und Temperatur
+  (`IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR`, I). Die Temperatur stuft nur ein — als Sollwert wird sie nicht
+  übernommen. Ohne Raumtemperatur und bei jedem anderen Wert sagt die Datei nicht, ob der Raum in der Hülle liegt;
+  es gelten B4 bis B6, benannt (`IMP_IFC_PROT_BEHEIZUNGSART_OFFEN`, I, mit Zahl und Wert).
+- **Wärmekapazität masseloser Schichten:** IFC4-Exporte führen je Baustoff oft Dichte und Wärmeleitfähigkeit,
+  aber keine `SpecificHeatCapacity`. Dann gilt c des Baustoffs, den der Namensabgleich (6.3) im Katalog der
+  Auslieferung trifft, sonst eine kleine benannte Stofftabelle nach DIN EN ISO 10456 (Beton, Mauerwerk, Putz und
+  Gips 1000, Holz 1600, Mineralfaser-Dämmstoff 1030, Schaumkunststoff 1450 J/(kg·K); `Waermekapazitaetsrueckfall`).
+  Die Schicht wird damit vollständig; eine Meldung je Aufbau nennt Schichten, Werte und Quelle
+  (`IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL`, I). Eine Schicht ohne Dichte oder Wärmeleitfähigkeit bleibt masselos
+  und wird benannt (`STOFFWERT_NULL`).
 - **Baujahr:** Fehlt `Pset_BuildingCommon.YearOfConstruction` am Gebäude, gilt `YearOfConstruction` aus
   einem beliebigen Satz (Name ohne angehängte Einheit, der Export schreibt `YearOfConstruction (Datum)`
   mit einem Datum als Text), sonst `Constructed` (Ganzzahl); es zählt der erste Wert, aus dem sich ein

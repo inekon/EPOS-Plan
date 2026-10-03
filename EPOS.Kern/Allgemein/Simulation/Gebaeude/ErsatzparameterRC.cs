@@ -164,11 +164,17 @@ namespace WindowsFormsApplication1
             bool fensterAus = double.IsPositiveInfinity(r_1_AF_KW) && double.IsPositiveInfinity(r_Rest_AF_KW);
             if (!fensterAus)
             {
-                if (!IstPositivEndlich(r_1_AF_KW) || !IstPositivEndlich(r_Rest_AF_KW))
+                // R_Rest,AF darf null oder negativ sein (Rechenbefund RB-Z4): A7a bildet ihn als Rest
+                // 1/(U·A)_w − R_1,AF − Flächenanteil an R_α,i, und in Gl. (27) geht nur die Zweigsumme
+                // ein — sie ist dann wieder 1/(U·A)_w, das Fenster behält sein volles U·A. Negativ wird
+                // der Rest bei hohem U_w und kleiner Strahlungsfläche (A_rad = A_IW < A_AW,ges), weil
+                // der Flächenanteil am inneren Übergang dann größer ist als der innere Widerstand des
+                // Fensters; das ist eine Aufteilung, kein Widerspruch. Geprüft wird die Zweigsumme unten.
+                if (!IstPositivEndlich(r_1_AF_KW) || double.IsNaN(r_Rest_AF_KW) || double.IsInfinity(r_Rest_AF_KW))
                     throw new GebaeudeModellException(GebaeudeModellFehler.FensterzweigUngueltig,
                         "Der Fensterzweig ist ungültig: R_1,AF = " + Text(r_1_AF_KW) +
-                        " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) + " K/W. Beide müssen " +
-                        "endlich und größer null sein, oder beide unendlich (keine Fenster).");
+                        " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) + " K/W. R_1,AF muss endlich und " +
+                        "größer null sein, R_Rest,AF endlich, oder beide unendlich (keine Fenster).");
             }
 
             Flaeche(a_AW_opak_M2, nameof(A_AW_opak_M2));
@@ -231,6 +237,11 @@ namespace WindowsFormsApplication1
                 if (!(rGesWand > 0.0))
                     throw new GebaeudeModellException(GebaeudeModellFehler.RRestAwNichtPositiv,
                         "Der Gesamtwiderstand des Wandzweigs ist nicht positiv (" + Text(rGesWand) +
+                        " K/W); Gl. (27) ist so nicht auswertbar.");
+                if (!(rGesFenster > 0.0))
+                    throw new GebaeudeModellException(GebaeudeModellFehler.FensterzweigUngueltig,
+                        "Der Gesamtwiderstand des Fensterzweigs ist nicht positiv (" + Text(rGesFenster) +
+                        " K/W, R_1,AF = " + Text(r_1_AF_KW) + " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) +
                         " K/W); Gl. (27) ist so nicht auswertbar.");
                 // Fenster nach den Wänden parallel; die Wandkapazität bleibt.
                 r1 = 1.0 / (1.0 / r_1_AW_KW + 1.0 / r_1_AF_KW);

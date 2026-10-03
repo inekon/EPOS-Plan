@@ -159,7 +159,9 @@ namespace WindowsFormsApplication1
         /// das Gebäude einen Platzhalternamen (<see cref="GebaeudeZuordnungsModell.PLATZHALTERNAMEN"/>), schlägt der
         /// Dialog den Dateinamen vor (<c>IMP_IFC_PROT_NAME_PLATZHALTER</c>, I); nennt der Dateiname genau ein Jahr
         /// (<see cref="Baujahrregel.JahrImDateinamen"/>) und führt die Datei kein Baujahr, nennt das Protokoll das Jahr
-        /// (<c>IMP_IFC_PROT_BAUJAHR_DATEINAME</c>, I) — es wird NIE als Baujahr übernommen.
+        /// (<c>IMP_IFC_PROT_BAUJAHR_DATEINAME</c>, I) — es wird NIE als Baujahr übernommen. Führt die Datei ein Baujahr und
+        /// nennt der Dateiname genau ein anderes Jahr, benennt das Protokoll den Widerspruch einmal
+        /// (<c>IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH</c>, I); es gilt das Baujahr der Datei.
         /// </summary>
         private static void Dateihinweise(GebaeudeAbbild abbild, string dateiname)
         {
@@ -173,6 +175,9 @@ namespace WindowsFormsApplication1
                 if (jahr.HasValue && !g.Baujahr.HasValue)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, IfcImportProfil.MELDUNGSPRAEFIX + "BAUJAHR_DATEINAME",
                         jahr.Value.ToString(CultureInfo.InvariantCulture)));
+                else if (jahr.HasValue && g.Baujahr.Value != jahr.Value)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, IfcImportProfil.MELDUNGSPRAEFIX + "BAUJAHR_WIDERSPRUCH",
+                        g.Baujahr.Value.ToString(CultureInfo.InvariantCulture), jahr.Value.ToString(CultureInfo.InvariantCulture)));
             }
         }
 
