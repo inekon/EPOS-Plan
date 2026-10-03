@@ -96,8 +96,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(11, Vorlagenfeldkatalog.KATALOGFASSUNG);
-            Assert.Equal(11, Vorlagenfeldkatalog.KatalogfassungWord);
+            Assert.Equal(12, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(12, Vorlagenfeldkatalog.KatalogfassungWord);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -262,6 +262,7 @@ namespace EPOS.Kern.Tests
                                                  "tabelle.kaelteerzeuger", "hat.tabelle.kaelteerzeuger",
                                                  "tabelle.speichertemperaturen", "hat.tabelle.speichertemperaturen",
                                                  "tabelle.gebaeude.ergebnis", "hat.tabelle.gebaeude.ergebnis",
+                                                 "tabelle.pufferauslegung", "hat.tabelle.pufferauslegung",
                                                  "stamm.bild.speichertemperaturen", "hat.bild.speichertemperaturen",
                                                  "text.kapitel_projekt", "baustein.projekt",
                                              }),

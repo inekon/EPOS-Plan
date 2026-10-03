@@ -43957,5 +43957,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PA_KEINE_REIHE_PROZESS_TEXT" xml:space="preserve">
     <value>Die Prozessreihe ist leer: Die Prozesszone bleibt leer.</value>
   </data>
+  <data name="BV_GRUND_KEINE_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>keine gespeicherte Pufferauslegung</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG" xml:space="preserve">
+    <value>Nachrechnung</value>
+  </data>
+  <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
+  </data>
 </root>
 

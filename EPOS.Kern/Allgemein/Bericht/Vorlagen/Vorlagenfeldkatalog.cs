@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 11;
+        public const int KATALOGFASSUNG = 12;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -676,6 +676,7 @@ namespace WindowsFormsApplication1
             ["tabelle.kaelteerzeuger"] = Berichtskapitel.PROJEKT,
             ["tabelle.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             ["tabelle.gebaeude.ergebnis"] = Berichtskapitel.PROJEKT,
+            ["tabelle.pufferauslegung"] = Berichtskapitel.PROJEKT,
             ["stamm.bild.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             // Komponenten & Varianten — die Variantenliste gehört zum Kapitel, das die Varianten nennt
             ["tabelle.varianten"] = Berichtskapitel.KOMPONENTEN,

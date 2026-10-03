@@ -40,6 +40,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int FASSUNG_KESSEL = 11;
 
+        /// <summary>Die Fassung der Pufferauslegungstafel (Katalog v12, Welle P4c): <c>tabelle.pufferauslegung</c>, Word und Excel.</summary>
+        internal const int FASSUNG_PUFFERAUSLEGUNG = 12;
+
         /// <summary>Der Alternativtext der Mustertabelle (Konzept 6.4 Nr. 2).</summary>
         public const string MUSTER_TABELLE = "muster.tabelle";
 
@@ -159,6 +162,11 @@ namespace WindowsFormsApplication1
                 id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur));
             yield return Q("tabelle.speichertemperaturen", ST, w => Berichtstabellen.Speichertemperaturen(w.Stamm, w.Englisch, w.Kultur));
             yield return Q("tabelle.gebaeude.ergebnis", ST, w => Berichtstabellen.Gebaeudeergebnisse(w.Stamm, w.Englisch, w.Kultur));
+            // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - dieselbe Tafel wie der Baustein.
+            Tabellenquelle puffer = Q(ProjektbeschreibungBaustein.PLATZHALTER_PUFFERAUSLEGUNG, ST,
+                                      w => Berichtstabellen.Pufferauslegung(w.Stamm, w.Kultur));
+            puffer.Seit = FASSUNG_PUFFERAUSLEGUNG;
+            yield return puffer;
 
             // ---------------- Variantenvergleich ----------------
             yield return Q("tabelle.vergleich", G, w => Berichtstabellen.Vergleichsgesamt(w.Daten, w.Englisch, w.Kultur));

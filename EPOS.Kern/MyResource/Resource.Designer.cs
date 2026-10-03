@@ -4139,6 +4139,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrechnung ähnelt.
+        /// </summary>
+        public static string BER_PAUS_NACHRECHNUNG {
+            get {
+                return ResourceManager.GetString("BER_PAUS_NACHRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachrechnung mit dem aktuellen Projektstand empfiehlt {0} l; die gespeicherte Auslegung ist neu zu rechnen. ähnelt.
         /// </summary>
         public static string BER_PAUS_NACHRECHNUNG_ABWEICHEND {
@@ -13069,6 +13078,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_KEINE_PROJEKTDATEN {
             get {
                 return ResourceManager.GetString("BV_GRUND_KEINE_PROJEKTDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine gespeicherte Pufferauslegung ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_PUFFERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_PUFFERAUSLEGUNG", resourceCulture);
             }
         }
         
@@ -103246,6 +103264,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_TABELLE__KOMPONENTEN__MATRIX {
             get {
                 return ResourceManager.GetString("VF_TABELLE__KOMPONENTEN__MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__PUFFERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__PUFFERAUSLEGUNG", resourceCulture);
             }
         }
         

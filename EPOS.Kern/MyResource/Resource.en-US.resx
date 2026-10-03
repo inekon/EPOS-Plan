@@ -43950,5 +43950,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PA_KEINE_REIHE_PROZESS_TEXT" xml:space="preserve">
     <value>The process series is empty: the process zone remains empty.</value>
   </data>
+  <data name="BV_GRUND_KEINE_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>no saved buffer design</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG" xml:space="preserve">
+    <value>Recalculation</value>
+  </data>
+  <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>Table of the saved buffer designs of the base project: one group row per design, below it storage class, template, usage profile, zone volumes, sizing criterion, recommendation, key figures and notes. If it is in the template, the section in the project chapter is omitted.</value>
+  </data>
 </root>
 

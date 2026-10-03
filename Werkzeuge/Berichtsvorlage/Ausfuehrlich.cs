@@ -521,6 +521,13 @@ namespace Berichtsvorlage
                 r.Add(Marke("tabelle.gebaeude.ergebnis"));
                 r.Add(Marke("/wenn"));
 
+                // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - steht die Tafel in der Vorlage, schreibt
+                // der Baustein des Kapitels Projekt seinen Abschnitt nicht.
+                r.Add(Marke("#wenn hat.tabelle.pufferauslegung"));
+                r.Add(H2("Pufferspeicher-Auslegung", "Buffer storage design"));
+                r.Add(Marke("tabelle.pufferauslegung"));
+                r.Add(Marke("/wenn"));
+
                 r.Add(Erklaert(Marke("#wenn hat.tabelle.speichertemperaturen"), new[]
                 {
                     "Jede Strukturtabelle und jedes Bild hat einen Schalter hat.tabelle.<name> bzw. hat.bild.<name>: Mit "

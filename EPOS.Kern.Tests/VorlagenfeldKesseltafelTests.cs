@@ -63,9 +63,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(11, schalter.Seit);
             Assert.Equal(Vorlagenfeldart.Schalter, schalter.Art);
             Assert.All(Vorlagenfeldkatalog.Alle.Where(f => f.Schluessel.StartsWith("hat.tabelle.", StringComparison.Ordinal)
-                                                           && f.Schluessel != SCHALTER),
+                                                           && f.Schluessel != SCHALTER
+                                                           // v12: der Schalter der Pufferauslegungstafel ist so alt wie sie.
+                                                           && f.Schluessel != "hat.tabelle.pufferauslegung"),
                        f => Assert.Equal(4, f.Seit));
-            Assert.Equal(11, Vorlagenfeldkatalog.KatalogfassungWord);
+            // Spätere Fassungen heben die Word-Fassung weiter (v12: Pufferauslegungstafel).
+            Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
         }
 
         [Fact]
