@@ -433,7 +433,8 @@ namespace WindowsFormsApplication1
 
             // ---- Nutzungsprofil ----
             PufferNutzungsprofilAbleitung np = global::WindowsFormsApplication1.Nutzungsprofil.Ableiten(
-                Zapfnutzungen(idProjekt), prozessVorhanden, Konditionierungsnutzungen(idProjekt));
+                Zapfnutzungen(idProjekt), prozessVorhanden, Konditionierungsnutzungen(idProjekt),
+                NutzungsprofilZuordnung.Lesen());
             H(nameof(PufferAuslegungEingang.Nutzungsprofil), np.Vorgabe ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.PROJEKT, np.HerkunftBaustein);
 
             if (reihen != null)

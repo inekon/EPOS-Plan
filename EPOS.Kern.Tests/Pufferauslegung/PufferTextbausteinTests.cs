@@ -229,10 +229,10 @@ namespace EPOS.Kern.Tests.Pufferauslegung
         [Fact]
         public void Nutzungsprofil_traegt_seine_Herkunft_als_Schluessel()
         {
-            PufferNutzungsprofilAbleitung a = Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null);
+            PufferNutzungsprofilAbleitung a = Nutzungsprofil.Ableiten(new[] { "Wohnen groß (abgeleitet)" }, false, null);
             Assert.Equal("PAUS_HERK_NP_ZAPF", a.HerkunftBaustein.Schluessel);
-            Assert.Equal("Zapf-Nutzungsart „Mehrfamilienhaus“", a.Herkunft);
-            Assert.Equal("Draw-off use type “Mehrfamilienhaus”", a.HerkunftBaustein.Aufloesen(EN));
+            Assert.Equal("Zapf-Nutzungsart „Wohnen groß (abgeleitet)“", a.Herkunft);
+            Assert.Equal("Draw-off use type “Wohnen groß (abgeleitet)”", a.HerkunftBaustein.Aufloesen(EN));
             PufferNutzungsprofilAbleitung v = Nutzungsprofil.Ableiten(null, false, null);
             Assert.Equal("Default", v.HerkunftBaustein.Aufloesen(EN));
             Assert.Equal("Vorgabe", v.HerkunftBaustein.Aufloesen(DE));
