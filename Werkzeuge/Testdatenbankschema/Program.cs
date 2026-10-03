@@ -2473,6 +2473,28 @@ namespace Testdatenbankschema
                                   BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, Register E30-Q12,
+            //      EZ-24): die Empfehlungsspannen der Pflichtzeilen "Hilfsenergiekosten" (BHKW) und
+            //      "Hilfsenergiekosten (Strom)" (Heizkessel) in den Auslieferungsvorlagen auf Weg B.
+            //      Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_HilfsenergieEmpfehlung bedient; Projektzeilen unberuehrt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Empfehlung ist ein Hinweis, kein Rechenwert.
+            string nrHilfsEmpf = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHilfsEmpf + " - Katalogempfehlung der Hilfsenergie auf Weg B: " +
+                              (HilfsenergieEmpfehlungNachzug.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + HilfsenergieEmpfehlungNachzug.Offen() + " offen).");
+            if (!trocken)
+            {
+                var berichtHilfsEmpf = new List<string>();
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(berichtHilfsEmpf);
+                foreach (string zeile in berichtHilfsEmpf)
+                    Console.WriteLine("Schritt " + nrHilfsEmpf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHilfsEmpf + " - vollstaendig: " +
+                                  HilfsenergieEmpfehlungNachzug.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

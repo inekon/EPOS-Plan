@@ -243,6 +243,9 @@ namespace WindowsFormsApplication1
             // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
             new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
                       "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
+            // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
+            new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
+                      "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

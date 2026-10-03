@@ -661,6 +661,9 @@ namespace WindowsFormsApplication1
         //   den Satz beim Umschalten der Bemessung NICHT stillschweigend uebernehmen.
         //
         //   ERFAHRUNGSWERTE gelten fuer Weg A: BHKW 2-4 %, Heizkessel 4-8 %.
+        //   Fuer Weg B (Anteil des Brennstoffeinsatzes als Strommenge) fuehrt die Saat
+        //   der Auslieferungsvorlagen BHKW 0,5-1,5 % und Heizkessel 1-2 % - Herleitung
+        //   und Nachzug im Bestand: HilfsenergieEmpfehlungNachzug (Auftrag P671).
         //
         //   NUR WEG C bei Puffer- und Stromspeicher sowie Photovoltaik: Ihre
         //   Umwandlungsverluste stecken bereits im Wirkungsgrad der Speicherrechnung
@@ -720,9 +723,10 @@ namespace WindowsFormsApplication1
         /// Hilfsenergie als Anteil des <b>Endenergiebedarfs</b> der Anlage [%] (Weg B) —
         /// dieselbe Menge wie bei <see cref="BEMESSUNG_PROZENT_ENDENERGIEKOSTEN"/>, aber
         /// unbewertet. Ergibt unmittelbar eine Strommenge [kWh], die mit dem
-        /// Strombezugspreis bewertet wird. <b>Keine Auslieferungsvorlage nutzt diesen
-        /// Weg</b> — er steht als ausdrückliche Alternative zur Kostenbasis zur Wahl
-        /// (Festlegung 29.08.2026). Die Sätze beider Wege sind NICHT austauschbar.
+        /// Strombezugspreis bewertet wird. Die Hilfsenergie-Pflichtzeilen der
+        /// Auslieferungsvorlagen von BHKW, Heizkessel und Wärmepumpe rechnen mit diesem
+        /// Weg (Schritt 94), ihre Empfehlung ist auf ihn bezogen
+        /// (<c>HilfsenergieEmpfehlungNachzug</c>). Die Sätze beider Wege sind NICHT austauschbar.
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_ENDENERGIEBEDARF = "PROZENT_ENDENERGIEBEDARF";

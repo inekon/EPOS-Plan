@@ -4901,6 +4901,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BEDARF_NETZ_KALENDER = BedarfNetzKalenderSchema.SCHRITT;
 
+        // ---- Auftrag P671 (Register E30‑Q12, EZ‑24): Katalogempfehlung der Hilfsenergie auf Weg B ----
+
+        /// <summary>
+        /// Schritt <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/> — <b>die Katalogempfehlung der
+        /// Hilfsenergie auf Weg B</b> (Auftrag P671, Register E30‑Q12, EZ‑24). Er folgt auf
+        /// <see cref="SCHRITT_BEDARF_NETZ_KALENDER"/> ohne Reihenfolgebedingung; er setzt Schritt 94
+        /// (Bemessung Weg B der Saat) voraus, der immer vor ihm läuft.
+        ///
+        /// <para><b>Reines DML:</b> <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> der Pflichtzeilen
+        /// „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und „Hilfsenergiekosten (Strom)“ (Heizkessel,
+        /// 4–8 % → 1–2 %) in den Auslieferungsvorlagen (<c>ReadOnly = 1</c>), nur wo noch die alte
+        /// Spanne aus Weg A steht. Projektzeilen und eigene Vorlagen bleiben unberührt. Quelle
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>; die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (die Empfehlung ist Hinweis am Satzfeld), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_HILFSENERGIE_EMPFEHLUNG = HilfsenergieEmpfehlungNachzug.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7070,6 +7088,16 @@ namespace WindowsFormsApplication1
                         "Zirkulation, und ein Wochenprofil liefe ohne Feiertage und Betriebsferien durch das " +
                         "Jahr. KEIN Rechenergebnis aendert sich - alles entsteht leer und rechnet wie zuvor.",
                         Schritt_BedarfNetzKalender),
+            // AUFTRAG P671 (E30-Q12, EZ-24) - die Empfehlungsspannen der Hilfsenergie von BHKW und
+            // Heizkessel in den Auslieferungsvorlagen auf Weg B. Reines DML; die Quelle ist
+            // HilfsenergieEmpfehlungNachzug, die Nummer steht allein dort.
+            new Schritt(SCHRITT_HILFSENERGIE_EMPFEHLUNG,
+                        "Tab_KostenVorlagePosition: Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel " +
+                        "auf den Endenergiebedarf (Weg B)",
+                        "Die Empfehlung am Satzfeld der Hilfsenergie nennte die Spanne aus Weg A (Anteil der " +
+                        "Brennstoffkosten) - in Weg B um das Preisverhaeltnis Strom zu Brennstoff zu hoch. KEIN " +
+                        "Rechenergebnis aendert sich - die Empfehlung ist ein Hinweis, Projektzeilen bleiben.",
+                        Schritt_HilfsenergieEmpfehlung),
         };
 
         /// <summary>
@@ -12640,6 +12668,69 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Netzverluste je Kanal, Zirkulation, Betriebskalender - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e) (leer).") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogempfehlung der Hilfsenergie auf Weg B" — Anlass und Regel stehen bei
+        /// <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/>, die Anweisungen bei
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>: über den KERN mit <c>?</c>-Parametern in einem
+        /// <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Berichtszeile des Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe
+        /// fragt <see cref="HilfsenergieEmpfehlungNachzug.Vollstaendig"/>. Fehlt eine der drei
+        /// Kostentabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_HilfsenergieEmpfehlung(Lauf l)
+        {
+            string nr = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { HilfsenergieEmpfehlungNachzug.TABELLE, SchemaKatalog.TAB_KOSTENVORLAGE,
+                                         SchemaKatalog.TAB_KOSTENKOMPONENTE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    HilfsenergieEmpfehlungNachzug.Ausfuehren(zeilen);
+                    vollstaendig = HilfsenergieEmpfehlungNachzug.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Nach dem Schritt traegt noch eine Auslieferungsvorlage die Hilfsenergie-Empfehlung aus Weg A.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogempfehlung der Hilfsenergie auf Weg B - KEIN Rechenergebnis aendert sich, " +
+                    "Projektzeilen bleiben unberuehrt, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

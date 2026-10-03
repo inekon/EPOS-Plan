@@ -548,10 +548,13 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
 Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
 Betriebsweisen (Schemaschritt 164) und die Felder für Netzverluste je Kanal, Zirkulation und Betriebskalender
-(Schemaschritt 166, Nachtrag „Schemaschritt 166“ unten) — Schemastand **166**, 81 195 008 Byte, LFS-SHA-256
-`58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693` (Nachtrag „Testdatenbank“ unten). **Die Basis
+(Schemaschritt 166, Nachtrag „Schemaschritt 166“ unten) und die Empfehlungsspannen der Hilfsenergie von BHKW
+und Heizkessel in den Auslieferungsvorlagen auf Weg B (Schemaschritt 167, Nachtrag „Schemaschritt 167“ unten) —
+Schemastand **167**, 81 195 008 Byte, LFS-SHA-256
+`8f172db10e401a15c7140a1eedfa85a360f8f244893573c06a6a24c893cf05af` (Nachtrag „Testdatenbank“ unten). **Die Basis
 bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
-gesäten Prozesssatz zu, trägt ein Temperaturpaar, Kanal-Netzverluste, eine Zirkulation oder einen Betriebskalender. Gegen diese Basis hält
+gesäten Prozesssatz zu, trägt ein Temperaturpaar, Kanal-Netzverluste, eine Zirkulation oder einen Betriebskalender,
+und die Empfehlung einer Kostenvorlage ist ein Hinweis am Satzfeld, kein Rechenwert. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -657,6 +660,18 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > neuen Zellen leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256 `58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693`**.
 > **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R32 GESAMT PASS mit 487/487
 > CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 167 (Katalogempfehlung der Hilfsenergie auf Weg B), Basis unverändert.**
+> `HilfsenergieEmpfehlungNachzug` (Nummer `BedarfNetzKalenderSchema.SCHRITT + 1`), reines DML: In den
+> Auslieferungsvorlagen (`Tab_KostenVorlage.ReadOnly = 1`, Kategorie Betrieb) trägt die Pflichtzeile
+> „Hilfsenergiekosten“ des BHKW (`Tab_KostenVorlagePosition.ID` 62) die Empfehlung 0,5–1,5 % statt 2–4 %, die
+> Pflichtzeile „Hilfsenergiekosten (Strom)“ des Heizkessels (ID 68) 1–2 % statt 4–8 % — beide rechnen als Anteil des
+> Endenergiebedarfs (Weg B), die alten Spannen galten für Weg A. Projektzeilen (`Tab_ProjektWerte`) führen keine
+> Empfehlung und bleiben unberührt. Die Testdatenbank ist aus der Fassung `58d9ba47…` (166) mit
+> `Werkzeuge/Testdatenbankschema` auf **167** gezogen (`--trocken` danach 0 offen, `integrity_check` ok,
+> `foreign_key_check` leer). Neue Fassung **81 195 008 Byte, LFS-SHA-256
+> `8f172db10e401a15c7140a1eedfa85a360f8f244893573c06a6a24c893cf05af`**. **Die Basis bleibt:** Der Referenzlauf liest
+> keine Kostenvorlage. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
 

@@ -862,6 +862,12 @@ namespace EPOS.Kern.Tests
                 // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
                 BedarfNetzKalenderSchema.Ausfuehren(null);
 
+                // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
+                // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den
+                // Auslieferungsvorlagen auf Weg B. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // reines DML, wiederholbar, Projektzeilen unberuehrt.
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
