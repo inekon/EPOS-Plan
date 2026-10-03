@@ -66,6 +66,11 @@ Bauweise (leicht 1–2 h, mittel 2–4 h, schwer 4–8 h), außerhalb Hinweis st
 ein Schemaschritt (Nummer spät gegen origin); Wellen R5, O1b, Erweiterung O2/O3; Leitkonzept N1.68 = E59, Festlegungen der
 Umsetzung werden N1.69.
 
+**E60 (03.10.2026, Vorschlag 1 des [Konzepts Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)):** Auslegungsgröße =
+stationäre Auslegungsheizlast + Aufheizleistung aus der KP3-Bemessung; O2 und O3 zeigen ideale Spitze, Tagesmittel und P_auf nebeneinander;
+kein Filter im Rechenweg. Der E59-Papierauftrag trägt E60 mit ein (Register, Statusdatei Zeile E60, Teilkonzept 4.8/7.6, Entwurf KP3 Zeilen
+O2/O3).
+
 ## 5. Auftrag KP3-E59 (Papiere) — Wortlaut für den Agenten
 
 Der Auftrag liegt als Datei `scratchpad/kp3/Auftrag_KP3_E59_Papiere.md`; falls das Scratchpad nicht mehr besteht, gilt dieser
