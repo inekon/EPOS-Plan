@@ -72,8 +72,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, StringComparison.Ordinal);
             Assert.Contains("Tab_Gebaeude.Energiestandard", GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, StringComparison.Ordinal);
             Assert.DoesNotContain("Energiestandard", GebaeudeSchema.SQL_VIEW_NACHTZEIT, StringComparison.Ordinal);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht (der manuellen Aufheizzeit, E59) beginnt mit der des Energiestandards.
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AUFHEIZ_MANUELL, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AKTUELL.Take(102));
         }
 
         /// <summary>
@@ -248,7 +249,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, b.SpaltenAngelegt);
             Assert.True(b.Umgeschluesselt);
             Assert.True(BaualtersklassenSchema.Vollstaendig());
-            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            // Der Durchgang baut die Sicht in SEINER Form; die manuelle Aufheizzeit setzt erst der spätere
+            // Schritt KP-S4 dahinter (er läuft deshalb zuletzt).
+            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SichtSpalten());
             Assert.Contains(bericht, z => z.Contains("(102 Spalten)", StringComparison.Ordinal));
 
             for (int i = 0; i < alt.Length; i++)

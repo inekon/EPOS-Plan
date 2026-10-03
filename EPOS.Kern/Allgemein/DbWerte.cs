@@ -2643,13 +2643,27 @@ namespace WindowsFormsApplication1
             AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST
         };
 
+        /// <summary>
+        /// Art der Aufheizzeit im ERGEBNIS: manuell — das Gebäude rampt an jedem Sprung mit seiner
+        /// manuellen Aufheizzeit <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c> (E59, Festlegungen 37, 39). Nur
+        /// in <c>Tab_ErgebnisGebaeude.Aufheiz_Art</c>/<c>Tab_ErgebnisZone.Aufheiz_Art</c>, nie in
+        /// <c>Tab_Einstellungen.Aufheiz_Art</c> — die Art des Projekts bleibt täglich oder fest.
+        /// </summary>
+        public const string AUFHEIZ_ART_MANUELL = "MANUELL";
+
+        /// <summary>Die drei Arten der Ergebnisspalte <c>Aufheiz_Art</c> in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ERGEBNIS_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST, AUFHEIZ_ART_MANUELL
+        };
+
         /// <summary>Zustand der Aufheizrechnung im Ergebnis: bemessen (Festlegung 25).</summary>
         public const string AUFHEIZ_ZUSTAND_BEMESSEN = "BEMESSEN";
 
         /// <summary>Zustand: der Bemessungsfall ist mit keiner Rampe bis 48 h erreichbar (W1); t_auf,max bleibt NULL.</summary>
         public const string AUFHEIZ_ZUSTAND_UNERREICHBAR = "UNERREICHBAR";
 
-        /// <summary>Zustand: das Gebäude rechnet gekoppelt (W5) — nur am Gebäude.</summary>
+        /// <summary>Zustand: das Gebäude bzw. die Zone rechnet gekoppelt (W5); an der Zone ab Schritt KP-S4 (<see cref="AufheizManuellSchema"/>).</summary>
         public const string AUFHEIZ_ZUSTAND_GEKOPPELT = "GEKOPPELT";
 
         /// <summary>Zustand: die Zone ist unbeheizt, ohne Rampe — nur an der Zone.</summary>

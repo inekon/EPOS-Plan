@@ -892,6 +892,14 @@ namespace EPOS.Kern.Tests
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 KatalogfassungSchema.Ausfuehren(null);
 
+                // Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59, E60; Entwurf KP3 Abschnitt
+                // 4): Aufschlag an Tab_Einstellungen, manuelle Aufheizzeit an Tab_Gebaeude samt achtem
+                // Sichtneubau, Aufheiz_Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
+                // der Zone per kleinem Neubau. Aus DERSELBEN Quelle wie Migration und Werkzeug; ZULETZT,
+                // damit kein aelterer Sichtdurchgang oben (Energiestandard) die Spalte wieder aus der Sicht
+                // schneidet; wiederholbar, KEIN DML an Bestandsdaten.
+                AufheizManuellSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

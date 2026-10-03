@@ -832,11 +832,21 @@ namespace WindowsFormsApplication1
         /// und Prüfsumme der ausgelieferten Sätze (<see cref="KatalogfassungSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
         /// allein bei <see cref="KatalogfassungSchema.SCHRITT"/>.
+        /// Danach, mit AUFSCHLAG UND MANUELLER AUFHEIZZEIT DER AUFHEIZOPTIMIERUNG (Entscheid E59 samt
+        /// Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4, KP-S4), steht das Ziel auf
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c>
+        /// und <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c> samt dem
+        /// achten Neubau der Sicht <c>Abfrage_Projektgebaeude</c> (103 Spalten), an <c>Tab_ErgebnisGebaeude</c>
+        /// <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und <c>Aufheizzuschlag_Kw</c>, an
+        /// <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c> und der Zustand <c>GEKOPPELT</c> per kleinem Neubau
+        /// (<see cref="AufheizManuellSchema"/>). <b>Ergebnisneutral:</b> Alle Felder entstehen leer, leer
+        /// heißt kein Aufschlag und keine manuelle Zeit. Die Nummer steht allein bei
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KatalogfassungSchema.SCHRITT;
+        public const int Zielversion = AufheizManuellSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -266,6 +266,8 @@ namespace WindowsFormsApplication1
             // zeigt sie nach dem nächsten Lauf.
             new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
                       "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
+            new Stufe(AufheizManuellSchema.SCHRITT, Art.Ddl,
+                      "Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, Zustand GEKOPPELT der Zone"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

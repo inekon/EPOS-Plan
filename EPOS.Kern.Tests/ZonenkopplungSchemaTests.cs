@@ -160,8 +160,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ID_Nachbarzone", "Trennflaeche_Zuordnung" }, bauteil.Skip(bauteil.Count - 2));
             Assert.Equal(ZonenkopplungSchema.SPALTENZAHL_LUFTSTROM, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_LUFTSTROM).Count);
             // Die Messlatte traegt dazu die Nachtauskuehlstunden des spaeteren Schritts KP-S1v und die
-            // vierzehn Spalten der Aufheizoptimierung (KP-S3, B24).
-            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
+            // vierzehn Spalten der Aufheizoptimierung (KP-S3) und Aufheiz_Art (KP-S4, B24).
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in new[] { ZonenkopplungSchema.TAB_LUFTSTROM, ZonenkopplungSchema.TAB_ERGEBNIS })
                 Assert.EndsWith("STRICT", Convert.ToString(DataRepository.ExecuteScalar(
                     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@t", t)), CultureInfo.InvariantCulture));
