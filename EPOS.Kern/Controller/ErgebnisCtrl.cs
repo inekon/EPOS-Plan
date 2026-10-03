@@ -1472,6 +1472,8 @@ namespace WindowsFormsApplication1
             Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, z => z.AufheizspruengeAus, (z, w) => z.AufheizspruengeAus = w),
             Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, z => z.HeizleistungMaxStundenH, (z, w) => z.HeizleistungMaxStundenH = w),
             Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SOMMERLUEFTUNG, z => z.SommerlueftungsstundenH, (z, w) => z.SommerlueftungsstundenH = w),
+            // Schritt KP-S4 (E59): die wirksame Art, geerbt vom Gebaeude.
+            Text<ErgebnisZoneModel>(AufheizManuellSchema.SPALTE_ART, z => z.AufheizArt, (z, w) => z.AufheizArt = w),
         };
 
         /// <summary>
@@ -1494,6 +1496,10 @@ namespace WindowsFormsApplication1
             Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZEIT_LAENGSTE, g => g.AufheizzeitLaengsteH, (g, w) => g.AufheizzeitLaengsteH = w),
             Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, g => g.AufheizspruengeAus, (g, w) => g.AufheizspruengeAus = w),
             Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, g => g.HeizleistungMaxStundenH, (g, w) => g.HeizleistungMaxStundenH = w),
+            // Schritt KP-S4 (E59, E60): die wirksame Art, Auslegungsheizlast und Aufheizzuschlag.
+            Text<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_ART, g => g.AufheizArt, (g, w) => g.AufheizArt = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUSLEGUNGSHEIZLAST, g => g.AuslegungsheizlastKw, (g, w) => g.AuslegungsheizlastKw = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUFHEIZZUSCHLAG, g => g.AufheizzuschlagKw, (g, w) => g.AufheizzuschlagKw = w),
         };
 
         /// <summary>Die Spalten der Liste, die <paramref name="tabelle"/> trägt (ohne Unterschied von Groß- und Kleinschreibung).</summary>

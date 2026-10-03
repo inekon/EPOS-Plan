@@ -158,7 +158,7 @@ namespace WindowsFormsApplication1
             skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
             // Stufe KP3 (Festlegung 28): Lüftungsstunden und Aufheizwerte nur, wenn sie wirken (E32).
             var texte = new List<KeyValuePair<string, string>>();
-            Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte);
+            Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte, gebaeude: true);
 
             // Stufe G6b (W5): je Zone die Kennzahlen, nur ab zwei Zonen.
             if (e.Zonen != null)
@@ -178,7 +178,7 @@ namespace WindowsFormsApplication1
                     skalare.Add(Paar(q + "MittlereRaumtemperaturHeizzeit", r.MittlereRaumtemperaturHeizzeit));
                     skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
                     if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));
-                    Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte);
+                    Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte, gebaeude: false);
                 }
             return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare, texte);
         }
@@ -186,10 +186,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Schlüssel, die nur bei Wirkung entstehen (Festlegung 28): Nachtauskühl- und Sommerlüftungsstunden,
         /// dann die Zahlen der Aufheizwerte in der Reihenfolge der Ergebniszeile; Zustand, Bemessung und Quelle als
-        /// Text. <paramref name="a"/> <c>null</c> = Schalter aus: kein Aufheizschlüssel.
+        /// Text. <paramref name="a"/> <c>null</c> = Schalter aus: kein Aufheizschlüssel. Am Gebäude dazu (E59,
+        /// Festlegung 39) <c>Geb[n].Aufheizart</c> als Text neben der Bemessung und <c>Geb[n].Aufheizzeit_Manuell</c>
+        /// nur, wenn das Gebäude mit manueller Aufheizzeit gerechnet hat.
         /// </summary>
         private static void Wirkend(string praefix, GebaeudeModellErgebnis e, Aufheizkennzahlen a,
-                                    List<KeyValuePair<string, double>> skalare, List<KeyValuePair<string, string>> texte)
+                                    List<KeyValuePair<string, double>> skalare, List<KeyValuePair<string, string>> texte,
+                                    bool gebaeude)
         {
             if (e.StundenMitNachtauskuehlung is int nacht) skalare.Add(Paar(praefix + "Nachtauskuehlstunden", nacht));
             if (GebaeudeKennzahlen.Sommerlueftungsstunden(e) is int sommer) skalare.Add(Paar(praefix + "Sommerlueftungsstunden", sommer));
@@ -197,10 +200,14 @@ namespace WindowsFormsApplication1
             texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizzustand", a.AufheizZustand));
             if (a.AufheizBemessung != null)
                 texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizbemessung", a.AufheizBemessung));
+            if (gebaeude && a.AufheizArt != null)
+                texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizart", a.AufheizArt));
             if (a.AufheizLeistungsquelle != null)
                 texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizleistungsquelle", a.AufheizLeistungsquelle));
             foreach (KeyValuePair<string, double> z in a.Zahlen())
                 skalare.Add(Paar(praefix + z.Key, z.Value));
+            if (gebaeude && a.AufheizzeitManuellH is int manuell)
+                skalare.Add(Paar(praefix + "Aufheizzeit_Manuell", manuell));
         }
 
         private static KeyValuePair<string, double> Paar(string k, double v) => new KeyValuePair<string, double>(k, v);

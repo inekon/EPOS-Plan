@@ -138,10 +138,14 @@ namespace WindowsFormsApplication1
         /// <item><b>P_auf nur endlich und über null</b> (Spalte <c>CHECK (&gt; 0)</c>): Die Testnaht der
         /// Grenzfallprobe (N-AH8) setzt P_auf = +∞ — das ist keine Leistung, die Spalte bleibt NULL; ebenso
         /// eine Grenze <c>Heizleistung_Max</c> = 0.</item>
-        /// <item><b>Eine gekoppelte Zone</b> (Mehrzonenweg mit AK1 als idealer Last) hat keinen Platz in
-        /// <c>Tab_ErgebnisZone</c>: Deren Zustandsspalte kennt GEKOPPELT nicht (Festlegung 25, Schritt 161).
-        /// Die Zeile bleibt dann ohne Aufheizwerte; den Zustand trägt das Gebäude. Ebenso hat ein Gebäude
+        /// <item><b>Eine gekoppelte Zone</b> (Mehrzonenweg mit AK1 als idealer Last) trägt den Zustand GEKOPPELT
+        /// und <c>HeizleistungMax_H</c> wie das gekoppelte Gebäude — die Zustandsspalte von <c>Tab_ErgebnisZone</c>
+        /// kennt GEKOPPELT seit dem Schritt KP-S4 (<see cref="AufheizManuellSchema"/>, Befund D2). Ein Gebäude hat
         /// keinen Zustand UNBEHEIZT und eine Zone keine Quelle GEMISCHT — beides entsteht im Lauf nicht.</item>
+        /// <item><b>E59/E60</b> (Festlegungen 39, 41): <c>Aufheiz_Art</c> an Gebäude und Zone (TAEGLICH, FEST oder
+        /// MANUELL; die Zone erbt die Art ihres Gebäudes), bei MANUELL <c>Aufheizzeit_Max_H</c> = der manuelle Wert;
+        /// <c>Auslegungsheizlast_Kw</c> (&gt; 0) und <c>Aufheizzuschlag_Kw</c> (≥ 0) nur am Gebäude und nur endlich;
+        /// die manuelle Aufheizzeit für den Ergebnisexport.</item>
         /// <item><c>HeizleistungMax_H</c> nur endlich.</item>
         /// </list>
         /// </summary>
@@ -151,7 +155,6 @@ namespace WindowsFormsApplication1
         {
             if (a == null || a.AufheizZustand == null) return null;
             string zustand = a.AufheizZustand;
-            if (zone && zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT) return null;
             if (!zone && zustand == DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT) return null;
             string quelle = a.AufheizLeistungsquelle;
             if (zone && quelle == DbWerte.AUFHEIZ_QUELLE_GEMISCHT) quelle = null;
@@ -159,6 +162,10 @@ namespace WindowsFormsApplication1
             {
                 AufheizZustand = zustand,
                 AufheizBemessung = zone ? null : a.AufheizBemessung,
+                AufheizArt = a.AufheizArt,
+                AufheizzeitManuellH = zone ? null : a.AufheizzeitManuellH,
+                AuslegungsheizlastKw = zone ? null : a.AuslegungsheizlastKw is double hl && hl > 0.0 && !double.IsInfinity(hl) ? hl : (double?)null,
+                AufheizzuschlagKw = zone ? null : a.AufheizzuschlagKw is double rh && rh >= 0.0 && !double.IsInfinity(rh) ? rh : (double?)null,
                 AufheizzeitMaxH = zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR ? null : a.AufheizzeitMaxH,
                 AufheizAussenC = Endlich(a.AufheizAussenC),
                 AufheizLeistungKw = a.AufheizLeistungKw is double p && p > 0.0 && !double.IsInfinity(p) ? p : (double?)null,
@@ -183,6 +190,9 @@ namespace WindowsFormsApplication1
             if (a == null) return e;
             e.AufheizZustand = a.AufheizZustand;
             e.AufheizBemessung = a.AufheizBemessung;
+            e.AufheizArt = a.AufheizArt;
+            e.AuslegungsheizlastKw = a.AuslegungsheizlastKw;
+            e.AufheizzuschlagKw = a.AufheizzuschlagKw;
             e.AufheizzeitMaxH = a.AufheizzeitMaxH;
             e.AufheizAussenC = a.AufheizAussenC;
             e.AufheizLeistungKw = a.AufheizLeistungKw;
@@ -203,6 +213,7 @@ namespace WindowsFormsApplication1
         {
             if (a == null) return z;
             z.AufheizZustand = a.AufheizZustand;
+            z.AufheizArt = a.AufheizArt;
             z.AufheizzeitMaxH = a.AufheizzeitMaxH;
             z.AufheizAussenC = a.AufheizAussenC;
             z.AufheizLeistungKw = a.AufheizLeistungKw;
@@ -262,6 +273,10 @@ namespace WindowsFormsApplication1
     {
         internal string AufheizZustand { get; init; }
         internal string AufheizBemessung { get; init; }
+        internal string AufheizArt { get; init; }
+        internal int? AufheizzeitManuellH { get; init; }
+        internal double? AuslegungsheizlastKw { get; init; }
+        internal double? AufheizzuschlagKw { get; init; }
         internal int? AufheizzeitMaxH { get; init; }
         internal double? AufheizAussenC { get; init; }
         internal double? AufheizLeistungKw { get; init; }

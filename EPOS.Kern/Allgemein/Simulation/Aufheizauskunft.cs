@@ -53,6 +53,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die Quelle von P_auf: GRENZE, ZIEL oder — im Mehrzonenweg — GEMISCHT.</summary>
         internal string Quelle { get; init; }
 
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59): MANUELL, wenn das Gebäude eine manuelle
+        /// Aufheizzeit trägt, sonst die Art des Projekts; <c>null</c> ohne Bemessung und bei GEKOPPELT.
+        /// <see cref="Zustand"/> und <see cref="AufheizzeitMaxH"/> bleiben auch dann die der BEMESSUNG — die
+        /// Herleitungszeile nennt manuellen und bemessenen Wert nebeneinander (Festlegung 39).
+        /// </summary>
+        internal string Art { get; init; }
+
+        /// <summary>Die manuelle Aufheizzeit des Gebäudes [h] (E59, Festlegung 37); <c>null</c> = Art des Projekts.</summary>
+        internal int? AufheizzeitManuellH { get; init; }
+
+        /// <summary>
+        /// τ₂ [h] — die langsame Zeitkonstante der Aufheizantwort am Bemessungsfall, am Gebäude mit Zonen das
+        /// Maximum der beheizten Zonen (Festlegung 40, P15 (b)): die Grundlage der Vorschlagsspanne
+        /// [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] im Gebäudedialog (O2); <c>null</c> ohne Sprung.
+        /// </summary>
+        internal double? Tau2H { get; init; }
+
         /// <summary>Verbrauchsangabe: den Faktor bestimmt erst der Jahreslauf (Rückrechnung, E8).</summary>
         internal bool FaktorErstImLauf => Zustand != null && !Skalierungsfaktor.HasValue;
     }

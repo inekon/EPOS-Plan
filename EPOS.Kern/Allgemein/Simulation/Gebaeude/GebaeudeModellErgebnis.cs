@@ -424,7 +424,25 @@ namespace WindowsFormsApplication1
         /// <summary>Die Bemessungsvariante des Laufs (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>); <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
         internal string AufheizBemessung { get; init; }
 
-        /// <summary>t_auf,max [h], 0 … 47; <c>null</c> bei UNERREICHBAR, GEKOPPELT und UNBEHEIZT (Festlegung 17).</summary>
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59, Festlegung 39): MANUELL mit manueller
+        /// Aufheizzeit des Gebäudes, sonst die Art des Projekts; die Zone erbt sie. <c>null</c> bei GEKOPPELT und UNBEHEIZT.
+        /// </summary>
+        internal string AufheizArt { get; init; }
+
+        /// <summary>Die manuelle Aufheizzeit [h], mit der gerechnet wurde (Festlegung 37); <c>null</c> = Art des Projekts.</summary>
+        internal int? AufheizzeitManuellH { get; init; }
+
+        /// <summary>Φ_HL [kW], skaliert wie P_auf (E60, Festlegung 41); <c>null</c> ohne Herleitung.</summary>
+        internal double? AuslegungsheizlastKw { get; init; }
+
+        /// <summary>Φ_RH = max(0, P_auf − Φ_stat) [kW], skaliert wie P_auf (E60, Festlegung 41); 0 bei W1.</summary>
+        internal double? AufheizzuschlagKw { get; init; }
+
+        /// <summary>τ₂ [h] der Aufheizantwort am Bemessungsfall (Festlegung 40); <c>null</c> ohne Sprung. Nicht skaliert.</summary>
+        internal double? Tau2H { get; init; }
+
+        /// <summary>t_auf,max [h], 0 … 47 — bei MANUELL der manuelle Wert (Festlegung 39); <c>null</c> bei UNERREICHBAR, GEKOPPELT und UNBEHEIZT (Festlegung 17).</summary>
         internal int? AufheizzeitMaxH { get; init; }
 
         /// <summary>T_a,B [°C]: kälteste Stunde mit Heizsollwert, bei (b) abzüglich ΔT_K; nicht skaliert.</summary>
@@ -506,6 +524,8 @@ namespace WindowsFormsApplication1
             => this with
             {
                 AufheizLeistungKw = AufheizLeistungKw * faktor,
+                AuslegungsheizlastKw = AuslegungsheizlastKw * faktor,
+                AufheizzuschlagKw = AufheizzuschlagKw * faktor,
                 Skalierungsfaktor = Skalierungsfaktor * faktor,
             };
 
@@ -531,7 +551,12 @@ namespace WindowsFormsApplication1
             {
                 AufheizZustand = plan.Zustand,
                 AufheizBemessung = b.Bemessung,
-                AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
+                AufheizArt = plan.Art,
+                AufheizzeitManuellH = plan.ManuellH,
+                AufheizzeitMaxH = plan.AufheizzeitMaxH,
+                AuslegungsheizlastKw = Wert(plan.AuslegungsheizlastW / 1000.0),
+                AufheizzuschlagKw = Wert(plan.AufheizzuschlagW / 1000.0),
+                Tau2H = Wert(b.Wirksam.Tau2S / 3600.0),
                 AufheizAussenC = Wert(b.Wirksam.AussenC),
                 AufheizLeistungKw = Wert(b.AufheizleistungW / 1000.0),
                 AufheizLeistungsquelle = b.Quelle,
@@ -578,7 +603,12 @@ namespace WindowsFormsApplication1
             {
                 AufheizZustand = g.Zustand,
                 AufheizBemessung = g.Bemessung,
+                AufheizArt = g.Art,
+                AufheizzeitManuellH = g.ManuellH,
                 AufheizzeitMaxH = g.AufheizzeitMaxH,
+                AuslegungsheizlastKw = Wert(g.AuslegungsheizlastW / 1000.0),
+                AufheizzuschlagKw = Wert(g.AufheizzuschlagW / 1000.0),
+                Tau2H = Wert(g.Tau2S / 3600.0),
                 AufheizAussenC = Wert(g.AussenBC),
                 AufheizLeistungKw = Wert(g.AufheizleistungW / 1000.0),
                 AufheizLeistungsquelle = g.Quelle,
