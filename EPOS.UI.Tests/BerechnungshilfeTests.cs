@@ -499,7 +499,11 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             { "Solarthermie", "Fassung 4" },
             // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
             { "Wärmepumpe", "Fassung 4" },
-            { "BHKW", "Fassung 4" }
+            { "BHKW", "Fassung 4" },
+            // Welle M7: Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul (Pufferspeicher),
+            // thermische Desinfektion (Brauchwasser).
+            { "Pufferspeicher", "Fassung 4" },
+            { "Brauchwasser", "Fassung 4" }
         };
 
     /// <summary>
