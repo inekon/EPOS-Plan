@@ -161,7 +161,16 @@ namespace WindowsFormsApplication1
         internal const string SQL_KESSEL = "SELECT * FROM Tab_Heizkessel WHERE ID = ?";
         internal const string SQL_BHKW = "SELECT * FROM Tab_BHKW WHERE ID = ?";
         internal const string SQL_SOLAR = "SELECT * FROM Tab_Solarkollektoren WHERE ID = ?";
-        internal const string SQL_BRENNSTOFF = "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?";
+
+        /// <summary>Der Name eines Brennstoffs im Projekt — aus der Projektkopie (<see cref="ProjektBrennstoffe.Sicht"/>).</summary>
+        private static string BrennstoffName(int idProjekt, int idBrennstoff)
+        {
+            string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
+            return Convert.ToString(DataRepository.ExecuteScalar("SELECT Bezeichner FROM " + quelle + " AS b WHERE b.ID = ?",
+                                                                 ProjektBrennstoffe.Mit(sicht, P("@id", idBrennstoff))),
+                                    CultureInfo.InvariantCulture);
+        }
+
         internal const string SQL_UEBERGABE =
             "SELECT Uebergabe_Art, COUNT(*) AS Anzahl FROM Tab_Gebaeude WHERE ID_Projekt = ? AND Uebergabe_Art IS NOT NULL " +
             "GROUP BY Uebergabe_Art ORDER BY COUNT(*) DESC, Uebergabe_Art";
@@ -234,11 +243,13 @@ namespace WindowsFormsApplication1
             var h = new List<PufferAuslegungHerkunft>();
             void H(string feld, string quelle, string text) => h.Add(new PufferAuslegungHerkunft(feld, quelle, text));
 
-            PufferAuslegungParameter p = PufferAuslegungParameter.Lesen();
+            PufferAuslegungParameter p = PufferAuslegungParameter.Lesen(idProjekt);
             H(nameof(PufferAuslegungEingang.Parameter), PufferHerkunftsquelle.PARAMETER,
-              DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB_PARAMETER)
-                  ? PufferAuslegungSchema.TAB_PARAMETER + ", fehlende Schlüssel aus den eingebauten Vorgaben"
-                  : "eingebaute Vorgaben (Vorgabetabelle fehlt)");
+              ProjektPufferparameter.HatKopie(idProjekt)
+                  ? ProjektPufferparameter.TAB + " (Projektkopie), fehlende Schlüssel aus " + PufferAuslegungSchema.TAB_PARAMETER
+                  : DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB_PARAMETER)
+                      ? PufferAuslegungSchema.TAB_PARAMETER + ", fehlende Schlüssel aus den eingebauten Vorgaben"
+                      : "eingebaute Vorgaben (Vorgabetabelle fehlt)");
 
             // ---- Puffer und Klassen-Set ----
             DataRow pz = null;
@@ -311,7 +322,7 @@ namespace WindowsFormsApplication1
             List<Anlage> anlagen = AnlagenLesen(idProjekt);
             int rang1 = Rang1(einst, anlagen, out string rangText);
             H(nameof(PufferAuslegungEingang.Erzeuger), PufferHerkunftsquelle.KASKADE, rangText);
-            PufferErzeuger erz = ErzeugerBauen(rang1, anlagen, h, out bool festbrennstoff, out bool bivalent,
+            PufferErzeuger erz = ErzeugerBauen(idProjekt, rang1, anlagen, h, out bool festbrennstoff, out bool bivalent,
                                                out IReadOnlyList<PufferSperrfenster> sperre, out double? mindestlaufzeit);
 
             // ---- Vorlage ----
@@ -509,7 +520,7 @@ namespace WindowsFormsApplication1
             return PufferBrennstoff.Keiner;
         }
 
-        private static PufferErzeuger ErzeugerBauen(int rang1, List<Anlage> anlagen, List<PufferAuslegungHerkunft> h,
+        private static PufferErzeuger ErzeugerBauen(int idProjekt, int rang1, List<Anlage> anlagen, List<PufferAuslegungHerkunft> h,
                                                     out bool festbrennstoff, out bool bivalent,
                                                     out IReadOnlyList<PufferSperrfenster> sperre, out double? mindestlaufzeit)
         {
@@ -559,8 +570,7 @@ namespace WindowsFormsApplication1
                         int idB = (int)(ZahlOderNull(g, "Brennstoff") ?? 0);
                         if (idB > 0)
                         {
-                            PufferBrennstoff art = BrennstoffAus(Convert.ToString(DataRepository.ExecuteScalar(SQL_BRENNSTOFF, P("@id", idB)),
-                                                                                  CultureInfo.InvariantCulture));
+                            PufferBrennstoff art = BrennstoffAus(BrennstoffName(idProjekt, idB));
                             if (art != PufferBrennstoff.Keiner) { brennstoff = art; festbrennstoff = true; }
                         }
                     }
@@ -956,6 +966,9 @@ namespace WindowsFormsApplication1
         {
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
             if (!DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB)) return -1;
+            // Die Projektkopie der Vorgaben entsteht mit der ersten gespeicherten Auslegung - wertgleich
+            // zum Stamm, die Vorbelegung unten liest also dieselben Werte wie davor.
+            ProjektPufferparameter.Sichern(idProjekt);
             PufferAuslegungEingang b = Grundvorbelegung(idProjekt, idPuffer, null, false).Eingang;
             PufferErzeuger ez = eingang.Erzeuger ?? new PufferErzeuger(), bz = b.Erzeuger ?? new PufferErzeuger();
 

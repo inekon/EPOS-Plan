@@ -1916,11 +1916,13 @@ namespace WindowsFormsApplication1
             // noch die EINSTUFUNG des Trägers.
             try
             {
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 DataTable b = DataRepository.GetDataTable(
                     "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
-                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                    "INNER JOIN " + quelle + " AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
-                    new DbParam("@c", carrierId));
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@c", carrierId)));
                 if (b != null && b.Rows.Count > 0)
                 {
                     // BEHG-pflichtig: Kategorien 1 Gas / 2 Öl / 3 Koks / 4 Kohle /

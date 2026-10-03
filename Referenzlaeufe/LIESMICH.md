@@ -557,14 +557,15 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **173**, 81 412 096 Byte, LFS-SHA-256
-`d65e7ef5c67f1ac8302bf17faa350da792535655c67118ddd39679549b249f2b`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **175**, 81 494 016 Byte, LFS-SHA-256
+`551a288deae7562b316a798f0c7b669e3b453ce8d22ad01fe6cebbd733c73951`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
 Hilfsenergie von BHKW und Heizkessel in den Auslieferungsvorlagen auf Weg B, Nachtrag „Schemaschritt 170“ unten)
 ändert nur einen Hinweis am Satzfeld der Kostenvorlagen, den der Referenzlauf nicht liest; Schemaschritt 171
-(Pufferoptionen und thermische Desinfektion) legt nur leere Felder an. Gegen diese Basis hält
+(Pufferoptionen und thermische Desinfektion) legt nur leere Felder an, ebenso Schemaschritt 174 (Aufschlag und
+manuelle Aufheizzeit der Aufheizoptimierung, Nachtrag unten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -704,6 +705,34 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (`integrity_check` ok). Neue Fassung **81 412 096 Byte, LFS-SHA-256 `d65e7ef5c67f1ac8302bf17faa350da792535655c67118ddd39679549b249f2b`**.
 > **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
 > byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 174 (KP-S4: Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung), Basis unverändert.**
+> `AufheizManuellSchema` (Nummer `KatalogfassungStufe2Schema.SCHRITT + 1`): an `Tab_Einstellungen` `Aufheiz_Aufschlag_H` (0 … 24) und
+> `Aufheiz_Aufschlag_Prozent` (0 … 100), an `Tab_Gebaeude` (nicht am Katalog) `Aufheizzeit_Manuell_H` (1 … 47) samt dem
+> achten Neubau der Sicht `Abfrage_Projektgebaeude` (103 Spalten), an `Tab_ErgebnisGebaeude` `Aufheiz_Art` (TAEGLICH, FEST,
+> MANUELL), `Auslegungsheizlast_Kw` (> 0) und `Aufheizzuschlag_Kw` (≥ 0), an `Tab_ErgebnisZone` `Aufheiz_Art`; alle nullbar
+> mit Prüfklausel. Der Zustand `GEKOPPELT` der Zone kommt per kleinem Neubau allein von `Tab_ErgebnisZone` (STRICT, beide
+> Fremdschlüssel und Indizes erhalten, `foreign_key_check` leer); `Tab_ErgebnisGebaeude` wird nicht neu gebaut. Kein DML an
+> Bestandsdaten. Die Testdatenbank ist aus der Fassung `d65e7ef5…` (173) mit `Werkzeuge/Testdatenbankschema` auf **174**
+> gezogen (7 Spalten, ein Neubau ohne Zeilen, Sicht; `integrity_check` ok). Neue Fassung **81 412 096 Byte, LFS-SHA-256
+> `e85c3bdbd33d618886712fcb0aacb124b44c1a6c123222a33921813d3edf0673`**. **Die Basis bleibt:** Aufschlag und manuelle
+> Aufheizzeit stehen überall leer, `Aufheizoptimierung` = 0 hält jedes Projekt auf „aus“, und der Referenzlauf liest
+> weder `Tab_ErgebnisGebaeude` noch `Tab_ErgebnisZone`; die sechzehn Projekte rechnen auf ihr gegen R33 GESAMT PASS mit
+> 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 175 (Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben), Basis unverändert.**
+> `ProjektkopienKatalogeSchema` (Nummer `AufheizManuellSchema.SCHRITT + 1`): `Tab_Brennstoff` (STRICT; je Projekt und
+> Brennstoffart die 14 Fachspalten des Stamms samt `Katalogfassung_Herkunft`, `ID_Projekt` mit `ON DELETE CASCADE`) und
+> `Tab_PufferAuslegungParameter` (STRICT; je Projekt und `Schluessel`). Die Saat kopiert wertgleich: je Projekt jeden
+> Stamm-Brennstoff (29 Projekte × 25 Arten = 725 Zeilen), je Projekt mit Pufferauslegung jede Vorgabe (hier 0). Der Kern
+> liest die Brennstoffwerte eines Projekts seither über `ProjektBrennstoffe.Sicht` aus der Kopie, der Katalogabgleich fasst
+> die Kopien nie an. Konditionierungsvorlagen brauchen keine Kopie, ihr Inhalt liegt schon am Gebäude. Die Testdatenbank ist
+> aus der Fassung `e85c3bdb…` (174) mit `Werkzeuge/Testdatenbankschema` auf **175** gezogen (2 Tabellen, 725 Zeilen;
+> `integrity_check` ok). Neue Fassung **81 494 016 Byte, LFS-SHA-256
+> `551a288deae7562b316a798f0c7b669e3b453ce8d22ad01fe6cebbd733c73951`**. **Die Basis bleibt:** Die Kopien tragen dieselben
+> Werte wie der Stamm; die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
+> byte-gleich. Berührt ist die Einfrierregel „gesäte Bedarfsdaten“ nur im Wortlaut (`Tab_Brennstoff` der Referenzprojekte
+> gehört seither dazu, siehe `CLAUDE.md`), nicht im Wert.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using EPOS.UI.Seiten.Simulation;
 using WindowsFormsApplication1;
 using Xunit;
@@ -325,5 +326,145 @@ namespace EPOS.Kern.Tests
 
         private static long Zahl(string sql)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql), CultureInfo.InvariantCulture);
+
+        // =============================================================================
+        //  Teil 4 - der Aufschlag (E59, Festlegungen 35 und 36; Schritt KP-S4)
+        // =============================================================================
+
+        /// <summary>Eine gepflegte Einstellung mit Aufschlag 3 h und 25 %.</summary>
+        private static readonly Aufheizvorgabe MIT_AUFSCHLAG =
+            new Aufheizvorgabe(true, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.0, 0.25, DbWerte.AUFHEIZ_ART_FEST, 3, 25.0);
+
+        /// <summary>Die zwei Aufschlagspalten roh als „h|%".</summary>
+        private static string RohAufschlag(int projekt)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Aufheiz_Aufschlag_H, Aufheiz_Aufschlag_Prozent FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                new DbParam("?", projekt));
+            Assert.True(dt != null && dt.Rows.Count == 1);
+            return string.Join("|", new[] { 0, 1 }.Select(i => dt.Rows[0][i] == DBNull.Value
+                ? "" : Convert.ToString(dt.Rows[0][i], CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Festlegung 36:</b> 0 und ein leeres Feld (NaN, ±∞) werden NULL, ein Wert bleibt; der Schalter aus behält
+        /// beide; die wirksamen Werte setzen 0 ein; <see cref="Aufheizvorgabe.HatAufschlag"/> genau mit einem Wert über 0;
+        /// ohne die Felder ist der Record derselbe wie zuvor.
+        /// </summary>
+        [Fact]
+        public void Der_Aufschlag_normalisiert_nach_Festlegung_36()
+        {
+            var null0 = new Aufheizvorgabe(true, null, null, null, null, 0, 0.0);
+            Assert.Null(null0.AufschlagH);
+            Assert.Null(null0.AufschlagProzent);
+            Assert.Equal(new Aufheizvorgabe(true, null, null, null, null), null0);
+            Assert.False(null0.HatAufschlag);
+            Assert.Equal(0, null0.AufschlagHWirksam);
+            Assert.Equal(0.0, null0.AufschlagProzentWirksam);
+
+            foreach (double leer in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity })
+                Assert.Null(new Aufheizvorgabe(true, null, null, null, null, null, leer).AufschlagProzent);
+
+            var h = new Aufheizvorgabe(true, null, null, null, null, 2, null);
+            Assert.True(h.HatAufschlag);
+            Assert.Equal(2, h.AufschlagHWirksam);
+            var p = new Aufheizvorgabe(true, null, null, null, null, null, 12.5);
+            Assert.True(p.HatAufschlag);
+            Assert.Equal(12.5, p.AufschlagProzentWirksam);
+
+            var aus = new Aufheizvorgabe(false, null, null, null, null, 4, 50.0);
+            Assert.False(aus.An);
+            Assert.Equal(4, aus.AufschlagH);
+            Assert.Equal(50.0, aus.AufschlagProzent);
+            Assert.NotEqual(Aufheizvorgabe.Aus, aus);
+
+            // Werte außerhalb bleiben stehen - das Schreiben scheitert an der Spalte.
+            Assert.Equal(25, new Aufheizvorgabe(true, null, null, null, null, 25, null).AufschlagH);
+        }
+
+        /// <summary>
+        /// <b>Der Rundlauf mit Aufschlag:</b> Schreiben → Lesen ergibt dieselbe Einstellung; die Datei führt 0 und leer
+        /// als NULL; Werte außerhalb (25 h, 100,5 %, −1) scheitern ohne Spur; der Schalter aus behält den Aufschlag.
+        /// </summary>
+        [Fact]
+        public void Der_Aufschlag_geht_hin_und_zurueck_und_scheitert_ohne_Spur()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal("|", RohAufschlag(PROJEKT));
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, MIT_AUFSCHLAG));
+            Assert.Equal(MIT_AUFSCHLAG, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+            Assert.Equal("3|25", RohAufschlag(PROJEKT));
+            Assert.Equal("1|STUNDE_ABZUG|3|0.25|FEST", Roh(PROJEKT));
+
+            var nurProzent = new Aufheizvorgabe(true, null, null, null, null, 0, 100.0);
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, nurProzent));
+            Assert.Equal("|100", RohAufschlag(PROJEKT));
+            Assert.Equal(nurProzent, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+
+            var nurStunden = new Aufheizvorgabe(true, null, null, null, null, 24, 0.0);
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, nurStunden));
+            Assert.Equal("24|", RohAufschlag(PROJEKT));
+
+            foreach (Aufheizvorgabe falsch in new[]
+                     {
+                         new Aufheizvorgabe(true, null, null, null, null, 25, null),
+                         new Aufheizvorgabe(true, null, null, null, null, -1, null),
+                         new Aufheizvorgabe(true, null, null, null, null, null, 100.5),
+                         new Aufheizvorgabe(true, null, null, null, null, null, -0.5),
+                     })
+            {
+                Assert.False(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, falsch), falsch.ToString());
+                Assert.Equal(nurStunden, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+            }
+
+            var aus = new Aufheizvorgabe(false, null, null, null, null, 4, 50.0);
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, aus));
+            Assert.Equal(aus, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+            Assert.Equal("4|50", RohAufschlag(PROJEKT));
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, Aufheizvorgabe.Aus));
+            Assert.Equal("|", RohAufschlag(PROJEKT));
+        }
+
+        /// <summary>
+        /// <b>Ohne die Aufschlagspalten</b> (eine Datei vor KP-S4): Lesen liefert die Einstellung ohne Aufschlag,
+        /// Schreiben ohne Aufschlag gelingt, mit Aufschlag liefert es <c>false</c> und lässt die Zeile stehen.
+        /// </summary>
+        [Fact]
+        public void Ohne_Aufschlagspalten_gilt_kein_Aufschlag()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, MIT_AUFSCHLAG));
+            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"Aufheiz_Aufschlag_Prozent\"");
+            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"Aufheiz_Aufschlag_H\"");
+            Aufheizvorgabe ohne = new Aufheizvorgabe(true, MIT_AUFSCHLAG.Bemessung, 3.0, 0.25, MIT_AUFSCHLAG.Art);
+            Assert.Equal(ohne, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+            Assert.False(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, MIT_AUFSCHLAG));
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSchreiben(PROJEKT, GEPFLEGT));
+            Assert.Equal(GEPFLEGT, KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT));
+        }
+
+        /// <summary>
+        /// <b>Der Aufschlag reist mit:</b> das Speichern der Kaskade, der Setzweg mit Vormerksatz-Regel, das
+        /// Projektduplikat und die Variante tragen ihn.
+        /// </summary>
+        [Fact]
+        public void Kaskade_Setzweg_Duplikat_und_Variante_tragen_den_Aufschlag()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(REFERENZ, MIT_AUFSCHLAG));
+            Assert.True(Kaskadendienste(REFERENZ).Speichern());
+            Assert.Equal(MIT_AUFSCHLAG, KonfigurationCtrl.AufheizvorgabeLesen(REFERENZ));
+
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(PROJEKT, MIT_AUFSCHLAG));
+            int neu = new ProjektDuplizierenCtrl().Duplizieren(PROJEKTNAME, PROJEKTNAME + " Aufschlag");
+            Assert.True(neu > 0, "Duplizieren fehlgeschlagen.");
+            Assert.Equal(MIT_AUFSCHLAG, KonfigurationCtrl.AufheizvorgabeLesen(neu));
+            int variante = new VariantenCtrl().AnlegenAusStamm(PROJEKT, PROJEKTNAME, "Aufschlag", out string fehler);
+            Assert.True(variante > 0, "Variante: " + fehler);
+            Assert.Equal(MIT_AUFSCHLAG, KonfigurationCtrl.AufheizvorgabeLesen(variante));
+        }
     }
 }

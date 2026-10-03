@@ -195,6 +195,10 @@ namespace WindowsFormsApplication1
             // Der Energiestandard (E47, siebter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
             // auf einer Sicht ohne die Spalte bleibt er null (keiner); ein Leertext gilt wie NULL.
             item.Energiestandard = TextOderNull(row, GebaeudeSchema.SPALTE_ENERGIESTANDARD);
+
+            // Die manuelle Aufheizzeit (E59, achter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+            // auf einer Sicht ohne die Spalte bleibt sie null (das Gebaeude folgt der Art des Projekts).
+            item.Aufheizzeit_Manuell_H = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_AUFHEIZZEIT_MANUELL);
             return item;
         }
 

@@ -120,7 +120,9 @@ namespace EPOS.Kern.Tests
         {
             var nurProjekt = new HashSet<string>(StringComparer.Ordinal)
             {
-                "items", "ID_Projekt", "ID_Gebaeude", "Z_AuswahlWohnflaeche", "Einheit", "Jahresnutzungsgrad", "DezentralWarmwasser"
+                "items", "ID_Projekt", "ID_Gebaeude", "Z_AuswahlWohnflaeche", "Einheit", "Jahresnutzungsgrad", "DezentralWarmwasser",
+                // E59 (Festlegung 38): die manuelle Aufheizzeit gehört allein dem Projektgebäude, der Katalog führt sie nicht.
+                "Aufheizzeit_Manuell_H",
             };
             IReadOnlyList<string> uebertragen = UebergabeHerleitungsquelle.Uebertragen();
             foreach (FieldInfo f in typeof(ProjektGebaeudeModel).GetFields(BindingFlags.Public | BindingFlags.Instance))

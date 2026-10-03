@@ -143,10 +143,10 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_UEBERGABE, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_KUEHLUNG, StringComparison.Ordinal);
             }
-            // Die GELTENDE Sicht ist die des letzten Durchgangs (des Energiestandards, E47); sie beginnt mit
-            // der Sicht von AK-S1 an denselben Stellen.
+            // Die GELTENDE Sicht ist die des letzten Durchgangs (der manuellen Aufheizzeit, E59); sie beginnt
+            // mit der Sicht von AK-S1 an denselben Stellen.
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SICHT_AKTUELL.Take(90));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AUFHEIZ_MANUELL, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         /// <summary>

@@ -92,6 +92,8 @@ namespace WindowsFormsApplication1
             ["Kuehl_Uebergabe_Leistung_Nenn"] = V, ["Kuehl_Auslegung_Vorlauf"] = V, ["Kuehl_Auslegung_Ruecklauf"] = V,
             ["Kuehl_Auslegung_Raumtemperatur"] = V, ["Kuehl_Vorlaufgrenze"] = V,
             ["Nachtabsenkung_Beginn"] = V, ["Nachtabsenkung_Ende"] = V, ["Wochenende"] = V, ["Ferien"] = V,
+            // E59 (Festlegung 38): die manuelle Aufheizzeit - die Datei traegt sie nicht, der Import schreibt NULL.
+            ["Aufheizzeit_Manuell_H"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,
@@ -132,6 +134,7 @@ namespace WindowsFormsApplication1
                 if (g.Rahmenanteil.HasValue) namen.Add("Rahmenanteil");
                 if (g.Verschattungsfaktor.HasValue) namen.Add("Verschattungsfaktor");
                 if (!string.IsNullOrWhiteSpace(g.Uebergabe_Art)) namen.Add("Uebergabe_Art");
+                if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

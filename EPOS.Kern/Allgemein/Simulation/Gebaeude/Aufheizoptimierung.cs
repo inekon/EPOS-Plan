@@ -52,6 +52,14 @@ namespace WindowsFormsApplication1
     /// erst danach; unbeheizte Zonen bekommen den Zustand UNBEHEIZT, gekoppelte GEKOPPELT. Die
     /// Gebäudewerte bildet <see cref="Gebaeudewerte"/>.</para>
     ///
+    /// <para><b>Aufschlag und manuelle Aufheizzeit</b> (E59, Welle R5; Festlegungen 35, 37, 38; P16): Der
+    /// Aufschlag des Projekts verlängert jede Rampe, die ein Sprung des Heizkalenders auslöst und die schon
+    /// eine ist (n &gt; 1), auf n' = min(48, n + max(h, ⌈n · p/100⌉)) und danach höchstens D + 1
+    /// (<see cref="MitAufschlag"/>); Sprünge mit n = 1 und Tage ohne Sprung bleiben unberührt, ohne Aufschlag
+    /// rechnet der Plan bitgleich wie zuvor. Ein Gebäude mit manueller Aufheizzeit t rampt an jedem Sprung mit
+    /// n = min(t + 1, D + 1) ohne Aufschlag (<see cref="StufenzahlManuell"/>); die Bemessung läuft weiter und
+    /// liefert T_a,B, P_auf und Herleitung, entscheidet aber nicht; seine Zonen erben t.</para>
+    ///
     /// <para><b>Schalter aus = kein Aufruf</b> (Grundsatz 3): <see cref="Vdi6007Rechenweg"/> und
     /// <see cref="ZonenEingang.Bauen"/> rufen <see cref="Anwenden"/> bzw. <see cref="AnwendenZonen"/> nur mit
     /// eingeschalteter <see cref="Aufheizvorgabe"/>. P_auf = +∞ (Testnaht) heißt n = 1 überall und kein
@@ -131,7 +139,10 @@ namespace WindowsFormsApplication1
                 return new Aufheizplan { Zustand = DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, Reihe = zone.Soll, Geaendert = false };
 
             Aufheizbemessung bemessung = Bemessen(zone, vorgabe, aufheizleistungTestW);
-            int obergrenze = bemessung.ObergrenzeH;
+            // E59 (Festlegung 37): Mit manueller Aufheizzeit t ersetzt t die bemessene Zeit - als Obergrenze
+            // des Fensters W (Festlegung 9) und als n = t + 1 an jedem Sprung; der Aufschlag wirkt nicht.
+            int? manuell = zone.ManuellH;
+            int obergrenze = manuell ?? bemessung.ObergrenzeH;
             bool fest = vorgabe.IstFest;
             Aufheizform form = bemessung.Form;
             double pAuf = bemessung.AufheizleistungW;
@@ -159,9 +170,15 @@ namespace WindowsFormsApplication1
                 double ta = KaeltesteAussenluft(zone.Aussen, hs, fenster);
                 double zusatz = zone.Zusatzleitwert(hs);
                 double phiStat = PhiStat(zone, thetaT, ta, hs / 24, zusatz, zone.MitNachbarn ? zone.NachbarnImSprung(hs) : null);
-                Aufheizantwort antwort = zone.Modell.Aufheizantwort(zone.Strahlungsanteil, zusatz);
                 double deltaT = thetaT - thetaN;
-                Aufheizstufenzahl st = Stufenzahl(antwort, phiStat, deltaT, pAuf, form, obergrenze, d, fest);
+                Aufheizstufenzahl st;
+                if (manuell is int t)
+                    st = StufenzahlManuell(t, d);
+                else
+                {
+                    Aufheizantwort antwort = zone.Modell.Aufheizantwort(zone.Strahlungsanteil, zusatz);
+                    st = MitAufschlag(Stufenzahl(antwort, phiStat, deltaT, pAuf, form, obergrenze, d, fest), d, vorgabe);
+                }
                 int n = st.N;
 
                 int geschrieben = 0;
@@ -218,8 +235,12 @@ namespace WindowsFormsApplication1
 
             return new Aufheizplan
             {
-                Zustand = bemessung.Zustand,
+                // Mit manueller Aufheizzeit entscheidet die Bemessung nicht: Zustand BEMESSEN (Festlegung 39).
+                Zustand = manuell.HasValue ? DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN : bemessung.Zustand,
                 Bemessung = bemessung,
+                Art = manuell.HasValue ? DbWerte.AUFHEIZ_ART_MANUELL : vorgabe.ArtWirksam,
+                ManuellH = manuell,
+                AuslegungsheizlastW = zone.AuslegungsheizlastW,
                 Reihe = maskenstunden > 0 ? neu : s,
                 Geaendert = maskenstunden > 0,
                 Rampenmaske = maske,
@@ -309,6 +330,52 @@ namespace WindowsFormsApplication1
             return new Aufheizstufenzahl(n, bedarf, !erreichbar, unterStationaer, begrenzt, bemessungBegrenzt);
         }
 
+        /// <summary>
+        /// <b>Der Aufschlag auf eine Rampe</b> (E59, Festlegung 35, P16): n' = min(48, n + max(h, ⌈n · p/100⌉))
+        /// nur für n &gt; 1, danach wie jedes n höchstens D + 1; W2 zählt mit n' (begrenzt, wenn der Aufschlag an
+        /// D + 1 stößt). Ein Sprung ohne Rampe (n = 1) und eine Einstellung ohne Aufschlag bleiben dieselbe
+        /// Stufenzahl — bitgleich (Grundsatz 3). Der Bedarf der Stufenformel und die Wache bleiben die des
+        /// ermittelten n.
+        /// </summary>
+        /// <param name="d">Die Absenkdauer D [h].</param>
+        internal static Aufheizstufenzahl MitAufschlag(Aufheizstufenzahl st, int d, Aufheizvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.HatAufschlag || st.N <= 1) return st;
+            int nAufschlag = MitAufschlag(st.N, vorgabe);
+            int n = Math.Min(nAufschlag, d + 1);
+            return st with { N = n, Begrenzt = st.Begrenzt || nAufschlag > d + 1 };
+        }
+
+        /// <summary>
+        /// n' = min(48, n + max(h, ⌈n · p/100⌉)) für n &gt; 1, sonst n (Festlegung 35). Die Aufrundung trägt den
+        /// Zahlenrand (<see cref="Rechenrand.Zu"/>): Ein Produkt, das eine ganze Zahl nur um die letzten Bits
+        /// verfehlt, rundet nicht eine Stunde zu weit.
+        /// </summary>
+        internal static int MitAufschlag(int n, Aufheizvorgabe vorgabe)
+        {
+            if (n <= 1 || vorgabe == null || !vorgabe.HatAufschlag) return n;
+            double anteil = n * vorgabe.AufschlagProzentWirksam / 100.0;
+            int prozent = anteil > 0.0 ? (int)Math.Ceiling(anteil - Rechenrand.Zu(anteil)) : 0;
+            int aufschlag = Math.Max(vorgabe.AufschlagHWirksam, prozent);
+            return Math.Min(DECKEL, n + aufschlag);
+        }
+
+        /// <summary>
+        /// <b>Die Stufenzahl der manuellen Aufheizzeit</b> (E59, Festlegung 37): n = min(t + 1, D + 1, 48) an
+        /// jedem Sprung, wie „fest" mit t statt t_auf,max; W2, wenn D die Rampe begrenzt; W1 entfällt, weil
+        /// kein n gesucht wird; kein Aufschlag.
+        /// </summary>
+        /// <param name="manuellH">Die manuelle Aufheizzeit t [h], 1 … 47.</param>
+        /// <param name="d">Die Absenkdauer D [h].</param>
+        internal static Aufheizstufenzahl StufenzahlManuell(int manuellH, int d)
+        {
+            if (manuellH < AufheizManuellSchema.MANUELL_MIN_H || manuellH > AufheizManuellSchema.MANUELL_MAX_H)
+                throw new ArgumentOutOfRangeException(nameof(manuellH), manuellH, "Die manuelle Aufheizzeit liegt zwischen 1 und 47 Stunden.");
+            if (d < 0) throw new ArgumentOutOfRangeException(nameof(d), d, "Die Absenkdauer ist nicht negativ.");
+            int n = Math.Min(Math.Min(manuellH + 1, d + 1), DECKEL);
+            return new Aufheizstufenzahl(n, manuellH + 1, false, false, manuellH + 1 > n, false);
+        }
+
         // =====================================================================
         //  Bemessung
         // =====================================================================
@@ -367,8 +434,16 @@ namespace WindowsFormsApplication1
             bool mitAbzug = vorgabe.MitAbzug;
             Aufheizbemessungsfall wirksam = mitAbzug ? b : a;
 
+            // E60 (Festlegung 41): Φ_stat(θ_T,max, T_a,B) - die Form der Zielleistung am Bemessungspunkt der
+            // wirksamen Variante; daraus der Aufheizzuschlag P_auf − Φ_stat. Ohne Heizstunde NaN.
+            double phiAuslegung = kalt >= 0 && Endlich(thetaTMax)
+                ? PhiStat(zone, thetaTMax, wirksam.AussenC, kalt / 24, zone.AuslegungZusatzleitwertWK,
+                          zone.MitNachbarn ? zone.NachbarnInDerBemessung : null)
+                : double.NaN;
+
             return new Aufheizbemessung
             {
+                PhiStatAuslegungW = phiAuslegung,
                 Zustand = wirksam.Erreichbar ? DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN : DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR,
                 AufheizleistungW = pAuf,
                 QuelleGrenze = grenze,
@@ -396,6 +471,7 @@ namespace WindowsFormsApplication1
             var gerechnet = new Dictionary<(long, long, long), Aufheizwahl>();
             int bestN = 0, bestHs = -1, unerreichbar = 0;
             double bestThetaN = double.NaN, bestThetaT = double.NaN, bestPhi = double.NaN, bestDelta = double.NegativeInfinity;
+            double bestTau2 = double.NaN;
             bool bestUnerreichbar = false;
             foreach ((int hs, int d) in spruenge)
             {
@@ -431,6 +507,7 @@ namespace WindowsFormsApplication1
                     bestThetaT = thetaT;
                     bestPhi = phi;
                     bestDelta = delta;
+                    bestTau2 = zone.Modell.Aufheizantwort(zone.Strahlungsanteil, zusatz).Tau2S;
                 }
             }
 
@@ -444,6 +521,7 @@ namespace WindowsFormsApplication1
                 ThetaTC = bestThetaT,
                 PhiStatW = bestPhi,
                 PaareUnerreichbar = unerreichbar,
+                Tau2S = bestTau2,
             };
         }
 
@@ -505,8 +583,10 @@ namespace WindowsFormsApplication1
                 };
 
             bool unerreichbar = geplant.Any(p => p.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR);
+            bool bemessungUnerreichbar = geplant.Any(p => p.Bemessung.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR);
+            int? tBemessen = null;
             int? tAufMax = null;
-            double aussenB = double.NaN, pAuf = double.NaN;
+            double aussenB = double.NaN, pAuf = double.NaN, phiHL = 0.0, phiRH = 0.0, tau2 = double.NaN;
             int laengste = 0, kuerzeste = int.MaxValue;
             var quellen = new SortedSet<string>(StringComparer.Ordinal);
             var tagRampe = new bool[365];
@@ -522,7 +602,12 @@ namespace WindowsFormsApplication1
             foreach (Aufheizplan p in geplant)
             {
                 Aufheizbemessung b = p.Bemessung;
-                if (!unerreichbar && b.Wirksam.AufheizzeitMaxH is int t && (tAufMax == null || t > tAufMax)) tAufMax = t;
+                if (!unerreichbar && p.AufheizzeitMaxH is int t && (tAufMax == null || t > tAufMax)) tAufMax = t;
+                if (!bemessungUnerreichbar && b.Wirksam.AufheizzeitMaxH is int tb && (tBemessen == null || tb > tBemessen)) tBemessen = tb;
+                phiHL += p.AuslegungsheizlastW;
+                phiRH += p.AufheizzuschlagW;
+                double tau = b.Wirksam.Tau2S;
+                if (!double.IsNaN(tau) && (double.IsNaN(tau2) || tau > tau2)) tau2 = tau;
                 double ab = b.Wirksam.AussenC;
                 if (!double.IsNaN(ab) && (double.IsNaN(aussenB) || ab < aussenB)) aussenB = ab;
                 if (!double.IsNaN(b.AufheizleistungW)) pAuf = double.IsNaN(pAuf) ? b.AufheizleistungW : pAuf + b.AufheizleistungW;
@@ -570,6 +655,13 @@ namespace WindowsFormsApplication1
                 ZonenBeheizt = beheizt,
                 ZonenGekoppelt = gekoppelt,
                 ZonenUnbeheizt = unbeheizt,
+                Art = geplant[0].Art,
+                ManuellH = geplant[0].ManuellH,
+                AuslegungsheizlastW = phiHL,
+                AufheizzuschlagW = phiRH,
+                Tau2S = tau2,
+                BemessungZustand = bemessungUnerreichbar ? DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR : DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN,
+                AufheizzeitBemessenH = bemessungUnerreichbar ? null : tBemessen,
             };
         }
 

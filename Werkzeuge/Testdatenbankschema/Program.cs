@@ -2631,6 +2631,49 @@ namespace Testdatenbankschema
                                   KatalogfassungStufe2Schema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59 samt Folgeentscheiden, E60;
+            //      Entwurf KP3 Abschnitt 4): an Tab_Einstellungen Aufheiz_Aufschlag_H und
+            //      Aufheiz_Aufschlag_Prozent, an Tab_Gebaeude Aufheizzeit_Manuell_H samt achtem Neubau der
+            //      Sicht Abfrage_Projektgebaeude (103 Spalten), an Tab_ErgebnisGebaeude Aufheiz_Art,
+            //      Auslegungsheizlast_Kw und Aufheizzuschlag_Kw, an Tab_ErgebnisZone Aufheiz_Art und der
+            //      Zustand GEKOPPELT per kleinem Neubau. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizManuell bedient; ZULETZT, damit kein aelterer
+            //      Sichtdurchgang (Energiestandard) die Spalte wieder aus der Sicht schneidet.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Felder entstehen leer, KEIN DML an Bestandsdaten.
+            string nrAufheizManuell = AufheizManuellSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizManuell + " - Aufschlag und manuelle Aufheizzeit: " +
+                              (AufheizManuellSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizManuell = new List<string>();
+                angelegt += AufheizManuellSchema.Ausfuehren(berichtAufheizManuell);
+                foreach (string zeile in berichtAufheizManuell)
+                    Console.WriteLine("Schritt " + nrAufheizManuell + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizManuell + " - vollstaendig: " +
+                                  AufheizManuellSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026): die
+            //      Projektkopien Tab_Brennstoff und Tab_PufferAuslegungParameter samt wertgleicher Saat.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ProjektkopienKataloge bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Kopien tragen die Werte des Stamms.
+            string nrKopien = ProjektkopienKatalogeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKopien + " - Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben: " +
+                              (ProjektkopienKatalogeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKopien = new List<string>();
+                tabellen += ProjektkopienKatalogeSchema.Ausfuehren(berichtKopien);
+                foreach (string zeile in berichtKopien)
+                    Console.WriteLine("Schritt " + nrKopien + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKopien + " - vollstaendig: " +
+                                  ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

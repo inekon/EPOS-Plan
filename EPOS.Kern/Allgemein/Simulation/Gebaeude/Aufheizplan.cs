@@ -46,6 +46,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Heizleistungsgrenze der Zone [W]; NaN = keine (dann gilt die Zielleistung).</summary>
         internal double HeizleistungMaxW { get; init; } = double.NaN;
 
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h] des Gebäudes (E59, Festlegung 37), 1 … 47 — die Zone erbt sie
+        /// (Festlegung 38); <c>null</c> = die Art des Projekts.
+        /// </summary>
+        internal int? ManuellH { get; init; }
+
+        /// <summary>
+        /// Die stationäre Auslegungsheizlast Φ_HL der Zone [W] (<see cref="GebaeudeModellEingang.AuslegungsheizlastW"/>,
+        /// E60, Festlegung 41); NaN, wo der Eingang sie nicht herleitet (ohne Wärmeübergabe).
+        /// </summary>
+        internal double AuslegungsheizlastW { get; init; } = double.NaN;
+
         /// <summary>Ist die Stunde Nutzungszeit nach der Nachtzeit (E55)? Für θ_T,max der Zielleistung.</summary>
         internal Func<int, bool> Nutzungszeit { get; init; }
 
@@ -200,6 +212,8 @@ namespace WindowsFormsApplication1
                 AuslegungZusatzleitwertWK = e.AuslegungZusatzleitwertWK,
                 Strahlungsanteil = e.HeizungStrahlungsanteil,
                 HeizleistungMaxW = e.HeizleistungMaxW,
+                ManuellH = e.AufheizzeitManuellH,
+                AuslegungsheizlastW = e.AuslegungsheizlastW,
                 Nutzungszeit = e.Nutzungszeit,
                 Gekoppelt = e.KopplungWirksam
                             || (e.KopplungAlsIdealeLast
@@ -239,6 +253,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl der Sprungpaare, die unerreichbar sind.</summary>
         internal int PaareUnerreichbar { get; init; }
+
+        /// <summary>
+        /// τ₂ [s]: die langsame Zeitkonstante der Aufheizantwort des ungünstigsten Paars (mit Strahlungsanteil und
+        /// Zusatzleitwert seiner Sprungstunde) — die Grundlage der Vorschlagsspanne der manuellen Aufheizzeit
+        /// (Festlegung 40, P15 (b)); NaN ohne Sprung.
+        /// </summary>
+        internal double Tau2S { get; init; } = double.NaN;
     }
 
     /// <summary>
@@ -272,6 +293,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>θ_T,max der Zielleistung [°C] — der höchste endliche Heizsollwert der Nutzungszeit.</summary>
         internal double ThetaTMaxC { get; init; } = double.NaN;
+
+        /// <summary>
+        /// Φ_stat(θ_T,max, T_a,B) [W] — die stationäre Last am Bemessungspunkt der wirksamen Variante, in der
+        /// Form der Zielleistung (Luftwechsel <see cref="Aufheizzone.AuslegungZusatzleitwertWK"/>, Erdreich des
+        /// Tags der kältesten Stunde); NaN ohne Heizstunde oder ohne θ_T,max (E60, Festlegung 41).
+        /// </summary>
+        internal double PhiStatAuslegungW { get; init; } = double.NaN;
+
+        /// <summary>
+        /// Der Aufheizzuschlag Φ_RH = max(0, P_auf − Φ_stat(θ_T,max, T_a,B)) [W] nach dem Muster der DIN EN 12831-1
+        /// (E60, P17 (b), Festlegung 41); 0 bei unerreichbarer Bemessung (W1); NaN ohne Bemessungspunkt; +∞ in der
+        /// Grenzfallprobe (N-AH8).
+        /// </summary>
+        internal double AufheizzuschlagW
+            => Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR ? 0.0
+               : double.IsNaN(AufheizleistungW) || double.IsNaN(PhiStatAuslegungW) ? double.NaN
+               : Math.Max(0.0, AufheizleistungW - PhiStatAuslegungW);
 
         /// <summary>Variante (a): kälteste Stunde.</summary>
         internal Aufheizbemessungsfall VarianteA { get; init; }
@@ -383,6 +421,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden, deren Rampenwert an θ_K(h) − 1 K gekappt wurde (Festlegung 8, F17).</summary>
         internal int KuehlgekappteStundenH { get; init; }
+
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59, Festlegung 39): MANUELL mit
+        /// manueller Aufheizzeit, sonst die Art des Projekts; <c>null</c> bei GEKOPPELT und UNBEHEIZT.
+        /// </summary>
+        internal string Art { get; init; }
+
+        /// <summary>Die manuelle Aufheizzeit t [h], mit der der Plan rampt (Festlegung 37); <c>null</c> = Art des Projekts.</summary>
+        internal int? ManuellH { get; init; }
+
+        /// <summary>
+        /// Die Aufheizzeit der Ergebniszeile [h] (Festlegung 39): bei MANUELL der manuelle Wert, sonst t_auf,max der
+        /// wirksamen Variante (<c>null</c> bei unerreichbarer Bemessung).
+        /// </summary>
+        internal int? AufheizzeitMaxH => ManuellH ?? Bemessung?.Wirksam.AufheizzeitMaxH;
+
+        /// <summary>Φ_HL der Zone [W] (E60, Festlegung 41); NaN ohne Herleitung, bei GEKOPPELT und UNBEHEIZT.</summary>
+        internal double AuslegungsheizlastW { get; init; } = double.NaN;
+
+        /// <summary>Φ_RH der Zone [W] (<see cref="Aufheizbemessung.AufheizzuschlagW"/>); NaN ohne Bemessung.</summary>
+        internal double AufheizzuschlagW => Bemessung?.AufheizzuschlagW ?? double.NaN;
     }
 
     /// <summary>
@@ -461,6 +520,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl der unbeheizten Zonen (UNBEHEIZT, ohne Rampe).</summary>
         internal int ZonenUnbeheizt { get; init; }
+
+        /// <summary>Die wirksame Art (Festlegung 39) — die der geplanten Zonen; <c>null</c> bei GEKOPPELT.</summary>
+        internal string Art { get; init; }
+
+        /// <summary>Die manuelle Aufheizzeit des Gebäudes [h]; <c>null</c> = Art des Projekts.</summary>
+        internal int? ManuellH { get; init; }
+
+        /// <summary>Φ_HL [W] als Summe über die geplanten Zonen (E60, Festlegung 41); NaN, wenn eine fehlt.</summary>
+        internal double AuslegungsheizlastW { get; init; } = double.NaN;
+
+        /// <summary>Φ_RH [W] als Summe über die geplanten Zonen (Festlegung 41); NaN, wenn eine fehlt.</summary>
+        internal double AufheizzuschlagW { get; init; } = double.NaN;
+
+        /// <summary>τ₂ [s] als Maximum über die geplanten Zonen (Festlegung 40); NaN ohne Sprung.</summary>
+        internal double Tau2S { get; init; } = double.NaN;
+
+        /// <summary>
+        /// Der Zustand der BEMESSUNG (BEMESSEN oder UNERREICHBAR) — bei MANUELL kann er vom <see cref="Zustand"/>
+        /// abweichen, der dann BEMESSEN ist (Festlegung 39); die Herleitungszeile nennt die Bemessung.
+        /// </summary>
+        internal string BemessungZustand { get; init; }
+
+        /// <summary>t_auf,max der Bemessung [h] als Maximum über die Zonen; <c>null</c> bei unerreichbarer Bemessung — auch bei MANUELL.</summary>
+        internal int? AufheizzeitBemessenH { get; init; }
 
         /// <summary>W5: gekoppelt, nicht optimiert.</summary>
         internal bool Gekoppelt => Zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT;

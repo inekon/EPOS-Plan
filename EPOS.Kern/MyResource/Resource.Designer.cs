@@ -72683,6 +72683,339 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string PBRS_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("PBRS_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte von „{0}“ ähnelt.
+        /// </summary>
+        public static string PBRS_BEARBEITEN_TITEL {
+            get {
+                return ResourceManager.GetString("PBRS_BEARBEITEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet mit seinen eigenen Kopien der Brennstoffe: Heizwerte, Emissionsfaktoren und Preisvorgaben. Ein Katalog-Update ändert sie nicht; „Auf Katalog zurücksetzen“ übernimmt den heutigen Katalogstand. ähnelt.
+        /// </summary>
+        public static string PBRS_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("PBRS_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte von „{0}“ auf den heutigen Katalogstand zurücksetzen? ähnelt.
+        /// </summary>
+        public static string PBRS_FRAGE_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PBRS_FRAGE_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt geöffnet. ähnelt.
+        /// </summary>
+        public static string PBRS_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("PBRS_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt noch keine Brennstoffe. ähnelt.
+        /// </summary>
+        public static string PBRS_LEER {
+            get {
+                return ResourceManager.GetString("PBRS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts… ähnelt.
+        /// </summary>
+        public static string PBRS_MENUE {
+            get {
+                return ResourceManager.GetString("PBRS_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld {0} lässt sich nicht bearbeiten. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_FELD_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_FELD_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte von „{0}“ sind gespeichert. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Kopie dieses Brennstoffs. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Brennstoff steht nicht mehr im Katalog; die Projektwerte bleiben. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_NICHT_ZURUECKGESETZT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_NICHT_ZURUECKGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist aus dem Katalog übernommen. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert für {0} ist ungültig. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht wieder auf dem Katalogstand. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_ZURUECKGESETZT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_ZURUECKGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string PBRS_SP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("PBRS_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string PBRS_SP_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("PBRS_SP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ [g/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_CO2 {
+            get {
+                return ResourceManager.GetString("PBRS_SP_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string PBRS_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("PBRS_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hi [kWh/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_HI {
+            get {
+                return ResourceManager.GetString("PBRS_SP_HI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hs [kWh/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_HS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_HS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/kW] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NOₓ [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_NOX {
+            get {
+                return ResourceManager.GetString("PBRS_SP_NOX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Primärenergiefaktor ähnelt.
+        /// </summary>
+        public static string PBRS_SP_PE {
+            get {
+                return ResourceManager.GetString("PBRS_SP_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SO₂ [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_SO2 {
+            get {
+                return ResourceManager.GetString("PBRS_SP_SO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string PBRS_SP_STAND {
+            get {
+                return ResourceManager.GetString("PBRS_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_STAUB {
+            get {
+                return ResourceManager.GetString("PBRS_SP_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abweichend ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht mehr im Katalog ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Katalog ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_WIE_KATALOG {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_WIE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwert: {0} ähnelt.
+        /// </summary>
+        public static string PBRS_TIP_KATALOGWERT {
+            get {
+                return ResourceManager.GetString("PBRS_TIP_KATALOGWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts ähnelt.
+        /// </summary>
+        public static string PBRS_TITEL {
+            get {
+                return ResourceManager.GetString("PBRS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Brennstoffe des Katalogs sind im Projekt. ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN_LEER {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff des Katalogs ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN_WAHL {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf Katalog zurücksetzen ähnelt.
+        /// </summary>
+        public static string PBRS_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PBRS_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string PDLG_ABBRECHEN {
