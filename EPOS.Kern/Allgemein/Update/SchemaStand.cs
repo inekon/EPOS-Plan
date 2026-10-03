@@ -823,11 +823,20 @@ namespace WindowsFormsApplication1
         /// <c>Desinfektion_Zieltemperatur_C</c> und <c>Desinfektion_Volumen_l</c>, alle mit Prüfklausel,
         /// reines DDL (<see cref="PufferOptionenSchema"/>). <b>Ergebnisneutral:</b> Leere Felder rechnen
         /// wie zuvor. Die Nummer steht allein bei <see cref="PufferOptionenSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG und der GESPEICHERTEN ERDREICHPRÜFUNG (Welle M6 der
+        /// Entscheidungsvorlage Modellgrenzen: KU1 Stufe 1, EQ1), steht das Ziel auf
+        /// <see cref="KatalogfassungSchema.SCHRITT"/>: an den acht Katalogtabellen der Stufe 1
+        /// <c>Katalog_Schluessel</c> (eindeutig, Teilindex), <c>Katalog_Pruefsumme</c> und
+        /// <c>Katalog_Ausgelaufen</c>, an <c>Tab_Applikation</c> die <c>Katalogfassung</c>, die Tabellen
+        /// <c>Tab_Katalogabgleich</c> und <c>Tab_ErgebnisErdreich</c> (STRICT) und die Saat von Schlüssel
+        /// und Prüfsumme der ausgelieferten Sätze (<see cref="KatalogfassungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = PufferOptionenSchema.SCHRITT;
+        public const int Zielversion = KatalogfassungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

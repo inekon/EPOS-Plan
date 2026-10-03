@@ -557,8 +557,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **171**, 81 235 968 Byte, LFS-SHA-256
-`4055798699076f008b90417d47efe726a71d203cd8c4f2d70b2c67580890c8a6`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **172**, 81 293 312 Byte, LFS-SHA-256
+`8edc80c49b95d9841d044580dc61a011915f3b330c587de66a41c86c9dab2bfd`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -681,6 +681,18 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `foreign_key_check` leer). Neue Fassung **81 235 968 Byte, LFS-SHA-256
 > `4055798699076f008b90417d47efe726a71d203cd8c4f2d70b2c67580890c8a6`**. **Die Basis bleibt:** Die Projekte der CI-Auswahl
 > rechnen auf ihr gegen R33 GESAMT PASS, alle CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 172 (Katalogfassung, Katalogabgleich, Erdreichprüfung im Ergebnis), Basis unverändert.**
+> `KatalogfassungSchema` (Nummer `PufferOptionenSchema.SCHRITT + 1`): an den Stufe-1-Katalogen (`Tab_WP_STAMM` samt
+> `Tab_Kenndaten_STAMM`/`Tab_Kenndaten_Kuehlung_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_BHKW_STAMM`, `Tab_PV_STAMM`,
+> `Tab_Brauchwasser_STAMM`, `Tab_Brauchwassertyp_STAMM`, `Tab_Prozesswaerme_STAMM`, `Tab_Prozesstyp_STAMM`) die Spalten
+> `Katalog_Schluessel` (Teilindex eindeutig), `Katalog_Pruefsumme`, `Katalog_Ausgelaufen`; `Tab_Applikation.Katalogfassung`;
+> die STRICT-Tabellen `Tab_Katalogabgleich` und `Tab_ErgebnisErdreich`. Die Saat setzt nur Schlüssel und Prüfsumme der
+> Sätze mit `ReadOnly = 1` (keine Fachwerte); Projektkopien unberührt. Die Testdatenbank ist aus der Fassung `40557986…`
+> (171) mit `Werkzeuge/Testdatenbankschema` auf **172** gezogen (36 Spalten, 2 Tabellen; `integrity_check` ok). Neue Fassung
+> **81 293 312 Byte, LFS-SHA-256 `8edc80c49b95d9841d044580dc61a011915f3b330c587de66a41c86c9dab2bfd`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich; der Katalogabgleich selbst
+> läuft auf der Testdatenbank nie (Einfrierregeln nennen Katalogzeilen der Referenzprojekte). Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 

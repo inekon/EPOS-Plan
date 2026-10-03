@@ -33663,9 +33663,6 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_BAUJAHR_TEXT" xml:space="preserve">
     <value>Baujahr aus „{0}“ gelesen: {1}.</value>
   </data>
-  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
-    <value>Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}.</value>
-  </data>
   <data name="IMP_IFC_PROT_GELESEN" xml:space="preserve">
     <value>{0} Gebäude, {1} Räume, {2} Bauteile gelesen.</value>
   </data>
@@ -38888,10 +38885,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_GRENZEN" xml:space="preserve">
-    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen mit Trennflächen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene (IfcRelSpaceBoundary2ndLevel) erneut ausgeben.</value>
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude.</value>
   </data>
   <data name="IMP_IFC_PROT_NUR_1STLEVEL" xml:space="preserve">
-    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene erneut ausgeben.</value>
+    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude.</value>
   </data>
   <data name="IMP_IFC_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
     <value>Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind.</value>
@@ -42162,6 +42159,186 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
     <value>{0}: Frischwassermodul – {1} Stunden ohne ausreichende Puffertemperatur; dort deckt die nächste Stufe der Kaskade.</value>
+  </data>
+  <data name="KABG_MENUE" xml:space="preserve">
+    <value>Katalog aktualisieren…</value>
+  </data>
+  <data name="KABG_TITEL" xml:space="preserve">
+    <value>Katalog aktualisieren</value>
+  </data>
+  <data name="KABG_EINLEITUNG" xml:space="preserve">
+    <value>Gleicht die Gerätekataloge (Wärmepumpen, Heizkessel, BHKW, PV-Module, Brauchwasser- und Prozesswärmeprofile) mit dem Katalogpaket der Auslieferung ab. Eigene Sätze und alle Projekte bleiben unberührt; ein Satz, den Sie geändert oder entsperrt haben, wird nicht überschrieben.</value>
+  </data>
+  <data name="KABG_FASSUNG_DB" xml:space="preserve">
+    <value>Fassung der Datenbank</value>
+  </data>
+  <data name="KABG_FASSUNG_PAKET" xml:space="preserve">
+    <value>Fassung des Pakets</value>
+  </data>
+  <data name="KABG_PAKETORT" xml:space="preserve">
+    <value>Katalogpaket</value>
+  </data>
+  <data name="KABG_BTN_PRUEFEN" xml:space="preserve">
+    <value>Nur prüfen</value>
+  </data>
+  <data name="KABG_BTN_ABGLEICHEN" xml:space="preserve">
+    <value>Abgleichen…</value>
+  </data>
+  <data name="KABG_BTN_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungsstand wiederherstellen…</value>
+  </data>
+  <data name="KABG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KABG_SPALTE_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KABG_SPALTE_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="KABG_SPALTE_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="KABG_SPALTE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="KABG_SPALTE_HANDLUNG" xml:space="preserve">
+    <value>Handlung</value>
+  </data>
+  <data name="KABG_LEER" xml:space="preserve">
+    <value>Noch nicht geprüft.</value>
+  </data>
+  <data name="KABG_KEINE_AENDERUNG" xml:space="preserve">
+    <value>Der Katalog entspricht dem Paket — nichts zu tun.</value>
+  </data>
+  <data name="KABG_NUR_GEPRUEFT" xml:space="preserve">
+    <value>Nur geprüft — nichts geschrieben.</value>
+  </data>
+  <data name="KABG_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="KABG_FRAGE_ABGLEICHEN" xml:space="preserve">
+    <value>Den Katalog jetzt mit dem Paket abgleichen? Vorher wird eine Sicherung der Datenbank angelegt.</value>
+  </data>
+  <data name="KABG_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Den Satz „{0}“ auf den Auslieferungsstand zurücksetzen? Ihre Anpassung geht dabei verloren.</value>
+  </data>
+  <data name="KABG_NIE" xml:space="preserve">
+    <value>noch nie abgeglichen</value>
+  </data>
+  <data name="KABG_KEIN_PAKET" xml:space="preserve">
+    <value>Kein Katalogpaket gefunden ({0}) — der Katalog wurde nicht abgeglichen.</value>
+  </data>
+  <data name="KABG_KEIN_PAKET_KURZ" xml:space="preserve">
+    <value>kein Paket</value>
+  </data>
+  <data name="KABG_PAKET_FEHLER" xml:space="preserve">
+    <value>Das Katalogpaket ist nicht lesbar: {0}</value>
+  </data>
+  <data name="KABG_NICHT_BEREIT" xml:space="preserve">
+    <value>Die Datenbank ist für den Katalogabgleich noch nicht eingerichtet; der Schemaschritt fehlt.</value>
+  </data>
+  <data name="KABG_BEREITS" xml:space="preserve">
+    <value>Der Katalog steht bereits auf Fassung {0}.</value>
+  </data>
+  <data name="KABG_BERICHT" xml:space="preserve">
+    <value>{0} neu, {1} aktualisiert, {2} behalten, {3} ausgelaufen</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
+    <value>Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
+  </data>
+  <data name="KABG_HINWEIS_BEHALTEN_ENTSPERRT" xml:space="preserve">
+    <value>Der Satz ist entsperrt. Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Ein eigener Satz trägt den Namen „{0}“; der Auslieferungssatz wurde nicht eingefügt.</value>
+  </data>
+  <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
+    <value>Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog.</value>
+  </data>
+  <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
+    <value>Der Satz steht nicht im Katalogpaket.</value>
+  </data>
+  <data name="KABG_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>Der Auslieferungsstand wurde wiederhergestellt.</value>
+  </data>
+  <data name="KABG_SICHERUNG" xml:space="preserve">
+    <value>Sicherung vor dem Abgleich: {0}</value>
+  </data>
+  <data name="KABG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>Die Sicherung vor dem Abgleich ist gescheitert — es wurde nichts abgeglichen: {0}</value>
+  </data>
+  <data name="KABG_START_TITEL" xml:space="preserve">
+    <value>Katalog aktualisiert</value>
+  </data>
+  <data name="KABG_START_TEXT" xml:space="preserve">
+    <value>Die Gerätekataloge wurden mit dem Katalogpaket der Fassung {0} abgeglichen: {1}.</value>
+  </data>
+  <data name="KABG_START_BEHALTEN" xml:space="preserve">
+    <value>Sätze, die Sie angepasst haben, bleiben unverändert. Unter Administration → Daten &amp; Import → Katalog aktualisieren… lassen sie sich mit dem neuen Auslieferungsstand vergleichen und auf Wunsch zurücksetzen.</value>
+  </data>
+  <data name="KABG_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KABG_AKTION_EINGEFUEGT" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="KABG_AKTION_AKTUALISIERT" xml:space="preserve">
+    <value>aktualisiert</value>
+  </data>
+  <data name="KABG_AKTION_BEHALTEN" xml:space="preserve">
+    <value>behalten</value>
+  </data>
+  <data name="KABG_AKTION_AUSGELAUFEN" xml:space="preserve">
+    <value>ausgelaufen</value>
+  </data>
+  <data name="KABG_AKTION_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>wiederhergestellt</value>
+  </data>
+  <data name="KABG_AKTION_KEIN_PAKET" xml:space="preserve">
+    <value>kein Paket</value>
+  </data>
+  <data name="KABG_AKTION_BERICHT" xml:space="preserve">
+    <value>Abgleich</value>
+  </data>
+  <data name="KABG_KATALOG_WP" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="KABG_KATALOG_KESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="KABG_KATALOG_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="KABG_KATALOG_PV" xml:space="preserve">
+    <value>PV-Module</value>
+  </data>
+  <data name="KABG_KATALOG_BW" xml:space="preserve">
+    <value>Brauchwasserprofile</value>
+  </data>
+  <data name="KABG_KATALOG_BWT" xml:space="preserve">
+    <value>Brauchwasser-Wochenprofile</value>
+  </data>
+  <data name="KABG_KATALOG_PW" xml:space="preserve">
+    <value>Prozesswärmeprofile</value>
+  </data>
+  <data name="KABG_KATALOG_PWT" xml:space="preserve">
+    <value>Prozesswärme-Wochenprofile</value>
+  </data>
+  <data name="SIMQ_ERDREICH_STAND_LAUF" xml:space="preserve">
+    <value>Stand des Laufs vom {0}.</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_SCHLUESSEL" xml:space="preserve">
+    <value>Katalogschlüssel:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_PRUEFSUMME" xml:space="preserve">
+    <value>Prüfsumme der Auslieferung:</value>
+  </data>
+  <data name="PARV_LBL_KATALOG_AUSGELAUFEN" xml:space="preserve">
+    <value>Ausgelaufen:</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
     <value>{0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5}</value>

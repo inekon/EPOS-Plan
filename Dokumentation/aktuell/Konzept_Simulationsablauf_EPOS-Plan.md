@@ -1406,6 +1406,96 @@ Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSch
 `PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
 Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.
 
+## 20. Katalogabgleich mit Katalogfassung; Erdreichprüfung im Ergebnis
+
+Welle M6 der [Entscheidungsvorlage Modellgrenzen](Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)
+(KU1 Stufe 1, EQ1). **Kein Rechenweg ist betroffen:** Der Lauf liest Projektkopien, und die
+fasst der Abgleich nie an; die Erdreichprüfung wird nur gespeichert, nicht anders gerechnet.
+
+**Schemaschritt `KatalogfassungSchema`** (DDL und Saat, wiederholbar):
+
+| Ort | Spalte bzw. Tabelle | Bedeutung |
+|---|---|---|
+| acht Kataloge der Stufe 1 | `Katalog_Schluessel` TEXT, eindeutig (Teilindex `WHERE … IS NOT NULL`) | stabile Kennung des Auslieferungssatzes, über Fassungen gleich; Anwendersatz leer |
+| dieselben | `Katalog_Pruefsumme` TEXT (64 Hexzeichen) | SHA-256 des ausgelieferten Stands |
+| dieselben | `Katalog_Ausgelaufen` INTEGER 0/1 | 1 = in einer späteren Auslieferung entfallen, bleibt stehen |
+| `Tab_Applikation` | `Katalogfassung` INTEGER | Fassung des letzten Abgleichs; leer = noch nie |
+| `Tab_Katalogabgleich` | STRICT | Protokoll: Zeitpunkt, Fassung, Tabelle, Schlüssel, Aktion, Hinweis |
+| `Tab_ErgebnisErdreich` | STRICT, an Projekt und Anlage (`ON DELETE CASCADE`) | Prüfzeilen der Erdreichprüfung je Lauf |
+
+**Die Stufe 1** (`Katalogfassung.Stufe1`) sind die laufend gepflegten Kataloge:
+`Tab_WP_STAMM` (Kürzel WP, mit den Kindtabellen `Tab_Kenndaten_STAMM` und
+`Tab_Kenndaten_Kuehlung_STAMM`, diese nur mit `ID_Projekt` 0 oder leer), `Tab_Heizkessel_STAMM`
+(KES), `Tab_BHKW_STAMM` (BHKW), `Tab_PV_STAMM` (PV), `Tab_Brauchwasser_STAMM` (BW),
+`Tab_Brauchwassertyp_STAMM` (BWT), `Tab_Prozesswaerme_STAMM` (PW), `Tab_Prozesstyp_STAMM` (PWT). Die
+übrigen Kataloge folgen in Stufe 2. Die Wache `KatalogabgleichTests` hält die Spaltenliste gegen
+das Schema: Jede Spalte einer Stufe-1-Tabelle ist Fach- oder Metaspalte.
+
+**Prüfsumme.** SHA-256 über die Fachspalten in der festen Folge der Liste, je Spalte
+„Name=Wert"; Zahlen invariant und rundlauffest (eine ganzzahlige Gleitkommazahl wie die Ganzzahl,
+Wahrheitswerte als 1/0), Text unverändert, leer trägt nichts bei — eine neu und leer angelegte
+Spalte verschiebt keine Prüfsumme. Die Kindzeilen gehen sortiert hinter dem Kopf ein.
+**Schlüssel:** Kürzel und bereinigter Bezeichner (Umlaute ausgeschrieben, alles außer A–Z und
+0–9 als „_", groß), bei Dopplung mit Zähler `_2`, `_3`. Die **Saat** des Schritts belegt Schlüssel
+und Prüfsumme jedes gesperrten Satzes (`ReadOnly = 1`) ohne Schlüssel — kein Fachwert ändert sich.
+
+**Katalogpaket.** `Werkzeuge/Auslieferungsvorlage` schreibt den Auslieferungsstand in der
+Vorlage fest (`Katalogpaket.Festschreiben`: Saat, Prüfsummen auf den heutigen Stand,
+`Katalogfassung`) und legt `Katalogpaket.json` neben die Vorlage: alle gesperrten Sätze der Stufe 1
+mit Schlüssel, Prüfsumme, Werten und Kindzeilen, dazu die Fassung (`--katalogfassung`, Vorgabe das
+Datum als JJJJMMTT). Eine JSON-Datei statt des Formats des Katalogimports: Jener liest
+Herstellerformate ohne Schlüssel und Prüfsumme, und das CSV-Paket des Zapfprofilgenerators trennt
+Zahl und Text nicht — die Prüfsumme braucht beides. Das Paket ist deterministisch (Tabellen in der
+Folge der Stufe 1, Sätze nach Schlüssel, Werte in Spaltenfolge, ASCII mit LF) und trägt keinen
+Schemastand. In der Auslieferung liegt es unter `{app}\Vorlage\Katalogpaket.json`
+(`Katalogpaket.Pfad(Dienste.Pfade.Auslieferungsvorlage)`).
+
+**Abgleich** (`Katalogabgleich`), je Satz des Pakets:
+
+| Lage in der Datenbank | Aktion |
+|---|---|
+| Schlüssel fehlt | **eingefügt** (`ReadOnly = 1`, Schlüssel, Prüfsumme); trägt ein eigener Satz den Namen: behalten mit Hinweis |
+| Werte = Paket, Prüfsumme = Paket | nichts (unverändert) |
+| gesperrt, Prüfsumme der Zeile = gespeicherte Prüfsumme | **aktualisiert** (Werte, Kindzeilen, Prüfsumme, nicht ausgelaufen) |
+| geändert (Prüfsumme weicht ab) oder entsperrt (`ReadOnly = 0`) | **behalten** — „Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor" |
+| Satz mit Schlüssel, den das Paket nicht mehr führt | **ausgelaufen** (`Katalog_Ausgelaufen = 1`), nie gelöscht |
+
+Anwenderzeilen (ohne Schlüssel) und jede Projektkopie bleiben unberührt. Alles läuft in EINEM
+Vorgang, samt Protokoll und neuer `Katalogfassung`; ein Lauf mit derselben Fassung tut nichts, und
+auch ein erzwungener Lauf schreibt keine Protokollzeile doppelt. Ohne lesbares Paket steht
+`KEIN_PAKET` im Protokoll.
+
+**Beim Start** (`Katalogabgleich.BeimStart`, gerufen von `Program.Main` der Windows-Schale nach
+erfolgreicher Schemamigration): nur wenn das Paket eine NEUERE Fassung trägt als die Datenbank, nach
+einer Sicherung per `VACUUM INTO` in `DB-Backup` (`Katalogabgleich.SicherungAnlegen` über
+`Datenbanksicherung.KopieAnlegen`). Den Bericht („n neu, m aktualisiert, k behalten,
+a ausgelaufen") zeigt das Hauptfenster einmal als Überlagerung. iOS gleicht nicht ab; dort liegt
+kein Paket.
+
+**Bedienung.** Administration → Daten & Import → „Katalog aktualisieren…"
+(`KatalogabgleichDialog`, Hülle `KatalogabgleichHuelle`, Fenster `KatalogabgleichFenster`): Fassung
+der Datenbank und des Pakets, „Nur prüfen", „Abgleichen…" (Rückfrage, Sicherung) und je behaltenem
+Satz „Auslieferungsstand wiederherstellen…" (Werte des Pakets, gesperrt, Aktion
+`WIEDERHERGESTELLT`). Eine Katalogkopie (`Katalogkopie.Duplizieren`) übernimmt die Katalogspalten
+nicht, die Dublettenprüfung vergleicht sie nicht.
+
+**Erdreichprüfung im Ergebnis (EQ1).** `SimulationRunner.BaueErgebnis` legt die Prüfung des Laufs
+(`ErdreichAuswertung.FuerProjekt`) ins Modell, `ErgebnisCtrl.Save` schreibt sie im Vorgang des
+Ergebnisses nach `Tab_ErgebnisErdreich` (die alten Zeilen des Projekts weg, die neuen hinein);
+`ErgebnisCtrl.Delete` nimmt sie mit. Je Anlage die Prüfzeilen `ENTZUGSLEISTUNG` (W; Hinweis = Text
+anstelle der Prüfung), `JAHRESENTZUG` (kWh/a; Hinweis = Vorbehalt), `VOLLLASTSTUNDEN` (h/a),
+`FROST` (h, Grenzwert 5 % der Betriebsstunden; Hinweis = Frostmeldung) und `VDI4640:<Zeile>` je
+Zeile der Auslegungsprüfung, alle mit Grundlage und Laufstempel. Der Erdreich-Dialog nimmt den Lauf
+der Sitzung, sonst das gespeicherte Ergebnis (`ErdreichErgebnisSpeicher.Gespeichert`) und zeigt
+darunter „Stand des Laufs vom …". Der Bericht führt die Prüfung nicht als Baustein; ein späterer
+Baustein liest sie über `ErdreichErgebnisSpeicher.Lesen`.
+
+Gehalten von `EPOS.Kern.Tests/KatalogabgleichTests` (Prüfsumme, Schlüssel, Wache, Saat, Abgleich mit
+der Probe `Referenzlaeufe/Importproben/Katalogpaket_Probe.json`, Wiederherstellen, Start, kein
+Paket), `ErdreichErgebnisSpeicherTests`, `KatalogduplizierenTests`, den Werkzeugtests
+`KatalogpaketVorlageTests` und den bunit-Fällen `KatalogabgleichDialogTests` und
+`QuelleErdreichDialogTests`.
+
 ## 21. Pufferspeicher: Bereitschaft, Zonenanteile, Frischwassermodul, Desinfektion
 
 Vier Optionen des Speichers und des Brauchwassers (Entscheidungsvorlage Modellgrenzen PS1 (c),

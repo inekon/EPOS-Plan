@@ -423,6 +423,11 @@ namespace WindowsFormsApplication1
             // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.
             m.Gebaeude.AddRange(simulation_Waermebedarf.GebaeudeKennzahlenListe);
 
+            // EQ1 (Entscheidungsvorlage Modellgrenzen): die Erdreichpruefung des Laufs, wie
+            // ErdreichAuswertung.AusLauf sie am Ende des Laufs abgelegt hat - ErgebnisCtrl.Save legt
+            // sie nach Tab_ErgebnisErdreich. Reine Auswertung, kein Rechenweg.
+            m.Erdreich.AddRange(ErdreichErgebnisSpeicher.Zeilen(ErdreichAuswertung.FuerProjekt(idProjekt), m.Zeitstempel));
+
             // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
             if (sim.bSimulationWP)
             {
