@@ -267,8 +267,8 @@ public class PufferAuslegungSeiteTests : EposBunitContext
         var cut = Zeige(stand);
         Schritt(cut, 3);
 
-        // Standard zeigt alle neun Karten, abgeschaltete gedämpft.
-        Assert.Equal(9, Karten(cut).Count);
+        // Standard zeigt die neun Karten der Vorlage und das Aufheizkriterium K12, abgeschaltete gedämpft.
+        Assert.Equal(10, Karten(cut).Count);
         Assert.Contains("epos-pausl-karte--aus", cut.Find("section[data-kriterium=D1]").ClassName);
 
         cut.Find("section[data-kriterium=D1] input[type=checkbox]").Change(true);
@@ -595,6 +595,113 @@ public class PufferAuslegungSeiteTests : EposBunitContext
         var cut = ZeigeMitProbelauf(stand, _ => Lauf(5.0, false), d);
         Schritt(cut, 4);
         Assert.Equal("5,0", cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td")[2].TextContent);
+    }
+
+    // =============================================================================
+    //  Nutzen-Aufwand-Zeile, Speicher-gegen-Leistung-Kurve und Aufheizkriterium (Welle P4d)
+    // =============================================================================
+
+    private static PufferNachbarstufenDaten Nachbarn() => new()
+    {
+        Stufen = new[]
+        {
+            new PufferNachbarstufeDaten(-2, 1500, -1500, 0.97, 9.1, 2100, 610, "kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts"),
+            new PufferNachbarstufeDaten(-1, 2000, -1000, 0.99, 7.0, 1600, 700, "kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts"),
+            new PufferNachbarstufeDaten(0, 3000, 0, 1.0, 5.3, 1219, 850, "Empfehlung"),
+            new PufferNachbarstufeDaten(1, 5000, 2000, 1.0, 3.4, 800, 1100, "größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt"),
+            new PufferNachbarstufeDaten(2, 8000, 5000, 1.0, 2.2, 520, 1400, "größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt")
+        },
+        Kurve = new[]
+        {
+            new PufferLeistungspunktDaten(6, 0.6, 1400, 26.7, false),
+            new PufferLeistungspunktDaten(8, 0.8, 1000, 20, true),
+            new PufferLeistungspunktDaten(10, 1.0, 700, 16, true),
+            new PufferLeistungspunktDaten(12, 1.2, 500, 13.3, false),
+            new PufferLeistungspunktDaten(14, 1.4, 400, 11.4, false)
+        },
+        KurveHinweis = "Laufvolumen bei 10 kW = D_max 24 kWh",
+        Herkunft = "Konzept Pufferauslegung 6",
+        Simulationszone = "Heizzone",
+        DauerMs = 120,
+        Automatisch = true
+    };
+
+    [Fact]
+    public void Schritt_4_zeigt_die_Nutzen_Aufwand_Zeile_mit_hervorgehobener_Empfehlung_und_die_Kurve()
+    {
+        var stand = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(stand);
+        d.Ergebnis!.Nachbarstufen = Nachbarn();
+        var cut = Zeige(stand, d);
+        Schritt(cut, 4);
+
+        var zeilen = cut.FindAll(".epos-pausl-nachbarstufen tbody tr");
+        Assert.Equal(5, zeilen.Count);
+        Assert.Equal(new[] { "-2", "-1", "0", "1", "2" }, zeilen.Select(z => z.GetAttribute("data-abstand")!).ToArray());
+        var empfehlung = cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='0']");
+        Assert.Contains("epos-pausl-nachbarstufe--empfehlung", empfehlung.ClassName);
+        Assert.Contains("3.000 l", empfehlung.TextContent);
+        Assert.Contains("JAZ sinkt", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='2'] .epos-pausl-nachbarstufe-jaz").TextContent);
+        Assert.Contains("+5.000 l", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='2']").TextContent);
+        Assert.DoesNotContain("epos-pausl-nachbarstufe--empfehlung", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='1']").ClassName ?? "");
+
+        var kurve = cut.FindAll(".epos-pausl-kurve tbody tr");
+        Assert.Equal(5, kurve.Count);
+        Assert.Contains("700 l", kurve[2].TextContent);
+        Assert.Contains("epos-pausl-kurve--band", kurve[1].ClassName);
+        Assert.Contains("D_max", cut.Find(".epos-pausl-kurve-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen-knopf"));
+    }
+
+    [Fact]
+    public void Ohne_Nachbarstufen_rechnet_der_Knopf_sie_auf_Zuruf()
+    {
+        var stand = new Pruefstand();
+        int gerufen = 0;
+        var cut = Render<PufferAuslegungSeite>(p => p
+            .Add(x => x.Daten, Start(stand))
+            .Add(x => x.Dienste, stand.Dienste() with { Nachbarstufen = _ => { gerufen++; return Nachbarn(); } }));
+        Schritt(cut, 4);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen"));
+        Assert.Contains(Resource.PAUS_NA_ERKLAERUNG, cut.Markup);
+
+        cut.Find(".epos-pausl-nachbarstufen-knopf").Click();
+        Assert.Equal(1, gerufen);
+        Assert.Equal(5, cut.FindAll(".epos-pausl-nachbarstufen tbody tr").Count);
+    }
+
+    [Fact]
+    public void Ohne_Nachbarstufen_Dienst_fehlt_der_Knopf()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 4);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen-knopf"));
+    }
+
+    [Fact]
+    public void Die_Karte_K12_folgt_dem_Nutzungsprofil_und_dem_Schalter_des_Anwenders()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 3);
+        // Wohnen: K12 steht in Standard gedämpft.
+        Assert.Contains("epos-pausl-karte--aus", cut.Find("section[data-kriterium=K12]").ClassName);
+        Assert.Equal(Resource.PAUS_KRIT_K12, cut.Find("section[data-kriterium=K12] .epos-pausl-karte-titel").TextContent);
+
+        cut.Find("section[data-kriterium=K12] input[type=checkbox]").Change(true);
+        Assert.True(stand.Gerechnet.Last().Kriterien["K12"]);
+        Assert.DoesNotContain("epos-pausl-karte--aus", cut.Find("section[data-kriterium=K12]").ClassName);
+
+        // Büro/Schule: der Vorlagenschalter steht an, Schnell zeigt die Karte.
+        var buero = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(buero);
+        d.AufheizVorlageAn = true;
+        var cut2 = Zeige(buero, d);
+        Stufe(cut2, PufferAuslegungStufe.Schnell);
+        Schritt(cut2, 3);
+        Assert.Contains("K12", Karten(cut2));
+        Assert.DoesNotContain("epos-pausl-karte--aus", cut2.Find("section[data-kriterium=K12]").ClassName);
     }
 }
 
