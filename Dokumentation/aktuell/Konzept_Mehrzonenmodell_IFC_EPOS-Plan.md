@@ -720,6 +720,9 @@ in [0,005; 500] W/(mK), ρ in [5; 8 000] kg/m³, c in [100; 5 000] J/(kgK); alle
 „nicht geliefert" und läuft in den Rückfall. Das ist keine Vorsicht, sondern Messung: FZK-Haus und
 Institute schreiben `Pset_MaterialThermal` **mit Nullen** — schlimmer als fehlend, weil ein naiver
 Leser λ = 0 übernimmt und einen unendlichen Wärmewiderstand rechnet (Befund P, § 3.4).
+Die Schichtdicke liegt in [0,5 mm; 1 m]: Bleche ab 0,5 mm (das Deckblech eines Sandwichelements trägt
+rund 7 kg/m²) gehören mit ihrer Masse in die Speicherbilanz, Folien und Anstriche darunter tragen weder
+Widerstand noch Masse nennenswert.
 
 ### 3.6 Was ohne Stoffwerte trotzdem geht
 
@@ -1014,7 +1017,7 @@ Rückfall. Je Eingabe:
 |---|---|
 | Zone | `Nutzflaeche > 0`, `Raumhoehe > 0`, `Volumen > 0`; Solltemperaturen 5…40 °C; `Maximaleraumtemperatur` ≥ Tagessollwert; Luftwechsel 0…10 1/h; höchstens 50 Zonen je Gebäude — nach E46, mit E50 (M12) als Vorgabe entschieden (2.9); ab zwei Zonen ist die Nutzfläche Pflicht (G6a) |
 | Bauteil | `Flaeche > 0`; U-Wert 0,1…6 W/(m²K); 0 < g ≤ 1; Rahmenanteil 0,05…0,6; Azimut 0…360°, Neigung 0…180°; `ID_Nachbarzone` gesetzt **genau dann**, wenn `Randbedingung = 'ZONE'`, und ≠ `ID_Zone` |
-| Aufbau/Schicht | `Dicke` 0,001…1,0 m; λ, ρ, c im Band aus 3.5; `Reihenfolge` lückenlos ab 1; mindestens eine Schicht |
+| Aufbau/Schicht | `Dicke` 0,0005…1,0 m; λ, ρ, c im Band aus 3.5; `Reihenfolge` lückenlos ab 1; mindestens eine Schicht |
 | aus 4.8 geerbt | `R_Rest,AW > 0` je Zone (Gl. (28), S. 17 mit den Klemmfällen (28a)–(28c)); `5 ≤ Bauweise/Nutzflaeche ≤ 200 Wh/(m²K)` im Klassenweg |
 
 Neu sind die Prüfungen **zwischen** Zonen, im Dialog wie im Lauf: **Trennflächenbilanz** — jede
@@ -1489,10 +1492,11 @@ Geometrierechnung (ADR-003):
   `IfcMaterialLayerSet` über 1 m (der Export erklärt `METRE`, schreibt `LayerThickness` aber in
   Millimetern), gilt der ganze Satz als Millimeter und alle seine Dicken werden durch 1000 geteilt
   (`IMP_IFC_PROT_SCHICHTDICKE_MM`, W, ein Sammelhinweis je Datei mit Zahl der Sätze und
-  größter Dicke samt Satz). Schichten unter 1 mm (Folien, Anstriche) tragen keine
+  größter Dicke samt Satz). Schichten unter 0,5 mm (Folien, Anstriche) tragen keine
   Wärmewirkung und werden übergangen (`IMP_IFC_PROT_SCHICHT_DUENN`, I, je Datei, nach Name und Dicke
   zusammengefasst); die Bauteildicke
-  aus der Schichtsumme rechnet ohne sie.
+  aus der Schichtsumme rechnet ohne sie. Bleche ab 0,5 mm (etwa das Deckblech eines Sandwichelements)
+  bleiben als Schicht und tragen ihre Masse in die Speicherbilanz.
 
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
 Eigenschaftsliste — `Pset_SpaceCommon` im FZK-Haus führt kein `IsExternal`, dafür die fremden
