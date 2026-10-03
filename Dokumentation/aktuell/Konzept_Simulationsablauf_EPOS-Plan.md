@@ -1670,6 +1670,15 @@ Herkunft steht nur als Text in `Bemerkung`. Der Lauf liest ausschließlich diese
 Projektkopie besteht damit schon, eine eigene Tabelle braucht es nicht; das Kennzeichen `ReadOnly`
 bleibt am Stamm.
 
+**Die Kopie trägt die Nutzung.** „Vorlage übernehmen" schreibt die `Nutzung` der Vorlage (`WOHNEN`,
+`BUERO`, `SCHULE`, `SONSTIGE`) in die Spalte `Nutzung` des Kalenders am Gebäude bzw. an der Zone;
+Bearbeiten behält sie, solange die Herkunft dieselbe Vorlage nennt, ein Kalender ohne Herkunft trägt
+keine. Die Vorbelegung des Nutzungsprofils der Pufferauslegung liest allein diese Spalte der
+Projektkalender, nie den Vorlagenkatalog: Umbenennen, Löschen oder Katalogabgleich einer Vorlage
+ändern sie nicht. Duplizieren, Projektpaket und Katalogbau-Übernahme tragen die Spalte mit.
+Schemaschritt `KonditionierungNutzungSchema` (176) legt sie an und füllt bestehende Kalender einmalig
+aus der Herkunft in `Bemerkung` (Vorlage gleichen Namens und gleicher Größe; ohne Treffer leer).
+
 **Vorgaben der Pufferauslegung.** Die Kopie entsteht mit der ersten gespeicherten Auslegung eines
 Projekts (`PufferAuslegungCtrl.Speichern`). `PufferAuslegungParameter.Lesen(idProjekt)` legt die
 eingebauten Vorgaben, darüber den Stamm und darüber die Kopie; die Herkunftszeile der Vorbelegung

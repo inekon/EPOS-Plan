@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -667,6 +668,11 @@ namespace WindowsFormsApplication1
 
             string groesse = Konditionierungsgroessen.Kennwort(kalender.Groesse);
 
+            // Die Nutzung der Herkunftsvorlage (Schemaschritt KonditionierungNutzungSchema) reist mit,
+            // solange die Herkunft dieselbe Vorlage nennt; eine neue Herkunft setzt der Aufrufer
+            // („Vorlage übernehmen"), ohne Herkunft bleibt sie leer.
+            string nutzung = BleibendeNutzung(v, eigner, groesse, zeile.Bemerkung);
+
             // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
             // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
             v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
@@ -687,6 +693,9 @@ namespace WindowsFormsApplication1
 
             object neu = v.Skalar("SELECT last_insert_rowid()");
             long idKalender = Convert.ToInt64(neu, CultureInfo.InvariantCulture);
+            if (nutzung != null)
+                v.Ausfuehren(KonditionierungNutzungSchema.SQL_SETZEN,
+                             new DbParam("@n", nutzung), new DbParam("@id", idKalender));
 
             foreach (Periodenzeile p in perioden)
                 v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE +
@@ -705,6 +714,43 @@ namespace WindowsFormsApplication1
                              new DbParam("@wo", (object)p.Woche),
                              new DbParam("@ww", (object)p.WieWochentag));
             return Ergebnis.Gut;
+        }
+
+        /// <summary>
+        /// Die Nutzung, die der neu geschriebene Kalender behält: die des bisherigen Kalenders derselben
+        /// Größe, wenn dessen Herkunft und die neue <paramref name="bemerkung"/> dieselbe Vorlage nennen;
+        /// sonst <c>null</c>. Ohne die Spalte (vor Schritt <see cref="KonditionierungNutzungSchema.SCHRITT"/>)
+        /// ebenfalls <c>null</c>.
+        /// </summary>
+        private static string BleibendeNutzung(DbVorgang v, Eigner eigner, string groesse, string bemerkung)
+        {
+            string vorlage = Kalenderherkunft.AusBemerkung(bemerkung).Vorlage;
+            if (string.IsNullOrEmpty(vorlage) || !KonditionierungNutzungSchema.SpalteDa(v)) return null;
+            DataTable t = v.Lese("SELECT \"Bemerkung\", \"Nutzung\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                                 "\" WHERE " + eigner.Bedingung() + " AND \"Groesse\" = ? ORDER BY \"ID\"",
+                                 Mit(eigner.Parameter(), new DbParam("@gr", groesse)));
+            if (t == null || t.Rows.Count == 0) return null;
+            DataRow r = t.Rows[0];
+            string alt = Text(r, "Nutzung");
+            if (alt == null) return null;
+            return string.Equals(Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage, vorlage,
+                                 StringComparison.Ordinal) ? alt : null;
+        }
+
+        /// <summary>
+        /// Setzt die Nutzung am Kalender einer Größe des Eigentümers — der Weg von „Vorlage übernehmen"
+        /// (<see cref="KonditionierungsvorlageCtrl.Uebernehmen"/>). Ohne die Spalte geschieht nichts.
+        /// </summary>
+        internal static void NutzungSetzen(Eigner eigner, Konditionierungsgroesse groesse, string nutzung)
+        {
+            if (eigner == null) throw new ArgumentNullException(nameof(eigner));
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return;
+            if (nutzung != null && !DbWerte.KOND_NUTZUNGEN.Contains(nutzung)) nutzung = null;
+            DataRepository.ExecuteNonQuery(
+                "UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Nutzung\" = ? WHERE " +
+                eigner.Bedingung() + " AND \"Groesse\" = ?",
+                Mit(new[] { new DbParam("@n", (object)nutzung) },
+                    Mit(eigner.Parameter(), new DbParam("@gr", Konditionierungsgroessen.Kennwort(groesse)))));
         }
 
         /// <summary>

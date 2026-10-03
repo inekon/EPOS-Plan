@@ -543,10 +543,15 @@ namespace WindowsFormsApplication1
         internal int ImportierenIntern(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
         {
+            object hoechste = DataRepository.ExecuteScalar("SELECT COALESCE(MAX(ID), 0) FROM Tab_Projekt");
+            long vorher = hoechste == null || hoechste == DBNull.Value ? 0 : Convert.ToInt64(hoechste, CultureInfo.InvariantCulture);
             int neu = ImportierenPaket(quellPfad, gewuenschterName, modus, fortschritt, stand, out fehler);
             // Ein Paket ohne Brennstoffkopien (aelterer Stand) bekommt sie sofort aus dem Katalog des Ziels -
             // je eingespieltem Projekt jede fehlende Brennstoffart, stehende Kopien bleiben.
             if (neu > 0) ProjektBrennstoffe.SichernAlle();
+            // Ebenso die Nutzung der Konditionierungskalender (Schemaschritt 176): aus der Herkunft in
+            // Bemerkung, nur an den eingespielten Projekten (IDs nach dem Import), stehende Werte bleiben.
+            if (neu > 0) KonditionierungNutzungSchema.SaatNachImport(vorher);
             return neu;
         }
 

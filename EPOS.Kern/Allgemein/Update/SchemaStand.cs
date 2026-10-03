@@ -855,11 +855,16 @@ namespace WindowsFormsApplication1
         /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
         /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
         /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit der KONDITIONIERUNGSNUTZUNG AN DER KALENDERKOPIE, steht das Ziel auf
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>: die Spalte <c>Nutzung</c> an
+        /// <c>Tab_Konditionierungskalender</c> samt Saat aus der Herkunftsvorlage
+        /// (<see cref="KonditionierungNutzungSchema"/>). <b>Ergebnisneutral:</b> Der Lauf liest die Nutzung
+        /// nicht. Die Nummer steht allein bei <see cref="KonditionierungNutzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
+        public const int Zielversion = KonditionierungNutzungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
