@@ -59,9 +59,8 @@ steigt der Sollwert über eine **berechnete** Aufheizzeit an. Kapitel 9 trennt d
 (Grundlagen dort 4.4–4.6, 5.6, 15, N1.32, N1.37, N1.48, N1.55, N1.56). Die Entscheide stehen dort als **Nachtrag
 N1.59 (E52, P1–P8)** und **Nachtrag N1.60 (E53, P9–P13 und Heizperiode)** und je als Zeile in Abschnitt 1 der
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md); das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
-führt die dreizehn Punkte P1–P13 in Kapitel 10 mit Entscheidvermerk und als offene Punkte P14 (die Aufheizreserve nach
-der Messung in RP1, E58 F7), P15 (die Spanne der Aufheizzeit nach Bauart), P16 (der Aufschlag an Sprüngen ohne Rampe)
-und P17 (die Lesart der Auslegungsgröße). Die Stufen KP0–KP4 führt die
+führt die Punkte P1–P13 und P15–P17 (Vorschlagsspanne, Aufschlag, Auslegungsgröße; 9.9) in Kapitel 10 mit
+Entscheidvermerk und als offenen Punkt P14 die Aufheizreserve nach der Messung in RP1 (E58 F7). Die Stufen KP0–KP4 führt die
 Statusdatei in Abschnitt 2. Was das Papier in Kühlkonzept, Anlagenkopplung und Mehrzonenmodell berührt, nennt 2.3.
 
 **Was dieses Papier nicht tut.** Es übernimmt aus Normen weder Tabellenwerte noch Formeln. VDI 6007 Blatt 1 und 3
@@ -716,12 +715,12 @@ sagt es.
   Die Bemessung läuft weiter und liefert Vorschlag und Herleitungszeile (4.8, 7.6), entscheidet aber nicht; der Aufschlag
   gilt nicht. Zonen erben den Wert ihres Gebäudes (3.4), unbeheizte Zonen rampen nicht; ein gekoppeltes Einzonengebäude
   bleibt nicht optimiert (W5).
-- **Aufschlag** *(Projekt)*: Auf jedes ermittelte n der Arten täglich und fest kommt
-  n' = min(48, n + max(A_h, ⌈n · A_% / 100⌉)) mit dem Aufschlag A_h in Stunden (0–24) und A_% in Prozent (0–100); es
-  gilt der größere der beiden. Danach begrenzt die Absenkdauer wie bei jedem n (n' − 1 ≤ D, W2 zählt mit n'); die Rampe
-  wird mit n' nach 4.1 geschrieben, die Sprungstunde nie, gekappt an θ_K − 1 K. t_auf,max bleibt die bemessene Zeit
-  ohne Aufschlag. Mit A_% > 0 erhält jeder Sprung, auch einer mit n = 1, mindestens eine Rampenstunde, mit A_h > 0
-  mindestens A_h — ob das so bleibt, ist offen (P16 im [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)).
+- **Aufschlag** *(Projekt, kalenderbezogen)*: Er verlängert nur Rampen, die ein Sprung des Heizkalenders auslöst und
+  die schon eine Rampe sind — ermitteltes n > 1 der Arten täglich und fest: n' = min(48, n + max(A_h, ⌈n · A_% / 100⌉))
+  mit dem Aufschlag A_h in Stunden (0–24) und A_% in Prozent (0–100); es gilt der größere der beiden. An Sprüngen ohne
+  Rampe (n = 1), an Tagen ohne Sprung und auf die manuelle Aufheizzeit wirkt er nicht; „täglich" behält an milden Tagen
+  seine Bedeutung. Danach begrenzt die Absenkdauer wie bei jedem n (n' − 1 ≤ D, W2 zählt mit n'); die Rampe wird mit n'
+  nach 4.1 geschrieben, die Sprungstunde nie, gekappt an θ_K − 1 K. t_auf,max bleibt die bemessene Zeit ohne Aufschlag.
   Ohne Aufschlag (beide leer oder 0) rechnet die Rampe bitgleich wie ohne die Felder.
 
 ### 4.7 Wechselwirkungen
@@ -768,21 +767,26 @@ sagt es.
 Die Spalten sind nullbar (NULL = Schalter aus); der Export schreibt die neuen Kennzahlen **nur bei wirksamem Schalter**
 (Muster E32). Den Vergleich mit und ohne Rampe liefert eine Projektvariante (P8).
 
-**Art „manuell" im Ergebnis.** Rampt ein Gebäude mit manueller Aufheizzeit, trägt seine Ergebniszeile
-`Aufheiz_Bemessung` = `MANUELL` und `Aufheizzeit_Max_H` = t_m (Gebäude und Zonen), Zustand BEMESSEN; T_a,B, P_auf und
-Quelle bleiben die der Bemessung. Der Export nennt `Geb[n].Aufheizzeit_Manuell` nur, wenn der Wert gesetzt ist. Die
+**Art im Ergebnis.** Die Ergebnisspalte `Aufheiz_Art` (Gebäude und Zonen; die Zone erbt die Art ihres Gebäudes) trägt
+die wirksame Art `TAEGLICH`, `FEST` oder `MANUELL`; `Aufheiz_Bemessung` behält bei jeder Art die Variante der Bemessung.
+Rampt ein Gebäude mit manueller Aufheizzeit, steht `Aufheizzeit_Max_H` = t_m (Gebäude und Zonen), Zustand BEMESSEN;
+T_a,B, P_auf und Quelle bleiben die der Bemessung. Der Export nennt `Geb[n].Aufheizart` bei wirksamem Schalter und
+`Geb[n].Aufheizzeit_Manuell` nur, wenn der Wert gesetzt ist. Die
 **Herleitungszeile** der Bemessung (ohne Jahreslauf) bleibt bei jeder Art stehen; sie ist zugleich der Vorschlag für die
 manuelle Aufheizzeit (7.6) und nennt bei gesetztem Wert beide Zeiten. Rampentage, Aufheizstunden, längste Rampe, W2 und
 W3 zählen die tatsächlich geschriebenen Rampen, also mit Aufschlag bzw. manuellem Wert.
 
-**Auslegungsgröße der Heizung.** Für die Auslegung gilt die stationäre Auslegungsheizlast plus die Aufheizleistung P_auf
-aus der Bemessung, nicht das Maximum der idealen Last. Bedarfsdialog und Bericht weisen ideale Spitze (`SpitzeKw`),
-Tagesmittel (`SpitzeTagesmittelKw`) und P_auf mit Quelle (`Aufheiz_Leistung_Kw`, `Aufheiz_Leistungsquelle`)
-nebeneinander aus und sagen, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist. Ein Filter auf der
-Lastreihe gehört nicht in den Rechenweg ([Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md));
-die Rampe senkt die Spitze geschlossen geregelt. Weil P_auf bei Quelle Ziel die stationäre Last am Bemessungspunkt
-schon enthält ((1 + ρ) · Φ_stat), ist die Lesart der Summe offen (P17 im Register); bis dahin stehen die Zahlen
-nebeneinander, eine Summe wird nicht ausgewiesen.
+**Auslegungsgröße der Heizung.** Für die Auslegung gilt nicht das Maximum der idealen Last, sondern
+Φ_HL + Φ_RH: die stationäre Auslegungsheizlast Φ_HL plus der **Aufheizzuschlag** Φ_RH = max(0, P_auf − Φ_stat(θ_T,max,
+T_a,B)) aus der Bemessung, nach dem Muster des Aufheizzuschlags der DIN EN 12831-1. P_auf enthält die stationäre Last am
+Bemessungspunkt schon; der Zuschlag ist bei Quelle Ziel ρ · Φ_stat, bei Quelle Grenze `Heizleistung_Max` − Φ_stat, bei
+W1 null; skaliert wird er wie P_auf, am Gebäude mit Zonen als Summe der beheizten Zonen, ein gekoppeltes Gebäude bekommt
+keinen. Die Ergebniszeile des Gebäudes trägt `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`. Bedarfsdialog und Bericht
+zeigen die Auslegungsgröße mit ihren Teilen und daneben ideale Spitze (`SpitzeKw`), Tagesmittel (`SpitzeTagesmittelKw`)
+und P_auf mit Quelle (`Aufheiz_Leistung_Kw`, `Aufheiz_Leistungsquelle`) und sagen, dass die ideale Spitze bei Schalter
+aus keine Auslegungsgröße ist. Ein Filter auf der Lastreihe gehört nicht in den Rechenweg
+([Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)); die Rampe senkt die
+Spitze geschlossen geregelt.
 
 | Hinweis (benannt; Protokoll, Bedarfsdialog, Bericht; der Lauf rechnet weiter) | Kriterium |
 |---|---|
@@ -812,8 +816,8 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 | N-AH8 Grenzfall | Schalter an, P_auf = +∞ | byte-gleich zu „aus" |
 | N-AH9 Mehrzonen | zwei Zonen mit Trennfläche, Formel gegen die volle Zonenschleife | sicher, Band 1 % |
 | N-AH10 Ränder | Sprung am 1. Januar, D < n, Übergang aus „aus", Beginn der Heizperiode, Bemessung innerhalb der Heizperiode, Deckel 48, Kühlkappung an θ_K − 1 K, AK1-Gebäude | benannte Ergebnisse W1–W5 |
-| N-AH11 Aufschlag | n' nach 4.6 je Sprung in täglich und fest, Deckel 48, W2 mit n', t_auf,max unverändert | ohne Ausnahme; Aufschlag 0/0 und Schalter aus byte-gleich |
-| N-AH12 manuell | jeder Sprung n = t_m + 1, Zonen erben, kein Aufschlag, Bemessung unverändert, Ergebniszeile `MANUELL`, Export nur gesetzt | ohne Ausnahme; Schalter aus byte-gleich |
+| N-AH11 Aufschlag | n' nach 4.6 je Rampe mit n > 1 in täglich und fest, Sprünge mit n = 1 ohne Aufschlag, Deckel 48, W2 mit n', t_auf,max unverändert | ohne Ausnahme; Aufschlag 0/0 und Schalter aus byte-gleich |
+| N-AH12 manuell | jeder Sprung n = t_m + 1, Zonen erben, kein Aufschlag, Bemessung unverändert, `Aufheiz_Art` = `MANUELL`, Export nur gesetzt | ohne Ausnahme; Schalter aus byte-gleich |
 
 ## 5. Datenmodell und Schema
 
@@ -885,8 +889,9 @@ OR …)`. Modus und Abzug stehen getrennt, damit NULL nicht zugleich „Variante
 Der **Aufschlag** steht in `Tab_Einstellungen` als `Aufheiz_Aufschlag_H` INTEGER 0…24 und `Aufheiz_Aufschlag_Prozent`
 REAL 0…100, NULL heißt jeweils 0; beim Schreiben werden 0 und ein leeres Feld zu NULL. Die **manuelle Aufheizzeit** steht
 je Gebäude in `Tab_Gebaeude.Aufheizzeit_Manuell_H` INTEGER 1…47, NULL heißt „Art des Projekts"; der Katalog
-(`Tab_Gebaeude_STAMM`) und die Zonen tragen kein Feld. `Tab_ErgebnisGebaeude.Aufheiz_Bemessung` kennt zusätzlich
-`MANUELL`.
+(`Tab_Gebaeude_STAMM`) und die Zonen tragen kein Feld. `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone` bekommen
+`Aufheiz_Art` TEXT `IN ('TAEGLICH','FEST','MANUELL')`, das Gebäude dazu `Auslegungsheizlast_Kw` (> 0) und
+`Aufheizzuschlag_Kw` (≥ 0); `Tab_ErgebnisZone.Aufheiz_Zustand` kennt zusätzlich `GEKOPPELT`.
 
 ### 5.4 Die Schemaschritte
 
@@ -904,9 +909,9 @@ Nachbarsitzungen die nächsten Nummern belegen können
 DML an Bestandsdaten** — die einzige Saat sind neue Katalogzeilen der Vorlagen, die kein Lauf liest; der Referenzlauf
 bleibt byte-gleich.
 
-**KP-S4** (KP3, Welle R5) trägt die drei Spalten aus 5.3 und die Erweiterung des `CHECK` von `Aufheiz_Bemessung`; weil
-SQLite einen `CHECK` nicht ändert, baut der Schritt `Tab_ErgebnisGebaeude` neu (Rezept von Schritt 96) und die Sicht
-`Abfrage_Projektgebaeude` um die Gebäudespalte. Die Nummer vergibt die Beauftragung wie oben aus `SchemaStand.Zielversion`
+**KP-S4** (KP3, Welle R5) trägt die Eingabe- und Ergebnisspalten aus 5.3 per `ADD COLUMN`, ohne Neubau von
+`Tab_ErgebnisGebaeude`; weil SQLite einen `CHECK` nicht ändert, baut er allein `Tab_ErgebnisZone` für `GEKOPPELT` neu
+(Rezept von Schritt 96) und die Sicht `Abfrage_Projektgebaeude` um die Gebäudespalte. Die Nummer vergibt die Beauftragung wie oben aus `SchemaStand.Zielversion`
 + 1 — Platzhalter Schritt 171 — und prüft sie spät gegen `origin`; kein DML an Bestandsdaten.
 
 ### 5.5 Kopierwege, Leser und Werkzeuge
@@ -1163,16 +1168,22 @@ Vorlagen werden über `Werkzeuge/Berichtsvorlage` neu gebaut.
 **Aufheizzeit manuell im Gebäudedialog.** Der Reiter „Konditionierung" des Gebäudedialogs trägt im Projektmodus eine
 Gruppe „Aufheizung" mit dem Feld „Aufheizzeit manuell (h)" (1–47, leer = Art des Projekts) und zwei **Vorschlägen**
 daneben: (1) die bemessene Aufheizzeit dieses Gebäudes aus der Herleitungszeile (4.8, ohne Jahreslauf) mit
-„Übernehmen"; (2) die **Spanne nach Bauart** — die Bauart folgt aus `Bauweise` je m² Wohnfläche wie im Katalogdialog
-(leicht < 30, schwer 30–75, sehr schwer > 75 Wh/(m²·K)): leicht 1–2 h, schwer 2–4 h, sehr schwer 4–8 h (Zahlen offen
-als P15). Ein Wert außerhalb der Spanne wird mit Hinweis angenommen, nicht gesperrt (weiche Sperre nach den Hausregeln
+„Übernehmen"; (2) die **Spanne aus der Zeitkonstante** des Gebäudes, keine feste Tabelle: [t_u; t_o] mit
+t_u = max(1, t_auf,max) und t_o = min(47, ⌈τ₂ · ln 10⌉) Stunden (liegt t_u über t_o, gilt [t_o; t_u]; bei
+unerreichbarer Bemessung [1; t_o]). τ₂ ist die langsame Zeitkonstante der Aufheizantwort (4.2) mit Strahlungsanteil und
+Zusatzleitwert des Bemessungsfalls, am Gebäude mit Zonen das Maximum der beheizten Zonen; nach ln 10 · τ₂ ist der
+langsame Modus auf 10 % abgeklungen, länger zu rampen senkt die Spitze kaum noch. Im Zahlenbeispiel aus 4.5 ergibt das
+1–11 h für das Haus aus 1045 und 8–12 h für die gedämmte Variante. Die Regel ist ein Vorschlag der Umsetzung (Entwurf
+Festlegung 40). Ein Wert außerhalb der Spanne wird mit Hinweis angenommen, nicht gesperrt (weiche Sperre nach den Hausregeln
 von `EPOS.UI`); ohne Projektschalter sagt das Feld, dass es erst mit der Aufheizoptimierung wirkt. Zonen zeigen den
 geerbten Wert lesend, der Katalogmodus zeigt das Feld nicht. Der Assistent setzt es über ein Katalogfeld in
-`GebaeudeKiSicht`; Abweichungsmerkmale „Aufheizzeit manuell (h)", „Aufschlag (h)" und „Aufschlag (%)".
+`GebaeudeKiSicht`; Abweichungsmerkmale „Art", „Aufheizzeit manuell (h)", „Aufschlag (h)" und „Aufschlag (%)".
 
 **Auslegungsgröße in Bedarfsdialog und Bericht.** Die Gruppe „Aufheizung" des Bedarfsdialogs und die Gebäudetafel des
-Berichts stellen je Gebäude ideale Spitze, Tagesmittel und P_auf mit Quelle nebeneinander, mit dem Hinweis aus 4.8, dass
-die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; beide Sprachen, keine neue Spalte.
+Berichts zeigen je Gebäude die Auslegungsgröße Φ_HL + Φ_RH mit ihren Teilen (4.8) und daneben ideale Spitze, Tagesmittel
+und P_auf mit Quelle, mit dem Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; beide
+Sprachen. Der Bericht liest die Teile aus der Ergebniszeile, der Bedarfsdialog bei Schalter aus aus der Auskunft der
+Bemessung.
 
 ### 7.7 Plattform, Glossar, Texte, Assistent, Tests
 
@@ -1352,14 +1363,20 @@ hat der Anwender beantwortet; im [Entwurf KP3](Gebaeudesimulation/2026-10-02_Ent
 (Abschnitt 6), ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5). **E60** entscheidet Vorschlag 1 des
 [Konzepts Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) (Abschnitt 5), im
 Entwurf Festlegung 41. Beide stehen als Nachtrag N1.68 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
+Am 03.10.2026 hat der Anwender die drei Folgefragen P15–P17 des [Registers](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+und den Schemaweg entschieden (letzte vier Zeilen).
 
 | Frage | Entscheid | Folgen |
 |---|---|---|
 | E59 (1) Wo liegt der manuelle Wert? | **je Gebäude**: dritte Art „manuell" am Gebäude, `Tab_Gebaeude.Aufheizzeit_Manuell_H` 1–47 h; Zonen erben, kein Feld am Katalog | 3.4, 4.6, 4.8, 5.3, 5.5, 7.6; Festlegungen 37–39 |
-| E59 (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum**: `Aufheiz_Aufschlag_H` 0–24 und `Aufheiz_Aufschlag_Prozent` 0–100 am Projekt, n' = min(48, n + max(A_h, ⌈n · A_%/100⌉)) auf jedes ermittelte n, nicht auf den manuellen Wert | 4.6, 5.3, 7.6; Festlegungen 35, 36; ob der Aufschlag auch Sprünge ohne Rampe trifft, ist offen (P16) |
-| E59 (3) Wann wird umgesetzt? | **nach D2, vor RP1**: Welle R5 (Rechenweg, Schritt KP-S4, Testdatenbank, Export), O1b (Projekteinstellung), Erweiterung von O2 (Feld mit Vorschlägen: bemessene Zeit und Spanne nach Bauart) und O3 (Abweichungsmerkmale) | 5.4, 8; KP3 16,75–21,75 PT mit E60; die Spanne nach Bauart ist zu bestätigen (P15) |
+| E59 (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum**: `Aufheiz_Aufschlag_H` 0–24 und `Aufheiz_Aufschlag_Prozent` 0–100 am Projekt, n' = min(48, n + max(A_h, ⌈n · A_%/100⌉)) auf jedes ermittelte n, nicht auf den manuellen Wert | 4.6, 5.3, 7.6; Festlegungen 35, 36; Geltungsbereich mit P16 entschieden |
+| E59 (3) Wann wird umgesetzt? | **nach D2, vor RP1**: Welle R5 (Rechenweg, Schritt KP-S4, Testdatenbank, Export), O1b (Projekteinstellung), Erweiterung von O2 (Feld mit Vorschlägen: bemessene Zeit und Spanne) und O3 (Abweichungsmerkmale) | 5.4, 8; KP3 16,75–21,75 PT mit E60; die Spanne mit P15 entschieden |
 | E59 „individuell" | Der Rechenweg ist es schon — Stufenformel, Bemessung und P_auf je Gebäude und Zone —; pauschal bleiben ρ (P14), die Art und der Aufschlag | 4.6; Festlegung 34 |
-| E60 Welche Größe gilt für die Heizungsauslegung? | **Vorschlag 1**: stationäre Auslegungsheizlast plus P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3) stellen ideale Spitze, Tagesmittel und P_auf mit Quelle nebeneinander, mit dem Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; kein Filter im Rechenweg, die Kennzahl „Spitze als n-h-Mittel" (Vorschlag 2) nicht beauftragt | 4.8, 7.6; Festlegung 41; die Lesart der Summe ist offen (P17) |
+| E60 Welche Größe gilt für die Heizungsauslegung? | **Vorschlag 1**: stationäre Auslegungsheizlast plus P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3) stellen ideale Spitze, Tagesmittel und P_auf mit Quelle nebeneinander, mit dem Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist; kein Filter im Rechenweg, die Kennzahl „Spitze als n-h-Mittel" (Vorschlag 2) nicht beauftragt | 4.8, 7.6; Festlegung 41; die Lesart der Summe mit P17 entschieden |
+| P16 Trifft der Aufschlag auch Sprünge ohne Rampe? (03.10.2026) | **Nein — kalenderbezogen:** Der Aufschlag gilt nur an Rampen, die ein Sprung des Heizsollwerts auslöst, und verlängert nur Rampen mit n > 1; an Sprüngen ohne Rampe (n = 1) und an Tagen ohne Sprung kein Aufschlag; Begrenzung auf D + 1 und W2 bleiben | 4.6; Festlegung 35 |
+| P17 Wie ist die Auslegungsgröße zu lesen? (03.10.2026) | **(b)**: Auslegungsheizlast plus Aufheizzuschlag P_auf − Φ_stat, nach dem Muster Φ_RH der DIN EN 12831-1, mit den Teilen daneben | 4.8, 7.6; Festlegung 41; Ergebnisspalten `Auslegungsheizlast_Kw`, `Aufheizzuschlag_Kw` |
+| P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? (03.10.2026) | **(b)**: aus τ₂ des Gebäudes (langsame Zeitkonstante des Zweikapazitätenmodells), keine feste Bauart-Tabelle; dazu die bemessene Zeit aus der Herleitungszeile | 7.6; Festlegung 40 mit der Regel [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] |
+| Schemaweg des Schritts KP-S4 (03.10.2026) | Neue Ergebnisspalte `Aufheiz_Art` an Gebäude und Zone per `ADD COLUMN`, `Aufheiz_Bemessung` behält die Variante, kein Neubau von `Tab_ErgebnisGebaeude`; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" | 4.8, 5.3, 5.4; Festlegungen 39, 43 |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
@@ -1509,8 +1526,9 @@ Gebäudehülle und des Stundenmodells gilt [Glossar Lokalisierung](Glossar_Lokal
 | **Aufheizoptimierung** | Der Projektschalter (Vorgabe aus), der vor jedem Sollwertsprung nach oben eine berechnete Rampe einfügt, damit die Sprungspitze die Aufheizleistung nicht übersteigt (4, F9). |
 | **Aufheizzeit t_auf** | Die Dauer der Rampe vor einem Sprung, (n − 1) Stunden bei n Stufen, höchstens die Absenkdauer D (4.1). |
 | **Aufheizzeit manuell t_m** | Die je Gebäude eingegebene Aufheizzeit (1–47 h), mit der das Gebäude statt der ermittelten an jedem Sprung rampt; die Zonen erben sie (4.6, 7.6). |
-| **Aufschlag** | Die Projektvorgabe in Stunden und in Prozent, um die jede ermittelte Rampe länger wird; es gilt der größere Wert, höchstens bis zum Deckel (4.6). |
-| **Auslegungsgröße** | Die Leistung, nach der die Heizung ausgelegt wird: die stationäre Auslegungsheizlast mit der Aufheizleistung P_auf, nicht das Maximum der idealen Last (4.8). |
+| **Aufheizzuschlag Φ_RH** | Der Teil der Aufheizleistung über der stationären Last am Bemessungspunkt, max(0, P_auf − Φ_stat); er kommt zur Auslegungsheizlast hinzu (4.8). |
+| **Aufschlag** | Die Projektvorgabe in Stunden und in Prozent, um die jede Rampe eines Kalendersprungs mit n > 1 länger wird; es gilt der größere Wert, höchstens bis zum Deckel (4.6). |
+| **Auslegungsgröße** | Die Leistung, nach der die Heizung ausgelegt wird: die stationäre Auslegungsheizlast plus der Aufheizzuschlag, nicht das Maximum der idealen Last (4.8). |
 | **Ausnahmetag** | Ein Tag, den eine eigene Periode (Ferien, Betriebspause, Feiertag oder „wie Wochentag X") statt der Standardwoche bestimmt; er bleibt erhalten, wenn die Matrix erneut angewendet oder eine Vorlage übernommen wird (3.2, P12). |
 | **Bemessung (a) und (b)** | Die zwei Varianten der kältesten Außentemperatur für die Höchstzeit: (a) die kälteste Stunde selbst (Vorgabe) oder (b) die kälteste Stunde abzüglich des Abzugs ΔT_K als Reserve für kältere Jahre (4.5). |
 | **Deckel** | Die feste Obergrenze von 48 Stufen (Stunden) je Rampe, unabhängig von Absenkdauer und Stufenformel (4.6). |
