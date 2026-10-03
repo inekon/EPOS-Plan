@@ -544,8 +544,14 @@ namespace EPOS.Kern.Tests
         /// (einseitig); „Innenwand frei" <c>btaHeated</c>, 8 m², ohne Bezug (einseitig); „Außenwand Süd" (EG, 180°) und
         /// „Außenwand Nord" (OG, 0°) außen, U 0,3, je 40 m² — Wohnen bzw. Schlafen; „Kellerwand" <c>btaGround</c>, 30 m²,
         /// Hüllkennung FALSE — Keller.</para>
+        ///
+        /// <para>Zwei Abwandlungen, nur im Speicher (keine Probendatei): <paramref name="schwach"/> — die Decke EG/OG trägt
+        /// nur 10 m² (die Datei referenziert nicht alle Deckenteile; die Fläche wird aus den Raummengen geschätzt);
+        /// <paramref name="spitzboden"/> — ein Geschoss DG (5200 mm) mit dem Raum „Spitzboden" (20 m², nach dem Namen
+        /// beheizt), der die „Oberste Decke" mitreferenziert: Die Datei erklärt sie gegen unbeheizt, die Erklärung gilt vor
+        /// dem Bezug und wird benannt.</para>
         /// </summary>
-        public static byte[] Referenzen(bool schwach = false)
+        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false)
         {
             using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_referenzen.ifc"))
             {
@@ -582,6 +588,12 @@ namespace EPOS.Kern.Tests
                 b.Bezug(abstell, kellerdecke, abstellwand);
                 b.Bezug(schlafen, decke, oberste, vordach, iwOg, treppe, nord);
                 b.Bezug(kind, decke, oberste, iwOg);
+                if (spitzboden)
+                {
+                    IIfcBuildingStorey dg = b.GeschossEnthalten(g, "DG", 5200);
+                    IIfcSpace sb = b.RaumEnthalten(dg, "Spitzboden", 150, 150, 20, 30, 1500, zerlegt: false);
+                    b.Bezug(sb, oberste);
+                }
                 return b.Speichern();
             }
         }

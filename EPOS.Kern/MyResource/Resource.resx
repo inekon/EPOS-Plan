@@ -43204,5 +43204,11 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
     <value>Der Deckungsgrad, den die Durchlaufbilanz mit dem Puffer erreichen soll, in Prozent; leer = 100 %.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GESCHAETZT" xml:space="preserve">
+    <value>Trenndecke {0}/{1}: Die Datei referenziert nicht alle Deckenteile — Fläche aus den Raummengen geschätzt: {2} m² (kleinere beheizte Grundfläche der beiden Geschosse) statt {3} m² referenziert; U-Wert und Aufbau aus den referenzierten Teilen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG" xml:space="preserve">
+    <value>Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen.</value>
+  </data>
 </root>
 
