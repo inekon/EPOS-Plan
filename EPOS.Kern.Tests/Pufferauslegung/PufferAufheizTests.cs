@@ -48,8 +48,8 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Equal(3042.6, k.VolumenL.Value, 1);
             Assert.Contains("Aufheiz.Dauer_h", k.Rechenweg);
             Assert.Equal(2, PufferAuslegungParameter.Vorgabe().Wert(PufferAuslegungVorgaben.AUFHEIZ_DAUER));
-            // Der Rückfall steht nicht in der Saat (kein Schemaschritt in dieser Welle).
-            Assert.DoesNotContain(PufferAuslegungVorgaben.EINTRAEGE, v => v.Schluessel.Contains("Aufheiz", StringComparison.Ordinal));
+            // Rückfall und Saat aus derselben Liste (Schemaschritt 179): Dauer und fünf Nutzungsschalter.
+            Assert.Equal(6, System.Linq.Enumerable.Count(PufferAuslegungVorgaben.EINTRAEGE, v => v.Schluessel.Contains("Aufheiz", StringComparison.Ordinal)));
         }
 
         [Fact]

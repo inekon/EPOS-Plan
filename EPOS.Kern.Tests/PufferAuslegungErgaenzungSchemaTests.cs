@@ -8,9 +8,10 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Schemaschritt der Ergänzungen der Pufferspeicher-Auslegung</b> (Welle P4c): Nummer und
-    /// Register, Prüfklauseln und Fremdschlüssel der sieben Spalten und der Schritt aus dem Stand vor
-    /// ihm — zweimal. Kein Referenzgebäude und kein Referenzpuffer trägt einen Wert.
+    /// <b>Schemaschritt der Ergänzungen der Pufferspeicher-Auslegung</b> (Wellen P4c/P4d): Nummer und
+    /// Register, Prüfklauseln und Fremdschlüssel der sechs Spalten, die Saat des Aufheizkriteriums und der
+    /// Schritt aus dem Stand vor ihm — zweimal. Kein Referenzpuffer trägt einen Wert; das Gebäude führt
+    /// keinen Verweis auf eine Konditionierungsvorlage.
     /// </summary>
     [Collection("Testdatenbank")]
     public class PufferAuslegungErgaenzungSchemaTests : IDisposable
@@ -27,7 +28,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(PufferAuslegungErgaenzungSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == PufferAuslegungErgaenzungSchema.SCHRITT).Wirkung);
-            Assert.Equal(7, PufferAuslegungErgaenzungSchema.SPALTEN.Count);
+            Assert.Equal(6, PufferAuslegungErgaenzungSchema.SPALTEN.Count);
+            Assert.DoesNotContain(PufferAuslegungErgaenzungSchema.SPALTEN, s => s.Tabelle == "Tab_Gebaeude");
             Assert.Equal(511, PufferAuslegungErgaenzungSchema.MASKE_MAX);
         }
 
@@ -40,8 +42,6 @@ namespace EPOS.Kern.Tests
             Ausfuehren(c, "CREATE TABLE Tab_Projekt (ID INTEGER PRIMARY KEY) STRICT");
             Ausfuehren(c, "CREATE TABLE Tab_Pufferspeicher (ID INTEGER PRIMARY KEY, ID_Projekt INTEGER) STRICT");
             Ausfuehren(c, "CREATE TABLE Tab_Pufferspeicher_STAMM (ID INTEGER PRIMARY KEY) STRICT");
-            Ausfuehren(c, "CREATE TABLE Tab_Gebaeude (ID INTEGER PRIMARY KEY) STRICT");
-            Ausfuehren(c, "CREATE TABLE Tab_Konditionierungsvorlage_STAMM (ID INTEGER PRIMARY KEY) STRICT");
             Ausfuehren(c, PufferAuslegungSchema.SqlCreateAuslegung());
             foreach (var s in PufferAuslegungErgaenzungSchema.SPALTEN)
                 Ausfuehren(c, PufferAuslegungErgaenzungSchema.Anlegen(s));
@@ -58,20 +58,16 @@ namespace EPOS.Kern.Tests
 
             // Der Katalogsatz geht, der Verweis wird leer; ein fremder Verweis wird abgelehnt.
             Ausfuehren(c, "INSERT INTO Tab_Pufferspeicher_STAMM (ID) VALUES (7)");
-            Ausfuehren(c, "INSERT INTO Tab_Konditionierungsvorlage_STAMM (ID) VALUES (3)");
             Ausfuehren(c, "INSERT INTO Tab_Pufferspeicher (ID, ID_Projekt, ID_Stamm) VALUES (5, 1, 7)");
-            Ausfuehren(c, "INSERT INTO Tab_Gebaeude (ID, ID_Konditionierungsvorlage) VALUES (9, 3)");
             Assert.True(Wirft(c, "INSERT INTO Tab_Pufferspeicher (ID, ID_Projekt, ID_Stamm) VALUES (6, 1, 99)"));
-            Assert.True(Wirft(c, "INSERT INTO Tab_Gebaeude (ID, ID_Konditionierungsvorlage) VALUES (10, 99)"));
             Ausfuehren(c, "DELETE FROM Tab_Pufferspeicher_STAMM");
-            Ausfuehren(c, "DELETE FROM Tab_Konditionierungsvorlage_STAMM");
             Assert.Equal(1L, Zahl(c, "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Stamm IS NULL"));
-            Assert.Equal(1L, Zahl(c, "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Konditionierungsvorlage IS NULL"));
         }
 
         /// <summary>
-        /// Der Schritt aus dem Stand VOR ihm: Die sieben Spalten werden entfernt; der Schritt legt sie leer
-        /// an, ein zweiter Lauf tut nichts. Kein Referenzgebäude und kein Referenzpuffer trägt einen Wert.
+        /// Der Schritt aus dem Stand VOR ihm: Die sechs Spalten und die sechs Vorgaben des Aufheizkriteriums
+        /// werden entfernt; der Schritt legt die Spalten leer an und sät die Vorgaben nach, ein zweiter Lauf
+        /// tut nichts. Kein Referenzpuffer trägt einen Wert.
         /// </summary>
         [Fact]
         public void Der_Schritt_aus_dem_Stand_davor_und_wiederholbar()
@@ -81,14 +77,22 @@ namespace EPOS.Kern.Tests
             Assert.True(PufferAuslegungErgaenzungSchema.Vollstaendig());
             foreach (var s in PufferAuslegungErgaenzungSchema.SPALTEN)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" DROP COLUMN \"" + s.Spalte + "\"");
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_PufferAuslegungParameter_STAMM WHERE Schluessel LIKE 'Pufferauslegung.Aufheiz.%'");
             Assert.False(PufferAuslegungErgaenzungSchema.Vollstaendig());
-            Assert.Equal(7, PufferAuslegungErgaenzungSchema.Anweisungen.Count());
+            Assert.Equal(6, PufferAuslegungErgaenzungSchema.Anweisungen.Count());
+            Assert.Equal(6, PufferAuslegungSchema.SaatOffen());
 
             var bericht = new List<string>();
-            Assert.Equal(7, PufferAuslegungErgaenzungSchema.Ausfuehren(bericht));
+            Assert.Equal(6 + 6, PufferAuslegungErgaenzungSchema.Ausfuehren(bericht));
             Assert.Equal(7, bericht.Count);
+            Assert.Contains(bericht, z => z.Contains("6 Vorgabe(n)"));
             Assert.True(PufferAuslegungErgaenzungSchema.Vollstaendig());
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Konditionierungsvorlage IS NOT NULL"));
+            Assert.Equal((long)PufferAuslegungVorgaben.Anzahl, Zahl("SELECT COUNT(*) FROM Tab_PufferAuslegungParameter_STAMM"));
+            Assert.Equal(154, PufferAuslegungVorgaben.Anzahl);
+            Assert.Equal(2.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Wert FROM Tab_PufferAuslegungParameter_STAMM WHERE Schluessel = 'Pufferauslegung.Aufheiz.Dauer_h'"),
+                System.Globalization.CultureInfo.InvariantCulture));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_table_info('Tab_Gebaeude') WHERE name LIKE '%Vorlage%'"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Stamm IS NOT NULL"));
 
             var zweiter = new List<string>();

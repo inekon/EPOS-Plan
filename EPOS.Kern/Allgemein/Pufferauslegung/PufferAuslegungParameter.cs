@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, double>(StringComparer.Ordinal);
             var quellen = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (PufferVorgabe v in PufferAuslegungVorgaben.EINTRAEGE.Concat(PufferAuslegungVorgaben.NACHTRAG))
+            foreach (PufferVorgabe v in PufferAuslegungVorgaben.EINTRAEGE)
             {
                 werte[v.Schluessel] = v.Wert;
                 quellen[v.Schluessel] = v.Quelle;

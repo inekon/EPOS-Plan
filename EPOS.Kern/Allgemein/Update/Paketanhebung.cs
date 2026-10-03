@@ -288,7 +288,7 @@ namespace WindowsFormsApplication1
                       "Zuordnung der Nutzungsprofile über IDs, Zapf-Nutzungsarten Büro, Schule und Gewerbe"),
             // Ein älteres Paket bringt die Ergänzungsspalten der Pufferauslegung nicht mit; sie bleiben leer.
             new Stufe(PufferAuslegungErgaenzungSchema.SCHRITT, Art.Ddl,
-                      "Sitzungseingaben der Pufferauslegung, Konditionierungsvorlage am Gebäude, Katalogverweis am Projektpuffer"),
+                      "Sitzungseingaben der Pufferauslegung, Katalogverweis am Projektpuffer, Vorgaben des Aufheizkriteriums"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

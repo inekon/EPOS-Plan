@@ -641,32 +641,5 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             // Das Referenzprojekt bleibt ohne Verweis.
             Assert.Equal(0L, Convert.ToInt64(Wert("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND ID_Stamm IS NOT NULL", P_ZAPF)));
         }
-
-        /// <summary>
-        /// Die Nutzungsprofil-Ableitung liest den Verweis <c>ID_Konditionierungsvorlage</c> am Gebäude
-        /// (Büro → Büro/Schule), wenn die Kalender des Gebäudes keine Nutzung tragen. Auf einer Projektkopie von 1007.
-        /// </summary>
-        [Fact]
-        public void Nutzungsprofil_liest_die_Konditionierungsvorlage_am_Gebaeude()
-        {
-            if (!_db.Vorhanden) return;
-            string name = Projektname(1007);
-            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Konditionierungsvorlage");
-            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
-            PufferNutzungsprofilAbleitung ohne = PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil;
-
-            object buero = Wert("SELECT ID FROM Tab_Konditionierungsvorlage_STAMM WHERE Nutzung = 'BUERO' ORDER BY ID");
-            Assert.False(Leer(buero));
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET ID_Konditionierungsvorlage = ? WHERE ID_Projekt = ?",
-                                           new DbParam("@v", Convert.ToInt64(buero)), new DbParam("@p", kopie));
-            PufferNutzungsprofilAbleitung mit = PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil;
-            Assert.Equal(PufferNutzungsprofil.BUERO_SCHULE, mit.Profil);
-            Assert.Contains("BUERO", mit.Herkunft);
-
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET ID_Konditionierungsvorlage = NULL WHERE ID_Projekt = ?",
-                                           new DbParam("@p", kopie));
-            Assert.Equal(ohne.Profil, PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil.Profil);
-            Assert.Equal(0L, Convert.ToInt64(Wert("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ? AND ID_Konditionierungsvorlage IS NOT NULL", 1007)));
-        }
     }
 }

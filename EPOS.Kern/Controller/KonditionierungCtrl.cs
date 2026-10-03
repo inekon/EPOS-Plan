@@ -443,8 +443,6 @@ namespace WindowsFormsApplication1
                 geschrieben = true;
             }
 
-            VorlagenverweisSchreiben(v, eigner, alt, neu);
-
             if (mitBestand)
             {
                 Ergebnis e = BestandSchreiben(v, eigner, alt.Bestand, neu.Bestand, out bool bestand);
@@ -452,38 +450,6 @@ namespace WindowsFormsApplication1
                 geschrieben |= bestand;
             }
             return Ergebnis.Gut;
-        }
-
-        internal const string SQL_VORLAGENVERWEIS =
-            "UPDATE \"Tab_Gebaeude\" SET \"" + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + "\" = " +
-            "(SELECT \"ID\" FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE + "\" WHERE \"Bezeichner\" = ? AND \"Groesse\" = ?) " +
-            "WHERE \"ID\" = ? AND EXISTS (SELECT 1 FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE +
-            "\" WHERE \"Bezeichner\" = ? AND \"Groesse\" = ?)";
-
-        /// <summary>
-        /// Merkt am Projektgebäude die zuletzt übernommene Konditionierungsvorlage
-        /// (<c>Tab_Gebaeude.ID_Konditionierungsvorlage</c>, Welle P4c): Trägt ein Kalender des Gebäudes oder
-        /// einer seiner Zonen eine NEUE Vorlagenherkunft, steht deren ID am Gebäude. Ohne die Spalte (älterer
-        /// Schemastand) oder ohne gleichnamige Vorlage bleibt der Verweis, wie er ist; die Herkunft in der
-        /// Bemerkung bleibt der Rückfall der Leser.
-        /// </summary>
-        private static void VorlagenverweisSchreiben(DbVorgang v, Eigner eigner, Konditionierungsstand alt, Konditionierungsstand neu)
-        {
-            if (eigner.Art != Kalendereigentuemer.Gebaeude && eigner.Art != Kalendereigentuemer.Zone) return;
-            if (eigner.IdGebaeude <= 0) return;
-            string vorlage = null, groesse = null;
-            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
-            {
-                Kalenderherkunft h = neu.Herkunft(g);
-                if (neu.Kalender(g) == null || string.IsNullOrEmpty(h?.Vorlage)) continue;
-                if (alt.Kalender(g) != null && h.Vorlage == alt.Herkunft(g)?.Vorlage) continue;
-                vorlage = h.Vorlage;
-                groesse = Konditionierungsgroessen.Kennwort(g);
-            }
-            if (vorlage == null) return;
-            if (!DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE)) return;
-            v.Ausfuehren(SQL_VORLAGENVERWEIS, new DbParam("@b", vorlage), new DbParam("@g", groesse),
-                         new DbParam("@id", eigner.IdGebaeude), new DbParam("@b2", vorlage), new DbParam("@g2", groesse));
         }
 
         /// <summary>Eine Vorgabezeile ersetzen — ohne Wert, wo die Zelle eine Bestandsspalte hat; eine leere Zelle hat keine Zeile.</summary>

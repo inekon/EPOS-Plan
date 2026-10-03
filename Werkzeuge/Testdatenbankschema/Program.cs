@@ -2731,11 +2731,11 @@ namespace Testdatenbankschema
                                   ProzessNutzungSchema.Vollstaendig() + " (erwartet True).");
             }
 
-            // ---- Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Welle P4c): die Sitzungseingaben der
-            //      Pufferauslegung, ID_Konditionierungsvorlage am Gebaeude, ID_Stamm am Projektpuffer.
+            // ---- Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Wellen P4c/P4d): die Sitzungseingaben der
+            //      Pufferauslegung, ID_Stamm am Projektpuffer und die Saat des Aufheizkriteriums K12.
             //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegungErgaenzung bedient.
             //
-            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer, die Simulation liest keine Vorgabe.
             string nrPufferErg = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
             Console.WriteLine();
             Console.WriteLine("Schritt " + nrPufferErg + " - Ergaenzungen der Pufferauslegung: " +

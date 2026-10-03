@@ -296,9 +296,8 @@ namespace EPOS.Kern.Tests
 
             var sicht = new HashSet<string>(Spalten("Abfrage_Projektgebaeude"), StringComparer.OrdinalIgnoreCase);
             string[] fehlen = Spalten(PROJEKT)
-                // Verweise auf Kataloge sind keine Fachspalten (ID_Gebaeude_Stamm, ID_Konditionierungsvorlage).
-                .Where(s => s != "ID_ProjektGebaeude" && s != "ID_Gebaeude_Stamm" &&
-                            s != PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE && !sicht.Contains(s))
+                // Verweise auf Kataloge sind keine Fachspalten (ID_Gebaeude_Stamm).
+                .Where(s => s != "ID_ProjektGebaeude" && s != "ID_Gebaeude_Stamm" && !sicht.Contains(s))
                 .ToArray();
             Assert.True(fehlen.Length == 0, "Es fehlen in der Sicht: " + string.Join(", ", fehlen));
         }

@@ -502,11 +502,9 @@ namespace EPOS.Kern.Tests
         public void Konditionierungsvorlagen_werden_bei_der_Uebernahme_kopiert()
         {
             if (!_db.Vorhanden) return;
-            // Übernommen ist kopiert: Kein Projektgebäude liest eine Vorlage live. Die einzige Vorlagenspalte
-            // ist die Herkunftsangabe ID_Konditionierungsvorlage (Welle P4c) - sie verweist, sie liefert nichts.
+            // Übernommen ist kopiert: Kein Projektgebäude liest eine Vorlage live, keine Projekttabelle führt eine Vorlagenspalte.
             foreach (string t in new[] { "Tab_Gebaeude", "Tab_Zone", "Tab_Projekt" })
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_table_info('" + t + "') WHERE name LIKE '%Vorlage%' AND name <> '" +
-                                      PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + "'"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_table_info('" + t + "') WHERE name LIKE '%Vorlage%'"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IS NOT NULL AND ID_Vorlage IS NOT NULL"));
 
             string projekt = Bild("SELECT * FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IS NOT NULL ORDER BY ID") +

@@ -20,8 +20,8 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Die Zahl der Saatzeilen: 57 Grundwerte und je Vorlage 9 Schalter und 4 Beispielwerte.</summary>
-        private const int SAATZAHL = 57 + 7 * 13;
+        /// <summary>Die Zahl der Saatzeilen: 63 Grundwerte (davon 6 des Aufheizkriteriums) und je Vorlage 9 Schalter und 4 Beispielwerte.</summary>
+        private const int SAATZAHL = 63 + 7 * 13;
 
         [Fact]
         public void Nummer_Ziel_und_Register()

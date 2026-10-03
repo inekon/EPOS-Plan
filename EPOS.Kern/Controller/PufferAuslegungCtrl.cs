@@ -224,14 +224,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Nutzung an den Kalendern der Projektgebäude und ihrer Zonen (am Zonenkalender ist
         /// <c>ID_Gebaeude</c> das Gebäude der Zone) — die Kopie trägt sie selbst
-        /// (<see cref="KonditionierungNutzungSchema"/>); sie geht dem Verweis <c>ID_Konditionierungsvorlage</c> vor.
+        /// (<see cref="KonditionierungNutzungSchema"/>).
         /// </summary>
         internal const string SQL_KONDITIONIERUNG =
             "SELECT k.ID_Gebaeude, k.Nutzung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
             "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Nutzung IS NOT NULL ORDER BY g.ID, k.ID";
-        internal const string SQL_KONDITIONIERUNG_VERWEIS =
-            "SELECT g.ID, v.Nutzung FROM Tab_Gebaeude g JOIN " + KonditionierungVorlagenSchema.TAB_VORLAGE + " v " +
-            "ON v.ID = g." + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + " WHERE g.ID_Projekt = ? ORDER BY g.ID";
         /// <summary>
         /// Die KP3-Aufheizbemessung des jüngsten Laufs mit Gebäudeergebnis (V30): Zahl der bemessenen Gebäude,
         /// Summe der Aufheizleistung Φ_n und längste Aufheizzeit t_auf,max.
@@ -1016,42 +1013,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierung der Projektgebäude: zuerst aus der Kopie an den Kalendern des
+        /// Die Nutzung der Konditionierung der Projektgebäude — allein aus der Kopie an den Kalendern des
         /// Gebäudes und seiner Zonen (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt
-        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>); für ein Gebäude, dessen Kalender keine Nutzung
-        /// tragen, über den Verweis <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Schemaschritt
-        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>). Umbenennen, Löschen oder Katalogabgleich einer
-        /// Vorlage ändern die Vorbelegung eines Gebäudes mit gefüllter Kopie nicht.
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>). Kein Verweis auf die Vorlage: Umbenennen, Löschen
+        /// oder Katalogabgleich einer Vorlage ändern die Vorbelegung nicht.
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            var mitKopie = new HashSet<long>();
-            if (KonditionierungNutzungSchema.SchemaVollstaendig())
-            {
-                DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
-                if (t != null)
-                    foreach (DataRow r in t.Rows)
-                    {
-                        string n = Text(r, "Nutzung");
-                        if (string.IsNullOrEmpty(n)) continue;
-                        l.Add(n);
-                        if (r["ID_Gebaeude"] != DBNull.Value)
-                            mitKopie.Add(Convert.ToInt64(r["ID_Gebaeude"], CultureInfo.InvariantCulture));
-                    }
-            }
-            if (DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE) &&
-                DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE))
-            {
-                DataTable tv = DataRepository.GetDataTable(SQL_KONDITIONIERUNG_VERWEIS, P("@projekt", idProjekt));
-                if (tv != null)
-                    foreach (DataRow r in tv.Rows)
-                    {
-                        if (mitKopie.Contains(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture))) continue;
-                        string n = Text(r, "Nutzung");
-                        if (!string.IsNullOrEmpty(n)) l.Add(n);
-                    }
-            }
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return l;
+            DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
+            if (t != null)
+                foreach (DataRow r in t.Rows)
+                {
+                    string n = Text(r, "Nutzung");
+                    if (!string.IsNullOrEmpty(n)) l.Add(n);
+                }
             return l;
         }
 

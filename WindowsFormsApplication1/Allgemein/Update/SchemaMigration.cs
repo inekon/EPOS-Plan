@@ -5085,10 +5085,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/> — <b>die Ergänzungen der
-        /// Pufferspeicher-Auslegung</b> (Welle P4c): an <c>Tab_PufferAuslegung</c> die Sitzungseingaben,
-        /// an <c>Tab_Gebaeude</c> <c>ID_Konditionierungsvorlage</c>, an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>.
+        /// Pufferspeicher-Auslegung</b> (Wellen P4c/P4d): an <c>Tab_PufferAuslegung</c> die Sitzungseingaben,
+        /// an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>, dazu die Saat der Vorgaben des Aufheizkriteriums K12
+        /// in <c>Tab_PufferAuslegungParameter_STAMM</c> (INSERT OR IGNORE).
         ///
-        /// <para><b>Reines DDL, wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer.</para>
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer; die Simulation liest
+        /// keine Vorgabe der Pufferauslegung.</para>
         /// </summary>
         public const int SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG = PufferAuslegungErgaenzungSchema.SCHRITT;
 
@@ -7369,10 +7371,10 @@ namespace WindowsFormsApplication1
             // die Nummer steht allein dort.
             new Schritt(SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG,
                         "Tab_PufferAuslegung: Kriterien_Aktiv, Sperrzeit_Expertenweg, Auslegungsheizlast_kW, " +
-                        "Wohneinheiten, Anzeigestufe; Tab_Gebaeude: ID_Konditionierungsvorlage; Tab_Pufferspeicher: ID_Stamm",
-                        "Die Eingaben einer Auslegungssitzung, die uebernommene Konditionierungsvorlage und der " +
-                        "Katalogsatz eines uebernommenen Puffers haetten keinen Ort. KEIN Rechenergebnis aendert sich - " +
-                        "die Spalten entstehen leer.",
+                        "Wohneinheiten, Anzeigestufe; Tab_Pufferspeicher: ID_Stamm; Saat Pufferauslegung.Aufheiz.*",
+                        "Die Eingaben einer Auslegungssitzung und der Katalogsatz eines uebernommenen Puffers haetten " +
+                        "keinen Ort; die Vorgaben des Aufheizkriteriums stuenden nur im Code. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten entstehen leer.",
                         Schritt_PufferAuslegungErgaenzung),
         };
 
@@ -13633,23 +13635,42 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            int angelegt = 0;
-            foreach (KeyValuePair<string, string> a in
-                     new List<KeyValuePair<string, string>>(PufferAuslegungErgaenzungSchema.Anweisungen))
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
             {
-                if (!SqliteDdl(l, a.Value, a.Key)) return false;
-                angelegt++;
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PufferAuslegungErgaenzungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
             }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
 
             if (!PufferAuslegungErgaenzungSchema.Vollstaendig())
             {
-                l.LetzterFehler = "Die Ergaenzungsspalten der Pufferauslegung stehen nach dem Schritt nicht vollstaendig.";
+                l.LetzterFehler = "Die Ergaenzungsspalten oder Vorgaben der Pufferauslegung stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
                 l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
                 return false;
             }
 
             l.Notiz(nr + ": Ergaenzungen der Pufferauslegung - " +
-                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    (handgriffe == 0 ? "standen bereits." : handgriffe + " Handgriff(e) (Spalten und Saat).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

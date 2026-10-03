@@ -201,20 +201,6 @@ namespace WindowsFormsApplication1
         /// <summary>Die Liste aller Vorgaben — Saat und Rückfall.</summary>
         public static readonly IReadOnlyList<PufferVorgabe> EINTRAEGE = Bauen();
 
-        /// <summary>
-        /// Vorgaben NUR als Rückfall, noch ohne Saatzeile (Welle P4d ohne Schemaschritt): das Aufheizkriterium K12.
-        /// Mit dem nächsten Schemaschritt wandern sie in <see cref="EINTRAEGE"/> und damit in die Saat.
-        /// </summary>
-        public static readonly IReadOnlyList<PufferVorgabe> NACHTRAG = new[]
-        {
-            V(AUFHEIZ_DAUER, 2, "h", Q_V30, PufferHerkunftsart.SETZUNG),
-            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.WOHNEN), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
-            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BEHERBERGUNG), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
-            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.PFLEGE), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
-            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BUERO_SCHULE), 1, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
-            V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.GEWERBE), 0, "0/1", Q_V30, PufferHerkunftsart.SETZUNG),
-        };
-
         private static List<PufferVorgabe> Bauen()
         {
             string R = PufferHerkunftsart.RICHTLINIE, S = PufferHerkunftsart.STUDIE,
@@ -278,6 +264,13 @@ namespace WindowsFormsApplication1
                 V(WP_MINDESTANTEIL, 0.3, "–", Q_V39, E),
                 V(SCHWELLE_EIN, 0.10, "–", Q_PUFFER, E),
                 V(SCHWELLE_AUS, 0.95, "–", Q_PUFFER, E),
+                // Aufheizkriterium K12 (Welle P4d): gesät mit Schritt 179, in Schritt 169 für frische Datenbanken.
+                V(AUFHEIZ_DAUER, 2, "h", Q_V30, E),
+                V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.WOHNEN), 0, "0/1", Q_V30, E),
+                V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BEHERBERGUNG), 0, "0/1", Q_V30, E),
+                V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.PFLEGE), 0, "0/1", Q_V30, E),
+                V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.BUERO_SCHULE), 1, "0/1", Q_V30, E),
+                V(AUFHEIZ_NUTZUNG + nameof(PufferNutzungsprofil.GEWERBE), 0, "0/1", Q_V30, E),
             };
 
             // Vorlagen: Kriterienschalter K1 K2 K3 K4 D1 D2 K9 K10 KV, dann Mindestlaufzeit [min],

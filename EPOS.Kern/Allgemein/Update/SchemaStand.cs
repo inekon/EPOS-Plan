@@ -872,7 +872,7 @@ namespace WindowsFormsApplication1
         /// Danach, mit den ERGÄNZUNGEN DER PUFFERSPEICHER-AUSLEGUNG (Welle P4c), steht das Ziel auf
         /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>: an <c>Tab_PufferAuslegung</c> die
         /// Sitzungseingaben (Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten, Anzeigestufe), an
-        /// <c>Tab_Gebaeude</c> <c>ID_Konditionierungsvorlage</c>, an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>
+        /// <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c> und die Saat des Aufheizkriteriums K12
         /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
         /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand

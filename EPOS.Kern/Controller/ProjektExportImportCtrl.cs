@@ -1279,11 +1279,10 @@ namespace WindowsFormsApplication1
             string.Equals(tabelle, GebaeudeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Ist das ein Katalog, dessen Verweis nicht reist (<c>Tab_Gebaeude.ID_Konditionierungsvorlage</c>,
-        /// <c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c)? Der Verweis kommt am Ziel leer an.
+        /// Ist das ein Katalog, dessen Verweis nicht reist (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c)?
+        /// Der Verweis kommt am Ziel leer an.
         /// </summary>
         private static bool IstReiseloserKatalog(string tabelle) =>
-            string.Equals(tabelle, SchemaKatalog.TAB_KONDITIONIERUNGSVORLAGE_STAMM, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
@@ -1332,12 +1331,10 @@ namespace WindowsFormsApplication1
                 col.Equals(WaermepumpeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
-            // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen nicht - die Id eines fremden
+            // Der Katalogverweis des Projektpuffers (Welle P4c) reist nicht - die Id eines fremden
             // Katalogs sagt am Ziel nichts; der Verweis ist eine Herkunftsangabe, kein Rechenwert.
-            if ((tab.Equals(GebaeudeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
-                 col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE, StringComparison.OrdinalIgnoreCase)) ||
-                (tab.Equals(SchemaKatalog.TAB_PUFFERSPEICHER, StringComparison.OrdinalIgnoreCase) &&
-                 col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase)))
+            if (tab.Equals(SchemaKatalog.TAB_PUFFERSPEICHER, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
             if (col.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase) ||
