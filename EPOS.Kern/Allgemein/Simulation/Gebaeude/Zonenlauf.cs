@@ -240,6 +240,7 @@ namespace WindowsFormsApplication1
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
                 Innenumkehr = _messung?.Ergebnis(),
                 StundenInnenpruefungGedeckelt = _gedeckelt,
+                Erdreich = eingang.Erdreich,
             };
         }
 

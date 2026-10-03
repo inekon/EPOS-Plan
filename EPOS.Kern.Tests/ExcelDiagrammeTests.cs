@@ -289,7 +289,9 @@ namespace EPOS.Kern.Tests
                 {
                     List<ChartRenderer.Segment> s = d.Name.EndsWith("waerme", StringComparison.Ordinal)
                         ? Berichtsbilder.Waermedeckung(v.Ergebnis) : Berichtsbilder.Stromdeckung(v.Ergebnis);
-                    return s.Count == zellen.Count && s.Select(x => (double?)x.Wert).SequenceEqual(zellen);
+                    // Auf den Zahlenrand: Ein Rest-Segment (100 − Summe) trägt etwa 29,590000000000003, die Zelle 29,59.
+                    return s.Count == zellen.Count
+                           && s.Zip(zellen, (x, z) => z.HasValue && Math.Abs(x.Wert - z.Value) <= 1e-9 * Math.Max(1.0, Math.Abs(z.Value))).All(b => b);
                 });
             }
             if (d.Name.StartsWith("bild.vergleich.balken.", StringComparison.Ordinal))

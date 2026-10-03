@@ -78,6 +78,30 @@ namespace WindowsFormsApplication1
         /// <summary>Temperaturleitfähigkeit des Erdreichs α_Erd [m²/d] (E6).</summary>
         internal const double ERDREICH_TEMPERATURLEITFAEHIGKEIT_M2D = 0.06;
 
+        // ---- Erdreichwiderstand nach DIN EN ISO 13370 (Rechenweg RP2a, Vorschlag 4) ----------
+
+        /// <summary>
+        /// Wärmeleitfähigkeit des Erdreichs λ_Erd [W/(m·K)] — DIN EN ISO 13370, Tabelle 1, Kategorie 2
+        /// (Sand, Kies); die Vorgabe der Norm, wenn die Bodenart unbekannt ist.
+        /// </summary>
+        internal const double ERDREICH_LAMBDA_WMK = 2.0;
+
+        /// <summary>
+        /// Dicke der Außenwand w [m] in der wirksamen Gesamtdicke d_t = w + λ·(R_si + R_f + R_se) —
+        /// DIN EN ISO 13370, 9.1; EPOS-Vorgabe, solange die Wanddicke nicht gelesen wird.
+        /// </summary>
+        internal const double ERDREICH_WANDDICKE_M = 0.3;
+
+        /// <summary>
+        /// Äußerer Übergangswiderstand R_se [m²K/W] in d_t und d_w — DIN EN ISO 13370, 9.1 (Wert der
+        /// DIN EN ISO 6946). Nur für die Formeln der Norm; das Bauteil selbst rechnet an Erdreich ohne
+        /// äußeren Übergang (<see cref="R_SE_ERDREICH"/>).
+        /// </summary>
+        internal const double ERDREICH_R_SE_NORM = 0.04;
+
+        /// <summary>Faktor der gut gedämmten Bodenplatte (d_t ≥ B′): U = λ/(0,457·B′ + d_t) — DIN EN ISO 13370, Gl. (3).</summary>
+        internal const double ERDREICH_FAKTOR_GEDAEMMT = 0.457;
+
         /// <summary>Vorlauf des Jahreslaufs [d] (Konzept 4.6, Rechenschritte 7.2).</summary>
         internal const int VORLAUF_TAGE = 30;
 

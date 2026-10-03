@@ -341,6 +341,7 @@ namespace WindowsFormsApplication1
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
             HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
+            HinweisErdreichumfang(m.Gebaeude.Erdreich, wer);
 
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
@@ -463,6 +464,20 @@ namespace WindowsFormsApplication1
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ZONE_ABSCHNITTE, wer,
                               r.StundenInnenpruefungGedeckelt.ToString(CultureInfo.InvariantCulture),
                               Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Der Laufhinweis des Erdreichumfangs</b> (Rechenweg RP2a, <c>SIMENG_ERDREICH_UMFANG</c>): einmal je Gebäude,
+        /// wenn der Erdreichwiderstand nach DIN EN ISO 13370 mit dem flächengleichen Quadrat rechnet, weil kein
+        /// (plausibler) Umfang vorliegt. Sonst still.
+        /// </summary>
+        internal static void HinweisErdreichumfang(Erdreichkennwerte e, string wer)
+        {
+            if (e == null || e.Quelle != Erdreichumfangsquelle.Quadrat) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("erdreich-umfang-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ERDREICH_UMFANG, wer, e.Umfang_M.ToString("0.#", k),
+                              e.B_M.ToString("0.##", k), e.Ug_WM2K.ToString("0.###", k)));
         }
 
         /// <summary>
@@ -772,6 +787,7 @@ namespace WindowsFormsApplication1
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
                 Innenumkehr = messung?.Ergebnis(),
                 StundenInnenpruefungGedeckelt = gedeckelt,
+                Erdreich = eingang.Erdreich,
             };
         }
 
@@ -923,6 +939,7 @@ namespace WindowsFormsApplication1
             HinweisNutzungsmaske(e, wer);
             HinweisUntertemperatur(e, r, wer);
             HinweisAbschnitte(r, wer);
+            HinweisErdreichumfang(r.Erdreich, wer);
             HinweisAufheizung(r.Aufheizung, wer);
             if (e.Bauteilweg)
             {

@@ -287,6 +287,7 @@ namespace WindowsFormsApplication1
                 HeizkalenderWirksam = zonen.Any(z => z.IstBeheizt && z.Eingang.HeizkalenderWirksam),
                 Innenumkehr = Innenumkehrmessung.Summe(ergebnisse.Select(e => e.Innenumkehr)),
                 StundenInnenpruefungGedeckelt = ergebnisse.Sum(e => e.StundenInnenpruefungGedeckelt),
+                Erdreich = ergebnisse.Select(e => e.Erdreich).FirstOrDefault(e => e != null),
             };
         }
 

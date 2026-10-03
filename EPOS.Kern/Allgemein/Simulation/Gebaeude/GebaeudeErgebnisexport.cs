@@ -154,10 +154,17 @@ namespace WindowsFormsApplication1
             };
             if (e.KuehlenergieMwh is double kuehlMwh) skalare.Add(Paar(p + "KuehlenergieMwh", kuehlMwh));
             if (e.StundenMitKuehlbedarf is int kuehlStunden) skalare.Add(Paar(p + "StundenMitKuehlbedarf", kuehlStunden));
+            // Rechenweg RP2a (E32-Muster): die Erdreichkennwerte nach DIN EN ISO 13370 nur mit Bauteil am Erdreich.
+            var texte = new List<KeyValuePair<string, string>>();
+            if (e.Erdreich != null)
+            {
+                skalare.Add(Paar(p + "Erdreich_B", e.Erdreich.B_M));
+                if (!double.IsNaN(e.Erdreich.Ug_WM2K)) skalare.Add(Paar(p + "Erdreich_Ug", e.Erdreich.Ug_WM2K));
+                texte.Add(new KeyValuePair<string, string>(p + "Erdreich_Umfangsquelle", e.Erdreich.QuelleText));
+            }
             skalare.Add(Paar(p + "MittlereRaumtemperaturHeizzeit", e.MittlereRaumtemperaturHeizzeit));
             skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
             // Stufe KP3 (Festlegung 28): Lüftungsstunden und Aufheizwerte nur, wenn sie wirken (E32).
-            var texte = new List<KeyValuePair<string, string>>();
             Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte, gebaeude: true);
             Messung(p, e.Innenumkehr, skalare);
 

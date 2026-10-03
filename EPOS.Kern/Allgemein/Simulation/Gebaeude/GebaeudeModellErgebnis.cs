@@ -387,6 +387,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int StundenInnenpruefungGedeckelt { get; init; }
 
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a): B′, U_g, R_g und die Herkunft des Umfangs;
+        /// <c>null</c> ohne Bauteil am Erdreich. Am Mehrzonengebäude die der ersten Zone mit Erdreich.
+        /// </summary>
+        internal Erdreichkennwerte Erdreich { get; init; }
+
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
@@ -408,6 +414,7 @@ namespace WindowsFormsApplication1
                 HeizkalenderWirksam = HeizkalenderWirksam,
                 Innenumkehr = Innenumkehr?.Skaliert(faktor),
                 StundenInnenpruefungGedeckelt = StundenInnenpruefungGedeckelt,
+                Erdreich = Erdreich,
             };
         }
     }

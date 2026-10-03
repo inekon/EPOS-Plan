@@ -373,6 +373,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IReadOnlyList<double> UWirksamJeBauteil_WM2K { get; private init; } = Array.Empty<double>();
 
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a) im Bauteilweg; <c>null</c> ohne Bauteil am
+        /// Erdreich und im Klassenweg (dort trägt sie der Eingang, <see cref="GebaeudeModellEingang.Erdreich"/>).
+        /// </summary>
+        internal Erdreichkennwerte Erdreich { get; private init; }
+
         /// <summary>Der Weg der Außenbauteilgruppe (Klassenweg oder Bauteilweg, Mehrzonenkonzept 3.6).</summary>
         internal Gruppenweg WegAussen { get; private init; }
 
@@ -453,8 +459,19 @@ namespace WindowsFormsApplication1
             double aIw = e.Innenflaechenfaktor * af;
             double aRad = Math.Min(aGes, aIw);
 
+            // Erdreich nach DIN EN ISO 13370 (Rechenweg RP2a): Liegt die Grundfläche am Erdreich, tritt der
+            // Erdreichwiderstand in Reihe zu ihrem U-Wert; B′ aus Grundfläche und Umfang (Feld, sonst Quadrat).
+            double uGrund = e.U_Grund;
+            Erdreichkennwerte erdreich = null;
+            if (string.Equals(e.GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal) && aGrund > 0.0 && uGrund > 0.0)
+            {
+                var u = new double[1];
+                erdreich = Erdreichwiderstand.Bauteilsatz(new[] { (aGrund, 180.0, uGrund) }, aGrund, e.ErdreichUmfangFeld_M, u);
+                uGrund = u[0];
+            }
+
             // A3 — Transmissionsleitwerte (ungewichtet, E2)
-            double uaOpak = e.U_Aussenwand * aWand + e.U_Dach * aDach + e.U_Grund * aGrund + e.U_Sonstige * aSonst;
+            double uaOpak = e.U_Aussenwand * aWand + e.U_Dach * aDach + uGrund * aGrund + e.U_Sonstige * aSonst;
             double uaFenster = aFenster > 0.0 ? e.U_Fenster * aFenster : 0.0;
 
             // A4 — Außenwandpfad (mit R_si-Abzug)
@@ -491,7 +508,8 @@ namespace WindowsFormsApplication1
             try
             {
                 return new ErsatzparameterRC(cAw, cIw, r1Aw, rRestAw, r1Iw, rConvAw, rConvIw, rRad, rExt,
-                                             aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen);
+                                             aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen)
+                       { Erdreich = erdreich };
             }
             catch (GebaeudeModellException ex)
             {
@@ -526,7 +544,8 @@ namespace WindowsFormsApplication1
             double hVe = e.Lueftungsleitwert_WK;
             if (e.Mehrzonenweg) hVe += e.LuftaustauschLeitwert_WK;
             return AusBauteilweg(new BauteilwegGebaeude(wer, e.Nutzflaeche_M2, e.Bauweise_WhK, e.MasseanteilAussen,
-                                                        e.Innenflaechenfaktor, hVe), bauteile, e.Mehrzonenweg);
+                                                        e.Innenflaechenfaktor, hVe, e.A_Grund_M2, e.ErdreichUmfangFeld_M),
+                                 bauteile, e.Mehrzonenweg);
         }
 
         /// <summary>
@@ -670,8 +689,11 @@ namespace WindowsFormsApplication1
             double uaOpak = 0.0;
             var zweigeAw = new List<(double R1_KW, double C1_Jk)>();
             var masseloseAw = new List<(BauteilEingang B, string Wer, double R_KW, double UGerechnet)>();
+            // Erdreich nach DIN EN ISO 13370 (RP2a): die Bauteile am Erdreich und der Platz ihrer Herleitung.
+            var erdreich = new List<(int Bauteil, int Herleitung, double Flaeche, double Neigung)>();
             foreach ((BauteilEingang b, string werB, int ib) in aussen)
             {
+                if (b.Rand == Bauteilrand.Erdreich) erdreich.Add((ib, herleitung.Count, b.Flaeche_M2, b.NeigungWirksamGrad));
                 double uGerechnet = double.NaN;
                 Schichtkennwerte kennwerte = default;
                 if (b.HatSchichten)
@@ -703,6 +725,25 @@ namespace WindowsFormsApplication1
                     masseloseAw.Add((b, werB, r, uGerechnet));
                     herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Aussen, true, double.NaN, double.NaN, double.NaN,
                                                          r / 6.0, double.NaN, uGerechnet, uWirksam));
+                }
+            }
+
+            // Der Erdreichwiderstand tritt in Reihe zu jedem Bauteil am Erdreich (RP2a, DIN EN ISO 13370): Er senkt
+            // dessen wirksamen U-Wert in Gl. (27) und in den Gewichten der äquivalenten Außentemperatur; R₁ und C₁
+            // bleiben die des Bauteils, R_Rest nimmt den Widerstand auf. Die Randtemperatur bleibt die nach Kusuda.
+            Erdreichkennwerte erdreichKennwerte = null;
+            if (erdreich.Count > 0)
+            {
+                var satz = new List<(double, double, double)>(erdreich.Count);
+                foreach (var t in erdreich) satz.Add((t.Flaeche, t.Neigung, uJeBauteil[t.Bauteil]));
+                var uNeu = new double[erdreich.Count];
+                erdreichKennwerte = Erdreichwiderstand.Bauteilsatz(satz, g.ErdreichFlaeche_M2, g.ErdreichUmfang_M, uNeu);
+                for (int k = 0; k < erdreich.Count; k++)
+                {
+                    (int ib, int ih, double flaeche, _) = erdreich[k];
+                    uaOpak += (uNeu[k] - uJeBauteil[ib]) * flaeche;
+                    uJeBauteil[ib] = uNeu[k];
+                    herleitung[ih] = herleitung[ih] with { UWirksam_WM2K = uNeu[k] };
                 }
             }
 
@@ -824,7 +865,7 @@ namespace WindowsFormsApplication1
                 throw new GebaeudeModellException(ex.Grund, wer + ": " + ex.Message);
             }
             return p with { Bauteilherleitung = herleitung.AsReadOnly(), WegAussen = wegAussen, WegInnen = wegInnen,
-                            UWirksamJeBauteil_WM2K = Array.AsReadOnly(uJeBauteil) };
+                            UWirksamJeBauteil_WM2K = Array.AsReadOnly(uJeBauteil), Erdreich = erdreichKennwerte };
         }
 
         /// <summary>Der konvektive Übergang raumseitig α_kon,i [W/(m²K)]: eingetragen, sonst <see cref="GebaeudeFestwerte.ALPHA_KON_INNEN"/>.</summary>
