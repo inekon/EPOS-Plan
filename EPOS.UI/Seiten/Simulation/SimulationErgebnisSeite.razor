@@ -246,7 +246,8 @@
                         <ErgebnisReiter Autarkie="@_daten.Autarkie" Modell="ModellHolen"
                                         KapazitaetGeaendert="KapazitaetGeaendert"
                                         WaermegangInhalt="@Waermegang"
-                                        StromgangInhalt="@Stromgang" />
+                                        StromgangInhalt="@Stromgang"
+                                        KaeltegangInhalt="@(_daten.Bedarf?.Kaelte is null ? null : Kaeltegang)" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -917,6 +918,11 @@
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
         Csv="@(Dienste?.CsvStromgang is null ? default
                 : EventCallback.Factory.Create<IReadOnlyList<string>>(this, r => Dienste!.CsvStromgang!(r)))" />;
+
+    // Der Kaeltegang steht nur, wenn das Projekt Kaelte rechnet: Bedarf.Kaelte ist
+    // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
+    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen"
+        FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
 
     /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
     private EventCallback Rueckruf(Action? aktion)

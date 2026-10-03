@@ -1044,6 +1044,9 @@ public static class Bilder
     public const string WaermeAutarkieMonate = "WAERME_AUTARKIE_MONATE";
     public const string Waermegang = "WAERMEGANG";
     public const string Stromgang = "STROMGANG";
+
+    /// <summary>Die Kälteproduktion des Ergebnisreiters — nur, wenn das Projekt Kälte rechnet.</summary>
+    public const string Kaeltegang = "KAELTEGANG";
 }
 
 // Das Ergebnis eines Schreib- oder Rechenwegs meldet der Datensatz

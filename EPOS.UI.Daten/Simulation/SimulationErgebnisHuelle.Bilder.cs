@@ -130,6 +130,7 @@ namespace WindowsFormsApplication1
                     case Bilder.WaermeAutarkieMonate: return ModellWaermeAutarkie();
                     case Bilder.Waermegang: return ModellWaermegang(a);
                     case Bilder.Stromgang: return ModellStromgang(a);
+                    case Bilder.Kaeltegang: return ModellKaeltegang(a);
                     default: return null;
                 }
             }
@@ -978,6 +979,26 @@ namespace WindowsFormsApplication1
                 a.Sortiert,
                 speicherreihen.Count > 0 ? speicherreihen : null,
                 MyResource.Resource.CHART_ACHSE_SPEICHERINHALT_KWH);
+        }
+
+        /// <summary>
+        /// Die Kälteproduktion (Unterreiter „Kälte Produktion Chart"): je Kälteerzeuger die
+        /// gedeckte Kälte als Säule, darauf die ungedeckte Kälte, darüber der Kältebedarf — die
+        /// Stundenreihen des Laufs, gebildet in <see cref="KaelteProduktionBild"/>. Rechnet das
+        /// Projekt keine Kälte, gibt es kein Bild.
+        /// </summary>
+        private Zeichenmodell ModellKaeltegang(Bildauftrag a)
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionBild.AusLauf(_waermebedarf?.Kaelteseite);
+            if (r == null) return null;
+            return KaelteProduktionBild.Modell(r, new KaelteProduktionBild.Texte
+            {
+                Titel = MyResource.Resource.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE,
+                Achse = MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                Bedarf = MyResource.Resource.CHART_LEGENDE_KAELTEBEDARF,
+                Rest = MyResource.Resource.CHART_LEGENDE_KAELTE_UNGEDECKT,
+                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE
+            }, a.Sortiert);
         }
 
         /// <summary>
