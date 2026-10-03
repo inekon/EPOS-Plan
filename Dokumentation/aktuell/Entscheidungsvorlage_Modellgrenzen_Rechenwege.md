@@ -278,7 +278,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
   Brauchwasserkanal und vom Erzeuger gedeckt, der die Zieltemperatur erreicht (sonst Heizstab).
 - **Empfehlung: später**, Aufwand M. Erst sinnvoll, wenn Speicher und Wärmepumpen-Vorlauf je
   Kanal (BW3, PS5) da sind; vorher gäbe es niemanden, der die Temperatur prüft.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M7)** — Projektschalter an `Tab_Einstellungen` (`Desinfektion_Aktiv`, `_Intervall_Tage`, `_Stunde`, `_Zieltemperatur_C`, `_Volumen_l`; leer = aus), Zusatzbedarf als eigener Posten `Brauchwasser_Desinfektion_Mwh`, zurückgehalten vor Stufen unter der Zieltemperatur, Rest als benannter Zusatzstrom; Schemaschritt `PufferOptionenSchema`. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW6 Einheit MWh im Lauf — erledigt
 
@@ -466,7 +466,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
   sonst nirgends gibt. Hinweistext im Pufferdialog: „Übertrager: Leistung als Entladegrenze
   eintragen“.
 - **Empfehlung: nein** (nur Hinweistext, S). Kein Planungsfall, der damit anders ausginge.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M7)** — nur der Hinweistext „Übertrager: Leistung als Entladegrenze eintragen" im Pufferdialog an der Entladeleistung.
 
 ---
 
@@ -631,7 +631,7 @@ Abschnitt 3.
 - **Empfehlung: (c) ja** (S–M; fachlich klar, der Katalogwert liefert H; Basis neu für jedes
   Referenzprojekt mit Puffer — deshalb als Option mit Vorgabe „Tageswert“); **(a) später** (S,
   erst mit Kombispeichern nötig); **(b) nein** (kein Anwender hat Daten dafür).
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (a) und (c), umgesetzt in Welle M7; (b) nein** — (c) `Bereitschaft_Weg` (`tag`/`temperatur`, leer = Tageswert) und `Aufstellraum_Temperatur_C` an `Tab_Pufferspeicher`; (a) `Schicht_Anteile` mit Prüfung und „Vorschlag Kombispeicher" im Dialog; beide als Option, Basis unberührt. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PS2 Quellspeicher statisch
 
@@ -679,7 +679,7 @@ Abschnitt 3.
   (c) Legionellenschaltung siehe BW5.
 - **Empfehlung: (a) später** (M, zusammen mit der Pufferauslegung und BW3); **(b) nein**;
   **(c) über BW5**.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (a), umgesetzt in Welle M7; (b) nein; (c) über BW5** — `Frischwassermodul` und `FWM_Graedigkeit_K` an `Tab_Pufferspeicher`, Entnahme des Brauchwassers nur ab ϑ_Zapf + ΔT_FWM, sonst die nächste Stufe; Nachheizstunden im Protokoll. Regeln: [Konzept Simulationsablauf, Abschnitt 21](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ---
 
@@ -1039,7 +1039,7 @@ Umstellen eines Referenzprojekts.
 | BH2 BHKW-Takten mit Folgeauftrag 6 | umgesetzt (Welle M4) | M | nein (Option; kein Referenzprojekt pflegt die Felder) | ☑ |
 | PV3 Einspeisebegrenzung mit Abregelung | umgesetzt (M5) | M | nein (Option) | ☑ |
 | ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
-| PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
+| PS1 (c) Bereitschaftsverlust temperaturabhängig | umgesetzt (Welle M7) | S–M | nein (Option; erst beim Umstellen eines Pufferprojekts) | ☑ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
 | PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
 | SP1 Standby des Speichersystems | umgesetzt (M5) | S–M | nein (Option) | ☑ |
@@ -1050,13 +1050,13 @@ Umstellen eines Referenzprojekts.
 | PV4 Albedo einstellbar | ja | S | nein (Vorgabe 0,2) | ☑ umgesetzt |
 | SP2 Beste Rastervariante übernehmen | ja | S | nein | ☑ umgesetzt |
 | BW3 Brauchwasser-Vorlauf je Erzeuger | später | M | nein (Option) | ☐ |
-| BW5 Thermische Desinfektion | später | M | nein (Option) | ☐ |
+| BW5 Thermische Desinfektion | umgesetzt (Welle M7) | M | nein (Option) | ☑ |
 | PW3 Wochenprofil je Monat oder Saison | später | M | nein (Option) | ☐ |
 | PW4 Verluste je Prozesssatz | später (Kanalwert über BW4) | S | nein | ☐ |
 | WP3 Abtaufaktor bei Kennfeldern ohne Abtauung | später | M | nein | ☐ |
 | PS2 Abwärme als Lader des Quellspeichers | später | M | nein | ☐ |
-| PS5 (a) Frischwassermodul | später | M | nein | ☐ |
-| PS1 (a) Zonenanteile wählbar | später | S | nein (Option) | ☐ |
+| PS5 (a) Frischwassermodul | umgesetzt (Welle M7) | M | nein (Option) | ☑ |
+| PS1 (a) Zonenanteile wählbar | umgesetzt (Welle M7) | S | nein (Option) | ☑ |
 | ST3 Stufe 2 Leitungsverlust physikalisch | später | S | ja, 1049 | ☐ |
 | SB1 (b) Stromprofile mit 672 Werten | später | M | nein | ☐ |
 | SP6 Alterung in der Wirtschaftlichkeit | später | M–L | nein (Wirtschaftlichkeit) | ☐ |
@@ -1065,10 +1065,10 @@ Umstellen eines Referenzprojekts.
 | SP10 Periodischer Start-SOC | später | S | ja, 1046 (nur als Option) | ☐ |
 | PV2 Klemmung je MPP-Eingang | später | S | nein | ☐ |
 | SP5 .NET-Planer für iOS | später | L | nein | ☐ |
-| HK4 Übertrager zwischen Puffer und Kessel | nein (Hinweistext) | S | nein | ☐ |
-| PS1 (b) Einströmmischung | nein | — | — | ☐ |
+| HK4 Übertrager zwischen Puffer und Kessel | Hinweistext umgesetzt (Welle M7) | S | nein | ☑ |
+| PS1 (b) Einströmmischung | nein | — | — | nein |
 | PS4 Mehr Katalogwerte Puffer | nein (außer mit PS1 (c)) | — | — | ☐ |
-| PS5 (b) Übertrager im Puffer | nein | — | — | ☐ |
+| PS5 (b) Übertrager im Puffer | nein | — | — | nein |
 | PV1 Ein-Dioden-Modell | nein | — | — | ☐ |
 | SB1 (c) Klimadaten in 10 oder 15 Minuten | nein | — | — | ☐ |
 | SP7 Herkunftsschichten | nein | — | — | ☐ |
@@ -1092,7 +1092,7 @@ zuerst, Rechenwegänderungen an Referenzprojekten gebündelt.
 | **M4 Erzeuger in Teillast** | WP1, BH1, BH2 mit Folgeauftrag 6 | neu nur, wenn die BHKW-Untergrenze in Referenzprojekten wirksam wird | dieselbe Bauart wie Kessel E2/E4, Tests und Editor wiederverwendbar |
 | **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV), umgesetzt mit Basis R33 | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
 | **M6 Katalog-Update** | KU1 Stufe 1 (laufend gepflegte Kataloge), EQ1 | unberührt | Schema und Werkzeug, eigene Abnahme mit einer Bestandsdatenbank des Anwenders |
-| **M7 Speicher** | PS1 (c), danach nach Bedarf PS1 (a), PS5 (a), BW5 | neu für Pufferprojekte, falls als Vorgabe gesetzt | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
+| **M7 Speicher** | PS1 (c), PS1 (a), PS5 (a), BW5, Hinweis HK4 — umgesetzt (Schemaschritt `PufferOptionenSchema`) | unberührt (alle als Option) | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
 | später | BW3, PW3, PW4 je Prozess, WP3, PS2, SB1 (b), SP3, SP6, SP8, SP10, PV2, SP5 | — | nach Anlass und Rückmeldung der Anwender |
 
 Nach dem Entscheid wird je Welle ein Auftrag mit Abnahme (Build, Tests, Referenzlauf) formuliert;
