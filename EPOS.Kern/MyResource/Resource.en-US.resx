@@ -43806,5 +43806,20 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="PA_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>The process supply temperature exceeds 95 °C or the highest generator supply temperature: the buffer cannot deliver it reliably.</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Temperature pair of the process heat</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR_KEINE" xml:space="preserve">
+    <value>no temperature pair maintained for the process heat: temperature pair of the buffer</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF" xml:space="preserve">
+    <value>highest supply temperature of the generators in the cascade</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF_KEINE" xml:space="preserve">
+    <value>no generator supply temperature maintained: check against 95 °C only</value>
+  </data>
 </root>
 

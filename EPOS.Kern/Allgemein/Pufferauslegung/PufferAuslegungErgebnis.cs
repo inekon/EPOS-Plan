@@ -41,13 +41,16 @@ namespace WindowsFormsApplication1
         public const string ZWEITERZEUGER_FREI = "PA-ZWEITERZEUGER-FREI";
         public const string HEIZSTAB_GESPERRT = "PA-HEIZSTAB-GESPERRT";
         public const string KEINE_REIHE = "PA-KEINE-REIHE";
+        /// <summary>Der Prozessvorlauf liegt über 95 °C oder über dem Vorlauf aller Erzeuger an der Kaskade.</summary>
+        public const string PROZESS_TEMPERATUR = "PA-PROZESS-TEMPERATUR";
 
         /// <summary>Alle Codes der Liste.</summary>
         public static readonly IReadOnlyList<string> ALLE = new[]
         {
             KEIN_PUFFER, BAND_UNTER, BAND_UEBER, ABTAU_VORRANG, STARTS_TAG, STARTS_JAHR, PRAXISGRENZE,
             EXTRAPOLATION, TANK_IM_TANK, OHNE_PUFFER_GEREGELT, HYGIENE_W551, HYGIENE_TEMPERATUR,
-            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE
+            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE,
+            PROZESS_TEMPERATUR
         };
     }
 

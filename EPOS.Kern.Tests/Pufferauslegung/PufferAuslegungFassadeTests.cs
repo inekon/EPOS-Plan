@@ -233,7 +233,7 @@ namespace EPOS.Kern.Tests.Pufferauslegung
         [Fact]
         public void Warncodes_und_Ressourcenschluessel()
         {
-            Assert.Equal(17, PufferWarncode.ALLE.Count);
+            Assert.Equal(18, PufferWarncode.ALLE.Count);
             Assert.All(PufferWarncode.ALLE, c => Assert.StartsWith("PA-", c, StringComparison.Ordinal));
             Assert.Equal("PA_KEIN_PUFFER",
                          new PufferWarnung(PufferWarncode.KEIN_PUFFER, PufferStufe.Hinweis, "", "", null).Ressourcenschluessel);

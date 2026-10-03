@@ -43813,5 +43813,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Aufbau „{0}“: {1} Schichten tragen Dichte und Wärmeleitfähigkeit, aber keine spezifische Wärmekapazität; c [J/(kg·K)] kommt aus dem Baustoffkatalog bzw. nach DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="PA_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Der Prozessvorlauf liegt über 95 °C oder über dem höchsten Erzeugervorlauf: Der Puffer kann ihn nicht sicher liefern.</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturpaar der Prozesswärme</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR_KEINE" xml:space="preserve">
+    <value>kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF" xml:space="preserve">
+    <value>höchster Vorlauf der Erzeuger an der Kaskade</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF_KEINE" xml:space="preserve">
+    <value>kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C</value>
+  </data>
 </root>
 

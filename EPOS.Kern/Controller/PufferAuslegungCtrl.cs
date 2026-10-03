@@ -194,6 +194,15 @@ namespace WindowsFormsApplication1
         internal const string SQL_GEBAEUDE_ANZAHL = "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?";
         internal const string SQL_PROZESS =
             "SELECT COUNT(*) FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
+        /// <summary>Höchster Vorlauf und tiefster Rücklauf der zugeordneten Prozesse mit Temperaturpaar (V29).</summary>
+        internal const string SQL_PROZESS_TEMPERATUR =
+            "SELECT MAX(p.Vorlauf) AS VL, MIN(p.Ruecklauf) AS RL FROM Tab_Prozesswaerme p " +
+            "INNER JOIN Z_Projekt_Prozesswaerme z ON z.ID_Prozesswaerme = p.ID " +
+            "WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL";
+        /// <summary>Höchster gepflegter Vorlauf der Wärmeerzeuger an der Kaskade (V29, Gegenstück zu <c>SQL_SYSTEM_VORLAUF</c>).</summary>
+        internal static readonly string SQL_ERZEUGER_VORLAUF_MAX =
+            "SELECT MAX(Vorlauf) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type IN (" +
+            ProjektPuffer.SYSTEMVORGABE_TYPEN + ") AND Vorlauf > 0";
         internal const string SQL_ZAPFNUTZUNGEN =
             "SELECT n.Bezeichner FROM " + TwwSchema.TAB_TWW_ZONE + " z JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
             " n ON n.ID = z.ID_Nutzungsart WHERE z.ID_Projekt = ? ORDER BY z.Reihenfolge, z.ID";
@@ -319,6 +328,25 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // ---- Temperaturpaar der Prozesswärme (V29) ----
+            double? prozessVl = null, prozessRl = null, erzeugerVlMax = null;
+            if (kP && prozessVorhanden)
+            {
+                DataRow pt = ErsteZeile(SQL_PROZESS_TEMPERATUR, P("@projekt", idProjekt), P("@projekt2", idProjekt));
+                double? tv = ZahlOderNull(pt, "VL"), tr = ZahlOderNull(pt, "RL");
+                if (tv > 0 && tr >= 0 && tv > tr) { prozessVl = tv; prozessRl = tr; }
+                double ev = Zahl(DataRepository.ExecuteScalar(SQL_ERZEUGER_VORLAUF_MAX, P("@projekt", idProjekt)));
+                if (ev > 0) erzeugerVlMax = ev;
+                H(nameof(PufferAuslegungEingang.ProzessVorlaufC), prozessVl.HasValue ? PufferHerkunftsquelle.PROJEKT : PufferHerkunftsquelle.PUFFER,
+                  prozessVl.HasValue
+                      ? T("PAUS_HERK_PROZESS_TEMPERATUR", "Temperaturpaar der Prozesswärme")
+                      : T("PAUS_HERK_PROZESS_TEMPERATUR_KEINE", "kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers"));
+                H(nameof(PufferAuslegungEingang.ErzeugerVorlaufMaxC), erzeugerVlMax.HasValue ? PufferHerkunftsquelle.KASKADE : PufferHerkunftsquelle.VORGABE,
+                  erzeugerVlMax.HasValue
+                      ? T("PAUS_HERK_ERZEUGER_VORLAUF", "höchster Vorlauf der Erzeuger an der Kaskade")
+                      : T("PAUS_HERK_ERZEUGER_VORLAUF_KEINE", "kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C"));
+            }
+
             // ---- Schwellen (Datenbank in %, Eingang als Anteil) ----
             double? sEin = ZahlOderNull(pz, "Schwelle_Ein"), sAus = ZahlOderNull(pz, "Schwelle_Aus");
             double? schwelleEin = sEin > 0 ? sEin / 100.0 : null;
@@ -423,6 +451,9 @@ namespace WindowsFormsApplication1
                 Erzeuger = erz,
                 VorlaufC = vl,
                 RuecklaufC = rl,
+                ProzessVorlaufC = prozessVl,
+                ProzessRuecklaufC = prozessRl,
+                ErzeugerVorlaufMaxC = erzeugerVlMax,
                 SchwelleEin = schwelleEin,
                 SchwelleAus = schwelleAus,
                 ReiheHeizung = reihen?.Vorhanden == true ? reihen.Heizung : Array.Empty<double>(),
