@@ -1885,7 +1885,8 @@ namespace WindowsFormsApplication1
         /// mindestens eine Dicke des Satzes über <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MAX_M"/>, gilt
         /// der ganze Satz als in Millimetern geschrieben (CAD-Exporte mit <c>METRE</c> im Kopf): alle Dicken
         /// durch 1000, ein Sammelhinweis je Datei. Schichten unter <see cref="GebaeudeFestwerte.SCHICHT_DICKE_MIN_M"/>
-        /// (Folien, Anstriche) tragen keine Wärmewirkung und werden mit Sammelhinweis übergangen.</para>
+        /// (0,5 mm: Folien, Anstriche) tragen keine Wärmewirkung und werden mit Sammelhinweis übergangen;
+        /// Bleche ab 0,5 mm bleiben als Schicht mit ihrer Masse erhalten.</para>
         /// </summary>
         private AbbildAufbau Aufbau(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
@@ -1917,7 +1918,7 @@ namespace WindowsFormsApplication1
                 IIfcMaterial stoff = schichten[i]?.Material;
                 if (dicken[i] > 0.0 && dicken[i] < GebaeudeFestwerte.SCHICHT_DICKE_MIN_M)
                 {
-                    // Folie, Anstrich: ohne Wärmewirkung — übergangen statt abgelehnt.
+                    // Folie, Anstrich unter 0,5 mm: ohne Wärmewirkung — übergangen statt abgelehnt.
                     if (zaehlen) Zaehlen(_schichtDuenn, (stoff?.Name.ToString() ?? "—") + " (" + Zahl(Math.Round(dicken[i] * 1000.0, 3)) + " mm)");
                     continue;
                 }

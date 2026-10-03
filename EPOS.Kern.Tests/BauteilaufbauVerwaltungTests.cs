@@ -136,6 +136,26 @@ namespace EPOS.Kern.Tests
             Assert.Null(BauteilaufbauCtrl.Kennwerte(luft, mitBezugsperiode: false).Bezugsperiode_D);
         }
 
+        /// <summary>
+        /// Die kleinste Schichtdicke ist 0,5 mm: Ein Blech von 0,5 oder 0,9 mm (Deckblech eines
+        /// Sandwichelements) ist zulässig, eine Folie von 0,4 mm nicht; die Meldung nennt die Grenze als 0,5 mm.
+        /// </summary>
+        [Fact]
+        public void Die_kleinste_Schichtdicke_ist_ein_halber_Millimeter()
+        {
+            Assert.Equal(0.5, BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MIN_M));
+            Assert.Null(BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(0.0005, 50, 7900, 500))));
+            Assert.Null(BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(0.0009, 50, 7900, 500))));
+            string duenn = BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(0.0004, 50, 7900, 500)));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.BAUTEIL_MSG_SCHICHT_DICKE_BAND, 1, 0.4, 0.5, 1000.0), duenn);
+            Assert.Contains("0,5", duenn);
+            // Beide Sprachen nennen die Grenze mit ihrer Kultur.
+            var en = new CultureInfo("en-US");
+            string englisch = string.Format(en, R.ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_DICKE_BAND", en), 1,
+                                            0.4, BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MIN_M), 1000.0);
+            Assert.Contains("0.5", englisch);
+        }
+
         [Fact]
         public void Die_Eingabepruefung_haelt_die_Regeln_aus_Mehrzonenkonzept_5_3()
         {
@@ -144,8 +164,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.BAUTEIL_MSG_AUFBAU_NAME_LEER, BauteilaufbauCtrl.EingabePruefen(new BauteilaufbauModel()));
             Assert.Equal(R.BAUTEIL_MSG_KEINE_SCHICHT, BauteilaufbauCtrl.EingabePruefen(Wand()));
 
-            string duenn = BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(0.0005, 0.5, 1000, 1000)));
-            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.BAUTEIL_MSG_SCHICHT_DICKE_BAND, 1, 0.5, 1.0, 1000.0), duenn);
+            string duenn = BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(0.0004, 0.5, 1000, 1000)));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.BAUTEIL_MSG_SCHICHT_DICKE_BAND, 1, 0.4, 0.5, 1000.0), duenn);
             Assert.NotNull(BauteilaufbauCtrl.EingabePruefen(Wand(Stoff(1.2, 0.5, 1000, 1000))));
 
             var dickeLuft = new BauteilschichtModel { Dicke = 0.4, IstLuftschicht = true };

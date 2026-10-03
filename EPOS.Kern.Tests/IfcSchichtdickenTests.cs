@@ -9,8 +9,8 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Rückfall „Schichtdicke in Millimetern"</b> des IFC-Lesers: CAD-Exporte erklären <c>METRE</c> als
     /// Längeneinheit, schreiben <c>IfcMaterialLayer.LayerThickness</c> aber in Millimetern. Liegt eine Dicke
-    /// eines Schichtsatzes über 1 m, gilt der ganze Satz als Millimeter; Schichten unter 1 mm (Folien) werden
-    /// übergangen — beides mit Sammelhinweis je Datei. Probe: <c>ifc4_schichtdicken_mm.ifc</c>.
+    /// eines Schichtsatzes über 1 m, gilt der ganze Satz als Millimeter; Schichten unter 0,5 mm (Folien) werden
+    /// übergangen, Bleche ab 0,5 mm gehalten — beides mit Sammelhinweis je Datei. Probe: <c>ifc4_schichtdicken_mm.ifc</c>.
     /// </summary>
     public sealed class IfcSchichtdickenTests : System.IDisposable
     {
@@ -27,11 +27,13 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeImportAblauf a = BauteilvorschlagProbe.Lesen(PROBE);
             AbbildBauteil wand = Bauteil(a, "Außenwand Millimeter");
-            Assert.Equal(2, wand.Aufbau.Schichten.Count);
-            Assert.Equal(new[] { "Dämmung", "Beton" }, wand.Aufbau.Schichten.Select(s => s.Name));
-            BauteilvorschlagProbe.Nah(0.16, wand.Aufbau.Schichten[0].DickeM);
-            BauteilvorschlagProbe.Nah(0.20, wand.Aufbau.Schichten[1].DickeM);
-            BauteilvorschlagProbe.Nah(0.36, wand.DickeM);
+            // Die Folie (0,2 mm) liegt unter 0,5 mm und wird übergangen; das Blech (0,9 mm) bleibt mit seiner Masse.
+            Assert.Equal(3, wand.Aufbau.Schichten.Count);
+            Assert.Equal(new[] { "Blech", "Dämmung", "Beton" }, wand.Aufbau.Schichten.Select(s => s.Name));
+            BauteilvorschlagProbe.Nah(0.0009, wand.Aufbau.Schichten[0].DickeM);
+            BauteilvorschlagProbe.Nah(0.16, wand.Aufbau.Schichten[1].DickeM);
+            BauteilvorschlagProbe.Nah(0.20, wand.Aufbau.Schichten[2].DickeM);
+            BauteilvorschlagProbe.Nah(0.3609, wand.DickeM);
 
             PruefMeldung mm = Assert.Single(a.Abbild.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHTDICKE_MM");
             Assert.Equal(PruefStufe.Warnung, mm.Stufe);
@@ -73,11 +75,13 @@ namespace EPOS.Kern.Tests
             foreach (GebaeudeBauteilzeile z in mitAufbau)
             {
                 Assert.True(z.USchichten > 0.0, z.ToString());
-                Assert.Equal(2, BauteilvorschlagProbe.Aufbau(v, z).Schichten.Count);
+                // Die Wand trägt Blech, Dämmung und Beton, das Dach Beton und Dämmung.
+                int soll = z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND ? 3 : 2;
+                Assert.Equal(soll, BauteilvorschlagProbe.Aufbau(v, z).Schichten.Count);
             }
-            // U der Wand aus 0,16 m Dämmung und 0,20 m Beton: 1/(0,13 + 0,16/0,04 + 0,2/2 + 0,04).
+            // U der Wand aus 0,9 mm Blech, 0,16 m Dämmung und 0,20 m Beton: 1/(0,13 + 0,0009/50 + 0,16/0,04 + 0,2/2 + 0,04).
             GebaeudeBauteilzeile wand = v.Zeilen.Single(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND);
-            BauteilvorschlagProbe.Nah(1.0 / (0.13 + 4.0 + 0.1 + 0.04), wand.USchichten, 1e-9);
+            BauteilvorschlagProbe.Nah(1.0 / (0.13 + 0.0009 / 50.0 + 4.0 + 0.1 + 0.04), wand.USchichten, 1e-9);
         }
     }
 }
