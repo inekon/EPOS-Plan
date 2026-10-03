@@ -41976,5 +41976,68 @@ This folder holds the standard template, the short report, the detailed template
   <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
     <value>Project setting feed-in limit: {0:N1} kW. It pre-fills the hard limit of a new fleet and, in the project run, curtails PV feed-in above it after the fleet has charged.</value>
   </data>
+  <data name="PSP_ANTEILE_ZAHL" xml:space="preserve">
+    <value>“{0}” is not a number.</value>
+  </data>
+  <data name="PSP_ANTEILE_BEREICH" xml:space="preserve">
+    <value>The share “{0}” is not between 0 and 1.</value>
+  </data>
+  <data name="PSP_ANTEILE_ANZAHL" xml:space="preserve">
+    <value>{0} shares for {1} zones – exactly one share per zone.</value>
+  </data>
+  <data name="PSP_ANTEILE_SUMME" xml:space="preserve">
+    <value>The shares add up to {0}, not 1.</value>
+  </data>
+  <data name="DESINF_PRUEF_INTERVALL" xml:space="preserve">
+    <value>The interval must be between {0} and {1} days.</value>
+  </data>
+  <data name="DESINF_PRUEF_STUNDE" xml:space="preserve">
+    <value>The hour must be between {0} and {1}.</value>
+  </data>
+  <data name="DESINF_PRUEF_ZIEL" xml:space="preserve">
+    <value>The target temperature must be between {0} and {1} °C.</value>
+  </data>
+  <data name="DESINF_PRUEF_VOLUMEN" xml:space="preserve">
+    <value>The volume must be between 0 and {0:N0} l.</value>
+  </data>
+  <data name="SIMENG_PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>Buffer storage “{0}”: standby loss by temperature, H = {1:0.00} W/K, installation room {2:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_ANTEILE_ABGELEHNT" xml:space="preserve">
+    <value>Buffer storage “{0}”: zone shares not applied – {1} Equal zones are used.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_OHNE_BRAUCHWASSER" xml:space="preserve">
+    <value>Buffer storage “{0}”: the fresh water module has no effect – the storage does not serve domestic hot water.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM" xml:space="preserve">
+    <value>Buffer storage “{0}”: fresh water module, tapping temperature {1:0.#} °C + approach {2:0.#} K – minimum temperature at the top {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_STUNDEN" xml:space="preserve">
+    <value>Buffer storage “{0}”: in {1} hours the top zone did not hold the minimum temperature of the fresh water module ({2:0.#} °C); the next cascade stage covered the rest.</value>
+  </data>
+  <data name="SIMENG_TWW_ZAPF_VORGABE" xml:space="preserve">
+    <value>Domestic hot water: the project has no tapping temperature – {0:0.#} °C is used.</value>
+  </data>
+  <data name="SIMENG_DESINF_SOLL_VORGABE" xml:space="preserve">
+    <value>Thermal disinfection: the project has no storage set temperature – {0:0.#} °C is used.</value>
+  </data>
+  <data name="SIMENG_DESINF_OHNE_VOLUMEN" xml:space="preserve">
+    <value>Thermal disinfection without volume: no volume is entered and no storage serves domestic hot water – no additional demand.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZIEL_UNTER_SOLL" xml:space="preserve">
+    <value>Thermal disinfection: the target temperature {0:0.#} °C is not above the storage set temperature {1:0.#} °C – no additional demand.</value>
+  </data>
+  <data name="SIMENG_DESINF_BEDARF" xml:space="preserve">
+    <value>thermal disinfection {0} times a year (every {1} days at {2}:00), {3:0.#} l from {4:0.#} to {5:0.#} °C: {6:0.##} kWh per event, {7:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMENG_DESINF_GEDECKT" xml:space="preserve">
+    <value>Thermal disinfection: {0} covers {1:0.##} kWh.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZUSATZSTROM" xml:space="preserve">
+    <value>Thermal disinfection: no generator reaches {1:0.#} °C for {0:0.##} kWh – covered by additional electricity (electric, efficiency 1), included in the residual electricity.</value>
+  </data>
+  <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
+    <value>Electric heater</value>
+  </data>
 </root>
 

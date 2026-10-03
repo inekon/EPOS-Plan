@@ -41983,5 +41983,68 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
     <value>Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat.</value>
   </data>
+  <data name="PSP_ANTEILE_ZAHL" xml:space="preserve">
+    <value>„{0}“ ist keine Zahl.</value>
+  </data>
+  <data name="PSP_ANTEILE_BEREICH" xml:space="preserve">
+    <value>Der Anteil „{0}“ liegt nicht zwischen 0 und 1.</value>
+  </data>
+  <data name="PSP_ANTEILE_ANZAHL" xml:space="preserve">
+    <value>{0} Anteile für {1} Zonen – je Zone genau ein Anteil.</value>
+  </data>
+  <data name="PSP_ANTEILE_SUMME" xml:space="preserve">
+    <value>Die Anteile ergeben {0}, nicht 1.</value>
+  </data>
+  <data name="DESINF_PRUEF_INTERVALL" xml:space="preserve">
+    <value>Das Intervall muss zwischen {0} und {1} Tagen liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_STUNDE" xml:space="preserve">
+    <value>Die Stunde muss zwischen {0} und {1} liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_ZIEL" xml:space="preserve">
+    <value>Die Zieltemperatur muss zwischen {0} und {1} °C liegen.</value>
+  </data>
+  <data name="DESINF_PRUEF_VOLUMEN" xml:space="preserve">
+    <value>Das Volumen muss zwischen 0 und {0:N0} l liegen.</value>
+  </data>
+  <data name="SIMENG_PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Bereitschaftsverlust nach Temperatur, H = {1:0.00} W/K, Aufstellraum {2:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_ANTEILE_ABGELEHNT" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Zonenanteile nicht übernommen – {1} Gerechnet wird mit gleich großen Zonen.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_OHNE_BRAUCHWASSER" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Das Frischwassermodul wirkt nicht – der Speicher führt kein Brauchwasser.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: Frischwassermodul, Zapftemperatur {1:0.#} °C + Grädigkeit {2:0.#} K – Mindesttemperatur oben {3:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_PSP_FWM_STUNDEN" xml:space="preserve">
+    <value>Pufferspeicher „{0}“: In {1} Stunden hielt die oberste Zone die Mindesttemperatur des Frischwassermoduls ({2:0.#} °C) nicht; den Rest deckte die nächste Stufe der Kaskade.</value>
+  </data>
+  <data name="SIMENG_TWW_ZAPF_VORGABE" xml:space="preserve">
+    <value>Brauchwasser: Das Projekt führt keine Zapftemperatur – gerechnet wird mit {0:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_DESINF_SOLL_VORGABE" xml:space="preserve">
+    <value>Thermische Desinfektion: Das Projekt führt keine Speichersolltemperatur – gerechnet wird mit {0:0.#} °C.</value>
+  </data>
+  <data name="SIMENG_DESINF_OHNE_VOLUMEN" xml:space="preserve">
+    <value>Thermische Desinfektion ohne Volumen: Weder ist ein Volumen gepflegt noch führt ein Speicher Brauchwasser – kein Zusatzbedarf.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZIEL_UNTER_SOLL" xml:space="preserve">
+    <value>Thermische Desinfektion: Die Zieltemperatur {0:0.#} °C liegt nicht über der Speichersolltemperatur {1:0.#} °C – kein Zusatzbedarf.</value>
+  </data>
+  <data name="SIMENG_DESINF_BEDARF" xml:space="preserve">
+    <value>thermische Desinfektion {0}-mal im Jahr (alle {1} Tage um {2} Uhr), {3:0.#} l von {4:0.#} auf {5:0.#} °C: {6:0.##} kWh je Ereignis, {7:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMENG_DESINF_GEDECKT" xml:space="preserve">
+    <value>Thermische Desinfektion: {0} deckt {1:0.##} kWh.</value>
+  </data>
+  <data name="SIMENG_DESINF_ZUSATZSTROM" xml:space="preserve">
+    <value>Thermische Desinfektion: Kein Erzeuger erreicht {1:0.#} °C für {0:0.##} kWh – gedeckt mit Zusatzstrom (elektrisch, Wirkungsgrad 1), im Reststrom enthalten.</value>
+  </data>
+  <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
 </root>
 
