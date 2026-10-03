@@ -67,6 +67,12 @@ public class SimulationKonfigSeiteTests : BunitContext
     /// <summary>#274: Wie oft wurde die Auslegung geöffnet?</summary>
     private int _spGeoeffnet;
 
+    /// <summary>Stufe P2: Hat die Hülle einen Weg in die Pufferspeicher-Auslegung eingelegt?</summary>
+    private bool _puWeg;
+
+    /// <summary>Stufe P2: Mit welchem Puffer wurde die Pufferspeicher-Auslegung geöffnet?</summary>
+    private readonly List<int> _puGeoeffnet = new();
+
     /// <summary>#307: Steht die Merkspalte „Kaskade vom Anwender gepflegt" auf 1?</summary>
     private bool _gepflegt;
 
@@ -215,6 +221,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         {
             Laden = _ => Daten(gesperrt, mitBooster),
             AuslegungOeffnen = _spWeg ? () => _spGeoeffnet++ : null,
+            PufferAuslegungOeffnen = _puWeg ? id => _puGeoeffnet.Add(id) : null,
             SchemaLaden = _ => { _schemaGeholt++; return SchemaBild.Leer; },
             Verschieben = (w, r) => _verschoben.Add(w + ":" + r),
             Aufnehmen = w => _aufgenommen.Add(w),
@@ -1971,6 +1978,40 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(cut.FindAll("p.epos-simkonfig-flottenstand"));
         Assert.Single(cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf"));
     }
+    // ==================================================================
+    //  Stufe P2 — „Pufferspeicher auslegen…" unter der Pufferverwaltung
+    // ==================================================================
+
+    /// <summary>
+    /// Konzept Pufferspeicher-Auslegung, Abschnitt 6: „Pufferspeicher auslegen…" steht unter
+    /// „Pufferspeicher anlegen / verwalten…" nach dem Muster „Stromspeicher auslegen…". Bei zwei
+    /// Speichern im Projekt öffnet er die Auslegung für einen neuen (0) — einen bestimmten wählt
+    /// „Auslegen…" der Pufferverwaltung.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_Pufferspeicher_auslegen_steht_unter_der_Pufferverwaltung()
+    {
+        _puWeg = true;
+        var cut = Seite();
+
+        var knoepfe = cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains("Pufferspeicher anlegen", knoepfe[0].TextContent);
+        Assert.Equal("Pufferspeicher auslegen…", knoepfe[1].TextContent.Trim());
+
+        cut.Find("button.epos-simkonfig-pufferauslegung").Click();
+        Assert.Equal(new[] { 0 }, _puGeoeffnet);
+    }
+
+    /// <summary>Kein Delegat, kein Knopf: Ohne Weg fehlt „Pufferspeicher auslegen…".</summary>
+    [Fact]
+    public void Ohne_Weg_in_die_Pufferauslegung_fehlt_der_Knopf()
+    {
+        _puWeg = false;
+        var cut = Seite();
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-pufferauslegung"));
+    }
+
     // ==================================================================
     //  Hausmuster der Dialoge: OK speichert, Abbrechen und ✕ verwerfen
     // ==================================================================

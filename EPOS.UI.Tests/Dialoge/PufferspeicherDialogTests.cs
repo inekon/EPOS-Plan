@@ -9,6 +9,7 @@ using Xunit;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
@@ -910,5 +911,39 @@ public class PufferspeicherDialogTests : EposBunitContext
         KiKern.KiErgebnis ergebnis = await haken.Speichern!();
         Assert.False(ergebnis.Erfolg);
         Assert.Contains("Alle Daten", ergebnis.Text, StringComparison.Ordinal);
+    }
+
+    // =========================================================================
+    //  Stufe P2 — „Auslegen…" in der Kachel-Verwaltung
+    // =========================================================================
+
+    /// <summary>
+    /// Einstieg A des Konzepts Pufferspeicher-Auslegung: „Auslegen…" steht neben „Bearbeiten…"
+    /// und reicht die Gerätenummer der gewählten Projektzeile an die Hülle (ohne Wahl 0); die Zeile
+    /// darunter sagt, dass der Knopf die Verwaltung ohne Speichern verlässt.
+    /// </summary>
+    [Fact]
+    public void Auslegen_reicht_die_Geraetenummer_der_Projektzeile_an_die_Huelle()
+    {
+        var geoeffnet = new List<int>();
+        var cut = Render<PufferspeicherDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Speicher 600 Liter", 51) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.ProjektDetail, id => Detail("Projektkopie " + id))
+            .Add(x => x.AuslegenOeffnen, id => { geoeffnet.Add(id); return Task.CompletedTask; }));
+
+        Assert.Contains("ohne zu speichern", cut.Find(".epos-pspd-auslegen-hinweis").TextContent);
+        // Die erste Projektzeile ist vorgewählt: ihre Gerätenummer.
+        cut.Find("button.epos-pspd-auslegen").Click();
+        Assert.Equal(new[] { 51 }, geoeffnet);
+
+        // Steht ein Katalogsatz in der Wahl, gibt es keine Projektzeile: 0 (neuer Speicher).
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.Find("button.epos-pspd-auslegen").Click();
+        Assert.Equal(new[] { 51, 0 }, geoeffnet);
+
+        var ohne = Aufbauen();
+        Assert.Empty(ohne.FindAll("button.epos-pspd-auslegen"));
     }
 }
