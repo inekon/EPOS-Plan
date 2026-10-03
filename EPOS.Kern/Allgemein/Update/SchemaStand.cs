@@ -793,6 +793,14 @@ namespace WindowsFormsApplication1
         /// <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel, reines DDL (<see cref="ErzeugerTeillastSchema"/>).
         /// <b>Ergebnisneutral:</b> Leere Felder rechnen wie zuvor. Die Nummer steht allein bei
         /// <see cref="ErzeugerTeillastSchema.SCHRITT"/>.
+        /// Danach, mit der EINSPEISEGRENZE UND DER SELBSTENTLADUNG (Welle M5 „Strom in Viertelstunden"
+        /// der Entscheidungsvorlage Modellgrenzen, PV3 und SP1), steht das Ziel auf
+        /// <see cref="StromViertelstundenSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> die nullbaren
+        /// Spalten <c>Einspeisegrenze_Wert</c> (≥ 0) und <c>Einspeisegrenze_Einheit</c> ('kW'/'%'), an
+        /// <c>Tab_Stromspeicher_STAMM</c> und <c>Tab_Stromspeicher</c> <c>Selbstentladung_Prozent_Monat</c>
+        /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
+        /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
+        /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
         /// Danach, mit der KATALOGEMPFEHLUNG DER HILFSENERGIE AUF WEG B (Auftrag P671, Register
         /// E30‑Q12, EZ‑24), steht das Ziel auf <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>: die
         /// Empfehlungsspannen der Pflichtzeilen „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und

@@ -1018,30 +1018,25 @@ namespace WindowsFormsApplication1
                     // doppelt gezählt.
                     pvm.Ueberschuss = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
                 }
-                else if (sim.Speicherergebnis != null &&
-                    sim.Speicherergebnis.LadungAcKwh != null &&
-                    sim.Speicherergebnis.LadungAcKwh.Length == pvs.Ueberschuss_viertelstunde.Length)
-                {
-                    double[] ladungKwh = sim.Speicherergebnis.LadungAcKwh;
-                    double einspKwh = 0;
-                    for (int vi = 0; vi < ladungKwh.Length; vi++)
-                        einspKwh += Math.Max(0,
-                            pvs.Ueberschuss_viertelstunde[vi] * 0.25 - ladungKwh[vi]);
-                    pvm.Ueberschuss = einspKwh / 1000.0;
-                }
                 else
-                    pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
+                {
+                    // SB1 (a) und PV3: die Einspeisung je Viertelstunde nach der Speicherladung
+                    // und unter der Einspeisegrenze - dieselbe Aufteilung wie Reiter und Bericht
+                    // (SimulationPV.EinspeisungAufteilen). Ohne Speicher und ohne Grenze ist das
+                    // der Überschuss.
+                    sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out _);
+                    pvm.Ueberschuss = SimulationPV.ViertelstundenKwh(einspeisungKw) / 1000.0;
+                }
                 // E28 (#535, E28‑Q3 a): der Stufeneingang je Viertelstunde bei 0 geklemmt - ein
                 // BHKW-Überschuss davor ist kein negativer Strombedarf der PV-Zeile.
                 pvm.Strombedarf = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf).Sum() / 4000.0;
                 pvm.Reststrombedarf = sim.Speicherflottennetzbilanz != null
                     ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                     : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
-                // E29 (#536, Restpunkt E28 (a), Entscheid E29‑Q10 a): der Nenner je Stunde bei 0
-                // geklemmt wie in der PV-Schleife (SimulationPV: bedarf = max(0, bedarfRoh)) -
+                // E29 (#536, Entscheid E29‑Q10 a) mit SB1 (a): der Nenner je VIERTELSTUNDE bei 0
+                // geklemmt wie in der PV-Bilanz (SimulationPV.Bilanzieren: bedarf = max(0, bedarfRoh)) -
                 // ein BHKW-Überschuss davor mindert den Bedarf nicht, die Deckung bleibt ≤ 100 %.
-                // Ohne negative Stunde dasselbe Array, also bitgleich.
-                double pvBedarfKwh = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf_stuendlich).Sum();
+                double pvBedarfKwh = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf).Sum() / 4.0;
                 pvm.Strombedarfsdeckung = (pvBedarfKwh > 0)
                     ? pvs.Stromproduktion.Sum() * 100.0 / pvBedarfKwh : 0;
                 pvm.MaxSolareLeistung = pvs.MaxPSolar;

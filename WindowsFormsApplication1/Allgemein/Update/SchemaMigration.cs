@@ -4918,13 +4918,31 @@ namespace WindowsFormsApplication1
         /// Taktrechnung der Wärmepumpe, Volllastwirkungsgrade und kein Takten beim BHKW.</para>
         /// </summary>
         public const int SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT;
+        // ---- Welle M5 Strom in Viertelstunden: Einspeisegrenze und Selbstentladung ----
+
+        /// <summary>
+        /// Schritt <see cref="StromViertelstundenSchema.SCHRITT"/> — <b>die Einspeisegrenze des Projekts
+        /// und die Selbstentladung des Stromspeichers</b> (Welle M5 der Entscheidungsvorlage Modellgrenzen:
+        /// PV3, SP1). Er folgt auf <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Einstellungen</c> die nullbaren Spalten
+        /// <c>Einspeisegrenze_Wert</c> und <c>Einspeisegrenze_Einheit</c>, an <c>Tab_Stromspeicher_STAMM</c>
+        /// und <c>Tab_Stromspeicher</c> die Spalte <c>Selbstentladung_Prozent_Monat</c>, alle mit
+        /// Prüfklausel. Die Anweisungen stehen bei <see cref="StromViertelstundenSchema"/>, die Nummer
+        /// allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten heißen keine
+        /// Einspeisegrenze und keine Selbstentladung.</para>
+        /// </summary>
+        public const int SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT;
+
         // ---- Auftrag P671 (Register E30‑Q12, EZ‑24): Katalogempfehlung der Hilfsenergie auf Weg B ----
 
         /// <summary>
         /// Schritt <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/> — <b>die Katalogempfehlung der
         /// Hilfsenergie auf Weg B</b> (Auftrag P671, Register E30‑Q12, EZ‑24). Er folgt auf
-        /// <see cref="SCHRITT_ERZEUGER_TEILLAST"/> ohne Reihenfolgebedingung (er berührt keine Spalte der
-        /// Teillastfelder); er setzt Schritt 94
+        /// <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/> ohne Reihenfolgebedingung (er berührt keine Spalte der
+        /// Teillastfelder, der Einspeisegrenze oder der Selbstentladung); er setzt Schritt 94
         /// (Bemessung Weg B der Saat) voraus, der immer vor ihm läuft.
         ///
         /// <para><b>Reines DML:</b> <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> der Pflichtzeilen
@@ -7114,6 +7132,16 @@ namespace WindowsFormsApplication1
                         "Taktverlust der Waermepumpe, Teillastkennlinie und Takten des BHKW haetten keinen Ort. " +
                         "KEIN Rechenergebnis aendert sich - die Felder entstehen leer und rechnen wie zuvor.",
                         Schritt_ErzeugerTeillast),
+            // WELLE M5 STROM IN VIERTELSTUNDEN - die Einspeisegrenze an der Projekteinstellung und die
+            // Selbstentladung am Stromspeicher. REIN DDL; die Quelle ist StromViertelstundenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROM_VIERTELSTUNDEN,
+                        "Tab_Einstellungen: Einspeisegrenze_Wert, Einspeisegrenze_Einheit; " +
+                        "Tab_Stromspeicher(_STAMM): Selbstentladung_Prozent_Monat",
+                        "Die Einspeisegrenze des Projekts und die Selbstentladung des Stromspeichers " +
+                        "haetten keinen Ort. KEIN Rechenergebnis aendert sich - die Felder entstehen leer " +
+                        "und heissen keine Grenze und keine Selbstentladung.",
+                        Schritt_StromViertelstunden),
             // AUFTRAG P671 (E30-Q12, EZ-24) - die Empfehlungsspannen der Hilfsenergie von BHKW und
             // Heizkessel in den Auslieferungsvorlagen auf Weg B. Reines DML; die Quelle ist
             // HilfsenergieEmpfehlungNachzug, die Nummer steht allein dort.
@@ -12731,6 +12759,49 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Teillastfelder von Waermepumpe und BHKW - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Einspeisegrenze und Selbstentladung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/>, die Anweisungen bei
+        /// <see cref="StromViertelstundenSchema"/>. <b>Wiederholbar</b>:
+        /// <c>StromViertelstundenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt eine der
+        /// drei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_StromViertelstunden(Lauf l)
+        {
+            string nr = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromViertelstundenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(StromViertelstundenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!StromViertelstundenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Einspeisegrenze und der Selbstentladung an " +
+                                  StromViertelstundenSchema.TAB_EINSTELLUNGEN + ", " +
+                                  StromViertelstundenSchema.TAB_KATALOG_STAMM + " und " +
+                                  StromViertelstundenSchema.TAB_KATALOG_PROJEKT +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Einspeisegrenze und Selbstentladung - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
                     " KEIN DML.");
             return true;

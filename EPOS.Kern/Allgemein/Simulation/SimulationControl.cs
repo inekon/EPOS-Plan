@@ -219,6 +219,35 @@ namespace WindowsFormsApplication1
         public SpeicherEngine.SpeicherErgebnis Speicherergebnis = null;
 
         /// <summary>
+        /// Der Eigenverbrauch des Speichersystems im Lauf [kWh/a] (Welle M5, SP1): der Standby der
+        /// Speicheranlagen, im Flottenpfad der Hilfsverbrauch der Einheiten. 0 ohne Standby.
+        /// </summary>
+        public double SpeichersystemEigenverbrauchKwh = 0;
+
+        /// <summary>
+        /// Aus dem PV-Überschuss gedeckter Standby je Viertelstunde [kW] (SP1); <c>null</c> ohne
+        /// Standby oder im Flottenpfad (dort steht er in der Flottenbilanz).
+        /// </summary>
+        public double[] SpeichersystemStandbyAusPvKw = null;
+
+        /// <summary>
+        /// Aus dem Netz gedeckter Standby je Viertelstunde [kW] (SP1); <c>null</c> ohne Standby. Er
+        /// steht im Netzbezug (<see cref="Rest_Strombedarf_viertelstuendlich"/>).
+        /// </summary>
+        public double[] SpeichersystemStandbyAusNetzKw = null;
+
+        /// <summary>
+        /// Einspeisung und Abregelung der Photovoltaik je Viertelstunde [kW] nach der Speicherladung
+        /// und dem Standby aus PV-Überschuss (SB1 a, PV3, SP1) — die eine Aufteilung, die Ergebnis,
+        /// Reiter und Bericht lesen. Im Flottenpfad gilt die Flottenbilanz, nicht diese Methode.
+        /// </summary>
+        public void PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw)
+        {
+            simulation_pv.EinspeisungAufteilen(Speicherergebnis?.LadungAcKwh, SpeichersystemStandbyAusPvKw,
+                                               out einspeisungKw, out abregelungKw);
+        }
+
+        /// <summary>
         /// Parametersatz, Variante und Anlagenbezug des Speicherlaufs (AP3b) —
         /// belegt zusammen mit <see cref="Speicherergebnis"/>.
         /// </summary>
@@ -531,6 +560,9 @@ namespace WindowsFormsApplication1
             // Speicherergebnis des Vorlaufs verwerfen - sonst zeigten Chart und
             // Kennzahlen die Werte eines früheren Projekts an.
             Speicherergebnis = null;
+            SpeichersystemEigenverbrauchKwh = 0;
+            SpeichersystemStandbyAusPvKw = null;
+            SpeichersystemStandbyAusNetzKw = null;
             Speicherflottenergebnis = null;
             Speicherflottenkonfiguration = null;
             Speicherflottennetzbilanz = null;
@@ -620,7 +652,16 @@ namespace WindowsFormsApplication1
                 if (temp != null)
                 {
                     if (!SpeicherflotteErsetztReststrom)
+                    {
                         Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+
+                        // SP1 (Welle M5): Was der Standby nicht aus PV-Überschuss deckt, kommt aus
+                        // dem Netz - nie aus der Batterie. Ohne Standby bleibt der Vektor, wie er ist.
+                        if (SpeichersystemStandbyAusNetzKw != null &&
+                            SpeichersystemStandbyAusNetzKw.Length == Rest_Strombedarf_viertelstuendlich.Length)
+                            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich,
+                                                                            SpeichersystemStandbyAusNetzKw);
+                    }
                     bSimulationSSP = true;
                 }
             }
@@ -4806,6 +4847,16 @@ namespace WindowsFormsApplication1
 
             // Simulation starten
             double[] temp = simulation_pv.Berechnung(m_ID_Projekt);
+
+            // PV3: Die Einspeisegrenze steht im Protokoll - mit der Abregelung OHNE Speicher; ein
+            // Speicher lädt vor dem Abregeln, sein Lauf folgt.
+            if (simulation_pv.EinspeisegrenzeKw.HasValue)
+                Protokoll.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIM_PV_EINSPEISEGRENZE_HINWEIS,
+                    simulation_pv.EinspeisegrenzeKw.Value, simulation_pv.AbregelungGesamtKwh,
+                    simulation_pv.StromproduktionTheoretischGesamtKwh > 0
+                        ? simulation_pv.AbregelungGesamtKwh / simulation_pv.StromproduktionTheoretischGesamtKwh * 100.0
+                        : 0.0));
 
             TestePVAnlage();
 

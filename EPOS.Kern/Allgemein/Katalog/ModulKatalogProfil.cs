@@ -245,6 +245,8 @@ namespace WindowsFormsApplication1
         public const string FeldLeistungskosten = "LEISTUNGSKOSTEN";
         public const string FeldInvestitionFix = "INVESTITION_FIX";
         public const string FeldStandby = "STANDBY";
+        /// <summary>Welle M5 (SP1): die Selbstentladung des Speichers [%/Monat].</summary>
+        public const string FeldSelbstentladung = "SELBSTENTLADUNG";
 
         public const string FeldFirma = "FIRMA";
         public const string FeldBeschreibung = "BESCHREIBUNG";
@@ -388,7 +390,12 @@ namespace WindowsFormsApplication1
                             new ModulKatalogFeld(FeldInvestitionFix, t("SP_LABEL_INVESTITION_FIX"), "€",
                                                  BrowserFeldArt.Zahl, true, 1),
                             new ModulKatalogFeld(FeldStandby, t("SP_LABEL_STANDBY"), "W",
-                                                 BrowserFeldArt.Zahl, true, 1)
+                                                 BrowserFeldArt.Zahl, true, 1,
+                                                 hinweis: t("SP_HINWEIS_STANDBY")),
+                            // Welle M5 (SP1): leer = keine Selbstentladung.
+                            new ModulKatalogFeld(FeldSelbstentladung, t("SP_LABEL_SELBSTENTLADUNG"), "%/Monat",
+                                                 BrowserFeldArt.Zahl, true, 1,
+                                                 hinweis: t("SP_HINWEIS_SELBSTENTLADUNG"))
                         }
                     };
 

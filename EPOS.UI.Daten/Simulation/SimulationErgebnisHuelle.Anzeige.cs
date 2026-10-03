@@ -853,8 +853,10 @@ namespace WindowsFormsApplication1
             d.HatPv = p.Photovoltaik;
             d.HatSolarthermie = p.Solarthermie;
 
-            double[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
-            double[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
+            // SB1 (a): Die Was-wäre-wenn-Rechnung nimmt dieselben Viertelstundenreihen wie der Lauf -
+            // die glatte PV-Reihe und den Viertelstundenbedarf der PV-Stufe.
+            double[] pvProd = sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde;
+            double[] stromBedarf = sim.simulation_pv.Strombedarf;
 
             // Der Kollektorertrag: nutzbarer Ertrag (Direktdeckung + Speicherladung) plus
             // der verworfene Überschuss.

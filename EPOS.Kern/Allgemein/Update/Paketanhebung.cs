@@ -246,6 +246,10 @@ namespace WindowsFormsApplication1
             // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
             new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
                       "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
+            // Die Spalten kommen leer an - keine Einspeisegrenze, keine Selbstentladung; ein Paketsatz
+            // rechnet wie zuvor.
+            new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
+                      "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
             // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
             new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
                       "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),

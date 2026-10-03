@@ -41908,5 +41908,80 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
     <value>Teillastkoeffizient C_d nach EN 14825 (0 bis 1). Er bestimmt den Taktverlust: COP_takt = COP · CR / (C_d · CR + 1 − C_d). Leer = Vorgabe 0,9.</value>
   </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_OHNE_KWP" xml:space="preserve">
+    <value>Photovoltaik: Die Einspeisegrenze von {0:N1} % braucht die installierte PV-Leistung (kWp) als Bezug; das Projekt führt keine. Gerechnet wird ohne Einspeisegrenze.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_HINWEIS" xml:space="preserve">
+    <value>Photovoltaik: Einspeisegrenze {0:N1} kW - ohne Speicher abgeregelt {1:N0} kWh/a ({2:N1} % des Ertrags). Ein Stromspeicher lädt vor dem Abregeln.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_STANDBY_AUSSERHALB" xml:space="preserve">
+    <value>Stromspeicher: Ein Standby-Verbrauch außerhalb 0 … 1 000 W wird nicht gerechnet.</value>
+  </data>
+  <data name="SP_LABEL_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Selbstentladung</value>
+  </data>
+  <data name="SP_HINWEIS_STANDBY" xml:space="preserve">
+    <value>Batteriemanagement und Wechselrichter im Leerlauf. Gedeckt aus PV-Überschuss, sonst aus dem Netz; leer = 0.</value>
+  </data>
+  <data name="SP_HINWEIS_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat, 0 … 20 %; leer = keine.</value>
+  </data>
+  <data name="SP_ERG_SELBSTENTLADUNG" xml:space="preserve">
+    <value>davon Selbstentladung</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Eigenverbrauch Speichersystem</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ" xml:space="preserve">
+    <value>davon aus dem Netz</value>
+  </data>
+  <data name="SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Standby-Verbrauch des Speichersystems: gedeckt aus PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG" xml:space="preserve">
+    <value>Abregelung an der Einspeisegrenze</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG_ANTEIL" xml:space="preserve">
+    <value>Abregelung in % der Erzeugung</value>
+  </data>
+  <data name="SIMERG_LBL_PV_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_GRP_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_HRL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss, in kW oder in % der installierten PV-Leistung. Was der Speicher nicht lädt und darüber liegt, wird abgeregelt. Leer = keine Grenze.</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_KW" xml:space="preserve">
+    <value>kW am Netzanschluss</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der installierten PV-Leistung</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_LEER" xml:space="preserve">
+    <value>keine Grenze</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_FEHLER" xml:space="preserve">
+    <value>Die Einspeisegrenze konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_MODK_SELBSTENTLADUNG_ERL" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss in der gewählten Einheit; leer heißt keine Grenze. Darüber wird abgeregelt, nachdem ein Speicher geladen hat.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze: kW am Netzanschluss oder % der installierten PV-Leistung (kWp).</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
+    <value>Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat.</value>
+  </data>
 </root>
 

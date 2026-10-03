@@ -41901,5 +41901,80 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
     <value>Degradation coefficient C_d to EN 14825 (0 to 1). It sets the cycling loss: COP_cycl = COP · CR / (C_d · CR + 1 − C_d). Empty = default 0.9.</value>
   </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_OHNE_KWP" xml:space="preserve">
+    <value>Photovoltaics: The feed-in limit of {0:N1} % needs the installed PV power (kWp) as its reference; the project has none. The run uses no feed-in limit.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_HINWEIS" xml:space="preserve">
+    <value>Photovoltaics: feed-in limit {0:N1} kW - curtailed without storage {1:N0} kWh/a ({2:N1} % of the yield). A battery charges before curtailment.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_STANDBY_AUSSERHALB" xml:space="preserve">
+    <value>Battery storage: a standby consumption outside 0 … 1,000 W is not used.</value>
+  </data>
+  <data name="SP_LABEL_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Self-discharge</value>
+  </data>
+  <data name="SP_HINWEIS_STANDBY" xml:space="preserve">
+    <value>Battery management and inverter at idle. Covered from PV surplus, otherwise from the grid; empty = 0.</value>
+  </data>
+  <data name="SP_HINWEIS_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Loss of stored energy per month, 0 … 20 %; empty = none.</value>
+  </data>
+  <data name="SP_ERG_SELBSTENTLADUNG" xml:space="preserve">
+    <value>of which self-discharge</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Storage system own consumption</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ" xml:space="preserve">
+    <value>of which from the grid</value>
+  </data>
+  <data name="SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Standby consumption of the storage system: covered from PV surplus after charging, otherwise from the grid, never from the battery.</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG" xml:space="preserve">
+    <value>Curtailment at the feed-in limit</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG_ANTEIL" xml:space="preserve">
+    <value>Curtailment in % of generation</value>
+  </data>
+  <data name="SIMERG_LBL_PV_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_GRP_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Feed-in limit</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT" xml:space="preserve">
+    <value>Unit of the feed-in limit</value>
+  </data>
+  <data name="SIMKONF_HRL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Maximum PV feed-in at the grid connection, in kW or in % of the installed PV power. Whatever the battery does not charge and lies above it is curtailed. Empty = no limit.</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_KW" xml:space="preserve">
+    <value>kW at the grid connection</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% of the installed PV power</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_LEER" xml:space="preserve">
+    <value>no limit</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_FEHLER" xml:space="preserve">
+    <value>The feed-in limit could not be saved.</value>
+  </data>
+  <data name="KI_DLG_MODK_SELBSTENTLADUNG_ERL" xml:space="preserve">
+    <value>Loss of stored energy per month in percent, 0 to 20; empty means no self-discharge. The simulation deducts it from the content every quarter-hour, at most down to the lower state-of-charge limit.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Maximum PV feed-in at the grid connection in the chosen unit; empty means no limit. Above it, PV is curtailed after a battery has charged.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL" xml:space="preserve">
+    <value>Unit of the feed-in limit: kW at the grid connection or % of the installed PV power (kWp).</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
+    <value>Project setting feed-in limit: {0:N1} kW. It pre-fills the hard limit of a new fleet and, in the project run, curtails PV feed-in above it after the fleet has charged.</value>
+  </data>
 </root>
 

@@ -140,6 +140,7 @@ Der Speicher rechnet nach Wärmeseite und Photovoltaik, je Viertelstunde, gegen 
 * '''Ladezustand''' – der Ladezustand zu Beginn des Laufs in Prozent der Kapazität; die Grenzen setzt die Betriebsführung (''Ladezustand min.'', ''Ladezustand max.'').
 * '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
 * '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
+* {{Anker|standby}}'''Standby-Verbrauch und Selbstentladung''' – unter ''Gerätetechnik'': der Verbrauch von Batteriemanagement und Wechselrichter im Leerlauf in W (0 bis 1 000) und der Verlust des Speicherinhalts in Prozent je Monat (0 bis 20). Leer heißt 0. Den Standby deckt die Simulation aus PV-Überschuss, sonst aus dem Netz; der Reiter ''Stromspeicher'' zeigt ihn als ''Eigenverbrauch Speichersystem'' samt Netzanteil.
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
 * {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''. Ausgelegt wird er über den Knopf ''Stromspeicher auslegen…'' derselben Spalte.
 
@@ -432,7 +433,7 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 
 Dieser Block steht hier und nicht bei einer Einheit: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
 
-* '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze".
+* '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze". Eine neue Flotte übernimmt als Netzeinspeisegrenze die ''Einspeisegrenze'' der Projekteinstellung ([[Programm Dokumentation/Simulation#einspeisegrenze|Simulation]]); die Zeile unter dem Feld nennt sie. Im Projektlauf wirkt die Projekteinstellung zusätzlich als weiche Grenze: Die Flotte lädt zuerst, PV darüber wird abgeregelt.
 * '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Idealwissen'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
 ** '''''Archivierte Prognose-Snapshots''''' ist die Vorbelegung und rechnet ausschließlich mit '''geladenen''' Prognosen – die tatsächliche Jahresreihe des Projekts wird nie als Prognose verwendet, sonst wäre jeder Fahrplan heimlich hellsichtig. Ist keine Prognose geladen, steht der Hinweis unter dem Feld, der Rechenknopf bleibt gesperrt und nennt den Grund. '''Zwei Auswege''': den Informationsstand auf ''Idealwissen'' setzen – ein Knopf tut das – oder in Schritt 2 über '''„Prognosen und Projektjahre…"''' Prognosen laden.
 * '''Endenergieziele''' – bei ''je Speicher ein Ziel'' eine Zeile je Einheit, mit dem '''Namen''' der Einheit davor.

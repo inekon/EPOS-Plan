@@ -864,6 +864,11 @@ namespace EPOS.Kern.Tests
                 // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
                 // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
                 ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
 
                 // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
                 // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den

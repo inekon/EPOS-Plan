@@ -16,16 +16,16 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
   Hilfsfunktion `SteuerGutschriftRechner.Entgangene9bEur`; EZ‑22) und **#656** (P654: Deckel auch im § 9b-Ausweis der vermiedenen
   Stromkosten; EZ‑23). Alle vier mit grünem Gate, Referenzlauf 16/16 gegen R30 und CI-Vermerk (grüne Kern-Läufe auf fremden Zweigen
   mit demselben Stand, weil Läufe auf dem Arbeitszweig fortlaufend durch Pushes abgebrochen werden).
-- **Letzter eigener Push:** Statuszeile #674 (03.10.2026, P671: Katalogempfehlung der Hilfsenergie, Schritt 168) auf `ios_migration_september`; davor `258bee90c` (02.10.2026, CI-Vermerk zu #656). `main` steht
+- **Letzter eigener Push:** Statuszeile #675 (03.10.2026, P671: Katalogempfehlung der Hilfsenergie, Schritt 169) auf `ios_migration_september`; davor `258bee90c` (02.10.2026, CI-Vermerk zu #656). `main` steht
   weiter auf `8692ab40` (29.09.); ein Fast-Forward nur nach Gate auf dem Zweigstand und auf Zuruf.
-- **Nummern und Basis:** Statuszeilen bis #674 vergeben (gemessen 03.10.2026 auf origin: #673 die Welle M4 Teillast), #674 für P671 (die
+- **Nummern und Basis:** Statuszeilen bis #675 vergeben (gemessen 03.10.2026 auf origin: #673 die Welle M4 Teillast, #674 die Welle M5 Strom in Viertelstunden), #675 für P671 (die
   Orchestrierung prüft beim Push); vor jeder Vergabe `git fetch` und die Statusdatei auf origin
   messen; am 02.10. wanderte jede eigene Nummer zwei- bis dreimal (Nachbarn: KP2/KP3 Gebäudesimulation, Dialogsitzung, Berichterstellung,
-  Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R32_Solarthermie` (Nachbarn; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
-  Schemastand 168 (fremde Schritte bis 167, Kostenstempel 159, 167 die Teillastfelder der Welle M4; 168 die Katalogempfehlung der Hilfsenergie aus P671; LFS-Zeiger
-  `9985c4a2…`), `SchemaStand.Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT`; Basis und Schemastand wandern täglich, vor
+  Kostenstempel). Referenzbasis `Referenzlaeufe/2026-10-02_R33_Viertelstunden` (Nachbarn; keine neue Basis durch P671; die Wirtschaftlichkeit steht in keiner CSV), Testdatenbank
+  Schemastand 169 (fremde Schritte bis 168, Kostenstempel 159, 167 die Teillastfelder der Welle M4, 168 Einspeisegrenze und Selbstentladung der Welle M5; 169 die Katalogempfehlung der Hilfsenergie aus P671; LFS-Zeiger
+  `e4c31671…`), `SchemaStand.Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT`; Basis und Schemastand wandern täglich, vor
   jeder Welle neu messen. Die Wirtschaftlichkeit hat keinen Rechenweg der Simulation berührt; ihr einziger nummerierter
-  Schemaschritt seit den Etappen ist der Katalogschritt 168 (P671, reines DML an den Auslieferungsvorlagen); Ergebnisspalten von `Tab_ErgebnisWirtschaftlichkeit`
+  Schemaschritt seit den Etappen ist der Katalogschritt 169 (P671, reines DML an den Auslieferungsvorlagen); Ergebnisspalten von `Tab_ErgebnisWirtschaftlichkeit`
   laufen additiv über `SpalteSicher` und `Werkzeuge/Testdatenbankschema` (kein Schritt, Hausmuster).
 - **Messlatten:** Linux-Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256` (200 Hashes, `kern.yml` auf ubuntu); Windows-Messlatte
   des lokalen Gates beim Anwender; die sechs Bericht-Messlatten `EPOS.Kern.Tests/Messlatten/Bericht_*` byte-gleich zu halten. Gate in
@@ -35,7 +35,7 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
   1.2.0.6 (Nach #633 (d), #645 (a), #650 (a), #653 (a), #656 (a)); Windows-Proben am 05.10. (Nach #633 (e), #645 (b), #650 (b),
   #653 (b) und (d) Hinweiszeile „Obergrenze Regelsatz", #656 (b)); Unterrichtung der Nachbarsitzung Wärmegestehung (Zweige
   `wirt-gestehung`, `wirt-merge`) über Nachlese, EZ‑20 bis EZ‑23 und die fachliche Führung (Nach #650 (d)); ferner § 6.3 Nr. 37
-  (Vorlagenweg, 5–6 %), die E30-Reste E30‑Q5 (Emission und Stromsteuer des Hilfsstroms) und N11 (Flotten-Netzeinspeisung) — Katalogempfehlung und Satzfeld sind mit P671 (#674, EZ‑24) erledigt —, Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18 (macOS-Läufer, nur nach Rückfrage).
+  (Vorlagenweg, 5–6 %), die E30-Reste E30‑Q5 (Emission und Stromsteuer des Hilfsstroms) und N11 (Flotten-Netzeinspeisung) — Katalogempfehlung und Satzfeld sind mit P671 (#675, EZ‑24) erledigt —, Abnahmen A‑E13‑1 … A‑E31 in der App, iOS-Lauf E18 (macOS-Läufer, nur nach Rückfrage).
 - **Nutzung:** Anwenderangabe 02.10.2026 „unter 40 %" vor den Wellen P651 und P654; Erfahrungswerte des Tages: Welle mit Code und
   Gate 6–9 %, kleine Welle 3–5 %, jeder zusätzliche Merge mit Nachtest etwa 1 %, volles Gate wiederholt etwa 1 %.
 - **Lehren des Tages:** (1) Ein Skriptabbruch in einer Befehlskette darf den Commit nicht mitnehmen — Papieränderungen vor dem Commit

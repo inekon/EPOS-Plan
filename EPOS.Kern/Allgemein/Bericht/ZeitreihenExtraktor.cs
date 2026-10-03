@@ -63,24 +63,18 @@ namespace WindowsFormsApplication1
 
                     if (sim.Speicherflottennetzbilanz == null)
                     {
-                    // V2 (PV-Konzept § 2.3, Etappe P1): Die Einspeisereihe ist der
-                    // Überschuss NACH der Speicherladung — geladene Energie wirkt als
-                    // vermiedener Netzbezug, nicht als Einspeisung. Ladung je Stunde =
-                    // Summe der vier Viertelstunden (LadungAcKwh der SpeicherEngine).
-                    double[] pvUeb = D(sim.simulation_pv.Ueberschuss);
-                    if (sim.Speicherergebnis != null &&
-                        sim.Speicherergebnis.LadungAcKwh != null &&
-                        sim.Speicherergebnis.LadungAcKwh.Length == pvUeb.Length * 4)
+                    // V2 (PV-Konzept § 2.3, Etappe P1) mit SB1 (a) und PV3: Die Einspeisereihe ist
+                    // der Überschuss NACH der Speicherladung und unter der Einspeisegrenze - je
+                    // Viertelstunde gebildet (SimulationPV.EinspeisungAufteilen), dann zum
+                    // Stundenmittel. Geladene Energie wirkt als vermiedener Netzbezug, nicht als
+                    // Einspeisung; was über der Grenze bleibt, ist Abregelung.
+                    sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw);
+                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = Stunden(sim, einspeisungKw);
+                    if (SimulationPV.ViertelstundenKwh(abregelungKw) > 0.5)
                     {
-                        double[] ladung = sim.Speicherergebnis.LadungAcKwh;
-                        for (int h = 0; h < pvUeb.Length; h++)
-                        {
-                            double lad = ladung[h * 4] + ladung[h * 4 + 1] +
-                                         ladung[h * 4 + 2] + ladung[h * 4 + 3];
-                            pvUeb[h] = Math.Max(0, pvUeb[h] - lad);
-                        }
+                        z.Reihen[ZeitreihenSatz.PV_ABREGELUNG] = Stunden(sim, abregelungKw);
+                        z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                     }
-                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = pvUeb;
 
                     // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
                     // PV-Überschussreihe (falsches Etikett).
@@ -128,6 +122,18 @@ namespace WindowsFormsApplication1
                 // hing bis dahin am PV-Objekt (simulation_pv.Speicherfuellstand).
                 if (sim.bSimulationSSP)
                     z.Reihen[ZeitreihenSatz.PV_SPEICHER_SOC] = D(sim.Speicherfuellstand_stuendlich);
+
+                // SP1 (Welle M5): der Eigenverbrauch des Speichersystems - Standby aus PV und Netz,
+                // im Flottenpfad der Hilfsverbrauch der Einheiten. Nur mit Eigenverbrauch > 0,5 kWh.
+                if (sim.bSimulationSSP && sim.SpeichersystemEigenverbrauchKwh > 0.5)
+                {
+                    double[] eigen = SpeichersystemEigenverbrauchKw(sim);
+                    if (eigen != null)
+                    {
+                        z.Reihen[ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH] = Stunden(sim, eigen);
+                        z.Beschriftungen[ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH] = "Eigenverbrauch Speichersystem";
+                    }
+                }
 
                 z.Reihen[ZeitreihenSatz.NETZBEZUG] = Stunden(sim, sim.Rest_Strombedarf_viertelstuendlich);
 
@@ -355,6 +361,27 @@ namespace WindowsFormsApplication1
         // Kopie einer Reihe (Aliasing-sicher: mehrere Felder der Simulation zeigen auf
         // dasselbe Array). Bis W8-O-5d gab es hier zwei Ueberladungen, float[] und double[];
         // seit der Kern durchgehend in double rechnet, bleibt eine.
+        /// <summary>
+        /// Der Eigenverbrauch des Speichersystems je Viertelstunde [kW] (SP1): Standby aus PV plus aus dem
+        /// Netz, im Flottenpfad der Hilfsverbrauch der Einheiten; <c>null</c> ohne Reihe.
+        /// </summary>
+        private static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
+        {
+            if (sim.SpeichersystemStandbyAusPvKw != null && sim.SpeichersystemStandbyAusNetzKw != null &&
+                sim.SpeichersystemStandbyAusPvKw.Length == sim.SpeichersystemStandbyAusNetzKw.Length)
+            {
+                var r = new double[sim.SpeichersystemStandbyAusPvKw.Length];
+                for (int i = 0; i < r.Length; i++)
+                    r[i] = sim.SpeichersystemStandbyAusPvKw[i] + sim.SpeichersystemStandbyAusNetzKw[i];
+                return r;
+            }
+            var intervalle = sim.Speicherflottenergebnis?.Variante?.Intervalle;
+            if (intervalle == null || intervalle.Count == 0) return null;
+            var f = new double[intervalle.Count];
+            for (int i = 0; i < f.Length; i++) f[i] = intervalle[i].HilfsverbrauchKw;
+            return f;
+        }
+
         private static double[] D(double[] q)
         {
             if (q == null) return null;

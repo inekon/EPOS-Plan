@@ -486,7 +486,9 @@ namespace EPOS.Kern.Tests
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
                                    "Degradation", "Modulkosten", "Wirkungsgrad_RT",
                                    "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                   "Investition_Fix", "Standby_Verbrauch" };
+                                   "Investition_Fix", "Standby_Verbrauch",
+                                   // Welle M5 (SP1): das Katalogfeld „Selbstentladung".
+                                   StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG };
 
                 case Anlagenart.Wechselrichter:
                     // Aus ModulKatalogProfil.Felder (Auspraegung Wechselrichter, W6-E-2)

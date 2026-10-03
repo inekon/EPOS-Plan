@@ -1162,13 +1162,11 @@ namespace WindowsFormsApplication1
         /// Speicherverrechnung.
         /// </summary>
         /// <remarks>
-        /// Quelle ist <c>SimulationPV.Stromproduktion_Theoretisch</c>; das Feld trägt
-        /// wertgleich den Inhalt von <c>pvPotentialGesamt_stuendlich</c> (dort wird der
-        /// Wechselrichterfaktor 0,95 bereits eingerechnet, <c>SimulationPV.cs:128</c>).
-        /// <c>Stromproduktion</c> ist hier ausdrücklich <b>nicht</b> gemeint: die Reihe
-        /// enthält im Bestand Direktverbrauch plus Speicherentnahme und wäre damit
-        /// doppelt verrechnet. Mit dem Rückbau in AP2b fällt diese Unterscheidung weg.
-        /// Ohne PV-Lauf ist die Reihe ein Nullvektor.
+        /// Quelle ist <c>SimulationPV.Stromproduktion_Theoretisch_viertelstunde</c>: die
+        /// Erzeugung nach Wechselrichter, je Stunde energieerhaltend nach dem Sonnenstand auf
+        /// die vier Viertel verteilt (Welle M5, SB1 a) — dieselbe glatte Reihe, mit der die
+        /// PV-Bilanz rechnet. <c>Stromproduktion</c> (der Direktverbrauch) ist hier
+        /// ausdrücklich <b>nicht</b> gemeint. Ohne PV-Lauf ist die Reihe ein Nullvektor.
         /// </remarks>
         public double[] BauePvReihe(SimulationControl sim)
         {
@@ -1177,7 +1175,7 @@ namespace WindowsFormsApplication1
             if (!sim.bSimulationPV || sim.simulation_pv == null)
                 return new double[RasterAdapter.ViertelstundenJahr];
 
-            return RasterAdapter.ZuViertelstundenDouble(sim.simulation_pv.Stromproduktion_Theoretisch);
+            return RasterAdapter.ZuViertelstundenDouble(sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde);
         }
 
         /// <summary>
@@ -1357,6 +1355,8 @@ namespace WindowsFormsApplication1
             double summeLeistung = 0.0;
             double summeInvestitionFix = 0.0;
             double summeStandbyW = 0.0;
+            double gewichteteSelbstentladung = 0.0;
+            bool standbyVerworfen = false;
             double gewichtetLadezustand = 0.0;
             double gewichtetDegradation = 0.0;
             double gewichteteModulkosten = 0.0;
@@ -1456,7 +1456,16 @@ namespace WindowsFormsApplication1
                     summeEnergie += energie;
                     summeLeistung += leistung;
                     summeInvestitionFix += Zahl(dt, row, "Investition_Fix");
-                    summeStandbyW += Zahl(dt, row, "Standby_Verbrauch");
+                    // SP1 (Welle M5): Standby je Gerät 0 … 1 000 W; ein Wert außerhalb rechnet nicht
+                    // und wird gemeldet (die Bestandsspalte trägt keine Prüfklausel).
+                    double standbyW = Zahl(dt, row, StromViertelstundenSchema.SPALTE_STANDBY);
+                    if (standbyW >= 0.0 && standbyW <= StromViertelstundenSchema.STANDBY_MAX_W)
+                        summeStandbyW += standbyW;
+                    else
+                        standbyVerworfen = true;
+                    double selbstentladung = Zahl(dt, row, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG);
+                    if (selbstentladung > 0.0 && selbstentladung <= StromViertelstundenSchema.SELBSTENTLADUNG_MAX_PROZENT)
+                        gewichteteSelbstentladung += selbstentladung * energie;
 
                     gewichtetLadezustand += Zahl(dt, row, "Ladezustand") * energie;
                     gewichtetDegradation += Zahl(dt, row, "Degradation") * energie;
@@ -1506,6 +1515,8 @@ namespace WindowsFormsApplication1
             double etaRt = gewichteterWirkungsgrad / summeEnergie;
             double cVer = gewichteteVerschleisskosten / summeEnergie;
             double zyklenZugesichert = gewichteteZyklen / summeEnergie;
+            double selbstentladungProzent = gewichteteSelbstentladung / summeEnergie;
+            if (standbyVerworfen) HinweisErgaenzen(MyResource.Resource.SIMENG_SPEICHER_STANDBY_AUSSERHALB);
 
             // Leistungsgrenze: fehlt sie in den Altdaten, gilt 1 C - das entspricht der
             // impliziten Annahme des Bestands (SimulationSSP setzte die Ladeleistung
@@ -1563,7 +1574,11 @@ namespace WindowsFormsApplication1
                 Kapitalzins = zins,
                 NutzungsdauerA = nutzungsdauer,
                 DegradationProA = degradationProzent / 100.0,
-                CVerEurProKwhZyklus = cVer
+                CVerEurProKwhZyklus = cVer,
+
+                // SP1 (Welle M5): Standby [W → kW] und Selbstentladung [%/Monat]; leer = 0.
+                StandbyKw = summeStandbyW / 1000.0,
+                SelbstentladungProzentMonat = selbstentladungProzent
             };
 
             // Start-SoC: Prozentangabe auf die Nennkapazität, anschließend in das Band
