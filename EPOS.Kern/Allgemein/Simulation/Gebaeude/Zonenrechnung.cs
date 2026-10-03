@@ -285,6 +285,7 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
                 SommerlueftungGesetzt = zonen.Any(z => z.Eingang.Sommerlueftung),
                 HeizkalenderWirksam = zonen.Any(z => z.IstBeheizt && z.Eingang.HeizkalenderWirksam),
+                Innenumkehr = Innenumkehrmessung.Summe(ergebnisse.Select(e => e.Innenumkehr)),
             };
         }
 

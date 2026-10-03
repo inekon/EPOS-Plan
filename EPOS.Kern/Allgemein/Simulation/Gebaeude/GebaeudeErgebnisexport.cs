@@ -159,6 +159,7 @@ namespace WindowsFormsApplication1
             // Stufe KP3 (Festlegung 28): Lüftungsstunden und Aufheizwerte nur, wenn sie wirken (E32).
             var texte = new List<KeyValuePair<string, string>>();
             Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte, gebaeude: true);
+            Messung(p, e.Innenumkehr, skalare);
 
             // Stufe G6b (W5): je Zone die Kennzahlen, nur ab zwei Zonen.
             if (e.Zonen != null)
@@ -179,6 +180,7 @@ namespace WindowsFormsApplication1
                     skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
                     if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));
                     Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte, gebaeude: false);
+                    Messung(q, r.Innenumkehr, skalare);
                 }
             return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare, texte);
         }
@@ -208,6 +210,21 @@ namespace WindowsFormsApplication1
                 skalare.Add(Paar(praefix + z.Key, z.Value));
             if (gebaeude && a.AufheizzeitManuellH is int manuell)
                 skalare.Add(Paar(praefix + "Aufheizzeit_Manuell", manuell));
+        }
+
+        /// <summary>
+        /// Die Messung der inneren Lastumkehr (Rechenweg RP2a) — nur mit eingeschalteter Messung
+        /// (<see cref="Zonenmodell2K.SCHALTER_INNENUMKEHR"/>); ohne sie entsteht kein Schlüssel.
+        /// </summary>
+        private static void Messung(string praefix, Innenumkehrmessung m, List<KeyValuePair<string, double>> skalare)
+        {
+            if (m == null) return;
+            skalare.Add(Paar(praefix + "Innenumkehr_Stunden", m.StundenUmkehr));
+            skalare.Add(Paar(praefix + "Innenumkehr_Abschnitte", m.AbschnitteUmkehr));
+            skalare.Add(Paar(praefix + "Innenumkehr_Kwh", m.UmkehrKwh));
+            skalare.Add(Paar(praefix + "Bandverletzung_Stunden", m.StundenBand));
+            skalare.Add(Paar(praefix + "Bandverletzung_Abschnitte", m.AbschnitteBand));
+            skalare.Add(Paar(praefix + "Bandverletzung_Kh", m.BandKh));
         }
 
         private static KeyValuePair<string, double> Paar(string k, double v) => new KeyValuePair<string, double>(k, v);

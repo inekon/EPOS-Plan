@@ -175,6 +175,33 @@ namespace WindowsFormsApplication1
         /// <summary>Die Systemmatrix A [1/s].</summary>
         internal Matrix2 A => _a;
 
+        /// <summary>
+        /// <b>Die Nullstelle der Ableitung eines Ausgangs</b> [s] (Rechenweg RP2a): Für den Ausgang
+        /// y(t) = z·x(t) + c mit x′ = A·x + b gilt y′(t) = z·exp(A·t)·v₀ mit v₀ = A·x₀ + b. Über die
+        /// Sylvester-Formel ist das α₁·e^(λ₁t) + α₂·e^(λ₂t) mit α₁,₂ = ½·p ± r/(λ₁ − λ₂), p = z·v₀,
+        /// r = z·(A − μ·I)·v₀ — höchstens eine Nullstelle, t* = ln(−α₂/α₁)/(λ₁ − λ₂); im
+        /// zusammenfallenden Fall y′ = e^(μt)·(p + t·r), t* = −p/r. <c>NaN</c>, wenn y′ keine
+        /// Nullstelle in (0; ∞) hat.
+        /// </summary>
+        internal double NullstelleAbleitung(double zA, double zB, Vektor2 v0)
+        {
+            Vektor2 w = _aMinusMu * v0;
+            double p = zA * v0.A + zB * v0.B;
+            double r = zA * w.A + zB * w.B;
+            double t;
+            if (_zusammenfallend)
+                t = r != 0.0 ? -p / r : double.NaN;
+            else
+            {
+                double dl = _l1 - _l2;
+                double a1 = 0.5 * p + r / dl;
+                double a2 = 0.5 * p - r / dl;
+                double q = a1 != 0.0 ? -a2 / a1 : double.NaN;
+                t = q > 0.0 ? Math.Log(q) / dl : double.NaN;
+            }
+            return t > 0.0 && !double.IsInfinity(t) ? t : double.NaN;
+        }
+
         /// <summary>Beide Eigenwerte [1/s], der betragskleinere (langsamere) zuerst.</summary>
         internal double[] Eigenwerte => new[] { _l1, _l2 };
 

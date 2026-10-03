@@ -581,6 +581,7 @@ namespace WindowsFormsApplication1
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
 
             var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
+            Innenumkehrzaehler messung = modell.Innenumkehrmessung ? new Innenumkehrzaehler() : null;   // Messung RP2a
 
             // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
             // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus. Mit wirksamer
@@ -657,6 +658,7 @@ namespace WindowsFormsApplication1
                 summeW += s.HeizleistungW;
                 kappung[h] = s.HeizleistungMaxAnteil;
                 kappungH += s.HeizleistungMaxAnteil;
+                messung?.Aufnehmen(in s);
 
                 if (!Endlich(heiz[h]) || heiz[h] < 0.0 || !Endlich(kuehl[h]) || kuehl[h] < 0.0
                     || !Endlich(luft[h]) || !Endlich(op[h]))
@@ -751,6 +753,7 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
                 SommerlueftungGesetzt = eingang.Sommerlueftung,
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+                Innenumkehr = messung?.Ergebnis(),
             };
         }
 

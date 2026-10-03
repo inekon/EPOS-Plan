@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
         // Stufe KP3 (Festlegung 20): der Kappungsanteil je Stunde, auch ohne Kopplung - eigener Akkumulator.
         private readonly double[] _kappung = new double[8760];
         private double _kappungH;
+        private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
 
         internal Zonenlauf(ZonenEingang zone)
         {
@@ -54,6 +55,7 @@ namespace WindowsFormsApplication1
             GebaeudeModellEingang eingang = zone.Eingang;
             _e = eingang;
             _modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
+            _messung = _modell.Innenumkehrmessung ? new Innenumkehrzaehler() : null;
 
             // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen - dieselbe
             // Stelle, damit die Schwellenreihe des Kühlkalenders (KP1b, G2) hier ebenso gilt.
@@ -137,6 +139,7 @@ namespace WindowsFormsApplication1
             _summeW += s.HeizleistungW;
             _kappung[h] = s.HeizleistungMaxAnteil;
             _kappungH += s.HeizleistungMaxAnteil;
+            _messung?.Aufnehmen(in s);
 
             if (!Endlich(_heiz[h]) || _heiz[h] < 0.0 || !Endlich(_kuehl[h]) || _kuehl[h] < 0.0
                 || !Endlich(_luft[h]) || !Endlich(_op[h]))
@@ -233,6 +236,7 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
                 SommerlueftungGesetzt = eingang.Sommerlueftung,
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+                Innenumkehr = _messung?.Ergebnis(),
             };
         }
 

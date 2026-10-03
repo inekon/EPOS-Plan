@@ -207,6 +207,20 @@ namespace WindowsFormsApplication1
         /// <summary>Zähler der Neubauten einer <see cref="Aufheizantwort(double, double)"/> — nur Messung, ohne Wirkung.</summary>
         internal int AufheizantwortNeubauten;
 
+        /// <summary>
+        /// Der Schalter der <b>Messung der inneren Lastumkehr</b> (Rechenweg RP2a), als
+        /// <see cref="AppContext"/>-Schalter (etwa in der <c>runtimeconfig.json</c> eines Werkzeugs). Vorgabe
+        /// aus; die Messung ändert keine Zahl des Laufs, sie zählt nur (<see cref="Innenumkehrmessung"/>).
+        /// </summary>
+        internal const string SCHALTER_INNENUMKEHR = "EPOS.Gebaeude.Innenumkehrmessung";
+
+        /// <summary>
+        /// Misst das Modell die innere Lastumkehr und die innere Bandverletzung je Abschnitt
+        /// (<see cref="Stundenergebnis.MessungUmkehrJ"/> …)? Vorgabe: der Schalter
+        /// <see cref="SCHALTER_INNENUMKEHR"/>; die Proben setzen ihn je Modell.
+        /// </summary>
+        internal bool Innenumkehrmessung { get; set; }
+
         // Der Zustand: die beiden Massentemperaturen [°C].
         private double _thetaMAw;
         private double _thetaMIw;
@@ -249,6 +263,7 @@ namespace WindowsFormsApplication1
             _wIW = p.A_IW_M2 / aSumme;
 
             _frei = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0, gExt: _gExt, schluessel: 0.0);
+            Innenumkehrmessung = AppContext.TryGetSwitch(SCHALTER_INNENUMKEHR, out bool messen) && messen;
             Zuruecksetzen(20.0);
         }
 
@@ -331,6 +346,9 @@ namespace WindowsFormsApplication1
             // Der Kappungsanteil von Heizleistung_Max [s] auch im idealen Fall (Entwurf KP3, Befund B1,
             // Festlegung 20): ein eigener Akkumulator, nur geschrieben, nie in eine andere Summe gelesen.
             double akkKappung = 0.0;
+            // Messung RP2a (nur mit Innenumkehrmessung): innere Lastumkehr [J] und Bandverletzung [K·s].
+            double mUmkehrJ = 0.0, mBandKs = 0.0;
+            int mUmkehrAb = 0, mBandAb = 0;
 
             while (t < STUNDE_S)
             {
@@ -383,6 +401,8 @@ namespace WindowsFormsApplication1
                         xMittel = u.Mittel(x, ab.B);
                     }
                 }
+                if (Innenumkehrmessung)
+                    Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);
                 double s2 = ab.Ausgang(1, xMittel);
                 double z2 = ab.Ausgang(2, xMittel);
@@ -461,7 +481,13 @@ namespace WindowsFormsApplication1
                     x.A,
                     x.B,
                     abschnitte,
-                    heizleistungMaxAnteil: akkKappung / STUNDE_S);
+                    heizleistungMaxAnteil: akkKappung / STUNDE_S)
+                {
+                    MessungUmkehrJ = mUmkehrJ,
+                    MessungUmkehrAbschnitte = mUmkehrAb,
+                    MessungBandKs = mBandKs,
+                    MessungBandAbschnitte = mBandAb,
+                };
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
@@ -509,7 +535,13 @@ namespace WindowsFormsApplication1
                 (tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlUebergabe] + tauVorlaufgrenze) / STUNDE_S,
                 tauVorlaufgrenze / STUNDE_S,
                 tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlleistungMax] / STUNDE_S,
-                tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S);
+                tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S)
+            {
+                MessungUmkehrJ = mUmkehrJ,
+                MessungUmkehrAbschnitte = mUmkehrAb,
+                MessungBandKs = mBandKs,
+                MessungBandAbschnitte = mBandAb,
+            };
         }
 
         /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
@@ -586,6 +618,8 @@ namespace WindowsFormsApplication1
             double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
             double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
+            double mUmkehrJ = 0.0, mBandKs = 0.0;
+            int mUmkehrAb = 0, mBandAb = 0;
             for (int i = 0; i < n; i++)
             {
                 if (!(t < STUNDE_S))
@@ -613,6 +647,8 @@ namespace WindowsFormsApplication1
                 if (tau < rest) u = ab.System.Rechner.Bei(tau);
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
+                if (Innenumkehrmessung)
+                    Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);
                 double s2 = ab.Ausgang(1, xMittel);
                 double z2 = ab.Ausgang(2, xMittel);
@@ -665,7 +701,13 @@ namespace WindowsFormsApplication1
                 x.A,
                 x.B,
                 n,
-                heizleistungMaxAnteil: akkKappung / STUNDE_S);
+                heizleistungMaxAnteil: akkKappung / STUNDE_S)
+            {
+                MessungUmkehrJ = mUmkehrJ,
+                MessungUmkehrAbschnitte = mUmkehrAb,
+                MessungBandKs = mBandKs,
+                MessungBandAbschnitte = mBandAb,
+            };
         }
 
         /// <summary>
@@ -1259,6 +1301,115 @@ namespace WindowsFormsApplication1
                 else unten = mitte;
             }
             return oben;
+        }
+
+        /// <summary>
+        /// Die Ableitung des dritten Ausgangs (Leistung bzw. Raumluft) im Zustand <paramref name="x"/>:
+        /// dz/dt = (Z₂₀, Z₂₁)·(A·x + b).
+        /// </summary>
+        private static double Ableitung(in Abschnitt ab, Vektor2 x)
+        {
+            Vektor2 v = ab.System.Rechner.A * x + ab.B;
+            return ab.System.Z20 * v.A + ab.System.Z21 * v.B;
+        }
+
+        /// <summary>
+        /// <b>Die innere Umkehr eines Abschnitts</b> (Rechenweg RP2a): Der dritte Ausgang ist auf dem Abschnitt
+        /// c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum. Es liegt genau dann im Innern, wenn die
+        /// Ableitung an Anfang und Ende verschiedene Vorzeichen trägt — nur dann wird es bestimmt
+        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>). Geprüft wird die Grenze, die das Extremum
+        /// verletzen kann: geregeltes Heizen am Minimum gegen q = 0, geregeltes Kühlen am Maximum gegen q = 0,
+        /// das Totband am Minimum gegen θ_soll (mit Heizung) und am Maximum gegen θ_max (mit Kühlung). Wahr nur,
+        /// wenn Anfang und Ende zulässig sind und das Extremum die Grenze über den Zahlenrand hinaus verletzt;
+        /// dann tragen <paramref name="tExtremum"/>, <paramref name="grenze"/> und <paramref name="richtung"/>
+        /// (−1 Minimum, +1 Maximum) die Lage. Die Überschreitung ist richtung·(z − grenze).
+        /// </summary>
+        private static bool InnenUmkehr(Betriebsfall fall, in Abschnitt ab, Vektor2 x, Vektor2 xEnde, double tau, in Stundenrand r,
+                                        out double tExtremum, out double grenze, out double richtung)
+        {
+            tExtremum = double.NaN;
+            grenze = double.NaN;
+            richtung = 0.0;
+            if (fall != Betriebsfall.HeizenGeregelt && fall != Betriebsfall.KuehlenGeregelt && fall != Betriebsfall.Totband)
+                return false;
+            double w0 = Ableitung(in ab, x);
+            double wE = Ableitung(in ab, xEnde);
+            if (!(w0 * wE < 0.0)) return false;
+            richtung = w0 < 0.0 ? -1.0 : 1.0;
+            switch (fall)
+            {
+                case Betriebsfall.HeizenGeregelt:
+                    if (richtung < 0.0) grenze = 0.0;
+                    break;
+                case Betriebsfall.KuehlenGeregelt:
+                    if (richtung > 0.0) grenze = 0.0;
+                    break;
+                default:
+                    if (richtung < 0.0 && r.MitHeizung) grenze = r.ThetaSoll;
+                    else if (richtung > 0.0 && r.MitKuehlung) grenze = r.ThetaMax;
+                    break;
+            }
+            if (!Endlich(grenze)) return false;
+            double rand = Rechenrand.Zu(grenze);
+            if (richtung * (ab.Ausgang(2, x) - grenze) > rand) return false;
+            if (richtung * (ab.Ausgang(2, xEnde) - grenze) > rand) return false;
+            double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
+            if (!(tStern > 0.0) || !(tStern < tau)) return false;
+            Vektor2 xs = ab.System.Rechner.Bei(tStern).Ende(x, ab.B);
+            if (!(richtung * (ab.Ausgang(2, xs) - grenze) > rand)) return false;
+            tExtremum = tStern;
+            return true;
+        }
+
+        /// <summary>
+        /// Der erste (<paramref name="vorwaerts"/>) bzw. letzte Austritt über die Grenze einer inneren Umkehr:
+        /// Bisektion auf [0; t*] bzw. [t*; τ], wo der Ausgang monoton ist. Vorwärts der erste Zeitpunkt jenseits
+        /// der Grenze, rückwärts der erste danach wieder diesseits.
+        /// </summary>
+        private static double Austritt(in Abschnitt ab, Vektor2 x, double von, double bis, double grenze, double richtung, bool vorwaerts)
+        {
+            double rand = Rechenrand.Zu(grenze);
+            double unten = von, oben = bis;
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                double mitte = 0.5 * (unten + oben);
+                if (!(mitte > unten) || !(mitte < oben)) break;
+                bool jenseits = richtung * (ab.Ausgang(2, ab.System.Rechner.Bei(mitte).Ende(x, ab.B)) - grenze) > rand;
+                if (jenseits == vorwaerts) oben = mitte;
+                else unten = mitte;
+            }
+            return oben;
+        }
+
+        /// <summary>
+        /// <b>Die Messung der inneren Lastumkehr</b> (Rechenweg RP2a, nur mit <see cref="Innenumkehrmessung"/>):
+        /// Hat der Abschnitt [0; τ] eine innere Umkehr (<see cref="InnenUmkehr"/>), zählt sie — geregelte Fälle
+        /// als Lastumkehr mit dem Integral der Leistung jenseits null [J], das Totband als Bandverletzung mit dem
+        /// Integral jenseits der Bandgrenze [K·s]. Exakt über das Mittel des Zustands auf [t₁; t₂]. Ändert nichts.
+        /// </summary>
+        private static void Messen(Betriebsfall fall, in Abschnitt ab, Vektor2 x, Vektor2 xEnde, double tau, in Stundenrand r,
+                                   ref double umkehrJ, ref int umkehrAb, ref double bandKs, ref int bandAb)
+        {
+            if (!InnenUmkehr(fall, in ab, x, xEnde, tau, in r, out double tE, out double grenze, out double richtung)) return;
+            double t1 = Austritt(in ab, x, 0.0, tE, grenze, richtung, vorwaerts: true);
+            double t2 = Austritt(in ab, x, tE, tau, grenze, richtung, vorwaerts: false);
+            double wert = 0.0;
+            if (t2 > t1)
+            {
+                Vektor2 x1 = t1 > 0.0 ? ab.System.Rechner.Bei(t1).Ende(x, ab.B) : x;
+                Vektor2 m = ab.System.Rechner.Bei(t2 - t1).Mittel(x1, ab.B);
+                wert = Math.Max(0.0, (t2 - t1) * richtung * (ab.Ausgang(2, m) - grenze));
+            }
+            if (ab.System.Geregelt)
+            {
+                umkehrJ += wert;
+                umkehrAb++;
+            }
+            else
+            {
+                bandKs += wert;
+                bandAb++;
+            }
         }
 
         /// <summary>

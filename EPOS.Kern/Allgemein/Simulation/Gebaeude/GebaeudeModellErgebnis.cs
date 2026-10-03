@@ -374,6 +374,12 @@ namespace WindowsFormsApplication1
         /// Spitzen mal <paramref name="faktor"/>, Zeiten, Zählungen, T_a,B und die Rampenmaske nicht —
         /// also zählt die Nutzungszeit der skalierten Kennzahlen ohne die Rampenstunden wie das Original.
         /// </summary>
+        /// <summary>
+        /// <b>Die Messung der inneren Lastumkehr</b> (Rechenweg RP2a); <c>null</c>, wenn die Messung aus war
+        /// (<see cref="Zonenmodell2K.SCHALTER_INNENUMKEHR"/>). Am Mehrzonengebäude die Summe der Zonen.
+        /// </summary>
+        internal Innenumkehrmessung Innenumkehr { get; init; }
+
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
@@ -393,8 +399,59 @@ namespace WindowsFormsApplication1
             {
                 SommerlueftungGesetzt = SommerlueftungGesetzt,
                 HeizkalenderWirksam = HeizkalenderWirksam,
+                Innenumkehr = Innenumkehr?.Skaliert(faktor),
             };
         }
+    }
+
+    /// <summary>
+    /// <b>Die Messung der inneren Lastumkehr eines Laufs</b> (Rechenweg RP2a, Diagnose): je Gebäude bzw. Zone
+    /// die Stunden, in denen ein geregelter Abschnitt im Innern das Vorzeichen der Leistung wechselte, obwohl
+    /// Mittel und Endpunkt zulässig waren, samt der dabei verrechneten Leistung mit falschem Vorzeichen [kWh]; und
+    /// die Stunden, in denen die Raumluft eines Totband-Abschnitts das Band im Innern verließ, samt Integral
+    /// [K·h]. Am Mehrzonengebäude Summen über die Zonen (Zonenstunden).
+    /// </summary>
+    internal sealed record Innenumkehrmessung(int StundenUmkehr, int AbschnitteUmkehr, double UmkehrKwh,
+                                              int StundenBand, int AbschnitteBand, double BandKh)
+    {
+        /// <summary>Dieselbe Messung am skalierten Gebäude: die Energie mit dem Faktor, die Zählungen nicht.</summary>
+        internal Innenumkehrmessung Skaliert(double faktor) => this with { UmkehrKwh = UmkehrKwh * faktor };
+
+        /// <summary>Die Summe über die Zonen; <c>null</c>, wenn keine Zone gemessen hat.</summary>
+        internal static Innenumkehrmessung Summe(IEnumerable<Innenumkehrmessung> zonen)
+        {
+            Innenumkehrmessung s = null;
+            foreach (Innenumkehrmessung z in zonen)
+            {
+                if (z == null) continue;
+                s = s == null ? z : new Innenumkehrmessung(s.StundenUmkehr + z.StundenUmkehr, s.AbschnitteUmkehr + z.AbschnitteUmkehr,
+                                                          s.UmkehrKwh + z.UmkehrKwh, s.StundenBand + z.StundenBand,
+                                                          s.AbschnitteBand + z.AbschnitteBand, s.BandKh + z.BandKh);
+            }
+            return s;
+        }
+    }
+
+    /// <summary>Der Zähler der Messung RP2a über die übernommenen Stunden eines Laufs.</summary>
+    internal sealed class Innenumkehrzaehler
+    {
+        private int _stundenUmkehr, _abschnitteUmkehr, _stundenBand, _abschnitteBand;
+        private double _umkehrJ, _bandKs;
+
+        /// <summary>Nimmt eine übernommene Stunde auf.</summary>
+        internal void Aufnehmen(in Stundenergebnis s)
+        {
+            if (s.MessungUmkehrAbschnitte > 0) _stundenUmkehr++;
+            if (s.MessungBandAbschnitte > 0) _stundenBand++;
+            _abschnitteUmkehr += s.MessungUmkehrAbschnitte;
+            _abschnitteBand += s.MessungBandAbschnitte;
+            _umkehrJ += s.MessungUmkehrJ;
+            _bandKs += s.MessungBandKs;
+        }
+
+        /// <summary>Die Messung des Laufs (J → kWh, K·s → K·h).</summary>
+        internal Innenumkehrmessung Ergebnis()
+            => new Innenumkehrmessung(_stundenUmkehr, _abschnitteUmkehr, _umkehrJ / 3.6e6, _stundenBand, _abschnitteBand, _bandKs / 3600.0);
     }
 
     /// <summary>
