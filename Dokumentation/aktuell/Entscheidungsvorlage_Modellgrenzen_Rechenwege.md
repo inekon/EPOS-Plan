@@ -925,7 +925,7 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
 ## 11. Wärmequelle Erdreich
 
-### EQ1 Prüfergebnisse werden nicht gespeichert
+### EQ1 Prüfergebnisse werden nicht gespeichert — umgesetzt
 
 - **Stand heute:** Die Ergebnisse der Prüfung nach VDI 4640 liegen prozessweit je Projekt im
   Speicher („letzter Lauf gewinnt“) und werden nicht persistiert
@@ -939,13 +939,17 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
   kann die Prüfung dann ohne neuen Lauf zeigen.
 - **Empfehlung: ja**, Aufwand S–M (Schemaschritt). Der Planer braucht den Nachweis im Bericht und
   nach einem Neustart. Kein Rechenweg betroffen → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M6):** `Tab_ErgebnisErdreich` im Schemaschritt `KatalogfassungSchema`,
+  geschrieben von `ErgebnisCtrl.Save` (`ErdreichErgebnisSpeicher`); der Dialog zeigt ohne Lauf der
+  Sitzung das gespeicherte Ergebnis mit „Stand des Laufs vom …". Der Bericht führt die Prüfung heute
+  nicht; ein Baustein kann sie aus dem Speicher lesen. Konzept Simulationsablauf, Abschnitt 20.
+- **Entscheidung des Anwenders: ☑**
 
 ---
 
 ## 12. Programm-Update und Katalog
 
-### KU1 Ein Update lässt den Katalog, wie er ist
+### KU1 Ein Update lässt den Katalog, wie er ist — Stufe 1 umgesetzt
 
 - **Stand heute:** Setup und Programmstart überschreiben keinen Katalogsatz und säen keinen nach
   (Hilfeseite Brauchwasser, Grenzen). Die Datenbank kommt nur bei der **Neuinstallation** aus der
@@ -985,7 +989,15 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
   Katalogsätze nur durch Neuinstallation. **Basis:** Der Abgleich ändert keine Projektkopie; die
   Testdatenbank wird aber nur mit Zustimmung abgeglichen, weil die Einfrierregeln Katalogzeilen
   nennen, die Referenzprojekte benutzen (`Tab_Tww*_STAMM`, Brennstoff- und Emissionswerte).
-- **Entscheidung des Anwenders: ☐**
+- **Stufe 1 umgesetzt (Welle M6):** Wärmepumpen samt Kennlinien und Kühlkennlinien, Heizkessel,
+  BHKW, PV-Module, Brauchwasser- und Prozessprofile samt Typen — Schemaschritt
+  `KatalogfassungSchema` (Schlüssel, Prüfsumme, Auslaufkennzeichen, `Katalogfassung`, Protokoll),
+  Katalogpaket als JSON neben der Vorlage (`Werkzeuge/Auslieferungsvorlage`), `Katalogabgleich`
+  beim Start nach Sicherung, „Katalog aktualisieren…" mit „Nur prüfen" und „Auslieferungsstand
+  wiederherstellen". „Ausgelaufen" ist eine Spalte (`Katalog_Ausgelaufen`), kein Löschen. Die
+  Testdatenbank wird nicht abgeglichen; die Saat setzt nur Schlüssel und Prüfsumme. Konzept
+  Simulationsablauf, Abschnitt 20; `BETRIEB_SQLITE.md`, Abschnitt 8a.
+- **Entscheidung des Anwenders:** Stufe 1 ☑ · Stufe 2 (übrige Kataloge) ☐
 
 ---
 
@@ -1032,7 +1044,7 @@ Umstellen eines Referenzprojekts.
 | PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | umgesetzt (M5) | M | ja, alle Referenzprojekte mit PV (R33) | ☑ |
-| KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
+| KU1 Katalogabgleich mit Katalogfassung | Stufe 1 umgesetzt (Welle M6); Stufe 2 offen | L | nein (Projektkopien unberührt) | Stufe 1 ☑ · Stufe 2 ☐ |
 | PW2 Kalenderschicht für alle Profile (mit BW2) | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
@@ -1043,7 +1055,7 @@ Umstellen eines Referenzprojekts.
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
 | PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
 | SP1 Standby des Speichersystems | umgesetzt (M5) | S–M | nein (Option) | ☑ |
-| EQ1 Erdreichprüfung speichern | ja | S–M | nein | ☐ |
+| EQ1 Erdreichprüfung speichern | umgesetzt (Welle M6) | S–M | nein | ☑ |
 | ST1 Pumpenstrom Solarkreis | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST6 Bezugsfläche der Kennwerte | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST3 Stufe 1 Solarkreisverluste als Feld | umgesetzt (M2) | S | nein (Vorgabe 8 %) | ☑ |

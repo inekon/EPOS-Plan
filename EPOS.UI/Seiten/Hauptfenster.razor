@@ -101,6 +101,25 @@
 
 </CascadingValue>
 
+@* DER BERICHT DES KATALOGABGLEICHS BEIM START (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+   Hat der Programmstart den Katalog mit dem Paket einer neuen Auslieferung abgeglichen, steht
+   hier einmal, was geschehen ist („n neu, m aktualisiert, k behalten, a ausgelaufen"). Die
+   Huelle reicht den fertigen Text herein; ohne Text bleibt die Ueberlagerung zu. Nur unter
+   Windows - iOS gleicht nicht ab. *@
+<Ueberlagerung Offen="@(_starthinweisOffen && Starthinweis.Length > 0)" Titel="@StarthinweisTitel"
+               Geschlossen="StarthinweisSchliessen">
+    <KindInhalt>
+        <div class="epos-starthinweis">
+            <p class="epos-starthinweis-text">@Starthinweis</p>
+            <div class="epos-leiste">
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="StarthinweisSchliessen">@StarthinweisOk</button>
+            </div>
+        </div>
+    </KindInhalt>
+</Ueberlagerung>
+
 </div>
 
 @code {
@@ -261,6 +280,24 @@
     /// das Fenster selbst wertet nichts davon aus.
     /// </summary>
     [Parameter] public WindowsFormsApplication1.LizenzLage? Lizenzlage { get; set; }
+
+    // =====================================================================
+    //  Der Bericht des Katalogabgleichs beim Start (KU1 Stufe 1)
+    // =====================================================================
+
+    /// <summary>Der fertige Bericht des Abgleichs beim Start; leer = nichts zu melden.</summary>
+    [Parameter] public string Starthinweis { get; set; } = "";
+
+    /// <summary>Der Titel der Überlagerung (<c>KABG_START_TITEL</c>).</summary>
+    [Parameter] public string StarthinweisTitel { get; set; } = "Katalog aktualisiert";
+
+    /// <summary>Der Knopf der Überlagerung (<c>KABG_OK</c>).</summary>
+    [Parameter] public string StarthinweisOk { get; set; } = "OK";
+
+    /// <summary>Steht die Überlagerung noch? Einmal geschlossen, bleibt sie zu.</summary>
+    private bool _starthinweisOffen = true;
+
+    private void StarthinweisSchliessen() => _starthinweisOffen = false;
 
     // =====================================================================
     //  Der EINE Handler

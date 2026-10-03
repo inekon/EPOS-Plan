@@ -400,6 +400,17 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Katalog-Dubletten" (<c>KatalogDublettenDialog</c>, W14c.5).</summary>
     public const string KatalogDubletten = "KATALOG_DUBLETTEN";
 
+    /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
+    /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liegt kein Katalogpaket der Auslieferung.
+    /// </remarks>
+    public const string Katalogabgleich = "KATALOGABGLEICH";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -442,7 +453,7 @@ public static class Seitenschluessel
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
         BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
         Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
+        Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };
 }

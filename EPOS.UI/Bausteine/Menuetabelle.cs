@@ -393,6 +393,10 @@ public static class Menuetabelle
                 // Dubletten entstehen BEIM Einlesen; die Pruefung gehoert ans
                 // Ende derselben Rubrik. Ihr Bild hatte sie nie.
                 new Menuepunkt("MenuItem_KatalogDubletten", "ADM_DUBLETTEN_MENUE", Seitenschluessel.KatalogDubletten),
+                // KU1 Stufe 1 (Entscheidungsvorlage Modellgrenzen): der Abgleich der
+                // Gerätekataloge mit dem Katalogpaket der Auslieferung - Pflege der
+                // eingelesenen Kataloge wie die Dublettensuche, deshalb hier.
+                new Menuepunkt("MenuItem_Katalogabgleich", "KABG_MENUE", Seitenschluessel.Katalogabgleich),
             },
             // MN-1: Daten & Import | Einstellungen
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminImport"),

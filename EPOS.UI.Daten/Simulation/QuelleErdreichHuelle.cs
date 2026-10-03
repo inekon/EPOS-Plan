@@ -54,8 +54,8 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
-                ["Lauf"] = ErdreichAuswertung.ErgebnisZuordnen(
-                    ErgebnisDesLaufs(daten)),
+                ["Lauf"] = LaufOderGespeichert(daten),
+                ["StandDesLaufs"] = MyResource.Resource.SIMQ_ERDREICH_STAND_LAUF,
 
                 ["Simulieren"] = Simulationslauf(daten),
                 ["Jahresgangmodell"] = Modellzeichner(),
@@ -222,6 +222,21 @@ namespace WindowsFormsApplication1
         {
             Diagrammfarben.Zuruecksetzen(rolle);
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Das Ergebnis, mit dem der Dialog öffnet (EQ1): der Lauf DIESER Sitzung, wenn es einen
+        /// gibt — sonst die gespeicherte Prüfung des letzten gespeicherten Laufs
+        /// (<c>Tab_ErgebnisErdreich</c>) samt Laufstempel, den der Dialog als „Stand des Laufs
+        /// vom …" zeigt.
+        /// </summary>
+        internal static ErdreichAuswertung.ErdreichLaufErgebnis LaufOderGespeichert(QuelleErdreichDaten daten)
+        {
+            ErdreichAuswertung.ErdreichLaufErgebnis frisch =
+                ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(daten));
+            if (frisch.Vorhanden || daten == null || daten.IdProjekt <= 0) return frisch;
+            try { return ErdreichErgebnisSpeicher.Gespeichert(daten.IdProjekt, daten.IdAnlage); }
+            catch { return frisch; }
         }
 
         /// <summary>

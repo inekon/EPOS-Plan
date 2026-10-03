@@ -104,6 +104,7 @@ namespace WindowsFormsApplication1
             { "Form_Gesetzesparameter",      B_ADMIN },
             { "Form_GesetzparameterZeile",   B_ADMIN },
             { "Form_KatalogDubletten",       B_ADMIN },
+            { "Form_Katalogabgleich",        B_ADMIN },
             // iU9-W15c: Beide Lizenzmasken sind Razor-Komponenten. Die
             // Klassennamen bleiben hier stehen - sie sind der Schluessel, unter dem
             // HilfeAutomatik ein geoeffnetes Fenster erkennt -, und die zwei

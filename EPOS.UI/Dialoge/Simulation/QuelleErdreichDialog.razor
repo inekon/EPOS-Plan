@@ -222,6 +222,12 @@
                 <p class="epos-erdreich-pruefung">@_pruefung</p>
             }
 
+            @* EQ1: Ein GESPEICHERTES Ergebnis (kein Lauf in dieser Sitzung) nennt seinen Lauf. *@
+            @if (_lauf.Vorhanden && _lauf.Laufstempel.Length > 0)
+            {
+                <p class="epos-erdreich-laufstand">@string.Format(StandDesLaufs, _lauf.Laufstempel)</p>
+            }
+
             @if (_aenderungshinweis.Length > 0)
             {
                 <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_aenderungshinweis" />
@@ -373,6 +379,12 @@
     [Parameter] public string PruefungKeinLauf { get; set; }
         = "(noch kein Simulationslauf)\n\nDie Prüfung braucht maximale Entzugsleistung, " +
           "Jahresentzugsarbeit und\nJahresvolllaststunden aus einem Simulationslauf.";
+
+    /// <summary>
+    /// Die Zeile unter einer GESPEICHERTEN Prüfung (EQ1, <c>SIMQ_ERDREICH_STAND_LAUF</c>);
+    /// {0} = Laufstempel des gespeicherten Laufs.
+    /// </summary>
+    [Parameter] public string StandDesLaufs { get; set; } = "Stand des Laufs vom {0}.";
 
     [Parameter] public string HinweisFestgestein { get; set; }
         = "\n  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 " +

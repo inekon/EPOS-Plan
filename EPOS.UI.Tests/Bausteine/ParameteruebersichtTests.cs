@@ -167,7 +167,9 @@ public class ParameteruebersichtTests : EposBunitContext
         k.Find("button.epos-modulparameter-knopf").Click();
 
         Assert.Contains(T("PARV_VERW_KEINE"), k.Markup);
-        Assert.Equal(9, k.FindAll("span.epos-verwendung--keine").Count);
+        // 9 Fachspalten ohne Verwendung, dazu die drei Katalogspalten des Katalogabgleichs (KU1 Stufe 1):
+        // Schluessel, Pruefsumme und Auslaufkennzeichen sind keine Rechengroessen.
+        Assert.Equal(12, k.FindAll("span.epos-verwendung--keine").Count);
     }
 
     /// <summary>
