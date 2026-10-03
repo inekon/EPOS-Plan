@@ -733,6 +733,19 @@ namespace ChartProben
                            Rollenfarbe(Farbrolle.REST) },
                    () => WaermeAutarkieBild.Png(WaermeAutarkieSatz()));
 
+            // B6c: die Kaelteproduktion des Ergebnisreiters (KaelteProduktionBild) - je
+            // Kaelteerzeuger eine Saeule, darauf die ungedeckte Kaelte im Grau des Rests,
+            // darueber der Kaeltebedarf als Linie; einmal mit Waermepumpe im Kuehlbetrieb,
+            // einmal ohne Kaelteerzeuger (der ganze Bedarf ungedeckt).
+            Pruefe(ziel, "kaelte_produktion", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.WAERME_WP), Rollenfarbe(Farbrolle.REST),
+                           Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)));
+
+            Pruefe(ziel, "kaelte_produktion_ohne_erzeuger", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.REST), Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSatz(false)));
+
             // --- B7: Temperaturverlauf ------------------------------------------------
             Pruefe(ziel, "temperaturverlauf_zwei_speicher", 1240, 560,
                    new[] { TEMP_ROT, TEMP_BLAU, TEMP_QUELLE },
@@ -2526,6 +2539,32 @@ namespace ChartProben
         /// fest verdrahtet, ohne Zufall. Ein Viertel der Solardeckung laeuft ueber den
         /// Speicher.
         /// </summary>
+        /// <summary>
+        /// Synthetische Kaeltereihen: ein Bedarf mit Sommerspitze; mit Erzeuger deckt die
+        /// Waermepumpe bis 30 kW, der Rest bleibt ungedeckt - ohne Erzeuger ist der ganze
+        /// Bedarf der Rest.
+        /// </summary>
+        private static KaelteProduktionBild.Reihen KaelteProduktionSatz(bool mitErzeuger)
+        {
+            double[] bedarf = Jahresreihe(10, 30, 12, 0, -Math.PI / 2);
+            var r = new KaelteProduktionBild.Reihen { Bedarf = bedarf };
+            if (!mitErzeuger)
+            {
+                r.Rest = (double[])bedarf.Clone();
+                return r;
+            }
+            var wp = new double[bedarf.Length];
+            var rest = new double[bedarf.Length];
+            for (int i = 0; i < bedarf.Length; i++)
+            {
+                wp[i] = Math.Min(bedarf[i], 30.0);
+                rest[i] = bedarf[i] - wp[i];
+            }
+            r.Erzeuger.Add(new KaelteProduktionBild.Erzeugerreihe { Name = "Waermepumpe 1", Werte = wp });
+            r.Rest = rest;
+            return r;
+        }
+
         private static SolarWaermeMonate WaermeAutarkieSatz()
         {
             var bedarf = new double[8760];
