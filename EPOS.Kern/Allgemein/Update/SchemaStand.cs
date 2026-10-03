@@ -785,11 +785,17 @@ namespace WindowsFormsApplication1
         /// Zuordnungstabelle die nullbare Spalte <c>ID_Betriebskalender</c>
         /// (<see cref="BedarfNetzKalenderSchema"/>). <b>Ergebnisneutral:</b> Alles bleibt leer, und leer
         /// rechnet wie zuvor. Die Nummer steht allein bei <see cref="BedarfNetzKalenderSchema.SCHRITT"/>.
+        /// Danach, mit der PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle
+        /// W1), steht das Ziel auf <see cref="PufferAuslegungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_PufferAuslegung</c> und <c>Tab_PufferAuslegungParameter_STAMM</c> samt Saat der
+        /// Vorgabewerte (<see cref="PufferAuslegungSchema"/>). <b>Ergebnisneutral:</b> Die Auslegung
+        /// rechnet und schreibt nur auf Zuruf. Die Nummer steht allein bei
+        /// <see cref="PufferAuslegungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = BedarfNetzKalenderSchema.SCHRITT;
+        public const int Zielversion = PufferAuslegungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
