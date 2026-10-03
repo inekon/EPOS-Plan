@@ -758,9 +758,10 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > gehört seither dazu, siehe `CLAUDE.md`), nicht im Wert.
 
 > **Nachtrag — Testdatenbank: Zonenprojekt 1052 gesät, Basis unverändert.** `Skripte/referenzprojekt_1052_zonen.cs` legt
-> auf der Fassung `db9a4033…` (173) das Projekt 1052 „Referenzprojekt Zonen“ an (Abschnitt „Das Referenzprojekt 1052“,
-> Kopie von 1018; drei Zonen, 31 Bauteile, ein Luftstrom, zwei Zonenkalender, Aufheizoptimierung an). Neue Fassung
-> **82 120 704 Byte, LFS-SHA-256 `dbd3810ba5bf44a6b19883a300c369db33227154ac8dccf5a4d1d5433e5678c5`**. **Die Basis
+> auf der Fassung `551a288d…` (175) das Projekt 1052 „Referenzprojekt Zonen“ an (Abschnitt „Das Referenzprojekt 1052“,
+> Kopie von 1018 samt ihren 25 Projektbrennstoffen; drei Zonen, 31 Bauteile, ein Luftstrom, zwei Zonenkalender,
+> Aufheizoptimierung an). Neue Fassung **82 329 600 Byte, LFS-SHA-256
+> `d33766677c86530624d4ba6f9fc218c3a817856b80f71063798ab2a588ca960b`**. **Die Basis
 > bleibt:** Die Vorlage 1018 ist zeilengleich (Abdruck samt Schlüsseln), kein Referenzprojekt trägt eine Zone oder einen
 > Zonenkalender, und die sechzehn Projekte rechnen gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel
 > ist berührt; 1052 kommt mit RP2 in die Basis.
@@ -898,7 +899,7 @@ schaltet die **Aufheizoptimierung an** (`KonfigurationCtrl.AufheizvorgabeSetzen`
 täglich, kein Aufschlag; Quelle Zielleistung, weil weder Gebäude noch Zone eine Heizleistungsgrenze tragen); eine manuelle
 Aufheizzeit trägt das Gebäude nicht. Alle übrigen Zonenfelder bleiben leer (Wert des Gebäudes).
 
-Gerechnet (Schemastand 173, zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 57,10 MWh (1018: 68,25 MWh),
+Gerechnet (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 57,10 MWh (1018: 68,25 MWh),
 Spitze 30,10 kW; Gästezimmer 37,21 MWh, Spitze 18,40 kW, 52 Rampentage, t_auf,max 6 h; Gastronomie 19,89 MWh,
 Spitze 12,51 kW, 201 Rampentage, t_auf,max 15 h; Keller im Mittel der Heizzeit 13,3 °C; 672 Rampenstunden in
 `heizsollwert_0.csv`. 1052 steht **nicht** in der Basis R33 und nicht in der CI-Auswahl; eingefroren wird es mit RP2
