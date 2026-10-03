@@ -86,8 +86,6 @@ namespace EPOS.Kern.Tests
                     foreach (KeyValuePair<string, double> s in satz.Skalare)
                     {
                         schluessel++;
-                        // Rechenweg RP2a: die Erdreichschlüssel stehen erst in der Basis R34 (RP2b) — bis dahin ausgenommen.
-                        if (s.Key.Contains(".Erdreich_", StringComparison.Ordinal)) continue;
                         Assert.True(aggregat.Contains(s.Key), "Projekt " + projekt + ": neuer Schlüssel " + s.Key);
                         Assert.DoesNotContain(NUR_BEI_WIRKUNG, t => s.Key.Contains(t, StringComparison.Ordinal));
                     }

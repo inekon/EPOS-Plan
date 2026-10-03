@@ -18,7 +18,7 @@ namespace EPOS.Kern.Tests
     /// <b>Ein Fall, der erst mit der Basis scharf wird, die 1051 führt</b>: Liegt unter <c>Referenzlaeufe/</c>
     /// genau eine Basis und führt sie den Ordner <c>Projekt_1051</c>, läuft der Fall; sonst ist er
     /// übersprungen mit dem Grund „Basis R34 noch nicht eingefroren". Ohne Eingriff am Test: Das Einfrieren
-    /// (RP2) legt den Ordner an, und der Fall prüft ab dann.
+    /// der Basis R34 legt den Ordner an, und der Fall prüft seither.
     /// </summary>
     public sealed class BasisMit1051FactAttribute : FactAttribute
     {
@@ -51,9 +51,9 @@ namespace EPOS.Kern.Tests
     /// <item><b>(e) Die ausgelieferte Vorlage „Büro"</b> ist unverändert — die Nachtzeile der Lüftung
     /// bleibt 0,1 1/h, die Nachtauskühlung lebt allein am Referenzbau.</item>
     /// <item><b>(f) Gegen die Basis</b>: <c>heizsollwert_&lt;n&gt;.csv</c> und <c>raumtemperatur_&lt;n&gt;.csv</c>
-    /// von <c>Projekt_1051</c> — übersprungen, bis die Basis R34 eingefroren ist (<see cref="BasisMit1051FactAttribute"/>).</item>
+    /// von <c>Projekt_1051</c> — übersprungen, solange die Basis den Ordner nicht führt (<see cref="BasisMit1051FactAttribute"/>).</item>
     /// </list>
-    /// 1051 steht nicht in der Basis R33; eingefroren wird es mit RP2 (Einfrierregel „gesäte
+    /// 1051 steht in der Basis R34 (Einfrierregel „gesäte
     /// Konditionierungsdaten", Teilkonzept 10.3).
     /// </summary>
     [Collection("Testdatenbank")]
