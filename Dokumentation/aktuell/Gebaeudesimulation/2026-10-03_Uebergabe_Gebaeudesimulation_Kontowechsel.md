@@ -13,8 +13,8 @@ Es wandert nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Wellen EV
 | Zweig | `ios_migration_september` (Remote `origin`, Standardzweig `main`) |
 | zuletzt gepushter Stand dieser Sitzung | `c2a3c6795` (R34, #697, Gebäudevergleich-Nachzug); danach Merges der anderen Sitzungen bis `156b6fbca` |
 | Referenzbasis | **R34** `Referenzlaeufe/2026-10-03_R34_Erdreich`, 18 Projekte (16 + 1051 + 1052), 548 CSV; Kopfzeile „Referenzbasis angemeldet: R35 — frei“ |
-| Schemastand der Testdatenbank | **176** (83 120 128 Byte, LFS-OID `bb8dd3dc…`), mit 1051 „Konditionierung“ und 1052 „Referenzprojekt Zonen“ |
-| Schemaschritte | 177–179 von den Sitzungen „Simulation Pufferspeicher“/„Dialoge und Korrekturen“ angemeldet; **180 von dieser Sitzung für EV1 angemeldet** (`Tab_Gebaeude.Erdreich_U_Wirksam`), 181 frei |
+| Schemastand der Testdatenbank | **179** (83 169 280 Byte, LFS-OID `799da43a…`; die Sitzung „Simulation Pufferspeicher“ hat die Fassung 176 mit 1051 und 1052 auf 179 gehoben, Commit `6d0b5d3c0`), mit 1051 „Referenzprojekt Konditionierung“ und 1052 „Referenzprojekt Zonen“ |
+| Schemaschritte | 177–179 (Sitzung „Simulation Pufferspeicher“) liegen auf origin; **180 von dieser Sitzung für EV1 angemeldet** (`Tab_Gebaeude.Erdreich_U_Wirksam`), hängt an 179; 181 frei |
 | CI | `kern.yml` grün auf `ede4311f0` (Lauf 37158483778, enthält #695–#697); Windows-Nachtlauf (`windows.yml`) voraussichtlich rot in `GebaeudeEinzonennetzTests` (40 Abdrücke nur unter Linux erfasst, siehe 4) |
 | Worktrees | keine; `AGENT_LAEUFT` liegt nicht |
 | Parallel laufende Sitzungen | „Dialoge und Korrekturen“ (Schemaschritt 176, Bericht Strom/Kälte, Statuszeilen #693/#694/#698/#699) und „Simulation Pufferspeicher“ (P3/P4, #688/#689/#700–#704). Beide pushen auf denselben Zweig; Statusnummern und Schemaschritte werden über die Kopfzeilen der Statusdatei abgestimmt |
@@ -44,7 +44,7 @@ Entscheide des Anwenders vom 03.10.2026 (alle in der Entscheidtabelle der Status
 
 Worktree `.claude/worktrees/ev1` (Zweig `ev1`) auf origin. Byte-gleich gegen R34 (Spalte NULL in allen Referenzgebäuden, kein Basiswechsel).
 
-1. Schema `ErdreichVorgabeSchema` (Nummer 180, hängt an 179 — vor dem Bau prüfen, ob 177–179 auf origin liegen; sonst wartet die Kette): `Tab_Gebaeude.Erdreich_U_Wirksam` REAL NULL CHECK (> 0), ebenso `Tab_Gebaeude_STAMM`; Testdatenbank anheben und mit LFS committen; Nachtrag in `Referenzlaeufe/LIESMICH.md` (Schemastand); Kopfzeile der Statusdatei auf „181 — frei“ fortschreiben.
+1. Schema `ErdreichVorgabeSchema` (Nummer 180, hängt an der Klasse von 179 — sie liegt auf origin): `Tab_Gebaeude.Erdreich_U_Wirksam` REAL NULL CHECK (> 0), ebenso `Tab_Gebaeude_STAMM`; Testdatenbank anheben und mit LFS committen; Nachtrag in `Referenzlaeufe/LIESMICH.md` (Schemastand); Kopfzeile der Statusdatei auf „181 — frei“ fortschreiben.
 2. Kern: `Erdreichwiderstand` nimmt die Vorgabe als U_g (keine B′-Rechnung), `Erdreichkennwerte.Umfangsquelle` = „Vorgabe“, Export `Geb[n].Erdreich_Umfangsquelle = VORGABE`; Katalogkopie → Projekt und Projektduplikat kopieren den Wert (`GebaeudeStammCtrl.SET_SPALTEN` prüfen).
 3. Reservehinweis (E64): Laufhinweis `SIMENG_AUFH_RESERVE_VORGABE` (I, einmal je Projekt), wenn `Aufheizvorgabe.Reserve` leer: „Aufheizreserve nicht vorgegeben; es gelten 20 %.“ Herleitungszeile nennt Quelle „Vorgabe“; Ressourcen de/en, `designer_neu.py schreiben`.
 4. Oberfläche: Gebäudedialog (Razor, Hülle in `EPOS.UI.Daten`) Feld „Wirksamer U-Wert Bodenplatte“ neben dem U-Wert der Grundfläche mit Hinweistext „leer = Erdreichkorrektur nach DIN EN ISO 13370“ und Auskunft B′/U_g gerechnet; Projektdialog: Platzhalter „Vorgabe 20 %“ am Feld Reserve mit Hinweistext. Texte in `MyResource.Resource.*`, beide Sprachen.
