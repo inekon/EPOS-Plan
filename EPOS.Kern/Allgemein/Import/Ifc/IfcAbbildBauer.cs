@@ -230,11 +230,35 @@ namespace WindowsFormsApplication1
             if (g.ZahlGeschosseMitRaeumen > 1) g.Zonenvorschlag = IfcImportProfil.ZONENREGEL_Z4;
         }
 
+        /// <summary>
+        /// Die Namen des Baujahr-Rückfalls in ihrer Rangfolge (Mehrzonenkonzept 6.5): erst der Standardname
+        /// in einem beliebigen Satz — auch mit angehängter Einheit, etwa <c>YearOfConstruction (Datum)</c> —,
+        /// dann <c>Constructed</c> („Erstellungsjahr des Gebäudes" eines CAD-Exports ohne Standardsatz).
+        /// </summary>
+        internal static readonly IReadOnlyList<string> BAUJAHR_NAMEN = new[] { "YearOfConstruction", "Constructed" };
+
+        /// <summary>
+        /// <b>Das Baujahr des Gebäudes</b>: <c>Pset_BuildingCommon.YearOfConstruction</c> (Vorkommnis vor Typ).
+        /// Fehlt es dort oder ist es leer, fällt der Leser auf <see cref="BAUJAHR_NAMEN"/> in einem beliebigen
+        /// Satz zurück (Name ohne angehängte Einheit, Groß-/Kleinschreibung egal) und nimmt den ersten Wert, aus
+        /// dem sich ein Jahr lesen lässt (<see cref="Baujahrregel.Jahr"/>); der Rückfall wird mit Satz, Name und
+        /// Text benannt (<c>IMP_IFC_PROT_BAUJAHR_RUECKFALL</c>, I). Ein unlesbarer Standardwert bleibt, was er ist
+        /// (<c>BAUJAHR_UNLESBAR</c>) — zurückgefallen wird nur, wenn der Standard fehlt.
+        /// </summary>
         private void Baujahr(IIfcBuilding b, AbbildGebaeude g)
         {
             IfcFund f = IfcEigenschaften.Finden(_bezuege, b, "Pset_BuildingCommon", "YearOfConstruction");
             string text = f == null ? null : Textwert(f);
-            if (string.IsNullOrWhiteSpace(text)) return;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                IfcFund r = BaujahrRueckfall(b, out string rtext);
+                if (r == null) return;
+                g.BaujahrText = rtext.Trim();
+                g.Baujahr = Baujahrregel.Jahr(rtext);
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BAUJAHR_RUECKFALL", r.Satz, r.Eigenschaft.Name.ToString(),
+                    g.BaujahrText, g.Baujahr.Value.ToString(CultureInfo.InvariantCulture)));
+                return;
+            }
             g.BaujahrText = text.Trim();
             g.Baujahr = Baujahrregel.Jahr(text);
             if (g.Baujahr.HasValue)
@@ -242,6 +266,19 @@ namespace WindowsFormsApplication1
                     g.Baujahr.Value.ToString(CultureInfo.InvariantCulture)));
             else
                 g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BAUJAHR_UNLESBAR", g.BaujahrText));
+        }
+
+        /// <summary>Der erste Fund aus <see cref="BAUJAHR_NAMEN"/>, aus dem sich ein Jahr lesen lässt; <c>null</c> = keiner.</summary>
+        private IfcFund BaujahrRueckfall(IIfcBuilding b, out string text)
+        {
+            foreach (string name in BAUJAHR_NAMEN)
+                foreach (IfcFund f in IfcEigenschaften.AlleMitNamen(_bezuege, b, new[] { name }))
+                {
+                    string t = f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+                    if (Baujahrregel.Jahr(t).HasValue) { text = t; return f; }
+                }
+            text = null;
+            return null;
         }
 
         /// <summary>

@@ -620,6 +620,26 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Importherkunft.Manuell, ohneJahr.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
         }
 
+        /// <summary>
+        /// Der vorgeschlagene Name des neuen Gebäudes: der Name des Gebäudes in der Datei; ohne ihn der Dateiname ohne
+        /// Endung statt der <c>GlobalId</c>.
+        /// </summary>
+        [Fact]
+        public void Ohne_Gebaeudenamen_schlaegt_der_Dialog_den_Dateinamen_vor()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_zwei_gebaeude.ifc");
+            Assert.Equal("Gebäude A", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+
+            a.Abbild.Gebaeude[0].Name = null;
+            GebaeudeImportSatz ohneName = a.Zuordnen(0, null);
+            Assert.Equal("ifc4_zwei_gebaeude", GebaeudeZuordnungsModell.Vorschlagsname(ohneName));
+            Assert.Contains("„" + ohneName.Gebaeudekennung + "“", GebaeudeZuordnungsModell.KopfText(ohneName));   // der Kopf nennt die Kennung
+
+            a.Abbild.Gebaeude[0].Name = "  ";
+            Assert.Equal("ifc4_zwei_gebaeude", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+            Assert.Equal("", GebaeudeZuordnungsModell.Vorschlagsname(null));
+        }
+
         [Fact]
         public void U09_Die_Einheiten_werden_je_Groessenart_mit_eigenem_Prefix_umgerechnet()
         {

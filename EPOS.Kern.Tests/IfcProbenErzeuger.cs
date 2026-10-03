@@ -480,6 +480,11 @@ namespace EPOS.Kern.Tests
         /// „DF CAD" (1 × 1 m, U 1,4) über <c>IfcRelAggregates</c>; „Oberste Decke CAD"
         /// <c>btaUppermostStorey</c>, U 0,3, 20 m²; „Spitzbodenwand CAD" außen, 270°, U 0,3, 8 m², aber
         /// Hüllkennung FALSE.</para>
+        ///
+        /// <para><b>Das Baujahr des CAD-Exports</b> (Baujahr-Rückfall, Mehrzonenkonzept 6.5): kein
+        /// <c>Pset_BuildingCommon</c>; im Satz <c>CAD_GebaeudeAllgemein</c> erst <c>Constructed</c> = 1983
+        /// (Ganzzahl), dann <c>YearOfConstruction (Datum)</c> = „01.01.1984 00:00:00" — der Standardname geht
+        /// in der Rangfolge vor, das Baujahr ist 1984 (Klasse H), nicht 1983 (G).</para>
         /// </summary>
         public static byte[] Enthaltensein()
         {
@@ -487,6 +492,8 @@ namespace EPOS.Kern.Tests
             {
                 b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
                 IIfcBuilding g = b.Gebaeude("Probengebäude", null);
+                b.Eigenschaften(g, "CAD_GebaeudeAllgemein", ("Constructed", new IfcInteger(1983)),
+                                ("YearOfConstruction (Datum)", new IfcLabel("01.01.1984 00:00:00")));
                 IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
                 IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
                 b.RaumEnthalten(eg, "Wohnen", 150, 150, 40, 100, 2500, zerlegt: false);
@@ -1277,6 +1284,9 @@ namespace EPOS.Kern.Tests
                 p.NominalValue = wert;
                 return p;
             }
+
+            /// <summary>Ein Eigenschaftssatz mit Einzelwerten an <paramref name="o"/>.</summary>
+            public void Eigenschaften(IIfcObject o, string name, params (string Name, IIfcValue Wert)[] werte) => Satz(o, name, werte);
 
             private void Satz(IIfcObject o, string name, params (string Name, IIfcValue Wert)[] werte)
             {

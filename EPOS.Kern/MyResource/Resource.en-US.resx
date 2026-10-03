@@ -33656,6 +33656,9 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_BAUJAHR_TEXT" xml:space="preserve">
     <value>Year of construction read from "{0}": {1}.</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction is missing; year of construction read from "{0}.{1}" = "{2}": {3}.</value>
+  </data>
   <data name="IMP_IFC_PROT_GELESEN" xml:space="preserve">
     <value>{0} buildings, {1} spaces, {2} building components read.</value>
   </data>
@@ -38878,10 +38881,10 @@ This folder holds the standard template, the short report, the detailed template
     <value>Zoning rule {0} is not available for this building (available: {1}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_GRENZEN" xml:space="preserve">
-    <value>Building "{0}" carries no space boundaries — without them there is no adjacency between zones; one zone per building is the default.</value>
+    <value>Building "{0}" carries no space boundaries — without them there is no adjacency between zones; one zone per building is the default. For several zones with separating surfaces, export the file again from the CAD program with 2nd-level space boundaries (IfcRelSpaceBoundary2ndLevel).</value>
   </data>
   <data name="IMP_IFC_PROT_NUR_1STLEVEL" xml:space="preserve">
-    <value>Building "{0}" carries {1} space boundaries, but none of the 2nd level — one zone per building is the default.</value>
+    <value>Building "{0}" carries {1} space boundaries, but none of the 2nd level — one zone per building is the default. For several zones, export the file again from the CAD program with 2nd-level space boundaries.</value>
   </data>
   <data name="IMP_IFC_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
     <value>Rule {0} without space boundaries: the zones are thermally decoupled until the separating surfaces between them are entered.</value>

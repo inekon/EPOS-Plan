@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Baujahr, wie es aus der Datei gezogen ist (IFC: <c>Pset_BuildingCommon.YearOfConstruction</c>,
-        /// erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
+        /// ohne ihn der Baujahr-Rückfall des Lesers, erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
         /// daraus die Baualtersklasse ab, wenn der Anwender keine vorgibt.
         /// </summary>
         public int? Baujahr { get; set; }

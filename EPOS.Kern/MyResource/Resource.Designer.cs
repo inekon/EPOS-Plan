@@ -36682,6 +36682,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr aus „{0}“ gelesen: {1}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_TEXT {
@@ -36844,7 +36853,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen mit Trennflächen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene (IfcRelSpaceBoundary2ndLevel) erneut ausgeben. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KEINE_GRENZEN {
             get {
@@ -36970,7 +36979,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. Für mehrere Zonen die Datei im CAD-Programm mit Raumbegrenzungen der 2. Ebene erneut ausgeben. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_NUR_1STLEVEL {
             get {
