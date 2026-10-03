@@ -1338,10 +1338,81 @@ Zonenflächen gegen die Summe der Raumflächen (5.3).
 Topologie weg: Bauteile über `IfcRelContainedInSpatialStructure` dem Geschoss zuordnen, Flächen aus
 den Quantity-Sets, Außen/Innen aus `Pset_*Common.IsExternal`. **Nachbarschaft gibt es dann nicht** —
 zwei Geschosszonen ohne Grenzen wären thermisch entkoppelt, und das ist falsch. Deshalb bietet der
-Leser bei fehlenden Grenzen **Z5 als Vorgabe** an und Z4 nur, wenn der Anwender die Trenndecke
-selbst einträgt: **Eine stillschweigend entkoppelte Mehrzonenrechnung wäre schlechter als die
-Einzonenrechnung.** Das ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
-Zone entschieden.
+Leser bei fehlenden Grenzen **Z5 als Vorgabe** an, solange keine Trenndecke die Geschosse verbindet:
+**Eine stillschweigend entkoppelte Mehrzonenrechnung wäre schlechter als die Einzonenrechnung.** Das
+ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). Die Trenndecke kommt dann aus den
+**Raumbezügen** der Datei, wenn sie welche führt (nächster Absatz, Anwenderentscheid 03.10.2026, ändert
+M7); fehlen auch sie, bleibt Z5 mit dem Hinweis `IMP_IFC_PROT_KEINE_GRENZEN`, und Z4 ist nur mit der
+Warnung `GRENZEN_ENTKOPPELT` zu haben. **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus
+`Bauweise`, je Zone entschieden.
+
+**Trenndecken und innere Masse über die Raumbezüge** (Anwenderentscheid 03.10.2026, ändert M7). Manche
+CAD-Exporte ohne Raumgrenzen schreiben je Raum ein `IfcRelReferencedInSpatialStructure` mit den
+angrenzenden Bauteilen. Führt ein Gebäude keine Raumgrenze, gibt der Leser daraus Bauteilen ohne eigene
+Grenze ihre Nachbarn — ohne Geometrie, die Fläche bleibt die Menge des Bauteils, je Geschosspaar und
+nicht je Raumpaar (ADR-003):
+
+- **Trenndecke:** Eine Platte oder ein Dach, nicht außen (weder `IsExternal` noch Angrenzung Außenluft
+  oder Erdreich), das Räume **genau zweier Geschosse** referenzieren, trennt diese Geschosse. Nachbarn
+  sind je Geschoss der erste beheizte Raum (sonst der erste), der beheizte zuerst, die Sicht aus der
+  Geschosslage (oben Boden, unten Decke); U-Wert und Aufbau wie bei jedem Bauteil. Unter Z4 wird sie die
+  Trennfläche der beiden Geschosszonen (Randbedingung `ZONE`), zum unbeheizten Keller die Trennfläche
+  zu dessen frei schwingender Zone; im Einzonenweg zwischen zwei beheizten Räumen innere Masse, zu einem
+  unbeheizten Raum Hülle gegen unbeheizt (Boden oder Decke nach der Sicht). Erklärt die Datei die Platte
+  gegen unbeheizt (`btaCellarCeiling`, `btaUppermostStorey`), liegen aber beiderseits beheizte Räume (ein
+  Spitzboden, der nach seinem Namen als beheizt gilt), gilt die Erklärung der Datei, nicht der Bezug —
+  sonst fiele die oberste Geschossdecke aus der Hülle, während die Datei die Dachfläche darüber nicht zur
+  Hülle zählt (bestätigt mit dem Anwenderentscheid 03.10.2026). Der Widerspruch wird benannt
+  (`IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG`, W, mit Bauteil und dem Raum der Seite, die die Datei unbeheizt
+  nennt, und dem Rat, die Beheizung des Raums zu prüfen).
+- **Fläche aus den Raummengen** (Anwenderentscheid 03.10.2026): Bleibt die Summe der referenzierten
+  Deckenteile eines Geschosspaars unter der kleineren beheizten Grundfläche der beiden Geschosse (Summe
+  der Raumflächen aus den Raummengen), referenziert die Datei nicht alle Deckenteile. Dann gilt diese
+  Grundfläche als Trenndeckenfläche, im Verhältnis ihrer Flächen auf die referenzierten Teile verteilt
+  (ohne Flächen zu gleichen Teilen); U-Wert und Aufbau bleiben die der referenzierten Teile, über die
+  Fläche gewichtet (`IMP_IFC_PROT_TRENNDECKE_GESCHAETZT`, I, mit geschätzter und referenzierter Fläche).
+  Ohne beheizten Raum in einem der beiden Geschosse (Keller) wird nicht geschätzt; ohne referenziertes
+  Deckenteil gibt es keine Trenndecke. Auch das ist keine Geometrierechnung (ADR-003): Es zählen Mengen.
+- **Innenwand zwischen Räumen:** Eine Wand innen oder ohne Angabe, die zwei bis vier Räume desselben
+  Geschosses referenzieren, liegt zwischen zweien davon — zwei beheizten, wenn es sie gibt (innere Masse,
+  beidseitig), sonst einem beheizten und einem unbeheizten (Hülle gegen unbeheizt bzw. Trennfläche zur
+  unbeheizten Zone des Geschosses).
+- **Kopplung:** Ein Geschosspaar trägt, wenn die Fläche seiner Trenndecken mindestens die Hälfte der
+  beheizten Grundfläche des kleineren Geschosses erreicht; darunter wird das Paar benannt
+  (`IMP_IFC_PROT_TRENNDECKE_KLEIN`, W, mit Fläche, Grundfläche und Anteil). Der Wächter bleibt (bestätigt
+  mit dem Anwenderentscheid 03.10.2026); nach der Schätzung aus den Raummengen erreicht jedes Paar mit
+  referenziertem Deckenteil und beheizten Räumen auf beiden Seiten die Hälfte — er wirkt nur noch, wo kein
+  Deckenteil referenziert ist und deshalb keine Trenndecke entsteht. Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
+  Geschoss), ist **Z4 die Vorgabe** ohne `KEINE_GRENZEN` und ohne `GRENZEN_ENTKOPPELT`; ist unter Z4
+  dennoch eine beheizte Zone ohne Verbindung (etwa nach den Haken der Raumliste), warnt
+  `GRENZEN_ENTKOPPELT`. Sonst bleibt Z5 die Vorgabe mit dem bisherigen Hinweis.
+- **Meldung:** je Gebäude `IMP_IFC_PROT_TRENNDECKE_REFERENZ` (I) mit der Zahl der Trenndecken, den
+  Geschosspaaren von unten nach oben und der Zahl der Innenwände mit zwei Nachbarn.
+
+**Innenwände ohne Nachbarraum** (Anwenderentscheid 03.10.2026). Eine Wand innen (`IsExternal = FALSE`
+oder Angrenzung `btaHeated`) in einem Gebäude ohne Raumgrenzen, der auch die Raumbezüge keine zwei
+Nachbarn geben (kein Bezug, ein Raum, Räume zweier Geschosse oder mehr als vier), zählt **einseitig** als
+innere Masse — im Einzonenweg in der Innenfläche (Innenflächenfaktor statt leer), unter Z4 in der Zone
+ihres Geschosses —, statt übergangen zu werden; das Protokoll nennt Zahl und Bruttofläche
+(`IMP_IFC_PROT_INNEN_EINSEITIG`, I). Gebäudetrennflächen sind sie nicht.
+
+**Hinweise aus dem Dateinamen** (Anwenderentscheid 03.10.2026). Trägt das Gebäude einer IFC-Datei einen
+Platzhalternamen (`Gebäude`, `Gebaeude`, `Building`, `Default Building`, `Haus`, ohne Groß-/Kleinschreibung),
+schlägt der Dialog den Dateinamen ohne Endung vor (`IMP_IFC_PROT_NAME_PLATZHALTER`, I). Nennt der
+Dateiname genau eine vierstellige Zahl von 1500 bis 2100 und führt die Datei kein Baujahr, nennt das
+Protokoll das Jahr (`IMP_IFC_PROT_BAUJAHR_DATEINAME`, I) — **übernommen wird es nie**: Ein Name wie
+„…EG55-2026" nennt das Planungsjahr, nicht das Baujahr.
+
+**Gemessen an der Anwenderdatei MFH 1964** (IFC2X3, 30 Räume, keine Raumgrenzen, 30 Raumbezüge): drei
+Trenndecken. Die Datei referenziert je Geschossdecke nur das erste Deckenteil (die übrigen 46 Teile
+„Boden OG1-2" … tragen keinen Bezug): EG/OG1 23,75 m² und OG1/DG1 2,26 m² werden aus den Raummengen auf
+je 96,42 m² geschätzt, Keller/EG bleibt 11,84 m² (der Keller ist unbeheizt; die übrigen Kellerdeckenteile
+zählen als Hülle gegen unbeheizt). Die Decke DG1/DG2 („Boden DG2") bleibt als oberste Geschossdecke
+Hülle, der Widerspruch zum Spitzboden „Wohnraum" wird benannt; das beheizte DG2 bleibt damit ungekoppelt,
+und die Vorgabe bleibt Z5 (unter Z4 mit `GRENZEN_ENTKOPPELT`). 51 Innenwände liegen zwischen zwei Räumen,
+19 (89,9 m²) zählen einseitig; der Innenflächenfaktor ist 2,91 statt leer. Die Produktionsdatei
+(EG55-2026): EG/OG1 aus 31,8 m² referenziert auf 7 343,89 m² geschätzt, die Geschosse sind gekoppelt —
+**Vorgabe Z4**; Innenflächenfaktor 1,34.
 
 **Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
 `IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
@@ -1450,6 +1521,8 @@ Protokoll ist die Meldungsliste in Reihenfolge und wird nicht geschrieben (Befun
 | Bild | Erkennung | Wirkung | Schlüssel |
 |---|---|---|---|
 | keine Raumgrenzen / nur 1. Ebene | `BoundedBy` leer bzw. keine 2ndLevel-Entität und kein `'2nd'` in Name/Description | Z5 vorgeben, Flächen aus Quantities | `IMP_IFC_PROT_KEINE_GRENZEN`, `…_NUR_1STLEVEL` (W) |
+| Trenndecke aus Raumbezügen zu klein | ohne Raumgrenzen: Σ Trenndecke eines Geschosspaars < 50 % der beheizten Grundfläche des kleineren Geschosses | Paar koppelt nicht, Vorgabe nach der Kopplung der übrigen Paare | `IMP_IFC_PROT_TRENNDECKE_KLEIN` (W) |
+| Erklärung gegen unbeheizt, Raum beheizt | ohne Raumgrenzen: Platte `btaCellarCeiling`/`btaUppermostStorey` zwischen Räumen zweier Geschosse, beide beheizt | Erklärung der Datei gilt, keine Trenndecke | `IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG` (W) |
 | Fläche ohne Gegenstück | `INTERNAL`, Rekonstruktion mehrdeutig | Randbedingung `UNBEHEIZT`, Zeile rot | `IMP_IFC_PROT_OHNE_GEGENSTUECK` (W) |
 | Bilanzlücke | Σ Trennfläche A→B ≠ B→A (> 2 %) | beide zeigen, größere nehmen | `IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH` (W) |
 | Überlappung | Innenränder **und** Kindgrenzen auf derselben Fläche | nur einmal abziehen | `IMP_IFC_PROT_UEBERLAPPUNG` (W) |
@@ -1725,7 +1798,7 @@ M12 und M13 entschieden**, alle nach Empfehlung. M11 bleibt mit seiner Stufe zu 
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
 | **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Entschieden mit E49 (26.09.2026, A2): ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, auch mit wirksamer Kühlung — nicht über `Kuehl_Sollwert`, E32) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **Entschieden mit E49 (26.09.2026, A3): 30 Tage mit Probe**, Verlängerung auf 90 Tage benannt, nur ab zwei Zonen (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
-| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Entschieden mit E50 (26.09.2026): Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5); bei gbXML entspricht Z4 die Regel X2 |
+| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Entschieden mit E50 (26.09.2026): Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen Z5, es sei denn, Trenndecken aus den Raumbezügen verbinden die beheizten Geschosse (6.5, Anwenderentscheid 03.10.2026); bei gbXML entspricht Z4 die Regel X2 |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Entschieden mit E50 (26.09.2026): ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
 | **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Entschieden mit E27 (22.09.2026): Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |
 | **M10** | Testdateien im Repositorium: DigitalHub (17,6 MB) als Blob? Lizenz der `…_with_SB`-Fassung nachfragen? | **Entschieden mit E27 (22.09.2026): DigitalHub ja — aber nur mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in `.gitattributes` im selben Schritt** und einem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS"; ohne sie liegt ein 17,6-MB-Blob dauerhaft in der Geschichte (er ist die einzige Datei mit Schichten **und** echten 2nd-Level-Paaren). **Lizenz der `…_with_SB`-Fassung nachfragen** — MIT ist für das GitHub-Repositorium belegt, nicht für die E3D-GitLab-Fassung (8.2) —, bis dahin nur außerhalb des Repositoriums messen. Alternative: Test holt die Datei zur Laufzeit und schweigt ohne sie |

@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<PufferspeicherDialog> dlg = null;
+            PufferAuslegungAuftrag auslegen = null;
 
             var werte = new Dictionary<string, object>(
                 Gaben(besitzer, projektId, idType, modelle))
@@ -55,7 +56,26 @@ namespace WindowsFormsApplication1
                 {
                     ok = b;
                     if (dlg != null) dlg.Schliessen(b);
-                })
+                }),
+
+                // Stufe P2 (Einstieg A): „Auslegen…" schliesst die Verwaltung wie Abbrechen und
+                // oeffnet danach die Pufferspeicher-Auslegung als freie Ansicht im Hauptfenster -
+                // fuer die Projektkopie der gewaehlten Zeile, ohne sie fuer einen neuen Speicher.
+                ["AuslegenOeffnen"] = new Func<int, Task>(geraetId =>
+                {
+                    bool kopie = geraetId > 0 && PufferSpCtrl.Detail(geraetId, projektId) != null;
+                    auslegen = new PufferAuslegungAuftrag
+                    {
+                        IdProjekt = projektId,
+                        IdPuffer = kopie ? geraetId : (int?)null,
+                        Einstieg = MyResource.Resource.PAUS_EINSTIEG_VERWALTUNG
+                    };
+                    ok = false;
+                    if (dlg != null) dlg.Schliessen(false);
+                    return Task.CompletedTask;
+                }),
+                ["BtnAuslegenText"] = MyResource.Resource.PAUS_BTN_AUSLEGEN,
+                ["HinweisAuslegenText"] = MyResource.Resource.PAUS_AUSLEGEN_VERWIRFT
             };
 
             dlg = new BlazorDialogForm<PufferspeicherDialog>(
@@ -65,6 +85,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+
+            // Erst NACH dem Schliessen: Die Wurzel wechselt die Ansicht im Hauptfenster.
+            if (auslegen != null) PufferAuslegungHuelle.Oeffnen(auslegen);
             return ok;
         }
 

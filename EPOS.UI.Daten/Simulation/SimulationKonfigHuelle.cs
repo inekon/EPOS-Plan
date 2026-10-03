@@ -106,6 +106,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
         private Action _auslegungWeg;
 
+        /// <summary>Was nach einer Übernahme aus der Pufferspeicher-Auslegung nachzuziehen ist (Stufe P2).</summary>
+        private Action _pufferNachzug;
+
         /// <summary>
         /// Der Kanalbedarf des gerechneten, noch gültigen Laufs [MWh/a] — für die
         /// Abnehmer ohne Versorger im Schema. <c>null</c> (oder ein Weg, der <c>null</c>
@@ -282,6 +285,7 @@ namespace WindowsFormsApplication1
                 ["TipSpeicherAufklappen"] = MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN,
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
                 ["BtnStromspeicherAuslegen"] = MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
+                ["BtnPufferAuslegen"] = MyResource.Resource.PAUS_BTN_KONFIG,
 
                 // ANWENDERWUNSCH 16.09.2026: der Knopf an der Erzeugerkarte, der den
                 // Konfigurationsdialog oeffnet - derselbe Wortlaut wie der Knopf in der
@@ -433,7 +437,12 @@ namespace WindowsFormsApplication1
                 WaermesenkeFertig = WaermesenkeFertig,
 
                 PufferVerwaltungGaben = idPuffer =>
-                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer),
+                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer, PufferAuslegungOeffnen),
+
+                // Stufe P2: „Pufferspeicher auslegen…" neben der Pufferverwaltung. Der Weg ist
+                // plattformfrei (freie Ansicht der Wurzel); nach einer Uebernahme gilt ein
+                // gerechnetes Ergebnis als veraltet (Nachzug der Ergebnishuelle).
+                PufferAuslegungOeffnen = PufferAuslegungOeffnen,
 
                 // #274: „Stromspeicher auslegen…" neben der Pufferverwaltung. Ohne
                 // eingelegten Weg gibt es den Knopf nicht (Hausregel „kein Delegat,
@@ -1461,6 +1470,32 @@ namespace WindowsFormsApplication1
         internal void AuslegungWegSetzen(Action weg)
         {
             _auslegungWeg = weg;
+        }
+
+        /// <summary>
+        /// Legt den Nachzug nach einer Übernahme aus der Pufferspeicher-Auslegung ein — die
+        /// Ergebnishülle markiert ihren Lauf als veraltet (<c>SimulationAnsichtQuelle</c>).
+        /// </summary>
+        internal void PufferNachzugSetzen(Action nachzug)
+        {
+            _pufferNachzug = nachzug;
+        }
+
+        /// <summary>
+        /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2) für den Projektpuffer
+        /// <paramref name="idPuffer"/> (<c>0</c> = einen neuen). Ohne angemeldete Wurzel geschieht
+        /// nichts — derselbe Ausgang wie bei jedem anderen Navigationsweg.
+        /// </summary>
+        private void PufferAuslegungOeffnen(int idPuffer)
+        {
+            if (m_ID_Projekt <= 0) return;
+            PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+            {
+                IdProjekt = m_ID_Projekt,
+                IdPuffer = idPuffer > 0 ? idPuffer : (int?)null,
+                Einstieg = MyResource.Resource.PAUS_EINSTIEG_KONFIG,
+                Nachzug = _pufferNachzug
+            });
         }
 
         private void AuslegungOeffnen()

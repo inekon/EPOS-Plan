@@ -239,7 +239,9 @@ namespace EPOS.Kern.Tests
         private static long Zahl(string sql, params DbParam[] p)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, p), CultureInfo.InvariantCulture);
 
-        private static List<string> Spalten(string tabelle) => DataRepository.SpaltenVonTabelle(tabelle);
+        // Die drei Katalogspalten (KU1) sind kein Fachwert und stehen nur am Katalog.
+        private static List<string> Spalten(string tabelle) =>
+            DataRepository.SpaltenVonTabelle(tabelle).Where(s => !Katalogfassung.IstKatalogspalte(s)).ToList();
 
         [Fact]
         public void Die_acht_Tabellen_stehen_STRICT_samt_Indizes()

@@ -2611,6 +2611,26 @@ namespace Testdatenbankschema
                                   KatalogfassungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+            //      den sechzehn Katalogtabellen der Stufe 2 samt Teilindex und die Saat von Schluessel und
+            //      Pruefsumme ihrer ausgelieferten Saetze. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogfassungStufe2 bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog2 = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog2 + " - Katalogfassung der uebrigen Kataloge: " +
+                              (KatalogfassungStufe2Schema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog2 = new List<string>();
+                angelegt += KatalogfassungStufe2Schema.Ausfuehren(berichtKatalog2);
+                foreach (string zeile in berichtKatalog2)
+                    Console.WriteLine("Schritt " + nrKatalog2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog2 + " - vollstaendig: " +
+                                  KatalogfassungStufe2Schema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59 samt Folgeentscheiden, E60;
             //      Entwurf KP3 Abschnitt 4): an Tab_Einstellungen Aufheiz_Aufschlag_H und
             //      Aufheiz_Aufschlag_Prozent, an Tab_Gebaeude Aufheizzeit_Manuell_H samt achtem Neubau der

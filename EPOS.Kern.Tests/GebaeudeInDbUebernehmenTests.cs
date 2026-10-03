@@ -241,6 +241,7 @@ namespace EPOS.Kern.Tests
             {
                 string name = Convert.ToString(r["name"], CultureInfo.InvariantCulture);
                 if (name is "ID" or "Bezeichner" or "Beschreibung" or "ReadOnly") continue;
+                if (Katalogfassung.IstKatalogspalte(name)) continue;   // KU1: kein Fachwert
                 Assert.Contains(name, spalten);
             }
             return spalten.ToArray();

@@ -245,8 +245,9 @@ namespace WindowsFormsApplication1
             { Verwendung.Simulation, Verwendung.Wirtschaftlichkeit, Verwendung.Bericht };
 
         /// <summary>
-        /// KU1 Stufe 1 (Schemaschritt <see cref="KatalogfassungSchema"/>): die drei Katalogspalten der
-        /// laufend gepflegten Kataloge, in der Reihenfolge der Tabelle die letzten. Kein Fachwert — die
+        /// KU1 Stufe 1 und 2 (Schemaschritte <see cref="KatalogfassungSchema"/> und
+        /// <see cref="KatalogfassungStufe2Schema"/>): die drei Katalogspalten der Kataloge des Registers,
+        /// in der Reihenfolge der Tabelle die letzten. Kein Fachwert — die
         /// Kennung des Auslieferungssatzes, die der Katalogabgleich liest und schreibt.
         /// </summary>
         private static IEnumerable<ParameterEintrag> Katalogspalten(Func<string, string> t) => new[]
@@ -640,7 +641,7 @@ namespace WindowsFormsApplication1
                 E(SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, t("SKK_LBL_BEZUGSFLAECHE"), "", SIM,
                   "SimulationSolarthermie.Kollektorfelder_Lesen → Solarkreis.Modulbezugsflaeche " +
                   "(apertur oder brutto); SolarkollektorKatalogDialog.razor; KatalogBrowserProfil (Solarkollektoren)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -762,7 +763,7 @@ namespace WindowsFormsApplication1
                 E(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, t("SP_LABEL_SELBSTENTLADUNG"), "%/Monat", SIM,
                   "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.SelbstentladungProzentMonat); " +
                   "SpeicherEngine/Speichersystem.Selbstentladung; SpeicherFlottenStudieCtrl.EinheitAusKatalogsatz")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -803,7 +804,7 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.cs:357 (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
 
         // =================================================================
@@ -937,7 +938,7 @@ namespace WindowsFormsApplication1
                   "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, Handpflege; " +
                   "StrangPlausibilitaet.MpptPruefen (P4 rot); " +
                   "StrangAuslegung.ParallelJeMppt (Grenze)")
-            };
+            }.Concat(Katalogspalten(t)).ToList();
         }
     }
 }

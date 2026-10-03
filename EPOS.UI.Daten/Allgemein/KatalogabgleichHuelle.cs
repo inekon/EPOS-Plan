@@ -182,21 +182,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Der Katalog in Worten.</summary>
-        public static string Katalogname(string tabelle)
-        {
-            switch (tabelle)
-            {
-                case "Tab_WP_STAMM": return MyResource.Resource.KABG_KATALOG_WP;
-                case "Tab_Heizkessel_STAMM": return MyResource.Resource.KABG_KATALOG_KESSEL;
-                case "Tab_BHKW_STAMM": return MyResource.Resource.KABG_KATALOG_BHKW;
-                case "Tab_PV_STAMM": return MyResource.Resource.KABG_KATALOG_PV;
-                case "Tab_Brauchwasser_STAMM": return MyResource.Resource.KABG_KATALOG_BW;
-                case "Tab_Brauchwassertyp_STAMM": return MyResource.Resource.KABG_KATALOG_BWT;
-                case "Tab_Prozesswaerme_STAMM": return MyResource.Resource.KABG_KATALOG_PW;
-                case "Tab_Prozesstyp_STAMM": return MyResource.Resource.KABG_KATALOG_PWT;
-                default: return tabelle ?? "";
-            }
-        }
+        /// <summary>
+        /// Der Katalog in Worten — aus dem Register des Kerns (<see cref="Katalogfassung.Anzeigename"/>),
+        /// damit jeder Katalog der Stufen 1 und 2 ohne eigene Zeile hier erscheint.
+        /// </summary>
+        public static string Katalogname(string tabelle) => Katalogfassung.Anzeigename(tabelle);
     }
 }

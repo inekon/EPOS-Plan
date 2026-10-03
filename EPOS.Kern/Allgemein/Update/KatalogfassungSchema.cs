@@ -124,6 +124,49 @@ namespace WindowsFormsApplication1
             yield return "Tab_Energieanlagen";
         }
 
+        /// <summary>Stehen an jeder Tabelle von <paramref name="tabellen"/> die drei Katalogspalten und der Teilindex?</summary>
+        internal static bool KatalogspaltenVollstaendig(IEnumerable<Katalogtabelle> tabellen)
+        {
+            foreach (Katalogtabelle t in tabellen)
+            {
+                if (!Katalogfassung.SpaltenVorhanden(t.Tabelle)) return false;
+                if (!IndexVorhanden(t.Tabelle)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Die Anweisungen für die Katalogspalten und den Teilindex an <paramref name="tabellen"/> — je
+        /// fehlende Spalte und fehlenden Index eine (die Indizes nach den Spalten); eine Tabelle, die die
+        /// Datenbank nicht führt, wird übergangen.
+        /// </summary>
+        internal static IEnumerable<KeyValuePair<string, string>> KatalogspaltenAnweisungen(IReadOnlyList<Katalogtabelle> tabellen)
+        {
+            foreach (Katalogtabelle t in tabellen)
+            {
+                if (!DataRepository.TabelleVorhanden(t.Tabelle)) continue;
+                foreach (KeyValuePair<string, string> s in Katalogspalten())
+                {
+                    if (DataRepository.SpalteVorhanden(t.Tabelle, s.Key)) continue;
+                    yield return new KeyValuePair<string, string>(
+                        t.Tabelle + "." + s.Key + " anlegen",
+                        "ALTER TABLE \"" + t.Tabelle + "\" ADD COLUMN \"" + s.Key + "\" " + s.Value);
+                }
+            }
+            // Die Indizes nach den Spalten: Ein Index ueber eine fehlende Spalte schluege fehl.
+            foreach (Katalogtabelle t in tabellen)
+            {
+                if (!DataRepository.TabelleVorhanden(t.Tabelle)) continue;
+                if (IndexVorhanden(t.Tabelle) && DataRepository.SpalteVorhanden(t.Tabelle, Katalogfassung.SPALTE_SCHLUESSEL))
+                    continue;
+                yield return new KeyValuePair<string, string>(
+                    Indexname(t.Tabelle) + " anlegen",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS \"" + Indexname(t.Tabelle) + "\" ON \"" + t.Tabelle +
+                    "\" (\"" + Katalogfassung.SPALTE_SCHLUESSEL + "\") WHERE \"" +
+                    Katalogfassung.SPALTE_SCHLUESSEL + "\" IS NOT NULL");
+            }
+        }
+
         /// <summary>Steht der Teilindex einer Tabelle?</summary>
         private static bool IndexVorhanden(string tabelle)
         {
@@ -136,18 +179,15 @@ namespace WindowsFormsApplication1
         /// <summary>Steht das Schema des Schritts vollständig (ohne die Saat)?</summary>
         public static bool SchemaVollstaendig()
         {
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
-            {
-                if (!Katalogfassung.SpaltenVorhanden(t.Tabelle)) return false;
-                if (!IndexVorhanden(t.Tabelle)) return false;
-            }
+            if (!KatalogspaltenVollstaendig(Katalogfassung.Stufe1)) return false;
             return DataRepository.SpalteVorhanden(Katalogfassung.TAB_APPLIKATION, Katalogfassung.SPALTE_FASSUNG) &&
                    DataRepository.TabelleVorhanden(TAB_ABGLEICH) &&
                    DataRepository.TabelleVorhanden(TAB_ERGEBNIS_ERDREICH);
         }
 
         /// <summary>Schema vollständig und jeder ausgelieferte Satz mit Schlüssel und Prüfsumme?</summary>
-        public static bool Vollstaendig() => SchemaVollstaendig() && KatalogSchluesselSaat.OffeneSaetze() == 0;
+        public static bool Vollstaendig() =>
+            SchemaVollstaendig() && KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe1) == 0;
 
         /// <summary>
         /// Die Anweisungen des Schritts — Beschreibung und SQL, je fehlende Spalte, fehlenden Index
@@ -157,29 +197,8 @@ namespace WindowsFormsApplication1
         {
             get
             {
-                foreach (Katalogtabelle t in Katalogfassung.Stufe1)
-                {
-                    if (!DataRepository.TabelleVorhanden(t.Tabelle)) continue;
-                    foreach (KeyValuePair<string, string> s in Katalogspalten())
-                    {
-                        if (DataRepository.SpalteVorhanden(t.Tabelle, s.Key)) continue;
-                        yield return new KeyValuePair<string, string>(
-                            t.Tabelle + "." + s.Key + " anlegen",
-                            "ALTER TABLE \"" + t.Tabelle + "\" ADD COLUMN \"" + s.Key + "\" " + s.Value);
-                    }
-                }
-                // Die Indizes nach den Spalten: Ein Index ueber eine fehlende Spalte schluege fehl.
-                foreach (Katalogtabelle t in Katalogfassung.Stufe1)
-                {
-                    if (!DataRepository.TabelleVorhanden(t.Tabelle)) continue;
-                    if (IndexVorhanden(t.Tabelle) && DataRepository.SpalteVorhanden(t.Tabelle, Katalogfassung.SPALTE_SCHLUESSEL))
-                        continue;
-                    yield return new KeyValuePair<string, string>(
-                        Indexname(t.Tabelle) + " anlegen",
-                        "CREATE UNIQUE INDEX IF NOT EXISTS \"" + Indexname(t.Tabelle) + "\" ON \"" + t.Tabelle +
-                        "\" (\"" + Katalogfassung.SPALTE_SCHLUESSEL + "\") WHERE \"" +
-                        Katalogfassung.SPALTE_SCHLUESSEL + "\" IS NOT NULL");
-                }
+                foreach (KeyValuePair<string, string> a in KatalogspaltenAnweisungen(Katalogfassung.Stufe1))
+                    yield return a;
                 if (!DataRepository.SpalteVorhanden(Katalogfassung.TAB_APPLIKATION, Katalogfassung.SPALTE_FASSUNG))
                     yield return new KeyValuePair<string, string>(
                         Katalogfassung.TAB_APPLIKATION + "." + Katalogfassung.SPALTE_FASSUNG + " anlegen",
@@ -213,22 +232,28 @@ namespace WindowsFormsApplication1
                 bericht?.Add(a.Key);
             }
             if (n == 0) bericht?.Add("Katalogspalten, Tab_Katalogabgleich und Tab_ErgebnisErdreich vorhanden");
-            KatalogSchluesselSaat.Ausfuehren(bericht);
+            KatalogSchluesselSaat.Ausfuehren(bericht, Katalogfassung.Stufe1);
             return n;
         }
     }
 
     /// <summary>
-    /// <b>Die Saat des Schemaschritts</b>: Schlüssel und Prüfsumme je ausgelieferten Satz der Stufe 1,
-    /// der noch keinen trägt. Kein Fachwert ändert sich; ein Anwendersatz bleibt ohne Schlüssel.
+    /// <b>Die Saat der Schemaschritte</b> (<see cref="KatalogfassungSchema"/> für die Stufe 1,
+    /// <see cref="KatalogfassungStufe2Schema"/> für die Stufe 2): Schlüssel und Prüfsumme je
+    /// ausgelieferten Satz, der noch keinen trägt. Kein Fachwert ändert sich; ein Anwendersatz bleibt
+    /// ohne Schlüssel.
     /// </summary>
     public static class KatalogSchluesselSaat
     {
-        /// <summary>Zahl der ausgelieferten Sätze ohne Schlüssel oder Prüfsumme (0 = Saat vollständig).</summary>
-        public static int OffeneSaetze()
+        /// <summary>
+        /// Zahl der ausgelieferten Sätze ohne Schlüssel oder Prüfsumme (0 = Saat vollständig) über
+        /// <paramref name="tabellen"/> (Vorgabe: das ganze Register); fehlen einer Tabelle die
+        /// Katalogspalten, <see cref="int.MaxValue"/>.
+        /// </summary>
+        public static int OffeneSaetze(IEnumerable<Katalogtabelle> tabellen = null)
         {
             int n = 0;
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+            foreach (Katalogtabelle t in tabellen ?? Katalogfassung.Alle)
             {
                 if (!DataRepository.TabelleVorhanden(t.Tabelle)) continue;
                 if (!Katalogfassung.SpaltenVorhanden(t.Tabelle)) return int.MaxValue;
@@ -242,13 +267,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Belegt je Tabelle in EINEM Vorgang Schlüssel und Prüfsumme der ausgelieferten Sätze ohne
-        /// Schlüssel, in der Folge ihrer ID. <b>Wiederholbar.</b> Fehler werfen.
+        /// Schlüssel, in der Folge ihrer ID, über <paramref name="tabellen"/> (Vorgabe: das ganze
+        /// Register; eine Tabelle ohne Katalogspalten wird übergangen) in der Folge des Registers —
+        /// ein Verweisziel bekommt seine Schlüssel vor dem Verweiser. <b>Wiederholbar.</b> Fehler werfen.
         /// </summary>
         /// <returns>Die Zahl der belegten Sätze.</returns>
-        public static int Ausfuehren(IList<string> bericht)
+        public static int Ausfuehren(IList<string> bericht, IEnumerable<Katalogtabelle> tabellen = null)
         {
             int gesamt = 0;
-            foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+            foreach (Katalogtabelle t in tabellen ?? Katalogfassung.Alle)
             {
                 if (!DataRepository.TabelleVorhanden(t.Tabelle) || !Katalogfassung.SpaltenVorhanden(t.Tabelle)) continue;
                 List<string> spalten = Katalogfassung.VorhandeneFachspalten(t);
@@ -274,8 +301,7 @@ namespace WindowsFormsApplication1
                                 string schluessel = r[Katalogfassung.SPALTE_SCHLUESSEL] as string;
                                 if (string.IsNullOrEmpty(schluessel))
                                 {
-                                    schluessel = Katalogfassung.Schluessel(t, Convert.ToString(r[Katalogfassung.SPALTE_BEZEICHNER],
-                                                                           CultureInfo.InvariantCulture), belegt.Contains);
+                                    schluessel = Katalogfassung.Schluessel(t, Katalogfassung.Name(t, r), belegt.Contains);
                                     belegt.Add(schluessel);
                                 }
                                 string summe = Katalogfassung.PruefsummeDerZeile(t, spalten, r, (sql, p) => v.Lese(sql, p));

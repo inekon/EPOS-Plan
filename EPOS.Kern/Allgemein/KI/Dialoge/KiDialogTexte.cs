@@ -2160,6 +2160,33 @@
         // ---- Form_Nutzungsdauer
         internal static string MaskeNutzungsdauer => MyResource.Resource.KI_DLG_MASKE_NUD;
 
+        // ---- Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P2) ----
+        internal static string MaskePufferAuslegung => MyResource.Resource.PAUS_TITEL;
+        internal static string PausKlasseHeizungName => MyResource.Resource.PAUS_KLASSE_HEIZUNG;
+        internal static string PausKlasseBrauchwasserName => MyResource.Resource.PAUS_KLASSE_BRAUCHWASSER;
+        internal static string PausKlasseProzessName => MyResource.Resource.PAUS_KLASSE_PROZESS;
+        internal static string PausKlasseErl => MyResource.Resource.KI_DLG_PAUS_KLASSE_ERL;
+        internal static string PausVorlageName => MyResource.Resource.PAUS_GRUPPE_VORLAGE;
+        internal static string PausVorlageErl => MyResource.Resource.KI_DLG_PAUS_VORLAGE_ERL;
+        internal static string PausGeregeltName => MyResource.Resource.PAUS_GEREGELT;
+        internal static string PausGeregeltErl => MyResource.Resource.KI_DLG_PAUS_GEREGELT_ERL;
+        internal static string PausZweitName => MyResource.Resource.PAUS_ZWEIT_FREI;
+        internal static string PausZweitErl => MyResource.Resource.KI_DLG_PAUS_ZWEIT_ERL;
+        internal static string PausUebergabeName => MyResource.Resource.PAUS_UEBERGABEART;
+        internal static string PausUebergabeErl => MyResource.Resource.KI_DLG_PAUS_UEBERGABE_ERL;
+        internal static string PausHeizgrenzeName => MyResource.Resource.PAUS_HEIZGRENZE;
+        internal static string PausHeizgrenzeErl => MyResource.Resource.KI_DLG_PAUS_HEIZGRENZE_ERL;
+        internal static string PausAnlagenvolumenName => MyResource.Resource.PAUS_ANLAGENVOLUMEN;
+        internal static string PausAnlagenvolumenErl => MyResource.Resource.KI_DLG_PAUS_ANLAGENVOLUMEN_ERL;
+        internal static string PausSperrprofilName => MyResource.Resource.PAUS_SPERRPROFIL;
+        internal static string PausSperrprofilErl => MyResource.Resource.KI_DLG_PAUS_SPERRPROFIL_ERL;
+        internal static string PausMindestlaufzeitName => MyResource.Resource.PAUS_MINDESTLAUFZEIT;
+        internal static string PausMindestlaufzeitErl => MyResource.Resource.KI_DLG_PAUS_MINDESTLAUFZEIT_ERL;
+        internal static string PausStartzielName => MyResource.Resource.PAUS_STARTZIEL;
+        internal static string PausStartzielErl => MyResource.Resource.KI_DLG_PAUS_STARTZIEL_ERL;
+        internal static string PausDeckungszielName => MyResource.Resource.PAUS_DECKUNGSZIEL;
+        internal static string PausDeckungErl => MyResource.Resource.KI_DLG_PAUS_DECKUNG_ERL;
+
         // ---- Betriebskalender (PW2, BW2) ----
         internal static string MaskeBetriebskalender => MyResource.Resource.BKAL_TITEL;
         internal static string BkalKalenderName => MyResource.Resource.BKAL_LBL_LISTE;

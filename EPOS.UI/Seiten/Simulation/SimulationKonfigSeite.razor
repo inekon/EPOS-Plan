@@ -216,6 +216,19 @@
                     <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
                             @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
 
+                    @* DER EINSTIEG IN DIE PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-
+                       Auslegung, Stufe P2) - nach dem Muster „Stromspeicher auslegen…": Jede
+                       Speicherart hat ihr Anlegen und ihr Auslegen beieinander. Steht genau EIN
+                       Puffer im Projekt, legt die Auslegung ihn aus; sonst oeffnet sie fuer einen
+                       neuen (die Klasse kommt aus dem Projekt) - einen bestimmten Speicher waehlt
+                       der Knopf „Auslegen…" der Pufferverwaltung. Kein Delegat, kein Knopf. *@
+                    @if (Dienste?.PufferAuslegungOeffnen is not null)
+                    {
+                        <button type="button" class="epos-knopf epos-simkonfig-pufferauslegung"
+                                disabled="@(IdProjekt <= 0)"
+                                @onclick="PufferAuslegungOeffnen">@BtnPufferAuslegen</button>
+                    }
+
                     @* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274,
                        Anwenderwunsch 14.09.2026): „Der Dialog Stromspeicher soll in den
                        Dialog Konfiguration verschoben werden. Aehnlich zu ‚Pufferspeicher
@@ -808,6 +821,9 @@
 
     /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
     [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
+
+    /// <summary>„Pufferspeicher auslegen…" (<c>PAUS_BTN_KONFIG</c>).</summary>
+    [Parameter] public string BtnPufferAuslegen { get; set; } = "Pufferspeicher auslegen…";
 
     /// <summary>
     /// SIMKONF_BTN_KONFIGURATION — der Knopf an der Erzeugerkarte, der den
@@ -1798,6 +1814,18 @@
     {
         if (IdProjekt <= 0) return;
         Dienste?.AuslegungOeffnen?.Invoke();
+    }
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2): mit dem einzigen Puffer
+    /// des Projekts, sonst für einen neuen. Der Rückweg führt über den Stapel der Wurzel hierher
+    /// zurück, und die Speicherspalte liest dabei frisch.
+    /// </summary>
+    private void PufferAuslegungOeffnen()
+    {
+        if (IdProjekt <= 0) return;
+        int idPuffer = _daten.Speicher.Count == 1 ? _daten.Speicher[0].IdPuffer : 0;
+        Dienste?.PufferAuslegungOeffnen?.Invoke(idPuffer);
     }
 
     // =====================================================================

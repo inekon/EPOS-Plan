@@ -410,7 +410,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string KnopfUebergeben { get; set; } = "An Speicherauslegung übergeben…";
 
     /// <summary><c>ZPG_AUS_GRUND_UEBERGEBEN</c></summary>
-    public string GrundUebergeben { get; set; } = "Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.";
+    public string GrundUebergeben { get; set; } = "Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.";
 
     // ------------------------------------------------------------ Warnliste
 

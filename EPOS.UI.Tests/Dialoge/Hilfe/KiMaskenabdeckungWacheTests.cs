@@ -364,6 +364,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
+        // Pufferspeicher-Auslegung (Stufe P2): dreizehn Felder im Katalog Form_PufferAuslegung (Klassen,
+        // Vorlage, Gerätetyp, Zweiterzeuger, Übergabeart, Heizgrenze, Anlagenvolumen, Sperrprofil und die
+        // drei Ziele). Draußen bleiben die Anzeigestufe (Sitzungseinstellung), die Kriterienschalter der
+        // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
+        // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
+        // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
+        new("PufferAuslegungSeite", 26, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme und " +
+            "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 9),

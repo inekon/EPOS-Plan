@@ -37,11 +37,11 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Nummer, Register, Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf die Katalogfassung; der Zielstand reicht mindestens bis zu ihr (kein Pin).</summary>
+        /// <summary>Die Nummer folgt lückenlos auf die Katalogfassung der Stufe 2; der Zielstand reicht mindestens bis zu ihr (kein Pin).</summary>
         [Fact]
         public void Die_Nummer_folgt_lueckenlos_und_die_Paketanhebung_fuehrt_DDL()
         {
-            Assert.Equal(KatalogfassungSchema.SCHRITT + 1, AufheizManuellSchema.SCHRITT);
+            Assert.Equal(KatalogfassungStufe2Schema.SCHRITT + 1, AufheizManuellSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= AufheizManuellSchema.SCHRITT);
 
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == AufheizManuellSchema.SCHRITT);
@@ -259,7 +259,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Werkzeug-Wache.</b> Migration der Schale, Werkzeug und Testkopie führen den Schritt aus derselben
-        /// Quelle, hinter der Katalogfassung und hinter dem älteren Sichtdurchgang des Energiestandards; die
+        /// Quelle, hinter der Katalogfassung der Stufe 2 und hinter dem älteren Sichtdurchgang des Energiestandards; die
         /// REPO-Datei trägt ihn leer (nur lesend).
         /// </summary>
         [Fact]
@@ -269,20 +269,20 @@ namespace EPOS.Kern.Tests
             if (wurzel == null) return;
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
-            int wKatalog = werkzeug.IndexOf("KatalogfassungSchema.Ausfuehren(", StringComparison.Ordinal);
+            int wKatalog = werkzeug.IndexOf("KatalogfassungStufe2Schema.Ausfuehren(", StringComparison.Ordinal);
             int wSicht = werkzeug.IndexOf("BaualtersklassenSchema.Ausfuehren(", StringComparison.Ordinal);
             int wManuell = werkzeug.IndexOf("AufheizManuellSchema.Ausfuehren(", StringComparison.Ordinal);
             Assert.True(wKatalog > 0 && wSicht > 0 && wManuell > wKatalog && wManuell > wSicht, "Das Werkzeug führt den Schritt nicht zuletzt.");
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT", migration);
-            int mKatalog = migration.IndexOf("new Schritt(SCHRITT_KATALOGFASSUNG", StringComparison.Ordinal);
+            int mKatalog = migration.IndexOf("new Schritt(SCHRITT_KATALOGFASSUNG_STUFE2", StringComparison.Ordinal);
             int mManuell = migration.IndexOf("new Schritt(SCHRITT_AUFHEIZ_MANUELL", StringComparison.Ordinal);
-            Assert.True(mKatalog > 0 && mManuell > mKatalog, "Der Schritt steht nicht hinter der Katalogfassung.");
+            Assert.True(mKatalog > 0 && mManuell > mKatalog, "Der Schritt steht nicht hinter der Katalogfassung der Stufe 2.");
             Assert.Contains("AufheizManuellSchema.Ausfuehren(", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
-            int vKatalog = vorrichtung.IndexOf("KatalogfassungSchema.Ausfuehren(null)", StringComparison.Ordinal);
+            int vKatalog = vorrichtung.IndexOf("KatalogfassungStufe2Schema.Ausfuehren(null)", StringComparison.Ordinal);
             int vSicht = vorrichtung.IndexOf("BaualtersklassenSchema.Ausfuehren(null)", StringComparison.Ordinal);
             int vManuell = vorrichtung.IndexOf("AufheizManuellSchema.Ausfuehren(null)", StringComparison.Ordinal);
             Assert.True(vKatalog > 0 && vSicht > 0 && vManuell > vKatalog && vManuell > vSicht, "Die Testkopie führt den Schritt nicht zuletzt.");
