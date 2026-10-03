@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static WindowsFormsApplication1.Textbaustein;
 
 namespace WindowsFormsApplication1
 {
@@ -20,10 +21,10 @@ namespace WindowsFormsApplication1
     /// <summary>Die Brauchwasserzone (Konzept 3.2) — Topologie-Weiche, Zuschläge, Zirkulation, Kennzahl je Person.</summary>
     public static class BrauchwasserzoneRechner
     {
-        public const string HERKUNFT_SPEICHER = "Zapfprofil-Speicherauslegung (TwwSpeicherauslegung)";
-        public const string HERKUNFT_FRISCHWASSER = "VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1";
-        public const string HERKUNFT_W551 = "DVGW W 551";
-        public const string HERKUNFT_IEA = "IEA SHC Task/Annex 46";
+        public static readonly Textbaustein HERKUNFT_SPEICHER = T("PAUS_HERK_ZAPF_SPEICHER", "Zapfprofil-Speicherauslegung (TwwSpeicherauslegung)");
+        public static readonly Textbaustein HERKUNFT_FRISCHWASSER = T("PAUS_HERK_FRISCHWASSER", "VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1");
+        public static readonly Textbaustein HERKUNFT_W551 = T("PAUS_HERK_W551", "DVGW W 551");
+        public static readonly Textbaustein HERKUNFT_IEA = T("PAUS_HERK_IEA", "IEA SHC Task/Annex 46");
 
         /// <summary>Kaltwasser- und Zapftemperatur, auf die sich ein Tagesbedarf in Litern bezieht (60/10 °C).</summary>
         public const double ZAPF_C = 60.0, KALT_C = 10.0;
@@ -108,8 +109,9 @@ namespace WindowsFormsApplication1
                     k.Add(new PufferKriterium
                     {
                         Kennung = PufferKriteriumKennung.B_SPEICHER, Bezeichnung = "Trinkwasserspeicher aus dem Zapfprofil",
-                        VolumenL = zp.NenninhaltL.Value, Aktiv = true, Herkunft = HERKUNFT_SPEICHER,
-                        Rechenweg = "Nenninhalt " + Z(zp.NenninhaltL.Value) + " l (Zuschläge und Zirkulation in der Zapfprofil-Auslegung)"
+                        VolumenL = zp.NenninhaltL.Value, Aktiv = true, HerkunftBaustein = HERKUNFT_SPEICHER,
+                        RechenwegBaustein = T("PAUS_WEG_B_SPEICHER", "Nenninhalt {0} l (Zuschläge und Zirkulation in der Zapfprofil-Auslegung)",
+                                              zp.NenninhaltL.Value)
                     });
                     if (zp.NenninhaltL.Value > W551_GROSSANLAGE_L)
                         g.Warnung(PufferWarncode.HYGIENE_W551, PufferStufe.Hinweis,
@@ -120,7 +122,8 @@ namespace WindowsFormsApplication1
                     k.Add(new PufferKriterium
                     {
                         Kennung = PufferKriteriumKennung.B_FRISCHWASSER, Bezeichnung = "Durchfluss ohne Speicher",
-                        VolumenL = 0, Aktiv = true, Herkunft = HERKUNFT_SPEICHER, Rechenweg = "Durchflussbereitung: kein Brauchwasseranteil im Puffer"
+                        VolumenL = 0, Aktiv = true, HerkunftBaustein = HERKUNFT_SPEICHER,
+                        RechenwegBaustein = T("PAUS_WEG_B_DURCHFLUSS", "Durchflussbereitung: kein Brauchwasseranteil im Puffer")
                     });
                     break;
 
@@ -134,30 +137,30 @@ namespace WindowsFormsApplication1
                     zirkulationKwhD = ZirkulationKwhD(e, p, g.C, weg);
                     double? qTag = TagesbedarfKwh(zp, g.C);
                     double dZ = 0;
-                    string zText;
+                    Textbaustein zText;
                     if (weg == PufferZirkulationWeg.ZAPFPROFIL)
-                        zText = "Zirkulation im Zapfprofil enthalten";
+                        zText = T("PAUS_WEG_ZIRK_ZAPFPROFIL", "Zirkulation im Zapfprofil enthalten");
                     else if (weg == PufferZirkulationWeg.ANTEIL)
                     {
                         dZ = p.Wert(PufferAuslegungVorgaben.ZIRK_ANTEIL) * zp.DmaxKwh;
-                        zText = "Zirkulation " + Z(p.Wert(PufferAuslegungVorgaben.ZIRK_ANTEIL)) + " · D_max = " + Z(dZ) + " kWh";
+                        zText = T("PAUS_WEG_ZIRK_ANTEIL", "Zirkulation {0} · D_max = {1} kWh", p.Wert(PufferAuslegungVorgaben.ZIRK_ANTEIL), dZ);
                     }
                     else if (zirkulationKwhD.HasValue && qTag.HasValue && qTag.Value > 0)
                     {
                         dZ = zirkulationKwhD.Value * zp.DmaxKwh / qTag.Value;
-                        zText = "Zirkulation " + Z(zirkulationKwhD.Value) + " kWh/d · D_max / Q_d = " + Z(dZ) + " kWh";
+                        zText = T("PAUS_WEG_ZIRK_TAG", "Zirkulation {0} kWh/d · D_max / Q_d = {1} kWh", zirkulationKwhD.Value, dZ);
                     }
                     else
-                        zText = "Zirkulation ohne Tagesbedarf nicht umzurechnen: kein Zuschlag";
+                        zText = T("PAUS_WEG_ZIRK_OHNE", "Zirkulation ohne Tagesbedarf nicht umzurechnen: kein Zuschlag");
                     double v = Frischwasservolumen(zp.DmaxKwh, dZ, zuschlag, g.C, dTB, g.Eta);
                     k.Add(new PufferKriterium
                     {
                         Kennung = PufferKriteriumKennung.B_FRISCHWASSER,
                         Bezeichnung = zp.Topologie == PufferBwTopologie.Wohnungsstation ? "Wohnungsstationen am Puffer" :
                                       zp.Topologie == PufferBwTopologie.Speicher ? "Trinkwasser am Puffer (ohne Nenninhalt)" : "Frischwasserstation am Puffer",
-                        VolumenL = v, Aktiv = true, EnthaeltNutzanteil = true, Herkunft = HERKUNFT_FRISCHWASSER,
-                        Rechenweg = "(" + Z(zp.DmaxKwh) + " + " + Z(dZ) + ") kWh · 1000 · (1 + " + Z(zuschlag) + ") / (" + Z(g.C) + " · " +
-                                    Z(dTB) + " K · " + Z(g.Eta) + "); " + zText
+                        VolumenL = v, Aktiv = true, EnthaeltNutzanteil = true, HerkunftBaustein = HERKUNFT_FRISCHWASSER,
+                        RechenwegBaustein = T("PAUS_WEG_B_FRISCHWASSER", "({0} + {1}) kWh · 1000 · (1 + {2}) / ({3} · {4} K · {5}); {6}",
+                                              zp.DmaxKwh, dZ, zuschlag, g.C, dTB, g.Eta, zText)
                     });
                     if (tOben < HYGIENE_VORLAUF_C)
                         g.Warnung(PufferWarncode.HYGIENE_TEMPERATUR, PufferStufe.Warnung,

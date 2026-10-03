@@ -52,13 +52,22 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Eine Zeile der Warnliste: Code, Stufe, deutscher Klartext (die Ressourcentexte de/en folgen in
-    /// Stufe P2 unter <see cref="Ressourcenschluessel"/>), Herkunft und Zone.
+    /// Eine Zeile der Warnliste: Code, Stufe, deutscher Klartext mit Zahlen (der Ressourcentext steht unter
+    /// <see cref="Ressourcenschluessel"/>), Herkunft als <see cref="Textbaustein"/> und Zone.
     /// </summary>
-    public sealed record PufferWarnung(string Code, PufferStufe Stufe, string Text, string Herkunft, PufferZone? Zone)
+    public sealed record PufferWarnung(string Code, PufferStufe Stufe, string Text, Textbaustein HerkunftBaustein, PufferZone? Zone)
     {
+        /// <summary>Eine Warnung mit einer Herkunft als Klartext (ohne Ressourcenschlüssel).</summary>
+        public PufferWarnung(string code, PufferStufe stufe, string text, string herkunft, PufferZone? zone)
+            : this(code, stufe, text, Textbaustein.Klar(herkunft), zone)
+        {
+        }
+
         /// <summary>Der Ressourcenschlüssel des Texts: <c>PA-KEIN-PUFFER</c> → <c>PA_KEIN_PUFFER</c>.</summary>
         public string Ressourcenschluessel => Code.Replace('-', '_');
+
+        /// <summary>Die Herkunft als deutscher Klartext.</summary>
+        public string Herkunft => HerkunftBaustein?.Klartext ?? "";
     }
 
     /// <summary>Die Kennungen der Kriterien (Konzept 3.3).</summary>
@@ -97,10 +106,14 @@ namespace WindowsFormsApplication1
         public bool Gueltig { get; init; } = true;
         /// <summary>Enthält der Wert schon den nutzbaren Anteil η_s (dann nicht erneut teilen)?</summary>
         public bool EnthaeltNutzanteil { get; init; }
-        /// <summary>Die Herkunft (Norm, Studie, Tool, Setzung) als Zitat.</summary>
-        public string Herkunft { get; init; } = "";
-        /// <summary>Der Rechenweg mit den eingesetzten Zahlen (Klartext).</summary>
-        public string Rechenweg { get; init; } = "";
+        /// <summary>Die Herkunft (Norm, Studie, Tool, Setzung) als Zitat — Ressourcenschlüssel <c>PAUS_HERK_*</c>.</summary>
+        public Textbaustein HerkunftBaustein { get; init; } = Textbaustein.Leer;
+        /// <summary>Der Rechenweg mit den eingesetzten Zahlen — Ressourcenschlüssel <c>PAUS_WEG_*</c> mit Argumenten.</summary>
+        public Textbaustein RechenwegBaustein { get; init; } = Textbaustein.Leer;
+        /// <summary>Die Herkunft als deutscher Klartext.</summary>
+        public string Herkunft => HerkunftBaustein?.Klartext ?? "";
+        /// <summary>Der Rechenweg als deutscher Klartext.</summary>
+        public string Rechenweg => RechenwegBaustein?.Klartext ?? "";
     }
 
     /// <summary>Das Betriebsbild einer Zweipunktsimulation (D2) als Kennzahlen.</summary>
@@ -141,7 +154,10 @@ namespace WindowsFormsApplication1
         public bool AusKatalog { get; init; }
         /// <summary>Klasse-C-Formel über ihrem Geltungsbereich (2 000 l) angewandt.</summary>
         public bool Extrapoliert { get; init; }
-        public string Herkunft { get; init; } = "";
+        /// <summary>Die Herkunft (Katalogsatz oder Klasse-C-Grenze) als <see cref="Textbaustein"/>.</summary>
+        public Textbaustein HerkunftBaustein { get; init; } = Textbaustein.Leer;
+        /// <summary>Die Herkunft als deutscher Klartext.</summary>
+        public string Herkunft => HerkunftBaustein?.Klartext ?? "";
     }
 
     /// <summary>Das Ergebnis einer Zone.</summary>

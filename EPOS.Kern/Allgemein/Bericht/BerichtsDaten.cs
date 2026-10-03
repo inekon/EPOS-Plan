@@ -175,6 +175,10 @@ namespace WindowsFormsApplication1
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>
         public ProjektDetails Details;
 
+        /// <summary>Die gespeicherten Pufferspeicher-Auslegungen des Stamms samt Nachrechnung
+        /// (<see cref="PufferAuslegungCtrl.Gespeichert"/>); leer = keine Zeile, der Abschnitt entfällt.</summary>
+        public List<PufferAuslegungGespeichert> Pufferauslegungen = new List<PufferAuslegungGespeichert>();
+
         /// <summary>Kennzahlwerte je Katalogschlüssel (null = für dieses Projekt nicht verfügbar).</summary>
         public Dictionary<string, double?> Kennzahlen = new Dictionary<string, double?>();
 

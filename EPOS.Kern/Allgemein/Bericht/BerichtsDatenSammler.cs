@@ -634,6 +634,14 @@ namespace WindowsFormsApplication1
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
             catch { v.Details = null; }
 
+            // 6a. Pufferspeicher-Auslegung (Stufe P3): die gespeicherten Zeilen des Stamms samt
+            //     Nachrechnung — nur lesend; ohne Zeile entfällt der Abschnitt der Projektbeschreibung.
+            if (v.IstStamm)
+            {
+                try { v.Pufferauslegungen = PufferAuslegungCtrl.Gespeichert(v.IdProjekt).ToList(); }
+                catch { v.Pufferauslegungen = new List<PufferAuslegungGespeichert>(); }
+            }
+
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
         }
 

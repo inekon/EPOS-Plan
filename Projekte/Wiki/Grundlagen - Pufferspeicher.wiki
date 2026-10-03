@@ -52,16 +52,48 @@ Gespeichert wird die Wärmekapazität des Wassers: Ein wärmeres Volumen enthäl
 
 Ein Pufferspeicher lohnt sich, sobald Erzeugung und Bedarf zeitlich auseinanderfallen: ein Blockheizkraftwerk, das lange am Stück laufen soll, eine Wärmepumpe, die Takten vermeiden muss, oder ein Kollektorfeld, dessen Ertrag nicht im selben Moment gebraucht wird. Wo ein Erzeuger ohnehin fein und verzögerungsfrei dem Bedarf folgen kann, bringt er wenig zusätzlichen Nutzen. Er ist reiner Zeitpuffer, keine Energiequelle: Ein zu groß gewählter Speicher kostet Investition und zusätzliche Bereitschaftsverluste, ohne die Laufzeiten weiter zu verbessern; ein zu kleiner taktet trotzdem.
 
+== Auslegung ==
+{{Anker|auslegung|kriterien}}
+
+Die Größe eines Pufferspeichers folgt nicht aus einer einzigen Formel, sondern aus mehreren Anforderungen; bemessend ist die größte. Für Heizungspuffer an Wärmepumpen beschreibt VDI 4645 die Wege, für Festbrennstoffkessel gelten die 1. BImSchV und DIN EN 303-5, für Trinkwasser DIN EN 12831-3 und DVGW W 551.
+
+{| class="wikitable"
+! Kriterium !! Frage !! Bezug
+|-
+| Vorprüfung Anlagenvolumen || Führt das Heizungsnetz selbst genug Wasser, sodass eine leistungsgeregelte Wärmepumpe ohne Puffer auskommt? || VDI 4645
+|-
+| Faustwert nach Gerätetyp || Welcher Mindestinhalt je kW gilt für ein Gerät mit fester Drehzahl, welcher für ein leistungsgeregeltes? || VDI 4645
+|-
+| Mindestlaufzeit || Reicht der Inhalt, damit der Erzeuger je Start eine Mindestzeit läuft? || VDI 4645
+|-
+| Sperrzeit || Überbrückt der Puffer eine Sperre des Erzeugers, ohne dass die Räume zu stark auskühlen? Ein in der Sperre freigegebener Zweiterzeuger macht das Kriterium entbehrlich. || VDI 4645
+|-
+| Deckungsgrad || Decken Erzeuger und Puffer den Bedarf über das Jahr? || Betriebssimulation
+|-
+| Taktziel || Bleiben die Starts je Tag unter einem Ziel? || Betriebssimulation
+|-
+| Festbrennstoff || Erreicht der Puffer das vorgeschriebene Mindestvolumen hinter einem Scheitholz- oder Pelletkessel? || 1. BImSchV, DIN EN 303-5
+|-
+| Solarthermie || Fasst der Puffer den Tagesertrag des Kollektorfelds? || DIN EN 12977
+|-
+| Brauchwasser || Deckt die Brauchwasserzone die größte Zapfspitze des Tages? || DIN EN 12831-3, DVGW W 551
+|-
+| Bereitschaftsverlust || Wie viel Wärme verliert der gewählte Inhalt im Stillstand? Ein Speicher mit 1 000 l verliert an der Grenze der Klasse C rund 3,6 kWh je Tag bei 45 K. || EN 15332
+|}
+
+Ein Kombipuffer addiert die Zonen für Heizung und Brauchwasser. Ein '''Plausibilitätsband''' je kW Heizlast – kleiner bei Flächenheizung, größer bei Heizkörpern – dient als Gegenprobe, nicht als Vorgabe. Ein größerer Puffer senkt die Starts, erhöht aber die Bereitschaftsverluste. Wie EPOS-Plan diese Kriterien aus den Bedarfsreihen und Erzeugern des Projekts rechnet und den Vorschlag in den Projektpuffer übernimmt, steht unter [[Programm Dokumentation/Pufferspeicher auslegen#kriterien|Pufferspeicher auslegen]].
+
 == In EPOS-Plan ==
 {{Anker|in-epos-plan|abbildung-in-epos-plan|zuordnung-zu-erzeugern}}
 
-Der Katalog der Pufferspeicher liegt unter Administration → Energiesysteme → Pufferspeicher; im Projekt legt die Kachel Pufferspeicher der Startseite den Speicher im Dialog „Verwaltung Pufferspeicher“ an, den Erzeugern zugeordnet wird er in der Simulationskonfiguration. Wie Zuordnung, Schaltschwellen und Ladereihenfolge dort zusammenwirken, zeigt [[Programm Dokumentation/Pufferspeicher#einbindung|Einbindung]], ein Beispiel mit realen Größen steht unter [[Programm Dokumentation/Pufferspeicher#beispiel|Beispiel]], das Zusammenspiel mit anderen Erzeugern unter [[Programm Dokumentation/Pufferspeicher#zusammenspiel|Zusammenspiel]] und was dabei zu beachten ist unter [[Programm Dokumentation/Pufferspeicher#fallstricke|Fallstricke]]. Der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].
+Der Katalog der Pufferspeicher liegt unter Administration → Energiesysteme → Pufferspeicher; im Projekt legt die Kachel Pufferspeicher der Startseite den Speicher im Dialog „Verwaltung Pufferspeicher“ an, den Erzeugern zugeordnet wird er in der Simulationskonfiguration. Wie Zuordnung, Schaltschwellen und Ladereihenfolge dort zusammenwirken, zeigt [[Programm Dokumentation/Pufferspeicher#einbindung|Einbindung]], ein Beispiel mit realen Größen steht unter [[Programm Dokumentation/Pufferspeicher#beispiel|Beispiel]], das Zusammenspiel mit anderen Erzeugern unter [[Programm Dokumentation/Pufferspeicher#zusammenspiel|Zusammenspiel]] und was dabei zu beachten ist unter [[Programm Dokumentation/Pufferspeicher#fallstricke|Fallstricke]]. Der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]. Einen Vorschlag für das Volumen rechnet die [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher-Auslegung]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
 * [[Programm Dokumentation/Pufferspeicher|Programm Dokumentation: Pufferspeicher]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] – der Rechenweg
+* [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen nach den Kriterien der Auslegung
 * [[Grundlagen/Solarkollektoren|Grundlagen: Solarkollektoren]] – der häufigste schwankende Erzeuger vor dem Puffer
 * [[Grundlagen/Hydraulikschemata|Hydraulikschemata]] – gebräuchliche Schaltungen als Prinzipschema
 

@@ -65,7 +65,7 @@ Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 2
 
 '''Was zu erwarten ist und wo Sie es prüfen.''' 11,6 kWh entsprechen knapp einer halben Stunde Volllast der Wärmepumpe. Nach dem Lauf zeigt der Reiter ''Wärmepumpe'' der Simulationsergebnisse die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen und Füllstand am Jahresende. Die Verluste bleiben unter 730 kWh im Jahr: 2 kWh je Tag bei vollem Speicher, weniger bei geringerem Füllstand. ''Minimale Spitzenkesselleistung:'' im selben Reiter nennt die größte Stundenlast, die nach Wärmepumpe, Speicher und Heizstab offen bleibt – Kessel 1 rechnet erst danach; den Füllstand über das Jahr zeigt ''Ergebnis → Wärme Produktion Chart'' mit der Auswahl ''Speicher:''.
 
-'''Welche Größe passt.''' Rechnen Sie mehrere Volumina als [[Programm Dokumentation/Varianten|Varianten]], die sich nur im Volumen unterscheiden, und vergleichen Sie den Anteil des Kessels im Reiter ''Heizkessel'', die Minimale Spitzenkesselleistung, die Verluste und den Füllstand. Takten und Mindestlaufzeiten bildet EPOS-Plan nicht ab; ein größerer Speicher zeigt sich deshalb nicht in weniger Takten.
+'''Welche Größe passt.''' Einen Vorschlag nach VDI 4645 und Betriebssimulation – mit Mindestlaufzeit, Sperrzeit und Taktziel – rechnet die [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher-Auslegung]]; ''Auslegen…'' im Dialog öffnet sie für den markierten Speicher. Für den Vergleich im Jahreslauf rechnen Sie mehrere Volumina als [[Programm Dokumentation/Varianten|Varianten]], die sich nur im Volumen unterscheiden, und vergleichen Sie den Anteil des Kessels im Reiter ''Heizkessel'', die Minimale Spitzenkesselleistung, die Verluste und den Füllstand. Takten und Mindestlaufzeiten bildet der Jahreslauf nicht ab; ein größerer Speicher zeigt sich dort nicht in weniger Takten – das Taktziel prüft die Auslegung.
 
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}
@@ -121,7 +121,7 @@ Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und 
 * '''Schichten 1.''' Mit ''Schichten:'' 1 rechnet der Speicher als ein Vorrat; Entnahmehöhen, Einspeisehöhe und Nutztemperatur wirken erst ab zwei Schichten.
 * '''Wo die Speicherwerte stehen.''' Die Tabelle je Speicher steht im Reiter ''Wärmepumpe''; darunter nennt je Speicher eine Zeile den Bereitschaftsverlust nach Temperatur und die Stunden, in denen das Frischwassermodul nicht zapfen konnte. Ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht, und es bleibt der Füllstand im ''Wärme Produktion Chart''.
 * {{Anker|wirkung-in-der-jahresbilanz|speicherverluste}}'''Verluste in der Jahresbilanz.''' Ladung minus Entladung eines Jahres ergibt die Bereitschaftsverluste, zuzüglich der Änderung des Füllstands. Die Erzeuger liefern deshalb etwas mehr Wärme, als der Bedarf verlangt.
-* '''Was EPOS-Plan nicht abbildet.''' Takten, Mindestlaufzeiten und Anlaufverluste – gerechnet wird im Stundenraster – und Massenströme. Ein Wärmeübertrager zwischen Puffer und Kessel wirkt nur über seine Leistung: Tragen Sie sie als ''Entladeleistung max.'' ein. Das Frischwassermodul prüft je Stunde die Temperatur der obersten Zone, Zapfspitzen innerhalb der Stunde sieht es nicht.
+* '''Was der Jahreslauf nicht abbildet.''' Takten, Mindestlaufzeiten und Anlaufverluste – gerechnet wird im Stundenraster – und Massenströme. Ein Wärmeübertrager zwischen Puffer und Kessel wirkt nur über seine Leistung: Tragen Sie sie als ''Entladeleistung max.'' ein. Das Frischwassermodul prüft je Stunde die Temperatur der obersten Zone, Zapfspitzen innerhalb der Stunde sieht es nicht.
 * '''Zonenanteile ohne Schichten.''' ''Zonenanteile'' wirken erst ab zwei Schichten, und ihre Zahl muss zur Schichtenzahl passen; ''Vorschlag Kombispeicher'' setzt beides zusammen.
 
 == Eingaben ==
@@ -155,6 +155,7 @@ Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und 
 
 * [[Programm Dokumentation/Solarthermie|Solarthermie]] – Kollektorfeld, das den Puffer direkt und nachrangig lädt
 * [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] – lädt den Puffer; eine Sole- oder Wasser-Wasser-Wärmepumpe kann ihn auch als Wärmequelle nutzen
+* [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen nach VDI 4645 und Betriebssimulation vorschlagen und übernehmen
 * [[Grundlagen/Pufferspeicher]] – die fachlichen Hintergründe
 
 [[Kategorie:Programm Dokumentation]]
