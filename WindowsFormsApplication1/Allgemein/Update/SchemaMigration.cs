@@ -5054,6 +5054,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/> — <b>die Ergänzungen der
+        /// Pufferspeicher-Auslegung</b> (Welle P4c): an <c>Tab_PufferAuslegung</c> die Sitzungseingaben,
+        /// an <c>Tab_Gebaeude</c> <c>ID_Konditionierungsvorlage</c>, an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>.
+        ///
+        /// <para><b>Reines DDL, wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG = PufferAuslegungErgaenzungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7306,6 +7315,15 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // ERGAENZUNGEN der Pufferauslegung (P4c). Quelle ist PufferAuslegungErgaenzungSchema,
+            // die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG,
+                        "Tab_PufferAuslegung: Kriterien_Aktiv, Sperrzeit_Expertenweg, Auslegungsheizlast_kW, " +
+                        "Wohneinheiten, Anzeigestufe; Tab_Gebaeude: ID_Konditionierungsvorlage; Tab_Pufferspeicher: ID_Stamm",
+                        "Die Eingaben einer Auslegungssitzung, die uebernommene Konditionierungsvorlage und der " +
+                        "Katalogsatz eines uebernommenen Puffers haetten keinen Ort. KEIN Rechenergebnis aendert sich - " +
+                        "die Spalten entstehen leer.",
+                        Schritt_PufferAuslegungErgaenzung),
         };
 
         /// <summary>
@@ -13399,6 +13417,43 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergänzungen der Pufferauslegung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG"/>, die Anweisungen bei
+        /// <see cref="PufferAuslegungErgaenzungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_PufferAuslegungErgaenzung(Lauf l)
+        {
+            string nr = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PufferAuslegungErgaenzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(PufferAuslegungErgaenzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!PufferAuslegungErgaenzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergaenzungsspalten der Pufferauslegung stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergaenzungen der Pufferauslegung - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

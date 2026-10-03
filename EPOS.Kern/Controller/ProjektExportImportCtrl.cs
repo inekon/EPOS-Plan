@@ -278,6 +278,10 @@ namespace WindowsFormsApplication1
                                         // der Original-Id zeigte er dort auf ein fremdes Geraet
                                         // oder legte einen Katalogsatz an.
                                         if (IstWaermepumpenkatalog(fk.RefTab)) continue;
+                                        // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen
+                                        // nicht: Konditionierungsvorlage und Pufferkatalog des Ziels
+                                        // kennen die Id nicht oder unter einem anderen Satz.
+                                        if (IstReiseloserKatalog(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -1269,6 +1273,14 @@ namespace WindowsFormsApplication1
         private static bool IstGebaeudekatalog(string tabelle) =>
             string.Equals(tabelle, GebaeudeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Ist das ein Katalog, dessen Verweis nicht reist (<c>Tab_Gebaeude.ID_Konditionierungsvorlage</c>,
+        /// <c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c)? Der Verweis kommt am Ziel leer an.
+        /// </summary>
+        private static bool IstReiseloserKatalog(string tabelle) =>
+            string.Equals(tabelle, SchemaKatalog.TAB_KONDITIONIERUNGSVORLAGE_STAMM, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase);
+
         /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
         private static bool IstWaermepumpenkatalog(string tabelle) =>
             string.Equals(tabelle, WaermepumpeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
@@ -1313,6 +1325,14 @@ namespace WindowsFormsApplication1
             // Dieselbe Regel fuer den Katalogverweis der Waermepumpen-Projektkopie (Schritt 80).
             if (tab.Equals(WaermepumpeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(WaermepumpeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+
+            // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen nicht - die Id eines fremden
+            // Katalogs sagt am Ziel nichts; der Verweis ist eine Herkunftsangabe, kein Rechenwert.
+            if ((tab.Equals(GebaeudeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
+                 col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE, StringComparison.OrdinalIgnoreCase)) ||
+                (tab.Equals(SchemaKatalog.TAB_PUFFERSPEICHER, StringComparison.OrdinalIgnoreCase) &&
+                 col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase)))
                 return DBNull.Value;
 
             if (col.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase) ||

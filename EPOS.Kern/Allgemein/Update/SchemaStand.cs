@@ -855,11 +855,17 @@ namespace WindowsFormsApplication1
         /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
         /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
         /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit den ERGÄNZUNGEN DER PUFFERSPEICHER-AUSLEGUNG (Welle P4c), steht das Ziel auf
+        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>: an <c>Tab_PufferAuslegung</c> die
+        /// Sitzungseingaben (Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten, Anzeigestufe), an
+        /// <c>Tab_Gebaeude</c> <c>ID_Konditionierungsvorlage</c>, an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>
+        /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
+        public const int Zielversion = PufferAuslegungErgaenzungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

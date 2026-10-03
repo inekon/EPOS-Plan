@@ -907,6 +907,10 @@ namespace EPOS.Kern.Tests
                 // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 ProjektkopienKatalogeSchema.Ausfuehren(null);
+                // Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Welle P4c): die Sitzungseingaben der
+                // Pufferauslegung, ID_Konditionierungsvorlage am Gebaeude, ID_Stamm am Projektpuffer.
+                // Reines DDL aus DERSELBEN Quelle wie Migration und Werkzeug; die Spalten bleiben leer.
+                PufferAuslegungErgaenzungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

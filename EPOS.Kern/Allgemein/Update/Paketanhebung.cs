@@ -275,6 +275,9 @@ namespace WindowsFormsApplication1
             // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
             new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
                       "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
+            // Ein älteres Paket bringt die Ergänzungsspalten der Pufferauslegung nicht mit; sie bleiben leer.
+            new Stufe(PufferAuslegungErgaenzungSchema.SCHRITT, Art.Ddl,
+                      "Sitzungseingaben der Pufferauslegung, Konditionierungsvorlage am Gebäude, Katalogverweis am Projektpuffer"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
