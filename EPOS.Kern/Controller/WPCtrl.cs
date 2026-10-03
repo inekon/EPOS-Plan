@@ -813,6 +813,10 @@ namespace WindowsFormsApplication1
                         }
 
                         v.Commit();
+
+                        // Welle M4 (WP1): Mindestleistung und C_d des Katalogsatzes reisen mit - NULL
+                        // bleibt NULL; ohne die Spalten (nicht migrierte Datenbank) nichts.
+                        ErzeugerTeillastWerte.WpKopieren(sHead, neueId);
                         return neueId;
                     }
                     catch (Exception ex)
@@ -1051,6 +1055,10 @@ namespace WindowsFormsApplication1
             ziel.KuehlHilfsstromanteil = Belegt(dt, row, KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL)
                 ? (double?)Convert.ToDouble(row[KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL])
                 : null;
+
+            // Welle M4 (WP1): Mindestleistung und C_d reisen auf demselben Leseweg - NULL-treu, eine
+            // fehlende Spalte (Datenbank vor ErzeugerTeillastSchema.SCHRITT) gilt wie NULL.
+            ErzeugerTeillastWerte.WpAusZeile(ziel, row);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

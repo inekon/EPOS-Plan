@@ -358,6 +358,12 @@
         internal static string WpKuehlleistungName => MyResource.Resource.WPS_LBL_KUEHLLEISTUNG;
         internal static string WpKuehlleistungErl => MyResource.Resource.KI_DLG_WP_KUEHLLEISTUNG_ERL;
 
+        // ---- Welle M4 (WP1): Taktverlust nach EN 14825 in der Wärmepumpenpflege
+        internal static string WpMindestleistungName => MyResource.Resource.WPS_LBL_MINDESTLEISTUNG;
+        internal static string WpMindestleistungErl => MyResource.Resource.KI_DLG_WP_MINDESTLEISTUNG_ERL;
+        internal static string WpTaktverlustCdName => MyResource.Resource.WPS_LBL_TAKTVERLUST_CD;
+        internal static string WpTaktverlustCdErl => MyResource.Resource.KI_DLG_WP_TAKTVERLUST_CD_ERL;
+
         // ========================================= Welle KI-F1: Erzeuger im Projekt
         //
         // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:
@@ -2573,6 +2579,16 @@
         internal static string BhkkRuecklaufName => MyResource.Resource.BHKWK_LBL_RUECKLAUF;
         internal static string BhkkRuecklaufErl => MyResource.Resource.KI_DLG_BHKK_RUECKLAUF_ERL;
 
+        // ---- Welle M4 (BH1, BH2): Teillast und Takten im BHKW-Katalogeditor
+        internal static string BhkkEtaEl50Name => MyResource.Resource.BHKWK_LBL_ETA_EL50;
+        internal static string BhkkEtaEl50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_EL50_ERL;
+        internal static string BhkkEtaTh50Name => MyResource.Resource.BHKWK_LBL_ETA_TH50;
+        internal static string BhkkEtaTh50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_TH50_ERL;
+        internal static string BhkkAnfahrverlustName => MyResource.Resource.BHKWK_LBL_ANFAHRVERLUST;
+        internal static string BhkkAnfahrverlustErl => MyResource.Resource.KI_DLG_BHKK_ANFAHRVERLUST_ERL;
+        internal static string BhkkMindestlaufzeitName => MyResource.Resource.BHKWK_LBL_MINDESTLAUFZEIT;
+        internal static string BhkkMindestlaufzeitErl => MyResource.Resource.KI_DLG_BHKK_MINDESTLAUFZEIT_ERL;
+
         // ---- Der Solarkollektor-Katalogeditor (Form_SolarDB)
         internal static string SkkNameName => MyResource.Resource.SKK_LBL_NAME;
         internal static string SkkNameErl => MyResource.Resource.KI_DLG_SKK_NAME_ERL;
@@ -3102,6 +3118,10 @@
                         case KatalogBrowserProfil.FeldWirkungsgradEl: return BhkkWgElErl;
                         case KatalogBrowserProfil.FeldWirkungsgradTh: return BhkkWgThErl;
                         case KatalogBrowserProfil.FeldWirkungsgrad: return BhkkWgGesamtErl;
+                        case KatalogBrowserProfil.FeldTeillastEl50: return BhkkEtaEl50Erl;
+                        case KatalogBrowserProfil.FeldTeillastTh50: return BhkkEtaTh50Erl;
+                        case KatalogBrowserProfil.FeldAnfahrverlust: return BhkkAnfahrverlustErl;
+                        case KatalogBrowserProfil.FeldMindestlaufzeit: return BhkkMindestlaufzeitErl;
                         case KatalogBrowserProfil.FeldInvestitionJeKwel:
                             return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
                         case KatalogBrowserProfil.FeldWartungJeKwhel:

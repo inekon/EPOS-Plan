@@ -89,6 +89,9 @@ namespace EPOS.Kern.Tests
                     "BEZEICHNER", "FIRMA", "BESCHREIBUNG", "PTHERM", "PEL", "GRENZLEISTUNG",
                     "VORLAUF", "RUECKLAUF",
                     "BRENNSTOFF", "WIRKUNGSGRAD_EL", "WIRKUNGSGRAD_TH", "WIRKUNGSGRAD",
+                    // Teillast und Takten (Welle M4: BH1, BH2).
+                    "WIRKUNGSGRAD_EL_TEILLAST50", "WIRKUNGSGRAD_TH_TEILLAST50",
+                    "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "MOTORTYP", "RAUMBEDARF",
                     "KOSTEN_MODUL", "KOSTEN_MONTAGE", "KOSTEN_LIEFERUNG",
                     "KOSTEN_SCHALLSCHUTZ", "KOSTEN_ABGASREINIGUNG",
@@ -457,6 +460,65 @@ namespace EPOS.Kern.Tests
             Assert.Equal("210", nachher[KatalogBrowserProfil.FeldCo]);
             Assert.Equal("199000", nachher[KatalogBrowserProfil.FeldCo2]);
             Assert.Equal("1", nachher[KatalogBrowserProfil.FeldStaub]);
+        }
+
+        /// <summary>
+        /// <b>Teillast und Takten des BHKW</b> (Welle M4: BH1, BH2): Werte kommen an (Komma wie
+        /// Punkt); ein LEERES Feld heisst „nicht gepflegt" und schreibt NULL, ein weggelassenes
+        /// bleibt stehen. Ein Wirkungsgrad als Prozentzahl, ein Bruchteil bei der Mindestlaufzeit
+        /// und unlesbarer Text werden benannt abgelehnt — und nichts wird geschrieben.
+        /// </summary>
+        [Fact]
+        public void Bhkw_Teillast_leer_heisst_nicht_gepflegt()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            static BHKWStammCtrl.AnzeigefelderBhkw Satz(string el50 = null, string th50 = null,
+                                                        string anfahr = null, string laufzeit = null)
+                => new BHKWStammCtrl.AnzeigefelderBhkw(
+                    "Probe GmbH", 260, 240, 25, 88, 62,
+                    WirkungsgradEl50: el50, WirkungsgradTh50: th50,
+                    AnfahrverlustKwh: anfahr, MindestlaufzeitMin: laufzeit);
+            static string Wert(string feld) => BHKWStammCtrl.KatalogsatzAnzeige(BHKW)[feld];
+            static BHKWStammCtrl.SpeicherErgebnis Schreiben(BHKWStammCtrl.AnzeigefelderBhkw f)
+                => BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, f, schreibschutzUebergehen: true);
+
+            var gepflegt = Schreiben(Satz("0,33", "0.55", "1,5", "15"));
+            Assert.True(gepflegt.Ok, gepflegt.Meldung);
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("0,55", Wert(KatalogBrowserProfil.FeldTeillastTh50));
+            Assert.Equal("1,5", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+            Assert.Equal("15", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Weggelassen = stehen lassen.
+            Assert.True(Schreiben(Satz()).Ok);
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("15", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Benannt abgelehnt, nichts geschrieben.
+            foreach (var falsch in new[]
+                     {
+                         Satz(el50: "33"), Satz(th50: "hoch"), Satz(anfahr: "-1"),
+                         Satz(laufzeit: "7,5"), Satz(laufzeit: "99")
+                     })
+            {
+                var abgelehnt = Schreiben(falsch);
+                Assert.False(abgelehnt.Ok);
+                Assert.False(string.IsNullOrEmpty(abgelehnt.Meldung));
+                Assert.DoesNotContain("KBROW_", abgelehnt.Meldung);
+            }
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("1,5", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+
+            // Leer = nicht gepflegt: NULL, nicht 0.
+            Assert.True(Schreiben(Satz("", " ", "", "")).Ok);
+            foreach (string feld in new[]
+                     {
+                         KatalogBrowserProfil.FeldTeillastEl50, KatalogBrowserProfil.FeldTeillastTh50,
+                         KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+                     })
+                Assert.Equal("", Wert(feld));
         }
 
         /// <summary>

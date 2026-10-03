@@ -483,6 +483,58 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Em.Bhkw.StaubKg", Zahl(bh.Em_Staub_BHKW)));
             }
 
+            // --- Erzeuger in Teillast (Welle M4: WP1, BH1, BH2) ----------------------------
+            //
+            // NUR BEI > 0: Die Schluessel entstehen allein fuer ein Modul, das die neue Rechnung
+            // tatsaechlich fuehrt - Starts nur mit gepflegter Mindestleistung (Waermepumpe) bzw.
+            // mit Anfahrverlust oder Mindestlaufzeit (BHKW), der Mehrbrennstoff der Kennlinie nur
+            // mit Teillastwirkungsgrad. Ein Bestandsprojekt ohne diese Felder bekommt keinen
+            // Schluessel; die Basis bleibt byte-gleich. EIGENES PRAEFIX "Takt." und "Teillast.",
+            // aus demselben Grund wie "Em." oben.
+            if (sim.bSimulationWP && sim.simulation_wp != null)
+            {
+                SimulationWaermepumpe wpT = sim.simulation_wp;
+                int module = Math.Min(wpT.wp_list.Count, SimulationWaermepumpe.MAX_WP);
+                for (int i = 0; i < module; i++)
+                {
+                    if (wpT.Starts_WP[i] <= 0) continue;
+                    string p = "Takt.Waermepumpe[" + i + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(wpT.Starts_WP[i])));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(wpT.Taktstunden_WP[i])));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(wpT.Taktstrom_KWh_WP[i])));
+                }
+            }
+            Kaeltekaskade kaskadeT = sim.simulation_Waermebedarf?.Kaelteseite?.Kaskade;
+            if (kaskadeT != null)
+                for (int k = 0; k < kaskadeT.Erzeuger.Count; k++)
+                {
+                    Kaelteerzeuger e = kaskadeT.Erzeuger[k];
+                    if (e == null || e.Starts <= 0) continue;
+                    string p = "Takt.Kaelte[" + k + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(e.Starts)));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(e.Taktstunden)));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(e.TaktstromKwh)));
+                }
+            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+            {
+                SimulationBHKW bhT = sim.simulation_bhkw;
+                int module = Math.Min(bhT.bhkw_list.Count, SimulationBHKW.MAX_BHKW);
+                for (int i = 0; i < module; i++)
+                {
+                    if (bhT.Starts_BHKW[i] > 0)
+                    {
+                        string p = "Takt.Bhkw[" + i + "].";
+                        skalare.Add(Neu(p + "Starts", Zahl(bhT.Starts_BHKW[i])));
+                        skalare.Add(Neu(p + "Taktstunden", Zahl(bhT.Taktstunden_BHKW[i])));
+                        skalare.Add(Neu(p + "AnfahrKwh", Zahl(bhT.Anfahrverlust_KWh_BHKW[i])));
+                    }
+                    BhkwTeillast t = bhT.Teillast(i);
+                    if (t != null && t.MitKennlinie && bhT.TeillastMehrbrennstoff_KWh_BHKW[i] != 0)
+                        skalare.Add(Neu("Teillast.Bhkw[" + i + "].MehrbrennstoffKwh",
+                                        Zahl(bhT.TeillastMehrbrennstoff_KWh_BHKW[i])));
+                }
+            }
+
             // --- Speicherflotte: Kennzahlen (Anwenderentscheid SP-O-8, 11.09.2026) --------
             //
             // WAS HIER FEHLTE. Laeuft die Flotte, ersetzt sie den Reststrombedarf des

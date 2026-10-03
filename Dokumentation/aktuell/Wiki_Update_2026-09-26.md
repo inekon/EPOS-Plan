@@ -177,7 +177,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
 - Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
-- Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#673; Version bestätigt der Anwender beim Upload)
+- Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#674; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
@@ -269,6 +269,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Ein Betriebskalender mit Feiertagen je Bundesland und Betriebsferien wirkt auf Brauchwasser-, Prozesswärme- und Stromprofile. (#670)
 - Ein Gebäude des Projekts lässt sich mit „In DB übernehmen“ als eigener Satz in die Gebäudedatenbank übernehmen. (#671)
 - Die Bauteilliste des IFC-Imports lässt sich durchsuchen, sortieren und je Spalte filtern. (#672)
+- Wärmepumpen rechnen unterhalb ihrer Mindestleistung einen Taktverlust nach EN 14825 samt Starts; BHKW rechnen mit einer Teillastkennlinie und takten unterhalb ihrer Untergrenze mit Anfahrverlust und Mindestlaufzeit. (#673)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

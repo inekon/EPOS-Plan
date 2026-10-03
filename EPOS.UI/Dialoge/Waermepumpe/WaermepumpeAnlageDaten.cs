@@ -153,6 +153,17 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Abrechnung des Kältestroms bei abweichendem Träger (<c>Kuehl_EigenerZaehler</c>, E34): <c>true</c> = eigener Zähler, sonst anteilig am Netzbezug.</summary>
     public bool? KuehlEigenerZaehler { get; set; }
 
+    // --- Taktverlust (Welle M4, WP1) — Werte des Geräts, nur zur Anzeige --------
+
+    /// <summary>
+    /// Kleinste Modulationsleistung der Projektkopie [kW] (<c>Tab_WP.Mindestleistung_kW</c>);
+    /// <c>null</c> = keine Taktrechnung. Der Anlagendialog zeigt sie nur — gepflegt wird im Katalog.
+    /// </summary>
+    public double? MindestleistungKw { get; set; }
+
+    /// <summary>Teillastkoeffizient C_d der Projektkopie (<c>Tab_WP.Taktverlustfaktor_Cd</c>); <c>null</c> = 0,9.</summary>
+    public double? TaktverlustfaktorCd { get; set; }
+
     // --- Verborgen mitlaufend --------------------------------------------------
 
     /// <summary>Modulkosten [€] — Ä19, nicht gezeichnet.</summary>
@@ -197,6 +208,8 @@ public sealed class WaermepumpeAnlageDaten
         KuehlHilfsstromanteil = KuehlHilfsstromanteil,
         KuehlCarrierId = KuehlCarrierId,
         KuehlEigenerZaehler = KuehlEigenerZaehler,
+        MindestleistungKw = MindestleistungKw,
+        TaktverlustfaktorCd = TaktverlustfaktorCd,
         Modulkosten = Modulkosten,
         Volumen = Volumen,
         Solaranteil = Solaranteil,

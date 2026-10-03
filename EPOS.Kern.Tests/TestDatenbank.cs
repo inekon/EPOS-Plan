@@ -856,11 +856,14 @@ namespace EPOS.Kern.Tests
                 // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug; wiederholbar, KEIN DML.
                 SolarthermieFelderSchema.Ausfuehren(null);
-
                 // Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste je
                 // Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die Kalenderspalte
                 // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
                 BedarfNetzKalenderSchema.Ausfuehren(null);
+                // Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder von
+                // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                ErzeugerTeillastSchema.Ausfuehren(null);
 
                 // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
                 // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den

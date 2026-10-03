@@ -202,7 +202,8 @@ namespace Auslieferungsvorlage.Tests
             // 154 seit der Welle M3b (Schemaschritt 166, BedarfNetzKalenderSchema): Tab_Betriebskalender,
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER; die Kalenderspalten der drei
             // Zuordnungstabellen sind ADD COLUMN und aendern die Zahl nicht. Schritt 167
-            // (HilfsenergieEmpfehlungNachzug) ist reines DML und laesst sie stehen.
+            // (ErzeugerTeillastSchema) ist ADD COLUMN, Schritt 168 (HilfsenergieEmpfehlungNachzug) reines
+            // DML - beide lassen sie stehen.
             Assert.Equal(154, befund.Strict);
         }
 

@@ -193,6 +193,15 @@ public sealed class WaermepumpeStammDaten
     /// <summary>Bauart — die Maske zeigt sie nicht, das <c>INSERT</c> schreibt sie.</summary>
     public string Bauart { get; set; } = "";
 
+    /// <summary>
+    /// Kleinste Modulationsleistung [kW] (Welle M4, WP1). <c>null</c> = keine Taktrechnung — das
+    /// Gerät moduliert bis null.
+    /// </summary>
+    public double? MindestleistungKw { get; set; }
+
+    /// <summary>Teillastkoeffizient C_d nach EN 14825 (Welle M4, WP1); <c>null</c> = Vorgabe 0,9.</summary>
+    public double? TaktverlustfaktorCd { get; set; }
+
     /// <summary>Auslieferungssatz? Dann sind Speichern und Löschen gesperrt.</summary>
     public bool NurLesen { get; set; }
 
@@ -213,6 +222,8 @@ public sealed class WaermepumpeStammDaten
         Modulkosten = Modulkosten,
         MaxPtherm = MaxPtherm,
         Bauart = Bauart,
+        MindestleistungKw = MindestleistungKw,
+        TaktverlustfaktorCd = TaktverlustfaktorCd,
         NurLesen = NurLesen
     };
 }

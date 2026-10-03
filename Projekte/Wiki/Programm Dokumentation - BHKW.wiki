@@ -145,7 +145,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 * '''Den Kaskadenplatz prüfen.''' Die Simulation rechnet ein BHKW nur auf einem gespeicherten Platz der Kaskade. Vorgeschlagen wird es von selbst vor dem Kessel; in einer von Hand gepflegten Kaskade bleibt die Reihenfolge, die Sie gesetzt haben – hinter einem Kessel bekäme es nur, was die Kessel offen lassen. Nach einem Handgriff an der Kaskade – ''+ aufnehmen'', ''×'' oder Pfeil – ist sie von Hand gepflegt; steht dann kein BHKW darin, kommt ein später angelegtes nicht mehr von selbst hinein. Die Seite nennt es in einer Hinweisleiste, der Lauf in einer Meldung über den Ergebnissen; aufgenommen wird es mit ''+ aufnehmen''.
 * {{Anker|pendelspeicher|taktung}}'''Pendelspeicher und Takten.''' Einen eigenen Pendelspeicher führt der Dialog nicht; diese Rolle übernimmt ein Pufferspeicher als Wärmesenke. Gerechnet wird stündlich: Ein Modul läuft voll, moduliert oder gar nicht. Taktung, Mindestlaufzeiten, Anfahr- und Stillstandsverluste und ein Teillastwirkungsgrad kommen im Modell nicht vor.
 * '''Vollbenutzungsstunden sind keine Betriebsstunden.''' Die Werte des Reiters teilen die Jahresarbeit durch die Nennleistung. Ein Modul, das ein Jahr lang zur Hälfte moduliert, hat 8&nbsp;760 Betriebsstunden, aber 4&nbsp;380 Vollbenutzungsstunden; die Summe über mehrere Module kann 8&nbsp;760 übersteigen.
-* '''Welche Untergrenze gilt.''' Jedes Modul rechnet in allen drei Betriebsarten mit dem Feld ''Untere Grenzleistung des ausgewählten Moduls'' der Verwaltung, sobald dort ein Wert über 0 steht; sonst mit der unteren Grenzleistung, die es aus dem Katalog mitbringt; steht auch dort 0, gilt die ''Untere Leistungsgrenze der Module'' der Konfiguration, und deren 0 heißt: keine Untergrenze. Unter seiner Untergrenze bleibt ein Modul in der Stunde aus. Ein Wert über 100&nbsp;% ist ungültig: Der Lauf meldet ihn und nimmt den nächsten.
+* '''Welche Untergrenze gilt.''' Jedes Modul rechnet in allen drei Betriebsarten mit dem Feld ''Untere Grenzleistung des ausgewählten Moduls'' der Verwaltung, sobald dort ein Wert über 0 steht; sonst mit der unteren Grenzleistung, die es aus dem Katalog mitbringt; steht auch dort 0, gilt die ''Untere Leistungsgrenze der Module'' der Konfiguration, und deren 0 heißt: keine Untergrenze. Unter seiner Untergrenze bleibt ein Modul in der Stunde aus – es sei denn, sein Katalogsatz führt einen Anfahrverlust oder eine Mindestlaufzeit; dann taktet es (siehe [[#teillast|Teillast und Takten]]). Ein Wert über 100&nbsp;% ist ungültig: Der Lauf meldet ihn und nimmt den nächsten.
 * '''Eine Betriebsart, eine Senke.''' Die Betriebsart gilt für das ganze Projekt, und die Fahrweisen schalten alle Module gemeinsam zu. Für die ganze BHKW-Stufe gilt die Wärmesenke eines führenden Moduls; weicht ein anderes davon ab, warnt das Laufprotokoll.
 * '''Stromgeführt verwirft Wärme, ohne Einspeisung regelt ab.''' Stromgeführt entsteht Wärme nach dem Strombedarf; was weder den Bedarf deckt noch in einen Puffer passt, zeigt der Reiter als ''Wärmeüberschuß (*)'' – verloren, der Brennstoff aber verbraucht. ''ohne Stromeinspeisung'' lässt ein Modul aus, wenn der Strombedarf der Stunde nicht reicht, auch wenn Wärme gebraucht würde; dann springen die Kessel ein.
 * '''Katalog und Projekt sind getrennt.''' ''Alle Daten anzeigen'' und ''Bearbeiten...'' ändern den Katalogsatz; ein übernommenes Modul rechnet weiter mit seiner Projektkopie. Damit eine Katalogänderung wirkt, nehmen Sie es aus dem Projekt und übernehmen es neu.
@@ -173,11 +173,22 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 
 ''Alle Daten anzeigen'' und ''Bearbeiten...'' führen die Kennwerte des Katalogsatzes:
 
-* '''Thermische Leistung''' und '''Elektrische Leistung''' – in kW; ihr Verhältnis ist die Stromkennzahl <math>\sigma</math>, die auch in Teillast gilt.
+* '''Thermische Leistung''' und '''Elektrische Leistung''' – in kW; ihr Verhältnis ist die Stromkennzahl <math>\sigma</math>. Ohne Teillastwerte gilt sie auch in Teillast.
 * '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – Faktoren; '''Ges. Wirkungsgrad''' ist ihre Summe. Er bestimmt den Brennstoff: <math>\text{Verbrauch} = (\text{Wärme} + \text{Strom}) / \text{Gesamtwirkungsgrad}</math>.
 * '''Untere Grenzleistung''' – in Prozent der Nennleistung. Ein Modul bleibt aus, wenn der Wärmeraum (wärmegeführt) bzw. der Strombedarf der Stunde (stromgeführt, ohne Einspeisung) unter diesem Anteil seiner Nennleistung liegt; steht hier 0, gilt die Projektvorgabe. Ein Wert in der Verwaltung des Projekts geht diesem Katalogwert vor.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * Die Emissionsfelder sind Herstellerangaben und rechnen nicht mit.
+
+=== Teillast und Takten ===
+{{Anker|teillast|teillastkennlinie|takten|anfahrverlust|mindestlaufzeit}}
+
+Die Gruppe ''Teillast und Takten'' in ''BHKW Eigenschaften'' und die gleichnamigen Felder in ''Alle Daten anzeigen'' beschreiben das Modul unter Volllast. Alle vier Felder dürfen leer bleiben; dann rechnet das Modul mit den Volllastwerten und bleibt unter seiner Untergrenze aus.
+
+* '''El. Wirkungsgrad bei 50 % Last''' und '''Th. Wirkungsgrad bei 50 % Last''' – Faktoren wie die Volllastwerte (z.&nbsp;B. 0,27 und 0,62). Zwischen 50&nbsp;% und Volllast verlaufen beide Wirkungsgrade geradlinig, darunter gilt der Wert bei 50&nbsp;%. Damit ändern sich in Teillast die Stromkennzahl und der Brennstoff: Ein Modul, dessen elektrischer Wirkungsgrad in Teillast fällt, braucht für dieselbe Strommenge mehr Brennstoff. Ein leeres Feld heißt „wie Volllast". Die kleine Kurve neben den Feldern zeigt beide Wirkungsgrade über der Last.
+* '''Anfahrverlust je Start''' – in kWh Brennstoff, der je Start zusätzlich verbraucht wird.
+* '''Mindestlaufzeit''' – in Minuten je Start, höchstens 60; leer gelten 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
+
+Mit einem Anfahrverlust oder einer Mindestlaufzeit '''taktet''' ein Modul unter seiner Untergrenze, statt in der Stunde auszubleiben – sofern der Wärmeraum der Stunde (offener Bedarf plus freier Puffer) mindestens einen Mindestlauf aufnimmt, also die Wärme der Untergrenze über die Mindestlaufzeit: Es deckt den Wärmeraum, den Strombedarf oder – ohne Einspeisung – das Kleinere von beiden in kurzen Läufen an der Untergrenze. Die Simulation zählt dabei die Starts der Stunde so, wie Mindestläufe die Wärme brauchen, und schlägt je Start den Anfahrverlust auf den Brennstoff. Ohne Untergrenze (0 in allen drei Ebenen) taktet kein Modul.
 
 === Betriebsart ===
 {{Anker|fahrweise|betriebsart|strategie}}
@@ -191,12 +202,12 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 
 == Berechnung ==
 
-Fahrweisen, Stromkennzahl und die Rolle des Puffers stehen unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]]. Der Brennstoffverbrauch ist die Summe aus Wärme und Strom geteilt durch den Gesamtwirkungsgrad; die Emissionen rechnen mit den Faktoren des Energieträgers ([[Programm Dokumentation/Emissionen|Emissionen]]), CO führt die Bilanz nicht.
+Fahrweisen, Stromkennzahl und die Rolle des Puffers stehen unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]]. Der Brennstoffverbrauch ist die Summe aus Wärme und Strom geteilt durch den Gesamtwirkungsgrad, mit Teillastwerten und beim Takten zuzüglich des Mehrbrennstoffs aus Teillast und Anfahrten; die Emissionen rechnen mit den Faktoren des Energieträgers ([[Programm Dokumentation/Emissionen|Emissionen]]), CO führt die Bilanz nicht.
 
 === Ergebnisse ===
 {{Anker|ergebnisse|betriebsstunden|modultabelle}}
 
-Der Reiter ''BHKW'' der Simulationsergebnisse zeigt in der Gruppe ''Wärme'' Bedarf, ''Wärmeproduktion'', ''Wärmeüberschuß (*)'', ''davon in den Speicher'', ''aus dem Speicher gedeckt'', ''Wärmebedarfsdeckung'' und ''Restwärmebedarf''; in der Gruppe ''Strom'' ''Strombedarf'', ''Stromproduktion'', ''Stromeinspeisung'', ''Strombedarfsdeckung'' und ''Reststrombedarf''. Die Gruppe ''Betrieb'' nennt Vollbenutzungsstunden – ''Vbh thermisch, Summe Module'', ''Vbh thermisch, Mittel Module'' und ''Vollbenutzungsstunden elektrisch'' –, gezählte Laufstunden weist der Reiter nicht aus. Es folgen der ''Brennstoffverbrauch'' je Brennstoff, die Modultabelle mit Wärme- und Stromproduktion je Modul und das Diagramm der Wärmelast mit dem Schalter ''sortiert'' ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]).
+Der Reiter ''BHKW'' der Simulationsergebnisse zeigt in der Gruppe ''Wärme'' Bedarf, ''Wärmeproduktion'', ''Wärmeüberschuß (*)'', ''davon in den Speicher'', ''aus dem Speicher gedeckt'', ''Wärmebedarfsdeckung'' und ''Restwärmebedarf''; in der Gruppe ''Strom'' ''Strombedarf'', ''Stromproduktion'', ''Stromeinspeisung'', ''Strombedarfsdeckung'' und ''Reststrombedarf''. Die Gruppe ''Betrieb'' nennt Vollbenutzungsstunden – ''Vbh thermisch, Summe Module'', ''Vbh thermisch, Mittel Module'' und ''Vollbenutzungsstunden elektrisch'' –, gezählte Laufstunden weist der Reiter nicht aus. Es folgen der ''Brennstoffverbrauch'' je Brennstoff, die Modultabelle mit Wärme- und Stromproduktion je Modul – rechnet ein Modul mit Teillastwerten, mit der Spalte ''Mehrbrennstoff Teillast'', taktet eines, mit ''Starts'' und ''Anfahrverlust'' – und das Diagramm der Wärmelast mit dem Schalter ''sortiert'' ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]).
 
 == Siehe auch ==
 

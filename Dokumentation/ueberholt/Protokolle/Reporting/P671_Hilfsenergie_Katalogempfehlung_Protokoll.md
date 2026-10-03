@@ -1,6 +1,6 @@
 # P671 — Katalogempfehlung der Hilfsenergie auf Weg B, Satzfeld im Kostenraster (Protokoll, 03.10.2026)
 
-Statuszeile vorläufig #673 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
+Statuszeile #674 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md) (die Orchestrierung prüft
 die Nummer beim Push; mit dieser Welle keine Statuszeile); Auftrag
 [`P671_Auftrag_2026-10-03.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P671_Auftrag_2026-10-03.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P654_Ausweis_9b_Deckel_Protokoll.md`](P654_Ausweis_9b_Deckel_Protokoll.md) (#656). Zweig
@@ -14,7 +14,7 @@ Katalogempfehlung der Hilfsenergie von BHKW (2–4 %) und Heizkessel (4–8 %) s
 die Pflichtzeilen rechnen aber seit Schritt 94 nach Weg B (Anteil des Endenergiebedarfs als Strommenge) — am Kessel von
 1030 ergäbe die Spanne 54.000–108.000 €/a. Anwenderentscheid 03.10.2026 (**EZ‑24**): „Setze jetzt fort" nach der
 Empfehlung der Wirtschaftlichkeit; N11 (Flotten-Netzeinspeisung) und E30‑Q5 (Emission und Stromsteuer des Hilfsstroms)
-bleiben benannt. Ein Katalogschritt (167), kein Rechenweg der Simulation, keine neue Basis (R32).
+bleiben benannt. Ein Katalogschritt (168), kein Rechenweg der Simulation, keine neue Basis (R32).
 
 ## Regeln
 
@@ -24,7 +24,7 @@ bleiben benannt. Ein Katalogschritt (167), kein Rechenweg der Simulation, keine 
    Gegenprobe als Umrechnung der alten Spanne mit Brennstoffpreis ÷ Strompreis (8 ÷ 30 ct/kWh): Kessel 1,07–2,13 %, BHKW
    0,53–1,07 %; Untergrenze und Mitte liegen in der neuen Spanne, die Obergrenze am Kessel um die Rundung darüber.
 2. **Eine Quelle.** Die Werte stehen in der Saat `SchemaKatalog.Schritt39_Vorlagen`; der Schritt liest seine Zielwerte dort.
-3. **Katalogschritt 167** (`HilfsenergieEmpfehlungNachzug`, Nummer `BedarfNetzKalenderSchema.SCHRITT + 1`, `Art.Katalog` in
+3. **Katalogschritt 168** (`HilfsenergieEmpfehlungNachzug`, Nummer `ErzeugerTeillastSchema.SCHRITT + 1`, `Art.Katalog` in
    der Paketanhebung): `UPDATE Tab_KostenVorlagePosition SET Empfehlung_von, Empfehlung_bis` nur an Zeilen mit der
    Bezeichnung der Pflichtzeile, Bemessung `PROZENT_ENDENERGIEBEDARF` und noch der alten Spanne, deren Vorlage
    `ReadOnly = 1`, Kategorie Betrieb und Komponente BHKW bzw. Heizkessel ist. Projektzeilen (`Tab_ProjektWerte` führt keine
@@ -37,15 +37,16 @@ bleiben benannt. Ein Katalogschritt (167), kein Rechenweg der Simulation, keine 
 ## Code
 
 - `EPOS.Kern/Allgemein/Update/HilfsenergieEmpfehlungNachzug.cs` (neu), `SchemaKatalog.cs` (Saat), `SchemaStand.cs`
-  (`Zielversion`), `Paketanhebung.cs` (Stufe 167), `EPOS.Kern/Allgemein/DbWerte.cs` (Kommentare beider Wege).
+  (`Zielversion`), `Paketanhebung.cs` (Stufe 168), `EPOS.Kern/Allgemein/DbWerte.cs` (Kommentare beider Wege).
 - `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`: `SCHRITT_HILFSENERGIE_EMPFEHLUNG`, Registereintrag hinter
-  166, `Schritt_HilfsenergieEmpfehlung` nach dem Muster von 158.
-- `EPOS.Kern.Tests/TestDatenbank.cs`, `Werkzeuge/Testdatenbankschema/Program.cs`: der Schritt hinter 166.
+  167 (Teillastfelder, Welle M4), `Schritt_HilfsenergieEmpfehlung` nach dem Muster von 158.
+- `EPOS.Kern.Tests/TestDatenbank.cs`, `Werkzeuge/Testdatenbankschema/Program.cs`: der Schritt hinter 167.
 - `EPOS.Kern/Controller/KostenProjektPositionenCtrl.cs` (`SatzAusAnlagenanteil`, `SatzAusAnteilUebernehmen`),
   `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs`, `EPOS.UI/Dialoge/Kosten/KostenKomponenteDaten.cs`, `VorlagenZeile.razor`,
   `KostenKomponenteDialog.razor`.
-- Testdatenbank mit dem Werkzeug auf 167 (Zeilen 62 und 68), `--trocken` danach 0 offen, `integrity_check` ok; LFS-SHA-256
-  `8f172db10e401a15c7140a1eedfa85a360f8f244893573c06a6a24c893cf05af`, 81 195 008 Byte.
+- Testdatenbank mit dem Werkzeug aus der Fassung `cf82126d…` der Welle M4 (167) auf 168 (Zeilen 62 und 68), `--trocken`
+  danach 0 offen, `integrity_check` ok, `foreign_key_check` leer; LFS-SHA-256
+  `9985c4a28fad4305964ddecbc91d19f3c749fd86dd090f925a9ff5722e73cd26`, 81 195 008 Byte.
 - Fremder Befund: `Werkzeuge/Auslieferungsvorlage.Tests/VorlageTests.cs` STRICT-Pin 153 → 154 (Schritt 166,
   `Tab_Betriebskalender`); origin hatte ihn nicht nachgezogen.
 
@@ -84,14 +85,20 @@ Kopf), Übergabepapier, `Referenzlaeufe/LIESMICH.md`, Wiki-Quelle `Programm Doku
 
 ## Gate
 
-Gate #673 auf `0983d8102` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
+Gate #674 auf `0983d8102` (Linux, `Werkzeuge/Gate/gate_linux.sh`): Kern-Filter Release 0 Fehler; ChartProben 200 Hashes, alle grün und
 gleich der Messlatte `Proben/ChartProben/Messlatte_2026-09-30.sha256`; Tests 18 402 grün, 2 übersprungen, 0 rot (Kern 10 145, UI 7 295,
 KiKern 549, SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf 16/16 PASS gegen
 `2026-10-02_R32_Solarthermie` (5 180 241 Werte, 487/487 CSV byte-gleich); Störlauf `--stoerung ulp` PASS; Werkzeugtest
 `Auslieferungsvorlage.Tests` 44/44. Windows-Schale 0 Fehler (Agent, x64 Debug, `EnableWindowsTargeting`).
 
+Prüfung nach dem Merge mit der Welle M4 (Linux): Kern-Filter Debug 0 Fehler; gefilterte Tests (Hilfsenergie, Teillast,
+Paketanhebung, Schemastand, Kosten, Wirtschaftlichkeit, Bemessung, Wachen) 1 387 grün, 0 rot (Kern 741, UI 593, SpeicherEngine 51,
+SpeicherPlanung 2); `Auslieferungsvorlage.Tests` 44/44; Windows-Schale 0 Fehler; Testdatenbank 167 → 168 mit `--trocken` danach 0
+offen, SqlDialektPruefer 2 176 Texte, 0 Fundstellen.
+
 ## Commit
 
 Fünf Commits auf `p671` hinter dem Auftrag `bd5811bf9` (`f257d60fb`, `718451eef`, `e360a892d`, `abcc77a43`, `b80b5562e`); Merge mit
-origin (#671, #672 der KP3-Sitzung; Schritt 167 dort frei) und `0983d8102` (eigene Nummer #673 statt #671). Statuszeile #673 im
-Folgecommit; Push nach Freigabe des Anwenders; CI-Vermerk in Nach #673 (d).
+origin (#671, #672 der KP3-Sitzung; Schritt 167 dort frei) und `0983d8102` (eigene Nummer #673 statt #671). Zweiter Merge mit origin (#673 der Welle M4, Teillastfelder als Schemaschritt 167):
+der Katalogschritt hängt sich als 168 an (`ErzeugerTeillastSchema.SCHRITT + 1`), Statuszeile #674, Testdatenbank 167 → 168.
+Statuszeile #674 im Folgecommit; Push nach Freigabe des Anwenders; CI-Vermerk in Nach #674 (d).

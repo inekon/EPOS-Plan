@@ -55,10 +55,11 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Sie folgt
-        /// lückenlos auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>; wird der Schritt beim
-        /// Zusammenführen umnummeriert, ändert sich nur diese Zeile.
+        /// lückenlos auf <see cref="ErzeugerTeillastSchema.SCHRITT"/> (167, Welle M4, zeitgleich
+        /// gebaut und zuerst auf dem Arbeitszweig); wird der Schritt beim Zusammenführen
+        /// umnummeriert, ändert sich nur diese Zeile.
         /// </summary>
-        public const int SCHRITT = BedarfNetzKalenderSchema.SCHRITT + 1;
+        public const int SCHRITT = ErzeugerTeillastSchema.SCHRITT + 1;
 
         /// <summary>Die Positionen der Kostenvorlagen — nur sie fasst der Schritt an.</summary>
         public const string TABELLE = SchemaKatalog.TAB_KOSTENVORLAGEPOSITION;

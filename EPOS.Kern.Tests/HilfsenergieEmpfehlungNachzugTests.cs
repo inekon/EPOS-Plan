@@ -53,14 +53,15 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// 167: die nächste freie Nummer hinter <see cref="BedarfNetzKalenderSchema.SCHRITT"/> (166,
-        /// Welle M3b) — und der Zielstand des Schemas.
+        /// 168: die nächste freie Nummer hinter <see cref="ErzeugerTeillastSchema.SCHRITT"/> (167,
+        /// Welle M4) — und der Zielstand des Schemas. Die Teillastfelder haben 167 zeitgleich belegt
+        /// und standen zuerst auf dem Arbeitszweig; dieser Katalogschritt hängt sich dahinter.
         /// </summary>
         [Fact]
-        public void Die_Nummer_folgt_lueckenlos_auf_die_Betriebskalender_und_ist_das_Ziel()
+        public void Die_Nummer_folgt_lueckenlos_auf_die_Teillastfelder_und_ist_das_Ziel()
         {
-            Assert.Equal(BedarfNetzKalenderSchema.SCHRITT + 1, HilfsenergieEmpfehlungNachzug.SCHRITT);
-            Assert.Equal(167, HilfsenergieEmpfehlungNachzug.SCHRITT);
+            Assert.Equal(ErzeugerTeillastSchema.SCHRITT + 1, HilfsenergieEmpfehlungNachzug.SCHRITT);
+            Assert.Equal(168, HilfsenergieEmpfehlungNachzug.SCHRITT);
             Assert.Equal(HilfsenergieEmpfehlungNachzug.SCHRITT, SchemaStand.Zielversion);
         }
 
