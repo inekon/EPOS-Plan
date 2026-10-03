@@ -209,5 +209,63 @@ namespace EPOS.Kern.Tests
                              BitConverter.DoubleToInt64Bits(l.Ergebnis.Aufheizung.HeizleistungMaxStundenH));
             });
         }
+        // =====================================================================
+        //  Verbrauchsangabe (Welle D2; B11, Befund R4)
+        // =====================================================================
+
+        private static List<string> Verbrauchshinweise(SimulationProtokoll p)
+            => p.Hinweise.Where(z => z.Contains("Aufheizoptimierung (Verbrauchsangabe)", StringComparison.Ordinal)
+                                     || z.Contains("Preheat optimisation (consumption entry)", StringComparison.Ordinal)).ToList();
+
+        /// <summary>
+        /// <b>Hinweis bei Verbrauchsangabe:</b> Wirkt die Rampe am Hotel (1018/10632) mit Verbrauchsangabe (80 MWh/a),
+        /// steht einmal je Gebäude der Hinweis, dass die Rückrechnung die Mehrwärme der Rampen in den Faktor aufnimmt
+        /// — mit der Zahl der Rampentage, deutsch und englisch, auch nach einem zweiten Lauf im selben Protokoll
+        /// einmal. Mit Flächenangabe, ohne Schalter und ohne Rampentag (Testnaht P_auf = +∞) schweigt er.
+        /// </summary>
+        [Fact]
+        public void Verbrauchsangabe_mit_wirkender_Rampe_nennt_den_Hinweis_einmal_je_Gebaeude()
+        {
+            if (!_db.Vorhanden) return;
+            var an = new Aufheizvorgabe(true, null, null, null, null);
+            Func<ProjektGebaeudeModel, bool> wahl = x => x.ID_Gebaeude == 10632;
+            Action<ProjektGebaeudeModel> verbrauch = x =>
+            {
+                x.Einheit = "Verbrauch  [MWh/a]";
+                x.Z_AuswahlWohnflaeche = 80.0;
+            };
+            foreach (string kultur in new[] { "de-DE", "en-US" })
+            {
+                using var k = new Kulturvorrichtung(kultur);
+                SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+                AufheizLauf.Gebaeudelauf l = AufheizLauf.Projekt(1018, an, double.NaN, wahl, verbrauch).Single();
+                AufheizLauf.Projekt(1018, an, double.NaN, wahl, verbrauch).Single();
+                int tage = l.Ergebnis.Aufheizung.Aufheiztage.Value;
+                Assert.True(tage > 0);
+                string h = Assert.Single(Verbrauchshinweise(p));
+                Assert.Equal("Gebäudemodell VDI 6007: Hotel-G-136 (10632) — " +
+                             string.Format(CultureInfo.CurrentCulture, R.SIMENG_AUFH_VERBRAUCH, tage.ToString(CultureInfo.CurrentCulture)), h);
+                _aus.WriteLine(kultur + ": " + h);
+            }
+
+            SimulationProtokoll flaeche = SimulationProtokoll.NeuStarten();
+            AufheizLauf.Projekt(1018, an, double.NaN, wahl);
+            Assert.Empty(Verbrauchshinweise(flaeche));
+
+            SimulationProtokoll aus = SimulationProtokoll.NeuStarten();
+            AufheizLauf.Projekt(1018, Aufheizvorgabe.Aus, double.NaN, wahl, verbrauch);
+            Assert.Empty(Verbrauchshinweise(aus));
+
+            SimulationProtokoll naht = SimulationProtokoll.NeuStarten();
+            AufheizLauf.Projekt(1018, an, double.PositiveInfinity, wahl, verbrauch);
+            Assert.Empty(Verbrauchshinweise(naht));
+
+            string de = R.ResourceManager.GetString("SIMENG_AUFH_VERBRAUCH", CultureInfo.GetCultureInfo("de-DE"));
+            string en = R.ResourceManager.GetString("SIMENG_AUFH_VERBRAUCH", CultureInfo.GetCultureInfo("en-US"));
+            Assert.NotEqual(de, en);
+            Assert.Contains("{0}", de, StringComparison.Ordinal);
+            Assert.Contains("{0}", en, StringComparison.Ordinal);
+            Assert.DoesNotContain("{1}", de + en, StringComparison.Ordinal);
+        }
     }
 }

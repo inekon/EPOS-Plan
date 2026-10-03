@@ -322,5 +322,52 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(1030, Klimaregion(1030)));
             Assert.Null(GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(1030, 0));
         }
+
+        // ==================================================================
+        //  Aufheizoptimierung (Entwurf KP3, Welle D2; B20, Grundsatz 4)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die Aufheizwerte der Auskunft sind die des Laufs</b> (B20: der Bedarfsdialog ist ihr Ort): Mit
+        /// eingeschalteter Aufheizoptimierung trägt die Ergebniszeile der Auskunft je Gebäude dieselben vierzehn
+        /// Aufheizwerte wie die Zeile, die der Lauf nach <c>Tab_ErgebnisGebaeude</c> legt — bitgleich, weil beide
+        /// <see cref="GebaeudeKennzahlen.Bilden"/> rufen; P_auf skaliert. Ohne Sommerlüftung sind die
+        /// Sommerlüftungsstunden in beiden <c>null</c>. Ohne Schalter trägt die Auskunft keinen Aufheizwert.
+        /// </summary>
+        [Theory]
+        [InlineData(1018)]
+        [InlineData(1008)]
+        public void Die_Aufheizwerte_der_Auskunft_sind_die_des_Laufs(int idProjekt)
+        {
+            if (!_db.Vorhanden) return;
+            using var db = new TestDatenbank();
+            int region = Klimaregion(idProjekt);
+            List<Z_ProjGebModel> zuordnungen = Zuordnungen(idProjekt);
+
+            foreach (Z_ProjGebModel z in zuordnungen)
+            {
+                GebaeudeBedarfErgebnis aus = GebaeudeBedarfCtrl.Rechnen(idProjekt, region, z.ID_Z);
+                Assert.True(aus.Erfolgreich, aus.Befund);
+                Assert.Null(aus.Ergebniszeile.AufheizZustand);
+                Assert.Equal(string.Join("|", Enumerable.Repeat("~", 14)), AufheizKennzahlenTests.Abdruck(aus.Ergebniszeile));
+            }
+
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(idProjekt, new Aufheizvorgabe(true, null, null, null, null)));
+            SimulationWaermebedarf lauf = Lauf(idProjekt);
+            int rampen = 0;
+            foreach (Z_ProjGebModel z in zuordnungen)
+            {
+                GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(idProjekt, region, z.ID_Z);
+                Assert.True(e.Erfolgreich, e.Befund);
+                ErgebnisGebaeudeModel zeile = lauf.GebaeudeKennzahlenListe.Single(g => g.ID_Gebaeude == e.Ergebniszeile.ID_Gebaeude);
+                Assert.Equal(zeile.HeizwaermeMwh, e.Ergebniszeile.HeizwaermeMwh);
+                Assert.NotNull(zeile.AufheizZustand);
+                Assert.Equal(AufheizKennzahlenTests.Abdruck(zeile), AufheizKennzahlenTests.Abdruck(e.Ergebniszeile));
+                Assert.Null(e.SommerlueftungsstundenH);
+                Assert.Null(zeile.SommerlueftungsstundenH);
+                rampen += zeile.Aufheiztage ?? 0;
+            }
+            Assert.True(rampen > 0, "Projekt " + idProjekt + ": keine Rampe");
+        }
     }
 }
